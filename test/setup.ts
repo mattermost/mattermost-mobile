@@ -9,7 +9,6 @@ import mockSafeAreaContext from 'react-native-safe-area-context/jest/mock';
 import {v4 as uuidv4} from 'uuid';
 
 import 'react-native-gesture-handler/jestSetup';
-import '@testing-library/react-native/extend-expect';
 
 import {mockApiClient} from './mock_api_client';
 
@@ -17,6 +16,9 @@ import type {RequestOptions} from '@mattermost/react-native-network-client';
 
 // @ts-expect-error Promise does not exists in global
 global.Promise = jest.requireActual('promise');
+
+// eslint-disable-next-line no-process-env
+process.env.EXPO_OS = 'ios';
 
 setGenerator(uuidv4);
 
@@ -68,6 +70,13 @@ jest.mock('expo-web-browser', () => ({
 }));
 
 jest.mock('@nozbe/watermelondb/utils/common/randomId/randomId', () => ({}));
+
+jest.mock('@nozbe/watermelondb/react/withObservables/garbageCollector', () => {
+    return {
+        __esModule: true,
+        default: jest.fn(),
+    };
+});
 
 /* eslint-disable no-console */
 jest.mock('@database/manager');
@@ -166,6 +175,7 @@ jest.doMock('react-native', () => {
             removeServerNotifications: jest.fn().mockImplementation(),
 
             unlockOrientation: jest.fn(),
+            getWindowDimensions: jest.fn().mockReturnValue({width: 426, height: 952}),
         },
         APIClient: {
             getConstants: () => ({
@@ -231,6 +241,12 @@ jest.doMock('react-native', () => {
         InteractionManager,
         NativeModules,
         Linking,
+        Animated: {
+            ...ReactNative.Animated,
+            timing: jest.fn(() => ({
+                start: jest.fn((callback) => callback?.({finished: true})),
+            })),
+        },
     }, ReactNative);
 });
 
@@ -388,12 +404,12 @@ jest.mock('@react-native-clipboard/clipboard', () => ({}));
 jest.mock('react-native-document-picker', () => ({}));
 
 jest.mock('@mattermost/react-native-network-client', () => ({
-    getOrCreateAPIClient: (serverUrl: string) => ({client: {
+    getOrCreateAPIClient: jest.fn((serverUrl: string) => Promise.resolve({client: {
         baseUrl: serverUrl,
         get: (url: string, options?: RequestOptions) => mockApiClient.get(`${serverUrl}${url}`, options),
         post: (url: string, options?: RequestOptions) => mockApiClient.post(`${serverUrl}${url}`, options),
         invalidate: jest.fn(),
-    }}),
+    }})),
     RetryTypes: {
         EXPONENTIAL_RETRY: 'exponential',
     },
@@ -424,3 +440,24 @@ global.requestAnimationFrame = (callback) => {
 };
 
 global.performance.now = () => Date.now();
+
+const colors = {
+    reset: '\x1b[0m',
+    yellow: '\x1b[33m',
+    red: '\x1b[31m',
+    cyan: '\x1b[36m',
+    blue: '\x1b[1;34m',
+};
+
+const filterStackTrace = (color: string, prefix: string) => {
+    return (...args: unknown[]) => {
+        const message = args.join(' ');
+        process.stdout.write(`\n${color}${prefix} ${message}${colors.reset}\n`);
+    };
+};
+
+// Override console methods globally
+console.warn = filterStackTrace(colors.yellow, '⚠️  Warning:');
+console.error = filterStackTrace(colors.red, '🚨 Error:');
+console.log = filterStackTrace(colors.cyan, '📢 Log:');
+console.debug = filterStackTrace(colors.blue, '🐞 Debug:');
