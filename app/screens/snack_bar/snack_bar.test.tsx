@@ -6,7 +6,7 @@ import {Navigation} from 'react-native-navigation';
 
 import {Screens} from '@constants';
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
-import {act, renderWithIntl} from '@test/intl-test-helper';
+import {act, renderWithIntlAndTheme} from '@test/intl-test-helper';
 
 import SnackBar from './index';
 
@@ -51,7 +51,6 @@ describe('SnackBar', () => {
     };
 
     beforeEach(() => {
-        jest.useFakeTimers();
         unsubscribeMock = jest.fn();
 
         (Navigation.events().registerComponentWillAppearListener as jest.Mock).mockReturnValue({
@@ -64,11 +63,10 @@ describe('SnackBar', () => {
 
     afterEach(() => {
         jest.clearAllMocks();
-        jest.clearAllTimers();
     });
 
     test('renders correctly with base props', () => {
-        const {getByTestId} = renderWithIntl(
+        const {getByTestId} = renderWithIntlAndTheme(
             <SnackBar {...baseProps}/>,
         );
 
@@ -77,7 +75,7 @@ describe('SnackBar', () => {
 
     test('does not auto-dismiss when keepOpen is true', () => {
         const dismissOverlay = jest.spyOn(Navigation, 'dismissOverlay');
-        renderWithIntl(
+        renderWithIntlAndTheme(
             <SnackBar
                 {...baseProps}
                 keepOpen={true}
@@ -93,7 +91,7 @@ describe('SnackBar', () => {
 
     test('renders custom message when provided', () => {
         const customMessage = 'Custom Test Message';
-        const {getByText} = renderWithIntl(
+        const {getByText} = renderWithIntlAndTheme(
             <SnackBar
                 {...baseProps}
                 customMessage={customMessage}
@@ -104,7 +102,7 @@ describe('SnackBar', () => {
     });
 
     test('renders close button when keepOpen is true', () => {
-        const {getByTestId} = renderWithIntl(
+        const {getByTestId} = renderWithIntlAndTheme(
             <SnackBar
                 {...baseProps}
                 keepOpen={true}
