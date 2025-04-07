@@ -13,10 +13,11 @@ import EmojiBar from './emoji_bar';
 import ReactorsList from './reactors_list';
 
 import type ReactionModel from '@typings/database/models/servers/reaction';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     initialEmoji: string;
-    location: string;
+    location: AvailableScreens;
     reactions?: ReactionModel[];
 }
 

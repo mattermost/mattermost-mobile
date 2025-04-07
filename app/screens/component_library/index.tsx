@@ -5,7 +5,7 @@ import React, {useCallback, useMemo, useState} from 'react';
 import {ScrollView, View, type StyleProp, type ViewStyle} from 'react-native';
 
 import AutocompleteSelector from '@components/autocomplete_selector';
-import {Preferences} from '@constants';
+import {Preferences, Screens} from '@constants';
 import {CustomThemeProvider} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import SecurityManager from '@managers/security_manager';
@@ -122,6 +122,7 @@ const ComponentLibrary = ({componentId}: Props) => {
                 onSelected={onSelectComponent}
                 selected={selectedComponent}
                 options={componentOptions}
+                location={Screens.COMPONENT_LIBRARY}
             />
             <AutocompleteSelector
                 testID='selectedTheme'
@@ -129,6 +130,7 @@ const ComponentLibrary = ({componentId}: Props) => {
                 onSelected={onSelectTheme}
                 selected={selectedTheme}
                 options={themeOptions}
+                location={Screens.COMPONENT_LIBRARY}
             />
             <AutocompleteSelector
                 testID='selectedBackground'
@@ -136,6 +138,7 @@ const ComponentLibrary = ({componentId}: Props) => {
                 onSelected={onSelectBackground}
                 selected={selectedBackground}
                 options={backgroundOptions}
+                location={Screens.COMPONENT_LIBRARY}
             />
             <View style={backgroundStyle}>
                 <CustomThemeProvider theme={Preferences.THEMES[selectedTheme]}>

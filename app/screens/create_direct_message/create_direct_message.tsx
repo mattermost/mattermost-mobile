@@ -13,7 +13,7 @@ import Loading from '@components/loading';
 import Search from '@components/search';
 import SelectedUsers from '@components/selected_users';
 import ServerUserList from '@components/server_user_list';
-import {General} from '@constants';
+import {General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
@@ -326,6 +326,7 @@ export default function CreateDirectMessage({
                 fetchFunction={userFetchFunction}
                 searchFunction={userSearchFunction}
                 createFilter={createUserFilter}
+                location={Screens.CREATE_DIRECT_MESSAGE}
             />
             <SelectedUsers
                 keyboardOverlap={keyboardOverlap}

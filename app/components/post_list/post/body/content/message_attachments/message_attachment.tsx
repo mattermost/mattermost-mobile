@@ -20,11 +20,13 @@ import AttachmentText from './attachment_text';
 import AttachmentThumbnail from './attachment_thumbnail';
 import AttachmentTitle from './attachment_title';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 type Props = {
     attachment: MessageAttachment;
     channelId: string;
     layoutWidth?: number;
-    location: string;
+    location: AvailableScreens;
     metadata?: PostMetadata | null;
     postId: string;
     theme: Theme;
@@ -138,6 +140,7 @@ export default function MessageAttachment({attachment, channelId, layoutWidth, l
                     actions={attachment.actions!}
                     postId={postId}
                     theme={theme}
+                    location={location}
                 />
                 }
                 {attachment.image_url && Boolean(metadata?.images?.[attachment.image_url]) &&

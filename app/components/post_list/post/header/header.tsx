@@ -23,6 +23,7 @@ import HeaderTag from './tag';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type HeaderProps = {
     author?: UserModel;
@@ -37,7 +38,7 @@ type HeaderProps = {
     isPendingOrFailed: boolean;
     isSystemPost: boolean;
     isWebHook: boolean;
-    location: string;
+    location: AvailableScreens;
     post: PostModel;
     rootPostAuthor?: UserModel;
     showPostPriority: boolean;

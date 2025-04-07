@@ -35,7 +35,7 @@ import {useAppState} from '@hooks/device';
 import NetworkManager from '@managers/network_manager';
 import {queryAllActiveServers} from '@queries/app/servers';
 import {getCurrentUser} from '@queries/servers/user';
-import {openAsBottomSheet} from '@screens/navigation';
+import {openAsBottomSheet, openUserProfileModal} from '@screens/navigation';
 import {getFullErrorMessage} from '@utils/errors';
 import {isSystemAdmin} from '@utils/user';
 
@@ -211,12 +211,9 @@ export const useHostMenus = () => {
     }, [intl, theme]);
 
     const openUserProfile = useCallback(async (session: CallSession) => {
-        const screen = Screens.USER_PROFILE;
-        const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
-        const closeUserProfile = 'close-user-profile';
-        const props = {closeButtonId: closeUserProfile, location: '', userId: session.userId};
-
-        openAsBottomSheet({screen, title, theme, closeButtonId: closeUserProfile, props});
+        openUserProfileModal(intl, theme, {
+            userId: session.userId,
+        });
     }, [intl, theme]);
 
     const onPress = useCallback((session: CallSession) => () => {

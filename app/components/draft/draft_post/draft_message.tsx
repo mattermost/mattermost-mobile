@@ -15,11 +15,12 @@ import {typography} from '@utils/typography';
 
 import type DraftModel from '@typings/database/models/servers/draft';
 import type {UserMentionKey} from '@typings/global/markdown';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     draft: DraftModel;
     layoutWidth: number;
-    location: string;
+    location: AvailableScreens;
 }
 
 const EMPTY_MENTION_KEYS: UserMentionKey[] = [];

@@ -5,6 +5,7 @@ import React from 'react';
 import {View} from 'react-native';
 
 import Markdown from '@components/markdown';
+import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from '@utils/markdown';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -41,7 +42,7 @@ function DialogIntroductionText({value}: Props) {
                 disableHashtags={true}
                 disableAtMentions={true}
                 disableChannelLink={true}
-                location=''
+                location={Screens.INTERACTIVE_DIALOG}
                 theme={theme}
             />
         </View>

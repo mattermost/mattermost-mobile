@@ -19,7 +19,7 @@ describe('Markdown', () => {
         baseTextStyle: {},
         enableInlineLatex: true,
         enableLatex: true,
-        location: 'somewhere?',
+        location: 'Channel',
         maxNodes: 2000,
         theme: Preferences.THEMES.denim,
     };

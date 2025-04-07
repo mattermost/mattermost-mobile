@@ -21,35 +21,6 @@ import {
     alertSlashCommandFailed,
 } from './';
 
-jest.mock('react-native', () => {
-    const RN = jest.requireActual('react-native');
-    return {
-        Platform: RN.Platform,
-        NativeModules: {
-            ...RN.NativeModules,
-            RNUtils: {
-                getConstants: () => ({
-                    appGroupIdentifier: 'group.mattermost.rnbeta',
-                    appGroupSharedDirectory: {
-                        sharedDirectory: '',
-                        databasePath: '',
-                    },
-                }),
-                addListener: jest.fn(),
-                removeListeners: jest.fn(),
-                isRunningInSplitView: jest.fn().mockReturnValue({isSplit: false, isTablet: false}),
-                getDeliveredNotifications: jest.fn().mockResolvedValue([]),
-                removeChannelNotifications: jest.fn().mockImplementation(),
-                removeThreadNotifications: jest.fn().mockImplementation(),
-                removeServerNotifications: jest.fn().mockImplementation(),
-            },
-        },
-        Alert: {
-            alert: jest.fn(),
-        },
-    };
-});
-
 jest.mock('@i18n', () => ({
     t: (id: string) => id,
 }));

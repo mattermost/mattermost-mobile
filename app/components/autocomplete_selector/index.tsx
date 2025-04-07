@@ -23,6 +23,7 @@ import {secureGetFromRecord} from '@utils/types';
 import {displayUsername} from '@utils/user';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Selection = DialogOption | Channel | UserProfile | DialogOption[] | Channel[] | UserProfile[];
 
@@ -43,6 +44,7 @@ type AutoCompleteSelectorProps = {
     teammateNameDisplay: string;
     isMultiselect?: boolean;
     testID: string;
+    location: AvailableScreens;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -131,8 +133,22 @@ function getTextAndValueFromSelectedItem(item: Selection, teammateNameDisplay: s
 }
 
 function AutoCompleteSelector({
-    dataSource, disabled = false, errorText, getDynamicOptions, helpText, label, onSelected, optional = false,
-    options, placeholder, roundedBorders = true, selected, teammateNameDisplay, isMultiselect = false, testID,
+    dataSource,
+    disabled = false,
+    errorText,
+    getDynamicOptions,
+    helpText,
+    label,
+    onSelected,
+    optional = false,
+    options,
+    placeholder,
+    roundedBorders = true,
+    selected,
+    teammateNameDisplay,
+    isMultiselect = false,
+    testID,
+    location,
 }: AutoCompleteSelectorProps) {
     const intl = useIntl();
     const theme = useTheme();
@@ -221,6 +237,7 @@ function AutoCompleteSelector({
                 disabled={disabled}
                 helpText={helpText}
                 errorText={errorText}
+                location={location}
             />
         </View>
     );
