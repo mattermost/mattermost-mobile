@@ -15,7 +15,7 @@ jest.mock('@components/option_item', () => ({
 }));
 jest.mocked(OptionItem).mockImplementation((props) => React.createElement('OptionItem', {testID: 'option-item', ...props}));
 
-jest.mock('@screens/navigation', () => ({
+jest.mock('@playbooks/screens/navigation', () => ({
     goToPlaybookRuns: jest.fn(),
 }));
 

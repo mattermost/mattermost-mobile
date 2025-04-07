@@ -19,8 +19,9 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {usePreventDoubleTap} from '@hooks/utils';
+import {goToPlaybookRun, goToPlaybookRuns} from '@playbooks/screens/navigation';
 import {BOTTOM_SHEET_ANDROID_OFFSET} from '@screens/bottom_sheet';
-import {bottomSheet, goToPlaybookRun, goToPlaybookRuns, popTopScreen, showModal} from '@screens/navigation';
+import {bottomSheet, popTopScreen, showModal} from '@screens/navigation';
 import {isTypeDMorGM} from '@utils/channel';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -52,6 +53,7 @@ type ChannelProps = {
     shouldRenderBookmarks: boolean;
     hasPlaybookRuns: boolean;
     playbooksActiveRuns: number;
+    activeRunId?: string;
 
     // searchTerm: string;
 };
@@ -101,6 +103,7 @@ const ChannelHeader = ({
     shouldRenderBookmarks,
     playbooksActiveRuns,
     hasPlaybookRuns,
+    activeRunId,
 }: ChannelProps) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
@@ -110,8 +113,6 @@ const ChannelHeader = ({
     const serverUrl = useServerUrl();
 
     const callsConfig = getCallsConfig(serverUrl);
-
-    const hasOneActivePlaybookRun = playbooksActiveRuns === 1;
 
     // NOTE: callsEnabledInChannel will be true/false (not undefined) based on explicit state + the DefaultEnabled system setting
     //   which ultimately comes from channel/index.tsx, and observeIsCallsEnabledInChannel
@@ -207,12 +208,12 @@ const ChannelHeader = ({
     }, [isTablet, callsAvailable, isDMorGM, hasPlaybookRuns, theme, onTitlePress, channelId]);
 
     const openPlaybooksRuns = useCallback(() => {
-        if (hasOneActivePlaybookRun) {
-            goToPlaybookRun(intl, undefined, channelId);
+        if (activeRunId) {
+            goToPlaybookRun(intl, activeRunId);
             return;
         }
         goToPlaybookRuns(intl, channelId);
-    }, [channelId, hasOneActivePlaybookRun, intl]);
+    }, [activeRunId, channelId, intl]);
 
     const rightButtons = useMemo(() => {
         const buttons: HeaderRightButton[] = [];

@@ -7,9 +7,9 @@ import {of as of$} from 'rxjs';
 import {combineLatestWith, distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import {General} from '@constants';
+import {queryActivePlaybookRunsPerChannel, queryPlaybookRunsPerChannel} from '@playbooks/queries/playbooks';
 import {observeChannel, observeChannelInfo} from '@queries/servers/channel';
 import {observeCanAddBookmarks, queryBookmarks} from '@queries/servers/channel_bookmark';
-import {queryActivePlaybookRunsPerChannel, queryPlaybookRunsPerChannel} from '@queries/servers/playbooks';
 import {observeConfigBooleanValue, observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
 import {observeUser} from '@queries/servers/user';
 import {
@@ -87,6 +87,16 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: OwnProps
     const isBookmarksEnabled = observeConfigBooleanValue(database, 'FeatureFlagChannelBookmarks');
     const canAddBookmarks = observeCanAddBookmarks(database, channelId);
 
+    const activeRuns = queryActivePlaybookRunsPerChannel(database, channelId).observe();
+    const activeRunId = activeRuns.pipe(
+        switchMap((runs) => {
+            if (runs.length !== 1) {
+                return of$(undefined);
+            }
+            return of$(runs[0].id);
+        }),
+    );
+
     return {
         canAddBookmarks,
         channelType,
@@ -99,11 +109,12 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: OwnProps
         isOwnDirectMessage,
         memberCount,
         teamId,
-        playbooksActiveRuns: queryActivePlaybookRunsPerChannel(database, channelId).observeCount(),
+        playbooksActiveRuns: activeRuns.pipe(switchMap((r) => of$(r.length))),
         hasPlaybookRuns: queryPlaybookRunsPerChannel(database, channelId).observeCount().pipe(
             switchMap((v) => of$(v > 0)),
             distinctUntilChanged(),
         ),
+        activeRunId,
 
         // searchTerm,
     };

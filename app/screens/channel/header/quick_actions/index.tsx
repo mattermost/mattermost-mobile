@@ -8,8 +8,8 @@ import ChannelActions from '@components/channel_actions';
 import CopyChannelLinkOption from '@components/channel_actions/copy_channel_link_option';
 import InfoBox from '@components/channel_actions/info_box';
 import LeaveChannelLabel from '@components/channel_actions/leave_channel_label';
-import PlaybookRunsOption from '@components/channel_actions/playbook_runs_option';
 import {useTheme} from '@context/theme';
+import PlaybookRunsOption from '@playbooks/components/channel_actions/playbook_runs_option';
 import {dismissBottomSheet} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 

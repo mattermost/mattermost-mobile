@@ -3,7 +3,7 @@
 
 import React, {type ComponentProps} from 'react';
 
-import PlaybookRunsOption from '@components/channel_actions/playbook_runs_option';
+import PlaybookRunsOption from '@playbooks/components/channel_actions/playbook_runs_option';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 

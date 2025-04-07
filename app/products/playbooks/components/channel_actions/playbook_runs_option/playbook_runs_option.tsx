@@ -6,7 +6,8 @@ import {useIntl} from 'react-intl';
 import {Platform} from 'react-native';
 
 import OptionItem from '@components/option_item';
-import {goToPlaybookRuns} from '@screens/navigation';
+import {goToPlaybookRuns} from '@playbooks/screens/navigation';
+import {dismissBottomSheet} from '@screens/navigation';
 
 type Props = {
     channelId: string;
@@ -19,7 +20,8 @@ const PlaybookRunsOption = ({
 }: Props) => {
     const intl = useIntl();
 
-    const onPress = useCallback(() => {
+    const onPress = useCallback(async () => {
+        await dismissBottomSheet();
         goToPlaybookRuns(intl, channelId);
     }, [intl, channelId]);
 

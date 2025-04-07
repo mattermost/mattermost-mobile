@@ -12,8 +12,6 @@ import CompassIcon from '@components/compass_icon';
 import {Events, Screens, Launch} from '@constants';
 import {NOT_READY} from '@constants/screens';
 import {getDefaultThemeByAppearance} from '@context/theme';
-import DatabaseManager from '@database/manager';
-import {queryActivePlaybookRunsPerChannel} from '@queries/servers/playbooks';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
@@ -24,7 +22,6 @@ import {changeOpacity, setNavigatorStyles} from '@utils/theme';
 import type {BottomSheetFooterProps} from '@gorhom/bottom-sheet';
 import type {LaunchProps} from '@typings/launch';
 import type {AvailableScreens, NavButtons} from '@typings/screens/navigation';
-import type {IntlShape} from 'react-intl';
 
 const alpha = {
     from: 0,
@@ -877,27 +874,4 @@ export async function findChannels(title: string, theme: Theme) {
         {closeButtonId},
         options,
     );
-}
-
-export function goToPlaybookRuns(intl: IntlShape, channelId: string) {
-    const title = intl.formatMessage({id: 'playbooks.playbooks_runs.title', defaultMessage: 'Playbook runs'});
-    goToScreen(Screens.PLAYBOOKS_RUNS, title, {channelId}, {});
-}
-
-export async function goToPlaybookRun(intl: IntlShape, playbookRunId?: string, channelId?: string) {
-    const title = intl.formatMessage({id: 'playbooks.playbook_run.title', defaultMessage: 'Playbook run'});
-    let idToUse = playbookRunId;
-    if (!idToUse && channelId) {
-        const database = await DatabaseManager.getActiveServerDatabase();
-        if (database) {
-            const models = await queryActivePlaybookRunsPerChannel(database, channelId).fetch();
-            idToUse = models[0]?.id;
-        }
-    }
-
-    if (!idToUse) {
-        return;
-    }
-
-    goToScreen(Screens.PLAYBOOK_RUN, title, {playbookRunId: idToUse}, {});
 }

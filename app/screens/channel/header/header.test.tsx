@@ -4,7 +4,7 @@
 import React, {type ComponentProps} from 'react';
 
 import NavigationHeader from '@components/navigation_header';
-import {goToPlaybookRun, goToPlaybookRuns} from '@screens/navigation';
+import {goToPlaybookRun, goToPlaybookRuns} from '@playbooks/screens/navigation';
 import {renderWithIntl} from '@test/intl-test-helper';
 
 import ChannelHeader from './header';
@@ -16,9 +16,12 @@ jest.mock('@components/navigation_header', () => ({
 jest.mocked(NavigationHeader).mockImplementation((props) => React.createElement('NavigationHeader', {testID: 'navigation-header', ...props}));
 
 jest.mock('@screens/navigation', () => ({
+    bottomSheet: jest.fn(),
+}));
+
+jest.mock('@playbooks/screens/navigation', () => ({
     goToPlaybookRun: jest.fn(),
     goToPlaybookRuns: jest.fn(),
-    bottomSheet: jest.fn(),
 }));
 
 jest.mock('@calls/state', () => ({
