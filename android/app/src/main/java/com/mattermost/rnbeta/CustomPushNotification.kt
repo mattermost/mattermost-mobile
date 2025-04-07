@@ -105,7 +105,7 @@ class CustomPushNotification(
             CustomPushNotificationHelper.PUSH_TYPE_MESSAGE, CustomPushNotificationHelper.PUSH_TYPE_SESSION -> {
                 val currentActivityName = mAppLifecycleFacade.runningReactContext?.currentActivity?.componentName?.className ?: ""
                 TurboLog.i("ReactNative", currentActivityName)
-                if (!mAppLifecycleFacade.isAppVisible() || currentActivityName != "MainActivity") {
+                if (!mAppLifecycleFacade.isAppVisible() || !currentActivityName.contains("MainActivity")) {
                     var createSummary = type == CustomPushNotificationHelper.PUSH_TYPE_MESSAGE
                     if (type == CustomPushNotificationHelper.PUSH_TYPE_MESSAGE) {
                         channelId?.let {

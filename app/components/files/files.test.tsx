@@ -1,6 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {render, fireEvent} from '@testing-library/react-native';
+import {render, fireEvent, act} from '@testing-library/react-native';
 import React, {useMemo, type ComponentProps} from 'react';
 import {DeviceEventEmitter, Text, TouchableOpacity, View} from 'react-native';
 
@@ -408,10 +408,16 @@ describe('Files', () => {
 
         expect(getByTestId('1-inViewPort')).toHaveTextContent('false');
         expect(getByTestId('2-inViewPort')).toHaveTextContent('false');
-        DeviceEventEmitter.emit(Events.ITEM_IN_VIEWPORT, {'unrelated-event': true});
+        act(() => {
+            DeviceEventEmitter.emit(Events.ITEM_IN_VIEWPORT, {'unrelated-event': true});
+        });
         expect(getByTestId('1-inViewPort')).toHaveTextContent('false');
         expect(getByTestId('2-inViewPort')).toHaveTextContent('false');
-        DeviceEventEmitter.emit(Events.ITEM_IN_VIEWPORT, {'test-location-test-post-id': true});
+
+        act(() => {
+            DeviceEventEmitter.emit(Events.ITEM_IN_VIEWPORT, {'test-location-test-post-id': true});
+        });
+
         expect(getByTestId('1-inViewPort')).toHaveTextContent('true');
         expect(getByTestId('2-inViewPort')).toHaveTextContent('true');
     });
@@ -444,7 +450,9 @@ describe('Files', () => {
         expect(getByTestId('1-inViewPort')).toHaveTextContent('false');
         expect(getByTestId('2-inViewPort')).toHaveTextContent('false');
 
-        DeviceEventEmitter.emit(Events.ITEM_IN_VIEWPORT, {'location1-post1': true});
+        act(() => {
+            DeviceEventEmitter.emit(Events.ITEM_IN_VIEWPORT, {'location1-post1': true});
+        });
         expect(getByTestId('1-inViewPort')).toHaveTextContent('false');
         expect(getByTestId('2-inViewPort')).toHaveTextContent('false');
 
@@ -453,11 +461,15 @@ describe('Files', () => {
         expect(getByTestId('1-inViewPort')).toHaveTextContent('false');
         expect(getByTestId('2-inViewPort')).toHaveTextContent('false');
 
-        DeviceEventEmitter.emit(Events.ITEM_IN_VIEWPORT, {'location2-post1': true});
+        act(() => {
+            DeviceEventEmitter.emit(Events.ITEM_IN_VIEWPORT, {'location2-post1': true});
+        });
         expect(getByTestId('1-inViewPort')).toHaveTextContent('false');
         expect(getByTestId('2-inViewPort')).toHaveTextContent('false');
 
-        DeviceEventEmitter.emit(Events.ITEM_IN_VIEWPORT, {'location2-post2': true});
+        act(() => {
+            DeviceEventEmitter.emit(Events.ITEM_IN_VIEWPORT, {'location2-post2': true});
+        });
         expect(getByTestId('1-inViewPort')).toHaveTextContent('true');
         expect(getByTestId('2-inViewPort')).toHaveTextContent('true');
     });
