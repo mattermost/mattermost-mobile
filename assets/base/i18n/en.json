@@ -952,6 +952,8 @@
   "persistent_notifications.error.special_mentions": "Cannot use @channel, @all or @here to mention recipients of persistent notifications.",
   "pinned_messages.empty.paragraph": "To pin important messages, long-press on a message and choose Pin To Channel. Pinned messages will be visible to everyone in this channel.",
   "pinned_messages.empty.title": "No pinned messages yet",
+  "playbooks.playbook_run.title": "Playbook run",
+  "playbooks.playbooks_runs.title": "Playbook runs",
   "plus_menu.browse_channels.title": "Browse Channels",
   "plus_menu.create_new_channel.title": "Create New Channel",
   "plus_menu.invite_people_to_team.title": "Invite people to the team",
