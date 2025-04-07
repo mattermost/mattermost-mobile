@@ -100,7 +100,7 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: OwnProps
         memberCount,
         teamId,
         playbooksActiveRuns: queryActivePlaybookRunsPerChannel(database, channelId).observeCount(),
-        playbooksRuns: queryPlaybookRunsPerChannel(database, channelId).observeCount().pipe(
+        hasPlaybookRuns: queryPlaybookRunsPerChannel(database, channelId).observeCount().pipe(
             switchMap((v) => of$(v > 0)),
             distinctUntilChanged(),
         ),

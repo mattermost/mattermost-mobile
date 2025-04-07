@@ -6,7 +6,7 @@ import {of as of$, combineLatest} from 'rxjs';
 import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {Database as DatabaseConstants, General, Permissions} from '@constants';
-import {isDMorGM} from '@utils/channel';
+import {isDefaultChannel, isDMorGM} from '@utils/channel';
 import {hasPermission} from '@utils/role';
 
 import {observeChannel, observeMyChannelRoles} from './channel';
@@ -91,7 +91,7 @@ export function observePermissionForPost(database: Database, post: PostModel, us
 export function observeCanManageChannelMembers(database: Database, channelId: string, user: UserModel) {
     return observeChannel(database, channelId).pipe(
         switchMap((c) => {
-            if (!c || c.deleteAt !== 0 || isDMorGM(c) || c.name === General.DEFAULT_CHANNEL) {
+            if (!c || c.deleteAt !== 0 || isDMorGM(c) || isDefaultChannel(c)) {
                 return of$(false);
             }
 
