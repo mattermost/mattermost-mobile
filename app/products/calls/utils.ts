@@ -17,14 +17,11 @@ import type {
     CallsConfigState,
     CallSession,
     CallsTheme,
-    CallsVersion,
 } from '@calls/types/calls';
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
 import type {IntlShape} from 'react-intl';
 import type {RTCIceServer} from 'react-native-webrtc';
-
-const callsMessageRegex = /^\u200b.* is inviting you to a call$/;
 
 export function sortSessions(locale: string, teammateNameDisplay: string, sessions?: Dictionary<CallSession>, presenterID?: string): CallSession[] {
     if (!sessions) {
@@ -94,15 +91,6 @@ export function isSupportedServerCalls(serverVersion?: string) {
     }
 
     return false;
-}
-
-export function isMultiSessionSupported(callsVersion: CallsVersion) {
-    return isMinimumServerVersion(
-        callsVersion.version,
-        Calls.MultiSessionCallsVersion.MAJOR_VERSION,
-        Calls.MultiSessionCallsVersion.MIN_VERSION,
-        Calls.MultiSessionCallsVersion.PATCH_VERSION,
-    );
 }
 
 export function isHostControlsAllowed(config: CallsConfigState) {
@@ -209,13 +197,7 @@ export function fillUserModels(sessions: Dictionary<CallSession>, models: UserMo
 }
 
 export function isCallsStartedMessage(payload?: NotificationData) {
-    if (payload?.sub_type === NOTIFICATION_SUB_TYPE.CALLS) {
-        return true;
-    }
-
-    // MM-55506 - Remove once we can assume MM servers will be >= 9.3.0, mobile will be >= 2.11.0,
-    // calls will be >= 0.21.0, and push proxy will be >= 5.27.0
-    return (payload?.message === 'You\'ve been invited to a call' || callsMessageRegex.test(payload?.message || ''));
+    return payload?.sub_type === NOTIFICATION_SUB_TYPE.CALLS;
 }
 
 export const hasCaptions = (postProps?: Record<string, unknown>): boolean => {
@@ -256,8 +238,5 @@ export function getCallPropsFromPost(post: PostModel | Post): CallPostProps {
         recordings: isRecordOf<CallJobMetadata>(post.props?.recordings, isCallJobMetadata) ? post.props.recordings : {},
         transcriptions: isRecordOf<CallJobMetadata>(post.props?.transcriptions, isCallJobMetadata) ? post.props.transcriptions : {},
         participants: isStringArray(post.props?.participants) ? post.props.participants : [],
-
-        // DEPRECATED
-        recording_files: isStringArray(post.props?.recording_files) ? post.props.recording_files : [],
     };
 }
