@@ -11,11 +11,13 @@ import ChannelQuickAction from './index';
 
 import type {Database} from '@nozbe/watermelondb';
 
-jest.mock('@components/channel_actions/playbook_runs_option', () => ({
+jest.mock('@playbooks/components/channel_actions/playbook_runs_option', () => ({
     __esModule: true,
     default: jest.fn(),
 }));
-jest.mocked(PlaybookRunsOption).mockImplementation((props) => React.createElement('PlaybookRunsOption', {testID: 'playbook-runs-option', ...props}));
+jest.mocked(PlaybookRunsOption).mockImplementation(
+    (props) => React.createElement('PlaybookRunsOption', {testID: 'playbook-runs-option', ...props}),
+);
 
 describe('ChannelQuickAction', () => {
     function getBaseProps(): ComponentProps<typeof ChannelQuickAction> {
