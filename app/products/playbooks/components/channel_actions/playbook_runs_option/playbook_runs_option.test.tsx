@@ -5,7 +5,9 @@ import React from 'react';
 import {Platform} from 'react-native';
 
 import OptionItem from '@components/option_item';
-import {renderWithIntl} from '@test/intl-test-helper';
+import {goToPlaybookRuns} from '@playbooks/screens/navigation';
+import {dismissBottomSheet} from '@screens/navigation';
+import {renderWithIntl, waitFor} from '@test/intl-test-helper';
 
 import PlaybookRunsOption from './playbook_runs_option';
 
@@ -14,6 +16,10 @@ jest.mock('@components/option_item', () => ({
     default: jest.fn(),
 }));
 jest.mocked(OptionItem).mockImplementation((props) => React.createElement('OptionItem', {testID: 'option-item', ...props}));
+
+jest.mock('@screens/navigation', () => ({
+    dismissBottomSheet: jest.fn(),
+}));
 
 jest.mock('@playbooks/screens/navigation', () => ({
     goToPlaybookRuns: jest.fn(),
@@ -56,7 +62,9 @@ describe('PlaybookRunsOption', () => {
         const optionItem = getByTestId('option-item');
         optionItem.props.action();
 
-        const navigation = require('@screens/navigation');
-        expect(navigation.goToPlaybookRuns).toHaveBeenCalledWith(expect.anything(), 'channel-id');
+        waitFor(() => {
+            expect(dismissBottomSheet).toHaveBeenCalled();
+            expect(goToPlaybookRuns).toHaveBeenCalledWith(expect.anything(), 'channel-id');
+        });
     });
 });

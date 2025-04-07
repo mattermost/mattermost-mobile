@@ -89,10 +89,11 @@ describe('ChannelHeader', () => {
         );
     });
 
-    it('navigates to single playbook run when there is exactly one active run', () => {
+    it('navigates to single playbook run when there is an active playbook provided', () => {
         const props = getBaseProps();
         props.playbooksActiveRuns = 1;
         props.hasPlaybookRuns = true;
+        props.activeRunId = 'run-id';
 
         const {getByTestId} = renderWithIntl(<ChannelHeader {...props}/>);
 
@@ -101,12 +102,13 @@ describe('ChannelHeader', () => {
         expect(playbookButton).toBeTruthy();
 
         playbookButton?.onPress();
-        expect(goToPlaybookRun).toHaveBeenCalledWith(expect.anything(), undefined, 'channel-id');
+        expect(goToPlaybookRun).toHaveBeenCalledWith(expect.anything(), 'run-id');
         expect(goToPlaybookRuns).not.toHaveBeenCalled();
     });
 
-    it('navigates to playbook runs list when there are multiple active runs', () => {
+    it('navigates to playbook runs list when there is no active playbook provided', () => {
         const props = getBaseProps();
+        props.activeRunId = undefined;
         props.playbooksActiveRuns = 3;
         props.hasPlaybookRuns = true;
 
