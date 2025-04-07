@@ -18,11 +18,11 @@ import {
     observeCurrentUserId,
     observeLicense,
 } from '@queries/servers/system';
+import {shouldShowChannelBanner} from '@screens/channel/channel_feature_checks';
 
 import Channel from './channel';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import {shouldShowChannelBanner} from '@screens/channel/channel_feature_checks';
 
 type EnhanceProps = WithDatabaseArgs & {
     serverUrl: string;
@@ -66,7 +66,7 @@ const enhanced = withObservables([], ({database, serverUrl}: EnhanceProps) => {
         switchMap(([channelTypeValue, licenseValue, bannerInfoValue]) =>
             of$(shouldShowChannelBanner(channelTypeValue, licenseValue, bannerInfoValue)),
         ),
-    )
+    );
 
     return {
         channelId,
