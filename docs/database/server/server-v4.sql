@@ -1,5 +1,5 @@
 ﻿-- Exported from QuickDBD: https://www.quickdatabasediagrams.com/
--- Link to schema: https://app.quickdatabasediagrams.com/#/d/PITc8R
+-- Link to schema: https://app.quickdatabasediagrams.com/#/d/y8OBmj
 -- NOTE! If you have used non-SQL datatypes in your design, you will have to change these here.
 
 -- Server Database - Schema Version 2
@@ -54,6 +54,7 @@ CREATE TABLE [Channel] (
     [team_id] string  NOT NULL ,
     [type] string  NOT NULL ,
     [update_at] number  NOT NULL ,
+    [banner_info] string,
     CONSTRAINT [PK_Channel] PRIMARY KEY CLUSTERED (
         [id] ASC
     )

@@ -157,7 +157,7 @@ export function hasTrailingSpaces(term: string) {
 export function isMainActivity() {
     if (Platform.OS === 'android') {
         const MattermostShare = require('@mattermost/rnshare').default;
-        return MattermostShare?.getCurrentActivityName() === 'MainActivity';
+        return MattermostShare?.getCurrentActivityName().includes('MainActivity');
     }
 
     return true;

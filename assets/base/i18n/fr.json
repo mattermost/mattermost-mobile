@@ -913,7 +913,7 @@
   "post_body.check_for_out_of_channel_mentions.link.public": "ajouter à ce canal",
   "post_body.check_for_out_of_channel_mentions.message.multiple": "ont été mentionnés, mais ne sont pas dans le canal. Voulez-vous ",
   "post_body.check_for_out_of_channel_mentions.message.one": "a été mentionné, mais n'est pas dans le canal. Voulez-vous ",
-  "post_body.check_for_out_of_channel_mentions.message_last": "? Ils auront alors accès à tout l'historique de messages pour ce canal.",
+  "post_body.check_for_out_of_channel_mentions.message_last": "? Ils auront alors accès à tout l’historique de messages pour ce canal.",
   "post_body.commentedOn": "a commenté le message de {name} : ",
   "post_body.deleted": "(message supprimé)",
   "post_info.auto_responder": "Réponse automatique",

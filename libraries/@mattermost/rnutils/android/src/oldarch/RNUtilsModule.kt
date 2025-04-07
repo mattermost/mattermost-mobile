@@ -66,7 +66,7 @@ class RNUtilsModule(context: ReactApplicationContext) :
 
     @ReactMethod(isBlockingSynchronousMethod = true)
     fun deleteDatabaseDirectory(databaseName: String?, shouldRemoveDirectory: Boolean): WritableMap {
-        return implementation.deleteDatabaseDirectory(databaseName, shouldRemoveDirectory)
+        return implementation.deleteDatabaseDirectory()
     }
 
     @ReactMethod(isBlockingSynchronousMethod = true)
