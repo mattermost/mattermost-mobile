@@ -6,12 +6,8 @@ on:
   pull_request:
     branches:
       - main
-      - feature_schedule_posts
     types:
       - labeled
-  push:
-    branches:
-      - e2e_feature_schedule_posts
 
 concurrency:
   group: "${{ github.workflow }}-${{ github.event.pull_request.number }}-${{ github.event.label.name }}"

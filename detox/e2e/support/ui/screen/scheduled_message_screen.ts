@@ -30,6 +30,12 @@ class ScheduledMessageScreen {
 
     clickScheduledTab = async () => {
         await element(by.id(this.testID.scheduledTab)).tap();
+        try {
+            await this.scheduledMessageTooltipCloseButton.tap();
+        } catch (error) {
+            // eslint-disable-next-line no-console
+            console.log('Element not visible, skipping click');
+        }
     };
 
     verifyCountOnScheduledTab = async (count: string) => {
@@ -60,6 +66,39 @@ class ScheduledMessageScreen {
         await this.rescheduleOption.tap();
         await waitFor(this.customDateTimePickerScreen).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         await expect(this.customDateTimePickerScreen).toBeVisible();
+    };
+
+    selectDateTime = async () => {
+        await element(by.text('Select Date')).tap();
+        await element(by.text('Select Time')).tap();
+        await element(by.text('Save')).tap();
+    };
+
+    assertScheduleTimeTextIsVisible = async (time: string) => {
+        await waitFor(element(by.id('scheduled_post.scheduled_at.date_time'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await expect(element(by.id('scheduled_post.scheduled_at.date_time'))).toHaveText(time);
+    };
+
+    nextMonday = async () => {
+        const today = new Date();
+        const dayOfWeek = today.getDay();
+        const daysUntilNextMonday = (8 - dayOfWeek) % 7 || 7;
+        const nextMonday = new Date(today);
+        nextMonday.setDate(today.getDate() + daysUntilNextMonday);
+        nextMonday.setHours(9, 0, 0, 0);
+
+        const options: Intl.DateTimeFormatOptions = {month: 'short', day: 'numeric'};
+        const formattedDate = `${nextMonday.toLocaleDateString('en-US', options)}, 9:00 AM`;
+        return formattedDate;
+    };
+
+    currentDay = async () => {
+        const today = new Date();
+        today.setHours(9, 0, 0, 0);
+
+        const options: Intl.DateTimeFormatOptions = {month: 'short', day: 'numeric'};
+        const formattedDate = `${today.toLocaleDateString('en-US', options)}, 9:00 AM`;
+        return formattedDate;
     };
 }
 

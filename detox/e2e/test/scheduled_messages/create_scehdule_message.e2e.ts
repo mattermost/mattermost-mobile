@@ -66,23 +66,15 @@ describe('Messaging - At-Mention', () => {
         // # Open a channel screen and post a message with lowercase at-mention
         const scheduledMessageText = 'Scheduled Message In a channel';
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.scheduleMessage(scheduledMessageText);
+        await ChannelScreen.scheduleGivenMessage(scheduledMessageText);
 
-        // # The bottom sheet info will not show `Tomorrow` if today is Friday or Saturday. Always schedule for Monday.
-        await ChannelScreen.scheduleMessageForMonday();
-        await ChannelScreen.clickOnScheduledMessage();
-
-        await expect(element(by.text('Message scheduled for 9:00 AM. See all.'))).toBeVisible();
-
-        // TODO: Verify the Channel message info
-
+        await chooseScheduleMessageDate();
         await verifyScheduledCountOnChannelListScreen('1');
 
         // # Open scheduled message screen and verify count
         await ChannelListScreen.draftsButton.tap();
         await ScheduleMessageScreen.clickScheduledTab();
         await ScheduleMessageScreen.verifyCountOnScheduledTab('1');
-        await ScheduleMessageScreen.scheduledMessageTooltipCloseButton.tap();
         await ScheduleMessageScreen.assertScheduledMessageExists(scheduledMessageText);
 
         await cleanupDrafts();
@@ -93,16 +85,9 @@ describe('Messaging - At-Mention', () => {
         // # Open a channel screen and post a message with lowercase at-mention
         const scheduledMessageText = 'Scheduled Message In a channel';
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.scheduleMessage(scheduledMessageText);
+        await ChannelScreen.scheduleGivenMessage(scheduledMessageText);
 
-        // # The bottom sheet info will not show `Tomorrow` if today is Friday or Saturday. Always schedule for Monday.
-        await ChannelScreen.scheduleMessageForMonday();
-        await ChannelScreen.clickOnScheduledMessage();
-
-        await expect(element(by.text('Message scheduled for 9:00 AM. See all.'))).toBeVisible();
-
-        // TODO: Verify the Channel message info
-
+        await chooseScheduleMessageDate();
         await verifyScheduledCountOnChannelListScreen('1');
 
         // # Open scheduled message screen and verify count
@@ -115,23 +100,16 @@ describe('Messaging - At-Mention', () => {
         await ScheduleMessageScreen.deleteScheduledMessageFromDraftActions();
         await DraftScreen.backButton.tap();
 
-        // TODO: Back to Channel and Verify the Channel message info is not shown
+        await verifyScheduledScheduledMessageDoesNotExist();
     });
 
     it('MM-T5730 should be able to Send a scheduled Message', async () => {
         // # Open a channel screen and post a message with lowercase at-mention
         const scheduledMessageText = 'Scheduled Message In a channel';
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.scheduleMessage(scheduledMessageText);
+        await ChannelScreen.scheduleGivenMessage(scheduledMessageText);
 
-        // # The bottom sheet info will not show `Tomorrow` if today is Friday or Saturday. Always schedule for Monday.
-        await ChannelScreen.scheduleMessageForMonday();
-        await ChannelScreen.clickOnScheduledMessage();
-
-        await expect(element(by.text('Message scheduled for 9:00 AM. See all.'))).toBeVisible();
-
-        // TODO: Verify the Channel message info
-
+        await chooseScheduleMessageDate();
         await verifyScheduledCountOnChannelListScreen('1');
 
         // # Open scheduled message screen and verify count
@@ -152,23 +130,17 @@ describe('Messaging - At-Mention', () => {
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, scheduledMessageText);
         await expect(postListPostItem).toBeVisible();
 
-        // TODO: Back to Channel and Verify the Channel message info is not shown and Message
+        await ChannelScreen.back();
+        await verifyScheduledScheduledMessageDoesNotExist();
     });
 
     it('MM-T5720 should be able to Reschedule a scheduled Message', async () => {
         // # Open a channel screen and post a message with lowercase at-mention
         const scheduledMessageText = 'Scheduled Message In a channel';
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.scheduleMessage(scheduledMessageText);
+        await ChannelScreen.scheduleGivenMessage(scheduledMessageText);
 
-        // # The bottom sheet info will not show `Tomorrow` if today is Friday or Saturday. Always schedule for Monday.
-        await ChannelScreen.scheduleMessageForMonday();
-        await ChannelScreen.clickOnScheduledMessage();
-
-        await expect(element(by.text('Message scheduled for 9:00 AM. See all.'))).toBeVisible();
-
-        // TODO: Verify the Channel message info
-
+        await chooseScheduleMessageDate();
         await verifyScheduledCountOnChannelListScreen('1');
 
         // # Open scheduled message screen and verify count
@@ -177,8 +149,13 @@ describe('Messaging - At-Mention', () => {
         await ScheduleMessageScreen.verifyCountOnScheduledTab('1');
         await ScheduleMessageScreen.assertScheduledMessageExists(scheduledMessageText);
 
+        await ScheduleMessageScreen.assertScheduleTimeTextIsVisible(await ScheduleMessageScreen.nextMonday());
+
         await DraftScreen.openDraftPostActions();
         await ScheduleMessageScreen.clickRescheduleOption();
+        await ScheduleMessageScreen.selectDateTime();
+        await ScheduleMessageScreen.assertScheduleTimeTextIsVisible(await ScheduleMessageScreen.currentDay());
+
     });
 
     async function cleanupDrafts() {
@@ -191,5 +168,23 @@ describe('Messaging - At-Mention', () => {
         await ChannelScreen.back();
         await ChannelListScreen.draftsButton.toBeVisible();
         await expect(element(by.id(ChannelListScreen.testID.scheduledMessageCountListScreen))).toHaveText(draftCount);
+    }
+
+    async function verifyScheduledScheduledMessageDoesNotExist() {
+        await ChannelListScreen.draftsButton.toNotBeVisible();
+        await expect(element(by.id(ChannelListScreen.testID.scheduledMessageCountListScreen))).not.toExist();
+    }
+
+    async function chooseScheduleMessageDate() {
+        // # The bottom sheet info will not show `Tomorrow` if today is Friday or Saturday. Always schedule for Monday.
+        const today = new Date().getDay();
+        if (today === 1) { // 1 represents Monday
+            await ChannelScreen.scheduleMessageForNextMonday();
+        } else {
+            await ChannelScreen.scheduleMessageForMonday();
+        }
+
+        await ChannelScreen.clickOnScheduledMessage();
+        await expect(element(by.text('1 scheduled message in channel. See all.'))).toBeVisible();
     }
 });

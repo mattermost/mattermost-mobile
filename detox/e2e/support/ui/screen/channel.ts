@@ -50,16 +50,20 @@ class ChannelScreen {
         scheduledPostTooltipCloseButton: 'scheduled_post.tooltip.close.button',
         scheduleMessageTomorrowOption: 'post_priority_picker_item.scheduledPostOptionTomorrow',
         scheduleMessageOnMondayOption: 'post_priority_picker_item.scheduledPostOptionMonday',
+        scheduledPostOptionNextMonday: 'post_priority_picker_item.scheduledPostOptionNextMonday',
         scheduledPostOptionTomorrowSelected: 'post_priority_picker_item.scheduledPostOptionTomorrow.selected',
         scheduledPostOptionMondaySelected: 'post_priority_picker_item.scheduledPostOptionMonday.selected',
+        scheduledPostOptionNextMondaySelected: 'post_priority_picker_item.scheduledPostOptionNextMonday.selected',
         clickOnScheduledMessageButton: 'scheduled_post_create_button',
     };
 
     clickOnScheduledMessageButton = element(by.id(this.testID.clickOnScheduledMessageButton));
     scheduledPostOptionTomorrowSelected = element(by.id(this.testID.scheduledPostOptionTomorrowSelected));
     scheduledPostOptionMondaySelected = element(by.id(this.testID.scheduledPostOptionMondaySelected));
+    scheduledPostOptionNextMonday = element(by.id(this.testID.scheduledPostOptionNextMonday));
+    scheduledPostOptionNextMondaySelected = element(by.id(this.testID.scheduledPostOptionNextMondaySelected));
     scheduleMessageTomorrowOption = element(by.id(this.testID.scheduleMessageTomorrowOption));
-    scheduleMessageOnMondayOption = element(by.id(this.testID.scheduleMessageTomorrowOption));
+    scheduleMessageOnMondayOption = element(by.id(this.testID.scheduleMessageOnMondayOption));
     scheduledPostTooltipCloseButton = element(by.id(this.testID.scheduledPostTooltipCloseButton));
     postPriorityPersistentNotification = element(by.id(this.testID.postPriorityPersistentNotification));
     postPriorityUrgentMessage = element(by.id(this.testID.postPriorityUrgentMessage));
@@ -207,7 +211,7 @@ class ChannelScreen {
         await this.tapSendButton();
     };
 
-    scheduleMessage = async (message: string) => {
+    scheduleGivenMessage = async (message: string) => {
         // # Post message
         await this.postInput.tap();
         await this.postInput.clearText();
@@ -269,7 +273,12 @@ class ChannelScreen {
 
     scheduleMessageForMonday = async () => {
         await this.scheduleMessageOnMondayOption.tap();
-        await expect(this.scheduledPostOptionTomorrowSelected).toBeVisible();
+        await expect(this.scheduledPostOptionMondaySelected).toBeVisible();
+    };
+
+    scheduleMessageForNextMonday = async () => {
+        await this.scheduledPostOptionNextMonday.tap();
+        await expect(this.scheduledPostOptionNextMondaySelected).toBeVisible();
     };
 
     clickOnScheduledMessage = async () => {

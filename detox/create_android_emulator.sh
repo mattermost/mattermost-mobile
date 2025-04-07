@@ -9,11 +9,6 @@ AVD_BASE_NAME=${2:-"detox_pixel_4_xl_api_34"}  # Second argument is AVD base nam
 AVD_NAME="${AVD_BASE_NAME}_api_${SDK_VERSION}"
 TEST_FILES=${@:3} # Capture all remaining arguments as Detox test files
 
-echo "SDK_VERSION: $SDK_VERSION"
-echo "AVD_BASE_NAME: $AVD_BASE_NAME"
-echo "AVD_NAME: $AVD_NAME"
-echo "TEST_FILES: $TEST_FILES"
-
 setup_avd_home() {
     if [[ "$CI" == "true" ]]; then
         export ANDROID_AVD_HOME=$(pwd)/.android/avd
