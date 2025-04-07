@@ -24,7 +24,7 @@ import {logDebug, logError, logInfo, logWarning} from '@utils/log';
 
 import {WebSocketClient, wsReconnectionTimeoutErr} from './websocket_client';
 
-import type {EmojiData} from '@mattermost/calls/lib/types';
+import type {EmojiData, TrackInfo} from '@mattermost/calls/lib/types';
 
 const peerConnectTimeout = 5000;
 const rtcMonitorInterval = 10000;
@@ -41,14 +41,20 @@ export async function newConnection(
     channelID: string,
     closeCb: (err?: Error) => void,
     setScreenShareURL: (url: string) => void,
+    setLocalVideoURL: (url: string) => void,
+    setRemoteVideoURL: (url: string) => void,
     hasMicPermission: boolean,
+    hasCameraPermission: boolean,
     title?: string,
     rootId?: string,
 ) {
     let peer: RTCPeer | null = null;
-    let stream: MediaStream;
+    let voiceStream: MediaStream;
+    let videoStream: MediaStream | null = null;
     let voiceTrackAdded = false;
     let voiceTrack: MediaStreamTrack | null = null;
+    let videoTrack: MediaStreamTrack | null = null;
+    let videoTrackAdded = false;
     let isClosed = false;
     let onCallEnd: EmitterSubscription | null = null;
     let audioDeviceChanged: EmitterSubscription | null = null;
@@ -68,15 +74,48 @@ export async function newConnection(
         }
 
         try {
-            stream = await mediaDevices.getUserMedia({
+            voiceStream = await mediaDevices.getUserMedia({
                 video: false,
                 audio: true,
             }) as MediaStream;
-            voiceTrack = stream.getAudioTracks()[0];
+            voiceTrack = voiceStream.getAudioTracks()[0];
             voiceTrack.enabled = false;
-            streams.push(stream);
+            streams.push(voiceStream);
         } catch (err) {
-            logError('calls: unable to get media device:', err);
+            logError('calls: unable to get audio stream:', err);
+        }
+    };
+
+    const initializeVideoTrack = async (start: boolean) => {
+        if (videoTrack) {
+            return;
+        }
+
+        try {
+            videoStream = await mediaDevices.getUserMedia({
+                video: {
+                    frameRate: 30,
+                    facingMode: 'user', // TODO: allow user to switch camera
+                },
+                audio: false,
+            }) as MediaStream;
+            videoTrack = videoStream.getVideoTracks()[0];
+
+            logDebug('calls: video track initialized', videoTrack.id, videoStream.id);
+
+            if (start) {
+                streams.push(videoStream);
+                setLocalVideoURL(videoStream.toURL());
+                videoTrack.enabled = true;
+            } else {
+                // If we're not starting the video, we release any resources immediately.
+                videoTrack.stop();
+                videoTrack.release();
+                videoStream = null;
+                videoTrack = null;
+            }
+        } catch (err) {
+            logError('calls: unable to get video stream:', err);
         }
     };
 
@@ -110,6 +149,10 @@ export async function newConnection(
 
     if (hasMicPermission) {
         initializeVoiceTrack();
+    }
+
+    if (config.EnableVideo && hasCameraPermission) {
+        initializeVideoTrack(false);
     }
 
     const disconnect = (err?: Error) => {
@@ -155,6 +198,64 @@ export async function newConnection(
         }
     });
 
+    const stopVideo = () => {
+        if (!peer || !videoTrack) {
+            return;
+        }
+
+        try {
+            if (videoTrackAdded) {
+                videoTrack.enabled = false;
+                peer.replaceTrack(videoTrack.id, null);
+            }
+        } catch (e) {
+            logError('calls: from RTCPeer, error on stopVideo:', e);
+            return;
+        }
+
+        if (ws) {
+            ws.send('video_off');
+        }
+    };
+
+    const startVideo = async () => {
+        if (!peer) {
+            return;
+        }
+
+        if (!videoTrack) {
+            await initializeVideoTrack(true);
+        }
+
+        if (!videoTrack || !videoStream) {
+            logError('calls.startVideo: video track or stream not initialized');
+            return;
+        }
+
+        rtcMonitor?.clearCache();
+
+        try {
+            if (videoTrackAdded) {
+                videoTrack.enabled = true;
+                peer.replaceTrack(videoTrack.id, videoTrack);
+            } else {
+                await peer.addStream(videoStream);
+                videoTrackAdded = true;
+            }
+        } catch (e) {
+            logError('calls: from RTCPeer, error on startVideo:', e);
+            return;
+        }
+
+        if (ws) {
+            ws.send('video_on', {
+                data: JSON.stringify({
+                    videoStreamID: videoStream.id,
+                }),
+            });
+        }
+    };
+
     const mute = () => {
         if (!peer || !voiceTrack) {
             return;
@@ -175,7 +276,7 @@ export async function newConnection(
         }
     };
 
-    const unmute = () => {
+    const unmute = async () => {
         if (!peer || !voiceTrack) {
             return;
         }
@@ -192,7 +293,7 @@ export async function newConnection(
             if (voiceTrackAdded) {
                 peer.replaceTrack(voiceTrack.id, voiceTrack);
             } else {
-                peer.addStream(stream);
+                await peer.addStream(voiceStream);
                 voiceTrackAdded = true;
             }
         } catch (e) {
@@ -424,15 +525,20 @@ export async function newConnection(
             }
         });
 
-        peer.on('stream', (remoteStream: MediaStream) => {
-            logDebug('calls: new remote stream received', remoteStream.id);
+        peer.on('stream', (remoteStream: MediaStream, trackInfo: TrackInfo) => {
+            logDebug('new remote stream received', remoteStream.id, trackInfo);
             for (const track of remoteStream.getTracks()) {
-                logDebug('calls: remote track', track.id);
+                logDebug('remote track', track.kind, track.id);
             }
 
             streams.push(remoteStream);
+
             if (remoteStream.getVideoTracks().length > 0) {
-                setScreenShareURL(remoteStream.toURL());
+                if (trackInfo?.type === 'video') {
+                    setRemoteVideoURL(remoteStream.toURL());
+                } else {
+                    setScreenShareURL(remoteStream.toURL());
+                }
             }
         });
 
@@ -479,11 +585,14 @@ export async function newConnection(
         disconnect,
         mute,
         unmute,
+        stopVideo,
+        startVideo,
         waitForPeerConnection,
         raiseHand,
         unraiseHand,
         sendReaction,
         initializeVoiceTrack,
+        initializeVideoTrack,
     };
 
     return connection;

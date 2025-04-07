@@ -27,6 +27,8 @@ import {
     setConfig,
     setPluginEnabled,
     setScreenShareURL,
+    setLocalVideoURL,
+    setRemoteVideoURL,
     setSpeakerPhone,
 } from '@calls/state';
 import {type AudioDevice, type Call, type CallSession, type CallsConnection, EndCallReturn} from '@calls/types/calls';
@@ -155,6 +157,7 @@ const convertOldCallToNew = (call: CallState): CallState => {
                 user_id: cur,
                 unmuted: call.states && call.states[curIdx] ? call.states[curIdx].unmuted : false,
                 raised_hand: call.states && call.states[curIdx] ? call.states[curIdx].raised_hand : 0,
+                video: call.states && call.states[curIdx] ? call.states[curIdx].video : false,
             });
             return accum;
         }, [] as SessionState[]),
@@ -175,6 +178,7 @@ export const createCallAndAddToIds = (channelId: string, call: CallState, ids?: 
                 sessionId: cur.session_id,
                 raisedHand: cur.raised_hand || 0,
                 muted: !cur.unmuted,
+                video: cur.video,
             };
             return accum;
         }, {} as Dictionary<CallSession>),
@@ -240,6 +244,7 @@ export const joinCall = async (
     channelId: string,
     userId: string,
     hasMicPermission: boolean,
+    hasCameraPermission: boolean,
     intl: IntlShape,
     title?: string,
     rootId?: string,
@@ -265,7 +270,7 @@ export const joinCall = async (
                 logDebug('calls: error on close', getFullErrorMessage(err));
                 showErrorAlertOnClose(err, intl);
             }
-        }, setScreenShareURL, hasMicPermission, title, rootId);
+        }, setScreenShareURL, setLocalVideoURL, setRemoteVideoURL, hasMicPermission, hasCameraPermission, title, rootId);
     } catch (error) {
         await forceLogoutIfNecessary(serverUrl, error);
         return {error};
@@ -342,9 +347,27 @@ export const unmuteMyself = () => {
     }
 };
 
+export const startMyVideo = () => {
+    if (connection) {
+        connection.startVideo();
+    }
+};
+
+export const stopMyVideo = () => {
+    if (connection) {
+        connection.stopVideo();
+    }
+};
+
 export const initializeVoiceTrack = () => {
     if (connection) {
         connection.initializeVoiceTrack();
+    }
+};
+
+export const initializeVideoTrack = () => {
+    if (connection) {
+        connection.initializeVideoTrack(false);
     }
 };
 

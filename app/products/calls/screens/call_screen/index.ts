@@ -20,6 +20,10 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         switchMap((gs) => of$(gs.micPermissionsGranted)),
         distinctUntilChanged(),
     );
+    const cameraPermissionsGranted = observeGlobalCallsState().pipe(
+        switchMap((gs) => of$(gs.cameraPermissionsGranted)),
+        distinctUntilChanged(),
+    );
     const teammateNameDisplay = observeCallDatabase().pipe(
         switchMap((db) => (db ? observeTeammateNameDisplay(db) : of$(''))),
         distinctUntilChanged(),
@@ -46,12 +50,16 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     );
     const displayName = channel.pipe(switchMap((c) => of$(c?.displayName)));
 
+    const isDM = channel.pipe(switchMap((c) => of$(c?.type === General.DM_CHANNEL)));
+
     return {
         currentCall,
         sessionsDict: observeCurrentSessionsDict(),
         micPermissionsGranted,
+        cameraPermissionsGranted,
         teammateNameDisplay,
         displayName,
+        isDM,
         isOwnDirectMessage,
         ...observeEndCallDetails(),
     };

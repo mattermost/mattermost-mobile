@@ -34,6 +34,7 @@ type Props = {
     sessionsDict: Dictionary<CallSession>;
     teammateNameDisplay: string;
     micPermissionsGranted: boolean;
+    cameraPermissionsGranted: boolean;
     threadScreen?: boolean;
     otherParticipants: boolean;
     isAdmin: boolean;
@@ -142,6 +143,7 @@ const CurrentCallBar = ({
     sessionsDict,
     teammateNameDisplay,
     micPermissionsGranted,
+    cameraPermissionsGranted,
     threadScreen,
     otherParticipants,
     isAdmin,
@@ -149,12 +151,12 @@ const CurrentCallBar = ({
 }: Props) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();
-    const {EnableTranscriptions} = useCallsConfig(serverUrl);
+    const {EnableTranscriptions, EnableVideo} = useCallsConfig(serverUrl);
     const callsTheme = useMemo(() => makeCallsTheme(theme), [theme]);
     const style = getStyleSheet(callsTheme);
     const intl = useIntl();
     const {formatMessage} = intl;
-    usePermissionsChecker(micPermissionsGranted);
+    usePermissionsChecker(micPermissionsGranted, !EnableVideo || cameraPermissionsGranted);
 
     const goToCallScreen = useCallback(async () => {
         const options: Options = {
