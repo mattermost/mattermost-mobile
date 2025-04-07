@@ -726,7 +726,7 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[1], null);
     });
 
-    it('setChannelEnabled', () => {
+    it('setChannelEnabled', async () => {
         const initialState = {
             ...DefaultCallsState,
             enabled: {'channel-1': true, 'channel-2': false},
@@ -734,33 +734,33 @@ describe('useCallsState', () => {
 
         // setup
         const {result} = renderHook(() => useCallsState('server1'));
-        act(() => setCallsState('server1', initialState));
+        await act(async () => setCallsState('server1', initialState));
         assert.deepEqual(result.current, initialState);
 
         // test setCalls affects enabled:
-        act(() => setCalls('server1', 'myUserId', {}, {'channel-1': true}));
+        await act(async () => setCalls('server1', 'myUserId', {}, {'channel-1': true}));
         assert.deepEqual(result.current.enabled, {'channel-1': true});
 
         // re-setup:
-        act(() => setCallsState('server1', initialState));
+        await act(async () => setCallsState('server1', initialState));
         assert.deepEqual(result.current, initialState);
 
         // test setChannelEnabled affects enabled:
-        act(() => setChannelEnabled('server1', 'channel-3', true));
+        await act(async () => setChannelEnabled('server1', 'channel-3', true));
         assert.deepEqual(result.current.enabled, {'channel-1': true, 'channel-2': false, 'channel-3': true});
-        act(() => setChannelEnabled('server1', 'channel-3', false));
+        await act(async () => setChannelEnabled('server1', 'channel-3', false));
         assert.deepEqual(result.current.enabled, {
             'channel-1': true,
             'channel-2': false,
             'channel-3': false,
         });
-        act(() => setChannelEnabled('server1', 'channel-1', true));
+        await act(async () => setChannelEnabled('server1', 'channel-1', true));
         assert.deepEqual(result.current.enabled, {
             'channel-1': true,
             'channel-2': false,
             'channel-3': false,
         });
-        act(() => setChannelEnabled('server1', 'channel-1', false));
+        await act(async () => setChannelEnabled('server1', 'channel-1', false));
         assert.deepEqual(result.current.enabled, {
             'channel-1': false,
             'channel-2': false,
@@ -1510,14 +1510,14 @@ describe('useCallsState', () => {
 
         // test: should not ring for same call again
         await act(async () => {
-            await setIncomingCalls(initialIncomingCalls);
+            setIncomingCalls(initialIncomingCalls);
             await playIncomingCallsRinging('server1', 'call1', 'online');
         });
         assert.deepEqual(result.current, initialIncomingCalls);
 
         // test: should not ring when already ringing
         await act(async () => {
-            await setIncomingCalls({
+            setIncomingCalls({
                 ...initialIncomingCalls,
                 currentRingingCallId: 'call2',
             });
@@ -1534,33 +1534,38 @@ describe('useCallsState', () => {
 
         // setup
         const {result} = renderHook(() => useIncomingCalls());
-        await act(async () => {
-            await setIncomingCalls(initialIncomingCalls);
+        act(() => {
+            setIncomingCalls(initialIncomingCalls);
         });
         assert.deepEqual(result.current, initialIncomingCalls);
 
         // test going to background
-        await act(async () => callsOnAppStateChange('background'));
+        await act(async () => {
+            await callsOnAppStateChange('background');
+        });
         assert.deepEqual(result.current, {...initialIncomingCalls, currentRingingCallId: undefined});
 
         // test going to inactive
         await act(async () => {
-            await setIncomingCalls(initialIncomingCalls);
+            setIncomingCalls(initialIncomingCalls);
             await callsOnAppStateChange('inactive');
+            await TestHelper.wait(100);
         });
         assert.deepEqual(result.current, {...initialIncomingCalls, currentRingingCallId: undefined});
 
         // test going to active (should not change state)
         await act(async () => {
-            await setIncomingCalls(initialIncomingCalls);
+            setIncomingCalls(initialIncomingCalls);
             await callsOnAppStateChange('active');
+            await TestHelper.wait(100);
         });
         assert.deepEqual(result.current, initialIncomingCalls);
 
         // test previous state
         await act(async () => {
-            await setIncomingCalls(initialIncomingCalls);
+            setIncomingCalls(initialIncomingCalls);
             await callsOnAppStateChange('active');
+            await TestHelper.wait(100);
         });
         assert.deepEqual(result.current, initialIncomingCalls);
     });
