@@ -70,6 +70,7 @@ export default defineConfig([
             "Gesture.ForceTouch",
             "Gesture.Exclusive",
             "Gesture.Simultaneous",
+            "Gesture.Race",
           ]
         }
       ],
