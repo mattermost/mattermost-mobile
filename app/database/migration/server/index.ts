@@ -8,11 +8,11 @@ import {addColumns, createTable, schemaMigrations, unsafeExecuteSql} from '@nozb
 
 import {MM_TABLES} from '@constants/database';
 
-const {CHANNEL_BOOKMARK, CHANNEL_INFO, DRAFT, POST, SCHEDULED_POST} = MM_TABLES.SERVER;
+const {CHANNEL_BOOKMARK, CHANNEL_INFO, CHANNEL, DRAFT, POST, SCHEDULED_POST} = MM_TABLES.SERVER;
 
 export default schemaMigrations({migrations: [
     {
-        toVersion: 7,
+        toVersion: 8,
         steps: [
             createTable({
                 name: SCHEDULED_POST,
@@ -27,6 +27,17 @@ export default schemaMigrations({migrations: [
                     {name: 'scheduled_at', type: 'number'},
                     {name: 'processed_at', type: 'number'},
                     {name: 'error_code', type: 'string'},
+                ],
+            }),
+        ],
+    },
+    {
+        toVersion: 7,
+        steps: [
+            addColumns({
+                table: CHANNEL,
+                columns: [
+                    {name: 'banner_info', type: 'string', isOptional: true},
                 ],
             }),
         ],

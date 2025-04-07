@@ -123,6 +123,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         team_id: {name: 'team_id', type: 'string', isIndexed: true},
                         type: {name: 'type', type: 'string'},
                         update_at: {name: 'update_at', type: 'number'},
+                        banner_info: {name: 'banner_info', type: 'string', isOptional: true},
 
                     },
                     columnArray: [
@@ -136,6 +137,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'team_id', type: 'string', isIndexed: true},
                         {name: 'type', type: 'string'},
                         {name: 'update_at', type: 'number'},
+                        {name: 'banner_info', type: 'string', isOptional: true},
                     ],
                 },
                 [CHANNEL_BOOKMARK]: {

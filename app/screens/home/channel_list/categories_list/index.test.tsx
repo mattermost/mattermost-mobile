@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {act} from '@testing-library/react-native';
+import {act, waitFor} from '@testing-library/react-native';
 import React from 'react';
 
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
@@ -30,7 +30,7 @@ describe('components/categories_list', () => {
         });
     });
 
-    it('should render', () => {
+    it('should render', async () => {
         const wrapper = renderWithEverything(
             <CategoriesList
                 moreThanOneTeam={false}
@@ -41,10 +41,12 @@ describe('components/categories_list', () => {
             />,
             {database},
         );
-        expect(wrapper.toJSON()).toBeTruthy();
+        await waitFor(() => {
+            expect(wrapper.toJSON()).toBeTruthy();
+        });
     });
 
-    it('should render channel list with thread menu', () => {
+    it('should render channel list with thread menu', async () => {
         jest.useFakeTimers();
         const wrapper = renderWithEverything(
             <CategoriesList
@@ -60,11 +62,13 @@ describe('components/categories_list', () => {
         act(() => {
             jest.runAllTimers();
         });
-        expect(wrapper.toJSON()).toBeTruthy();
         jest.useRealTimers();
+        await waitFor(() => {
+            expect(wrapper.toJSON()).toBeTruthy();
+        });
     });
 
-    it('should render channel list with Draft menu', () => {
+    it('should render channel list with Draft menu', async () => {
         const wrapper = renderWithEverything(
             <CategoriesList
                 isCRTEnabled={true}
@@ -76,7 +80,9 @@ describe('components/categories_list', () => {
             />,
             {database},
         );
-        expect(wrapper.getByText('Drafts')).toBeTruthy();
+        await waitFor(() => {
+            expect(wrapper.getByText('Drafts')).toBeTruthy();
+        });
     });
 
     it('should render team error', async () => {
@@ -100,16 +106,19 @@ describe('components/categories_list', () => {
         act(() => {
             jest.runAllTimers();
         });
-        expect(wrapper.toJSON()).toMatchSnapshot();
+
         jest.useRealTimers();
 
+        await waitFor(() => {
+            expect(wrapper.toJSON()).toMatchSnapshot();
+        });
+    });
+
+    it('should render channels error', async () => {
         await operator.handleSystem({
             systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: TestHelper.basicTeam!.id}],
             prepareRecordsOnly: false,
         });
-    });
-
-    it('should render channels error', () => {
         jest.useFakeTimers();
         const wrapper = renderWithEverything(
             <CategoriesList
@@ -124,7 +133,10 @@ describe('components/categories_list', () => {
         act(() => {
             jest.runAllTimers();
         });
-        expect(wrapper.toJSON()).toMatchSnapshot();
+        jest.useRealTimers();
+        await waitFor(() => {
+            expect(wrapper.toJSON()).toMatchSnapshot();
+        });
     });
 
     it('should render channel list with Draft menu if scheduledPostCount is greater than 0 and scheduledPost feature is enabled', () => {
