@@ -593,8 +593,8 @@ describe('preparePostList', () => {
 
     it('should combine user activity posts correctly', () => {
         const posts = [
-            mockPostModel({id: 'post1', type: 'user-activity', props: {user_activity_posts: []}}),
-            mockPostModel({id: 'post2', type: 'user-activity', props: {user_activity_posts: []}}),
+            mockPostModel({id: 'post1', type: 'system_combined_user_activity', props: {user_activity_posts: []}}),
+            mockPostModel({id: 'post2', type: 'system_combined_user_activity', props: {user_activity_posts: []}}),
         ];
 
         const result = preparePostList(posts, lastViewedAt, true, currentUserId, currentUsername, showJoinLeave, currentTimezone, isThreadScreen, savedPostIds);
@@ -613,7 +613,7 @@ describe('preparePostList', () => {
             id: 'deleted-post',
             deleteAt: Date.now(), // Set deleteAt to a non-zero value
             createAt: Date.now(),
-            type: 'post', // Ensure it's a 'post' type
+            type: '',
             userId: 'user-id',
             message: 'This is a deleted post',
             props: {},
@@ -732,7 +732,7 @@ describe('shouldFilterJoinLeavePost', () => {
     const currentUsername = 'current-username';
 
     it('should not filter non-join/leave posts', () => {
-        const post = mockPostModel({type: 'custom_post_type'});
+        const post = mockPostModel({type: 'custom_post_type' as PostType});
         const result = shouldFilterJoinLeavePost(post, false, currentUsername);
 
         // Non-join/leave posts should not be filtered regardless of showJoinLeave value

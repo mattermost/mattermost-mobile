@@ -29,14 +29,17 @@ const {
  * @param {RecordPair} operator.value
  * @returns {Promise<ChannelModel>}
  */
-export const transformChannelRecord = ({action, database, value}: TransformerArgs): Promise<ChannelModel> => {
-    const raw = value.raw as Channel;
-    const record = value.record as ChannelModel;
+export const transformChannelRecord = ({action, database, value}: TransformerArgs<ChannelModel, Channel>): Promise<ChannelModel> => {
+    const raw = value.raw;
+    const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
+    if (!isCreateAction && !record) {
+        throw new Error('Record not found for non create action');
+    }
 
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
     const fieldsMapper = (channel: ChannelModel) => {
-        channel._raw.id = isCreateAction ? (raw?.id ?? channel.id) : record.id;
+        channel._raw.id = isCreateAction ? (raw?.id ?? channel.id) : record!.id;
         channel.createAt = raw.create_at;
         channel.creatorId = raw.creator_id;
         channel.deleteAt = raw.delete_at;
@@ -48,6 +51,7 @@ export const transformChannelRecord = ({action, database, value}: TransformerArg
         channel.shared = Boolean(raw.shared);
         channel.teamId = raw.team_id;
         channel.type = raw.type;
+        channel.bannerInfo = raw.banner_info;
     };
 
     return prepareBaseRecord({
@@ -56,7 +60,7 @@ export const transformChannelRecord = ({action, database, value}: TransformerArg
         tableName: CHANNEL,
         value,
         fieldsMapper,
-    }) as Promise<ChannelModel>;
+    });
 };
 
 /**
@@ -66,13 +70,16 @@ export const transformChannelRecord = ({action, database, value}: TransformerArg
  * @param {RecordPair} operator.value
  * @returns {Promise<MyChannelSettingsModel>}
  */
-export const transformMyChannelSettingsRecord = ({action, database, value}: TransformerArgs): Promise<MyChannelSettingsModel> => {
-    const raw = value.raw as ChannelMembership;
-    const record = value.record as MyChannelSettingsModel;
+export const transformMyChannelSettingsRecord = ({action, database, value}: TransformerArgs<MyChannelSettingsModel, ChannelMembership>): Promise<MyChannelSettingsModel> => {
+    const raw = value.raw;
+    const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
+    if (!isCreateAction && !record) {
+        throw new Error('Record not found for non create action');
+    }
 
     const fieldsMapper = (myChannelSetting: MyChannelSettingsModel) => {
-        myChannelSetting._raw.id = isCreateAction ? (raw.channel_id || myChannelSetting.id) : record.id;
+        myChannelSetting._raw.id = isCreateAction ? (raw.channel_id || myChannelSetting.id) : record!.id;
         myChannelSetting.notifyProps = raw.notify_props;
     };
 
@@ -82,7 +89,7 @@ export const transformMyChannelSettingsRecord = ({action, database, value}: Tran
         tableName: MY_CHANNEL_SETTINGS,
         value,
         fieldsMapper,
-    }) as Promise<MyChannelSettingsModel>;
+    });
 };
 
 /**
@@ -92,13 +99,16 @@ export const transformMyChannelSettingsRecord = ({action, database, value}: Tran
  * @param {RecordPair} operator.value
  * @returns {Promise<ChannelInfoModel>}
  */
-export const transformChannelInfoRecord = ({action, database, value}: TransformerArgs): Promise<ChannelInfoModel> => {
-    const raw = value.raw as Partial<ChannelInfo>;
-    const record = value.record as ChannelInfoModel;
+export const transformChannelInfoRecord = ({action, database, value}: TransformerArgs<ChannelInfoModel, ChannelInfo>): Promise<ChannelInfoModel> => {
+    const raw = value.raw;
+    const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
+    if (!isCreateAction && !record) {
+        throw new Error('Record not found for non create action');
+    }
 
     const fieldsMapper = (channelInfo: ChannelInfoModel) => {
-        channelInfo._raw.id = isCreateAction ? (raw.id || channelInfo.id) : record.id;
+        channelInfo._raw.id = isCreateAction ? (raw.id || channelInfo.id) : record!.id;
         channelInfo.guestCount = raw.guest_count ?? channelInfo.guestCount ?? 0;
         channelInfo.header = raw.header ?? channelInfo.header ?? '';
         channelInfo.memberCount = raw.member_count ?? channelInfo.memberCount ?? 0;
@@ -113,7 +123,7 @@ export const transformChannelInfoRecord = ({action, database, value}: Transforme
         tableName: CHANNEL_INFO,
         value,
         fieldsMapper,
-    }) as Promise<ChannelInfoModel>;
+    });
 };
 
 /**
@@ -123,13 +133,16 @@ export const transformChannelInfoRecord = ({action, database, value}: Transforme
  * @param {RecordPair} operator.value
  * @returns {Promise<MyChannelModel>}
  */
-export const transformMyChannelRecord = async ({action, database, value}: TransformerArgs): Promise<MyChannelModel> => {
-    const raw = value.raw as ChannelMembership;
-    const record = value.record as MyChannelModel;
+export const transformMyChannelRecord = async ({action, database, value}: TransformerArgs<MyChannelModel, ChannelMembership>): Promise<MyChannelModel> => {
+    const raw = value.raw;
+    const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
+    if (!isCreateAction && !record) {
+        throw new Error('Record not found for non create action');
+    }
 
     const fieldsMapper = (myChannel: MyChannelModel) => {
-        myChannel._raw.id = isCreateAction ? (raw.channel_id || myChannel.id) : record.id;
+        myChannel._raw.id = isCreateAction ? (raw.channel_id || myChannel.id) : record!.id;
         myChannel.roles = raw.roles;
 
         // ignoring msg_count_root because msg_count, mention_count, last_post_at is already calculated in "handleMyChannel" based on CRT is enabled or not
@@ -149,7 +162,7 @@ export const transformMyChannelRecord = async ({action, database, value}: Transf
         tableName: MY_CHANNEL,
         value,
         fieldsMapper,
-    }) as Promise<MyChannelModel>;
+    });
 };
 
 /**
@@ -159,14 +172,17 @@ export const transformMyChannelRecord = async ({action, database, value}: Transf
  * @param {RecordPair} operator.value
  * @returns {Promise<ChannelMembershipModel>}
  */
-export const transformChannelMembershipRecord = ({action, database, value}: TransformerArgs): Promise<ChannelMembershipModel> => {
-    const raw = value.raw as ChannelMembership;
-    const record = value.record as ChannelMembershipModel;
+export const transformChannelMembershipRecord = ({action, database, value}: TransformerArgs<ChannelMembershipModel, ChannelMembership>): Promise<ChannelMembershipModel> => {
+    const raw = value.raw;
+    const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
+    if (!isCreateAction && !record) {
+        throw new Error('Record not found for non create action');
+    }
 
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
     const fieldsMapper = (channelMember: ChannelMembershipModel) => {
-        channelMember._raw.id = isCreateAction ? (raw?.id ?? channelMember.id) : record.id;
+        channelMember._raw.id = isCreateAction ? (raw?.id ?? channelMember.id) : record!.id;
         channelMember.channelId = raw.channel_id;
         channelMember.userId = raw.user_id;
         channelMember.schemeAdmin = raw.scheme_admin ?? false;
@@ -178,7 +194,7 @@ export const transformChannelMembershipRecord = ({action, database, value}: Tran
         tableName: CHANNEL_MEMBERSHIP,
         value,
         fieldsMapper,
-    }) as Promise<ChannelMembershipModel>;
+    });
 };
 
 /**
@@ -188,14 +204,17 @@ export const transformChannelMembershipRecord = ({action, database, value}: Tran
  * @param {RecordPair} operator.value
  * @returns {Promise<ChannelBookmarkModel>}
  */
-export const transformChannelBookmarkRecord = ({action, database, value}: TransformerArgs): Promise<ChannelBookmarkModel> => {
-    const raw = value.raw as ChannelBookmark;
-    const record = value.record as ChannelBookmarkModel;
+export const transformChannelBookmarkRecord = ({action, database, value}: TransformerArgs<ChannelBookmarkModel, ChannelBookmark>): Promise<ChannelBookmarkModel> => {
+    const raw = value.raw;
+    const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
+    if (!isCreateAction && !record) {
+        throw new Error('Record not found for non create action');
+    }
 
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
     const fieldsMapper = (bookmark: ChannelBookmarkModel) => {
-        bookmark._raw.id = isCreateAction ? (raw?.id ?? bookmark.id) : record.id;
+        bookmark._raw.id = isCreateAction ? (raw?.id ?? bookmark.id) : record!.id;
         bookmark.createAt = raw.create_at;
         bookmark.deleteAt = raw.delete_at;
         bookmark.updateAt = raw.update_at;
@@ -219,5 +238,5 @@ export const transformChannelBookmarkRecord = ({action, database, value}: Transf
         tableName: CHANNEL_BOOKMARK,
         value,
         fieldsMapper,
-    }) as Promise<ChannelBookmarkModel>;
+    });
 };

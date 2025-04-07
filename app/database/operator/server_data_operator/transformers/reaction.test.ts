@@ -23,8 +23,6 @@ describe('*** REACTION Prepare Records Test ***', () => {
                     post_id: 'ps81iqbddesfby8jayz7owg4yypoo',
                     emoji_name: 'thumbsup',
                     create_at: 1596032651748,
-                    update_at: 1608253011321,
-                    delete_at: 0,
                 },
             },
         });

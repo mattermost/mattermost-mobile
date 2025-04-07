@@ -259,7 +259,7 @@ export const fetchThreads = async (
             threadsData.push(...threads);
 
             if (threads.length === perPage && (pages == null || currentPage < pages!)) {
-                const newOptions: FetchThreadsOptions = {perPage, deleted, unread};
+                const newOptions: FetchThreadsOptions = {perPage, deleted, unread, since};
                 if (fetchDirection === Direction.Down) {
                     const last = threads[threads.length - 1];
                     newOptions.before = last.id;
@@ -385,7 +385,7 @@ export const syncTeamThreads = async (
                 // We are fetching the threads for the first time. We get "latest" and "earliest" values.
                 // At this point we may receive threads without replies, so we also check the post.create_at timestamp.
                 const {earliestThread, latestThread} = getThreadsListEdges(latestThreads.threads);
-                syncDataUpdate.latest = latestThread.last_reply_at || latestThread.post.create_at;
+                syncDataUpdate.latest = Math.max(latestThread.last_viewed_at, latestThread.last_reply_at, latestThread.post.create_at);
                 syncDataUpdate.earliest = earliestThread.last_reply_at || earliestThread.post.create_at;
 
                 threads.push(...latestThreads.threads);
@@ -409,8 +409,8 @@ export const syncTeamThreads = async (
                     serverUrl,
                     teamId,
                     {deleted: true, since: refresh ? undefined : syncData.latest + 1, excludeDirect},
+                    Direction.Down,
                     undefined,
-                    1,
                     groupLabel,
                 ),
             ]);
@@ -421,7 +421,7 @@ export const syncTeamThreads = async (
             if (allNewThreads.threads?.length) {
                 // As we are syncing, we get all new threads and we will update the "latest" value.
                 const {latestThread} = getThreadsListEdges(allNewThreads.threads);
-                const latestDate = latestThread.last_reply_at || latestThread.post.create_at;
+                const latestDate = Math.max(latestThread.last_reply_at, latestThread.last_viewed_at, latestThread.post.create_at);
                 syncDataUpdate.latest = Math.max(syncData.latest, latestDate);
 
                 threads.push(...allNewThreads.threads);
