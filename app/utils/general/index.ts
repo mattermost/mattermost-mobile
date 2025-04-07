@@ -78,5 +78,7 @@ export function getContrastingSimpleColor(colorHexCode: string): string {
     const colorLuminance = (0.2126 * redLuminance) + (0.7152 * greenLuminance) + (0.0722 * blueLuminance);
 
     // return black or white based on color's luminance
+    // 0.179 is the threshold for black and white contrast - https://www.w3.org/TR/WCAG21/#dfn-contrast-ratio,
+    // The exact value was derived empirically by testing the contrast of black and white on various colors
     return colorLuminance > 0.179 ? '#000000' : '#FFFFFF';
 }

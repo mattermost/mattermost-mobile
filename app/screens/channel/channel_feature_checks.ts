@@ -3,8 +3,8 @@
 
 import {General, License} from '@constants';
 
-export function shouldShowChannelBanner(channelType: ChannelType, license?: ClientLicense, bannerInfo?: ChannelBannerInfo): boolean {
-    if (!license || !bannerInfo) {
+export function shouldShowChannelBanner(channelType?: ChannelType, license?: ClientLicense, bannerInfo?: ChannelBannerInfo): boolean {
+    if (!license || !bannerInfo || !channelType) {
         return false;
     }
 

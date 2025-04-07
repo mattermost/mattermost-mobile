@@ -22,6 +22,7 @@ import {
 import Channel from './channel';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
+import {shouldShowChannelBanner} from '@screens/channel/channel_feature_checks';
 
 type EnhanceProps = WithDatabaseArgs & {
     serverUrl: string;
@@ -60,6 +61,13 @@ const enhanced = withObservables([], ({database, serverUrl}: EnhanceProps) => {
         switchMap((channel) => of$(channel?.bannerInfo)),
     );
 
+    const includeChannelBanner = channelType.pipe(
+        combineLatestWith(license, bannerInfo),
+        switchMap(([channelTypeValue, licenseValue, bannerInfoValue]) =>
+            of$(shouldShowChannelBanner(channelTypeValue, licenseValue, bannerInfoValue)),
+        ),
+    )
+
     return {
         channelId,
         ...observeCallStateInChannel(serverUrl, database, channelId),
@@ -70,8 +78,7 @@ const enhanced = withObservables([], ({database, serverUrl}: EnhanceProps) => {
         currentUserId,
         hasGMasDMFeature,
         includeBookmarkBar,
-        license,
-        bannerInfo,
+        includeChannelBanner,
     };
 });
 
