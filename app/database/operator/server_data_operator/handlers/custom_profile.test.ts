@@ -145,7 +145,7 @@ describe('*** Operator: Custom Profile Handlers tests ***', () => {
         // Should only include one record due to unique id
         expect(spyOnHandleRecords).toHaveBeenCalledWith(
             expect.objectContaining({
-                createOrUpdateRawValues: [fields[0]],
+                createOrUpdateRawValues: [fields[1]],
             }),
             'handleCustomProfileFields',
         );
@@ -180,7 +180,7 @@ describe('*** Operator: Custom Profile Handlers tests ***', () => {
         // Should only include one record due to unique id
         expect(spyOnHandleRecords).toHaveBeenCalledWith(
             expect.objectContaining({
-                createOrUpdateRawValues: [attributes[0]],
+                createOrUpdateRawValues: [attributes[1]],
             }),
             'handleCustomProfileAttributes',
         );
