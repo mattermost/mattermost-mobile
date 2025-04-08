@@ -11,7 +11,7 @@
     "npm": "^9 || ^10"
   },
   "dependencies": {
-    "@formatjs/intl-datetimeformat": "6.17.4",
+    "@formatjs/intl-datetimeformat": "6.18.0",
     "@formatjs/intl-getcanonicallocales": "2.5.5",
     "@formatjs/intl-listformat": "7.7.11",
     "@formatjs/intl-locale": "4.2.11",
@@ -70,7 +70,7 @@
     "path-to-regexp": "8.2.0",
     "react": "18.3.1",
     "react-freeze": "1.0.4",
-    "react-intl": "7.1.8",
+    "react-intl": "7.1.10",
     "react-native": "0.76.9",
     "react-native-background-timer": "2.4.1",
     "react-native-document-picker": "9.3.1",
