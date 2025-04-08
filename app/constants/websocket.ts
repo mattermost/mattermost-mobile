@@ -106,5 +106,10 @@ const WebsocketEvents = {
     CHANNEL_BOOKMARK_UPDATED: 'channel_bookmark_updated',
     CHANNEL_BOOKMARK_SORTED: 'channel_bookmark_sorted',
     CHANNEL_BOOKMARK_DELETED: 'channel_bookmark_deleted',
+
+    CUSTOM_PROFILE_ATTRIBUTES_VALUES_UPDATED: 'custom_profile_attributes_values_updated',
+    CUSTOM_PROFILE_ATTRIBUTES_FIELD_UPDATED: 'custom_profile_attributes_field_updated',
+    CUSTOM_PROFILE_ATTRIBUTES_FIELD_CREATED: 'custom_profile_attributes_field_created',
+    CUSTOM_PROFILE_ATTRIBUTES_FIELD_DELETED: 'custom_profile_attributes_field_deleted',
 };
 export default WebsocketEvents;
