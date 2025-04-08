@@ -52,7 +52,7 @@ type ChannelProps = {
     groupCallsAllowed: boolean;
     isTabletView?: boolean;
     shouldRenderBookmarks: boolean;
-    shouldRenderChannelBanner?: boolean;
+    shouldRenderChannelBanner: boolean;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({

@@ -40,7 +40,7 @@ type ChannelProps = {
     channelType: ChannelType;
     hasGMasDMFeature: boolean;
     includeBookmarkBar?: boolean;
-    includeChannelBanner?: boolean;
+    includeChannelBanner: boolean;
 };
 
 const edges: Edge[] = ['left', 'right'];
