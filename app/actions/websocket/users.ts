@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {type Model} from '@nozbe/watermelondb';
 import {DeviceEventEmitter} from 'react-native';
 
 import {updateChannelsDisplayName} from '@actions/local/channel';
@@ -11,12 +12,14 @@ import DatabaseManager from '@database/manager';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import WebsocketManager from '@managers/websocket_manager';
 import {queryChannelsByTypes, queryUserChannelsByTypes} from '@queries/servers/channel';
+import {deleteCustomProfileAttributesByFieldId} from '@queries/servers/custom_profile';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {getConfig, getLicense} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
+import {logError} from '@utils/log';
 import {displayUsername} from '@utils/user';
 
-import type {Model} from '@nozbe/watermelondb';
+import type {CustomProfileField} from '@typings/api/custom_profile_attributes';
 
 export async function handleUserUpdatedEvent(serverUrl: string, msg: WebSocketMessage) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -119,4 +122,130 @@ export const userTyping = async (serverUrl: string, channelId: string, rootId?: 
 export async function handleStatusChangedEvent(serverUrl: string, msg: WebSocketMessage) {
     const newStatus = msg.data.status;
     setCurrentUserStatus(serverUrl, newStatus);
+}
+
+export async function handleCustomProfileAttributesValuesUpdatedEvent(serverUrl: string, msg: WebSocketMessage) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        logError('No operator found');
+        return;
+    }
+
+    const {user_id, values} = msg.data;
+    const attributesForDatabase = Object.entries(values).map(([fieldId, value]) => ({
+        id: `${fieldId}-${user_id}`,
+        field_id: fieldId,
+        user_id,
+        value: value as string,
+    }));
+
+    try {
+        await operator.handleCustomProfileAttributes({
+            attributes: attributesForDatabase,
+            prepareRecordsOnly: false,
+        });
+    } catch (error) {
+        logError('Error handling custom profile attributes values updated event', error);
+    }
+}
+
+export async function handleCustomProfileAttributesFieldUpdatedEvent(serverUrl: string, msg: WebSocketMessage) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        logError('No operator found');
+        return;
+    }
+
+    const {field} = msg.data;
+    const fieldForDatabase = {
+        id: field.id,
+        group_id: field.group_id,
+        name: field.name,
+        type: field.type,
+        target_id: field.target_id,
+        target_type: field.target_type,
+        create_at: field.create_at,
+        update_at: field.update_at,
+        delete_at: field.delete_at,
+        attrs: field.attrs,
+    };
+
+    try {
+        await operator.handleCustomProfileFields({
+            fields: [fieldForDatabase],
+            prepareRecordsOnly: false,
+        });
+    } catch (error) {
+        logError('Error handling custom profile attributes field updated event', error);
+    }
+}
+
+export async function handleCustomProfileAttributesFieldCreatedEvent(serverUrl: string, msg: WebSocketMessage) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        logError('No operator found');
+        return;
+    }
+
+    const {field} = msg.data;
+    const fieldForDatabase = {
+        id: field.id,
+        group_id: field.group_id,
+        name: field.name,
+        type: field.type,
+        target_id: field.target_id,
+        target_type: field.target_type,
+        create_at: field.create_at,
+        update_at: field.update_at,
+        delete_at: field.delete_at,
+        attrs: field.attrs,
+    };
+
+    try {
+        await operator.handleCustomProfileFields({
+            fields: [fieldForDatabase],
+            prepareRecordsOnly: false,
+        });
+    } catch (error) {
+        logError('Error handling custom profile attributes field created event', error);
+    }
+}
+
+export async function handleCustomProfileAttributesFieldDeletedEvent(serverUrl: string, msg: WebSocketMessage) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        logError('No operator found');
+        return;
+    }
+
+    const {field_id} = msg.data;
+
+    try {
+        // Delete the field from the database
+        const fieldForDatabase: CustomProfileField = {
+            id: field_id,
+            group_id: '',
+            name: '',
+            type: '',
+            target_id: '',
+            target_type: '',
+            create_at: 0,
+            update_at: 0,
+            delete_at: Date.now(),
+            attrs: {},
+        };
+
+        await operator.handleCustomProfileFields({
+            fields: [fieldForDatabase],
+            prepareRecordsOnly: false,
+        });
+    } catch (error) {
+        logError('Error handling custom profile field deleted event', error);
+    }
+    try {
+        // Also delete any attributes associated with this field
+        await deleteCustomProfileAttributesByFieldId(operator.database, field_id);
+    } catch (error) {
+        logError('Error handling related attributes to a custom profile field deleted event', error);
+    }
 }
