@@ -31,6 +31,7 @@ export const CALL_NOTIFICATION_BAR_HEIGHT = 40;
 
 export const ANNOUNCEMENT_BAR_HEIGHT = 40;
 export const BOOKMARKS_BAR_HEIGHT = 48;
+export const CHANNEL_BANNER_HEIGHT = 40;
 
 export const HOME_PADDING = {
     paddingLeft: 18,

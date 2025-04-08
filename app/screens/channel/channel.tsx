@@ -41,6 +41,7 @@ type ChannelProps = {
     channelType: ChannelType;
     hasGMasDMFeature: boolean;
     includeBookmarkBar?: boolean;
+    includeChannelBanner: boolean;
 };
 
 const edges: Edge[] = ['left', 'right'];
@@ -65,6 +66,7 @@ const Channel = ({
     currentUserId,
     hasGMasDMFeature,
     includeBookmarkBar,
+    includeChannelBanner,
 }: ChannelProps) => {
     useGMasDMNotice(currentUserId, channelType, dismissedGMasDMNotice, hasGMasDMFeature);
     const isTablet = useIsTablet();
@@ -127,6 +129,7 @@ const Channel = ({
                     groupCallsAllowed={groupCallsAllowed}
                     isTabletView={isTabletView}
                     shouldRenderBookmarks={shouldRender}
+                    shouldRenderChannelBanner={includeChannelBanner}
                 />
                 {shouldRender &&
                 <ExtraKeyboardProvider>
@@ -155,6 +158,7 @@ const Channel = ({
                         showIncomingCalls={showIncomingCalls}
                         isInACall={isInACall}
                         includeBookmarkBar={includeBookmarkBar}
+                        includeChannelBanner={includeChannelBanner}
                     />
                 }
             </SafeAreaView>
