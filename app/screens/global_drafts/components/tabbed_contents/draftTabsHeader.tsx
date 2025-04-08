@@ -83,13 +83,12 @@ export function DraftTabsHeader({draftsCount, scheduledPostCount, selectedTab, o
         return (
             <Badge
                 value={draftsCount}
-                borderColor={changeOpacity(theme.centerChannelColor, 0.08)}
                 visible={draftsCount !== 0}
                 style={style}
                 testID='draft_count_badge'
             />
         );
-    }, [draftsCount, selectedTab, styles.activeBadgeStyles, styles.badgeStyles, theme.centerChannelColor]);
+    }, [draftsCount, selectedTab, styles.activeBadgeStyles, styles.badgeStyles]);
 
     const scheduledPostCountBadge = useMemo(() => {
         const style = [styles.badgeStyles, selectedTab === DRAFT_SCREEN_TAB_SCHEDULED_POSTS ? styles.activeBadgeStyles : null];
@@ -97,13 +96,12 @@ export function DraftTabsHeader({draftsCount, scheduledPostCount, selectedTab, o
         return (
             <Badge
                 value={scheduledPostCount}
-                borderColor={changeOpacity(theme.centerChannelColor, 0.08)}
                 visible={scheduledPostCount !== 0}
                 style={style}
                 testID='scheduled_post_count_badge'
             />
         );
-    }, [scheduledPostCount, selectedTab, styles.activeBadgeStyles, styles.badgeStyles, theme.centerChannelColor]);
+    }, [scheduledPostCount, selectedTab, styles.activeBadgeStyles, styles.badgeStyles]);
 
     const {draftsContanerStyle, draftsTabStyle, scheduledContainerStyle, scheduledTabStyle} = useMemo(() => {
         return {

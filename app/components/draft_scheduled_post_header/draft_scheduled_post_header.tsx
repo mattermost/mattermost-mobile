@@ -85,6 +85,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         scheduledContainer: {
             display: 'flex',
             flexDirection: 'row',
+            flexWrap: 'wrap',
             alignItems: 'center',
             marginBottom: 10,
         },
@@ -180,7 +181,7 @@ const DraftAndScheduledPostHeader: React.FC<Props> = ({
             {draftType === DRAFT_TYPE_SCHEDULED &&
                 <View style={style.scheduledContainer}>
                     <Text style={style.scheduledAtText}>
-                        {intl.formatMessage({id: 'channel_info.scheduled', defaultMessage: 'Send on {time}'}, {time: getReadableTimestamp(postScheduledAt!, getUserTimezone(currentUser), isMilitaryTime, currentUser?.locale || DEFAULT_LOCALE)})}
+                        {scheduledPostErrorCode === 'post_send_success_delete_failed' ? intl.formatMessage({id: 'scheduled_post.header.sent', defaultMessage: 'Sent'}) : intl.formatMessage({id: 'channel_info.scheduled', defaultMessage: 'Send on {time}'}, {time: getReadableTimestamp(postScheduledAt!, getUserTimezone(currentUser), isMilitaryTime, currentUser?.locale || DEFAULT_LOCALE)})}
                     </Text>
                     {scheduledPostErrorCode &&
                         <View style={style.errorState}>

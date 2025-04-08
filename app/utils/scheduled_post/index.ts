@@ -116,7 +116,7 @@ const errorCodeToErrorMessage = defineMessages<ScheduledPostErrorCode>({
     },
     post_send_success_delete_failed: {
         id: 'scheduled_post.error_code.post_send_success_delete_failed',
-        defaultMessage: 'Post already Sent, Delete Manually',
+        defaultMessage: 'Please delete as this was posted',
     },
 });
 
