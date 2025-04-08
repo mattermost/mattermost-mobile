@@ -84,6 +84,7 @@ export const USER_PROFILE = 'UserProfile';
 export const CHANNEL_BOOKMARK = 'ChannelBookmarkAddOrEdit';
 export const GENERIC_OVERLAY = 'GenericOverlay';
 export const GLOBAL_DRAFTS_AND_SCHEDULED_POSTS = 'GlobalDraftsAndScheduledPosts';
+export const CHANNEL_BANNER = 'ChannelBanner';
 
 export default {
     ABOUT,
@@ -168,6 +169,7 @@ export default {
     GENERIC_OVERLAY,
     SCHEDULED_POST_OPTIONS,
     GLOBAL_DRAFTS_AND_SCHEDULED_POSTS,
+    CHANNEL_BANNER,
 } as const;
 
 export const MODAL_SCREENS_WITHOUT_BACK = new Set<string>([
