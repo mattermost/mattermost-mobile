@@ -11,6 +11,7 @@ import UserInfo from './user_info';
 
 import type CustomProfileAttributeModel from '@database/models/server/custom_profile_attribute';
 import type UserModel from '@database/models/server/user';
+import type {CustomAttributeSet} from '@typings/api/custom_profile_attributes';
 
 const localhost = 'http://localhost:8065';
 
@@ -121,7 +122,7 @@ describe('screens/user_profile/UserInfo', () => {
             value: 'Remote',
             sort_order: 0,
         },
-    };
+    } as CustomAttributeSet;
 
     const databaseAttributes = [
         {
