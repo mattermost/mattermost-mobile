@@ -52,7 +52,9 @@ export const sortByNewest = (a: SortByCreatAt, b: SortByCreatAt) => {
 export const isBetaApp = applicationId && applicationId.includes('rnbeta');
 
 // getContrastingSimpleColor returns a contrasting color - either black or white, depending on the luminance
-// of the supplied color. Both input and outpur colors are in hexadecimal color code.
+// of the supplied color. Both input and output colors are in hexadecimal color code.
+// This function is copied from Mattermost webapp -
+// https://github.com/mattermost/mattermost/blob/03d724b6a64dbb7bb41a9491f60d277244a8c488/webapp/channels/src/packages/mattermost-redux/src/utils/theme_utils.ts#L176
 export function getContrastingSimpleColor(colorHexCode: string): string {
     const color = colorHexCode.startsWith('#') ? colorHexCode.slice(1) : colorHexCode;
 
