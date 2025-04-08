@@ -51,6 +51,7 @@ export const getCustomProfileAttribute = async (database: Database, fieldId: str
         const attributeRecord = await database.get<CustomProfileAttributeModel>(CUSTOM_PROFILE_ATTRIBUTE).query(
             Q.where('field_id', fieldId),
             Q.where('user_id', userId),
+            Q.take(1),
         ).fetch();
         return attributeRecord[0];
     } catch {

@@ -19,170 +19,243 @@ describe('*** Operator: Custom Profile Handlers tests ***', () => {
         await DatabaseManager.init([serverUrl]);
         operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
     });
+    describe('=> handleCustomProfileFields', () => {
+        it('should write to CustomProfileField table', async () => {
+            expect.assertions(2);
 
-    it('=> handleCustomProfileFields: should write to CustomProfileField table', async () => {
-        expect.assertions(2);
+            const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
+            const fields: CustomProfileField[] = [
+                {
+                    id: 'field1',
+                    name: 'Test Field',
+                    type: 'text',
+                    create_at: 1607683720173,
+                    update_at: 1607683720173,
+                    delete_at: 0,
+                    group_id: 'group1',
+                    target_id: 'target1',
+                    target_type: 'user',
+                    attrs: {},
+                },
+            ];
 
-        const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
-        const fields: CustomProfileField[] = [
-            {
-                id: 'field1',
-                name: 'Test Field',
-                type: 'text',
-                create_at: 1607683720173,
-                update_at: 1607683720173,
-                delete_at: 0,
-                group_id: 'group1',
-                target_id: 'target1',
-                target_type: 'user',
-                attrs: {},
-            },
-        ];
+            await operator.handleCustomProfileFields({
+                fields,
+                prepareRecordsOnly: false,
+            });
 
-        await operator.handleCustomProfileFields({
-            fields,
-            prepareRecordsOnly: false,
+            expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
+            expect(spyOnHandleRecords).toHaveBeenCalledWith({
+                fieldName: 'id',
+                createOrUpdateRawValues: fields,
+                tableName: MM_TABLES.SERVER.CUSTOM_PROFILE_FIELD,
+                prepareRecordsOnly: false,
+                transformer: transformCustomProfileFieldRecord,
+            }, 'handleCustomProfileFields');
         });
 
-        expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
-        expect(spyOnHandleRecords).toHaveBeenCalledWith({
-            fieldName: 'id',
-            createOrUpdateRawValues: fields,
-            tableName: MM_TABLES.SERVER.CUSTOM_PROFILE_FIELD,
-            prepareRecordsOnly: false,
-            transformer: transformCustomProfileFieldRecord,
-        }, 'handleCustomProfileFields');
-    });
+        it('should properly pass prepareRecordsOnly when set to true', async () => {
+            expect.assertions(2);
 
-    it('=> handleCustomProfileFields: should handle empty fields array', async () => {
-        expect.assertions(1);
+            const originalHandleRecords = operator.handleRecords;
+            operator.handleRecords = jest.fn().mockResolvedValue([]);
 
-        const result = await operator.handleCustomProfileFields({
-            fields: [],
-            prepareRecordsOnly: false,
+            const fields: CustomProfileField[] = [
+                {
+                    id: 'field1',
+                    name: 'Test Field',
+                    type: 'text',
+                    create_at: 1607683720173,
+                    update_at: 1607683720173,
+                    delete_at: 0,
+                    group_id: 'group1',
+                    target_id: 'target1',
+                    target_type: 'user',
+                    attrs: {},
+                },
+            ];
+
+            await operator.handleCustomProfileFields({
+                fields,
+                prepareRecordsOnly: true,
+            });
+
+            expect(operator.handleRecords).toHaveBeenCalledTimes(1);
+            expect(operator.handleRecords).toHaveBeenCalledWith({
+                fieldName: 'id',
+                createOrUpdateRawValues: fields,
+                tableName: MM_TABLES.SERVER.CUSTOM_PROFILE_FIELD,
+                prepareRecordsOnly: true,
+                transformer: transformCustomProfileFieldRecord,
+            }, 'handleCustomProfileFields');
+
+            operator.handleRecords = originalHandleRecords;
         });
 
-        expect(result).toEqual([]);
-    });
+        it('should handle empty fields array', async () => {
+            expect.assertions(1);
 
-    it('=> handleCustomProfileAttributes: should write to CustomProfileAttribute table', async () => {
-        expect.assertions(2);
+            const result = await operator.handleCustomProfileFields({
+                fields: [],
+                prepareRecordsOnly: false,
+            });
 
-        const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
-        const attributes: CustomProfileAttribute[] = [
-            {
-                id: 'field1-user1',
-                field_id: 'field1',
-                user_id: 'user1',
-                value: 'Test Value',
-            },
-        ];
-
-        await operator.handleCustomProfileAttributes({
-            attributes,
-            prepareRecordsOnly: false,
+            expect(result).toEqual([]);
         });
 
-        expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
-        expect(spyOnHandleRecords).toHaveBeenCalledWith({
-            fieldName: 'id',
-            createOrUpdateRawValues: attributes,
-            tableName: MM_TABLES.SERVER.CUSTOM_PROFILE_ATTRIBUTE,
-            prepareRecordsOnly: false,
-            transformer: transformCustomProfileAttributeRecord,
-        }, 'handleCustomProfileAttributes');
+        it('should handle duplicate fields by using unique id', async () => {
+            expect.assertions(2);
+
+            const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
+            const fields: CustomProfileField[] = [
+                {
+                    id: 'field1',
+                    name: 'Test Field 1',
+                    type: 'text',
+                    create_at: 1607683720173,
+                    update_at: 1607683720173,
+                    delete_at: 0,
+                    group_id: 'group1',
+                    target_id: 'target1',
+                    target_type: 'user',
+                    attrs: {},
+                },
+                {
+                    id: 'field1',
+                    name: 'Test Field 2',
+                    type: 'text',
+                    create_at: 1607683720173,
+                    update_at: 1607683720173,
+                    delete_at: 0,
+                    group_id: 'group1',
+                    target_id: 'target1',
+                    target_type: 'user',
+                    attrs: {},
+                },
+            ];
+
+            await operator.handleCustomProfileFields({
+                fields,
+                prepareRecordsOnly: false,
+            });
+
+            expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
+
+            expect(spyOnHandleRecords).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    createOrUpdateRawValues: [fields[1]],
+                }),
+                'handleCustomProfileFields',
+            );
+        });
     });
 
-    it('=> handleCustomProfileAttributes: should handle empty attributes array', async () => {
-        expect.assertions(1);
+    describe('=> handleCustomProfileAttributes', () => {
+        it('should write to CustomProfileAttribute table', async () => {
+            expect.assertions(2);
 
-        const result = await operator.handleCustomProfileAttributes({
-            attributes: [],
-            prepareRecordsOnly: false,
+            const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
+            const attributes: CustomProfileAttribute[] = [
+                {
+                    id: 'field1-user1',
+                    field_id: 'field1',
+                    user_id: 'user1',
+                    value: 'Test Value',
+                },
+            ];
+
+            await operator.handleCustomProfileAttributes({
+                attributes,
+                prepareRecordsOnly: false,
+            });
+
+            expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
+            expect(spyOnHandleRecords).toHaveBeenCalledWith({
+                fieldName: 'id',
+                createOrUpdateRawValues: attributes,
+                tableName: MM_TABLES.SERVER.CUSTOM_PROFILE_ATTRIBUTE,
+                prepareRecordsOnly: false,
+                transformer: transformCustomProfileAttributeRecord,
+            }, 'handleCustomProfileAttributes');
         });
 
-        expect(result).toEqual([]);
-    });
+        it('should properly pass prepareRecordsOnly when set to true', async () => {
+            expect.assertions(2);
 
-    it('=> handleCustomProfileFields: should handle duplicate fields by using unique id', async () => {
-        expect.assertions(2);
+            const originalHandleRecords = operator.handleRecords;
+            operator.handleRecords = jest.fn().mockResolvedValue([]);
 
-        const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
-        const fields: CustomProfileField[] = [
-            {
-                id: 'field1',
-                name: 'Test Field 1',
-                type: 'text',
-                create_at: 1607683720173,
-                update_at: 1607683720173,
-                delete_at: 0,
-                group_id: 'group1',
-                target_id: 'target1',
-                target_type: 'user',
-                attrs: {},
-            },
-            {
-                id: 'field1',
-                name: 'Test Field 2',
-                type: 'text',
-                create_at: 1607683720173,
-                update_at: 1607683720173,
-                delete_at: 0,
-                group_id: 'group1',
-                target_id: 'target1',
-                target_type: 'user',
-                attrs: {},
-            },
-        ];
+            const attributes: CustomProfileAttribute[] = [
+                {
+                    id: 'field1-user1',
+                    field_id: 'field1',
+                    user_id: 'user1',
+                    value: 'Test Value',
+                },
+            ];
 
-        await operator.handleCustomProfileFields({
-            fields,
-            prepareRecordsOnly: false,
+            await operator.handleCustomProfileAttributes({
+                attributes,
+                prepareRecordsOnly: true,
+            });
+
+            expect(operator.handleRecords).toHaveBeenCalledTimes(1);
+            expect(operator.handleRecords).toHaveBeenCalledWith({
+                fieldName: 'id',
+                createOrUpdateRawValues: attributes,
+                tableName: MM_TABLES.SERVER.CUSTOM_PROFILE_ATTRIBUTE,
+                prepareRecordsOnly: true,
+                transformer: transformCustomProfileAttributeRecord,
+            }, 'handleCustomProfileAttributes');
+
+            // Restore original method
+            operator.handleRecords = originalHandleRecords;
         });
 
-        expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
+        it('should handle empty attributes array', async () => {
+            expect.assertions(1);
 
-        // Should only include one record due to unique id
-        expect(spyOnHandleRecords).toHaveBeenCalledWith(
-            expect.objectContaining({
-                createOrUpdateRawValues: [fields[1]],
-            }),
-            'handleCustomProfileFields',
-        );
-    });
+            const result = await operator.handleCustomProfileAttributes({
+                attributes: [],
+                prepareRecordsOnly: false,
+            });
 
-    it('=> handleCustomProfileAttributes: should handle duplicate attributes by using unique id', async () => {
-        expect.assertions(2);
-
-        const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
-        const attributes: CustomProfileAttribute[] = [
-            {
-                id: 'field1-user1',
-                field_id: 'field1',
-                user_id: 'user1',
-                value: 'Test Value 1',
-            },
-            {
-                id: 'field1-user1',
-                field_id: 'field1',
-                user_id: 'user1',
-                value: 'Test Value 2',
-            },
-        ];
-
-        await operator.handleCustomProfileAttributes({
-            attributes,
-            prepareRecordsOnly: false,
+            expect(result).toEqual([]);
         });
 
-        expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
+        it('should handle duplicate attributes by using unique id', async () => {
+            expect.assertions(2);
 
-        // Should only include one record due to unique id
-        expect(spyOnHandleRecords).toHaveBeenCalledWith(
-            expect.objectContaining({
-                createOrUpdateRawValues: [attributes[1]],
-            }),
-            'handleCustomProfileAttributes',
-        );
+            const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
+            const attributes: CustomProfileAttribute[] = [
+                {
+                    id: 'field1-user1',
+                    field_id: 'field1',
+                    user_id: 'user1',
+                    value: 'Test Value 1',
+                },
+                {
+                    id: 'field1-user1',
+                    field_id: 'field1',
+                    user_id: 'user1',
+                    value: 'Test Value 2',
+                },
+            ];
+
+            await operator.handleCustomProfileAttributes({
+                attributes,
+                prepareRecordsOnly: false,
+            });
+
+            expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
+
+            expect(spyOnHandleRecords).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    createOrUpdateRawValues: [attributes[1]],
+                }),
+                'handleCustomProfileAttributes',
+            );
+        });
     });
+
 });
