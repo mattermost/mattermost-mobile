@@ -5,6 +5,11 @@ import type CustomProfileAttributeModel from './custom_profile_attribute';
 import type {Model, Query} from '@nozbe/watermelondb';
 import type {Associations} from '@nozbe/watermelondb/Model';
 
+export type CustomProfileFieldAttrs = {
+    sort_order?: number;
+    [key: string]: unknown;
+};
+
 declare class CustomProfileFieldModel extends Model {
     static table: string;
     static associations: Associations;
@@ -34,10 +39,7 @@ declare class CustomProfileFieldModel extends Model {
     deleteAt: number;
 
     /** attrs : Any extra properties of the field */
-    attrs: {
-        sort_order?: number;
-        [key: string]: unknown;
-    } | null;
+    attrs: CustomProfileFieldAttrs | null;
 
     /** customProfileAttributes : All the custom profile attributes for this field */
     customProfileAttributes: Query<CustomProfileAttributeModel>;
