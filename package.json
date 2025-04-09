@@ -138,21 +138,21 @@
     "@types/react-native-background-timer": "2.0.2",
     "@types/react-native-dotenv": "0.2.2",
     "@types/react-syntax-highlighter": "15.5.13",
-    "@types/semver": "7.5.8",
+    "@types/semver": "7.7.0",
     "@types/tinycolor2": "1.4.6",
     "@types/tough-cookie": "4.0.5",
     "@types/url-parse": "1.4.11",
     "@types/uuid": "10.0.0",
-    "@typescript-eslint/eslint-plugin": "8.27.0",
-    "@typescript-eslint/parser": "8.27.0",
+    "@typescript-eslint/eslint-plugin": "8.29.1",
+    "@typescript-eslint/parser": "8.29.1",
     "babel-jest": "29.7.0",
     "babel-loader": "10.0.0",
     "babel-plugin-module-resolver": "5.0.2",
-    "eslint": "9.23.0",
+    "eslint": "9.24.0",
     "eslint-plugin-header": "3.1.1",
     "eslint-plugin-import": "2.31.0",
     "eslint-plugin-jest": "28.11.0",
-    "eslint-plugin-react": "7.37.4",
+    "eslint-plugin-react": "7.37.5",
     "eslint-plugin-react-hooks": "5.2.0",
     "husky": "9.1.7",
     "isomorphic-fetch": "3.0.0",
@@ -161,14 +161,14 @@
     "jest-expo": "52.0.6",
     "jetifier": "2.0.0",
     "mmjstool": "github:mattermost/mattermost-utilities#83b1b311972b8f5e750aae4019457a40abb5aa44",
-    "nock": "14.0.1",
+    "nock": "14.0.3",
     "patch-package": "8.0.0",
     "react-devtools-core": "6.1.1",
     "react-test-renderer": "18.3.1",
     "timezones.json": "1.7.1",
     "tough-cookie": "5.1.2",
-    "ts-jest": "29.2.6",
-    "typescript": "5.8.2",
+    "ts-jest": "29.3.1",
+    "typescript": "5.8.3",
     "uuid": "11.1.0"
   },
   "scripts": {
@@ -223,7 +223,7 @@
       "react-native": "^0.76.5"
     },
     "@react-native/eslint-config@0.76.5": {
-      "@typescript-eslint/eslint-plugin": "^8.26.1"
+      "@typescript-eslint/eslint-plugin": "^8.29.1"
     }
   },
   "expo": {
