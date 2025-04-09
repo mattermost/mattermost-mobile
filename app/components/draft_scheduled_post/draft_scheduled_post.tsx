@@ -10,18 +10,18 @@ import {switchToChannelById} from '@actions/remote/channel';
 import DraftAndScheduledPostHeader from '@components/draft_scheduled_post_header';
 import Header from '@components/post_draft/draft_input/header';
 import {Screens} from '@constants';
+import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED, type DraftType} from '@constants/draft';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {DRAFT_OPTIONS_BUTTON} from '@screens/draft_scheduled_post_options';
-import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED, type DraftType} from '@screens/global_drafts/constants';
 import {openAsBottomSheet} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import DraftAndScheduledPostContainer from './draft_scheduled_post_container';
 
-import type {ScheduledPostModel} from '@database/models/server';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type DraftModel from '@typings/database/models/servers/draft';
+import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {

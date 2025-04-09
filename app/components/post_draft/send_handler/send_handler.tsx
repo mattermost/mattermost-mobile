@@ -10,7 +10,7 @@ import {useServerUrl} from '@context/server';
 import {useHandleSendMessage} from '@hooks/handle_send_message';
 import SendDraft from '@screens/draft_scheduled_post_options/send_draft';
 
-import type {DraftType} from '@screens/global_drafts/constants';
+import type {DraftType} from '@constants/draft';
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 import type {AvailableScreens} from '@typings/screens/navigation';
 

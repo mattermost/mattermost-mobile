@@ -14,7 +14,7 @@ import {observePermissionForChannel} from '@queries/servers/role';
 import {observeFirstScheduledPost, queryScheduledPost} from '@queries/servers/scheduled_post';
 import {observeConfigBooleanValue, observeConfigIntValue, observeCurrentUserId} from '@queries/servers/system';
 import {observeUser} from '@queries/servers/user';
-import {DRAFT_TYPE_SCHEDULED, type DraftType} from '@screens/global_drafts/constants';
+import {DRAFT_TYPE_SCHEDULED, type DraftType} from '@constants/draft';
 
 import SendHandler, {INITIAL_PRIORITY} from './send_handler';
 

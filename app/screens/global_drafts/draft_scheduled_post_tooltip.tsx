@@ -8,7 +8,7 @@ import {StyleSheet, TouchableOpacity, View} from 'react-native';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {Preferences} from '@constants';
-import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED, type DraftType} from '@screens/global_drafts/constants';
+import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED, type DraftType} from '@constants/draft';
 import {changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 

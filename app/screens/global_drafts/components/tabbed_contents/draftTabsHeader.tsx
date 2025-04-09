@@ -6,9 +6,9 @@ import {TouchableOpacity, View} from 'react-native';
 
 import Badge from '@components/badge';
 import FormattedText from '@components/formatted_text';
+import {DRAFT_SCREEN_TAB_SCHEDULED_POSTS, type DraftScreenTab} from '@constants/draft';
 import {useTheme} from '@context/theme';
 import {usePreventDoubleTap} from '@hooks/utils';
-import {DRAFT_SCREEN_TAB_SCHEDULED_POSTS, type DraftScreenTab} from '@screens/global_drafts/global_drafts';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 

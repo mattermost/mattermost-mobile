@@ -10,6 +10,7 @@ import NavigationHeader from '@components/navigation_header';
 import OtherMentionsBadge from '@components/other_mentions_badge';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import {Screens} from '@constants';
+import {DRAFT_SCREEN_TAB_DRAFTS, type DraftScreenTab} from '@constants/draft';
 import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {useTeamSwitch} from '@hooks/team_switch';
@@ -24,10 +25,6 @@ import GlobalScheduledPostList from './components/global_scheduled_post_list';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 const edges: Edge[] = ['left', 'right'];
-
-export const DRAFT_SCREEN_TAB_DRAFTS = 0;
-export const DRAFT_SCREEN_TAB_SCHEDULED_POSTS = 1;
-export type DraftScreenTab = typeof DRAFT_SCREEN_TAB_DRAFTS | typeof DRAFT_SCREEN_TAB_SCHEDULED_POSTS;
 
 type Props = {
     componentId?: AvailableScreens;

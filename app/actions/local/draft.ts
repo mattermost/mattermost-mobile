@@ -14,8 +14,8 @@ import {isTablet} from '@utils/helpers';
 import {logError} from '@utils/log';
 import {isParsableUrl} from '@utils/url';
 
+import type {DraftScreenTab} from '@constants/draft';
 import type {Model} from '@nozbe/watermelondb';
-import type {DraftScreenTab} from '@screens/global_drafts/global_drafts';
 
 type goToScreenParams = {
     initialTab?: DraftScreenTab;

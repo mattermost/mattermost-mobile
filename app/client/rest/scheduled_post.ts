@@ -13,25 +13,33 @@ export interface ClientScheduledPostMix {
 }
 
 const ClientScheduledPost = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
-    createScheduledPost = async (schedulePost: ScheduledPost, connectionId?: string) => {
+    createScheduledPost = (schedulePost: ScheduledPost, connectionId?: string) => {
+        const headers: Record<string, string> = {};
+        if (connectionId) {
+            headers['Connection-Id'] = connectionId;
+        }
         return this.doFetch(
             this.getScheduledPostRoute(),
             {
                 method: 'post',
                 body: schedulePost,
-                headers: {'Connection-Id': connectionId},
+                headers,
             },
         );
     };
 
-    updateScheduledPost = async (scheduledPost: ScheduledPost, connectionId = '') => {
+    updateScheduledPost = (scheduledPost: ScheduledPost, connectionId = '') => {
         const scheduledPostId = scheduledPost.id;
+        const headers: Record<string, string> = {};
+        if (connectionId) {
+            headers['Connection-Id'] = connectionId;
+        }
         return this.doFetch(
             `${this.getScheduledPostRoute()}/${scheduledPostId}`,
             {
                 method: 'put',
                 body: scheduledPost,
-                headers: {'Connection-Id': connectionId},
+                headers,
             },
         );
     };
@@ -44,11 +52,15 @@ const ClientScheduledPost = <TBase extends Constructor<ClientBase>>(superclass: 
     }
 
     deleteScheduledPost(scheduledPostId: string, connectionId = '') {
+        const headers: Record<string, string> = {};
+        if (connectionId) {
+            headers['Connection-Id'] = connectionId;
+        }
         return this.doFetch(
             `${this.getScheduledPostRoute()}/${scheduledPostId}`,
             {
                 method: 'delete',
-                headers: {'Connection-Id': connectionId},
+                headers,
             },
         );
     }

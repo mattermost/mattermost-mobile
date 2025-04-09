@@ -1,14 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-/* eslint-disable max-lines */
-
 import {DeviceEventEmitter} from 'react-native';
 
 import {Navigation, Screens} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
+import {DRAFT_SCREEN_TAB_DRAFTS, DRAFT_SCREEN_TAB_SCHEDULED_POSTS} from '@constants/draft';
 import DatabaseManager from '@database/manager';
-import {DRAFT_SCREEN_TAB_DRAFTS, DRAFT_SCREEN_TAB_SCHEDULED_POSTS} from '@screens/global_drafts/global_drafts';
 import {goToScreen, popTo} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';

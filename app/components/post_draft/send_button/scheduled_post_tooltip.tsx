@@ -23,7 +23,6 @@ const styles = StyleSheet.create({
     container: {
         paddingHorizontal: 4,
         paddingVertical: 8,
-        display: 'flex',
         flexDirection: 'column',
         gap: 18,
     },

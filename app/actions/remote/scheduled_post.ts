@@ -18,9 +18,6 @@ import type {CreateResponse} from '@hooks/handle_send_message';
 export async function createScheduledPost(serverUrl: string, schedulePost: ScheduledPost): Promise<CreateResponse> {
     try {
         const operator = DatabaseManager.getServerDatabaseAndOperator(serverUrl).operator;
-        if (!operator) {
-            return {error: `${serverUrl} database not found`};
-        }
 
         const connectionId = websocketManager.getClient(serverUrl)?.getConnectionId();
         const client = NetworkManager.getClient(serverUrl);
@@ -42,12 +39,13 @@ export async function createScheduledPost(serverUrl: string, schedulePost: Sched
     }
 }
 
-export async function updateScheduledPost(serverUrl: string, scheduledPost: ScheduledPost | ScheduledPostModel, updateTime: number, connectionId?: string, fetchOnly = false) {
+export async function updateScheduledPost(serverUrl: string, scheduledPost: ScheduledPost | ScheduledPostModel, updateTime: number, fetchOnly = false) {
     try {
         const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const client = NetworkManager.getClient(serverUrl);
         const normalizedScheduledPost = isScheduledPostModel(scheduledPost) ? await scheduledPost.toApi(database) : scheduledPost;
         normalizedScheduledPost.scheduled_at = updateTime;
+        const connectionId = websocketManager.getClient(serverUrl)?.getConnectionId();
         const response = await client.updateScheduledPost(normalizedScheduledPost, connectionId);
 
         if (response && !fetchOnly) {
@@ -69,9 +67,6 @@ export async function updateScheduledPost(serverUrl: string, scheduledPost: Sche
 export async function fetchScheduledPosts(serverUrl: string, teamId: string, includeDirectChannels = false, groupLabel?: RequestGroupLabel) {
     try {
         const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        if (!operator || !database) {
-            return {error: `${serverUrl} database not found`};
-        }
 
         const client = NetworkManager.getClient(serverUrl);
 
@@ -101,9 +96,6 @@ export async function fetchScheduledPosts(serverUrl: string, teamId: string, inc
 export async function deleteScheduledPost(serverUrl: string, scheduledPostId: string) {
     try {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        if (!operator) {
-            return {error: `${serverUrl} database not found`};
-        }
 
         const client = NetworkManager.getClient(serverUrl);
         const connectionId = websocketManager.getClient(serverUrl)?.getConnectionId();

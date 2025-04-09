@@ -4,7 +4,7 @@
 import {screen} from '@testing-library/react-native';
 import React from 'react';
 
-import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED} from '@screens/global_drafts/constants';
+import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED} from '@constants/draft';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 

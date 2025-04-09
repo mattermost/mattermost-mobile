@@ -6,18 +6,18 @@ import {useIntl} from 'react-intl';
 import {Alert} from 'react-native';
 
 import {removeDraft} from '@actions/local/draft';
-import {handleUpdateScheduledPostErrorCode} from '@actions/local/scheduled_post';
+import {updateScheduledPostErrorCode} from '@actions/local/scheduled_post';
 import {deleteScheduledPost} from '@actions/remote/scheduled_post';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {General} from '@constants';
+import {DRAFT_TYPE_DRAFT, type DraftType} from '@constants/draft';
 import {ICON_SIZE} from '@constants/post_draft';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useHandleSendMessage} from '@hooks/handle_send_message';
 import {usePersistentNotificationProps} from '@hooks/persistent_notification_props';
-import {DRAFT_TYPE_DRAFT, type DraftType} from '@screens/global_drafts/constants';
 import {dismissBottomSheet} from '@screens/navigation';
 import {persistentNotificationsConfirmation, sendMessageWithAlert} from '@utils/post';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -112,7 +112,7 @@ const SendDraft: React.FC<Props> = ({
             const res = await deleteScheduledPost(serverUrl, postId);
             if (res?.error) {
                 try {
-                    await handleUpdateScheduledPostErrorCode(serverUrl, postId, 'post_send_success_delete_failed');
+                    await updateScheduledPostErrorCode(serverUrl, postId, 'post_send_success_delete_failed');
                 } catch {
                     // do nothing
                 }

@@ -8,10 +8,10 @@ import {DeviceEventEmitter, Text, View} from 'react-native';
 import {switchToGlobalDrafts} from '@actions/local/draft';
 import CompassIcon from '@components/compass_icon';
 import {Events} from '@constants';
+import {DRAFT_SCREEN_TAB_SCHEDULED_POSTS} from '@constants/draft';
 import {DRAFT} from '@constants/screens';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {DRAFT_SCREEN_TAB_SCHEDULED_POSTS} from '@screens/global_drafts/global_drafts';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -22,7 +22,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             paddingVertical: 12,
             paddingHorizontal: 16,
             color: changeOpacity(theme.centerChannelColor, 0.72),
-            display: 'flex',
             flexDirection: 'row',
             alignItems: 'center',
             gap: 12,
@@ -30,7 +29,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         text: {
             color: changeOpacity(theme.centerChannelColor, 0.75),
-            fontSize: 14,
+            ...typography('Body', 100, 'SemiBold'),
         },
         link: {
             color: theme.linkColor,
