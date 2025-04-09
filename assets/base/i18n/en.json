@@ -232,6 +232,7 @@
   "channel_notification_preferences.reset_default": "Reset to default",
   "channel_notification_preferences.thread_replies": "Thread replies",
   "channel_notification_preferences.unmute_content": "Unmute channel",
+  "channel.banner.bottom_sheet.title": "Channel Banner",
   "combined_system_message.added_to_channel.many_expanded": "{users} and {lastUser} were **added to the channel** by {actor}.",
   "combined_system_message.added_to_channel.one": "{firstUser} **added to the channel** by {actor}.",
   "combined_system_message.added_to_channel.one_you": "You were **added to the channel** by {actor}.",

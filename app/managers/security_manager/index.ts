@@ -292,7 +292,7 @@ class SecurityManagerSingleton {
                 defaultLocale: DEFAULT_LOCALE,
                 messages: getTranslations(locale),
             });
-            switchToServer(lastAccessedServer, theme, intl);
+            await switchToServer(lastAccessedServer, theme, intl);
         }
     };
 

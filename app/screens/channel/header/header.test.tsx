@@ -48,6 +48,7 @@ describe('ChannelHeader', () => {
             isCustomStatusEnabled: false,
             isCustomStatusExpired: false,
             isOwnDirectMessage: false,
+            shouldRenderChannelBanner: false,
         };
     }
 

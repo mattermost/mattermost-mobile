@@ -21,6 +21,7 @@ import {useDefaultHeaderHeight} from '@hooks/header';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {goToPlaybookRun, goToPlaybookRuns} from '@playbooks/screens/navigation';
 import {BOTTOM_SHEET_ANDROID_OFFSET} from '@screens/bottom_sheet';
+import ChannelBanner from '@screens/channel/header/channel_banner';
 import {bottomSheet, popTopScreen, showModal} from '@screens/navigation';
 import {isTypeDMorGM} from '@utils/channel';
 import {bottomSheetSnapPoint} from '@utils/helpers';
@@ -51,6 +52,7 @@ type ChannelProps = {
     groupCallsAllowed: boolean;
     isTabletView?: boolean;
     shouldRenderBookmarks: boolean;
+    shouldRenderChannelBanner: boolean;
     hasPlaybookRuns: boolean;
     playbooksActiveRuns: number;
     activeRunId?: string;
@@ -101,6 +103,7 @@ const ChannelHeader = ({
     groupCallsAllowed,
     isTabletView,
     shouldRenderBookmarks,
+    shouldRenderChannelBanner,
     playbooksActiveRuns,
     hasPlaybookRuns,
     activeRunId,
@@ -293,6 +296,8 @@ const ChannelHeader = ({
         return undefined;
     }, [memberCount, customStatus, isCustomStatusExpired, theme.sidebarHeaderTextColor, styles.customStatusContainer, styles.customStatusEmoji, styles.customStatusText, styles.subtitle, isCustomStatusEnabled]);
 
+    const showBookmarkBar = isBookmarksEnabled && hasBookmarks && shouldRenderBookmarks;
+
     return (
         <>
             <NavigationHeader
@@ -309,11 +314,18 @@ const ChannelHeader = ({
             <View style={contextStyle}>
                 <RoundedHeaderContext/>
             </View>
-            {isBookmarksEnabled && hasBookmarks && shouldRenderBookmarks &&
+            {showBookmarkBar &&
             <ChannelHeaderBookmarks
                 canAddBookmarks={canAddBookmarks}
                 channelId={channelId}
             />
+            }
+            {
+                shouldRenderChannelBanner &&
+                <ChannelBanner
+                    channelId={channelId}
+                    isTopItem={!showBookmarkBar}
+                />
             }
         </>
     );
