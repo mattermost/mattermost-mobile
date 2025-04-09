@@ -138,4 +138,6 @@ type RawValue =
   | ScheduledPost
   | UserProfile
   | SlashCommand
+  | CustomProfileAttribute
+  | CustomProfileField
   | Pick<ChannelMembership, 'channel_id' | 'user_id'>

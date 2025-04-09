@@ -18,6 +18,8 @@ export const MM_TABLES = {
         CHANNEL_MEMBERSHIP: 'ChannelMembership',
         CONFIG: 'Config',
         CUSTOM_EMOJI: 'CustomEmoji',
+        CUSTOM_PROFILE_FIELD: 'CustomProfileField',
+        CUSTOM_PROFILE_ATTRIBUTE: 'CustomProfileAttribute',
         DRAFT: 'Draft',
         FILE: 'File',
         GROUP: 'Group',
