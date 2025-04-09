@@ -165,15 +165,22 @@ const LoginOptions = ({
     }, [closeButtonId, componentId, serverUrl]);
 
     useEffect(() => {
+        translateX.value = 0;
+    }, []);
+
+    useEffect(() => {
         const listener = {
             componentDidAppear: () => {
                 translateX.value = 0;
+            },
+            componentDidDisappear: () => {
+                translateX.value = -dimensions.width;
             },
         };
         const unsubscribe = Navigation.events().registerComponentListener(listener, Screens.LOGIN);
 
         return () => unsubscribe.remove();
-    }, [translateX]);
+    }, [dimensions, translateX]);
 
     useNavButtonPressed(closeButtonId || '', componentId, dismiss, []);
     useAndroidHardwareBackHandler(componentId, pop);
