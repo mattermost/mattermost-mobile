@@ -96,6 +96,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flexWrap: 'wrap',
             marginHorizontal: 20,
             marginVertical: 16,
+            gap: 8,
         },
     };
 });
