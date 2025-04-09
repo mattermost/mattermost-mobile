@@ -2191,9 +2191,6 @@ PODS:
   - SDWebImage/Core (5.19.7)
   - SDWebImageSVGCoder (1.7.0):
     - SDWebImage/Core (~> 5.6)
-  - Sentry (8.48.0):
-    - Sentry/Core (= 8.48.0)
-  - Sentry/Core (8.48.0)
   - Sentry/HybridSDK (8.48.0)
   - simdjson (3.9.4)
   - SocketRocket (0.7.1)
@@ -2321,7 +2318,7 @@ DEPENDENCIES:
   - RNShare (from `../node_modules/react-native-share`)
   - RNSVG (from `../node_modules/react-native-svg`)
   - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
-  - Sentry (= 8.48.0)
+  - Sentry/HybridSDK (= 8.48.0)
   - "simdjson (from `../node_modules/@nozbe/simdjson`)"
   - TurboLogIOSNative (from `https://github.com/larkox/react-native-turbo-log-ios-native.git`)
   - "WatermelonDB (from `../node_modules/@nozbe/watermelondb`)"
@@ -2705,6 +2702,6 @@ SPEC CHECKSUMS:
   WatermelonDB: 75e467adbaf2cb2809780fb3eda7ce4964e11778
   Yoga: feb4910aba9742cfedc059e2b2902e22ffe9954a
 
-PODFILE CHECKSUM: 68d46228e97f9466fd4aabe4ac662677dfcbd50c
+PODFILE CHECKSUM: 1ef6fbb0759fabcfdd7b613777362c0d35ec2f8b
 
 COCOAPODS: 1.16.1
