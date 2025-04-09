@@ -55,7 +55,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             gap: 12,
             alignItems: 'center',
             backgroundColor: changeOpacity(theme.errorTextColor, 0.08),
-            padding: 16,
+            paddingHorizontal: 16,
+            height: 50,
         },
         errorText: {
             ...typography('Body', 100, 'SemiBold'),
@@ -138,17 +139,20 @@ const GlobalScheduledPostList: React.FC<Props> = ({
                             item={item}
                             location={location}
                             layoutWidth={layoutWidth}
+                            firstItem={item.id === firstScheduledPostId}
                         />
                     </View>
                 </Tooltip>
             );
         }
+
         return (
             <DraftAndScheduledPostSwipeActions
                 draftType={DRAFT_TYPE_SCHEDULED}
                 item={item}
                 location={location}
                 layoutWidth={layoutWidth}
+                firstItem={item.id === firstScheduledPostId}
             />
         );
     }, [close, firstScheduledPostId, layoutWidth, location, styles.swippeableContainer, styles.tooltipContentStyle, styles.tooltipStyle, tooltipVisible, tutorialWatched]);

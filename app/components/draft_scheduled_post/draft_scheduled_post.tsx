@@ -32,6 +32,7 @@ type Props = {
     layoutWidth: number;
     isPostPriorityEnabled: boolean;
     draftType: DraftType;
+    firstItem?: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -43,6 +44,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             paddingHorizontal: 20,
             paddingVertical: 16,
             width: '100%',
+        },
+        postContainerBorderTop: {
             borderTopColor: changeOpacity(theme.centerChannelColor, 0.16),
             borderTopWidth: 1,
         },
@@ -72,6 +75,7 @@ const DraftAndScheduledPost: React.FC<Props> = ({
     layoutWidth,
     isPostPriorityEnabled,
     draftType,
+    firstItem,
 }) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -116,7 +120,7 @@ const DraftAndScheduledPost: React.FC<Props> = ({
                     <View style={style.errorLine}/>
                 }
                 <View
-                    style={style.postContainer}
+                    style={[style.postContainer, firstItem ? null : style.postContainerBorderTop]}
                 >
                     <DraftAndScheduledPostHeader
                         channel={channel}
