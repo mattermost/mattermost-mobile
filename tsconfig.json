@@ -52,6 +52,7 @@
             "@i18n": ["app/i18n/index"],
             "@init/*": ["app/init/*"],
             "@managers/*": ["app/managers/*"],
+            "@playbooks/*": ["app/products/playbooks/*"],
             "@queries/*": ["app/queries/*"],
             "@screens/*": ["app/screens/*"],
             "@selectors/*": ["app/selectors/*"],

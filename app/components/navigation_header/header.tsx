@@ -17,6 +17,7 @@ export type HeaderRightButton = {
     buttonType?: 'native' | 'opacity' | 'highlight';
     color?: string;
     iconName: string;
+    count?: number;
     onPress: () => void;
     rippleRadius?: number;
     testID?: string;
@@ -114,6 +115,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
                 zIndex: 2,
             },
         }),
+    },
+    rightButtonContainer: {
+        flexDirection: 'row',
+        gap: 6,
     },
     rightIcon: {
         marginLeft: 10,
@@ -244,11 +249,16 @@ const Header = ({
                         style={i > 0 && styles.rightIcon}
                         testID={r.testID}
                     >
-                        <CompassIcon
-                            size={24}
-                            name={r.iconName}
-                            color={r.color || theme.sidebarHeaderTextColor}
-                        />
+                        <View style={styles.rightButtonContainer}>
+                            <CompassIcon
+                                size={24}
+                                name={r.iconName}
+                                color={r.color || theme.sidebarHeaderTextColor}
+                            />
+                            {Boolean(r.count) && (
+                                <Text style={styles.title}>{r.count}</Text>
+                            )}
+                        </View>
                     </TouchableWithFeedback>
                 ))
                 }

@@ -69,8 +69,9 @@ jest.mock('expo-web-browser', () => ({
     })),
 }));
 
-jest.mock('@nozbe/watermelondb/utils/common/randomId/randomId', () => ({}));
+jest.mock('@react-native-camera-roll/camera-roll', () => ({}));
 
+jest.mock('@nozbe/watermelondb/utils/common/randomId/randomId', () => ({}));
 jest.mock('@nozbe/watermelondb/react/withObservables/garbageCollector', () => {
     return {
         __esModule: true,
