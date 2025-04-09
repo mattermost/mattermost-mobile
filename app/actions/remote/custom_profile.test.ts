@@ -8,6 +8,15 @@ import {
     updateCustomProfileAttributes,
 } from './custom_profile';
 
+jest.mock('@database/manager', () => ({
+    getServerDatabaseAndOperator: jest.fn().mockReturnValue({
+        operator: {
+            handleCustomProfileFields: jest.fn(),
+            handleCustomProfileAttributes: jest.fn(),
+        },
+    }),
+}));
+
 beforeAll(() => {
     // @ts-ignore
     NetworkManager.getClient = () => mockClient;
