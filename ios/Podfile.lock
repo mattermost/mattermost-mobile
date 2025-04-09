@@ -1549,7 +1549,7 @@ PODS:
     - React-Core
   - react-native-safe-area-context (5.3.0):
     - React-Core
-  - react-native-video (6.11.0):
+  - react-native-video (6.12.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1562,7 +1562,7 @@ PODS:
     - React-featureflags
     - React-graphics
     - React-ImageManager
-    - react-native-video/Video (= 6.11.0)
+    - react-native-video/Video (= 6.12.0)
     - React-NativeModulesApple
     - React-RCTFabric
     - React-rendererdebug
@@ -1571,7 +1571,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-video/Video (6.11.0):
+  - react-native-video/Video (6.12.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2647,7 +2647,7 @@ SPEC CHECKSUMS:
   react-native-paste-input: e151e40812741262c997fcb859ee806cbfabf617
   react-native-performance: 125a96c145e29918b55b45ce25cbba54f1e24dcd
   react-native-safe-area-context: fdb0a66feac038cb6eb1edafcf2ccee2b5cf0284
-  react-native-video: e94551f96f0c8cb6cc56573ca36338a27b0b0533
+  react-native-video: dc45bc1ddabbcb5dedd6cc6b30ef916d0f7ef33c
   react-native-webrtc: 62659d18a13f6b50ad95c99a9a48cf9872a15815
   React-nativeconfig: 8efdb1ef1e9158c77098a93085438f7e7b463678
   React-NativeModulesApple: cebca2e5320a3d66e123cade23bd90a167ffce5e
