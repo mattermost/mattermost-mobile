@@ -61,6 +61,9 @@ declare class PlaybookRunModel extends Model {
     // Timestamp of the last status update
     last_status_update_at: number;
 
+    // Timestamp of the last run update
+    last_update_at: number;
+
     // Indicates if retrospective is enabled for the run
     retrospective_enabled: boolean;
 

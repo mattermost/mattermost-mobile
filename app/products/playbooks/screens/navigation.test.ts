@@ -21,8 +21,8 @@ describe('Playbooks Navigation', () => {
     describe('goToPlaybookRuns', () => {
         it('should navigate to playbook runs screen with correct parameters', () => {
             const channelId = 'channel-id-1';
-
-            goToPlaybookRuns(mockIntl, channelId);
+            const channelName = 'channel-name-1';
+            goToPlaybookRuns(mockIntl, channelId, channelName);
 
             expect(mockIntl.formatMessage).toHaveBeenCalledWith({
                 id: 'playbooks.playbooks_runs.title',
@@ -32,7 +32,13 @@ describe('Playbooks Navigation', () => {
                 Screens.PLAYBOOKS_RUNS,
                 'Playbook runs',
                 {channelId},
-                {},
+                expect.objectContaining({
+                    topBar: expect.objectContaining({
+                        subtitle: {
+                            text: channelName,
+                        },
+                    }),
+                }),
             );
         });
     });

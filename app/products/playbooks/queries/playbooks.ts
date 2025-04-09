@@ -25,17 +25,24 @@ export function queryPlaybookRunsPerChannel(database: Database, channelId: strin
         id: 'playbook_run_id1',
         playbook_id: 'playbook_id',
         name: 'Playbook Run 1',
-        participant_ids: ['user_id1', 'user_id2'],
+        participant_ids: ['user_id_1', 'user_id_2'],
+        owner_user_id: 'user_id_1',
     } as PlaybookRunModel;
     const model2: PlaybookRunModel = {
         id: 'playbook_run_id2',
         playbook_id: 'playbook_id2',
         name: 'Playbook Run 2',
-        participant_ids: ['user_id1', 'user_id2'],
+        participant_ids: ['user_id_3', 'user_id_4'],
+        owner_user_id: 'user_id_3',
     } as PlaybookRunModel;
     return {
         observe: () => of$([model1, model2]),
         observeCount: () => of$(2),
         fetch: async () => [model1, model2],
     };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function observePlaybookRunProgress(database: Database, runId: string) {
+    return of$(50);
 }

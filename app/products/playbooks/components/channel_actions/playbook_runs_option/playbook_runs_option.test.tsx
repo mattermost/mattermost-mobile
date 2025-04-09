@@ -29,6 +29,7 @@ describe('PlaybookRunsOption', () => {
     const baseProps = {
         channelId: 'channel-id',
         playbooksActiveRuns: 3,
+        channelName: 'channel-name',
     };
 
     beforeEach(() => {
@@ -64,7 +65,7 @@ describe('PlaybookRunsOption', () => {
 
         waitFor(() => {
             expect(dismissBottomSheet).toHaveBeenCalled();
-            expect(goToPlaybookRuns).toHaveBeenCalledWith(expect.anything(), 'channel-id');
+            expect(goToPlaybookRuns).toHaveBeenCalledWith(expect.anything(), 'channel-id', 'channel-name');
         });
     });
 });

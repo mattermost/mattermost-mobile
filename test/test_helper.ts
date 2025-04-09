@@ -897,6 +897,7 @@ class TestHelperSingleton {
             retrospective_enabled: false,
             retrospective: '',
             retrospective_published_at: 0,
+            last_update_at: 0,
             ...overwrite,
         };
     };
