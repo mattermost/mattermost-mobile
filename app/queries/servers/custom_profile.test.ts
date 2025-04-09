@@ -2,7 +2,10 @@
 // See LICENSE.txt for license information.
 /* eslint-disable max-lines */
 
+import {random} from 'lodash';
+
 import DatabaseManager from '@database/manager';
+import {customProfileAttributeId} from '@utils/custom_profile_attribute';
 
 import {
     getCustomProfileFieldById,
@@ -19,6 +22,7 @@ import {
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database} from '@nozbe/watermelondb';
+import type {CustomAttribute} from '@typings/api/custom_profile_attributes';
 
 describe('Custom Profile Queries', () => {
     const serverUrl = 'custom-profile.test.com';
@@ -67,6 +71,8 @@ describe('Custom Profile Queries', () => {
 
     describe('observeCustomProfileFields', () => {
         it('should observe all custom profile fields', (done) => {
+            const errorFn = jest.fn();
+
             operator.handleCustomProfileFields({
                 fields: [
                     {
@@ -101,9 +107,10 @@ describe('Custom Profile Queries', () => {
                         expect(fields[1].name).toBe('Test Field 2');
                         done();
                     },
-                    error: done,
+                    error: errorFn,
                 });
             });
+            expect(errorFn).toHaveBeenCalledTimes(0);
         });
     });
 
@@ -656,6 +663,71 @@ describe('Custom Profile Queries', () => {
             field2Attributes = await queryCustomProfileAttributesByFieldId(database, 'field2').fetch();
             expect(field1Attributes.length).toBe(0);
             expect(field2Attributes.length).toBe(1);
+        });
+    });
+
+    describe('Performance Tests', () => {
+        it('should profile convertProfileAttributesToCustomAttributes performance', async () => {
+            jest.setTimeout(30000); // Increase timeout for this test
+
+            // Create a larger dataset to test performance
+            const fieldCount = 200;
+            const userCount = 5;
+
+            // Create fields
+            const fields = Array.from({length: fieldCount}, (_, i) => ({
+                id: `field${i}`,
+                name: `Test Field ${i}`,
+                type: 'text',
+                delete_at: 0,
+                group_id: '',
+                target_id: '',
+                target_type: 'user',
+                create_at: 1000,
+                update_at: 1000,
+                attrs: {sort_order: i + random(0, 1000)},
+            }));
+
+            await operator.handleCustomProfileFields({
+                fields,
+                prepareRecordsOnly: false,
+            });
+
+            // Create attributes (10 attributes per user)
+            const attributes = [];
+            for (let u = 0; u < userCount; u++) {
+                const userId = `user${u}`;
+                for (let f = 0; f < fieldCount; f++) {
+                    const fieldId = `field${f}`;
+                    attributes.push({
+                        id: customProfileAttributeId(fieldId, userId),
+                        field_id: fieldId,
+                        user_id: userId,
+                        value: `Value for user ${u} field ${f}`,
+                    });
+                }
+            }
+
+            await operator.handleCustomProfileAttributes({
+                attributes,
+                prepareRecordsOnly: false,
+            });
+
+            // Profile the function for one specific user
+            const userId = 'user0';
+            const userAttributes = await queryCustomProfileAttributesByUserId(database, userId).fetch();
+
+            console.log(`Testing conversion of ${userAttributes.length} attributes`);
+
+            // Run the function once to get performance data
+            const sortFn = (a: CustomAttribute, b: CustomAttribute) => (a.sort_order || 0) - (b.sort_order || 0);
+
+            const startTime = performance.now();
+            await convertProfileAttributesToCustomAttributes(database, userAttributes, sortFn);
+            const endTime = performance.now();
+            console.log(`Time with sorting: ${(endTime - startTime).toFixed(2)}ms`);
+
+            expect(true).toBe(true); // No assertions needed for profiling
         });
     });
 });

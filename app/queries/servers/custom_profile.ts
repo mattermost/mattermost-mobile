@@ -6,6 +6,7 @@ import {of as of$, type Observable} from 'rxjs';
 import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import {MM_TABLES} from '@constants/database';
+import {customProfileAttributeId} from '@utils/custom_profile_attribute';
 
 import type {CustomAttribute} from '@typings/api/custom_profile_attributes';
 import type CustomProfileAttributeModel from 'app/database/models/server/custom_profile_attribute';
@@ -49,8 +50,7 @@ export const observeCustomProfileFields = (database: Database) => {
 export const getCustomProfileAttribute = async (database: Database, fieldId: string, userId: string) => {
     try {
         const attributeRecord = await database.get<CustomProfileAttributeModel>(CUSTOM_PROFILE_ATTRIBUTE).query(
-            Q.where('field_id', fieldId),
-            Q.where('user_id', userId),
+            Q.where('id', customProfileAttributeId(fieldId, userId)),
             Q.take(1),
         ).fetch();
         return attributeRecord[0];
@@ -68,8 +68,7 @@ export const getCustomProfileAttribute = async (database: Database, fieldId: str
  */
 export const observeCustomProfileAttribute = (database: Database, fieldId: string, userId: string) => {
     return database.get<CustomProfileAttributeModel>(CUSTOM_PROFILE_ATTRIBUTE).query(
-        Q.where('field_id', fieldId),
-        Q.where('user_id', userId),
+        Q.where('id', customProfileAttributeId(fieldId, userId)),
         Q.take(1),
     ).observe().pipe(
         switchMap((result) => (result.length ? result[0].observe() : of$(undefined))),

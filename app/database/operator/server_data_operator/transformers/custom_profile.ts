@@ -3,6 +3,7 @@
 
 import {MM_TABLES, OperationType} from '@constants/database';
 import {prepareBaseRecord} from '@database/operator/server_data_operator/transformers/index';
+import {customProfileAttributeId} from '@utils/custom_profile_attribute';
 
 import type {CustomProfileAttributeModel, CustomProfileFieldModel} from '@database/models/server';
 import type {CustomProfileField, CustomProfileAttribute} from '@typings/api/custom_profile_attributes';
@@ -58,7 +59,7 @@ export const transformCustomProfileAttributeRecord = ({action, database, value}:
     const raw = value.raw as unknown as CustomProfileAttribute;
 
     const fieldsMapper = (attribute: CustomProfileAttributeModel) => {
-        attribute._raw.id = `${raw.field_id}-${raw.user_id}`;
+        attribute._raw.id = customProfileAttributeId(raw.field_id, raw.user_id);
         attribute.fieldId = raw.field_id;
         attribute.userId = raw.user_id;
         attribute.value = raw.value;
