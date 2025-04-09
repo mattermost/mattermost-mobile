@@ -8,16 +8,20 @@ import {StyleSheet, View} from 'react-native';
 
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useTabs, {type TabDefinition} from '@hooks/use_tabs';
+import {popTopScreen} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import EmptyState from './empty_state';
-import PlaybookCard from './playbook_card';
+import PlaybookCard, {CARD_HEIGHT} from './playbook_card';
 
 import type PlaybookRunModel from '@typings/database/models/servers/playbook_run_model';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     allRuns: PlaybookRunModel[];
+    componentId: AvailableScreens;
 };
 
 type Tabs = 'in-progress' | 'finished';
@@ -60,9 +64,16 @@ const tabs: Array<TabDefinition<Tabs>> = [
 
 const PlaybookRuns = ({
     allRuns,
+    componentId,
 }: Props) => {
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
+
+    const exit = useCallback(() => {
+        popTopScreen(componentId);
+    }, [componentId]);
+
+    useAndroidHardwareBackHandler(componentId, exit);
 
     const [inProgressRuns, finishedRuns] = useMemo(() => {
         const inProgress: PlaybookRunModel[] = [];
@@ -102,6 +113,7 @@ const PlaybookRuns = ({
                 renderItem={renderItem}
                 contentContainerStyle={styles.container}
                 ItemSeparatorComponent={ItemSeparator}
+                estimatedItemSize={CARD_HEIGHT}
             />
         );
     }

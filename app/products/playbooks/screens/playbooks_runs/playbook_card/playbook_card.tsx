@@ -6,6 +6,7 @@ import {useIntl} from 'react-intl';
 import {Text, TouchableOpacity, View, useWindowDimensions} from 'react-native';
 
 import BaseChip from '@components/chips/base_chip';
+import {CHIP_HEIGHT} from '@components/chips/constants';
 import UserChip from '@components/chips/user_chip';
 import CompassIcon from '@components/compass_icon';
 import FriendlyDate from '@components/friendly_date';
@@ -23,10 +24,16 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 
 // import {openUserProfileModal} from '@screens/navigation';
 
+const VERTICAL_PADDING = 16;
+const TITLE_HEIGHT = 24; // From typography at 200 size
+const GAP = 8;
+const GAPS = GAP * 2;
+export const ITEM_HEIGHT = (VERTICAL_PADDING * 2) + TITLE_HEIGHT + GAPS + (CHIP_HEIGHT * 2);
+
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => ({
     cardContainer: {
         margin: 0,
-        paddingVertical: 16,
+        paddingVertical: VERTICAL_PADDING,
         paddingHorizontal: 20,
         borderRadius: 4,
         backgroundColor: theme.centerChannelBg,
@@ -38,7 +45,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => ({
         shadowOpacity: 0.08,
         shadowRadius: 3,
         elevation: 2,
-        gap: 8,
+        gap: GAP,
     },
     cardTitle: {
         ...typography('Body', 200, 'SemiBold'),

@@ -49,7 +49,10 @@ describe('PlaybookRuns', () => {
 
     it('shows empty state when no runs in selected tab', () => {
         const {getByTestId} = renderWithIntl(
-            <PlaybookRuns allRuns={[]}/>,
+            <PlaybookRuns
+                allRuns={[]}
+                componentId={'PlaybookRuns'}
+            />,
         );
 
         const emptyState = getByTestId('empty-state');
@@ -61,6 +64,7 @@ describe('PlaybookRuns', () => {
         const {getByText, queryByTestId} = renderWithIntl(
             <PlaybookRuns
                 allRuns={[inProgressRun, finishedRun]}
+                componentId={'PlaybookRuns'}
             />,
         );
 
@@ -90,7 +94,10 @@ describe('PlaybookRuns', () => {
         ];
 
         const {getByText, getByTestId} = renderWithIntl(
-            <PlaybookRuns allRuns={runs}/>,
+            <PlaybookRuns
+                allRuns={runs}
+                componentId={'PlaybookRuns'}
+            />,
         );
 
         let list = getByTestId('flash-list');
