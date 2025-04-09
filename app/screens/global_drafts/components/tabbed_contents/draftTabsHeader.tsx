@@ -57,6 +57,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             alignSelf: 'center',
             left: 4,
             top: 1,
+            borderWidth: 0,
+            paddingTop: 2,
         },
         activeBadgeStyles: {
             color: theme.buttonBg,
