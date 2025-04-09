@@ -55,7 +55,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             gap: 12,
             alignItems: 'center',
             backgroundColor: changeOpacity(theme.errorTextColor, 0.08),
-            padding: 16,
+            paddingHorizontal: 16,
+            height: 52,
         },
         errorText: {
             ...typography('Body', 100, 'SemiBold'),
