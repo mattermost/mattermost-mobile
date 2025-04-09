@@ -1890,7 +1890,7 @@ PODS:
     - React-Core
   - RNFileViewer (2.1.5):
     - React-Core
-  - RNFlashList (1.7.6):
+  - RNFlashList (1.8.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2682,7 +2682,7 @@ SPEC CHECKSUMS:
   RNCClipboard: e1d17c9d093d8129ef50b39b63a17a0e8ccd0ade
   RNDateTimePicker: 29264364ea7b8cc0fb355b3843cf276a4ff78966
   RNFileViewer: 4b5d83358214347e4ab2d4ca8d5c1c90d869e251
-  RNFlashList: 38e63c7f8e9ce22f765ce9b381ea8f7ced3cb88c
+  RNFlashList: 44865f55330fd19c86a16d5cdec3b968914d095f
   RNGestureHandler: c5753d613f9a9ae4546e2c932f759db7c5f158d3
   RNKeychain: 6aa400162221d6c12e6b6a34722a85136e686f2b
   RNLocalize: 15463c4d79c7da45230064b4adcf5e9bb984667e
