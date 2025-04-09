@@ -5,7 +5,7 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {Platform, useWindowDimensions, View, type LayoutChangeEvent} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {Navigation} from 'react-native-navigation';
-import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import Animated, {useAnimatedStyle, useReducedMotion, useSharedValue, withTiming} from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import FormattedText from '@components/formatted_text';
@@ -86,7 +86,8 @@ const LoginOptions = ({
     const dimensions = useWindowDimensions();
     const defaultHeaderHeight = useDefaultHeaderHeight();
     const isTablet = useIsTablet();
-    const translateX = useSharedValue(dimensions.width);
+    const reducedMotion = useReducedMotion();
+    const translateX = useSharedValue(reducedMotion ? 0 : dimensions.width);
     const [contentFillScreen, setContentFillScreen] = useState(false);
     const numberSSOs = useMemo(() => {
         return Object.values(ssoOptions).filter((v) => v.enabled).length;
@@ -164,22 +165,15 @@ const LoginOptions = ({
     }, [closeButtonId, componentId, serverUrl]);
 
     useEffect(() => {
-        translateX.value = 0;
-    }, []);
-
-    useEffect(() => {
         const listener = {
             componentDidAppear: () => {
                 translateX.value = 0;
-            },
-            componentDidDisappear: () => {
-                translateX.value = -dimensions.width;
             },
         };
         const unsubscribe = Navigation.events().registerComponentListener(listener, Screens.LOGIN);
 
         return () => unsubscribe.remove();
-    }, [dimensions, translateX]);
+    }, [translateX]);
 
     useNavButtonPressed(closeButtonId || '', componentId, dismiss, []);
     useAndroidHardwareBackHandler(componentId, pop);

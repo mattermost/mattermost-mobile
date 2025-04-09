@@ -7,6 +7,7 @@ import {IntlProvider} from 'react-intl';
 import {Platform, type StyleProp, type ViewStyle} from 'react-native';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {Navigation} from 'react-native-navigation';
+import {ReducedMotionConfig, ReduceMotion, useReducedMotion} from 'react-native-reanimated';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 
 import {Screens} from '@constants';
@@ -52,6 +53,18 @@ const withManagedConfig = (Screen: React.ComponentType) => {
             <EMMProvider>
                 <Screen {...props}/>
             </EMMProvider>
+        );
+    };
+};
+
+const withReducedMotion = (Screen: React.ComponentType) => {
+    return function ReducedMotionFn(props: any) {
+        const reducedMotion = useReducedMotion();
+        return (
+            <>
+                <ReducedMotionConfig mode={reducedMotion ? ReduceMotion.Always : ReduceMotion.Never}/>
+                <Screen {...props}/>
+            </>
         );
     };
 };
@@ -173,7 +186,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             screen = withServerDatabase(require('@screens/latex').default);
             break;
         case Screens.LOGIN:
-            screen = withIntl(require('@screens/login').default);
+            screen = withReducedMotion(withIntl(require('@screens/login').default));
             break;
         case Screens.MANAGE_CHANNEL_MEMBERS:
             screen = withServerDatabase(require('@screens/manage_channel_members').default);
@@ -304,6 +317,6 @@ export function registerScreens() {
     const serverScreen = require('@screens/server').default;
     const onboardingScreen = require('@screens/onboarding').default;
     Navigation.registerComponent(Screens.ONBOARDING, () => withGestures(withIntl(withManagedConfig(onboardingScreen)), undefined));
-    Navigation.registerComponent(Screens.SERVER, () => withSafeAreaInsets(withGestures(withIntl(withManagedConfig(serverScreen)), undefined)));
+    Navigation.registerComponent(Screens.SERVER, () => withReducedMotion(withSafeAreaInsets(withGestures(withIntl(withManagedConfig(serverScreen)), undefined))));
     Navigation.registerComponent(Screens.HOME, () => withGestures(withSafeAreaInsets(withServerDatabase(withManagedConfig(homeScreen))), undefined));
 }
