@@ -664,6 +664,63 @@ describe('Custom Profile Queries', () => {
             expect(field1Attributes.length).toBe(0);
             expect(field2Attributes.length).toBe(1);
         });
+
+        it('should delete attributes with custom batch size', async () => {
+            const fieldId = 'field3';
+            const attributeCount = 5;
+
+            // Create a field
+            await operator.handleCustomProfileFields({
+                fields: [
+                    {
+                        id: fieldId,
+                        name: 'Batch Test Field',
+                        type: 'text',
+                        delete_at: 0,
+                        group_id: '',
+                        target_id: '',
+                        target_type: 'user',
+                        create_at: 1000,
+                        update_at: 1000,
+                    },
+                ],
+                prepareRecordsOnly: false,
+            });
+
+            // Create multiple attributes for testing batch deletion
+            const attributes = Array.from({length: attributeCount}, (_, i) => ({
+                id: `${fieldId}_user${i}`,
+                field_id: fieldId,
+                user_id: `user${i}`,
+                value: `Value ${i}`,
+            }));
+
+            await operator.handleCustomProfileAttributes({
+                attributes,
+                prepareRecordsOnly: false,
+            });
+
+            // Verify initial state
+            let fieldAttributes = await queryCustomProfileAttributesByFieldId(database, fieldId).fetch();
+            expect(fieldAttributes.length).toBe(attributeCount);
+
+            // Delete with custom batch size (smaller than total count)
+            await deleteCustomProfileAttributesByFieldId(database, fieldId, 2);
+
+            // Verify all attributes were deleted despite the small batch size
+            fieldAttributes = await queryCustomProfileAttributesByFieldId(database, fieldId).fetch();
+            expect(fieldAttributes.length).toBe(0);
+        });
+
+        it('should handle case when no attributes exist', async () => {
+            const nonExistentFieldId = 'nonexistent_field';
+
+            // Try to delete attributes for a field that doesn't exist
+            await deleteCustomProfileAttributesByFieldId(database, nonExistentFieldId);
+
+            // Function should complete without errors
+            expect(true).toBe(true);
+        });
     });
 
     describe('Performance Tests', () => {

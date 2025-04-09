@@ -161,16 +161,32 @@ export const queryCustomProfileAttributesByFieldId = (database: Database, fieldI
 };
 
 /**
- * Query to delete custom profile attributes by field ID
+ * Delete custom profile attributes by field ID with batching support
  * @param database - The database instance
  * @param fieldId - The field ID
+ * @param batchSize - Number of records to delete in each batch (defaults to 100)
  * @returns Promise that resolves when the deletion is complete
  */
-export const deleteCustomProfileAttributesByFieldId = async (database: Database, fieldId: string) => {
-    const attributes = await queryCustomProfileAttributesByFieldId(database, fieldId);
+export const deleteCustomProfileAttributesByFieldId = async (database: Database, fieldId: string, batchSize = 100) => {
+    const attributes = await queryCustomProfileAttributesByFieldId(database, fieldId).fetch();
 
-    return database.write(async () => {
-        await Promise.all(attributes.map((attribute) => attribute.destroyPermanently()));
-    });
+    if (!attributes.length) {
+        return;
+    }
+
+    // Process attributes in batches to avoid performance issues with large datasets
+    const promises = [];
+    for (let i = 0; i < attributes.length; i += batchSize) {
+        const batch = attributes.slice(i, i + batchSize);
+        const preparedModels = batch.map((attribute) => attribute.prepareDestroyPermanently());
+
+        const batchPromise = database.write(async () => {
+            await database.batch(...preparedModels);
+        }, `deleteCustomProfileAttributesByFieldId:${fieldId}:batch:${i}`);
+
+        promises.push(batchPromise);
+    }
+
+    await Promise.all(promises);
 };
 
