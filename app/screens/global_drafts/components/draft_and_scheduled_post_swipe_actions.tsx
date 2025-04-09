@@ -29,6 +29,7 @@ type Props = {
     item: DraftModel | ScheduledPostModel;
     location: string;
     layoutWidth: number;
+    firstItem?: boolean;
 }
 
 const getStyles = makeStyleSheetFromTheme((theme) => {
@@ -115,6 +116,7 @@ const DraftAndScheduledPostSwipeActions: React.FC<Props> = ({
     item,
     location,
     layoutWidth,
+    firstItem,
 }) => {
     const swipeable = useRef<SwipeableMethods>(null);
     const intl = useIntl();
@@ -176,6 +178,7 @@ const DraftAndScheduledPostSwipeActions: React.FC<Props> = ({
                     post={item}
                     location={location}
                     layoutWidth={layoutWidth}
+                    firstItem={firstItem}
                 />
             </ReanimatedSwipeable>
         </GestureHandlerRootView>
