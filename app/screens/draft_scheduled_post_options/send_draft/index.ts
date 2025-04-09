@@ -44,20 +44,18 @@ const enhanced = withObservables(['channelId', 'rootId'], (ownProps: WithDatabas
 
     const deactivatedChannel = combineLatest([currentUser, channel]).pipe(
         switchMap(([u, c]) => {
-            if (!u || !c) {
-                return of$(false);
+            if (!u || !c || c.type !== General.DM_CHANNEL) {
+                return of$(null);
             }
-            if (c.type !== General.DM_CHANNEL) {
-                return of$(false);
-            }
+
             const teammateId = getUserIdFromChannelName(u.id, c.name);
-            if (teammateId) {
-                return observeUser(database, teammateId).pipe(
-                    switchMap((u2) => (u2 ? of$(Boolean(u2.deleteAt)) : of$(false))), // eslint-disable-line max-nested-callbacks
-                );
+            if (!teammateId) {
+                return of$(null);
             }
-            return of$(true);
+
+            return observeUser(database, teammateId);
         }),
+        switchMap((u2) => of$(Boolean(u2?.deleteAt))),
     );
 
     return {

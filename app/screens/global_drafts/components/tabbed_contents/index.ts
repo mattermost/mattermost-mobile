@@ -14,7 +14,7 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const currentTeamId = observeCurrentTeamId(database);
-    const draftsCount = currentTeamId.pipe(switchMap((teamId) => observeDraftCount(database, teamId))); // Observe draft count
+    const draftsCount = currentTeamId.pipe(switchMap((teamId) => observeDraftCount(database, teamId)));
     const scheduledPostCount = currentTeamId.pipe(switchMap((teamId) => observeScheduledPostCount(database, teamId, true)));
     return {
         draftsCount,
