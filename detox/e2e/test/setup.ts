@@ -19,7 +19,6 @@ beforeAll(async () => {
             newInstance: true,
             delete: true,
             permissions: {
-
                 // Set all permissions at once
                 notifications: 'YES',
                 camera: 'NO',

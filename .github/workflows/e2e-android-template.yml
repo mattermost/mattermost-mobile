@@ -224,8 +224,6 @@ jobs:
           chmod +x ./create_android_emulator.sh
           ./create_android_emulator.sh ${{ env.SDK_VERSION }} ${{ env.AVD_NAME }} ${{ matrix.specs }}
         continue-on-error: true # We want to run all the tests
-        env:
-          RETRY_COUNT: 2
 
       - name: Upload Android Test Report
         if: always()
