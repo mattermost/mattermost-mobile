@@ -26,14 +26,17 @@ const {
   * @param {RecordPair} operator.value
   * @returns {Promise<GroupModel>}
   */
-export const transformGroupRecord = ({action, database, value}: TransformerArgs): Promise<GroupModel> => {
-    const raw = value.raw as Group;
-    const record = value.record as GroupModel;
+export const transformGroupRecord = ({action, database, value}: TransformerArgs<GroupModel, Group>): Promise<GroupModel> => {
+    const raw = value.raw;
+    const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
+    if (!isCreateAction && !record) {
+        throw new Error('Record not found for non create action');
+    }
 
     // id of group comes from server response
     const fieldsMapper = (group: GroupModel) => {
-        group._raw.id = isCreateAction ? (raw?.id ?? group.id) : record.id;
+        group._raw.id = isCreateAction ? (raw?.id ?? group.id) : record!.id;
         group.name = raw.name;
         group.displayName = raw.display_name;
         group.source = raw.source;
@@ -47,7 +50,7 @@ export const transformGroupRecord = ({action, database, value}: TransformerArgs)
         tableName: GROUP,
         value,
         fieldsMapper,
-    }) as Promise<GroupModel>;
+    });
 };
 
 /**
@@ -57,8 +60,8 @@ export const transformGroupRecord = ({action, database, value}: TransformerArgs)
    * @param {RecordPair} operator.value
    * @returns {Promise<GroupChannelModel>}
    */
-export const transformGroupChannelRecord = ({action, database, value}: TransformerArgs): Promise<GroupChannelModel> => {
-    const raw = value.raw as GroupChannel;
+export const transformGroupChannelRecord = ({action, database, value}: TransformerArgs<GroupChannelModel, GroupChannel>): Promise<GroupChannelModel> => {
+    const raw = value.raw;
 
     // id of group comes from server response
     const fieldsMapper = (model: GroupChannelModel) => {
@@ -73,7 +76,7 @@ export const transformGroupChannelRecord = ({action, database, value}: Transform
         tableName: GROUP_CHANNEL,
         value,
         fieldsMapper,
-    }) as Promise<GroupChannelModel>;
+    });
 };
 
 /**
@@ -83,8 +86,8 @@ export const transformGroupChannelRecord = ({action, database, value}: Transform
    * @param {RecordPair} operator.value
    * @returns {Promise<GroupMembershipModel>}
    */
-export const transformGroupMembershipRecord = ({action, database, value}: TransformerArgs): Promise<GroupMembershipModel> => {
-    const raw = value.raw as GroupMembership;
+export const transformGroupMembershipRecord = ({action, database, value}: TransformerArgs<GroupMembershipModel, GroupMembership>): Promise<GroupMembershipModel> => {
+    const raw = value.raw;
 
     // id of group comes from server response
     const fieldsMapper = (model: GroupMembershipModel) => {
@@ -99,7 +102,7 @@ export const transformGroupMembershipRecord = ({action, database, value}: Transf
         tableName: GROUP_MEMBERSHIP,
         value,
         fieldsMapper,
-    }) as Promise<GroupMembershipModel>;
+    });
 };
 
 /**
@@ -109,8 +112,8 @@ export const transformGroupMembershipRecord = ({action, database, value}: Transf
    * @param {RecordPair} operator.value
    * @returns {Promise<GroupTeamModel>}
    */
-export const transformGroupTeamRecord = ({action, database, value}: TransformerArgs): Promise<GroupTeamModel> => {
-    const raw = value.raw as GroupTeam;
+export const transformGroupTeamRecord = ({action, database, value}: TransformerArgs<GroupTeamModel, GroupTeam>): Promise<GroupTeamModel> => {
+    const raw = value.raw;
 
     // id of group comes from server response
     const fieldsMapper = (model: GroupTeamModel) => {
@@ -125,5 +128,5 @@ export const transformGroupTeamRecord = ({action, database, value}: TransformerA
         tableName: GROUP_TEAM,
         value,
         fieldsMapper,
-    }) as Promise<GroupTeamModel>;
+    });
 };

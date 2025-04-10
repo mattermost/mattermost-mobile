@@ -5,10 +5,9 @@ import React from 'react';
 
 import {fetchCustomAttributes} from '@actions/remote/user';
 import {renderWithIntlAndTheme, screen, waitFor} from '@test/intl-test-helper';
+import TestHelper from '@test/test_helper';
 
 import UserInfo from './user_info';
-
-import type UserModel from '@database/models/server/user';
 
 const localhost = 'http://localhost:8065';
 
@@ -23,18 +22,18 @@ jest.mock('@context/server', () => ({
 describe('screens/user_profile/UserInfo', () => {
     beforeEach(() => {
         // Reset mock before each test
-        (fetchCustomAttributes as jest.Mock).mockReset();
+        jest.mocked(fetchCustomAttributes).mockReset();
     });
 
     const baseProps = {
-        user: {
+        user: TestHelper.fakeUserModel({
             id: 'user1',
             firstName: 'First',
             lastName: 'Last',
             username: 'username',
             nickname: 'nick',
             position: 'Developer',
-        } as UserModel,
+        }),
         isMyUser: false,
         showCustomStatus: false,
         showLocalTime: true,
@@ -65,7 +64,7 @@ describe('screens/user_profile/UserInfo', () => {
     };
 
     test('should display custom attributes in sort order', async () => {
-        (fetchCustomAttributes as jest.Mock).mockResolvedValue({attributes: baseCustomAttributes});
+        jest.mocked(fetchCustomAttributes).mockResolvedValue({attributes: baseCustomAttributes});
 
         renderWithIntlAndTheme(
             <UserInfo {...baseProps}/>,
@@ -136,7 +135,7 @@ describe('screens/user_profile/UserInfo', () => {
                 sort_order: 2,
             },
         };
-        (fetchCustomAttributes as jest.Mock).mockResolvedValue({attributes: withEmptyCustomAttributes});
+        jest.mocked(fetchCustomAttributes).mockResolvedValue({attributes: withEmptyCustomAttributes});
 
         renderWithIntlAndTheme(
             <UserInfo {...baseProps}/>,

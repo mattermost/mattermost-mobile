@@ -82,6 +82,7 @@ export const THREAD_OPTIONS = 'ThreadOptions';
 export const USER_PROFILE = 'UserProfile';
 export const CHANNEL_BOOKMARK = 'ChannelBookmarkAddOrEdit';
 export const GENERIC_OVERLAY = 'GenericOverlay';
+export const CHANNEL_BANNER = 'ChannelBanner';
 
 export default {
     ABOUT,
@@ -164,6 +165,7 @@ export default {
     THREAD_OPTIONS,
     USER_PROFILE,
     GENERIC_OVERLAY,
+    CHANNEL_BANNER,
 } as const;
 
 export const MODAL_SCREENS_WITHOUT_BACK = new Set<string>([

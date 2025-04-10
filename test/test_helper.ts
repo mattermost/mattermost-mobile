@@ -19,7 +19,25 @@ import DatabaseManager from '@database/manager';
 import {prepareCommonSystemValues} from '@queries/servers/system';
 
 import type {APIClientInterface} from '@mattermost/react-native-network-client';
-import type {Model, Query} from '@nozbe/watermelondb';
+import type {Model, Query, Relation} from '@nozbe/watermelondb';
+import type CategoryChannelModel from '@typings/database/models/servers/category_channel';
+import type ChannelModel from '@typings/database/models/servers/channel';
+import type ChannelBookmarkModel from '@typings/database/models/servers/channel_bookmark';
+import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
+import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
+import type DraftModel from '@typings/database/models/servers/draft';
+import type FileModel from '@typings/database/models/servers/file';
+import type GroupModel from '@typings/database/models/servers/group';
+import type MyChannelModel from '@typings/database/models/servers/my_channel';
+import type MyChannelSettingsModel from '@typings/database/models/servers/my_channel_settings';
+import type MyTeamModel from '@typings/database/models/servers/my_team';
+import type PostModel from '@typings/database/models/servers/post';
+import type PostsInChannelModel from '@typings/database/models/servers/posts_in_channel';
+import type PreferenceModel from '@typings/database/models/servers/preference';
+import type RoleModel from '@typings/database/models/servers/role';
+import type TeamModel from '@typings/database/models/servers/team';
+import type ThreadModel from '@typings/database/models/servers/thread';
+import type UserModel from '@typings/database/models/servers/user';
 
 const DEFAULT_LOCALE = 'en';
 
@@ -247,6 +265,19 @@ class TestHelperSingleton {
         };
     };
 
+    fakeChannelInfo = (overwrite: Partial<ChannelInfo>): ChannelInfo => {
+        return {
+            id: this.generateId(),
+            guest_count: 0,
+            header: '',
+            member_count: 0,
+            purpose: '',
+            pinned_post_count: 0,
+            files_count: 0,
+            ...overwrite,
+        };
+    };
+
     fakeChannelWithId = (teamId: string): Channel => {
         return {
             ...this.fakeChannel({team_id: teamId}),
@@ -319,7 +350,7 @@ class TestHelperSingleton {
         return 'success' + this.generateId() + '@simulator.amazonses.com';
     };
 
-    fakePost = (overwrite: Partial<Post>): Post => {
+    fakePost = (overwrite?: Partial<Post>): Post => {
         const time = Date.now();
 
         return {
@@ -424,7 +455,425 @@ class TestHelperSingleton {
         };
     };
 
-    fakeUser = (): UserProfile => {
+    fakeQuery = <T extends Model>(returnValue: T[]): Query<T> => {
+        return {
+            fetch: jest.fn().mockImplementation(async () => returnValue),
+            observe: jest.fn().mockImplementation(() => of$(returnValue)),
+        } as unknown as Query<T>;
+    };
+
+    fakeRelation = <T extends Model>(returnValue?: T): Relation<T> => {
+        return {
+            fetch: jest.fn().mockImplementation(async () => returnValue!),
+            _model: {} as T,
+            _columnName: '',
+            _relationTableName: '',
+            _isImmutable: false,
+            _cachedObservable: of$(returnValue!),
+            id: this.generateId(),
+            then: jest.fn(),
+            set: jest.fn(),
+            observe: jest.fn().mockImplementation(() => of$(returnValue!)),
+        };
+    };
+
+    fakeModel = () => {
+        return {
+            id: this.generateId(),
+            _raw: {} as any,
+            collection: {} as any,
+            collections: {} as any,
+            database: {} as any,
+            db: {} as any,
+            asModel: {} as any,
+            _isEditing: false,
+            _preparedState: 'create' as const,
+            syncStatus: 'synced' as const,
+            table: '',
+            _subscribers: [],
+            _getChanges: jest.fn(),
+            update: jest.fn(),
+            prepareUpdate: jest.fn(),
+            cancelPrepareUpdate: jest.fn(),
+            prepareMarkAsDeleted: jest.fn(),
+            prepareDestroyPermanently: jest.fn(),
+            markAsDeleted: jest.fn(),
+            destroyPermanently: jest.fn(),
+            experimentalMarkAsDeleted: jest.fn(),
+            experimentalDestroyPermanently: jest.fn(),
+            observe: jest.fn(),
+            batch: jest.fn(),
+            callWriter: jest.fn(),
+            callReader: jest.fn(),
+            subAction: jest.fn(),
+            experimentalSubscribe: jest.fn(),
+            _notifyChanged: jest.fn(),
+            _notifyDestroyed: jest.fn(),
+            _getRaw: jest.fn(),
+            _setRaw: jest.fn(),
+            _dangerouslySetRawWithoutMarkingColumnChange: jest.fn(),
+            __ensureCanSetRaw: jest.fn(),
+            __ensureNotDisposable: jest.fn(),
+        };
+    };
+
+    fakeUserModel = (overwrite?: Partial<UserModel>): UserModel => {
+        const modelBase = this.fakeModel();
+        return {
+            ...modelBase,
+            email: this.fakeEmail(),
+            locale: DEFAULT_LOCALE,
+            username: this.generateId(),
+            firstName: this.generateId(),
+            lastName: this.generateId(),
+            deleteAt: 0,
+            roles: 'system_user',
+            authService: '',
+            id: this.generateId(),
+            nickname: '',
+            notifyProps: this.fakeUserNotifyProps(),
+            position: '',
+            updateAt: 0,
+            isBot: false,
+            isGuest: false,
+            lastPictureUpdate: 0,
+            status: 'offline',
+            remoteId: null,
+            props: {},
+            timezone: {automaticTimezone: 'UTC', manualTimezone: '', useAutomaticTimezone: true},
+            mentionKeys: [],
+            userMentionKeys: [],
+            highlightKeys: [],
+            termsOfServiceId: '',
+            termsOfServiceCreateAt: 0,
+
+            channelsCreated: this.fakeQuery([]),
+            channels: this.fakeQuery([]),
+            customProfileAttributes: this.fakeQuery([]),
+            posts: this.fakeQuery([]),
+            preferences: this.fakeQuery([]),
+            reactions: this.fakeQuery([]),
+            teams: this.fakeQuery([]),
+            threadParticipations: this.fakeQuery([]),
+
+            prepareStatus: () => null,
+
+            ...overwrite,
+        };
+    };
+
+    fakeChannelModel = (overwrite?: Partial<ChannelModel>): ChannelModel => {
+        return {
+            ...this.fakeModel(),
+            createAt: 0,
+            creatorId: this.generateId(),
+            deleteAt: 0,
+            updateAt: 0,
+            displayName: this.generateId(),
+            isGroupConstrained: false,
+            name: this.generateId(),
+            shared: false,
+            teamId: this.generateId(),
+            type: 'O' as const,
+            members: this.fakeQuery([]),
+            drafts: this.fakeQuery([]),
+            bookmarks: this.fakeQuery([]),
+            posts: this.fakeQuery([]),
+            postsInChannel: this.fakeQuery([]),
+            team: this.fakeRelation(),
+            creator: this.fakeRelation(),
+            info: this.fakeRelation(),
+            membership: this.fakeRelation(),
+            categoryChannel: this.fakeRelation(),
+            toApi: jest.fn(),
+            ...overwrite,
+        };
+    };
+
+    fakeChannelMembershipModel = (overwrite?: Partial<ChannelMembershipModel>): ChannelMembershipModel => {
+        return {
+            ...this.fakeModel(),
+            channelId: this.generateId(),
+            userId: this.generateId(),
+            schemeAdmin: false,
+            memberChannel: this.fakeRelation(),
+            memberUser: this.fakeRelation(),
+            getAllChannelsForUser: this.fakeQuery([]),
+            getAllUsersInChannel: this.fakeQuery([]),
+            ...overwrite,
+        };
+    };
+    fakeMyChannelMembershipModel = (overwrite?: Partial<MyChannelModel>): MyChannelModel => {
+        return {
+            ...this.fakeModel(),
+            channel: this.fakeRelation(),
+            lastPostAt: 0,
+            lastFetchedAt: 0,
+            lastViewedAt: 0,
+            manuallyUnread: false,
+            mentionsCount: 0,
+            messageCount: 0,
+            isUnread: false,
+            roles: '',
+            viewedAt: 0,
+            settings: this.fakeRelation(),
+            resetPreparedState: jest.fn(),
+            ...overwrite,
+        };
+    };
+
+    fakeCategoryChannelModel = (overwrite?: Partial<CategoryChannelModel>): CategoryChannelModel => {
+        return {
+            ...this.fakeModel(),
+            channel: this.fakeRelation(),
+            categoryId: this.generateId(),
+            channelId: this.generateId(),
+            sortOrder: 0,
+            category: this.fakeRelation(),
+            myChannel: this.fakeRelation(),
+            ...overwrite,
+        };
+    };
+
+    fakeDraftModel = (overwrite?: Partial<DraftModel>): DraftModel => {
+        return {
+            ...this.fakeModel(),
+            channelId: this.generateId(),
+            message: '',
+            rootId: '',
+            files: [],
+            metadata: {},
+            updateAt: 0,
+            ...overwrite,
+        };
+    };
+
+    fakePostsInChannelModel = (overwrite?: Partial<PostsInChannelModel>): PostsInChannelModel => {
+        return {
+            ...this.fakeModel(),
+            channelId: this.generateId(),
+            earliest: 0,
+            latest: 0,
+            channel: this.fakeRelation(),
+            ...overwrite,
+        };
+    };
+
+    fakeChannelBookmarkModel = (overwrite?: Partial<ChannelBookmarkModel>): ChannelBookmarkModel => {
+        return {
+            ...this.fakeModel(),
+            channelId: this.generateId(),
+            ownerId: this.generateId(),
+            fileId: this.generateId(),
+            displayName: this.generateId(),
+            createAt: 0,
+            updateAt: 0,
+            deleteAt: 0,
+            sortOrder: 0,
+            type: 'file',
+            channel: this.fakeRelation(),
+            owner: this.fakeRelation(),
+            file: this.fakeRelation(),
+            toApi: jest.fn(),
+            ...overwrite,
+        };
+    };
+
+    fakeFileModel = (overwrite?: Partial<FileModel>): FileModel => {
+        return {
+            ...this.fakeModel(),
+            id: this.generateId(),
+            extension: 'png',
+            height: 100,
+            width: 100,
+            mimeType: 'image/png',
+            name: 'image1',
+            size: 100,
+            imageThumbnail: '',
+            localPath: 'path/to/image1',
+            postId: this.generateId(),
+            post: this.fakeRelation(),
+            toFileInfo: jest.fn(),
+            ...overwrite,
+        };
+    };
+
+    fakeMyChannelSettingsModel = (overwrite?: Partial<MyChannelSettingsModel>): MyChannelSettingsModel => {
+        return {
+            ...this.fakeModel(),
+            notifyProps: this.fakeChannelNotifyProps(),
+            myChannel: this.fakeRelation(),
+            ...overwrite,
+        };
+    };
+
+    fakeTeamModel = (overwrite?: Partial<TeamModel>): TeamModel => {
+        return {
+            ...this.fakeModel(),
+            id: this.generateId(),
+            name: this.generateId(),
+            displayName: this.generateId(),
+            type: 'O' as const,
+            allowedDomains: '',
+            inviteId: this.generateId(),
+            description: '',
+            updateAt: 0,
+            isAllowOpenInvite: true,
+            isGroupConstrained: false,
+            lastTeamIconUpdatedAt: 0,
+            categories: this.fakeQuery([]),
+            channels: this.fakeQuery([]),
+            myTeam: this.fakeRelation(),
+            teamChannelHistory: this.fakeRelation(),
+            members: this.fakeQuery([]),
+            teamSearchHistories: this.fakeQuery([]),
+            ...overwrite,
+        };
+    };
+
+    fakeChannelInfoModel = (overwrite?: Partial<ChannelInfoModel>): ChannelInfoModel => {
+        return {
+            ...this.fakeModel(),
+            guestCount: 0,
+            header: '',
+            memberCount: 0,
+            pinnedPostCount: 0,
+            filesCount: 0,
+            purpose: '',
+            channel: this.fakeRelation(),
+            ...overwrite,
+        };
+    };
+
+    fakePostModel = (overwrite?: Partial<PostModel>): PostModel => {
+        return {
+            ...this.fakeModel(),
+            channelId: this.generateId(),
+            createAt: 0,
+            deleteAt: 0,
+            editAt: 0,
+            isPinned: false,
+            message: '',
+            metadata: {},
+            originalId: '',
+            pendingPostId: '',
+            props: {},
+            rootId: '',
+            type: '',
+            updateAt: 0,
+            messageSource: '',
+            previousPostId: '',
+            userId: this.generateId(),
+            root: this.fakeQuery([]),
+            drafts: this.fakeQuery([]),
+            files: this.fakeQuery([]),
+            postsInThread: this.fakeQuery([]),
+            reactions: this.fakeQuery([]),
+            author: this.fakeRelation(),
+            channel: this.fakeRelation(),
+            thread: this.fakeRelation(),
+            hasReplies: async () => false,
+            toApi: jest.fn(),
+            ...overwrite,
+        };
+    };
+
+    fakeGroupModel = (overwrite?: Partial<GroupModel>): GroupModel => {
+        return {
+            ...this.fakeModel(),
+            name: this.generateId(),
+            displayName: this.generateId(),
+            description: this.generateId(),
+            source: this.generateId(),
+            remoteId: this.generateId(),
+            createdAt: 0,
+            updatedAt: 0,
+            deletedAt: 0,
+            memberCount: 0,
+            channels: this.fakeQuery([]),
+            teams: this.fakeQuery([]),
+            members: this.fakeQuery([]),
+            ...overwrite,
+        };
+    };
+
+    fakeMyChannelModel = (overwrite?: Partial<MyChannelModel>): MyChannelModel => {
+        return {
+            ...this.fakeModel(),
+            lastPostAt: 0,
+            lastFetchedAt: 0,
+            lastViewedAt: 0,
+            manuallyUnread: false,
+            mentionsCount: 0,
+            messageCount: 0,
+            isUnread: false,
+            roles: '',
+            viewedAt: 0,
+            channel: this.fakeRelation(),
+            settings: this.fakeRelation(),
+            resetPreparedState: jest.fn(),
+            ...overwrite,
+        };
+    };
+
+    fakeRoleModel = (overwrite?: Partial<RoleModel>): RoleModel => {
+        return {
+            ...this.fakeModel(),
+            name: this.generateId(),
+            permissions: [],
+            ...overwrite,
+        };
+    };
+
+    fakeThreadModel = (overwrite?: Partial<ThreadModel>): ThreadModel => {
+        return {
+            ...this.fakeModel(),
+            lastReplyAt: 0,
+            lastFetchedAt: 0,
+            lastViewedAt: 0,
+            replyCount: 0,
+            isFollowing: false,
+            unreadReplies: 0,
+            unreadMentions: 0,
+            viewedAt: 0,
+            participants: this.fakeQuery([]),
+            threadsInTeam: this.fakeQuery([]),
+            post: this.fakeRelation(),
+            ...overwrite,
+        };
+    };
+
+    fakeMyTeamModel = (overwrite?: Partial<MyTeamModel>): MyTeamModel => {
+        return {
+            ...this.fakeModel(),
+            roles: '',
+            team: this.fakeRelation(),
+            ...overwrite,
+        };
+    };
+
+    fakePreferenceModel = (overwrite?: Partial<PreferenceModel>): PreferenceModel => {
+        return {
+            ...this.fakeModel(),
+            value: '',
+            category: '',
+            name: '',
+            userId: '',
+            user: this.fakeRelation(),
+            ...overwrite,
+        };
+    };
+
+    fakeRole = (overwrite?: Partial<Role>): Role => {
+        return {
+            id: this.generateId(),
+            name: this.generateId(),
+            permissions: [],
+            ...overwrite,
+        };
+    };
+
+    fakeUser = (overwrite?: Partial<UserProfile>): UserProfile => {
         return {
             email: this.fakeEmail(),
             locale: DEFAULT_LOCALE,
@@ -437,13 +886,14 @@ class TestHelperSingleton {
             auth_service: '',
             id: this.generateId(),
             nickname: '',
-            notify_props: this.fakeNotifyProps(),
+            notify_props: this.fakeUserNotifyProps(),
             position: '',
             update_at: 0,
+            ...overwrite,
         };
     };
 
-    fakeNotifyProps = (): UserNotifyProps => {
+    fakeUserNotifyProps = (overwrite?: Partial<UserNotifyProps>): UserNotifyProps => {
         return {
             channel: 'false',
             comments: 'root',
@@ -456,41 +906,23 @@ class TestHelperSingleton {
             push: 'default',
             push_status: 'away',
             calls_desktop_sound: 'true',
-            calls_mobile_notification_sound: '',
+            calls_mobile_notification_sound: Ringtone.Calm,
             calls_mobile_sound: 'true',
             calls_notification_sound: '',
+            ...overwrite,
         };
     };
 
-    fakeUserWithId = (id = this.generateId()): UserProfile => {
+    fakeChannelNotifyProps = (overwrite?: Partial<ChannelNotifyProps>): ChannelNotifyProps => {
         return {
-            ...this.fakeUser(),
-            id,
-            create_at: 1507840900004,
-            update_at: 1507840900004,
-            delete_at: 0,
-            auth_service: '',
-            nickname: '',
-            notify_props: {
-                desktop: 'default',
-                desktop_sound: 'true',
-                email: 'true',
-                mark_unread: 'all',
-                push: 'default',
-                push_status: 'away',
-                comments: 'any',
-                first_name: 'true',
-                channel: 'true',
-                mention_keys: '',
-                highlight_keys: '',
-                calls_desktop_sound: 'true',
-                calls_mobile_sound: '',
-                calls_notification_sound: Ringtone.Calm,
-                calls_mobile_notification_sound: '',
-            },
-            last_picture_update: 0,
-            position: '',
-            is_bot: false,
+            channel_auto_follow_threads: 'on',
+            desktop: 'default',
+            email: 'default',
+            mark_unread: 'all',
+            push: 'default',
+            ignore_channel_mentions: 'off',
+            push_threads: 'mention',
+            ...overwrite,
         };
     };
 
@@ -589,7 +1021,7 @@ class TestHelperSingleton {
     };
 
     initMockEntities = () => {
-        this.basicUser = this.fakeUserWithId();
+        this.basicUser = this.fakeUser();
         this.basicUser.roles = 'system_user system_admin';
         this.basicTeam = this.fakeTeamWithId();
         this.basicTeamMember = this.fakeTeamMember(this.basicUser.id, this.basicTeam.id);

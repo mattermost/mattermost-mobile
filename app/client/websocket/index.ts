@@ -183,7 +183,12 @@ export default class WebSocketClient {
                 }
             }
 
-            this.waitingForPong = false;
+            // Send a ping immediately to test the socket
+            this.waitingForPong = true;
+            this.ping();
+
+            // And every 30 seconds after, checking to ensure
+            // we're getting responses from the server
             this.pingInterval = setInterval(
                 () => {
                     if (!this.waitingForPong) {

@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.webkit.MimeTypeMap
 import androidx.core.content.FileProvider
+import androidx.core.net.toUri
 import com.facebook.react.bridge.ActivityEventListener
 import com.facebook.react.bridge.BaseActivityEventListener
 import com.facebook.react.bridge.Promise
@@ -25,6 +26,8 @@ open class SaveDataTask(private val reactContext: ReactApplicationContext) {
     private var fileContent: String? = null
 
     private val weakContext = WeakReference(reactContext.applicationContext)
+
+    private lateinit var mActivityEventListener: ActivityEventListener
 
     companion object {
         const val SAVE_REQUEST: Int = 38641
@@ -112,7 +115,7 @@ open class SaveDataTask(private val reactContext: ReactApplicationContext) {
         var filename = ""
 
         if (filePath?.startsWith("content://") == true) {
-            contentUri = Uri.parse(filePath)
+            contentUri = filePath.toUri()
         } else {
             val newFile = filePath?.let { File(it) }
             filename = newFile?.name ?: ""

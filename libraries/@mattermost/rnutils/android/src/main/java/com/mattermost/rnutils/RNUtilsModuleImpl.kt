@@ -1,10 +1,9 @@
 package com.mattermost.rnutils
 
 import android.app.Activity
-import android.net.Uri
 import android.os.Build
 import android.view.WindowManager
-import androidx.core.view.OnApplyWindowInsetsListener
+import androidx.core.net.toUri
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
@@ -16,7 +15,6 @@ import com.mattermost.rnutils.helpers.SaveDataTask
 import com.mattermost.rnutils.helpers.SplitView
 
 class RNUtilsModuleImpl(private val reactContext: ReactApplicationContext) {
-    private var customInsetsListener: OnApplyWindowInsetsListener? = null
 
     companion object {
         const val NAME = "RNUtils"
@@ -56,7 +54,7 @@ class RNUtilsModuleImpl(private val reactContext: ReactApplicationContext) {
         var result = ""
 
         if (currentActivity != null) {
-            val uri = Uri.parse(filePath)
+            val uri = filePath?.toUri()
             val path: String? = RealPathUtil.getRealPathFromURI(reactContext, uri)
             if (path != null) {
                 result = "file://$path"
@@ -160,7 +158,7 @@ class RNUtilsModuleImpl(private val reactContext: ReactApplicationContext) {
 
     fun lockPortrait() {}
 
-    fun deleteDatabaseDirectory(databaseName: String?, shouldRemoveDirectory: Boolean): WritableMap {
+    fun deleteDatabaseDirectory(): WritableMap {
         val map = Arguments.createMap()
         map.putNull("error")
         map.putBoolean("success", true)
