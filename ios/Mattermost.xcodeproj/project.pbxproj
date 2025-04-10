@@ -12,8 +12,7 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		1AC06461F0B9867B11829943 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24C9C33C1C823BB8E1B3E161 /* ExpoModulesProvider.swift */; };
-		27C667A329523ECA00E590D5 /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = 27C667A229523ECA00E590D5 /* Sentry */; };
-		27C667A529523F0A00E590D5 /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = 27C667A429523F0A00E590D5 /* Sentry */; };
+		266E7D53748BB8A1308B5CF2 /* libPods-MattermostShare.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B1BD2D4C53C3682D8892612F /* libPods-MattermostShare.a */; };
 		27C667A9295241B600E590D5 /* Sentry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27C667A8295241B600E590D5 /* Sentry.swift */; };
 		27C667AA295241B600E590D5 /* Sentry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27C667A8295241B600E590D5 /* Sentry.swift */; };
 		413A0FD06EA0DB2B3F30403F /* libPods-NotificationService.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AEDDC97F55A1F6C056C6B1BC /* libPods-NotificationService.a */; };
@@ -240,6 +239,7 @@
 		32AC3D4EA79E44738A6E9766 /* OpenSans-BoldItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans-BoldItalic.ttf"; path = "../assets/fonts/OpenSans-BoldItalic.ttf"; sourceTree = "<group>"; };
 		3647DF63D6764CF093375861 /* OpenSans-ExtraBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans-ExtraBold.ttf"; path = "../assets/fonts/OpenSans-ExtraBold.ttf"; sourceTree = "<group>"; };
 		41F3AFE83AAF4B74878AB78A /* OpenSans-Italic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans-Italic.ttf"; path = "../assets/fonts/OpenSans-Italic.ttf"; sourceTree = "<group>"; };
+		4751361789DCCAD0DBD95C16 /* Pods-MattermostShare.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MattermostShare.debug.xcconfig"; path = "Target Support Files/Pods-MattermostShare/Pods-MattermostShare.debug.xcconfig"; sourceTree = "<group>"; };
 		495BC95F23565ABF00C40C83 /* libXCDYouTubeKit.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libXCDYouTubeKit.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		495BC96123565ADD00C40C83 /* libYoutubePlayer-in-WKWebView.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = "libYoutubePlayer-in-WKWebView.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		499F7B3F235513F600E7AF6E /* libXCDYouTubeKit.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libXCDYouTubeKit.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -382,8 +382,10 @@
 		83ABFD112C1C90D90029685B /* calls_urgent.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = calls_urgent.mp3; path = ../assets/sounds/calls_urgent.mp3; sourceTree = "<group>"; };
 		A10297DBBE728B2BF1BC045E /* Pods-NotificationService.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NotificationService.debug.xcconfig"; path = "Target Support Files/Pods-NotificationService/Pods-NotificationService.debug.xcconfig"; sourceTree = "<group>"; };
 		AEDDC97F55A1F6C056C6B1BC /* libPods-NotificationService.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-NotificationService.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B1BD2D4C53C3682D8892612F /* libPods-MattermostShare.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-MattermostShare.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		BC977883E2624E05975CA65B /* OpenSans-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans-Regular.ttf"; path = "../assets/fonts/OpenSans-Regular.ttf"; sourceTree = "<group>"; };
 		BE17F630DB5D41FD93F32D22 /* OpenSans-LightItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans-LightItalic.ttf"; path = "../assets/fonts/OpenSans-LightItalic.ttf"; sourceTree = "<group>"; };
+		C7E622B6B1B605983E8E23B7 /* Pods-MattermostShare.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MattermostShare.release.xcconfig"; path = "Target Support Files/Pods-MattermostShare/Pods-MattermostShare.release.xcconfig"; sourceTree = "<group>"; };
 		C9A1070F2BBD7C8700753CDC /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		C9A107112BBDA00200753CDC /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		C9A107132BBDBC8F00753CDC /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
@@ -409,7 +411,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				49AE370126D4455D00EF4E52 /* Gekidou in Frameworks */,
-				27C667A329523ECA00E590D5 /* Sentry in Frameworks */,
 				413A0FD06EA0DB2B3F30403F /* libPods-NotificationService.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -420,7 +421,7 @@
 			files = (
 				7FD4822C2864D73300A5B18B /* OpenGraph in Frameworks */,
 				7F4288042865D340006B48E1 /* Gekidou in Frameworks */,
-				27C667A529523F0A00E590D5 /* Sentry in Frameworks */,
+				266E7D53748BB8A1308B5CF2 /* libPods-MattermostShare.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -534,6 +535,8 @@
 				E7BEDFCF1660521CCB3EADEF /* Pods-Mattermost.release.xcconfig */,
 				A10297DBBE728B2BF1BC045E /* Pods-NotificationService.debug.xcconfig */,
 				FF7D3AE3E5E892576497A111 /* Pods-NotificationService.release.xcconfig */,
+				4751361789DCCAD0DBD95C16 /* Pods-MattermostShare.debug.xcconfig */,
+				C7E622B6B1B605983E8E23B7 /* Pods-MattermostShare.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -569,6 +572,7 @@
 				81061F4CBB31484A94D5A8EE /* libz.tbd */,
 				7A83BBA09DE89A630126EA06 /* libPods-Mattermost.a */,
 				AEDDC97F55A1F6C056C6B1BC /* libPods-NotificationService.a */,
+				B1BD2D4C53C3682D8892612F /* libPods-MattermostShare.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -1101,7 +1105,6 @@
 			name = NotificationService;
 			packageProductDependencies = (
 				49AE370026D4455D00EF4E52 /* Gekidou */,
-				27C667A229523ECA00E590D5 /* Sentry */,
 			);
 			productName = NotificationService;
 			productReference = 7F581D32221ED5C60099E66B /* NotificationService.appex */;
@@ -1111,9 +1114,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 7FC5699328563FDB000B0905 /* Build configuration list for PBXNativeTarget "MattermostShare" */;
 			buildPhases = (
+				72C6C74DFCEA1986BED63294 /* [CP] Check Pods Manifest.lock */,
 				7FC5698228563FDB000B0905 /* Sources */,
 				7FC5698328563FDB000B0905 /* Frameworks */,
 				7FC5698428563FDB000B0905 /* Resources */,
+				3B5D687DE9159D75705CA398 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -1123,7 +1128,6 @@
 			packageProductDependencies = (
 				7FD4822B2864D73300A5B18B /* OpenGraph */,
 				7F4288032865D340006B48E1 /* Gekidou */,
-				27C667A429523F0A00E590D5 /* Sentry */,
 			);
 			productName = MattermostShare;
 			productReference = 7FC5698628563FDB000B0905 /* MattermostShare.appex */;
@@ -1209,7 +1213,6 @@
 			mainGroup = 83CBB9F61A601CBA00E9B192;
 			packageReferences = (
 				7FD4822A2864D73300A5B18B /* XCRemoteSwiftPackageReference "OpenGraph" */,
-				27C667A129523ECA00E590D5 /* XCRemoteSwiftPackageReference "sentry-cocoa" */,
 			);
 			productRefGroup = 83CBBA001A601CBA00E9B192 /* Products */;
 			projectDirPath = "";
@@ -1389,6 +1392,24 @@
 			shellPath = /bin/sh;
 			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-Mattermost/expo-configure-project.sh\"\n";
 		};
+		3B5D687DE9159D75705CA398 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-MattermostShare/Pods-MattermostShare-resources.sh",
+				"${PODS_CONFIGURATION_BUILD_DIR}/Sentry/Sentry.bundle",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Sentry.bundle",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-MattermostShare/Pods-MattermostShare-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 		60D7AC7FCA7AC276C4308D05 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -1505,6 +1526,28 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
+		72C6C74DFCEA1986BED63294 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-MattermostShare-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
 		A40F47AC8A062DFCF1B2A23E /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -1569,10 +1612,12 @@
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-NotificationService/Pods-NotificationService-resources.sh",
 				"${PODS_CONFIGURATION_BUILD_DIR}/CocoaLumberjack/CocoaLumberjackPrivacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/Sentry/Sentry.bundle",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/CocoaLumberjackPrivacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Sentry.bundle",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -2124,7 +2169,7 @@
 			buildSettings = {
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
+				CLANG_CXX_LANGUAGE_STANDARD = "$(inherited)";
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_COMMA = YES;
@@ -2173,7 +2218,7 @@
 			buildSettings = {
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
+				CLANG_CXX_LANGUAGE_STANDARD = "$(inherited)";
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_COMMA = YES;
@@ -2215,10 +2260,11 @@
 		};
 		7FC5699128563FDB000B0905 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4751361789DCCAD0DBD95C16 /* Pods-MattermostShare.debug.xcconfig */;
 			buildSettings = {
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
+				CLANG_CXX_LANGUAGE_STANDARD = "$(inherited)";
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_COMMA = YES;
@@ -2227,7 +2273,7 @@
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = "$(inherited)";
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
@@ -2264,10 +2310,11 @@
 		};
 		7FC5699228563FDB000B0905 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = C7E622B6B1B605983E8E23B7 /* Pods-MattermostShare.release.xcconfig */;
 			buildSettings = {
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
+				CLANG_CXX_LANGUAGE_STANDARD = "$(inherited)";
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_COMMA = YES;
@@ -2276,7 +2323,7 @@
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = "$(inherited)";
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
@@ -2483,14 +2530,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		27C667A129523ECA00E590D5 /* XCRemoteSwiftPackageReference "sentry-cocoa" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/getsentry/sentry-cocoa.git";
-			requirement = {
-				kind = exactVersion;
-				version = 8.41.0;
-			};
-		};
 		7FD4822A2864D73300A5B18B /* XCRemoteSwiftPackageReference "OpenGraph" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/satoshi-takano/OpenGraph.git";
@@ -2502,16 +2541,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		27C667A229523ECA00E590D5 /* Sentry */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 27C667A129523ECA00E590D5 /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
-			productName = Sentry;
-		};
-		27C667A429523F0A00E590D5 /* Sentry */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 27C667A129523ECA00E590D5 /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
-			productName = Sentry;
-		};
 		49AE370026D4455D00EF4E52 /* Gekidou */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Gekidou;
