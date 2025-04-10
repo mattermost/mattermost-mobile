@@ -68,7 +68,6 @@ export const showScheduledPostCreationErrorSnackbar = (errorMessage: string) => 
     return showSnackBar({
         barType: SNACK_BAR_TYPE.SCHEDULED_POST_CREATION_ERROR,
         customMessage: errorMessage,
-        keepOpen: true,
         type: 'error',
     });
 };
