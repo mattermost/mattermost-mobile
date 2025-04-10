@@ -165,6 +165,10 @@ const LoginOptions = ({
     }, [closeButtonId, componentId, serverUrl]);
 
     useEffect(() => {
+        translateX.value = 0;
+    }, []);
+
+    useEffect(() => {
         const listener = {
             componentDidAppear: () => {
                 translateX.value = 0;
