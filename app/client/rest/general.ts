@@ -18,6 +18,7 @@ export interface ClientGeneralMix {
     logClientError: (message: string, level?: string) => Promise<any>;
     getClientConfigOld: (groupLabel?: RequestGroupLabel) => Promise<ClientConfig>;
     getClientLicenseOld: (groupLabel?: RequestGroupLabel) => Promise<ClientLicense>;
+    getLicenseLoadMetric: (groupLabel?: RequestGroupLabel) => Promise<{load: number}>;
     getTimezones: () => Promise<string[]>;
     getGlobalDataRetentionPolicy: (groupLabel?: RequestGroupLabel) => Promise<GlobalDataRetentionPolicy>;
     getTeamDataRetentionPolicies: (userId: string, page?: number, perPage?: number, groupLabel?: RequestGroupLabel) => Promise<PoliciesResponse<TeamDataRetentionPolicy>>;
@@ -66,6 +67,13 @@ const ClientGeneral = <TBase extends Constructor<ClientBase>>(superclass: TBase)
     getClientLicenseOld = async (groupLabel?: RequestGroupLabel) => {
         return this.doFetch(
             `${this.urlVersion}/license/client?format=old`,
+            {method: 'get', groupLabel},
+        );
+    };
+
+    getLicenseLoadMetric = async (groupLabel?: RequestGroupLabel) => {
+        return this.doFetch(
+            `${this.urlVersion}/license/load_metric`,
             {method: 'get', groupLabel},
         );
     };
