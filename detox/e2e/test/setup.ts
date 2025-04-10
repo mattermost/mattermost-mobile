@@ -30,7 +30,8 @@ beforeAll(async () => {
                 detoxPrintBusyIdleResources: 'YES',
                 detoxDebugVisibility: 'YES',
                 detoxDisableSynchronization: 'YES',
-                detoxURLBlacklistRegex: '.*localhost.*', // Reduce network syncs
+                detoxDisableHierarchyDump: 'YES',
+                reduceMotion: 'YES',
             },
         });
         isFirstLaunch = false;

@@ -202,6 +202,7 @@ jobs:
           DETOX_DEVICE_TYPE: ${{ env.DEVICE_NAME }}
           DETOX_OS_VERSION: ${{ env.DEVICE_OS_VERSION }}
           LOW_BANDWIDTH_MODE: ${{ inputs.low_bandwidth_mode }}
+          RETRY_COUNT: 2
 
       - name: reset network settings
         if: ${{ inputs.low_bandwidth_mode || failure() }}

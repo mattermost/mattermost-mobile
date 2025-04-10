@@ -88,5 +88,8 @@
     "sessionId": "ios-test-session",
     "debugSynchronization": 5000,
     "autoStart": true
+  },
+  "visibility": {
+    "threshold": 75
   }
 }
