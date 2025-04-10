@@ -192,7 +192,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             screen = withServerDatabase(require('@screens/manage_channel_members').default);
             break;
         case Screens.MFA:
-            screen = withIntl(require('@screens/mfa').default);
+            screen = withReducedMotion(withIntl(require('@screens/mfa').default));
             break;
         case Screens.SELECT_TEAM:
             screen = withServerDatabase(require('@screens/select_team').default);
@@ -271,7 +271,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             break;
         }
         case Screens.SSO:
-            screen = withIntl(require('@screens/sso').default);
+            screen = withReducedMotion(withIntl(require('@screens/sso').default));
             break;
         case Screens.TABLE:
             screen = withServerDatabase(require('@screens/table').default);

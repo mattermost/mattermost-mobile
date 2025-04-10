@@ -7,7 +7,7 @@ import {useIntl} from 'react-intl';
 import {Keyboard, Platform, useWindowDimensions, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {Navigation} from 'react-native-navigation';
-import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import Animated, {useAnimatedStyle, useReducedMotion, useSharedValue, withTiming} from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {login} from '@actions/remote/session';
@@ -99,7 +99,8 @@ const AnimatedSafeArea = Animated.createAnimatedComponent(SafeAreaView);
 
 const MFA = ({componentId, config, goToHome, license, loginId, password, serverDisplayName, serverUrl, theme}: MFAProps) => {
     const dimensions = useWindowDimensions();
-    const translateX = useSharedValue(dimensions.width);
+    const reducedMotion = useReducedMotion();
+    const translateX = useSharedValue(reducedMotion ? 0 : dimensions.width);
     const keyboardAwareRef = useRef<KeyboardAwareScrollView>(null);
     const intl = useIntl();
     const [token, setToken] = useState<string>('');
