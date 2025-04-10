@@ -212,7 +212,6 @@ class ChannelScreen {
     };
 
     scheduleGivenMessage = async (message: string) => {
-        // # Post message
         await this.postInput.tap();
         await this.postInput.clearText();
         await this.postInput.replaceText(message);
