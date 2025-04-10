@@ -226,7 +226,6 @@ jobs:
         continue-on-error: true # We want to run all the tests
         env:
           RETRY_COUNT: 2
-          MAX_WORKERS: 2
 
       - name: Upload Android Test Report
         if: always()
