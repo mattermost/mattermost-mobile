@@ -203,6 +203,7 @@ describe('transformSchedulePostsRecord', () => {
             user_id: 'user_id',
             create_at: 4000,
             scheduled_at: 2000,
+            message: 'scheduled post message',
         } as ScheduledPost;
 
         const preparedRecord = await transformSchedulePostsRecord({
@@ -212,7 +213,6 @@ describe('transformSchedulePostsRecord', () => {
         });
 
         expect(preparedRecord.rootId).toBe('');
-        expect(preparedRecord.message).toBe('');
         expect(preparedRecord.files).toEqual([]);
         expect(preparedRecord.metadata).toBeUndefined();
         expect(preparedRecord.updateAt).toBeGreaterThan(0);
@@ -238,6 +238,7 @@ describe('transformSchedulePostsRecord', () => {
             user_id: 'user_id',
             create_at: 4000,
             scheduled_at: 2000,
+            message: 'schedule post message',
         } as ScheduledPost;
 
         const preparedRecord = await transformSchedulePostsRecord({
@@ -247,5 +248,40 @@ describe('transformSchedulePostsRecord', () => {
         });
 
         expect(preparedRecord.errorCode).toBe(localErrorCode);
+    });
+
+    it('=> should return error if message and files are empty', async () => {
+        expect.assertions(3);
+
+        const database = await createTestConnection({databaseName: 'post_prepare_records', setActive: true});
+        expect(database).toBeTruthy();
+
+        let emptyMessageAndFileError;
+        let preparedRecords;
+        try {
+            preparedRecords = await transformSchedulePostsRecord({
+                action: OperationType.CREATE,
+                database: database!,
+                value: {
+                    record: undefined,
+                    raw: {
+                        id: 'schedule_post_id',
+                        channel_id: 'channel_id',
+                        root_id: '',
+                        message: '',
+                        user_id: 'user_id',
+                        processed_at: 0,
+                        scheduled_at: 1223456789,
+                        update_at: 0,
+                        error_code: '',
+                    } as ScheduledPost,
+                },
+            });
+        } catch (error) {
+            emptyMessageAndFileError = error;
+        }
+
+        expect(preparedRecords).not.toBeTruthy();
+        expect(emptyMessageAndFileError).toBeTruthy();
     });
 });

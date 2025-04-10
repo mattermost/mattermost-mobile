@@ -4,11 +4,11 @@
 import React, {useCallback} from 'react';
 
 import {updateDraftPriority} from '@actions/local/draft';
+import SendDraft from '@components/draft_scheduled_post/draft_scheduled_post_actions/send_draft';
 import DraftInput from '@components/post_draft/draft_input/';
 import {PostPriorityType} from '@constants/post';
 import {useServerUrl} from '@context/server';
 import {useHandleSendMessage} from '@hooks/handle_send_message';
-import SendDraft from '@screens/draft_scheduled_post_options/send_draft';
 
 import type {DraftType} from '@constants/draft';
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';

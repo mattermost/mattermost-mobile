@@ -8,7 +8,7 @@ import Tooltip from 'react-native-walkthrough-tooltip';
 import {storeDraftsTutorial} from '@actions/app/global';
 import {Screens} from '@constants';
 import {DRAFT_SCHEDULED_POST_LAYOUT_PADDING, DRAFT_TYPE_DRAFT} from '@constants/draft';
-import {tooltipContentStyle} from '@constants/tooltip';
+import {staticStyles} from '@constants/tooltip';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import DraftTooltip from '@screens/global_drafts/draft_scheduled_post_tooltip';
 import {popTopScreen} from '@screens/navigation';
@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
         width: '100%',
     },
     tooltipContentStyle: {
-        ...tooltipContentStyle,
+        ...staticStyles.tooltipContent,
     },
 });
 

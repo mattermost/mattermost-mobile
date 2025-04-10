@@ -15,9 +15,9 @@ import CopyTextOption from '@screens/post_options/options/copy_text_option';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import DeleteDraft from './delete_draft';
-import EditDraft from './edit_draft';
-import RescheduledDraft from './rescheduled_draft';
+import DeleteDraft from '../../components/draft_scheduled_post/draft_scheduled_post_actions/delete_draft';
+import EditDraft from '../../components/draft_scheduled_post/draft_scheduled_post_actions/edit_draft';
+import RescheduledDraft from '../../components/draft_scheduled_post/draft_scheduled_post_actions/rescheduled_draft';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type DraftModel from '@typings/database/models/servers/draft';

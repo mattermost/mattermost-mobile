@@ -9,7 +9,7 @@ import {storeScheduledPostsListTutorial} from '@actions/app/global';
 import CompassIcon from '@components/compass_icon';
 import {Screens} from '@constants';
 import {DRAFT_SCHEDULED_POST_LAYOUT_PADDING, DRAFT_TYPE_SCHEDULED} from '@constants/draft';
-import {tooltipContentStyle} from '@constants/tooltip';
+import {staticStyles} from '@constants/tooltip';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import DraftTooltip from '@screens/global_drafts/draft_scheduled_post_tooltip';
@@ -47,7 +47,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             width: '100%',
         },
         tooltipContentStyle: {
-            ...tooltipContentStyle,
+            ...staticStyles.tooltipContent,
         },
         errorContainer: {
             display: 'flex',

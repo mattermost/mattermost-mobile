@@ -170,6 +170,10 @@ export const transformSchedulePostsRecord = ({action, database, value}: Transfor
     const emptyFileInfo: FileInfo[] = [];
     const raw = value.raw;
 
+    if (!raw.message && !raw.metadata?.files?.length) {
+        throw new Error('Scheduled post message and files are empty');
+    }
+
     const fieldsMapper = (scheduledPost: ScheduledPostModel) => {
         scheduledPost._raw.id = raw.id;
         scheduledPost.rootId = raw?.root_id ?? '';

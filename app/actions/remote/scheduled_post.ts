@@ -5,7 +5,7 @@ import {ActionType} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import websocketManager from '@managers/websocket_manager';
-import {getConfigValue} from '@queries/servers/system';
+import {getConfigValue, getCurrentUserId} from '@queries/servers/system';
 import ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 import {getFullErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
@@ -43,7 +43,8 @@ export async function updateScheduledPost(serverUrl: string, scheduledPost: Sche
     try {
         const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const client = NetworkManager.getClient(serverUrl);
-        const normalizedScheduledPost = isScheduledPostModel(scheduledPost) ? await scheduledPost.toApi(database) : scheduledPost;
+        const currentUserId = await getCurrentUserId(database);
+        const normalizedScheduledPost = isScheduledPostModel(scheduledPost) ? scheduledPost.toApi(currentUserId) : scheduledPost;
         normalizedScheduledPost.scheduled_at = updateTime;
         const connectionId = websocketManager.getClient(serverUrl)?.getConnectionId();
         const response = await client.updateScheduledPost(normalizedScheduledPost, connectionId);
