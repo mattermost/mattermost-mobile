@@ -9,14 +9,13 @@ import Animated, {runOnJS, runOnUI, useAnimatedReaction} from 'react-native-rean
 import {useGallery} from '@context/gallery';
 import {freezeOtherScreens, measureItem} from '@utils/gallery';
 
-import DocumentRenderer from './document_renderer';
 import LightboxSwipeout, {type LightboxSwipeoutRef, type RenderItemInfo} from './lightbox_swipeout';
 import Backdrop, {type BackdropProps} from './lightbox_swipeout/backdrop';
-import VideoRenderer from './video_renderer';
+import DocumentRenderer from './renderers/document';
+import VideoRenderer from './renderers/video';
 import GalleryViewer from './viewer';
 
-import type {ImageRendererProps} from './image_renderer';
-import type {GalleryItemType} from '@typings/screens/gallery';
+import type {GalleryItemType, GalleryPagerItem} from '@typings/screens/gallery';
 
 const AnimatedImage = Animated.createAnimatedComponent(Image);
 
@@ -27,7 +26,7 @@ interface GalleryProps {
     onIndexChange?: (index: number) => void;
     onHide: () => void;
     targetDimensions: { width: number; height: number };
-    onShouldHideControls: (hide: boolean) => void;
+    setControlsHidden: (hide: boolean) => void;
 }
 
 export interface GalleryRef {
@@ -40,7 +39,7 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({
     items,
     onHide,
     targetDimensions,
-    onShouldHideControls,
+    setControlsHidden,
     onIndexChange,
 }: GalleryProps, ref) => {
     const {refsByIndexSV, sharedValues} = useGallery(galleryIdentifier);
@@ -118,7 +117,7 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({
         'worklet';
 
         if (Math.abs(translateY) > 8) {
-            onShouldHideControls(true);
+            setControlsHidden(true);
         }
     }
 
@@ -126,7 +125,7 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({
         'worklet';
 
         runOnJS(freezeOtherScreens)(true);
-        onShouldHideControls(false);
+        setControlsHidden(false);
     }
 
     function hideLightboxItem() {
@@ -155,7 +154,7 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({
         return null;
     }, [item]);
 
-    const onRenderPage = useCallback((props: ImageRendererProps, idx: number) => {
+    const onRenderPage = useCallback((props: GalleryPagerItem, idx: number) => {
         switch (props.item.type) {
             case 'video':
                 return (
@@ -163,14 +162,14 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({
                         {...props}
                         index={idx}
                         initialIndex={initialIndex}
-                        onShouldHideControls={onShouldHideControls}
+                        setControlsHidden={setControlsHidden}
                     />
                 );
             case 'file':
                 return (
                     <DocumentRenderer
                         item={props.item}
-                        onShouldHideControls={onShouldHideControls}
+                        setControlsHidden={setControlsHidden}
                     />
                 );
             default:
@@ -191,20 +190,16 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({
             targetDimensions={targetDimensions}
             renderItem={onRenderItem}
         >
-            {({onGesture, shouldHandleEvent}) => (
-                <GalleryViewer
-                    items={items}
-                    onIndexChange={onIndexChangeWorklet}
-                    shouldPagerHandleGestureEvent={shouldHandleEvent}
-                    onShouldHideControls={onShouldHideControls}
-                    height={targetDimensions.height}
-                    width={targetDimensions.width}
-                    initialIndex={initialIndex}
-                    onPagerEnabledGesture={onGesture}
-                    numToRender={1}
-                    renderPage={onRenderPage}
-                />
-            )}
+            <GalleryViewer
+                items={items}
+                onIndexChange={onIndexChangeWorklet}
+                setControlsHidden={setControlsHidden}
+                height={targetDimensions.height}
+                width={targetDimensions.width}
+                initialIndex={initialIndex}
+                numToRender={1}
+                renderPage={onRenderPage}
+            />
         </LightboxSwipeout>
     );
 });

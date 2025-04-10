@@ -79,7 +79,7 @@ const GalleryScreen = ({componentId, galleryIdentifier, hideActions, initialInde
         requestAnimationFrame(async () => {
             dismissOverlay(componentId);
         });
-    }, [isTablet]);
+    }, [componentId, isTablet]);
 
     const onIndexChange = useCallback((index: number) => {
         setLocalIndex(index);
@@ -105,7 +105,7 @@ const GalleryScreen = ({componentId, galleryIdentifier, hideActions, initialInde
                     items={items}
                     onHide={close}
                     onIndexChange={onIndexChange}
-                    onShouldHideControls={setControlsHidden}
+                    setControlsHidden={setControlsHidden}
                     ref={galleryRef}
                     targetDimensions={dimensions}
                 />

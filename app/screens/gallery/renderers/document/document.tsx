@@ -4,25 +4,24 @@
 import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, StyleSheet, Text, View} from 'react-native';
-import {RectButton, TouchableWithoutFeedback} from 'react-native-gesture-handler';
+import {RectButton, Pressable} from 'react-native-gesture-handler';
 import Animated from 'react-native-reanimated';
 
 import FileIcon from '@components/files/file_icon';
 import {Events, Preferences} from '@constants';
+import DownloadWithAction from '@screens/gallery/footer/download_with_action';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {isDocument} from '@utils/file';
 import {galleryItemToFileInfo} from '@utils/gallery';
 import {changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import DownloadWithAction from '../footer/download_with_action';
-
 import type {GalleryAction, GalleryItemType} from '@typings/screens/gallery';
 
 type Props = {
     canDownloadFiles: boolean;
     item: GalleryItemType;
-    onShouldHideControls: (hide: boolean) => void;
+    setControlsHidden: (hide?: boolean) => void;
 }
 
 const styles = StyleSheet.create({
@@ -49,10 +48,9 @@ const styles = StyleSheet.create({
     },
 });
 
-const DocumentRenderer = ({canDownloadFiles, item, onShouldHideControls}: Props) => {
+const DocumentRenderer = ({canDownloadFiles, item, setControlsHidden}: Props) => {
     const {formatMessage} = useIntl();
     const file = useMemo(() => galleryItemToFileInfo(item), [item]);
-    const [controls, setControls] = useState(true);
     const [enabled, setEnabled] = useState(true);
     const isSupported = useMemo(() => isDocument(file), [file]);
     const optionText = isSupported ? formatMessage({
@@ -62,11 +60,6 @@ const DocumentRenderer = ({canDownloadFiles, item, onShouldHideControls}: Props)
         id: 'gallery.unsupported',
         defaultMessage: "Preview isn't supported for this file type. Try downloading or sharing to open it in another app.",
     });
-
-    const handleHideControls = useCallback(() => {
-        onShouldHideControls(controls);
-        setControls(!controls);
-    }, [controls, onShouldHideControls]);
 
     const setGalleryAction = useCallback((action: GalleryAction) => {
         DeviceEventEmitter.emit(Events.GALLERY_ACTIONS, action);
@@ -79,9 +72,13 @@ const DocumentRenderer = ({canDownloadFiles, item, onShouldHideControls}: Props)
         setEnabled(false);
     }, []);
 
+    const handlePress = useCallback(() => {
+        setControlsHidden();
+    }, [setControlsHidden]);
+
     return (
         <>
-            <TouchableWithoutFeedback onPress={handleHideControls}>
+            <Pressable onPress={handlePress}>
                 <Animated.View style={styles.container}>
                     <FileIcon
                         backgroundColor='transparent'
@@ -112,7 +109,7 @@ const DocumentRenderer = ({canDownloadFiles, item, onShouldHideControls}: Props)
                     </View>
                     }
                 </Animated.View>
-            </TouchableWithoutFeedback>
+            </Pressable>
             {!enabled &&
             <DownloadWithAction
                 action='opening'

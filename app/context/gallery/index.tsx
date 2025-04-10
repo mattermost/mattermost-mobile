@@ -35,6 +35,7 @@ class Gallery {
         activeIndex: makeMutable(0),
         targetWidth: makeMutable(0),
         targetHeight: makeMutable(0),
+        scale: makeMutable(1),
     };
 
     public items = new Map<number, GalleryManagerItem>();
