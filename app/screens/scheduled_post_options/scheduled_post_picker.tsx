@@ -98,9 +98,9 @@ export function ScheduledPostOptions({currentUserTimezone, onSchedule}: Props) {
         if (response?.error) {
             const errorMessage = response.error as string;
             showScheduledPostCreationErrorSnackbar(errorMessage);
-        } else {
-            await dismissBottomSheet();
+            return;
         }
+        dismissBottomSheet();
     }, [onSchedule, selectedTime]));
 
     const renderContent = () => {

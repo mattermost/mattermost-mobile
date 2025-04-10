@@ -40,20 +40,17 @@ type Props = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
-            display: 'flex',
             flexDirection: 'row',
             justifyContent: 'space-between',
             alignItems: 'center',
         },
         infoContainer: {
-            display: 'flex',
             flexDirection: 'row',
             alignItems: 'center',
             flexShrink: 1,
             maxWidth: '80%',
         },
         channelInfo: {
-            display: 'flex',
             flexDirection: 'row',
             alignItems: 'center',
         },
@@ -83,7 +80,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             ...typography('Body', 75),
         },
         scheduledContainer: {
-            display: 'flex',
             flexDirection: 'row',
             flexWrap: 'wrap',
             alignItems: 'center',
@@ -95,7 +91,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         errorState: {
             backgroundColor: theme.errorTextColor,
-            display: 'flex',
             flexDirection: 'row',
             alignItems: 'center',
             gap: 4,
