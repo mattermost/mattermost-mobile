@@ -2,8 +2,7 @@
   "testRunner": {
     "$0": "jest",
     "args": {
-      "config": "e2e/config.js",
-      "maxWorkers": 1
+      "config": "e2e/config.js"
     }
   },
   "apps": {
