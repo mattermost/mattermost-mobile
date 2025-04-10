@@ -5,11 +5,11 @@ import React from 'react';
 import {Alert} from 'react-native';
 
 import {removeDraft} from '@actions/local/draft';
-import {handleUpdateScheduledPostErrorCode} from '@actions/local/scheduled_post';
+import {updateScheduledPostErrorCode} from '@actions/local/scheduled_post';
 import {createPost} from '@actions/remote/post';
 import {deleteScheduledPost} from '@actions/remote/scheduled_post';
 import {General, Screens} from '@constants';
-import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED} from '@screens/global_drafts/constants';
+import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED} from '@constants/draft';
 import {dismissBottomSheet} from '@screens/navigation';
 import {act, fireEvent, renderWithEverything, renderWithIntlAndTheme} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
@@ -257,7 +257,7 @@ describe('Send Draft', () => {
         );
 
         // Verify handleUpdateScheduledPostErrorCode was called with correct params
-        expect(handleUpdateScheduledPostErrorCode).toHaveBeenCalledWith(
+        expect(updateScheduledPostErrorCode).toHaveBeenCalledWith(
             'https://server.com',
             'post-id',
             'post_send_success_delete_failed',

@@ -10,7 +10,7 @@ import {renderWithIntl} from '@test/intl-test-helper';
 import * as DraftUtils from '@utils/draft';
 import * as ScheduledPostUtils from '@utils/scheduled_post';
 
-import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED} from '../constants';
+import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED} from '../../../constants/draft';
 
 import DraftAndScheduledPostSwipeActions from './draft_and_scheduled_post_swipe_actions';
 

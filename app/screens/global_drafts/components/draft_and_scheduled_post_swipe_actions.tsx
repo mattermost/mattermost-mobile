@@ -19,7 +19,7 @@ import {deleteScheduledPostConfirmation} from '@utils/scheduled_post';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED, type DraftType} from '../constants';
+import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED, type DraftType} from '../../../constants/draft';
 
 import type DraftModel from '@typings/database/models/servers/draft';
 import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';

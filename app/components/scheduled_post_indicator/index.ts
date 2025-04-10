@@ -16,7 +16,7 @@ type Props = WithDatabaseArgs & {
     rootId?: string;
 }
 
-const enhance = withObservables([], ({database, channelId, rootId}: Props) => {
+const enhance = withObservables(['channelId', 'rootId'], ({database, channelId, rootId}: Props) => {
     const isCRTEnabled = observeIsCRTEnabled(database);
 
     let scheduledPostCount = of(0);

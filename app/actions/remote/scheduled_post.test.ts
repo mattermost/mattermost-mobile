@@ -220,7 +220,7 @@ describe('updateScheduledPost', () => {
         await operator.handleUsers({users: [user1], prepareRecordsOnly: false});
         const mockResponse = {...scheduledPost, update_at: Date.now()};
         mockClient.updateScheduledPost.mockImplementationOnce(() => Promise.resolve(mockResponse));
-        const result = await updateScheduledPost(serverUrl, scheduledPost, 123, undefined, true);
+        const result = await updateScheduledPost(serverUrl, scheduledPost, 123, true);
         expect(result.error).toBeUndefined();
         expect(result.scheduledPost).toEqual(mockResponse);
         expect(spyHandleScheduledPosts).not.toHaveBeenCalled();

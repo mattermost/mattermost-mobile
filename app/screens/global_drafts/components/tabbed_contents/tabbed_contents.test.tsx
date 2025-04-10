@@ -5,7 +5,7 @@ import {act, fireEvent, screen} from '@testing-library/react-native';
 import React from 'react';
 import {Text} from 'react-native';
 
-import {DRAFT_SCREEN_TAB_DRAFTS, DRAFT_SCREEN_TAB_SCHEDULED_POSTS} from '@screens/global_drafts/global_drafts';
+import {DRAFT_SCREEN_TAB_DRAFTS, DRAFT_SCREEN_TAB_SCHEDULED_POSTS} from '@constants/draft';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 

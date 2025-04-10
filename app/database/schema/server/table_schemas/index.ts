@@ -8,6 +8,8 @@ export {default as ChannelBookmarkSchema} from './channel_bookmark';
 export {default as ChannelInfoSchema} from './channel_info';
 export {default as ChannelMembershipSchema} from './channel_membership';
 export {default as CustomEmojiSchema} from './custom_emoji';
+export {default as CustomProfileFieldSchema} from './custom_profile_field';
+export {default as CustomProfileAttributeSchema} from './custom_profile_attribute';
 export {default as DraftSchema} from './draft';
 export {default as FileSchema} from './file';
 export {default as GroupSchema} from './group';

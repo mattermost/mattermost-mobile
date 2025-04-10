@@ -5,7 +5,7 @@ import {fireEvent, screen, waitFor} from '@testing-library/react-native';
 import React from 'react';
 
 import {Screens} from '@constants';
-import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED} from '@screens/global_drafts/constants';
+import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED} from '@constants/draft';
 import {dismissBottomSheet} from '@screens/navigation';
 import {renderWithIntl} from '@test/intl-test-helper';
 import {deleteDraftConfirmation} from '@utils/draft';

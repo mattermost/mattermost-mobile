@@ -7,7 +7,7 @@ import {logError} from '@utils/log';
 
 import type {ScheduledPostErrorCode} from '@typings/utils/scheduled_post';
 
-export async function handleScheduledPosts(serverUrl: string, actionType: string, scheduledPosts: ScheduledPost[], prepareRecordsOnly = false): Promise<{models?: ScheduledPostModel[]; error?: unknown}> {
+export async function scheduledPostsAction(serverUrl: string, actionType: string, scheduledPosts: ScheduledPost[], prepareRecordsOnly = false): Promise<{models?: ScheduledPostModel[]; error?: unknown}> {
     if (!scheduledPosts.length) {
         return {models: undefined};
     }
@@ -17,18 +17,18 @@ export async function handleScheduledPosts(serverUrl: string, actionType: string
         const models = await operator.handleScheduledPosts({actionType, scheduledPosts, prepareRecordsOnly});
         return {models};
     } catch (error) {
-        logError('handleScheduledPosts cannot handle scheduled post websocket event', error);
+        logError('ScheduledPostsAction cannot handle scheduled post', error);
         return {error};
     }
 }
 
-export async function handleUpdateScheduledPostErrorCode(serverUrl: string, scheduledPostId: string, errorCode: ScheduledPostErrorCode, prepareRecordsOnly = false): Promise<{models?: ScheduledPostModel[]; error?: unknown}> {
+export async function updateScheduledPostErrorCode(serverUrl: string, scheduledPostId: string, errorCode: ScheduledPostErrorCode, prepareRecordsOnly = false): Promise<{models?: ScheduledPostModel[]; error?: unknown}> {
     try {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const models = [await operator.handleUpdateScheduledPostErrorCode({scheduledPostId, errorCode, prepareRecordsOnly})];
         return {models};
     } catch (error) {
-        logError('handleUpdateScheduledPostErrorCode cannot update scheduled post error code', error);
+        logError('UpdateScheduledPostErrorCode cannot update scheduled post error code', error);
         return {error};
     }
 }

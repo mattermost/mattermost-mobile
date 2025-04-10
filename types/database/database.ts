@@ -10,6 +10,7 @@ import type {Database} from '@nozbe/watermelondb';
 import type Model from '@nozbe/watermelondb/Model';
 import type {Clause} from '@nozbe/watermelondb/QueryDescription';
 import type {Class} from '@nozbe/watermelondb/types';
+import type {CustomProfileField, CustomProfileAttribute} from '@typings/api/custom_profile_attributes';
 import type System from '@typings/database/models/servers/system';
 
 export type WithDatabaseArgs = { database: Database }
@@ -303,6 +304,14 @@ export type HandleScheduledPostsArgs = PrepareOnly & {
 export type HandleScheduledPostErrorCodeArgs = PrepareOnly & {
   scheduledPostId: string;
   errorCode: string;
+}
+
+export type HandleCustomProfileFieldsArgs = PrepareOnly & {
+  fields?: CustomProfileField[];
+};
+
+export type HandleCustomProfileAttributesArgs = PrepareOnly & {
+  attributes?: CustomProfileAttribute[];
 };
 
 export type LoginArgs = {

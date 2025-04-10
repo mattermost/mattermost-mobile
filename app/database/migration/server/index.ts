@@ -8,11 +8,11 @@ import {addColumns, createTable, schemaMigrations, unsafeExecuteSql} from '@nozb
 
 import {MM_TABLES} from '@constants/database';
 
-const {CHANNEL_BOOKMARK, CHANNEL_INFO, CHANNEL, DRAFT, POST, SCHEDULED_POST} = MM_TABLES.SERVER;
+const {CHANNEL_BOOKMARK, CHANNEL_INFO, DRAFT, POST, CHANNEL, CUSTOM_PROFILE_ATTRIBUTE, CUSTOM_PROFILE_FIELD, SCHEDULED_POST} = MM_TABLES.SERVER;
 
 export default schemaMigrations({migrations: [
     {
-        toVersion: 8,
+        toVersion: 9,
         steps: [
             createTable({
                 name: SCHEDULED_POST,
@@ -27,6 +27,33 @@ export default schemaMigrations({migrations: [
                     {name: 'scheduled_at', type: 'number'},
                     {name: 'processed_at', type: 'number'},
                     {name: 'error_code', type: 'string'},
+                ],
+            }),
+        ],
+    },
+    {
+        toVersion: 8,
+        steps: [
+            createTable({
+                name: CUSTOM_PROFILE_ATTRIBUTE,
+                columns: [
+                    {name: 'field_id', type: 'string', isIndexed: true},
+                    {name: 'user_id', type: 'string', isIndexed: true},
+                    {name: 'value', type: 'string'},
+                ],
+            }),
+            createTable({
+                name: CUSTOM_PROFILE_FIELD,
+                columns: [
+                    {name: 'group_id', type: 'string', isIndexed: true},
+                    {name: 'name', type: 'string'},
+                    {name: 'type', type: 'string'},
+                    {name: 'target_id', type: 'string'},
+                    {name: 'target_type', type: 'string'},
+                    {name: 'create_at', type: 'number'},
+                    {name: 'update_at', type: 'number'},
+                    {name: 'delete_at', type: 'number', isOptional: true},
+                    {name: 'attrs', type: 'string', isOptional: true},
                 ],
             }),
         ],

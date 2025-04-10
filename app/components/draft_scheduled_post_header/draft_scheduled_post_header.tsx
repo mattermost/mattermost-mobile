@@ -10,9 +10,9 @@ import ProfileAvatar from '@components/draft_scheduled_post_header/profile_avata
 import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
 import {General} from '@constants';
+import {DRAFT_TYPE_SCHEDULED, type DraftType} from '@constants/draft';
 import {useTheme} from '@context/theme';
 import {DEFAULT_LOCALE} from '@i18n';
-import {DRAFT_TYPE_SCHEDULED, type DraftType} from '@screens/global_drafts/constants';
 import {getReadableTimestamp} from '@utils/datetime';
 import {getErrorStringFromCode} from '@utils/scheduled_post';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';

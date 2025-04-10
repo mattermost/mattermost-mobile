@@ -6,7 +6,8 @@ import React from 'react';
 
 import {renderWithIntl} from '@test/intl-test-helper';
 
-import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED} from './constants';
+import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED} from '../../constants/draft';
+
 import DraftScheduledPostTooltip from './draft_scheduled_post_tooltip';
 
 describe('DraftScheduledPostTooltip', () => {
