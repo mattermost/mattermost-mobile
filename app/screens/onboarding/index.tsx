@@ -14,7 +14,7 @@ import {
     BackHandler,
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
-import Animated, {useAnimatedStyle, useDerivedValue, useSharedValue, withTiming} from 'react-native-reanimated';
+import Animated, {useAnimatedStyle, useDerivedValue, useReducedMotion, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {storeOnboardingViewedValue} from '@actions/app/global';
 import {Screens} from '@constants';
@@ -60,11 +60,12 @@ const Onboarding = ({
     const {slidesData} = useSlidesData();
     const LAST_SLIDE_INDEX = slidesData.length - 1;
     const slidesRef = useRef<ScrollView>(null);
+    const reducedMotion = useReducedMotion();
 
     const scrollX = useSharedValue(0);
 
     // used to smothly animate the whole onboarding screen during the appear event scenario (from server screen back to onboarding screen)
-    const translateX = useSharedValue(width);
+    const translateX = useSharedValue(reducedMotion ? 0 : width);
 
     const currentIndex = useDerivedValue(() => Math.round(scrollX.value / width));
 
