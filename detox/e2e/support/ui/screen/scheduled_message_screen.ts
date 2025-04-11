@@ -75,8 +75,8 @@ class ScheduledMessageScreen {
     };
 
     assertScheduleTimeTextIsVisible = async (time: string) => {
-        await waitFor(element(by.id('scheduled_post.scheduled_at.date_time'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await expect(element(by.id('scheduled_post.scheduled_at.date_time'))).toHaveText(time);
+        await waitFor(element(by.id('scheduled_post_header.scheduled_at'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await expect(element(by.id('scheduled_post_header.scheduled_at'))).toHaveText(time);
     };
 
     nextMonday = async () => {

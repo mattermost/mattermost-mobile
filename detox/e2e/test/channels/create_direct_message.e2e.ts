@@ -87,10 +87,11 @@ describe('Channels - Create Direct Message', () => {
         await CreateDirectMessageScreen.getUserItem(newUser.id).tap();
 
         // * Verify the new user is selected
-        await expect(CreateDirectMessageScreen.getSelectedUserDisplayName(newUser.id)).toBeVisible();
+        await expect(CreateDirectMessageScreen.getSelectedDMUserDisplayName(newUser.id)).toBeVisible();
 
         // # Tap on start button
         await CreateDirectMessageScreen.startButton.tap();
+        await ChannelScreen.scheduledPostTooltipCloseButton.tap();
 
         // * Verify on direct message channel screen for the new user
         await ChannelScreen.toBeVisible();
@@ -126,14 +127,14 @@ describe('Channels - Create Direct Message', () => {
         await CreateDirectMessageScreen.getUserItem(firstNewUser.id).tap();
 
         // * Verify the first new user is selected
-        await expect(CreateDirectMessageScreen.getSelectedUserDisplayName(firstNewUser.id)).toBeVisible();
+        await expect(CreateDirectMessageScreen.getSelectedDMUserDisplayName(firstNewUser.id)).toBeVisible();
 
         // # Search for the second new user and tap on the second new user item
         await CreateDirectMessageScreen.searchInput.replaceText(secondNewUser.username);
         await CreateDirectMessageScreen.getUserItem(secondNewUser.id).tap();
 
         // * Verify the second new user is selected
-        await expect(CreateDirectMessageScreen.getSelectedUserDisplayName(secondNewUser.id)).toBeVisible();
+        await expect(CreateDirectMessageScreen.getSelectedDMUserDisplayName(secondNewUser.id)).toBeVisible();
 
         // # Tap on start button
         await CreateDirectMessageScreen.startButton.tap();

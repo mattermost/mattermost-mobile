@@ -96,6 +96,16 @@ class CreateOrEditChannelScreen {
         await this.makePrivateToggledOn.tap();
         await expect(this.makePrivateToggledOff).toBeVisible();
     };
+
+    clickonCreateButton = async () => {
+        await this.createButton.tap();
+        try {
+            await ChannelScreen.scheduledPostTooltipCloseButton.tap();
+        } catch (error) {
+            // eslint-disable-next-line no-console
+            console.log('Element not visible, skipping click');
+        }
+    };
 }
 
 const createOrEditChannelScreen = new CreateOrEditChannelScreen();

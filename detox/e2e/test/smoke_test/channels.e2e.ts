@@ -69,6 +69,13 @@ describe('Smoke Test - Channels', () => {
         await wait(timeouts.ONE_SEC);
         await BrowseChannelsScreen.getChannelItem(channel.name).multiTap(2);
 
+        try {
+            await ChannelScreen.scheduledPostTooltipCloseButton.tap();
+        } catch (error) {
+            // eslint-disable-next-line no-console
+            console.log('Element not visible, skipping click');
+        }
+
         // * Verify on newly joined channel screen
         await ChannelScreen.toBeVisible();
         await expect(ChannelScreen.headerTitle).toHaveText(channel.display_name);
@@ -91,7 +98,7 @@ describe('Smoke Test - Channels', () => {
         const displayName = `Channel ${getRandomId()}`;
         await CreateOrEditChannelScreen.openCreateChannel();
         await CreateOrEditChannelScreen.displayNameInput.replaceText(displayName);
-        await CreateOrEditChannelScreen.createButton.tap();
+        await CreateOrEditChannelScreen.clickonCreateButton();
 
         // * Verify on newly created public channel
         await ChannelScreen.toBeVisible();
@@ -108,6 +115,7 @@ describe('Smoke Test - Channels', () => {
         await CreateDirectMessageScreen.searchInput.replaceText(newUserDisplayName);
         await wait(timeouts.ONE_SEC);
         await CreateDirectMessageScreen.getUserItem(newUser.id).tap();
+        await wait(timeouts.ONE_SEC);
         await CreateDirectMessageScreen.startButton.tap();
 
         // * Verify on direct message channel screen for the new user

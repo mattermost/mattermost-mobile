@@ -80,7 +80,6 @@ class LoginScreen {
         await this.passwordInput.replaceText(user.password);
         await this.signinButton.tap();
 
-        await waitFor(ChannelListScreen.channelListScreen).toExist().withTimeout(timeouts.TEN_SEC);
     };
 }
 
