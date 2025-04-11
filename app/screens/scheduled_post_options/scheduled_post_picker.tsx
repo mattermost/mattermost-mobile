@@ -50,6 +50,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
         height: OPTIONS_SEPARATOR_HEIGHT,
     },
+    errorText: {
+        color: theme.errorTextColor,
+        ...typography('Heading', 25),
+    },
 }));
 
 type Props = {
@@ -63,6 +67,7 @@ export function ScheduledPostOptions({currentUserTimezone, onSchedule}: Props) {
     const [isScheduling, setIsScheduling] = useState(false);
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
     const [customTimeSelected, setCustomTimeSelected] = useState(false);
+    const [isError, setIsError] = useState(false);
     const userTimezone = getTimezone(currentUserTimezone);
 
     const style = getStyleSheet(theme);
@@ -79,15 +84,18 @@ export function ScheduledPostOptions({currentUserTimezone, onSchedule}: Props) {
     }, [customTimeSelected]);
 
     const onSelectTime = useCallback((selectedValue: string) => {
+        setIsError(false);
         setSelectedTime(selectedValue);
     }, []);
 
     const handleOnSchedule = usePreventDoubleTap(useCallback(async () => {
         if (!selectedTime) {
+            setIsError(true);
             logDebug('ScheduledPostOptions', 'No time selected');
             return;
         }
 
+        setIsError(false);
         setIsScheduling(true);
         const schedulingInfo: SchedulingInfo = {
             scheduled_at: parseInt(selectedTime, 10),
@@ -124,6 +132,13 @@ export function ScheduledPostOptions({currentUserTimezone, onSchedule}: Props) {
                         onCustomTimeSelected={setCustomTimeSelected}
                     />
                 </View>
+                {isError &&
+                    <FormattedText
+                        id='scheduled_post_no_select_time'
+                        defaultMessage={'Please select the time'}
+                        style={style.errorText}
+                    />
+                }
             </View>
         );
     };

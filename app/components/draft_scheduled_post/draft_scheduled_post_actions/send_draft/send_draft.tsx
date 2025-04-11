@@ -19,6 +19,7 @@ import {useTheme} from '@context/theme';
 import {useHandleSendMessage} from '@hooks/handle_send_message';
 import {usePersistentNotificationProps} from '@hooks/persistent_notification_props';
 import {dismissBottomSheet} from '@screens/navigation';
+import {logError} from '@utils/log';
 import {persistentNotificationsConfirmation, sendMessageWithAlert} from '@utils/post';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -114,7 +115,7 @@ const SendDraft: React.FC<Props> = ({
                 try {
                     await updateScheduledPostErrorCode(serverUrl, postId, 'post_send_success_delete_failed');
                 } catch {
-                    // do nothing
+                    logError('Fail to update scheduled post error code');
                 }
                 Alert.alert(
                     intl.formatMessage({id: 'scheduled_post.delete_fails', defaultMessage: 'Delete fails'}),

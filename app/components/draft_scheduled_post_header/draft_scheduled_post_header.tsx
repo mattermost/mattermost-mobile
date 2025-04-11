@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {type ReactNode} from 'react';
+import React from 'react';
 import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
@@ -120,7 +120,45 @@ const DraftAndScheduledPostHeader: React.FC<Props> = ({
     const intl = useIntl();
     const theme = useTheme();
     const style = getStyleSheet(theme);
-    const isChannelTypeDM = channel.type === General.DM_CHANNEL;
+    const isDM = channel.type === General.DM_CHANNEL;
+
+    const renderScheduledInfo = () => {
+        if (draftType !== DRAFT_TYPE_SCHEDULED) {
+            return null;
+        }
+
+        const isSent = scheduledPostErrorCode === 'post_send_success_delete_failed';
+        const scheduledTime = getReadableTimestamp(
+            postScheduledAt!,
+            getUserTimezone(currentUser),
+            isMilitaryTime,
+            currentUser?.locale || DEFAULT_LOCALE,
+        );
+
+        return (
+            <View style={style.scheduledContainer}>
+                <Text style={style.scheduledAtText}>
+                    {isSent? intl.formatMessage({id: 'scheduled_post.header.sent', defaultMessage: 'Sent'}): intl.formatMessage(
+                        {id: 'channel_info.scheduled', defaultMessage: 'Send on {time}'},
+                        {time: scheduledTime},
+                    )}
+                </Text>
+
+                {scheduledPostErrorCode && (
+                    <View style={style.errorState}>
+                        <CompassIcon
+                            name='alert-outline'
+                            size={12}
+                            color={theme.buttonColor}
+                        />
+                        <Text style={style.errorText}>
+                            {getErrorStringFromCode(intl, scheduledPostErrorCode as ScheduledPostErrorCode)}
+                        </Text>
+                    </View>
+                )}
+            </View>
+        );
+    };
 
     const ChannelInfo = ({id, defaultMessage}: {id: string; defaultMessage: string}) => (
         <View style={style.channelInfo}>
@@ -145,57 +183,42 @@ const DraftAndScheduledPostHeader: React.FC<Props> = ({
         </View>
     );
 
-    let headerComponent: ReactNode = null;
+    const getHeaderLabel = () => {
+        if (rootId) {
+            return (
+                <ChannelInfo
+                    id='channel_info.thread_in'
+                    defaultMessage='Thread in:'
+                />
+            );
+        }
 
-    if (rootId) {
-        headerComponent = (
-            <ChannelInfo
-                id='channel_info.thread_in'
-                defaultMessage='Thread in:'
-            />
-        );
-    } else if (isChannelTypeDM) {
-        headerComponent = (
-            <ChannelInfo
-                id='channel_info.draft_to_user'
-                defaultMessage='To:'
-            />
-        );
-    } else {
-        headerComponent = (
+        if (isDM) {
+            return (
+                <ChannelInfo
+                    id='channel_info.draft_to_user'
+                    defaultMessage='To:'
+                />
+            );
+        }
+
+        return (
             <ChannelInfo
                 id='channel_info.draft_in_channel'
                 defaultMessage='In:'
             />
         );
-    }
+    };
 
     return (
-
         <View>
-            {draftType === DRAFT_TYPE_SCHEDULED &&
-                <View style={style.scheduledContainer}>
-                    <Text style={style.scheduledAtText}>
-                        {scheduledPostErrorCode === 'post_send_success_delete_failed' ? intl.formatMessage({id: 'scheduled_post.header.sent', defaultMessage: 'Sent'}) : intl.formatMessage({id: 'channel_info.scheduled', defaultMessage: 'Send on {time}'}, {time: getReadableTimestamp(postScheduledAt!, getUserTimezone(currentUser), isMilitaryTime, currentUser?.locale || DEFAULT_LOCALE)})}
-                    </Text>
-                    {scheduledPostErrorCode &&
-                        <View style={style.errorState}>
-                            <CompassIcon
-                                name='alert-outline'
-                                size={12}
-                                color={theme.buttonColor}
-                            />
-                            <Text style={style.errorText}>{getErrorStringFromCode(intl, scheduledPostErrorCode as ScheduledPostErrorCode)}</Text>
-                        </View>
-                    }
-                </View>
-            }
+            {renderScheduledInfo()}
             <View
                 style={style.container}
                 testID={testID}
             >
                 <View style={style.infoContainer}>
-                    {headerComponent}
+                    {getHeaderLabel()}
                     <Text
                         ellipsizeMode='tail'
                         numberOfLines={1}
