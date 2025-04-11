@@ -78,6 +78,16 @@ describe('ClientGeneral', () => {
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
     });
 
+    test('getLicenseLoadMetric', async () => {
+        const groupLabel = 'Notification';
+        const expectedUrl = `${client.urlVersion}/license/load_metric`;
+        const expectedOptions = {method: 'get', groupLabel};
+
+        await client.getLicenseLoadMetric(groupLabel);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+    });
+
     test('getTimezones', async () => {
         const expectedUrl = client.getTimezonesRoute();
         const expectedOptions = {method: 'get'};
