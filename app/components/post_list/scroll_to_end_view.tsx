@@ -25,7 +25,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         buttonStyle: {
             position: 'absolute',
             alignSelf: 'center',
-            bottom: -70,
+            bottom: -100,
             flexDirection: 'row',
         },
         shadow: {
@@ -97,10 +97,11 @@ const ScrollToEndView = ({
         () => ({
             transform: [
                 {
-                    translateY: withTiming(showScrollToEndBtn ? -80 - keyboardOverlap - bottomAdjustment : 0, {duration: 300}),
+                    translateY: withTiming(showScrollToEndBtn ? -100 - keyboardOverlap - bottomAdjustment : -15, {duration: 300}),
                 },
             ],
             maxWidth: withTiming(isNewMessage ? 169 : 40, {duration: 300}),
+            opacity: withTiming(showScrollToEndBtn ? 1 : 0),
         }),
         [showScrollToEndBtn, isNewMessage, keyboardOverlap, bottomAdjustment],
     );

@@ -295,6 +295,17 @@ export type HandleDraftArgs = PrepareOnly & {
   drafts?: Draft[];
 };
 
+export type HandleScheduledPostsArgs = PrepareOnly & {
+  actionType: string;
+  scheduledPosts?: ScheduledPost[];
+  includeDirectChannelPosts?: boolean;
+};
+
+export type HandleScheduledPostErrorCodeArgs = PrepareOnly & {
+  scheduledPostId: string;
+  errorCode: string;
+}
+
 export type HandleCustomProfileFieldsArgs = PrepareOnly & {
   fields?: CustomProfileField[];
 };

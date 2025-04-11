@@ -34,6 +34,7 @@ type Props = {
     footerComponent?: React.FC<unknown>;
     renderContent: () => ReactNode;
     snapPoints?: Array<string | number>;
+    enableDynamicSizing?: boolean;
     testID?: string;
 }
 
@@ -97,6 +98,7 @@ const BottomSheet = ({
     renderContent,
     snapPoints = [1, '50%', '80%'],
     testID,
+    enableDynamicSizing = false,
 }: Props) => {
     const sheetRef = useRef<BottomSheetM>(null);
     const isTablet = useIsTablet();
@@ -228,7 +230,7 @@ const BottomSheet = ({
             keyboardBlurBehavior='restore'
             onClose={close}
             bottomInset={insets.bottom}
-            enableDynamicSizing={false}
+            enableDynamicSizing={enableDynamicSizing}
         >
             <BottomSheetView style={styles.view}>
                 {renderContainerContent()}

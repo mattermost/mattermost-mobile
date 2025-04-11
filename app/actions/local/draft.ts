@@ -6,17 +6,65 @@ import {DeviceEventEmitter, Image} from 'react-native';
 import {Navigation, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getDraft} from '@queries/servers/drafts';
-import {goToScreen} from '@screens/navigation';
+import {getCurrentChannelId, getCurrentTeamId, setCurrentTeamAndChannelId} from '@queries/servers/system';
+import {addChannelToTeamHistory} from '@queries/servers/team';
+import {goToScreen, popTo} from '@screens/navigation';
+import NavigationStore from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
 import {logError} from '@utils/log';
 import {isParsableUrl} from '@utils/url';
 
-export const switchToGlobalDrafts = async () => {
-    const isTablelDevice = isTablet();
-    if (isTablelDevice) {
-        DeviceEventEmitter.emit(Navigation.NAVIGATION_HOME, Screens.GLOBAL_DRAFTS);
-    } else {
-        goToScreen(Screens.GLOBAL_DRAFTS, '', {}, {topBar: {visible: false}});
+import type {DraftScreenTab} from '@constants/draft';
+import type {Model} from '@nozbe/watermelondb';
+
+type goToScreenParams = {
+    initialTab?: DraftScreenTab;
+}
+
+export const switchToGlobalDrafts = async (serverUrl: string, teamId?: string, initialTab?: DraftScreenTab, prepareRecordsOnly = false) => {
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const models: Model[] = [];
+
+        let teamIdToUse = teamId;
+        if (!teamId) {
+            teamIdToUse = await getCurrentTeamId(database);
+        }
+
+        if (!teamIdToUse) {
+            throw new Error('no team to switch to');
+        }
+
+        const currentChannelId = await getCurrentChannelId(database);
+        await setCurrentTeamAndChannelId(operator, teamIdToUse, currentChannelId);
+        const history = await addChannelToTeamHistory(operator, teamIdToUse, Screens.GLOBAL_DRAFTS, true);
+        models.push(...history);
+
+        if (!prepareRecordsOnly) {
+            await operator.batchRecords(models, 'switchToGlobalDrafts');
+        }
+        const params: goToScreenParams = {};
+
+        const isDraftAlreadyInNavigationStack = NavigationStore.getScreensInStack().includes(Screens.GLOBAL_DRAFTS);
+        if (isDraftAlreadyInNavigationStack) {
+            popTo(Screens.GLOBAL_DRAFTS);
+            return {models};
+        }
+
+        params.initialTab = initialTab;
+
+        const isTabletDevice = isTablet();
+        if (isTabletDevice) {
+            DeviceEventEmitter.emit(Navigation.NAVIGATION_HOME, Screens.GLOBAL_DRAFTS, params);
+        } else {
+            goToScreen(Screens.GLOBAL_DRAFTS, '', params, {topBar: {visible: false}});
+        }
+
+        return {models};
+    } catch (error) {
+        logError('Failed switchToGlobalDrafts', error);
+
+        return {error};
     }
 };
 

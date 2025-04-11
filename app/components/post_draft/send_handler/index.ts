@@ -6,11 +6,13 @@ import {combineLatest, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {General, Permissions} from '@constants';
+import {DRAFT_TYPE_SCHEDULED, type DraftType} from '@constants/draft';
 import {MAX_MESSAGE_LENGTH_FALLBACK} from '@constants/post_draft';
-import {observeChannel, observeChannelInfo, observeCurrentChannel} from '@queries/servers/channel';
+import {observeChannel, observeChannelInfo} from '@queries/servers/channel';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
 import {observeFirstDraft, queryDraft} from '@queries/servers/drafts';
 import {observePermissionForChannel} from '@queries/servers/role';
+import {observeFirstScheduledPost, queryScheduledPost} from '@queries/servers/scheduled_post';
 import {observeConfigBooleanValue, observeConfigIntValue, observeCurrentUserId} from '@queries/servers/system';
 import {observeUser} from '@queries/servers/user';
 
@@ -20,19 +22,15 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 
 type OwnProps = {
     rootId: string;
+    draftType?: DraftType;
     channelId: string;
     channelIsArchived?: boolean;
 }
 
-const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => {
+const enhanced = withObservables(['channelId', 'rootId', 'draftType'], (ownProps: WithDatabaseArgs & OwnProps) => {
     const database = ownProps.database;
-    const {rootId, channelId} = ownProps;
-    let channel;
-    if (rootId) {
-        channel = observeChannel(database, channelId);
-    } else {
-        channel = observeCurrentChannel(database);
-    }
+    const {rootId, channelId, draftType} = ownProps;
+    const channel = observeChannel(database, channelId);
 
     const currentUserId = observeCurrentUserId(database);
     const currentUser = currentUserId.pipe(
@@ -42,16 +40,30 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
         switchMap((u) => of$(u?.status === General.OUT_OF_OFFICE)),
     );
 
-    const postPriority = queryDraft(database, channelId, rootId).observeWithColumns(['metadata']).pipe(
-        switchMap(observeFirstDraft),
-        switchMap((d) => {
-            if (!d?.metadata?.priority) {
-                return of$(INITIAL_PRIORITY);
-            }
+    let postPriority;
+    if (draftType === DRAFT_TYPE_SCHEDULED) {
+        postPriority = queryScheduledPost(database, channelId, rootId).observeWithColumns(['metadata']).pipe(
+            switchMap(observeFirstScheduledPost),
+            switchMap((d) => {
+                if (!d?.metadata?.priority) {
+                    return of$(INITIAL_PRIORITY);
+                }
 
-            return of$(d.metadata.priority);
-        }),
-    );
+                return of$(d.metadata.priority);
+            }),
+        );
+    } else {
+        postPriority = queryDraft(database, channelId, rootId).observeWithColumns(['metadata']).pipe(
+            switchMap(observeFirstDraft),
+            switchMap((d) => {
+                if (!d?.metadata?.priority) {
+                    return of$(INITIAL_PRIORITY);
+                }
+
+                return of$(d.metadata.priority);
+            }),
+        );
+    }
 
     const enableConfirmNotificationsToChannel = observeConfigBooleanValue(database, 'EnableConfirmNotificationsToChannel');
     const maxMessageLength = observeConfigIntValue(database, 'MaxPostSize', MAX_MESSAGE_LENGTH_FALLBACK);
