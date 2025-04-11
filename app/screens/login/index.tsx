@@ -174,13 +174,13 @@ const LoginOptions = ({
                 translateX.value = 0;
             },
             componentDidDisappear: () => {
-                translateX.value = -dimensions.width;
+                translateX.value = reducedMotion ? 0 : -dimensions.width;
             },
         };
         const unsubscribe = Navigation.events().registerComponentListener(listener, Screens.LOGIN);
 
         return () => unsubscribe.remove();
-    }, [dimensions, translateX]);
+    }, [dimensions, translateX, reducedMotion]);
 
     useNavButtonPressed(closeButtonId || '', componentId, dismiss, []);
     useAndroidHardwareBackHandler(componentId, pop);

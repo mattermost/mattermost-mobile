@@ -102,13 +102,13 @@ const Onboarding = ({
                 translateX.value = 0;
             },
             componentDidDisappear: () => {
-                translateX.value = -width;
+                translateX.value = reducedMotion ? 0 : -width;
             },
         };
         const unsubscribe = Navigation.events().registerComponentListener(listener, Screens.ONBOARDING);
 
         return () => unsubscribe.remove();
-    }, [width]);
+    }, [width, reducedMotion, translateX]);
 
     const transform = useAnimatedStyle(() => {
         const duration = Platform.OS === 'android' ? 250 : 350;

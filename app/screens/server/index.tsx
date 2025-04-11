@@ -7,7 +7,7 @@ import {useIntl} from 'react-intl';
 import {Alert, BackHandler, Platform, useWindowDimensions, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {Navigation} from 'react-native-navigation';
-import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import Animated, {useAnimatedStyle, useReducedMotion, useSharedValue, withTiming} from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {doPing} from '@actions/remote/general';
@@ -94,6 +94,7 @@ const Server = ({
     const {formatMessage} = intl;
     const disableServerUrl = Boolean(managedConfig?.allowOtherServers === 'false' && managedConfig?.serverUrl);
     const additionalServer = launchType === Launch.AddServerFromDeepLink || launchType === Launch.AddServer;
+    const reducedMotion = useReducedMotion();
 
     const dismiss = () => {
         NetworkManager.invalidateClient(url);
@@ -156,13 +157,13 @@ const Server = ({
                 }
             },
             componentDidDisappear: () => {
-                translateX.value = -dimensions.width;
+                translateX.value = reducedMotion ? 0 : -dimensions.width;
             },
         };
         const unsubscribe = Navigation.events().registerComponentListener(listener, componentId);
 
         return () => unsubscribe.remove();
-    }, [componentId, url, dimensions]);
+    }, [componentId, dimensions, reducedMotion, translateX, url]);
 
     useEffect(() => {
         const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {

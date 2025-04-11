@@ -7,7 +7,6 @@ import {IntlProvider} from 'react-intl';
 import {Platform, type StyleProp, type ViewStyle} from 'react-native';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {Navigation} from 'react-native-navigation';
-import {ReducedMotionConfig, ReduceMotion, useReducedMotion} from 'react-native-reanimated';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 
 import {Screens} from '@constants';
@@ -53,18 +52,6 @@ const withManagedConfig = (Screen: React.ComponentType) => {
             <EMMProvider>
                 <Screen {...props}/>
             </EMMProvider>
-        );
-    };
-};
-
-const withReducedMotion = (Screen: React.ComponentType) => {
-    return function ReducedMotionFn(props: any) {
-        const reducedMotion = useReducedMotion();
-        return (
-            <>
-                <ReducedMotionConfig mode={reducedMotion ? ReduceMotion.Always : ReduceMotion.Never}/>
-                <Screen {...props}/>
-            </>
         );
     };
 };
@@ -186,13 +173,13 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             screen = withServerDatabase(require('@screens/latex').default);
             break;
         case Screens.LOGIN:
-            screen = withReducedMotion(withIntl(require('@screens/login').default));
+            screen = withIntl(require('@screens/login').default);
             break;
         case Screens.MANAGE_CHANNEL_MEMBERS:
             screen = withServerDatabase(require('@screens/manage_channel_members').default);
             break;
         case Screens.MFA:
-            screen = withReducedMotion(withIntl(require('@screens/mfa').default));
+            screen = withIntl(require('@screens/mfa').default);
             break;
         case Screens.SELECT_TEAM:
             screen = withServerDatabase(require('@screens/select_team').default);
@@ -271,7 +258,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             break;
         }
         case Screens.SSO:
-            screen = withReducedMotion(withIntl(require('@screens/sso').default));
+            screen = withIntl(require('@screens/sso').default);
             break;
         case Screens.TABLE:
             screen = withServerDatabase(require('@screens/table').default);
@@ -316,7 +303,7 @@ export function registerScreens() {
     const homeScreen = require('@screens/home').default;
     const serverScreen = require('@screens/server').default;
     const onboardingScreen = require('@screens/onboarding').default;
-    Navigation.registerComponent(Screens.ONBOARDING, () => withReducedMotion(withGestures(withIntl(withManagedConfig(onboardingScreen)), undefined)));
-    Navigation.registerComponent(Screens.SERVER, () => withReducedMotion(withSafeAreaInsets(withGestures(withIntl(withManagedConfig(serverScreen)), undefined))));
+    Navigation.registerComponent(Screens.ONBOARDING, () => withGestures(withIntl(withManagedConfig(onboardingScreen)), undefined));
+    Navigation.registerComponent(Screens.SERVER, () => withSafeAreaInsets(withGestures(withIntl(withManagedConfig(serverScreen)), undefined)));
     Navigation.registerComponent(Screens.HOME, () => withGestures(withSafeAreaInsets(withServerDatabase(withManagedConfig(homeScreen))), undefined));
 }

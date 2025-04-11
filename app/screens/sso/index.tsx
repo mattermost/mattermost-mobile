@@ -126,13 +126,13 @@ const SSO = ({
                 translateX.value = 0;
             },
             componentDidDisappear: () => {
-                translateX.value = -dimensions.width;
+                translateX.value = reducedMotion ? 0 : -dimensions.width;
             },
         };
         const unsubscribe = Navigation.events().registerComponentListener(listener, Screens.SSO);
 
         return () => unsubscribe.remove();
-    }, [dimensions]);
+    }, [dimensions, reducedMotion, translateX]);
 
     useEffect(() => {
         translateX.value = 0;

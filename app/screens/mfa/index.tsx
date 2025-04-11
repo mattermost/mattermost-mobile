@@ -151,13 +151,13 @@ const MFA = ({componentId, config, goToHome, license, loginId, password, serverD
                 translateX.value = 0;
             },
             componentDidDisappear: () => {
-                translateX.value = -dimensions.width;
+                translateX.value = reducedMotion ? 0 : -dimensions.width;
             },
         };
         const unsubscribe = Navigation.events().registerComponentListener(listener, componentId);
 
         return () => unsubscribe.remove();
-    }, [componentId, dimensions, translateX]);
+    }, [componentId, dimensions, translateX, reducedMotion]);
 
     useEffect(() => {
         translateX.value = 0;
