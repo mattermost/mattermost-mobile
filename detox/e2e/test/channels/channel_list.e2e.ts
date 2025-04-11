@@ -85,6 +85,7 @@ describe('Channels - Channel List', () => {
 
         // * Verify on first channel
         await ChannelScreen.toBeVisible();
+        await ChannelScreen.scheduledPostTooltipCloseButton.tap();
         await expect(ChannelScreen.headerTitle).toHaveText(testChannel.display_name);
 
         // # Go back to channel list screen and tap on a second channel

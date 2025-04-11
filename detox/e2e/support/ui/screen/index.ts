@@ -35,6 +35,7 @@ import PushNotificationSettingsScreen from './push_notification_settings';
 import ReactionsScreen from './reactions';
 import RecentMentionsScreen from './recent_mentions';
 import SavedMessagesScreen from './saved_messages';
+import ScheduleMessageScreen from './scheduled_message_screen';
 import SearchMessagesScreen from './search_messages';
 import SelectTimezoneScreen from './select_timezone';
 import ServerScreen from './server';
@@ -95,4 +96,5 @@ export {
     TimezoneDisplaySettingsScreen,
     UserProfileScreen,
     DraftScreen,
+    ScheduleMessageScreen,
 };

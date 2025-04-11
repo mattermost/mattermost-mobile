@@ -85,6 +85,7 @@ describe('Channels - Browse Channels', () => {
 
         // # Tap on the new public channel item
         await BrowseChannelsScreen.getChannelItem(channel.name).multiTap(2);
+        await BrowseChannelsScreen.dismissScheduledPostTooltip();
 
         // * Verify on newly joined public channel screen
         await ChannelScreen.toBeVisible();

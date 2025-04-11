@@ -17,7 +17,7 @@ import {
     ServerScreen,
     ChannelInfoScreen,
 } from '@support/ui/screen';
-import {getAdminAccount, getRandomId, timeouts} from '@support/utils';
+import {getAdminAccount, getRandomId, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Convert to Private Channel', () => {
@@ -45,6 +45,8 @@ describe('Channels - Convert to Private Channel', () => {
         await CreateOrEditChannelScreen.openCreateChannel();
         await CreateOrEditChannelScreen.displayNameInput.replaceText(channelDisplayName);
         await CreateOrEditChannelScreen.createButton.tap();
+        await wait(timeouts.TWO_SEC);
+        await ChannelScreen.scheduledPostTooltipCloseButton.tap();
         await ChannelInfoScreen.open();
         await ChannelInfoScreen.convertToPrivateChannel(channelDisplayName, {confirm: true});
 

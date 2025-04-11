@@ -171,6 +171,12 @@ describe('Channels - Find Channels', () => {
 });
 
 async function verifyDetailsOnChannelScreen(display_name: string) {
+    try {
+        await ChannelScreen.scheduledPostTooltipCloseButton.tap();
+    } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log('Element not visible, skipping click');
+    }
     await ChannelScreen.toBeVisible();
     await expect(ChannelScreen.headerTitle).toHaveText(display_name);
     await expect(ChannelScreen.introDisplayName).toHaveText(display_name);

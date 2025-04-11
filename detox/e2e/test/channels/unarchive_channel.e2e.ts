@@ -17,7 +17,7 @@ import {
     ServerScreen,
     ChannelInfoScreen,
 } from '@support/ui/screen';
-import {getAdminAccount, getRandomId, timeouts} from '@support/utils';
+import {getAdminAccount, getRandomId, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Unarchive Channel', () => {
@@ -27,6 +27,8 @@ describe('Channels - Unarchive Channel', () => {
         // # Log in to server as admin
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.loginAsAdmin(getAdminAccount());
+        await wait(timeouts.TWO_SEC);
+        await element(by.text('ad-1')).tap();
     });
 
     beforeEach(async () => {
@@ -45,6 +47,12 @@ describe('Channels - Unarchive Channel', () => {
         await CreateOrEditChannelScreen.openCreateChannel();
         await CreateOrEditChannelScreen.displayNameInput.replaceText(channelDisplayName);
         await CreateOrEditChannelScreen.createButton.tap();
+        try {
+            await ChannelScreen.scheduledPostTooltipCloseButton.tap();
+        } catch {
+            // eslint-disable-next-line no-console
+            console.log('Scheduled post tooltip not displayed');
+        }
         await ChannelInfoScreen.open();
         await ChannelInfoScreen.archivePublicChannel({confirm: true});
 
