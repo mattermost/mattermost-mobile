@@ -7,7 +7,7 @@ import {useIntl} from 'react-intl';
 import {Keyboard, Platform, Text, useWindowDimensions, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {Navigation} from 'react-native-navigation';
-import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import Animated, {useAnimatedStyle, useReducedMotion, useSharedValue, withTiming} from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {sendPasswordResetEmail} from '@actions/remote/session';
@@ -93,7 +93,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const ForgotPassword = ({componentId, serverUrl, theme}: Props) => {
     const dimensions = useWindowDimensions();
-    const translateX = useSharedValue(dimensions.width);
+    const reducedMotion = useReducedMotion();
+    const translateX = useSharedValue(reducedMotion ? 0 : dimensions.width);
     const [email, setEmail] = useState<string>('');
     const [error, setError] = useState<string>('');
     const [isPasswordLinkSent, setIsPasswordLinkSent] = useState<boolean>(false);
