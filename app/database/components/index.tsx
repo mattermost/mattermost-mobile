@@ -3,7 +3,6 @@
 
 import {DatabaseProvider} from '@nozbe/watermelondb/react';
 import React, {type ComponentType, useEffect, useState} from 'react';
-import {ReducedMotionConfig, ReduceMotion} from 'react-native-reanimated';
 
 import DeviceInfoProvider from '@context/device';
 import ServerProvider from '@context/server';
@@ -68,7 +67,6 @@ export function withServerDatabase<T extends JSX.IntrinsicAttributes>(Component:
                     <UserLocaleProvider database={state.database}>
                         <ServerProvider server={{displayName: state.serverDisplayName, url: state.serverUrl}}>
                             <ThemeProvider database={state.database}>
-                                <ReducedMotionConfig mode={ReduceMotion.System}/>
                                 <Component {...props}/>
                             </ThemeProvider>
                         </ServerProvider>
