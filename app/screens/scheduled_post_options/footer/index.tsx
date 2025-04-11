@@ -56,6 +56,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     applyButtonProcessingText: {
         color: changeOpacity(theme.centerChannelColor, 0.32),
+        ...typography('Body', 200, 'SemiBold'),
     },
     schedulingButtonContentWrapper: {
         position: 'relative',
@@ -89,7 +90,7 @@ type Props = BottomSheetFooterProps & {
     isScheduling: boolean;
 }
 
-export function ScheduledPostFooter({onSchedule, isScheduling, ...props}: Props) {
+function ScheduledPostFooter({onSchedule, isScheduling, ...props}: Props) {
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const isTablet = useIsTablet();
@@ -134,3 +135,5 @@ export function ScheduledPostFooter({onSchedule, isScheduling, ...props}: Props)
         </BottomSheetFooter>
     );
 }
+
+export default ScheduledPostFooter;

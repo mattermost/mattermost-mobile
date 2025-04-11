@@ -11,14 +11,15 @@ import {useIsTablet} from '@hooks/device';
 import {usePreventDoubleTap} from '@hooks/utils';
 import BottomSheet from '@screens/bottom_sheet';
 import {dismissBottomSheet} from '@screens/navigation';
+import {FOOTER_HEIGHT} from '@screens/post_priority_picker/footer';
 import ScheduledPostCoreOptions from '@screens/scheduled_post_options/core_options';
-import ScheduledPostFooter from '@screens/scheduled_post_options/footer';
-import {FOOTER_HEIGHT} from '@screens/scheduled_post_options/footer/scheduled_post_footer';
 import {logDebug} from '@utils/log';
 import {showScheduledPostCreationErrorSnackbar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getTimezone} from '@utils/user';
+
+import ScheduledPostFooter from './footer';
 
 import type {BottomSheetFooterProps} from '@gorhom/bottom-sheet';
 
@@ -49,6 +50,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
         height: OPTIONS_SEPARATOR_HEIGHT,
     },
+    errorText: {
+        color: theme.errorTextColor,
+        ...typography('Heading', 25),
+    },
 }));
 
 type Props = {
@@ -62,6 +67,7 @@ export function ScheduledPostOptions({currentUserTimezone, onSchedule}: Props) {
     const [isScheduling, setIsScheduling] = useState(false);
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
     const [customTimeSelected, setCustomTimeSelected] = useState(false);
+    const [isError, setIsError] = useState(false);
     const userTimezone = getTimezone(currentUserTimezone);
 
     const style = getStyleSheet(theme);
@@ -78,15 +84,18 @@ export function ScheduledPostOptions({currentUserTimezone, onSchedule}: Props) {
     }, [customTimeSelected]);
 
     const onSelectTime = useCallback((selectedValue: string) => {
+        setIsError(false);
         setSelectedTime(selectedValue);
     }, []);
 
     const handleOnSchedule = usePreventDoubleTap(useCallback(async () => {
         if (!selectedTime) {
+            setIsError(true);
             logDebug('ScheduledPostOptions', 'No time selected');
             return;
         }
 
+        setIsError(false);
         setIsScheduling(true);
         const schedulingInfo: SchedulingInfo = {
             scheduled_at: parseInt(selectedTime, 10),
@@ -98,9 +107,9 @@ export function ScheduledPostOptions({currentUserTimezone, onSchedule}: Props) {
         if (response?.error) {
             const errorMessage = response.error as string;
             showScheduledPostCreationErrorSnackbar(errorMessage);
-        } else {
-            await dismissBottomSheet();
+            return;
         }
+        dismissBottomSheet();
     }, [onSchedule, selectedTime]));
 
     const renderContent = () => {
@@ -123,6 +132,13 @@ export function ScheduledPostOptions({currentUserTimezone, onSchedule}: Props) {
                         onCustomTimeSelected={setCustomTimeSelected}
                     />
                 </View>
+                {isError &&
+                    <FormattedText
+                        id='scheduled_post_no_select_time'
+                        defaultMessage={'Please select the time'}
+                        style={style.errorText}
+                    />
+                }
             </View>
         );
     };

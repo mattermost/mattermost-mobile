@@ -2,8 +2,9 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {Platform, View} from 'react-native';
+import {View} from 'react-native';
 
+import CopyTextOption from '@components/copy_text_option/copy_text_option';
 import FormattedText from '@components/formatted_text';
 import SendHandler from '@components/post_draft/send_handler/';
 import {Screens} from '@constants';
@@ -11,13 +12,13 @@ import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED, type DraftType} from '@constants
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import BottomSheet from '@screens/bottom_sheet';
-import CopyTextOption from '@screens/post_options/options/copy_text_option';
+import {bottomSheetSnapPoint} from '@utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import DeleteDraft from './delete_draft';
-import EditDraft from './edit_draft';
-import RescheduledDraft from './rescheduled_draft';
+import DeleteDraft from '../../components/draft_scheduled_post/draft_scheduled_post_actions/delete_draft';
+import EditDraft from '../../components/draft_scheduled_post/draft_scheduled_post_actions/edit_draft';
+import RescheduledDraft from '../../components/draft_scheduled_post/draft_scheduled_post_actions/rescheduled_draft';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type DraftModel from '@typings/database/models/servers/draft';
@@ -58,9 +59,8 @@ const DraftScheduledPostOptions: React.FC<Props> = ({
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const snapPoints = useMemo(() => {
-        const bottomSheetAdjust = Platform.select({ios: 5, default: 20});
-        const COMPONENT_HEIGHT = TITLE_HEIGHT + (4 * ITEM_HEIGHT) + bottomSheetAdjust;
-        return [1, COMPONENT_HEIGHT];
+        const componentHeight = TITLE_HEIGHT + bottomSheetSnapPoint(4, ITEM_HEIGHT);
+        return [1, componentHeight];
     }, []);
 
     const renderContent = () => {

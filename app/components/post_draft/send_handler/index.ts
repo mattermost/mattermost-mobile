@@ -27,7 +27,7 @@ type OwnProps = {
     channelIsArchived?: boolean;
 }
 
-const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => {
+const enhanced = withObservables(['channelId', 'rootId', 'draftType'], (ownProps: WithDatabaseArgs & OwnProps) => {
     const database = ownProps.database;
     const {rootId, channelId, draftType} = ownProps;
     const channel = observeChannel(database, channelId);

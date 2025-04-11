@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
+import {switchMap} from 'rxjs/operators';
 
 import {Tutorial} from '@constants';
 import {observeTutorialWatched} from '@queries/app/global';
@@ -12,16 +13,11 @@ import GlobalScheduledPostList from './global_scheduled_post_list';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-type Props = {
-    teamId: string;
-} & WithDatabaseArgs;
-
-const withTeamId = withObservables([], ({database}: WithDatabaseArgs) => ({
-    teamId: observeCurrentTeamId(database),
-}));
-
-const enhanced = withObservables(['teamId'], ({database, teamId}: Props) => {
-    const allScheduledPosts = observeScheduledPostsForTeam(database, teamId, true);
+const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
+    const teamIdObservable = observeCurrentTeamId(database);
+    const allScheduledPosts = teamIdObservable.pipe(
+        switchMap((teamId) => observeScheduledPostsForTeam(database, teamId, true)),
+    );
     const tutorialWatched = observeTutorialWatched(Tutorial.SCHEDULED_POSTS_LIST);
 
     return {
@@ -30,4 +26,4 @@ const enhanced = withObservables(['teamId'], ({database, teamId}: Props) => {
     };
 });
 
-export default withDatabase(withTeamId(enhanced(GlobalScheduledPostList)));
+export default withDatabase(enhanced(GlobalScheduledPostList));

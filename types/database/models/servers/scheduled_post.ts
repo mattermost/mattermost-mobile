@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import type {Database, Model} from '@nozbe/watermelondb';
+import type {Model} from '@nozbe/watermelondb';
 import type {Associations} from '@nozbe/watermelondb/Model';
 
 /**
@@ -43,7 +43,7 @@ declare class ScheduledPostModel extends Model {
     /** error_code : The reason message if the schedule post failed */
     errorCode: string;
 
-    toApi: (serverDatabase: Database) => Promise<ScheduledPost>;
+    toApi: (user_id: string) => ScheduledPost;
 }
 
 export default ScheduledPostModel;

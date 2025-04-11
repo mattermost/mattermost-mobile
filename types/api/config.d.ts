@@ -201,7 +201,6 @@ interface ClientConfig {
     WebsocketPort: string;
     WebsocketSecurePort: string;
     WebsocketURL: string;
-    ScheduledPosts: string;
 }
 
 type SecurityClientConfig = Pick<ClientConfig, 'MobileEnableBiometrics' | 'MobileJailbreakProtection' | 'MobilePreventScreenCapture' | 'SiteName'>

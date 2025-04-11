@@ -15,7 +15,7 @@ import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getTimezone} from '@utils/user';
 
-import DateTimePicker from './date_time_selector';
+import DateTimePicker from '../../../components/data_time_selector/date_time_selector';
 
 import type UserModel from '@typings/database/models/servers/user';
 

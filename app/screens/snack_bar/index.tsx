@@ -7,7 +7,6 @@ import {
     DeviceEventEmitter,
     Text,
     TouchableOpacity,
-    useWindowDimensions,
     type StyleProp,
     type ViewStyle,
 } from 'react-native';
@@ -29,7 +28,7 @@ import {Navigation as NavigationConstants, Screens} from '@constants';
 import {MESSAGE_TYPE, SNACK_BAR_CONFIG} from '@constants/snack_bar';
 import {TABLET_SIDEBAR_WIDTH} from '@constants/view';
 import {useTheme} from '@context/theme';
-import {useIsTablet} from '@hooks/device';
+import {useIsTablet, useWindowDimensions} from '@hooks/device';
 import SecurityManager from '@managers/security_manager';
 import {dismissOverlay} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';

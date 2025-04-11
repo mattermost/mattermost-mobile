@@ -6,8 +6,8 @@ import React, {useCallback, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 
+import DateTimeSelector from '@components/data_time_selector/date_time_selector';
 import {useTheme} from '@context/theme';
-import DateTimeSelector from '@screens/custom_status_clear_after/components/date_time_selector';
 import PickerOption from '@screens/post_priority_picker/components/picker_option';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getFormattedTime} from '@utils/time';
@@ -19,12 +19,10 @@ const optionKeyOptionTomorrow = 'scheduledPostOptionTomorrow';
 const optionKeyOptionNextMonday = 'scheduledPostOptionNextMonday';
 const optionKeyOptionCustom = 'scheduledPostOptionCustom';
 
-const OPTIONS_SEPARATOR_HEIGHT = 1;
-
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     optionsSeparator: {
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
-        height: OPTIONS_SEPARATOR_HEIGHT,
+        height: 1,
     },
 }));
 

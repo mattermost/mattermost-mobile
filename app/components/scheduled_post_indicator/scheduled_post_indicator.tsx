@@ -43,7 +43,7 @@ type Props = {
     scheduledPostCount?: number;
 }
 
-export function ScheduledPostIndicator({
+function ScheduledPostIndicator({
     isThread,
     scheduledPostCount = 0,
 }: Props) {
@@ -58,41 +58,25 @@ export function ScheduledPostIndicator({
         }
     }, [serverUrl]);
 
-    if (scheduledPostCount === 0) {
-        return null;
-    }
-    let scheduledPostText;
-    if (scheduledPostCount === 1) {
-        scheduledPostText = isThread ? (
-            <FormattedMessage
-                id='scheduled_post.channel_indicator.thread.single'
-                defaultMessage='1 scheduled message in thread.'
-            />
-        ) : (
-            <FormattedMessage
-                id='scheduled_post.channel_indicator.single'
-                defaultMessage='1 scheduled message in channel.'
-            />
-        );
-    } else {
-        scheduledPostText = isThread ? (
-            <FormattedMessage
-                id='scheduled_post.channel_indicator.thread.multiple'
-                defaultMessage='{count} scheduled messages in thread.'
-                values={{
-                    count: scheduledPostCount,
-                }}
-            />
-        ) : (
-            <FormattedMessage
-                id='scheduled_post.channel_indicator.multiple'
-                defaultMessage='{count} scheduled messages in channel.'
-                values={{
-                    count: scheduledPostCount,
-                }}
-            />
-        );
-    }
+    const scheduledPostText = isThread ? (
+        <FormattedMessage
+            id='scheduled_post.channel_indicator.thread'
+            defaultMessage={`{count, plural,
+                one {# scheduled message in thread.}
+                other {# scheduled messages in thread.}
+            }`}
+            values={{count: scheduledPostCount}}
+        />
+    ) : (
+        <FormattedMessage
+            id='scheduled_post.channel_indicator'
+            defaultMessage={`{count, plural,
+                one {# scheduled message in channel.}
+                other {# scheduled messages in channel.}
+            }`}
+            values={{count: scheduledPostCount}}
+        />
+    );
 
     return (
         <View
@@ -121,3 +105,5 @@ export function ScheduledPostIndicator({
         </View>
     );
 }
+
+export default ScheduledPostIndicator;

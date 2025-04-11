@@ -79,7 +79,7 @@ export function DraftTabsHeader({draftsCount, scheduledPostCount, selectedTab, o
     const styles = getStyleSheet(theme);
     const viewingDrafts = selectedTab === DRAFT_TAB_INDEX;
 
-    const draftCountBadge = useMemo(() => {
+    const draftCountBadge = () => {
         const style = [styles.badgeStyles, selectedTab === DRAFT_TAB_INDEX ? styles.activeBadgeStyles : null];
 
         return (
@@ -90,9 +90,9 @@ export function DraftTabsHeader({draftsCount, scheduledPostCount, selectedTab, o
                 testID='draft_count_badge'
             />
         );
-    }, [draftsCount, selectedTab, styles.activeBadgeStyles, styles.badgeStyles]);
+    };
 
-    const scheduledPostCountBadge = useMemo(() => {
+    const scheduledPostCountBadge = () => {
         const style = [styles.badgeStyles, selectedTab === DRAFT_SCREEN_TAB_SCHEDULED_POSTS ? styles.activeBadgeStyles : null];
 
         return (
@@ -103,7 +103,7 @@ export function DraftTabsHeader({draftsCount, scheduledPostCount, selectedTab, o
                 testID='scheduled_post_count_badge'
             />
         );
-    }, [scheduledPostCount, selectedTab, styles.activeBadgeStyles, styles.badgeStyles]);
+    };
 
     const {draftsContanerStyle, draftsTabStyle, scheduledContainerStyle, scheduledTabStyle} = useMemo(() => {
         return {
@@ -151,7 +151,7 @@ export function DraftTabsHeader({draftsCount, scheduledPostCount, selectedTab, o
                             defaultMessage='Drafts'
                             style={draftsTabStyle}
                         />
-                        {draftCountBadge}
+                        {draftCountBadge()}
                     </View>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -165,7 +165,7 @@ export function DraftTabsHeader({draftsCount, scheduledPostCount, selectedTab, o
                             defaultMessage='Scheduled'
                             style={scheduledTabStyle}
                         />
-                        {scheduledPostCountBadge}
+                        {scheduledPostCountBadge()}
                     </View>
                 </TouchableOpacity>
             </View>
