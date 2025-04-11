@@ -82,7 +82,8 @@ const Server = ({
     const intl = useIntl();
     const managedConfig = useManagedConfig<ManagedConfig>();
     const dimensions = useWindowDimensions();
-    const translateX = useSharedValue(animated ? dimensions.width : 0);
+    const reducedMotion = useReducedMotion();
+    const translateX = useSharedValue(animated && !reducedMotion ? dimensions.width : 0);
     const keyboardAwareRef = useRef<KeyboardAwareScrollView>(null);
     const [connecting, setConnecting] = useState(false);
     const [displayName, setDisplayName] = useState<string>('');
@@ -94,7 +95,6 @@ const Server = ({
     const {formatMessage} = intl;
     const disableServerUrl = Boolean(managedConfig?.allowOtherServers === 'false' && managedConfig?.serverUrl);
     const additionalServer = launchType === Launch.AddServerFromDeepLink || launchType === Launch.AddServer;
-    const reducedMotion = useReducedMotion();
 
     const dismiss = () => {
         NetworkManager.invalidateClient(url);
