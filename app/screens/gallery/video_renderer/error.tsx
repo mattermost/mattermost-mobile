@@ -11,7 +11,6 @@ import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {Preferences} from '@constants';
-import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {calculateDimensions} from '@utils/images';
 import {typography} from '@utils/typography';
 
@@ -121,9 +120,7 @@ const VideoError = ({filename, height, isDownloading, isRemote, onShouldHideCont
                         onPress={handleDownload}
                         theme={Preferences.THEMES.onyx}
                         size={'lg'}
-                        textStyle={buttonTextStyle(Preferences.THEMES.onyx, 'lg', 'primary', isDownloading ? 'disabled' : 'default')}
                         text={intl.formatMessage({id: 'video.download', defaultMessage: 'Download video'})}
-                        backgroundStyle={buttonBackgroundStyle(Preferences.THEMES.onyx, 'lg', 'primary', isDownloading ? 'disabled' : 'default')}
                     />
                 </View>
                 }

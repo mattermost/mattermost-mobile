@@ -69,6 +69,10 @@ jest.mock('expo-web-browser', () => ({
     })),
 }));
 
+jest.mock('@mattermost/react-native-turbo-log', () => ({
+    getLogPaths: jest.fn(),
+}));
+
 jest.mock('@nozbe/watermelondb/utils/common/randomId/randomId', () => ({}));
 
 jest.mock('@nozbe/watermelondb/react/withObservables/garbageCollector', () => {
@@ -173,6 +177,9 @@ jest.doMock('react-native', () => {
             removeChannelNotifications: jest.fn().mockImplementation(),
             removeThreadNotifications: jest.fn().mockImplementation(),
             removeServerNotifications: jest.fn().mockImplementation(),
+
+            createZipFile: jest.fn(),
+            saveFile: jest.fn(),
 
             unlockOrientation: jest.fn(),
             getWindowDimensions: jest.fn().mockReturnValue({width: 426, height: 952}),
@@ -428,6 +435,13 @@ jest.mock('react-native-haptic-feedback', () => {
     };
 });
 
+jest.mock('@utils/log', () => ({
+    logError: jest.fn(),
+    logDebug: jest.fn(),
+    logInfo: jest.fn(),
+    logWarning: jest.fn(),
+}));
+
 declare const global: {
     requestAnimationFrame: (callback: () => void) => void;
     performance: {
@@ -461,3 +475,7 @@ console.warn = filterStackTrace(colors.yellow, '⚠️  Warning:');
 console.error = filterStackTrace(colors.red, '🚨 Error:');
 console.log = filterStackTrace(colors.cyan, '📢 Log:');
 console.debug = filterStackTrace(colors.blue, '🐞 Debug:');
+
+// Silence warnings about missing EXPO_OS environment variable
+// on tests
+process.env.EXPO_OS = 'ios'; // eslint-disable-line no-process-env

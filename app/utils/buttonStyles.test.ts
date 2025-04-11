@@ -3,7 +3,7 @@
 
 import Preferences from '@constants/preferences';
 
-import {buttonBackgroundStyle, buttonStyles, getBackgroundStyles, buttonSizeStyles, buttonTextStyle, buttonTextStyles, buttonTextSizeStyles} from './buttonStyles';
+import {buttonBackgroundStyle, buttonStyles, getBackgroundStyles, buttonSizeStyles, buttonTextStyle, buttonTextSizeStyles} from './buttonStyles';
 import {changeOpacity} from './theme';
 
 describe('get the style of a button', () => {
@@ -65,28 +65,24 @@ describe('get the style of a button', () => {
 });
 
 describe('get the text style of a button', () => {
-    const defaultTextStyle = buttonTextStyles.main;
     const theme = Preferences.THEMES.denim;
 
     test('button text default values', () => {
         const tests = [{
             getStyle: () => buttonTextStyle(theme),
             expected: [
-                defaultTextStyle,
                 buttonTextSizeStyles.m,
                 {color: theme.buttonColor},
             ],
         }, {
             getStyle: () => buttonTextStyle(theme, 'xs'),
             expected: [
-                defaultTextStyle,
                 buttonTextSizeStyles.xs,
                 {color: theme.buttonColor},
             ],
         }, {
             getStyle: () => buttonTextStyle(theme, 'lg', 'secondary'),
             expected: [
-                defaultTextStyle,
                 buttonTextSizeStyles.lg,
                 {color: theme.buttonBg},
             ],
@@ -104,26 +100,29 @@ describe('get the text style of a button', () => {
         const btnTypes: ButtonType[] = ['default', 'destructive', 'disabled', 'inverted'];
 
         const getColor = (type: ButtonType, emphasis: ButtonEmphasis) => {
-            let color: string = theme.buttonColor;
-
             if (type === 'disabled') {
-                color = changeOpacity(theme.centerChannelColor, 0.32);
+                return changeOpacity(theme.centerChannelColor, 0.32);
             }
 
-            if ((type === 'destructive' && emphasis !== 'primary')) {
-                color = theme.errorTextColor;
+            if (type === 'destructive') {
+                if (emphasis === 'primary') {
+                    return theme.buttonColor;
+                }
+                return theme.errorTextColor;
             }
 
-            if ((type === 'inverted' && emphasis === 'primary') ||
-                (type !== 'inverted' && emphasis !== 'primary')) {
-                color = theme.buttonBg;
+            if (type === 'inverted') {
+                if (emphasis === 'primary') {
+                    return theme.buttonBg;
+                }
+                return theme.buttonColor;
             }
 
-            if (type === 'inverted' && emphasis === 'tertiary') {
-                color = theme.sidebarText;
+            if (emphasis === 'primary') {
+                return theme.buttonColor;
             }
 
-            return color;
+            return theme.buttonBg;
         };
 
         btnEnphasis.forEach((emphasis) => {
@@ -131,7 +130,6 @@ describe('get the text style of a button', () => {
                 btnTypes.forEach((type) => {
                     const style = buttonTextStyle(theme, size, emphasis, type);
                     expect(style).toEqual([
-                        defaultTextStyle,
                         buttonTextSizeStyles[size],
                         {color: getColor(type, emphasis)},
                     ]);
