@@ -8,10 +8,6 @@ include ':reactnativenotifications'
 project(':reactnativenotifications').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-notifications/lib/android/app')
 include ':watermelondb-jsi'
 project(':watermelondb-jsi').projectDir = new File(rootProject.projectDir, '../node_modules/@nozbe/watermelondb/native/android-jsi')
-include ':frameanimation'
-project(':frameanimation').projectDir = new File('../node_modules/APNG4Android/frameanimation')
-include ':gif'
-project(':gif').projectDir = new File('../node_modules/APNG4Android/gif')
 includeBuild('../node_modules/@react-native/gradle-plugin')
 apply from: new File(["node", "--print", "require.resolve('expo/package.json')"].execute(null, rootDir).text.trim(), "../scripts/autolinking.gradle")
 useExpoModules()
