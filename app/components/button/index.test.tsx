@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {fireEvent, render} from '@testing-library/react-native';
-import React from 'react';
+import React, {type ComponentProps} from 'react';
 import {View, Text} from 'react-native';
 
 import {Preferences} from '@constants';
@@ -10,46 +10,32 @@ import {Preferences} from '@constants';
 import Button from './index';
 
 describe('components/button', () => {
-    const theme: Theme = Preferences.THEMES.denim;
+    const getBaseProps = (): ComponentProps<typeof Button> => ({
+        onPress: jest.fn(),
+        text: 'Test Button',
+        theme: Preferences.THEMES.denim,
+        testID: 'test-button',
+    });
 
     it('should render button with text', () => {
-        const {getByText} = render(
-            <Button
-                onPress={jest.fn()}
-                text='Test Button'
-                theme={theme}
-            />,
-        );
+        const props = getBaseProps();
+        const {getByText} = render(<Button {...props}/>);
 
         expect(getByText('Test Button')).toBeTruthy();
     });
 
     it('should handle onPress', () => {
-        const onPress = jest.fn();
-        const {getByTestId} = render(
-            <Button
-                onPress={onPress}
-                text='Test Button'
-                theme={theme}
-                testID='test-button'
-            />,
-        );
+        const props = getBaseProps();
+        const {getByTestId} = render(<Button {...props}/>);
 
         fireEvent.press(getByTestId('test-button'));
-        expect(onPress).toHaveBeenCalled();
+        expect(props.onPress).toHaveBeenCalled();
     });
 
     it('should render with icon', () => {
-        const {getByTestId} = render(
-            <Button
-                onPress={jest.fn()}
-                text='Test Button'
-                theme={theme}
-                iconName='close'
-                iconSize={24}
-                testID='test-button'
-            />,
-        );
+        const props = getBaseProps();
+        props.iconName = 'close';
+        const {getByTestId} = render(<Button {...props}/>);
 
         const icon = getByTestId('test-button-icon');
         expect(icon).toBeTruthy();
@@ -57,31 +43,18 @@ describe('components/button', () => {
     });
 
     it('should render disabled button', () => {
-        const onPress = jest.fn();
-        const {getByTestId} = render(
-            <Button
-                onPress={onPress}
-                text='Test Button'
-                theme={theme}
-                disabled={true}
-                testID='test-button'
-            />,
-        );
+        const props = getBaseProps();
+        props.disabled = true;
+        const {getByTestId} = render(<Button {...props}/>);
 
         fireEvent.press(getByTestId('test-button'));
-        expect(onPress).not.toHaveBeenCalled();
+        expect(props.onPress).not.toHaveBeenCalled();
     });
 
     it('should render icon on the right', () => {
-        const props = {
-            onPress: jest.fn(),
-            text: 'Test Button',
-            theme,
-            iconName: 'close',
-            iconSize: 24,
-            isIconOnTheRight: false,
-            testID: 'test-button',
-        };
+        const props = getBaseProps();
+        props.isIconOnTheRight = false;
+        props.iconName = 'close';
 
         const {getByTestId, rerender} = render(<Button {...props}/>);
 
@@ -103,15 +76,9 @@ describe('components/button', () => {
                 <Text>{'Custom Icon'}</Text>
             </View>
         );
-        const {getByTestId} = render(
-            <Button
-                onPress={jest.fn()}
-                text='Test Button'
-                theme={theme}
-                iconComponent={<CustomIcon/>}
-                testID='test-button'
-            />,
-        );
+        const props = getBaseProps();
+        props.iconComponent = <CustomIcon/>;
+        const {getByTestId} = render(<Button {...props}/>);
 
         expect(getByTestId('custom-icon')).toBeTruthy();
     });

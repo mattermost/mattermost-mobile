@@ -9,9 +9,7 @@ import CompassIcon from '@components/compass_icon';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {changeOpacity} from '@utils/theme';
 
-type ConditionalProps = | {iconName: string; iconSize: number} | {iconName?: never; iconSize?: never}
-
-type Props = ConditionalProps & {
+type Props = {
     theme: Theme;
     backgroundStyle?: StyleProp<ViewStyle>;
     buttonContainerStyle?: StyleProp<ViewStyle>;
@@ -27,6 +25,7 @@ type Props = ConditionalProps & {
     disabled?: boolean;
     hitSlop?: Insets;
     isIconOnTheRight?: boolean;
+    iconName?: string;
 };
 
 const styles = StyleSheet.create({
@@ -34,14 +33,24 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         gap: 7,
     },
+    icon: {
+        verticalAlign: 'middle',
+    },
 });
+
+const iconSizePerSize: Record<ButtonSize, number> = {
+    xs: 14,
+    s: 14,
+    m: 18,
+    lg: 22,
+};
 
 const Button = ({
     theme,
     backgroundStyle,
     buttonContainerStyle,
     textStyle,
-    size,
+    size = 'm',
     emphasis,
     buttonType,
     buttonState,
@@ -49,7 +58,6 @@ const Button = ({
     text,
     testID,
     iconName,
-    iconSize,
     isIconOnTheRight = false,
     iconComponent,
     disabled,
@@ -64,15 +72,6 @@ const Button = ({
         buttonTextStyle(theme, size, emphasis, buttonType),
         textStyle,
     ], [theme, textStyle, size, emphasis, buttonType]);
-
-    const textContainerStyle = useMemo(
-        () =>
-            (iconSize ? [
-                styles.container,
-                {minHeight: iconSize},
-            ] : styles.container),
-        [iconSize],
-    );
 
     let buttonStyle = StyleSheet.flatten(bgStyle);
     if (disabled) {
@@ -90,9 +89,10 @@ const Button = ({
         icon = (
             <CompassIcon
                 name={iconName!}
-                size={iconSize}
+                size={iconSizePerSize[size]}
                 color={StyleSheet.flatten(txtStyle).color}
                 testID={`${testID}-icon`}
+                style={styles.icon}
             />
         );
     }
@@ -107,12 +107,12 @@ const Button = ({
             hitSlop={hitSlop}
         >
             <View
-                style={textContainerStyle}
+                style={styles.container}
                 testID={`${testID}-text-container`}
             >
                 {!isIconOnTheRight && icon}
                 <Text
-                    style={txtStyle}
+                    style={[txtStyle]}
                     numberOfLines={1}
                 >
                     {text}

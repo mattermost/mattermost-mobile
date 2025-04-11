@@ -116,7 +116,6 @@ const AppLogs = () => {
                     emphasis='tertiary'
                     theme={theme}
                     iconName='download-outline'
-                    iconSize={20}
                     disabled={!hasLogs}
                 />
             </View>

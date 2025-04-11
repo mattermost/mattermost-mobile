@@ -115,7 +115,7 @@ const ReportProblem = ({
 
     return (
         <View style={styles.container}>
-            <ScrollView style={styles.content}>
+            <ScrollView contentContainerStyle={styles.content}>
                 <View style={styles.detailsSection}>
                     <Text style={styles.detailsTitle}>
                         {intl.formatMessage({
@@ -139,20 +139,22 @@ const ReportProblem = ({
                     </>
                 )}
             </ScrollView>
-            <View style={styles.buttonContainer}>
-                <Button
-                    theme={theme}
-                    text={intl.formatMessage({
-                        id: 'screen.report_problem.button',
-                        defaultMessage: 'Report a problem',
-                    })}
-                    onPress={handleReport}
-                    iconName='open-in-new'
-                    iconSize={20}
-                    size='lg'
-                    isIconOnTheRight={true}
-                />
-            </View>
+            {reportAProblemType !== 'hidden' && (
+                <View style={styles.buttonContainer}>
+                    <Button
+                        theme={theme}
+                        text={intl.formatMessage({
+                            id: 'screen.report_problem.button',
+                            defaultMessage: 'Report a problem',
+                        })}
+                        onPress={handleReport}
+                        iconName='open-in-new'
+                        size='lg'
+                        isIconOnTheRight={true}
+                        buttonContainerStyle={{alignContent: 'center', justifyContent: 'center', alignItems: 'center'}}
+                    />
+                </View>
+            )}
         </View>
     );
 };

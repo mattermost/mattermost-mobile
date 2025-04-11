@@ -67,7 +67,6 @@ const CopyMetadata = ({
                     onPress={handleCopy}
                     emphasis='tertiary'
                     iconName='content-copy'
-                    iconSize={20}
                     theme={theme}
                     text={intl.formatMessage({id: 'report_a_problem.metadata.copy', defaultMessage: 'Copy'})}
                 />
