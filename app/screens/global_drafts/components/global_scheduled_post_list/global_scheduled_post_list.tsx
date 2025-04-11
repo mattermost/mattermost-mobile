@@ -109,7 +109,7 @@ const GlobalScheduledPostList: React.FC<Props> = ({
 
     useAndroidHardwareBackHandler(Screens.GLOBAL_DRAFTS, collapse);
 
-    const close = useCallback(() => {
+    const closeTooltip = useCallback(() => {
         setTooltipVisible(false);
         storeScheduledPostsListTutorial();
     }, []);
@@ -124,11 +124,11 @@ const GlobalScheduledPostList: React.FC<Props> = ({
                     placement={'bottom'}
                     content={
                         <DraftTooltip
-                            onClose={close}
+                            onClose={closeTooltip}
                             draftType={DRAFT_TYPE_SCHEDULED}
                         />
                     }
-                    onClose={close}
+                    onClose={closeTooltip}
                     tooltipStyle={styles.tooltipStyle}
                 >
                     <View
@@ -155,7 +155,7 @@ const GlobalScheduledPostList: React.FC<Props> = ({
                 firstItem={item.id === firstScheduledPostId}
             />
         );
-    }, [close, firstScheduledPostId, layoutWidth, location, styles.swippeableContainer, styles.tooltipContentStyle, styles.tooltipStyle, tooltipVisible, tutorialWatched]);
+    }, [closeTooltip, firstScheduledPostId, layoutWidth, location, styles.swippeableContainer, styles.tooltipContentStyle, styles.tooltipStyle, tooltipVisible, tutorialWatched]);
 
     return (
         <View

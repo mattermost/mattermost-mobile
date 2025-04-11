@@ -12,14 +12,13 @@ import CompassIcon from '@components/compass_icon';
 import DraftAndSchedulePost from '@components/draft_scheduled_post';
 import FormattedText from '@components/formatted_text';
 import {Events} from '@constants';
+import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED, type DraftType} from '@constants/draft';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {deleteDraftConfirmation} from '@utils/draft';
 import {deleteScheduledPostConfirmation} from '@utils/scheduled_post';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
-
-import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED, type DraftType} from '../../../constants/draft';
 
 import type DraftModel from '@typings/database/models/servers/draft';
 import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
@@ -153,7 +152,7 @@ const DraftAndScheduledPostSwipeActions: React.FC<Props> = ({
         });
 
         return () => listener.remove();
-    }, [item.id, draftType]);
+    }, [item.id]);
 
     return (
         <GestureHandlerRootView>

@@ -11,14 +11,15 @@ import {useIsTablet} from '@hooks/device';
 import {usePreventDoubleTap} from '@hooks/utils';
 import BottomSheet from '@screens/bottom_sheet';
 import {dismissBottomSheet} from '@screens/navigation';
+import {FOOTER_HEIGHT} from '@screens/post_priority_picker/footer';
 import ScheduledPostCoreOptions from '@screens/scheduled_post_options/core_options';
-import ScheduledPostFooter from '@screens/scheduled_post_options/footer';
-import {FOOTER_HEIGHT} from '@screens/scheduled_post_options/footer/scheduled_post_footer';
 import {logDebug} from '@utils/log';
 import {showScheduledPostCreationErrorSnackbar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getTimezone} from '@utils/user';
+
+import ScheduledPostFooter from './footer';
 
 import type {BottomSheetFooterProps} from '@gorhom/bottom-sheet';
 

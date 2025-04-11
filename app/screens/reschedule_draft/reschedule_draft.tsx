@@ -6,6 +6,7 @@ import {useIntl} from 'react-intl';
 import {Keyboard, SafeAreaView, StyleSheet, View} from 'react-native';
 
 import {updateScheduledPost} from '@actions/remote/scheduled_post';
+import DateTimeSelector from '@components/data_time_selector/date_time_selector';
 import Loading from '@components/loading';
 import {MESSAGE_TYPE, SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useServerUrl} from '@context/server';
@@ -13,7 +14,6 @@ import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {usePreventDoubleTap} from '@hooks/utils';
-import DateTimeSelector from '@screens/custom_status_clear_after/components/date_time_selector';
 import {buildNavigationButton, dismissModal, setButtons} from '@screens/navigation';
 import {logDebug} from '@utils/log';
 import {showSnackBar} from '@utils/snack_bar';
@@ -31,8 +31,6 @@ type Props = {
     draft: ScheduledPostModel;
 }
 
-const OPTIONS_PADDING = 12;
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -43,7 +41,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     optionsContainer: {
-        paddingTop: OPTIONS_PADDING,
+        paddingTop: 12,
     },
 });
 

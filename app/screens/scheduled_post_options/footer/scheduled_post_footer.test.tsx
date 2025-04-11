@@ -8,7 +8,7 @@ import {useIsTablet} from '@hooks/device';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
-import {ScheduledPostFooter} from './scheduled_post_footer';
+import ScheduledPostFooter from '.';
 
 import type Database from '@nozbe/watermelondb/Database';
 

@@ -25,8 +25,10 @@ export const queryScheduledPostsForTeam = (database: Database, teamId: string, i
 
 export const queryScheduledPost = (database: Database, channelId: string, rootId = '') => {
     return database.collections.get<ScheduledPostModel>(SCHEDULED_POST).query(
-        Q.where('channel_id', channelId),
-        Q.where('root_id', rootId),
+        Q.and(
+            Q.where('channel_id', channelId),
+            Q.where('root_id', rootId),
+        ),
     );
 };
 
@@ -48,10 +50,10 @@ export const observeScheduledPostCountForChannel = (
     isCRTEnabled: boolean,
 ) => {
     let query = database.get<ScheduledPostModel>(SCHEDULED_POST).query(
-        Q.on(CHANNEL,
-            Q.where('id', channelId),
+        Q.and(
+            Q.where('channel_id', channelId),
+            Q.where('error_code', ''),
         ),
-        Q.where('error_code', ''),
     );
 
     if (isCRTEnabled) {

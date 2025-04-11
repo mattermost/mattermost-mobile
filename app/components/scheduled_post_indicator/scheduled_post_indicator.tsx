@@ -43,7 +43,7 @@ type Props = {
     scheduledPostCount?: number;
 }
 
-export function ScheduledPostIndicator({
+function ScheduledPostIndicator({
     isThread,
     scheduledPostCount = 0,
 }: Props) {
@@ -58,9 +58,6 @@ export function ScheduledPostIndicator({
         }
     }, [serverUrl]);
 
-    if (scheduledPostCount === 0) {
-        return null;
-    }
     const scheduledPostText = isThread ? (
         <FormattedMessage
             id='scheduled_post.channel_indicator.thread'
@@ -108,3 +105,5 @@ export function ScheduledPostIndicator({
         </View>
     );
 }
+
+export default ScheduledPostIndicator;
