@@ -8,23 +8,34 @@ import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {updateLocalUser} from '@actions/local/user';
-import {setDefaultProfileImage, updateMe, uploadUserProfileImage, fetchCustomAttributes, updateCustomAttributes} from '@actions/remote/user';
+import {fetchCustomProfileAttributes, updateCustomProfileAttributes} from '@actions/remote/custom_profile';
+import {setDefaultProfileImage, updateMe, uploadUserProfileImage} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
 import TabletTitle from '@components/tablet_title';
 import {Events} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import DatabaseManager from '@database/manager';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import SecurityManager from '@managers/security_manager';
+import {
+    convertProfileAttributesToCustomAttributes,
+    observeCustomProfileAttributesByUserId,
+    observeCustomProfileFields,
+    queryCustomProfileAttributesByUserId,
+} from '@queries/servers/custom_profile';
 import {dismissModal, popTopScreen, setButtons} from '@screens/navigation';
+import {logError} from '@utils/log';
 import {preventDoubleTap} from '@utils/tap';
+import {sortCustomProfileAttributes} from '@utils/user';
 
 import ProfileForm, {CUSTOM_ATTRS_PREFIX} from './components/form';
 import ProfileError from './components/profile_error';
 import Updating from './components/updating';
 import UserProfilePicture from './components/user_profile_picture';
 
+import type {CustomAttribute} from '@typings/api/custom_profile_attributes';
 import type {EditProfileProps, NewProfileImage, UserInfo} from '@typings/screens/edit_profile';
 
 const edges: Edge[] = ['bottom', 'left', 'right'];
@@ -43,6 +54,11 @@ const styles = StyleSheet.create({
 const CLOSE_BUTTON_ID = 'close-edit-profile';
 const UPDATE_BUTTON_ID = 'update-profile';
 const CUSTOM_ATTRS_PREFIX_NAME = `${CUSTOM_ATTRS_PREFIX}.`;
+
+const customAttributesReducer = (acc: Record<string, CustomAttribute>, attr: CustomAttribute) => {
+    acc[attr.id] = attr;
+    return acc;
+};
 
 const EditProfile = ({
     componentId, currentUser, isModal, isTablet,
@@ -67,6 +83,7 @@ const EditProfile = ({
     const [error, setError] = useState<unknown>();
     const [usernameError, setUsernameError] = useState<unknown>();
     const [updating, setUpdating] = useState(false);
+    const lastRequest = useRef(0);
 
     const buttonText = intl.formatMessage({id: 'mobile.account.settings.save', defaultMessage: 'Save'});
     const rightButton = useMemo(() => {
@@ -120,19 +137,110 @@ const EditProfile = ({
         setCanSave(value);
     }, [componentId, rightButton, isTablet]);
 
+    // Get database and observables
+    const database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
+    const dbAttributes = useState(() =>
+        (enableCustomAttributes ? observeCustomProfileAttributesByUserId(database, currentUser?.id || '') : null),
+    )[0];
+    const dbFields = useState(() =>
+        (enableCustomAttributes ? observeCustomProfileFields(database) : null),
+    )[0];
+
     useEffect(() => {
         const loadCustomAttributes = async () => {
             if (!currentUser) {
                 return;
             }
-            const {error: fetchError, attributes} = await fetchCustomAttributes(serverUrl, currentUser.id);
-            if (!fetchError && attributes) {
-                setUserInfo((prev: UserInfo) => ({...prev, customAttributes: attributes} as UserInfo));
+
+            try {
+                // First load from database
+                if (enableCustomAttributes) {
+                    const attrs = await queryCustomProfileAttributesByUserId(database, currentUser.id).fetch();
+                    if (attrs.length) {
+                        const converted = await convertProfileAttributesToCustomAttributes(
+                            database,
+                            attrs,
+                            sortCustomProfileAttributes,
+                        );
+                        if (converted.length) {
+                            setUserInfo((prev) => ({
+                                ...prev,
+                                customAttributes: converted.reduce(customAttributesReducer, {} as Record<string, CustomAttribute>),
+                            }));
+                        }
+                    }
+                }
+            } catch (dbError) {
+                logError('Error loading custom attributes from database', dbError);
+            }
+
+            // Then fetch from server for latest data
+            const reqTime = Date.now();
+            lastRequest.current = reqTime;
+            const {error: fetchError, attributes} = await fetchCustomProfileAttributes(serverUrl, currentUser.id);
+            if (!fetchError && attributes && lastRequest.current === reqTime) {
+                setUserInfo((prev) => ({...prev, customAttributes: attributes}));
             }
         };
 
         loadCustomAttributes();
-    }, [currentUser, serverUrl]);
+    }, [currentUser, serverUrl, database, enableCustomAttributes]);
+
+    // Update when database changes using the observables
+    useEffect(() => {
+        if (dbAttributes || dbFields) {
+            const subscriptions: Array<{unsubscribe: () => void}> = [];
+
+            if (dbAttributes) {
+                const attributesSubscription = dbAttributes.subscribe(async (attributes) => {
+                    if (attributes?.length) {
+                        const converted = await convertProfileAttributesToCustomAttributes(
+                            database,
+                            attributes,
+                            sortCustomProfileAttributes,
+                        );
+
+                        const attributesMap = converted.reduce(customAttributesReducer, {} as Record<string, CustomAttribute>);
+
+                        // eslint-disable-next-line max-nested-callbacks
+                        setUserInfo((prev) => ({
+                            ...prev,
+                            customAttributes: attributesMap,
+                        }));
+                    }
+                });
+                subscriptions.push(attributesSubscription);
+            }
+
+            if (dbFields) {
+                const fieldsSubscription = dbFields.subscribe(async () => {
+                    // When fields change, we need to reconvert the attributes to get the updated order
+                    const attrs = await queryCustomProfileAttributesByUserId(database, currentUser?.id || '').fetch();
+                    if (attrs.length) {
+                        const converted = await convertProfileAttributesToCustomAttributes(
+                            database,
+                            attrs,
+                            sortCustomProfileAttributes,
+                        );
+
+                        const attributesMap = converted.reduce(customAttributesReducer, {} as Record<string, CustomAttribute>);
+
+                        // eslint-disable-next-line max-nested-callbacks
+                        setUserInfo((prev) => ({
+                            ...prev,
+                            customAttributes: attributesMap,
+                        }));
+                    }
+                });
+                subscriptions.push(fieldsSubscription);
+            }
+
+            return () => {
+                subscriptions.forEach((subscription) => subscription.unsubscribe());
+            };
+        }
+        return undefined;
+    }, [dbAttributes, dbFields, database, currentUser?.id]);
 
     const submitUser = useCallback(preventDoubleTap(async () => {
         if (!currentUser) {
@@ -173,7 +281,7 @@ const EditProfile = ({
 
                 // Update custom attributes if changed
                 if (userInfo.customAttributes) {
-                    const {error: attrError} = await updateCustomAttributes(serverUrl, userInfo.customAttributes);
+                    const {error: attrError} = await updateCustomProfileAttributes(serverUrl, currentUser.id, userInfo.customAttributes);
                     if (attrError) {
                         resetScreen(attrError);
                         return;
