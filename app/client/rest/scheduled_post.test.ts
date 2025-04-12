@@ -104,7 +104,7 @@ describe('ClientScheduledPost', () => {
         const expectedOptions = {
             method: 'put',
             body: updatedPost,
-            headers: {'Connection-Id': ''},
+            headers: {},
         };
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
     });
@@ -126,7 +126,7 @@ describe('ClientScheduledPost', () => {
         const expectedUrl = `${client.getScheduledPostRoute()}/${scheduledPostId}`;
         const expectedOptions = {
             method: 'delete',
-            headers: {'Connection-Id': ''},
+            headers: {},
         };
         await client.deleteScheduledPost(scheduledPostId);
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);

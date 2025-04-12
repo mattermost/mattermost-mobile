@@ -56,6 +56,7 @@ jest.mock('@actions/remote/post', () => ({
 
 jest.mock('@actions/local/scheduled_post', () => ({
     handleUpdateScheduledPostErrorCode: jest.fn(),
+    updateScheduledPostErrorCode: jest.fn(),
 }));
 jest.mock('@database/manager');
 jest.mock('@queries/servers/post');

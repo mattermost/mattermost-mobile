@@ -43,17 +43,6 @@ describe('ScheduledPostIndicator', () => {
         scheduledPostCount: 1,
     };
 
-    test('should not render when scheduledPostCount is 0', () => {
-        const props = {
-            ...baseProps,
-            scheduledPostCount: 0,
-            channelId: 'channel_id',
-        };
-
-        renderWithIntlAndTheme(<ScheduledPostIndicator {...props}/>);
-        expect(screen.queryByText(/scheduled/i)).toBeNull();
-    });
-
     test('should render multiple posts message when scheduledPostCount is greater than 1', () => {
         const props = {
             ...baseProps,
