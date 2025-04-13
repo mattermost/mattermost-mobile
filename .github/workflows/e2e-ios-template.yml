@@ -307,3 +307,28 @@ jobs:
           echo "" >> ${GITHUB_STEP_SUMMARY}
           echo "You can check the full report [here](${{ steps.set-url.outputs.TARGET_URL }})" >> ${GITHUB_STEP_SUMMARY}
           echo "There was **${{ steps.summary.outputs.PERCENTAGE }}%** success rate." >> ${GITHUB_STEP_SUMMARY}
+
+      - name: Comment report on the PR
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { context, github } = require('@actions/github');
+            const prNumber = context.payload.pull_request.number;
+            const commentBody = `
+              ## E2E Test Report
+              - **Status**: ${{ steps.determine-status.outputs.STATUS }}
+              - **Failures**: ${{ steps.summary.outputs.FAILURES }}
+              - **Run ID**: ${{ needs.generate-specs.outputs.build_id }}
+              - **Run Type**: ${{ inputs.run-type }}
+              - **Branch**: ${{ needs.generate-specs.outputs.mobile_ref }}
+              - **Commit Hash**: ${{ needs.generate-specs.outputs.mobile_sha }}
+              - **Report URL**: [View Report](${{ steps.set-url.outputs.TARGET_URL }})
+            `;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: commentBody,
+            });
