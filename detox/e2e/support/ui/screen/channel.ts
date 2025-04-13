@@ -283,7 +283,7 @@ class ChannelScreen {
 
     clickOnScheduledMessage = async () => {
         await this.clickOnScheduledMessageButton.tap();
-        await expect(this.clickOnScheduledMessageButton).not.toExist();
+        await waitFor(this.clickOnScheduledMessageButton).not.toBeVisible().withTimeout(timeouts.FOUR_SEC);
     };
 
     /*

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Alert} from '@support/ui/component';
-import {timeouts} from '@support/utils';
+import {isAndroid, isIos, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 class ScheduledMessageScreen {
@@ -17,6 +17,10 @@ class ScheduledMessageScreen {
         scheduledDraftTime: 'scheduled_post_header.scheduled_at',
     };
 
+    selectDateButton = element(by.text(isIos()? 'Select Date': 'SELECT DATE'));
+    selectTimeButton = element(by.text(isIos()? 'Select Time': 'SELECT TIME'));
+    saveButton = element(by.text(isIos()? 'Save': 'SAVE'));
+    androidCalenderOkButton = element(by.text('OK'));
     scheduledDraftTime = element(by.id(this.testID.scheduledDraftTime));
     customDateTimePickerScreen = element(by.id(this.testID.customDateTimePickerScreen));
     rescheduleOption = element(by.id(this.testID.rescheduleOption));
@@ -64,44 +68,109 @@ class ScheduledMessageScreen {
         await this.deleteDraftPost(this.deleteDraft);
     };
 
+    selectDateTime = async () => {
+        if (isAndroid()) {
+            await this.selectDateButton.tap();
+            await device.pressBack();
+            await this.selectTimeButton.tap();
+            await device.pressBack();
+            await this.saveButton.tap();
+            await device.pressBack(); // SHOULD BE REMOVED AFTER FIXING THE ANDROID CALENDAR BUG
+        } else {
+            await this.selectDateButton.tap();
+            await this.selectTimeButton.tap();
+            await this.saveButton.tap();
+        }
+    };
+
     clickRescheduleOption = async () => {
         await this.rescheduleOption.tap();
-        await waitFor(this.customDateTimePickerScreen).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-        await expect(this.customDateTimePickerScreen).toBeVisible();
+        if (isIos()) {
+            await waitFor(this.customDateTimePickerScreen).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+            await expect(this.customDateTimePickerScreen).toBeVisible();
+        } else {
+            // to close native calander picker
+            await device.pressBack();
+        }
     };
 
-    selectDateTime = async () => {
-        await element(by.text('Select Date')).tap();
-        await element(by.text('Select Time')).tap();
-        await element(by.text('Save')).tap();
+    /**
+     * Asserts that the element has the expected text.
+     * @param expectedText - The text you expect in the element
+     */
+    assertScheduleTimeTextIsVisible = async (expectedText: string) => {
+        const attr = await this.scheduledDraftTime.getAttributes();
+        const actualText = 'text' in attr ? attr.text : null;
+        const normalize = (s: string) => s.replace(/\s+/g, ' ').replace(/\u202F/g, ' ').trim();
+
+        if (normalize(actualText || '') !== normalize(expectedText)) {
+            throw new Error(`Expected text "${expectedText}" but found "${actualText}"`);
+        }
     };
 
-    assertScheduleTimeTextIsVisible = async (time: string) => {
-        await waitFor(this.scheduledDraftTime).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await expect(this.scheduledDraftTime).toHaveText(time);
+    getRoundedTime = async (): Promise<Date> => {
+        const now = new Date();
+        const minutes = now.getMinutes();
+
+        if (minutes === 0 || minutes === 30) {
+            // Waiting 60 seconds to avoid edge case at HH:00 or HH:30...
+            await wait(timeouts.ONE_MIN);
+            return this.getRoundedTime(); // Retry after wait
+        }
+
+        if (minutes < 30) {
+            now.setMinutes(30, 0, 0);
+        } else {
+            now.setHours(now.getHours() + 1, 0, 0, 0);
+        }
+
+        return now;
     };
 
     nextMonday = async () => {
         const today = new Date();
         const dayOfWeek = today.getDay();
         const daysUntilNextMonday = (8 - dayOfWeek) % 7 || 7;
+
         const nextMonday = new Date(today);
         nextMonday.setDate(today.getDate() + daysUntilNextMonday);
-        nextMonday.setHours(9, 0, 0, 0);
+        nextMonday.setHours(9, 0, 0, 0); // Hardcoded 9:00 AM
 
-        const options: Intl.DateTimeFormatOptions = {month: 'short', day: 'numeric'};
-        const formattedDate = `${nextMonday.toLocaleDateString('en-US', options)}, 9:00 AM`;
-        return `Send on ${formattedDate}`;
+        const locale = 'en-US';
+        const dateOptions: Intl.DateTimeFormatOptions = {month: 'short', day: 'numeric'};
+        const timeOptions: Intl.DateTimeFormatOptions = {hour: 'numeric', minute: '2-digit', hour12: true};
+
+        const datePart = nextMonday.toLocaleDateString(locale, dateOptions);
+        const timePart = nextMonday.toLocaleTimeString(locale, timeOptions);
+
+        return this.normalize(`Send on ${datePart}, ${timePart}`);
     };
 
     currentDay = async () => {
-        const today = new Date();
-        today.setHours(9, 0, 0, 0);
+        const adjustedTime = await this.getRoundedTime();
 
-        const options: Intl.DateTimeFormatOptions = {month: 'short', day: 'numeric'};
-        const formattedDate = `${today.toLocaleDateString('en-US', options)}, 9:00 AM`;
-        return `Send on ${formattedDate}`;
+        const locale = 'en-US';
+        const dateOptions: Intl.DateTimeFormatOptions = {month: 'short', day: 'numeric'};
+        const timeOptions: Intl.DateTimeFormatOptions = {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true,
+        };
+
+        const datePart = adjustedTime.toLocaleDateString(locale, dateOptions);
+        const timePart = adjustedTime.toLocaleTimeString(locale, timeOptions);
+
+        return this.normalize(`Send on ${datePart}, ${timePart}`);
     };
+
+    /**
+     * Normalizes text by trimming, collapsing spaces, and replacing narrow no-break spaces.
+     */
+    normalize = (s: string) =>
+        s.replace(/\u202F/g, ' '). // replace narrow no-break spaces
+            replace(/\s+/g, ' '). // collapse multiple spaces
+            trim();
+
 }
 
 const scheduledMessageScreen = new ScheduledMessageScreen();

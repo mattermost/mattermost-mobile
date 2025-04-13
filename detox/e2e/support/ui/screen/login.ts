@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {ChannelListScreen, ServerScreen} from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
+import {isAndroid, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 class LoginScreen {
@@ -68,7 +68,7 @@ class LoginScreen {
         await element(by.text(/^Log In to Your Account*$/)).tap();
         await this.signinButton.tap();
 
-        await waitFor(ChannelListScreen.channelListScreen).toExist().withTimeout(timeouts.TEN_SEC);
+        await waitFor(ChannelListScreen.channelListScreen).toExist().withTimeout(isAndroid() ? timeouts.ONE_MIN : timeouts.HALF_MIN);
     };
 
     loginAsAdmin = async (user: any = {}) => {

@@ -187,13 +187,16 @@ describe('Scheduled Draft,', () => {
         await ScheduleMessageScreen.verifyCountOnScheduledTab('1');
         await ScheduleMessageScreen.assertScheduledMessageExists(scheduledMessageText);
 
-        await expect(element(by.id('scheduled_post_header.scheduled_at'))).toHaveText(await ScheduleMessageScreen.nextMonday());
-
+        await ScheduleMessageScreen.assertScheduleTimeTextIsVisible(await ScheduleMessageScreen.nextMonday());
         await DraftScreen.openDraftPostActions();
         await ScheduleMessageScreen.clickRescheduleOption();
         await ScheduleMessageScreen.selectDateTime();
-        await expect(element(by.text(await ScheduleMessageScreen.nextMonday()))).toBeVisible();
-        await expect(element(by.id('scheduled_post_header.scheduled_at'))).toHaveText(await ScheduleMessageScreen.currentDay());
+        await ScheduleMessageScreen.assertScheduleTimeTextIsVisible(await ScheduleMessageScreen.currentDay());
+
+        // Clean up drafts
+        await DraftScreen.openDraftPostActions();
+        await ScheduleMessageScreen.deleteScheduledMessageFromDraftActions();
+        await DraftScreen.backButton.tap();
     });
 
     async function cleanupDrafts() {
