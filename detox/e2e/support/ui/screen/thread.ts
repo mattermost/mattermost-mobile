@@ -112,11 +112,10 @@ class ThreadScreen {
         await this.tapSendButton();
     };
 
-    scheduleGivenMessage = async (message: string) => {
+    enterMessageToSchedule = async (message: string) => {
         await this.postInput.tap();
         await this.postInput.clearText();
         await this.postInput.replaceText(message);
-        await this.longPressSendButton();
     };
 
     longPressSendButton = async () => {

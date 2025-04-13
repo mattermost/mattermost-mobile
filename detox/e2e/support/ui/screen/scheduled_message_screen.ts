@@ -14,8 +14,10 @@ class ScheduledMessageScreen {
         scheduledTabBadgeCount: 'scheduled_post_count_badge',
         scheduledMessageTooltipCloseButton: 'draft.tooltip.close.button',
         scheduledMessageText: 'markdown_paragraph',
+        scheduledDraftTime: 'scheduled_post_header.scheduled_at',
     };
 
+    scheduledDraftTime = element(by.id(this.testID.scheduledDraftTime));
     customDateTimePickerScreen = element(by.id(this.testID.customDateTimePickerScreen));
     rescheduleOption = element(by.id(this.testID.rescheduleOption));
     deleteDraftSwipeAction = element(by.text('Delete draft'));
@@ -75,8 +77,8 @@ class ScheduledMessageScreen {
     };
 
     assertScheduleTimeTextIsVisible = async (time: string) => {
-        await waitFor(element(by.id('scheduled_post_header.scheduled_at'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await expect(element(by.id('scheduled_post_header.scheduled_at'))).toHaveText(time);
+        await waitFor(this.scheduledDraftTime).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await expect(this.scheduledDraftTime).toHaveText(time);
     };
 
     nextMonday = async () => {
@@ -89,7 +91,7 @@ class ScheduledMessageScreen {
 
         const options: Intl.DateTimeFormatOptions = {month: 'short', day: 'numeric'};
         const formattedDate = `${nextMonday.toLocaleDateString('en-US', options)}, 9:00 AM`;
-        return formattedDate;
+        return `Send on ${formattedDate}`;
     };
 
     currentDay = async () => {
@@ -98,7 +100,7 @@ class ScheduledMessageScreen {
 
         const options: Intl.DateTimeFormatOptions = {month: 'short', day: 'numeric'};
         const formattedDate = `${today.toLocaleDateString('en-US', options)}, 9:00 AM`;
-        return formattedDate;
+        return `Send on ${formattedDate}`;
     };
 }
 

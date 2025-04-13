@@ -55,8 +55,10 @@ class ChannelScreen {
         scheduledPostOptionMondaySelected: 'post_priority_picker_item.scheduledPostOptionMonday.selected',
         scheduledPostOptionNextMondaySelected: 'post_priority_picker_item.scheduledPostOptionNextMonday.selected',
         clickOnScheduledMessageButton: 'scheduled_post_create_button',
+        scheduledDraftInfoInChannel: 'scheduled_post_header.scheduled_post_indicator',
     };
 
+    scheduledDraftInfoInChannel= element(by.id(this.testID.scheduledDraftInfoInChannel));
     clickOnScheduledMessageButton = element(by.id(this.testID.clickOnScheduledMessageButton));
     scheduledPostOptionTomorrowSelected = element(by.id(this.testID.scheduledPostOptionTomorrowSelected));
     scheduledPostOptionMondaySelected = element(by.id(this.testID.scheduledPostOptionMondaySelected));
@@ -211,11 +213,10 @@ class ChannelScreen {
         await this.tapSendButton();
     };
 
-    scheduleGivenMessage = async (message: string) => {
+    enterMessageToSchedule = async (message: string) => {
         await this.postInput.tap();
         await this.postInput.clearText();
         await this.postInput.replaceText(message);
-        await this.longPressSendButton();
     };
 
     tapSendButton = async () => {
@@ -283,6 +284,16 @@ class ChannelScreen {
     clickOnScheduledMessage = async () => {
         await this.clickOnScheduledMessageButton.tap();
         await expect(this.clickOnScheduledMessageButton).not.toExist();
+    };
+
+    /*
+    * Verify the message is scheduled and user can see Info in channel or thread
+    * @param {boolean} thread - true if the message is scheduled in thread
+    * @returns {Promise<void>}
+    */
+    verifyScheduledDraftInfoInChannel = async (thread = false) => {
+        await expect(this.scheduledDraftInfoInChannel).toBeVisible();
+        await expect(this.scheduledDraftInfoInChannel).toHaveText(`1 scheduled message in ${thread? 'thread': 'channel'}. See all.`);
     };
 }
 

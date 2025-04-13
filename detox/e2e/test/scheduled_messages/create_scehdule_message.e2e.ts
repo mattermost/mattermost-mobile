@@ -28,10 +28,10 @@ import {
     DraftScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {timeouts} from '@support/utils';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
-describe('Messaging - At-Mention', () => {
+describe('Scheduled Draft,', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testChannel: any;
@@ -67,9 +67,11 @@ describe('Messaging - At-Mention', () => {
     it('MM-T5762 should be able to create a scheduled message', async () => {
         const scheduledMessageText = 'Scheduled Message In a channel';
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.scheduleGivenMessage(scheduledMessageText);
-
+        await ChannelScreen.enterMessageToSchedule(scheduledMessageText);
+        await ChannelScreen.longPressSendButton();
         await chooseScheduleMessageDate();
+        await wait(timeouts.TWO_SEC);
+        await ChannelScreen.verifyScheduledDraftInfoInChannel();
         await verifyScheduledCountOnChannelListScreen('1');
 
         // # Open scheduled message screen and verify count
@@ -93,9 +95,10 @@ describe('Messaging - At-Mention', () => {
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
         await waitFor(ThreadScreen.postInput).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-
-        await ThreadScreen.scheduleGivenMessage(scheduledMessageText);
+        await ThreadScreen.enterMessageToSchedule(scheduledMessageText);
+        await ThreadScreen.longPressSendButton();
         await chooseScheduleMessageDate();
+        await ChannelScreen.verifyScheduledDraftInfoInChannel(true);
         await ThreadScreen.back();
         await verifyScheduledCountOnChannelListScreen('1');
 
@@ -121,9 +124,10 @@ describe('Messaging - At-Mention', () => {
     it('MM-T5731 should be able to Delete a scheduled Message', async () => {
         const scheduledMessageText = 'Scheduled Message In a channel';
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.scheduleGivenMessage(scheduledMessageText);
-
+        await ChannelScreen.enterMessageToSchedule(scheduledMessageText);
+        await ChannelScreen.longPressSendButton();
         await chooseScheduleMessageDate();
+        await ChannelScreen.verifyScheduledDraftInfoInChannel();
         await verifyScheduledCountOnChannelListScreen('1');
 
         // # Open scheduled message screen and verify count
@@ -141,8 +145,8 @@ describe('Messaging - At-Mention', () => {
     it('MM-T5730 should be able to Send a scheduled Message', async () => {
         const scheduledMessageText = 'Scheduled Message In a channel';
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.scheduleGivenMessage(scheduledMessageText);
-
+        await ChannelScreen.enterMessageToSchedule(scheduledMessageText);
+        await ChannelScreen.longPressSendButton();
         await chooseScheduleMessageDate();
         await verifyScheduledCountOnChannelListScreen('1');
 
@@ -171,9 +175,10 @@ describe('Messaging - At-Mention', () => {
     it('MM-T5720 should be able to Reschedule a scheduled Message', async () => {
         const scheduledMessageText = 'Scheduled Message In a channel';
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.scheduleGivenMessage(scheduledMessageText);
-
+        await ChannelScreen.enterMessageToSchedule(scheduledMessageText);
+        await ChannelScreen.longPressSendButton();
         await chooseScheduleMessageDate();
+        await ChannelScreen.verifyScheduledDraftInfoInChannel();
         await verifyScheduledCountOnChannelListScreen('1');
 
         // # Open scheduled message screen and verify count
@@ -182,12 +187,13 @@ describe('Messaging - At-Mention', () => {
         await ScheduleMessageScreen.verifyCountOnScheduledTab('1');
         await ScheduleMessageScreen.assertScheduledMessageExists(scheduledMessageText);
 
-        await ScheduleMessageScreen.assertScheduleTimeTextIsVisible(await ScheduleMessageScreen.nextMonday());
+        await expect(element(by.id('scheduled_post_header.scheduled_at'))).toHaveText(await ScheduleMessageScreen.nextMonday());
 
         await DraftScreen.openDraftPostActions();
         await ScheduleMessageScreen.clickRescheduleOption();
         await ScheduleMessageScreen.selectDateTime();
-        await ScheduleMessageScreen.assertScheduleTimeTextIsVisible(await ScheduleMessageScreen.currentDay());
+        await expect(element(by.text(await ScheduleMessageScreen.nextMonday()))).toBeVisible();
+        await expect(element(by.id('scheduled_post_header.scheduled_at'))).toHaveText(await ScheduleMessageScreen.currentDay());
     });
 
     async function cleanupDrafts() {
@@ -217,6 +223,5 @@ describe('Messaging - At-Mention', () => {
         }
 
         await ChannelScreen.clickOnScheduledMessage();
-        await expect(element(by.text('1 scheduled message in channel. See all.'))).toBeVisible();
     }
 });
