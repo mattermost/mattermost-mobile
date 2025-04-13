@@ -87,6 +87,7 @@ const mockWebSocketClient = {
 jest.mock('@queries/servers/system', () => ({
     getConfigValue: jest.fn(),
     getCurrentTeamId: jest.fn(),
+    getCurrentUserId: jest.fn(),
 }));
 
 jest.mock('@managers/websocket_manager', () => ({
@@ -221,6 +222,7 @@ describe('updateScheduledPost', () => {
         const mockResponse = {...scheduledPost, update_at: Date.now()};
         mockClient.updateScheduledPost.mockImplementationOnce(() => Promise.resolve(mockResponse));
         const result = await updateScheduledPost(serverUrl, scheduledPost, 123, true);
+        console.log(result.error);
         expect(result.error).toBeUndefined();
         expect(result.scheduledPost).toEqual(mockResponse);
         expect(spyHandleScheduledPosts).not.toHaveBeenCalled();
