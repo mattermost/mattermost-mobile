@@ -64,5 +64,10 @@ end
 
 target 'NotificationService' do
   pod 'TurboLogIOSNative', :git => 'https://github.com/larkox/react-native-turbo-log-ios-native.git', :modular_headers => true
+  pod 'Sentry/HybridSDK', '8.48.0'
+end
+
+target 'MattermostShare' do
+  pod 'Sentry/HybridSDK', '8.48.0'
 end
 
