@@ -125,19 +125,6 @@ export const useHandleSendMessage = ({
             };
         }
 
-        let shouldClearDraft = true;
-        if (isFromDraftView) {
-            shouldClearDraft = await canPostDraftInChannelOrThread({
-                serverUrl,
-                rootId,
-                intl,
-                canPost,
-                channelIsArchived,
-                channelIsReadOnly,
-                deactivatedChannel,
-            });
-        }
-
         let response: CreateResponse;
         if (schedulingInfo) {
             response = await createScheduledPost(serverUrl, scheduledPostFromPost(post, schedulingInfo, postPriority, postFiles));
@@ -154,7 +141,21 @@ export const useHandleSendMessage = ({
             return response;
         }
 
-        if (shouldClearDraft) {
+        if (isFromDraftView) {
+            const shouldClearDraft = await canPostDraftInChannelOrThread({
+                serverUrl,
+                rootId,
+                intl,
+                canPost,
+                channelIsArchived,
+                channelIsReadOnly,
+                deactivatedChannel,
+            });
+
+            if (shouldClearDraft) {
+                clearDraft();
+            }
+        } else {
             clearDraft();
         }
         setSendingMessage(false);
