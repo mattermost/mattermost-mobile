@@ -6,7 +6,7 @@ on:
     branches:
       - build-beta-[0-9]+
       - build-beta-android-[0-9]+
-
+  workflow_dispatch:  # ← This line enables manual triggering from GitHub UI
 env:
   NODE_VERSION: 22.14.0
   TERM: xterm
