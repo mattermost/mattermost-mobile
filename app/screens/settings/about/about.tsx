@@ -126,11 +126,9 @@ const About = ({componentId, config, license}: AboutProps) => {
 
     useEffect(() => {
         const fetchLoadMetric = async () => {
-            if (license.IsLicensed === 'true') {
-                const isLicensed = license.IsLicensed === 'true';
-                const metric = await getLicenseLoadMetric(serverUrl, config.Version, isLicensed);
-                setLoadMetric(metric);
-            }
+            const isLicensed = license.IsLicensed === 'true';
+            const metric = await getLicenseLoadMetric(serverUrl, config.Version, isLicensed);
+            setLoadMetric(metric);
         };
 
         fetchLoadMetric();
