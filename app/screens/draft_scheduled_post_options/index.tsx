@@ -4,7 +4,10 @@
 import React, {useMemo} from 'react';
 import {View} from 'react-native';
 
-import CopyTextOption from '@components/copy_text_option/copy_text_option';
+import CopyTextOption from '@components/copy_text_option';
+import DeleteDraft from '@components/draft_scheduled_post/draft_scheduled_post_actions/delete_draft';
+import EditDraft from '@components/draft_scheduled_post/draft_scheduled_post_actions/edit_draft';
+import RescheduledDraft from '@components/draft_scheduled_post/draft_scheduled_post_actions/rescheduled_draft';
 import FormattedText from '@components/formatted_text';
 import SendHandler from '@components/post_draft/send_handler/';
 import {Screens} from '@constants';
@@ -12,13 +15,10 @@ import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED, type DraftType} from '@constants
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import BottomSheet from '@screens/bottom_sheet';
+import {emptyFunction} from '@utils/general';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
-
-import DeleteDraft from '../../components/draft_scheduled_post/draft_scheduled_post_actions/delete_draft';
-import EditDraft from '../../components/draft_scheduled_post/draft_scheduled_post_actions/edit_draft';
-import RescheduledDraft from '../../components/draft_scheduled_post/draft_scheduled_post_actions/rescheduled_draft';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type DraftModel from '@typings/database/models/servers/draft';
@@ -106,14 +106,12 @@ const DraftScheduledPostOptions: React.FC<Props> = ({
                     cursorPosition={0}
                     draftType={draftType}
                     postId={draft.id}
-                    /* eslint-disable no-empty-function */
-                    clearDraft={() => {}}
-                    updateCursorPosition={() => {}}
-                    updatePostInputTop={() => {}}
-                    addFiles={() => {}}
-                    setIsFocused={() => {}}
-                    updateValue={() => {}}
-                    /* eslint-enable no-empty-function */
+                    clearDraft={emptyFunction}
+                    updateCursorPosition={emptyFunction}
+                    updatePostInputTop={emptyFunction}
+                    addFiles={emptyFunction}
+                    setIsFocused={emptyFunction}
+                    updateValue={emptyFunction}
                 />
                 {draftType === DRAFT_TYPE_SCHEDULED &&
                     <RescheduledDraft

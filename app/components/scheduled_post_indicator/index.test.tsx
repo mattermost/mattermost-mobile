@@ -11,7 +11,7 @@ import {DRAFT} from '@constants/screens';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
-import ScheduledPostIndicator from './scheduled_post_indicator';
+import ScheduledPostIndicator from '.';
 
 jest.mock('@utils/theme', () => ({
     changeOpacity: jest.fn().mockReturnValue('rgba(0,0,0,0.5)'),

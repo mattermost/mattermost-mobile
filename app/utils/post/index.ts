@@ -266,7 +266,7 @@ export function scheduledPostFromPost(post: Post, schedulingInfo: SchedulingInfo
     return {
         ...post,
         scheduled_at: schedulingInfo.scheduled_at,
-        priority: postPriority,
+        priority: post.root_id ? undefined : postPriority,
         metadata: {
             files: postFiles,
         },

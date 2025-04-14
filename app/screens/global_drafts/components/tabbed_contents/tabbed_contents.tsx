@@ -7,7 +7,7 @@ import {StyleSheet, View, type LayoutChangeEvent} from 'react-native';
 import Animated, {runOnJS, useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
 import {DRAFT_SCREEN_TAB_DRAFTS, DRAFT_SCREEN_TAB_SCHEDULED_POSTS, type DraftScreenTab} from '@constants/draft';
-import {DraftTabsHeader} from '@screens/global_drafts/components/tabbed_contents/draftTabsHeader';
+import {DraftTabsHeader} from '@screens/global_drafts/components/tabbed_contents/draft_tabs_header';
 
 const duration = 250;
 

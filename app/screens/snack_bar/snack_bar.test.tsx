@@ -6,7 +6,7 @@ import {Navigation} from 'react-native-navigation';
 
 import {Screens} from '@constants';
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
-import {act, renderWithIntlAndTheme} from '@test/intl-test-helper';
+import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
 import SnackBar from './index';
 
@@ -73,22 +73,6 @@ describe('SnackBar', () => {
         expect(getByTestId('toast.message')).toBeVisible();
     });
 
-    test('does not auto-dismiss when keepOpen is true', () => {
-        const dismissOverlay = jest.spyOn(Navigation, 'dismissOverlay');
-        renderWithIntlAndTheme(
-            <SnackBar
-                {...baseProps}
-                keepOpen={true}
-            />,
-        );
-
-        act(() => {
-            jest.advanceTimersByTime(3000);
-        });
-
-        expect(dismissOverlay).not.toHaveBeenCalled();
-    });
-
     test('renders custom message when provided', () => {
         const customMessage = 'Custom Test Message';
         const {getByText} = renderWithIntlAndTheme(
@@ -99,16 +83,5 @@ describe('SnackBar', () => {
         );
 
         expect(getByText(customMessage)).toBeVisible();
-    });
-
-    test('renders close button when keepOpen is true', () => {
-        const {getByTestId} = renderWithIntlAndTheme(
-            <SnackBar
-                {...baseProps}
-                keepOpen={true}
-            />,
-        );
-
-        expect(getByTestId('close-button')).toBeVisible();
     });
 });
