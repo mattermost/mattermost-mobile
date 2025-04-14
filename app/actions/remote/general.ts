@@ -9,6 +9,7 @@ import NetworkManager from '@managers/network_manager';
 import {getDeviceToken} from '@queries/app/global';
 import {getExpandedLinks, getPushVerificationStatus} from '@queries/servers/system';
 import {getFullErrorMessage} from '@utils/errors';
+import {isMinimumServerVersion} from '@utils/helpers';
 import {logDebug} from '@utils/log';
 
 import {forceLogoutIfNecessary} from './session';
@@ -112,6 +113,25 @@ export const getRedirectLocation = async (serverUrl: string, link: string) => {
         logDebug('error on getRedirectLocation', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
+    }
+};
+
+export const getLicenseLoadMetric = async (serverUrl: string, serverVersion: string, isLicensed: boolean) => {
+    if (!isLicensed || !isMinimumServerVersion(serverVersion, 10, 8, 0)) {
+        return {loadMetric: null};
+    }
+
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const response = await client.getLicenseLoadMetric();
+        if (response?.load && response.load > 0) {
+            return {loadMetric: response.load};
+        }
+        return {loadMetric: null};
+    } catch (error) {
+        // Silently fail if the endpoint is not available
+        logDebug('error on getLicenseLoadMetric', getFullErrorMessage(error));
+        return {loadMetric: null};
     }
 };
 

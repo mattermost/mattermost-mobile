@@ -7,6 +7,7 @@ import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Text, View} from 'react-native';
 
+import {getLicenseLoadMetric} from '@actions/remote/general';
 import Config from '@assets/config.json';
 import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
@@ -18,7 +19,6 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {t} from '@i18n';
-import NetworkManager from '@managers/network_manager';
 import {popTopScreen} from '@screens/navigation';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {showSnackBar} from '@utils/snack_bar';
@@ -126,22 +126,17 @@ const About = ({componentId, config, license}: AboutProps) => {
 
     useEffect(() => {
         const fetchLoadMetric = async () => {
-            try {
-                if (license.IsLicensed === 'true') {
-                    const client = NetworkManager.getClient(serverUrl);
-                    const response = await client.getLicenseLoadMetric();
-                    if (response?.load && response.load > 0) {
-                        setLoadMetric(response.load);
-                    }
+            if (license.IsLicensed === 'true') {
+                const isLicensed = license.IsLicensed === 'true';
+                const {loadMetric: metric} = await getLicenseLoadMetric(serverUrl, config.Version, isLicensed);
+                if (metric !== null) {
+                    setLoadMetric(metric);
                 }
-            } catch {
-                // Silently fail if the endpoint is not available
-                // No need to log the error
             }
         };
 
         fetchLoadMetric();
-    }, [license.IsLicensed, serverUrl]);
+    }, [config.Version, license.IsLicensed, serverUrl]);
 
     const openURL = useCallback((url: string) => {
         const onError = () => {
