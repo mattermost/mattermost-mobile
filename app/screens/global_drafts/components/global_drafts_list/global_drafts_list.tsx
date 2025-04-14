@@ -2,20 +2,19 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useState} from 'react';
-import {InteractionManager, StyleSheet, View, type LayoutChangeEvent, type ListRenderItemInfo} from 'react-native';
-import Animated from 'react-native-reanimated';
+import {FlatList, InteractionManager, StyleSheet, View, type LayoutChangeEvent, type ListRenderItemInfo} from 'react-native';
 import Tooltip from 'react-native-walkthrough-tooltip';
 
 import {storeDraftsTutorial} from '@actions/app/global';
-import {INITIAL_BATCH_TO_RENDER, SCROLL_POSITION_CONFIG} from '@components/post_list/config';
 import {Screens} from '@constants';
+import {DRAFT_SCHEDULED_POST_LAYOUT_PADDING, DRAFT_TYPE_DRAFT} from '@constants/draft';
+import {staticStyles} from '@constants/tooltip';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import DraftTooltip from '@screens/global_drafts/draft_scheduled_post_tooltip';
 import {popTopScreen} from '@screens/navigation';
 
+import DraftAndScheduledPostSwipeActions from '../draft_and_scheduled_post_swipe_actions';
 import DraftEmptyComponent from '../draft_empty_component';
-
-import DraftSwipeActions from './draft_swipe_actions';
-import DraftTooltip from './draft_tooltip';
 
 import type DraftModel from '@typings/database/models/servers/draft';
 
@@ -44,14 +43,10 @@ const styles = StyleSheet.create({
         width: '100%',
     },
     tooltipContentStyle: {
-        borderRadius: 8,
-        width: 247,
-        padding: 16,
-        height: 160,
+        ...staticStyles.tooltipContent,
     },
 });
 
-const AnimatedFlatList = Animated.FlatList;
 const keyExtractor = (item: DraftModel) => item.id;
 
 const GlobalDraftsList: React.FC<Props> = ({
@@ -63,7 +58,7 @@ const GlobalDraftsList: React.FC<Props> = ({
     const [tooltipVisible, setTooltipVisible] = useState(false);
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         if (location === Screens.GLOBAL_DRAFTS) {
-            setLayoutWidth(e.nativeEvent.layout.width - 40); // 40 is the padding of the container
+            setLayoutWidth(e.nativeEvent.layout.width - DRAFT_SCHEDULED_POST_LAYOUT_PADDING);
         }
     }, [location]);
 
@@ -100,14 +95,20 @@ const GlobalDraftsList: React.FC<Props> = ({
                     useInteractionManager={true}
                     contentStyle={styles.tooltipContentStyle}
                     placement={'bottom'}
-                    content={<DraftTooltip onClose={close}/>}
+                    content={
+                        <DraftTooltip
+                            onClose={close}
+                            draftType={DRAFT_TYPE_DRAFT}
+                        />
+                    }
                     onClose={close}
                     tooltipStyle={styles.tooltipStyle}
                 >
                     <View
                         style={styles.swippeableContainer}
                     >
-                        <DraftSwipeActions
+                        <DraftAndScheduledPostSwipeActions
+                            draftType={DRAFT_TYPE_DRAFT}
                             item={item}
                             location={location}
                             layoutWidth={layoutWidth}
@@ -117,7 +118,8 @@ const GlobalDraftsList: React.FC<Props> = ({
             );
         }
         return (
-            <DraftSwipeActions
+            <DraftAndScheduledPostSwipeActions
+                draftType={DRAFT_TYPE_DRAFT}
                 item={item}
                 location={location}
                 layoutWidth={layoutWidth}
@@ -131,11 +133,9 @@ const GlobalDraftsList: React.FC<Props> = ({
             onLayout={onLayout}
             testID='global_drafts_list'
         >
-            <AnimatedFlatList
+            <FlatList
                 data={allDrafts}
                 keyExtractor={keyExtractor}
-                initialNumToRender={INITIAL_BATCH_TO_RENDER + 5}
-                maintainVisibleContentPosition={SCROLL_POSITION_CONFIG}
                 contentContainerStyle={!allDrafts.length && styles.empty}
                 maxToRenderPerBatch={10}
                 nativeID={location}
