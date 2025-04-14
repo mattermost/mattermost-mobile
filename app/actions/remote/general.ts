@@ -118,20 +118,20 @@ export const getRedirectLocation = async (serverUrl: string, link: string) => {
 
 export const getLicenseLoadMetric = async (serverUrl: string, serverVersion: string, isLicensed: boolean) => {
     if (!isLicensed || !isMinimumServerVersion(serverVersion, 10, 8, 0)) {
-        return {loadMetric: null};
+        return null;
     }
 
     try {
         const client = NetworkManager.getClient(serverUrl);
         const response = await client.getLicenseLoadMetric();
         if (response?.load && response.load > 0) {
-            return {loadMetric: response.load};
+            return response.load;
         }
-        return {loadMetric: null};
+        return null;
     } catch (error) {
         // Silently fail if the endpoint is not available
         logDebug('error on getLicenseLoadMetric', getFullErrorMessage(error));
-        return {loadMetric: null};
+        return null;
     }
 };
 

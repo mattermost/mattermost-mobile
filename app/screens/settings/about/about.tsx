@@ -128,10 +128,8 @@ const About = ({componentId, config, license}: AboutProps) => {
         const fetchLoadMetric = async () => {
             if (license.IsLicensed === 'true') {
                 const isLicensed = license.IsLicensed === 'true';
-                const {loadMetric: metric} = await getLicenseLoadMetric(serverUrl, config.Version, isLicensed);
-                if (metric !== null) {
-                    setLoadMetric(metric);
-                }
+                const metric = await getLicenseLoadMetric(serverUrl, config.Version, isLicensed);
+                setLoadMetric(metric);
             }
         };
 
