@@ -8,7 +8,7 @@ import {DRAFT_SCREEN_TAB_DRAFTS, DRAFT_SCREEN_TAB_SCHEDULED_POSTS} from '@consta
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
-import {DraftTabsHeader} from './draftTabsHeader';
+import {DraftTabsHeader} from './draft_tabs_header';
 
 describe('DraftTabsHeader', () => {
     const baseProps: Parameters<typeof DraftTabsHeader>[0] = {

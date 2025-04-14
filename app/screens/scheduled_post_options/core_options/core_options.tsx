@@ -6,7 +6,7 @@ import React, {useCallback, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 
-import DateTimeSelector from '@components/data_time_selector/date_time_selector';
+import DateTimeSelector from '@components/data_time_selector';
 import {useTheme} from '@context/theme';
 import PickerOption from '@screens/post_priority_picker/components/picker_option';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';

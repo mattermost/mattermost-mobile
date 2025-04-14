@@ -18,7 +18,7 @@ import {dismissBottomSheet} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {isSystemMessage} from '@utils/post';
 
-import CopyTextOption from '../../components/copy_text_option/copy_text_option';
+import CopyTextOption from '../../components/copy_text_option';
 
 import AppBindingsPostOptions from './options/app_bindings_post_option';
 import DeletePostOption from './options/delete_post_option';
