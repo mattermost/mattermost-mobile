@@ -8,6 +8,7 @@ import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getActiveServerUrl} from '@queries/app/servers';
 
+import {fetchScheduledPosts} from './scheduled_post';
 import {
     addCurrentUserToTeam,
     addUserToTeam,
@@ -27,6 +28,10 @@ import {
     buildTeamIconUrl,
     fetchTeamsThreads,
 } from './team';
+
+jest.mock('./scheduled_post', () => ({
+    fetchScheduledPosts: jest.fn(),
+}));
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 
@@ -310,6 +315,7 @@ describe('teams', () => {
         const result = await handleTeamChange(serverUrl, teamId);
         expect(result).toBeDefined();
         expect(result?.error).toBeUndefined();
+        expect(fetchScheduledPosts).toHaveBeenCalledWith(serverUrl, teamId, false);
     });
 
     it('handleKickFromTeam - base case', async () => {

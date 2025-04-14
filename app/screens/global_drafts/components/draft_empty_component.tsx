@@ -47,6 +47,7 @@ const DraftEmptyComponent = () => {
         >
             <Image
                 source={draft_message_image}
+                style={styles.image}
             />
             <FormattedText
                 id='drafts.empty.title'
