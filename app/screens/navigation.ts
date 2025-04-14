@@ -499,6 +499,10 @@ export function goToScreen(name: AvailableScreens, title: string, passProps = {}
 
     DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, false);
 
+    if (NavigationStore.getScreensInStack().includes(name)) {
+        Navigation.pop(name);
+    }
+
     return Navigation.push(componentId, {
         component: {
             id: name,
