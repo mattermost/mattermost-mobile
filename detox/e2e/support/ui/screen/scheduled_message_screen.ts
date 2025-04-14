@@ -101,9 +101,8 @@ class ScheduledMessageScreen {
     assertScheduleTimeTextIsVisible = async (expectedText: string) => {
         const attr = await this.scheduledDraftTime.getAttributes();
         const actualText = 'text' in attr ? attr.text : null;
-        const normalize = (s: string) => s.replace(/\s+/g, ' ').replace(/\u202F/g, ' ').trim();
 
-        if (normalize(actualText || '') !== normalize(expectedText)) {
+        if (this.normalize(actualText || '') !== this.normalize(expectedText)) {
             throw new Error(`Expected text "${expectedText}" but found "${actualText}"`);
         }
     };

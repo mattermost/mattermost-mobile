@@ -133,7 +133,7 @@ const saveReport = async () => {
             }
         }
     }
-    const result = await saveArtifacts();
+    const result = await saveArtifacts(platform);
     if (result && result.success) {
         console.log('Successfully uploaded artifacts to S3:', result.reportLink);
     }
