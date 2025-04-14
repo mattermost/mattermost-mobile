@@ -12,13 +12,6 @@ export type ShowSnackBarArgs = {
     onAction?: () => void;
     sourceScreen?: AvailableScreens;
     messageValues?: Record<string, PrimitiveType>;
-
-    /**
-     * If true, the snackbar will stay open until manually closed by clicking the close button.
-     * default is false
-     */
-    keepOpen?: boolean;
-
     customMessage?: string;
     type?: SnackBarConfig['type'];
 };

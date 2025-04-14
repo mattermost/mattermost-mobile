@@ -22,7 +22,6 @@ import Animated, {
     withTiming,
 } from 'react-native-reanimated';
 
-import CompassIcon from '@components/compass_icon';
 import Toast, {TOAST_HEIGHT} from '@components/toast';
 import {Navigation as NavigationConstants, Screens} from '@constants';
 import {MESSAGE_TYPE, SNACK_BAR_CONFIG} from '@constants/snack_bar';
@@ -95,7 +94,6 @@ const SnackBar = ({
     componentId,
     onAction,
     sourceScreen,
-    keepOpen,
     customMessage,
     type,
 }: SnackBarProps) => {
@@ -230,27 +228,20 @@ const SnackBar = ({
         animateHiding(false);
     };
 
-    const dismissSnackBar = useCallback(() => {
-        if (!isPanned.value) {
-            animateHiding(false);
-        }
-    }, [animateHiding, isPanned.value]);
-
     // This effect hides the snack bar after 3 seconds
     useEffect(() => {
         mounted.current = true;
-
-        if (!keepOpen) {
-            baseTimer.current = setTimeout(() => {
-                dismissSnackBar();
-            }, 3000);
-        }
+        baseTimer.current = setTimeout(() => {
+            if (!isPanned.value) {
+                animateHiding(false);
+            }
+        }, 3000);
 
         return () => {
             stopTimers();
             mounted.current = false;
         };
-    }, [keepOpen, dismissSnackBar]);
+    }, []);
 
     // This effect dismisses the Navigation Overlay after we have hidden the snack bar
     useEffect(() => {
@@ -319,20 +310,6 @@ const SnackBar = ({
                                     </Text>
                                 </TouchableOpacity>
                             )}
-                            {
-                                keepOpen &&
-                                <TouchableOpacity
-                                    onPress={dismissSnackBar}
-                                    testID='close-button'
-                                >
-                                    <CompassIcon
-                                        color={theme.buttonColor}
-                                        name={'close'}
-                                        size={18}
-                                        style={styles.text}
-                                    />
-                                </TouchableOpacity>
-                            }
                         </Toast>
                     </Animated.View>
                 </Animated.View>
