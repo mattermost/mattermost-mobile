@@ -5,6 +5,7 @@ import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {switchMap} from 'rxjs/operators';
 
 import {observeCurrentChannelId, observeCurrentTeamId} from '@queries/servers/system';
+import {observeTeamLastChannelId} from '@queries/servers/team';
 import {observeUnreadsAndMentionsInTeam} from '@queries/servers/thread';
 
 import ThreadsButton from './threads_button';
@@ -16,6 +17,11 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
 
     return {
         currentChannelId: observeCurrentChannelId(database),
+        lastChannelId: currentTeamId.pipe(
+            switchMap(
+                (teamId) => observeTeamLastChannelId(database, teamId),
+            ),
+        ),
         unreadsAndMentions: currentTeamId.pipe(
             switchMap(
                 (teamId) => observeUnreadsAndMentionsInTeam(database, teamId),

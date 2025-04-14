@@ -33,6 +33,7 @@ const {
     PREFERENCE,
     REACTION,
     ROLE,
+    SCHEDULED_POST,
     SYSTEM,
     TEAM,
     TEAM_CHANNEL_HISTORY,
@@ -48,7 +49,7 @@ const {
 describe('*** Test schema for SERVER database ***', () => {
     it('=> The SERVER SCHEMA should strictly match', () => {
         expect(serverSchema).toEqual({
-            version: 8,
+            version: 9,
             unsafeSql: undefined,
             tables: {
                 [CATEGORY]: {
@@ -532,6 +533,34 @@ describe('*** Test schema for SERVER database ***', () => {
                     columnArray: [
                         {name: 'name', type: 'string', isIndexed: true},
                         {name: 'permissions', type: 'string'},
+                    ],
+                },
+                [SCHEDULED_POST]: {
+                    name: SCHEDULED_POST,
+                    unsafeSql: undefined,
+                    columns: {
+                        channel_id: {name: 'channel_id', type: 'string', isIndexed: true},
+                        message: {name: 'message', type: 'string'},
+                        files: {name: 'files', type: 'string'},
+                        root_id: {name: 'root_id', type: 'string', isIndexed: true},
+                        metadata: {name: 'metadata', type: 'string', isOptional: true},
+                        create_at: {name: 'create_at', type: 'number'},
+                        update_at: {name: 'update_at', type: 'number'},
+                        scheduled_at: {name: 'scheduled_at', type: 'number'},
+                        processed_at: {name: 'processed_at', type: 'number'},
+                        error_code: {name: 'error_code', type: 'string'},
+                    },
+                    columnArray: [
+                        {name: 'channel_id', type: 'string', isIndexed: true},
+                        {name: 'files', type: 'string'},
+                        {name: 'message', type: 'string'},
+                        {name: 'root_id', type: 'string', isIndexed: true},
+                        {name: 'metadata', type: 'string', isOptional: true},
+                        {name: 'create_at', type: 'number'},
+                        {name: 'update_at', type: 'number'},
+                        {name: 'scheduled_at', type: 'number'},
+                        {name: 'processed_at', type: 'number'},
+                        {name: 'error_code', type: 'string'},
                     ],
                 },
                 [SYSTEM]: {
