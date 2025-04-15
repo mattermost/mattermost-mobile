@@ -137,9 +137,6 @@ jobs:
           
           # Validate the consolidated SBOM
           cyclonedx validate --input-file="$SBOM_FILENAME"
-          
-          # Cleanup temporary files
-          rm -f "sbom-top-level.json" "sbom-android.json" "sbom-ios.json"
         shell: bash
 
       - name: ci/upload-consolidated-sbom
