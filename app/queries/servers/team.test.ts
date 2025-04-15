@@ -42,6 +42,7 @@ import {
     getDefaultTeamId,
     observeIsTeamUnread,
     observeSortedJoinedTeams,
+    observeTeamLastChannelId,
 } from './team';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -285,6 +286,16 @@ describe('Team Queries', () => {
 
             const history = await getTeamChannelHistory(database, teamId);
             expect(history).toEqual([Screens.GLOBAL_THREADS]);
+        });
+
+        it('should add GLOBAL_DRAFTS to team history but skip channel check', async () => {
+            const channelId = Screens.GLOBAL_DRAFTS;
+
+            const result = await addChannelToTeamHistory(operator, teamId, channelId);
+            expect(result.length).toBe(1);
+
+            const history = await getTeamChannelHistory(database, teamId);
+            expect(history).toEqual([Screens.GLOBAL_DRAFTS]);
         });
     });
 
@@ -1310,6 +1321,58 @@ describe('Team Queries', () => {
                         });
                     });
                 });
+            });
+        });
+    });
+
+    describe('observeTeamLastChannelId', () => {
+        it('should return undefined if no team channel history exists', (done) => {
+            observeTeamLastChannelId(database, teamId).subscribe((channelId) => {
+                expect(channelId).toBeUndefined();
+                done();
+            });
+        });
+
+        it('should return the last channel id from team channel history', async () => {
+            const channelId = 'channel1';
+            await operator.handleTeamChannelHistory({
+                teamChannelHistories: [{
+                    id: teamId,
+                    channel_ids: [channelId],
+                }],
+                prepareRecordsOnly: false,
+            });
+
+            observeTeamLastChannelId(database, teamId).subscribe((lastChannelId) => {
+                expect(lastChannelId).toBe(channelId);
+            });
+        });
+
+        it('should update when team channel history changes', async () => {
+            const initialChannelId = 'channel1';
+            const newChannelId = 'channel2';
+
+            await operator.handleTeamChannelHistory({
+                teamChannelHistories: [{
+                    id: teamId,
+                    channel_ids: [initialChannelId],
+                }],
+                prepareRecordsOnly: false,
+            });
+
+            const subscription = observeTeamLastChannelId(database, teamId).subscribe((lastChannelId) => {
+                if (lastChannelId === initialChannelId) {
+                    operator.handleTeamChannelHistory({
+                        teamChannelHistories: [{
+                            id: teamId,
+                            channel_ids: [newChannelId],
+                        }],
+                        prepareRecordsOnly: false,
+                    });
+                } else if (lastChannelId === newChannelId) {
+                    expect(lastChannelId).toBe(newChannelId);
+                    subscription.unsubscribe();
+                }
             });
         });
     });
