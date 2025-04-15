@@ -31,7 +31,7 @@ export const useAppBinding = (context: UseAppBindingContext, config: UseAppBindi
 
     return useCallback(async (binding: AppBinding) => {
         const callContext = createCallContext(
-            binding.app_id,
+            binding.app_id!,
             binding.location,
             context.channel_id,
             context.team_id,

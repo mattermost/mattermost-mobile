@@ -12,6 +12,7 @@ import {
     Notifications,
     type NotificationTextInput,
     type Registered,
+    type RegistrationError,
 } from 'react-native-notifications';
 import {requestNotifications} from 'react-native-permissions';
 
@@ -34,7 +35,7 @@ import {isMainActivity, isTablet} from '@utils/helpers';
 import {logDebug, logInfo} from '@utils/log';
 import {convertToNotificationData} from '@utils/notification';
 
-class PushNotifications {
+class PushNotificationsSingleton {
     configured = false;
     subscriptions?: EmitterSubscription[];
 
@@ -45,6 +46,8 @@ class PushNotifications {
             Notifications.events().registerRemoteNotificationsRegistered(this.onRemoteNotificationsRegistered),
             Notifications.events().registerNotificationReceivedBackground(this.onNotificationReceivedBackground),
             Notifications.events().registerNotificationReceivedForeground(this.onNotificationReceivedForeground),
+            Notifications.events().registerRemoteNotificationsRegistrationFailed(this.NotificationsRegistrationFailed),
+            Notifications.events().registerRemoteNotificationsRegistrationDenied(this.onRemoteNotificationsRegistrationDenied),
         ];
 
         if (register) {
@@ -276,12 +279,22 @@ class PushNotifications {
                 prefix = Device.PUSH_NOTIFY_ANDROID_REACT_NATIVE;
             }
 
-            storeDeviceToken(`${prefix}-v2:${deviceToken}`);
+            const token = `${prefix}-v2:${deviceToken}`;
+            storeDeviceToken(token);
+            logDebug('Notification token registered', token);
 
             // Store the device token in the default database
             this.requestNotificationReplyPermissions();
         }
         return null;
+    };
+
+    onRemoteNotificationsRegistrationDenied = () => {
+        logDebug('Notification registration denied');
+    };
+
+    NotificationsRegistrationFailed = (event: RegistrationError) => {
+        logDebug('Notification registration failed', event);
     };
 
     removeChannelNotifications = async (serverUrl: string, channelId: string) => {
@@ -320,4 +333,5 @@ class PushNotifications {
     };
 }
 
-export default new PushNotifications();
+const PushNotifications = new PushNotificationsSingleton();
+export default PushNotifications;

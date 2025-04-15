@@ -1,9 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, Text, TouchableOpacity, useWindowDimensions, type ViewStyle} from 'react-native';
+import {
+    DeviceEventEmitter,
+    Text,
+    TouchableOpacity,
+    type StyleProp,
+    type ViewStyle,
+} from 'react-native';
 import {Gesture, GestureDetector, GestureHandlerRootView} from 'react-native-gesture-handler';
 import {type ComponentEvent, Navigation} from 'react-native-navigation';
 import Animated, {
@@ -21,7 +27,8 @@ import {Navigation as NavigationConstants, Screens} from '@constants';
 import {MESSAGE_TYPE, SNACK_BAR_CONFIG} from '@constants/snack_bar';
 import {TABLET_SIDEBAR_WIDTH} from '@constants/view';
 import {useTheme} from '@context/theme';
-import {useIsTablet} from '@hooks/device';
+import {useIsTablet, useWindowDimensions} from '@hooks/device';
+import SecurityManager from '@managers/security_manager';
 import {dismissOverlay} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -39,6 +46,8 @@ const SNACK_BAR_HEIGHT = 56;
 const SNACK_BAR_BOTTOM_RATIO = 0.04;
 
 const caseScreens: AvailableScreens[] = [Screens.PERMALINK, Screens.MANAGE_CHANNEL_MEMBERS, Screens.MENTIONS, Screens.SAVED_MESSAGES];
+
+const DEFAULT_ICON = 'alert-outline';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -85,6 +94,8 @@ const SnackBar = ({
     componentId,
     onAction,
     sourceScreen,
+    customMessage,
+    type,
 }: SnackBarProps) => {
     const [showSnackBar, setShowSnackBar] = useState<boolean | undefined>();
     const intl = useIntl();
@@ -97,7 +108,17 @@ const SnackBar = ({
     const mounted = useRef(false);
     const userHasUndo = useRef(false);
 
-    const config = SNACK_BAR_CONFIG[barType];
+    let config;
+    if (barType && SNACK_BAR_CONFIG[barType]) {
+        config = SNACK_BAR_CONFIG[barType];
+    } else {
+        config = {
+            iconName: DEFAULT_ICON,
+            canUndo: false,
+            type,
+        };
+    }
+
     const styles = getStyleSheet(theme);
     const gestureRootStyle = useMemo(() => {
         return {
@@ -141,8 +162,8 @@ const SnackBar = ({
         return [
             styles.mobile,
             isTablet && tabletStyle,
-        ] as ViewStyle;
-    }, [theme, barType]);
+        ] as StyleProp<ViewStyle>;
+    }, [windowWidth, styles.mobile, isTablet, sourceScreen]);
 
     const toastStyle = useMemo(() => {
         let backgroundColor: string;
@@ -158,7 +179,7 @@ const SnackBar = ({
                 break;
         }
         return [styles.toast, {backgroundColor}];
-    }, [theme, config?.type]);
+    }, [config?.type, styles.toast, theme.onlineIndicator, theme.errorTextColor, theme.centerChannelColor]);
 
     const animatedMotion = useAnimatedStyle(() => {
         return {
@@ -197,10 +218,10 @@ const SnackBar = ({
             runOnJS(hideSnackBar)();
         });
 
-    const animateHiding = (forceHiding: boolean) => {
+    const animateHiding = useCallback((forceHiding: boolean) => {
         const duration = forceHiding ? 0 : 200;
         offset.value = withTiming(200, {duration}, () => runOnJS(hideSnackBar)());
-    };
+    }, [offset]);
 
     const onUndoPressHandler = () => {
         userHasUndo.current = true;
@@ -220,7 +241,7 @@ const SnackBar = ({
             stopTimers();
             mounted.current = false;
         };
-    }, [isPanned.value]);
+    }, []);
 
     // This effect dismisses the Navigation Overlay after we have hidden the snack bar
     useEffect(() => {
@@ -230,7 +251,7 @@ const SnackBar = ({
             }
             dismissOverlay(componentId);
         }
-    }, [showSnackBar, onAction]);
+    }, [showSnackBar, onAction, componentId]);
 
     // This effect checks if we are navigating away and if so, it dismisses the snack bar
     useEffect(() => {
@@ -252,7 +273,12 @@ const SnackBar = ({
             tabPress.remove();
             navigateToTab.remove();
         };
-    }, []);
+    }, [animateHiding, componentId, sourceScreen]);
+
+    const message = customMessage || intl.formatMessage(
+        {id: config.id, defaultMessage: config.defaultMessage},
+        messageValues,
+    );
 
     return (
         <GestureHandlerRootView
@@ -261,6 +287,7 @@ const SnackBar = ({
             <GestureDetector gesture={gesture}>
                 <Animated.View
                     style={animatedMotion}
+                    nativeID={SecurityManager.getShieldScreenId(componentId)}
                 >
                     <Animated.View
                         entering={FadeIn.duration(300)}
@@ -268,12 +295,10 @@ const SnackBar = ({
                         <Toast
                             animatedStyle={snackBarStyle}
                             iconName={config.iconName}
-                            message={intl.formatMessage(
-                                {id: config.id, defaultMessage: config.defaultMessage},
-                                messageValues,
-                            )}
+                            message={message}
                             style={toastStyle}
                             textStyle={styles.text}
+                            testID='toast'
                         >
                             {config.canUndo && onAction && (
                                 <TouchableOpacity onPress={onUndoPressHandler}>

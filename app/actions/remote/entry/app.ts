@@ -4,6 +4,7 @@
 import {setLastServerVersionCheck} from '@actions/local/systems';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import DatabaseManager from '@database/manager';
+import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {prepareCommonSystemValues} from '@queries/servers/system';
 import {deleteV1Data} from '@utils/file';
@@ -15,6 +16,8 @@ export async function appEntry(serverUrl: string, since = 0) {
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
+
+    PerformanceMetricsManager.startTimeToInteraction();
 
     if (!since) {
         if (Object.keys(DatabaseManager.serverDatabases).length === 1) {
@@ -28,7 +31,7 @@ export async function appEntry(serverUrl: string, since = 0) {
         await operator.batchRecords(removeLastUnreadChannelId, 'appEntry - removeLastUnreadChannelId');
     }
 
-    WebsocketManager.openAll();
+    WebsocketManager.openAll('Cold Start');
 
     verifyPushProxy(serverUrl);
 

@@ -24,7 +24,7 @@ import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type MyTeamModel from '@typings/database/models/servers/my_team';
 import type PostModel from '@typings/database/models/servers/post';
 
-export async function pushNotificationEntry(serverUrl: string, notification: NotificationData) {
+export async function pushNotificationEntry(serverUrl: string, notification: NotificationData, groupLabel?: BaseRequestGroupLabel) {
     // We only reach this point if we have a channel Id in the notification payload
     const channelId = notification.channel_id!;
     const rootId = notification.root_id!;
@@ -33,6 +33,9 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
+
+    PerformanceMetricsManager.startTimeToInteraction();
+
     const {database} = operator;
 
     const currentTeamId = await getCurrentTeamId(database);
@@ -65,7 +68,7 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
     let myTeam: MyTeamModel | TeamMembership | undefined = await getMyTeamById(database, teamId);
 
     if (!myTeam) {
-        const resp = await fetchMyTeam(serverUrl, teamId);
+        const resp = await fetchMyTeam(serverUrl, teamId, false, groupLabel);
         if (resp.error) {
             if (isErrorWithStatusCode(resp.error) && resp.error.status_code === 403) {
                 emitNotificationError('Team');
@@ -78,7 +81,7 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
     }
 
     if (!myChannel) {
-        const resp = await fetchMyChannel(serverUrl, teamId, channelId);
+        const resp = await fetchMyChannel(serverUrl, teamId, channelId, false, groupLabel);
         if (resp.error) {
             if (isErrorWithStatusCode(resp.error) && resp.error.status_code === 403) {
                 emitNotificationError('Channel');
@@ -97,7 +100,7 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
         if (isThreadNotification) {
             let post: PostModel | Post | undefined = await getPostById(database, rootId);
             if (!post) {
-                const resp = await fetchPostById(serverUrl, rootId);
+                const resp = await fetchPostById(serverUrl, rootId, false, groupLabel);
                 post = resp.post;
             }
 
@@ -105,20 +108,20 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
 
             if (actualRootId) {
                 PerformanceMetricsManager.setLoadTarget('THREAD');
-                await fetchAndSwitchToThread(serverUrl, actualRootId, true);
+                await fetchAndSwitchToThread(serverUrl, actualRootId, true, groupLabel);
             } else if (post) {
                 PerformanceMetricsManager.setLoadTarget('THREAD');
-                await fetchAndSwitchToThread(serverUrl, rootId, true);
+                await fetchAndSwitchToThread(serverUrl, rootId, true, groupLabel);
             } else {
                 emitNotificationError('Post');
             }
         } else {
             PerformanceMetricsManager.setLoadTarget('CHANNEL');
-            await switchToChannelById(serverUrl, channelId, teamId);
+            await switchToChannelById(serverUrl, channelId, teamId, false, groupLabel);
         }
     }
 
-    WebsocketManager.openAll();
+    WebsocketManager.openAll(groupLabel);
 
     return {};
 }

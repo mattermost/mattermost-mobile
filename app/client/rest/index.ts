@@ -11,6 +11,7 @@ import ClientCategories, {type ClientCategoriesMix} from './categories';
 import ClientChannelBookmarks, {type ClientChannelBookmarksMix} from './channel_bookmark';
 import ClientChannels, {type ClientChannelsMix} from './channels';
 import {DEFAULT_LIMIT_AFTER, DEFAULT_LIMIT_BEFORE, HEADER_X_VERSION_ID} from './constants';
+import ClientCustomAttributes, {type ClientCustomAttributesMix} from './custom_profile_attributes';
 import ClientEmojis, {type ClientEmojisMix} from './emojis';
 import ClientFiles, {type ClientFilesMix} from './files';
 import ClientGeneral, {type ClientGeneralMix} from './general';
@@ -19,6 +20,7 @@ import ClientIntegrations, {type ClientIntegrationsMix} from './integrations';
 import ClientNPS, {type ClientNPSMix} from './nps';
 import ClientPosts, {type ClientPostsMix} from './posts';
 import ClientPreferences, {type ClientPreferencesMix} from './preferences';
+import ClientScheduledPost, {type ClientScheduledPostMix} from './scheduled_post';
 import ClientTeams, {type ClientTeamsMix} from './teams';
 import ClientThreads, {type ClientThreadsMix} from './threads';
 import ClientTos, {type ClientTosMix} from './tos';
@@ -38,13 +40,16 @@ interface Client extends ClientBase,
     ClientIntegrationsMix,
     ClientPostsMix,
     ClientPreferencesMix,
+    ClientScheduledPostMix,
     ClientTeamsMix,
     ClientThreadsMix,
     ClientTosMix,
     ClientUsersMix,
     ClientCallsMix,
     ClientPluginsMix,
-    ClientNPSMix
+    ClientNPSMix,
+    ClientCustomAttributesMix,
+    ClientScheduledPostMix
 {}
 
 class Client extends mix(ClientBase).with(
@@ -59,6 +64,7 @@ class Client extends mix(ClientBase).with(
     ClientIntegrations,
     ClientPosts,
     ClientPreferences,
+    ClientScheduledPost,
     ClientTeams,
     ClientThreads,
     ClientTos,
@@ -66,6 +72,8 @@ class Client extends mix(ClientBase).with(
     ClientCalls,
     ClientPlugins,
     ClientNPS,
+    ClientCustomAttributes,
+    ClientScheduledPost,
 ) {
     // eslint-disable-next-line no-useless-constructor
     constructor(apiClient: APIClientInterface, serverUrl: string, bearerToken?: string, csrfToken?: string) {

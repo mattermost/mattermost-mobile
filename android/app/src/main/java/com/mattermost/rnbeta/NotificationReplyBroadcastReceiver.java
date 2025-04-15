@@ -8,16 +8,18 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.Person;
 
 import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
 
 import com.mattermost.helpers.*;
+import com.mattermost.turbolog.TurboLog;
 import com.wix.reactnativenotifications.core.NotificationIntentAdapter;
 import com.wix.reactnativenotifications.core.notification.PushNotificationProps;
 
@@ -40,6 +42,7 @@ public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
 
             final int notificationId = intent.getIntExtra(CustomPushNotificationHelper.NOTIFICATION_ID, -1);
             final String serverUrl = bundle.getString("server_url");
+            Network.init(context);
             if (serverUrl != null) {
                     replyToMessage(serverUrl, notificationId, message);
             } else {
@@ -66,7 +69,6 @@ public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
         WritableMap headers = Arguments.createMap();
         headers.putString("Content-Type", "application/json");
 
-
         WritableMap body = Arguments.createMap();
         body.putString("channel_id", channelId);
         body.putString("message", message.toString());
@@ -78,26 +80,36 @@ public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
 
         String postsEndpoint = "/api/v4/posts?set_online=false";
         Network.post(serverUrl, postsEndpoint, options, new ResolvePromise() {
+            private boolean isSuccessful(int statusCode) {
+                return statusCode >= 200 && statusCode < 300;
+            }
             @Override
             public void resolve(@Nullable Object value) {
                 if (value != null) {
+                    ReadableMap response = (ReadableMap)value;
+                    ReadableMap data = response.getMap("data");
+                    if (data != null && data.hasKey("status_code") && !isSuccessful(data.getInt("status_code"))) {
+                        TurboLog.Companion.i("ReactNative", String.format("Reply FAILED exception %s", data.getString("message")));
+                        onReplyFailed(notificationId);
+                        return;
+                    }
                     onReplySuccess(notificationId, message);
-                    Log.i("ReactNative", "Reply SUCCESS");
+                    TurboLog.Companion.i("ReactNative", "Reply SUCCESS");
                 } else {
-                    Log.i("ReactNative", "Reply FAILED resolved without value");
+                    TurboLog.Companion.i("ReactNative", "Reply FAILED resolved without value");
                     onReplyFailed(notificationId);
                 }
             }
 
             @Override
-            public void reject(Throwable reason) {
-                Log.i("ReactNative", String.format("Reply FAILED exception %s", reason.getMessage()));
+            public void reject(@NonNull Throwable reason) {
+                TurboLog.Companion.i("ReactNative", String.format("Reply FAILED exception %s", reason.getMessage()));
                 onReplyFailed(notificationId);
             }
 
             @Override
-            public void reject(String code, String message) {
-                Log.i("ReactNative",
+            public void reject(@NonNull String code, String message) {
+                TurboLog.Companion.i("ReactNative",
                         String.format("Reply FAILED status %s BODY %s", code, message)
                 );
                 onReplyFailed(notificationId);

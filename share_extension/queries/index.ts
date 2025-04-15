@@ -33,7 +33,7 @@ export const getServerHasChannels = async (serverUrl: string) => {
 
 export const observeServerHasChannels = (serverUrl: string) => {
     return queryHasChannels(serverUrl)?.observe().pipe(
-        switchMap((channels) => of$(channels?.length > 0 ?? false)),
+        switchMap((channels) => of$(channels.length > 0)),
     ) || of$(false);
 };
 

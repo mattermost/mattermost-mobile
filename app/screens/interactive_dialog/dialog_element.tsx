@@ -1,13 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo} from 'react';
 
 import AutocompleteSelector from '@components/autocomplete_selector';
 import BoolSetting from '@components/settings/bool_setting';
 import RadioSetting from '@components/settings/radio_setting';
 import TextSetting from '@components/settings/text_setting';
 import {selectKeyboardType as selectKB} from '@utils/integrations';
+import {filterOptions} from '@utils/message_attachment';
 
 import type {KeyboardTypeOptions} from 'react-native';
 
@@ -22,6 +23,21 @@ function selectKeyboardType(type: InteractiveDialogElementType, subtype?: Intera
     return selectKB(subtype);
 }
 
+function getStringValue(value: string | number | boolean | string[] | undefined): string | undefined {
+    if (typeof value === 'string') {
+        return value;
+    }
+    if (typeof value === 'number') {
+        return value.toString();
+    }
+
+    return undefined;
+}
+
+function getBooleanValue(value: string | number | boolean | string[] | undefined): boolean | undefined {
+    return typeof value === 'boolean' ? value : undefined;
+}
+
 type Props = {
     displayName: string;
     name: string;
@@ -34,7 +50,7 @@ type Props = {
     dataSource?: string;
     optional?: boolean;
     options?: PostActionOption[];
-    value: string|number|boolean|string[];
+    value?: string|number|boolean|string[];
     onChange: (name: string, value: string|number|boolean|string[]) => void;
 }
 function DialogElement({
@@ -55,11 +71,12 @@ function DialogElement({
     const testID = `InteractiveDialogElement.${name}`;
     const handleChange = useCallback((newValue: string | boolean | string[]) => {
         if (type === 'text' && subtype === 'number') {
-            onChange(name, parseInt(newValue as string, 10));
+            const number = parseInt(newValue as string, 10);
+            onChange(name, isNaN(number) ? '' : number);
             return;
         }
         onChange(name, newValue);
-    }, [onChange, type, subtype]);
+    }, [type, subtype, onChange, name]);
 
     const handleSelect = useCallback((newValue: DialogOption | undefined) => {
         if (!newValue) {
@@ -68,7 +85,11 @@ function DialogElement({
         }
 
         onChange(name, newValue.value);
-    }, [onChange]);
+    }, [name, onChange]);
+
+    const filteredOptions = useMemo(() => {
+        return filterOptions(options);
+    }, [options]);
 
     switch (type) {
         case 'text':
@@ -77,7 +98,7 @@ function DialogElement({
                 <TextSetting
                     label={displayName}
                     maxLength={maxLength || (type === 'text' ? TEXT_DEFAULT_MAX_LENGTH : TEXTAREA_DEFAULT_MAX_LENGTH)}
-                    value={value as string}
+                    value={getStringValue(value)}
                     placeholder={placeholder}
                     helpText={helpText}
                     errorText={errorText}
@@ -95,14 +116,14 @@ function DialogElement({
                 <AutocompleteSelector
                     label={displayName}
                     dataSource={dataSource}
-                    options={options}
+                    options={filteredOptions}
                     optional={optional}
                     onSelected={handleSelect}
                     helpText={helpText}
                     errorText={errorText}
                     placeholder={placeholder}
                     showRequiredAsterisk={true}
-                    selected={value as string}
+                    selected={getStringValue(value)}
                     roundedBorders={false}
                     testID={testID}
                 />
@@ -113,17 +134,17 @@ function DialogElement({
                     label={displayName}
                     helpText={helpText}
                     errorText={errorText}
-                    options={options}
+                    options={filteredOptions}
                     onChange={handleChange}
                     testID={testID}
-                    value={value as string}
+                    value={getStringValue(value)}
                 />
             );
         case 'bool':
             return (
                 <BoolSetting
                     label={displayName}
-                    value={value as boolean}
+                    value={getBooleanValue(value)}
                     placeholder={placeholder}
                     helpText={helpText}
                     errorText={errorText}

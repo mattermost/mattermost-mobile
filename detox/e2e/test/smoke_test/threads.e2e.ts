@@ -58,9 +58,11 @@ describe('Smoke Test - Threads', () => {
         // # Create a thread and unfollow thread via thread navigation
         const parentMessage = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
+        await waitFor(ChannelScreen.postInput).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         await ChannelScreen.postMessage(parentMessage);
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
+        await waitFor(ThreadScreen.postInput).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         await ThreadScreen.postMessage(`${parentMessage} reply`);
         await ThreadScreen.followingButton.tap();
 

@@ -8,7 +8,7 @@ import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {updateLocalUser} from '@actions/local/user';
-import {setDefaultProfileImage, updateMe, uploadUserProfileImage} from '@actions/remote/user';
+import {setDefaultProfileImage, updateMe, uploadUserProfileImage, fetchCustomAttributes, updateCustomAttributes} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
 import TabletTitle from '@components/tablet_title';
 import {Events} from '@constants';
@@ -16,10 +16,11 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import SecurityManager from '@managers/security_manager';
 import {dismissModal, popTopScreen, setButtons} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 
-import ProfileForm from './components/form';
+import ProfileForm, {CUSTOM_ATTRS_PREFIX} from './components/form';
 import ProfileError from './components/profile_error';
 import Updating from './components/updating';
 import UserProfilePicture from './components/user_profile_picture';
@@ -41,10 +42,11 @@ const styles = StyleSheet.create({
 
 const CLOSE_BUTTON_ID = 'close-edit-profile';
 const UPDATE_BUTTON_ID = 'update-profile';
+const CUSTOM_ATTRS_PREFIX_NAME = `${CUSTOM_ATTRS_PREFIX}.`;
 
 const EditProfile = ({
     componentId, currentUser, isModal, isTablet,
-    lockedFirstName, lockedLastName, lockedNickname, lockedPosition, lockedPicture,
+    lockedFirstName, lockedLastName, lockedNickname, lockedPosition, lockedPicture, enableCustomAttributes,
 }: EditProfileProps) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
@@ -59,6 +61,7 @@ const EditProfile = ({
         nickname: currentUser?.nickname || '',
         position: currentUser?.position || '',
         username: currentUser?.username || '',
+        customAttributes: {},
     });
     const [canSave, setCanSave] = useState(false);
     const [error, setError] = useState<unknown>();
@@ -75,7 +78,7 @@ const EditProfile = ({
             color: theme.sidebarHeaderTextColor,
             text: buttonText,
         };
-    }, [isTablet, theme.sidebarHeaderTextColor]);
+    }, [isTablet, theme.sidebarHeaderTextColor, buttonText]);
 
     const leftButton = useMemo(() => {
         return isTablet ? null : {
@@ -92,7 +95,7 @@ const EditProfile = ({
                 leftButtons: [leftButton!],
             });
         }
-    }, []);
+    }, [isTablet, componentId, rightButton, leftButton]);
 
     const close = useCallback(() => {
         if (isModal) {
@@ -102,7 +105,7 @@ const EditProfile = ({
         } else {
             popTopScreen(componentId);
         }
-    }, []);
+    }, [componentId, isModal, isTablet]);
 
     const enableSaveButton = useCallback((value: boolean) => {
         if (!isTablet) {
@@ -115,7 +118,21 @@ const EditProfile = ({
             setButtons(componentId, buttons);
         }
         setCanSave(value);
-    }, [componentId, rightButton]);
+    }, [componentId, rightButton, isTablet]);
+
+    useEffect(() => {
+        const loadCustomAttributes = async () => {
+            if (!currentUser) {
+                return;
+            }
+            const {error: fetchError, attributes} = await fetchCustomAttributes(serverUrl, currentUser.id);
+            if (!fetchError && attributes) {
+                setUserInfo((prev: UserInfo) => ({...prev, customAttributes: attributes} as UserInfo));
+            }
+        };
+
+        loadCustomAttributes();
+    }, [currentUser, serverUrl]);
 
     const submitUser = useCallback(preventDoubleTap(async () => {
         if (!currentUser) {
@@ -153,6 +170,15 @@ const EditProfile = ({
                     resetScreenForProfileError(reqError);
                     return;
                 }
+
+                // Update custom attributes if changed
+                if (userInfo.customAttributes) {
+                    const {error: attrError} = await updateCustomAttributes(serverUrl, userInfo.customAttributes);
+                    if (attrError) {
+                        resetScreen(attrError);
+                        return;
+                    }
+                }
             }
 
             close();
@@ -170,15 +196,47 @@ const EditProfile = ({
         enableSaveButton(true);
     }, [enableSaveButton]);
 
-    const onUpdateField = useCallback((fieldKey: string, name: string) => {
+    const onUpdateField = useCallback((fieldKey: string, value: string) => {
         const update = {...userInfo};
-        update[fieldKey] = name;
+        if (fieldKey.startsWith(CUSTOM_ATTRS_PREFIX_NAME)) {
+            const attrKey = fieldKey.slice(CUSTOM_ATTRS_PREFIX_NAME.length);
+            update.customAttributes = {...update.customAttributes, [attrKey]: {id: attrKey, name: userInfo.customAttributes[attrKey].name, value, sort_order: userInfo.customAttributes[attrKey].sort_order}};
+        } else {
+            switch (fieldKey) {
+            // typescript doesn't like to do update[fieldkey] as it might containg a customAttribute case
+                case 'email':
+                    update.email = value;
+                    break;
+                case 'firstName':
+                    update.firstName = value;
+                    break;
+                case 'lastName':
+                    update.lastName = value;
+                    break;
+                case 'nickname':
+                    update.nickname = value;
+                    break;
+                case 'position':
+                    update.position = value;
+                    break;
+                case 'username':
+                    update.username = value;
+                    break;
+            }
+        }
         setUserInfo(update);
 
-        // @ts-expect-error access object property by string key
-        const currentValue = currentUser[fieldKey];
-        const didChange = currentValue !== name;
-        hasUpdateUserInfo.current = currentValue !== name;
+        let didChange = false;
+        if (fieldKey.startsWith(CUSTOM_ATTRS_PREFIX_NAME)) {
+            const attrKey = fieldKey.slice(CUSTOM_ATTRS_PREFIX_NAME.length);
+            didChange = userInfo.customAttributes?.[attrKey].value !== value;
+        } else {
+            // @ts-expect-error access object property by string key
+            const currentValue = currentUser[fieldKey];
+            didChange = currentValue !== value;
+        }
+
+        hasUpdateUserInfo.current = didChange;
         enableSaveButton(didChange);
     }, [userInfo, currentUser, enableSaveButton]);
 
@@ -232,12 +290,16 @@ const EditProfile = ({
                 onUpdateField={onUpdateField}
                 userInfo={userInfo}
                 submitUser={submitUser}
+                enableCustomAttributes={enableCustomAttributes}
             />
         </KeyboardAwareScrollView>
     ) : null;
 
     return (
-        <>
+        <View
+            style={styles.flex}
+            nativeID={SecurityManager.getShieldScreenId(componentId)}
+        >
             {isTablet &&
                 <TabletTitle
                     action={buttonText}
@@ -254,7 +316,7 @@ const EditProfile = ({
             >
                 {content}
             </SafeAreaView>
-        </>
+        </View>
     );
 };
 

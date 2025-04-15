@@ -1,16 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import KeyboardTrackingView, {type KeyboardTrackingViewRef} from '@mattermost/keyboard-tracker';
-import React, {type RefObject, useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Platform} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import Autocomplete from '@components/autocomplete';
-import {View as ViewConstants} from '@constants';
+import {ExtraKeyboard} from '@context/extra_keyboard';
 import {useServerUrl} from '@context/server';
 import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
-import {useIsTablet, useKeyboardHeight} from '@hooks/device';
+import {useKeyboardHeight} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 
 import Archived from './archived';
@@ -20,7 +18,6 @@ import ReadOnly from './read_only';
 const AUTOCOMPLETE_ADJUST = -5;
 type Props = {
     testID?: string;
-    accessoriesContainerID?: string;
     canPost: boolean;
     channelId: string;
     channelIsArchived?: boolean;
@@ -30,18 +27,13 @@ type Props = {
     isSearch?: boolean;
     message?: string;
     rootId?: string;
-    scrollViewNativeID?: string;
-    keyboardTracker: RefObject<KeyboardTrackingViewRef>;
     containerHeight: number;
     isChannelScreen: boolean;
     canShowPostPriority?: boolean;
 }
 
-const {KEYBOARD_TRACKING_OFFSET} = ViewConstants;
-
 function PostDraft({
     testID,
-    accessoriesContainerID,
     canPost,
     channelId,
     channelIsArchived,
@@ -51,8 +43,6 @@ function PostDraft({
     isSearch,
     message = '',
     rootId = '',
-    scrollViewNativeID,
-    keyboardTracker,
     containerHeight,
     isChannelScreen,
     canShowPostPriority,
@@ -61,9 +51,8 @@ function PostDraft({
     const [cursorPosition, setCursorPosition] = useState(message.length);
     const [postInputTop, setPostInputTop] = useState(0);
     const [isFocused, setIsFocused] = useState(false);
-    const isTablet = useIsTablet();
-    const keyboardHeight = useKeyboardHeight(keyboardTracker);
-    const insets = useSafeAreaInsets();
+    const keyboardHeight = useKeyboardHeight();
+    const kbHeight = Platform.OS === 'ios' ? keyboardHeight : 0; // useKeyboardHeight is already deducting the keyboard height on Android
     const headerHeight = useDefaultHeaderHeight();
     const serverUrl = useServerUrl();
 
@@ -73,14 +62,8 @@ function PostDraft({
         setCursorPosition(message.length);
     }, [channelId, rootId]);
 
-    const keyboardAdjustment = (isTablet && isChannelScreen) ? KEYBOARD_TRACKING_OFFSET : 0;
-    const insetsAdjustment = (isTablet && isChannelScreen) ? 0 : insets.bottom;
-    const autocompletePosition = AUTOCOMPLETE_ADJUST + Platform.select({
-        ios: (keyboardHeight ? keyboardHeight - keyboardAdjustment : (postInputTop + insetsAdjustment)),
-        default: postInputTop + insetsAdjustment,
-    });
+    const autocompletePosition = AUTOCOMPLETE_ADJUST + kbHeight + postInputTop;
     const autocompleteAvailableSpace = containerHeight - autocompletePosition - (isChannelScreen ? headerHeight : 0);
-
     const [animatedAutocompletePosition, animatedAutocompleteAvailableSpace] = useAutocompleteDefaultAnimatedValues(autocompletePosition, autocompleteAvailableSpace);
 
     if (channelIsArchived || deactivatedChannel) {
@@ -136,26 +119,11 @@ function PostDraft({
         />
     ) : null;
 
-    if (Platform.OS === 'android') {
-        return (
-            <>
-                {draftHandler}
-                {autoComplete}
-            </>
-        );
-    }
-
     return (
         <>
-            <KeyboardTrackingView
-                accessoriesContainerID={accessoriesContainerID}
-                ref={keyboardTracker}
-                scrollViewNativeID={scrollViewNativeID}
-                viewInitialOffsetY={isTablet && !rootId ? KEYBOARD_TRACKING_OFFSET : 0}
-            >
-                {draftHandler}
-            </KeyboardTrackingView>
+            {draftHandler}
             {autoComplete}
+            {Platform.OS !== 'android' && <ExtraKeyboard/>}
         </>
     );
 }

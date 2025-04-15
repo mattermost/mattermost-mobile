@@ -4,9 +4,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.app.IntentService;
 import android.os.Bundle;
-import android.util.Log;
 
 import com.mattermost.rnutils.helpers.NotificationHelper;
+import com.mattermost.turbolog.TurboLog;
 import com.wix.reactnativenotifications.core.NotificationIntentAdapter;
 
 public class NotificationDismissService extends IntentService {
@@ -20,6 +20,6 @@ public class NotificationDismissService extends IntentService {
         final Bundle bundle = NotificationIntentAdapter.extractPendingNotificationDataFromIntent(intent);
 
         NotificationHelper.INSTANCE.dismissNotification(context, bundle);
-        Log.i("ReactNative", "Dismiss notification");
+        TurboLog.Companion.i("ReactNative", "Dismiss notification");
     }
 }

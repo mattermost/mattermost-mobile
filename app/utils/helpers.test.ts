@@ -197,9 +197,8 @@ describe('Helpers', () => {
         test('should calculate bottom sheet snap point', () => {
             const itemsCount = 5;
             const itemHeight = 50;
-            const bottomInset = 20;
-            const result = bottomSheetSnapPoint(itemsCount, itemHeight, bottomInset);
-            const expected = (itemsCount * itemHeight) + bottomInset + STATUS_BAR_HEIGHT;
+            const result = bottomSheetSnapPoint(itemsCount, itemHeight);
+            const expected = (itemsCount * itemHeight) + STATUS_BAR_HEIGHT;
             expect(result).toBe(expected);
         });
     });

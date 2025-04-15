@@ -30,7 +30,7 @@ const enhanced = withObservables(['post'], ({serverUrl, post, database}: OwnProp
     );
 
     // The call is not active, so return early with what we need to render the post.
-    if (post.props.end_at) {
+    if (post.props?.end_at) {
         return {
             currentUser,
             isMilitaryTime,

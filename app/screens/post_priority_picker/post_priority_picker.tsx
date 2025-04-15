@@ -3,8 +3,7 @@
 
 import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {View} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {Platform, View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import {getItemHeightWithDescription} from '@components/option_item';
@@ -89,7 +88,6 @@ const PostPriorityPicker = ({
     updatePostPriority,
     closeButtonId,
 }: Props) => {
-    const {bottom} = useSafeAreaInsets();
     const intl = useIntl();
     const isTablet = useIsTablet();
     const theme = useTheme();
@@ -108,8 +106,8 @@ const PostPriorityPicker = ({
 
     const snapPoints = useMemo(() => {
         const paddingBottom = 10;
-        const bottomSheetAdjust = 5;
-        let COMPONENT_HEIGHT = TITLE_HEIGHT + OPTIONS_PADDING + FOOTER_HEIGHT + bottomSheetSnapPoint(3, ITEM_HEIGHT, bottom) + paddingBottom + bottomSheetAdjust;
+        const bottomSheetAdjust = Platform.select({ios: 5, default: 20});
+        let COMPONENT_HEIGHT = TITLE_HEIGHT + OPTIONS_PADDING + FOOTER_HEIGHT + bottomSheetSnapPoint(3, ITEM_HEIGHT) + paddingBottom + bottomSheetAdjust;
 
         if (isPostAcknowledgementEnabled) {
             COMPONENT_HEIGHT += OPTIONS_SEPARATOR_HEIGHT + TOGGLE_OPTION_MARGIN_TOP + getItemHeightWithDescription(2);
@@ -119,7 +117,7 @@ const PostPriorityPicker = ({
         }
 
         return [1, COMPONENT_HEIGHT];
-    }, [displayPersistentNotifications, isPostAcknowledgementEnabled, bottom]);
+    }, [displayPersistentNotifications, isPostAcknowledgementEnabled]);
 
     const handleUpdatePriority = useCallback((priority: PostPriority['priority']) => {
         setData((prevData) => ({
@@ -131,16 +129,16 @@ const PostPriorityPicker = ({
 
     const handleUpdateRequestedAck = useCallback((requested_ack: boolean) => {
         setData((prevData) => ({...prevData, requested_ack}));
-    }, [data]);
+    }, []);
 
     const handleUpdatePersistentNotifications = useCallback((persistent_notifications: boolean) => {
         setData((prevData) => ({...prevData, persistent_notifications}));
-    }, [data]);
+    }, []);
 
     const handleSubmit = useCallback(() => {
         updatePostPriority(data);
         closeBottomSheet();
-    }, [data]);
+    }, [closeBottomSheet, data, updatePostPriority]);
 
     const renderContent = () => (
         <View style={style.container}>
@@ -196,6 +194,7 @@ const PostPriorityPicker = ({
                                 type='toggle'
                                 selected={data.requested_ack}
                                 descriptionNumberOfLines={2}
+                                value='requested_ack'
                             />
                         </View>
                         {displayPersistentNotifications && (
@@ -213,6 +212,7 @@ const PostPriorityPicker = ({
                                     type='toggle'
                                     selected={data.persistent_notifications}
                                     descriptionNumberOfLines={2}
+                                    value='persistent_notifications'
                                 />
                             </View>
                         )}

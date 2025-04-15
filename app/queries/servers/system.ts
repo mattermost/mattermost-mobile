@@ -137,17 +137,23 @@ export const getCommonSystemValues = async (serverDatabase: Database) => {
     };
 };
 
-const fromModelToClientConfig = (list: ConfigModel[]) => {
+const fromModelToClientConfig = <T = ClientConfig>(list: ConfigModel[]) => {
     const config: {[key: string]: any} = {};
     list.forEach((v) => {
         config[v.id] = v.value;
     });
-    return config as ClientConfig;
+    return config as T;
 };
 
 export const getConfig = async (database: Database) => {
     const configList = await database.get<ConfigModel>(CONFIG).query().fetch();
     return fromModelToClientConfig(configList);
+};
+
+export const getSecurityConfig = async (database: Database) => {
+    const configList = await database.get<ConfigModel>(CONFIG).query(
+        Q.where('id', Q.oneOf(['MobileEnableBiometrics', 'MobileJailbreakProtection', 'MobilePreventScreenCapture', 'SiteName']))).fetch();
+    return fromModelToClientConfig<SecurityClientConfig>(configList);
 };
 
 export const queryConfigValue = (database: Database, key: keyof ClientConfig) => {
@@ -205,7 +211,7 @@ export const getIsDataRetentionEnabled = async (database: Database) => {
 
 export const observeConfig = (database: Database): Observable<ClientConfig | undefined> => {
     return database.get<ConfigModel>(CONFIG).query().observeWithColumns(['value']).pipe(
-        switchMap((result) => of$(fromModelToClientConfig(result))),
+        switchMap((result) => of$(fromModelToClientConfig<ClientConfig>(result))),
     );
 };
 

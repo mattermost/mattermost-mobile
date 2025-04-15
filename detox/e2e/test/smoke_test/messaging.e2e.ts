@@ -111,6 +111,9 @@ describe('Smoke Test - Messaging', () => {
         // * Verify on reply thread screen
         await ThreadScreen.toBeVisible();
 
+        // * Verify no thread overview while there are no replies
+        await expect(ThreadScreen.getThreadOverview()).not.toBeVisible();
+
         // # Reply to parent post
         const replyMessage = `${message} reply`;
         await ThreadScreen.postMessage(replyMessage);
@@ -119,6 +122,9 @@ describe('Smoke Test - Messaging', () => {
         const {post: replyPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem: replyPostListPostItem} = ThreadScreen.getPostListPostItem(replyPost.id, replyMessage);
         await expect(replyPostListPostItem).toBeVisible();
+
+        // * Verify thread overview when there are replies
+        await expect(ThreadScreen.getThreadOverview()).toBeVisible();
 
         // # Go back to channel list screen
         await ThreadScreen.back();
@@ -180,7 +186,8 @@ describe('Smoke Test - Messaging', () => {
 
         // # Tap on post to open thread and tap on thread overview unsave button
         await postListPostItem.tap();
-        await ThreadScreen.getThreadOverviewUnsaveButton().tap();
+        await element(by.text(message)).longPress();
+        await PostOptionsScreen.unsavePostOption.tap();
 
         // * Verify saved text is not displayed on the post pre-header
         await expect(channelPostListPostItemPreHeaderText).not.toBeVisible();

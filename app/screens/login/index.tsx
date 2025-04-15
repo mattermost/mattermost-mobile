@@ -15,6 +15,7 @@ import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import NetworkManager from '@managers/network_manager';
+import SecurityManager from '@managers/security_manager';
 import Background from '@screens/background';
 import {dismissModal, goToScreen, loginAnimationOptions, popTopScreen} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
@@ -119,7 +120,7 @@ const LoginOptions = ({
                 defaultMessage="You can't log in to your account yet. At least one login option must be configured. Contact your System Admin for assistance."
             />
         );
-    }, [hasLoginForm, numberSSOs, theme]);
+    }, [hasLoginForm, numberSSOs, styles.subheader]);
 
     const goToSso = preventDoubleTap((ssoType: string) => {
         goToScreen(Screens.SSO, '', {config, extra, launchError, launchType, license, theme, ssoType, serverDisplayName, serverUrl}, loginAnimationOptions());
@@ -160,7 +161,7 @@ const LoginOptions = ({
         });
 
         return () => navigationEvents.remove();
-    }, []);
+    }, [closeButtonId, componentId, serverUrl]);
 
     useEffect(() => {
         translateX.value = 0;
@@ -178,7 +179,7 @@ const LoginOptions = ({
         const unsubscribe = Navigation.events().registerComponentListener(listener, Screens.LOGIN);
 
         return () => unsubscribe.remove();
-    }, [dimensions]);
+    }, [dimensions, translateX]);
 
     useNavButtonPressed(closeButtonId || '', componentId, dismiss, []);
     useAndroidHardwareBackHandler(componentId, pop);
@@ -213,17 +214,18 @@ const LoginOptions = ({
         <View
             style={styles.flex}
             testID='login.screen'
+            nativeID={SecurityManager.getShieldScreenId(componentId, false, true)}
         >
             <Background theme={theme}/>
             <AnimatedSafeArea style={[styles.container, transform]}>
                 <KeyboardAwareScrollView
                     bounces={true}
                     contentContainerStyle={[styles.innerContainer, additionalContainerStyle]}
-                    enableAutomaticScroll={true}
+                    enableAutomaticScroll={false}
                     enableOnAndroid={false}
                     enableResetScrollToCoords={true}
-                    extraScrollHeight={0}
-                    keyboardDismissMode='interactive'
+                    extraScrollHeight={20}
+                    keyboardDismissMode='on-drag'
                     keyboardShouldPersistTaps='handled'
                     ref={keyboardAwareRef}
                     scrollToOverflowEnabled={true}
@@ -239,6 +241,7 @@ const LoginOptions = ({
                         <Form
                             config={config}
                             extra={extra}
+                            keyboardAwareRef={keyboardAwareRef}
                             license={license}
                             launchError={launchError}
                             launchType={launchType}

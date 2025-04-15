@@ -6,6 +6,7 @@ import keyMirror from '@utils/key_mirror';
 
 export const SNACK_BAR_TYPE = keyMirror({
     ADD_CHANNEL_MEMBERS: null,
+    CODE_COPIED: null,
     FAVORITE_CHANNEL: null,
     FOLLOW_THREAD: null,
     INFO_COPIED: null,
@@ -18,6 +19,11 @@ export const SNACK_BAR_TYPE = keyMirror({
     UNFAVORITE_CHANNEL: null,
     UNMUTE_CHANNEL: null,
     UNFOLLOW_THREAD: null,
+    CREATE_POST_ERROR: null,
+    CONNECTION_ERROR: null,
+    SCHEDULED_POST_CREATION_ERROR: null,
+    RESCHEDULED_POST: null,
+    DELETE_SCHEDULED_POST_ERROR: null,
 });
 
 export const MESSAGE_TYPE = {
@@ -26,7 +32,7 @@ export const MESSAGE_TYPE = {
     DEFAULT: 'default',
 };
 
-type SnackBarConfig = {
+export type SnackBarConfig = {
     id: string;
     defaultMessage: string;
     iconName: string;
@@ -39,6 +45,12 @@ export const SNACK_BAR_CONFIG: Record<string, SnackBarConfig> = {
         id: t('snack.bar.channel.members.added'),
         defaultMessage: '{numMembers, number} {numMembers, plural, one {member} other {members}} added',
         iconName: 'check',
+        canUndo: false,
+    },
+    CODE_COPIED: {
+        id: t('snack.bar.code.copied'),
+        defaultMessage: 'Code copied to clipboard',
+        iconName: 'content-copy',
         canUndo: false,
     },
     FAVORITE_CHANNEL: {

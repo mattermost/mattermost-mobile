@@ -8,7 +8,6 @@ import {Linking, Platform, View} from 'react-native';
 import urlParse from 'url-parse';
 
 import {Sso} from '@constants';
-import NetworkManager from '@managers/network_manager';
 import {isErrorWithMessage} from '@utils/errors';
 import {isBetaApp} from '@utils/general';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -23,7 +22,6 @@ interface SSOWithRedirectURLProps {
     doSSOLogin: (bearerToken: string, csrfToken: string) => void;
     loginError: string;
     loginUrl: string;
-    serverUrl: string;
     setLoginError: (value: string) => void;
     theme: Theme;
 }
@@ -59,7 +57,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const SSOAuthenticationWithExternalBrowser = ({doSSOLogin, loginError, loginUrl, serverUrl, setLoginError, theme}: SSOWithRedirectURLProps) => {
+const SSOAuthenticationWithExternalBrowser = ({doSSOLogin, loginError, loginUrl, setLoginError, theme}: SSOWithRedirectURLProps) => {
     const [error, setError] = useState<string>('');
     const [loginSuccess, setLoginSuccess] = useState(false);
     const style = getStyleSheet(theme);
@@ -75,8 +73,6 @@ const SSOAuthenticationWithExternalBrowser = ({doSSOLogin, loginError, loginUrl,
         if (resetErrors !== false) {
             setError('');
             setLoginError('');
-            NetworkManager.invalidateClient(serverUrl);
-            NetworkManager.createClient(serverUrl);
         }
         const parsedUrl = urlParse(loginUrl, true);
         const query: Record<string, string> = {

@@ -25,30 +25,27 @@ const withTeams = withObservables([], ({database}: WithDatabaseArgs) => {
             switchMap((p) => (p.length ? of$(p[0].value.split(',')) : of$([]))),
         );
     const myOrderedTeams = combineLatest([myTeams, order, teamIds]).pipe(
-        map(([ts, o, tids]) => {
-            let ids: string[] = o;
-            if (!o.length) {
-                ids = tids.
+        map(([memberships, o, teams]) => {
+            const sortedTeamIds = new Set(o);
+            const membershipMap = new Map(memberships.map((m) => [m.id, m]));
+
+            if (sortedTeamIds.size) {
+                const mySortedTeams = [...sortedTeamIds].
+                    filter((id) => id && membershipMap.has(id)).
+                    map((id) => membershipMap.get(id)!);
+
+                const extraTeams = teams.
+                    filter((t) => t.id && !sortedTeamIds.has(t.id) && membershipMap.has(t.id)).
                     sort((a, b) => a.displayName.toLocaleLowerCase().localeCompare(b.displayName.toLocaleLowerCase())).
-                    map((t) => t.id);
+                    map((t) => membershipMap.get(t.id)!);
+
+                return [...mySortedTeams, ...extraTeams];
             }
 
-            const indexes: {[x: string]: number} = {};
-            const originalIndexes: {[x: string]: number} = {};
-            ids.forEach((v, i) => {
-                indexes[v] = i;
-            });
-
-            ts.forEach((t, i) => {
-                originalIndexes[t.id] = i;
-            });
-
-            return ts.sort((a, b) => {
-                if ((indexes[a.id] != null) || (indexes[b.id] != null)) {
-                    return (indexes[a.id] ?? tids.length) - (indexes[b.id] ?? tids.length);
-                }
-                return (originalIndexes[a.id] - originalIndexes[b.id]);
-            });
+            return teams.
+                filter((t) => t.id && membershipMap.has(t.id)).
+                sort((a, b) => a.displayName.toLocaleLowerCase().localeCompare(b.displayName.toLocaleLowerCase())).
+                map((t) => membershipMap.get(t.id)!);
         }),
     );
     return {

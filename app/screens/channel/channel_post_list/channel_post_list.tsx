@@ -31,7 +31,7 @@ type Props = {
     shouldShowJoinLeaveMessages: boolean;
 }
 
-const edges: Edge[] = ['bottom'];
+const edges: Edge[] = [];
 const styles = StyleSheet.create({
     flex: {flex: 1},
     containerStyle: {paddingTop: 12},

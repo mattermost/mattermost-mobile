@@ -10,6 +10,7 @@ import ThemeProvider from '@context/theme';
 import UserLocaleProvider from '@context/user_locale';
 import DatabaseManager from '@database/manager';
 import {subscribeActiveServers} from '@database/subscription/servers';
+import {secureGetFromRecord} from '@utils/types';
 
 import type {Database} from '@nozbe/watermelondb';
 import type ServersModel from '@typings/database/models/app/servers';
@@ -31,7 +32,7 @@ export function withServerDatabase<T extends JSX.IntrinsicAttributes>(Component:
 
             if (server) {
                 const database =
-                    DatabaseManager.serverDatabases[server.url]?.database;
+                    secureGetFromRecord(DatabaseManager.serverDatabases, server.url)?.database;
 
                 if (database) {
                     setState({

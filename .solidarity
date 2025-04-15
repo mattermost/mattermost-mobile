@@ -32,14 +32,14 @@
       {
         "rule": "cli",
         "binary": "ruby",
-        "semver": ">=3.0.0",
+        "semver": ">=3.2.0",
         "error": "visit rvm install https://rvm.io/rvm/install",
         "platform": "darwin"
       },
       {
         "rule": "cli",
         "binary": "pod",
-        "semver": "1.15.2",
+        "semver": "1.16.1",
         "platform": "darwin"
       }
     ],

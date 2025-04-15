@@ -56,6 +56,7 @@ class Alert {
     removeButton3 = isAndroid() ? element(by.text('REMOVE')) : element(by.label('Remove')).atIndex(3);
     yesButton = isAndroid() ? element(by.text('YES')) : element(by.label('Yes')).atIndex(0);
     yesButton2 = isAndroid() ? element(by.text('YES')) : element(by.label('Yes')).atIndex(1);
+    sendButton = isAndroid() ? element(by.text('SEND')) : element(by.label('Send')).atIndex(1);
 }
 
 const alert = new Alert();

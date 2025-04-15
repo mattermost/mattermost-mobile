@@ -1,12 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {chunk} from 'lodash';
 import {DeviceEventEmitter} from 'react-native';
 
 import {removeUserFromTeam as localRemoveUserFromTeam} from '@actions/local/team';
+import {fetchScheduledPosts} from '@actions/remote/scheduled_post';
 import {PER_PAGE_DEFAULT} from '@client/rest/constants';
 import {Events} from '@constants';
 import DatabaseManager from '@database/manager';
+import {removeDuplicatesModels} from '@helpers/database';
 import NetworkManager from '@managers/network_manager';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {prepareCategoriesAndCategoriesChannels} from '@queries/servers/categories';
@@ -22,9 +25,10 @@ import {logDebug} from '@utils/log';
 
 import {fetchMyChannelsForTeam, switchToChannelById} from './channel';
 import {fetchGroupsForTeamIfConstrained} from './groups';
-import {fetchPostsForChannel, fetchPostsForUnreadChannels} from './post';
+import {fetchPostsForChannel} from './post';
 import {fetchRolesIfNeeded} from './role';
 import {forceLogoutIfNecessary} from './session';
+import {syncThreadsIfNeeded} from './thread';
 
 import type {Client} from '@client/rest';
 import type {Model} from '@nozbe/watermelondb';
@@ -155,14 +159,14 @@ export async function sendEmailInvitesToTeam(serverUrl: string, teamId: string, 
     }
 }
 
-export async function fetchMyTeams(serverUrl: string, fetchOnly = false): Promise<MyTeamsRequest> {
+export async function fetchMyTeams(serverUrl: string, fetchOnly = false, groupLabel?: RequestGroupLabel): Promise<MyTeamsRequest> {
     try {
         const client = NetworkManager.getClient(serverUrl);
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         const [teams, memberships]: [Team[], TeamMembership[]] = await Promise.all([
-            client.getMyTeams(),
-            client.getMyTeamMembers(),
+            client.getMyTeams(groupLabel),
+            client.getMyTeamMembers(groupLabel),
         ]);
 
         if (!fetchOnly) {
@@ -201,14 +205,14 @@ export async function fetchMyTeams(serverUrl: string, fetchOnly = false): Promis
     }
 }
 
-export async function fetchMyTeam(serverUrl: string, teamId: string, fetchOnly = false): Promise<MyTeamsRequest> {
+export async function fetchMyTeam(serverUrl: string, teamId: string, fetchOnly = false, groupLabel?: RequestGroupLabel): Promise<MyTeamsRequest> {
     try {
         const client = NetworkManager.getClient(serverUrl);
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         const [team, membership] = await Promise.all([
-            client.getTeam(teamId),
-            client.getTeamMember(teamId, 'me'),
+            client.getTeam(teamId, groupLabel),
+            client.getTeamMember(teamId, 'me', groupLabel),
         ]);
         if (!fetchOnly) {
             const modelPromises = prepareMyTeams(operator, [team], [membership]);
@@ -241,14 +245,14 @@ export const fetchAllTeams = async (serverUrl: string, page = 0, perPage = PER_P
     }
 };
 
-const recCanJoinTeams = async (client: Client, myTeamsIds: Set<string>, page: number): Promise<boolean> => {
-    const fetchedTeams = await client.getTeams(page, PER_PAGE_DEFAULT);
+const recCanJoinTeams = async (client: Client, myTeamsIds: Set<string>, page: number, groupLabel?: RequestGroupLabel): Promise<boolean> => {
+    const fetchedTeams = await client.getTeams(page, PER_PAGE_DEFAULT, false, groupLabel);
     if (fetchedTeams.find((t) => !myTeamsIds.has(t.id) && t.delete_at === 0)) {
         return true;
     }
 
     if (fetchedTeams.length === PER_PAGE_DEFAULT) {
-        return recCanJoinTeams(client, myTeamsIds, page + 1);
+        return recCanJoinTeams(client, myTeamsIds, page + 1, groupLabel);
     }
 
     return false;
@@ -292,7 +296,7 @@ export async function fetchTeamsForComponent(
     return {teams: alreadyLoaded, hasMore: false, page};
 }
 
-export const updateCanJoinTeams = async (serverUrl: string) => {
+export const updateCanJoinTeams = async (serverUrl: string, groupLabel?: RequestGroupLabel) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -300,7 +304,7 @@ export const updateCanJoinTeams = async (serverUrl: string) => {
         const myTeams = await queryMyTeams(database).fetch();
         const myTeamsIds = new Set(myTeams.map((m) => m.id));
 
-        const canJoin = await recCanJoinTeams(client, myTeamsIds, 0);
+        const canJoin = await recCanJoinTeams(client, myTeamsIds, 0, groupLabel);
 
         EphemeralStore.setCanJoinOtherTeams(serverUrl, canJoin);
         return {};
@@ -312,24 +316,36 @@ export const updateCanJoinTeams = async (serverUrl: string) => {
     }
 };
 
-export const fetchTeamsChannelsAndUnreadPosts = async (serverUrl: string, since: number, teams: Team[], memberships: TeamMembership[], excludeTeamId?: string) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
-        return {error: `${serverUrl} database not found`};
-    }
+export const fetchTeamsThreads = async (
+    serverUrl: string, since: number, teams: Team[], isCRTEnabled?: boolean, fetchOnly = false, groupLabel?: RequestGroupLabel,
+) => {
+    try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const result: Model[] = [];
 
-    const membershipSet = new Set(memberships.map((m) => m.team_id));
-    const myTeams = teams.filter((t) => membershipSet.has(t.id) && t.id !== excludeTeamId);
+        // process up to 15 teams at a time
+        const chunks = chunk(teams, 15);
+        for await (const myTeams of chunks) {
+            const models: Model[] = [];
+            const threads = await syncThreadsIfNeeded(serverUrl, isCRTEnabled ?? false, myTeams, true, groupLabel);
+            if (threads.models) {
+                models.push(...threads.models);
+            }
 
-    for await (const team of myTeams) {
-        const {channels, memberships: members} = await fetchMyChannelsForTeam(serverUrl, team.id, true, since, false, true);
+            if (!fetchOnly && models.length) {
+                await operator.batchRecords(removeDuplicatesModels(models), 'fetchTeamsThreads');
+            }
 
-        if (channels?.length && members?.length) {
-            fetchPostsForUnreadChannels(serverUrl, channels, members);
+            if (models.length) {
+                result.push(...models);
+            }
         }
-    }
 
-    return {};
+        return {error: undefined, models: result};
+    } catch (error) {
+        logDebug('error on fetchTeamsThreads', getFullErrorMessage(error));
+        return {error};
+    }
 };
 
 export async function fetchTeamByName(serverUrl: string, teamName: string, fetchOnly = false) {
@@ -421,6 +437,7 @@ export async function handleTeamChange(serverUrl: string, teamId: string) {
 
     // Fetch Groups + GroupTeams
     fetchGroupsForTeamIfConstrained(serverUrl, teamId);
+    fetchScheduledPosts(serverUrl, teamId, false);
     return {};
 }
 

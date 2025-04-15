@@ -46,7 +46,7 @@ if (global.HermesInternal) {
     require('@formatjs/intl-pluralrules/polyfill-force');
     require('@formatjs/intl-numberformat/polyfill-force');
     require('@formatjs/intl-datetimeformat/polyfill-force');
-    require('@formatjs/intl-datetimeformat/add-golden-tz');
+    require('@formatjs/intl-datetimeformat/add-all-tz');
     require('@formatjs/intl-listformat/polyfill-force');
 }
 

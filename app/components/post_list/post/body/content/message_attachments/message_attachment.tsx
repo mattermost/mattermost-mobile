@@ -5,8 +5,9 @@ import React from 'react';
 import {View} from 'react-native';
 
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
-import {getStatusColors} from '@utils/message_attachment_colors';
+import {getStatusColors} from '@utils/message_attachment';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {secureGetFromRecord} from '@utils/types';
 import {isValidUrl} from '@utils/url';
 
 import AttachmentActions from './attachment_actions';
@@ -62,7 +63,7 @@ export default function MessageAttachment({attachment, channelId, layoutWidth, l
     if (attachment.color) {
         if (attachment.color[0] === '#') {
             borderStyle = {borderLeftColor: attachment.color};
-        } else if (STATUS_COLORS[attachment.color]) {
+        } else if (secureGetFromRecord(STATUS_COLORS, attachment.color)) {
             borderStyle = {borderLeftColor: STATUS_COLORS[attachment.color]};
         }
     }
@@ -97,7 +98,7 @@ export default function MessageAttachment({attachment, channelId, layoutWidth, l
                     value={attachment.title}
                 />
                 }
-                {isValidUrl(attachment.thumb_url) &&
+                {attachment.thumb_url && isValidUrl(attachment.thumb_url) &&
                 <AttachmentThumbnail uri={attachment.thumb_url}/>
                 }
                 {Boolean(attachment.text) &&
@@ -113,7 +114,7 @@ export default function MessageAttachment({attachment, channelId, layoutWidth, l
                     theme={theme}
                 />
                 }
-                {Boolean(attachment.fields?.length) &&
+                {attachment.fields && attachment.fields?.length &&
                 <AttachmentFields
                     baseTextStyle={style.message}
                     blockStyles={blockStyles}
@@ -125,21 +126,21 @@ export default function MessageAttachment({attachment, channelId, layoutWidth, l
                     theme={theme}
                 />
                 }
-                {Boolean(attachment.footer) &&
+                {attachment.footer &&
                 <AttachmentFooter
                     icon={attachment.footer_icon}
                     text={attachment.footer}
                     theme={theme}
                 />
                 }
-                {Boolean(attachment.actions?.length) &&
+                {attachment.actions && attachment.actions.length &&
                 <AttachmentActions
                     actions={attachment.actions!}
                     postId={postId}
                     theme={theme}
                 />
                 }
-                {Boolean(metadata?.images?.[attachment.image_url]) &&
+                {attachment.image_url && Boolean(metadata?.images?.[attachment.image_url]) &&
                     <AttachmentImage
                         imageUrl={attachment.image_url}
                         imageMetadata={metadata!.images![attachment.image_url]!}

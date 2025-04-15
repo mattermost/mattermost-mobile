@@ -55,7 +55,7 @@ type Props = {
     maxLength?: number;
     optional: boolean;
     onChange: (value: string) => void;
-    value: string;
+    value?: string;
     multiline: boolean;
     keyboardType: KeyboardTypeOptions;
     secureTextEntry: boolean;

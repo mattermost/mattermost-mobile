@@ -9,8 +9,8 @@ import type ClientBase from './base';
 
 export interface ClientGroupsMix {
     getGroups: (params: {query?: string; filterAllowReference?: boolean; page?: number; perPage?: number; since?: number; includeMemberCount?: boolean}) => Promise<Group[]>;
-    getAllGroupsAssociatedToChannel: (channelId: string, filterAllowReference?: boolean) => Promise<{groups: Group[]; total_group_count: number}>;
-    getAllGroupsAssociatedToMembership: (userId: string, filterAllowReference?: boolean) => Promise<Group[]>;
+    getAllGroupsAssociatedToChannel: (channelId: string, filterAllowReference?: boolean, groupLabel?: RequestGroupLabel) => Promise<{groups: Group[]; total_group_count: number}>;
+    getAllGroupsAssociatedToMembership: (userId: string, filterAllowReference?: boolean, groupLabel?: RequestGroupLabel) => Promise<Group[]>;
     getAllGroupsAssociatedToTeam: (teamId: string, filterAllowReference?: boolean) => Promise<{groups: Group[]; total_group_count: number}>;
 }
 
@@ -29,14 +29,14 @@ const ClientGroups = <TBase extends Constructor<ClientBase>>(superclass: TBase) 
         );
     };
 
-    getAllGroupsAssociatedToChannel = async (channelId: string, filterAllowReference = false) => {
+    getAllGroupsAssociatedToChannel = async (channelId: string, filterAllowReference = false, groupLabel?: RequestGroupLabel) => {
         return this.doFetch(
             `${this.urlVersion}/channels/${channelId}/groups${buildQueryString({
                 paginate: false,
                 filter_allow_reference: filterAllowReference,
                 include_member_count: true,
             })}`,
-            {method: 'get'},
+            {method: 'get', groupLabel},
         );
     };
 
@@ -47,10 +47,10 @@ const ClientGroups = <TBase extends Constructor<ClientBase>>(superclass: TBase) 
         );
     };
 
-    getAllGroupsAssociatedToMembership = async (userId: string, filterAllowReference = false) => {
+    getAllGroupsAssociatedToMembership = async (userId: string, filterAllowReference = false, groupLabel?: RequestGroupLabel) => {
         return this.doFetch(
             `${this.urlVersion}/users/${userId}/groups${buildQueryString({paginate: false, filter_allow_reference: filterAllowReference})}`,
-            {method: 'get'},
+            {method: 'get', groupLabel},
         );
     };
 };

@@ -66,7 +66,7 @@ export const fetchGroupsByNames = async (serverUrl: string, names: string[], fet
     }
 };
 
-export const fetchGroupsForChannel = async (serverUrl: string, channelId: string, fetchOnly = false) => {
+export const fetchGroupsForChannel = async (serverUrl: string, channelId: string, fetchOnly = false, groupLabel?: RequestGroupLabel) => {
     try {
         const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const license = await getLicense(database);
@@ -75,7 +75,7 @@ export const fetchGroupsForChannel = async (serverUrl: string, channelId: string
         }
 
         const client = NetworkManager.getClient(serverUrl);
-        const response = await client.getAllGroupsAssociatedToChannel(channelId);
+        const response = await client.getAllGroupsAssociatedToChannel(channelId, undefined, groupLabel);
 
         if (!response.groups.length) {
             return {groups: [], groupChannels: []};
@@ -129,7 +129,7 @@ export const fetchGroupsForTeam = async (serverUrl: string, teamId: string, fetc
     }
 };
 
-export const fetchGroupsForMember = async (serverUrl: string, userId: string, fetchOnly = false) => {
+export const fetchGroupsForMember = async (serverUrl: string, userId: string, fetchOnly = false, groupLabel?: RequestGroupLabel) => {
     try {
         const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const license = await getLicense(database);
@@ -138,7 +138,7 @@ export const fetchGroupsForMember = async (serverUrl: string, userId: string, fe
         }
 
         const client: Client = NetworkManager.getClient(serverUrl);
-        const response = await client.getAllGroupsAssociatedToMembership(userId);
+        const response = await client.getAllGroupsAssociatedToMembership(userId, false, groupLabel);
 
         if (!response.length) {
             return {groups: [], groupMemberships: []};
@@ -191,13 +191,13 @@ export const fetchGroupsForTeamIfConstrained = async (serverUrl: string, teamId:
     }
 };
 
-export const fetchGroupsForChannelIfConstrained = async (serverUrl: string, channelId: string, fetchOnly = false) => {
+export const fetchGroupsForChannelIfConstrained = async (serverUrl: string, channelId: string, fetchOnly = false, groupLabel?: RequestGroupLabel) => {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const channel = await getChannelById(database, channelId);
 
         if (channel?.isGroupConstrained) {
-            return fetchGroupsForChannel(serverUrl, channelId, fetchOnly);
+            return fetchGroupsForChannel(serverUrl, channelId, fetchOnly, groupLabel);
         }
 
         return {};

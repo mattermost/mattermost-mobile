@@ -20,6 +20,7 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useKeyboardOverlap} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {t} from '@i18n';
+import SecurityManager from '@managers/security_manager';
 import {dismissModal} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
 import {mergeNavigationOptions} from '@utils/navigation';
@@ -255,6 +256,7 @@ export default function ChannelAddMembers({
             onLayout={onLayout}
             ref={mainView}
             edges={['top', 'left', 'right']}
+            nativeID={SecurityManager.getShieldScreenId(componentId)}
         >
             <View style={style.searchBar}>
                 <Search

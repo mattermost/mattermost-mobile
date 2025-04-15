@@ -29,7 +29,7 @@ import {
     updateDmGmDisplayName,
 } from './channel';
 
-import type {ChannelModel, MyChannelModel, SystemModel} from '@app/database/models/server';
+import type {ChannelModel, MyChannelModel, SystemModel} from '@database/models/server';
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database} from '@nozbe/watermelondb';
 

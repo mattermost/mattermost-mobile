@@ -15,6 +15,8 @@ import {popTopScreen} from '@screens/navigation';
 import {gotoSettingsScreen} from '@screens/settings/config';
 import {getEmailInterval, getEmailIntervalTexts, getNotificationProps} from '@utils/user';
 
+import SendTestNotificationNotice from './send_test_notification_notice';
+
 import type UserModel from '@typings/database/models/servers/user';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
@@ -45,6 +47,7 @@ type NotificationsProps = {
     enableEmailBatching: boolean;
     isCRTEnabled: boolean;
     sendEmailNotifications: boolean;
+    serverVersion: string;
 }
 const Notifications = ({
     componentId,
@@ -54,6 +57,7 @@ const Notifications = ({
     enableEmailBatching,
     isCRTEnabled,
     sendEmailNotifications,
+    serverVersion,
 }: NotificationsProps) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
@@ -75,7 +79,7 @@ const Notifications = ({
         const defaultMessage = isCRTEnabled ? 'Mentions' : 'Mentions and Replies';
         const title = intl.formatMessage({id, defaultMessage});
         gotoSettingsScreen(screen, title);
-    }, [isCRTEnabled]);
+    }, [intl, isCRTEnabled]);
 
     const goToNotificationSettingsPush = useCallback(() => {
         const screen = Screens.SETTINGS_NOTIFICATION_PUSH;
@@ -85,7 +89,7 @@ const Notifications = ({
         });
 
         gotoSettingsScreen(screen, title);
-    }, []);
+    }, [intl]);
 
     const callsNotificationsOn = useMemo(() => Boolean(notifyProps?.calls_mobile_sound ? notifyProps.calls_mobile_sound === 'true' : notifyProps?.calls_desktop_sound === 'true'),
         [notifyProps]);
@@ -97,7 +101,7 @@ const Notifications = ({
         });
 
         gotoSettingsScreen(screen, title);
-    }, []);
+    }, [intl]);
 
     const goToNotificationAutoResponder = useCallback(() => {
         const screen = Screens.SETTINGS_NOTIFICATION_AUTO_RESPONDER;
@@ -106,13 +110,13 @@ const Notifications = ({
             defaultMessage: 'Automatic Replies',
         });
         gotoSettingsScreen(screen, title);
-    }, []);
+    }, [intl]);
 
     const goToEmailSettings = useCallback(() => {
         const screen = Screens.SETTINGS_NOTIFICATION_EMAIL;
         const title = intl.formatMessage({id: 'notification_settings.email', defaultMessage: 'Email Notifications'});
         gotoSettingsScreen(screen, title);
-    }, []);
+    }, [intl]);
 
     const close = useCallback(() => {
         popTopScreen(componentId);
@@ -161,6 +165,10 @@ const Notifications = ({
                     testID='notification_settings.automatic_replies.option'
                 />
             )}
+            <SendTestNotificationNotice
+                serverVersion={serverVersion}
+                userId={currentUser?.id || ''}
+            />
         </SettingContainer>
     );
 };

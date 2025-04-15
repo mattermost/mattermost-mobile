@@ -12,7 +12,7 @@ require File.join(File.dirname(`node --print "require.resolve('expo/package.json
 node_require('react-native/scripts/react_native_pods.rb')
 node_require('react-native-permissions/scripts/setup.rb')
 
-platform :ios, min_ios_version_supported
+platform :ios, '15.1' #min_ios_version_supported
 prepare_react_native_project!
 
 linkage = ENV['USE_FRAMEWORKS']
@@ -43,6 +43,8 @@ target 'Mattermost' do
   pod 'React-jsi', :path => '../node_modules/react-native/ReactCommon/jsi', :modular_headers => true
   pod 'React-jsc', :path => '../node_modules/react-native/ReactCommon/jsc', :modular_headers => true
   pod 'simdjson', path: '../node_modules/@nozbe/simdjson', :modular_headers => true
+  pod 'CocoaLumberjack', :modular_headers => true
+  pod 'TurboLogIOSNative', :git => 'https://github.com/larkox/react-native-turbo-log-ios-native.git', :modular_headers => true
 
   post_install do |installer|
     # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202
@@ -54,8 +56,18 @@ target 'Mattermost' do
   
     # installer.pods_project.targets.each do |target|
     #   target.build_configurations.each do |config|
-    #     config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.4'
+    #     config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'
     #   end
     # end
   end
 end
+
+target 'NotificationService' do
+  pod 'TurboLogIOSNative', :git => 'https://github.com/larkox/react-native-turbo-log-ios-native.git', :modular_headers => true
+  pod 'Sentry/HybridSDK', '8.48.0'
+end
+
+target 'MattermostShare' do
+  pod 'Sentry/HybridSDK', '8.48.0'
+end
+

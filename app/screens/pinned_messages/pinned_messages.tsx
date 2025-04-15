@@ -10,9 +10,11 @@ import Loading from '@components/loading';
 import DateSeparator from '@components/post_list/date_separator';
 import Post from '@components/post_list/post';
 import {Events, Screens} from '@constants';
+import {ExtraKeyboardProvider} from '@context/extra_keyboard';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import SecurityManager from '@managers/security_manager';
 import {popTopScreen} from '@screens/navigation';
 import {getDateForDateLine, selectOrderedPosts} from '@utils/post_list';
 
@@ -151,18 +153,21 @@ function SavedMessages({
             edges={edges}
             style={styles.flex}
             testID='pinned_messages.screen'
+            nativeID={SecurityManager.getShieldScreenId(componentId)}
         >
-            <FlatList
-                contentContainerStyle={data.length ? styles.list : [styles.empty]}
-                ListEmptyComponent={emptyList}
-                data={data}
-                onRefresh={handleRefresh}
-                refreshing={refreshing}
-                renderItem={renderItem}
-                scrollToOverflowEnabled={true}
-                onViewableItemsChanged={onViewableItemsChanged}
-                testID='pinned_messages.post_list.flat_list'
-            />
+            <ExtraKeyboardProvider>
+                <FlatList
+                    contentContainerStyle={data.length ? styles.list : [styles.empty]}
+                    ListEmptyComponent={emptyList}
+                    data={data}
+                    onRefresh={handleRefresh}
+                    refreshing={refreshing}
+                    renderItem={renderItem}
+                    scrollToOverflowEnabled={true}
+                    onViewableItemsChanged={onViewableItemsChanged}
+                    testID='pinned_messages.post_list.flat_list'
+                />
+            </ExtraKeyboardProvider>
         </SafeAreaView>
     );
 }

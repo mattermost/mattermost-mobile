@@ -11,6 +11,7 @@ import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE} from '@i18n';
 import {getUserById} from '@queries/servers/user';
 import {toMilliseconds} from '@utils/datetime';
+import {ensureString, includes} from '@utils/types';
 import {displayUsername, getUserIdFromChannelName} from '@utils/user';
 
 import type PostModel from '@typings/database/models/servers/post';
@@ -36,7 +37,7 @@ export function areConsecutivePosts(post: PostModel, previousPost: PostModel) {
 }
 
 export function isFromWebhook(post: PostModel | Post): boolean {
-    return post.props && post.props.from_webhook === 'true';
+    return post.props?.from_webhook === 'true';
 }
 
 export function isEdited(post: PostModel): boolean {
@@ -48,7 +49,7 @@ export function isPostEphemeral(post: PostModel): boolean {
 }
 
 export function isPostFailed(post: PostModel): boolean {
-    return post.props?.failed || ((post.pendingPostId === post.id) && (Date.now() > post.updateAt + POST_TIME_TO_FAIL));
+    return Boolean(post.props?.failed) || ((post.pendingPostId === post.id) && (Date.now() > post.updateAt + POST_TIME_TO_FAIL));
 }
 
 export function isPostPendingOrFailed(post: PostModel): boolean {
@@ -64,15 +65,20 @@ export function fromAutoResponder(post: PostModel): boolean {
 }
 
 export function postUserDisplayName(post: PostModel, author?: UserModel, teammateNameDisplay?: string, enablePostUsernameOverride = false) {
-    if (isFromWebhook(post) && post.props?.override_username && enablePostUsernameOverride) {
-        return post.props.override_username;
+    const overrideUsername = ensureString(post.props?.override_username);
+    if (
+        isFromWebhook(post) &&
+        enablePostUsernameOverride &&
+        overrideUsername
+    ) {
+        return overrideUsername;
     }
 
     return displayUsername(author, author?.locale || DEFAULT_LOCALE, teammateNameDisplay, true);
 }
 
 export function shouldIgnorePost(post: Post): boolean {
-    return Post.IGNORE_POST_TYPES.includes(post.type);
+    return includes(Post.IGNORE_POST_TYPES, post.type);
 }
 
 export const processPostsFetched = (data: PostResponse) => {
@@ -211,4 +217,59 @@ export async function persistentNotificationsConfirmation(serverUrl: string, val
         description,
         buttons,
     );
+}
+
+export async function sendMessageWithAlert({title, channelName, intl, sendMessageHandler}: {
+    title: string;
+    channelName: string;
+    intl: IntlShape;
+    sendMessageHandler: () => void;
+}) {
+    const buttons: AlertButton[] = [{
+        text: intl.formatMessage({
+            id: 'send_message.confirm.cancel',
+            defaultMessage: 'Cancel',
+        }),
+        style: 'cancel',
+    }, {
+        text: intl.formatMessage({
+            id: 'send_message.confirm.send',
+            defaultMessage: 'Send',
+        }),
+        onPress: sendMessageHandler,
+    }];
+
+    const description = intl.formatMessage({
+        id: 'send_message.confirm.description',
+        defaultMessage: 'Are you sure you want to send this message to {channelName} now?',
+    }, {
+        channelName,
+    });
+
+    Alert.alert(
+        title,
+        description,
+        buttons,
+    );
+}
+
+export function scheduledPostFromPost(post: Post, schedulingInfo: SchedulingInfo, postPriority?: PostPriority, postFiles?: FileInfo[]): ScheduledPost {
+    const fileIDs: string[] = [];
+    if (postFiles) {
+        postFiles.forEach((file) => {
+            if (file.id) {
+                fileIDs.push(file.id);
+            }
+        });
+    }
+
+    return {
+        ...post,
+        scheduled_at: schedulingInfo.scheduled_at,
+        priority: post.root_id ? undefined : postPriority,
+        metadata: {
+            files: postFiles,
+        },
+        file_ids: fileIDs,
+    };
 }

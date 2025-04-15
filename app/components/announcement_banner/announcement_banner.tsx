@@ -9,7 +9,6 @@ import {
     View,
 } from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {dismissAnnouncement} from '@actions/local/systems';
 import CompassIcon from '@components/compass_icon';
@@ -85,7 +84,6 @@ const AnnouncementBanner = ({
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const height = useSharedValue(0);
-    const {bottom} = useSafeAreaInsets();
     const theme = useTheme();
     const [visible, setVisible] = useState(false);
     const style = getStyle(theme);
@@ -107,7 +105,6 @@ const AnnouncementBanner = ({
         const snapPoint = bottomSheetSnapPoint(
             1,
             SNAP_POINT_WITHOUT_DISMISS + (allowDismissal ? DISMISS_BUTTON_HEIGHT : 0),
-            bottom,
         );
 
         bottomSheet({
@@ -117,7 +114,7 @@ const AnnouncementBanner = ({
             snapPoints: [1, snapPoint],
             theme,
         });
-    }, [theme.sidebarHeaderTextColor, intl.locale, renderContent, allowDismissal, bottom]);
+    }, [intl, allowDismissal, renderContent, theme]);
 
     const handleDismiss = useCallback(() => {
         dismissAnnouncement(serverUrl, bannerText);
@@ -132,7 +129,7 @@ const AnnouncementBanner = ({
         height.value = withTiming(visible ? ANNOUNCEMENT_BAR_HEIGHT : 0, {
             duration: 200,
         });
-    }, [visible]);
+    }, [height, visible]);
 
     const bannerStyle = useAnimatedStyle(() => ({
         height: height.value,

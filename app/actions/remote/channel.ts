@@ -5,7 +5,8 @@
 import {DeviceEventEmitter} from 'react-native';
 
 import {addChannelToDefaultCategory, handleConvertedGMCategories, storeCategories} from '@actions/local/category';
-import {markChannelAsViewed, removeCurrentUserFromChannel, setChannelDeleteAt, storeMyChannelsForTeam, switchToChannel} from '@actions/local/channel';
+import {markChannelAsViewed, removeCurrentUserFromChannel, setChannelDeleteAt, storeAllMyChannels, storeMyChannelsForTeam, switchToChannel} from '@actions/local/channel';
+import {switchToGlobalDrafts} from '@actions/local/draft';
 import {switchToGlobalThreads} from '@actions/local/thread';
 import {loadCallForChannel} from '@calls/actions/calls';
 import {DeepLink, Events, General, Preferences, Screens} from '@constants';
@@ -45,6 +46,7 @@ import type ChannelModel from '@typings/database/models/servers/channel';
 import type {IntlShape} from 'react-intl';
 
 export type MyChannelsRequest = {
+    teamId?: string;
     categories?: CategoryWithChannels[];
     channels?: Channel[];
     memberships?: ChannelMembership[];
@@ -375,12 +377,12 @@ export async function fetchChannelCreator(serverUrl: string, channelId: string, 
     }
 }
 
-export async function fetchChannelStats(serverUrl: string, channelId: string, fetchOnly = false) {
+export async function fetchChannelStats(serverUrl: string, channelId: string, fetchOnly = false, groupLabel?: RequestGroupLabel) {
     try {
         const client = NetworkManager.getClient(serverUrl);
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-        const stats = await client.getChannelStats(channelId);
+        const stats = await client.getChannelStats(channelId, groupLabel);
         if (!fetchOnly) {
             const channel = await getChannelById(database, channelId);
             if (channel) {
@@ -403,7 +405,84 @@ export async function fetchChannelStats(serverUrl: string, channelId: string, fe
     }
 }
 
-export async function fetchMyChannelsForTeam(serverUrl: string, teamId: string, includeDeleted = true, since = 0, fetchOnly = false, excludeDirect = false, isCRTEnabled?: boolean): Promise<MyChannelsRequest> {
+export async function fetchAllMyChannelsForAllTeams(serverUrl: string, since: number, isCRTEnabled: boolean, fetchOnly = false, groupLabel?: RequestGroupLabel) {
+    try {
+        if (!fetchOnly) {
+            setTeamLoading(serverUrl, true);
+        }
+        const client = NetworkManager.getClient(serverUrl);
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        async function fetchAllMemberships() {
+            const results: ChannelMembership[] = [];
+            async function fetchNextMembershipsPage(page: number) {
+                try {
+                    const memberships = await client.getAllMyChannelMembersFromAllTeams(page, General.CHANNEL_MEMBERS_CHUNK_SIZE, groupLabel);
+                    results.push(...memberships);
+                    if (memberships.length < General.CHANNEL_MEMBERS_CHUNK_SIZE) {
+                        return;
+                    }
+
+                    await fetchNextMembershipsPage(page + 1);
+                } catch (e) {
+                    logError(`fetchAllMyChannelsForAllTeams error: Failed to fetch memberships for page ${page} `, e);
+                }
+            }
+
+            await fetchNextMembershipsPage(0);
+            return results;
+        }
+
+        const promises: [Promise<Channel[]>, Promise<ChannelMembership[]>] = [
+            client.getAllChannelsFromAllTeams(since, since > 0, groupLabel),
+            fetchAllMemberships(),
+        ];
+        const [channels, memberships] = await Promise.all(promises);
+        const categoriesPromises = [];
+
+        const teamIdsSet = channels.reduce<Set<string>>((set, c) => {
+            if (c.team_id) {
+                set.add(c.team_id);
+            }
+            return set;
+        }, new Set());
+
+        for (const teamId of teamIdsSet) {
+            categoriesPromises.push(client.getCategories('me', teamId, groupLabel));
+        }
+
+        const categories: CategoryWithChannels[] = [];
+        const results = await Promise.all(categoriesPromises);
+        for (const result of results) {
+            categories.push(...result.categories);
+        }
+
+        if (!fetchOnly) {
+            const {models: chModels} = await storeAllMyChannels(serverUrl, channels, memberships, isCRTEnabled, true);
+            const {models: catModels} = await storeCategories(serverUrl, categories, true, true); // Re-sync
+            const models = (chModels || []).concat(catModels || []);
+            if (models.length) {
+                await operator.batchRecords(models, 'fetchAllMyChannelsForAllTeams');
+            }
+            setTeamLoading(serverUrl, false);
+        }
+
+        return {channels, memberships, categories};
+    } catch (error) {
+        logDebug('error on fetchMyChannelsForTeam', getFullErrorMessage(error));
+        if (!fetchOnly) {
+            setTeamLoading(serverUrl, false);
+        }
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+}
+
+export async function fetchMyChannelsForTeam(
+    serverUrl: string, teamId: string, includeDeleted = true,
+    since = 0, fetchOnly = false, excludeDirect = false,
+    isCRTEnabled?: boolean, groupLabel?: RequestGroupLabel,
+): Promise<MyChannelsRequest> {
     try {
         if (!fetchOnly) {
             setTeamLoading(serverUrl, true);
@@ -411,9 +490,9 @@ export async function fetchMyChannelsForTeam(serverUrl: string, teamId: string, 
         const client = NetworkManager.getClient(serverUrl);
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const [allChannels, channelMemberships, categoriesWithOrder] = await Promise.all([
-            client.getMyChannels(teamId, includeDeleted, since),
-            client.getMyChannelMembers(teamId),
-            client.getCategories('me', teamId),
+            client.getMyChannels(teamId, includeDeleted, since, groupLabel),
+            client.getMyChannelMembers(teamId, groupLabel),
+            client.getCategories('me', teamId, groupLabel),
         ]);
 
         let channels = allChannels;
@@ -441,7 +520,7 @@ export async function fetchMyChannelsForTeam(serverUrl: string, teamId: string, 
             setTeamLoading(serverUrl, false);
         }
 
-        return {channels, memberships, categories};
+        return {channels, memberships, categories, teamId};
     } catch (error) {
         logDebug('error on fetchMyChannelsForTeam', getFullErrorMessage(error));
         if (!fetchOnly) {
@@ -452,13 +531,13 @@ export async function fetchMyChannelsForTeam(serverUrl: string, teamId: string, 
     }
 }
 
-export async function fetchMyChannel(serverUrl: string, teamId: string, channelId: string, fetchOnly = false): Promise<MyChannelsRequest> {
+export async function fetchMyChannel(serverUrl: string, teamId: string, channelId: string, fetchOnly = false, groupLabel?: RequestGroupLabel): Promise<MyChannelsRequest> {
     try {
         const client = NetworkManager.getClient(serverUrl);
 
         const [channel, member] = await Promise.all([
-            client.getChannel(channelId),
-            client.getChannelMember(channelId, 'me'),
+            client.getChannel(channelId, groupLabel),
+            client.getChannelMember(channelId, 'me', groupLabel),
         ]);
 
         if (!fetchOnly) {
@@ -476,7 +555,11 @@ export async function fetchMyChannel(serverUrl: string, teamId: string, channelI
     }
 }
 
-export async function fetchMissingDirectChannelsInfo(serverUrl: string, directChannels: Channel[], locale?: string, teammateDisplayNameSetting?: string, currentUserId?: string, fetchOnly = false) {
+export async function fetchMissingDirectChannelsInfo(
+    serverUrl: string, directChannels: Channel[], locale?: string,
+    teammateDisplayNameSetting?: string, currentUserId?: string,
+    fetchOnly = false, groupLabel?: RequestGroupLabel,
+) {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const displayNameByChannel: Record<string, string> = {};
@@ -509,8 +592,8 @@ export async function fetchMissingDirectChannelsInfo(serverUrl: string, directCh
         const membersCount = await getMembersCountByChannelsId(database, dmIds);
         const profileChannelsToFetch = dmIds.filter((id) => membersCount[id] <= 1 && dmWithoutDisplayName.has(id));
         const results = await Promise.all([
-            profileChannelsToFetch.length ? fetchProfilesPerChannels(serverUrl, profileChannelsToFetch, currentUserId, false) : Promise.resolve({data: undefined}),
-            fetchProfilesInGroupChannels(serverUrl, gms.map((c) => c.id), false),
+            profileChannelsToFetch.length ? fetchProfilesPerChannels(serverUrl, profileChannelsToFetch, currentUserId, false, groupLabel) : Promise.resolve({data: undefined}),
+            fetchProfilesInGroupChannels(serverUrl, gms.map((c) => c.id), false, groupLabel),
         ]);
 
         const profileRequests = results.flat();
@@ -653,10 +736,10 @@ export async function joinChannelIfNeeded(serverUrl: string, channelId: string) 
     }
 }
 
-export async function markChannelAsRead(serverUrl: string, channelId: string, updateLocal = false) {
+export async function markChannelAsRead(serverUrl: string, channelId: string, updateLocal = false, groupLabel?: RequestGroupLabel) {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        await client.viewMyChannel(channelId);
+        await client.viewMyChannel(channelId, undefined, groupLabel);
 
         if (updateLocal) {
             await markChannelAsViewed(serverUrl, channelId, true);
@@ -1038,9 +1121,11 @@ export async function getChannelTimezones(serverUrl: string, channelId: string) 
     }
 }
 
-export async function switchToChannelById(serverUrl: string, channelId: string, teamId?: string, skipLastUnread = false) {
+export async function switchToChannelById(serverUrl: string, channelId: string, teamId?: string, skipLastUnread = false, groupLabel?: RequestGroupLabel) {
     if (channelId === Screens.GLOBAL_THREADS) {
         return switchToGlobalThreads(serverUrl, teamId);
+    } else if (channelId === Screens.GLOBAL_DRAFTS) {
+        return switchToGlobalDrafts(serverUrl, teamId);
     }
 
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
@@ -1050,18 +1135,18 @@ export async function switchToChannelById(serverUrl: string, channelId: string, 
 
     DeviceEventEmitter.emit(Events.CHANNEL_SWITCH, true);
 
-    fetchPostsForChannel(serverUrl, channelId);
-    fetchChannelBookmarks(serverUrl, channelId);
+    fetchPostsForChannel(serverUrl, channelId, false, false, groupLabel);
+    fetchChannelBookmarks(serverUrl, channelId, false, groupLabel);
     await switchToChannel(serverUrl, channelId, teamId, skipLastUnread);
-    openChannelIfNeeded(serverUrl, channelId);
-    markChannelAsRead(serverUrl, channelId);
-    fetchChannelStats(serverUrl, channelId);
-    fetchGroupsForChannelIfConstrained(serverUrl, channelId);
+    openChannelIfNeeded(serverUrl, channelId, groupLabel);
+    markChannelAsRead(serverUrl, channelId, false, groupLabel);
+    fetchChannelStats(serverUrl, channelId, false, groupLabel);
+    fetchGroupsForChannelIfConstrained(serverUrl, channelId, false, groupLabel);
 
     DeviceEventEmitter.emit(Events.CHANNEL_SWITCH, false);
 
     if (await AppsManager.isAppsEnabled(serverUrl)) {
-        AppsManager.fetchBindings(serverUrl, channelId);
+        AppsManager.fetchBindings(serverUrl, channelId, false, groupLabel);
     }
 
     return {};
@@ -1249,8 +1334,10 @@ export const handleKickFromChannel = async (serverUrl: string, channelId: string
         const currentServer = await getActiveServer();
         if (currentServer?.url === serverUrl) {
             const channel = await getChannelById(database, channelId);
-            DeviceEventEmitter.emit(event, channel?.displayName);
-            await dismissAllModalsAndPopToRoot();
+            if (channel) {
+                DeviceEventEmitter.emit(event, channel.displayName);
+                await dismissAllModalsAndPopToRoot();
+            }
         }
 
         const tabletDevice = isTablet();
@@ -1263,6 +1350,8 @@ export const handleKickFromChannel = async (serverUrl: string, channelId: string
                 if (currentServer?.url === serverUrl) {
                     if (newChannelId === Screens.GLOBAL_THREADS) {
                         await switchToGlobalThreads(serverUrl, teamId, false);
+                    } else if (newChannelId === Screens.GLOBAL_DRAFTS) {
+                        await switchToGlobalDrafts(serverUrl, teamId);
                     } else {
                         await switchToChannelById(serverUrl, newChannelId, teamId, true);
                     }

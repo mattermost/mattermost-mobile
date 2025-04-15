@@ -3,6 +3,7 @@
 
 import React from 'react';
 
+import LocalConfig from '@assets/config.json';
 import Preferences from '@constants/preferences';
 import {renderWithIntl} from '@test/intl-test-helper';
 
@@ -16,12 +17,11 @@ jest.mock('@utils/url', () => {
 
 describe('SSO with redirect url', () => {
     const baseProps = {
-        customUrlScheme: 'mmauthbeta://',
+        customUrlScheme: LocalConfig.AuthUrlSchemeDev,
         doSSOLogin: jest.fn(),
         intl: {},
         loginError: '',
         loginUrl: '',
-        serverUrl: 'http://localhost:8065',
         setLoginError: jest.fn(),
         theme: Preferences.THEMES.denim,
     };

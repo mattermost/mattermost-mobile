@@ -38,6 +38,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
             switchMap(([ldap, saml]) => of$(ldap || saml)),
         ),
         lockedPicture: observeConfigBooleanValue(database, 'LdapPictureAttributeSet'),
+        enableCustomAttributes: observeConfigBooleanValue(database, 'FeatureFlagCustomProfileAttributes'),
     };
 });
 

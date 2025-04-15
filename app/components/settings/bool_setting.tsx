@@ -12,7 +12,7 @@ import Label from './label';
 
 type Props = {
     label?: string;
-    value: boolean;
+    value?: boolean;
     placeholder?: string;
     helpText?: string;
     errorText?: string;

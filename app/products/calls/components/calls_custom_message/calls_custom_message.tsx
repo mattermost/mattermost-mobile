@@ -9,6 +9,7 @@ import {Text, TouchableOpacity, View} from 'react-native';
 import {leaveCallConfirmation} from '@calls/actions/calls';
 import {leaveAndJoinWithAlert, showLimitRestrictedAlert} from '@calls/alerts';
 import {setJoiningChannelId} from '@calls/state';
+import {getCallPropsFromPost} from '@calls/utils';
 import CompassIcon from '@components/compass_icon';
 import FormattedRelativeTime from '@components/formatted_relative_time';
 import FormattedText from '@components/formatted_text';
@@ -164,13 +165,15 @@ export const CallsCustomMessage = ({
         leaveCallConfirmation(intl, otherParticipants, isAdmin, isHost, serverUrl, post.channelId);
     }, [intl, otherParticipants, isAdmin, isHost, serverUrl, post.channelId]);
 
-    const title = post.props.title ? (
+    const callProps = getCallPropsFromPost(post);
+
+    const title = callProps.title ? (
         <Text style={style.title}>
-            {post.props.title}
+            {callProps.title}
         </Text>
     ) : null;
 
-    if (post.props.end_at) {
+    if (callProps.start_at > 0 && callProps.end_at > 0) {
         return (
             <>
                 {title}
@@ -195,7 +198,7 @@ export const CallsCustomMessage = ({
                             <Text>{' '}</Text>
                             <FormattedTime
                                 style={style.timeText}
-                                value={post.props.end_at}
+                                value={callProps.end_at}
                                 isMilitaryTime={isMilitaryTime}
                                 timezone={timezone}
                             />
@@ -204,7 +207,7 @@ export const CallsCustomMessage = ({
                                 id={'mobile.calls_lasted'}
                                 style={style.timeText}
                                 defaultMessage={'Lasted {duration}'}
-                                values={{duration: moment.duration(post.props.end_at - post.props.start_at).humanize(false)}}
+                                values={{duration: moment.duration(callProps.end_at - callProps.start_at).humanize(false)}}
                             />
                         </View>
                     </View>
@@ -273,7 +276,7 @@ export const CallsCustomMessage = ({
                         style={style.text}
                     />
                     <FormattedRelativeTime
-                        value={post.props.start_at}
+                        value={callProps.start_at}
                         updateIntervalInSeconds={1}
                         style={style.timeText}
                     />

@@ -2,7 +2,6 @@ package com.mattermost.helpers
 
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
@@ -15,6 +14,7 @@ import com.mattermost.helpers.push_notification.fetchNeededUsers
 import com.mattermost.helpers.push_notification.fetchPosts
 import com.mattermost.helpers.push_notification.fetchTeamIfNeeded
 import com.mattermost.helpers.push_notification.fetchThread
+import com.mattermost.turbolog.TurboLog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -50,31 +50,38 @@ class PushNotificationDataRunnable {
                         val isCRTEnabled = initialData.getString("is_crt_enabled") == "true"
                         val ackId = initialData.getString("ack_id")
 
-                        Log.i("ReactNative", "Start fetching notification data in server=$serverUrl for channel=$channelId and ack=$ackId")
+                        TurboLog.i("ReactNative", "Start fetching notification data in server=$serverUrl for channel=$channelId and ack=$ackId")
 
                         val receivingThreads = isCRTEnabled && !rootId.isNullOrEmpty()
                         val notificationData = Arguments.createMap()
 
+                        var channel: ReadableMap? = null
+                        var myTeam: ReadableMap? = null
+
                         if (!teamId.isNullOrEmpty()) {
                             val res = fetchTeamIfNeeded(db, serverUrl, teamId)
                             res.first?.let { notificationData.putMap("team", it) }
-                            res.second?.let { notificationData.putMap("myTeam", it) }
+
+                            myTeam = res.second
+                            myTeam?.let { notificationData.putMap("myTeam", it) }
                         }
 
                         if (channelId != null && postId != null) {
                             val channelRes = fetchMyChannel(db, serverUrl, channelId, isCRTEnabled)
-                            channelRes.first?.let { notificationData.putMap("channel", it) }
+
+                            channel = channelRes.first
+                            channel?.let { notificationData.putMap("channel", it) }
                             channelRes.second?.let { notificationData.putMap("myChannel", it) }
                             val loadedProfiles = channelRes.third
 
                             // Fetch categories if needed
-                            if (!teamId.isNullOrEmpty() && notificationData.getMap("myTeam") != null) {
+                            if (!teamId.isNullOrEmpty() && myTeam != null) {
                                 // should load all categories
                                 val res = fetchMyTeamCategories(db, serverUrl, teamId)
                                 res?.let { notificationData.putMap("categories", it) }
-                            } else if (notificationData.getMap("channel") != null) {
+                            } else if (channel != null) {
                                 // check if the channel is in the category for the team
-                                val res = addToDefaultCategoryIfNeeded(db, notificationData.getMap("channel")!!)
+                                val res = addToDefaultCategoryIfNeeded(db, channel)
                                 res?.let { notificationData.putArray("categoryChannels", it) }
                             }
 
@@ -104,13 +111,15 @@ class PushNotificationDataRunnable {
                             dbHelper.saveToDatabase(db, notificationData, teamId, channelId, receivingThreads)
                         }
 
-                        Log.i("ReactNative", "Done processing push notification=$serverUrl for channel=$channelId and ack=$ackId")
+                        TurboLog.i("ReactNative", "Done processing push notification=$serverUrl for channel=$channelId and ack=$ackId")
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
+                    val eMessage = e.message ?: "Error with no message"
+                    TurboLog.e("ReactNative", "Error processing push notification error=$eMessage")
                 } finally {
                     db?.close()
-                    Log.i("ReactNative", "DONE fetching notification data")
+                    TurboLog.i("ReactNative", "DONE fetching notification data")
                 }
 
                 return result

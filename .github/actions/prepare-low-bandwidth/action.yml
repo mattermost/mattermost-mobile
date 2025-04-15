@@ -1,0 +1,106 @@
+name: Prepare Low Bandwidth Environment (MacOS & iOS Simulators only)
+description: prepare any workflow for low bandwidth testing
+
+inputs:
+  test_server_url:
+    description: The URL of the test server
+    required: true
+  device_name:
+    description: The iOS simulator name
+    required: true
+  download_speed:
+    description: The download speed limit (in Kbit/s)
+    required: false
+    default: "3300"
+  upload_speed:
+    description: The upload speed limit (in Kbit/s)
+    required: false
+    default: "3300"
+  latency:
+    description: The latency (in ms) each way
+    required: false
+    default: "500"
+
+
+runs:
+  using: composite
+  steps:
+      - name: delete the zip file and trash (to free up space)
+        shell: bash
+        run: |
+          rm -rf mobile-artifacts/*.zip
+          sudo rm -rf ~/.Trash/*
+
+      - name: check disk space
+        shell: bash
+        run: df -h
+
+      - name: remove protocol from SITE_1_URL
+        id: remove-protocol
+        shell: bash
+        run: |
+          echo "SITE_1_HOST=${{ inputs.test_server_url }}" | sed -e 's/http:\/\///g' -e 's/https:\/\///g' >> ${GITHUB_OUTPUT}
+
+      - name: Throttle Bandwidth 1
+        id: throttle-bandwidth-1
+        continue-on-error: true
+        uses: ./.github/actions/bandwidth-throttling
+        with: 
+          test_server_host: ${{ steps.remove-protocol.outputs.SITE_1_HOST }}
+          download_speed: ${{ inputs.download_speed }}
+          upload_speed: ${{ inputs.upload_speed }}
+          latency: ${{ inputs.latency }}
+
+      - name: Throttle Bandwidth 2
+        if: steps.throttle-bandwidth-1.outcome != 'success'
+        id: throttle-bandwidth-2
+        uses: ./.github/actions/bandwidth-throttling
+        with: 
+          test_server_host: ${{ steps.remove-protocol.outputs.SITE_1_HOST }}
+          download_speed: ${{ inputs.download_speed}}
+          upload_speed: ${{ inputs.upload_speed }}
+          latency: ${{ inputs.latency }}
+          disable: "true"
+
+      - name: Install mitmproxy & pm2 (process manager)
+        id: install-mitmproxy-pm2
+        shell: bash
+        run: |
+          brew install mitmproxy
+
+          npm i -g pm2
+
+      - name: Start mitmproxy via mitmdump and stop it (to get .mitmproxy folder)
+        shell: bash
+        run: |
+          pm2 start mitmdump --log /Users/runner/work/mattermost-mobile/mattermost-mobile/mitmdump.log -- --allow-hosts '${{ steps.remove-protocol.outputs.SITE_1_HOST }}' --ignore-hosts 'localhost' -s /Users/runner/work/mattermost-mobile/mattermost-mobile/scripts/mitmdump-flow-parsing.py
+
+          sleep 5;
+
+          pm2 stop mitmdump
+
+          # we need to wait for mitmdump to stop so it'll produce the .mitmproxy folder  
+          sleep 5;
+
+      - name: Get simulator UDID
+        id: get-simulator-udid
+        shell: bash
+        run: |
+          simulator_udid=$(xcrun simctl list devices "${{ inputs.device_name }}" -j | jq '.devices' | jq '."com.apple.CoreSimulator.SimRuntime.iOS-17-4"[0]["udid"]')
+          echo "simulator_udid="$(echo $simulator_udid) >> ${GITHUB_OUTPUT}
+
+      - name: install certificate
+        shell: bash
+        run: |
+          sudo security add-trusted-cert -d -p ssl -p basic -k /Library/Keychains/System.keychain ~/.mitmproxy/mitmproxy-ca-cert.pem
+
+          # must boot first before adding root cert
+          xcrun simctl boot ${{ steps.get-simulator-udid.outputs.simulator_udid }}
+
+          xcrun simctl keychain booted add-root-cert ~/.mitmproxy/mitmproxy-ca-cert.pem
+
+          sleep 5;
+
+      - name: show me booted simulators
+        shell: bash
+        run: xcrun simctl list devices booted | grep Booted

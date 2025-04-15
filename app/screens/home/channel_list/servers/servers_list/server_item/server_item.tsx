@@ -9,9 +9,8 @@ import Swipeable from 'react-native-gesture-handler/Swipeable';
 import {Navigation} from 'react-native-navigation';
 
 import {storeMultiServerTutorial} from '@actions/app/global';
-import {doPing} from '@actions/remote/general';
+import {switchToServer, switchToServerAndLogin} from '@actions/app/server';
 import {logout} from '@actions/remote/session';
-import {fetchConfigAndLicense} from '@actions/remote/systems';
 import CompassIcon from '@components/compass_icon';
 import Loading from '@components/loading';
 import ServerIcon from '@components/server_icon';
@@ -20,14 +19,10 @@ import TutorialSwipeLeft from '@components/tutorial_highlight/swipe_left';
 import {Events, Screens} from '@constants';
 import {PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import {useTheme} from '@context/theme';
-import DatabaseManager from '@database/manager';
 import {subscribeServerUnreadAndMentions, type UnreadObserverArgs} from '@database/subscription/unreads';
 import {useIsTablet} from '@hooks/device';
-import WebsocketManager from '@managers/websocket_manager';
-import {getServerByIdentifier} from '@queries/app/servers';
 import {dismissBottomSheet} from '@screens/navigation';
-import {canReceiveNotifications} from '@utils/push_proxy';
-import {alertServerAlreadyConnected, alertServerError, alertServerLogout, alertServerRemove, editServer, loginToServer} from '@utils/server';
+import {alertServerLogout, alertServerRemove, editServer} from '@utils/server';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {removeProtocol, stripTrailingSlashes} from '@utils/url';
@@ -59,7 +54,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     badge: {
         left: 18,
         top: -5,
-        borderColor: theme.centerChannelBg,
     },
     button: {
         borderRadius: 8,
@@ -180,23 +174,23 @@ const ServerItem = ({
         setBadge({isUnread, mentions});
     };
 
-    const logoutServer = async () => {
+    const logoutServer = useCallback(async () => {
         Navigation.updateProps(Screens.HOME, {extra: undefined});
-        await logout(server.url);
+        await logout(server.url, intl);
 
         if (isActive) {
             dismissBottomSheet();
         } else {
             DeviceEventEmitter.emit(Events.SWIPEABLE, '');
         }
-    };
+    }, [intl, isActive, server.url]);
 
-    const removeServer = async () => {
-        const skipLogoutFromServer = server.lastActiveAt === 0;
+    const removeServer = useCallback(async () => {
+        const skipServerLogout = server.lastActiveAt === 0;
         await dismissBottomSheet();
         Navigation.updateProps(Screens.HOME, {extra: undefined});
-        await logout(server.url, skipLogoutFromServer, true);
-    };
+        await logout(server.url, intl, {skipServerLogout, removeServer: true});
+    }, [intl, server.lastActiveAt, server.url]);
 
     const startTutorial = () => {
         viewRef.current?.measureInWindow((x, y, w, h) => {
@@ -223,7 +217,7 @@ const ServerItem = ({
                 setShowTutorial(true);
             });
         }
-    }, [showTutorial]);
+    }, [highlight, isTablet, tutorialWatched]);
 
     useLayoutEffect(() => {
         if (showTutorial && !tutorialShown.current) {
@@ -240,7 +234,7 @@ const ServerItem = ({
         }
 
         return style;
-    }, [isActive]);
+    }, [isActive, styles.active, styles.container]);
 
     const serverStyle = useMemo(() => {
         const style: StyleProp<ViewStyle> = [styles.row];
@@ -249,34 +243,13 @@ const ServerItem = ({
         }
 
         return style;
-    }, [server.lastActiveAt]);
+    }, [server.lastActiveAt, styles.offline, styles.row]);
 
     const handleLogin = useCallback(async () => {
         swipeable.current?.close();
         setSwitching(true);
-        const result = await doPing(server.url, true);
-        if (result.error) {
-            alertServerError(intl, result.error);
-            setSwitching(false);
-            return;
-        }
-
-        const data = await fetchConfigAndLicense(server.url, true);
-        if (data.error) {
-            alertServerError(intl, data.error);
-            setSwitching(false);
-            return;
-        }
-        const existingServer = await getServerByIdentifier(data.config!.DiagnosticId);
-        if (existingServer && existingServer.lastActiveAt > 0) {
-            alertServerAlreadyConnected(intl);
-            setSwitching(false);
-            return;
-        }
-
-        canReceiveNotifications(server.url, result.canReceiveNotifications as string, intl);
-        loginToServer(theme, server.url, displayName, data.config!, data.license!);
-    }, [server, theme, intl]);
+        await switchToServerAndLogin(server.url, theme, intl, () => setSwitching(false));
+    }, [server.url, intl, theme]);
 
     const handleDismissTutorial = useCallback(() => {
         swipeable.current?.close();
@@ -287,15 +260,15 @@ const ServerItem = ({
     const handleEdit = useCallback(() => {
         DeviceEventEmitter.emit(Events.SWIPEABLE, '');
         editServer(theme, server);
-    }, [server]);
+    }, [server, theme]);
 
     const handleLogout = useCallback(async () => {
         alertServerLogout(server.displayName, logoutServer, intl);
-    }, [isActive, intl, server]);
+    }, [server.displayName, logoutServer, intl]);
 
     const handleRemove = useCallback(() => {
         alertServerRemove(server.displayName, removeServer, intl);
-    }, [isActive, server, intl]);
+    }, [server.displayName, removeServer, intl]);
 
     const handleShowTutorial = useCallback(() => {
         swipeable.current?.openRight();
@@ -310,14 +283,9 @@ const ServerItem = ({
         if (server.lastActiveAt) {
             setSwitching(true);
             await dismissBottomSheet();
-            Navigation.updateProps(Screens.HOME, {extra: undefined});
-            DatabaseManager.setActiveServerDatabase(server.url);
-            WebsocketManager.initializeClient(server.url);
-            return;
         }
-
-        handleLogin();
-    }, [server, isActive, theme, intl]);
+        await switchToServer(server.url, theme, intl, () => setSwitching(false));
+    }, [isActive, server.lastActiveAt, server.url, theme, intl]);
 
     const onSwipeableWillOpen = useCallback(() => {
         DeviceEventEmitter.emit(Events.SWIPEABLE, server.url);
@@ -404,9 +372,9 @@ const ServerItem = ({
                         <View style={serverStyle}>
                             {!switching &&
                             <ServerIcon
-                                badgeBackgroundColor={theme.mentionColor}
-                                badgeBorderColor={theme.mentionBg}
-                                badgeColor={theme.mentionBg}
+                                badgeBackgroundColor={theme.buttonBg}
+                                badgeBorderColor={theme.centerChannelBg}
+                                badgeColor={theme.buttonColor}
                                 badgeStyle={styles.badge}
                                 iconColor={changeOpacity(theme.centerChannelColor, 0.56)}
                                 hasUnreads={badge.isUnread}

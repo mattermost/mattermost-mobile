@@ -1,14 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React from 'react';
-import {useIntl} from 'react-intl';
 
-import {getUserCustomStatus} from '@utils/user';
+import React, {useEffect, useState, useRef} from 'react';
 
+import {fetchCustomAttributes} from '@actions/remote/user';
+import {useServerUrl} from '@context/server';
+import {getUserCustomStatus, sortCustomProfileAttributes} from '@utils/user';
+
+import CustomAttributes from './custom_attributes';
 import UserProfileCustomStatus from './custom_status';
-import UserProfileLabel from './label';
 
 import type {UserModel} from '@database/models/server';
+import type {CustomAttribute} from '@typings/api/custom_profile_attributes';
 
 type Props = {
     localTime?: string;
@@ -17,36 +20,47 @@ type Props = {
     showNickname: boolean;
     showPosition: boolean;
     user: UserModel;
+    enableCustomAttributes?: boolean;
 }
 
-const UserInfo = ({localTime, showCustomStatus, showLocalTime, showNickname, showPosition, user}: Props) => {
-    const {formatMessage} = useIntl();
+const emptyList: CustomAttribute[] = []; /** avoid re-renders **/
+
+const UserInfo = ({localTime, showCustomStatus, showLocalTime, showNickname, showPosition, user, enableCustomAttributes}: Props) => {
     const customStatus = getUserCustomStatus(user);
+    const serverUrl = useServerUrl();
+    const [customAttributes, setCustomAttributes] = useState<CustomAttribute[]>(emptyList);
+
+    const lastRequest = useRef(0);
+
+    useEffect(() => {
+        if (enableCustomAttributes) {
+            const fetchData = async () => {
+                const reqTime = Date.now();
+                lastRequest.current = reqTime;
+                const {attributes, error} = await fetchCustomAttributes(serverUrl, user.id, true);
+                if (!error && lastRequest.current === reqTime) {
+                    const attributesList = Object.values(attributes).sort(sortCustomProfileAttributes);
+                    setCustomAttributes(attributesList);
+                } else {
+                    setCustomAttributes(emptyList);
+                }
+            };
+
+            fetchData();
+        } else {
+            setCustomAttributes(emptyList);
+        }
+    }, [enableCustomAttributes, serverUrl, user.id]);
 
     return (
         <>
-            {showCustomStatus && <UserProfileCustomStatus customStatus={customStatus!}/> }
-            {showNickname &&
-                <UserProfileLabel
-                    description={user.nickname}
-                    testID='user_profile.nickname'
-                    title={formatMessage({id: 'channel_info.nickname', defaultMessage: 'Nickname'})}
-                />
-            }
-            {showPosition &&
-                <UserProfileLabel
-                    description={user.position}
-                    testID='user_profile.position'
-                    title={formatMessage({id: 'channel_info.position', defaultMessage: 'Position'})}
-                />
-            }
-            {showLocalTime &&
-                <UserProfileLabel
-                    description={localTime!}
-                    testID='user_profile.local_time'
-                    title={formatMessage({id: 'channel_info.local_time', defaultMessage: 'Local Time'})}
-                />
-            }
+            {showCustomStatus && <UserProfileCustomStatus customStatus={customStatus!}/>}
+            <CustomAttributes
+                nickname={showNickname ? user.nickname : undefined}
+                position={showPosition ? user.position : undefined}
+                localTime={showLocalTime ? localTime : undefined}
+                customAttributes={customAttributes}
+            />
         </>
     );
 };

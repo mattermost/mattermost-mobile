@@ -6,7 +6,6 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, View, Text, StyleSheet, Platform} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import FormattedText from '@components/formatted_text';
 import ErrorBoundary from '@components/markdown/error_boundary';
@@ -90,7 +89,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const LatexCodeBlock = ({content, theme}: Props) => {
     const intl = useIntl();
-    const {bottom} = useSafeAreaInsets();
     const managedConfig = useManagedConfig<ManagedConfig>();
     const styles = getStyleSheet(theme);
     const languageDisplayName = getHighlightLanguageName('latex');
@@ -161,12 +159,12 @@ const LatexCodeBlock = ({content, theme}: Props) => {
             bottomSheet({
                 closeButtonId: 'close-code-block',
                 renderContent,
-                snapPoints: [1, bottomSheetSnapPoint(2, ITEM_HEIGHT, bottom)],
+                snapPoints: [1, bottomSheetSnapPoint(2, ITEM_HEIGHT)],
                 title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
                 theme,
             });
         }
-    }, [managedConfig?.copyAndPasteProtection, intl, bottom, theme]);
+    }, [managedConfig?.copyAndPasteProtection, intl, theme, styles.bottomSheet, content]);
 
     const onRenderErrorMessage = useCallback(({error}: {error: Error}) => {
         return <Text style={styles.errorText}>{'Render error: ' + error.message}</Text>;

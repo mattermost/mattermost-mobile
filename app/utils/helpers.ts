@@ -140,9 +140,8 @@ export function isTablet() {
 
 export const pluckUnique = (key: string) => (array: Array<{[key: string]: unknown}>) => Array.from(new Set(array.map((obj) => obj[key])));
 
-export function bottomSheetSnapPoint(itemsCount: number, itemHeight: number, bottomInset: number) {
-    const bottom = Platform.select({ios: bottomInset, default: 0}) + STATUS_BAR_HEIGHT;
-    return (itemsCount * itemHeight) + bottom;
+export function bottomSheetSnapPoint(itemsCount: number, itemHeight: number) {
+    return (itemsCount * itemHeight) + STATUS_BAR_HEIGHT;
 }
 
 export function hasTrailingSpaces(term: string) {
@@ -158,7 +157,7 @@ export function hasTrailingSpaces(term: string) {
 export function isMainActivity() {
     if (Platform.OS === 'android') {
         const MattermostShare = require('@mattermost/rnshare').default;
-        return MattermostShare?.getCurrentActivityName() === 'MainActivity';
+        return MattermostShare?.getCurrentActivityName().includes('MainActivity');
     }
 
     return true;

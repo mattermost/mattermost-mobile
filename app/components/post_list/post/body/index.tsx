@@ -96,8 +96,11 @@ const Body = ({
     let body;
     let message;
 
+    const nBindings = Array.isArray(post.props?.app_bindings) ? post.props?.app_bindings.length : 0;
+    const nAttachments = Array.isArray(post.props?.attachments) ? post.props?.attachments.length : 0;
+
     const isReplyPost = Boolean(post.rootId && (!isEphemeral || !hasBeenDeleted) && location !== THREAD);
-    const hasContent = Boolean((post.metadata?.embeds?.length || (appsEnabled && post.props?.app_bindings?.length)) || post.props?.attachments?.length);
+    const hasContent = Boolean((post.metadata?.embeds?.length || (appsEnabled && nBindings)) || nAttachments);
 
     const replyBarStyle = useCallback((): StyleProp<ViewStyle>|undefined => {
         if (!isReplyPost || (isCRTEnabled && location === Screens.PERMALINK)) {

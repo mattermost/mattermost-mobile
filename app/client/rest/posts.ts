@@ -10,12 +10,12 @@ import type ClientBase from './base';
 export interface ClientPostsMix {
     createPost: (post: Post) => Promise<Post>;
     updatePost: (post: Post) => Promise<Post>;
-    getPost: (postId: string) => Promise<Post>;
+    getPost: (postId: string, groupLabel?: RequestGroupLabel) => Promise<Post>;
     patchPost: (postPatch: Partial<Post> & {id: string}) => Promise<Post>;
     deletePost: (postId: string) => Promise<any>;
-    getPostThread: (postId: string, options: FetchPaginatedThreadOptions) => Promise<PostResponse>;
-    getPosts: (channelId: string, page?: number, perPage?: number, collapsedThreads?: boolean, collapsedThreadsExtended?: boolean) => Promise<PostResponse>;
-    getPostsSince: (channelId: string, since: number, collapsedThreads?: boolean, collapsedThreadsExtended?: boolean) => Promise<PostResponse>;
+    getPostThread: (postId: string, options: FetchPaginatedThreadOptions, groupLabel?: RequestGroupLabel) => Promise<PostResponse>;
+    getPosts: (channelId: string, page?: number, perPage?: number, collapsedThreads?: boolean, collapsedThreadsExtended?: boolean, groupLabel?: RequestGroupLabel) => Promise<PostResponse>;
+    getPostsSince: (channelId: string, since: number, collapsedThreads?: boolean, collapsedThreadsExtended?: boolean, groupLabel?: RequestGroupLabel) => Promise<PostResponse>;
     getPostsBefore: (channelId: string, postId?: string, page?: number, perPage?: number, collapsedThreads?: boolean, collapsedThreadsExtended?: boolean) => Promise<PostResponse>;
     getPostsAfter: (channelId: string, postId: string, page?: number, perPage?: number, collapsedThreads?: boolean, collapsedThreadsExtended?: boolean) => Promise<PostResponse>;
     getFileInfosForPost: (postId: string) => Promise<FileInfo[]>;
@@ -33,6 +33,7 @@ export interface ClientPostsMix {
     doPostActionWithCookie: (postId: string, actionId: string, actionCookie: string, selectedOption?: string) => Promise<any>;
     acknowledgePost: (postId: string, userId: string) => Promise<PostAcknowledgement>;
     unacknowledgePost: (postId: string, userId: string) => Promise<any>;
+    sendTestNotification: () => Promise<{status: 'OK'}>;
 }
 
 const ClientPosts = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
@@ -50,10 +51,10 @@ const ClientPosts = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         );
     };
 
-    getPost = async (postId: string) => {
+    getPost = async (postId: string, groupLabel?: RequestGroupLabel) => {
         return this.doFetch(
             `${this.getPostRoute(postId)}`,
-            {method: 'get'},
+            {method: 'get', groupLabel},
         );
     };
 
@@ -71,7 +72,7 @@ const ClientPosts = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         );
     };
 
-    getPostThread = (postId: string, options: FetchPaginatedThreadOptions) => {
+    getPostThread = (postId: string, options: FetchPaginatedThreadOptions, groupLabel?: RequestGroupLabel) => {
         const {
             fetchThreads = true,
             collapsedThreads = false,
@@ -83,21 +84,21 @@ const ClientPosts = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         } = options;
         return this.doFetch(
             `${this.getPostRoute(postId)}/thread${buildQueryString({skipFetchThreads: !fetchThreads, collapsedThreads, collapsedThreadsExtended, direction, perPage, ...rest})}`,
-            {method: 'get'},
+            {method: 'get', groupLabel},
         );
     };
 
-    getPosts = async (channelId: string, page = 0, perPage = PER_PAGE_DEFAULT, collapsedThreads = false, collapsedThreadsExtended = false) => {
+    getPosts = async (channelId: string, page = 0, perPage = PER_PAGE_DEFAULT, collapsedThreads = false, collapsedThreadsExtended = false, groupLabel?: RequestGroupLabel) => {
         return this.doFetch(
             `${this.getChannelRoute(channelId)}/posts${buildQueryString({page, per_page: perPage, collapsedThreads, collapsedThreadsExtended})}`,
-            {method: 'get'},
+            {method: 'get', groupLabel},
         );
     };
 
-    getPostsSince = async (channelId: string, since: number, collapsedThreads = false, collapsedThreadsExtended = false) => {
+    getPostsSince = async (channelId: string, since: number, collapsedThreads = false, collapsedThreadsExtended = false, groupLabel?: RequestGroupLabel) => {
         return this.doFetch(
             `${this.getChannelRoute(channelId)}/posts${buildQueryString({since, collapsedThreads, collapsedThreadsExtended})}`,
-            {method: 'get'},
+            {method: 'get', groupLabel},
         );
     };
 
@@ -218,6 +219,13 @@ const ClientPosts = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         return this.doFetch(
             `${this.getUserRoute(userId)}/posts/${postId}/ack`,
             {method: 'delete'},
+        );
+    };
+
+    sendTestNotification = async () => {
+        return this.doFetch(
+            `${this.urlVersion}/notifications/test`,
+            {method: 'post'},
         );
     };
 };

@@ -18,6 +18,7 @@ import {openGalleryAtIndex} from '@utils/gallery';
 import {generateId} from '@utils/general';
 import {calculateDimensions, getViewPortWidth, isGifTooLarge} from '@utils/images';
 import {changeOpacity} from '@utils/theme';
+import {secureGetFromRecord} from '@utils/types';
 import {extractFilenameFromUrl, isImageLink, isValidUrl} from '@utils/url';
 
 import type {GalleryItemType} from '@typings/screens/gallery';
@@ -55,7 +56,7 @@ const ImagePreview = ({expandedLink, isReplyPost, layoutWidth, link, location, m
     const fileId = useRef(generateId('uid')).current;
     const [imageUrl, setImageUrl] = useState(expandedLink || link);
     const isTablet = useIsTablet();
-    const imageProps = metadata?.images?.[link];
+    const imageProps = secureGetFromRecord(metadata?.images, link);
     const dimensions = calculateDimensions(imageProps?.height, imageProps?.width, layoutWidth || getViewPortWidth(isReplyPost, isTablet));
 
     const onError = useCallback(() => {

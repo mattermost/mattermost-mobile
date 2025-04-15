@@ -6,8 +6,9 @@ import React from 'react';
 import {View} from 'react-native';
 
 import ProfilePicture from '@components/profile_picture';
+import {BOTTOM_TAB_PROFILE_PHOTO_SIZE, BOTTOM_TAB_STATUS_SIZE} from '@constants/view';
 import {observeCurrentUser} from '@queries/servers/user';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type UserModel from '@typings/database/models/servers/user';
@@ -19,22 +20,32 @@ type Props = {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
-    selected: {
+    container: {
         borderWidth: 2,
-        borderColor: theme.buttonBg,
         borderRadius: 20,
+    },
+    focused: {
+        borderColor: theme.buttonBg,
+    },
+    unfocused: {
+        borderColor: changeOpacity(theme.centerChannelColor, 0.48),
     },
 }));
 
-const Account = ({currentUser, isFocused, theme}: Props) => {
+export const Account = ({currentUser, isFocused, theme}: Props) => {
     const style = getStyleSheet(theme);
 
     return (
-        <View style={isFocused ? style.selected : undefined}>
+        <View
+            style={[isFocused ? style.focused : style.unfocused, style.container]}
+            testID='account-container'
+        >
             <ProfilePicture
+                testID='account-profile-picture'
                 author={currentUser}
                 showStatus={true}
-                size={28}
+                size={BOTTOM_TAB_PROFILE_PHOTO_SIZE}
+                statusSize={BOTTOM_TAB_STATUS_SIZE}
             />
         </View>
     );

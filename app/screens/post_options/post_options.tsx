@@ -5,12 +5,13 @@ import {BottomSheetScrollView} from '@gorhom/bottom-sheet';
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import React, {useMemo} from 'react';
 import {ScrollView} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {CopyPermalinkOption, FollowThreadOption, ReplyOption, SaveOption} from '@components/common_post_options';
+import CopyTextOption from '@components/copy_text_option';
 import {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
 import {REACTION_PICKER_HEIGHT, REACTION_PICKER_MARGIN} from '@constants/reaction_picker';
+import {useBottomSheetListsFix} from '@hooks/bottom_sheet_lists_fix';
 import {useIsTablet} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import BottomSheet from '@screens/bottom_sheet';
@@ -19,7 +20,6 @@ import {bottomSheetSnapPoint} from '@utils/helpers';
 import {isSystemMessage} from '@utils/post';
 
 import AppBindingsPostOptions from './options/app_bindings_post_option';
-import CopyTextOption from './options/copy_text_option';
 import DeletePostOption from './options/delete_post_option';
 import EditOption from './options/edit_option';
 import MarkAsUnreadOption from './options/mark_unread_option';
@@ -55,8 +55,8 @@ const PostOptions = ({
     sourceScreen, post, thread, bindings, serverUrl,
 }: PostOptionsProps) => {
     const managedConfig = useManagedConfig<ManagedConfig>();
-    const {bottom} = useSafeAreaInsets();
     const isTablet = useIsTablet();
+    const {enabled, panResponder} = useBottomSheetListsFix();
     const Scroll = useMemo(() => (isTablet ? ScrollView : BottomSheetScrollView), [isTablet]);
 
     const close = () => {
@@ -82,7 +82,7 @@ const PostOptions = ({
             return v ? acc + 1 : acc;
         }, 0) + (shouldShowBindings ? 0.5 : 0);
 
-        items.push(bottomSheetSnapPoint(optionsCount, ITEM_HEIGHT, bottom) + (canAddReaction ? REACTION_PICKER_HEIGHT + REACTION_PICKER_MARGIN : 0));
+        items.push(bottomSheetSnapPoint(optionsCount, ITEM_HEIGHT) + (canAddReaction ? REACTION_PICKER_HEIGHT + REACTION_PICKER_MARGIN : 0));
 
         if (shouldShowBindings) {
             items.push('80%');
@@ -92,12 +92,16 @@ const PostOptions = ({
     }, [
         canAddReaction, canCopyPermalink, canCopyText,
         canDelete, canEdit, shouldRenderFollow, shouldShowBindings,
-        canMarkAsUnread, canPin, canReply, isSystemPost, bottom,
+        canMarkAsUnread, canPin, canReply, isSystemPost,
     ]);
 
     const renderContent = () => {
         return (
-            <Scroll bounces={false}>
+            <Scroll
+                bounces={false}
+                scrollEnabled={enabled}
+                {...panResponder.panHandlers}
+            >
                 {canAddReaction &&
                     <ReactionBar
                         bottomSheetId={Screens.POST_OPTIONS}

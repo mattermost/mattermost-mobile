@@ -7,7 +7,6 @@ import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl, type IntlShape} from 'react-intl';
 import {Alert, StyleSheet} from 'react-native';
 import Animated from 'react-native-reanimated';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {ITEM_HEIGHT} from '@components/option_item';
 import {useServerUrl} from '@context/server';
@@ -48,7 +47,10 @@ const styles = StyleSheet.create({
         paddingVertical: 6,
         height: 48,
     },
-    button: {backgroundColor: 'transparent'},
+    button: {
+        backgroundColor: 'transparent',
+        paddingHorizontal: 0,
+    },
 });
 
 const openLink = async (href: string, serverUrl: string, siteURL: string, intl: IntlShape) => {
@@ -90,7 +92,6 @@ const ChannelBookmark = ({
     const managedConfig = useManagedConfig<ManagedConfig>();
     const serverUrl = useServerUrl();
     const intl = useIntl();
-    const {bottom} = useSafeAreaInsets();
     const [action, setAction] = useState<GalleryAction>('none');
     const isDocumentFile = useMemo(() => isDocument(file), [file]);
     const canCopyPublicLink = Boolean((bookmark.type === 'link' || (file?.id && publicLinkEnabled)) && managedConfig.copyAndPasteProtection !== 'true');
@@ -124,11 +125,11 @@ const ChannelBookmark = ({
         bottomSheet({
             title: bookmark.displayName,
             renderContent,
-            snapPoints: [1, bottomSheetSnapPoint(1, (count * ITEM_HEIGHT), bottom) + TITLE_HEIGHT],
+            snapPoints: [1, bottomSheetSnapPoint(1, (count * ITEM_HEIGHT)) + TITLE_HEIGHT],
             theme,
             closeButtonId: 'close-channel-bookmark-actions',
         });
-    }, [bookmark, bottom, canCopyPublicLink, canDeleteBookmarks, canDownloadFiles, canEditBookmarks, file, theme]);
+    }, [bookmark, canCopyPublicLink, canDeleteBookmarks, canDownloadFiles, canEditBookmarks, file, theme]);
 
     const {onGestureEvent, ref} = useGalleryItem(galleryIdentifier, index || 0, handlePress);
 

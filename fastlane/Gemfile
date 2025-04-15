@@ -1,7 +1,7 @@
 source "https://rubygems.org"
 
 gem "fastlane"
-gem "nokogiri"
+gem "nokogiri", '~> 1.18.4'
 gem "dotenv"
 
 plugins_path = File.join(File.dirname(__FILE__), '.', 'Pluginfile')

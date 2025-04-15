@@ -6,6 +6,7 @@ import moment from 'moment-timezone';
 import {Post} from '@constants';
 import {toMilliseconds} from '@utils/datetime';
 import {isFromWebhook} from '@utils/post';
+import {ensureString, includes, isArrayOf, isStringArray, secureGetFromRecord} from '@utils/types';
 
 import type {PostList, PostWithPrevAndNext} from '@typings/components/post_list';
 import type PostModel from '@typings/database/models/servers/post';
@@ -72,7 +73,7 @@ function combineUserActivityPosts(orderedPosts: PostList) {
             lastPostIsUserActivity = false;
             combinedCount = 0;
         } else {
-            const postIsUserActivity = item.type === 'post' && Post.USER_ACTIVITY_POST_TYPES.includes(item.value.currentPost.type);
+            const postIsUserActivity = item.type === 'post' && includes(Post.USER_ACTIVITY_POST_TYPES, item.value.currentPost.type);
             if (postIsUserActivity && lastPostIsUserActivity && combinedCount < MAX_COMBINED_SYSTEM_POSTS) {
                 out[out.length - 1].value += '_' + item.value.currentPost.id;
             } else if (postIsUserActivity) {
@@ -95,21 +96,26 @@ function combineUserActivityPosts(orderedPosts: PostList) {
     return out;
 }
 
-function comparePostTypes(a: typeof postTypePriority, b: typeof postTypePriority) {
-    return postTypePriority[a.postType] - postTypePriority[b.postType];
+function comparePostTypes(a: MessageData, b: MessageData) {
+    const aPriority = secureGetFromRecord(postTypePriority, a.postType) ?? 99;
+    const bPriority = secureGetFromRecord(postTypePriority, b.postType) ?? 99;
+    return aPriority - bPriority;
 }
 
-function extractUserActivityData(userActivities: any) {
-    const messageData: any[] = [];
+function extractUserActivityData(userActivities: Record<PostType, UserActivityValue>): UserActivityProp {
+    const messageData: MessageData[] = [];
     const allUserIds: string[] = [];
     const allUsernames: string[] = [];
-    Object.entries(userActivities).forEach(([postType, values]: [string, any]) => {
+    Object.entries(userActivities).forEach(([postType, values]: [PostType, UserActivityValue]) => {
         if (
             postType === Post.POST_TYPES.ADD_TO_TEAM ||
             postType === Post.POST_TYPES.ADD_TO_CHANNEL ||
             postType === Post.POST_TYPES.REMOVE_FROM_CHANNEL
         ) {
-            Object.keys(values).map((key) => [key, values[key]]).forEach(([actorId, users]) => {
+            if (Array.isArray(values)) {
+                throw new Error('Invalid Post activity data');
+            }
+            Object.entries(values).forEach(([actorId, users]) => {
                 if (Array.isArray(users)) {
                     throw new Error('Invalid Post activity data');
                 }
@@ -154,9 +160,11 @@ function isJoinLeavePostForUsername(post: PostModel, currentUsername: string): b
         return false;
     }
 
-    if (post.props.user_activity_posts) {
+    // We can be more lax with the types here because the recursive function only checks
+    // whether it is an array, or comparison with strings, so it should be safe enough.
+    if (Array.isArray(post.props.user_activity_posts)) {
         for (const childPost of post.props.user_activity_posts as PostModel[]) {
-            if (isJoinLeavePostForUsername(childPost, currentUsername)) {
+            if (childPost && isJoinLeavePostForUsername(childPost, currentUsername)) {
                 // If any of the contained posts are for this user, the client will
                 // need to figure out how to render the post
                 return true;
@@ -253,10 +261,15 @@ export function selectOrderedPosts(
     return out.reverse();
 }
 
+type ActivityData = {
+    ids: string[];
+    usernames: string[];
+}
+type UserActivityValue = string[] | Record<string, ActivityData>
 function combineUserActivitySystemPost(systemPosts: PostModel[]) {
-    const userActivities = systemPosts.reduce((acc: any, post: PostModel) => {
+    const userActivities = systemPosts.reduce((acc: Record<string, UserActivityValue>, post: PostModel) => {
         const postType = post.type;
-        let userActivityProps = acc;
+        const userActivityProps = acc;
         const combinedPostType = userActivityProps[postType];
 
         if (
@@ -264,13 +277,15 @@ function combineUserActivitySystemPost(systemPosts: PostModel[]) {
             postType === Post.POST_TYPES.ADD_TO_CHANNEL ||
             postType === Post.POST_TYPES.REMOVE_FROM_CHANNEL
         ) {
-            const userId = post.props.addedUserId || post.props.removedUserId;
-            const username = post.props.addedUsername || post.props.removedUsername;
+            const userId = ensureString(post.props?.addedUserId) || ensureString(post.props?.removedUserId);
+            const username = ensureString(post.props?.addedUsername) || ensureString(post.props?.removedUsername);
             if (combinedPostType) {
-                if (Array.isArray(combinedPostType[post.userId])) {
+                if (Array.isArray(combinedPostType)) {
                     throw new Error('Invalid Post activity data');
                 }
-                const users = combinedPostType[post.userId] || {ids: [], usernames: []};
+
+                const userCombinedPostType = combinedPostType[post.userId];
+                const users = userCombinedPostType || {ids: [], usernames: []};
                 if (userId) {
                     if (!users.ids.includes(userId)) {
                         users.ids.push(userId);
@@ -305,7 +320,7 @@ function combineUserActivitySystemPost(systemPosts: PostModel[]) {
                     userActivityProps[postType] = [...combinedPostType, propsUserId];
                 }
             } else {
-                userActivityProps = {...userActivityProps, [postType]: [propsUserId]};
+                userActivityProps[postType] = [propsUserId];
             }
         }
 
@@ -345,7 +360,7 @@ export function generateCombinedPost(combinedId: string, systemPosts: PostModel[
             user_activity_posts: systemPosts,
             system_post_ids: systemPosts.map((post) => post.id),
         },
-        type: Post.POST_TYPES.COMBINED_USER_ACTIVITY as PostType,
+        type: Post.POST_TYPES.COMBINED_USER_ACTIVITY,
         user_id: '',
         metadata: {},
     };
@@ -356,6 +371,10 @@ export function getDateForDateLine(item: string) {
 }
 
 export function getPostIdsForCombinedUserActivityPost(item: string) {
+    if (!item.startsWith(COMBINED_USER_ACTIVITY)) {
+        throw new Error(`Invalid prefix, expected string to start with '${COMBINED_USER_ACTIVITY}'`);
+    }
+
     return item.substring(COMBINED_USER_ACTIVITY.length).split('_');
 }
 
@@ -373,10 +392,62 @@ export function shouldFilterJoinLeavePost(post: PostModel, showJoinLeave: boolea
     }
 
     // Don't filter out non-join/leave messages
-    if (joinLeavePostTypes.indexOf(post.type) === -1) {
+    if (!includes(joinLeavePostTypes, post.type)) {
         return false;
     }
 
     // Don't filter out join/leave messages about the current user
     return !isJoinLeavePostForUsername(post, currentUsername);
+}
+
+export type MessageData = {
+    actorId?: string;
+    postType: PostType;
+    userIds: string[];
+}
+
+function isMessageData(v: unknown): v is MessageData {
+    if (typeof v !== 'object' || !v) {
+        return false;
+    }
+
+    if (('actorId' in v) && typeof v.actorId !== 'string') {
+        return false;
+    }
+
+    if (!('postType' in v) || typeof v.postType !== 'string') {
+        return false;
+    }
+
+    if (!('userIds' in v) || !isStringArray(v.userIds)) {
+        return false;
+    }
+
+    return true;
+}
+
+export type UserActivityProp = {
+    allUserIds: string[];
+    allUsernames: string[];
+    messageData: MessageData[];
+}
+
+export function isUserActivityProp(v: unknown): v is UserActivityProp {
+    if (typeof v !== 'object' || !v) {
+        return false;
+    }
+
+    if (!('allUserIds' in v) || !isStringArray(v.allUserIds)) {
+        return false;
+    }
+
+    if (!('allUsernames' in v) || !isStringArray(v.allUsernames)) {
+        return false;
+    }
+
+    if (!('messageData' in v) || !isArrayOf(v.messageData, isMessageData)) {
+        return false;
+    }
+
+    return true;
 }

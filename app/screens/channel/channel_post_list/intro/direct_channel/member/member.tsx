@@ -39,7 +39,7 @@ const Member = ({channelId, containerStyle, size = 72, showStatus = true, theme,
 
         Keyboard.dismiss();
         openAsBottomSheet({screen, title, theme, closeButtonId, props});
-    }, [theme, intl.locale]);
+    }, [intl, user.id, channelId, theme]);
 
     return (
         <TouchableWithFeedback

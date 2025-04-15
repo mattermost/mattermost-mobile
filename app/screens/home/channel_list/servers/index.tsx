@@ -4,7 +4,6 @@
 import React, {useCallback, useEffect, useImperativeHandle, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Dimensions, StyleSheet} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import ServerIcon from '@components/server_icon';
 import {useServerUrl} from '@context/server';
@@ -49,7 +48,6 @@ const Servers = React.forwardRef<ServersRef>((_, ref) => {
     const registeredServers = useRef<ServersModel[]|undefined>();
     const currentServerUrl = useServerUrl();
     const isTablet = useIsTablet();
-    const {bottom} = useSafeAreaInsets();
     const theme = useTheme();
 
     const updateTotal = () => {
@@ -119,7 +117,7 @@ const Servers = React.forwardRef<ServersRef>((_, ref) => {
             const maxScreenHeight = Math.ceil(0.6 * Dimensions.get('window').height);
             const maxSnapPoint = Math.min(
                 maxScreenHeight,
-                bottomSheetSnapPoint(registeredServers.current.length, SERVER_ITEM_HEIGHT, bottom) + TITLE_HEIGHT + BUTTON_HEIGHT +
+                bottomSheetSnapPoint(registeredServers.current.length, SERVER_ITEM_HEIGHT) + TITLE_HEIGHT + BUTTON_HEIGHT +
                     (registeredServers.current.filter((s: ServersModel) => s.lastActiveAt).length * PUSH_ALERT_TEXT_HEIGHT),
             );
 
@@ -141,7 +139,7 @@ const Servers = React.forwardRef<ServersRef>((_, ref) => {
                 title: intl.formatMessage({id: 'your.servers', defaultMessage: 'Your servers'}),
             });
         }
-    }, [bottom, isTablet, theme]);
+    }, [intl, isTablet, theme]);
 
     useImperativeHandle(ref, () => ({
         openServers: onPress,

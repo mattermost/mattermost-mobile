@@ -8,9 +8,14 @@
 
 import Foundation
 import Gekidou
+import react_native_emm
 
 @objc class GekidouWrapper: NSObject {
   @objc public static let `default` = GekidouWrapper()
+  
+  override init() {
+    ScreenCaptureManager.startTrackingScreens()
+  }
 
   @objc func postNotificationReceipt(_ userInfo: [AnyHashable:Any]) {
     PushNotification.default.postNotificationReceipt(userInfo)

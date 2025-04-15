@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ServerScreen} from '@support/ui/screen';
+import {ChannelListScreen, ServerScreen} from '@support/ui/screen';
 import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
@@ -39,7 +39,7 @@ class LoginScreen {
     signinButtonDisabled = element(by.id(this.testID.signinButtonDisabled));
 
     toBeVisible = async () => {
-        await wait(timeouts.ONE_SEC);
+        await wait(timeouts.FOUR_SEC);
         await waitFor(this.loginScreen).toExist().withTimeout(timeouts.TEN_SEC);
         await waitFor(this.usernameInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
@@ -60,18 +60,27 @@ class LoginScreen {
 
     login = async (user: any = {}) => {
         await this.toBeVisible();
-        await this.usernameInput.typeText(`${user.newUser.email}\n`);
-        await this.passwordInput.typeText(`${user.newUser.password}\n`);
 
-        await wait(timeouts.FOUR_SEC);
+        await this.usernameInput.tap({x: 150, y: 10});
+        await this.usernameInput.replaceText(user.newUser.email);
+        await this.passwordInput.tap();
+        await this.passwordInput.replaceText(user.newUser.password);
+        await element(by.text(/^Log In to Your Account*$/)).tap();
+        await this.signinButton.tap();
+
+        await waitFor(ChannelListScreen.channelListScreen).toExist().withTimeout(timeouts.TEN_SEC);
     };
 
     loginAsAdmin = async (user: any = {}) => {
         await this.toBeVisible();
-        await this.usernameInput.typeText(user.username);
-        await this.passwordInput.typeText(`${user.password}\n`);
+        await this.usernameInput.tap({x: 150, y: 10});
 
-        await wait(timeouts.ONE_SEC);
+        await this.usernameInput.replaceText(user.username);
+        await this.passwordInput.tap();
+        await this.passwordInput.replaceText(user.password);
+        await this.signinButton.tap();
+
+        await waitFor(ChannelListScreen.channelListScreen).toExist().withTimeout(timeouts.TEN_SEC);
     };
 }
 

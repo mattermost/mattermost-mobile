@@ -3,7 +3,7 @@
 
 import {Image, type ImageStyle} from 'expo-image';
 import React, {useState, useCallback} from 'react';
-import {type StyleProp, type TextStyle, type ViewStyle} from 'react-native';
+import {type StyleProp, type TextStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import Emoji from '@components/emoji';
@@ -18,7 +18,7 @@ type Props = {
     iconSize: number;
     imageStyle?: StyleProp<ImageStyle>;
     imageUrl?: string;
-    genericStyle: StyleProp<ViewStyle>;
+    genericStyle: StyleProp<TextStyle>;
 }
 
 const BookmarkIcon = ({emoji, emojiSize, emojiStyle, file, genericStyle, iconSize, imageStyle, imageUrl}: Props) => {
@@ -32,6 +32,7 @@ const BookmarkIcon = ({emoji, emojiSize, emojiStyle, file, genericStyle, iconSiz
     if (file && !emoji && !hasImageError) {
         return (
             <FileIcon
+                testID='bookmark-file-icon'
                 file={file}
                 iconSize={iconSize}
                 smallImage={true}
@@ -40,15 +41,18 @@ const BookmarkIcon = ({emoji, emojiSize, emojiStyle, file, genericStyle, iconSiz
     } else if (imageUrl && !emoji && !hasImageError) {
         return (
             <Image
+                testID='bookmark-image'
                 source={{uri: imageUrl}}
                 style={imageStyle}
                 onError={handleImageError}
             />
         );
     } else if (emoji) {
+        const sanitizedEmoji = emoji.replace(/:/g, '');
         return (
             <Emoji
-                emojiName={emoji!}
+                testID='bookmark-emoji'
+                emojiName={sanitizedEmoji}
                 size={emojiSize}
                 textStyle={emojiStyle}
             />
@@ -61,6 +65,7 @@ const BookmarkIcon = ({emoji, emojiSize, emojiStyle, file, genericStyle, iconSiz
             size={22}
             color={theme.centerChannelColor}
             style={genericStyle}
+            testID='bookmark-generic-icon'
         />
     );
 };

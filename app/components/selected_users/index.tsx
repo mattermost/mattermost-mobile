@@ -7,13 +7,12 @@ import Animated, {useAnimatedStyle, useDerivedValue, useSharedValue, withTiming}
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import Button from '@components/button';
-import {USER_CHIP_BOTTOM_MARGIN, USER_CHIP_HEIGHT} from '@components/selected_chip';
+import {CHIP_BOTTOM_MARGIN, CHIP_HEIGHT} from '@components/chips/constants';
+import SelectedUserChip from '@components/chips/selected_user_chip';
 import Toast from '@components/toast';
 import {useTheme} from '@context/theme';
-import {useKeyboardHeightWithDuration} from '@hooks/device';
+import {useIsTablet, useKeyboardHeightWithDuration} from '@hooks/device';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-
-import SelectedUser from './selected_user';
 
 type Props = {
 
@@ -84,15 +83,15 @@ type Props = {
 }
 
 const BUTTON_HEIGHT = 48;
-const CHIP_HEIGHT_WITH_MARGIN = USER_CHIP_HEIGHT + USER_CHIP_BOTTOM_MARGIN;
-const EXPOSED_CHIP_HEIGHT = 0.33 * USER_CHIP_HEIGHT;
+const CHIP_HEIGHT_WITH_MARGIN = CHIP_HEIGHT + CHIP_BOTTOM_MARGIN;
+const EXPOSED_CHIP_HEIGHT = 0.33 * CHIP_HEIGHT;
 const MAX_CHIP_ROWS = 2;
 const SCROLL_MARGIN_TOP = 20;
 const SCROLL_MARGIN_BOTTOM = 12;
 const USERS_CHIPS_MAX_HEIGHT = (CHIP_HEIGHT_WITH_MARGIN * MAX_CHIP_ROWS) + EXPOSED_CHIP_HEIGHT;
 const SCROLL_MAX_HEIGHT = USERS_CHIPS_MAX_HEIGHT + SCROLL_MARGIN_TOP + SCROLL_MARGIN_BOTTOM;
 const PANEL_MAX_HEIGHT = SCROLL_MAX_HEIGHT + BUTTON_HEIGHT;
-const TABLET_MARGIN_BOTTOM = 20;
+const MARGIN_BOTTOM = 20;
 const TOAST_BOTTOM_MARGIN = 24;
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
@@ -155,6 +154,7 @@ export default function SelectedUsers({
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
     const keyboard = useKeyboardHeightWithDuration();
+    const isTablet = useIsTablet();
     const insets = useSafeAreaInsets();
 
     const usersChipsHeight = useSharedValue(0);
@@ -163,28 +163,28 @@ export default function SelectedUsers({
 
     const users = useMemo(() => {
         const u = [];
-        for (const id of Object.keys(selectedIds)) {
-            if (!selectedIds[id]) {
+        for (const user of Object.values(selectedIds)) {
+            if (!user) {
                 continue;
             }
 
+            const userItemTestID = `${testID}.${user.id}`;
+
             u.push(
-                <SelectedUser
-                    key={id}
-                    user={selectedIds[id]}
+                <SelectedUserChip
+                    key={user.id}
+                    user={user}
+                    onPress={onRemove}
                     teammateNameDisplay={teammateNameDisplay}
-                    onRemove={onRemove}
-                    testID={`${testID}.selected_user`}
+                    testID={userItemTestID}
                 />,
             );
         }
         return u;
-    }, [selectedIds, teammateNameDisplay, onRemove]);
+    }, [selectedIds, teammateNameDisplay, onRemove, testID]);
 
     const totalPanelHeight = useDerivedValue(() => (
-        isVisible ?
-            usersChipsHeight.value + SCROLL_MARGIN_BOTTOM + SCROLL_MARGIN_TOP + BUTTON_HEIGHT :
-            0
+        isVisible ? usersChipsHeight.value + SCROLL_MARGIN_BOTTOM + SCROLL_MARGIN_TOP + BUTTON_HEIGHT : 0
     ), [isVisible]);
 
     const handlePress = useCallback(() => {
@@ -205,10 +205,10 @@ export default function SelectedUsers({
     });
 
     const animatedContainerStyle = useAnimatedStyle(() => ({
-        marginBottom: withTiming(keyboardOverlap + TABLET_MARGIN_BOTTOM, {duration: keyboard.duration}),
+        marginBottom: withTiming(keyboardOverlap + ((Platform.OS === 'android' || isTablet) ? MARGIN_BOTTOM : -MARGIN_BOTTOM), {duration: keyboard.duration}),
         backgroundColor: isVisible ? theme.centerChannelBg : 'transparent',
         ...androidMaxHeight,
-    }), [keyboardOverlap, keyboard.duration, isVisible, theme.centerChannelBg]);
+    }), [keyboardOverlap, keyboard.duration, isVisible, isTablet, theme.centerChannelBg]);
 
     const animatedToastStyle = useAnimatedStyle(() => {
         return {

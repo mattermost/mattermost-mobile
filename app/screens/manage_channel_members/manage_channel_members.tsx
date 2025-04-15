@@ -16,6 +16,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import SecurityManager from '@managers/security_manager';
 import {openAsBottomSheet, popTopScreen, setButtons} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
 import {showRemoveChannelUserSnackbar} from '@utils/snack_bar';
@@ -130,7 +131,7 @@ export default function ManageChannelMembers({
 
         Keyboard.dismiss();
         openAsBottomSheet({screen: USER_PROFILE, title, theme, closeButtonId: CLOSE_BUTTON_ID, props});
-    }, [canManageAndRemoveMembers, channelId, isManageMode, currentUserId]);
+    }, [currentUserId, isManageMode, formatMessage, channelId, canManageAndRemoveMembers, theme, serverUrl]);
 
     const searchUsers = useCallback(async (searchTerm: string) => {
         setSearchedTerm(searchTerm);
@@ -291,6 +292,7 @@ export default function ManageChannelMembers({
         <SafeAreaView
             style={styles.container}
             testID='manage_members.screen'
+            nativeID={SecurityManager.getShieldScreenId(componentId)}
         >
             <View style={styles.searchBar}>
                 <Search

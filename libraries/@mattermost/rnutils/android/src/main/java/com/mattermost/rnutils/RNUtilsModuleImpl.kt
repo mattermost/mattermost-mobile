@@ -1,7 +1,9 @@
 package com.mattermost.rnutils
 
 import android.app.Activity
-import android.net.Uri
+import android.os.Build
+import android.view.WindowManager
+import androidx.core.net.toUri
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
@@ -13,10 +15,12 @@ import com.mattermost.rnutils.helpers.SaveDataTask
 import com.mattermost.rnutils.helpers.SplitView
 
 class RNUtilsModuleImpl(private val reactContext: ReactApplicationContext) {
+
     companion object {
         const val NAME = "RNUtils"
 
         private var context: ReactApplicationContext? = null
+        private var hasRegisteredLoad = false
 
         fun sendJSEvent(eventName: String, data: ReadableMap?) {
             if (context?.hasActiveReactInstance() == true) {
@@ -50,7 +54,7 @@ class RNUtilsModuleImpl(private val reactContext: ReactApplicationContext) {
         var result = ""
 
         if (currentActivity != null) {
-            val uri = Uri.parse(filePath)
+            val uri = filePath?.toUri()
             val path: String? = RealPathUtil.getRealPathFromURI(reactContext, uri)
             if (path != null) {
                 result = "file://$path"
@@ -73,11 +77,21 @@ class RNUtilsModuleImpl(private val reactContext: ReactApplicationContext) {
         return SplitView.getWindowDimensions()
     }
 
+    fun setHasRegisteredLoad() {
+        hasRegisteredLoad = true
+    }
+
+    fun getHasRegisteredLoad(): WritableMap {
+        val map = Arguments.createMap()
+        map.putBoolean("hasRegisteredLoad", hasRegisteredLoad)
+        return map
+    }
+
     fun unlockOrientation() {}
 
     fun lockPortrait() {}
 
-    fun deleteDatabaseDirectory(databaseName: String?, shouldRemoveDirectory: Boolean): WritableMap {
+    fun deleteDatabaseDirectory(): WritableMap {
         val map = Arguments.createMap()
         map.putNull("error")
         map.putBoolean("success", true)
@@ -109,5 +123,27 @@ class RNUtilsModuleImpl(private val reactContext: ReactApplicationContext) {
 
     fun removeServerNotifications(serverUrl: String?) {
         serverUrl?.let { Notifications.removeServerNotifications(it) }
+    }
+
+    fun setSoftKeyboardToAdjustNothing() {
+        val currentActivity: Activity = reactContext.currentActivity ?: return
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
+            return
+        }
+
+        currentActivity.runOnUiThread {
+            currentActivity.window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING)
+        }
+    }
+
+    fun setSoftKeyboardToAdjustResize() {
+        val currentActivity: Activity = reactContext.currentActivity ?: return
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
+            return
+        }
+
+        currentActivity.runOnUiThread {
+            currentActivity.window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+        }
     }
 }

@@ -48,7 +48,7 @@ const NavigationHeaderLargeTitle = ({
 
     const containerStyle = useMemo(() => {
         return [{height: heightOffset}, styles.container];
-    }, [heightOffset, theme]);
+    }, [heightOffset, styles.container]);
 
     return (
         <Animated.View style={[containerStyle, transform]}>

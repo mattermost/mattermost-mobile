@@ -7,6 +7,7 @@ import React, {type ReactElement} from 'react';
 import {IntlProvider} from 'react-intl';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 
+import {ExtraKeyboardProvider} from '@context/extra_keyboard';
 import ServerUrlProvider from '@context/server';
 import {ThemeContext, getDefaultThemeByAppearance} from '@context/theme';
 import {getTranslations} from '@i18n';
@@ -63,7 +64,9 @@ export function renderWithEverything(ui: ReactElement, {locale = 'en', database,
                 >
                     <ThemeContext.Provider value={getDefaultThemeByAppearance()}>
                         <SafeAreaProvider>
-                            {children}
+                            <ExtraKeyboardProvider>
+                                {children}
+                            </ExtraKeyboardProvider>
                         </SafeAreaProvider>
                     </ThemeContext.Provider>
                 </IntlProvider>

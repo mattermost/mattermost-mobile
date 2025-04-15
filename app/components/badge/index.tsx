@@ -22,7 +22,7 @@ type Props = {
 };
 
 export default function Badge({
-    borderColor,
+    borderColor: borderColorProp,
     color,
     visible = true,
     type = 'Normal',
@@ -60,9 +60,13 @@ export default function Badge({
         return null;
     }
 
-    // @ts-expect-error: backgroundColor definitely exists
-    const {backgroundColor = rest.backgroundColor || theme.mentionBg, ...restStyle} =
-    StyleSheet.flatten(style) || {};
+    const {
+        backgroundColor = rest.backgroundColor || theme.mentionBg,
+        borderColor: styleBorderColor,
+        ...restStyle
+    } = (StyleSheet.flatten(style) || {}) as TextStyle;
+
+    const borderColor = borderColorProp || styleBorderColor || theme.centerChannelBg;
     const textColor = color || theme.mentionColor;
     let lineHeight = Platform.select({android: 21, ios: 16.5});
     let fontSize = 12;

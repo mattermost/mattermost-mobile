@@ -6,7 +6,6 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import React, {Children, type ReactElement, useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, StyleSheet, Text, View} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import urlParse from 'url-parse';
 
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
@@ -47,7 +46,6 @@ const parseLinkLiteral = (literal: string) => {
 
 const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteURL, onLinkLongPress}: MarkdownLinkProps) => {
     const intl = useIntl();
-    const {bottom} = useSafeAreaInsets();
     const managedConfig = useManagedConfig<ManagedConfig>();
     const serverUrl = useServerUrl();
     const theme = useTheme();
@@ -146,12 +144,12 @@ const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteU
             bottomSheet({
                 closeButtonId: 'close-mardown-link',
                 renderContent,
-                snapPoints: [1, bottomSheetSnapPoint(2, ITEM_HEIGHT, bottom)],
+                snapPoints: [1, bottomSheetSnapPoint(2, ITEM_HEIGHT)],
                 title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
                 theme,
             });
         }
-    }, [managedConfig, intl, bottom, theme, onLinkLongPress]);
+    }, [managedConfig?.copyAndPasteProtection, onLinkLongPress, intl, theme, href]);
 
     const renderChildren = experimentalNormalizeMarkdownLinks ? parseChildren() : children;
 

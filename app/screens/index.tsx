@@ -99,6 +99,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.CREATE_OR_EDIT_CHANNEL:
             screen = withServerDatabase(require('@screens/create_or_edit_channel').default);
             break;
+        case Screens.COMPONENT_LIBRARY:
+            screen = withServerDatabase(require('@screens/component_library').default);
+            break;
         case Screens.CUSTOM_STATUS:
             screen = withServerDatabase(require('@screens/custom_status').default);
             break;
@@ -110,6 +113,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             break;
         case Screens.CHANNEL_ADD_MEMBERS:
             screen = withServerDatabase(require('@screens/channel_add_members').default);
+            break;
+        case Screens.DRAFT_SCHEDULED_POST_OPTIONS:
+            screen = withServerDatabase(require('@screens/draft_scheduled_post_options').default);
             break;
         case Screens.EDIT_POST:
             screen = withServerDatabase(require('@screens/edit_post').default);
@@ -134,6 +140,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             break;
         case Screens.GENERIC_OVERLAY:
             screen = withServerDatabase(require('@screens/overlay').default);
+            break;
+        case Screens.GLOBAL_DRAFTS:
+            screen = withServerDatabase(require('@screens/global_drafts').default);
             break;
         case Screens.GLOBAL_THREADS:
             screen = withServerDatabase(require('@screens/global_threads').default);
@@ -189,6 +198,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             break;
         case Screens.REACTIONS:
             screen = withServerDatabase(require('@screens/reactions').default);
+            break;
+        case Screens.RESCHEDULE_DRAFT:
+            screen = withServerDatabase(require('@screens/reschedule_draft').default);
             break;
         case Screens.REVIEW_APP:
             screen = withServerDatabase(require('@screens/review_app').default);
@@ -283,6 +295,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.CALL_HOST_CONTROLS:
             screen = withServerDatabase(require('@calls/screens/host_controls').default);
             break;
+        case Screens.SCHEDULED_POST_OPTIONS:
+            screen = withServerDatabase(require('@screens/scheduled_post_options').default);
+            break;
     }
 
     if (screen) {
@@ -295,6 +310,6 @@ export function registerScreens() {
     const serverScreen = require('@screens/server').default;
     const onboardingScreen = require('@screens/onboarding').default;
     Navigation.registerComponent(Screens.ONBOARDING, () => withGestures(withIntl(withManagedConfig(onboardingScreen)), undefined));
-    Navigation.registerComponent(Screens.SERVER, () => withGestures(withIntl(withManagedConfig(serverScreen)), undefined));
+    Navigation.registerComponent(Screens.SERVER, () => withSafeAreaInsets(withGestures(withIntl(withManagedConfig(serverScreen)), undefined)));
     Navigation.registerComponent(Screens.HOME, () => withGestures(withSafeAreaInsets(withServerDatabase(withManagedConfig(homeScreen))), undefined));
 }

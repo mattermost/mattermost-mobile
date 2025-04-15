@@ -4,13 +4,88 @@
 // NOTE : To implement migration, please follow this document
 // https://nozbe.github.io/WatermelonDB/Advanced/Migrations.html
 
-import {addColumns, createTable, schemaMigrations} from '@nozbe/watermelondb/Schema/migrations';
+import {addColumns, createTable, schemaMigrations, unsafeExecuteSql} from '@nozbe/watermelondb/Schema/migrations';
 
 import {MM_TABLES} from '@constants/database';
 
-const {CHANNEL_BOOKMARK, CHANNEL_INFO, DRAFT, POST} = MM_TABLES.SERVER;
+const {CHANNEL_BOOKMARK, CHANNEL_INFO, DRAFT, POST, CHANNEL, CUSTOM_PROFILE_ATTRIBUTE, CUSTOM_PROFILE_FIELD, SCHEDULED_POST} = MM_TABLES.SERVER;
 
 export default schemaMigrations({migrations: [
+    {
+        toVersion: 9,
+        steps: [
+            createTable({
+                name: SCHEDULED_POST,
+                columns: [
+                    {name: 'channel_id', type: 'string', isIndexed: true},
+                    {name: 'message', type: 'string'},
+                    {name: 'files', type: 'string'},
+                    {name: 'root_id', type: 'string', isIndexed: true},
+                    {name: 'metadata', type: 'string', isOptional: true},
+                    {name: 'create_at', type: 'number'},
+                    {name: 'update_at', type: 'number'},
+                    {name: 'scheduled_at', type: 'number'},
+                    {name: 'processed_at', type: 'number'},
+                    {name: 'error_code', type: 'string'},
+                ],
+            }),
+        ],
+    },
+    {
+        toVersion: 8,
+        steps: [
+            createTable({
+                name: CUSTOM_PROFILE_ATTRIBUTE,
+                columns: [
+                    {name: 'field_id', type: 'string', isIndexed: true},
+                    {name: 'user_id', type: 'string', isIndexed: true},
+                    {name: 'value', type: 'string'},
+                ],
+            }),
+            createTable({
+                name: CUSTOM_PROFILE_FIELD,
+                columns: [
+                    {name: 'group_id', type: 'string', isIndexed: true},
+                    {name: 'name', type: 'string'},
+                    {name: 'type', type: 'string'},
+                    {name: 'target_id', type: 'string'},
+                    {name: 'target_type', type: 'string'},
+                    {name: 'create_at', type: 'number'},
+                    {name: 'update_at', type: 'number'},
+                    {name: 'delete_at', type: 'number', isOptional: true},
+                    {name: 'attrs', type: 'string', isOptional: true},
+                ],
+            }),
+        ],
+    },
+    {
+        toVersion: 7,
+        steps: [
+            addColumns({
+                table: CHANNEL,
+                columns: [
+                    {name: 'banner_info', type: 'string', isOptional: true},
+                ],
+            }),
+        ],
+    },
+    {
+        toVersion: 6,
+        steps: [
+            unsafeExecuteSql('CREATE INDEX IF NOT EXISTS Post_type ON Post (type);'),
+        ],
+    },
+    {
+        toVersion: 5,
+        steps: [
+            addColumns({
+                table: DRAFT,
+                columns: [
+                    {name: 'update_at', type: 'number'},
+                ],
+            }),
+        ],
+    },
     {
         toVersion: 4,
         steps: [

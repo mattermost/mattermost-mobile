@@ -7,7 +7,7 @@ import * as logUtils from '@utils/log';
 
 import {addRecentReaction} from './reactions';
 
-import type ServerDataOperator from '@app/database/operator/server_data_operator';
+import type ServerDataOperator from '@database/operator/server_data_operator';
 
 jest.mock('@database/manager');
 jest.mock('@queries/servers/system');

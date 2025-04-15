@@ -9,6 +9,7 @@ import CompassIcon from '@components/compass_icon';
 import UserItem from '@components/user_item';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
+import {secureGetFromRecord} from '@utils/types';
 import {typography} from '@utils/typography';
 
 import TextItem, {TextItemType} from './text_item';
@@ -114,7 +115,7 @@ export default function SummaryReport({
                 </Text>
             </View>
             {invites.map(({userId, reason}) => {
-                const item = selectedIds[userId];
+                const item = secureGetFromRecord(selectedIds, userId);
 
                 return (
                     <View

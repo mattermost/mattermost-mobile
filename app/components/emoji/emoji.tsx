@@ -2,13 +2,9 @@
 // See LICENSE.txt for license information.
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
-import {Image} from 'expo-image';
+import {Image as ExpoImage} from 'expo-image';
 import React from 'react';
-import {
-    Platform,
-    StyleSheet,
-    Text,
-} from 'react-native';
+import {Image, Platform, StyleSheet, Text} from 'react-native';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
@@ -99,41 +95,63 @@ const Emoji = (props: EmojiProps) => {
         );
     }
 
+    const key = (`${assetImage}-${height}-${width}`);
     if (assetImage) {
-        const key = Platform.OS === 'android' ? (`${assetImage}-${height}-${width}`) : null;
-
         const image = assetImages.get(assetImage);
         if (!image) {
             return null;
         }
-        return (
-            <Image
-                key={key}
-                source={image}
-                style={[commonStyle, imageStyle, {width, height}]}
-                resizeMode={'contain'}
-                testID={testID}
-            />
-        );
+
+        return Platform.select({
+            ios: (
+                <ExpoImage
+                    source={image}
+                    style={[commonStyle, imageStyle, {width, height}]}
+                    contentFit='contain'
+                    testID={testID}
+                    recyclingKey={key}
+                />
+            ),
+            android: (
+                <Image
+                    key={key}
+                    source={image}
+                    style={[commonStyle, imageStyle, {width, height}]}
+                    resizeMode='contain'
+                    testID={testID}
+                />
+            ),
+        });
     }
 
     if (!imageUrl) {
         return null;
     }
 
-    // Android can't change the size of an image after its first render, so
-    // force a new image to be rendered when the size changes
-    const key = Platform.OS === 'android' ? (`${imageUrl}-${height}-${width}`) : null;
-
-    return (
-        <Image
-            key={key}
-            style={[commonStyle, imageStyle, {width, height}]}
-            source={{uri: imageUrl}}
-            contentFit='contain'
-            testID={testID}
-        />
-    );
+    return Platform.select({
+        ios: (
+            <ExpoImage
+                style={[commonStyle, imageStyle, {width, height}]}
+                source={{uri: imageUrl}}
+                contentFit='contain'
+                testID={testID}
+                recyclingKey={key}
+                cachePolicy='disk'
+                placeholder={require('@assets/images/thumb.png')}
+                placeholderContentFit='contain'
+            />
+        ),
+        android: (
+            <Image
+                source={{uri: imageUrl, cache: 'force-cache'}}
+                style={[commonStyle, imageStyle, {width, height}]}
+                resizeMode='contain'
+                testID={testID}
+                key={key}
+                defaultSource={require('@assets/images/thumb.png')}
+            />
+        ),
+    });
 };
 
 const withCustomEmojis = withObservables(['emojiName'], ({database, emojiName}: WithDatabaseArgs & {emojiName: string}) => {

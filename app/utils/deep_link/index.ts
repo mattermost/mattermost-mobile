@@ -9,8 +9,8 @@ import urlParse from 'url-parse';
 import {makeDirectChannel, switchToChannelByName} from '@actions/remote/channel';
 import {showPermalink} from '@actions/remote/permalink';
 import {fetchUsersByUsernames} from '@actions/remote/user';
-import DeepLinkType from '@app/constants/deep_linking';
 import {DeepLink, Launch, Screens} from '@constants';
+import DeepLinkType from '@constants/deep_linking';
 import {getDefaultThemeByAppearance} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, t} from '@i18n';
@@ -61,7 +61,7 @@ export async function handleDeepLink(deepLinkUrl: string, intlShape?: IntlShape,
         if (existingServerUrl !== currentServerUrl && NavigationStore.getVisibleScreen()) {
             await dismissAllModalsAndPopToRoot();
             DatabaseManager.setActiveServerDatabase(existingServerUrl);
-            WebsocketManager.initializeClient(existingServerUrl);
+            WebsocketManager.initializeClient(existingServerUrl, 'DeepLink');
             await NavigationStore.waitUntilScreenHasLoaded(Screens.HOME);
         }
 

@@ -5,7 +5,7 @@ import React from 'react';
 import {Text, View} from 'react-native';
 
 import {useTheme} from '@context/theme';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 type Props = {
@@ -17,15 +17,21 @@ type Props = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         marginVertical: 8,
+        flexDirection: 'row',
+        alignItems: 'center',
     },
     description: {
         color: theme.centerChannelColor,
+        flex: 2,
         ...typography('Body', 200),
     },
     title: {
-        color: changeOpacity(theme.centerChannelColor, 0.56),
-        marginBottom: 2,
-        ...typography('Body', 50, 'SemiBold'),
+        color: theme.centerChannelColor,
+        flex: 1,
+        marginRight: 20,
+        height: '100%',
+        alignItems: 'flex-start',
+        ...typography('Body', 100, 'SemiBold'),
     },
 }));
 
@@ -38,6 +44,7 @@ const UserProfileLabel = ({title, description, testID}: Props) => {
             <Text
                 style={styles.title}
                 testID={`${testID}.title`}
+                numberOfLines={1}
             >
                 {title}
             </Text>

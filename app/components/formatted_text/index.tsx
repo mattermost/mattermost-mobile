@@ -46,9 +46,7 @@ const FormattedText = (props: FormattedTextProps) => {
         // when the `message` is formatted. This allows the formatted
         // message to then be broken-up into parts with references to the
         // React Elements inserted back in.
-        Object.keys(values).forEach((name) => {
-            const value = values[name];
-
+        Object.entries(values).forEach(([name, value]) => {
             if (isValidElement(value)) {
                 const token = generateToken();
                 tokenizedValues[name] = tokenDelimiter + token + tokenDelimiter;

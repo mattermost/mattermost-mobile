@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {type ReactNode, useEffect, useMemo, useRef, useState} from 'react';
+import React, {type ReactNode, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, Platform, type StyleProp, View, type ViewStyle, TouchableHighlight} from 'react-native';
 
@@ -14,6 +14,7 @@ import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';
 import {POST_TIME_TO_FAIL} from '@constants/post';
 import * as Screens from '@constants/screens';
+import {useHideExtraKeyboardIfNeeded} from '@context/extra_keyboard';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -21,7 +22,6 @@ import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {openAsBottomSheet} from '@screens/navigation';
 import {hasJumboEmojiOnly} from '@utils/emoji/helpers';
 import {fromAutoResponder, isFromWebhook, isPostFailed, isPostPendingOrFailed, isSystemMessage} from '@utils/post';
-import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Avatar from './avatar';
@@ -176,7 +176,7 @@ const Post = ({
         return false;
     }, [customEmojiNames, post.message]);
 
-    const handlePostPress = () => {
+    const handlePostPress = useCallback(() => {
         if ([Screens.SAVED_MESSAGES, Screens.MENTIONS, Screens.SEARCH, Screens.PINNED_MESSAGES].includes(location)) {
             showPermalink(serverUrl, '', post.id);
             return;
@@ -195,19 +195,20 @@ const Post = ({
         setTimeout(() => {
             pressDetected.current = false;
         }, 300);
-    };
+    }, [
+        hasBeenDeleted, isAutoResponder, isEphemeral,
+        isPendingOrFailed, isSystemPost, location, serverUrl, post,
+    ]);
 
-    const handlePress = preventDoubleTap(() => {
+    const handlePress = useHideExtraKeyboardIfNeeded(() => {
         pressDetected.current = true;
 
         if (post) {
-            Keyboard.dismiss();
-
             setTimeout(handlePostPress, 300);
         }
-    });
+    }, [handlePostPress, post]);
 
-    const showPostOptions = () => {
+    const showPostOptions = useHideExtraKeyboardIfNeeded(() => {
         if (!post) {
             return;
         }
@@ -231,7 +232,11 @@ const Post = ({
             title,
             props: passProps,
         });
-    };
+    }, [
+        canDelete, hasBeenDeleted, intl,
+        isEphemeral, isPendingOrFailed, isTablet, isSystemPost,
+        location, post, serverUrl, showAddReaction, theme,
+    ]);
 
     const [, rerender] = useState(false);
     useEffect(() => {
@@ -306,6 +311,7 @@ const Post = ({
                 <SystemHeader
                     createAt={post.createAt}
                     theme={theme}
+                    isEphemeral={isEphemeral}
                 />
             );
         } else {

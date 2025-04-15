@@ -4,16 +4,56 @@
 import Emm from '@mattermost/react-native-emm';
 import deepEqual from 'deep-equal';
 import {isRootedExperimentalAsync} from 'expo-device';
+import {defineMessages} from 'react-intl';
 import {Alert, type AlertButton, AppState, type AppStateStatus, Platform} from 'react-native';
 
-import {DEFAULT_LOCALE, getTranslations, t} from '@i18n';
+import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 import {toMilliseconds} from '@utils/datetime';
 import {isMainActivity} from '@utils/helpers';
 import {getIOSAppGroupDetails} from '@utils/mattermost_managed';
 
 const PROMPT_IN_APP_PIN_CODE_AFTER = toMilliseconds({minutes: 5});
 
-class ManagedApp {
+const messages = defineMessages({
+    blocked: {
+        id: 'mobile.managed.blocked_by',
+        defaultMessage: 'Blocked by {vendor}',
+    },
+    jailbreak: {
+        id: 'mobile.managed.jailbreak.emm',
+        defaultMessage: 'Jailbroken or rooted devices are not trusted by {vendor}.\n\nThe app will now close.',
+    },
+    exit: {
+        id: 'mobile.managed.exit',
+        defaultMessage: 'Exit',
+    },
+    securedBy: {
+        id: 'mobile.managed.secured_by',
+        defaultMessage: 'Secured by {vendor}',
+    },
+    androidSettings: {
+        id: 'mobile.managed.settings',
+        defaultMessage: 'Go to settings',
+    },
+    notSecuredVendorIOS: {
+        id: 'mobile.managed.not_secured.ios.vendor',
+        defaultMessage: 'This device must be secured with biometrics or passcode to use {vendor}.\n\nGo to Settings > Face ID & Passcode.',
+    },
+    notSecuredVendorAndroid: {
+        id: 'mobile.managed.not_secured.android.vendor',
+        defaultMessage: 'This device must be secured with a screen lock to use {vendor}.',
+    },
+    notSecuredIOS: {
+        id: 'mobile.managed.not_secured.ios',
+        defaultMessage: 'This device must be secured with biometrics or passcode to use Mattermost.\n\nGo to Settings > Face ID & Passcode.',
+    },
+    notSecuredAndroid: {
+        id: 'mobile.managed.not_secured.android',
+        defaultMessage: 'This device must be secured with a screen lock to use Mattermost.',
+    },
+});
+
+class ManagedAppSingleton {
     backgroundSince = 0;
     enabled = false;
     inAppPinCode = false;
@@ -94,11 +134,11 @@ class ManagedApp {
         const locale = DEFAULT_LOCALE;
         const translations = getTranslations(locale);
         Alert.alert(
-            translations[t('mobile.managed.blocked_by')].replace('{vendor}', this.vendor),
-            translations[t('mobile.managed.jailbreak')].
+            translations[messages.blocked.id].replace('{vendor}', this.vendor),
+            translations[messages.jailbreak.id].
                 replace('{vendor}', this.vendor),
             [{
-                text: translations[t('mobile.managed.exit')],
+                text: translations[messages.exit.id],
                 style: 'destructive',
                 onPress: () => {
                     Emm.exitApp();
@@ -123,7 +163,7 @@ class ManagedApp {
         if (authExpired) {
             try {
                 const auth = await Emm.authenticate({
-                    reason: translations[t('mobile.managed.secured_by')].replace('{vendor}', this.vendor),
+                    reason: translations[messages.securedBy.id].replace('{vendor}', this.vendor),
                     fallback: true,
                     supressEnterPassword: true,
                 });
@@ -158,12 +198,12 @@ class ManagedApp {
     };
 
     showNotSecuredAlert = (translations: Record<string, string>) => {
-        return new Promise(async (resolve) => { /* eslint-disable-line no-async-promise-executor */
+        return new Promise((resolve) => {
             const buttons: AlertButton[] = [];
 
             if (Platform.OS === 'android') {
                 buttons.push({
-                    text: translations[t('mobile.managed.settings')],
+                    text: translations[messages.androidSettings.id],
                     onPress: () => {
                         Emm.openSecuritySettings();
                     },
@@ -171,26 +211,22 @@ class ManagedApp {
             }
 
             buttons.push({
-                text: translations[t('mobile.managed.exit')],
+                text: translations[messages.exit.id],
                 onPress: resolve,
                 style: 'cancel',
             });
 
             let message;
-            if (Platform.OS === 'ios') {
-                const {face} = await Emm.deviceSecureWith();
-
-                if (face) {
-                    message = translations[t('mobile.managed.not_secured.ios')];
-                } else {
-                    message = translations[t('mobile.managed.not_secured.ios.touchId')];
-                }
+            if (this.vendor) {
+                const platform = Platform.select({ios: messages.notSecuredVendorIOS.id, default: messages.notSecuredVendorAndroid.id});
+                message = translations[platform].replace('{vendor}', this.vendor);
             } else {
-                message = translations[t('mobile.managed.not_secured.android')];
+                const platform = Platform.select({ios: messages.notSecuredIOS.id, default: messages.notSecuredAndroid.id});
+                message = translations[platform];
             }
 
             Alert.alert(
-                translations[t('mobile.managed.blocked_by')].replace('{vendor}', this.vendor),
+                translations[messages.blocked.id].replace('{vendor}', this.vendor),
                 message,
                 buttons,
                 {cancelable: false, onDismiss: () => resolve},
@@ -199,4 +235,5 @@ class ManagedApp {
     };
 }
 
-export default new ManagedApp();
+const ManagedApp = new ManagedAppSingleton();
+export default ManagedApp;

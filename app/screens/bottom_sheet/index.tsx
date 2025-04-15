@@ -1,16 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import BottomSheetM, {BottomSheetBackdrop, type BottomSheetBackdropProps} from '@gorhom/bottom-sheet';
+import BottomSheetM, {BottomSheetBackdrop, BottomSheetView, type BottomSheetBackdropProps} from '@gorhom/bottom-sheet';
 import React, {type ReactNode, useCallback, useEffect, useMemo, useRef} from 'react';
 import {DeviceEventEmitter, type Handle, InteractionManager, Keyboard, type StyleProp, View, type ViewStyle} from 'react-native';
 import {ReduceMotion, type WithSpringConfig} from 'react-native-reanimated';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {Events} from '@constants';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import SecurityManager from '@managers/security_manager';
 import {dismissModal} from '@screens/navigation';
 import {hapticFeedback} from '@utils/general';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -22,6 +24,8 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 export {default as BottomSheetButton, BUTTON_HEIGHT} from './button';
 export {default as BottomSheetContent, TITLE_HEIGHT} from './content';
 
+export const BOTTOM_SHEET_ANDROID_OFFSET = 12;
+
 type Props = {
     closeButtonId?: string;
     componentId: AvailableScreens;
@@ -30,6 +34,7 @@ type Props = {
     footerComponent?: React.FC<unknown>;
     renderContent: () => ReactNode;
     snapPoints?: Array<string | number>;
+    enableDynamicSizing?: boolean;
     testID?: string;
 }
 
@@ -68,6 +73,9 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             borderTopWidth: 1,
             borderColor: changeOpacity(theme.centerChannelColor, 0.08),
         },
+        view: {
+            flex: 1,
+        },
     };
 });
 
@@ -90,9 +98,11 @@ const BottomSheet = ({
     renderContent,
     snapPoints = [1, '50%', '80%'],
     testID,
+    enableDynamicSizing = false,
 }: Props) => {
     const sheetRef = useRef<BottomSheetM>(null);
     const isTablet = useIsTablet();
+    const insets = useSafeAreaInsets();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const interaction = useRef<Handle>();
@@ -191,11 +201,14 @@ const BottomSheet = ({
     if (isTablet) {
         const FooterComponent = footerComponent;
         return (
-            <>
+            <View
+                style={styles.view}
+                nativeID={SecurityManager.getShieldScreenId(componentId)}
+            >
                 <View style={styles.separator}/>
                 {renderContainerContent()}
                 {FooterComponent && (<FooterComponent/>)}
-            </>
+            </View>
         );
     }
 
@@ -216,8 +229,12 @@ const BottomSheet = ({
             keyboardBehavior='extend'
             keyboardBlurBehavior='restore'
             onClose={close}
+            bottomInset={insets.bottom}
+            enableDynamicSizing={enableDynamicSizing}
         >
-            {renderContainerContent()}
+            <BottomSheetView style={styles.view}>
+                {renderContainerContent()}
+            </BottomSheetView>
         </BottomSheetM>
     );
 };

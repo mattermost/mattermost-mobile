@@ -22,7 +22,7 @@ type FileInfo = {
     uri?: string;
     user_id: string;
     width: number;
-    postProps?: Record<string, any>;
+    postProps?: Record<string, unknown>;
 };
 
 type FilesState = {

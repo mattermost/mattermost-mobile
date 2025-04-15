@@ -152,7 +152,7 @@ const Footer = ({channelId, location, participants, teamId, thread}: Props) => {
             return orderedParticipantsList;
         }
         return [];
-    }, [participants.length]);
+    }, [participants]);
 
     let userAvatarsStack;
     if (participantsList.length) {

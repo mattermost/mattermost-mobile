@@ -22,4 +22,3 @@ const useNavButtonPressed = (navButtonId: string, componentId: string, callback:
 };
 
 export default useNavButtonPressed;
-

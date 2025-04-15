@@ -49,10 +49,9 @@ class ServerScreen {
     connectToServer = async (serverUrl: string, serverDisplayName: string) => {
         await this.toBeVisible();
         await this.serverUrlInput.replaceText(serverUrl);
-        await this.serverUrlInput.tapReturnKey();
         await this.serverDisplayNameInput.replaceText(serverDisplayName);
         if (isAndroid()) {
-            await this.serverDisplayNameInput.tapReturnKey();
+            await this.tapConnectButton();
         }
         if (isIos()) {
             await this.tapConnectButton();
@@ -67,7 +66,7 @@ class ServerScreen {
                 }
             }
         }
-        await waitFor(this.usernameInput).toExist().withTimeout(timeouts.ONE_SEC);
+        await waitFor(this.usernameInput).toExist().withTimeout(timeouts.TEN_SEC);
     };
 
     close = async () => {

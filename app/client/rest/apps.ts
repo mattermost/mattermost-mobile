@@ -7,7 +7,7 @@ import type ClientBase from './base';
 
 export interface ClientAppsMix {
     executeAppCall: <Res = unknown>(call: AppCallRequest, trackAsSubmit: boolean) => Promise<AppCallResponse<Res>>;
-    getAppsBindings: (userID: string, channelID: string, teamID: string) => Promise<AppBinding[]>;
+    getAppsBindings: (userID: string, channelID: string, teamID: string, groupLabel?: RequestGroupLabel) => Promise<AppBinding[]>;
 }
 
 const ClientApps = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
@@ -27,7 +27,7 @@ const ClientApps = <TBase extends Constructor<ClientBase>>(superclass: TBase) =>
         );
     };
 
-    getAppsBindings = async (userID: string, channelID: string, teamID: string) => {
+    getAppsBindings = async (userID: string, channelID: string, teamID: string, groupLabel?: RequestGroupLabel) => {
         const params = {
             user_id: userID,
             channel_id: channelID,
@@ -37,7 +37,7 @@ const ClientApps = <TBase extends Constructor<ClientBase>>(superclass: TBase) =>
 
         return this.doFetch(
             `${this.getAppsProxyRoute()}/api/v1/bindings${buildQueryString(params)}`,
-            {method: 'get'},
+            {method: 'get', groupLabel},
         );
     };
 };

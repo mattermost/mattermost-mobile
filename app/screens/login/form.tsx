@@ -3,7 +3,7 @@
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import {Button} from '@rneui/base';
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState, type RefObject} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, TextInput, TouchableOpacity, View} from 'react-native';
 
@@ -13,19 +13,22 @@ import FloatingTextInput from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import {FORGOT_PASSWORD, MFA} from '@constants/screens';
+import {useAvoidKeyboard} from '@hooks/device';
 import {t} from '@i18n';
 import {goToScreen, loginAnimationOptions, resetToHome} from '@screens/navigation';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
-import {getFullErrorMessage, isErrorWithMessage, isServerError} from '@utils/errors';
+import {getFullErrorMessage, getServerError, isErrorWithMessage, isServerError} from '@utils/errors';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
 
 import type {LaunchProps} from '@typings/launch';
+import type {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 interface LoginProps extends LaunchProps {
     config: Partial<ClientConfig>;
     license: Partial<ClientLicense>;
+    keyboardAwareRef: RefObject<KeyboardAwareScrollView>;
     serverDisplayName: string;
     theme: Theme;
 }
@@ -77,7 +80,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const LoginForm = ({config, extra, serverDisplayName, launchError, launchType, license, serverUrl, theme}: LoginProps) => {
+const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchError, launchType, license, serverUrl, theme}: LoginProps) => {
     const styles = getStyleSheet(theme);
     const loginRef = useRef<TextInput>(null);
     const passwordRef = useRef<TextInput>(null);
@@ -92,6 +95,8 @@ const LoginForm = ({config, extra, serverDisplayName, launchError, launchType, l
     const emailEnabled = config.EnableSignInWithEmail === 'true';
     const usernameEnabled = config.EnableSignInWithUsername === 'true';
     const ldapEnabled = license.IsLicensed === 'true' && config.EnableLdap === 'true' && license.LDAP === 'true';
+
+    useAvoidKeyboard(keyboardAwareRef);
 
     const preSignIn = preventDoubleTap(async () => {
         setIsLoading(true);
@@ -112,20 +117,23 @@ const LoginForm = ({config, extra, serverDisplayName, launchError, launchType, l
         resetToHome({extra, launchError: hasError, launchType, serverUrl});
     };
 
-    const checkLoginResponse = (data: LoginActionResponse) => {
-        let errorId = '';
-        const loginError = data.error;
-        if (isServerError(loginError) && loginError.server_error_id) {
-            errorId = loginError.server_error_id;
+    const isMFAError = (loginError: unknown): boolean => {
+        const serverError = getServerError(loginError);
+        if (serverError) {
+            return MFA_EXPECTED_ERRORS.includes(serverError);
         }
+        return false;
+    };
 
-        if (data.failed && MFA_EXPECTED_ERRORS.includes(errorId)) {
+    const checkLoginResponse = (data: LoginActionResponse) => {
+        const {failed, error: loginError} = data;
+        if (failed && isMFAError(loginError)) {
             goToMfa();
             setIsLoading(false);
             return false;
         }
 
-        if (loginError && data.failed) {
+        if (failed && loginError) {
             setIsLoading(false);
             setError(getLoginErrorMessage(loginError));
             return false;
@@ -222,7 +230,7 @@ const LoginForm = ({config, extra, serverDisplayName, launchError, launchType, l
         };
 
         goToScreen(FORGOT_PASSWORD, '', passProps, loginAnimationOptions());
-    }, [theme]);
+    }, [config.ForgotPasswordLink, serverUrl, theme]);
 
     const togglePasswordVisiblity = useCallback(() => {
         setIsPasswordVisible((prevState) => !prevState);
@@ -308,6 +316,7 @@ const LoginForm = ({config, extra, serverDisplayName, launchError, launchType, l
                 autoCapitalize={'none'}
                 blurOnSubmit={false}
                 containerStyle={styles.inputBoxEmail}
+                autoComplete='email'
                 disableFullscreenUI={true}
                 enablesReturnKeyAutomatically={true}
                 error={error ? ' ' : ''}
@@ -328,6 +337,7 @@ const LoginForm = ({config, extra, serverDisplayName, launchError, launchType, l
                 autoCapitalize={'none'}
                 blurOnSubmit={false}
                 containerStyle={styles.inputBoxPassword}
+                autoComplete='current-password'
                 disableFullscreenUI={true}
                 enablesReturnKeyAutomatically={true}
                 error={error}

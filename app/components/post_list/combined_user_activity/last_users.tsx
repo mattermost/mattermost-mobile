@@ -10,6 +10,7 @@ import FormattedText from '@components/formatted_text';
 import Markdown from '@components/markdown';
 import {getMarkdownTextStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {secureGetFromRecord} from '@utils/types';
 
 import {postTypeMessages, systemMessages} from './messages';
 
@@ -50,12 +51,14 @@ const LastUsers = ({actor, channelId, location, postType, theme, usernames}: Las
     if (expanded) {
         const lastIndex = usernames.length - 1;
         const lastUser = usernames[lastIndex];
-        const expandedMessage = postTypeMessages[postType].many_expanded;
-        const formattedMessage = intl.formatMessage(expandedMessage, {
+        const expandedMessage = secureGetFromRecord(postTypeMessages, postType)?.many_expanded;
+
+        // We default to empty string, but this should never happen
+        const formattedMessage = expandedMessage ? intl.formatMessage(expandedMessage, {
             users: usernames.slice(0, lastIndex).join(', '),
             lastUser,
             actor,
-        });
+        }) : '';
 
         return (
             <Markdown
@@ -71,6 +74,8 @@ const LastUsers = ({actor, channelId, location, postType, theme, usernames}: Las
 
     const firstUser = usernames[0];
     const numOthers = usernames.length - 1;
+
+    const message = secureGetFromRecord(systemMessages, postType);
 
     return (
         <Text>
@@ -96,8 +101,8 @@ const LastUsers = ({actor, channelId, location, postType, theme, usernames}: Las
             </Text>
             <FormattedMarkdownText
                 channelId={channelId}
-                id={systemMessages[postType].id}
-                defaultMessage={systemMessages[postType].defaultMessage}
+                id={message?.id || ''}
+                defaultMessage={message?.defaultMessage || ''}
                 location={location}
                 values={{actor}}
                 baseTextStyle={style.baseText}

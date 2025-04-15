@@ -68,8 +68,7 @@ const SkinSelector = ({onSelectSkin, selected, skins}: Props) => {
                 />
             </View>
             <View style={[styles.skins, isTablet && {marginRight: 10}]}>
-                {Object.keys(skins).map((key) => {
-                    const name = skins[key];
+                {Object.entries(skins).map(([key, name]) => {
                     return (
                         <View
                             key={name}

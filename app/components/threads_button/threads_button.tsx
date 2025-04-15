@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {TouchableOpacity, View} from 'react-native';
+import {DeviceEventEmitter, TouchableOpacity, View} from 'react-native';
 
 import {switchToGlobalThreads} from '@actions/local/thread';
 import Badge from '@components/badge';
@@ -13,11 +13,13 @@ import {
 } from '@components/channel_item/channel_item';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
+import {Events, Screens} from '@constants';
+import {THREAD} from '@constants/screens';
 import {HOME_PADDING} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {preventDoubleTap} from '@utils/tap';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -39,9 +41,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 type Props = {
     currentChannelId: string;
+    lastChannelId?: string;
     onCenterBg?: boolean;
     onPress?: () => void;
-    shouldHighlighActive?: boolean;
+    shouldHighlightActive?: boolean;
     unreadsAndMentions: {
         unreads: boolean;
         mentions: number;
@@ -51,10 +54,11 @@ type Props = {
 
 const ThreadsButton = ({
     currentChannelId,
+    lastChannelId,
     onCenterBg,
     onPress,
     unreadsAndMentions,
-    shouldHighlighActive = false,
+    shouldHighlightActive = false,
     isOnHome = false,
 }: Props) => {
     const isTablet = useIsTablet();
@@ -64,16 +68,17 @@ const ThreadsButton = ({
     const styles = getChannelItemStyleSheet(theme);
     const customStyles = getStyleSheet(theme);
 
-    const handlePress = useCallback(preventDoubleTap(() => {
+    const handlePress = usePreventDoubleTap(useCallback(() => {
+        DeviceEventEmitter.emit(Events.ACTIVE_SCREEN, THREAD);
         if (onPress) {
             onPress();
         } else {
             switchToGlobalThreads(serverUrl);
         }
-    }), [onPress, serverUrl]);
+    }, [onPress, serverUrl]));
 
     const {unreads, mentions} = unreadsAndMentions;
-    const isActive = isTablet && shouldHighlighActive && !currentChannelId;
+    const isActive = isTablet && ((shouldHighlightActive && !currentChannelId) || (!currentChannelId && lastChannelId === Screens.GLOBAL_THREADS));
 
     const [containerStyle, iconStyle, textStyle, badgeStyle] = useMemo(() => {
         const container = [

@@ -6,7 +6,6 @@ import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {type ListRenderItemInfo, Text, TouchableOpacity, useWindowDimensions, View} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {hostMuteOthers} from '@calls/actions/calls';
 import {useHostControlsAvailable, useHostMenus} from '@calls/hooks';
@@ -17,6 +16,7 @@ import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
+import {useBottomSheetListsFix} from '@hooks/bottom_sheet_lists_fix';
 import {useIsTablet} from '@hooks/device';
 import BottomSheet from '@screens/bottom_sheet';
 import {bottomSheetSnapPoint} from '@utils/helpers';
@@ -79,14 +79,14 @@ export const ParticipantsList = ({
     const theme = useTheme();
     const {onPress} = useHostMenus();
     const hostControlsAvailable = useHostControlsAvailable();
-    const {bottom} = useSafeAreaInsets();
     const {height} = useWindowDimensions();
     const isTablet = useIsTablet();
+    const {enabled, panResponder} = useBottomSheetListsFix();
     const List = useMemo(() => (isTablet ? FlatList : BottomSheetFlatList), [isTablet]);
     const styles = getStyleSheet(theme);
 
     const sessions = sortSessions(intl.locale, teammateNameDisplay, sessionsDict);
-    const snapPoint1 = bottomSheetSnapPoint(Math.min(sessions.length, MIN_ROWS), ROW_HEIGHT, bottom) + HEADER_HEIGHT;
+    const snapPoint1 = bottomSheetSnapPoint(Math.min(sessions.length, MIN_ROWS), ROW_HEIGHT) + HEADER_HEIGHT;
     const snapPoint2 = height * 0.8;
     const snapPoints = [1, Math.min(snapPoint1, snapPoint2)];
     if (sessions.length > MIN_ROWS && snapPoint1 < snapPoint2) {
@@ -140,8 +140,9 @@ export const ParticipantsList = ({
                     data={sessions}
                     renderItem={renderItem}
                     overScrollMode={'auto'}
+                    scrollEnabled={enabled}
+                    {...panResponder.panHandlers}
                 />
-                <View style={{height: bottom}}/>
             </>
         );
     };

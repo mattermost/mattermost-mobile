@@ -5,6 +5,7 @@ import xRegExp from 'xregexp';
 
 import {General} from '@constants';
 
+import type {Model} from '@nozbe/watermelondb';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 
@@ -91,3 +92,19 @@ export const filterAndSortMyChannels = ([myChannels, channels, notifyProps]: Fil
 // Matches letters from any alphabet and numbers
 const sqliteLikeStringRegex = xRegExp('[^\\p{L}\\p{Nd}]', 'g');
 export const sanitizeLikeString = (value: string) => value.replace(sqliteLikeStringRegex, '_');
+
+export function removeDuplicatesModels(array: Model[]) {
+    if (!array.length) {
+        return array;
+    }
+
+    const seen = new Set();
+    return array.filter((item) => {
+        const key = `${item.collection.table}-${item.id}`;
+        if (seen.has(key)) {
+            return false;
+        }
+        seen.add(key);
+        return true;
+    });
+}

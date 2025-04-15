@@ -105,13 +105,13 @@ const mockClient = {
     getUser: jest.fn((userId: string) => ({...user, id: userId})),
     getMyChannels: jest.fn((teamId: string) => ([{id: channelId, name: 'channel1', creatorId: user.id, team_id: teamId}])),
     getMyChannelMembers: jest.fn(() => ([{id: user.id + '-' + channelId, user_id: user.id, channel_id: channelId, roles: ''}])),
-    getCategories: jest.fn((userId: string, teamId: string) => ({categories: [{id: 'categoryid', channel_id: [channelId], team_id: teamId}], order: ['categoryid']})),
+    getCategories: jest.fn((userId: string, teamId: string) => ({categories: [{id: 'categoryid', channel_ids: [channelId], team_id: teamId}], order: ['categoryid']})),
     viewMyChannel: jest.fn(),
     getTeamByName: jest.fn((teamName: string) => ({id: teamId, name: teamName})),
     getTeam: jest.fn((id: string) => ({id, name: 'teamname'})),
     addToTeam: jest.fn((teamId: string, userId: string) => ({id: userId + '-' + teamId, user_id: userId, team_id: teamId, roles: ''})),
     getUserByUsername: jest.fn((username: string) => ({...user, id: 'userid2', username})),
-    createDirectChannel: jest.fn((userId1: string, userId2: string) => ({id: userId1 + '__' + userId2, team_id: '', type: 'D', display_name: 'displayname'})),
+    createDirectChannel: jest.fn((userIds: string[]) => ({id: userIds[0] + '__' + userIds[1], team_id: '', type: 'D', display_name: 'displayname'})),
     getChannels: jest.fn((teamId: string) => ([{id: channelId, name: 'channel1', creatorId: user.id, team_id: teamId}])),
     getArchivedChannels: jest.fn((teamId: string) => ([{id: channelId + 'old', name: 'channel1old', creatorId: user.id, team_id: teamId, delete_at: 1}])),
     createGroupChannel: jest.fn(() => ({id: 'groupid', team_id: '', type: 'G', display_name: 'displayname'})),
@@ -129,6 +129,11 @@ const mockClient = {
     convertChannelToPrivate: jest.fn(),
     getGroupMessageMembersCommonTeams: jest.fn(() => ({id: teamId, name: 'teamname'})),
     convertGroupMessageToPrivateChannel: jest.fn((channelId: string) => ({id: channelId, name: 'channel1', creatorId: user.id, type: 'P'})),
+    getPosts: jest.fn(() => ({
+        order: [],
+        posts: [],
+        previousPostId: '',
+    })),
 };
 
 const teamId = 'teamid1';

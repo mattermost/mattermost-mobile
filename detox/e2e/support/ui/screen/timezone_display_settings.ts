@@ -10,8 +10,8 @@ class TimezoneDisplaySettingsScreen {
         timezoneDisplaySettingsScreen: 'timezone_display_settings.screen',
         backButton: 'screen.back.button',
         scrollView: 'timezone_display_settings.scroll_view',
-        automaticOptionToggledOff: 'timezone_display_settings.automatic.option.toggled.false',
-        automaticOptionToggledOn: 'timezone_display_settings.automatic.option.toggled.true',
+        automaticOptionToggledOff: 'timezone_display_settings.automatic.option.toggled.false.button',
+        automaticOptionToggledOn: 'timezone_display_settings.automatic.option.toggled.true.button',
         manualOption: 'timezone_display_settings.manual.option',
         manualOptionInfo: 'timezone_display_settings.manual.option.info',
     };

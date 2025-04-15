@@ -71,6 +71,11 @@ const SUPPORTED_VIDEO_FORMAT = Platform.select({
     android: ['video/3gpp', 'video/x-matroska', 'video/mp4', 'video/webm', 'video/quicktime'],
 });
 
+const SUPPORTED_AUDIO_FORMAT = Platform.select({
+    ios: ['audio/mp4', 'audio/mpeg', 'audio/wav', 'audio/x-aiff'],
+    android: ['audio/mp4', 'audio/mpeg', 'audio/ogg', 'audio/wav', 'audio/webm', 'audio/3gpp'],
+});
+
 const types: Record<string, string> = {};
 const extensions: Record<string, readonly string[]> = {};
 
@@ -308,6 +313,21 @@ export const isVideo = (file?: FileInfo | FileModel) => {
     return SUPPORTED_VIDEO_FORMAT!.includes(mime);
 };
 
+export const isAudio = (file?: FileInfo | FileModel) => {
+    if (!file) {
+        return false;
+    }
+
+    let mime = 'mime_type' in file ? file.mime_type : file.mimeType;
+    if (mime && mime.includes(';')) {
+        mime = mime.split(';')[0];
+    } else if (!mime && file?.name) {
+        mime = lookupMimeType(file.name);
+    }
+
+    return SUPPORTED_AUDIO_FORMAT!.includes(mime);
+};
+
 export function getFormattedFileSize(bytes: number): string {
     const fileSizes: Array<[string, number]> = [
         ['TB', 1024 * 1024 * 1024 * 1024],
@@ -413,7 +433,7 @@ export async function extractFileInfo(files: Array<Asset | DocumentPickerRespons
         } else {
             const localPath = file.uri || '';
             try {
-                const fileInfo = await getInfoAsync(decodeURIComponent(localPath), {size: true});
+                const fileInfo = await getInfoAsync(localPath, {size: true});
                 if ('size' in fileInfo) {
                     outFile.size = fileInfo.size || 0;
                     outFile.name = localPath.substring(localPath.lastIndexOf('/') + 1);

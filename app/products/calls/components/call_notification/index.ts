@@ -5,9 +5,9 @@ import {withObservables} from '@nozbe/watermelondb/react';
 import {of as of$} from 'rxjs';
 import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
-import {observeAllActiveServers} from '@app/queries/app/servers';
 import {CallNotification} from '@calls/components/call_notification/call_notification';
 import DatabaseManager from '@database/manager';
+import {observeAllActiveServers} from '@queries/app/servers';
 import {observeChannelMembers} from '@queries/servers/channel';
 import {observeCurrentUser, observeTeammateNameDisplay} from '@queries/servers/user';
 

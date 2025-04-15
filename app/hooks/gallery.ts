@@ -14,7 +14,7 @@ import {useGallery} from '@context/gallery';
 import type {Context, GestureHandlers, OnGestureEvent} from '@typings/screens/gallery';
 import type {GestureHandlerGestureEvent} from 'react-native-gesture-handler';
 
-function diff(context: any, name: string, value: any) {
+export function diff(context: any, name: string, value: any) {
     'worklet';
 
     if (!context.___diffs) {
@@ -212,7 +212,7 @@ export function useGalleryItem(
 ) {
     const gallery = useGallery(identifier);
     const ref = useAnimatedRef<any>();
-    const {opacity, activeIndex} = gallery!.sharedValues;
+    const {opacity, activeIndex} = gallery.sharedValues;
 
     const styles = useAnimatedStyle(() => {
         return {

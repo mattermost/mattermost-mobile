@@ -66,6 +66,16 @@ describe('searchGroups', () => {
         expect(models[0].id).toBe(group.id);
     });
 
+    it('searchGroupsByName', async () => {
+        const groupModels = await operator.handleGroups({groups: [group], prepareRecordsOnly: false});
+        mockedRemoteGroups.fetchGroupsForAutocomplete.mockReturnValueOnce(Promise.resolve(groupModels));
+
+        const models = await searchGroupsByName(serverUrl, group.name);
+        expect(models).toBeDefined();
+        expect(models.length).toBe(1);
+        expect(models[0].id).toBe(group.id);
+    });
+
     it('searchGroupsByNameInTeam - handle not found database', async () => {
         const models = await searchGroupsByNameInTeam('foo', 'test', teamId);
         expect(models).toBeDefined();
@@ -90,6 +100,18 @@ describe('searchGroups', () => {
         expect(models[0].id).toBe(group.id);
     });
 
+    it('searchGroupsByNameInTeam', async () => {
+        const groupModels = await operator.handleGroups({groups: [group], prepareRecordsOnly: false});
+        await operator.handleGroupTeamsForTeam({groups: [group], teamId, prepareRecordsOnly: false});
+
+        mockedRemoteGroups.fetchFilteredTeamGroups.mockReturnValueOnce(Promise.resolve(groupModels));
+
+        const models = await searchGroupsByNameInTeam(serverUrl, group.name, teamId);
+        expect(models).toBeDefined();
+        expect(models.length).toBe(1);
+        expect(models[0].id).toBe(group.id);
+    });
+
     it('searchGroupsByNameInChannel - handle not found database', async () => {
         const models = await searchGroupsByNameInChannel('foo', 'test', channelId);
         expect(models).toBeDefined();
@@ -107,6 +129,18 @@ describe('searchGroups', () => {
         await operator.handleGroupChannelsForChannel({groups: [group], channelId, prepareRecordsOnly: false});
 
         mockedRemoteGroups.fetchFilteredChannelGroups.mockReturnValueOnce(Promise.reject(new Error('fail')));
+
+        const models = await searchGroupsByNameInChannel(serverUrl, group.name, channelId);
+        expect(models).toBeDefined();
+        expect(models.length).toBe(1);
+        expect(models[0].id).toBe(group.id);
+    });
+
+    it('searchGroupsByNameInChannel', async () => {
+        const groupModels = await operator.handleGroups({groups: [group], prepareRecordsOnly: false});
+        await operator.handleGroupChannelsForChannel({groups: [group], channelId, prepareRecordsOnly: false});
+
+        mockedRemoteGroups.fetchFilteredChannelGroups.mockReturnValueOnce(Promise.resolve(groupModels));
 
         const models = await searchGroupsByNameInChannel(serverUrl, group.name, channelId);
         expect(models).toBeDefined();

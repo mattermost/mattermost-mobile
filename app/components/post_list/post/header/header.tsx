@@ -4,6 +4,7 @@
 import React from 'react';
 import {View} from 'react-native';
 
+import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
 import PostPriorityLabel from '@components/post_priority/post_priority_label';
 import {CHANNEL, THREAD} from '@constants/screens';
@@ -11,6 +12,7 @@ import {useTheme} from '@context/theme';
 import {DEFAULT_LOCALE} from '@i18n';
 import {postUserDisplayName} from '@utils/post';
 import {makeStyleSheetFromTheme} from '@utils/theme';
+import {ensureString} from '@utils/types';
 import {typography} from '@utils/typography';
 import {displayUsername, getUserCustomStatus, getUserTimezone, isCustomStatusExpired} from '@utils/user';
 
@@ -63,6 +65,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             opacity: 0.5,
             ...typography('Body', 75, 'Regular'),
         },
+        visibleToYou: {
+            color: theme.centerChannelColor,
+            marginTop: 5,
+            marginLeft: 5,
+            opacity: 0.5,
+            ...typography('Body', 75, 'Regular'),
+        },
         postPriority: {
             alignSelf: 'center',
             marginLeft: 6,
@@ -88,6 +97,8 @@ const Header = (props: HeaderProps) => {
         isCustomStatusEnabled && displayName && customStatus &&
         !(isSystemPost || author?.isBot || isAutoResponse || isWebHook),
     ) && !isCustomStatusExpired(author) && Boolean(customStatus?.emoji);
+    const userIconOverride = ensureString(post.props?.override_icon_url);
+    const usernameOverride = ensureString(post.props?.override_username);
 
     return (
         <>
@@ -101,9 +112,9 @@ const Header = (props: HeaderProps) => {
                         rootPostAuthor={rootAuthorDisplayName}
                         shouldRenderReplyButton={shouldRenderReplyButton}
                         theme={theme}
-                        userIconOverride={post.props?.override_icon_url}
+                        userIconOverride={userIconOverride}
                         userId={post.userId}
-                        usernameOverride={post.props?.override_username}
+                        usernameOverride={usernameOverride}
                         showCustomStatusEmoji={showCustomStatusEmoji}
                         customStatus={customStatus!}
                     />
@@ -121,6 +132,14 @@ const Header = (props: HeaderProps) => {
                         style={style.time}
                         testID='post_header.date_time'
                     />
+                    {isEphemeral && (
+                        <FormattedText
+                            id='post_header.visible_message'
+                            defaultMessage='(Only visible to you)'
+                            style={style.visibleToYou}
+                            testID='post_header.visible_message'
+                        />
+                    )}
                     {showPostPriority && post.metadata?.priority?.priority && (
                         <View style={style.postPriority}>
                             <PostPriorityLabel

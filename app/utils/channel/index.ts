@@ -45,7 +45,7 @@ export function selectDefaultChannelForTeam<T extends Channel|ChannelModel>(chan
     if (roles) {
         canIJoinPublicChannelsInTeam = hasPermission(roles, Permissions.JOIN_PUBLIC_CHANNELS);
     }
-    const defaultChannel = channels?.find((c) => c.name === General.DEFAULT_CHANNEL);
+    const defaultChannel = channels?.find(isDefaultChannel);
     const membershipIds = new Set(memberships.map((m) => m.channel_id));
     const iAmMemberOfTheTeamDefaultChannel = Boolean(defaultChannel && membershipIds.has(defaultChannel.id));
     const myFirstTeamChannel = channels?.filter((c) =>
@@ -157,4 +157,8 @@ export function filterChannelsMatchingTerm(channels: Channel[], term: string): C
         return name.startsWith(lowercasedTerm) ||
             displayName.startsWith(lowercasedTerm);
     });
+}
+
+export function isDefaultChannel(channel: Channel | ChannelModel | undefined): boolean {
+    return channel?.name === General.DEFAULT_CHANNEL;
 }

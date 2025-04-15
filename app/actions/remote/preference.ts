@@ -28,12 +28,12 @@ export type MyPreferencesRequest = {
     error?: unknown;
 };
 
-export const fetchMyPreferences = async (serverUrl: string, fetchOnly = false): Promise<MyPreferencesRequest> => {
+export const fetchMyPreferences = async (serverUrl: string, fetchOnly = false, groupLabel?: RequestGroupLabel): Promise<MyPreferencesRequest> => {
     try {
         const client = NetworkManager.getClient(serverUrl);
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-        const preferences = await client.getMyPreferences();
+        const preferences = await client.getMyPreferences(groupLabel);
 
         if (!fetchOnly) {
             await operator.handlePreferences({
@@ -84,7 +84,7 @@ export const savePostPreference = async (serverUrl: string, postId: string) => {
     }
 };
 
-export const savePreference = async (serverUrl: string, preferences: PreferenceType[], prepareRecordsOnly = false) => {
+export const savePreference = async (serverUrl: string, preferences: PreferenceType[], prepareRecordsOnly = false, groupLabel?: RequestGroupLabel) => {
     try {
         if (!preferences.length) {
             return {preferences: []};
@@ -97,7 +97,7 @@ export const savePreference = async (serverUrl: string, preferences: PreferenceT
         const chunkSize = 100;
         const chunks = chunk(preferences, chunkSize);
         chunks.forEach((c: PreferenceType[]) => {
-            client.savePreferences(userId, c);
+            client.savePreferences(userId, c, groupLabel);
         });
         const preferenceModels = await operator.handlePreferences({
             preferences,
@@ -141,14 +141,14 @@ export const deleteSavedPost = async (serverUrl: string, postId: string) => {
     }
 };
 
-export const openChannelIfNeeded = async (serverUrl: string, channelId: string) => {
+export const openChannelIfNeeded = async (serverUrl: string, channelId: string, groupLabel?: RequestGroupLabel) => {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const channel = await getChannelById(database, channelId);
         if (!channel || !isDMorGM(channel)) {
             return {};
         }
-        const res = await openChannels(serverUrl, [channel]);
+        const res = await openChannels(serverUrl, [channel], groupLabel);
         return res;
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error);
@@ -156,11 +156,11 @@ export const openChannelIfNeeded = async (serverUrl: string, channelId: string) 
     }
 };
 
-export const openAllUnreadChannels = async (serverUrl: string) => {
+export const openAllUnreadChannels = async (serverUrl: string, groupLabel?: RequestGroupLabel) => {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const channels = await queryAllUnreadDMsAndGMsIds(database).fetch();
-        const res = await openChannels(serverUrl, channels);
+        const res = await openChannels(serverUrl, channels, groupLabel);
         return res;
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error);
@@ -168,7 +168,7 @@ export const openAllUnreadChannels = async (serverUrl: string) => {
     }
 };
 
-const openChannels = async (serverUrl: string, channels: ChannelModel[]) => {
+const openChannels = async (serverUrl: string, channels: ChannelModel[], groupLabel?: RequestGroupLabel) => {
     const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
     const userId = await getCurrentUserId(database);
 
@@ -202,7 +202,7 @@ const openChannels = async (serverUrl: string, channels: ChannelModel[]) => {
         );
     }
 
-    return savePreference(serverUrl, prefs);
+    return savePreference(serverUrl, prefs, false, groupLabel);
 };
 
 export const setDirectChannelVisible = async (serverUrl: string, channelId: string, visible = true) => {

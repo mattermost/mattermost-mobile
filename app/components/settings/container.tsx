@@ -6,9 +6,12 @@ import {ScrollView} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {useTheme} from '@context/theme';
+import SecurityManager from '@managers/security_manager';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-const edges: Edge[] = ['left', 'right'];
+import type {AvailableScreens} from '@typings/screens/navigation';
+
+const edges: Edge[] = ['left', 'right', 'bottom'];
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -18,6 +21,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         contentContainerStyle: {
             marginTop: 8,
+            flexGrow: 1,
         },
     };
 });
@@ -35,6 +39,7 @@ const SettingContainer = ({children, testID}: SettingContainerProps) => {
             edges={edges}
             style={styles.container}
             testID={`${testID}.screen`}
+            nativeID={SecurityManager.getShieldScreenId(`${testID}.screen` as AvailableScreens)}
         >
             <ScrollView
                 contentContainerStyle={styles.contentContainerStyle}

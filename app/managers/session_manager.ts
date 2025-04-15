@@ -14,6 +14,7 @@ import {getAllServerCredentials, removeServerCredentials} from '@init/credential
 import {relaunchApp} from '@init/launch';
 import PushNotifications from '@init/push_notifications';
 import NetworkManager from '@managers/network_manager';
+import SecurityManager from '@managers/security_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getAllServers, getServerDisplayName} from '@queries/app/servers';
 import {getCurrentUser} from '@queries/servers/user';
@@ -31,7 +32,7 @@ type LogoutCallbackArg = {
     removeServer: boolean;
 }
 
-class SessionManager {
+export class SessionManagerSingleton {
     private previousAppState: AppStateStatus;
     private scheduling = false;
     private terminatingSessionUrl = new Set<string>();
@@ -90,7 +91,7 @@ class SessionManager {
         if (!this.scheduling) {
             this.scheduling = true;
             const serverCredentials = await getAllServerCredentials();
-            const promises: Array<Promise<void>> = [];
+            const promises: Array<Promise<{error: unknown} | {error?: undefined}>> = [];
             for (const {serverUrl} of serverCredentials) {
                 promises.push(scheduleSessionNotification(serverUrl));
             }
@@ -114,6 +115,7 @@ class SessionManager {
         cancelSessionNotification(serverUrl);
         await removeServerCredentials(serverUrl);
         PushNotifications.removeServerNotifications(serverUrl);
+        SecurityManager.removeServer(serverUrl);
 
         NetworkManager.invalidateClient(serverUrl);
         WebsocketManager.invalidateClient(serverUrl);
@@ -187,7 +189,11 @@ class SessionManager {
 
     private onSessionExpired = async (serverUrl: string) => {
         this.terminatingSessionUrl.add(serverUrl);
-        await logout(serverUrl, false, false, true);
+
+        // logout is not doing anything in this scenario, but we keep it
+        // to keep the same flow as other logout scenarios.
+        await logout(serverUrl, undefined, {skipServerLogout: true, skipEvents: true});
+
         await this.terminateSession(serverUrl, false);
 
         const activeServerUrl = await DatabaseManager.getActiveServerUrl();
@@ -203,4 +209,5 @@ class SessionManager {
     };
 }
 
-export default new SessionManager();
+const SessionManager = new SessionManagerSingleton();
+export default SessionManager;

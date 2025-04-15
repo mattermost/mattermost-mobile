@@ -50,12 +50,14 @@ export default function DraftInputHeader({
             {postPriority.requested_ack && (
                 <>
                     <CompassIcon
+                        testID='drafts.requested_ack.icon'
                         color={theme.onlineIndicator}
                         name='check-circle-outline'
                         size={14}
                     />
                     {!postPriority.priority && (
                         <FormattedText
+                            testID='requested_ack.title'
                             id='requested_ack.title'
                             defaultMessage='Request Acknowledgements'
                             style={{color: theme.onlineIndicator}}
@@ -66,12 +68,14 @@ export default function DraftInputHeader({
             {postPriority.persistent_notifications && (
                 <>
                     <CompassIcon
+                        testID='drafts.persistent_notifications.icon'
                         color={PostPriorityColors.URGENT}
                         name='bell-ring-outline'
                         size={14}
                     />
                     {noMentionsError && (
                         <FormattedText
+                            testID='drafts.persistent_notifications.error.no_mentions.title'
                             id='persistent_notifications.error.no_mentions.title'
                             defaultMessage='Recipients must be @mentioned'
                             style={style.error}

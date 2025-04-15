@@ -314,11 +314,11 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
             }
 
             const {posts, order, authors, actionType, previousPostId} = await fetchPostsForChannel(serverUrl, channelId, true);
-            if (posts?.length && order?.length) {
+            if (posts?.length && order?.length && actionType) {
                 const {models: prepared} = await storePostsForChannel(
                     serverUrl, channelId,
                     posts, order, previousPostId ?? '',
-                    actionType, authors, true,
+                    actionType, authors || [], true,
                 );
 
                 if (prepared?.length) {
@@ -328,7 +328,7 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
 
             loadCallForChannel(serverUrl, channelId);
         } else {
-            const addedUser = getUserById(database, userId);
+            const addedUser = await getUserById(database, userId);
             if (!addedUser) {
                 // TODO Potential improvement https://mattermost.atlassian.net/browse/MM-40581
                 const {users} = await fetchUsersByIds(serverUrl, [userId], true);

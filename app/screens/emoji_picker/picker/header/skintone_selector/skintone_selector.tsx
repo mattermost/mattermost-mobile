@@ -44,8 +44,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const skins = Object.keys(skinCodes).reduce<Record<string, string>>((result, value) => {
-    const skin = skinCodes[value];
+const skins = Object.entries(skinCodes).reduce<Record<string, string>>((result, [value, skin]) => {
     if (value === 'default') {
         result[value] = 'hand';
     } else {

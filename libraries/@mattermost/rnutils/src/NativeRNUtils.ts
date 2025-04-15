@@ -41,6 +41,10 @@ export type WindowDimensionsChanged = Readonly<{
   height: Double;
 }>
 
+type HasRegisteredLoadResponse = {
+  hasRegisteredLoad: boolean;
+}
+
 export interface Spec extends TurboModule {
     readonly getConstants: () => Constants;
 
@@ -55,6 +59,9 @@ export interface Spec extends TurboModule {
     unlockOrientation: () => void;
     lockPortrait: () => void;
 
+    getHasRegisteredLoad: () => HasRegisteredLoadResponse;
+    setHasRegisteredLoad: () => void;
+
     deleteDatabaseDirectory: (databaseName: string, shouldRemoveDirectory: boolean) => DatabaseOperationResult;
     renameDatabase: (databaseName: string, newDatabaseName: string) => DatabaseOperationResult;
     deleteEntitiesFile: () => boolean;
@@ -63,6 +70,9 @@ export interface Spec extends TurboModule {
     removeChannelNotifications(serverUrl: string, channelId: string): void;
     removeThreadNotifications(serverUrl: string, threadId: string): void;
     removeServerNotifications(serverUrl: string): void;
+
+    setSoftKeyboardToAdjustResize(): void;
+    setSoftKeyboardToAdjustNothing(): void;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('RNUtils');

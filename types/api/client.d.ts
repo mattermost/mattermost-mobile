@@ -3,12 +3,16 @@
 
 type logLevel = 'ERROR' | 'WARNING' | 'INFO';
 
+type BaseRequestGroupLabel = 'Login' | 'Cold Start' | 'Notification' | 'DeepLink' | 'WebSocket Reconnect' | 'Server Switch';
+type RequestGroupLabel = BaseRequestGroupLabel | `${BaseRequestGroupLabel} Deferred`;
+
 type ClientOptions = {
     body?: any;
     method?: string;
     noRetry?: boolean;
     timeoutInterval?: number;
     headers?: Record<string, any>;
+    groupLabel?: RequestGroupLabel;
 };
 
 type ClientErrorIntl =

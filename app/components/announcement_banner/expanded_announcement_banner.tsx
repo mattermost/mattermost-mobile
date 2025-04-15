@@ -14,6 +14,7 @@ import Markdown from '@components/markdown';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {useBottomSheetListsFix} from '@hooks/bottom_sheet_lists_fix';
 import {useIsTablet} from '@hooks/device';
 import {dismissBottomSheet} from '@screens/navigation';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
@@ -24,6 +25,7 @@ import {typography} from '@utils/typography';
 type Props = {
     allowDismissal: boolean;
     bannerText: string;
+    headingText?: string;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -54,6 +56,7 @@ const close = () => {
 const ExpandedAnnouncementBanner = ({
     allowDismissal,
     bannerText,
+    headingText,
 }: Props) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
@@ -61,6 +64,7 @@ const ExpandedAnnouncementBanner = ({
     const isTablet = useIsTablet();
     const intl = useIntl();
     const insets = useSafeAreaInsets();
+    const {enabled, panResponder} = useBottomSheetListsFix();
 
     const dismissBanner = useCallback(() => {
         dismissAnnouncement(serverUrl, bannerText);
@@ -86,18 +90,22 @@ const ExpandedAnnouncementBanner = ({
 
     const Scroll = useMemo(() => (isTablet ? ScrollView : BottomSheetScrollView), [isTablet]);
 
+    const heading = headingText || intl.formatMessage({
+        id: 'mobile.announcement_banner.title',
+        defaultMessage: 'Announcement',
+    });
+
     return (
         <View style={containerStyle}>
             {!isTablet && (
                 <Text style={style.title}>
-                    {intl.formatMessage({
-                        id: 'mobile.announcement_banner.title',
-                        defaultMessage: 'Announcement',
-                    })}
+                    {heading}
                 </Text>
             )}
             <Scroll
                 style={style.scrollContainer}
+                scrollEnabled={enabled}
+                {...panResponder.panHandlers}
             >
                 <Markdown
                     baseTextStyle={style.baseTextStyle}

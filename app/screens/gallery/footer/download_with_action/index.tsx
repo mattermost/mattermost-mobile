@@ -273,7 +273,7 @@ const DownloadWithAction = ({action, item, onDownloadSuccess, setAction, gallery
                     actionToExecute({
                         code: 200,
                         ok: true,
-                        data: {path},
+                        data: {path: path.replace('file://', '')},
                     });
                 } else {
                     if (item.type === 'avatar') {

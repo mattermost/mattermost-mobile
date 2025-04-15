@@ -8,10 +8,10 @@ import {View, Text, Platform, type Insets} from 'react-native';
 import {Shadow} from 'react-native-shadow-2';
 
 import {uploadFile} from '@actions/remote/file';
-import CompassIcon from '@app/components/compass_icon';
-import FileIcon from '@app/components/files/file_icon';
-import ProgressBar from '@app/components/progress_bar';
+import CompassIcon from '@components/compass_icon';
+import FileIcon from '@components/files/file_icon';
 import FormattedText from '@components/formatted_text';
+import ProgressBar from '@components/progress_bar';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -308,7 +308,7 @@ const BookmarkFile = ({channelId, close, disabled, initialFile, maxFileSize, set
                                 ellipsizeMode='tail'
                                 style={styles.filename}
                             >
-                                {decodeURIComponent(file.name.trim())}
+                                {file.name.trim()}
                             </Text>
                             {info}
                         </View>

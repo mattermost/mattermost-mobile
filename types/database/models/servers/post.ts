@@ -65,13 +65,13 @@ declare class PostModel extends Model {
     rootId: string;
 
     /** type : Type of props (e.g. system message) */
-    type: string;
+    type: PostType;
 
     /** user_id : The foreign key of the User who authored this post. */
     userId: string;
 
     /** props : Additional attributes for this props */
-    props: any;
+    props: Record<string, unknown> | null;
 
     /** drafts  : Every draft associated with this Post */
     drafts: Query<DraftModel>;

@@ -5,6 +5,7 @@ import compose from 'lodash/fp/compose';
 import {of as of$} from 'rxjs';
 import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
+import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeTeam, queryTeamSearchHistoryByTeamId} from '@queries/servers/team';
 
 import Initial from './initial';
@@ -22,6 +23,7 @@ const enhance = withObservables(['teamId'], ({database, teamId}: EnhanceProps) =
             switchMap((t) => of$(t?.displayName || '')),
             distinctUntilChanged(),
         ),
+        crossTeamSearchEnabled: observeConfigBooleanValue(database, 'EnableCrossTeamSearch'),
     };
 });
 

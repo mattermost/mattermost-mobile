@@ -7,8 +7,8 @@ import {StyleSheet, View} from 'react-native';
 
 import {buildAbsoluteUrl} from '@actions/remote/file';
 import {buildProfileImageUrlFromUser} from '@actions/remote/user';
-import {useServerUrl} from '@app/context/server';
 import CompassIcon from '@components/compass_icon';
+import {useServerUrl} from '@context/server';
 import {changeOpacity} from '@utils/theme';
 
 import type UserModel from '@typings/database/models/servers/user';

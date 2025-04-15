@@ -55,7 +55,7 @@ export default function PostPriorityAction({
                 closeButtonId: POST_PRIORITY_PICKER_BUTTON,
             },
         });
-    }, [intl, postPriority, updatePostPriority, theme]);
+    }, [isTablet, intl, theme, postPriority, updatePostPriority]);
 
     const iconName = 'alert-circle-outline';
     const iconColor = changeOpacity(theme.centerChannelColor, 0.64);

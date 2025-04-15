@@ -15,10 +15,12 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useKeyboardOverlap} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import SecurityManager from '@managers/security_manager';
 import {dismissModal, setButtons} from '@screens/navigation';
 import {isEmail} from '@utils/helpers';
 import {mergeNavigationOptions} from '@utils/navigation';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
+import {secureGetFromRecord} from '@utils/types';
 import {isGuest} from '@utils/user';
 
 import Selection from './selection';
@@ -183,7 +185,7 @@ export default function Invite({
         const id = email ? item : (item as UserProfile).id;
         const newSelectedIds = Object.assign({}, selectedIds);
 
-        if (!selectedIds[id]) {
+        if (!secureGetFromRecord(selectedIds, id)) {
             newSelectedIds[id] = item;
         }
 
@@ -301,8 +303,9 @@ export default function Invite({
                 }
 
                 for (const email of emails) {
-                    if (membersWithError[email]) {
-                        notSent.push({userId: email, reason: membersWithError[email]});
+                    const error = secureGetFromRecord(membersWithError, email);
+                    if (error) {
+                        notSent.push({userId: email, reason: error});
                     } else {
                         sent.push({userId: email, reason: formatMessage({id: 'invite.summary.email_invite', defaultMessage: 'An invitation email has been sent'})});
                     }
@@ -414,6 +417,7 @@ export default function Invite({
             onLayout={onLayoutWrapper}
             ref={mainView}
             testID='invite.screen'
+            nativeID={SecurityManager.getShieldScreenId(componentId)}
         >
             {renderContent()}
         </SafeAreaView>

@@ -4,6 +4,8 @@
 
 /* eslint-disable max-lines */
 
+import {chunk} from 'lodash';
+
 import {markChannelAsUnread, updateLastPostAt} from '@actions/local/channel';
 import {addPostAcknowledgement, removePost, removePostAcknowledgement, storePostsForChannel} from '@actions/local/post';
 import {addRecentReaction} from '@actions/local/reactions';
@@ -16,7 +18,7 @@ import NetworkManager from '@managers/network_manager';
 import {getMyChannel, prepareMissingChannelsForAllTeams, queryAllMyChannel} from '@queries/servers/channel';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
 import {getPostById, getRecentPostsInChannel} from '@queries/servers/post';
-import {getCurrentUserId, getCurrentChannelId} from '@queries/servers/system';
+import {getCurrentUserId} from '@queries/servers/system';
 import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers/thread';
 import {queryAllUsers} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
@@ -39,6 +41,13 @@ type PostsRequest = {
     posts?: Post[];
     previousPostId?: string;
 }
+
+export type PostsForChannel = PostsRequest & {
+    actionType?: string;
+    authors?: UserProfile[];
+    channelId?: string;
+    error?: unknown;
+};
 
 type PostsObjectsRequest = {
     error?: unknown;
@@ -71,7 +80,7 @@ export async function createPost(serverUrl: string, post: Partial<Post>, files: 
     const pendingPostId = post.pending_post_id || `${currentUserId}:${timestamp}`;
 
     const existing = await getPostById(database, pendingPostId);
-    if (existing && !existing.props.failed) {
+    if (existing && !existing.props?.failed) {
         return {data: false};
     }
 
@@ -231,7 +240,7 @@ export const retryFailedPost = async (serverUrl: string, post: PostModel) => {
         // timestamps will remain the same as the initial attempt for createAt
         // but updateAt will be use for the optimistic post UI
         post.prepareUpdate((p) => {
-            p.props = newPost.props;
+            p.props = newPost.props || null;
             p.updateAt = timestamp;
         });
         await operator.batchRecords([post], 'retryFailedPost - first update');
@@ -275,17 +284,7 @@ export const retryFailedPost = async (serverUrl: string, post: PostModel) => {
     return {};
 };
 
-export const fetchPostsForCurrentChannel = async (serverUrl: string) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    const currentChannelId = await getCurrentChannelId(database);
-    return fetchPostsForChannel(serverUrl, currentChannelId);
-};
-
-export async function fetchPostsForChannel(serverUrl: string, channelId: string, fetchOnly = false) {
+export async function fetchPostsForChannel(serverUrl: string, channelId: string, fetchOnly = false, skipAuthors = false, groupLabel?: RequestGroupLabel): Promise<PostsForChannel> {
     try {
         if (!fetchOnly) {
             EphemeralStore.addLoadingMessagesForChannel(serverUrl, channelId);
@@ -297,10 +296,10 @@ export async function fetchPostsForChannel(serverUrl: string, channelId: string,
         const postsInChannel = await getRecentPostsInChannel(database, channelId);
         const since = myChannel?.lastFetchedAt || postsInChannel?.[0]?.createAt || 0;
         if (since) {
-            postAction = fetchPostsSince(serverUrl, channelId, since, true);
+            postAction = fetchPostsSince(serverUrl, channelId, since, true, groupLabel);
             actionType = ActionType.POSTS.RECEIVED_SINCE;
         } else {
-            postAction = fetchPosts(serverUrl, channelId, 0, General.POST_CHUNK_SIZE, true);
+            postAction = fetchPosts(serverUrl, channelId, 0, General.POST_CHUNK_SIZE, true, groupLabel);
             actionType = ActionType.POSTS.RECEIVED_IN_CHANNEL;
         }
 
@@ -310,8 +309,10 @@ export async function fetchPostsForChannel(serverUrl: string, channelId: string,
         }
         let authors: UserProfile[] = [];
         if (data.posts?.length && data.order?.length) {
-            const {authors: fetchedAuthors} = await fetchPostAuthors(serverUrl, data.posts, true);
-            authors = fetchedAuthors || [];
+            if (!skipAuthors) {
+                const {authors: fetchedAuthors} = await fetchPostAuthors(serverUrl, data.posts, true, groupLabel);
+                authors = fetchedAuthors || [];
+            }
 
             if (!fetchOnly) {
                 await storePostsForChannel(
@@ -322,7 +323,7 @@ export async function fetchPostsForChannel(serverUrl: string, channelId: string,
             }
         }
 
-        return {posts: data.posts, order: data.order, authors, actionType, previousPostId: data.previousPostId};
+        return {posts: data.posts, order: data.order, authors, actionType, previousPostId: data.previousPostId, channelId};
     } catch (error) {
         logDebug('error on fetchPostsForChannel', getFullErrorMessage(error));
         return {error};
@@ -333,18 +334,85 @@ export async function fetchPostsForChannel(serverUrl: string, channelId: string,
     }
 }
 
-export const fetchPostsForUnreadChannels = async (serverUrl: string, channels: Channel[], memberships: ChannelMembership[], excludeChannelId?: string) => {
-    const promises = [];
-    for (const member of memberships) {
-        const channel = channels.find((c) => c.id === member.channel_id);
-        if (channel && !channel.delete_at && (channel.total_msg_count - member.msg_count) > 0 && channel.id !== excludeChannelId) {
-            promises.push(fetchPostsForChannel(serverUrl, channel.id));
+export const fetchPostsForUnreadChannels = async (
+    serverUrl: string, teams: Team[], channels: Channel[], memberships: ChannelMembership[],
+    excludeChannelId?: string, isCRTEnabled?: boolean, fetchOnly = false, groupLabel?: RequestGroupLabel,
+): Promise<PostsForChannel[]> => {
+    const teamIndexMap = new Map<string, number>();
+    teams.forEach((team, index) => teamIndexMap.set(team.id, index));
+
+    const channelsMap = new Map<string, Channel>();
+    for (const channel of channels) {
+        channelsMap.set(channel.id, channel);
+    }
+
+    const sortedUnreadchannelIds = memberships.filter((member) => {
+        const channel = channelsMap.get(member.channel_id);
+        if (channel && !channel.delete_at && channel.id !== excludeChannelId) {
+            const unreads = isCRTEnabled ? (channel.total_msg_count_root ?? 0) - (member.msg_count_root ?? 0) : channel.total_msg_count - member.msg_count;
+            return unreads > 0; // Keep only channels with unreads
+        }
+
+        return false;
+    }).
+        sort((a, b) => {
+            const channelA = channelsMap.get(a.channel_id);
+            const channelB = channelsMap.get(b.channel_id);
+
+            if (!channelA || !channelB) {
+                return 0; // If either channel is undefined, treat as equal
+            }
+
+            // Priority for channels with an empty team_id
+            if (channelA.team_id === '' && channelB.team_id !== '') {
+                return -1;
+            }
+            if (channelB.team_id === '' && channelA.team_id !== '') {
+                return 1;
+            }
+
+            // Get team indices for sorting
+            const teamIndexA = teamIndexMap.get(channelA.team_id) ?? Number.MAX_SAFE_INTEGER;
+            const teamIndexB = teamIndexMap.get(channelB.team_id) ?? Number.MAX_SAFE_INTEGER;
+
+            // Sort by team index first
+            if (teamIndexA !== teamIndexB) {
+                return teamIndexA - teamIndexB;
+            }
+
+            // If team index is the same, sort by last_viewed_at in descending order
+            return b.last_viewed_at - a.last_viewed_at;
+        }).
+        map((member) => member.channel_id);
+
+    const postsForChannel: PostsForChannel[] = [];
+    const posts: Post[] = [];
+
+    // process 10 unread channels at a time
+    const chunks = chunk(sortedUnreadchannelIds, 10);
+    for await (const channelIds of chunks) {
+        const promises = [];
+        for (const channelId of channelIds) {
+            promises.push(fetchPostsForChannel(serverUrl, channelId, fetchOnly, true, groupLabel));
+        }
+
+        const results = await Promise.all(promises);
+        postsForChannel.push(...results);
+        for (const r of results) {
+            if (r.posts?.length) {
+                posts.push(...r.posts);
+            }
         }
     }
-    await Promise.all(promises);
+
+    if (posts.length) {
+        fetchPostAuthors(serverUrl, posts, false, groupLabel);
+    }
+
+    return postsForChannel;
 };
 
-export async function fetchPosts(serverUrl: string, channelId: string, page = 0, perPage = General.POST_CHUNK_SIZE, fetchOnly = false): Promise<PostsRequest> {
+export async function fetchPosts(serverUrl: string, channelId: string, page = 0, perPage = General.POST_CHUNK_SIZE, fetchOnly = false, groupLabel?: RequestGroupLabel): Promise<PostsRequest> {
     try {
         if (!fetchOnly) {
             EphemeralStore.addLoadingMessagesForChannel(serverUrl, channelId);
@@ -352,7 +420,7 @@ export async function fetchPosts(serverUrl: string, channelId: string, page = 0,
         const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const client = NetworkManager.getClient(serverUrl);
         const isCRTEnabled = await getIsCRTEnabled(database);
-        const data = await client.getPosts(channelId, page, perPage, isCRTEnabled, isCRTEnabled);
+        const data = await client.getPosts(channelId, page, perPage, isCRTEnabled, isCRTEnabled, groupLabel);
         const result = processPostsFetched(data);
         if (!fetchOnly && result.posts.length) {
             const models = await operator.handlePosts({
@@ -361,7 +429,7 @@ export async function fetchPosts(serverUrl: string, channelId: string, page = 0,
                 prepareRecordsOnly: true,
             });
 
-            const {authors} = await fetchPostAuthors(serverUrl, result.posts, true);
+            const {authors} = await fetchPostAuthors(serverUrl, result.posts, true, groupLabel);
             if (authors?.length) {
                 const userModels = await operator.handleUsers({
                     users: authors,
@@ -444,7 +512,7 @@ export async function fetchPostsBefore(serverUrl: string, channelId: string, pos
     }
 }
 
-export async function fetchPostsSince(serverUrl: string, channelId: string, since: number, fetchOnly = false): Promise<PostsRequest> {
+export async function fetchPostsSince(serverUrl: string, channelId: string, since: number, fetchOnly = false, groupLabel?: RequestGroupLabel): Promise<PostsRequest> {
     try {
         if (!fetchOnly) {
             EphemeralStore.addLoadingMessagesForChannel(serverUrl, channelId);
@@ -453,7 +521,7 @@ export async function fetchPostsSince(serverUrl: string, channelId: string, sinc
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         const isCRTEnabled = await getIsCRTEnabled(database);
-        const data = await client.getPostsSince(channelId, since, isCRTEnabled, isCRTEnabled);
+        const data = await client.getPostsSince(channelId, since, isCRTEnabled, isCRTEnabled, groupLabel);
         const result = processPostsFetched(data);
         if (!fetchOnly) {
             const models = await operator.handlePosts({
@@ -462,7 +530,7 @@ export async function fetchPostsSince(serverUrl: string, channelId: string, sinc
                 prepareRecordsOnly: true,
             });
 
-            const {authors} = await fetchPostAuthors(serverUrl, result.posts, true);
+            const {authors} = await fetchPostAuthors(serverUrl, result.posts, true, groupLabel);
             if (authors?.length) {
                 const userModels = await operator.handleUsers({
                     users: authors,
@@ -491,7 +559,7 @@ export async function fetchPostsSince(serverUrl: string, channelId: string, sinc
     }
 }
 
-export const fetchPostAuthors = async (serverUrl: string, posts: Post[], fetchOnly = false): Promise<AuthorsRequest> => {
+export const fetchPostAuthors = async (serverUrl: string, posts: Post[], fetchOnly = false, groupLabel?: RequestGroupLabel): Promise<AuthorsRequest> => {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const client = NetworkManager.getClient(serverUrl);
@@ -519,11 +587,11 @@ export const fetchPostAuthors = async (serverUrl: string, posts: Post[], fetchOn
         }
         const promises: Array<Promise<UserProfile[]>> = [];
         if (userIdsToLoad.size) {
-            promises.push(client.getProfilesByIds(Array.from(userIdsToLoad)));
+            promises.push(client.getProfilesByIds(Array.from(userIdsToLoad), {}, groupLabel));
         }
 
         if (usernamesToLoad.size) {
-            promises.push(client.getProfilesByUsernames(Array.from(usernamesToLoad)));
+            promises.push(client.getProfilesByUsernames(Array.from(usernamesToLoad), groupLabel));
         }
 
         if (promises.length) {
@@ -554,7 +622,7 @@ export const fetchPostAuthors = async (serverUrl: string, posts: Post[], fetchOn
     }
 };
 
-export async function fetchPostThread(serverUrl: string, postId: string, options?: FetchPaginatedThreadOptions, fetchOnly = false) {
+export async function fetchPostThread(serverUrl: string, postId: string, options?: FetchPaginatedThreadOptions, fetchOnly = false, groupLabel?: RequestGroupLabel) {
     try {
         setFetchingThreadState(postId, true);
         const client = NetworkManager.getClient(serverUrl);
@@ -568,7 +636,7 @@ export async function fetchPostThread(serverUrl: string, postId: string, options
             collapsedThreads: isCRTEnabled,
             collapsedThreadsExtended: isCRTEnabled,
             ...options,
-        });
+        }, groupLabel);
         const result = processPostsFetched(data);
         let posts: Model[] = [];
         if (result.posts.length && !fetchOnly) {
@@ -580,7 +648,7 @@ export async function fetchPostThread(serverUrl: string, postId: string, options
             });
             models.push(...posts);
 
-            const {authors} = await fetchPostAuthors(serverUrl, result.posts, true);
+            const {authors} = await fetchPostAuthors(serverUrl, result.posts, true, groupLabel);
             if (authors?.length) {
                 const userModels = await operator.handleUsers({
                     users: authors,
@@ -725,14 +793,14 @@ export async function fetchMissingChannelsFromPosts(serverUrl: string, posts: Po
     }
 }
 
-export async function fetchPostById(serverUrl: string, postId: string, fetchOnly = false) {
+export async function fetchPostById(serverUrl: string, postId: string, fetchOnly = false, groupLabel?: RequestGroupLabel) {
     try {
         const client = NetworkManager.getClient(serverUrl);
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const post = await client.getPost(postId);
+        const post = await client.getPost(postId, groupLabel);
         if (!fetchOnly) {
             const models: Model[] = [];
-            const {authors} = await fetchPostAuthors(serverUrl, [post], true);
+            const {authors} = await fetchPostAuthors(serverUrl, [post], true, groupLabel);
             const posts = await operator.handlePosts({
                 actionType: ActionType.POSTS.RECEIVED_NEW,
                 order: [post.id],

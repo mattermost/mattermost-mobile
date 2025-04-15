@@ -3,7 +3,8 @@
 
 import React, {useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, ScrollView} from 'react-native';
+import {Keyboard} from 'react-native';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {type ImageResource, Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
@@ -13,9 +14,11 @@ import ErrorText from '@components/error_text';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import SecurityManager from '@managers/security_manager';
 import {buildNavigationButton, dismissModal, setButtons} from '@screens/navigation';
 import {checkDialogElementForError, checkIfErrorsMatchElements} from '@utils/integrations';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {secureGetFromRecord} from '@utils/types';
 
 import DialogElement from './dialog_element';
 import DialogIntroductionText from './dialog_introduction_text';
@@ -105,7 +108,7 @@ function InteractiveDialog({
     const serverUrl = useServerUrl();
     const intl = useIntl();
 
-    const scrollView = useRef<ScrollView>(null);
+    const scrollView = useRef<KeyboardAwareScrollView>(null);
 
     const onChange = useCallback((name: string, value: string | number | boolean) => {
         dispatchValues({name, value});
@@ -122,7 +125,7 @@ function InteractiveDialog({
         base.showAsAction = 'always';
         base.color = theme.sidebarHeaderTextColor;
         return base;
-    }, [intl, submitting, theme]);
+    }, [intl, submitLabel, submitting, theme.sidebarHeaderTextColor]);
 
     useEffect(() => {
         setButtons(componentId, {
@@ -139,10 +142,16 @@ function InteractiveDialog({
 
     const handleSubmit = useCallback(async () => {
         const newErrors: Errors = {};
+        const submission = {...values};
         let hasErrors = false;
         if (elements) {
             elements.forEach((elem) => {
-                const newError = checkDialogElementForError(elem, values[elem.name]);
+                // Delete empty number fields before submissions
+                if (elem.type === 'text' && elem.subtype === 'number' && secureGetFromRecord(submission, elem.name) === '') {
+                    delete submission[elem.name];
+                }
+
+                const newError = checkDialogElementForError(elem, secureGetFromRecord(submission, elem.name));
                 if (newError) {
                     newErrors[elem.name] = intl.formatMessage({id: newError.id, defaultMessage: newError.defaultMessage}, newError.values);
                     hasErrors = true;
@@ -160,7 +169,7 @@ function InteractiveDialog({
             url,
             callback_id: callbackId,
             state,
-            submission: values,
+            submission,
         } as DialogSubmission;
 
         setSubmitting(true);
@@ -178,7 +187,7 @@ function InteractiveDialog({
             if (data.error) {
                 hasErrors = true;
                 setError(data.error);
-                scrollView.current?.scrollTo({x: 0, y: 0});
+                scrollView.current?.scrollToPosition(0, 0, true);
             } else {
                 setError('');
             }
@@ -189,7 +198,7 @@ function InteractiveDialog({
         } else {
             close();
         }
-    }, [elements, values, intl, url, callbackId, state]);
+    }, [elements, url, callbackId, state, values, serverUrl, intl]);
 
     useEffect(() => {
         const unsubscribe = Navigation.events().registerComponentListener({
@@ -218,7 +227,7 @@ function InteractiveDialog({
         return () => {
             unsubscribe.remove();
         };
-    }, [serverUrl, url, callbackId, state, handleSubmit, submitting]);
+    }, [serverUrl, url, callbackId, state, handleSubmit, submitting, componentId, notifyOnCancel]);
 
     useAndroidHardwareBackHandler(componentId, close);
 
@@ -226,10 +235,21 @@ function InteractiveDialog({
         <SafeAreaView
             testID='interactive_dialog.screen'
             style={style.container}
+            nativeID={SecurityManager.getShieldScreenId(componentId)}
         >
-            <ScrollView
+            <KeyboardAwareScrollView
                 ref={scrollView}
+                bounces={false}
                 style={style.scrollView}
+                enableAutomaticScroll={true}
+                enableOnAndroid={true}
+                noPaddingBottomOnAndroid={true}
+                scrollToOverflowEnabled={true}
+                enableResetScrollToCoords={true}
+                extraScrollHeight={0}
+                extraHeight={0}
+                keyboardDismissMode='interactive'
+                keyboardShouldPersistTaps='handled'
             >
                 {Boolean(error) && (
                     <ErrorText
@@ -239,11 +259,12 @@ function InteractiveDialog({
                     />
                 )}
                 {Boolean(introductionText) &&
-                    <DialogIntroductionText
-                        value={introductionText}
-                    />
+                <DialogIntroductionText
+                    value={introductionText}
+                />
                 }
                 {Boolean(elements) && elements.map((e) => {
+                    const value = secureGetFromRecord(values, e.name);
                     return (
                         <DialogElement
                             key={'dialogelement' + e.name}
@@ -252,18 +273,18 @@ function InteractiveDialog({
                             type={e.type}
                             subtype={e.subtype}
                             helpText={e.help_text}
-                            errorText={errors[e.name]}
+                            errorText={secureGetFromRecord(errors, e.name)}
                             placeholder={e.placeholder}
                             maxLength={e.max_length}
                             dataSource={e.data_source}
                             optional={e.optional}
                             options={e.options}
-                            value={values[e.name]}
+                            value={value}
                             onChange={onChange}
                         />
                     );
                 })}
-            </ScrollView>
+            </KeyboardAwareScrollView>
         </SafeAreaView>
     );
 }

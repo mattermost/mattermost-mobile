@@ -14,6 +14,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useBackNavigation from '@hooks/navigate_back';
+import SecurityManager from '@managers/security_manager';
 import {dismissOverlay} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -134,7 +135,10 @@ const ShareFeedback = ({
     }), []);
 
     return (
-        <View style={styles.root}>
+        <View
+            nativeID={SecurityManager.getShieldScreenId(componentId)}
+            style={styles.root}
+        >
             <View
                 style={styles.container}
                 testID='rate_app.screen'
@@ -170,14 +174,14 @@ const ShareFeedback = ({
                                     emphasis={'tertiary'}
                                     onPress={onPressNo}
                                     text={intl.formatMessage({id: 'share_feedback.button.no', defaultMessage: 'No, thanks'})}
-                                    backgroundStyle={styles.leftButton}
+                                    buttonContainerStyle={styles.leftButton}
                                 />
                                 <Button
                                     theme={theme}
                                     size={'lg'}
                                     onPress={onPressYes}
                                     text={intl.formatMessage({id: 'share_feedback.button.yes', defaultMessage: 'Yes'})}
-                                    backgroundStyle={styles.rightButton}
+                                    buttonContainerStyle={styles.rightButton}
                                 />
                             </View>
                         </View>

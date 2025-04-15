@@ -66,11 +66,13 @@ describe('Account - Settings - Mention Notification Settings', () => {
 
     it('MM-T5107_2 - should be able to change mention notification settings and save by tapping navigation back button', async () => {
         // # Switch toggles, type in keywords as camelcase with spaces, tap on back button, and go back to mention notifications screen
-        const keywords = ` Keywords ${getRandomId()} `;
+        const keywords = `Keywords ${getRandomId()}`;
+        const commasSeparator = ',';
         await MentionNotificationSettingsScreen.toggleCaseSensitiveFirstNameOptionOn();
         await MentionNotificationSettingsScreen.toggleNonCaseSensitiveUsernameOptionOn();
         await MentionNotificationSettingsScreen.toggleChannelWideMentionsOptionOff();
-        await MentionNotificationSettingsScreen.keywordsInput.replaceText(keywords);
+        await MentionNotificationSettingsScreen.keywordsInput.typeText(keywords);
+        await MentionNotificationSettingsScreen.keywordsInput.typeText(commasSeparator);
         await MentionNotificationSettingsScreen.back();
         await MentionNotificationSettingsScreen.open();
 
@@ -79,7 +81,8 @@ describe('Account - Settings - Mention Notification Settings', () => {
         await expect(MentionNotificationSettingsScreen.nonCaseSensitiveUsernameOptionToggledOn).toBeVisible();
         await expect(MentionNotificationSettingsScreen.channelWideMentionsOptionToggledOff).toBeVisible();
         if (isIos()) {
-            await expect(MentionNotificationSettingsScreen.keywordsInput).toHaveValue(keywords.replace(/ /g, '').toLowerCase());
+            const triggerMentionKeyword = await MentionNotificationSettingsScreen.getKeywordTriggerElement(keywords);
+            await expect(triggerMentionKeyword).toHaveText(keywords.replace(/ /g, '').toLowerCase());
         } else {
             await expect(MentionNotificationSettingsScreen.keywordsInput).toHaveText(keywords.replace(/ /g, '').toLowerCase());
         }

@@ -130,7 +130,7 @@ describe('Channels - Favorite and Unfavorite Channel', () => {
         await CreateDirectMessageScreen.getUserItem(newUser.id).tap();
         await CreateDirectMessageScreen.startButton.tap();
         await ChannelScreen.postMessage('test');
-        await device.reloadReactNative();
+        await ChannelScreen.back();
         await ChannelListScreen.getChannelItemDisplayName(directMessagesCategory, directMessageChannel.name).tap();
         await ChannelScreen.introFavoriteAction.tap();
         await ChannelScreen.back();

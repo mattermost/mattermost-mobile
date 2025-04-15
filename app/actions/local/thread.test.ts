@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ActionType} from '@app/constants';
+import {ActionType} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import Preferences from '@constants/preferences';
 import DatabaseManager from '@database/manager';
@@ -38,6 +38,7 @@ jest.mock('@store/navigation_store', () => {
     return {
         ...original,
         waitUntilScreenIsTop: jest.fn(() => Promise.resolve()),
+        getScreensInStack: jest.fn(() => []),
     };
 });
 
@@ -64,7 +65,7 @@ const user2: UserProfile = {
     roles: '',
 } as UserProfile;
 
-const rootPost = {...TestHelper.fakePost(channelId, user.id), id: 'rootpostid', create_at: 1};
+const rootPost = TestHelper.fakePost({channel_id: channelId, user_id: user.id, id: 'rootpostid', create_at: 1});
 const threads = [
     {
         id: rootPost.id,
@@ -99,7 +100,25 @@ describe('switchToGlobalThreads', () => {
         await operator.handleTeam({teams: [team], prepareRecordsOnly: false});
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
 
-        const {models, error} = await switchToGlobalThreads(serverUrl, undefined, false);
+        const {models, error} = await switchToGlobalThreads(serverUrl, undefined);
+        expect(error).toBeUndefined();
+        expect(models).toBeDefined();
+        expect(models?.length).toBe(1); // history
+    });
+
+    it('base case - provided team id', async () => {
+        let mockIsTablet: jest.Mock;
+        jest.mock('@utils/helpers', () => {
+            const original = jest.requireActual('@utils/helpers');
+            mockIsTablet = jest.fn(() => true);
+            return {
+                ...original,
+                isTablet: mockIsTablet,
+            };
+        });
+        await operator.handleTeam({teams: [team], prepareRecordsOnly: false});
+
+        const {models, error} = await switchToGlobalThreads(serverUrl, team.id);
         expect(error).toBeUndefined();
         expect(models).toBeDefined();
         expect(models?.length).toBe(1); // history
@@ -121,14 +140,14 @@ describe('switchToThread', () => {
         await operator.handleUsers({users: [user], prepareRecordsOnly: false});
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user.id}], prepareRecordsOnly: false});
 
-        const {error} = await switchToThread(serverUrl, '', false);
+        const {error} = await switchToThread(serverUrl, '');
         expect((error as Error).message).toBe('Post not found');
     });
 
     it('handle no channel', async () => {
         await operator.handleUsers({users: [user], prepareRecordsOnly: false});
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user.id}], prepareRecordsOnly: false});
-        const post = {...TestHelper.fakePost(channelId, user2.id), id: 'postid', create_at: 1};
+        const post = TestHelper.fakePost({channel_id: channelId, user_id: user2.id, id: 'postid', create_at: 1});
         await operator.handlePosts({
             actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
             order: [post.id],
@@ -136,7 +155,7 @@ describe('switchToThread', () => {
             prepareRecordsOnly: false,
         });
 
-        const {error} = await switchToThread(serverUrl, post.id, false);
+        const {error} = await switchToThread(serverUrl, post.id);
         expect((error as Error).message).toBe('Channel not found');
     });
 
@@ -146,7 +165,43 @@ describe('switchToThread', () => {
         await operator.handleTeam({teams: [team], prepareRecordsOnly: false});
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: 'teamid2'}, {id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user.id}], prepareRecordsOnly: false});
         await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
-        const post = {...TestHelper.fakePost(channelId, user2.id), id: 'postid', create_at: 1};
+        const post = TestHelper.fakePost({channel_id: channelId, user_id: user2.id, id: 'postid', create_at: 1});
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [post.id],
+            posts: [post],
+            prepareRecordsOnly: false,
+        });
+
+        const {error} = await switchToThread(serverUrl, post.id, true);
+        expect(error).toBeUndefined();
+    });
+
+    it('base case not from notification', async () => {
+        EphemeralStore.theme = Preferences.THEMES.denim;
+        await operator.handleUsers({users: [user, user2], prepareRecordsOnly: false});
+        await operator.handleTeam({teams: [team], prepareRecordsOnly: false});
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: 'teamid2'}, {id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user.id}], prepareRecordsOnly: false});
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+        const post = TestHelper.fakePost({channel_id: channelId, user_id: user2.id, id: 'postid', create_at: 1});
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [post.id],
+            posts: [post],
+            prepareRecordsOnly: false,
+        });
+
+        const {error} = await switchToThread(serverUrl, post.id, false);
+        expect(error).toBeUndefined();
+    });
+
+    it('base case for DM', async () => {
+        EphemeralStore.theme = Preferences.THEMES.denim;
+        await operator.handleUsers({users: [user, user2], prepareRecordsOnly: false});
+        await operator.handleTeam({teams: [team], prepareRecordsOnly: false});
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: 'teamid2'}, {id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user.id}], prepareRecordsOnly: false});
+        await operator.handleChannel({channels: [{...channel, team_id: '', type: 'D', display_name: 'user1-user2'}], prepareRecordsOnly: false});
+        const post = TestHelper.fakePost({channel_id: channelId, user_id: user2.id, id: 'postid', create_at: 1});
         await operator.handlePosts({
             actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
             order: [post.id],
@@ -169,7 +224,7 @@ describe('createThreadFromNewPost', () => {
     it('base case', async () => {
         await operator.handleUsers({users: [user, user2], prepareRecordsOnly: false});
         await operator.handleThreads({threads, prepareRecordsOnly: false, teamId: team.id});
-        const post = {...TestHelper.fakePost(channelId, user2.id), id: 'postid', create_at: 1, root_id: rootPost.id};
+        const post = TestHelper.fakePost({channel_id: channelId, user_id: user2.id, id: 'postid', create_at: 1, root_id: rootPost.id});
 
         const {models, error} = await createThreadFromNewPost(serverUrl, post, false);
         expect(error).toBeUndefined();
@@ -179,9 +234,9 @@ describe('createThreadFromNewPost', () => {
 
     it('base case - no root post', async () => {
         await operator.handleUsers({users: [user2], prepareRecordsOnly: false});
-        const post = {...TestHelper.fakePost(channelId, user2.id), id: 'postid', create_at: 1};
+        const post = TestHelper.fakePost({channel_id: channelId, user_id: user2.id, id: 'postid', create_at: 1});
 
-        const {models, error} = await createThreadFromNewPost(serverUrl, post, false);
+        const {models, error} = await createThreadFromNewPost(serverUrl, post);
         expect(error).toBeUndefined();
         expect(models).toBeDefined();
         expect(models?.length).toBe(1); // thread
@@ -215,7 +270,7 @@ describe('processReceivedThreads', () => {
             },
         ] as Thread[];
 
-        const {models, error} = await processReceivedThreads(serverUrl, thread, team.id, false);
+        const {models, error} = await processReceivedThreads(serverUrl, thread, team.id);
         expect(error).toBeUndefined();
         expect(models).toBeDefined();
         expect(models?.length).toBe(4); // post, thread, thread participant, thread in team
@@ -289,7 +344,7 @@ describe('updateTeamThreadsSync', () => {
     });
 
     it('base case', async () => {
-        const {models, error} = await updateTeamThreadsSync(serverUrl, {id: 'id1', earliest: 1, latest: 2}, false);
+        const {models, error} = await updateTeamThreadsSync(serverUrl, {id: 'id1', earliest: 1, latest: 2});
         expect(error).toBeUndefined();
         expect(models).toBeDefined();
     });

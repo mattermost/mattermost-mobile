@@ -13,7 +13,6 @@ import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {useFetchingThreadState} from '@hooks/fetching_thread';
 import {bottomSheetModalOptions, showModal, showModalOverCurrentContext} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -58,14 +57,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const ThreadOverview = ({isSaved, repliesCount, rootId, rootPost, style, testID}: Props) => {
+const ThreadOverview = ({isSaved, repliesCount, rootPost, style, testID}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
     const intl = useIntl();
     const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
-    const isFetchingThread = useFetchingThreadState(rootId);
 
     const onHandleSavePress = useCallback(preventDoubleTap(() => {
         if (rootPost?.id) {
@@ -101,35 +99,8 @@ const ThreadOverview = ({isSaved, repliesCount, rootId, rootPost, style, testID}
 
     const saveButtonTestId = isSaved ? `${testID}.unsave.button` : `${testID}.save.button`;
 
-    let repliesCountElement;
-    if (repliesCount > 0) {
-        repliesCountElement = (
-            <FormattedText
-                style={styles.repliesCount}
-                id='thread.repliesCount'
-                defaultMessage='{repliesCount, number} {repliesCount, plural, one {reply} other {replies}}'
-                testID={`${testID}.replies_count`}
-                values={{repliesCount}}
-            />
-        );
-    } else if (isFetchingThread) {
-        repliesCountElement = (
-            <FormattedText
-                style={styles.repliesCount}
-                id='thread.loadingReplies'
-                defaultMessage='Loading replies...'
-                testID={`${testID}.loading_replies`}
-            />
-        );
-    } else {
-        repliesCountElement = (
-            <FormattedText
-                style={styles.repliesCount}
-                id='thread.noReplies'
-                defaultMessage='No replies yet'
-                testID={`${testID}.no_replies`}
-            />
-        );
+    if (repliesCount === 0) {
+        return null;
     }
 
     return (
@@ -138,7 +109,13 @@ const ThreadOverview = ({isSaved, repliesCount, rootId, rootPost, style, testID}
             testID={testID}
         >
             <View style={styles.repliesCountContainer}>
-                {repliesCountElement}
+                <FormattedText
+                    style={styles.repliesCount}
+                    id='thread.repliesCount'
+                    defaultMessage='{repliesCount, number} {repliesCount, plural, one {reply} other {replies}}'
+                    testID={`${testID}.replies_count`}
+                    values={{repliesCount}}
+                />
             </View>
             <View style={styles.optionsContainer}>
                 <TouchableOpacity

@@ -1,0 +1,1447 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<FormattedDate/> should default when timezone is not found 1`] = `
+<Text>
+  10:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'bg' locale and '{"dateStyle": "medium"}' format 1`] = `
+<Text>
+  26.10.2024 г.
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'bg' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short", "year": "numeric"}' format 1`] = `
+<Text>
+  26.10.2024 г., 10:01 ч.
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'bg' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short"}' format 1`] = `
+<Text>
+  26.10, 10:01 ч.
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'bg' locale and '{"day": "numeric", "month": "short"}' format 1`] = `
+<Text>
+  26.10
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'bg' locale and '{"weekday": "long"}' format 1`] = `
+<Text>
+  събота
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'bg' locale and 'undefined' format 1`] = `
+<Text>
+  26.10.2024 г.
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'de' locale and '{"dateStyle": "medium"}' format 1`] = `
+<Text>
+  26.10.2024
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'de' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short", "year": "numeric"}' format 1`] = `
+<Text>
+  26. Okt. 2024, 10:01
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'de' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short"}' format 1`] = `
+<Text>
+  26. Okt., 10:01
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'de' locale and '{"day": "numeric", "month": "short"}' format 1`] = `
+<Text>
+  26. Okt.
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'de' locale and '{"weekday": "long"}' format 1`] = `
+<Text>
+  Samstag
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'de' locale and 'undefined' format 1`] = `
+<Text>
+  26.10.2024
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'en' locale and '{"dateStyle": "medium"}' format 1`] = `
+<Text>
+  Oct 26, 2024
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'en' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short", "year": "numeric"}' format 1`] = `
+<Text>
+  Oct 26, 2024, 10:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'en' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short"}' format 1`] = `
+<Text>
+  Oct 26, 10:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'en' locale and '{"day": "numeric", "month": "short"}' format 1`] = `
+<Text>
+  Oct 26
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'en' locale and '{"weekday": "long"}' format 1`] = `
+<Text>
+  Saturday
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'en' locale and 'undefined' format 1`] = `
+<Text>
+  Oct 26, 2024
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'en-AU' locale and '{"dateStyle": "medium"}' format 1`] = `
+<Text>
+  26 Oct 2024
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'en-AU' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short", "year": "numeric"}' format 1`] = `
+<Text>
+  26 Oct 2024, 10:01 am
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'en-AU' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short"}' format 1`] = `
+<Text>
+  26 Oct, 10:01 am
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'en-AU' locale and '{"day": "numeric", "month": "short"}' format 1`] = `
+<Text>
+  26 Oct
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'en-AU' locale and '{"weekday": "long"}' format 1`] = `
+<Text>
+  Saturday
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'en-AU' locale and 'undefined' format 1`] = `
+<Text>
+  26 Oct 2024
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'es' locale and '{"dateStyle": "medium"}' format 1`] = `
+<Text>
+  26 oct 2024
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'es' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short", "year": "numeric"}' format 1`] = `
+<Text>
+  26 oct 2024, 10:01
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'es' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short"}' format 1`] = `
+<Text>
+  26 oct, 10:01
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'es' locale and '{"day": "numeric", "month": "short"}' format 1`] = `
+<Text>
+  26 oct
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'es' locale and '{"weekday": "long"}' format 1`] = `
+<Text>
+  sábado
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'es' locale and 'undefined' format 1`] = `
+<Text>
+  26 oct 2024
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'fa' locale and '{"dateStyle": "medium"}' format 1`] = `
+<Text>
+  ۵ آبان ۱۴۰۳
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'fa' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short", "year": "numeric"}' format 1`] = `
+<Text>
+  ۵ آبان ۱۴۰۳، ۱۰:۰۱
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'fa' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short"}' format 1`] = `
+<Text>
+  ۵ آبان، ۱۰:۰۱
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'fa' locale and '{"day": "numeric", "month": "short"}' format 1`] = `
+<Text>
+  ۵ آبان
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'fa' locale and '{"weekday": "long"}' format 1`] = `
+<Text>
+  شنبه
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'fa' locale and 'undefined' format 1`] = `
+<Text>
+  ۵ آبان ۱۴۰۳
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'fr' locale and '{"dateStyle": "medium"}' format 1`] = `
+<Text>
+  26 oct. 2024
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'fr' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short", "year": "numeric"}' format 1`] = `
+<Text>
+  26 oct. 2024, 10:01
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'fr' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short"}' format 1`] = `
+<Text>
+  26 oct., 10:01
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'fr' locale and '{"day": "numeric", "month": "short"}' format 1`] = `
+<Text>
+  26 oct.
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'fr' locale and '{"weekday": "long"}' format 1`] = `
+<Text>
+  samedi
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'fr' locale and 'undefined' format 1`] = `
+<Text>
+  26 oct. 2024
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'hu' locale and '{"dateStyle": "medium"}' format 1`] = `
+<Text>
+  2024. okt. 26.
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'hu' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short", "year": "numeric"}' format 1`] = `
+<Text>
+  2024. okt. 26. 10:01
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'hu' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short"}' format 1`] = `
+<Text>
+  okt. 26. 10:01
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'hu' locale and '{"day": "numeric", "month": "short"}' format 1`] = `
+<Text>
+  okt. 26.
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'hu' locale and '{"weekday": "long"}' format 1`] = `
+<Text>
+  szombat
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'hu' locale and 'undefined' format 1`] = `
+<Text>
+  2024. okt. 26.
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'it' locale and '{"dateStyle": "medium"}' format 1`] = `
+<Text>
+  26 ott 2024
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'it' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short", "year": "numeric"}' format 1`] = `
+<Text>
+  26 ott 2024, 10:01
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'it' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short"}' format 1`] = `
+<Text>
+  26 ott, 10:01
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'it' locale and '{"day": "numeric", "month": "short"}' format 1`] = `
+<Text>
+  26 ott
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'it' locale and '{"weekday": "long"}' format 1`] = `
+<Text>
+  sabato
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'it' locale and 'undefined' format 1`] = `
+<Text>
+  26 ott 2024
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'ja' locale and '{"dateStyle": "medium"}' format 1`] = `
+<Text>
+  2024/10/26
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'ja' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short", "year": "numeric"}' format 1`] = `
+<Text>
+  2024年10月26日 10:01
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'ja' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short"}' format 1`] = `
+<Text>
+  10月26日 10:01
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'ja' locale and '{"day": "numeric", "month": "short"}' format 1`] = `
+<Text>
+  10月26日
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'ja' locale and '{"weekday": "long"}' format 1`] = `
+<Text>
+  土曜日
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'ja' locale and 'undefined' format 1`] = `
+<Text>
+  2024/10/26
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'ko' locale and '{"dateStyle": "medium"}' format 1`] = `
+<Text>
+  2024. 10. 26.
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'ko' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short", "year": "numeric"}' format 1`] = `
+<Text>
+  2024년 10월 26일 오전 10:01
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'ko' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short"}' format 1`] = `
+<Text>
+  10월 26일 오전 10:01
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'ko' locale and '{"day": "numeric", "month": "short"}' format 1`] = `
+<Text>
+  10월 26일
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'ko' locale and '{"weekday": "long"}' format 1`] = `
+<Text>
+  토요일
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'ko' locale and 'undefined' format 1`] = `
+<Text>
+  2024. 10. 26.
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'nl' locale and '{"dateStyle": "medium"}' format 1`] = `
+<Text>
+  26 okt 2024
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'nl' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short", "year": "numeric"}' format 1`] = `
+<Text>
+  26 okt 2024, 10:01
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'nl' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short"}' format 1`] = `
+<Text>
+  26 okt, 10:01
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'nl' locale and '{"day": "numeric", "month": "short"}' format 1`] = `
+<Text>
+  26 okt
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'nl' locale and '{"weekday": "long"}' format 1`] = `
+<Text>
+  zaterdag
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'nl' locale and 'undefined' format 1`] = `
+<Text>
+  26 okt 2024
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'pl' locale and '{"dateStyle": "medium"}' format 1`] = `
+<Text>
+  26 paź 2024
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'pl' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short", "year": "numeric"}' format 1`] = `
+<Text>
+  26 paź 2024, 10:01
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'pl' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short"}' format 1`] = `
+<Text>
+  26 paź, 10:01
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'pl' locale and '{"day": "numeric", "month": "short"}' format 1`] = `
+<Text>
+  26 paź
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'pl' locale and '{"weekday": "long"}' format 1`] = `
+<Text>
+  sobota
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'pl' locale and 'undefined' format 1`] = `
+<Text>
+  26 paź 2024
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'pt-BR' locale and '{"dateStyle": "medium"}' format 1`] = `
+<Text>
+  26 de out. de 2024
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'pt-BR' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short", "year": "numeric"}' format 1`] = `
+<Text>
+  26 de out. de 2024, 10:01
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'pt-BR' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short"}' format 1`] = `
+<Text>
+  26 de out., 10:01
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'pt-BR' locale and '{"day": "numeric", "month": "short"}' format 1`] = `
+<Text>
+  26 de out.
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'pt-BR' locale and '{"weekday": "long"}' format 1`] = `
+<Text>
+  sábado
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'pt-BR' locale and 'undefined' format 1`] = `
+<Text>
+  26 de out. de 2024
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'ro' locale and '{"dateStyle": "medium"}' format 1`] = `
+<Text>
+  26 oct. 2024
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'ro' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short", "year": "numeric"}' format 1`] = `
+<Text>
+  26 oct. 2024, 10:01
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'ro' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short"}' format 1`] = `
+<Text>
+  26 oct., 10:01
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'ro' locale and '{"day": "numeric", "month": "short"}' format 1`] = `
+<Text>
+  26 oct.
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'ro' locale and '{"weekday": "long"}' format 1`] = `
+<Text>
+  sâmbătă
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'ro' locale and 'undefined' format 1`] = `
+<Text>
+  26 oct. 2024
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'ru' locale and '{"dateStyle": "medium"}' format 1`] = `
+<Text>
+  26 окт. 2024 г.
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'ru' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short", "year": "numeric"}' format 1`] = `
+<Text>
+  26 окт. 2024 г., 10:01
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'ru' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short"}' format 1`] = `
+<Text>
+  26 окт., 10:01
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'ru' locale and '{"day": "numeric", "month": "short"}' format 1`] = `
+<Text>
+  26 окт.
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'ru' locale and '{"weekday": "long"}' format 1`] = `
+<Text>
+  суббота
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'ru' locale and 'undefined' format 1`] = `
+<Text>
+  26 окт. 2024 г.
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'sv' locale and '{"dateStyle": "medium"}' format 1`] = `
+<Text>
+  26 okt. 2024
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'sv' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short", "year": "numeric"}' format 1`] = `
+<Text>
+  26 okt. 2024 10:01
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'sv' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short"}' format 1`] = `
+<Text>
+  26 okt. 10:01
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'sv' locale and '{"day": "numeric", "month": "short"}' format 1`] = `
+<Text>
+  26 okt.
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'sv' locale and '{"weekday": "long"}' format 1`] = `
+<Text>
+  lördag
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'sv' locale and 'undefined' format 1`] = `
+<Text>
+  26 okt. 2024
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'tr' locale and '{"dateStyle": "medium"}' format 1`] = `
+<Text>
+  26 Eki 2024
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'tr' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short", "year": "numeric"}' format 1`] = `
+<Text>
+  26 Eki 2024 10:01
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'tr' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short"}' format 1`] = `
+<Text>
+  26 Eki 10:01
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'tr' locale and '{"day": "numeric", "month": "short"}' format 1`] = `
+<Text>
+  26 Eki
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'tr' locale and '{"weekday": "long"}' format 1`] = `
+<Text>
+  Cumartesi
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'tr' locale and 'undefined' format 1`] = `
+<Text>
+  26 Eki 2024
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'uk' locale and '{"dateStyle": "medium"}' format 1`] = `
+<Text>
+  26 жовт. 2024 р.
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'uk' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short", "year": "numeric"}' format 1`] = `
+<Text>
+  26 жовт. 2024 р., 10:01
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'uk' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short"}' format 1`] = `
+<Text>
+  26 жовт., 10:01
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'uk' locale and '{"day": "numeric", "month": "short"}' format 1`] = `
+<Text>
+  26 жовт.
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'uk' locale and '{"weekday": "long"}' format 1`] = `
+<Text>
+  субота
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'uk' locale and 'undefined' format 1`] = `
+<Text>
+  26 жовт. 2024 р.
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'vi' locale and '{"dateStyle": "medium"}' format 1`] = `
+<Text>
+  26 thg 10, 2024
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'vi' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short", "year": "numeric"}' format 1`] = `
+<Text>
+  10:01 26 thg 10, 2024
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'vi' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short"}' format 1`] = `
+<Text>
+  10:01 26 thg 10
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'vi' locale and '{"day": "numeric", "month": "short"}' format 1`] = `
+<Text>
+  26 thg 10
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'vi' locale and '{"weekday": "long"}' format 1`] = `
+<Text>
+  Thứ Bảy
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'vi' locale and 'undefined' format 1`] = `
+<Text>
+  26 thg 10, 2024
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'zh-CN' locale and '{"dateStyle": "medium"}' format 1`] = `
+<Text>
+  2024年10月26日
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'zh-CN' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short", "year": "numeric"}' format 1`] = `
+<Text>
+  2024年10月26日 10:01
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'zh-CN' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short"}' format 1`] = `
+<Text>
+  10月26日 10:01
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'zh-CN' locale and '{"day": "numeric", "month": "short"}' format 1`] = `
+<Text>
+  10月26日
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'zh-CN' locale and '{"weekday": "long"}' format 1`] = `
+<Text>
+  星期六
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'zh-CN' locale and 'undefined' format 1`] = `
+<Text>
+  2024年10月26日
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'zh-TW' locale and '{"dateStyle": "medium"}' format 1`] = `
+<Text>
+  2024年10月26日
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'zh-TW' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short", "year": "numeric"}' format 1`] = `
+<Text>
+  2024年10月26日 上午10:01
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'zh-TW' locale and '{"day": "numeric", "hour": "numeric", "minute": "numeric", "month": "short"}' format 1`] = `
+<Text>
+  10月26日 上午10:01
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'zh-TW' locale and '{"day": "numeric", "month": "short"}' format 1`] = `
+<Text>
+  10月26日
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'zh-TW' locale and '{"weekday": "long"}' format 1`] = `
+<Text>
+  星期六
+</Text>
+`;
+
+exports[`<FormattedDate/> should match snapshot for 'zh-TW' locale and 'undefined' format 1`] = `
+<Text>
+  2024年10月26日
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with a manual user time 1`] = `
+<Text>
+  Oct 26, 2024
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Africa/Abidjan 1`] = `
+<Text>
+  10:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Africa/Addis_Ababa 1`] = `
+<Text>
+  1:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Africa/Algiers 1`] = `
+<Text>
+  11:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Africa/Blantyre 1`] = `
+<Text>
+  12:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Africa/Cairo 1`] = `
+<Text>
+  1:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Africa/Casablanca 1`] = `
+<Text>
+  11:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Africa/Ceuta 1`] = `
+<Text>
+  12:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Africa/Tripoli 1`] = `
+<Text>
+  12:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Africa/Windhoek 1`] = `
+<Text>
+  12:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Anchorage 1`] = `
+<Text>
+  2:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Anguilla 1`] = `
+<Text>
+  6:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Araguaina 1`] = `
+<Text>
+  7:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Argentina/Buenos_Aires 1`] = `
+<Text>
+  7:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Asuncion 1`] = `
+<Text>
+  7:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Bahia 1`] = `
+<Text>
+  7:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Bahia_Banderas 1`] = `
+<Text>
+  4:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Belize 1`] = `
+<Text>
+  4:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Bogota 1`] = `
+<Text>
+  5:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Boise 1`] = `
+<Text>
+  4:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Campo_Grande 1`] = `
+<Text>
+  6:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Caracas 1`] = `
+<Text>
+  6:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Chicago 1`] = `
+<Text>
+  5:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Chihuahua 1`] = `
+<Text>
+  4:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Creston 1`] = `
+<Text>
+  3:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Danmarkshavn 1`] = `
+<Text>
+  10:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Detroit 1`] = `
+<Text>
+  6:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Glace_Bay 1`] = `
+<Text>
+  7:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Godthab 1`] = `
+<Text>
+  9:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Havana 1`] = `
+<Text>
+  6:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Indiana/Marengo 1`] = `
+<Text>
+  6:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Los_Angeles 1`] = `
+<Text>
+  3:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Montevideo 1`] = `
+<Text>
+  7:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Noronha 1`] = `
+<Text>
+  8:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Regina 1`] = `
+<Text>
+  4:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Santa_Isabel 1`] = `
+<Text>
+  3:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Santiago 1`] = `
+<Text>
+  7:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Sao_Paulo 1`] = `
+<Text>
+  7:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Scoresbysund 1`] = `
+<Text>
+  9:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/St_Johns 1`] = `
+<Text>
+  7:31 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone America/Tijuana 1`] = `
+<Text>
+  3:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Antarctica/Casey 1`] = `
+<Text>
+  6:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Antarctica/Davis 1`] = `
+<Text>
+  5:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Antarctica/DumontDUrville 1`] = `
+<Text>
+  8:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Antarctica/Macquarie 1`] = `
+<Text>
+  9:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Antarctica/Mawson 1`] = `
+<Text>
+  3:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Antarctica/McMurdo 1`] = `
+<Text>
+  11:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Antarctica/Vostok 1`] = `
+<Text>
+  3:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Arctic/Longyearbyen 1`] = `
+<Text>
+  12:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Aden 1`] = `
+<Text>
+  1:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Amman 1`] = `
+<Text>
+  1:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Anadyr 1`] = `
+<Text>
+  10:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Baghdad 1`] = `
+<Text>
+  1:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Baku 1`] = `
+<Text>
+  2:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Beirut 1`] = `
+<Text>
+  1:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Brunei 1`] = `
+<Text>
+  6:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Chita 1`] = `
+<Text>
+  7:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Choibalsan 1`] = `
+<Text>
+  6:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Colombo 1`] = `
+<Text>
+  3:31 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Damascus 1`] = `
+<Text>
+  1:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Dhaka 1`] = `
+<Text>
+  4:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Dili 1`] = `
+<Text>
+  7:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Dubai 1`] = `
+<Text>
+  2:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Hong_Kong 1`] = `
+<Text>
+  6:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Irkutsk 1`] = `
+<Text>
+  6:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Jerusalem 1`] = `
+<Text>
+  1:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Kabul 1`] = `
+<Text>
+  2:31 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Kamchatka 1`] = `
+<Text>
+  10:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Karachi 1`] = `
+<Text>
+  3:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Kathmandu 1`] = `
+<Text>
+  3:46 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Kolkata 1`] = `
+<Text>
+  3:31 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Krasnoyarsk 1`] = `
+<Text>
+  5:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Nicosia 1`] = `
+<Text>
+  1:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Nicosia 2`] = `
+<Text>
+  1:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Novokuznetsk 1`] = `
+<Text>
+  5:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Pyongyang 1`] = `
+<Text>
+  7:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Rangoon 1`] = `
+<Text>
+  4:31 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Sakhalin 1`] = `
+<Text>
+  9:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Taipei 1`] = `
+<Text>
+  6:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Tbilisi 1`] = `
+<Text>
+  2:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Tehran 1`] = `
+<Text>
+  1:31 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Yekaterinburg 1`] = `
+<Text>
+  3:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Asia/Yerevan 1`] = `
+<Text>
+  2:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Atlantic/Canary 1`] = `
+<Text>
+  11:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Atlantic/Cape_Verde 1`] = `
+<Text>
+  9:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Australia/Adelaide 1`] = `
+<Text>
+  8:31 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Australia/Brisbane 1`] = `
+<Text>
+  8:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Australia/Currie 1`] = `
+<Text>
+  9:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Australia/Darwin 1`] = `
+<Text>
+  7:31 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Australia/Melbourne 1`] = `
+<Text>
+  9:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Etc/GMT+10 1`] = `
+<Text>
+  12:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Etc/GMT+11 1`] = `
+<Text>
+  11:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Etc/GMT+12 1`] = `
+<Text>
+  10:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Etc/GMT-12 1`] = `
+<Text>
+  10:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Etc/GMT-13 1`] = `
+<Text>
+  11:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Europe/Astrakhan 1`] = `
+<Text>
+  2:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Europe/Belgrade 1`] = `
+<Text>
+  12:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Europe/Guernsey 1`] = `
+<Text>
+  11:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Europe/Helsinki 1`] = `
+<Text>
+  1:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Europe/Isle_of_Man 1`] = `
+<Text>
+  11:01 AM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Europe/Istanbul 1`] = `
+<Text>
+  1:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Europe/Kaliningrad 1`] = `
+<Text>
+  12:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Europe/Kirov 1`] = `
+<Text>
+  1:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Europe/Sarajevo 1`] = `
+<Text>
+  12:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Indian/Mahe 1`] = `
+<Text>
+  2:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Pacific/Apia 1`] = `
+<Text>
+  11:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone Pacific/Fiji 1`] = `
+<Text>
+  10:01 PM
+</Text>
+`;
+
+exports[`<FormattedDate/> should render with timezone undefined 1`] = `
+<Text>
+  10:01 AM
+</Text>
+`;

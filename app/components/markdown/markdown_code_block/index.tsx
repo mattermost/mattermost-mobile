@@ -6,7 +6,6 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, StyleSheet, Text, type TextStyle, TouchableOpacity, View} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import FormattedText from '@components/formatted_text';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
@@ -71,7 +70,6 @@ const MarkdownCodeBlock = ({language = '', content, textStyle}: MarkdownCodeBloc
     const intl = useIntl();
     const managedConfig = useManagedConfig<ManagedConfig>();
     const theme = useTheme();
-    const {bottom} = useSafeAreaInsets();
     const style = getStyleSheet(theme);
     const SyntaxHighlighter = useMemo(() => {
         if (!syntaxHighlighter) {
@@ -147,12 +145,12 @@ const MarkdownCodeBlock = ({language = '', content, textStyle}: MarkdownCodeBloc
             bottomSheet({
                 closeButtonId: 'close-code-block',
                 renderContent,
-                snapPoints: [1, bottomSheetSnapPoint(2, ITEM_HEIGHT, bottom)],
+                snapPoints: [1, bottomSheetSnapPoint(2, ITEM_HEIGHT)],
                 title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
                 theme,
             });
         }
-    }, [managedConfig, intl, bottom, theme]);
+    }, [managedConfig?.copyAndPasteProtection, intl, theme, style.bottomSheet, content]);
 
     const trimContent = (text: string) => {
         const lines = text.split('\n');

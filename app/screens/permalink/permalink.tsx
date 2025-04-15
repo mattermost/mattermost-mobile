@@ -15,17 +15,20 @@ import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import PostList from '@components/post_list';
 import {Screens} from '@constants';
+import {ExtraKeyboardProvider} from '@context/extra_keyboard';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
+import SecurityManager from '@managers/security_manager';
 import {getChannelById, getMyChannel} from '@queries/servers/channel';
 import {dismissModal} from '@screens/navigation';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {closePermalink} from '@utils/permalink';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {secureGetFromRecord} from '@utils/types';
 import {typography} from '@utils/typography';
 
 import PermalinkError from './permalink_error';
@@ -176,7 +179,7 @@ function Permalink({
                 return;
             }
 
-            const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+            const database = secureGetFromRecord(DatabaseManager.serverDatabases, serverUrl)?.database;
             if (!database) {
                 setError({unreachable: true});
                 setLoading(false);
@@ -314,7 +317,7 @@ function Permalink({
         );
     } else {
         content = (
-            <>
+            <ExtraKeyboardProvider>
                 <View style={style.postList}>
                     <PostList
                         highlightedId={postId}
@@ -344,7 +347,7 @@ function Permalink({
                         />
                     </TouchableOpacity>
                 </View>
-            </>
+            </ExtraKeyboardProvider>
         );
     }
 
@@ -353,6 +356,7 @@ function Permalink({
         <SafeAreaView
             style={containerStyle}
             testID='permalink.screen'
+            nativeID={SecurityManager.getShieldScreenId(Screens.PERMALINK)}
             edges={edges}
         >
             <Animated.View style={style.wrapper}>

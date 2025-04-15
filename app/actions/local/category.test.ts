@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {DMS_CATEGORY} from '@app/constants/categories';
-import {setCurrentUserId} from '@app/queries/servers/system';
+import {DMS_CATEGORY} from '@constants/categories';
 import DatabaseManager from '@database/manager';
+import {setCurrentUserId} from '@queries/servers/system';
 
 import {
     deleteCategory,
@@ -14,6 +14,7 @@ import {
 } from './category';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
+import type ChannelModel from '@typings/database/models/servers/channel';
 
 describe('handleConvertedGMCategories', () => {
     const serverUrl = 'baseHandler.test.com';
@@ -66,7 +67,7 @@ describe('handleConvertedGMCategories', () => {
         };
         await operator.handleCategoryChannels({categoryChannels: [dmCategoryChannel, customCategoryChannel], prepareRecordsOnly: false});
 
-        const {models, error} = await handleConvertedGMCategories(serverUrl, channelId, teamId1, true);
+        const {models, error} = await handleConvertedGMCategories(serverUrl, channelId, teamId1);
         expect(error).toBeUndefined();
         expect(models).toBeDefined();
         expect(models!.length).toBe(3); // two for removing channel for a custom and a DM category, and one for adding it to default channels category
@@ -83,7 +84,7 @@ describe('handleConvertedGMCategories', () => {
     });
 
     it('error - database not prepared', async () => {
-        const {error} = await handleConvertedGMCategories(serverUrl, channelId, teamId1, true);
+        const {error} = await handleConvertedGMCategories('', channelId, teamId1, true);
         expect(error).toBeDefined();
     });
 });
@@ -124,6 +125,11 @@ describe('category crud', () => {
         expect(error2).toBeUndefined();
     });
 
+    it('deleteCategory - handle database not found', async () => {
+        const {error} = await deleteCategory('', '');
+        expect(error).toBeDefined();
+    });
+
     it('storeCategories', async () => {
         const defaultCategory: CategoryWithChannels = {
             id: 'default_category_id',
@@ -141,6 +147,11 @@ describe('category crud', () => {
         expect(error).toBeUndefined();
         expect(models).toBeDefined();
         expect(models!.length).toBe(3);
+    });
+
+    it('storeCategories - handle database not found', async () => {
+        const {error} = await storeCategories('', []);
+        expect(error).toBeDefined();
     });
 
     it('toggleCollapseCategory', async () => {
@@ -162,6 +173,11 @@ describe('category crud', () => {
         expect(error2).toBeUndefined();
         expect(categoryResult2).toBeDefined();
         expect(categoryResult2?.collapsed).toBe(defaultCategory.collapsed);
+    });
+
+    it('toggleCollapseCategory - handle database not found', async () => {
+        const {error} = await toggleCollapseCategory('', '');
+        expect(error).toBeDefined();
     });
 });
 
@@ -221,6 +237,11 @@ describe('addChannelToDefaultCategory', () => {
         expect(dmError).toBeUndefined();
         expect(dmModels).toBeDefined();
         expect(dmModels!.length).toBe(1); // one for the dm channel
+
+        const {models: channelModels, error: channelModelError} = await addChannelToDefaultCategory(serverUrl, {teamId: teamId1, id: channelId} as ChannelModel);
+        expect(channelModelError).toBeUndefined();
+        expect(channelModels).toBeDefined();
+        expect(channelModels!.length).toBe(1); // one for the channel
     });
 
     it('error - no current user', async () => {
@@ -233,7 +254,7 @@ describe('addChannelToDefaultCategory', () => {
     });
 
     it('error - database not prepared', async () => {
-        const {error} = await addChannelToDefaultCategory(serverUrl, channel);
+        const {error} = await addChannelToDefaultCategory('', channel);
         expect(error).toBeDefined();
     });
 });

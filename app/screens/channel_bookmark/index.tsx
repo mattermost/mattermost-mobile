@@ -13,6 +13,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import SecurityManager from '@managers/security_manager';
 import {buildNavigationButton, dismissModal, setButtons} from '@screens/navigation';
 import {getFullErrorMessage} from '@utils/errors';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -93,7 +94,7 @@ const ChannelBookmarkAddOrEdit = ({
                 enabled,
             }],
         });
-    }, [formatMessage, theme]);
+    }, [componentId, formatMessage, theme.sidebarHeaderTextColor]);
 
     const setBookmarkToSave = useCallback((b?: ChannelBookmark) => {
         enableSaveButton((b?.type === 'link' && Boolean(b?.link_url)) || (b?.type === 'file' && Boolean(b.file_id)));
@@ -159,13 +160,13 @@ const ChannelBookmarkAddOrEdit = ({
             ...(bookmark || emptyBookmark),
             owner_id: ownerId,
             channel_id: channelId,
-            display_name: decodeURIComponent(f.name),
+            display_name: f.name,
             type: 'file',
             file_id: f.id,
         };
         setBookmarkToSave(b);
         setFile(f);
-    }, [bookmark, channelId, ownerId]);
+    }, [bookmark, channelId, ownerId, setBookmarkToSave]);
 
     const setBookmarkDisplayName = useCallback((displayName: string) => {
         if (bookmark) {
@@ -269,6 +270,7 @@ const ChannelBookmarkAddOrEdit = ({
             edges={edges}
             style={styles.content}
             testID='channel_bookmark.screen'
+            nativeID={SecurityManager.getShieldScreenId(componentId)}
         >
             {type === 'link' &&
                 <BookmarkLink

@@ -45,6 +45,16 @@ class RNUtilsModule(context: ReactApplicationContext) :
     }
 
     @ReactMethod
+    fun setHasRegisteredLoad() {
+        implementation.setHasRegisteredLoad()
+    }
+
+    @ReactMethod(isBlockingSynchronousMethod = true)
+    fun getHasRegisteredLoad(): WritableMap {
+        return implementation.getHasRegisteredLoad()
+    }
+
+    @ReactMethod
     fun unlockOrientation() {
         implementation.unlockOrientation()
     }
@@ -56,7 +66,7 @@ class RNUtilsModule(context: ReactApplicationContext) :
 
     @ReactMethod(isBlockingSynchronousMethod = true)
     fun deleteDatabaseDirectory(databaseName: String?, shouldRemoveDirectory: Boolean): WritableMap {
-        return implementation.deleteDatabaseDirectory(databaseName, shouldRemoveDirectory)
+        return implementation.deleteDatabaseDirectory()
     }
 
     @ReactMethod(isBlockingSynchronousMethod = true)
@@ -87,5 +97,15 @@ class RNUtilsModule(context: ReactApplicationContext) :
     @ReactMethod
     fun removeServerNotifications(serverUrl: String?) {
         implementation.removeServerNotifications(serverUrl)
+    }
+
+    @ReactMethod
+    fun setSoftKeyboardToAdjustResize() {
+        implementation.setSoftKeyboardToAdjustResize()
+    }
+
+    @ReactMethod
+    fun setSoftKeyboardToAdjustNothing() {
+        implementation.setSoftKeyboardToAdjustNothing()
     }
 }

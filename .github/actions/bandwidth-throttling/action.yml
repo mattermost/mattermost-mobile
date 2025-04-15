@@ -1,0 +1,71 @@
+name: bandwidth-throttling
+description: Action to throttle the bandwidth on MacOS runner
+
+inputs:
+  test_server_host:
+    description: The host of the test server, no protocol
+    required: true
+  download_speed:
+    description: The download speed limit (in Kbit/s)
+    required: false
+    default: "3300"
+  upload_speed:
+    description: The upload speed limit (in Kbit/s)
+    required: false
+    default: "3300"
+  latency:
+    description: The latency (in ms) each way
+    required: false
+    default: "500"
+  disable:
+    description: Disable throttling
+    required: false
+    default: "false"
+
+runs:
+  using: composite
+  steps:
+    - name: disable first
+      if: ${{ inputs.disable == 'true' }}
+      shell: bash
+      continue-on-error: true
+      run: |
+        sudo pfctl -d
+
+        sleep 2;
+
+    - name: throttle bandwidth down
+      shell: bash
+      run: |
+        # reset pf and dnctl
+        sudo dnctl -q flush
+        sudo dnctl -q pipe flush
+        sudo pfctl -f /etc/pf.conf
+        sudo pfctl -E
+
+        sleep 2;
+
+        sudo pfctl -d
+        sudo dnctl -q flush
+        sudo dnctl -q pipe flush
+
+
+        echo "dummynet in from ${{ inputs.test_server_host }} to ! 127.0.0.1 pipe 1
+        dummynet out from ! 127.0.0.1 to ${{ inputs.test_server_host }} pipe 2" | sudo pfctl -f -
+        
+        # pipe 1 is download
+        sudo dnctl pipe 1 config bw ${{ inputs.download_speed }}Kbit/s delay ${{ inputs.latency }}ms
+        
+        # pipe 2 is upload
+        sudo dnctl pipe 2 config bw ${{ inputs.upload_speed }}Kbit/s delay ${{ inputs.latency }}ms
+
+        sleep 5;
+        
+        sudo pfctl -E
+
+        sleep 5;
+
+    - name: test curl after throttling
+      shell: bash
+      run: |
+        curl -o /dev/null -m 20 --retry 2 -s -w 'Total: %{time_total}s\n' 'https://${{ inputs.test_server_host }}/api/v4/system/ping?get_server_status=true'

@@ -15,7 +15,10 @@ export type RolesRequest = {
     roles?: Role[];
 }
 
-export const fetchRolesIfNeeded = async (serverUrl: string, updatedRoles: string[], fetchOnly = false, force = false): Promise<RolesRequest> => {
+export const fetchRolesIfNeeded = async (
+    serverUrl: string, updatedRoles: string[],
+    fetchOnly = false, force = false, groupLabel?: RequestGroupLabel,
+): Promise<RolesRequest> => {
     if (!updatedRoles.length) {
         return {roles: []};
     }
@@ -46,7 +49,7 @@ export const fetchRolesIfNeeded = async (serverUrl: string, updatedRoles: string
         const getRolesRequests = [];
         for (let i = 0; i < newRoles.length; i += General.MAX_GET_ROLES_BY_NAMES) {
             const chunk = newRoles.slice(i, i + General.MAX_GET_ROLES_BY_NAMES);
-            getRolesRequests.push(client.getRolesByNames(chunk));
+            getRolesRequests.push(client.getRolesByNames(chunk, groupLabel));
         }
 
         const roles = (await Promise.all(getRolesRequests)).flat();
@@ -65,7 +68,10 @@ export const fetchRolesIfNeeded = async (serverUrl: string, updatedRoles: string
     }
 };
 
-export const fetchRoles = async (serverUrl: string, teamMembership?: TeamMembership[], channelMembership?: ChannelMembership[], user?: UserProfile, fetchOnly = false, force = false) => {
+export const fetchRoles = async (
+    serverUrl: string, teamMembership?: TeamMembership[], channelMembership?: ChannelMembership[],
+    user?: UserProfile, fetchOnly = false, force = false, groupLabel?: RequestGroupLabel,
+) => {
     const rolesToFetch = new Set<string>(user?.roles.split(' ') || []);
 
     if (teamMembership?.length) {
@@ -87,7 +93,7 @@ export const fetchRoles = async (serverUrl: string, teamMembership?: TeamMembers
 
     rolesToFetch.delete('');
     if (rolesToFetch.size > 0) {
-        return fetchRolesIfNeeded(serverUrl, Array.from(rolesToFetch), fetchOnly, force);
+        return fetchRolesIfNeeded(serverUrl, Array.from(rolesToFetch), fetchOnly, force, groupLabel);
     }
 
     return {roles: []};

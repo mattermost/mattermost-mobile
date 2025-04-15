@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import NetInfo, {type NetInfoState, type NetInfoSubscription} from '@react-native-community/netinfo';
+import NetInfo, {NetInfoStateType, type NetInfoState, type NetInfoSubscription} from '@react-native-community/netinfo';
 import {AppState, type AppStateStatus, type NativeEventSubscription} from 'react-native';
 import BackgroundTimer from 'react-native-background-timer';
 import {BehaviorSubject} from 'rxjs';
@@ -23,13 +23,14 @@ import {logError} from '@utils/log';
 const WAIT_TO_CLOSE = toMilliseconds({seconds: 15});
 const WAIT_UNTIL_NEXT = toMilliseconds({seconds: 5});
 
-class WebsocketManager {
+class WebsocketManagerSingleton {
     private connectedSubjects: {[serverUrl: string]: BehaviorSubject<WebsocketConnectedState>} = {};
 
     private clients: Record<string, WebSocketClient> = {};
     private connectionTimerIDs: Record<string, NodeJS.Timeout> = {};
     private isBackgroundTimerRunning = false;
     private netConnected = false;
+    private netType: NetInfoStateType = NetInfoStateType.none;
     private previousActiveState: boolean;
     private statusUpdatesIntervalIDs: Record<string, NodeJS.Timeout> = {};
     private backgroundIntervalId: number | undefined;
@@ -43,7 +44,9 @@ class WebsocketManager {
     }
 
     public init = async (serverCredentials: ServerCredential[]) => {
-        this.netConnected = Boolean((await NetInfo.fetch()).isConnected);
+        const netInfo = await NetInfo.fetch();
+        this.netConnected = Boolean(netInfo.isConnected);
+        this.netType = netInfo.type;
         serverCredentials.forEach(
             ({serverUrl, token}) => {
                 try {
@@ -101,20 +104,21 @@ class WebsocketManager {
         for (const url of Object.keys(this.clients)) {
             const client = this.clients[url];
             client.close(true);
+            client.invalidate();
             this.getConnectedSubject(url).next('not_connected');
         }
     };
 
-    public openAll = async () => {
+    public openAll = async (groupLabel?: BaseRequestGroupLabel) => {
         let queued = 0;
         for await (const clientUrl of Object.keys(this.clients)) {
             const activeServerUrl = await DatabaseManager.getActiveServerUrl();
             if (clientUrl === activeServerUrl) {
-                this.initializeClient(clientUrl);
+                this.initializeClient(clientUrl, groupLabel);
             } else {
                 queued += 1;
                 this.getConnectedSubject(clientUrl).next('connecting');
-                this.connectionTimerIDs[clientUrl] = setTimeout(() => this.initializeClient(clientUrl), WAIT_UNTIL_NEXT * queued);
+                this.connectionTimerIDs[clientUrl] = setTimeout(() => this.initializeClient(clientUrl, groupLabel), WAIT_UNTIL_NEXT * queued);
             }
         }
     };
@@ -144,7 +148,7 @@ class WebsocketManager {
         }
     };
 
-    public initializeClient = async (serverUrl: string) => {
+    public initializeClient = async (serverUrl: string, groupLabel: BaseRequestGroupLabel = 'WebSocket Reconnect') => {
         const client: WebSocketClient = this.clients[serverUrl];
         clearTimeout(this.connectionTimerIDs[serverUrl]);
         delete this.connectionTimerIDs[serverUrl];
@@ -152,7 +156,7 @@ class WebsocketManager {
             const hasSynced = this.firstConnectionSynced[serverUrl];
             client.initialize({}, !hasSynced);
             if (!hasSynced) {
-                const error = await handleFirstConnect(serverUrl);
+                const error = await handleFirstConnect(serverUrl, groupLabel);
                 if (error) {
                     // This will try to reconnect and try to sync again
                     client.close(false);
@@ -227,33 +231,38 @@ class WebsocketManager {
         }
 
         const isActive = appState === 'active';
-        this.handleStateChange(this.netConnected, isActive);
+        this.handleStateChange(this.netConnected, this.netType, isActive);
     };
 
     private onNetStateChange = (netState: NetInfoState) => {
         const newState = Boolean(netState.isConnected);
-        if (this.netConnected === newState) {
-            return;
-        }
-
-        this.handleStateChange(newState, this.previousActiveState);
+        this.handleStateChange(newState, netState.type, this.previousActiveState);
     };
 
-    private handleStateChange = (currentIsConnected: boolean, currentIsActive: boolean) => {
-        if (currentIsActive === this.previousActiveState && currentIsConnected === this.netConnected) {
+    private handleStateChange = (currentIsConnected: boolean, currentNetType: NetInfoStateType, currentIsActive: boolean) => {
+        if (currentIsActive === this.previousActiveState && currentIsConnected === this.netConnected && currentNetType === this.netType) {
             return;
         }
 
         this.cancelConnectTimers();
 
         const wentBackground = this.previousActiveState && !currentIsActive;
+        const switchedNetworks = currentIsConnected && currentNetType !== this.netType && this.netType !== 'none';
 
         this.previousActiveState = currentIsActive;
         this.netConnected = currentIsConnected;
+        this.netType = currentNetType;
 
         if (!currentIsConnected) {
             this.closeAll();
             return;
+        }
+
+        if (switchedNetworks) {
+            // Close all connections when we switch from (for example) vpn to wifi
+            // to ensure we are using the right network and doesn't get stuck on
+            // retries.
+            this.closeAll();
         }
 
         if (currentIsActive) {
@@ -262,7 +271,7 @@ class WebsocketManager {
             }
             this.isBackgroundTimerRunning = false;
             if (this.netConnected) {
-                this.openAll();
+                this.openAll('WebSocket Reconnect');
             }
 
             return;
@@ -283,4 +292,5 @@ class WebsocketManager {
     };
 }
 
-export default new WebsocketManager();
+const WebsocketManager = new WebsocketManagerSingleton();
+export default WebsocketManager;

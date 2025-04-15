@@ -39,7 +39,6 @@
         "baseUrl": ".",
         "paths": {
             "@actions/*": ["app/actions/*"],
-            "@app/*": ["app/*"],
             "@assets/*": ["dist/assets/*"],
             "@calls/*": ["app/products/calls/*"],
             "@client/*": ["app/client/*"],

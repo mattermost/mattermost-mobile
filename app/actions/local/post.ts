@@ -160,7 +160,7 @@ export async function markPostAsDeleted(serverUrl: string, post: Post, prepareRe
             p.message = '';
             p.messageSource = '';
             p.metadata = null;
-            p.props = undefined;
+            p.props = null;
         });
 
         if (!prepareRecordsOnly) {

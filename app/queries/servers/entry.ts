@@ -5,10 +5,10 @@ import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
 
 import {prepareCategoriesAndCategoriesChannels} from './categories';
-import {prepareDeleteChannel, prepareMyChannelsForTeam} from './channel';
+import {prepareAllMyChannels, prepareDeleteChannel, queryAllChannels, queryChannelsById} from './channel';
 import {prepareMyPreferences} from './preference';
 import {resetLastFullSync} from './system';
-import {prepareDeleteTeam, prepareMyTeams} from './team';
+import {prepareDeleteTeam, prepareMyTeams, queryMyTeams, queryTeamsById} from './team';
 import {prepareUsers} from './user';
 
 import type {MyChannelsRequest} from '@actions/remote/channel';
@@ -18,18 +18,22 @@ import type {MyUserRequest} from '@actions/remote/user';
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Model} from '@nozbe/watermelondb';
 import type ChannelModel from '@typings/database/models/servers/channel';
-import type TeamModel from '@typings/database/models/servers/team';
 
 type PrepareModelsArgs = {
     operator: ServerDataOperator;
     initialTeamId?: string;
-    removeTeams?: TeamModel[];
-    removeChannels?: ChannelModel[];
     teamData?: MyTeamsRequest;
     chData?: MyChannelsRequest;
     prefData?: MyPreferencesRequest;
     meData?: MyUserRequest;
     isCRTEnabled?: boolean;
+}
+
+type PrepareModelsForDeletionArgs = {
+    operator: ServerDataOperator;
+    initialTeamId?: string;
+    teamData?: MyTeamsRequest;
+    chData?: MyChannelsRequest;
 }
 
 const {
@@ -44,20 +48,47 @@ const {
     MY_CHANNEL,
 } = MM_TABLES.SERVER;
 
-export async function prepareModels({operator, initialTeamId, removeTeams, removeChannels, teamData, chData, prefData, meData, isCRTEnabled}: PrepareModelsArgs): Promise<Array<Promise<Model[]>>> {
+export async function prepareEntryModelsForDeletion({operator, teamData, chData}: PrepareModelsForDeletionArgs): Promise<Array<Promise<Model[]>>> {
     const modelPromises: Array<Promise<Model[]>> = [];
+    const {database} = operator;
+    let teamIdsToDelete: Set<string>|undefined;
 
-    if (removeTeams?.length) {
+    if (teamData?.teams?.length && teamData.memberships?.length) {
+        const myTeams = await queryMyTeams(database).fetch();
+        const joinedTeams = new Set(teamData.memberships?.filter((m) => m.delete_at === 0).map((m) => m.team_id));
+        const myTeamsToDelete = myTeams.filter((m) => !joinedTeams.has(m.id));
+        teamIdsToDelete = new Set(myTeamsToDelete.map((m) => m.id));
+        const removeTeams = await queryTeamsById(database, Array.from(teamIdsToDelete)).fetch();
+
         removeTeams.forEach((team) => {
             modelPromises.push(prepareDeleteTeam(team));
         });
     }
 
-    if (removeChannels?.length) {
-        removeChannels.forEach((channel) => {
-            modelPromises.push(prepareDeleteChannel(channel));
-        });
+    if (chData?.channels?.length && chData.memberships?.length) {
+        const {channels} = chData;
+        const fetchedChannelIds = new Set(channels.map((c) => c.id));
+        const channelsQuery = await queryAllChannels(database);
+        const storedChannelsMap = channelsQuery.reduce<Record<string, ChannelModel>>((map, channel) => {
+            map[channel.id] = channel;
+            return map;
+        }, {});
+
+        const removeChannelIds: string[] = Object.keys(storedChannelsMap).filter((id) => !fetchedChannelIds.has(id) && !teamIdsToDelete?.has(storedChannelsMap[id]?.teamId));
+        let removeChannels: ChannelModel[]|undefined;
+        if (removeChannelIds?.length) {
+            removeChannels = await queryChannelsById(database, removeChannelIds).fetch();
+            removeChannels.forEach((c) => {
+                modelPromises.push(prepareDeleteChannel(c));
+            });
+        }
     }
+
+    return modelPromises;
+}
+
+export async function prepareEntryModels({operator, teamData, chData, prefData, meData, isCRTEnabled}: PrepareModelsArgs): Promise<Array<Promise<Model[]>>> {
+    const modelPromises: Array<Promise<Model[]>> = [];
 
     if (teamData?.teams?.length && teamData.memberships?.length) {
         modelPromises.push(...prepareMyTeams(operator, teamData.teams, teamData.memberships));
@@ -68,9 +99,8 @@ export async function prepareModels({operator, initialTeamId, removeTeams, remov
     }
 
     if (chData?.channels?.length && chData.memberships?.length) {
-        if (initialTeamId) {
-            modelPromises.push(...await prepareMyChannelsForTeam(operator, initialTeamId, chData.channels, chData.memberships, isCRTEnabled));
-        }
+        const {channels, memberships} = chData;
+        modelPromises.push(...await prepareAllMyChannels(operator, channels, memberships, isCRTEnabled));
     }
 
     if (prefData?.preferences?.length) {

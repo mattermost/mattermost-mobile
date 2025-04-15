@@ -1,0 +1,344 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SendTestNotificationNotice should match snapshot 1`] = `
+<View
+  style={
+    {
+      "flex": 1,
+      "justifyContent": "flex-end",
+      "margin": 16,
+    }
+  }
+>
+  <View
+    style={
+      [
+        {
+          "borderRadius": 4,
+          "borderStyle": "solid",
+          "borderWidth": 1,
+        },
+        {
+          "backgroundColor": "rgba(93,137,234,0.08)",
+          "borderColor": "rgba(93,137,234,0.16)",
+        },
+      ]
+    }
+    testID="sectionNoticeContainer"
+  >
+    <View
+      style={
+        {
+          "alignItems": "flex-start",
+          "flexDirection": "row",
+          "gap": 12,
+          "padding": 16,
+        }
+      }
+    >
+      <Icon
+        name="lightbulb-outline"
+        size={20}
+        style={
+          {
+            "color": "#5d89ea",
+          }
+        }
+        testID="sectionNoticeHeaderIcon"
+      />
+      <View
+        style={
+          {
+            "flex": 1,
+            "flexDirection": "column",
+            "gap": 8,
+          }
+        }
+      >
+        <Text
+          style={
+            {
+              "color": "#3f4350",
+              "fontFamily": "OpenSans-SemiBold",
+              "fontSize": 16,
+              "fontWeight": "600",
+              "lineHeight": 24,
+              "margin": 0,
+            }
+          }
+        >
+          Troubleshooting notifications
+        </Text>
+        <View
+          style={
+            [
+              {
+                "alignItems": "flex-start",
+                "flexDirection": "row",
+                "flexWrap": "wrap",
+              },
+            ]
+          }
+          testID="markdown_paragraph"
+        >
+          <Text>
+            <Text
+              selectable={false}
+              style={
+                {
+                  "color": "#3f4350",
+                  "fontFamily": "OpenSans",
+                  "fontSize": 16,
+                  "fontWeight": "400",
+                  "lineHeight": 24,
+                }
+              }
+              testID="markdown_text"
+            >
+              Not receiving notifications? Start by sending a test notification to all your devices to check if they’re working as expected. If issues persist, explore ways to solve them with troubleshooting steps.
+            </Text>
+          </Text>
+        </View>
+        <View
+          style={
+            {
+              "gap": 8,
+              "marginTop": 8,
+            }
+          }
+        >
+          <View
+            style={
+              [
+                {
+                  "overflow": "hidden",
+                },
+                {
+                  "borderRadius": 2,
+                },
+                undefined,
+                false,
+              ]
+            }
+            testID="RNE_BUTTON_WRAPPER"
+          >
+            <View
+              accessibilityRole="button"
+              accessibilityState={
+                {
+                  "busy": false,
+                  "checked": undefined,
+                  "disabled": false,
+                  "expanded": undefined,
+                  "selected": undefined,
+                }
+              }
+              accessibilityValue={
+                {
+                  "max": undefined,
+                  "min": undefined,
+                  "now": undefined,
+                  "text": undefined,
+                }
+              }
+              accessible={true}
+              collapsable={false}
+              focusable={true}
+              onClick={[Function]}
+              onResponderGrant={[Function]}
+              onResponderMove={[Function]}
+              onResponderRelease={[Function]}
+              onResponderTerminate={[Function]}
+              onResponderTerminationRequest={[Function]}
+              onStartShouldSetResponder={[Function]}
+              style={
+                {
+                  "opacity": 1,
+                }
+              }
+            >
+              <View
+                style={
+                  {
+                    "alignItems": "center",
+                    "backgroundColor": "#1c58d9",
+                    "borderColor": "#2089dc",
+                    "borderRadius": 4,
+                    "borderWidth": 0,
+                    "flex": 0,
+                    "flexDirection": "row",
+                    "height": 40,
+                    "justifyContent": "center",
+                    "padding": 8,
+                    "paddingHorizontal": 20,
+                    "paddingVertical": 12,
+                  }
+                }
+              >
+                <View
+                  style={
+                    {
+                      "flexDirection": "row",
+                    }
+                  }
+                >
+                  <Text
+                    numberOfLines={1}
+                    style={
+                      [
+                        [
+                          {
+                            "alignItems": "center",
+                            "fontFamily": "OpenSans-SemiBold",
+                            "fontWeight": "600",
+                            "justifyContent": "center",
+                            "padding": 1,
+                            "textAlignVertical": "center",
+                          },
+                          {
+                            "fontSize": 14,
+                            "lineHeight": 14,
+                            "marginTop": 3,
+                          },
+                          {
+                            "color": "#ffffff",
+                          },
+                        ],
+                        undefined,
+                      ]
+                    }
+                  >
+                    Send a test notification
+                  </Text>
+                </View>
+              </View>
+            </View>
+          </View>
+          <View
+            style={
+              [
+                {
+                  "overflow": "hidden",
+                },
+                {
+                  "borderRadius": 2,
+                },
+                undefined,
+                false,
+              ]
+            }
+            testID="RNE_BUTTON_WRAPPER"
+          >
+            <View
+              accessibilityRole="button"
+              accessibilityState={
+                {
+                  "busy": false,
+                  "checked": undefined,
+                  "disabled": false,
+                  "expanded": undefined,
+                  "selected": undefined,
+                }
+              }
+              accessibilityValue={
+                {
+                  "max": undefined,
+                  "min": undefined,
+                  "now": undefined,
+                  "text": undefined,
+                }
+              }
+              accessible={true}
+              collapsable={false}
+              focusable={true}
+              onClick={[Function]}
+              onResponderGrant={[Function]}
+              onResponderMove={[Function]}
+              onResponderRelease={[Function]}
+              onResponderTerminate={[Function]}
+              onResponderTerminationRequest={[Function]}
+              onStartShouldSetResponder={[Function]}
+              style={
+                {
+                  "opacity": 1,
+                }
+              }
+            >
+              <View
+                style={
+                  {
+                    "alignItems": "center",
+                    "backgroundColor": "rgba(28,88,217,0.08)",
+                    "borderColor": "#2089dc",
+                    "borderRadius": 4,
+                    "borderWidth": 0,
+                    "flex": 0,
+                    "flexDirection": "row",
+                    "height": 40,
+                    "justifyContent": "center",
+                    "padding": 8,
+                    "paddingHorizontal": 20,
+                    "paddingVertical": 12,
+                  }
+                }
+              >
+                <View
+                  style={
+                    [
+                      {
+                        "flexDirection": "row",
+                      },
+                      {
+                        "minHeight": 18,
+                      },
+                    ]
+                  }
+                >
+                  <Icon
+                    color="#1c58d9"
+                    name="open-in-new"
+                    size={18}
+                    style={
+                      {
+                        "marginRight": 7,
+                      }
+                    }
+                  />
+                  <Text
+                    numberOfLines={1}
+                    style={
+                      [
+                        [
+                          {
+                            "alignItems": "center",
+                            "fontFamily": "OpenSans-SemiBold",
+                            "fontWeight": "600",
+                            "justifyContent": "center",
+                            "padding": 1,
+                            "textAlignVertical": "center",
+                          },
+                          {
+                            "fontSize": 14,
+                            "lineHeight": 14,
+                            "marginTop": 3,
+                          },
+                          {
+                            "color": "#1c58d9",
+                          },
+                        ],
+                        undefined,
+                      ]
+                    }
+                  >
+                    Troubleshooting docs
+                  </Text>
+                </View>
+              </View>
+            </View>
+          </View>
+        </View>
+      </View>
+    </View>
+  </View>
+</View>
+`;

@@ -15,8 +15,9 @@ import FloatingTextInput from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import {useIsTablet} from '@hooks/device';
+import {useAvoidKeyboard} from '@hooks/device';
 import {t} from '@i18n';
+import SecurityManager from '@managers/security_manager';
 import Background from '@screens/background';
 import {popTopScreen} from '@screens/navigation';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
@@ -99,7 +100,6 @@ const AnimatedSafeArea = Animated.createAnimatedComponent(SafeAreaView);
 const MFA = ({componentId, config, goToHome, license, loginId, password, serverDisplayName, serverUrl, theme}: MFAProps) => {
     const dimensions = useWindowDimensions();
     const translateX = useSharedValue(dimensions.width);
-    const isTablet = useIsTablet();
     const keyboardAwareRef = useRef<KeyboardAwareScrollView>(null);
     const intl = useIntl();
     const [token, setToken] = useState<string>('');
@@ -108,20 +108,6 @@ const MFA = ({componentId, config, goToHome, license, loginId, password, serverD
     const {formatMessage} = useIntl();
 
     const styles = getStyleSheet(theme);
-
-    const onFocus = useCallback(() => {
-        if (Platform.OS === 'ios') {
-            let offsetY = 150;
-            if (isTablet) {
-                const {width, height} = dimensions;
-                const isLandscape = width > height;
-                offsetY = (isLandscape ? 270 : 150);
-            }
-            requestAnimationFrame(() => {
-                keyboardAwareRef.current?.scrollToPosition(0, offsetY);
-            });
-        }
-    }, [dimensions]);
 
     const handleInput = useCallback((userToken: string) => {
         setToken(userToken);
@@ -156,6 +142,8 @@ const MFA = ({componentId, config, goToHome, license, loginId, password, serverD
         };
     }, []);
 
+    useAvoidKeyboard(keyboardAwareRef, 2);
+
     useEffect(() => {
         const listener = {
             componentDidAppear: () => {
@@ -168,7 +156,7 @@ const MFA = ({componentId, config, goToHome, license, loginId, password, serverD
         const unsubscribe = Navigation.events().registerComponentListener(listener, componentId);
 
         return () => unsubscribe.remove();
-    }, [dimensions]);
+    }, [componentId, dimensions, translateX]);
 
     useEffect(() => {
         translateX.value = 0;
@@ -181,7 +169,10 @@ const MFA = ({componentId, config, goToHome, license, loginId, password, serverD
     useAndroidHardwareBackHandler(componentId, close);
 
     return (
-        <View style={styles.flex}>
+        <View
+            nativeID={SecurityManager.getShieldScreenId(componentId, false, true)}
+            style={styles.flex}
+        >
             <Background theme={theme}/>
             <AnimatedSafeArea
                 testID='mfa.screen'
@@ -190,7 +181,7 @@ const MFA = ({componentId, config, goToHome, license, loginId, password, serverD
                 <KeyboardAwareScrollView
                     bounces={false}
                     contentContainerStyle={styles.innerContainer}
-                    enableAutomaticScroll={Platform.OS === 'android'}
+                    enableAutomaticScroll={false}
                     enableOnAndroid={false}
                     enableResetScrollToCoords={true}
                     extraScrollHeight={0}
@@ -226,7 +217,6 @@ const MFA = ({componentId, config, goToHome, license, loginId, password, serverD
                                 keyboardType='numeric'
                                 label={formatMessage({id: 'login_mfa.token', defaultMessage: 'Enter MFA Token'})}
                                 onChangeText={handleInput}
-                                onFocus={onFocus}
                                 onSubmitEditing={submit}
                                 returnKeyType='go'
                                 spellCheck={false}

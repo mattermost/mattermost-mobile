@@ -4,7 +4,6 @@
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import React, {useMemo} from 'react';
 import {View} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {CopyPermalinkOption, FollowThreadOption, ReplyOption, SaveOption} from '@components/common_post_options';
 import FormattedText from '@components/formatted_text';
@@ -59,7 +58,6 @@ const ThreadOptions = ({
 }: ThreadOptionsProps) => {
     const theme = useTheme();
     const isTablet = useIsTablet();
-    const {bottom} = useSafeAreaInsets();
     const style = getStyleSheet(theme);
 
     const close = () => {
@@ -111,7 +109,7 @@ const ThreadOptions = ({
         );
     }
 
-    const snapPoint = useMemo(() => TITLE_HEIGHT + bottomSheetSnapPoint(options.length, ITEM_HEIGHT, bottom), [bottom, options.length]);
+    const snapPoint = useMemo(() => TITLE_HEIGHT + bottomSheetSnapPoint(options.length, ITEM_HEIGHT), [options.length]);
 
     const renderContent = () => (
         <>

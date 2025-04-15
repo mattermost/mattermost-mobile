@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ActionType, Post} from '@app/constants';
-import {COMBINED_USER_ACTIVITY} from '@app/utils/post_list';
+import {ActionType, Post} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import TestHelper from '@test/test_helper';
+import {COMBINED_USER_ACTIVITY} from '@utils/post_list';
 
 import {
     sendAddToChannelEphemeralPost,
@@ -21,7 +21,6 @@ import {
 } from './post';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
-import type UserModel from '@typings/database/models/servers/user';
 
 const serverUrl = 'baseHandler.test.com';
 let operator: ServerDataOperator;
@@ -36,12 +35,22 @@ jest.mock('@utils/general', () => {
     };
 });
 
+let mockGetIsCRTEnabled: jest.Mock;
+jest.mock('@queries/servers/thread', () => {
+    const original = jest.requireActual('@queries/servers/thread');
+    mockGetIsCRTEnabled = jest.fn(() => true);
+    return {
+        ...original,
+        getIsCRTEnabled: mockGetIsCRTEnabled,
+    };
+});
+
 const channelId = 'channelid1';
-const user: UserProfile = {
+const user: UserProfile = TestHelper.fakeUser({
     id: 'userid',
     username: 'username',
     roles: '',
-} as UserProfile;
+});
 
 beforeEach(async () => {
     await DatabaseManager.init([serverUrl]);
@@ -54,7 +63,7 @@ afterEach(async () => {
 
 describe('sendAddToChannelEphemeralPost', () => {
     it('handle not found database', async () => {
-        const {posts, error} = await sendAddToChannelEphemeralPost('foo', {} as UserModel, ['username2'], ['added username2'], channelId, '');
+        const {posts, error} = await sendAddToChannelEphemeralPost('foo', TestHelper.fakeUserModel(), ['username2'], ['added username2'], channelId, '');
         expect(posts).toBeUndefined();
         expect(error).toBeTruthy();
     });
@@ -62,7 +71,7 @@ describe('sendAddToChannelEphemeralPost', () => {
     it('base case', async () => {
         const users = await operator.handleUsers({users: [user], prepareRecordsOnly: false});
 
-        const {posts, error} = await sendAddToChannelEphemeralPost(serverUrl, users[0], ['username2'], ['added username2'], channelId, '');
+        const {posts, error} = await sendAddToChannelEphemeralPost(serverUrl, users[0], ['username2'], ['added username2'], channelId);
         expect(error).toBeUndefined();
         expect(posts).toBeDefined();
         expect(posts?.length).toBe(1);
@@ -86,7 +95,7 @@ describe('sendEphemeralPost', () => {
     it('handle no user', async () => {
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: 'useridcurrent'}], prepareRecordsOnly: false});
 
-        const {post, error} = await sendEphemeralPost(serverUrl, 'newmessage', channelId, '');
+        const {post, error} = await sendEphemeralPost(serverUrl, 'newmessage', channelId);
         expect(error).toBeUndefined();
         expect(post).toBeDefined();
         expect(post?.user_id).toBe('useridcurrent');
@@ -101,7 +110,7 @@ describe('sendEphemeralPost', () => {
 });
 
 describe('removePost', () => {
-    const post = {...TestHelper.fakePost(channelId), id: 'postid'};
+    const post = TestHelper.fakePost({id: 'postid', channel_id: channelId});
 
     it('handle not found database', async () => {
         const {post: rPost, error} = await removePost('foo', post);
@@ -122,13 +131,19 @@ describe('removePost', () => {
         expect(rPost).toBeDefined();
     });
 
+    it('base case - missing post', async () => {
+        const {post: rPost, error} = await removePost(serverUrl, post);
+        expect(error).toBeUndefined();
+        expect(rPost).toBeDefined();
+    });
+
     it('base case - system message', async () => {
-        const systemPost = {...TestHelper.fakePost(channelId), id: `${COMBINED_USER_ACTIVITY}id1_id2`, type: Post.POST_TYPES.COMBINED_USER_ACTIVITY as PostType, props: {system_post_ids: ['id1']}};
+        const systemPost = TestHelper.fakePost({channel_id: channelId, id: `${COMBINED_USER_ACTIVITY}id1_id2`, type: Post.POST_TYPES.COMBINED_USER_ACTIVITY, props: {system_post_ids: ['id1']}});
 
         await operator.handlePosts({
             actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
             order: [post.id, 'id1'],
-            posts: [systemPost, {...TestHelper.fakePost(channelId), id: 'id1'}],
+            posts: [systemPost, TestHelper.fakePost({id: 'id1', channel_id: channelId})],
             prepareRecordsOnly: false,
         });
 
@@ -139,7 +154,7 @@ describe('removePost', () => {
 });
 
 describe('markPostAsDeleted', () => {
-    const post = TestHelper.fakePost(channelId);
+    const post = TestHelper.fakePost({channel_id: channelId});
 
     it('handle not found database', async () => {
         const {model, error} = await markPostAsDeleted('foo', post);
@@ -169,19 +184,18 @@ describe('markPostAsDeleted', () => {
 });
 
 describe('storePostsForChannel', () => {
-    const post = TestHelper.fakePost(channelId);
-    post.user_id = user.id;
+    const post = TestHelper.fakePost({channel_id: channelId, user_id: user.id});
     const teamId = 'tId1';
-    const channel: Channel = {
+    const channel: Channel = TestHelper.fakeChannel({
         id: channelId,
         team_id: teamId,
         total_msg_count: 0,
-    } as Channel;
-    const channelMember: ChannelMembership = {
+    });
+    const channelMember: ChannelMembership = TestHelper.fakeChannelMember({
         id: 'id',
         channel_id: channelId,
         msg_count: 0,
-    } as ChannelMembership;
+    });
 
     it('handle not found database', async () => {
         const {models, error} = await storePostsForChannel('foo', channelId, [post], [post.id], '', ActionType.POSTS.RECEIVED_IN_CHANNEL, [user], false);
@@ -189,26 +203,28 @@ describe('storePostsForChannel', () => {
         expect(error).toBeTruthy();
     });
 
-    it('base case', async () => {
+    it('base case - CRT on', async () => {
         await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
-        await operator.handleConfigs({
-            configs: [
-                {id: 'CollapsedThreads', value: 'default_on'},
-                {id: 'FeatureFlagCollapsedThreads', value: 'true'},
-            ],
-            configsToDelete: [],
-            prepareRecordsOnly: false,
-        });
 
         const {models, error} = await storePostsForChannel(serverUrl, channelId, [post], [post.id], '', ActionType.POSTS.RECEIVED_IN_CHANNEL, [user], false);
         expect(error).toBeUndefined();
         expect(models).toBeDefined();
         expect(models?.length).toBe(5); // Post, PostsInChannel, User, MyChannel, Thread
     });
+
+    it('base case - CRT off', async () => {
+        await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
+        mockGetIsCRTEnabled.mockImplementationOnce(() => false);
+
+        const {models, error} = await storePostsForChannel(serverUrl, channelId, [post], [post.id], '', ActionType.POSTS.RECEIVED_IN_CHANNEL, [user]);
+        expect(error).toBeUndefined();
+        expect(models).toBeDefined();
+        expect(models?.length).toBe(4); // Post, PostsInChannel, User, MyChannel
+    });
 });
 
 describe('getPosts', () => {
-    const post = TestHelper.fakePost(channelId);
+    const post = TestHelper.fakePost({channel_id: channelId});
 
     it('handle not found database', async () => {
         const posts = await getPosts('foo', [post.id]);
@@ -231,7 +247,7 @@ describe('getPosts', () => {
 });
 
 describe('addPostAcknowledgement', () => {
-    const post = TestHelper.fakePost(channelId);
+    const post = TestHelper.fakePost({channel_id: channelId});
 
     it('handle not found database', async () => {
         const {model, error} = await addPostAcknowledgement('foo', post.id, user.id, 123, false);
@@ -267,14 +283,14 @@ describe('addPostAcknowledgement', () => {
             prepareRecordsOnly: false,
         });
 
-        const {model, error} = await addPostAcknowledgement(serverUrl, post.id, user.id, 123, false);
+        const {model, error} = await addPostAcknowledgement(serverUrl, post.id, user.id, 123);
         expect(error).toBeUndefined();
         expect(model).toBeDefined();
     });
 });
 
 describe('removePostAcknowledgement', () => {
-    const post = TestHelper.fakePost(channelId);
+    const post = TestHelper.fakePost({channel_id: channelId});
 
     it('handle not found database', async () => {
         const {model, error} = await removePostAcknowledgement('foo', post.id, user.id, false);
@@ -296,14 +312,14 @@ describe('removePostAcknowledgement', () => {
             prepareRecordsOnly: false,
         });
 
-        const {model, error} = await removePostAcknowledgement(serverUrl, post.id, user.id, false);
+        const {model, error} = await removePostAcknowledgement(serverUrl, post.id, user.id);
         expect(error).toBeUndefined();
         expect(model).toBeDefined();
     });
 });
 
 describe('deletePosts', () => {
-    const post = TestHelper.fakePost(channelId);
+    const post = TestHelper.fakePost({channel_id: channelId});
 
     it('handle not found database', async () => {
         const {error} = await deletePosts('foo', [post.id]);

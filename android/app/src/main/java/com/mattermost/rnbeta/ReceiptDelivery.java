@@ -1,7 +1,6 @@
 package com.mattermost.rnbeta;
 
 import android.os.Bundle;
-import android.util.Log;
 
 import java.lang.System;
 import java.util.Objects;
@@ -12,6 +11,7 @@ import com.facebook.react.bridge.Arguments;
 
 import com.facebook.react.bridge.WritableMap;
 import com.mattermost.helpers.*;
+import com.mattermost.turbolog.TurboLog;
 
 import okhttp3.Response;
 
@@ -19,7 +19,7 @@ public class ReceiptDelivery {
     private static final String[] ackKeys = new String[]{"post_id", "root_id", "category", "message", "team_id", "channel_id", "channel_name", "type", "sender_id", "sender_name", "version"};
 
     public static Bundle send(final String ackId, final String serverUrl, final String postId, final String type, final boolean isIdLoaded) {
-        Log.i("ReactNative", String.format("Send receipt delivery ACK=%s TYPE=%s to URL=%s with ID-LOADED=%s", ackId, type, serverUrl, isIdLoaded));
+        TurboLog.Companion.i("ReactNative", String.format("Send receipt delivery ACK=%s TYPE=%s to URL=%s with ID-LOADED=%s", ackId, type, serverUrl, isIdLoaded));
         WritableMap options = Arguments.createMap();
         WritableMap headers = Arguments.createMap();
         WritableMap body = Arguments.createMap();
@@ -38,6 +38,7 @@ public class ReceiptDelivery {
             JSONObject jsonResponse = new JSONObject(responseBody);
             return parseAckResponse(jsonResponse);
         } catch (Exception e) {
+            TurboLog.Companion.e("ReactNative", "Send receipt delivery failed " + e.getMessage());
             e.printStackTrace();
             return null;
         }

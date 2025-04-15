@@ -10,6 +10,7 @@ import com.facebook.react.bridge.ReadableMap;
 
 import com.mattermost.networkclient.ApiClientModuleImpl;
 import com.mattermost.networkclient.enums.RetryTypes;
+import com.mattermost.turbolog.TurboLog;
 
 import okhttp3.HttpUrl;
 import okhttp3.Response;
@@ -21,9 +22,12 @@ public class Network {
     private static final Promise emptyPromise = new ResolvePromise();
 
     public static void init(Context context) {
-        final ReactApplicationContext reactContext = (ApiClientModuleImpl.context == null) ? new ReactApplicationContext(context) : ApiClientModuleImpl.context;
-        clientModule = new ApiClientModuleImpl(reactContext);
-        createClientOptions();
+        if (clientModule == null) {
+            clientModule = new ApiClientModuleImpl(context);
+            createClientOptions();
+        } else {
+            TurboLog.Companion.i("ReactNative", "Network already initialized");
+        }
     }
 
     public static void get(String baseUrl, String endpoint, ReadableMap options, Promise promise) {

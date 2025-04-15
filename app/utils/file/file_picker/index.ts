@@ -11,6 +11,7 @@ import Permissions from 'react-native-permissions';
 import {dismissBottomSheet} from '@screens/navigation';
 import {extractFileInfo, lookupMimeType} from '@utils/file';
 import {logWarning} from '@utils/log';
+import {safeDecodeURIComponent} from '@utils/url';
 
 import type {IntlShape} from 'react-intl';
 
@@ -128,7 +129,7 @@ export default class FilePickerUtil {
                 const type = file.type || lookupMimeType(uri);
                 let fileName = file.fileName;
                 if (type.includes('video/') && uri) {
-                    fileName = decodeURIComponent(uri.split('\\').pop()?.split('/').pop() || '');
+                    fileName = safeDecodeURIComponent(uri.split('\\').pop()?.split('/').pop() || '');
                 }
 
                 if (uri) {

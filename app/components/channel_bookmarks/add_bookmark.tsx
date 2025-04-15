@@ -3,14 +3,13 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, View, type Insets} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {Alert, Platform, View, type Insets} from 'react-native';
 
 import Button from '@components/button';
 import {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
-import {TITLE_HEIGHT} from '@screens/bottom_sheet';
+import {BOTTOM_SHEET_ANDROID_OFFSET, TITLE_HEIGHT} from '@screens/bottom_sheet';
 import {bottomSheet, showModal} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -81,7 +80,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
 const AddBookmark = ({bookmarksCount, channelId, currentUserId, canUploadFiles, showLarge}: Props) => {
     const theme = useTheme();
     const {formatMessage} = useIntl();
-    const {bottom} = useSafeAreaInsets();
     const styles = getStyleSheet(theme);
 
     const onPress = useCallback(() => {
@@ -126,14 +124,19 @@ const AddBookmark = ({bookmarksCount, channelId, currentUserId, canUploadFiles, 
             />
         );
 
+        let height = bottomSheetSnapPoint(1, (2 * ITEM_HEIGHT)) + TITLE_HEIGHT;
+        if (Platform.OS === 'android') {
+            height += BOTTOM_SHEET_ANDROID_OFFSET;
+        }
+
         bottomSheet({
             title: formatMessage({id: 'channel_info.add_bookmark', defaultMessage: 'Add a bookmark'}),
             renderContent,
-            snapPoints: [1, bottomSheetSnapPoint(1, (2 * ITEM_HEIGHT), bottom) + TITLE_HEIGHT],
+            snapPoints: [1, height],
             theme,
             closeButtonId: 'close-channel-quick-actions',
         });
-    }, [bottom, bookmarksCount, canUploadFiles, currentUserId, channelId, theme]);
+    }, [bookmarksCount, canUploadFiles, formatMessage, theme, channelId, currentUserId]);
 
     const button = (
         <Button
