@@ -97,7 +97,6 @@ function ScheduledPostIndicator({
                     <Text
                         style={styles.link}
                         onPress={handleSeeAllScheduledPosts}
-                        testID='scheduled_post_header.scheduled_post_indicator.link'
                     >
                         <FormattedMessage
                             id='scheduled_post.channel_indicator.link_to_scheduled_posts.text'

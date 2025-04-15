@@ -604,9 +604,9 @@ describe('post utils', () => {
             expect(result.scheduled_at).toBe(schedulingInfo.scheduled_at);
         });
 
-        it('should include the post priority if provided', () => {
+        it('should not include the post priority if its a post in thread', () => {
             const result: ScheduledPost = scheduledPostFromPost(post, schedulingInfo, postPriority);
-            expect(result.priority).toBe(postPriority);
+            expect(result.priority).toBeUndefined();
         });
 
         it('should include the file IDs if post files are provided', () => {
