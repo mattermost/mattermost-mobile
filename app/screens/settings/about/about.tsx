@@ -128,7 +128,7 @@ const About = ({componentId, config, license}: AboutProps) => {
         const fetchLoadMetric = async () => {
             const isLicensed = license.IsLicensed === 'true';
             const result = await getLicenseLoadMetric(serverUrl, config.Version, isLicensed);
-            
+
             // Only set the metric if we got a number back
             if (result !== null && typeof result === 'number') {
                 setLoadMetric(result);
@@ -202,7 +202,7 @@ const About = ({componentId, config, license}: AboutProps) => {
             const databaseSchemaVersion = intl.formatMessage({id: 'settings.about.database.schema', defaultMessage: 'Database Schema Version: {version}'}, {version: config.SchemaVersion});
             let copiedString = `${appVersion}\n${server}\n${database}\n${databaseSchemaVersion}`;
 
-            if (license.IsLicensed === 'true' && loadMetric !== null) {
+            if (loadMetric !== null) {
                 const loadMetricStr = intl.formatMessage({id: 'settings.about.license.load_metric', defaultMessage: 'Load Metric: {load}'}, {load: loadMetric});
                 copiedString += `\n${loadMetricStr}`;
             }
@@ -210,7 +210,7 @@ const About = ({componentId, config, license}: AboutProps) => {
             Clipboard.setString(copiedString);
             showSnackBar({barType: SNACK_BAR_TYPE.INFO_COPIED, sourceScreen: componentId});
         },
-        [intl, config, license.IsLicensed, loadMetric],
+        [intl, config, loadMetric],
     );
 
     return (
@@ -262,7 +262,7 @@ const About = ({componentId, config, license}: AboutProps) => {
                         {serverVersion}
                     </Text>
                 </View>
-                {license.IsLicensed === 'true' && loadMetric !== null && (
+                {loadMetric !== null && (
                     <View style={styles.group}>
                         <Text
                             style={styles.leftHeading}
