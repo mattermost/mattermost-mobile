@@ -79,11 +79,10 @@ describe('ClientGeneral', () => {
     });
 
     test('getLicenseLoadMetric', async () => {
-        const groupLabel = 'Notification';
         const expectedUrl = `${client.urlVersion}/license/load_metric`;
-        const expectedOptions = {method: 'get', groupLabel};
+        const expectedOptions = {method: 'get'};
 
-        await client.getLicenseLoadMetric(groupLabel);
+        await client.getLicenseLoadMetric();
 
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
     });

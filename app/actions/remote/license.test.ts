@@ -3,9 +3,9 @@
 
 import NetworkManager from '@managers/network_manager';
 import {isMinimumServerVersion} from '@utils/helpers';
-import {forceLogoutIfNecessary} from './session';
 
 import {getLicenseLoadMetric} from './license';
+import {forceLogoutIfNecessary} from './session';
 
 jest.mock('@constants/device', () => ({}), {virtual: true});
 jest.mock('@database/manager', () => ({}), {virtual: true});
@@ -54,7 +54,7 @@ describe('Actions.Remote.License', () => {
 
             expect(isMinimumServerVersion).toHaveBeenCalledWith('10.8.0', 10, 8, 0);
             expect(NetworkManager.getClient).toHaveBeenCalledWith(serverUrl);
-            expect(mockClient.getLicenseLoadMetric).toHaveBeenCalled();
+            expect(mockClient.getLicenseLoadMetric).toHaveBeenCalledWith();
             expect(result).toBe(100);
         });
 
