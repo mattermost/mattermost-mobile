@@ -88,6 +88,7 @@ describe('Server Login - Server List', () => {
         await User.apiAdminLogin(siteTwoUrl);
         ({user: serverTwoUser} = await Setup.apiInit(siteTwoUrl));
         await ServerListScreen.addServerButton.tap();
+        await waitFor(ServerScreen.headerTitleAddServer).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await expect(ServerScreen.headerTitleAddServer).toBeVisible();
         await ServerScreen.connectToServer(serverTwoUrl, serverTwoDisplayName);
         await LoginScreen.login(serverTwoUser);
@@ -109,10 +110,12 @@ describe('Server Login - Server List', () => {
         await waitFor(ServerListScreen.getServerItemActive(serverTwoDisplayName)).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await waitFor(ServerListScreen.getServerItemInactive(serverOneDisplayName)).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
+        await wait(timeouts.TWO_SEC);
         // # Add a third server and log in to the third server
         await User.apiAdminLogin(siteThreeUrl);
         ({user: serverThreeUser} = await Setup.apiInit(siteThreeUrl));
         await ServerListScreen.addServerButton.tap();
+        await waitFor(ServerScreen.headerTitleAddServer).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await expect(ServerScreen.headerTitleAddServer).toBeVisible();
         await ServerScreen.connectToServer(serverThreeUrl, serverThreeDisplayName);
         await LoginScreen.login(serverThreeUser);
@@ -236,13 +239,12 @@ describe('Server Login - Server List', () => {
         await expect(Alert.removeServerTitle(serverOneDisplayName)).toBeVisible();
 
         // # Tap on remove button and go back to server list screen
-        await Alert.removeButton3.tap();
+        await Alert.removeButton1.tap();
         await wait(timeouts.ONE_SEC);
         await ServerListScreen.open();
         if (isIos()) {
             await ServerListScreen.serverListTitle.swipe('up');
         } else if (isAndroid()) {
-            await waitFor(ServerListScreen.serverListTitle).toBeVisible().withTimeout(timeouts.TWO_SEC);
             await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.1, 0.5, 0.3);
         }
 
@@ -252,6 +254,7 @@ describe('Server Login - Server List', () => {
 
         // # Add first server back to the list and log in to the first server
         await ServerListScreen.addServerButton.tap();
+        await waitFor(ServerScreen.headerTitleAddServer).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await expect(ServerScreen.headerTitleAddServer).toBeVisible();
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(serverOneUser);
@@ -277,7 +280,7 @@ describe('Server Login - Server List', () => {
         await expect(Alert.logoutTitle(serverThreeDisplayName)).toBeVisible();
 
         // # Tap on logout button
-        await Alert.logoutButton3.tap();
+        await Alert.logoutButton.tap();
 
         // * Verify third server is logged out
         await ServerListScreen.getServerItemInactive(serverThreeDisplayName).swipe('left');
@@ -301,6 +304,7 @@ describe('Server Login - Server List', () => {
             await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.1, 0.5, 0.3);
         }
         await ServerListScreen.addServerButton.tap();
+        await waitFor(ServerScreen.headerTitleAddServer).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await expect(ServerScreen.headerTitleAddServer).toBeVisible();
         await ServerScreen.serverUrlInput.replaceText(serverTwoUrl);
         if (isAndroid()) {
