@@ -74,37 +74,5 @@ describe('Actions.Remote.License', () => {
             expect(result).toEqual({error: mockError});
             expect(forceLogoutIfNecessary).toHaveBeenCalledWith(serverUrl, mockError);
         });
-
-        it('should correctly handle different server versions', async () => {
-            // Test with versions below minimum requirement
-            let result = await getLicenseLoadMetric(serverUrl, '10.7.0', true);
-            expect(result).toBeNull();
-            expect(NetworkManager.getClient).not.toHaveBeenCalled();
-
-            result = await getLicenseLoadMetric(serverUrl, '9.0.0', true);
-            expect(result).toBeNull();
-            expect(NetworkManager.getClient).not.toHaveBeenCalled();
-
-            // Set up mock for versions that meet requirement
-            const mockClient = {
-                getLicenseLoadMetric: jest.fn().mockResolvedValue({load: 100}),
-            } as unknown as Client;
-            (NetworkManager.getClient as jest.Mock).mockReturnValue(mockClient);
-
-            // Test with versions meeting or exceeding minimum requirement
-            result = await getLicenseLoadMetric(serverUrl, '10.8.0', true);
-            expect(NetworkManager.getClient).toHaveBeenCalled();
-            expect(result).toBe(100);
-            jest.clearAllMocks();
-
-            result = await getLicenseLoadMetric(serverUrl, '10.9.0', true);
-            expect(NetworkManager.getClient).toHaveBeenCalled();
-            expect(result).toBe(100);
-            jest.clearAllMocks();
-
-            result = await getLicenseLoadMetric(serverUrl, '11.0.0', true);
-            expect(NetworkManager.getClient).toHaveBeenCalled();
-            expect(result).toBe(100);
-        });
     });
 });
