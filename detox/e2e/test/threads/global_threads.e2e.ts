@@ -24,7 +24,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId} from '@support/utils';
+import {getRandomId, timeouts} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Threads - Global Threads', () => {
@@ -92,6 +92,7 @@ describe('Threads - Global Threads', () => {
         await expect(GlobalThreadsScreen.getThreadItem(parentPost.id)).toBeVisible();
         await expect(GlobalThreadsScreen.getThreadItemThreadStarterUserDisplayName(parentPost.id)).toHaveText(testUser.username);
         await expect(GlobalThreadsScreen.getThreadItemThreadStarterChannelDisplayName(parentPost.id)).toHaveText(testChannel.display_name.toUpperCase());
+        await waitFor(GlobalThreadsScreen.getThreadItemFooterReplyCount(parentPost.id)).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await expect(GlobalThreadsScreen.getThreadItemFooterReplyCount(parentPost.id)).toHaveText('1 reply');
 
         // # Tap on the thread

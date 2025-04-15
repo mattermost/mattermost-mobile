@@ -313,17 +313,16 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const { context, github } = require('@actions/github');
             const prNumber = context.payload.pull_request.number;
             const commentBody = `
               ## E2E Test Report
-              - **Status**: ${{ steps.determine-status.outputs.STATUS }}
-              - **Failures**: ${{ steps.summary.outputs.FAILURES }}
-              - **Run ID**: ${{ needs.generate-specs.outputs.build_id }}
-              - **Run Type**: ${{ inputs.run-type }}
-              - **Branch**: ${{ needs.generate-specs.outputs.mobile_ref }}
-              - **Commit Hash**: ${{ needs.generate-specs.outputs.mobile_sha }}
-              - **Report URL**: [View Report](${{ steps.set-url.outputs.TARGET_URL }})
+              - **Status**: ${process.env.STATUS}
+              - **Failures**: ${process.env.FAILURES}
+              - **Run ID**: ${process.env.BUILD_ID}
+              - **Run Type**: ${process.env.RUN_TYPE}
+              - **Branch**: ${process.env.MOBILE_REF}
+              - **Commit Hash**: ${process.env.MOBILE_SHA}
+              - **Report URL**: [View Report](${process.env.TARGET_URL})
             `;
 
             await github.rest.issues.createComment({
@@ -332,3 +331,11 @@ jobs:
               issue_number: prNumber,
               body: commentBody,
             });
+        env:
+          STATUS: ${{ steps.determine-status.outputs.STATUS }}
+          FAILURES: ${{ steps.summary.outputs.FAILURES }}
+          BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
+          RUN_TYPE: ${{ inputs.run-type }}
+          MOBILE_REF: ${{ needs.generate-specs.outputs.mobile_ref }}
+          MOBILE_SHA: ${{ needs.generate-specs.outputs.mobile_sha }}
+          TARGET_URL: ${{ steps.set-url.outputs.TARGET_URL }}

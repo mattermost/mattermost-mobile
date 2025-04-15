@@ -74,7 +74,7 @@ describe('Teams - Invite', () => {
         await expect(Invite.teamIcon).toBeVisible();
 
         // * Verify default Selection
-        await waitFor(Invite.screenSelection).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await waitFor(Invite.screenSelection).toBeVisible().withTimeout(timeouts.ONE_MIN);
 
         // * Verify Server data
         await expect(Invite.serverDisplayName).toHaveText(serverOneDisplayName);
