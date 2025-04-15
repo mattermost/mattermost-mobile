@@ -47,13 +47,16 @@ jobs:
           path: Mattermost-unsigned.ipa
           name: Mattermost-unsigned.ipa
 
-      -name: ci/sbom-ios
-        uses: ./.github/actions/snyk-sbom
-        working-directory: ./ios
-        with:
-          sbom_name: 'sbom_ios.json'
-          snyk_token: "${{ secrets.SNYK_TOKEN }}"
-          tag: "${{ github.ref_name }}"
+      - name: ci/install-snyk
+        run: npm install -g snyk@1.1296.1
+
+      - name: ci/generate-ios-sbom
+        env:
+          SNYK_TOKEN: "${{ secrets.SNYK_TOKEN }}"
+        run: |
+          cd ios/
+          snyk sbom --format=cyclonedx1.6+json --json-file-output=../sbom-ios.json --all-projects
+        shell: bash
 
   build-android-unsigned:
     runs-on: ubuntu-22.04
@@ -81,19 +84,76 @@ jobs:
           path: Mattermost-unsigned.apk
           name: Mattermost-unsigned.apk
 
-      -name: ci/sbom-android
-          uses: ./.github/actions/snyk-sbom
-          working-directory: ./android
-          with:
-            sbom_name: 'sbom_android.json'
-            snyk_token: "${{ secrets.SNYK_TOKEN }}"
-            tag: "${{ github.ref_name }}"
+      - name: ci/install-snyk
+        run: npm install -g snyk@1.1296.1
+
+      - name: ci/generate-android-sbom
+        env:
+          SNYK_TOKEN: "${{ secrets.SNYK_TOKEN }}"
+        run: |
+          cd android/
+          snyk sbom --format=cyclonedx1.6+json --all-projects --json-file-output=../sbom-android.json
+        shell: bash
+
+  generate-consolidated-sbom:
+    runs-on: ubuntu-22.04
+    needs:
+      - build-ios-unsigned
+      - build-android-unsigned
+    steps:
+      - name: ci/checkout-repo
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: ci/download-sboms
+        uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e # v4.1.7
+        with:
+          path: ${{ github.workspace }}
+          merge-multiple: true
+
+      - name: ci/install-snyk
+        run: npm install -g snyk@1.1296.1
+
+      - name: ci/setup-cyclonedx-cli
+        run: |
+          curl -sSfL https://github.com/CycloneDX/cyclonedx-cli/releases/download/0.27.2/cyclonedx-linux-x64 -o cyclonedx
+          chmod +x cyclonedx
+          sudo mv cyclonedx /usr/local/bin/
+
+      - name: ci/generate-consolidated-sbom
+        env:
+          SNYK_TOKEN: "${{ secrets.SNYK_TOKEN }}"
+          SBOM_FILENAME: "sbom-${{ github.event.repository.name }}-${{ github.ref_name }}.json"
+        run: |
+          # Generate top-level SBOM
+          snyk sbom --format=cyclonedx1.6+json --json-file-output=sbom-top-level.json
+          
+          # Consolidate SBOMs
+          cyclonedx merge \
+            --input-files "sbom-top-level.json" "sbom-android.json" "sbom-ios.json" \
+            --input-format=json \
+            --output-file="$SBOM_FILENAME" \
+            --output-format=json \
+            --output-version=v1_6
+          
+          # Validate the consolidated SBOM
+          cyclonedx validate --input-file="$SBOM_FILENAME"
+          
+          # Cleanup temporary files
+          rm -f "sbom-top-level.json" "sbom-android.json" "sbom-ios.json"
+        shell: bash
+
+      - name: ci/upload-consolidated-sbom
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        with:
+          path: sbom-${{ github.event.repository.name }}-${{ github.ref_name }}.json
+          name: sbom-${{ github.event.repository.name }}-${{ github.ref_name }}.json
 
   release:
     runs-on: ubuntu-22.04
     needs:
       - build-ios-unsigned
       - build-android-unsigned
+      - generate-consolidated-sbom
     steps:
       - name: ci/checkout-repo
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -115,3 +175,9 @@ jobs:
           GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
         run: bundle exec fastlane github
         working-directory: ./fastlane
+
+      - name: release/upload-sbom-to-release
+        env:
+          GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
+        run: |
+          gh release upload "${{ github.ref_name }}" "sbom-${{ github.event.repository.name }}-${{ github.ref_name }}.json"
