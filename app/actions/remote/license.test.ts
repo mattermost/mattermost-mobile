@@ -3,6 +3,7 @@
 
 import NetworkManager from '@managers/network_manager';
 import {isMinimumServerVersion} from '@utils/helpers';
+import {forceLogoutIfNecessary} from './session';
 
 import {getLicenseLoadMetric} from './license';
 
@@ -17,12 +18,8 @@ jest.mock('@utils/helpers', () => ({
     isMinimumServerVersion: jest.fn(),
 }));
 
-jest.mock('@utils/log', () => ({
-    logDebug: jest.fn(),
-}));
-
-jest.mock('@utils/errors', () => ({
-    getFullErrorMessage: jest.fn(),
+jest.mock('./session', () => ({
+    forceLogoutIfNecessary: jest.fn(),
 }));
 
 describe('Actions.Remote.License', () => {
@@ -73,16 +70,18 @@ describe('Actions.Remote.License', () => {
             expect(result).toBeNull();
         });
 
-        it('should return null if API call fails', async () => {
+        it('should return error and call forceLogoutIfNecessary if API call fails', async () => {
+            const mockError = new Error('API error');
             const mockClient = {
-                getLicenseLoadMetric: jest.fn().mockRejectedValue(new Error('API error')),
+                getLicenseLoadMetric: jest.fn().mockRejectedValue(mockError),
             };
             (NetworkManager.getClient as jest.Mock).mockReturnValue(mockClient);
             (isMinimumServerVersion as jest.Mock).mockReturnValueOnce(true);
 
             const result = await getLicenseLoadMetric(serverUrl, '10.8.0', true);
 
-            expect(result).toBeNull();
+            expect(result).toEqual({error: mockError});
+            expect(forceLogoutIfNecessary).toHaveBeenCalledWith(serverUrl, mockError);
         });
     });
 });

@@ -2,9 +2,9 @@
 // See LICENSE.txt for license information.
 
 import NetworkManager from '@managers/network_manager';
-import {getFullErrorMessage} from '@utils/errors';
 import {isMinimumServerVersion} from '@utils/helpers';
-import {logDebug} from '@utils/log';
+
+import {forceLogoutIfNecessary} from './session';
 
 export const getLicenseLoadMetric = async (serverUrl: string, serverVersion: string, isLicensed: boolean) => {
     if (!isLicensed || !isMinimumServerVersion(serverVersion, 10, 8, 0)) {
@@ -19,8 +19,7 @@ export const getLicenseLoadMetric = async (serverUrl: string, serverVersion: str
         }
         return null;
     } catch (error) {
-        // Silently fail if the endpoint is not available
-        logDebug('error on getLicenseLoadMetric', getFullErrorMessage(error));
-        return null;
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
     }
 };
