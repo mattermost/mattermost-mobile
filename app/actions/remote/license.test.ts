@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Client} from '@client/rest';
 import NetworkManager from '@managers/network_manager';
-import {isMinimumServerVersion} from '@utils/helpers';
 
 import {getLicenseLoadMetric} from './license';
 import {forceLogoutIfNecessary} from './session';
@@ -12,10 +12,6 @@ jest.mock('@database/manager', () => ({}), {virtual: true});
 
 jest.mock('@managers/network_manager', () => ({
     getClient: jest.fn(),
-}));
-
-jest.mock('@utils/helpers', () => ({
-    isMinimumServerVersion: jest.fn(),
 }));
 
 jest.mock('./session', () => ({
@@ -37,7 +33,6 @@ describe('Actions.Remote.License', () => {
         });
 
         it('should return null if server version is less than minimum', async () => {
-            (isMinimumServerVersion as jest.Mock).mockReturnValueOnce(false);
             const result = await getLicenseLoadMetric(serverUrl, '10.7.0', true);
             expect(result).toBeNull();
             expect(NetworkManager.getClient).not.toHaveBeenCalled();
@@ -46,13 +41,11 @@ describe('Actions.Remote.License', () => {
         it('should fetch and return load metric if licensed and minimum version is met', async () => {
             const mockClient = {
                 getLicenseLoadMetric: jest.fn().mockResolvedValue({load: 100}),
-            };
+            } as unknown as Client;
             (NetworkManager.getClient as jest.Mock).mockReturnValue(mockClient);
-            (isMinimumServerVersion as jest.Mock).mockReturnValueOnce(true);
 
             const result = await getLicenseLoadMetric(serverUrl, '10.8.0', true);
 
-            expect(isMinimumServerVersion).toHaveBeenCalledWith('10.8.0', 10, 8, 0);
             expect(NetworkManager.getClient).toHaveBeenCalledWith(serverUrl);
             expect(mockClient.getLicenseLoadMetric).toHaveBeenCalledWith();
             expect(result).toBe(100);
@@ -61,9 +54,8 @@ describe('Actions.Remote.License', () => {
         it('should return null if response does not contain load or load is 0', async () => {
             const mockClient = {
                 getLicenseLoadMetric: jest.fn().mockResolvedValue({load: 0}),
-            };
+            } as unknown as Client;
             (NetworkManager.getClient as jest.Mock).mockReturnValue(mockClient);
-            (isMinimumServerVersion as jest.Mock).mockReturnValueOnce(true);
 
             const result = await getLicenseLoadMetric(serverUrl, '10.8.0', true);
 
@@ -74,14 +66,45 @@ describe('Actions.Remote.License', () => {
             const mockError = new Error('API error');
             const mockClient = {
                 getLicenseLoadMetric: jest.fn().mockRejectedValue(mockError),
-            };
+            } as unknown as Client;
             (NetworkManager.getClient as jest.Mock).mockReturnValue(mockClient);
-            (isMinimumServerVersion as jest.Mock).mockReturnValueOnce(true);
 
             const result = await getLicenseLoadMetric(serverUrl, '10.8.0', true);
 
             expect(result).toEqual({error: mockError});
             expect(forceLogoutIfNecessary).toHaveBeenCalledWith(serverUrl, mockError);
+        });
+
+        it('should correctly handle different server versions', async () => {
+            // Test with versions below minimum requirement
+            let result = await getLicenseLoadMetric(serverUrl, '10.7.0', true);
+            expect(result).toBeNull();
+            expect(NetworkManager.getClient).not.toHaveBeenCalled();
+
+            result = await getLicenseLoadMetric(serverUrl, '9.0.0', true);
+            expect(result).toBeNull();
+            expect(NetworkManager.getClient).not.toHaveBeenCalled();
+
+            // Set up mock for versions that meet requirement
+            const mockClient = {
+                getLicenseLoadMetric: jest.fn().mockResolvedValue({load: 100}),
+            } as unknown as Client;
+            (NetworkManager.getClient as jest.Mock).mockReturnValue(mockClient);
+
+            // Test with versions meeting or exceeding minimum requirement
+            result = await getLicenseLoadMetric(serverUrl, '10.8.0', true);
+            expect(NetworkManager.getClient).toHaveBeenCalled();
+            expect(result).toBe(100);
+            jest.clearAllMocks();
+
+            result = await getLicenseLoadMetric(serverUrl, '10.9.0', true);
+            expect(NetworkManager.getClient).toHaveBeenCalled();
+            expect(result).toBe(100);
+            jest.clearAllMocks();
+
+            result = await getLicenseLoadMetric(serverUrl, '11.0.0', true);
+            expect(NetworkManager.getClient).toHaveBeenCalled();
+            expect(result).toBe(100);
         });
     });
 });
