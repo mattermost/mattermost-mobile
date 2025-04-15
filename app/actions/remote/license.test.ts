@@ -16,7 +16,7 @@ jest.mock('./session');
 
 describe('Actions.Remote.License', () => {
     const serverUrl = 'https://server.com';
-    
+
     beforeEach(() => {
         jest.clearAllMocks();
     });
