@@ -20,18 +20,10 @@ import {
 import {getAdminAccount, getRandomId, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
-import {launchAppWithRetry} from '../../test/setup';
-
 describe('Channels - Unarchive Channel', () => {
     const serverOneDisplayName = 'Server 1';
 
     beforeAll(async () => {
-        try {
-            await device.reloadReactNative();
-        } catch (error) {
-            // # Reload failed, retrying app launch.
-            await launchAppWithRetry();
-        }
 
         // # Log in to server as admin
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);

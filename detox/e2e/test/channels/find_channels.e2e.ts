@@ -28,8 +28,6 @@ import {
 import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
-import {launchAppWithRetry} from '../../test/setup';
-
 describe('Channels - Find Channels', () => {
     const serverOneDisplayName = 'Server 1';
     let testChannel: any;
@@ -41,13 +39,6 @@ describe('Channels - Find Channels', () => {
         testChannel = channel;
         testTeam = team;
         testUser = user;
-
-        try {
-            await device.reloadReactNative();
-        } catch (error) {
-            // # Reload failed, retrying app launch.
-            await launchAppWithRetry();
-        }
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);

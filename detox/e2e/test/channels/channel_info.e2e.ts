@@ -23,8 +23,6 @@ import {
 import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
-import {launchAppWithRetry} from '../../test/setup';
-
 describe('Channels - Channel Info', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
@@ -33,13 +31,6 @@ describe('Channels - Channel Info', () => {
     beforeAll(async () => {
         const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
-
-        try {
-            await device.reloadReactNative();
-        } catch (error) {
-            // # Reload failed, retrying app launch.
-            await launchAppWithRetry();
-        }
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
