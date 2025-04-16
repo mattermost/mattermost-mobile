@@ -2,10 +2,11 @@
 // See LICENSE.txt for license information.
 
 import TurboLogger from '@mattermost/react-native-turbo-log';
-import {Alert} from 'react-native';
+import {Alert, Platform} from 'react-native';
 import Share from 'react-native-share';
 
 import {shareLogs, getDefaultReportAProblemLink, metadataToString, emailLogs} from './share_logs';
+import {tryOpenURL} from './url';
 
 jest.mock('react-native-share', () => ({
     open: jest.fn(),
@@ -13,6 +14,10 @@ jest.mock('react-native-share', () => ({
     Social: {
         EMAIL: 'email',
     },
+}));
+
+jest.mock('./url', () => ({
+    tryOpenURL: jest.fn(),
 }));
 
 jest.mock('react-native/Libraries/Alert/Alert', () => ({
@@ -110,79 +115,110 @@ describe('emailLogs', () => {
         appPlatform: 'ios',
     };
 
-    beforeEach(() => {
-        jest.clearAllMocks();
-
-        const logPaths = ['/path/to/log1', '/path/to/log2'];
-        jest.mocked(TurboLogger.getLogPaths).mockResolvedValue(logPaths);
+    let originalPlatform: typeof Platform.OS;
+    beforeAll(() => {
+        originalPlatform = Platform.OS;
     });
 
-    it('should share logs with attachments when excludeLogs is false', async () => {
-        await emailLogs(metadata, 'My Site', 'support@example.com', false);
-
-        expect(Share.shareSingle).toHaveBeenCalledWith(expect.objectContaining({
-            subject: 'Problem with My Site React Native app',
-            email: 'support@example.com',
-            urls: ['file:///path/to/log1', 'file:///path/to/log2'],
-            social: Share.Social.EMAIL,
-        }));
+    afterAll(() => {
+        Platform.OS = originalPlatform;
     });
 
-    it('should handle an empty list of log paths', async () => {
-        jest.mocked(TurboLogger.getLogPaths).mockResolvedValue([]);
+    describe('android', () => {
+        beforeAll(() => {
+            Platform.OS = 'android';
+        });
+        beforeEach(() => {
+            jest.clearAllMocks();
 
-        await emailLogs(metadata, 'My Site', 'support@example.com', false);
+            const logPaths = ['/path/to/log1', '/path/to/log2'];
+            jest.mocked(TurboLogger.getLogPaths).mockResolvedValue(logPaths);
+        });
 
-        expect(Share.shareSingle).toHaveBeenCalledWith(expect.objectContaining({
-            subject: 'Problem with My Site React Native app',
-            email: 'support@example.com',
-            urls: undefined,
-            social: Share.Social.EMAIL,
-        }));
+        it('should share logs with attachments when excludeLogs is false', async () => {
+            await emailLogs(metadata, 'My Site', 'support@example.com', false);
+
+            expect(Share.shareSingle).toHaveBeenCalledWith(expect.objectContaining({
+                subject: 'Problem with My Site React Native app',
+                email: 'support@example.com',
+                urls: ['file:///path/to/log1', 'file:///path/to/log2'],
+                social: Share.Social.EMAIL,
+            }));
+        });
+
+        it('should handle an empty list of log paths', async () => {
+            jest.mocked(TurboLogger.getLogPaths).mockResolvedValue([]);
+
+            await emailLogs(metadata, 'My Site', 'support@example.com', false);
+
+            expect(Share.shareSingle).toHaveBeenCalledWith(expect.objectContaining({
+                subject: 'Problem with My Site React Native app',
+                email: 'support@example.com',
+                urls: undefined,
+                social: Share.Social.EMAIL,
+            }));
+        });
+
+        it('should share without logs when excludeLogs is true', async () => {
+            await emailLogs(metadata, 'My Site', 'support@example.com', true);
+
+            expect(Share.shareSingle).toHaveBeenCalledWith(expect.objectContaining({
+                subject: 'Problem with My Site React Native app',
+                email: 'support@example.com',
+                urls: undefined,
+                social: Share.Social.EMAIL,
+            }));
+        });
+
+        it('should handle errors', async () => {
+            const error = new Error('Share failed');
+            jest.mocked(Share.shareSingle).mockRejectedValue(error);
+
+            await emailLogs(metadata, 'My Site', 'support@example.com');
+
+            expect(Alert.alert).toHaveBeenCalledWith('Error', 'Error: Share failed');
+        });
+
+        it('should pass the correct metadata to the share function', async () => {
+            await emailLogs(metadata, 'My Site', 'support@example.com', false);
+
+            expect(Share.shareSingle).toHaveBeenCalledWith(expect.objectContaining({
+                message: expect.stringContaining('Current User ID: user1'),
+            }));
+
+            expect(Share.shareSingle).toHaveBeenCalledWith(expect.objectContaining({
+                message: expect.stringContaining('Current Team ID: team1'),
+            }));
+
+            expect(Share.shareSingle).toHaveBeenCalledWith(expect.objectContaining({
+                message: expect.stringContaining('Server Version: 1.0.0'),
+            }));
+
+            expect(Share.shareSingle).toHaveBeenCalledWith(expect.objectContaining({
+                message: expect.stringContaining('App Version: 2.0.0'),
+            }));
+
+            expect(Share.shareSingle).toHaveBeenCalledWith(expect.objectContaining({
+                message: expect.stringContaining('App Platform: ios'),
+            }));
+        });
     });
+    describe('ios', () => {
+        beforeAll(() => {
+            Platform.OS = 'ios';
+        });
 
-    it('should share without logs when excludeLogs is true', async () => {
-        await emailLogs(metadata, 'My Site', 'support@example.com', true);
+        it('should open the correct mailto link', async () => {
+            await emailLogs(metadata, 'My Site', 'support@example.com', false);
 
-        expect(Share.shareSingle).toHaveBeenCalledWith(expect.objectContaining({
-            subject: 'Problem with My Site React Native app',
-            email: 'support@example.com',
-            urls: undefined,
-            social: Share.Social.EMAIL,
-        }));
-    });
-
-    it('should handle errors', async () => {
-        const error = new Error('Share failed');
-        jest.mocked(Share.shareSingle).mockRejectedValue(error);
-
-        await emailLogs(metadata, 'My Site', 'support@example.com');
-
-        expect(Alert.alert).toHaveBeenCalledWith('Error', 'Error: Share failed');
-    });
-
-    it('should pass the correct metadata to the share function', async () => {
-        await emailLogs(metadata, 'My Site', 'support@example.com', false);
-
-        expect(Share.shareSingle).toHaveBeenCalledWith(expect.objectContaining({
-            message: expect.stringContaining('Current User ID: user1'),
-        }));
-
-        expect(Share.shareSingle).toHaveBeenCalledWith(expect.objectContaining({
-            message: expect.stringContaining('Current Team ID: team1'),
-        }));
-
-        expect(Share.shareSingle).toHaveBeenCalledWith(expect.objectContaining({
-            message: expect.stringContaining('Server Version: 1.0.0'),
-        }));
-
-        expect(Share.shareSingle).toHaveBeenCalledWith(expect.objectContaining({
-            message: expect.stringContaining('App Version: 2.0.0'),
-        }));
-
-        expect(Share.shareSingle).toHaveBeenCalledWith(expect.objectContaining({
-            message: expect.stringContaining('App Platform: ios'),
-        }));
+            expect(tryOpenURL).toHaveBeenCalledTimes(1);
+            expect(tryOpenURL).toHaveBeenCalledWith(expect.stringMatching(/^mailto:support@example\.com\?subject=Problem%20with%20My%20Site%20React%20Native%20app&body=/));
+            expect(tryOpenURL).toHaveBeenCalledWith(expect.stringContaining(encodeURIComponent('Current User ID: user1')));
+            expect(tryOpenURL).toHaveBeenCalledWith(expect.stringContaining(encodeURIComponent('Current Team ID: team1')));
+            expect(tryOpenURL).toHaveBeenCalledWith(expect.stringContaining(encodeURIComponent('Server Version: 1.0.0')));
+            expect(tryOpenURL).toHaveBeenCalledWith(expect.stringContaining(encodeURIComponent('App Version: 2.0.0')));
+            expect(tryOpenURL).toHaveBeenCalledWith(expect.stringContaining(encodeURIComponent('App Platform: ios')));
+        });
     });
 });
 
