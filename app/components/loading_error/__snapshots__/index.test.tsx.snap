@@ -102,16 +102,12 @@ exports[`Loading Error should match snapshot 1`] = `
     onStartShouldSetResponder={[Function]}
     style={
       {
-        "alignItems": "center",
         "backgroundColor": "#ffffff",
         "borderRadius": 4,
-        "flex": 0,
-        "height": 48,
-        "justifyContent": "center",
         "marginTop": 24,
         "opacity": 1,
         "paddingHorizontal": 24,
-        "paddingVertical": 14,
+        "paddingVertical": 12,
       }
     }
   >
@@ -119,17 +115,10 @@ exports[`Loading Error should match snapshot 1`] = `
       style={
         [
           {
-            "alignItems": "center",
             "fontFamily": "OpenSans-SemiBold",
-            "fontWeight": "600",
-            "justifyContent": "center",
-            "padding": 1,
-            "textAlignVertical": "center",
-          },
-          {
             "fontSize": 16,
-            "lineHeight": 18,
-            "marginTop": 1,
+            "fontWeight": "600",
+            "lineHeight": 24,
           },
           {
             "color": "#1c58d9",

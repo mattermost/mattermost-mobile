@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fireEvent, render} from '@testing-library/react-native';
+import {fireEvent, render, within} from '@testing-library/react-native';
 import React, {type ComponentProps} from 'react';
 import {View, Text} from 'react-native';
 
@@ -61,13 +61,13 @@ describe('components/button', () => {
         const container = getByTestId('test-button-text-container');
 
         // When icon is on the left, it should be the first child
-        expect(container.children[0].props.testID).toEqual('test-button-icon');
+        expect(within(container.children[0]).getByTestId('test-button-icon')).toBeVisible();
 
         props.isIconOnTheRight = true;
         rerender(<Button {...props}/>);
 
         // When icon is on the right, it should be the last child
-        expect(container.children[1].props.testID).toEqual('test-button-icon');
+        expect(within(container.children[1]).getByTestId('test-button-icon')).toBeVisible();
     });
 
     it('should render custom icon component', () => {
