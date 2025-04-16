@@ -84,6 +84,7 @@ class ScheduledMessageScreen {
     };
 
     clickRescheduleOption = async () => {
+        await wait(timeouts.HALF_MIN);
         await this.rescheduleOption.tap();
         if (isIos()) {
             await waitFor(this.customDateTimePickerScreen).toBeVisible().withTimeout(timeouts.FOUR_SEC);

@@ -240,6 +240,7 @@ describe('Server Login - Server List', () => {
         await waitFor(Alert.removeServerTitle(serverOneDisplayName)).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Tap on remove button and go back to server list screen
+        await waitFor(Alert.removeButton1).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await Alert.removeButton1.tap();
         await wait(timeouts.ONE_SEC);
         await ServerListScreen.open();
@@ -281,6 +282,7 @@ describe('Server Login - Server List', () => {
         await waitFor(Alert.logoutTitle(serverThreeDisplayName)).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Tap on logout button
+        await waitFor(Alert.logoutButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await Alert.logoutButton.tap();
 
         // * Verify third server is logged out

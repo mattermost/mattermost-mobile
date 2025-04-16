@@ -27,6 +27,8 @@ import {
 import {getRandomId, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
+import {launchAppWithRetry} from '../../test/setup';
+
 describe('Messaging - Pin and Unpin Message', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
@@ -34,6 +36,12 @@ describe('Messaging - Pin and Unpin Message', () => {
     let testChannel: any;
 
     beforeAll(async () => {
+        try {
+            await device.reloadReactNative();
+        } catch (error) {
+            // # Reload failed, retrying app launch.
+            await launchAppWithRetry();
+        }
         const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
 

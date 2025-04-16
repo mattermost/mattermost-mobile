@@ -17,7 +17,7 @@ let isFirstLaunch = true;
  * Launch the app with retry mechanism
  * @returns {Promise<void>}
  */
-async function launchAppWithRetry() {
+export async function launchAppWithRetry(): Promise<void> {
     let lastError;
 
     for (let attempt = 1; attempt <= MAX_RETRY_ATTEMPTS; attempt++) {
@@ -92,5 +92,5 @@ beforeAll(async () => {
 
 // Add this to speed up test cleanup
 afterAll(async () => {
-    // await device.terminateApp();
+    await device.terminateApp();
 });
