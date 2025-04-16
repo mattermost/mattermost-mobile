@@ -8,7 +8,7 @@ import SettingItem from '@components/settings/item';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {goToScreen} from '@screens/navigation';
-import {shareLogs} from '@utils/share_logs';
+import {emailLogs} from '@utils/share_logs';
 
 import type {ReportAProblemMetadata} from '@typings/screens/report_a_problem';
 
@@ -39,7 +39,7 @@ const ReportProblem = ({
 
     const onPress = useCallback(() => {
         if (skipReportAProblemScreen) {
-            shareLogs(metadata, siteName, reportAProblemMail, true);
+            emailLogs(metadata, siteName, reportAProblemMail, true);
         } else {
             const message = onlyAllowLogs ? messages.downloadLogs : messages.reportProblem;
             const title = intl.formatMessage(message);

@@ -8,7 +8,7 @@ import {View} from 'react-native';
 import {Screens} from '@constants';
 import {renderWithIntl} from '@test/intl-test-helper';
 import {logDebug} from '@utils/log';
-import {getDefaultReportAProblemLink, shareLogs} from '@utils/share_logs';
+import {emailLogs, getDefaultReportAProblemLink, shareLogs} from '@utils/share_logs';
 import {tryOpenURL} from '@utils/url';
 
 import AppLogs from './app_logs';
@@ -17,6 +17,7 @@ import ReportProblem from './report_problem';
 jest.mock('@utils/share_logs', () => ({
     ...jest.requireActual('@utils/share_logs'),
     shareLogs: jest.fn(),
+    emailLogs: jest.fn(),
     getDefaultReportAProblemLink: jest.fn().mockReturnValue('default-link'),
 }));
 
@@ -89,7 +90,7 @@ describe('screens/report_a_problem/report_problem', () => {
 
         await act(async () => {
             fireEvent.press(getByText('Report a problem'));
-            expect(shareLogs).toHaveBeenCalledWith(
+            expect(emailLogs).toHaveBeenCalledWith(
                 props.metadata,
                 props.siteName,
                 props.reportAProblemMail,
@@ -113,7 +114,7 @@ describe('screens/report_a_problem/report_problem', () => {
 
         await act(async () => {
             fireEvent.press(getByText('Report a problem'));
-            expect(shareLogs).toHaveBeenCalledWith(
+            expect(emailLogs).toHaveBeenCalledWith(
                 props.metadata,
                 props.siteName,
                 props.reportAProblemMail,

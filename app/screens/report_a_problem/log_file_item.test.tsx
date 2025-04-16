@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {act, render, waitFor} from '@testing-library/react-native';
+import {render, waitFor} from '@testing-library/react-native';
 import React from 'react';
 
 import {getFileSize} from '@utils/file';
@@ -27,10 +27,8 @@ describe('screens/report_a_problem/log_file_item', () => {
             <LogFileItem path={filePath}/>,
         );
 
-        await act(async () => {
-            await waitFor(() => {
-                expect(getByText('file.txt')).toBeTruthy();
-            });
+        await waitFor(() => {
+            expect(getByText('file.txt')).toBeTruthy();
         });
     });
 
@@ -38,11 +36,8 @@ describe('screens/report_a_problem/log_file_item', () => {
         const {getByText} = render(
             <LogFileItem path={filePath}/>,
         );
-
-        await act(async () => {
-            await waitFor(() => {
-                expect(getByText('TXT 1024 B')).toBeTruthy();
-            });
+        await waitFor(() => {
+            expect(getByText('TXT 1024 B')).toBeTruthy();
         });
     });
 
@@ -51,10 +46,8 @@ describe('screens/report_a_problem/log_file_item', () => {
             <LogFileItem path={filePath}/>,
         );
 
-        await act(async () => {
-            await waitFor(() => {
-                expect(getFileSize).toHaveBeenCalledWith(filePath);
-            });
+        await waitFor(() => {
+            expect(getFileSize).toHaveBeenCalledWith(filePath);
         });
     });
 
@@ -65,10 +58,8 @@ describe('screens/report_a_problem/log_file_item', () => {
             <LogFileItem path={filePath}/>,
         );
 
-        await act(async () => {
-            await waitFor(() => {
-                expect(getByText('TXT 2 KB')).toBeTruthy();
-            });
+        await waitFor(() => {
+            expect(getByText('TXT 2 KB')).toBeTruthy();
         });
     });
 
@@ -77,11 +68,9 @@ describe('screens/report_a_problem/log_file_item', () => {
             <LogFileItem path={filePath}/>,
         );
 
-        await act(async () => {
-            await waitFor(() => {
-                const icon = getByTestId('log-file-icon');
-                expect(icon.props.name).toBe('file-text-outline');
-            });
+        await waitFor(() => {
+            const icon = getByTestId('log-file-icon');
+            expect(icon.props.name).toBe('file-text-outline');
         });
     });
 });

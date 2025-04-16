@@ -32,9 +32,7 @@ const styles = StyleSheet.create({
     container: {
         flexDirection: 'row',
         gap: 7,
-    },
-    icon: {
-        verticalAlign: 'middle',
+        alignItems: 'center',
     },
 });
 
@@ -86,14 +84,16 @@ const Button = ({
     if (iconComponent) {
         icon = iconComponent;
     } else if (iconName) {
+        // We wrap the icon in a view to avoid it to follow text layout
         icon = (
-            <CompassIcon
-                name={iconName!}
-                size={iconSizePerSize[size]}
-                color={StyleSheet.flatten(txtStyle).color}
-                testID={`${testID}-icon`}
-                style={styles.icon}
-            />
+            <View>
+                <CompassIcon
+                    name={iconName!}
+                    size={iconSizePerSize[size]}
+                    color={StyleSheet.flatten(txtStyle).color}
+                    testID={`${testID}-icon`}
+                />
+            </View>
         );
     }
 

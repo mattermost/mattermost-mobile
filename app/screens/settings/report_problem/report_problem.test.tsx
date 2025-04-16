@@ -7,7 +7,7 @@ import React from 'react';
 import {Screens} from '@constants';
 import {goToScreen} from '@screens/navigation';
 import {renderWithIntl} from '@test/intl-test-helper';
-import {shareLogs} from '@utils/share_logs';
+import {emailLogs} from '@utils/share_logs';
 
 import ReportProblem from './report_problem';
 
@@ -16,7 +16,7 @@ jest.mock('@screens/navigation', () => ({
 }));
 
 jest.mock('@utils/share_logs', () => ({
-    shareLogs: jest.fn(),
+    emailLogs: jest.fn(),
 }));
 
 describe('screens/settings/report_problem/report_problem', () => {
@@ -111,7 +111,7 @@ describe('screens/settings/report_problem/report_problem', () => {
 
         await act(async () => {
             fireEvent.press(getByTestId('settings.report_problem.option'));
-            expect(shareLogs).toHaveBeenCalledWith(
+            expect(emailLogs).toHaveBeenCalledWith(
                 props.metadata,
                 props.siteName,
                 props.reportAProblemMail,

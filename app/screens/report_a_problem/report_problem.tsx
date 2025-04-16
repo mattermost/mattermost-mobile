@@ -10,7 +10,7 @@ import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {popTopScreen} from '@screens/navigation';
 import {logDebug} from '@utils/log';
-import {getDefaultReportAProblemLink, shareLogs} from '@utils/share_logs';
+import {emailLogs, getDefaultReportAProblemLink, shareLogs} from '@utils/share_logs';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {tryOpenURL} from '@utils/url';
@@ -74,7 +74,7 @@ const ReportProblem = ({
     const handleReport = useCallback(async () => {
         switch (reportAProblemType) {
             case 'email':
-                await shareLogs(metadata, siteName, reportAProblemMail, !allowDownloadLogs);
+                await emailLogs(metadata, siteName, reportAProblemMail, !allowDownloadLogs);
                 return;
             case 'link': {
                 let linkToUse = reportAProblemLink;

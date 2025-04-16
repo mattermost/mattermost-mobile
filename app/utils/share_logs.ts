@@ -28,6 +28,25 @@ export const shareLogs = async (metadata: ReportAProblemMetadata, siteName: stri
     }
 };
 
+export const emailLogs = async (metadata: ReportAProblemMetadata, siteName: string | undefined, reportAProblemMail: string | undefined, excludeLogs: boolean = false) => {
+    try {
+        const logPaths = await TurboLogger.getLogPaths();
+        const attachments = excludeLogs ? [] : logPaths.map((path) => pathWithPrefix('file://', path));
+        await Share.shareSingle({
+            social: Share.Social.EMAIL as any, // The type is not correct in the library
+            subject: `Problem with ${siteName} React Native app`,
+            email: reportAProblemMail,
+            urls: attachments.length ? attachments : undefined,
+            message: [
+                'Please share a description of the problem:\n\n',
+                metadataToString(metadata),
+            ].join('\n'),
+        });
+    } catch (e: unknown) {
+        Alert.alert('Error', `${e}`);
+    }
+};
+
 export const getDefaultReportAProblemLink = (isLicensed: boolean) => {
     return isLicensed ? 'https://mattermost.com/pl/report_a_problem_licensed' : 'https://mattermost.com/pl/report_a_problem_unlicensed';
 };
