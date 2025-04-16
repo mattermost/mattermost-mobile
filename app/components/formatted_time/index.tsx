@@ -2,12 +2,12 @@
 // See LICENSE.txt for license information.
 
 import moment from 'moment';
-import mtz from 'moment-timezone';
 import React from 'react';
 import {useIntl} from 'react-intl';
 import {Text, type TextProps} from 'react-native';
 
 import {getLocaleFromLanguage} from '@i18n';
+import {getFormattedTime} from '@utils/time';
 
 type FormattedTimeProps = TextProps & {
     isMilitaryTime: boolean;
@@ -18,24 +18,8 @@ type FormattedTimeProps = TextProps & {
 const FormattedTime = ({isMilitaryTime, timezone, value, ...props}: FormattedTimeProps) => {
     const {locale} = useIntl();
     moment.locale(getLocaleFromLanguage(locale).toLowerCase());
-    const getFormattedTime = () => {
-        let format = 'H:mm';
-        if (!isMilitaryTime) {
-            const localeFormat = mtz.localeData().longDateFormat('LT');
-            format = localeFormat?.includes('A') ? localeFormat : 'h:mm A';
-        }
 
-        let zone: string;
-        if (typeof timezone === 'object') {
-            zone = timezone.useAutomaticTimezone ? timezone.automaticTimezone : timezone.manualTimezone;
-        } else {
-            zone = timezone;
-        }
-
-        return timezone ? mtz.tz(value, zone).format(format) : mtz(value).format(format);
-    };
-
-    const formattedTime = getFormattedTime();
+    const formattedTime = getFormattedTime(isMilitaryTime, timezone, value);
 
     return (
         <Text {...props}>

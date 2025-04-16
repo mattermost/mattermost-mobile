@@ -6,6 +6,7 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {addChannelToDefaultCategory, handleConvertedGMCategories, storeCategories} from '@actions/local/category';
 import {markChannelAsViewed, removeCurrentUserFromChannel, setChannelDeleteAt, storeAllMyChannels, storeMyChannelsForTeam, switchToChannel} from '@actions/local/channel';
+import {switchToGlobalDrafts} from '@actions/local/draft';
 import {switchToGlobalThreads} from '@actions/local/thread';
 import {loadCallForChannel} from '@calls/actions/calls';
 import {DeepLink, Events, General, Preferences, Screens} from '@constants';
@@ -1123,6 +1124,8 @@ export async function getChannelTimezones(serverUrl: string, channelId: string) 
 export async function switchToChannelById(serverUrl: string, channelId: string, teamId?: string, skipLastUnread = false, groupLabel?: RequestGroupLabel) {
     if (channelId === Screens.GLOBAL_THREADS) {
         return switchToGlobalThreads(serverUrl, teamId);
+    } else if (channelId === Screens.GLOBAL_DRAFTS) {
+        return switchToGlobalDrafts(serverUrl, teamId);
     }
 
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
@@ -1347,6 +1350,8 @@ export const handleKickFromChannel = async (serverUrl: string, channelId: string
                 if (currentServer?.url === serverUrl) {
                     if (newChannelId === Screens.GLOBAL_THREADS) {
                         await switchToGlobalThreads(serverUrl, teamId, false);
+                    } else if (newChannelId === Screens.GLOBAL_DRAFTS) {
+                        await switchToGlobalDrafts(serverUrl, teamId);
                     } else {
                         await switchToChannelById(serverUrl, newChannelId, teamId, true);
                     }

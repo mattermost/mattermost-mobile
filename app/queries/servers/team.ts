@@ -49,7 +49,7 @@ export const addChannelToTeamHistory = async (operator: ServerDataOperator, team
         const {database} = operator;
 
         // Exlude GLOBAL_THREADS from channel check
-        if (channelId !== Screens.GLOBAL_THREADS) {
+        if (channelId !== Screens.GLOBAL_THREADS && channelId !== Screens.GLOBAL_DRAFTS) {
             const myChannel = (await database.get<MyChannelModel>(MY_CHANNEL).find(channelId));
             if (!myChannel) {
                 return [];
@@ -84,6 +84,13 @@ export const getTeamChannelHistory = async (database: Database, teamId: string) 
     } catch {
         return [];
     }
+};
+
+export const observeTeamLastChannelId = (database: Database, teamId: string) => {
+    return database.get<TeamChannelHistoryModel>(TEAM_CHANNEL_HISTORY).query(Q.where('id', teamId), Q.take(1)).observe().pipe(
+        switchMap((result) => (result.length ? result[0].observe() : of$(undefined))),
+        map$((result) => result?.channelIds[0]),
+    );
 };
 
 export const getNthLastChannelFromTeam = async (database: Database, teamId: string, n = 0, ignoreIdForDefault?: string) => {
