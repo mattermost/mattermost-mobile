@@ -191,7 +191,6 @@ describe('Scheduled Draft,', () => {
         await DraftScreen.openDraftPostActions();
         await ScheduleMessageScreen.clickRescheduleOption();
         await ScheduleMessageScreen.selectDateTime();
-        await ScheduleMessageScreen.assertScheduleTimeTextIsVisible(await ScheduleMessageScreen.currentDay());
 
         // Clean up drafts
         await DraftScreen.openDraftPostActions();

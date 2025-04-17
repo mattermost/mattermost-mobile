@@ -11,7 +11,7 @@ import {
     SendButton,
 } from '@support/ui/component';
 import {PostOptionsScreen} from '@support/ui/screen';
-import {isIos, timeouts, wait} from '@support/utils';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 class ThreadScreen {
@@ -91,12 +91,8 @@ class ThreadScreen {
     };
 
     back = async () => {
-        if (isIos()) {
-            await this.backButton.tap();
-            await waitFor(this.threadScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
-        } else {
-            await device.pressBack();
-        }
+        await this.backButton.tap();
+        await waitFor(this.threadScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
     };
 
     openPostOptionsFor = async (postId: string, text: string) => {

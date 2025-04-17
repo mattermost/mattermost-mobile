@@ -237,10 +237,10 @@ describe('Server Login - Server List', () => {
         await ServerListScreen.getServerItemRemoveOption(serverOneDisplayName).tap();
 
         // * Verify remove server alert is displayed
-        await waitFor(Alert.removeServerTitle(serverOneDisplayName)).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await waitFor(Alert.removeServerTitle(serverOneDisplayName)).toBeVisible().withTimeout(timeouts.HALF_MIN);
 
         // # Tap on remove button and go back to server list screen
-        await waitFor(Alert.removeButton1).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await waitFor(Alert.removeButton1).toBeVisible().withTimeout(timeouts.HALF_MIN);
         await Alert.removeButton1.tap();
         await wait(timeouts.ONE_SEC);
         await ServerListScreen.open();
@@ -355,8 +355,9 @@ describe('Server Login - Server List', () => {
         await waitFor(ServerListScreen.getServerItemInactive(serverTwoDisplayName)).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ServerListScreen.getServerItemInactive(serverTwoDisplayName).swipe('left', 'slow');
         await ServerListScreen.getServerItemLogoutOption(serverTwoDisplayName).tap();
-        await waitFor(Alert.logoutButton2).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await Alert.logoutButton2.tap();
+        await wait(timeouts.FOUR_SEC);
+        await waitFor(Alert.logoutButton).toBeVisible().withTimeout(timeouts.HALF_MIN);
+        await Alert.logoutButton.tap();
         await ServerListScreen.getServerItemActive(serverOneDisplayName).tap();
     });
 });

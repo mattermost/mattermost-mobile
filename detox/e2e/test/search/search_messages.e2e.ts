@@ -261,6 +261,7 @@ describe('Search - Search Messages', () => {
         // # Type in a search term that will yield results and tap on search key
         await SearchMessagesScreen.searchInput.typeText(searchTerm);
         await SearchMessagesScreen.searchInput.tapReturnKey();
+        await wait(timeouts.TEN_SEC);
 
         // * Verify search results contain searched message
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
