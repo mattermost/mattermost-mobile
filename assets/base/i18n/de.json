@@ -1041,6 +1041,8 @@
   "scheduled_post.option.header": "Nachrichten-Aktionen",
   "scheduled_post.options.delete.cancel": "Abbrechen",
   "scheduled_post.options.delete.confirm": "Entfernen",
+  "scheduled_post.options.delete.confirmation": "Bist du sicher, dass du diesen geplanten Beitrag löschen willst?",
+  "scheduled_post.options.delete.title": "Entfernen",
   "scheduled_post_no_select_time": "Bitte wähle die Zeit",
   "scheduled_post_options.confirm_button.processing.text": "Zeitplanung",
   "scheduled_post_options.confirm_button.text": "Senden des Entwurfs planen",
