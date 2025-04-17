@@ -28,7 +28,7 @@ import {
     DraftScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
+import {isIos, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Scheduled Draft,', () => {
@@ -188,9 +188,12 @@ describe('Scheduled Draft,', () => {
         await ScheduleMessageScreen.assertScheduledMessageExists(scheduledMessageText);
 
         await ScheduleMessageScreen.assertScheduleTimeTextIsVisible(await ScheduleMessageScreen.nextMonday());
-        await DraftScreen.openDraftPostActions();
-        await ScheduleMessageScreen.clickRescheduleOption();
-        await ScheduleMessageScreen.selectDateTime();
+        if (isIos()) {
+            // Andoid uses native date picker which is not supported by detox asit cannot interact with native UI
+            await DraftScreen.openDraftPostActions();
+            await ScheduleMessageScreen.clickRescheduleOption();
+            await ScheduleMessageScreen.selectDateTime();
+        }
 
         // Clean up drafts
         await DraftScreen.openDraftPostActions();

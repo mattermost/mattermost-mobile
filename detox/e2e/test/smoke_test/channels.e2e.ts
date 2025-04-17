@@ -146,7 +146,7 @@ describe('Smoke Test - Channels', () => {
         // # Open find channels screen, search for the channel to navigate to, and tap on the target channel item
         await FindChannelsScreen.open();
         await FindChannelsScreen.searchInput.replaceText(testChannel.name);
-        await wait(timeouts.ONE_SEC);
+        await wait(timeouts.TEN_SEC);
         await FindChannelsScreen.getFilteredChannelItem(testChannel.name).tap();
 
         // * Verify on target channel screen

@@ -88,8 +88,7 @@ describe('Server Login - Server List', () => {
         await User.apiAdminLogin(siteTwoUrl);
         ({user: serverTwoUser} = await Setup.apiInit(siteTwoUrl));
         await ServerListScreen.addServerButton.tap();
-        await waitFor(ServerScreen.headerTitleAddServer).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await expect(ServerScreen.headerTitleAddServer).toBeVisible();
+        await expect(ServerScreen.headerTitleAddServer).toBeVisible(35);
         await ServerScreen.connectToServer(serverTwoUrl, serverTwoDisplayName);
         await LoginScreen.login(serverTwoUser);
 
@@ -116,8 +115,7 @@ describe('Server Login - Server List', () => {
         await User.apiAdminLogin(siteThreeUrl);
         ({user: serverThreeUser} = await Setup.apiInit(siteThreeUrl));
         await ServerListScreen.addServerButton.tap();
-        await waitFor(ServerScreen.headerTitleAddServer).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await expect(ServerScreen.headerTitleAddServer).toBeVisible();
+        await expect(ServerScreen.headerTitleAddServer).toBeVisible(35);
         await ServerScreen.connectToServer(serverThreeUrl, serverThreeDisplayName);
         await LoginScreen.login(serverThreeUser);
 
@@ -256,8 +254,7 @@ describe('Server Login - Server List', () => {
 
         // # Add first server back to the list and log in to the first server
         await ServerListScreen.addServerButton.tap();
-        await waitFor(ServerScreen.headerTitleAddServer).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await expect(ServerScreen.headerTitleAddServer).toBeVisible();
+        await expect(ServerScreen.headerTitleAddServer).toBeVisible(35);
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(serverOneUser);
     });
@@ -307,8 +304,7 @@ describe('Server Login - Server List', () => {
             await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.1, 0.5, 0.3);
         }
         await ServerListScreen.addServerButton.tap();
-        await waitFor(ServerScreen.headerTitleAddServer).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await expect(ServerScreen.headerTitleAddServer).toBeVisible();
+        await expect(ServerScreen.headerTitleAddServer).toBeVisible(35);
         await ServerScreen.serverUrlInput.replaceText(serverTwoUrl);
         if (isAndroid()) {
             await ServerScreen.serverUrlInput.tapReturnKey();

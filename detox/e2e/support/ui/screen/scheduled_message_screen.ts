@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Alert} from '@support/ui/component';
-import {isAndroid, isIos, timeouts, wait} from '@support/utils';
+import {isIos, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 class ScheduledMessageScreen {
@@ -69,22 +69,12 @@ class ScheduledMessageScreen {
     };
 
     selectDateTime = async () => {
-        if (isAndroid()) {
-            await this.selectDateButton.tap();
-            await device.pressBack();
-            await this.selectTimeButton.tap();
-            await device.pressBack();
-            await this.saveButton.tap();
-            await device.pressBack(); // SHOULD BE REMOVED AFTER FIXING THE ANDROID CALENDAR BUG
-        } else {
-            await this.selectDateButton.tap();
-            await this.selectTimeButton.tap();
-            await this.saveButton.tap();
-        }
+        await this.selectDateButton.tap();
+        await this.selectTimeButton.tap();
+        await this.saveButton.tap();
     };
 
     clickRescheduleOption = async () => {
-        await wait(timeouts.HALF_MIN);
         await this.rescheduleOption.tap();
         if (isIos()) {
             await waitFor(this.customDateTimePickerScreen).toBeVisible().withTimeout(timeouts.FOUR_SEC);
