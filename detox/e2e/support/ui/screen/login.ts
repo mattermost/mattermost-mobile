@@ -65,7 +65,7 @@ class LoginScreen {
         await this.usernameInput.replaceText(user.newUser.email);
         await this.passwordInput.tap();
         await this.passwordInput.replaceText(user.newUser.password);
-        await element(by.text(/^Log In to Your Account*$/)).tap();
+        await element(by.text(/^Enter your login details below*$/)).tap();
         await this.signinButton.tap();
 
         await waitFor(ChannelListScreen.channelListScreen).toExist().withTimeout(isAndroid() ? timeouts.ONE_MIN : timeouts.HALF_MIN);
@@ -78,7 +78,7 @@ class LoginScreen {
         await this.usernameInput.replaceText(user.username);
         await this.passwordInput.tap();
         await this.passwordInput.replaceText(user.password);
-        await element(by.text(/^Log In to Your Account*$/)).tap();
+        await element(by.text(/^Enter your login details below*$/)).tap();
         await this.signinButton.tap();
         await waitFor(ChannelListScreen.channelListScreen).toExist().withTimeout(isAndroid() ? timeouts.ONE_MIN : timeouts.HALF_MIN);
     };
