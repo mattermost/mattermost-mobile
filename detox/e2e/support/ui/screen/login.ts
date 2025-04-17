@@ -21,8 +21,10 @@ class LoginScreen {
         forgotPasswordButton: 'login_form.forgot_password.button',
         signinButton: 'login_form.signin.button',
         signinButtonDisabled: 'login_form.signin.button.disabled',
+        loginFormInfoText: 'login_options.description.enter_credentials',
     };
 
+    loginFormInfoText = element(by.id(this.testID.loginFormInfoText));
     loginScreen = element(by.id(this.testID.loginScreen));
     backButton = element(by.id(this.testID.backButton));
     titleLoginToAccount = element(by.id(this.testID.titleLoginToAccount));
@@ -65,7 +67,7 @@ class LoginScreen {
         await this.usernameInput.replaceText(user.newUser.email);
         await this.passwordInput.tap();
         await this.passwordInput.replaceText(user.newUser.password);
-        await element(by.text(/^Enter your login details below*$/)).tap();
+        await this.loginFormInfoText.tap();
         await this.signinButton.tap();
 
         await waitFor(ChannelListScreen.channelListScreen).toExist().withTimeout(isAndroid() ? timeouts.ONE_MIN : timeouts.HALF_MIN);
@@ -78,7 +80,7 @@ class LoginScreen {
         await this.usernameInput.replaceText(user.username);
         await this.passwordInput.tap();
         await this.passwordInput.replaceText(user.password);
-        await element(by.text(/^Enter your login details below*$/)).tap();
+        await this.loginFormInfoText.tap();
         await this.signinButton.tap();
         await waitFor(ChannelListScreen.channelListScreen).toExist().withTimeout(isAndroid() ? timeouts.ONE_MIN : timeouts.HALF_MIN);
     };

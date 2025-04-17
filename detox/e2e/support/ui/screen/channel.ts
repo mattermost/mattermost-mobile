@@ -48,6 +48,7 @@ class ChannelScreen {
         postPriorityRequestAck: 'post_priority_picker_item.requested_ack.toggled.false.button',
         postPriorityPersistentNotification: 'post_priority_picker_item.persistent_notifications.toggled.undefined.button',
         scheduledPostTooltipCloseButton: 'scheduled_post.tooltip.close.button',
+        scheduledPostTooltipCloseButtonAdminAccount: 'scheduled_post_tutorial_tooltip.close',
         scheduleMessageTomorrowOption: 'post_priority_picker_item.scheduledPostOptionTomorrow',
         scheduleMessageOnMondayOption: 'post_priority_picker_item.scheduledPostOptionMonday',
         scheduledPostOptionNextMonday: 'post_priority_picker_item.scheduledPostOptionNextMonday',
@@ -67,6 +68,7 @@ class ChannelScreen {
     scheduleMessageTomorrowOption = element(by.id(this.testID.scheduleMessageTomorrowOption));
     scheduleMessageOnMondayOption = element(by.id(this.testID.scheduleMessageOnMondayOption));
     scheduledPostTooltipCloseButton = element(by.id(this.testID.scheduledPostTooltipCloseButton));
+    scheduledPostTooltipCloseButtonAdminAccount = element(by.id(this.testID.scheduledPostTooltipCloseButtonAdminAccount));
     postPriorityPersistentNotification = element(by.id(this.testID.postPriorityPersistentNotification));
     postPriorityUrgentMessage = element(by.id(this.testID.postPriorityUrgentMessage));
     postPriorityRequestAck = element(by.id(this.testID.postPriorityRequestAck));

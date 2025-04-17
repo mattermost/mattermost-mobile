@@ -48,12 +48,9 @@ describe('Channels - Unarchive Channel', () => {
         await CreateOrEditChannelScreen.openCreateChannel();
         await CreateOrEditChannelScreen.displayNameInput.replaceText(channelDisplayName);
         await CreateOrEditChannelScreen.createButton.tap();
-        try {
-            await ChannelScreen.scheduledPostTooltipCloseButton.tap();
-        } catch {
-            // eslint-disable-next-line no-console
-            console.log('Scheduled post tooltip not displayed');
-        }
+        await wait(timeouts.TWO_SEC);
+        await expect(ChannelScreen.scheduledPostTooltipCloseButtonAdminAccount).toBeVisible();
+        await ChannelScreen.scheduledPostTooltipCloseButtonAdminAccount.tap();
         await ChannelInfoScreen.open();
         await ChannelInfoScreen.archivePublicChannel({confirm: true});
 
