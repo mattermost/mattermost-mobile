@@ -214,7 +214,7 @@ jobs:
 
       - name: Install Android SDK components
         run: |
-          yes | sdkmanager --install "platform-tools" "emulator" "platforms;android-34" "system-images;android-34;default;x86_64"
+          yes | sdkmanager --install "platform-tools" "emulator" "platforms;android-34" "system-images;android-34;default;x86_64" "system-images;android-34;google_apis;x86_64"
         env:
           JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
         
