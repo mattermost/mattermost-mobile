@@ -16,6 +16,8 @@ const {
     CHANNEL_MEMBERSHIP,
     CONFIG,
     CUSTOM_EMOJI,
+    CUSTOM_PROFILE_FIELD,
+    CUSTOM_PROFILE_ATTRIBUTE,
     DRAFT,
     FILE,
     GROUP,
@@ -31,6 +33,7 @@ const {
     PREFERENCE,
     REACTION,
     ROLE,
+    SCHEDULED_POST,
     SYSTEM,
     TEAM,
     TEAM_CHANNEL_HISTORY,
@@ -46,7 +49,7 @@ const {
 describe('*** Test schema for SERVER database ***', () => {
     it('=> The SERVER SCHEMA should strictly match', () => {
         expect(serverSchema).toEqual({
-            version: 7,
+            version: 9,
             unsafeSql: undefined,
             tables: {
                 [CATEGORY]: {
@@ -207,6 +210,46 @@ describe('*** Test schema for SERVER database ***', () => {
                         name: {name: 'name', type: 'string', isIndexed: true},
                     },
                     columnArray: [{name: 'name', type: 'string', isIndexed: true}],
+                },
+                [CUSTOM_PROFILE_FIELD]: {
+                    name: CUSTOM_PROFILE_FIELD,
+                    unsafeSql: undefined,
+                    columns: {
+                        group_id: {name: 'group_id', type: 'string'},
+                        name: {name: 'name', type: 'string'},
+                        type: {name: 'type', type: 'string'},
+                        target_id: {name: 'target_id', type: 'string'},
+                        target_type: {name: 'target_type', type: 'string'},
+                        create_at: {name: 'create_at', type: 'number'},
+                        update_at: {name: 'update_at', type: 'number'},
+                        delete_at: {name: 'delete_at', type: 'number'},
+                        attrs: {name: 'attrs', type: 'string', isOptional: true},
+                    },
+                    columnArray: [
+                        {name: 'group_id', type: 'string'},
+                        {name: 'name', type: 'string'},
+                        {name: 'type', type: 'string'},
+                        {name: 'target_id', type: 'string'},
+                        {name: 'target_type', type: 'string'},
+                        {name: 'create_at', type: 'number'},
+                        {name: 'update_at', type: 'number'},
+                        {name: 'delete_at', type: 'number'},
+                        {name: 'attrs', type: 'string', isOptional: true},
+                    ],
+                },
+                [CUSTOM_PROFILE_ATTRIBUTE]: {
+                    name: CUSTOM_PROFILE_ATTRIBUTE,
+                    unsafeSql: undefined,
+                    columns: {
+                        field_id: {name: 'field_id', type: 'string', isIndexed: true},
+                        user_id: {name: 'user_id', type: 'string', isIndexed: true},
+                        value: {name: 'value', type: 'string'},
+                    },
+                    columnArray: [
+                        {name: 'field_id', type: 'string', isIndexed: true},
+                        {name: 'user_id', type: 'string', isIndexed: true},
+                        {name: 'value', type: 'string'},
+                    ],
                 },
                 [MY_CHANNEL]: {
                     name: MY_CHANNEL,
@@ -490,6 +533,34 @@ describe('*** Test schema for SERVER database ***', () => {
                     columnArray: [
                         {name: 'name', type: 'string', isIndexed: true},
                         {name: 'permissions', type: 'string'},
+                    ],
+                },
+                [SCHEDULED_POST]: {
+                    name: SCHEDULED_POST,
+                    unsafeSql: undefined,
+                    columns: {
+                        channel_id: {name: 'channel_id', type: 'string', isIndexed: true},
+                        message: {name: 'message', type: 'string'},
+                        files: {name: 'files', type: 'string'},
+                        root_id: {name: 'root_id', type: 'string', isIndexed: true},
+                        metadata: {name: 'metadata', type: 'string', isOptional: true},
+                        create_at: {name: 'create_at', type: 'number'},
+                        update_at: {name: 'update_at', type: 'number'},
+                        scheduled_at: {name: 'scheduled_at', type: 'number'},
+                        processed_at: {name: 'processed_at', type: 'number'},
+                        error_code: {name: 'error_code', type: 'string'},
+                    },
+                    columnArray: [
+                        {name: 'channel_id', type: 'string', isIndexed: true},
+                        {name: 'files', type: 'string'},
+                        {name: 'message', type: 'string'},
+                        {name: 'root_id', type: 'string', isIndexed: true},
+                        {name: 'metadata', type: 'string', isOptional: true},
+                        {name: 'create_at', type: 'number'},
+                        {name: 'update_at', type: 'number'},
+                        {name: 'scheduled_at', type: 'number'},
+                        {name: 'processed_at', type: 'number'},
+                        {name: 'error_code', type: 'string'},
                     ],
                 },
                 [SYSTEM]: {

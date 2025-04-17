@@ -5,7 +5,7 @@ buildscript {
         compileSdkVersion = 35
         targetSdkVersion = 34
         supportLibVersion = "35.0.0"
-        kotlinVersion = "1.9.24"
+        kotlinVersion = "1.9.25"
         kotlin_version = kotlinVersion
         RNNKotlinVersion = kotlinVersion
         firebaseVersion = "24.1.0"
@@ -19,7 +19,7 @@ buildscript {
     dependencies {
         classpath("com.android.tools.build:gradle")
         classpath("com.facebook.react:react-native-gradle-plugin")
-        classpath('com.google.gms:google-services:4.4.0')
+        classpath('com.google.gms:google-services:4.4.2')
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
 
         // NOTE: Do not place your application dependencies here; they belong

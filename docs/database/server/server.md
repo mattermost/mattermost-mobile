@@ -1,4 +1,4 @@
-# Server Database - Schema Version 4 
+# Server Database - Schema Version 5
 # Please bump the version by 1, any time the schema changes.
 # Also, include the migration plan under app/database/migration/server,
 # update all models, relationships and types.
@@ -63,6 +63,28 @@ CustomEmoji
 -
 id PK string # auto-generated
 name string
+
+
+CustomProfileField
+-
+id PK string # server-generated
+group_id string
+name string
+type string
+target_id string
+target_type string
+create_at number
+update_at number
+delete_at number
+attrs string NULL # stringified JSON
+
+
+CustomProfileAttribute
+-
+id PK string # composition ID User.id-CustomProfileField.id
+field_id string INDEX FK >- CustomProfileField.id
+user_id string INDEX FK >- User.id
+value string
 
 
 Draft
