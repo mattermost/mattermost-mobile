@@ -1126,6 +1126,8 @@
   "settings.about.database.schema": "数据库Schema版本：{version}",
   "settings.about.database.schema.title": "数据库 Schema 版本：",
   "settings.about.database.title": "数据库：",
+  "settings.about.license.load_metric": "负载指标：{load}",
+  "settings.about.license.load_metric.title": "负载指标：",
   "settings.about.licensed": "许可给：{company}",
   "settings.about.powered_by": "{site}由Mattermost支持",
   "settings.about.server.version": "服务器版本：{version}（构建版本{buildNumber}）",
