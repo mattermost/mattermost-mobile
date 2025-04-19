@@ -17,7 +17,7 @@ import {
     PostOptionsScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
+import {isIos, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 class ChannelScreen {
@@ -57,9 +57,12 @@ class ChannelScreen {
         scheduledPostOptionNextMondaySelected: 'post_priority_picker_item.scheduledPostOptionNextMonday.selected',
         clickOnScheduledMessageButton: 'scheduled_post_create_button',
         scheduledDraftInfoInChannel: 'scheduled_post_header.scheduled_post_indicator',
+        scheduledDraftTooltipText: 'scheduled_post.tooltip.description',
     };
 
-    scheduledDraftInfoInChannel= element(by.id(this.testID.scheduledDraftInfoInChannel));
+    scheduleDraftInforMessage = element(by.text('Type a message and long press the send button to schedule it for a later time.'));
+    scheduledDraftTooltipText = element(by.id(this.testID.scheduledDraftTooltipText));
+    scheduledDraftInfoInChannel = element(by.id(this.testID.scheduledDraftInfoInChannel));
     clickOnScheduledMessageButton = element(by.id(this.testID.clickOnScheduledMessageButton));
     scheduledPostOptionTomorrowSelected = element(by.id(this.testID.scheduledPostOptionTomorrowSelected));
     scheduledPostOptionMondaySelected = element(by.id(this.testID.scheduledPostOptionMondaySelected));
@@ -194,7 +197,7 @@ class ChannelScreen {
         await expect(postListPostItem).toBeVisible();
 
         // # Open post options
-        await postListPostItem.longPress();
+        await postListPostItem.longPress(timeouts.TWO_SEC);
         await PostOptionsScreen.toBeVisible();
         await wait(timeouts.TWO_SEC);
     };
@@ -295,7 +298,18 @@ class ChannelScreen {
     */
     verifyScheduledDraftInfoInChannel = async (thread = false) => {
         await expect(this.scheduledDraftInfoInChannel).toBeVisible();
-        await expect(this.scheduledDraftInfoInChannel).toHaveText(`1 scheduled message in ${thread? 'thread': 'channel'}. See all.`);
+        await expect(this.scheduledDraftInfoInChannel).toHaveText(`1 scheduled message in ${thread ? 'thread' : 'channel'}. See all.`);
+    };
+
+    closeScheduledMessageTooltip = async () => {
+        if (isIos()) {
+            await waitFor(this.scheduledDraftTooltipText).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            await this.scheduledDraftTooltipText.tap();
+        } else {
+            // The page re-renders and then opens the tooltip again. Wait for the tooltip to be stable and then tap it.
+            await wait(timeouts.TEN_SEC);
+            await this.scheduleDraftInforMessage.tap();
+        }
     };
 }
 

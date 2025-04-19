@@ -68,7 +68,7 @@ class SearchMessagesScreen {
     };
 
     getRecentSearchItemRemoveButton = (searchTerm: string) => {
-        return element(by.id(`search.recent_item.${searchTerm}.remove.button`));
+        return element(by.id(`search.recent_item.${searchTerm}.remove.button`)).atIndex(0);
     };
 
     toBeVisible = async () => {
@@ -87,6 +87,7 @@ class SearchMessagesScreen {
 
     openPostOptionsFor = async (postId: string, text: string) => {
         const {postListPostItem} = this.getPostListPostItem(postId, text);
+        await wait(timeouts.TWO_SEC);
         await expect(postListPostItem).toBeVisible();
 
         // # Open post options

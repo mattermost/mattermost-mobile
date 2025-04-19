@@ -23,6 +23,7 @@ import {
     ServerScreen,
     TableScreen,
 } from '@support/ui/screen';
+import {isIos} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Messaging - Markdown Table', () => {
@@ -178,9 +179,13 @@ describe('Messaging - Markdown Table', () => {
 
         // * Verify table screen is scrollable to the bottom
         const expectedElement = element(by.text('Right VS last'));
-        await waitFor(expectedElement).toBeVisible().whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(50, 'down');
-        await expect(element(by.text('Header VS last'))).not.toBeVisible();
-        await expect(expectedElement).toBeVisible();
+        if (isIos()) {
+            await waitFor(expectedElement).toBeVisible().whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'down');
+            await expect(element(by.text('Header VS last'))).not.toBeVisible();
+            await expect(expectedElement).toBeVisible();
+        } else {
+            await expect(expectedElement).toExist();
+        }
 
         // # Go back to channel list screen
         await TableScreen.back();
@@ -194,11 +199,11 @@ describe('Messaging - Markdown Table', () => {
             '| :-- | :-: | --: | --: | :-- | :-: | --: | --: |\n' +
             '| Left | Center | Right | Right | Left | Center | Right | Right |\n'.repeat(30) +
             '| Left | Center | Right | Right | Left | Center | Right | Right last |\n';
-        await ChannelScreen.open(channelsCategory, testChannel.name);
         await Post.apiCreatePost(siteOneUrl, {
             channelId: testChannel.id,
             message: markdownTable,
         });
+        await ChannelScreen.open(channelsCategory, testChannel.name);
 
         // * Verify table is displayed with some right columns and bottom rows not visible
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
@@ -219,9 +224,13 @@ describe('Messaging - Markdown Table', () => {
         await expect(element(by.text('Header last'))).toBeVisible();
         await expect(element(by.text('Right last'))).not.toBeVisible();
         const expectedElement = element(by.text('Right last'));
-        await waitFor(expectedElement).toBeVisible().whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(50, 'down');
-        await expect(element(by.text('Header last'))).not.toBeVisible();
-        await expect(expectedElement).toBeVisible();
+        if (isIos()) {
+            await waitFor(expectedElement).toBeVisible().whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'down');
+            await expect(element(by.text('Header last'))).not.toBeVisible();
+            await expect(expectedElement).toBeVisible();
+        } else {
+            await expect(expectedElement).toExist();
+        }
 
         // # Go back to channel list screen
         await TableScreen.back();

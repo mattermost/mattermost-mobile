@@ -60,7 +60,7 @@ class CreateOrEditChannelScreen {
     openEditChannel = async () => {
         // # Open edit channel screen
         await ChannelInfoScreen.scrollView.tap({x: 1, y: 1});
-        await ChannelInfoScreen.scrollView.scroll(100, 'down');
+        await ChannelInfoScreen.scrollView.scrollTo('bottom');
         await ChannelInfoScreen.editChannelOption.tap();
 
         return this.toBeVisible();
