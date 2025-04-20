@@ -1,7 +1,6 @@
 #!/bin/bash
 # Cross-platform emulator setup + Detox runner for CI and local
 
-# Add this to your script's header comments
 # Usage: 
 #   ./create_android_emulator.sh [SDK_VERSION] [AVD_BASE_NAME] [TEST_FILES]
 # Options:
@@ -21,6 +20,9 @@ AVD_BASE_NAME=${2:-"detox_pixel_4_xl"}
 AVD_NAME="${AVD_BASE_NAME}_api_${SDK_VERSION}"
 TEST_FILES=${@:3}
 
+# Default to headless mode
+HEADLESS=true
+# Override for local development if --headed flag is present
 if [[ "$CI" != "true" && "$*" == *"--headed"* ]]; then
     HEADLESS=false
 fi
@@ -28,6 +30,8 @@ fi
 # ----------- Utility --------------
 
 log() { echo -e "\033[1;36m👉 $1\033[0m"; }
+error() { echo -e "\033[1;31m❌ $1\033[0m"; }
+success() { echo -e "\033[1;32m✅ $1\033[0m"; }
 
 # ----------- Environment Setup --------------
 
@@ -42,9 +46,18 @@ ensure_sdk_image() {
     local cpu_arch=$1
     local image="system-images;android-${SDK_VERSION};google_apis;${cpu_arch}"
 
+    # Verify sdkmanager exists
+    if [ ! -f "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" ]; then
+        error "sdkmanager not found. Please ensure Android SDK is properly installed."
+        exit 1
+    fi
+
+    log "Checking for system image: $image"
     if ! "$ANDROID_HOME"/cmdline-tools/latest/bin/sdkmanager --list | grep -q "$image"; then
         log "Installing system image: $image"
-        yes | "$ANDROID_HOME"/cmdline-tools/latest/bin/sdkmanager "$image"
+        yes | "$ANDROID_HOME"/cmdline-tools/latest/bin/sdkmanager --install "$image"
+    else
+        log "System image already installed: $image"
     fi
 }
 
@@ -65,33 +78,88 @@ create_avd() {
     ensure_sdk_image "$cpu_arch_family"
 
     log "Creating AVD: $AVD_NAME"
+
+    # Make sure avdmanager exists
+    if [ ! -f "$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager" ]; then
+        error "avdmanager not found. Please ensure Android SDK is properly installed."
+        exit 1
+    fi
+
+    # Delete the AVD if it already exists to ensure clean creation
+    "$ANDROID_HOME"/cmdline-tools/latest/bin/avdmanager delete avd -n "$AVD_NAME" 2>/dev/null || true
+
+    # Create the AVD
     "$ANDROID_HOME"/cmdline-tools/latest/bin/avdmanager create avd \
         -n "$AVD_NAME" \
         -k "system-images;android-${SDK_VERSION};google_apis;${cpu_arch_family}" \
-        -d "pixel" -f
+        -d "pixel_4_xl" -f
 
-    cp -r android_emulator/ "$AVD_NAME/"
-    sed -i.bak -e "s|AvdId = change_avd_id|AvdId = ${AVD_NAME}|g" "$AVD_NAME/config.ini"
-    sed -i -e "s|avd.ini.displayname = change_avd_displayname|avd.ini.displayname = Detox Pixel 4 XL API ${SDK_VERSION}|g" "$AVD_NAME/config.ini"
-    sed -i -e "s|abi.type = change_type|abi.type = ${cpu_arch_family}|g" "$AVD_NAME/config.ini"
-    sed -i -e "s|hw.cpu.arch = change_cpu_arch|hw.cpu.arch = ${cpu_arch}|g" "$AVD_NAME/config.ini"
-    sed -i -e "s|image.sysdir.1 = change_to_image_sysdir/|image.sysdir.1 = system-images/android-${SDK_VERSION}/google_apis/${cpu_arch_family}/|g" "$AVD_NAME/config.ini"
-    sed -i -e "s|skin.path = change_to_absolute_path/pixel_4_xl_skin|skin.path = $(pwd)/${AVD_NAME}/pixel_4_xl_skin|g" "$AVD_NAME/config.ini"
-    echo "hw.cpu.ncore=4" >> "$AVD_NAME/config.ini"
+    # Ensure config.ini exists and create a backup
+    CONFIG_PATH="$HOME/.android/avd/${AVD_NAME}.avd/config.ini"
+    if [[ "$CI" == "true" ]]; then
+        CONFIG_PATH="$(pwd)/.android/avd/${AVD_NAME}.avd/config.ini"
+    fi
 
-    log "AVD created successfully"
+    if [ ! -f "$CONFIG_PATH" ]; then
+        error "AVD config file not found at: $CONFIG_PATH"
+        exit 1
+    fi
+
+    # Backup original config
+    cp "$CONFIG_PATH" "${CONFIG_PATH}.backup"
+
+    # Modify config.ini with optimal settings for E2E testing
+    cat > "$CONFIG_PATH" << EOF
+avd.ini.encoding=UTF-8
+path=$(dirname "$CONFIG_PATH")
+path.rel=avd/${AVD_NAME}.avd
+target=google_apis
+target.arch=${cpu_arch_family}
+AvdId=${AVD_NAME}
+avd.ini.displayname=Detox Pixel 4 XL API ${SDK_VERSION}
+hw.cpu.arch=${cpu_arch}
+hw.cpu.ncore=4
+hw.ramSize=2048
+hw.screen=1080x2280
+hw.dPad=no
+hw.lcd.width=1080
+hw.lcd.height=2280
+hw.lcd.density=440
+hw.keyboard=yes
+hw.keyboard.lid=no
+hw.gpu.enabled=yes
+hw.gpu.mode=auto
+image.sysdir.1=system-images/android-${SDK_VERSION}/google_apis/${cpu_arch_family}/
+tag.display=Google APIs
+disk.dataPartition.size=6G
+hw.mainKeys=no
+hw.accelerometer=yes
+hw.gyroscope=yes
+hw.audioInput=yes
+hw.audioOutput=yes
+hw.sdCard=yes
+hw.sdCard.path=${HOME}/.android/avd/${AVD_NAME}.avd/sdcard.img
+hw.camera.back=emulated
+hw.camera.front=emulated
+runtime.network.latency=none
+runtime.network.speed=full
+showDeviceFrame=yes
+skin.name=pixel_4_xl
+skin.dynamic=yes
+EOF
+
+    success "AVD created and configured successfully: $AVD_NAME"
 }
 
 # ----------- Emulator Control --------------
 
 start_emulator() {
     log "Starting emulator..."
-    local emulator_opts="-avd $AVD_NAME -no-boot-anim -no-audio -no-snapshot -no-window -read-only"
-    local grpc_port="8554"
 
-    # Clear previous log
-    rm -f .emulator_port.log
+    # Common emulator options
+    local emulator_opts="-avd $AVD_NAME -no-boot-anim -no-audio -gpu swiftshader_indirect"
     
+    # Add headless mode if needed
     if [[ "$HEADLESS" == "true" ]]; then
         emulator_opts="$emulator_opts -no-window"
         log "Running in headless mode"
@@ -99,65 +167,120 @@ start_emulator() {
         log "Running in headed mode (GUI visible)"
     fi
 
-    if [[ "$CI" == "true" || "$(uname -s)" == "Linux" ]]; then
-        emulator $emulator_opts -gpu swiftshader_indirect -accel on -grpc $grpc_port > .emulator_port.log 2>&1 &
+    # Add platform-specific optimizations
+    case "$(uname -s)" in
+        Darwin)
+            # macOS specific settings
+            emulator_opts="$emulator_opts -accel hvf"
+            ;;
+        Linux)
+            # Linux specific settings
+            emulator_opts="$emulator_opts -accel on"
+            ;;
+        *)
+            log "Unknown OS, using default emulator acceleration"
+            ;;
+    esac
+
+    # Clear previous log
+    rm -f .emulator_port.log
+
+    # Start the emulator
+    if command -v emulator &> /dev/null; then
+        emulator $emulator_opts > .emulator_port.log 2>&1 &
     else
-        emulator $emulator_opts -gpu host -grpc $grpc_port > .emulator_port.log 2>&1 &
+        "$ANDROID_HOME/emulator/emulator" $emulator_opts > .emulator_port.log 2>&1 &
     fi
 
     EMULATOR_PID=$!
     echo $EMULATOR_PID > .emulator_pid
     log "Emulator started with PID: $EMULATOR_PID"
-    log "Waiting for port assignment..."
-    
-    # Wait for port to be assigned
-    local max_wait=30 elapsed=0
-    while ! grep -q "control console listening on port" .emulator_port.log && [ $elapsed -lt $max_wait ]; do
-        sleep 1
-        ((elapsed++))
-    done
 }
 
 kill_existing_emulators() {
     log "Checking for existing emulators..."
-    # Kill all running emulators
-    pgrep -f "emulator.*-avd" | xargs kill -9 >/dev/null 2>&1 || true
+
+    # Kill running emulators based on platform
+    case "$(uname -s)" in
+        Darwin)
+            # macOS
+            pgrep -f "emulator.*-avd" | xargs kill -9 2>/dev/null || true
+            ;;
+        Linux)
+            # Linux
+            pkill -f "emulator.*-avd" 2>/dev/null || true
+            ;;
+        *)
+            log "Unknown OS, skipping emulator cleanup"
+            ;;
+    esac
+
     # Clear any existing ADB connections
-    adb kill-server >/dev/null 2>&1
-    adb start-server >/dev/null 2>&1
+    adb kill-server >/dev/null 2>&1 || true
+    adb start-server >/dev/null 2>&1 || true
 }
 
 wait_for_emulator() {
     log "Waiting for emulator to boot..."
     
-    # Get the specific emulator port from our log
-    local emulator_port=$(grep -Eo "emulator:.*port \K\d+" .emulator_port.log | head -1)
-    local emulator_serial="emulator-${emulator_port:-5554}"
+    # Wait for ADB device to appear
+    local max_attempts=60
+    local attempt=0
+    local device_found=false
+
+    while [ $attempt -lt $max_attempts ]; do
+        if adb devices | grep -q "emulator"; then
+            device_found=true
+            break
+        fi
+        sleep 2
+        ((attempt++))
+        log "Waiting for device to appear in adb devices... (Attempt $attempt/$max_attempts)"
+    done
+
+    if [ "$device_found" != "true" ]; then
+        error "Emulator failed to start properly. Check .emulator_port.log for details."
+        cat .emulator_port.log
+        exit 1
+    fi
+
+    # Get the emulator serial
+    local emulator_serial=$(adb devices | grep emulator | head -1 | cut -f1)
+
+    log "Device found: $emulator_serial, waiting for boot completion..."
     
     # Use specific serial for all adb commands
     local adb_cmd="adb -s $emulator_serial"
     
-    # Wait for our specific emulator
-    $adb_cmd wait-for-device
-
+    # Wait for boot completion
     boot_completed=""
     retries=0
-    until [[ "$boot_completed" == "1" || $retries -gt 20 ]]; do
-        boot_completed=$($adb_cmd shell getprop sys.boot_completed | tr -d '\r')
-        sleep 5
+    until [[ "$boot_completed" == "1" || $retries -gt 60 ]]; do
+        boot_completed=$($adb_cmd shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || echo "")
+
+        if [[ -z "$boot_completed" ]]; then
+            # If the command failed, wait and try again
+            sleep 2
+            ((retries++))
+            echo " ⏳ Waiting for device to respond ($retries)..."
+            continue
+        elif [[ "$boot_completed" == "1" ]]; then
+            break
+        fi
+
+        sleep 3
         ((retries++))
-        echo " ⏳ still waiting ($retries)..."
+        echo " ⏳ Waiting for boot completion ($retries)..."
     done
 
     if [[ "$boot_completed" != "1" ]]; then
-        echo "❌ Emulator failed to boot."
+        error "Emulator failed to boot within the timeout period."
         exit 1
     fi
 
     # Get emulator information
-    local sdk_version=$($adb_cmd shell getprop ro.build.version.sdk)
-    local device_model=$($adb_cmd shell getprop ro.product.model)
-    local grpc_port="8554"
+    local sdk_version=$($adb_cmd shell getprop ro.build.version.sdk | tr -d '\r')
+    local device_model=$($adb_cmd shell getprop ro.product.model | tr -d '\r')
 
     # Print detailed information
     echo -e "\n\033[1;35mEmulator Information:\033[0m"
@@ -165,44 +288,59 @@ wait_for_emulator() {
     echo -e "Serial: \033[1;33m$emulator_serial\033[0m"
     echo -e "Android API: \033[1;33m$sdk_version\033[0m"
     echo -e "Device Model: \033[1;33m$device_model\033[0m"
-    echo -e "gRPC Port: \033[1;33m$grpc_port\033[0m"
     echo -e "PID: \033[1;33m$EMULATOR_PID\033[0m"
     echo -e "\n\033[1;35mManagement Commands:\033[0m"
     echo -e "Stop emulator: \033[1;32madb -s $emulator_serial emu kill\033[0m"
-    echo -e "Restart emulator: \033[1;32memulator -avd $AVD_NAME -grpc $grpc_port\033[0m"
     echo -e "View logs: \033[1;32mtail -f .emulator_port.log\033[0m"
     echo -e "Kill by PID: \033[1;32mkill $EMULATOR_PID\033[0m"
     echo -e "ADB commands: \033[1;32madb -s $emulator_serial <command>\033[0m"
 
-    log "✅ Emulator is ready -> $AVD_NAME (Serial: $emulator_serial)"
+    success "Emulator is ready -> $AVD_NAME (Serial: $emulator_serial)"
+
+    # Save emulator serial for later use
+    echo "$emulator_serial" > .emulator_serial
 }
 
 cleanup() {
     if [[ -f ".emulator_pid" ]]; then
         local pid=$(cat .emulator_pid)
-        if ps -p $pid > /dev/null; then
+        if ps -p $pid > /dev/null 2>&1; then
             log "Stopping emulator (PID: $pid)..."
-            kill $pid
+            kill $pid 2>/dev/null || true
             rm .emulator_pid
         fi
     fi
-    rm -f .emulator_port.log
+
+    if [[ -f ".emulator_serial" ]]; then
+        local serial=$(cat .emulator_serial)
+        log "Stopping emulator via adb (Serial: $serial)..."
+        adb -s $serial emu kill 2>/dev/null || true
+        rm .emulator_serial
+    fi
+
+    # Additional cleanup
+    adb devices | grep emulator | cut -f1 | xargs -I{} adb -s {} emu kill 2>/dev/null || true
 }
 
-# Trap Ctrl+C to ensure cleanup
-trap cleanup EXIT
+# Trap Ctrl+C and other exit signals to ensure cleanup
+trap cleanup EXIT INT TERM
 
 update_detox_config() {
     local config_file=".detoxrc.json"
     
     if [ -f "$config_file" ]; then
-        # Use jq to ONLY update the avdName while preserving all other structure
-        jq --arg avdName "$AVD_NAME" \
-           '.devices["android.emulator"].device.avdName = $avdName' \
-           "$config_file" > "${config_file}.tmp" && \
-        mv "${config_file}.tmp" "$config_file"
-        
-        log "Updated detoxrc.json AVD name to: $AVD_NAME"
+        # Check if jq is available
+        if command -v jq &> /dev/null; then
+            # Use jq to update the avdName
+            jq --arg avdName "$AVD_NAME" \
+               '.devices["android.emulator"].device.avdName = $avdName' \
+               "$config_file" > "${config_file}.tmp" && \
+            mv "${config_file}.tmp" "$config_file"
+            
+            log "Updated detoxrc.json AVD name to: $AVD_NAME"
+        else
+            log "Warning: jq is not installed - skipping detoxrc.json update"
+        fi
     else
         log "Warning: detoxrc.json not found in current directory"
     fi
@@ -212,8 +350,20 @@ update_detox_config() {
 
 install_app() {
     log "Installing app..."
-    adb install -r ../android/app/build/outputs/apk/debug/app-debug.apk || true
-    adb shell pm list packages | grep "com.mattermost.rnbeta" && log "App is installed."
+    local apk_path="../android/app/build/outputs/apk/debug/app-debug.apk"
+
+    if [ ! -f "$apk_path" ]; then
+        error "APK not found at: $apk_path"
+        exit 1
+    fi
+
+    adb install -r "$apk_path"
+    if adb shell pm list packages | grep -q "com.mattermost.rnbeta"; then
+        success "App is installed."
+    else
+        error "App installation failed."
+        exit 1
+    fi
 }
 
 start_server() {
@@ -222,29 +372,53 @@ start_server() {
     RUNNING_E2E=true npm run start &
     
     local max_wait=120 elapsed=0
-    until nc -z localhost 8081; do
-        [[ $elapsed -ge $max_wait ]] && echo "❌ Metro bundler did not start." && exit 1
+
+    log "Waiting for Metro to start on port 8081..."
+    until nc -z localhost 8081 2>/dev/null; do
+        if [[ $elapsed -ge $max_wait ]]; then
+            error "Metro bundler did not start within the timeout period."
+            exit 1
+        fi
         sleep 5
         ((elapsed+=5))
+        log "Still waiting for Metro bundler ($elapsed/$max_wait seconds)..."
     done
-    log "✅ Metro bundler is ready"
+
+    success "Metro bundler is ready"
 }
 
 setup_adb_reverse() {
     log "Setting up ADB reverse..."
-    adb reverse tcp:8081 tcp:8081 || true
+
+    # Get the emulator serial if available
+    local emulator_serial=""
+    if [[ -f ".emulator_serial" ]]; then
+        emulator_serial=$(cat .emulator_serial)
+        adb -s "$emulator_serial" reverse tcp:8081 tcp:8081 || true
+    else
+        # Fallback to using the first emulator in the list
+        adb reverse tcp:8081 tcp:8081 || true
+    fi
 }
 
 run_detox_tests() {
     log "Running Detox tests: $@"
     cd detox
-    npm run e2e:android-test -- "$@"
+
+    # Check if any test files were specified
+    if [ -z "$@" ]; then
+        log "No test files specified, running all tests"
+        npm run e2e:android-test
+    else
+        log "Running specified test files: $@"
+        npm run e2e:android-test -- "$@"
+    fi
 }
 
 # ----------- Main Logic --------------
 
 main() {
-    kill_existing_emulators  # Add this line first
+    kill_existing_emulators
     setup_avd_home
 
     if ! emulator -list-avds | grep -q "$AVD_NAME"; then
