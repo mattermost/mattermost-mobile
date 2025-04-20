@@ -71,6 +71,7 @@ describe('Server Login - Login by Email', () => {
         // # Log in with non-empty username and empty password
         await usernameInput.replaceText('username');
         await passwordInput.clearText();
+        await LoginScreen.loginFormInfoText.tap();
 
         // * Verify signin button is disabled
         await expect(signinButtonDisabled).toBeVisible();
@@ -81,6 +82,7 @@ describe('Server Login - Login by Email', () => {
         await usernameInput.replaceText('username');
         await passwordInput.replaceText('password');
         await wait(timeouts.TWO_SEC);
+        await LoginScreen.loginFormInfoText.tap();
         await signinButton.tap();
 
         // * Verify incorrect combination error
@@ -92,6 +94,8 @@ describe('Server Login - Login by Email', () => {
         const {team, user} = await Setup.apiInit(siteOneUrl);
         await usernameInput.replaceText(user.newUser.username);
         await passwordInput.replaceText(user.newUser.password);
+        await LoginScreen.loginFormInfoText.tap();
+
         await signinButton.tap();
         await wait(timeouts.TWO_SEC);
 

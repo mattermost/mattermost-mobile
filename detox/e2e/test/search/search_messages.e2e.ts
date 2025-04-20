@@ -200,6 +200,9 @@ describe('Search - Search Messages', () => {
         await SearchMessagesScreen.searchModifierPhrases.tap();
         await SearchMessagesScreen.searchInput.tapBackspaceKey();
         await SearchMessagesScreen.searchInput.typeText(messageWithIncludedTerm);
+
+        // # Collapse the keyboard
+        await element(by.id('search.modifier.header')).tap();
         await SearchMessagesScreen.searchModifierPhrases.tap();
         await SearchMessagesScreen.searchInput.tapBackspaceKey();
         await SearchMessagesScreen.searchInput.tapReturnKey();

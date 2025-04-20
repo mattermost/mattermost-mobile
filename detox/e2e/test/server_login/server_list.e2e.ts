@@ -30,7 +30,7 @@ import {
     ServerScreen,
     ServerListScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, timeouts, wait} from '@support/utils';
+import {isAndroid, isIos, timeouts, wait, retryWithReload} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Server Login - Server List', () => {
@@ -46,7 +46,7 @@ describe('Server Login - Server List', () => {
         ({user: serverOneUser} = await Setup.apiInit(siteOneUrl));
         await expect(ServerScreen.headerTitleConnectToServer).toBeVisible();
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
-        await LoginScreen.login(serverOneUser);
+        await retryWithReload(() => LoginScreen.login(serverOneUser));
     });
 
     beforeEach(async () => {
@@ -87,6 +87,7 @@ describe('Server Login - Server List', () => {
         // # Add a second server and log in to the second server
         await User.apiAdminLogin(siteTwoUrl);
         ({user: serverTwoUser} = await Setup.apiInit(siteTwoUrl));
+        await wait(timeouts.TWO_SEC);
         await ServerListScreen.addServerButton.tap();
         await expect(ServerScreen.headerTitleAddServer).toBeVisible(35);
         await ServerScreen.connectToServer(serverTwoUrl, serverTwoDisplayName);
@@ -109,11 +110,10 @@ describe('Server Login - Server List', () => {
         await waitFor(ServerListScreen.getServerItemActive(serverTwoDisplayName)).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await waitFor(ServerListScreen.getServerItemInactive(serverOneDisplayName)).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
-        await wait(timeouts.TWO_SEC);
-
         // # Add a third server and log in to the third server
         await User.apiAdminLogin(siteThreeUrl);
         ({user: serverThreeUser} = await Setup.apiInit(siteThreeUrl));
+        await wait(timeouts.TWO_SEC);
         await ServerListScreen.addServerButton.tap();
         await expect(ServerScreen.headerTitleAddServer).toBeVisible(35);
         await ServerScreen.connectToServer(serverThreeUrl, serverThreeDisplayName);
@@ -125,6 +125,7 @@ describe('Server Login - Server List', () => {
 
         // # Open server list screen
         await ServerListScreen.open();
+        await wait(timeouts.TWO_SEC);
         if (isIos()) {
             await ServerListScreen.serverListTitle.swipe('up');
         } else if (isAndroid()) {

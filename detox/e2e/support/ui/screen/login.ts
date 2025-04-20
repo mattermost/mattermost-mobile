@@ -70,7 +70,7 @@ class LoginScreen {
         await this.loginFormInfoText.tap();
         await this.signinButton.tap();
 
-        await waitFor(ChannelListScreen.channelListScreen).toExist().withTimeout(isAndroid() ? timeouts.ONE_MIN : timeouts.HALF_MIN);
+        await waitFor(ChannelListScreen.channelListScreen).toBeVisible().withTimeout(isAndroid() ? timeouts.ONE_MIN : timeouts.HALF_MIN);
     };
 
     loginAsAdmin = async (user: any = {}) => {
@@ -82,7 +82,7 @@ class LoginScreen {
         await this.passwordInput.replaceText(user.password);
         await this.loginFormInfoText.tap();
         await this.signinButton.tap();
-        await waitFor(ChannelListScreen.channelListScreen).toExist().withTimeout(isAndroid() ? timeouts.ONE_MIN : timeouts.HALF_MIN);
+        await waitFor(ChannelListScreen.channelListScreen).toBeVisible().withTimeout(isAndroid() ? timeouts.ONE_MIN : timeouts.HALF_MIN);
     };
 }
 

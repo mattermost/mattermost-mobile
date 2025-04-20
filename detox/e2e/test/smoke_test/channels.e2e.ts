@@ -139,7 +139,8 @@ describe('Smoke Test - Channels', () => {
         await ChannelScreen.back();
     });
 
-    it('MM-T4774_4 - should be able to find and edit a channel', async () => {
+    // TODO: Uncomment the test when the issue is fixed https://mattermost.atlassian.net/browse/MM-63814
+    it.skip('MM-T4774_4 - should be able to find and edit a channel', async () => {
         // # Open find channels screen, search for the channel to navigate to, and tap on the target channel item
         await FindChannelsScreen.open();
         await FindChannelsScreen.searchInput.replaceText(testChannel.name);

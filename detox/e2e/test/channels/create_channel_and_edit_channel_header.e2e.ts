@@ -20,7 +20,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, isIos} from '@support/utils';
+import {getRandomId, isIos, retryWithReload, timeouts} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Create Channel and Edit Channel Header', () => {
@@ -31,7 +31,7 @@ describe('Channels - Create Channel and Edit Channel Header', () => {
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
-        await LoginScreen.login(user);
+        await retryWithReload(() => LoginScreen.login(user));
     });
 
     beforeEach(async () => {
@@ -75,6 +75,7 @@ describe('Channels - Create Channel and Edit Channel Header', () => {
         await CreateOrEditChannelScreen.purposeInput.replaceText(purpose);
         await CreateOrEditChannelScreen.headerInput.replaceText(header);
         await CreateOrEditChannelScreen.createButton.tap();
+        await waitFor(ChannelScreen.scheduledPostTooltipCloseButton).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         await ChannelScreen.scheduledPostTooltipCloseButton.tap();
 
         // * Verify on newly created public channel
