@@ -5,7 +5,8 @@
 #   ./create_android_emulator.sh [SDK_VERSION] [AVD_BASE_NAME] [TEST_FILES]
 # Options:
 #   --headed  Run emulator with GUI (local development only)
-
+set -ex
+set -o pipefail
 if [[ "$DEBUG" == "true" ]]; then
     set -ex
     set -o pipefail
