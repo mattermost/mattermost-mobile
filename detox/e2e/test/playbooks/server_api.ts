@@ -7,16 +7,26 @@ export const siteOneUrl = 'http://localhost:8065';
 
 // Helper function for API requests
 async function doFetch(url: string, options: any = {}) {
+    // Store token from login response
+    static let token = '';
+    
     const response = await fetch(url, {
         ...options,
         headers: {
             'Content-Type': 'application/json',
+            ...(token && url !== `${siteOneUrl}/api/v4/users/login` ? { 'Authorization': `Bearer ${token}` } : {}),
             ...options.headers,
         },
     });
 
     if (!response.ok) {
         throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+    }
+
+    // If this is a login response, save the token
+    if (url.includes('/api/v4/users/login')) {
+        token = response.headers.get('Token') || '';
+        console.log('Authentication successful, token acquired');
     }
 
     return response.json();
@@ -150,16 +160,32 @@ export class Team {
     }
 }
 
+// Store token from login response
+let token = '';
+
 export class User {
     static async apiAdminLogin(siteUrl: string) {
         const url = `${siteUrl}/api/v4/users/login`;
-        return doFetch(url, {
+        const response = await fetch(url, {
             method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
             body: JSON.stringify({
                 login_id: 'sysadmin',
                 password: 'Sys@dmin-sample1',
             }),
         });
+
+        if (!response.ok) {
+            throw new Error(`Login failed: ${response.status} ${response.statusText}`);
+        }
+
+        // Extract token from headers
+        token = response.headers.get('Token') || '';
+        console.log('Authentication successful, token acquired');
+        
+        return response.json();
     }
 
     static async apiCreateUser(siteUrl: string) {
