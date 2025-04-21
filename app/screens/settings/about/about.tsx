@@ -126,7 +126,7 @@ const About = ({componentId, config, license}: AboutProps) => {
 
     useEffect(() => {
         const fetchLoadMetric = async () => {
-            const isLicensed = license.IsLicensed === 'true';
+            const isLicensed = license?.IsLicensed === 'true';
             const result = await getLicenseLoadMetric(serverUrl, config.Version, isLicensed);
 
             // Only set the metric if we got a number back
@@ -136,7 +136,7 @@ const About = ({componentId, config, license}: AboutProps) => {
         };
 
         fetchLoadMetric();
-    }, [config.Version, license.IsLicensed, serverUrl]);
+    }, [config.Version, license?.IsLicensed, serverUrl]);
 
     const openURL = useCallback((url: string) => {
         const onError = () => {
