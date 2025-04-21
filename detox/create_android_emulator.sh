@@ -5,8 +5,10 @@
 #   ./create_android_emulator.sh [SDK_VERSION] [AVD_BASE_NAME] [TEST_FILES]
 # Options:
 #   --headed  Run emulator with GUI (local development only)
+
 set -ex
 set -o pipefail
+
 if [[ "$DEBUG" == "true" ]]; then
     set -ex
     set -o pipefail
@@ -187,15 +189,32 @@ start_emulator() {
     rm -f .emulator_port.log
 
     # Start the emulator
-    if command -v emulator &> /dev/null; then
-        emulator $emulator_opts > .emulator_port.log 2>&1 &
-    else
-        "$ANDROID_HOME/emulator/emulator" $emulator_opts > .emulator_port.log 2>&1 &
+    local emulator_cmd="emulator"
+    if ! command -v emulator &> /dev/null; then
+        emulator_cmd="$ANDROID_HOME/emulator/emulator"
     fi
 
+    log "Running emulator command: $emulator_cmd $emulator_opts"
+    
+    # Start the emulator and save its output
+    $emulator_cmd $emulator_opts > .emulator_port.log 2>&1 &
+    
     EMULATOR_PID=$!
     echo $EMULATOR_PID > .emulator_pid
     log "Emulator started with PID: $EMULATOR_PID"
+    
+    # Wait a moment to detect immediate failures
+    sleep 5
+    
+    # Check if emulator process is still running
+    if ! ps -p $EMULATOR_PID > /dev/null; then 
+        error "Emulator process terminated immediately after launch!"
+        error "Check .emulator_port.log for details:"
+        cat .emulator_port.log
+        return 1
+    fi
+    
+    return 0
 }
 
 kill_existing_emulators() {
@@ -234,6 +253,15 @@ wait_for_emulator() {
             device_found=true
             break
         fi
+        
+        # Check if emulator process is still running
+        if ! ps -p $EMULATOR_PID > /dev/null; then
+            error "Emulator process terminated unexpectedly!"
+            error "Check .emulator_port.log for details:"
+            cat .emulator_port.log
+            return 1
+        fi
+        
         sleep 2
         ((attempt++))
         log "Waiting for device to appear in adb devices... (Attempt $attempt/$max_attempts)"
@@ -242,7 +270,7 @@ wait_for_emulator() {
     if [ "$device_found" != "true" ]; then
         error "Emulator failed to start properly. Check .emulator_port.log for details."
         cat .emulator_port.log
-        exit 1
+        return 1
     fi
 
     # Get the emulator serial
@@ -276,7 +304,7 @@ wait_for_emulator() {
 
     if [[ "$boot_completed" != "1" ]]; then
         error "Emulator failed to boot within the timeout period."
-        exit 1
+        return 1
     fi
 
     # Get emulator information
@@ -300,9 +328,13 @@ wait_for_emulator() {
 
     # Save emulator serial for later use
     echo "$emulator_serial" > .emulator_serial
+    
+    return 0
 }
 
 cleanup() {
+    log "Running cleanup..."
+    
     if [[ -f ".emulator_pid" ]]; then
         local pid=$(cat .emulator_pid)
         if ps -p $pid > /dev/null 2>&1; then
@@ -321,10 +353,13 @@ cleanup() {
 
     # Additional cleanup
     adb devices | grep emulator | cut -f1 | xargs -I{} adb -s {} emu kill 2>/dev/null || true
+    
+    # Kill any remaining metro processes if applicable
+    if [[ -n "$METRO_PID" ]]; then
+        log "Stopping Metro bundler (PID: $METRO_PID)..."
+        kill $METRO_PID 2>/dev/null || true
+    fi
 }
-
-# Trap Ctrl+C and other exit signals to ensure cleanup
-trap cleanup EXIT INT TERM
 
 update_detox_config() {
     local config_file=".detoxrc.json"
@@ -355,22 +390,25 @@ install_app() {
 
     if [ ! -f "$apk_path" ]; then
         error "APK not found at: $apk_path"
-        exit 1
+        return 1
     fi
 
     adb install -r "$apk_path"
     if adb shell pm list packages | grep -q "com.mattermost.rnbeta"; then
         success "App is installed."
+        return 0
     else
         error "App installation failed."
-        exit 1
+        return 1
     fi
 }
 
 start_server() {
     log "Starting Metro bundler..."
     cd ..
-    RUNNING_E2E=true npm run start &
+    RUNNING_E2E=true npm run start > metro.log 2>&1 &
+    METRO_PID=$!
+    log "Metro bundler started with PID: $METRO_PID"
     
     local max_wait=120 elapsed=0
 
@@ -378,7 +416,8 @@ start_server() {
     until nc -z localhost 8081 2>/dev/null; do
         if [[ $elapsed -ge $max_wait ]]; then
             error "Metro bundler did not start within the timeout period."
-            exit 1
+            cat metro.log
+            return 1
         fi
         sleep 5
         ((elapsed+=5))
@@ -386,6 +425,7 @@ start_server() {
     done
 
     success "Metro bundler is ready"
+    return 0
 }
 
 setup_adb_reverse() {
@@ -395,30 +435,50 @@ setup_adb_reverse() {
     local emulator_serial=""
     if [[ -f ".emulator_serial" ]]; then
         emulator_serial=$(cat .emulator_serial)
-        adb -s "$emulator_serial" reverse tcp:8081 tcp:8081 || true
+        adb -s "$emulator_serial" reverse tcp:8081 tcp:8081 || {
+            error "Failed to set up ADB reverse for port 8081"
+            return 1
+        }
     else
         # Fallback to using the first emulator in the list
-        adb reverse tcp:8081 tcp:8081 || true
+        adb reverse tcp:8081 tcp:8081 || {
+            error "Failed to set up ADB reverse for port 8081"
+            return 1
+        }
     fi
+    
+    return 0
 }
 
 run_detox_tests() {
-    log "Running Detox tests: $@"
+    local test_files="$@"
+    log "Running Detox tests: $test_files"
     cd detox
+    
+    # Capture the return value of the test command
+    local test_result=0
 
     # Check if any test files were specified
-    if [ -z "$@" ]; then
+    if [ -z "$test_files" ]; then
         log "No test files specified, running all tests"
-        npm run e2e:android-test
+        npm run e2e:android-test || test_result=$?
     else
-        log "Running specified test files: $@"
-        npm run e2e:android-test -- "$@"
+        log "Running specified test files: $test_files"
+        npm run e2e:android-test -- $test_files || test_result=$?
     fi
+    
+    log "Detox tests completed with exit code: $test_result"
+    return $test_result
 }
 
 # ----------- Main Logic --------------
 
 main() {
+    local main_result=0
+    
+    # Disable trap during setup to prevent premature cleanup
+    trap - EXIT INT TERM
+    
     kill_existing_emulators
     setup_avd_home
 
@@ -429,18 +489,60 @@ main() {
     fi
 
     update_detox_config
-    start_emulator
-    wait_for_emulator
-
-    if [[ "$CI" == "true" ]]; then
-        install_app
-        start_server
-        setup_adb_reverse
-        run_detox_tests $TEST_FILES
-    else
-        log "Emulator is running in interactive mode. Press Ctrl+C to stop."
-        wait $EMULATOR_PID
+    
+    # Start emulator and handle potential failures
+    if ! start_emulator; then
+        error "Failed to start emulator properly."
+        cleanup
+        exit 1
     fi
+    
+    # Now enable the trap for subsequent operations
+    trap cleanup EXIT INT TERM
+    
+    # Wait for emulator to boot
+    if ! wait_for_emulator; then
+        error "Emulator failed to boot properly."
+        main_result=1
+    fi
+
+    # Only proceed with tests if emulator is working
+    if [[ $main_result -eq 0 && "$CI" == "true" ]]; then
+        if ! install_app; then
+            error "Failed to install app."
+            main_result=1
+        fi
+        
+        if [[ $main_result -eq 0 ]] && ! start_server; then
+            error "Failed to start Metro server."
+            main_result=1
+        fi
+        
+        if [[ $main_result -eq 0 ]] && ! setup_adb_reverse; then
+            error "Failed to set up ADB reverse."
+            main_result=1
+        fi
+        
+        if [[ $main_result -eq 0 ]]; then
+            # Run the tests and capture the result
+            if ! run_detox_tests $TEST_FILES; then
+                log "Tests completed with failures."
+                main_result=1
+            else
+                success "All tests passed successfully!"
+            fi
+        fi
+    elif [[ "$CI" != "true" ]]; then
+        log "Emulator is running in interactive mode. Press Ctrl+C to stop."
+        # Wait for emulator process in non-CI mode
+        wait $EMULATOR_PID || true
+    fi
+    
+    # Run cleanup manually before exiting
+    cleanup
+    
+    log "Script completed with exit code: $main_result"
+    exit $main_result
 }
 
 main
