@@ -37,6 +37,20 @@ export const generateRandomChecklists = (numChecklists = 1, numItems = 3) => {
  * @param {Object} options - playbook options
  * @return {Object} returns a playbook object
  */
+interface PlaybookOptions {
+    teamId: string;
+    userId: string;
+    prefix?: string;
+    numChecklists?: number;
+    numItems?: number;
+    isPublic?: boolean;
+    broadcastEnabled?: boolean;
+    broadcastChannelIds?: string[];
+    statusUpdateEnabled?: boolean;
+    retrospectiveEnabled?: boolean;
+    metricsEnabled?: boolean;
+}
+
 export const generateRandomPlaybook = ({
     teamId,
     userId,
@@ -49,7 +63,7 @@ export const generateRandomPlaybook = ({
     statusUpdateEnabled = true,
     retrospectiveEnabled = true,
     metricsEnabled = false,
-} = {}) => {
+} : PlaybookOptions) => {
     const randomId = getRandomId(6);
     const title = `${prefix}-${randomId}`;
     
@@ -85,16 +99,24 @@ export const generateRandomPlaybook = ({
 
 /**
  * Generate a random playbook run
- * @param {Object} options - playbook run options
+ * @param {Object} options - playbook run options, must include teamId, playbookId, channelId, and ownerId
  * @return {Object} returns a playbook run object
  */
+interface PlaybookRunOptions {
+    teamId: string;
+    playbookId: string;
+    channelId: string;
+    ownerId: string;
+    prefix?: string;
+}
+
 export const generateRandomPlaybookRun = ({
     teamId,
     playbookId,
     channelId,
     ownerId,
     prefix = 'run',
-} = {}) => {
+}: PlaybookRunOptions) => {
     const randomId = getRandomId(6);
     const name = `${prefix}-${randomId}`;
     
