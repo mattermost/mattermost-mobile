@@ -3,6 +3,7 @@
 
 import client from './client';
 import {getResponseFromError} from './common';
+import PlaybooksHelpers from './playbooks_helpers';
 
 const playbookRunsEndpoint = '/plugins/playbooks/api/v0/runs';
 const playbooksEndpoint = '/plugins/playbooks/api/v0/playbooks';
@@ -612,6 +613,7 @@ export const Playbooks = {
     apiUnfollowPlaybookRun,
     apiAddUsersToRun,
     apiUpdateRun,
+    ...PlaybooksHelpers,
 };
 
 export default Playbooks;

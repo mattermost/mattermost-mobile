@@ -5,6 +5,7 @@ import Bot from './bot';
 import Channel from './channel';
 import Ldap from './ldap';
 import Playbooks from './playbooks';
+import PlaybooksHelpers from './playbooks_helpers';
 import Plugin from './plugin';
 import Post from './post';
 import Preference from './preference';
@@ -19,6 +20,7 @@ export {
     Channel,
     Ldap,
     Playbooks,
+    PlaybooksHelpers,
     Plugin,
     Post,
     Preference,
