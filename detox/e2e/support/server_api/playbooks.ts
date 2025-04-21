@@ -4,18 +4,6 @@
 import client from './client';
 import {getResponseFromError} from './common';
 
-// ****************************************************************
-// Playbooks
-// Adapted from Cypress commands in mattermost/e2e-tests/cypress/tests/support/api/playbooks.js
-//
-// Exported API function should have the following:
-// - documented using JSDoc
-// - meaningful description
-// - match the referenced API endpoints
-// - parameter/s defined by `@param`
-// - return value defined by `@return`
-// ****************************************************************
-
 const playbookRunsEndpoint = '/plugins/playbooks/api/v0/runs';
 const playbooksEndpoint = '/plugins/playbooks/api/v0/playbooks';
 
