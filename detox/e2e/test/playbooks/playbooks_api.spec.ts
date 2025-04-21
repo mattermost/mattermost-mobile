@@ -1,8 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Playbooks, Team, User, Channel} from '@support/server_api';
-import {siteOneUrl} from '@support/test_config';
+import {Playbooks, Team, User, Channel, siteOneUrl} from './server_api';
 
 // Simple utility to log results
 const logResult = (operation: string, result: unknown): unknown => {
