@@ -115,7 +115,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 type AboutProps = {
     componentId: AvailableScreens;
     config: ClientConfig;
-    license: ClientLicense;
+    license?: ClientLicense;
 }
 const About = ({componentId, config, license}: AboutProps) => {
     const intl = useIntl();
@@ -317,7 +317,7 @@ const About = ({componentId, config, license}: AboutProps) => {
                     iconSize={15}
                     buttonType={'default'}
                 />
-                {license.IsLicensed === 'true' && (
+                {license?.IsLicensed === 'true' && (
                     <View style={styles.licenseContainer}>
                         <FormattedText
                             defaultMessage='Licensed to: {company}'

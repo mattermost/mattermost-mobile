@@ -28,7 +28,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 
 type TitleProps = {
     config: ClientConfig;
-    license: ClientLicense;
+    license?: ClientLicense;
 }
 const Title = ({config, license}: TitleProps) => {
     const theme = useTheme();
@@ -41,7 +41,7 @@ const Title = ({config, license}: TitleProps) => {
         id = t('about.teamEditiont1');
         defaultMessage = 'Enterprise Edition';
 
-        if (license.IsLicensed === 'true') {
+        if (license?.IsLicensed === 'true') {
             id = t('about.enterpriseEditione1');
             defaultMessage = 'Enterprise Edition';
         }
