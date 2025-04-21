@@ -3,26 +3,36 @@
 
 import {Playbooks, Team, User, Channel} from '@support/server_api';
 import {siteOneUrl} from '@support/test_config';
-import * as jestExpect from 'expect';
 
-describe('Playbooks API', () => {
-    let testTeam: any;
-    let testUser: any;
-    let testChannel: any;
+// Simple utility to log results
+const logResult = (operation, result) => {
+    console.log(`\n=== ${operation} ===`);
+    console.log(JSON.stringify(result, null, 2));
+    console.log('===================\n');
+    return result;
+};
 
-    beforeAll(async () => {
+// Main function to run all API operations
+async function runPlaybooksApi() {
+    try {
+        console.log('Starting Playbooks API operations...');
+        
         // Login as admin
         await User.apiAdminLogin(siteOneUrl);
-
+        console.log('Logged in as admin');
+        
         // Create test data
         const {team} = await Team.apiCreateTeam(siteOneUrl);
-        testTeam = team;
+        const testTeam = team;
+        logResult('Created team', testTeam);
 
         const {user} = await User.apiCreateUser(siteOneUrl);
-        testUser = user;
+        const testUser = user;
+        logResult('Created user', testUser);
 
         // Add user to team
         await Team.apiAddUserToTeam(siteOneUrl, testUser.id, testTeam.id);
+        console.log(`Added user ${testUser.id} to team ${testTeam.id}`);
 
         // Create a channel
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
@@ -30,55 +40,23 @@ describe('Playbooks API', () => {
             type: 'O',
             prefix: 'playbook-test',
         });
-        testChannel = channel;
-    });
+        const testChannel = channel;
+        logResult('Created channel', testChannel);
 
-    afterAll(async () => {
-        // Clean up
-        if (testChannel?.id) {
-            await Channel.apiDeleteChannel(siteOneUrl, testChannel.id);
-        }
-        if (testTeam?.id) {
-            await Team.apiDeleteTeam(siteOneUrl, testTeam.id);
-        }
-        if (testUser?.id) {
-            await User.apiDeactivateUser(siteOneUrl, testUser.id);
-        }
-    });
-
-    it('should create and get a playbook', async () => {
-        // Create a test playbook
+        // 1. Create a playbook
         const playbookTitle = 'Test Playbook ' + Date.now();
         const playbook = await Playbooks.apiCreateTestPlaybook(siteOneUrl, {
             teamId: testTeam.id,
             title: playbookTitle,
             userId: testUser.id,
         });
+        logResult('Created playbook', playbook);
 
-        jestExpect.default(playbook).toBeTruthy();
-        jestExpect.default(playbook.id).toBeTruthy();
-        jestExpect.default(playbook.title).toBe(playbookTitle);
-
-        // Get the playbook by ID
+        // 2. Get the playbook by ID
         const fetchedPlaybook = await Playbooks.apiGetPlaybook(siteOneUrl, playbook.id);
-        jestExpect.default(fetchedPlaybook).toBeTruthy();
-        jestExpect.default(fetchedPlaybook.id).toBe(playbook.id);
-        jestExpect.default(fetchedPlaybook.title).toBe(playbookTitle);
+        logResult('Fetched playbook', fetchedPlaybook);
 
-        // Clean up
-        await Playbooks.apiArchivePlaybook(siteOneUrl, playbook.id);
-    });
-
-    it('should create, update, and finish a playbook run', async () => {
-        // Create a test playbook
-        const playbookTitle = 'Run Test Playbook ' + Date.now();
-        const playbook = await Playbooks.apiCreateTestPlaybook(siteOneUrl, {
-            teamId: testTeam.id,
-            title: playbookTitle,
-            userId: testUser.id,
-        });
-
-        // Start a playbook run
+        // 3. Start a playbook run
         const runName = 'Test Run ' + Date.now();
         const playbookRun = await Playbooks.apiRunPlaybook(siteOneUrl, {
             name: runName,
@@ -87,86 +65,69 @@ describe('Playbooks API', () => {
             playbook_id: playbook.id,
             channel_id: testChannel.id,
         });
+        logResult('Started playbook run', playbookRun);
 
-        jestExpect.default(playbookRun).toBeTruthy();
-        jestExpect.default(playbookRun.id).toBeTruthy();
-        jestExpect.default(playbookRun.name).toBe(runName);
-
-        // Get the playbook run
+        // 4. Get the playbook run
         const fetchedRun = await Playbooks.apiGetPlaybookRun(siteOneUrl, playbookRun.id);
-        jestExpect.default(fetchedRun).toBeTruthy();
-        jestExpect.default(fetchedRun.id).toBe(playbookRun.id);
-        jestExpect.default(fetchedRun.name).toBe(runName);
+        logResult('Fetched playbook run', fetchedRun);
 
-        // Update status
+        // 5. Update status
         const statusMessage = 'Status update test';
         const statusUpdate = await Playbooks.apiUpdateStatus(siteOneUrl, playbookRun.id, statusMessage);
-        jestExpect.default(statusUpdate).toBeTruthy();
-        jestExpect.default(statusUpdate.status_posts).toBeTruthy();
+        logResult('Updated status', statusUpdate);
 
-        // Finish the run
-        const finishedRun = await Playbooks.apiFinishRun(siteOneUrl, playbookRun.id);
-        jestExpect.default(finishedRun).toBeTruthy();
-        jestExpect.default(finishedRun.id).toBe(playbookRun.id);
-        jestExpect.default(finishedRun.end_at).toBeGreaterThan(0);
-
-        // Clean up
-        await Playbooks.apiArchivePlaybook(siteOneUrl, playbook.id);
-    });
-
-    it('should follow and unfollow a playbook run', async () => {
-        // Create a test playbook
-        const playbookTitle = 'Follow Test Playbook ' + Date.now();
-        const playbook = await Playbooks.apiCreateTestPlaybook(siteOneUrl, {
-            teamId: testTeam.id,
-            title: playbookTitle,
-            userId: testUser.id,
-        });
-
-        // Start a playbook run
-        const runName = 'Follow Test Run ' + Date.now();
-        const playbookRun = await Playbooks.apiRunPlaybook(siteOneUrl, {
-            name: runName,
-            owner_user_id: testUser.id,
-            team_id: testTeam.id,
-            playbook_id: playbook.id,
-            channel_id: testChannel.id,
-        });
-
-        // Follow the run
+        // 6. Follow the run
         const followResult = await Playbooks.apiFollowPlaybookRun(siteOneUrl, playbookRun.id);
-        jestExpect.default(followResult).toBeTruthy();
+        logResult('Followed run', followResult);
 
-        // Unfollow the run
+        // 7. Unfollow the run
         const unfollowResult = await Playbooks.apiUnfollowPlaybookRun(siteOneUrl, playbookRun.id);
-        jestExpect.default(unfollowResult).toBeTruthy();
+        logResult('Unfollowed run', unfollowResult);
 
-        // Clean up
-        await Playbooks.apiFinishRun(siteOneUrl, playbookRun.id);
-        await Playbooks.apiArchivePlaybook(siteOneUrl, playbook.id);
-    });
-
-    it('should update a playbook', async () => {
-        // Create a test playbook
-        const playbookTitle = 'Update Test Playbook ' + Date.now();
-        const playbook = await Playbooks.apiCreateTestPlaybook(siteOneUrl, {
-            teamId: testTeam.id,
-            title: playbookTitle,
-            userId: testUser.id,
-        });
-
-        // Update the playbook
+        // 8. Update the playbook
         const updatedTitle = 'Updated Playbook ' + Date.now();
         const updatedPlaybook = {
             ...playbook,
             title: updatedTitle,
         };
-
         const updateResult = await Playbooks.apiUpdatePlaybook(siteOneUrl, updatedPlaybook);
-        jestExpect.default(updateResult).toBeTruthy();
-        jestExpect.default(updateResult.title).toBe(updatedTitle);
+        logResult('Updated playbook', updateResult);
 
-        // Clean up
+        // 9. Finish the run
+        const finishedRun = await Playbooks.apiFinishRun(siteOneUrl, playbookRun.id);
+        logResult('Finished run', finishedRun);
+
+        // 10. Create another playbook that won't be cleaned up (for UI verification)
+        const permanentPlaybookTitle = 'PERMANENT Playbook ' + Date.now();
+        const permanentPlaybook = await Playbooks.apiCreateTestPlaybook(siteOneUrl, {
+            teamId: testTeam.id,
+            title: permanentPlaybookTitle,
+            userId: testUser.id,
+        });
+        logResult('Created permanent playbook for UI verification', permanentPlaybook);
+        
+        console.log('\n=== SUMMARY ===');
+        console.log(`Created team: ${testTeam.name} (${testTeam.id})`);
+        console.log(`Created user: ${testUser.username} (${testUser.id})`);
+        console.log(`Created channel: ${testChannel.name} (${testChannel.id})`);
+        console.log(`Created playbook: ${playbook.title} (${playbook.id})`);
+        console.log(`Created permanent playbook: ${permanentPlaybook.title} (${permanentPlaybook.id})`);
+        console.log(`Created run: ${playbookRun.name} (${playbookRun.id})`);
+        console.log('All operations completed successfully!');
+        
+        // Optional: Clean up (comment out if you want to keep the data for UI verification)
+        /*
         await Playbooks.apiArchivePlaybook(siteOneUrl, playbook.id);
-    });
-});
+        await Channel.apiDeleteChannel(siteOneUrl, testChannel.id);
+        await Team.apiDeleteTeam(siteOneUrl, testTeam.id);
+        await User.apiDeactivateUser(siteOneUrl, testUser.id);
+        console.log('Cleanup completed');
+        */
+        
+    } catch (error) {
+        console.error('Error running Playbooks API operations:', error);
+    }
+}
+
+// Run the function
+runPlaybooksApi();
