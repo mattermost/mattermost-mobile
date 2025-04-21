@@ -20,7 +20,6 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {retryWithReload} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Autocomplete - Channel Post Draft', () => {
@@ -32,7 +31,7 @@ describe('Autocomplete - Channel Post Draft', () => {
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
-        await retryWithReload(() => LoginScreen.login(user));
+        await LoginScreen.login(user);
 
         // * Verify on channel list screen
         await ChannelListScreen.toBeVisible();

@@ -25,7 +25,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isIos, timeouts, wait, retryWithReload} from '@support/utils';
+import {isIos, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Find Channels', () => {
@@ -42,7 +42,7 @@ describe('Channels - Find Channels', () => {
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
-        await retryWithReload(() => LoginScreen.login(testUser));
+        await LoginScreen.login(testUser);
     });
 
     beforeEach(async () => {

@@ -25,7 +25,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait, retryWithReload} from '@support/utils';
+import {getRandomId, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Autocomplete - At-Mention', () => {
@@ -52,7 +52,7 @@ describe('Autocomplete - At-Mention', () => {
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
-        await retryWithReload(() => LoginScreen.login(user));
+        await LoginScreen.login(user);
 
         // * Verify on channel list screen
         await ChannelListScreen.toBeVisible();

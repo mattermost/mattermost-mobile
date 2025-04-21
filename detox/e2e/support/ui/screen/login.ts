@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {ChannelListScreen, ServerScreen} from '@support/ui/screen';
-import {isAndroid, timeouts, wait} from '@support/utils';
+import {isAndroid, retryWithReload, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 class LoginScreen {
@@ -60,9 +60,8 @@ class LoginScreen {
         await expect(this.loginScreen).not.toBeVisible();
     };
 
-    login = async (user: any = {}) => {
+    loginWithRetryIfStuck = async (user: any = {}) => {
         await this.toBeVisible();
-
         await this.usernameInput.tap({x: 150, y: 10});
         await this.usernameInput.replaceText(user.newUser.email);
         await this.passwordInput.tap();
@@ -71,6 +70,10 @@ class LoginScreen {
         await this.signinButton.tap();
 
         await waitFor(ChannelListScreen.channelListScreen).toBeVisible().withTimeout(isAndroid() ? timeouts.ONE_MIN : timeouts.HALF_MIN);
+    };
+
+    login = async (user: any = {}) => {
+        await retryWithReload(() => this.loginWithRetryIfStuck(user));
     };
 
     loginAsAdmin = async (user: any = {}) => {

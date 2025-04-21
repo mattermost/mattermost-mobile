@@ -30,7 +30,7 @@ import {
     ServerScreen,
     ServerListScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, timeouts, wait, retryWithReload} from '@support/utils';
+import {isAndroid, isIos, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Server Login - Server List', () => {
@@ -46,7 +46,7 @@ describe('Server Login - Server List', () => {
         ({user: serverOneUser} = await Setup.apiInit(siteOneUrl));
         await expect(ServerScreen.headerTitleConnectToServer).toBeVisible();
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
-        await retryWithReload(() => LoginScreen.login(serverOneUser));
+        await LoginScreen.login(serverOneUser);
     });
 
     beforeEach(async () => {

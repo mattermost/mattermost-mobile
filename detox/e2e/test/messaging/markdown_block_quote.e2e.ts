@@ -22,7 +22,6 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {retryWithReload} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Messaging - Markdown Block Quote', () => {
@@ -36,7 +35,7 @@ describe('Messaging - Markdown Block Quote', () => {
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
-        await retryWithReload(() => LoginScreen.login(user));
+        await LoginScreen.login(user);
     });
 
     beforeEach(async () => {

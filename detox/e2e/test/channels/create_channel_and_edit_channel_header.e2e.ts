@@ -20,7 +20,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, isIos, retryWithReload, timeouts} from '@support/utils';
+import {getRandomId, isIos, timeouts} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Create Channel and Edit Channel Header', () => {
@@ -31,7 +31,7 @@ describe('Channels - Create Channel and Edit Channel Header', () => {
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
-        await retryWithReload(() => LoginScreen.login(user));
+        await LoginScreen.login(user);
     });
 
     beforeEach(async () => {
