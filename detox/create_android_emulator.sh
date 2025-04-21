@@ -91,11 +91,11 @@ create_avd() {
     # Delete the AVD if it already exists to ensure clean creation
     "$ANDROID_HOME"/cmdline-tools/latest/bin/avdmanager delete avd -n "$AVD_NAME" 2>/dev/null || true
 
-    # Create the AVD
+    # Create the AVD - changing to use "pixel" which is a valid skin
     "$ANDROID_HOME"/cmdline-tools/latest/bin/avdmanager create avd \
         -n "$AVD_NAME" \
         -k "system-images;android-${SDK_VERSION};google_apis;${cpu_arch_family}" \
-        -d "pixel_4_xl" -f
+        -d "pixel" -f
 
     # Ensure config.ini exists and create a backup
     CONFIG_PATH="$HOME/.android/avd/${AVD_NAME}.avd/config.ini"
@@ -112,6 +112,7 @@ create_avd() {
     cp "$CONFIG_PATH" "${CONFIG_PATH}.backup"
 
     # Modify config.ini with optimal settings for E2E testing
+    # Changed skin.name to 'pixel' instead of 'pixel_4_xl'
     cat > "$CONFIG_PATH" << EOF
 avd.ini.encoding=UTF-8
 path=$(dirname "$CONFIG_PATH")
@@ -119,15 +120,15 @@ path.rel=avd/${AVD_NAME}.avd
 target=google_apis
 target.arch=${cpu_arch_family}
 AvdId=${AVD_NAME}
-avd.ini.displayname=Detox Pixel 4 XL API ${SDK_VERSION}
+avd.ini.displayname=Detox Pixel API ${SDK_VERSION}
 hw.cpu.arch=${cpu_arch}
 hw.cpu.ncore=4
 hw.ramSize=2048
-hw.screen=1080x2280
+hw.screen=1080x1920
 hw.dPad=no
 hw.lcd.width=1080
-hw.lcd.height=2280
-hw.lcd.density=440
+hw.lcd.height=1920
+hw.lcd.density=420
 hw.keyboard=yes
 hw.keyboard.lid=no
 hw.gpu.enabled=yes
@@ -147,7 +148,7 @@ hw.camera.front=emulated
 runtime.network.latency=none
 runtime.network.speed=full
 showDeviceFrame=yes
-skin.name=pixel_4_xl
+skin.name=pixel
 skin.dynamic=yes
 EOF
 
@@ -486,6 +487,11 @@ main() {
         create_avd
     else
         log "AVD '$AVD_NAME' already exists."
+        
+        # Delete and recreate to ensure correct config
+        log "Deleting existing AVD to ensure proper configuration"
+        "$ANDROID_HOME"/cmdline-tools/latest/bin/avdmanager delete avd -n "$AVD_NAME" 2>/dev/null || true
+        create_avd
     fi
 
     update_detox_config
