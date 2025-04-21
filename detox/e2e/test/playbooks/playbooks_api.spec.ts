@@ -5,7 +5,7 @@ import {Playbooks, Team, User, Channel} from '@support/server_api';
 import {siteOneUrl} from '@support/test_config';
 
 // Simple utility to log results
-const logResult = (operation, result) => {
+const logResult = (operation: string, result: unknown): unknown => {
     console.log(`\n=== ${operation} ===`);
     console.log(JSON.stringify(result, null, 2));
     console.log('===================\n');
