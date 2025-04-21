@@ -11,24 +11,24 @@ import {getRandomId} from '@support/utils';
  */
 export const generateRandomChecklists = (numChecklists = 1, numItems = 3) => {
     const checklists = [];
-    
+
     for (let i = 0; i < numChecklists; i++) {
         const randomId = getRandomId(6);
         const items = [];
-        
+
         for (let j = 0; j < numItems; j++) {
             items.push({
                 title: `Task ${j + 1} for checklist ${i + 1} (${randomId})`,
                 description: `Description for task ${j + 1}`,
             });
         }
-        
+
         checklists.push({
             title: `Checklist ${i + 1} (${randomId})`,
             items,
         });
     }
-    
+
     return checklists;
 };
 
@@ -64,10 +64,10 @@ export const generateRandomPlaybook = ({
     statusUpdateEnabled = true,
     retrospectiveEnabled = true,
     metricsEnabled = false,
-} : PlaybookOptions) => {
+}: PlaybookOptions) => {
     const randomId = getRandomId(6);
     const title = `${prefix}-${randomId}`;
-    
+
     return {
         team_id: teamId,
         title,
@@ -121,7 +121,7 @@ export const generateRandomPlaybookRun = ({
 }: PlaybookRunOptions) => {
     const randomId = getRandomId(6);
     const name = `${prefix}-${randomId}`;
-    
+
     return {
         name,
         owner_user_id: ownerId,
