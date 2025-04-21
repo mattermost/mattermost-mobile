@@ -133,6 +133,9 @@ export class Playbooks {
         console.log('Trying with minimal playbook payload:', JSON.stringify(minimalPlaybook, null, 2));
         
         try {
+            if (!endpoints[0]) {
+                throw new Error('No valid endpoint found for playbook creation');
+            }
             return await doFetch(endpoints[0], {
                 method: 'POST',
                 body: JSON.stringify(minimalPlaybook),
