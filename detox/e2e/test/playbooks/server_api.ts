@@ -5,11 +5,7 @@ import fetch from 'node-fetch';
 
 export const siteOneUrl = 'http://localhost:8065';
 
-// Helper function for API requests
-async function doFetch(url: string, options: any = {}) {
-    // Store token from login response
-    static let token = '';
-    
+async function doFetch(url: string, options: any = {}) {    
     const response = await fetch(url, {
         ...options,
         headers: {
