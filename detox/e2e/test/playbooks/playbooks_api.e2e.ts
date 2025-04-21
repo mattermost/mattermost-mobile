@@ -3,7 +3,6 @@
 
 import {Playbooks, Team, User, Channel} from '@support/server_api';
 import {siteOneUrl} from '@support/test_config';
-// Import Jest's expect
 import * as jestExpect from 'expect';
 
 describe('Playbooks API', () => {
@@ -56,15 +55,15 @@ describe('Playbooks API', () => {
             userId: testUser.id,
         });
 
-        jestExpect(playbook).toBeTruthy();
-        jestExpect(playbook.id).toBeTruthy();
-        jestExpect(playbook.title).toBe(playbookTitle);
+        jestExpect.default(playbook).toBeTruthy();
+        jestExpect.default(playbook.id).toBeTruthy();
+        jestExpect.default(playbook.title).toBe(playbookTitle);
 
         // Get the playbook by ID
         const fetchedPlaybook = await Playbooks.apiGetPlaybook(siteOneUrl, playbook.id);
-        jestExpect(fetchedPlaybook).toBeTruthy();
-        jestExpect(fetchedPlaybook.id).toBe(playbook.id);
-        jestExpect(fetchedPlaybook.title).toBe(playbookTitle);
+        jestExpect.default(fetchedPlaybook).toBeTruthy();
+        jestExpect.default(fetchedPlaybook.id).toBe(playbook.id);
+        jestExpect.default(fetchedPlaybook.title).toBe(playbookTitle);
 
         // Clean up
         await Playbooks.apiArchivePlaybook(siteOneUrl, playbook.id);
@@ -89,27 +88,27 @@ describe('Playbooks API', () => {
             channel_id: testChannel.id,
         });
 
-        jestExpect(playbookRun).toBeTruthy();
-        jestExpect(playbookRun.id).toBeTruthy();
-        jestExpect(playbookRun.name).toBe(runName);
+        jestExpect.default(playbookRun).toBeTruthy();
+        jestExpect.default(playbookRun.id).toBeTruthy();
+        jestExpect.default(playbookRun.name).toBe(runName);
 
         // Get the playbook run
         const fetchedRun = await Playbooks.apiGetPlaybookRun(siteOneUrl, playbookRun.id);
-        jestExpect(fetchedRun).toBeTruthy();
-        jestExpect(fetchedRun.id).toBe(playbookRun.id);
-        jestExpect(fetchedRun.name).toBe(runName);
+        jestExpect.default(fetchedRun).toBeTruthy();
+        jestExpect.default(fetchedRun.id).toBe(playbookRun.id);
+        jestExpect.default(fetchedRun.name).toBe(runName);
 
         // Update status
         const statusMessage = 'Status update test';
         const statusUpdate = await Playbooks.apiUpdateStatus(siteOneUrl, playbookRun.id, statusMessage);
-        jestExpect(statusUpdate).toBeTruthy();
-        jestExpect(statusUpdate.status_posts).toBeTruthy();
+        jestExpect.default(statusUpdate).toBeTruthy();
+        jestExpect.default(statusUpdate.status_posts).toBeTruthy();
 
         // Finish the run
         const finishedRun = await Playbooks.apiFinishRun(siteOneUrl, playbookRun.id);
-        jestExpect(finishedRun).toBeTruthy();
-        jestExpect(finishedRun.id).toBe(playbookRun.id);
-        jestExpect(finishedRun.end_at).toBeGreaterThan(0);
+        jestExpect.default(finishedRun).toBeTruthy();
+        jestExpect.default(finishedRun.id).toBe(playbookRun.id);
+        jestExpect.default(finishedRun.end_at).toBeGreaterThan(0);
 
         // Clean up
         await Playbooks.apiArchivePlaybook(siteOneUrl, playbook.id);
@@ -136,11 +135,11 @@ describe('Playbooks API', () => {
 
         // Follow the run
         const followResult = await Playbooks.apiFollowPlaybookRun(siteOneUrl, playbookRun.id);
-        jestExpect(followResult).toBeTruthy();
+        jestExpect.default(followResult).toBeTruthy();
 
         // Unfollow the run
         const unfollowResult = await Playbooks.apiUnfollowPlaybookRun(siteOneUrl, playbookRun.id);
-        jestExpect(unfollowResult).toBeTruthy();
+        jestExpect.default(unfollowResult).toBeTruthy();
 
         // Clean up
         await Playbooks.apiFinishRun(siteOneUrl, playbookRun.id);
@@ -162,10 +161,10 @@ describe('Playbooks API', () => {
             ...playbook,
             title: updatedTitle,
         };
-        
+
         const updateResult = await Playbooks.apiUpdatePlaybook(siteOneUrl, updatedPlaybook);
-        jestExpect(updateResult).toBeTruthy();
-        jestExpect(updateResult.title).toBe(updatedTitle);
+        jestExpect.default(updateResult).toBeTruthy();
+        jestExpect.default(updateResult.title).toBe(updatedTitle);
 
         // Clean up
         await Playbooks.apiArchivePlaybook(siteOneUrl, playbook.id);
