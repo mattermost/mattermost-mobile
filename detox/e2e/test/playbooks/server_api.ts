@@ -6,6 +6,9 @@ import fetch from 'node-fetch';
 export const siteOneUrl = 'http://localhost:8065';
 
 async function doFetch(url: string, options: any = {}) {    
+    console.log(`Making request to: ${url}`);
+    console.log(`Method: ${options.method || 'GET'}`);
+    
     const response = await fetch(url, {
         ...options,
         headers: {
@@ -16,7 +19,17 @@ async function doFetch(url: string, options: any = {}) {
     });
 
     if (!response.ok) {
-        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+        // Try to get more detailed error information
+        let errorDetails = '';
+        try {
+            const errorJson = await response.json();
+            errorDetails = JSON.stringify(errorJson);
+        } catch (e) {
+            // If we can't parse the response as JSON, just use the status text
+            errorDetails = response.statusText;
+        }
+        
+        throw new Error(`API request failed: ${response.status} ${response.statusText}\nURL: ${url}\nDetails: ${errorDetails}`);
     }
 
     // If this is a login response, save the token
@@ -31,6 +44,11 @@ async function doFetch(url: string, options: any = {}) {
 export class Playbooks {
     static async apiCreateTestPlaybook(siteUrl: string, options: any) {
         const url = `${siteUrl}/plugins/playbooks/api/v0/playbooks`;
+        
+        // Log the request for debugging
+        console.log('Creating playbook with options:', JSON.stringify(options, null, 2));
+        
+        // Simplified playbook structure based on API requirements
         const playbook = {
             title: options.title,
             team_id: options.teamId,
@@ -48,18 +66,27 @@ export class Playbooks {
                     ],
                 },
             ],
-            members: [
-                {
-                    user_id: options.userId,
-                    roles: ['playbook_admin'],
-                },
-            ],
         };
+        
+        // Log the actual request payload
+        console.log('Playbook request payload:', JSON.stringify(playbook, null, 2));
 
-        return doFetch(url, {
-            method: 'POST',
-            body: JSON.stringify(playbook),
-        });
+        try {
+            return await doFetch(url, {
+                method: 'POST',
+                body: JSON.stringify(playbook),
+            });
+        } catch (error) {
+            console.error('Error creating playbook:', error);
+            
+            // Try an alternative endpoint if the first one fails
+            console.log('Trying alternative playbook creation endpoint...');
+            const altUrl = `${siteUrl}/api/v4/playbooks`;
+            return await doFetch(altUrl, {
+                method: 'POST',
+                body: JSON.stringify(playbook),
+            });
+        }
     }
 
     static async apiGetPlaybook(siteUrl: string, playbookId: string) {
