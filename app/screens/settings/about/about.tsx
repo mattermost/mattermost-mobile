@@ -3,10 +3,11 @@
 
 import Clipboard from '@react-native-clipboard/clipboard';
 import {applicationId, nativeApplicationVersion, nativeBuildVersion} from 'expo-application';
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Text, View} from 'react-native';
 
+import {getLicenseLoadMetric} from '@actions/remote/license';
 import Config from '@assets/config.json';
 import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
@@ -14,6 +15,7 @@ import FormattedText from '@components/formatted_text';
 import SettingContainer from '@components/settings/container';
 import AboutLinks from '@constants/about_links';
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {usePreventDoubleTap} from '@hooks/utils';
@@ -118,6 +120,22 @@ const About = ({componentId, config, license}: AboutProps) => {
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const serverUrl = useServerUrl();
+    const [loadMetric, setLoadMetric] = useState<number | null>(null);
+
+    useEffect(() => {
+        const fetchLoadMetric = async () => {
+            const isLicensed = license.IsLicensed === 'true';
+            const result = await getLicenseLoadMetric(serverUrl, config.Version, isLicensed);
+
+            // Only set the metric if we got a number back
+            if (result !== null && typeof result === 'number') {
+                setLoadMetric(result);
+            }
+        };
+
+        fetchLoadMetric();
+    }, [config.Version, license.IsLicensed, serverUrl]);
 
     const openURL = useCallback((url: string) => {
         const onError = () => {
@@ -181,11 +199,17 @@ const About = ({componentId, config, license}: AboutProps) => {
             const server = buildNumber === version ? intl.formatMessage({id: 'settings.about.server.version.noBuild', defaultMessage: 'Server Version: {version}'}, {version}) : intl.formatMessage({id: 'settings.about.server.version', defaultMessage: 'Server Version: {version} (Build {buildNumber})'}, {version, buildNumber});
             const database = intl.formatMessage({id: 'settings.about.database', defaultMessage: 'Database: {driverName}'}, {driverName: config.SQLDriverName});
             const databaseSchemaVersion = intl.formatMessage({id: 'settings.about.database.schema', defaultMessage: 'Database Schema Version: {version}'}, {version: config.SchemaVersion});
-            const copiedString = `${appVersion}\n${server}\n${database}\n${databaseSchemaVersion}`;
+            let copiedString = `${appVersion}\n${server}\n${database}\n${databaseSchemaVersion}`;
+
+            if (loadMetric !== null) {
+                const loadMetricStr = intl.formatMessage({id: 'settings.about.license.load_metric', defaultMessage: 'Load Metric: {load}'}, {load: loadMetric});
+                copiedString += `\n${loadMetricStr}`;
+            }
+
             Clipboard.setString(copiedString);
             showSnackBar({barType: SNACK_BAR_TYPE.INFO_COPIED, sourceScreen: componentId});
         },
-        [intl, config.BuildNumber, config.Version, config.SQLDriverName, config.SchemaVersion, componentId],
+        [intl, config.BuildNumber, config.Version, config.SQLDriverName, config.SchemaVersion, loadMetric, componentId],
     );
 
     return (
@@ -237,6 +261,22 @@ const About = ({componentId, config, license}: AboutProps) => {
                         {serverVersion}
                     </Text>
                 </View>
+                {loadMetric !== null && (
+                    <View style={styles.group}>
+                        <Text
+                            style={styles.leftHeading}
+                            testID='about.license_load_metric.title'
+                        >
+                            {intl.formatMessage({id: 'settings.about.license.load_metric.title', defaultMessage: 'Load Metric:'})}
+                        </Text>
+                        <Text
+                            style={styles.rightHeading}
+                            testID='about.license_load_metric.value'
+                        >
+                            {loadMetric}
+                        </Text>
+                    </View>
+                )}
                 <View style={styles.group}>
                     <Text
                         style={styles.leftHeading}
