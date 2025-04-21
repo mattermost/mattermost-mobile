@@ -25,6 +25,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Create Direct Message', () => {
@@ -91,6 +92,7 @@ describe('Channels - Create Direct Message', () => {
 
         // # Tap on start button
         await CreateDirectMessageScreen.startButton.tap();
+        await waitFor(ChannelScreen.scheduledPostTooltipCloseButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelScreen.scheduledPostTooltipCloseButton.tap();
 
         // * Verify on direct message channel screen for the new user
@@ -124,6 +126,8 @@ describe('Channels - Create Direct Message', () => {
         // # Open create direct message screen, search for the first new user and tap on the first new user item
         await CreateDirectMessageScreen.open();
         await CreateDirectMessageScreen.searchInput.replaceText(firstNewUser.username);
+        await CreateDirectMessageScreen.searchInput.tapReturnKey();
+        await wait(timeouts.ONE_SEC);
         await CreateDirectMessageScreen.getUserItem(firstNewUser.id).tap();
 
         // * Verify the first new user is selected
@@ -131,6 +135,8 @@ describe('Channels - Create Direct Message', () => {
 
         // # Search for the second new user and tap on the second new user item
         await CreateDirectMessageScreen.searchInput.replaceText(secondNewUser.username);
+        await CreateDirectMessageScreen.searchInput.tapReturnKey();
+        await wait(timeouts.ONE_SEC);
         await CreateDirectMessageScreen.getUserItem(secondNewUser.id).tap();
 
         // * Verify the second new user is selected
@@ -155,6 +161,8 @@ describe('Channels - Create Direct Message', () => {
         const searchTerm = 'blahblahblahblah';
         await CreateDirectMessageScreen.open();
         await CreateDirectMessageScreen.searchInput.replaceText(searchTerm);
+        await CreateDirectMessageScreen.searchInput.tapReturnKey();
+        await wait(timeouts.ONE_SEC);
 
         // * Verify empty search state for create direct message
         await expect(element(by.text(`No matches found for “${searchTerm}”`))).toBeVisible();

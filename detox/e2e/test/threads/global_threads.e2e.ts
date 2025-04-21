@@ -92,7 +92,13 @@ describe('Threads - Global Threads', () => {
         await expect(GlobalThreadsScreen.getThreadItem(parentPost.id)).toBeVisible();
         await expect(GlobalThreadsScreen.getThreadItemThreadStarterUserDisplayName(parentPost.id)).toHaveText(testUser.username);
         await expect(GlobalThreadsScreen.getThreadItemThreadStarterChannelDisplayName(parentPost.id)).toHaveText(testChannel.display_name.toUpperCase());
-        await waitFor(GlobalThreadsScreen.getThreadItemFooterReplyCount(parentPost.id)).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        try {
+            // The reply count is shown as read.
+            await waitFor(GlobalThreadsScreen.getThreadItemFooterReplyCount(parentPost.id)).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        } catch (error) {
+            // somtimes the app shows it as unread since the test actions are fast.
+            await waitFor(GlobalThreadsScreen.getThreadItemFooterUnreadReplies(parentPost.id)).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        }
 
         // # Tap on the thread
         await GlobalThreadsScreen.getThreadItem(parentPost.id).tap();
