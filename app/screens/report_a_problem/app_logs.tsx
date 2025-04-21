@@ -4,7 +4,7 @@ import TurboLogger from '@mattermost/react-native-turbo-log';
 import RNUtils from '@mattermost/rnutils';
 import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {View, Text, Platform} from 'react-native';
+import {View, Text, ActivityIndicator, Platform} from 'react-native';
 import Share from 'react-native-share';
 
 import Button from '@components/button';
@@ -13,8 +13,8 @@ import {deleteFile, pathWithPrefix} from '@utils/file';
 import {logDebug} from '@utils/log';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
+import LogFileItem from './log_file_item';
 import {getCommonStyleSheet} from './styles';
-import ZipContainer from './zip_container';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     ...getCommonStyleSheet(theme),
@@ -25,7 +25,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     container: {
         gap: 16,
     },
-
 }));
 
 const AppLogs = () => {
@@ -84,10 +83,17 @@ const AppLogs = () => {
                     defaultMessage: 'APP LOGS:',
                 })}
             </Text>
-            <ZipContainer
-                logFiles={logFiles}
-                isLoading={isLoading}
-            />
+            <View>
+                {isLoading ? (
+                    <ActivityIndicator
+                        testID='logs-loading'
+                        color={theme.buttonBg}
+                        size='large'
+                    />
+                ) : (hasLogs && (
+                    <LogFileItem/>
+                ))}
+            </View>
             <View style={styles.buttonContainer}>
                 <Button
                     onPress={handleDownload}

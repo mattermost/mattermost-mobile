@@ -4,8 +4,6 @@
 import {render, waitFor} from '@testing-library/react-native';
 import React from 'react';
 
-import {getFileSize} from '@utils/file';
-
 import LogFileItem from './log_file_item';
 
 jest.mock('@utils/file', () => ({
@@ -14,63 +12,37 @@ jest.mock('@utils/file', () => ({
 }));
 
 describe('screens/report_a_problem/log_file_item', () => {
-    const filePath = '/path/to/log/file.txt';
-    const fileSize = 1024; // 1KB
-
     beforeEach(() => {
         jest.clearAllMocks();
-        jest.mocked(getFileSize).mockResolvedValue(fileSize);
     });
 
     it('renders log file item with correct filename', async () => {
         const {getByText} = render(
-            <LogFileItem path={filePath}/>,
+            <LogFileItem/>,
         );
 
         await waitFor(() => {
-            expect(getByText('file.txt')).toBeTruthy();
+            expect(getByText(/Logs_/)).toBeTruthy();
         });
     });
 
-    it('displays file size in KB', async () => {
+    it('displays file type', async () => {
         const {getByText} = render(
-            <LogFileItem path={filePath}/>,
+            <LogFileItem/>,
         );
         await waitFor(() => {
-            expect(getByText('TXT 1024 B')).toBeTruthy();
-        });
-    });
-
-    it('handles file size calculation', async () => {
-        render(
-            <LogFileItem path={filePath}/>,
-        );
-
-        await waitFor(() => {
-            expect(getFileSize).toHaveBeenCalledWith(filePath);
-        });
-    });
-
-    it('rounds file size to nearest KB', async () => {
-        jest.mocked(getFileSize).mockResolvedValue(2750); // 2.685KB
-
-        const {getByText} = render(
-            <LogFileItem path={filePath}/>,
-        );
-
-        await waitFor(() => {
-            expect(getByText('TXT 2 KB')).toBeTruthy();
+            expect(getByText('ZIP')).toBeTruthy();
         });
     });
 
     it('displays file icon', async () => {
         const {getByTestId} = render(
-            <LogFileItem path={filePath}/>,
+            <LogFileItem/>,
         );
 
         await waitFor(() => {
             const icon = getByTestId('log-file-icon');
-            expect(icon.props.name).toBe('file-text-outline');
+            expect(icon.props.name).toBe('file-zip-outline');
         });
     });
 });

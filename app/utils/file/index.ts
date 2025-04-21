@@ -579,11 +579,6 @@ export const pathWithPrefix = (prefix: string, path: string) => {
     return `${p}${path}`;
 };
 
-export const getFileSize = async (path: string) => {
-    const file = await getInfoAsync(pathWithPrefix('file://', path));
-    return 'size' in file ? file.size : 0;
-};
-
 export const deleteFile = async (path: string) => {
     await deleteAsync(pathWithPrefix('file://', path));
 };

@@ -1,46 +1,41 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 import {View, Text} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
-import {getFileSize, getFormattedFileSize} from '@utils/file';
 
 import {getCommonFileStyles} from './styles';
 
-type Props = {
-    path: string;
-}
+const getCurrentDate = () => {
+    const date = new Date();
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}${month}${day}`;
+};
 
-const LogFileItem = ({path}: Props) => {
+const LogFileItem = () => {
     const theme = useTheme();
     const styles = getCommonFileStyles(theme);
 
-    const [size, setSize] = useState<string>();
-
-    const filename = path.split('/').pop() || '';
-
-    useEffect(() => {
-        getFileSize(path).then((fileSize) => {
-            setSize(getFormattedFileSize(fileSize));
-        });
-    }, [path]);
+    const currentDate = getCurrentDate();
 
     return (
         <View style={styles.container}>
             <CompassIcon
-                name='file-text-outline'
+                name='file-zip-outline'
                 size={40}
                 color={theme.centerChannelColor}
                 testID='log-file-icon'
             />
             <View style={styles.header}>
                 <Text style={styles.name}>
-                    {filename}
+                    {`Logs_${currentDate}`}
                 </Text>
                 <Text style={styles.type}>
-                    {`TXT ${size}`}
+                    {'ZIP'}
                 </Text>
             </View>
         </View>

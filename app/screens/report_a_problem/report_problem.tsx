@@ -11,7 +11,7 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {popTopScreen} from '@screens/navigation';
 import {logDebug} from '@utils/log';
 import {emailLogs, getDefaultReportAProblemLink, shareLogs} from '@utils/share_logs';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {tryOpenURL} from '@utils/url';
 
@@ -39,8 +39,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     container: {
         flex: 1,
         backgroundColor: theme.centerChannelBg,
-        padding: 20,
+        paddingVertical: 20,
         gap: 20,
+    },
+    body: {
+        paddingHorizontal: 20,
     },
     content: {
         gap: 16,
@@ -53,7 +56,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         gap: 8,
     },
     buttonContainer: {
+        paddingHorizontal: 20,
         marginTop: 'auto',
+        borderTopWidth: 1,
+        borderColor: changeOpacity(theme.centerChannelColor, 0.08),
+        width: '100%',
+        paddingTop: 20,
     },
 }));
 
@@ -115,30 +123,32 @@ const ReportProblem = ({
 
     return (
         <View style={styles.container}>
-            <ScrollView contentContainerStyle={styles.content}>
-                <View style={styles.detailsSection}>
-                    <Text style={styles.detailsTitle}>
-                        {intl.formatMessage({
-                            id: 'screen.report_problem.details.title',
-                            defaultMessage: 'Troubleshouting details',
-                        })}
-                    </Text>
-                    <Text style={styles.bodyText}>
-                        {descriptionText}
-                    </Text>
-                </View>
-                <MenuDivider/>
-                <CopyMetadata
-                    metadata={metadata}
-                    componentId={componentId}
-                />
-                {allowDownloadLogs && (
-                    <>
-                        <MenuDivider/>
-                        <AppLogs/>
-                    </>
-                )}
-            </ScrollView>
+            <View style={styles.body}>
+                <ScrollView contentContainerStyle={styles.content}>
+                    <View style={styles.detailsSection}>
+                        <Text style={styles.detailsTitle}>
+                            {intl.formatMessage({
+                                id: 'screen.report_problem.details.title',
+                                defaultMessage: 'Troubleshouting details',
+                            })}
+                        </Text>
+                        <Text style={styles.bodyText}>
+                            {descriptionText}
+                        </Text>
+                    </View>
+                    <MenuDivider/>
+                    <CopyMetadata
+                        metadata={metadata}
+                        componentId={componentId}
+                    />
+                    {allowDownloadLogs && (
+                        <>
+                            <MenuDivider/>
+                            <AppLogs/>
+                        </>
+                    )}
+                </ScrollView>
+            </View>
             {reportAProblemType !== 'hidden' && (
                 <View style={styles.buttonContainer}>
                     <Button
@@ -151,7 +161,6 @@ const ReportProblem = ({
                         iconName='open-in-new'
                         size='lg'
                         isIconOnTheRight={true}
-                        buttonContainerStyle={{alignContent: 'center', justifyContent: 'center', alignItems: 'center'}}
                     />
                 </View>
             )}

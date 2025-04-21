@@ -67,8 +67,7 @@ describe('screens/report_a_problem/app_logs', () => {
 
         await waitForElementToBeRemoved(() => getByTestId('logs-loading'));
 
-        expect(getByText(file1)).toBeTruthy();
-        expect(getByText(file2)).toBeTruthy();
+        expect(getByText(/Logs_/)).toBeTruthy();
         expect(getByText('Download App Logs')).toBeEnabled();
     });
 
