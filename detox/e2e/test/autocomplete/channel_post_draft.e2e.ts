@@ -20,7 +20,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import { retryWithReload } from '@support/utils';
+import {retryWithReload} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Autocomplete - Channel Post Draft', () => {
