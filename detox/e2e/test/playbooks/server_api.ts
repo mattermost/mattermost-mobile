@@ -9,11 +9,22 @@ async function doFetch(url: string, options: any = {}) {
     console.log(`Making request to: ${url}`);
     console.log(`Method: ${options.method || 'GET'}`);
     
+    // For Mattermost API, the token should be sent as a header
+    const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+    };
+    
+    if (token && !url.includes('/api/v4/users/login')) {
+        // Try with Authorization header
+        headers['Authorization'] = `Bearer ${token}`;
+        // Also add the token as a cookie for plugins
+        headers['Cookie'] = `MMAUTHTOKEN=${token}`;
+    }
+    
     const response = await fetch(url, {
         ...options,
         headers: {
-            'Content-Type': 'application/json',
-            ...(token && url !== `${siteOneUrl}/api/v4/users/login` ? { 'Authorization': `Bearer ${token}` } : {}),
+            ...headers,
             ...options.headers,
         },
     });
@@ -25,8 +36,13 @@ async function doFetch(url: string, options: any = {}) {
             const errorJson = await response.json();
             errorDetails = JSON.stringify(errorJson);
         } catch (e) {
-            // If we can't parse the response as JSON, just use the status text
-            errorDetails = response.statusText;
+            try {
+                // Try to get the text response if JSON parsing fails
+                errorDetails = await response.text();
+            } catch (textError) {
+                // If we can't parse the response as text either, just use the status text
+                errorDetails = response.statusText;
+            }
         }
         
         throw new Error(`API request failed: ${response.status} ${response.statusText}\nURL: ${url}\nDetails: ${errorDetails}`);
@@ -43,17 +59,27 @@ async function doFetch(url: string, options: any = {}) {
 
 export class Playbooks {
     static async apiCreateTestPlaybook(siteUrl: string, options: any) {
-        const url = `${siteUrl}/plugins/playbooks/api/v0/playbooks`;
+        // Try different API endpoints for playbooks
+        const endpoints = [
+            // First try the v1 API
+            `${siteUrl}/plugins/playbooks/api/v1/playbooks`,
+            // Then try the v0 API
+            `${siteUrl}/plugins/playbooks/api/v0/playbooks`,
+            // Then try the team-specific endpoint
+            `${siteUrl}/plugins/playbooks/api/v0/teams/${options.teamId}/playbooks`
+        ];
         
         // Log the request for debugging
         console.log('Creating playbook with options:', JSON.stringify(options, null, 2));
         
-        // Simplified playbook structure based on API requirements
+        // Complete playbook structure based on API requirements
         const playbook = {
             title: options.title,
             team_id: options.teamId,
             description: 'Test playbook created via API',
             public: true,
+            create_public_playbook_run: true,
+            member_ids: [options.userId],
             checklists: [
                 {
                     title: 'Test Checklist',
@@ -62,30 +88,58 @@ export class Playbooks {
                             title: 'Test Checklist Item',
                             description: 'Test description',
                             state: 0,
+                            command: '',
+                            command_last_run: 0,
                         },
                     ],
                 },
             ],
+            message_on_join: 'Welcome to the playbook run!',
+            retrospective_enabled: true,
+            retrospective_reminder_interval_seconds: 86400,
+            webhook_on_creation_urls: [],
+            webhook_on_status_update_urls: [],
         };
         
         // Log the actual request payload
         console.log('Playbook request payload:', JSON.stringify(playbook, null, 2));
 
+        // Try each endpoint in sequence
+        let lastError = null;
+        for (const url of endpoints) {
+            try {
+                console.log(`Trying endpoint: ${url}`);
+                return await doFetch(url, {
+                    method: 'POST',
+                    body: JSON.stringify(playbook),
+                });
+            } catch (error) {
+                console.error(`Error with endpoint ${url}:`, error);
+                lastError = error;
+                // Continue to the next endpoint
+            }
+        }
+        
+        // If we get here, all endpoints failed
+        console.error('All playbook creation endpoints failed');
+        
+        // As a last resort, try creating a minimal playbook
+        const minimalPlaybook = {
+            title: options.title,
+            team_id: options.teamId,
+            checklists: [{title: 'Checklist', items: []}],
+        };
+        
+        console.log('Trying with minimal playbook payload:', JSON.stringify(minimalPlaybook, null, 2));
+        
         try {
-            return await doFetch(url, {
+            return await doFetch(endpoints[0], {
                 method: 'POST',
-                body: JSON.stringify(playbook),
+                body: JSON.stringify(minimalPlaybook),
             });
-        } catch (error) {
-            console.error('Error creating playbook:', error);
-            
-            // Try an alternative endpoint if the first one fails
-            console.log('Trying alternative playbook creation endpoint...');
-            const altUrl = `${siteUrl}/api/v4/playbooks`;
-            return await doFetch(altUrl, {
-                method: 'POST',
-                body: JSON.stringify(playbook),
-            });
+        } catch (finalError) {
+            console.error('Final attempt failed:', finalError);
+            throw lastError || finalError;
         }
     }
 
@@ -206,7 +260,26 @@ export class User {
 
         // Extract token from headers
         token = response.headers.get('Token') || '';
-        console.log('Authentication successful, token acquired');
+        
+        // If token is not in the Token header, try to get it from the response body
+        if (!token) {
+            const data = await response.json();
+            if (data && data.token) {
+                token = data.token;
+            }
+        }
+        
+        if (!token) {
+            console.warn('Warning: No authentication token found in response');
+        } else {
+            console.log('Authentication successful, token acquired');
+        }
+        
+        // Print all headers for debugging
+        console.log('Response headers:');
+        response.headers.forEach((value, name) => {
+            console.log(`${name}: ${value}`);
+        });
         
         return response.json();
     }
