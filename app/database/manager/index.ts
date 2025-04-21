@@ -23,6 +23,7 @@ import ServerDataOperator from '@database/operator/server_data_operator';
 import {schema as appSchema} from '@database/schema/app';
 import {serverSchema} from '@database/schema/server';
 import {beforeUpgrade} from '@helpers/database/upgrade';
+import {PlaybookRunModel, PlaybookChecklistModel, PlaybookChecklistItemModel} from '@playbooks/database/models';
 import {getActiveServer, getServer, getServerByIdentifier} from '@queries/app/servers';
 import {logDebug, logError} from '@utils/log';
 import {deleteIOSDatabase, getIOSAppGroupDetails, renameIOSDatabase} from '@utils/mattermost_managed';
@@ -49,6 +50,7 @@ class DatabaseManagerSingleton {
             PostModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, ReactionModel, RoleModel,
             ScheduledPostModel, SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,
             ThreadModel, ThreadParticipantModel, ThreadInTeamModel, TeamThreadsSyncModel, UserModel,
+            PlaybookRunModel, PlaybookChecklistModel, PlaybookChecklistItemModel,
         ];
 
         this.databaseDirectory = Platform.OS === 'ios' ? getIOSAppGroupDetails().appGroupDatabase : `${documentDirectory}/databases/`;
@@ -549,7 +551,7 @@ class DatabaseManagerSingleton {
 }
 
 if (!__DEV__) {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
     // @ts-ignore
     logger.silence();
 }

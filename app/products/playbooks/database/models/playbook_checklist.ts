@@ -1,0 +1,40 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+
+import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
+import Model, {type Associations} from '@nozbe/watermelondb/Model';
+
+import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
+
+import type {Relation} from '@nozbe/watermelondb';
+import type PlaybookChecklistModelInterface from '@playbooks/types/database/models/playbook_checklist';
+import type PlaybookRunModel from '@playbooks/types/database/models/playbook_run';
+
+const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST} = PLAYBOOK_TABLES;
+
+/**
+ * The PlaybookChecklist model represents a playbook run in the Mattermost app.
+ */
+export default class PlaybookChecklistModel extends Model implements PlaybookChecklistModelInterface {
+    /** table (name) : PlaybookChecklist */
+    static table = PLAYBOOK_CHECKLIST;
+
+    /** associations : Describes every relationship to this table. */
+    static associations: Associations = {
+
+        /** A PLAYBOOK_CHECKLIST belongs to a PLAYBOOK_RUN (relationship is N:1) */
+        [PLAYBOOK_RUN]: {type: 'belongs_to', key: 'run_id'},
+    };
+
+    /** run_id: The id of the playbook run this checklist belongs to */
+    @field('run_id') runId!: string;
+
+    /** title : Title of the checklist */
+    @field('title') title!: string;
+
+    /** order : Order of the checklist */
+    @field('order') order!: number;
+
+    /** run : The playbook run to which this checklist belongs */
+    @immutableRelation(PLAYBOOK_RUN, 'run_id') run!: Relation<PlaybookRunModel>;
+}
