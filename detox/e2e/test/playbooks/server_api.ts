@@ -5,6 +5,34 @@ import fetch from 'node-fetch';
 
 export const siteOneUrl = 'http://localhost:8065';
 
+// Function to fetch CSRF token
+async function fetchCsrfToken(siteUrl: string) {
+    try {
+        const response = await fetch(`${siteUrl}/api/v4/system/ping`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+        
+        const cookies = response.headers.get('set-cookie');
+        if (cookies) {
+            const csrfMatch = cookies.match(/MMCSRF=([^;]+)/);
+            if (csrfMatch && csrfMatch[1]) {
+                csrfToken = csrfMatch[1];
+                console.log('CSRF token acquired from ping:', csrfToken);
+                return true;
+            }
+        }
+        
+        console.warn('Could not extract CSRF token from ping response');
+        return false;
+    } catch (error) {
+        console.error('Error fetching CSRF token:', error);
+        return false;
+    }
+}
+
 async function doFetch(url: string, options: any = {}) {    
     console.log(`Making request to: ${url}`);
     console.log(`Method: ${options.method || 'GET'}`);
@@ -15,10 +43,20 @@ async function doFetch(url: string, options: any = {}) {
     };
     
     if (token && !url.includes('/api/v4/users/login')) {
-        // Try with Authorization header
+        // Add Authorization header
         headers['Authorization'] = `Bearer ${token}`;
-        // Also add the token as a cookie for plugins
-        headers['Cookie'] = `MMAUTHTOKEN=${token}`;
+        
+        // Add CSRF token for non-GET requests
+        if (options.method && options.method !== 'GET' && csrfToken) {
+            headers['X-CSRF-Token'] = csrfToken;
+        }
+        
+        // Add cookies for authentication and CSRF
+        const cookies = [`MMAUTHTOKEN=${token}`];
+        if (csrfToken) {
+            cookies.push(`MMCSRF=${csrfToken}`);
+        }
+        headers['Cookie'] = cookies.join('; ');
     }
     
     const response = await fetch(url, {
@@ -133,10 +171,13 @@ export class Playbooks {
         console.log('Trying with minimal playbook payload:', JSON.stringify(minimalPlaybook, null, 2));
         
         try {
-            if (!endpoints[0]) {
+            // Make sure we have a valid endpoint
+            const endpoint = endpoints[0];
+            if (!endpoint) {
                 throw new Error('No valid endpoint found for playbook creation');
             }
-            return await doFetch(endpoints[0], {
+            
+            return await doFetch(endpoint, {
                 method: 'POST',
                 body: JSON.stringify(minimalPlaybook),
             });
@@ -240,8 +281,9 @@ export class Team {
     }
 }
 
-// Store token from login response
+// Store authentication tokens
 let token = '';
+let csrfToken = '';
 
 export class User {
     static async apiAdminLogin(siteUrl: string) {
@@ -264,6 +306,16 @@ export class User {
         // Extract token from headers
         token = response.headers.get('Token') || '';
         
+        // Extract CSRF token from headers or cookies
+        const cookies = response.headers.get('set-cookie');
+        if (cookies) {
+            const csrfMatch = cookies.match(/MMCSRF=([^;]+)/);
+            if (csrfMatch && csrfMatch[1]) {
+                csrfToken = csrfMatch[1];
+                console.log('CSRF token acquired:', csrfToken);
+            }
+        }
+        
         // If token is not in the Token header, try to get it from the response body
         if (!token) {
             const data = await response.json();
@@ -276,6 +328,12 @@ export class User {
             console.warn('Warning: No authentication token found in response');
         } else {
             console.log('Authentication successful, token acquired');
+        }
+        
+        // If we still don't have a CSRF token, make a request to get one
+        if (!csrfToken) {
+            console.log('No CSRF token found in login response, fetching from API...');
+            await fetchCsrfToken(siteUrl);
         }
         
         // Print all headers for debugging
