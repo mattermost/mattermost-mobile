@@ -34,6 +34,8 @@ describe('Playbooks - Basic', () => {
             numChecklists: 2,
             numItems: 3,
         });
+        
+        console.log('Generated playbook:', JSON.stringify(playbook, null, 2));
 
         // Create the playbook
         const {id: playbookId} = await Playbooks.apiCreatePlaybook(serverUrl, playbook);

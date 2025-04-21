@@ -49,6 +49,7 @@ interface PlaybookOptions {
     statusUpdateEnabled?: boolean;
     retrospectiveEnabled?: boolean;
     metricsEnabled?: boolean;
+    reminderTimerDefaultSeconds?: number;
 }
 
 export const generateRandomPlaybook = ({
@@ -80,6 +81,7 @@ export const generateRandomPlaybook = ({
         broadcast_channel_ids: broadcastChannelIds,
         status_update_enabled: statusUpdateEnabled,
         retrospective_enabled: retrospectiveEnabled,
+        reminder_timer_default_seconds: 3600, // 1 hour in seconds
         metrics: metricsEnabled ? [
             {
                 title: 'Time to resolution',
