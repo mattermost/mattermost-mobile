@@ -116,6 +116,16 @@ jobs:
               repo: context.repo.repo,
               body: message
             });
+            
+            // Remove the label that triggered the build
+            if (github.event.label && (github.event.label.name === 'Build Apps for PR' || github.event.label.name === 'Build App for iOS')) {
+              await github.rest.issues.removeLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                name: github.event.label.name
+              });
+            }
 
   build-android-pr:
     runs-on: ubuntu-22.04
@@ -196,3 +206,13 @@ jobs:
               repo: context.repo.repo,
               body: message
             });
+            
+            // Remove the label that triggered the build
+            if (github.event.label && (github.event.label.name === 'Build Apps for PR' || github.event.label.name === 'Build App for Android')) {
+              await github.rest.issues.removeLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                name: github.event.label.name
+              });
+            }
