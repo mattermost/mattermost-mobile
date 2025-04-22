@@ -490,7 +490,7 @@
   "mobile.acknowledgements.header": "Подяки",
   "mobile.action_menu.select": "Виберіть параметр",
   "mobile.add_team.create_team": "Створити нову команду",
-  "mobile.add_team.join_team": "Приєднатись до іншої команди",
+  "mobile.add_team.join_team": "Приєднатись до іншої Команди",
   "mobile.android.back_handler_exit": "Натисніть ще раз, щоб вийти",
   "mobile.android.photos_permission_denied_description": "Завантажте фотографії на сервер або збережіть їх на своєму пристрої. Відкрийте Налаштування, щоб надати {applicationName} доступ на читання та запис до вашої фототеки.",
   "mobile.android.photos_permission_denied_title": "{applicationName} хотів би отримати доступ до ваших фотографій",
