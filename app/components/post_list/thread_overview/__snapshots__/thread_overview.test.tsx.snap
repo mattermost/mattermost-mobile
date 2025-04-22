@@ -53,7 +53,7 @@ exports[`ThreadOverview should match snapshot when post is saved and has replies
       delayLongPress={600}
       enabled={true}
       exclusive={true}
-      handlerTag={1}
+      handlerTag={-1}
       handlerType="NativeViewGestureHandler"
       innerRef={null}
       onGestureHandlerEvent={[Function]}
@@ -92,7 +92,7 @@ exports[`ThreadOverview should match snapshot when post is saved and has replies
       delayLongPress={600}
       enabled={true}
       exclusive={true}
-      handlerTag={2}
+      handlerTag={-1}
       handlerType="NativeViewGestureHandler"
       innerRef={null}
       onGestureHandlerEvent={[Function]}

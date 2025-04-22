@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import * as bookmark from '@actions/local/channel_bookmark';
+import * as scheduledPost from '@actions/websocket/scheduled_post';
 import * as calls from '@calls/connection/websocket_event_handlers';
 import {WebsocketEvents} from '@constants';
 
@@ -33,6 +34,7 @@ jest.mock('./threads');
 jest.mock('@calls/connection/websocket_event_handlers');
 jest.mock('./group');
 jest.mock('@actions/local/channel_bookmark');
+jest.mock('@actions/websocket/scheduled_post');
 
 describe('handleWebSocketEvent', () => {
     const serverUrl = 'https://example.com';
@@ -520,5 +522,23 @@ describe('handleWebSocketEvent', () => {
         msg.event = WebsocketEvents.CHANNEL_BOOKMARK_SORTED;
         await handleWebSocketEvent(serverUrl, msg);
         expect(bookmark.handleBookmarkSorted).toHaveBeenCalledWith(serverUrl, msg);
+    });
+
+    it('should handle SCHEDULED_POST_CREATED event', async () => {
+        msg.event = WebsocketEvents.SCHEDULED_POST_CREATED;
+        await handleWebSocketEvent(serverUrl, msg);
+        expect(scheduledPost.handleCreateOrUpdateScheduledPost).toHaveBeenCalledWith(serverUrl, msg);
+    });
+
+    it('should handle SCHEDULED_POST_UPDATED event', async () => {
+        msg.event = WebsocketEvents.SCHEDULED_POST_UPDATED;
+        await handleWebSocketEvent(serverUrl, msg);
+        expect(scheduledPost.handleCreateOrUpdateScheduledPost).toHaveBeenCalledWith(serverUrl, msg);
+    });
+
+    it('should handle SCHEDULED_POST_DELETED event', async () => {
+        msg.event = WebsocketEvents.SCHEDULED_POST_DELETED;
+        await handleWebSocketEvent(serverUrl, msg);
+        expect(scheduledPost.handleDeleteScheduledPost).toHaveBeenCalledWith(serverUrl, msg);
     });
 });

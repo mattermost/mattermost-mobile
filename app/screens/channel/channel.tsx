@@ -9,6 +9,7 @@ import {storeLastViewedChannelIdAndServer, removeLastViewedChannelIdAndServer} f
 import FloatingCallContainer from '@calls/components/floating_call_container';
 import FreezeScreen from '@components/freeze_screen';
 import PostDraft from '@components/post_draft';
+import ScheduledPostIndicator from '@components/scheduled_post_indicator';
 import {ExtraKeyboardProvider} from '@context/extra_keyboard';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useChannelSwitch} from '@hooks/channel_switch';
@@ -41,6 +42,7 @@ type ChannelProps = {
     hasGMasDMFeature: boolean;
     includeBookmarkBar?: boolean;
     includeChannelBanner: boolean;
+    scheduledPostCount: number;
 };
 
 const edges: Edge[] = ['left', 'right'];
@@ -66,6 +68,7 @@ const Channel = ({
     hasGMasDMFeature,
     includeBookmarkBar,
     includeChannelBanner,
+    scheduledPostCount,
 }: ChannelProps) => {
     useGMasDMNotice(currentUserId, channelType, dismissedGMasDMNotice, hasGMasDMFeature);
     const isTablet = useIsTablet();
@@ -138,6 +141,11 @@ const Channel = ({
                             nativeID={channelId}
                         />
                     </View>
+                    <>
+                        {scheduledPostCount > 0 &&
+                            <ScheduledPostIndicator scheduledPostCount={scheduledPostCount}/>
+                        }
+                    </>
                     <PostDraft
                         channelId={channelId}
                         testID='channel.post_draft'

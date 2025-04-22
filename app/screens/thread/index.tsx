@@ -7,6 +7,7 @@ import {distinctUntilChanged, switchMap, of as of$} from 'rxjs';
 import {observeCallStateInChannel} from '@calls/observers';
 import {withServerUrl} from '@context/server';
 import {observePost} from '@queries/servers/post';
+import {observeScheduledPostCountForThread} from '@queries/servers/scheduled_post';
 import {observeIsCRTEnabled} from '@queries/servers/thread';
 import EphemeralStore from '@store/ephemeral_store';
 
@@ -28,11 +29,14 @@ const enhanced = withObservables(['rootId'], ({database, serverUrl, rootId}: Enh
         distinctUntilChanged(),
     );
 
+    const scheduledPostCount = observeScheduledPostCountForThread(database, rootId);
+
     return {
         isCRTEnabled: observeIsCRTEnabled(database),
         ...observeCallStateInChannel(serverUrl, database, channelId),
         rootId: of$(rId),
         rootPost,
+        scheduledPostCount,
     };
 });
 

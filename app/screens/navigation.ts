@@ -499,6 +499,11 @@ export function goToScreen(name: AvailableScreens, title: string, passProps = {}
 
     DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, false);
 
+    if (NavigationStore.getScreensInStack().includes(name)) {
+        Navigation.updateProps(name, passProps);
+        return Navigation.popTo(name, merge(defaultOptions, options));
+    }
+
     return Navigation.push(componentId, {
         component: {
             id: name,
@@ -517,6 +522,15 @@ export async function popTopScreen(screenId?: AvailableScreens) {
             const componentId = NavigationStore.getVisibleScreen();
             await Navigation.pop(componentId);
         }
+    } catch (error) {
+        // RNN returns a promise rejection if there are no screens
+        // atop the root screen to pop. We'll do nothing in this case.
+    }
+}
+
+export async function popTo(screenId: AvailableScreens) {
+    try {
+        await Navigation.popTo(screenId);
     } catch (error) {
         // RNN returns a promise rejection if there are no screens
         // atop the root screen to pop. We'll do nothing in this case.
