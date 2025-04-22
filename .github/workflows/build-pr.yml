@@ -77,7 +77,23 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const artifactUrl = `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${github.run_id}`;
+            // Get the list of artifacts for this workflow run
+            const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.runId
+            });
+            
+            // Find the iOS artifact
+            const iosArtifact = artifacts.data.artifacts.find(artifact => 
+              artifact.name.startsWith('ios-build-pr-'));
+            
+            if (!iosArtifact) {
+              console.log('No iOS artifact found');
+              return;
+            }
+            
+            const artifactUrl = `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${iosArtifact.id}`;
             const message = `### iOS PR Build\n\nThe iOS PR build is available for download [here](${artifactUrl})\nCommit: ${{ github.event.pull_request.head.sha }}`;
             
             github.rest.issues.createComment({
@@ -127,7 +143,23 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const artifactUrl = `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${github.run_id}`;
+            // Get the list of artifacts for this workflow run
+            const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.runId
+            });
+            
+            // Find the Android artifact
+            const androidArtifact = artifacts.data.artifacts.find(artifact => 
+              artifact.name.startsWith('android-build-pr-'));
+            
+            if (!androidArtifact) {
+              console.log('No Android artifact found');
+              return;
+            }
+            
+            const artifactUrl = `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${androidArtifact.id}`;
             const message = `### Android PR Build\n\nThe Android PR build is available for download [here](${artifactUrl})\nCommit: ${{ github.event.pull_request.head.sha }}`;
             
             github.rest.issues.createComment({
