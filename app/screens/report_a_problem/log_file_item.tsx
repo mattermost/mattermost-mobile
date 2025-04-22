@@ -25,7 +25,7 @@ const LogFileItem = () => {
     return (
         <View style={styles.container}>
             <CompassIcon
-                name='file-zip-outline'
+                name='file-zip-outline-large'
                 size={40}
                 color={theme.centerChannelColor}
                 testID='log-file-icon'
