@@ -31,6 +31,7 @@ import type GroupModel from '@typings/database/models/servers/group';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type MyChannelSettingsModel from '@typings/database/models/servers/my_channel_settings';
 import type MyTeamModel from '@typings/database/models/servers/my_team';
+import type PlaybookRunModel from '@typings/database/models/servers/playbook_run_model';
 import type PostModel from '@typings/database/models/servers/post';
 import type PostsInChannelModel from '@typings/database/models/servers/posts_in_channel';
 import type PreferenceModel from '@typings/database/models/servers/preference';
@@ -38,6 +39,7 @@ import type RoleModel from '@typings/database/models/servers/role';
 import type TeamModel from '@typings/database/models/servers/team';
 import type ThreadModel from '@typings/database/models/servers/thread';
 import type UserModel from '@typings/database/models/servers/user';
+import type {IntlShape} from 'react-intl';
 
 const DEFAULT_LOCALE = 'en';
 
@@ -199,6 +201,14 @@ class TestHelperSingleton {
         };
 
         return new Client(mockApiClient, mockApiClient.baseUrl);
+    };
+
+    fakeIntl = (): IntlShape => {
+        return {
+            formatMessage: jest.fn((message) => {
+                return message.defaultMessage;
+            }),
+        } as unknown as IntlShape;
     };
 
     fakeCategory = (teamId: string): Category => {
@@ -459,6 +469,7 @@ class TestHelperSingleton {
         return {
             fetch: jest.fn().mockImplementation(async () => returnValue),
             observe: jest.fn().mockImplementation(() => of$(returnValue)),
+            observeCount: jest.fn().mockImplementation(() => of$(returnValue.length)),
         } as unknown as Query<T>;
     };
 
@@ -860,6 +871,33 @@ class TestHelperSingleton {
             name: '',
             userId: '',
             user: this.fakeRelation(),
+            ...overwrite,
+        };
+    };
+
+    fakePlaybookRunModel = (overwrite?: Partial<PlaybookRunModel>): PlaybookRunModel => {
+        return {
+            ...this.fakeModel(),
+            name: this.generateId(),
+            description: this.generateId(),
+            is_active: true,
+            owner_user_id: this.generateId(),
+            team_id: this.generateId(),
+            channel_id: this.generateId(),
+            create_at: Date.now(),
+            end_at: 0,
+            delete_at: 0,
+            active_stage: 0,
+            active_stage_title: this.generateId(),
+            post_id: this.generateId(),
+            playbook_id: this.generateId(),
+            participant_ids: [],
+            summary: this.generateId(),
+            current_status: '',
+            last_status_update_at: 0,
+            retrospective_enabled: false,
+            retrospective: '',
+            retrospective_published_at: 0,
             ...overwrite,
         };
     };
