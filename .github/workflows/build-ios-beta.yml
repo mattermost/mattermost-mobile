@@ -2,12 +2,6 @@
 name: build-ios-beta
 
 on:
-  workflow_dispatch:
-    inputs:
-      branch:
-        description: 'Branch to build'
-        required: true
-        default: 'main'
   push:
     branches:
       - build-beta-[0-9]+
@@ -56,22 +50,6 @@ jobs:
         with:
           name: ios-build-simulator-${{ github.run_id }}
           path: Mattermost-simulator-x86_64.app.zip
-          
-      - name: ci/post-artifact-link-to-pr
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const artifactUrl = `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`;
-            const message = `### iOS Simulator Build\n\nThe iOS simulator build is available for download [here](${artifactUrl}).`;
-            
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: message
-            });
 
   build-and-deploy-ios-beta:
     runs-on: macos-14-large

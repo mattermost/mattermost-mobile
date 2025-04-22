@@ -1,6 +1,12 @@
 ---
 name: build-pr
 on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to build'
+        required: true
+        default: 'main'
   pull_request:
     types:
       - labeled
@@ -64,6 +70,22 @@ jobs:
         with:
           name: ios-build-pr-${{ github.run_id }}
           path: "*.ipa"
+          
+      - name: ci/post-artifact-link-to-pr
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const artifactUrl = `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`;
+            const message = `### iOS PR Build\n\nThe iOS PR build is available for download [here](${artifactUrl})`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: message
+            });
 
   build-android-pr:
     runs-on: ubuntu-22.04
@@ -98,3 +120,19 @@ jobs:
         with:
           name: android-build-pr-${{ github.run_id }}
           path: "*.apk"
+          
+      - name: ci/post-artifact-link-to-pr
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const artifactUrl = `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`;
+            const message = `### Android PR Build\n\nThe Android PR build is available for download [here](${artifactUrl})`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: message
+            });
