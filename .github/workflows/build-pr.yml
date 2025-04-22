@@ -66,6 +66,7 @@ jobs:
         working-directory: ./fastlane
 
       - name: ci/upload-ios-pr-build
+        id: ci/upload-ios-pr-build
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: ios-build-pr-${{ github.run_id }}
@@ -77,24 +78,14 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            // Get the list of artifacts for this workflow run
-            const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              run_id: context.runId
-            });
-            
-            // Find the iOS artifact
-            const iosArtifact = artifacts.data.artifacts.find(artifact => 
-              artifact.name.startsWith('ios-build-pr-'));
-            
-            if (!iosArtifact) {
-              console.log('No iOS artifact found');
+            const artifactId = '${{ steps.ci/upload-ios-pr-build.outputs.artifact-id }}';
+            if (!artifactId) {
+              console.log('No iOS artifact ID found');
               return;
             }
             
-            const artifactUrl = `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${iosArtifact.id}`;
-            const message = `### iOS PR Build\n\nThe iOS PR build is available for download [here](${artifactUrl})\nCommit: ${{ github.event.pull_request.head.sha }}`;
+            const artifactUrl = `${{ github.server_url }}/${{ github.repository }}/actions/artifacts/${artifactId}/zip`;
+            const message = `### iOS PR Build\n\nThe iOS PR build is available for [download](${artifactUrl})\nCommit: ${{ github.event.pull_request.head.sha }}`;
             
             github.rest.issues.createComment({
               issue_number: context.issue.number,
@@ -132,6 +123,7 @@ jobs:
         working-directory: ./fastlane
 
       - name: ci/upload-android-pr-build
+        id: ci-upload-android-pr-build
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: android-build-pr-${{ github.run_id }}
@@ -143,24 +135,14 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            // Get the list of artifacts for this workflow run
-            const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              run_id: context.runId
-            });
-            
-            // Find the Android artifact
-            const androidArtifact = artifacts.data.artifacts.find(artifact => 
-              artifact.name.startsWith('android-build-pr-'));
-            
-            if (!androidArtifact) {
-              console.log('No Android artifact found');
+            const artifactId = '${{ steps.ci-upload-android-pr-build.outputs.artifact-id }}';
+            if (!artifactId) {
+              console.log('No Android artifact ID found');
               return;
             }
             
-            const artifactUrl = `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${androidArtifact.id}`;
-            const message = `### Android PR Build\n\nThe Android PR build is available for download [here](${artifactUrl})\nCommit: ${{ github.event.pull_request.head.sha }}`;
+            const artifactUrl = `${{ github.server_url }}/${{ github.repository }}/actions/artifacts/${artifactId}/zip`;
+            const message = `### Android PR Build\n\nThe Android PR build is available for [download](${artifactUrl})\nCommit: ${{ github.event.pull_request.head.sha }}`;
             
             github.rest.issues.createComment({
               issue_number: context.issue.number,
