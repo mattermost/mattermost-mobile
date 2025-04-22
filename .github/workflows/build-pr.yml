@@ -78,7 +78,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const artifactUrl = `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`;
-            const message = `### iOS PR Build\n\nThe iOS PR build is available for download [here](${artifactUrl})`;
+            const message = `### iOS PR Build\n\nThe iOS PR build is available for download [here](${artifactUrl})\nCommit: ${{ github.event.pull_request.head.sha }}`;
             
             github.rest.issues.createComment({
               issue_number: context.issue.number,
@@ -128,7 +128,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const artifactUrl = `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`;
-            const message = `### Android PR Build\n\nThe Android PR build is available for download [here](${artifactUrl})`;
+            const message = `### Android PR Build\n\nThe Android PR build is available for download [here](${artifactUrl})\nCommit: ${{ github.event.pull_request.head.sha }}`;
             
             github.rest.issues.createComment({
               issue_number: context.issue.number,
