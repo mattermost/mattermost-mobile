@@ -74,7 +74,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const artifactUrl = `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`;
-            const message = `### Android Beta Build\n\nThe Android beta build is available for download [here](${artifactUrl}) and has been deployed to the Play Store.`;
+            const message = `### Android Beta Build\n\nThe Android beta build is available for download [here](${artifactUrl})`;
             
             github.rest.issues.createComment({
               issue_number: context.issue.number,
