@@ -874,7 +874,7 @@ platform :android do
           project_dir: 'android/',
           properties: {
             'separateApk' => ENV["SEPARATE_APKS"] || false,
-            'universalApk' => ENV["SEPARATE_APKS"] || false,
+            'universalApk' => ENV["UNIVERSAL_APK"] || false,
           }
       )
     end
