@@ -1,0 +1,68 @@
+diff --git a/node_modules/expo-image/android/build.gradle b/node_modules/expo-image/android/build.gradle
+index 11492a2..b6bb941 100644
+--- a/node_modules/expo-image/android/build.gradle
++++ b/node_modules/expo-image/android/build.gradle
+@@ -44,7 +44,7 @@ dependencies {
+   kapt "com.github.bumptech.glide:compiler:${GLIDE_VERSION}"
+   api 'com.caverock:androidsvg-aar:1.4'
+ 
+-  implementation "com.github.penfeizhou.android.animation:glide-plugin:3.0.2"
++  implementation("com.github.penfeizhou.android.animation:glide-plugin:3.0.3")
+   implementation "com.github.bumptech.glide:avif-integration:${GLIDE_VERSION}"
+ 
+   api 'com.github.bumptech.glide:okhttp3-integration:4.11.0'
+diff --git a/node_modules/expo-image/android/src/main/java/expo/modules/image/okhttp/ExpoImageOkHttpClientGlideModule.kt b/node_modules/expo-image/android/src/main/java/expo/modules/image/okhttp/ExpoImageOkHttpClientGlideModule.kt
+index 071907c..edf10c1 100644
+--- a/node_modules/expo-image/android/src/main/java/expo/modules/image/okhttp/ExpoImageOkHttpClientGlideModule.kt
++++ b/node_modules/expo-image/android/src/main/java/expo/modules/image/okhttp/ExpoImageOkHttpClientGlideModule.kt
+@@ -70,8 +70,15 @@ data class GlideUrlWrapper(val glideUrl: GlideUrl) {
+ 
+ @GlideModule
+ class ExpoImageOkHttpClientGlideModule : LibraryGlideModule() {
++  companion object {
++    var okHttpClient: OkHttpClient? = null
++  }
+   override fun registerComponents(context: Context, glide: Glide, registry: Registry) {
+-    val client = OkHttpClient()
++    val client = if (okHttpClient != null) {
++      okHttpClient!!
++    } else {
++      OkHttpClient()
++    }
+     // We don't use the `GlideUrl` directly but we want to replace the default okhttp loader anyway
+     // to make sure that the app will use only one client.
+     registry.replace(GlideUrl::class.java, InputStream::class.java, OkHttpUrlLoader.Factory(client))
+diff --git a/node_modules/expo-image/ios/ExpoImage.podspec b/node_modules/expo-image/ios/ExpoImage.podspec
+index 21bef71..d662d23 100644
+--- a/node_modules/expo-image/ios/ExpoImage.podspec
++++ b/node_modules/expo-image/ios/ExpoImage.podspec
+@@ -20,9 +20,7 @@ Pod::Spec.new do |s|
+ 
+   s.dependency 'ExpoModulesCore'
+   s.dependency 'SDWebImage', '~> 5.19.1'
+-  s.dependency 'SDWebImageAVIFCoder', '~> 0.11.0'
+   s.dependency 'SDWebImageSVGCoder', '~> 1.7.0'
+-  s.dependency 'libavif/libdav1d'
+ 
+   # Swift/Objective-C compatibility
+   s.pod_target_xcconfig = {
+diff --git a/node_modules/expo-image/ios/ImageModule.swift b/node_modules/expo-image/ios/ImageModule.swift
+index 4bab386..a41d924 100644
+--- a/node_modules/expo-image/ios/ImageModule.swift
++++ b/node_modules/expo-image/ios/ImageModule.swift
+@@ -2,7 +2,6 @@
+ 
+ import ExpoModulesCore
+ import SDWebImage
+-import SDWebImageAVIFCoder
+ import SDWebImageSVGCoder
+ 
+ public final class ImageModule: Module {
+@@ -211,7 +210,6 @@ public final class ImageModule: Module {
+   static func registerCoders() {
+     // By default Animated WebP is not supported
+     SDImageCodersManager.shared.addCoder(SDImageAWebPCoder.shared)
+-    SDImageCodersManager.shared.addCoder(SDImageAVIFCoder.shared)
+     SDImageCodersManager.shared.addCoder(SDImageSVGCoder.shared)
+     SDImageCodersManager.shared.addCoder(SDImageHEICCoder.shared)
+   }

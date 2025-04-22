@@ -5,9 +5,9 @@ import React, {useEffect, useMemo, useState} from 'react';
 import {DeviceEventEmitter, useWindowDimensions} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
-import DraftsButton from '@components/drafts_buttton/drafts_button';
+import DraftsButton from '@components/drafts_buttton';
 import ThreadsButton from '@components/threads_button';
-import {Events} from '@constants';
+import {Events, Screens} from '@constants';
 import {CHANNEL, DRAFT, THREAD} from '@constants/screens';
 import {TABLET_SIDEBAR_WIDTH, TEAM_SIDEBAR_WIDTH} from '@constants/view';
 import {useTheme} from '@context/theme';
@@ -33,6 +33,10 @@ type ChannelListProps = {
     isCRTEnabled?: boolean;
     moreThanOneTeam: boolean;
     draftsCount: number;
+    scheduledPostCount: number;
+    scheduledPostHasError: boolean;
+    lastChannelId?: string;
+    scheduledPostsEnabled?: boolean;
 };
 
 const getTabletWidth = (moreThanOneTeam: boolean) => {
@@ -47,13 +51,17 @@ const CategoriesList = ({
     isCRTEnabled,
     moreThanOneTeam,
     draftsCount,
+    scheduledPostCount,
+    scheduledPostHasError,
+    lastChannelId,
+    scheduledPostsEnabled,
 }: ChannelListProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const {width} = useWindowDimensions();
     const isTablet = useIsTablet();
     const tabletWidth = useSharedValue(isTablet ? getTabletWidth(moreThanOneTeam) : 0);
-    const [activeScreen, setActiveScreen] = useState<ScreenType>(CHANNEL);
+    const [activeScreen, setActiveScreen] = useState<ScreenType>(isTablet && lastChannelId === Screens.GLOBAL_DRAFTS ? DRAFT : CHANNEL);
 
     useEffect(() => {
         if (isTablet) {
@@ -96,23 +104,25 @@ const CategoriesList = ({
         return (
             <ThreadsButton
                 isOnHome={true}
-                shouldHighlighActive={activeScreen === THREAD}
+                shouldHighlightActive={activeScreen === THREAD}
             />
         );
     }, [activeScreen, isCRTEnabled]);
 
     const draftsButtonComponent = useMemo(() => {
-        if (draftsCount > 0) {
+        if (draftsCount > 0 || (scheduledPostCount > 0 && scheduledPostsEnabled) || (isTablet && activeScreen === DRAFT)) {
             return (
                 <DraftsButton
                     draftsCount={draftsCount}
                     shouldHighlightActive={activeScreen === DRAFT}
+                    scheduledPostCount={scheduledPostCount}
+                    scheduledPostHasError={scheduledPostHasError}
                 />
             );
         }
 
         return null;
-    }, [activeScreen, draftsCount]);
+    }, [activeScreen, draftsCount, isTablet, scheduledPostCount, scheduledPostHasError, scheduledPostsEnabled]);
 
     const content = useMemo(() => {
         if (!hasChannels) {

@@ -19,7 +19,6 @@ import type {Database} from '@nozbe/watermelondb';
 jest.mock('@react-native-camera-roll/camera-roll', () => ({}));
 
 jest.mock('@react-navigation/native', () => ({
-    ...jest.requireActual('@react-navigation/native'),
     useNavigation: () => ({
         getState: () => ({
             index: 0,

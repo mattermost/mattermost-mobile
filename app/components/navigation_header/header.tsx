@@ -118,10 +118,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     rightButtonContainer: {
         flexDirection: 'row',
+        alignItems: 'center',
         gap: 6,
     },
     rightIcon: {
-        marginLeft: 10,
+        padding: 5,
     },
     title: {
         color: theme.sidebarHeaderTextColor,
@@ -178,7 +179,7 @@ const Header = ({
 
     const additionalTitleStyle = useMemo(() => ({
         marginLeft: Platform.select({android: showBackButton && !leftComponent ? 20 : 0}),
-    }), [leftComponent, showBackButton, theme]);
+    }), [leftComponent, showBackButton]);
 
     return (
         <Animated.View style={containerStyle}>
@@ -238,7 +239,7 @@ const Header = ({
             </Animated.View>
             <Animated.View style={styles.rightContainer}>
                 {Boolean(rightButtons?.length) &&
-                rightButtons?.map((r, i) => (
+                rightButtons?.map((r) => (
                     <TouchableWithFeedback
                         key={r.iconName}
                         borderlessRipple={r.borderless === undefined ? true : r.borderless}
@@ -246,7 +247,7 @@ const Header = ({
                         onPress={r.onPress}
                         rippleRadius={r.rippleRadius || 20}
                         type={r.buttonType || Platform.select({android: 'native', default: 'opacity'})}
-                        style={i > 0 && styles.rightIcon}
+                        style={styles.rightIcon}
                         testID={r.testID}
                     >
                         <View style={styles.rightButtonContainer}>

@@ -135,6 +135,9 @@ export function getRoundedTime(value: Moment) {
 
 export function isTablet() {
     const result: SplitViewResult = RNUtils.isRunningInSplitView();
+    if (!result) {
+        return false;
+    }
     return result.isTablet && !result.isSplit;
 }
 

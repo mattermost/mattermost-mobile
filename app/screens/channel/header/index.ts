@@ -91,6 +91,8 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: OwnProps
     const activeRunId = activeRuns.pipe(
         switchMap((runs) => {
             if (runs.length !== 1) {
+                // if there is more than one active run, we directly go to the playbook list
+                // so we don't need the id (since it is more than one)
                 return of$(undefined);
             }
             return of$(runs[0].id);
