@@ -19,6 +19,7 @@ export default tableSchema({
         {name: 'roles', type: 'string'},
         {name: 'viewed_at', type: 'number'},
         {name: 'last_fetched_at', type: 'number', isIndexed: true},
+        {name: 'urgent_mentions_count', type: 'number', isOptional: true},
     ],
 });
 
