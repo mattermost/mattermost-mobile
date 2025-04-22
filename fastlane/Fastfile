@@ -340,7 +340,6 @@ lane :github do
     android = [
       "    * [Mattermost arm64-v8a](https://releases.mattermost.com/mattermost-mobile/#{version}/#{build}/Mattermost-arm64-v8a.apk)",
       "    * [Mattermost armeabi-v7a](https://releases.mattermost.com/mattermost-mobile/#{version}/#{build}/Mattermost-armeabi-v7a.apk)",
-      "    * [Mattermost Universal](https://releases.mattermost.com/mattermost-mobile/#{version}/#{build}/Mattermost.apk)",
       "    * [Mattermost x86](https://releases.mattermost.com/mattermost-mobile/#{version}/#{build}/Mattermost-x86.apk)",
       "    * [Mattermost x86_64](https://releases.mattermost.com/mattermost-mobile/#{version}/#{build}/Mattermost-x86_64.apk)",
     ]
@@ -874,7 +873,7 @@ platform :android do
           project_dir: 'android/',
           properties: {
             'separateApk' => ENV["SEPARATE_APKS"] || false,
-            'universalApk' => ENV["SEPARATE_APKS"] || false,
+            'universalApk' => ENV["UNIVERSAL_APK"] || false,
           }
       )
     end
