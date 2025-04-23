@@ -66,7 +66,7 @@ jobs:
         working-directory: ./fastlane
 
       - name: ci/upload-ios-pr-build
-        id: ci/upload-ios-pr-build
+        id: ci-upload-ios-pr-build
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: ios-build-pr-${{ github.run_id }}
@@ -78,7 +78,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const artifactId = '${{ steps.ci/upload-ios-pr-build.outputs.artifact-id }}';
+            const artifactId = '${{ steps.ci-upload-ios-pr-build.outputs.artifact-id }}';
             if (!artifactId) {
               console.log('No iOS artifact ID found');
               return;
