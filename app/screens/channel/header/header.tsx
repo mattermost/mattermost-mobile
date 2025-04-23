@@ -215,8 +215,8 @@ const ChannelHeader = ({
             goToPlaybookRun(intl, activeRunId);
             return;
         }
-        goToPlaybookRuns(intl, channelId);
-    }, [activeRunId, channelId, intl]);
+        goToPlaybookRuns(intl, channelId, displayName);
+    }, [activeRunId, channelId, displayName, intl]);
 
     const rightButtons = useMemo(() => {
         const buttons: HeaderRightButton[] = [];
