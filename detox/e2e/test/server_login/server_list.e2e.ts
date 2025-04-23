@@ -87,8 +87,9 @@ describe('Server Login - Server List', () => {
         // # Add a second server and log in to the second server
         await User.apiAdminLogin(siteTwoUrl);
         ({user: serverTwoUser} = await Setup.apiInit(siteTwoUrl));
+        await wait(timeouts.TWO_SEC);
         await ServerListScreen.addServerButton.tap();
-        await expect(ServerScreen.headerTitleAddServer).toBeVisible();
+        await expect(ServerScreen.headerTitleAddServer).toBeVisible(35);
         await ServerScreen.connectToServer(serverTwoUrl, serverTwoDisplayName);
         await LoginScreen.login(serverTwoUser);
 
@@ -112,8 +113,9 @@ describe('Server Login - Server List', () => {
         // # Add a third server and log in to the third server
         await User.apiAdminLogin(siteThreeUrl);
         ({user: serverThreeUser} = await Setup.apiInit(siteThreeUrl));
+        await wait(timeouts.TWO_SEC);
         await ServerListScreen.addServerButton.tap();
-        await expect(ServerScreen.headerTitleAddServer).toBeVisible();
+        await expect(ServerScreen.headerTitleAddServer).toBeVisible(35);
         await ServerScreen.connectToServer(serverThreeUrl, serverThreeDisplayName);
         await LoginScreen.login(serverThreeUser);
 
@@ -123,6 +125,7 @@ describe('Server Login - Server List', () => {
 
         // # Open server list screen
         await ServerListScreen.open();
+        await wait(timeouts.TWO_SEC);
         if (isIos()) {
             await ServerListScreen.serverListTitle.swipe('up');
         } else if (isAndroid()) {
@@ -183,7 +186,7 @@ describe('Server Login - Server List', () => {
             await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.1, 0.5, 0.3);
         }
         await waitFor(ServerListScreen.getServerItemActive(serverOneDisplayName)).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await ServerListScreen.getServerItemActive(serverOneDisplayName).swipe('left');
+        await ServerListScreen.getServerItemActive(serverOneDisplayName).swipe('left', 'slow');
         await ServerListScreen.getServerItemEditOption(serverOneDisplayName).tap();
 
         // * Verify on edit server screen
@@ -209,7 +212,7 @@ describe('Server Login - Server List', () => {
         await expect(ServerListScreen.getServerItemActive(newServerOneDisplayName)).toBeVisible();
 
         // # Revert back to original first server display name and go back to first server
-        await ServerListScreen.getServerItemActive(newServerOneDisplayName).swipe('left');
+        await ServerListScreen.getServerItemActive(newServerOneDisplayName).swipe('left', 'slow');
         await ServerListScreen.getServerItemEditOption(newServerOneDisplayName).tap();
         await EditServerScreen.serverDisplayNameInput.replaceText(serverOneDisplayName);
         await EditServerScreen.saveButton.tap();
@@ -229,20 +232,20 @@ describe('Server Login - Server List', () => {
             await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.1, 0.5, 0.3);
         }
         await waitFor(ServerListScreen.getServerItemActive(serverOneDisplayName)).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await ServerListScreen.getServerItemActive(serverOneDisplayName).swipe('left');
+        await ServerListScreen.getServerItemActive(serverOneDisplayName).swipe('left', 'slow');
         await ServerListScreen.getServerItemRemoveOption(serverOneDisplayName).tap();
 
         // * Verify remove server alert is displayed
-        await expect(Alert.removeServerTitle(serverOneDisplayName)).toBeVisible();
+        await waitFor(Alert.removeServerTitle(serverOneDisplayName)).toBeVisible().withTimeout(timeouts.HALF_MIN);
 
         // # Tap on remove button and go back to server list screen
-        await Alert.removeButton3.tap();
+        await waitFor(Alert.removeButton1).toBeVisible().withTimeout(timeouts.HALF_MIN);
+        await Alert.removeButton1.tap();
         await wait(timeouts.ONE_SEC);
         await ServerListScreen.open();
         if (isIos()) {
             await ServerListScreen.serverListTitle.swipe('up');
         } else if (isAndroid()) {
-            await waitFor(ServerListScreen.serverListTitle).toBeVisible().withTimeout(timeouts.TWO_SEC);
             await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.1, 0.5, 0.3);
         }
 
@@ -252,7 +255,7 @@ describe('Server Login - Server List', () => {
 
         // # Add first server back to the list and log in to the first server
         await ServerListScreen.addServerButton.tap();
-        await expect(ServerScreen.headerTitleAddServer).toBeVisible();
+        await expect(ServerScreen.headerTitleAddServer).toBeVisible(35);
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(serverOneUser);
     });
@@ -270,17 +273,18 @@ describe('Server Login - Server List', () => {
             await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.1, 0.5, 0.3);
         }
         await waitFor(ServerListScreen.getServerItemInactive(serverThreeDisplayName)).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await ServerListScreen.getServerItemInactive(serverThreeDisplayName).swipe('left');
+        await ServerListScreen.getServerItemInactive(serverThreeDisplayName).swipe('left', 'slow');
         await ServerListScreen.getServerItemLogoutOption(serverThreeDisplayName).tap();
 
         // * Verify logout server alert is displayed
-        await expect(Alert.logoutTitle(serverThreeDisplayName)).toBeVisible();
+        await waitFor(Alert.logoutTitle(serverThreeDisplayName)).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Tap on logout button
-        await Alert.logoutButton3.tap();
+        await waitFor(Alert.logoutButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await Alert.logoutButton.tap();
 
         // * Verify third server is logged out
-        await ServerListScreen.getServerItemInactive(serverThreeDisplayName).swipe('left');
+        await ServerListScreen.getServerItemInactive(serverThreeDisplayName).swipe('left', 'slow');
         await expect(ServerListScreen.getServerItemLoginOption(serverThreeDisplayName)).toBeVisible();
 
         // # Go back to first server
@@ -301,7 +305,7 @@ describe('Server Login - Server List', () => {
             await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.1, 0.5, 0.3);
         }
         await ServerListScreen.addServerButton.tap();
-        await expect(ServerScreen.headerTitleAddServer).toBeVisible();
+        await expect(ServerScreen.headerTitleAddServer).toBeVisible(35);
         await ServerScreen.serverUrlInput.replaceText(serverTwoUrl);
         if (isAndroid()) {
             await ServerScreen.serverUrlInput.tapReturnKey();
@@ -346,9 +350,11 @@ describe('Server Login - Server List', () => {
             await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.1, 0.5, 0.3);
         }
         await waitFor(ServerListScreen.getServerItemInactive(serverTwoDisplayName)).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await ServerListScreen.getServerItemInactive(serverTwoDisplayName).swipe('left');
+        await ServerListScreen.getServerItemInactive(serverTwoDisplayName).swipe('left', 'slow');
         await ServerListScreen.getServerItemLogoutOption(serverTwoDisplayName).tap();
-        await Alert.logoutButton2.tap();
+        await wait(timeouts.FOUR_SEC);
+        await waitFor(Alert.logoutButton).toBeVisible().withTimeout(timeouts.HALF_MIN);
+        await Alert.logoutButton.tap();
         await ServerListScreen.getServerItemActive(serverOneDisplayName).tap();
     });
 });

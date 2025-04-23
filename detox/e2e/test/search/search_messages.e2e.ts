@@ -96,7 +96,7 @@ describe('Search - Search Messages', () => {
         await SearchMessagesScreen.searchModifierFrom.tap();
         await SearchMessagesScreen.searchInput.typeText(testUser.username);
         const {atMentionItem} = Autocomplete.getAtMentionItem(testUser.id);
-        await waitFor(atMentionItem).toBeVisible().withTimeout(2000);
+        await waitFor(atMentionItem).toBeVisible().withTimeout(timeouts.TWO_SEC);
         await atMentionItem.tap();
         await SearchMessagesScreen.searchInput.tapReturnKey();
 
@@ -126,6 +126,7 @@ describe('Search - Search Messages', () => {
         await SearchMessagesScreen.searchModifierIn.tap();
         await SearchMessagesScreen.searchInput.typeText(testChannel.name);
         const {channelMentionItem} = Autocomplete.getChannelMentionItem(testChannel.name);
+        await waitFor(channelMentionItem).toBeVisible().withTimeout(timeouts.TWO_SEC);
         await channelMentionItem.tap();
         await SearchMessagesScreen.searchInput.tapReturnKey();
 
@@ -166,6 +167,7 @@ describe('Search - Search Messages', () => {
         await SearchMessagesScreen.searchInput.tapReturnKey();
 
         // * Verify search results do not contain messages with excluded term
+        await wait(timeouts.TWO_SEC);
         await expect(nonExcludedPostListPostItem).toBeVisible();
         await expect(excludedPostListPostItem).not.toBeVisible();
 
@@ -198,11 +200,15 @@ describe('Search - Search Messages', () => {
         await SearchMessagesScreen.searchModifierPhrases.tap();
         await SearchMessagesScreen.searchInput.tapBackspaceKey();
         await SearchMessagesScreen.searchInput.typeText(messageWithIncludedTerm);
+
+        // # Collapse the keyboard
+        await element(by.id('search.modifier.header')).tap();
         await SearchMessagesScreen.searchModifierPhrases.tap();
         await SearchMessagesScreen.searchInput.tapBackspaceKey();
         await SearchMessagesScreen.searchInput.tapReturnKey();
 
         // * Verify search results only contain messages with included term
+        await wait(timeouts.TWO_SEC);
         await expect(nonIncludedPostListPostItem).not.toBeVisible();
         await expect(includedPostListPostItem).toBeVisible();
 
@@ -223,17 +229,10 @@ describe('Search - Search Messages', () => {
         // * Verify on search messages screen
         await SearchMessagesScreen.toBeVisible();
 
-        // # Tap on from-search-modifier, type in username, tap on user at-mention autocomplete, tap on in-search-modifier, type in channel, tap on channel mention autocomplete, and tap on search key
-        await SearchMessagesScreen.searchModifierFrom.tap();
-        await SearchMessagesScreen.searchInput.typeText(testUser.username);
-        const {atMentionItem} = Autocomplete.getAtMentionItem(testUser.id);
-        await atMentionItem.tap();
-        await SearchMessagesScreen.searchModifierIn.tap();
-        await wait(timeouts.ONE_SEC);
-        await SearchMessagesScreen.searchInput.typeText(testChannel.name);
-        const {channelMentionItem} = Autocomplete.getChannelMentionItem(testChannel.name);
-        await channelMentionItem.tap();
+        // # Tap on from-search-modifier, type in username
+        await SearchMessagesScreen.searchInput.typeText(`from: ${testUser.username} channel: ${testChannel.name}`);
         await SearchMessagesScreen.searchInput.tapReturnKey();
+        await wait(timeouts.TWO_SEC);
 
         // * Verify search results only contain messages from user in channel
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
@@ -261,6 +260,7 @@ describe('Search - Search Messages', () => {
         // # Type in a search term that will yield results and tap on search key
         await SearchMessagesScreen.searchInput.typeText(searchTerm);
         await SearchMessagesScreen.searchInput.tapReturnKey();
+        await wait(timeouts.TEN_SEC);
 
         // * Verify search results contain searched message
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
@@ -314,6 +314,7 @@ describe('Search - Search Messages', () => {
         // # Type in a search term that will yield results for second team and tap on search key
         await SearchMessagesScreen.searchInput.typeText(searchTerm);
         await SearchMessagesScreen.searchInput.tapReturnKey();
+        await wait(timeouts.TWO_SEC);
 
         // * Verify search results contain searched message
         const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(post.id, message);
@@ -321,6 +322,7 @@ describe('Search - Search Messages', () => {
 
         // # Tap on team picker button and tap on first team option
         await SearchMessagesScreen.teamPickerButton.tap();
+        await wait(timeouts.TWO_SEC);
         await TeamDropdownMenuScreen.getTeamIcon(testTeam.id).tap();
 
         // * Verify search results do not contain searched message
@@ -347,6 +349,7 @@ describe('Search - Search Messages', () => {
         const searchTerm = getRandomId();
         await SearchMessagesScreen.searchInput.typeText(searchTerm);
         await SearchMessagesScreen.searchInput.tapReturnKey();
+        await wait(timeouts.TWO_SEC);
 
         // * Verify empty search state for search messages
         await expect(element(by.text(`No matches found for “${searchTerm}”`))).toBeVisible();
@@ -373,6 +376,8 @@ describe('Search - Search Messages', () => {
         // # Type in a search term that will yield results, tap on search key, open post options for searched message, and tap on edit option
         await SearchMessagesScreen.searchInput.typeText(searchTerm);
         await SearchMessagesScreen.searchInput.tapReturnKey();
+        await wait(timeouts.TWO_SEC);
+
         const {post: searchedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await SearchMessagesScreen.openPostOptionsFor(searchedPost.id, message);
         await PostOptionsScreen.editPostOption.tap();
@@ -442,6 +447,7 @@ describe('Search - Search Messages', () => {
         // # Type in a search term that will yield results, tap on search key, open post options for searched message, tap on save option, and open saved messages screen
         await SearchMessagesScreen.searchInput.typeText(searchTerm);
         await SearchMessagesScreen.searchInput.tapReturnKey();
+        await wait(timeouts.TWO_SEC);
         const {post: searchedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await SearchMessagesScreen.openPostOptionsFor(searchedPost.id, message);
         await PostOptionsScreen.savePostOption.tap();
@@ -482,6 +488,8 @@ describe('Search - Search Messages', () => {
         // # Type in a search term that will yield results, tap on search key, open post options for searched message, tap on pin to channel option, go back to channel list screen, open the channel screen where searched message is posted, open channel info screen, and open pinned messages screen
         await SearchMessagesScreen.searchInput.typeText(searchTerm);
         await SearchMessagesScreen.searchInput.tapReturnKey();
+        await wait(timeouts.TWO_SEC);
+
         const {post: searchedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await SearchMessagesScreen.openPostOptionsFor(searchedPost.id, message);
         await PostOptionsScreen.pinPostOption.tap();

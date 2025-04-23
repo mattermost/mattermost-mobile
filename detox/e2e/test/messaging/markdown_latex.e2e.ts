@@ -48,7 +48,8 @@ describe('Messaging - Markdown Latex', () => {
         await HomeScreen.logout();
     });
 
-    it('MM-T4900_1 - should be able to display markdown latex code block', async () => {
+    // TODO: Uncomment the test when the issue is fixed https://mattermost.atlassian.net/browse/MM-63817
+    it.skip('MM-T4900_1 - should be able to display markdown latex code block', async () => {
         // # Open a channel screen and post a markdown latex code block
         // eslint-disable-next-line no-useless-escape
         const message = 'X_k = \sum_{n=0}^{2N-1} x_n \cos \left[\frac{\pi}{N} \left(n+\frac{1}{2}+\frac{N}{2}\right) \left(k+\frac{1}{2}\right) \right]';

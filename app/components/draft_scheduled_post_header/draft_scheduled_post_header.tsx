@@ -137,7 +137,10 @@ const DraftAndScheduledPostHeader: React.FC<Props> = ({
 
         return (
             <View style={style.scheduledContainer}>
-                <Text style={style.scheduledAtText}>
+                <Text
+                    style={style.scheduledAtText}
+                    testID='scheduled_post_header.scheduled_at'
+                >
                     {isSent? intl.formatMessage({id: 'scheduled_post.header.sent', defaultMessage: 'Sent'}): intl.formatMessage(
                         {id: 'channel_info.scheduled', defaultMessage: 'Send on {time}'},
                         {time: scheduledTime},
