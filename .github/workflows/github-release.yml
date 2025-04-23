@@ -180,7 +180,6 @@ jobs:
         uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47c8a # v4.2.1
         with:
           path: ${{ github.workspace }}
-          pattern: sbom-${{ github.event.repository.name }}-${{ github.ref_name }}.json
           merge-multiple: true
 
       - name: release/create-github-release
