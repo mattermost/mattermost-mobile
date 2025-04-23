@@ -60,7 +60,7 @@ class CreateOrEditChannelScreen {
     openEditChannel = async () => {
         // # Open edit channel screen
         await ChannelInfoScreen.scrollView.tap({x: 1, y: 1});
-        await ChannelInfoScreen.scrollView.scroll(100, 'down');
+        await ChannelInfoScreen.scrollView.scrollTo('bottom');
         await ChannelInfoScreen.editChannelOption.tap();
 
         return this.toBeVisible();
@@ -95,6 +95,16 @@ class CreateOrEditChannelScreen {
     toggleMakePrivateOff = async () => {
         await this.makePrivateToggledOn.tap();
         await expect(this.makePrivateToggledOff).toBeVisible();
+    };
+
+    clickonCreateButton = async () => {
+        await this.createButton.tap();
+        try {
+            await ChannelScreen.scheduledPostTooltipCloseButton.tap();
+        } catch (error) {
+            // eslint-disable-next-line no-console
+            console.log('Element not visible, skipping click');
+        }
     };
 }
 

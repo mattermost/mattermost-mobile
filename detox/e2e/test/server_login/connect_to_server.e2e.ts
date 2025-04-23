@@ -78,7 +78,11 @@ describe('Server Login - Connect to Server', () => {
 
         // * Verify invalid url error
         await waitFor(serverUrlInputError).toExist().withTimeout(timeouts.FOUR_SEC);
-        await expect(serverUrlInputError).toHaveText('URLSessionTask failed with error: A server with the specified hostname could not be found.');
+        const expectedErrorText = isIos()
+            ? 'URLSessionTask failed with error: A server with the specified hostname could not be found.'
+            : 'Unable to resolve host "invalid": No address associated with hostname';
+
+        await expect(serverUrlInputError).toHaveText(expectedErrorText);
     });
 
     it('MM-T4676_4 - should show connection error on invalid ssl or invalid host', async () => {

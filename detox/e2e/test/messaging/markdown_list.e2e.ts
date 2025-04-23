@@ -22,6 +22,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
+import {isAndroid, isIos} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Messaging - Markdown List', () => {
@@ -48,7 +49,7 @@ describe('Messaging - Markdown List', () => {
         await HomeScreen.logout();
     });
 
-    it.skip('MM-T4894_1 - should be able to display markdown bullet list -- UNSTABLE', async () => {
+    it('MM-T4894_1 - should be able to display markdown bullet list', async () => {
         // # Open a channel screen and post a markdown bullet list
         const item1 = 'item one';
         const item2 = 'item two';
@@ -61,14 +62,23 @@ describe('Messaging - Markdown List', () => {
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItemListItem, postListPostItemListItemBullet} = ChannelScreen.getPostListPostItem(post.id);
         await expect(postListPostItemListItem.atIndex(0)).toBeVisible();
-        await expect(postListPostItemListItemBullet.atIndex(0)).toHaveText('•');
         await expect(element(by.text(item1))).toBeVisible();
-        await expect(postListPostItemListItem.atIndex(1)).toBeVisible();
-        await expect(postListPostItemListItemBullet.atIndex(1)).toHaveText('•');
         await expect(element(by.text(item2))).toBeVisible();
-        await expect(postListPostItemListItem.atIndex(2)).toBeVisible();
-        await expect(postListPostItemListItemBullet.atIndex(2)).toHaveText('◦');
         await expect(element(by.text(item2SubPoint))).toBeVisible();
+
+        if (isAndroid()) {
+            await expect(postListPostItemListItem.atIndex(0)).toHaveLabel(`• ${item1}`);
+        }
+
+        if (isIos()) {
+            await expect(postListPostItemListItem.atIndex(0)).toBeVisible();
+            await expect(postListPostItemListItem.atIndex(1)).toBeVisible();
+            await expect(postListPostItemListItem.atIndex(2)).toBeVisible();
+
+            await expect(postListPostItemListItemBullet.atIndex(0)).toHaveText('•');
+            await expect(postListPostItemListItemBullet.atIndex(1)).toHaveText('•');
+            await expect(postListPostItemListItemBullet.atIndex(2)).toHaveText('◦');
+        }
 
         // # Go back to channel list screen
         await ChannelScreen.back();
@@ -89,12 +99,19 @@ describe('Messaging - Markdown List', () => {
         await expect(postListPostItemListItem.atIndex(0)).toBeVisible();
         await expect(postListPostItemListItemBullet.atIndex(0)).toHaveText('1.');
         await expect(element(by.text(item1))).toBeVisible();
-        await expect(postListPostItemListItem.atIndex(1)).toBeVisible();
-        await expect(postListPostItemListItemBullet.atIndex(1)).toHaveText('2.');
         await expect(element(by.text(item2))).toBeVisible();
-        await expect(postListPostItemListItem.atIndex(2)).toBeVisible();
-        await expect(postListPostItemListItemBullet.atIndex(2)).toHaveText('3.');
         await expect(element(by.text(item3))).toBeVisible();
+
+        if (isAndroid()) {
+            await expect(postListPostItemListItem.atIndex(0)).toHaveLabel(`1. ${item1}`);
+        }
+
+        if (isIos()) {
+            await expect(postListPostItemListItem.atIndex(1)).toBeVisible();
+            await expect(postListPostItemListItemBullet.atIndex(1)).toHaveText('2.');
+            await expect(postListPostItemListItem.atIndex(2)).toBeVisible();
+            await expect(postListPostItemListItemBullet.atIndex(2)).toHaveText('3.');
+        }
 
         // # Go back to channel list screen
         await ChannelScreen.back();

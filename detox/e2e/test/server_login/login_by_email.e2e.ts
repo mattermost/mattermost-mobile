@@ -17,6 +17,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Server Login - Login by Email', () => {
@@ -61,14 +62,16 @@ describe('Server Login - Login by Email', () => {
     it('MM-T4677_2 - should show disabled signin button on empty username or password', async () => {
         // # Log in with empty username and non-empty password
         await usernameInput.clearText();
-        await passwordInput.typeText('password');
+        await passwordInput.replaceText('password');
+        await wait(timeouts.TWO_SEC);
 
         // * Verify signin button is disabled
         await expect(signinButtonDisabled).toBeVisible();
 
         // # Log in with non-empty username and empty password
-        await usernameInput.typeText('username');
+        await usernameInput.replaceText('username');
         await passwordInput.clearText();
+        await LoginScreen.loginFormInfoText.tap();
 
         // * Verify signin button is disabled
         await expect(signinButtonDisabled).toBeVisible();
@@ -76,8 +79,10 @@ describe('Server Login - Login by Email', () => {
 
     it('MM-T4677_3 - should show incorrect combination error on incorrect credentials', async () => {
         // # Log in with incorrect credentials
-        await usernameInput.typeText('username');
-        await passwordInput.typeText('password');
+        await usernameInput.replaceText('username');
+        await passwordInput.replaceText('password');
+        await wait(timeouts.TWO_SEC);
+        await LoginScreen.loginFormInfoText.tap();
         await signinButton.tap();
 
         // * Verify incorrect combination error
@@ -87,9 +92,12 @@ describe('Server Login - Login by Email', () => {
     it('MM-T4677_4 - should show channel list screen on successful login', async () => {
         // # Log in to server with correct credentials
         const {team, user} = await Setup.apiInit(siteOneUrl);
-        await usernameInput.typeText(user.newUser.username);
-        await passwordInput.typeText(user.newUser.password);
+        await usernameInput.replaceText(user.newUser.username);
+        await passwordInput.replaceText(user.newUser.password);
+        await LoginScreen.loginFormInfoText.tap();
+
         await signinButton.tap();
+        await wait(timeouts.TWO_SEC);
 
         // * Verify on channel list screen and channel list header shows team display name and server display name
         await ChannelListScreen.toBeVisible();
