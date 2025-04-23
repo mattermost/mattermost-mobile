@@ -2,14 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessage, useIntl} from 'react-intl';
 import {Text, TouchableOpacity, View, useWindowDimensions} from 'react-native';
 
-import BaseChip from '@components/chips/base_chip';
 import {CHIP_HEIGHT} from '@components/chips/constants';
 import UserChip from '@components/chips/user_chip';
-import CompassIcon from '@components/compass_icon';
 import FriendlyDate from '@components/friendly_date';
+import Tag from '@components/tag';
 import UserAvatarsStack from '@components/user_avatars_stack';
 import {useTheme} from '@context/theme';
 import {goToPlaybookRun} from '@playbooks/screens/navigation';
@@ -62,7 +61,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => ({
         alignItems: 'center',
     },
     lastUpdatedText: {
-        ...typography('Body', 100, 'Regular'),
+        color: changeOpacity(theme.centerChannelColor, 0.64),
+        ...typography('Body', 75, 'Regular'),
     },
     flex: {
         flex: 1,
@@ -75,7 +75,10 @@ type Props = {
     participants: UserModel[];
     progress: number;
     owner?: UserModel;
+    playbookName?: string;
 };
+
+const bottomSheetTitleMessage = defineMessage({id: 'playbook.participants', defaultMessage: 'Run Participants'});
 
 const PlaybookCard = ({
     run,
@@ -83,12 +86,18 @@ const PlaybookCard = ({
     participants,
     progress,
     owner,
+    playbookName,
 }: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
     const dimensions = useWindowDimensions();
     const finished = Boolean(run.end_at);
+    const tagMaxWidth = dimensions.width * 0.25;
+
+    const tagContainerStyle = useMemo(() => ({
+        maxWidth: tagMaxWidth,
+    }), [tagMaxWidth]);
 
     const onCardPress = useCallback(() => {
         goToPlaybookRun(intl, run.id);
@@ -102,14 +111,6 @@ const PlaybookCard = ({
         //     location,
         // });
     }, []);
-
-    const icon = useMemo(() => (
-        <CompassIcon
-            name='product-playbooks'
-            size={20}
-            color={theme.centerChannelColor}
-        />
-    ), [theme.centerChannelColor]);
 
     return (
         <TouchableOpacity
@@ -134,6 +135,7 @@ const PlaybookCard = ({
                     channelId={run.channel_id}
                     location={location}
                     users={participants}
+                    bottomSheetTitle={bottomSheetTitleMessage}
                 />
             </View>
             <View style={styles.infoRow}>
@@ -155,11 +157,14 @@ const PlaybookCard = ({
                         })}
                     </Text>
                 </View>
-                <BaseChip
-                    prefix={icon}
-                    label='Playbook with really long name'
-                    maxWidth={dimensions.width * 0.20}
-                />
+                {playbookName && (
+                    <View style={tagContainerStyle}>
+                        <Tag
+                            message={playbookName}
+                            icon={'book-outline'}
+                        />
+                    </View>
+                )}
             </View>
             <ProgressBar
                 progress={progress}

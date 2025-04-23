@@ -34,13 +34,10 @@ type Props = {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
-    botContainer: {
-        alignSelf: 'flex-end',
-        bottom: 7.5,
-        height: 20,
-        marginBottom: 0,
-        marginLeft: 4,
-        paddingVertical: 0,
+    displayNameContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
     },
     botText: {
         fontSize: 14,
@@ -164,7 +161,7 @@ const DirectChannel = ({
                 {getGMIntroMessageSpecificPart(userNotifyProps, channelNotifyProps, styles.boldText)}
             </Text>
         );
-    }, [channel.displayName, theme, channelNotifyProps, userNotifyProps]);
+    }, [channel.type, channel.displayName, hasGMasDMFeature, styles.message, styles.boldText, userNotifyProps, channelNotifyProps]);
 
     const profiles = useMemo(() => {
         if (channel.type === General.DM_CHANNEL) {
@@ -195,14 +192,14 @@ const DirectChannel = ({
                 userIds={channelMembers.map((cm) => cm.userId)}
             />
         );
-    }, [members, theme]);
+    }, [channel.id, channel.name, channel.type, currentUserId, members, theme]);
 
     return (
         <View style={styles.container}>
             <View style={styles.profilesContainer}>
                 {profiles}
             </View>
-            <View style={{flexDirection: 'row'}}>
+            <View style={styles.displayNameContainer}>
                 <Text
                     style={[styles.title, channel.type === General.GM_CHANNEL ? styles.titleGroup : undefined]}
                     testID='channel_post_list.intro.display_name'
@@ -210,10 +207,7 @@ const DirectChannel = ({
                     {channel.displayName}
                 </Text>
                 {isBot &&
-                <BotTag
-                    style={styles.botContainer}
-                    textStyle={styles.botText}
-                />
+                    <BotTag size={'m'}/>
                 }
             </View>
             {message}

@@ -34,12 +34,12 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             borderRadius: 16,
             height: CHIP_HEIGHT,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
-            paddingHorizontal: 7,
+            padding: 2,
         },
         text: {
             marginLeft: 8,
             color: theme.centerChannelColor,
-            ...typography('Body', 100, 'SemiBold'),
+            ...typography('Body', 75),
         },
         remove: {
             justifyContent: 'center',
@@ -47,6 +47,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         chipContent: {
             flexDirection: 'row',
+            alignItems: 'center',
         },
     };
 });
@@ -65,8 +66,9 @@ export default function BaseChip({
     const dimensions = useWindowDimensions();
     const textStyle = useMemo(() => {
         const textMaxWidth = maxWidth || dimensions.width * 0.70;
-        return [style.text, {maxWidth: textMaxWidth}];
-    }, [maxWidth, dimensions.width, style.text]);
+        const marginRight = showRemoveOption ? undefined : 7;
+        return [style.text, {maxWidth: textMaxWidth, marginRight}];
+    }, [maxWidth, dimensions.width, showRemoveOption, style.text]);
 
     const chipContent = (
         <>

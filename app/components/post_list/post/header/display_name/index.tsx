@@ -8,8 +8,8 @@ import {Keyboard, Text, TouchableOpacity, useWindowDimensions, View} from 'react
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {openAsBottomSheet} from '@screens/navigation';
-import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -33,7 +33,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         displayName: {
             color: theme.centerChannelColor,
             flexGrow: 1,
-            marginRight: 5,
             ...typography('Body', 200, 'SemiBold'),
         },
         displayNameCustomEmojiWidth: {
@@ -71,7 +70,7 @@ const HeaderDisplayName = ({
     const intl = useIntl();
     const style = getStyleSheet(theme);
 
-    const onPress = useCallback(preventDoubleTap(() => {
+    const onPress = usePreventDoubleTap(useCallback(() => {
         const screen = Screens.USER_PROFILE;
         const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
         const closeButtonId = 'close-user-profile';
@@ -79,7 +78,7 @@ const HeaderDisplayName = ({
 
         Keyboard.dismiss();
         openAsBottomSheet({screen, title, theme, closeButtonId, props});
-    }), [intl.locale, channelId, userIconOverride, userId, usernameOverride, theme]);
+    }, [intl, userId, channelId, location, userIconOverride, usernameOverride, theme]));
 
     const calcNameWidth = () => {
         const isLandscape = dimensions.width > dimensions.height;

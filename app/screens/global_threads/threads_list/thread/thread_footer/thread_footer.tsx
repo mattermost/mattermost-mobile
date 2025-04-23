@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
+import {defineMessage} from 'react-intl';
 import {View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
@@ -47,6 +48,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
     };
 });
+
+const bottomSheetTitleMessage = defineMessage({id: 'mobile.participants.header', defaultMessage: 'Thread Participants'});
 
 const ThreadFooter = ({author, channelId, location, participants, testID, thread}: Props) => {
     const theme = useTheme();
@@ -97,6 +100,7 @@ const ThreadFooter = ({author, channelId, location, participants, testID, thread
                 location={location}
                 style={style.avatarsContainer}
                 users={participantsList}
+                bottomSheetTitle={bottomSheetTitleMessage}
             />
         );
     }
