@@ -84,7 +84,7 @@
     }
   },
   "session": {
-    "sessionId": "ios-test-session",
+    "sessionId": "mobile-test-session",
     "debugSynchronization": 5000,
     "autoStart": true
   },

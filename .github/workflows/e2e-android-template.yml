@@ -317,29 +317,19 @@ jobs:
         with:
           script: |
             const prNumber = context.payload.pull_request.number;
-      
-            const summaryTable = `
-              | Tests | Passed ✅ | Failed ❌ | Skipped ⏭️ | Errors ⚠️ |
-              |:-----:|:---------:|:--------:|:----------:|:---------:|
-              | ${process.env.TOTAL} | ${process.env.PASSES} | ${process.env.FAILURES} | ${process.env.SKIPPED} | ${process.env.ERRORS} |
-              
-              You can check the full report [here](${process.env.TARGET_URL})
-              
-              There was **${process.env.PERCENTAGE}%** success rate.`;
-              
-              const commentBody = `
-              ## Android E2E Test Report
-              - **Commit Hash**: ${process.env.MOBILE_SHA}
-              
-              ${summaryTable}
-              `;
-              
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: prNumber,
-                body: commentBody,
-              });
+
+            const commentBody = `**Android E2E Test Report**: ${process.env.MOBILE_SHA} | ${process.env.PERCENTAGE}% (${process.env.PASSES}/${process.env.TOTAL}) | [full report](${process.env.TARGET_URL})
+            | Tests | Passed ✅ | Failed ❌ | Skipped ⏭️ | Errors ⚠️ |
+            |:---:|:---:|:---:|:---:|:---:|
+            | ${process.env.TOTAL} | ${process.env.PASSES} | ${process.env.FAILURES} | ${process.env.SKIPPED} | ${process.env.ERRORS} |
+            `;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: commentBody,
+            });
         env:
           STATUS: ${{ steps.determine-status.outputs.STATUS }}
           FAILURES: ${{ steps.summary.outputs.FAILURES }}
