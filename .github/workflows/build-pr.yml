@@ -71,7 +71,7 @@ jobs:
         with:
           name: ios-build-pr-${{ github.run_id }}
           path: "*.ipa"
-          
+
       - name: ci/post-artifact-link-to-pr
         if: github.event_name == 'pull_request'
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
@@ -83,26 +83,16 @@ jobs:
               console.log('No iOS artifact ID found');
               return;
             }
-            
+
             const artifactUrl = `${{ github.server_url }}/${{ github.repository }}/actions/artifacts/${artifactId}/zip`;
             const message = `### iOS PR Build\n\nThe iOS PR build is available for [download](${artifactUrl})\nCommit: ${{ github.event.pull_request.head.sha }}`;
-            
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: message
             });
-            
-            // Remove the label that triggered the build
-            if (github.event.label && (github.event.label.name === 'Build Apps for PR' || github.event.label.name === 'Build App for iOS')) {
-              await github.rest.issues.removeLabel({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                name: github.event.label.name
-              });
-            }
 
   build-android-pr:
     runs-on: ubuntu-22.04
@@ -138,7 +128,7 @@ jobs:
         with:
           name: android-build-pr-${{ github.run_id }}
           path: "*.apk"
-          
+
       - name: ci/post-artifact-link-to-pr
         if: github.event_name == 'pull_request'
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
@@ -150,23 +140,13 @@ jobs:
               console.log('No Android artifact ID found');
               return;
             }
-            
+
             const artifactUrl = `${{ github.server_url }}/${{ github.repository }}/actions/artifacts/${artifactId}/zip`;
             const message = `### Android PR Build\n\nThe Android PR build is available for [download](${artifactUrl})\nCommit: ${{ github.event.pull_request.head.sha }}`;
-            
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: message
             });
-            
-            // Remove the label that triggered the build
-            if (github.event.label && (github.event.label.name === 'Build Apps for PR' || github.event.label.name === 'Build App for Android')) {
-              await github.rest.issues.removeLabel({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                name: github.event.label.name
-              });
-            }
