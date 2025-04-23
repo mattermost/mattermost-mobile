@@ -42,7 +42,7 @@ describe('screens/report_a_problem/log_file_item', () => {
 
         await waitFor(() => {
             const icon = getByTestId('log-file-icon');
-            expect(icon.props.name).toBe('file-zip-outline');
+            expect(icon.props.name).toBe('file-zip-outline-large');
         });
     });
 });
