@@ -94,7 +94,7 @@ export const retrieveRecords = <T extends Model>({database, tableName, condition
     return database.collections.get<T>(tableName).query(condition).fetch();
 };
 
-function isHasManyAssociation(associated: AssociationInfo) {
+export function isHasManyAssociation(associated: AssociationInfo) {
     return associated.type === 'has_many' && 'foreignKey' in associated;
 }
 

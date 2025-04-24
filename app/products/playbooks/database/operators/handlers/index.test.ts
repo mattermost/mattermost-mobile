@@ -9,7 +9,7 @@ import type ServerDataOperator from '@database/operator/server_data_operator';
 
 const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM} = PLAYBOOK_TABLES;
 
-const createPlaybookItem =(prefix: string, index: number): PlaybookChecklistItem => ({
+export const createPlaybookItem =(prefix: string, index: number): PlaybookChecklistItem => ({
     id: `${prefix}-item_${index}`,
     title: `Item ${index + 1} of Checklist ${prefix}`,
     description: 'Item description',
@@ -24,7 +24,7 @@ const createPlaybookItem =(prefix: string, index: number): PlaybookChecklistItem
     completed_at: 0,
 });
 
-const createPlaybookChecklist = (prefix: string, itemsCount: number, index: number): PlaybookChecklist => {
+export const createPlaybookChecklist = (prefix: string, itemsCount: number, index: number): PlaybookChecklist => {
     const items: PlaybookChecklistItem[] = [];
     const id = `${prefix}-checklist_${index}`;
     for (let k = 0; k < itemsCount; k++) {
@@ -38,7 +38,7 @@ const createPlaybookChecklist = (prefix: string, itemsCount: number, index: numb
     };
 };
 
-function createPlaybookRuns(runsCount = 1, maxChecklistCount = 1, maxItemsPerChecklist = 1): PlaybookRun[] {
+export function createPlaybookRuns(runsCount = 1, maxChecklistCount = 1, maxItemsPerChecklist = 1): PlaybookRun[] {
     const playbookRuns: PlaybookRun[] = [];
     for (let i = 0; i < runsCount; i++) {
         const checklists: PlaybookChecklist[] = [];
