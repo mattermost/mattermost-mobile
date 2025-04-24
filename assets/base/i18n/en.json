@@ -1072,7 +1072,7 @@
   "screen.report_problem.button": "Report a problem",
   "screen.report_problem.details.description": "When reporting a problem, share the metadata and app logs given below to help troubleshoot your problem faster",
   "screen.report_problem.details.description_without_logs": "When reporting a problem, share the metadata given below to help troubleshoot your problem faster",
-  "screen.report_problem.details.title": "Troubleshouting details",
+  "screen.report_problem.details.title": "Troubleshooting details",
   "screen.report_problem.logs.download": "Download App Logs",
   "screen.report_problem.logs.title": "APP LOGS:",
   "screen.report_problem.metadata.title": "METADATA:",

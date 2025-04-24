@@ -129,7 +129,7 @@ const ReportProblem = ({
                         <Text style={styles.detailsTitle}>
                             {intl.formatMessage({
                                 id: 'screen.report_problem.details.title',
-                                defaultMessage: 'Troubleshouting details',
+                                defaultMessage: 'Troubleshooting details',
                             })}
                         </Text>
                         <Text style={styles.bodyText}>
