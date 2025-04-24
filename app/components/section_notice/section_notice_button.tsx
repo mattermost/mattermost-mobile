@@ -17,8 +17,8 @@ const SectionNoticeButton = ({
     emphasis,
 }: ButtonProps) => {
     const theme = useTheme();
-    const leadingIcon = button.leadingIcon ? {iconName: button.leadingIcon, iconSize: 18} : {};
-    const trailingIcon = button.trailingIcon ? {iconName: button.trailingIcon, iconSize: 18} : {};
+    const leadingIcon = button.leadingIcon ? {iconName: button.leadingIcon} : {};
+    const trailingIcon = button.trailingIcon ? {iconName: button.trailingIcon} : {};
 
     return (
         <Button

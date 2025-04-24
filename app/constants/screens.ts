@@ -50,6 +50,7 @@ export const PINNED_MESSAGES = 'PinnedMessages';
 export const POST_OPTIONS = 'PostOptions';
 export const POST_PRIORITY_PICKER = 'PostPriorityPicker';
 export const REACTIONS = 'Reactions';
+export const REPORT_PROBLEM = 'ReportProblem';
 export const RESCHEDULE_DRAFT = 'RescheduleDraft';
 export const REVIEW_APP = 'ReviewApp';
 export const SAVED_MESSAGES = 'SavedMessages';
@@ -136,6 +137,7 @@ export default {
     POST_OPTIONS,
     POST_PRIORITY_PICKER,
     REACTIONS,
+    REPORT_PROBLEM,
     RESCHEDULE_DRAFT,
     REVIEW_APP,
     SAVED_MESSAGES,
