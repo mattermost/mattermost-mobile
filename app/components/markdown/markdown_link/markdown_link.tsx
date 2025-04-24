@@ -13,7 +13,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
 import {handleDeepLink, matchDeepLink} from '@utils/deep_link';
-import {bottomSheetSnapPoint} from '@utils/helpers';
+import {bottomSheetSnapPoint, isEmail} from '@utils/helpers';
 import {preventDoubleTap} from '@utils/tap';
 import {normalizeProtocol, tryOpenURL} from '@utils/url';
 
@@ -123,10 +123,14 @@ const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteU
                             leftIcon='content-copy'
                             onPress={() => {
                                 dismissBottomSheet();
-                                Clipboard.setString(href);
+                                const cleanHref = href.replace(/^mailto:/, '');
+                                Clipboard.setString(cleanHref);
                             }}
                             testID='at_mention.bottom_sheet.copy_url'
-                            text={intl.formatMessage({id: 'mobile.markdown.link.copy_url', defaultMessage: 'Copy URL'})}
+                            text={intl.formatMessage({
+                                id: isEmail(href.replace(/^mailto:/, '')) ? 'mobile.markdown.link.copy_email' : 'mobile.markdown.link.copy_url',
+                                defaultMessage: isEmail(href.replace(/^mailto:/, '')) ? 'Copy Email' : 'Copy URL',
+                            })}
                         />
                         <SlideUpPanelItem
                             destructive={true}
