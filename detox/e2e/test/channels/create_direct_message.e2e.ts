@@ -197,7 +197,7 @@ describe('Channels - Create Direct Message', () => {
         await wait(timeouts.ONE_SEC);
 
         // * Verify the deactivated user does not appear in search results
-        await expect(element(by.text(`No matches found for "${deactivatedUser.username}"`))).toBeVisible();
+        await expect(element(by.text(`No matches found for “${deactivatedUser.username}”`))).toBeVisible();
 
         // # Go back to channel list screen
         await CreateDirectMessageScreen.close();
