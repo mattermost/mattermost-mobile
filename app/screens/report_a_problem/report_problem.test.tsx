@@ -60,7 +60,7 @@ describe('screens/report_a_problem/report_problem', () => {
             <ReportProblem {...baseProps}/>,
         );
 
-        expect(getByText('Troubleshouting details')).toBeTruthy();
+        expect(getByText('Troubleshooting details')).toBeTruthy();
         expect(getByText('When reporting a problem, share the metadata and app logs given below to help troubleshoot your problem faster')).toBeTruthy();
         expect(getByTestId('app-logs')).toBeVisible();
     });
