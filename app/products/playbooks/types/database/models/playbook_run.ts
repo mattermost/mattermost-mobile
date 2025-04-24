@@ -79,9 +79,6 @@ declare class PlaybookRunModel extends Model {
     // Timestamp when the retrospective was published
     retrospectivePublishedAt: number;
 
-    /** participants : Users participating in this playbook run */
-    participants: Query<UserModel>;
-
     /** post : the post that created the run (nullable) */
     post: Relation<PostModel>;
 

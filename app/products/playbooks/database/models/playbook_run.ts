@@ -110,9 +110,6 @@ export default class PlaybookRunModel extends Model implements PlaybookRunModelI
     /** retrospective_published_at : Timestamp when the retrospective was published */
     @field('retrospective_published_at') retrospectivePublishedAt!: number;
 
-    /** participants : Users participating in this run */
-    @children(USER) participants!: Query<UserModel>;
-
     /** post : The POST to which this PLAYBOOK_RUN belongs (can be null) */
     @immutableRelation(POST, 'post_id') post!: Relation<PostModel>;
 
