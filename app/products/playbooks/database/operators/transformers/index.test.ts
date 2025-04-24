@@ -346,6 +346,7 @@ describe('*** PLAYBOOK_CHECKLIST_ITEM Prepare Records Test ***', () => {
                     due_date: 1620000003000,
                     completed_at: 0,
                     task_actions: null,
+                    delete_at: 0,
                 },
             },
         });
@@ -400,6 +401,7 @@ describe('*** PLAYBOOK_CHECKLIST_ITEM Prepare Records Test ***', () => {
                     due_date: 1620000007000,
                     completed_at: 1620000008000,
                     task_actions: null,
+                    delete_at: 0,
                 },
             },
         });
@@ -440,6 +442,7 @@ describe('*** PLAYBOOK_CHECKLIST_ITEM Prepare Records Test ***', () => {
                         due_date: 1620000003000,
                         completed_at: 0,
                         task_actions: null,
+                        delete_at: 0,
                     },
                 },
             }),

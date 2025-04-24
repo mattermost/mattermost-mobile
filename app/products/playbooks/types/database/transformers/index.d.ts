@@ -25,4 +25,5 @@ type PlaybookChecklistItemWithChecklist = {
     task_actions?: TaskAction[] | null;
     order: number;
     completed_at: number;
+    delete_at: number;
 }
