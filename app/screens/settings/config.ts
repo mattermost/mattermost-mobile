@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {t} from '@i18n';
+import {defineMessages, type IntlShape} from 'react-intl';
+
 import {goToScreen} from '@screens/navigation';
 import {typography} from '@utils/typography';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
-import type {IntlShape} from 'react-intl';
 
 export const getSaveButton = (buttonId: string, intl: IntlShape, color: string) => ({
     color,
@@ -37,42 +37,109 @@ type SettingConfigDetails = {
         testID?: string;
 }
 
-export const SettingOptionConfig: Record<string, SettingConfigDetails> = {
-    notification: {
-        defaultMessage: 'Notifications',
-        i18nId: t('general_settings.notifications'),
-        icon: 'bell-outline',
-        testID: 'general_settings.notifications',
-    },
-    display: {
-        defaultMessage: 'Display',
-        i18nId: t('general_settings.display'),
-        icon: 'layers-outline',
-        testID: 'general_settings.display',
-    },
-    advanced_settings: {
-        defaultMessage: 'Advanced Settings',
-        i18nId: t('general_settings.advanced_settings'),
-        icon: 'tune',
-        testID: 'general_settings.advanced',
-    },
-    about: {
-        defaultMessage: 'About {appTitle}',
-        i18nId: t('general_settings.about'),
-        icon: 'information-outline',
-        testID: 'general_settings.about',
-    },
-    help: {
-        defaultMessage: 'Help',
-        i18nId: t('general_settings.help'),
-        testID: 'general_settings.help',
+const messages = defineMessages({
+    download_logs: {
+        defaultMessage: 'Download app logs',
+        id: 'general_settings.download_logs',
     },
     report_problem: {
         defaultMessage: 'Report a Problem',
-        i18nId: t('general_settings.report_problem'),
-        testID: 'general_settings.report_problem',
+        id: 'general_settings.report_problem',
     },
+    notifications: {
+        defaultMessage: 'Notifications',
+        id: 'general_settings.notifications',
+    },
+    display: {
+        defaultMessage: 'Display',
+        id: 'general_settings.display',
+    },
+    advanced_settings: {
+        defaultMessage: 'Advanced Settings',
+        id: 'general_settings.advanced_settings',
+    },
+    about: {
+        defaultMessage: 'About {appTitle}',
+        id: 'general_settings.about',
+    },
+    help: {
+        defaultMessage: 'Help',
+        id: 'general_settings.help',
+    },
+    push_notifications: {
+        defaultMessage: 'Push Notifications',
+        id: 'notification_settings.mobile',
+    },
+    call_notifications: {
+        defaultMessage: 'Call Notifications',
+        id: 'notification_settings.calls',
+    },
+    email: {
+        defaultMessage: 'Email',
+        id: 'notification_settings.email',
+    },
+    automatic_replies: {
+        defaultMessage: 'Automatic replies',
+        id: 'notification_settings.ooo_auto_responder',
+    },
+    clock_display: {
+        defaultMessage: 'Clock Display',
+        id: 'mobile.display_settings.clockDisplay',
+    },
+    crt: {
+        defaultMessage: 'Collapsed Reply Threads',
+        id: 'mobile.display_settings.crt',
+    },
+    theme: {
+        defaultMessage: 'Theme',
+        id: 'mobile.display_settings.theme',
+    },
+    timezone: {
+        defaultMessage: 'Timezone',
+        id: 'mobile.display_settings.timezone',
+    },
+});
 
+export const SettingOptionConfig: Record<string, SettingConfigDetails> = {
+    notification: {
+        defaultMessage: messages.notifications.defaultMessage,
+        i18nId: messages.notifications.id,
+        icon: 'bell-outline',
+        testID: messages.notifications.id,
+    },
+    display: {
+        defaultMessage: messages.display.defaultMessage,
+        i18nId: messages.display.id,
+        icon: 'layers-outline',
+        testID: messages.display.id,
+    },
+    advanced_settings: {
+        defaultMessage: messages.advanced_settings.defaultMessage,
+        i18nId: messages.advanced_settings.id,
+        icon: 'tune',
+        testID: messages.advanced_settings.id,
+    },
+    about: {
+        defaultMessage: messages.about.defaultMessage,
+        i18nId: messages.about.id,
+        icon: 'information-outline',
+        testID: messages.about.id,
+    },
+    help: {
+        defaultMessage: messages.help.defaultMessage,
+        i18nId: messages.help.id,
+        testID: messages.help.id,
+    },
+    report_problem: {
+        defaultMessage: messages.report_problem.defaultMessage,
+        i18nId: messages.report_problem.id,
+        testID: messages.report_problem.id,
+    },
+    download_logs: {
+        defaultMessage: messages.download_logs.defaultMessage,
+        i18nId: messages.download_logs.id,
+        testID: messages.download_logs.id,
+    },
 };
 
 export const NotificationsOptionConfig: Record<string, SettingConfigDetails> = {
@@ -81,55 +148,55 @@ export const NotificationsOptionConfig: Record<string, SettingConfigDetails> = {
         testID: 'notification_settings.mentions_replies',
     },
     push_notification: {
-        defaultMessage: 'Push Notifications',
-        i18nId: t('notification_settings.mobile'),
+        defaultMessage: messages.push_notifications.defaultMessage,
+        i18nId: messages.push_notifications.id,
         icon: 'cellphone',
-        testID: 'notification_settings.push_notification',
+        testID: messages.push_notifications.id,
     },
     call_notification: {
-        defaultMessage: 'Call Notifications',
-        i18nId: t('notification_settings.calls'),
+        defaultMessage: messages.call_notifications.defaultMessage,
+        i18nId: messages.call_notifications.id,
         icon: 'phone-in-talk',
-        testID: 'notification_settings.call_notification',
+        testID: messages.call_notifications.id,
     },
     email: {
-        defaultMessage: 'Email',
-        i18nId: t('notification_settings.email'),
+        defaultMessage: messages.email.defaultMessage,
+        i18nId: messages.email.id,
         icon: 'email-outline',
-        testID: 'notification_settings.email',
+        testID: messages.email.id,
     },
     automatic_dm_replies: {
-        defaultMessage: 'Automatic replies',
-        i18nId: t('notification_settings.ooo_auto_responder'),
+        defaultMessage: messages.automatic_replies.defaultMessage,
+        i18nId: messages.automatic_replies.id,
         icon: 'reply-outline',
-        testID: 'notification_settings.automatic_dm_replies',
+        testID: messages.automatic_replies.id,
     },
 };
 
 export const DisplayOptionConfig: Record<string, SettingConfigDetails> = {
     clock: {
-        defaultMessage: 'Clock Display',
-        i18nId: t('mobile.display_settings.clockDisplay'),
+        defaultMessage: messages.clock_display.defaultMessage,
+        i18nId: messages.clock_display.id,
         icon: 'clock-outline',
-        testID: 'display_settings.clock',
+        testID: messages.clock_display.id,
     },
     crt: {
-        defaultMessage: 'Collapsed Reply Threads',
-        i18nId: t('mobile.display_settings.crt'),
+        defaultMessage: messages.crt.defaultMessage,
+        i18nId: messages.crt.id,
         icon: 'message-text-outline',
-        testID: 'display_settings.crt',
+        testID: messages.crt.id,
     },
     theme: {
-        defaultMessage: 'Theme',
-        i18nId: t('mobile.display_settings.theme'),
+        defaultMessage: messages.theme.defaultMessage,
+        i18nId: messages.theme.id,
         icon: 'palette-outline',
-        testID: 'display_settings.theme',
+        testID: messages.theme.id,
     },
     timezone: {
-        defaultMessage: 'Timezone',
-        i18nId: t('mobile.display_settings.timezone'),
+        defaultMessage: messages.timezone.defaultMessage,
+        i18nId: messages.timezone.id,
         icon: 'globe',
-        testID: 'display_settings.timezone',
+        testID: messages.timezone.id,
     },
 };
 
