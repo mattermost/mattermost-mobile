@@ -2,10 +2,10 @@
 
 echo Cleaning started
 
-# Reset watchman watches
+# Reset watchman watches for this project only
 if command -v watchman &> /dev/null; then
-  echo "Resetting watchman watches"
-  watchman watch-del-all
+  echo "Resetting watchman watches for this project"
+  watchman watch-del . 2>/dev/null || echo "No watch found for this directory"
 fi
 
 rm -rf ios/Pods
