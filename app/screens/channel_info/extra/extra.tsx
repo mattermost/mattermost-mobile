@@ -20,7 +20,7 @@ import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {ANDROID_33, OS_VERSION} from '@constants/versions';
 import {useTheme} from '@context/theme';
 import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
-import {bottomSheetSnapPoint} from '@utils/helpers';
+import {bottomSheetSnapPoint, isEmail} from '@utils/helpers';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {showSnackBar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -134,12 +134,13 @@ const Extra = ({channelId, createdAt, createdBy, customStatus, header, isCustomS
                         <SlideUpPanelItem
                             leftIcon='link-variant'
                             onPress={() => {
-                                onCopy(url!, true);
+                                const cleanUrl = url!.replace(/^mailto:/, '');
+                                onCopy(cleanUrl, isEmail(cleanUrl));
                             }}
                             testID={`${headerTestId}.bottom_sheet.copy_url`}
                             text={intl.formatMessage({
-                                id: 'mobile.markdown.link.copy_url',
-                                defaultMessage: 'Copy URL',
+                                id: isEmail(url!.replace(/^mailto:/, '')) ? 'mobile.markdown.link.copy_email' : 'mobile.markdown.link.copy_url',
+                                defaultMessage: isEmail(url!.replace(/^mailto:/, '')) ? 'Copy Email Address' : 'Copy URL',
                             })}
                         />
                     )}

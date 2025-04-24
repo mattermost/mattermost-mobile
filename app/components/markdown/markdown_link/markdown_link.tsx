@@ -129,7 +129,7 @@ const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteU
                             testID='at_mention.bottom_sheet.copy_url'
                             text={intl.formatMessage({
                                 id: isEmail(href.replace(/^mailto:/, '')) ? 'mobile.markdown.link.copy_email' : 'mobile.markdown.link.copy_url',
-                                defaultMessage: isEmail(href.replace(/^mailto:/, '')) ? 'Copy Email' : 'Copy URL',
+                                defaultMessage: isEmail(href.replace(/^mailto:/, '')) ? 'Copy Email Address' : 'Copy URL',
                             })}
                         />
                         <SlideUpPanelItem
