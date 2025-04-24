@@ -2,6 +2,12 @@
 
 echo Cleaning started
 
+# Reset watchman watches
+if command -v watchman &> /dev/null; then
+  echo "Resetting watchman watches"
+  watchman watch-del-all
+fi
+
 rm -rf ios/Pods
 rm -rf node_modules
 rm -rf dist
