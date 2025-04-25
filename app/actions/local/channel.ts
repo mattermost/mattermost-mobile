@@ -176,6 +176,7 @@ export async function markChannelAsViewed(serverUrl: string, channelId: string, 
             m.isUnread = false;
             m.mentionsCount = 0;
             m.manuallyUnread = false;
+            m.urgentMentionsCount = 0;
             if (!onlyCounts) {
                 m.viewedAt = member.lastViewedAt;
                 m.lastViewedAt = Date.now();
@@ -193,7 +194,7 @@ export async function markChannelAsViewed(serverUrl: string, channelId: string, 
     }
 }
 
-export async function markChannelAsUnread(serverUrl: string, channelId: string, messageCount: number, mentionsCount: number, lastViewed: number, prepareRecordsOnly = false) {
+export async function markChannelAsUnread(serverUrl: string, channelId: string, messageCount: number, mentionsCount: number, lastViewed: number, urgentMentionsCount: number, prepareRecordsOnly = false) {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const member = await getMyChannel(database, channelId);
@@ -206,6 +207,7 @@ export async function markChannelAsUnread(serverUrl: string, channelId: string, 
             m.lastViewedAt = lastViewed - 1;
             m.messageCount = messageCount;
             m.mentionsCount = mentionsCount;
+            m.urgentMentionsCount = urgentMentionsCount;
             m.manuallyUnread = true;
             m.isUnread = true;
         });

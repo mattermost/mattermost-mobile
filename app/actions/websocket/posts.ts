@@ -152,6 +152,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
                 myChannel.messageCount + 1,
                 myChannel.mentionsCount + (hasMentions ? 1 : 0),
                 myChannel.lastViewedAt,
+                myChannel.urgentMentionsCount,
                 true,
             );
             if (unreadAt) {
@@ -318,12 +319,13 @@ export async function handlePostUnread(serverUrl: string, msg: WebSocketMessage)
     }
 
     if (!myChannel?.manuallyUnread) {
-        const {channels} = await fetchMyChannel(serverUrl, teamId, channelId, true);
+        const {channels, memberships} = await fetchMyChannel(serverUrl, teamId, channelId, true);
         const channel = channels?.[0];
+        const membership = memberships?.[0];
         const postNumber = isCRTEnabled ? channel?.total_msg_count_root : channel?.total_msg_count;
         const delta = postNumber ? postNumber - messages : messages;
 
-        markChannelAsUnread(serverUrl, channelId, delta, mentions, lastViewedAt);
+        markChannelAsUnread(serverUrl, channelId, delta, mentions, lastViewedAt, membership?.urgent_mention_count || 0);
     }
 }
 
