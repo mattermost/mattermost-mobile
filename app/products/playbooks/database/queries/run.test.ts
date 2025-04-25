@@ -303,7 +303,6 @@ describe('Playbook Run Queries', () => {
             const observable = observePlaybookRunProgress(operator.database, mockRuns[0].id);
 
             observable.subscribe((progress) => {
-                console.log('PROGRESS', progress);
                 expect(progress).toBeGreaterThan(0);
                 expect(progress).toBeLessThan(100.00);
                 done();
