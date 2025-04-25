@@ -62,6 +62,7 @@ class DatabaseManagerSingleton {
     public init = async (serverUrls: string[]): Promise<void> => {
         await this.createAppDatabase();
         for await (const serverUrl of serverUrls) {
+            await this.destroyServerDatabase(serverUrl);
             await this.initServerDatabase(serverUrl);
         }
         this.appDatabase?.operator.handleInfo({

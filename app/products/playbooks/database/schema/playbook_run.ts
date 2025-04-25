@@ -30,5 +30,7 @@ export default tableSchema({
         {name: 'retrospective_enabled', type: 'boolean'},
         {name: 'retrospective', type: 'string'},
         {name: 'retrospective_published_at', type: 'number'},
+        {name: 'sync', type: 'string', isIndexed: true, isOptional: true},
+        {name: 'last_sync_at', type: 'number', isOptional: true},
     ],
 });

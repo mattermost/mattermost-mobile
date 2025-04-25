@@ -195,6 +195,8 @@ last_status_update_at number
 retrospective_enabled boolean
 retrospective string
 retrospective_published_at number
+synced string NULL INDEX # optional field for sync status
+last_sync_at number NULL # optional field for last sync timestamp
 
 PlaybookChecklist
 -
@@ -202,6 +204,8 @@ id PK string # server-generated
 run_id string INDEX FK >- PlaybookRun.id
 title string
 sort_order number
+synced string NULL INDEX # optional field for sync status
+last_sync_at number NULL # optional field for last sync timestamp
 
 PlaybookChecklistItem
 -
@@ -219,6 +223,8 @@ due_date number
 task_actions string # stringified array of TaskAction
 order number
 completed_at number
+synced string NULL INDEX # optional field for sync status
+last_sync_at number NULL # optional field for last sync timestamp
 
 Post
 -
@@ -372,4 +378,4 @@ roles string
 status string
 timezone string
 update_at number
-username string 
+username string

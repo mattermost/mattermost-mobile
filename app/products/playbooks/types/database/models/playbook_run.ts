@@ -4,6 +4,7 @@
 import type PlaybookChecklistModel from './playbook_checklist';
 import type {Query, Relation, Model} from '@nozbe/watermelondb';
 import type {Associations} from '@nozbe/watermelondb/Model';
+import type {SyncStatus} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
 import type TeamModel from '@typings/database/models/servers/team';
@@ -78,6 +79,12 @@ declare class PlaybookRunModel extends Model {
 
     // Timestamp when the retrospective was published
     retrospectivePublishedAt: number;
+
+    // The sync status of the playbook run
+    sync: SyncStatus;
+
+    // Timestamp of the last sync operation
+    lastSyncAt: number;
 
     /** post : the post that created the run (nullable) */
     post: Relation<PostModel>;

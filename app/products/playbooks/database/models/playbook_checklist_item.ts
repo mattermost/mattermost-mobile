@@ -11,6 +11,7 @@ import {safeParseJSON} from '@utils/helpers';
 import type {Relation} from '@nozbe/watermelondb';
 import type PlaybookChecklistItemModelInterface from '@playbooks//types/database/models/playbook_checklist_item';
 import type PlaybookChecklistModel from '@playbooks/types/database/models/playbook_checklist';
+import type {SyncStatus} from '@typings/database/database';
 
 const {USER} = MM_TABLES.SERVER;
 const {PLAYBOOK_CHECKLIST_ITEM, PLAYBOOK_CHECKLIST} = PLAYBOOK_TABLES;
@@ -70,6 +71,12 @@ export default class PlaybookChecklistItemModel extends Model implements Playboo
 
     /** task_actions : The JSON string representing the task actions */
     @json('task_actions', safeParseJSON) taskActions!: TaskAction[] | null;
+
+    /** sync : The sync status of the checklist item */
+    @field('sync') sync!: SyncStatus;
+
+    /** last_sync_at : The timestamp when the checklist item was last synced */
+    @field('last_sync_at') lastSyncAt!: number;
 
     /** checklist : The checklist to which this checklist item belongs */
     @immutableRelation(PLAYBOOK_CHECKLIST, 'checklist_id') checklist!: Relation<PlaybookChecklistModel>;

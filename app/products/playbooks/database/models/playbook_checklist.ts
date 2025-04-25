@@ -10,6 +10,7 @@ import type {Query, Relation} from '@nozbe/watermelondb';
 import type PlaybookChecklistModelInterface from '@playbooks/types/database/models/playbook_checklist';
 import type PlaybookChecklistItemModel from '@playbooks/types/database/models/playbook_checklist_item';
 import type PlaybookRunModel from '@playbooks/types/database/models/playbook_run';
+import type {SyncStatus} from '@typings/database/database';
 
 const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM} = PLAYBOOK_TABLES;
 
@@ -37,6 +38,12 @@ export default class PlaybookChecklistModel extends Model implements PlaybookChe
 
     /** order : Order of the checklist */
     @field('order') order!: number;
+
+    /** sync : The sync status of the checklist */
+    @field('sync') sync!: SyncStatus;
+
+    /** last_sync_at : The timestamp when the checklist was last synced */
+    @field('last_sync_at') lastSyncAt!: number;
 
     /** items : All the items associated with this checklist */
     @children(PLAYBOOK_CHECKLIST_ITEM) items!: Query<PlaybookChecklistItemModel>;

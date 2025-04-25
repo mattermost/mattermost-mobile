@@ -11,6 +11,7 @@ import {safeParseJSON} from '@utils/helpers';
 import type {Query, Relation} from '@nozbe/watermelondb';
 import type PlaybookRunModelInterface from '@playbooks//types/database/models/playbook_run';
 import type PlaybookChecklistModel from '@playbooks/types/database/models/playbook_checklist';
+import type {SyncStatus} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
 import type TeamModel from '@typings/database/models/servers/team';
@@ -109,6 +110,12 @@ export default class PlaybookRunModel extends Model implements PlaybookRunModelI
 
     /** retrospective_published_at : Timestamp when the retrospective was published */
     @field('retrospective_published_at') retrospectivePublishedAt!: number;
+
+    /** sync : The sync status of the playbook run */
+    @field('sync') sync!: SyncStatus;
+
+    /** last_sync_at : The timestamp when the playbook run was last synced */
+    @field('last_sync_at') lastSyncAt!: number;
 
     /** post : The POST to which this PLAYBOOK_RUN belongs (can be null) */
     @immutableRelation(POST, 'post_id') post!: Relation<PostModel>;

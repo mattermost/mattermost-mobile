@@ -4,6 +4,7 @@
 import type PlaybookChecklistModel from './playbook_checklist';
 import type {Relation, Model} from '@nozbe/watermelondb';
 import type {Associations} from '@nozbe/watermelondb/Model';
+import type {SyncStatus} from '@typings/database/database';
 
 /**
  * The PlaybookChecklistItem model represents a playbook run in the Mattermost app.
@@ -50,6 +51,12 @@ declare class PlaybookChecklistItemModel extends Model {
 
     // Timestamp when the checklist item was completed (0 if not completed)
     completedAt: number;
+
+    // The sync status of the checklist item
+    sync: SyncStatus;
+
+    // The timestamp when the checklist item was last synced
+    lastSyncAt: number;
 
     // JSON string representing the task actions
     taskActions: TaskAction[] | null;
