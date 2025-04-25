@@ -12,7 +12,9 @@ export const shouldUpdatePlaybookRunRecord = (existingRecord: PlaybookRunModel, 
         existingRecord.isActive !== raw.is_active ||
         existingRecord.currentStatus !== raw.current_status ||
         existingRecord.retrospectiveEnabled !== raw.retrospective_enabled ||
-        existingRecord.retrospectivePublishedAt !== raw.retrospective_published_at);
+        existingRecord.retrospectivePublishedAt !== raw.retrospective_published_at ||
+        existingRecord.participantIds.length !== raw.participant_ids.length ||
+        !existingRecord.participantIds.every((id, index) => id === raw.participant_ids[index]));
 };
 
 export const shouldHandlePlaybookChecklistRecord = (existingRecord: PlaybookChecklistModel, raw: PlaybookChecklistWithRun): boolean => {

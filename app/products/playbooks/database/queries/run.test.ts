@@ -4,8 +4,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {filter} from 'rxjs/operators';
+
 import DatabaseManager from '@database/manager';
 import {createPlaybookItem, createPlaybookRuns} from '@playbooks/database/operators/handlers/index.test';
+import TestHelper from '@test/test_helper';
 
 import {
     queryPlaybookRunsPerChannel,
@@ -13,6 +16,7 @@ import {
     observePlaybookRunById,
     observePlaybookRunsPerChannel,
     observePlaybookRunProgress,
+    observePlaybookRunParticipants,
 } from './run';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -322,6 +326,113 @@ describe('Playbook Run Queries', () => {
                 expect(progress).toBe(0);
                 done();
             });
+        });
+    });
+
+    describe('observePlaybookRunParticipants', () => {
+        it('should return an empty array if the playbook run is not found', (done) => {
+            const runId = 'nonexistent_run';
+
+            const observable = observePlaybookRunParticipants(operator.database, runId);
+
+            observable.subscribe((participants) => {
+                console.log('SUBSCRIBED', participants);
+                expect(participants).toEqual([]);
+                done();
+            });
+        });
+
+        it('should return an empty array if the playbook run has no participants', (done) => {
+            const mockRuns = createPlaybookRuns(1, 0, 0);
+            mockRuns[0].participant_ids = [];
+            operator.handlePlaybookRun({
+                runs: mockRuns,
+                prepareRecordsOnly: false,
+                removeAssociatedRecords: false,
+            });
+
+            const observable = observePlaybookRunParticipants(operator.database, mockRuns[0].id);
+
+            observable.subscribe((participants) => {
+                expect(participants).toEqual([]);
+                done();
+            });
+        });
+
+        it('should return the participants of the playbook run', (done) => {
+            const mockRuns = createPlaybookRuns(1, 0, 0);
+            const mockUsers = [
+                TestHelper.fakeUser({id: 'user1', username: 'User One'}),
+                TestHelper.fakeUser({id: 'user2', username: 'User Two'}),
+            ];
+            mockRuns[0].participant_ids = mockUsers.map((user) => user.id);
+
+            operator.handleUsers({
+                users: mockUsers,
+                prepareRecordsOnly: false,
+            });
+
+            operator.handlePlaybookRun({
+                runs: mockRuns,
+                prepareRecordsOnly: false,
+                removeAssociatedRecords: false,
+            });
+
+            const observable = observePlaybookRunParticipants(operator.database, mockRuns[0].id);
+
+            observable.
+                pipe(filter((participants) => participants.length > 0)).
+                subscribe((participants) => {
+                    expect(participants.length).toBe(2);
+                    expect(participants.map((user) => user.id)).toEqual(mockUsers.map((user) => user.id));
+                    done();
+                });
+        });
+
+        it('should update participants when the playbook run is updated', (done) => {
+            const mockRuns = createPlaybookRuns(1, 0, 0);
+            const initialUsers = [
+                TestHelper.fakeUser({id: 'user1', username: 'User One'}),
+            ];
+            const updatedUsers = [
+                TestHelper.fakeUser({id: 'user2', username: 'User Two'}),
+                TestHelper.fakeUser({id: 'user3', username: 'User Three'}),
+            ];
+            mockRuns[0].participant_ids = initialUsers.map((user) => user.id);
+
+            operator.handleUsers({
+                users: [...initialUsers, ...updatedUsers],
+                prepareRecordsOnly: false,
+            });
+
+            operator.handlePlaybookRun({
+                runs: mockRuns,
+                prepareRecordsOnly: false,
+                removeAssociatedRecords: false,
+            });
+
+            const observable = observePlaybookRunParticipants(operator.database, mockRuns[0].id);
+
+            let callCount = 0;
+            observable.
+                pipe(filter((participants) => participants.length > 0)).
+                subscribe((participants) => {
+                    callCount++;
+                    if (callCount === 1) {
+                        expect(participants.map((user) => user.id)).toEqual(initialUsers.map((user) => user.id));
+
+                        // Update the playbook run with new participants
+                        mockRuns[0].participant_ids = updatedUsers.map((user) => user.id);
+                        operator.handlePlaybookRun({
+                            runs: mockRuns,
+                            prepareRecordsOnly: false,
+                            removeAssociatedRecords: false,
+                        });
+                    } else if (callCount === 2) {
+                        expect(participants.map((user) => user.id)).toEqual(updatedUsers.map((user) => user.id));
+                        done();
+                    }
+                });
         });
     });
 });
