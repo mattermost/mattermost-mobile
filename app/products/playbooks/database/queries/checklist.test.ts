@@ -92,14 +92,14 @@ describe('Checklist Queries', () => {
             operator.handlePlaybookChecklist({
                 checklists: [mockChecklist],
                 prepareRecordsOnly: false,
-            });
+            }).then(() => {
+                const observable = observePlaybookChecklistById(operator.database, mockChecklist.id);
 
-            const observable = observePlaybookChecklistById(operator.database, mockChecklist.id);
-
-            observable.subscribe((checklist) => {
-                expect(checklist).toBeDefined();
-                expect(checklist!.id).toBe(mockChecklist.id);
-                done();
+                observable.subscribe((checklist) => {
+                    expect(checklist).toBeDefined();
+                    expect(checklist!.id).toBe(mockChecklist.id);
+                    done();
+                });
             });
         });
 
@@ -129,15 +129,15 @@ describe('Checklist Queries', () => {
             operator.handlePlaybookChecklist({
                 checklists: mockChecklists,
                 prepareRecordsOnly: false,
-            });
+            }).then(() => {
+                const observable = observePlaybookChecklistsByRun(operator.database, runId);
 
-            const observable = observePlaybookChecklistsByRun(operator.database, runId);
-
-            observable.subscribe((checklists) => {
-                expect(checklists.length).toBe(2);
-                expect(checklists[0].id).toBe(mockChecklists[1].id); // Sorted by order ascending
-                expect(checklists[1].id).toBe(mockChecklists[0].id);
-                done();
+                observable.subscribe((checklists) => {
+                    expect(checklists.length).toBe(2);
+                    expect(checklists[0].id).toBe(mockChecklists[1].id); // Sorted by order ascending
+                    expect(checklists[1].id).toBe(mockChecklists[0].id);
+                    done();
+                });
             });
         });
     });
@@ -149,13 +149,13 @@ describe('Checklist Queries', () => {
             operator.handlePlaybookChecklistItem({
                 items: [],
                 prepareRecordsOnly: false,
-            });
+            }).then(() => {
+                const observable = observePlaybookChecklistProgress(operator.database, checklistId);
 
-            const observable = observePlaybookChecklistProgress(operator.database, checklistId);
-
-            observable.subscribe((progress) => {
-                expect(progress).toBe(0);
-                done();
+                observable.subscribe((progress) => {
+                    expect(progress).toBe(0);
+                    done();
+                });
             });
         });
 
@@ -192,14 +192,14 @@ describe('Checklist Queries', () => {
                 checklists: mockChecklists,
                 prepareRecordsOnly: false,
                 processChildren: true,
-            });
+            }).then(() => {
+                const observable = observePlaybookChecklistProgress(operator.database, mockChecklists[0].id);
 
-            const observable = observePlaybookChecklistProgress(operator.database, mockChecklists[0].id);
-
-            observable.subscribe((progress) => {
-                expect(progress).toBeGreaterThan(0);
-                expect(progress).toBeLessThan(100.00);
-                done();
+                observable.subscribe((progress) => {
+                    expect(progress).toBeGreaterThan(0);
+                    expect(progress).toBeLessThan(100.00);
+                    done();
+                });
             });
         });
     });

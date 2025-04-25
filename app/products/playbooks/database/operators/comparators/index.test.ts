@@ -17,6 +17,7 @@ describe('shouldUpdatePlaybookRunRecord', () => {
             currentStatus: 'InProgress',
             retrospectiveEnabled: true,
             retrospectivePublishedAt: 789,
+            participantIds: [] as string[],
         } as PlaybookRunModel;
         const raw = {
             last_status_update_at: 123,
@@ -26,6 +27,7 @@ describe('shouldUpdatePlaybookRunRecord', () => {
             current_status: 'InProgress',
             retrospective_enabled: true,
             retrospective_published_at: 789,
+            participant_ids: [] as string[],
         } as PlaybookRun;
 
         expect(shouldUpdatePlaybookRunRecord(existingRecord, raw)).toBe(false);
@@ -40,6 +42,7 @@ describe('shouldUpdatePlaybookRunRecord', () => {
             currentStatus: 'InProgress',
             retrospectiveEnabled: true,
             retrospectivePublishedAt: 789,
+            participantIds: [] as string[],
         } as PlaybookRunModel;
         const raw = {
             last_status_update_at: 124, // Different field
@@ -49,6 +52,7 @@ describe('shouldUpdatePlaybookRunRecord', () => {
             current_status: 'InProgress',
             retrospective_enabled: true,
             retrospective_published_at: 789,
+            participant_ids: [] as string[],
         } as PlaybookRun;
 
         expect(shouldUpdatePlaybookRunRecord(existingRecord, raw)).toBe(true);
