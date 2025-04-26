@@ -264,7 +264,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         roles: {name: 'roles', type: 'string'},
                         viewed_at: {name: 'viewed_at', type: 'number'},
                         last_fetched_at: {name: 'last_fetched_at', type: 'number', isIndexed: true},
-                        urgent_mentions_count: {name: 'urgent_mentions_count', type: 'number', isOptional: true},
+                        urgent_mention_count: {name: 'urgent_mention_count', type: 'number', isOptional: true},
                     },
                     columnArray: [
                         {name: 'is_unread', type: 'boolean'},
@@ -276,7 +276,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'roles', type: 'string'},
                         {name: 'viewed_at', type: 'number'},
                         {name: 'last_fetched_at', type: 'number', isIndexed: true},
-                        {name: 'urgent_mentions_count', type: 'number', isOptional: true},
+                        {name: 'urgent_mention_count', type: 'number', isOptional: true},
                     ],
                 },
                 [MY_CHANNEL_SETTINGS]: {

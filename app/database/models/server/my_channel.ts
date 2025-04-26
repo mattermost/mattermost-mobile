@@ -45,7 +45,7 @@ export default class MyChannelModel extends Model implements MyChannelModelInter
     @field('mentions_count') mentionsCount!: number;
 
     /** unread_mentions_count : The number of unread mentions on this channel with urgent priority set */
-    @field('urgent_mentions_count') urgentMentionsCount!: number;
+    @field('urgent_mention_count') urgentMentionCount!: number;
 
     /** is_unread : Whether the channel has unread messages */
     @field('is_unread') isUnread!: boolean;

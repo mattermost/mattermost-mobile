@@ -248,7 +248,7 @@ describe('channelMember', () => {
 
     it('toggleMuteChannel - base case', async () => {
         await operator.handleMyChannelSettings({
-            settings: [{id: channelId, user_id: user.id, channel_id: channelId, roles: '', last_viewed_at: 1, last_update_at: 1, msg_count: 10, mention_count: 0, notify_props: {}}],
+            settings: [{id: channelId, user_id: user.id, channel_id: channelId, roles: '', last_viewed_at: 1, last_update_at: 1, msg_count: 10, mention_count: 0, urgent_mention_count: 0, notify_props: {}}],
             prepareRecordsOnly: false,
         });
 

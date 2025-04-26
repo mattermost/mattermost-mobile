@@ -31,7 +31,7 @@ declare class MyChannelModel extends Model {
     messageCount: number;
 
     /** unread_mentions_count : The number of unread mentions on this channel with urgent priority set */
-    urgentMentionsCount: number;
+    urgentMentionCount: number;
 
     /** is_unread : Whether the channel has unread posts */
     isUnread: boolean;

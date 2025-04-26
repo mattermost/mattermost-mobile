@@ -17,7 +17,7 @@ export default schemaMigrations({migrations: [
             addColumns({
                 table: MY_CHANNEL,
                 columns: [
-                    {name: 'urgent_mentions_count', type: 'number', isOptional: true},
+                    {name: 'urgent_mention_count', type: 'number', isOptional: true},
                 ],
             }),
         ],

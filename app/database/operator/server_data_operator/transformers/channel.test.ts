@@ -62,6 +62,7 @@ describe('*** CHANNEL Prepare Records Test ***', () => {
             last_viewed_at: 0,
             msg_count: 0,
             mention_count: 0,
+            urgent_mention_count: 0,
             last_update_at: 0,
             notify_props: {
                 desktop: 'default',
@@ -131,6 +132,7 @@ describe('*** CHANNEL Prepare Records Test ***', () => {
                     last_update_at: 0,
                     mention_count: 3,
                     msg_count: 10,
+                    urgent_mention_count: 0,
                     roles: 'guest',
                     notify_props: {},
                 },
@@ -159,6 +161,7 @@ describe('*** CHANNEL Prepare Records Test ***', () => {
                     last_viewed_at: 1613667352029,
                     msg_count: 3864,
                     mention_count: 0,
+                    urgent_mention_count: 0,
                     notify_props: {
                         desktop: 'default',
                         email: 'default',

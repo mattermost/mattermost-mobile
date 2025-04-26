@@ -114,6 +114,7 @@ describe('Categories utils', () => {
                 mention_count: 0,
                 msg_count: 20,
                 roles: 'user',
+                urgent_mention_count: 0,
                 notify_props: {
                     desktop: 'default',
                     email: 'default',
@@ -132,6 +133,7 @@ describe('Categories utils', () => {
                 mention_count: 3,
                 msg_count: 23,
                 roles: 'user',
+                urgent_mention_count: 0,
                 notify_props: {
                     desktop: 'default',
                     email: 'default',
@@ -147,6 +149,7 @@ describe('Categories utils', () => {
                 last_viewed_at: dt1,
                 last_update_at: dt1,
                 mention_count: 1,
+                urgent_mention_count: 0,
                 msg_count: 21,
                 roles: 'user',
                 notify_props: {
@@ -165,6 +168,7 @@ describe('Categories utils', () => {
                 last_update_at: dt3,
                 mention_count: 0,
                 msg_count: 0,
+                urgent_mention_count: 0,
                 roles: 'user',
                 notify_props: {
                     desktop: 'default',
@@ -239,6 +243,7 @@ describe('Categories utils', () => {
                 last_update_at: 1617311494451,
                 mention_count: 3,
                 msg_count: 10,
+                urgent_mention_count: 0,
                 roles: 'guest',
                 notify_props: {
                     desktop: 'default',
@@ -321,6 +326,7 @@ describe('Categories utils', () => {
                 last_update_at: 1617311494451,
                 mention_count: 3,
                 msg_count: 10,
+                urgent_mention_count: 0,
                 roles: 'user',
                 notify_props: {
                     desktop: 'default',
@@ -339,6 +345,7 @@ describe('Categories utils', () => {
                 last_update_at: 1617311494451,
                 mention_count: 3,
                 msg_count: 10,
+                urgent_mention_count: 0,
                 roles: 'user',
                 notify_props: {
                     desktop: 'default',
@@ -442,6 +449,7 @@ describe('Categories utils', () => {
                 mention_count: 0,
                 msg_count: 20,
                 roles: 'user',
+                urgent_mention_count: 0,
                 notify_props: {
                     desktop: 'default',
                     email: 'default',
@@ -459,6 +467,7 @@ describe('Categories utils', () => {
                 last_update_at: dt_chan2,
                 mention_count: 3,
                 msg_count: 10,
+                urgent_mention_count: 0,
                 roles: 'user',
                 notify_props: {
                     desktop: 'default',
