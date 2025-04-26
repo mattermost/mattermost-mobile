@@ -152,7 +152,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
                 myChannel.messageCount + 1,
                 myChannel.mentionsCount + (hasMentions ? 1 : 0),
                 myChannel.lastViewedAt,
-                myChannel.urgentMentionsCount,
+                myChannel.urgentMentionCount,
                 true,
             );
             if (unreadAt) {

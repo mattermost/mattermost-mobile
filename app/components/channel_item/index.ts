@@ -96,7 +96,7 @@ const enhance = withObservables(['channel', 'showTeamName', 'shouldHighlightActi
         ) : of$(0);
 
     const urgentMentionsCount = myChannel.pipe(
-        switchMap((mc) => of$(mc?.urgentMentionsCount)),
+        switchMap((mc) => of$(mc?.urgentMentionCount)),
     );
 
     const hasCall = observeChannelsWithCalls(serverUrl || '').pipe(

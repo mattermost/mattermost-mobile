@@ -667,7 +667,7 @@ describe('markChannelAsUnread', () => {
         expect(member?.lastViewedAt).toBe(122);
         expect(member?.messageCount).toBe(10);
         expect(member?.mentionsCount).toBe(1);
-        expect(member?.urgentMentionsCount).toBe(1);
+        expect(member?.urgentMentionCount).toBe(1);
     });
 });
 
