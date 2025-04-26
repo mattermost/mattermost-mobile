@@ -83,7 +83,7 @@ type ChannelMembership = {
     post_root_id?: string;
     is_unread?: boolean;
     manually_unread?: boolean;
-    urgent_mention_count?: number;
+    urgent_mention_count: number;
 };
 type ChannelUnread = {
     channel_id: string;
