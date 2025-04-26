@@ -900,7 +900,7 @@ export const markPostAsUnread = async (serverUrl: string, postId: string) => {
                 let totalMessages = channel.total_msg_count;
                 let messages = channelMember.msg_count;
                 let mentionCount = channelMember.mention_count;
-                const urgentMentionsCount = channelMember.urgent_mention_count || 0;
+                const urgentMentionCount = channelMember.urgent_mention_count || 0;
 
                 if (isCRTEnabled) {
                     totalMessages = channel.total_msg_count_root!;
@@ -909,7 +909,7 @@ export const markPostAsUnread = async (serverUrl: string, postId: string) => {
                 }
 
                 const messageCount = totalMessages - messages;
-                await markChannelAsUnread(serverUrl, channelId, messageCount, mentionCount, post.createAt, urgentMentionsCount);
+                await markChannelAsUnread(serverUrl, channelId, messageCount, mentionCount, post.createAt, urgentMentionCount);
                 return {post};
             }
         }
