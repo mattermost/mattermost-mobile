@@ -1069,7 +1069,7 @@
   "screen.channel_files.results.filter.title": "Filteren op bestandstype",
   "screen.mentions.subtitle": "Berichten waarin je wordt genoemd in",
   "screen.mentions.title": "Recente vermeldingen",
-  "screen.report_problem.button": "Een probleem melden",
+  "screen.report_problem.button": "Meld een probleem",
   "screen.report_problem.details.description": "Als je een probleem meldt, deel dan de metagegevens en app-logs die hieronder staan om je probleem sneller op te lossen",
   "screen.report_problem.details.description_without_logs": "Als je een probleem meldt, deel dan de onderstaande metagegevens om het probleem sneller op te lossen",
   "screen.report_problem.details.title": "Details troubleshooting",
