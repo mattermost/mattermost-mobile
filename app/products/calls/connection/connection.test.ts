@@ -44,6 +44,9 @@ describe('newConnection', () => {
             AllowEnableCalls: true,
             EnableAV1: true,
         })),
+        getVersion: jest.fn(() => ({
+            version: '1.7.0',
+        })),
         genTURNCredentials: jest.fn(() => Promise.resolve([{
             urls: ['turn:turn.example.com'],
             username: 'user',
