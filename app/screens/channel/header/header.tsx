@@ -51,6 +51,7 @@ type ChannelProps = {
     groupCallsAllowed: boolean;
     isTabletView?: boolean;
     shouldRenderBookmarks: boolean;
+    alias?: string;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -82,6 +83,7 @@ const ChannelHeader = ({
     canAddBookmarks, channelId, channelType, componentId, customStatus, displayName, hasBookmarks,
     isBookmarksEnabled, isCustomStatusEnabled, isCustomStatusExpired, isOwnDirectMessage, memberCount,
     searchTerm, teamId, callsEnabledInChannel, groupCallsAllowed, isTabletView, shouldRenderBookmarks,
+    alias,
 }: ChannelProps) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
@@ -199,6 +201,10 @@ const ChannelHeader = ({
     let title = displayName;
     if (isOwnDirectMessage) {
         title = intl.formatMessage({id: 'channel_header.directchannel.you', defaultMessage: '{displayName} (you)'}, {displayName});
+    }
+
+    if (alias) {
+        title = `${title} (${alias})`;
     }
 
     let subtitle;
