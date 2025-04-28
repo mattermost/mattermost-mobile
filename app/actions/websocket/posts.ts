@@ -145,6 +145,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
             }
         } else if (!isCRTEnabled || !post.root_id) {
             const hasMentions = msg.data.mentions?.includes(currentUserId);
+            const hasUrgentMentions = post.metadata.priority?.priority === 'urgent';
             preparedMyChannelHack(myChannel);
             const {member: unreadAt} = await markChannelAsUnread(
                 serverUrl,
@@ -152,7 +153,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
                 myChannel.messageCount + 1,
                 myChannel.mentionsCount + (hasMentions ? 1 : 0),
                 myChannel.lastViewedAt,
-                myChannel.urgentMentionCount,
+                myChannel.urgentMentionCount + (hasUrgentMentions ? 1 : 0),
                 true,
             );
             if (unreadAt) {

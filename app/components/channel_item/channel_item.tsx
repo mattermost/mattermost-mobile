@@ -37,7 +37,7 @@ type Props = {
     isOnCenterBg?: boolean;
     showChannelName?: boolean;
     isOnHome?: boolean;
-    urgentMentionsCount?: number;
+    urgentMentionCount?: number;
 }
 
 export const ROW_HEIGHT = 40;
@@ -125,7 +125,7 @@ const ChannelItem = ({
     isOnCenterBg = false,
     showChannelName = false,
     isOnHome = false,
-    urgentMentionsCount = 0,
+    urgentMentionCount = 0,
 }: Props) => {
     const {formatMessage} = useIntl();
     const theme = useTheme();
@@ -133,7 +133,7 @@ const ChannelItem = ({
     const styles = getStyleSheet(theme);
 
     const channelName = (showChannelName && !isDMorGM(channel)) ? channel.name : '';
-    const hasUrgent = urgentMentionsCount > 0;
+    const hasUrgent = urgentMentionCount > 0;
 
     // Make it bolded if it has unreads or mentions
     const isBolded = isUnread || mentionsCount > 0;
