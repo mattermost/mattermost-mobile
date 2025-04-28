@@ -132,7 +132,7 @@ export const backgroundNotification = async (serverUrl: string, notification: No
                             if (attachment.fields?.length) {
                                 // eslint-disable-next-line max-nested-callbacks
                                 attachment.fields.forEach((field) => {
-                                    if (field.short) {
+                                    if (field.short !== undefined) {
                                         field.short = Boolean(field.short);
                                     }
                                 });
@@ -140,7 +140,7 @@ export const backgroundNotification = async (serverUrl: string, notification: No
                             if (attachment.actions?.length) {
                                 // eslint-disable-next-line max-nested-callbacks
                                 attachment.actions.forEach((action) => {
-                                    if (action.disabled) {
+                                    if (action.disabled !== undefined) {
                                         action.disabled = Boolean(action.disabled);
                                     }
                                 });
