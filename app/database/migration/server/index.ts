@@ -12,6 +12,18 @@ const {CHANNEL_BOOKMARK, CHANNEL_INFO, DRAFT, POST} = MM_TABLES.SERVER;
 
 export default schemaMigrations({migrations: [
     {
+        toVersion: 7,
+        steps: [
+            createTable({
+                name: 'Aliases',
+                columns: [
+                    {name: 'from', type: 'string'},
+                    {name: 'to', type: 'string'},
+                ],
+            }),
+        ],
+    },
+    {
         toVersion: 6,
         steps: [
             unsafeExecuteSql('CREATE INDEX IF NOT EXISTS Post_type ON Post (type);'),

@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {General} from '@constants';
 import Calls from '@constants/calls';
 
 const WebsocketEvents = {
@@ -104,5 +105,7 @@ const WebsocketEvents = {
     CHANNEL_BOOKMARK_UPDATED: 'channel_bookmark_updated',
     CHANNEL_BOOKMARK_SORTED: 'channel_bookmark_sorted',
     CHANNEL_BOOKMARK_DELETED: 'channel_bookmark_deleted',
+
+    ALIAS_UPDATE: `custom_${General.ALIASES_PLUGIN_ID}_alias_update`,
 };
 export default WebsocketEvents;

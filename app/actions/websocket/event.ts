@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import * as bookmark from '@actions/local/channel_bookmark';
+import {fetchAliases} from '@actions/remote/aliases';
 import * as calls from '@calls/connection/websocket_event_handlers';
 import {WebsocketEvents} from '@constants';
 
@@ -293,6 +294,9 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
             break;
         case WebsocketEvents.CHANNEL_BOOKMARK_SORTED:
             bookmark.handleBookmarkSorted(serverUrl, msg);
+            break;
+        case WebsocketEvents.ALIAS_UPDATE:
+            fetchAliases(serverUrl);
             break;
     }
 }
