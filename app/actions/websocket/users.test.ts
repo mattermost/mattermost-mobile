@@ -23,7 +23,6 @@ import {
     userTyping,
     handleCustomProfileAttributesValuesUpdatedEvent,
     handleCustomProfileAttributesFieldUpdatedEvent,
-    handleCustomProfileAttributesFieldCreatedEvent,
     handleCustomProfileAttributesFieldDeletedEvent,
 } from './users';
 
@@ -442,81 +441,6 @@ describe('WebSocket Users Actions', () => {
             } as WebSocketMessage;
 
             await handleCustomProfileAttributesFieldUpdatedEvent(
-                serverUrl,
-                msg,
-            );
-
-            expect(console.error).toHaveBeenCalled();
-        });
-    });
-
-    describe('handleCustomProfileAttributesFieldCreatedEvent', () => {
-        it('should handle missing operator', async () => {
-            jest.spyOn(console, 'error').mockImplementation(() => {});
-            DatabaseManager.serverDatabases = {};
-            const msg = {
-                data: {
-                    field: {id: 'field1'},
-                },
-            } as WebSocketMessage;
-
-            await handleCustomProfileAttributesFieldCreatedEvent(
-                serverUrl,
-                msg,
-            );
-
-            expect(console.error).toHaveBeenCalled();
-        });
-
-        it('should handle custom profile field creation', async () => {
-            const mockHandleCustomProfileFields = jest.
-                fn().
-                mockResolvedValue([]);
-            operator.handleCustomProfileFields = mockHandleCustomProfileFields;
-
-            const mockField = {
-                id: 'field1',
-                group_id: 'group1',
-                name: 'Field 1',
-                type: 'text',
-                target_id: 'target1',
-                target_type: 'user',
-                create_at: 1000,
-                update_at: 2000,
-                delete_at: 0,
-                attrs: {required: true},
-            };
-
-            const msg = {
-                data: {
-                    field: mockField,
-                },
-            } as WebSocketMessage;
-
-            await handleCustomProfileAttributesFieldCreatedEvent(
-                serverUrl,
-                msg,
-            );
-
-            expect(mockHandleCustomProfileFields).toHaveBeenCalledWith({
-                fields: [mockField],
-                prepareRecordsOnly: false,
-            });
-        });
-
-        it('should handle errors during field creation', async () => {
-            jest.spyOn(console, 'error').mockImplementation(() => {});
-            operator.handleCustomProfileFields = jest.
-                fn().
-                mockRejectedValue(new Error('test error'));
-
-            const msg = {
-                data: {
-                    field: {id: 'field1'},
-                },
-            } as WebSocketMessage;
-
-            await handleCustomProfileAttributesFieldCreatedEvent(
                 serverUrl,
                 msg,
             );

@@ -3,38 +3,14 @@
 
 import {forceLogoutIfNecessary} from '@actions/remote/session';
 import DatabaseManager from '@database/manager';
+import {ATTRIBUTE_HANDLER_DESCRIPTION, FIELD_HANDLER_DESCRIPTION} from '@database/operator/server_data_operator/handlers/custom_profile';
 import NetworkManager from '@managers/network_manager';
+import {customProfileAttributeId} from '@utils/custom_profile_attribute';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 
+import type Model from '@nozbe/watermelondb/Model';
 import type {CustomProfileField, CustomAttribute, CustomAttributeSet, CustomProfileAttribute, UserCustomProfileAttributeSimple} from '@typings/api/custom_profile_attributes';
-
-/**
- * Fetches custom profile fields from the server
- * @param serverUrl - The server URL
- * @returns Promise with the custom profile fields or error
- */
-export const fetchCustomProfileFields = async (serverUrl: string): Promise<{fields?: CustomProfileField[]; error?: unknown}> => {
-    try {
-        const client = NetworkManager.getClient(serverUrl);
-        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const fields = await client.getCustomProfileAttributeFields();
-
-        if (fields?.length > 0) {
-            // Store fields in the database
-            await operator.handleCustomProfileFields({
-                fields,
-                prepareRecordsOnly: false,
-            });
-            return {fields, error: undefined};
-        }
-        return {fields: [], error: undefined};
-    } catch (error) {
-        logDebug('error on fetchCustomProfileFields', getFullErrorMessage(error));
-        forceLogoutIfNecessary(serverUrl, error);
-        return {fields: [], error};
-    }
-};
 
 /**
  * Fetches custom profile attribute values for a user
@@ -44,6 +20,7 @@ export const fetchCustomProfileFields = async (serverUrl: string): Promise<{fiel
  * @returns Promise with the custom profile attributes or error
  */
 export const fetchCustomProfileAttributes = async (serverUrl: string, userId: string, filterEmpty = false): Promise<{attributes: CustomAttributeSet; error: unknown}> => {
+    const attributes: Record<string, CustomAttribute> = {};
     try {
         const client = NetworkManager.getClient(serverUrl);
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -52,51 +29,49 @@ export const fetchCustomProfileAttributes = async (serverUrl: string, userId: st
             client.getCustomProfileAttributeValues(userId),
         ]);
 
+        const fieldBatch: Model[] = [];
+        const attributeBatch: Model[] = [];
         if (fields?.length > 0) {
-            const attributes: Record<string, CustomAttribute> = {};
-            const attributesForDatabase: CustomProfileAttribute[] = [];
 
-            fields.forEach((field: CustomProfileField) => {
-                const value = (attrValues as Record<string, string>)[field.id] || '';
-                if (!filterEmpty || value) {
-                    attributes[field.id] = {
-                        id: field.id,
-                        name: field.name,
-                        value,
-                        sort_order: field.attrs?.sort_order,
-                    };
-
-                    // Prepare attributes for database storage
-                    attributesForDatabase.push({
-                        id: `${field.id}-${userId}`,
-                        field_id: field.id,
-                        user_id: userId,
-                        value,
-                    });
-                }
-            });
-
-            // Store attributes in the database
-            if (attributesForDatabase.length > 0) {
-                await operator.handleCustomProfileAttributes({
-                    attributes: attributesForDatabase,
-                    prepareRecordsOnly: false,
-                });
-            }
             if (fields?.length > 0) {
-                await operator.handleCustomProfileFields({
-                    fields,
-                    prepareRecordsOnly: false,
-                });
-            }
 
-            return {attributes, error: undefined};
+                Promise.all(fields.map(async (field: CustomProfileField) => {
+                    const value = (attrValues as Record<string, string>)[field.id] || '';
+                    if (!filterEmpty || value) {
+                        attributes[field.id] = {
+                            id: field.id,
+                            name: field.name,
+                            value,
+                            sort_order: field.attrs?.sort_order,
+                        };
+                        const attributeModel = await operator.handleCustomProfileAttributes({
+                            attributes: [{
+                                id: customProfileAttributeId(field.id, userId),
+                                field_id: field.id,
+                                user_id: userId,
+                                value,
+                            }],
+                            prepareRecordsOnly: true,
+                        });
+                        attributeBatch.push(...attributeModel);
+                        const fieldModels = await operator.handleCustomProfileFields({
+                            fields,
+                            prepareRecordsOnly: true,
+                        });
+                        fieldBatch.push(...fieldModels);
+                    }
+                }));
+                if (fieldBatch.length > 0) {
+                    await operator.batchRecords(fieldBatch, FIELD_HANDLER_DESCRIPTION);
+                    await operator.batchRecords(attributeBatch, ATTRIBUTE_HANDLER_DESCRIPTION);
+                }
+            }
         }
-        return {attributes: {} as Record<string, CustomAttribute>, error: undefined};
+        return {attributes, error: undefined};
     } catch (error) {
         logDebug('error on fetchCustomProfileAttributes', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
-        return {attributes: {} as Record<string, CustomAttribute>, error};
+        return {attributes, error};
     }
 };
 
