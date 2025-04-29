@@ -4,7 +4,7 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import {Platform, StyleSheet, useWindowDimensions, View} from 'react-native';
 import {Navigation} from 'react-native-navigation';
-import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import Animated, {useAnimatedStyle, useReducedMotion, useSharedValue, withTiming} from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {ssoLogin} from '@actions/remote/session';
@@ -48,7 +48,8 @@ const SSO = ({
     serverUrl, ssoType, theme,
 }: SSOProps) => {
     const dimensions = useWindowDimensions();
-    const translateX = useSharedValue(dimensions.width);
+    const reducedMotion = useReducedMotion();
+    const translateX = useSharedValue(reducedMotion ? 0 : dimensions.width);
 
     const [loginError, setLoginError] = useState<string>('');
     let loginUrl = '';
@@ -125,13 +126,13 @@ const SSO = ({
                 translateX.value = 0;
             },
             componentDidDisappear: () => {
-                translateX.value = -dimensions.width;
+                translateX.value = reducedMotion ? 0 : -dimensions.width;
             },
         };
         const unsubscribe = Navigation.events().registerComponentListener(listener, Screens.SSO);
 
         return () => unsubscribe.remove();
-    }, [dimensions]);
+    }, [dimensions, reducedMotion, translateX]);
 
     useEffect(() => {
         translateX.value = 0;

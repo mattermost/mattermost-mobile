@@ -14,7 +14,7 @@ import {
     BackHandler,
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
-import Animated, {ReduceMotion, useAnimatedStyle, useDerivedValue, useSharedValue, withTiming} from 'react-native-reanimated';
+import Animated, {useAnimatedStyle, useDerivedValue, useReducedMotion, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {storeOnboardingViewedValue} from '@actions/app/global';
 import {Screens} from '@constants';
@@ -60,11 +60,12 @@ const Onboarding = ({
     const {slidesData} = useSlidesData();
     const LAST_SLIDE_INDEX = slidesData.length - 1;
     const slidesRef = useRef<ScrollView>(null);
+    const reducedMotion = useReducedMotion();
 
     const scrollX = useSharedValue(0);
 
     // used to smothly animate the whole onboarding screen during the appear event scenario (from server screen back to onboarding screen)
-    const translateX = useSharedValue(width);
+    const translateX = useSharedValue(reducedMotion ? 0 : width);
 
     const currentIndex = useDerivedValue(() => Math.round(scrollX.value / width));
 
@@ -101,18 +102,18 @@ const Onboarding = ({
                 translateX.value = 0;
             },
             componentDidDisappear: () => {
-                translateX.value = -width;
+                translateX.value = reducedMotion ? 0 : -width;
             },
         };
         const unsubscribe = Navigation.events().registerComponentListener(listener, Screens.ONBOARDING);
 
         return () => unsubscribe.remove();
-    }, [width]);
+    }, [width, reducedMotion, translateX]);
 
     const transform = useAnimatedStyle(() => {
         const duration = Platform.OS === 'android' ? 250 : 350;
         return {
-            transform: [{translateX: withTiming(translateX.value, {duration, reduceMotion: ReduceMotion.Never})}],
+            transform: [{translateX: withTiming(translateX.value, {duration})}],
         };
     }, []);
 

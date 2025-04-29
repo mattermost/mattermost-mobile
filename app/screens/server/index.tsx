@@ -7,7 +7,7 @@ import {useIntl} from 'react-intl';
 import {Alert, BackHandler, Platform, useWindowDimensions, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {Navigation} from 'react-native-navigation';
-import Animated, {ReduceMotion, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import Animated, {useAnimatedStyle, useReducedMotion, useSharedValue, withTiming} from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {doPing} from '@actions/remote/general';
@@ -82,7 +82,8 @@ const Server = ({
     const intl = useIntl();
     const managedConfig = useManagedConfig<ManagedConfig>();
     const dimensions = useWindowDimensions();
-    const translateX = useSharedValue(animated ? dimensions.width : 0);
+    const reducedMotion = useReducedMotion();
+    const translateX = useSharedValue(animated && !reducedMotion ? dimensions.width : 0);
     const keyboardAwareRef = useRef<KeyboardAwareScrollView>(null);
     const [connecting, setConnecting] = useState(false);
     const [displayName, setDisplayName] = useState<string>('');
@@ -156,7 +157,7 @@ const Server = ({
                 }
             },
             componentDidDisappear: () => {
-                translateX.value = -dimensions.width;
+                translateX.value = reducedMotion ? 0 : -dimensions.width;
             },
         };
         const unsubscribe = Navigation.events().registerComponentListener(listener, componentId);
@@ -376,7 +377,7 @@ const Server = ({
     const transform = useAnimatedStyle(() => {
         const duration = Platform.OS === 'android' ? 250 : 350;
         return {
-            transform: [{translateX: withTiming(translateX.value, {duration, reduceMotion: ReduceMotion.Never})}],
+            transform: [{translateX: withTiming(translateX.value, {duration})}],
         };
     }, []);
 
