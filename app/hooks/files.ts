@@ -84,7 +84,7 @@ export const useImageAttachments = (filesInfo: FileInfo[], publicLinkEnabled: bo
             }
             return {images, nonImages};
         }, {images: [], nonImages: []});
-    }, [filesInfo, serverUrl]);
+    }, [filesInfo, serverUrl, publicLinkEnabled]);
 };
 
 export const useChannelBookmarkFiles = (bookmarks: ChannelBookmarkModel[], publicLinkEnabled: boolean) => {
