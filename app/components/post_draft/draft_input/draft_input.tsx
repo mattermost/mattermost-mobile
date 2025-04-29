@@ -260,6 +260,7 @@ function DraftInput({
                             disabled={sendActionDisabled}
                             sendMessage={handleSendMessage}
                             showScheduledPostOptions={handleShowScheduledPostOptions}
+                            scheduledPostEnabled={scheduledPostsEnabled}
                         />
                     </View>
                 </ScrollView>

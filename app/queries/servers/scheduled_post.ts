@@ -2,9 +2,12 @@
 // See LICENSE.txt for license information.
 
 import {Database, Q} from '@nozbe/watermelondb';
-import {of as of$} from 'rxjs';
+import {combineLatest, of as of$} from 'rxjs';
+import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {MM_TABLES} from '@constants/database';
+
+import {getConfigValue, getLicense, observeConfigBooleanValue, observeLicense} from './system';
 
 import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 const {SERVER: {CHANNEL, SCHEDULED_POST}} = MM_TABLES;
@@ -67,4 +70,25 @@ export const observeScheduledPostCountForThread = (database: Database, rootId: s
     return database.collections.get<ScheduledPostModel>(SCHEDULED_POST).query(
         Q.where('root_id', rootId),
     ).observeCount();
+};
+
+export const observeScheduledPostEnabled = (database: Database) => {
+    const isScheduledPostConfigEnabled = observeConfigBooleanValue(database, 'ScheduledPosts');
+    const isLicensed = observeLicense(database);
+
+    const isScheduledPostEnabled = combineLatest([isScheduledPostConfigEnabled, isLicensed]).pipe(
+        switchMap(([isEnabled, license]) => {
+            if (license?.IsLicensed === 'true') {
+                return of$(isEnabled);
+            }
+            return of$(false);
+        }),
+        distinctUntilChanged(),
+    );
+
+    return isScheduledPostEnabled;
+};
+
+export const getIsScheduledPostEnabled = async (database: Database) => {
+    return (await getConfigValue(database, 'ScheduledPosts')) === 'true' && (await getLicense(database))?.IsLicensed === 'true';
 };
