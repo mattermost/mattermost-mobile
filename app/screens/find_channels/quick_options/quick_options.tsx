@@ -66,7 +66,7 @@ const QuickOptions = ({canCreateChannels, canJoinChannels, close}: Props) => {
     return (
         <Animated.View
             entering={FadeInDown.duration(200)}
-            exiting={Platform.OS === 'android' ? undefined : FadeOutUp.duration(100) /* https://mattermost.atlassian.net/browse/MM-63814?focusedCommentId=178584 */}
+            exiting={Platform.select({ios: FadeOutUp.duration(100)}) /* https://mattermost.atlassian.net/browse/MM-63814?focusedCommentId=178584 */}
             style={styles.container}
         >
             <Animated.View style={styles.wrapper}>

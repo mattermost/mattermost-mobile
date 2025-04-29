@@ -336,7 +336,7 @@ const FilteredList = ({
     return (
         <Animated.View
             entering={FadeInDown.duration(100)}
-            exiting={Platform.OS === 'android' ? undefined : FadeOutUp.duration(100) /* https://mattermost.atlassian.net/browse/MM-63814?focusedCommentId=178584 */}
+            exiting={Platform.select({ios: FadeOutUp.duration(100)}) /* https://mattermost.atlassian.net/browse/MM-63814?focusedCommentId=178584 */}
             style={style.flex}
         >
             <FlatList
