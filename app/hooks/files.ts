@@ -59,12 +59,12 @@ const getFileInfo = async (serverUrl: string, bookmarks: ChannelBookmarkModel[],
     }
 };
 
-export const useImageAttachments = (filesInfo: FileInfo[]) => {
+export const useImageAttachments = (filesInfo: FileInfo[], publicLinkEnabled: boolean) => {
     const serverUrl = useServerUrl();
     return useMemo(() => {
         return filesInfo.reduce(({images, nonImages}: {images: FileInfo[]; nonImages: FileInfo[]}, file) => {
             const imageFile = isImage(file);
-            const videoFile = isVideo(file);
+            const videoFile = isVideo(file) && publicLinkEnabled; // we don't render previews for videos if public link is disabled
             const audioFile = isAudio(file);
 
             if (imageFile || videoFile || audioFile) {

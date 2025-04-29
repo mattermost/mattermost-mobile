@@ -64,7 +64,7 @@ const Files = ({
     const [inViewPort, setInViewPort] = useState(false);
     const isTablet = useIsTablet();
 
-    const {images: imageAttachments, nonImages: nonImageAttachments} = useImageAttachments(filesInfo);
+    const {images: imageAttachments, nonImages: nonImageAttachments} = useImageAttachments(filesInfo, publicLinkEnabled);
     const [filesForGallery, setFilesForGallery] = useState(() => [...imageAttachments, ...nonImageAttachments]);
 
     const attachmentIndex = (fileId: string) => {
