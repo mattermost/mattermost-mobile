@@ -85,7 +85,7 @@ describe('useImageAttachments', () => {
         ]);
 
         expect(result.current.nonImages).toEqual([
-            TestHelper.fakeFileInfo({id: '2', localPath: 'path/to/video1', uri: 'path/to/video1'}),
+            TestHelper.fakeFileInfo({id: '2', localPath: 'path/to/video1', uri: `${serverUrl}/files/video1`}),
             TestHelper.fakeFileInfo({id: '3', localPath: 'path/to/file1', uri: `${serverUrl}/files/file1`}),
         ]);
     });
