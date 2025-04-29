@@ -5,7 +5,7 @@ import {useManagedConfig} from '@mattermost/react-native-emm';
 import Clipboard from '@react-native-clipboard/clipboard';
 import moment from 'moment';
 import React, {useCallback, useMemo} from 'react';
-import {useIntl,defineMessages} from 'react-intl';
+import {useIntl, defineMessages} from 'react-intl';
 import {Platform, StyleSheet, Text, View} from 'react-native';
 
 import CustomStatusExpiry from '@components/custom_status/custom_status_expiry';
