@@ -53,7 +53,7 @@ describe('useImageAttachments', () => {
         jest.mocked(buildFilePreviewUrl).mockImplementation((url, id) => `${url}/preview/${id}`);
         jest.mocked(buildFileUrl).mockImplementation((url, id) => `${url}/file/${id}`);
 
-        const {result} = renderHook(() => useImageAttachments(filesInfo, true));
+        const {result} = renderHook(() => useImageAttachments(filesInfo));
 
         expect(result.current.images).toEqual([
             TestHelper.fakeFileInfo({id: '1', localPath: 'path/to/image1', uri: 'path/to/image1'}),
@@ -78,7 +78,7 @@ describe('useImageAttachments', () => {
         jest.mocked(buildFilePreviewUrl).mockImplementation((url, id) => `${url}/preview/${id}`);
         jest.mocked(buildFileUrl).mockImplementation((url, id) => `${url}/file/${id}`);
 
-        const {result} = renderHook(() => useImageAttachments(filesInfo, false));
+        const {result} = renderHook(() => useImageAttachments(filesInfo));
 
         expect(result.current.images).toEqual([
             TestHelper.fakeFileInfo({id: '1', localPath: 'path/to/image1', uri: 'path/to/image1'}),
@@ -100,7 +100,7 @@ describe('useImageAttachments', () => {
         jest.mocked(isGif).mockReturnValue(false);
         jest.mocked(buildFilePreviewUrl).mockImplementation((url, id) => `${url}/preview/${id}`);
 
-        const {result} = renderHook(() => useImageAttachments(filesInfo, true));
+        const {result} = renderHook(() => useImageAttachments(filesInfo));
 
         expect(result.current.images).toEqual([
             TestHelper.fakeFileInfo({id: '1', localPath: '', uri: 'https://example.com/preview/1'}),
@@ -118,7 +118,7 @@ describe('useImageAttachments', () => {
         jest.mocked(isGif).mockImplementation((file) => file?.id === '1');
         jest.mocked(buildFileUrl).mockImplementation((url, id) => `${url}/file/${id}`);
 
-        const {result} = renderHook(() => useImageAttachments(filesInfo, true));
+        const {result} = renderHook(() => useImageAttachments(filesInfo));
 
         expect(result.current.images).toEqual([
             TestHelper.fakeFileInfo({id: '1', localPath: '', uri: 'https://example.com/file/1'}),
@@ -138,7 +138,7 @@ describe('useImageAttachments', () => {
         jest.mocked(buildFilePreviewUrl).mockImplementation((url, id) => `${url}/preview/${id}`);
         jest.mocked(buildFileUrl).mockImplementation((url, id) => `${url}/file/${id}`);
 
-        const {result, rerender} = renderHook(() => useImageAttachments(filesInfo, true));
+        const {result, rerender} = renderHook(() => useImageAttachments(filesInfo));
 
         const firstResult = result.current;
 
@@ -152,7 +152,7 @@ describe('useImageAttachments', () => {
     it('should handle empty filesInfo array', () => {
         const filesInfo: FileInfo[] = [];
 
-        const {result} = renderHook(() => useImageAttachments(filesInfo, true));
+        const {result} = renderHook(() => useImageAttachments(filesInfo));
 
         expect(result.current.images).toEqual([]);
         expect(result.current.nonImages).toEqual([]);
@@ -169,7 +169,7 @@ describe('useImageAttachments', () => {
         jest.mocked(isGif).mockReturnValue(false);
         jest.mocked(buildFilePreviewUrl).mockImplementation((url, id) => `${url}/preview/${id}`);
 
-        const {result} = renderHook(() => useImageAttachments(filesInfo, true));
+        const {result} = renderHook(() => useImageAttachments(filesInfo));
 
         expect(result.current.images).toEqual([
             TestHelper.fakeFileInfo({id: '', localPath: 'path/to/image1', uri: 'path/to/image1'}),

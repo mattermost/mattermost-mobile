@@ -76,7 +76,7 @@ const FileResults = ({
     const containerStyle = useMemo(() => ([paddingTop, {flexGrow: 1}]), [paddingTop]);
     const numOptions = getNumberFileMenuOptions(canDownloadFiles, publicLinkEnabled);
 
-    const {images: imageAttachments, nonImages: nonImageAttachments} = useImageAttachments(fileInfos, publicLinkEnabled);
+    const {images: imageAttachments, nonImages: nonImageAttachments} = useImageAttachments(fileInfos);
     const filesForGallery = useMemo(() => imageAttachments.concat(nonImageAttachments), [imageAttachments, nonImageAttachments]);
 
     const channelNames = useMemo(() => getChannelNamesWithID(fileChannels), [fileChannels]);
@@ -122,7 +122,6 @@ const FileResults = ({
                 numOptions={numOptions}
                 onOptionsPress={onOptionsPress}
                 onPress={onPreviewPress}
-                publicLinkEnabled={publicLinkEnabled}
                 setAction={setAction}
                 updateFileForGallery={updateFileForGallery}
             />
@@ -135,7 +134,6 @@ const FileResults = ({
         onPreviewPress,
         onOptionsPress,
         numOptions,
-        publicLinkEnabled,
     ]);
 
     const noResults = useMemo(() => {

@@ -29,7 +29,6 @@ type Props = {
     numOptions: number;
     onOptionsPress: (finfo: FileInfo) => void;
     onPress: (idx: number) => void;
-    publicLinkEnabled: boolean;
     setAction: (action: GalleryAction) => void;
     updateFileForGallery: (idx: number, file: FileInfo) => void;
 }
@@ -44,7 +43,6 @@ const FileResult = ({
     numOptions,
     onOptionsPress,
     onPress,
-    publicLinkEnabled,
     setAction,
     updateFileForGallery,
 }: Props) => {
@@ -92,7 +90,6 @@ const FileResult = ({
                     onOptionsPress={handleOptionsPress}
                     onPress={onPress}
                     optionSelected={isTablet && showOptions}
-                    publicLinkEnabled={publicLinkEnabled}
                     showDate={true}
                     updateFileForGallery={updateFileForGallery}
                     wrapperWidth={(getViewPortWidth(isReplyPost, isTablet) - 6)}
