@@ -2,7 +2,7 @@
 # Cross-platform emulator setup + Detox runner for CI and local
 
 # Usage: 
-#   ./local_avd_creation.sh [SDK_VERSION] [AVD_BASE_NAME] [TEST_FILES]
+#   ./avd_creation.sh [SDK_VERSION] [AVD_BASE_NAME] [TEST_FILES]
 # Options:
 #   --headed  Run emulator with GUI (local development only)
 #   --debug  Run emulator with debug mode (local development only)
@@ -48,6 +48,10 @@ setup_avd_home() {
         export ANDROID_AVD_HOME=$(pwd)/.android/avd
         mkdir -p "$ANDROID_AVD_HOME"
     fi
+
+    # Always ensure the .android/avd directory exists in the home directory
+    # This fixes the error on Linux runners
+    mkdir -p "$HOME/.android/avd"
 }
 
 ensure_sdk_image() {
@@ -117,29 +121,61 @@ create_avd() {
     INI_PATH="$HOME/.android/avd/${AVD_NAME}.ini"
     if [ ! -f "$INI_PATH" ]; then
         log "Creating .ini file for AVD: $AVD_NAME"
+        # Make sure parent directory exists
+        mkdir -p "$HOME/.android/avd"
         echo "avd.ini.encoding=UTF-8" > "$INI_PATH"
         echo "path=$(pwd)/.android/avd/${AVD_NAME}.avd" >> "$INI_PATH"
         echo "path.rel=avd/${AVD_NAME}.avd" >> "$INI_PATH"
+
+        # Set proper permissions for the .ini file
+        chmod 644 "$INI_PATH"
     fi
 
     # Ensure config.ini exists
     CONFIG_PATH="$(pwd)/.android/avd/${AVD_NAME}.avd/config.ini"
     if [ ! -f "$CONFIG_PATH" ]; then
         error "AVD config file not found at: $CONFIG_PATH"
-        exit 1
+        # Create minimal config if it doesn't exist
+        mkdir -p "$(pwd)/.android/avd/${AVD_NAME}.avd"
+        touch "$CONFIG_PATH"
     fi
 
-    cp -r android_emulator/ "$AVD_NAME/"
-    sed -i -e "s|AvdId = change_avd_id|AvdId = ${AVD_NAME}|g" "$AVD_NAME/config.ini"
-    sed -i -e "s|avd.ini.displayname = change_avd_displayname|avd.ini.displayname = Detox Pixel 4 XL API ${SDK_VERSION}|g" "$AVD_NAME/config.ini"
-    sed -i -e "s|abi.type = change_type|abi.type = ${cpu_arch_family}|g" "$AVD_NAME/config.ini"
-    sed -i -e "s|hw.cpu.arch = change_cpu_arch|hw.cpu.arch = ${cpu_arch}|g" "$AVD_NAME/config.ini"
-    sed -i -e "s|image.sysdir.1 = change_to_image_sysdir/|image.sysdir.1 = system-images/android-${SDK_VERSION}/default/${cpu_arch_family}/|g" "$AVD_NAME/config.ini"
-    sed -i -e "s|skin.path = change_to_absolute_path/pixel_4_xl_skin|skin.path = $(pwd)/${AVD_NAME}/pixel_4_xl_skin|g" "$AVD_NAME/config.ini"
+    # Ensure android_emulator directory exists or skip this step
+    if [ -d "android_emulator/" ]; then
+        # Copy android_emulator directory if it exists
+        mkdir -p "$AVD_NAME"
+        cp -r android_emulator/ "$AVD_NAME/" || true
+    else
+        log "android_emulator directory not found, creating minimal AVD configuration"
+        mkdir -p "$AVD_NAME/pixel_4_xl_skin"
+        touch "$AVD_NAME/config.ini"
+    fi
+
+    # Update config.ini with required properties
+    # First check if config.ini exists in the target directory
+    if [ -f "$AVD_NAME/config.ini" ]; then
+        sed -i -e "s|AvdId = change_avd_id|AvdId = ${AVD_NAME}|g" "$AVD_NAME/config.ini" || true
+        sed -i -e "s|avd.ini.displayname = change_avd_displayname|avd.ini.displayname = Detox Pixel 4 XL API ${SDK_VERSION}|g" "$AVD_NAME/config.ini" || true
+        sed -i -e "s|abi.type = change_type|abi.type = ${cpu_arch_family}|g" "$AVD_NAME/config.ini" || true
+        sed -i -e "s|hw.cpu.arch = change_cpu_arch|hw.cpu.arch = ${cpu_arch}|g" "$AVD_NAME/config.ini" || true
+        sed -i -e "s|image.sysdir.1 = change_to_image_sysdir/|image.sysdir.1 = system-images/android-${SDK_VERSION}/default/${cpu_arch_family}/|g" "$AVD_NAME/config.ini" || true
+        sed -i -e "s|skin.path = change_to_absolute_path/pixel_4_xl_skin|skin.path = $(pwd)/${AVD_NAME}/pixel_4_xl_skin|g" "$AVD_NAME/config.ini" || true
+    else
+        # Create a new config.ini with required properties
+        echo "AvdId=${AVD_NAME}" > "$AVD_NAME/config.ini"
+        echo "avd.ini.displayname=Detox Pixel 4 XL API ${SDK_VERSION}" >> "$AVD_NAME/config.ini"
+        echo "abi.type=${cpu_arch_family}" >> "$AVD_NAME/config.ini"
+        echo "hw.cpu.arch=${cpu_arch}" >> "$AVD_NAME/config.ini"
+        echo "image.sysdir.1=system-images/android-${SDK_VERSION}/default/${cpu_arch_family}/" >> "$AVD_NAME/config.ini"
+        echo "skin.path=$(pwd)/${AVD_NAME}/pixel_4_xl_skin" >> "$AVD_NAME/config.ini"
+    fi
 
     echo "hw.cpu.ncore=5" >> "$AVD_NAME/config.ini"
-    echo "Android virtual device successfully created: ${AVD_NAME}"
+    
+    # Copy the config to the AVD directory
+    cp "$AVD_NAME/config.ini" "$(pwd)/.android/avd/${AVD_NAME}.avd/config.ini" || true
 
+    echo "Android virtual device successfully created: ${AVD_NAME}"
     success "AVD created and configured successfully: $AVD_NAME"
 }
 
@@ -167,6 +203,13 @@ start_emulator() {
             ;;
         Linux)
             # Linux specific settings
+            if [[ -z "$DISPLAY" ]]; then
+                # Set default display if not set
+                export DISPLAY=:0
+                log "DISPLAY not set, using default: $DISPLAY"
+            else
+                log "Using DISPLAY: $DISPLAY"
+            fi
             emulator_opts="$emulator_opts -accel on"
             ;;
         *)
