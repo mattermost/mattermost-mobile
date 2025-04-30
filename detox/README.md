@@ -39,11 +39,11 @@ The debug apk will be built and available at `android/app/build/outputs/apk/debu
 #### Create emulator
 
 ```sh
-./local_avd_creation.sh SDK_VERSION AVD_NAME
+./avd_creation.sh SDK_VERSION AVD_NAME
 
-# example ./local_avd_creation.sh 34 pixel_5a_avd
-# example ./local_avd_creation.sh 34 pixel_5a_avd --headless
-# If we want to see the emulator logs. Run it in debug mode example ./local_avd_creation.sh 34 pixel_5a_avd --debug
+# example ./avd_creation.sh 34 pixel_5a_avd
+# example ./avd_creation.sh 34 pixel_5a_avd --headless
+# If we want to see the emulator logs. Run it in debug mode example ./avd_creation.sh 34 pixel_5a_avd --debug
 ```
 
 To execute the Detox tests on Android, navigate to the `detox` folder and run:
