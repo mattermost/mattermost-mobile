@@ -12,6 +12,14 @@ npm install
 
 navigate to the `detox` folder and run `npm install`
 
+## Export required variables
+
+```sh
+export ADMIN_USERNAME="username"
+export ADMIN_PASSWORD="password"
+export SITE_1_URL="<---https://site-url--->" # do not add '/' at the end
+```
+
 ## Android
 
 ### Build Detox Android App
@@ -31,11 +39,11 @@ The debug apk will be built and available at `android/app/build/outputs/apk/debu
 #### Create emulator
 
 ```sh
-./create_android_emulator.sh SDK_VERSION AVD_NAME
+./local_avd_creation.sh SDK_VERSION AVD_NAME
 
-# example ./create_android_emulator.sh 34 pixel_5a_avd
-# example ./create_android_emulator.sh 34 pixel_5a_avd --headless
-# If we want to see the emulator logs. Run it in debug mode example ./create_android_emulator.sh 34 pixel_5a_avd --debug
+# example ./local_avd_creation.sh 34 pixel_5a_avd
+# example ./local_avd_creation.sh 34 pixel_5a_avd --headless
+# If we want to see the emulator logs. Run it in debug mode example ./local_avd_creation.sh 34 pixel_5a_avd --debug
 ```
 
 To execute the Detox tests on Android, navigate to the `detox` folder and run:
