@@ -4,7 +4,7 @@
 import {useNavigation} from '@react-navigation/native';
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {FlatList, type ListRenderItemInfo, StyleSheet, View} from 'react-native';
+import {FlatList, type ListRenderItemInfo, Platform, StyleSheet, View} from 'react-native';
 import Animated, {FadeInDown, FadeOutUp} from 'react-native-reanimated';
 
 import NoResultsWithTerm from '@components/no_results_with_term';
@@ -94,7 +94,7 @@ const SearchChannels = ({
     return (
         <Animated.View
             entering={FadeInDown.duration(100)}
-            exiting={FadeOutUp.duration(100)}
+            exiting={Platform.select({ios: FadeOutUp.duration(100)}) /* https://mattermost.atlassian.net/browse/MM-63814?focusedCommentId=178584 */}
             style={style.flex}
         >
             <FlatList

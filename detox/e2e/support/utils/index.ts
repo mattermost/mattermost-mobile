@@ -77,3 +77,28 @@ export const timeouts = {
     FOUR_MIN: MINUTE * 4,
 };
 
+/**
+ * Retry a function with reload
+ * @param {function} func - function to retry
+ * @param {number} retries - number of retries
+ * @return {Promise<void>} - promise that resolves when the function succeeds
+ * @throws {Error} - if the function fails after the specified number of retries
+ */
+export async function retryWithReload(func: () => Promise<void>, retries: number = 2): Promise<void> {
+    for (let attempt = 0; attempt <= retries; attempt++) {
+        try {
+            // eslint-disable-next-line no-await-in-loop
+            await func();
+            return;
+        } catch (err) {
+            if (attempt < retries) {
+                // eslint-disable-next-line no-await-in-loop
+                await device.reloadReactNative();
+                // eslint-disable-next-line no-await-in-loop
+                await new Promise((res) => setTimeout(res, 3000));
+            } else {
+                throw err;
+            }
+        }
+    }
+}

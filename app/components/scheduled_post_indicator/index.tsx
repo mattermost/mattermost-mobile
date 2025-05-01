@@ -88,7 +88,10 @@ function ScheduledPostIndicator({
                     name='clock-send-outline'
                     size={18}
                 />
-                <Text style={styles.text}>
+                <Text
+                    style={styles.text}
+                    testID='scheduled_post_header.scheduled_post_indicator'
+                >
                     {scheduledPostText}
                     {' '}
                     <Text

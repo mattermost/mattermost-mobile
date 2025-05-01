@@ -52,7 +52,7 @@ describe('Autocomplete - At-Mention', () => {
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
-        await LoginScreen.login(testUser);
+        await LoginScreen.login(user);
 
         // * Verify on channel list screen
         await ChannelListScreen.toBeVisible();

@@ -7,6 +7,7 @@ import {
     type CallsConfig,
     type EmojiData,
     type UserReactionData,
+    type CallsVersionInfo,
 } from '@mattermost/calls/lib/types';
 
 import type UserModel from '@typings/database/models/servers/user';
@@ -153,7 +154,7 @@ export type CallsConfigState = CallsConfig & {
     AllowEnableCalls: boolean;
     GroupCallsAllowed: boolean;
     pluginEnabled: boolean;
-    version: CallsVersion;
+    version: CallsVersionInfo;
     last_retrieved_at: number;
 }
 
@@ -209,11 +210,6 @@ export type AudioDeviceInfoRaw = {
 export type AudioDeviceInfo = {
     availableAudioDeviceList: AudioDevice[];
     selectedAudioDevice: AudioDevice;
-};
-
-export type CallsVersion = {
-    version?: string;
-    build?: string;
 };
 
 export type LiveCaptionMobile = {

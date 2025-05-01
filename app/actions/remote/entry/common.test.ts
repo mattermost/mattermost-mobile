@@ -22,6 +22,7 @@ import NetworkManager from '@managers/network_manager';
 import {getDeviceToken} from '@queries/app/global';
 import {getCurrentChannelId, getCurrentTeamId, setCurrentTeamAndChannelId} from '@queries/servers/system';
 import NavigationStore from '@store/navigation_store';
+import {logDebug} from '@utils/log';
 
 import {entry, setExtraSessionProps, verifyPushProxy, entryInitialChannelId, restDeferredAppEntryActions, handleEntryAfterLoadNavigation, deferredAppEntryActions} from './common';
 
@@ -866,7 +867,6 @@ describe('actions/remote/entry/common', () => {
         });
 
         it('should handle error gracefully', async () => {
-            const consoleDebugSpy = jest.spyOn(console, 'debug').mockImplementation(() => {});
             (DatabaseManager.getServerDatabaseAndOperator as jest.Mock).mockImplementation(() => {
                 throw new Error('Test error');
             });
@@ -882,8 +882,7 @@ describe('actions/remote/entry/common', () => {
                 false,
             );
 
-            expect(consoleDebugSpy).toHaveBeenCalled();
-            consoleDebugSpy.mockRestore();
+            expect(logDebug).toHaveBeenCalled();
         });
 
         it('should handle tablet device scenario', async () => {

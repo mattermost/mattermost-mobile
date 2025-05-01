@@ -87,7 +87,6 @@ const RescheduledDraft: React.FC<Props> = ({
                 type: MESSAGE_TYPE.ERROR,
             });
         } else {
-            setIsUpdating(false);
             onClose();
         }
     }, [intl, onClose]);
