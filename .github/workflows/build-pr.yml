@@ -84,7 +84,7 @@ jobs:
               return;
             }
 
-            const artifactUrl = `${{ github.server_url }}/${{ github.repository }}/actions/artifacts/${artifactId}/zip`;
+            const artifactUrl = `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${artifactId}`;
             const message = `### iOS PR Build\n\nThe iOS PR build is available for [download](${artifactUrl})\nCommit: ${{ github.event.pull_request.head.sha }}`;
 
             github.rest.issues.createComment({
@@ -141,7 +141,7 @@ jobs:
               return;
             }
 
-            const artifactUrl = `${{ github.server_url }}/${{ github.repository }}/actions/artifacts/${artifactId}/zip`;
+            const artifactUrl = `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${artifactId}`;
             const message = `### Android PR Build\n\nThe Android PR build is available for [download](${artifactUrl})\nCommit: ${{ github.event.pull_request.head.sha }}`;
 
             github.rest.issues.createComment({
