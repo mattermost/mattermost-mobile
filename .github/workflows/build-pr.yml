@@ -7,6 +7,15 @@ on:
         description: 'Branch to build'
         required: true
         default: 'main'
+      platform:
+        description: 'Platform to build'
+        required: true
+        type: choice
+        default: 'android'
+        options:
+          - ios
+          - android
+
   pull_request:
     types:
       - labeled
@@ -18,7 +27,7 @@ env:
 jobs:
   test:
     runs-on: ubuntu-22.04
-    if: ${{ github.event.label.name == 'Build Apps for PR' || github.event.label.name == 'Build App for iOS' || github.event.label.name == 'Build App for Android' }}
+    if: ${{ github.event.label.name == 'Build Apps for PR' || github.event.label.name == 'Build App for iOS' || github.event.label.name == 'Build App for Android' || (github.event_name == 'workflow_dispatch' && (github.event.inputs.platform == 'ios' || github.event.inputs.platform == 'android')) }}
     steps:
       - name: ci/checkout-repo
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -29,7 +38,7 @@ jobs:
 
   build-ios-pr:
     runs-on: macos-14-large
-    if: ${{ github.event.label.name == 'Build Apps for PR' || github.event.label.name == 'Build App for iOS' }}
+    if: ${{ github.event.label.name == 'Build Apps for PR' || github.event.label.name == 'Build App for iOS'  || (github.event_name == 'workflow_dispatch' && github.event.inputs.platform == 'ios') }}
     needs:
       - test
     steps:
@@ -96,7 +105,7 @@ jobs:
 
   build-android-pr:
     runs-on: ubuntu-22.04
-    if: ${{ github.event.label.name == 'Build Apps for PR' || github.event.label.name == 'Build App for Android' }}
+    if: ${{ github.event.label.name == 'Build Apps for PR' || github.event.label.name == 'Build App for Android'  || (github.event_name == 'workflow_dispatch' && github.event.inputs.platform == 'android') }}
     needs:
       - test
     steps:
