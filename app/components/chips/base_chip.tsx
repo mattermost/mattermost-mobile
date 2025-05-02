@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Text, TouchableOpacity, useWindowDimensions} from 'react-native';
+import {Platform, Text, TouchableOpacity, useWindowDimensions} from 'react-native';
 import Animated, {FadeIn, FadeOut} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
@@ -103,10 +103,13 @@ export default function BaseChip({
             </TouchableOpacity>
         );
     }
+
+    // https://mattermost.atlassian.net/browse/MM-63814?focusedCommentId=178584
+    const useFadeOut = showAnimation && Platform.OS !== 'android';
     return (
         <Animated.View
             entering={showAnimation ? FadeIn.duration(FADE_DURATION) : undefined}
-            exiting={showAnimation ? FadeOut.duration(FADE_DURATION) : undefined}
+            exiting={useFadeOut ? FadeOut.duration(FADE_DURATION) : undefined}
             style={style.container}
             testID={testID}
         >

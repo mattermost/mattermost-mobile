@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
-import {combineLatestWith, distinctUntilChanged, of as of$, switchMap} from 'rxjs';
+import {combineLatest, combineLatestWith, distinctUntilChanged, of as of$, switchMap} from 'rxjs';
 
 import {observeCallStateInChannel, observeIsCallsEnabledInChannel} from '@calls/observers';
 import {observeCallsConfig} from '@calls/state';
@@ -12,12 +12,14 @@ import {observeChannel, observeCurrentChannel} from '@queries/servers/channel';
 import {queryBookmarks} from '@queries/servers/channel_bookmark';
 import {observeHasGMasDMFeature} from '@queries/servers/features';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import {observeScheduledPostCountForChannel} from '@queries/servers/scheduled_post';
 import {
     observeConfigBooleanValue,
     observeCurrentChannelId,
     observeCurrentUserId,
     observeLicense,
 } from '@queries/servers/system';
+import {observeIsCRTEnabled} from '@queries/servers/thread';
 import {shouldShowChannelBanner} from '@screens/channel/channel_feature_checks';
 
 import Channel from './channel';
@@ -68,6 +70,12 @@ const enhanced = withObservables([], ({database, serverUrl}: EnhanceProps) => {
         ),
     );
 
+    const isCRTEnabled = observeIsCRTEnabled(database);
+
+    const scheduledPostCount = combineLatest([channelId, isCRTEnabled]).pipe(
+        switchMap(([cid, isCRT]) => observeScheduledPostCountForChannel(database, cid, isCRT)),
+    );
+
     return {
         channelId,
         ...observeCallStateInChannel(serverUrl, database, channelId),
@@ -79,6 +87,7 @@ const enhanced = withObservables([], ({database, serverUrl}: EnhanceProps) => {
         hasGMasDMFeature,
         includeBookmarkBar,
         includeChannelBanner,
+        scheduledPostCount,
     };
 });
 

@@ -156,61 +156,50 @@ exports[`Section notice match snapshot 1`] = `
                   "borderColor": "#2089dc",
                   "borderRadius": 4,
                   "borderWidth": 0,
-                  "flex": 0,
                   "flexDirection": "row",
-                  "height": 40,
                   "justifyContent": "center",
                   "padding": 8,
                   "paddingHorizontal": 20,
-                  "paddingVertical": 12,
+                  "paddingVertical": 10,
                 }
               }
             >
               <View
                 style={
-                  [
-                    {
-                      "flexDirection": "row",
-                    },
-                    {
-                      "minHeight": 18,
-                    },
-                  ]
-                }
-              >
-                <Icon
-                  color="#ffffff"
-                  name="chevron-right"
-                  size={18}
-                  style={
-                    {
-                      "marginRight": 7,
-                    }
+                  {
+                    "alignItems": "center",
+                    "flexDirection": "row",
+                    "gap": 7,
                   }
-                />
+                }
+                testID="undefined-text-container"
+              >
+                <View>
+                  <Icon
+                    color="#ffffff"
+                    name="chevron-right"
+                    size={18}
+                    testID="undefined-icon"
+                  />
+                </View>
                 <Text
                   numberOfLines={1}
                   style={
                     [
                       [
-                        {
-                          "alignItems": "center",
-                          "fontFamily": "OpenSans-SemiBold",
-                          "fontWeight": "600",
-                          "justifyContent": "center",
-                          "padding": 1,
-                          "textAlignVertical": "center",
-                        },
-                        {
-                          "fontSize": 14,
-                          "lineHeight": 14,
-                          "marginTop": 3,
-                        },
-                        {
-                          "color": "#ffffff",
-                        },
+                        [
+                          {
+                            "fontFamily": "OpenSans-SemiBold",
+                            "fontSize": 14,
+                            "fontWeight": "600",
+                            "lineHeight": 20,
+                          },
+                          {
+                            "color": "#ffffff",
+                          },
+                        ],
+                        undefined,
                       ],
-                      undefined,
                     ]
                   }
                 >
@@ -278,61 +267,50 @@ exports[`Section notice match snapshot 1`] = `
                   "borderColor": "#2089dc",
                   "borderRadius": 4,
                   "borderWidth": 0,
-                  "flex": 0,
                   "flexDirection": "row",
-                  "height": 40,
                   "justifyContent": "center",
                   "padding": 8,
                   "paddingHorizontal": 20,
-                  "paddingVertical": 12,
+                  "paddingVertical": 10,
                 }
               }
             >
               <View
                 style={
-                  [
-                    {
-                      "flexDirection": "row",
-                    },
-                    {
-                      "minHeight": 18,
-                    },
-                  ]
-                }
-              >
-                <Icon
-                  color="#1c58d9"
-                  name="chevron-right"
-                  size={18}
-                  style={
-                    {
-                      "marginRight": 7,
-                    }
+                  {
+                    "alignItems": "center",
+                    "flexDirection": "row",
+                    "gap": 7,
                   }
-                />
+                }
+                testID="undefined-text-container"
+              >
+                <View>
+                  <Icon
+                    color="#1c58d9"
+                    name="chevron-right"
+                    size={18}
+                    testID="undefined-icon"
+                  />
+                </View>
                 <Text
                   numberOfLines={1}
                   style={
                     [
                       [
-                        {
-                          "alignItems": "center",
-                          "fontFamily": "OpenSans-SemiBold",
-                          "fontWeight": "600",
-                          "justifyContent": "center",
-                          "padding": 1,
-                          "textAlignVertical": "center",
-                        },
-                        {
-                          "fontSize": 14,
-                          "lineHeight": 14,
-                          "marginTop": 3,
-                        },
-                        {
-                          "color": "#1c58d9",
-                        },
+                        [
+                          {
+                            "fontFamily": "OpenSans-SemiBold",
+                            "fontSize": 14,
+                            "fontWeight": "600",
+                            "lineHeight": 20,
+                          },
+                          {
+                            "color": "#1c58d9",
+                          },
+                        ],
+                        undefined,
                       ],
-                      undefined,
                     ]
                   }
                 >
@@ -400,61 +378,50 @@ exports[`Section notice match snapshot 1`] = `
                   "borderColor": "#2089dc",
                   "borderRadius": 4,
                   "borderWidth": 0,
-                  "flex": 0,
                   "flexDirection": "row",
-                  "height": 40,
                   "justifyContent": "center",
                   "padding": 8,
                   "paddingHorizontal": 20,
-                  "paddingVertical": 12,
+                  "paddingVertical": 10,
                 }
               }
             >
               <View
                 style={
-                  [
-                    {
-                      "flexDirection": "row",
-                    },
-                    {
-                      "minHeight": 18,
-                    },
-                  ]
-                }
-              >
-                <Icon
-                  color="#1c58d9"
-                  name="chevron-right"
-                  size={18}
-                  style={
-                    {
-                      "marginRight": 7,
-                    }
+                  {
+                    "alignItems": "center",
+                    "flexDirection": "row",
+                    "gap": 7,
                   }
-                />
+                }
+                testID="undefined-text-container"
+              >
+                <View>
+                  <Icon
+                    color="#1c58d9"
+                    name="chevron-right"
+                    size={18}
+                    testID="undefined-icon"
+                  />
+                </View>
                 <Text
                   numberOfLines={1}
                   style={
                     [
                       [
-                        {
-                          "alignItems": "center",
-                          "fontFamily": "OpenSans-SemiBold",
-                          "fontWeight": "600",
-                          "justifyContent": "center",
-                          "padding": 1,
-                          "textAlignVertical": "center",
-                        },
-                        {
-                          "fontSize": 14,
-                          "lineHeight": 14,
-                          "marginTop": 3,
-                        },
-                        {
-                          "color": "#1c58d9",
-                        },
+                        [
+                          {
+                            "fontFamily": "OpenSans-SemiBold",
+                            "fontSize": 14,
+                            "fontWeight": "600",
+                            "lineHeight": 20,
+                          },
+                          {
+                            "color": "#1c58d9",
+                          },
+                        ],
+                        undefined,
                       ],
-                      undefined,
                     ]
                   }
                 >

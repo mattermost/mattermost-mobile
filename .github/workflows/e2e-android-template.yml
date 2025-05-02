@@ -52,7 +52,7 @@ on:
         description: "Android API level"
         required: false
         type: string
-        default: "33"
+        default: "34"
     outputs:
       STATUS:
         value: ${{ jobs.generate-report.outputs.STATUS }}
@@ -130,7 +130,7 @@ jobs:
     name: android-detox-e2e-${{ matrix.runId }}-${{ matrix.deviceName }}-${{ matrix.deviceOsVersion }}
     runs-on: ubuntu-latest-8-cores
     continue-on-error: true
-    timeout-minutes: 150
+    timeout-minutes: 240
     env:
       ANDROID_HOME: /usr/local/lib/android/sdk
       ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
@@ -170,6 +170,12 @@ jobs:
           cd detox
           npm install
 
+      - name: Set .env with RUNNING_E2E=true
+        run: |
+          cat > .env <<EOF
+          RUNNING_E2E=true
+          EOF
+  
       - name: Create destination path
         run: mkdir -p android/app/build
 
@@ -194,23 +200,34 @@ jobs:
 
       - name: Accept Android licenses
         run: |
-          yes | sdkmanager --licenses || true
+          mkdir -p ~/.android
+          yes | sdkmanager --licenses > sdk_licenses_output.txt || true
+      
+          # Check if "All SDK package licenses accepted" appears in output
+          if grep -q "All SDK package licenses accepted" sdk_licenses_output.txt; then
+            echo "✅ All licenses accepted successfully."
+          else
+            echo "❌ Licenses not fully accepted."
+            cat sdk_licenses_output.txt
+            exit 1
+          fi
 
-      - name: Install Android system image
+      - name: Install Android SDK components
         run: |
-          sdkmanager "system-images;android-34;default;x86_64"
-          sdkmanager "platform-tools" "emulator"
-
+          yes | sdkmanager --install "platform-tools" "emulator" "platforms;android-34" "system-images;android-34;default;x86_64" "system-images;android-34;google_apis;x86_64"
+        env:
+          JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
+        
       - name: Create and run Android Emulator
         run: |
           cd detox
           chmod +x ./create_android_emulator.sh
-          ./create_android_emulator.sh ${{ env.SDK_VERSION }} ${{ env.AVD_NAME }} ${{ matrix.specs }}
+          CI=true ./create_android_emulator.sh ${{ env.SDK_VERSION }} ${{ env.AVD_NAME }} ${{ matrix.specs }}
         continue-on-error: true # We want to run all the tests
 
       - name: Upload Android Test Report
         if: always()
-        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: android-results-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
           path: detox/artifacts/
@@ -293,3 +310,36 @@ jobs:
           echo "" >> ${GITHUB_STEP_SUMMARY}
           echo "You can check the full report [here](${{ steps.set-url.outputs.TARGET_URL }})" >> ${GITHUB_STEP_SUMMARY}
           echo "There was **${{ steps.summary.outputs.PERCENTAGE }}%** success rate." >> ${GITHUB_STEP_SUMMARY}
+
+      - name: Comment report on the PR
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const prNumber = context.payload.pull_request.number;
+
+            const commentBody = `**Android E2E Test Report**: ${process.env.MOBILE_SHA} | ${process.env.PERCENTAGE}% (${process.env.PASSES}/${process.env.TOTAL}) | [full report](${process.env.TARGET_URL})
+            | Tests | Passed ✅ | Failed ❌ | Skipped ⏭️ | Errors ⚠️ |
+            |:---:|:---:|:---:|:---:|:---:|
+            | ${process.env.TOTAL} | ${process.env.PASSES} | ${process.env.FAILURES} | ${process.env.SKIPPED} | ${process.env.ERRORS} |
+            `;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: commentBody,
+            });
+        env:
+          STATUS: ${{ steps.determine-status.outputs.STATUS }}
+          FAILURES: ${{ steps.summary.outputs.FAILURES }}
+          PASSES: ${{ steps.summary.outputs.PASSES }}
+          SKIPPED: ${{ steps.summary.outputs.SKIPPED }}
+          TOTAL: ${{ steps.summary.outputs.TOTAL }}
+          ERRORS: ${{ steps.summary.outputs.ERRORS }}
+          PERCENTAGE: ${{ steps.summary.outputs.PERCENTAGE }}
+          BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
+          RUN_TYPE: ${{ inputs.run-type }}
+          MOBILE_REF: ${{ needs.generate-specs.outputs.mobile_ref }}
+          MOBILE_SHA: ${{ needs.generate-specs.outputs.mobile_sha }}
+          TARGET_URL: ${{ steps.set-url.outputs.TARGET_URL }}

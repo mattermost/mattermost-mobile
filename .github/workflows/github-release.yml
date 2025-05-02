@@ -42,10 +42,27 @@ jobs:
         working-directory: ./fastlane
 
       - name: ci/upload-ios-unsigned
-        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           path: Mattermost-unsigned.ipa
           name: Mattermost-unsigned.ipa
+
+      - name: ci/install-snyk
+        run: npm install -g snyk@1.1296.1
+
+      - name: ci/generate-ios-sbom
+        env:
+          SNYK_TOKEN: "${{ secrets.SNYK_TOKEN }}"
+        run: |
+          cd ios/
+          snyk sbom --format=cyclonedx1.6+json --json-file-output=../sbom-ios.json --all-projects
+        shell: bash
+
+      - name: ci/upload-ios-sbom
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          path: sbom-ios.json
+          name: sbom-ios.json
 
   build-android-unsigned:
     runs-on: ubuntu-22.04
@@ -68,12 +85,29 @@ jobs:
         working-directory: ./fastlane
 
       - name: ci/upload-android-unsigned-build
-        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           path: Mattermost-unsigned.apk
           name: Mattermost-unsigned.apk
 
-  release:
+      - name: ci/install-snyk
+        run: npm install -g snyk@1.1296.1
+
+      - name: ci/generate-android-sbom
+        env:
+          SNYK_TOKEN: "${{ secrets.SNYK_TOKEN }}"
+        run: |
+          cd android/
+          snyk sbom --format=cyclonedx1.6+json --all-projects --json-file-output=../sbom-android.json
+        shell: bash
+
+      - name: ci/upload-android-sbom
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          path: sbom-android.json
+          name: sbom-android.json
+
+  generate-consolidated-sbom:
     runs-on: ubuntu-22.04
     needs:
       - build-ios-unsigned
@@ -82,14 +116,68 @@ jobs:
       - name: ci/checkout-repo
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - uses: ruby/setup-ruby@32110d4e311bd8996b2a82bf2a43b714ccc91777 # v1.221.0
+      - name: ci/download-sboms
+        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47c8a # v4.2.1
+        with:
+          path: ${{ github.workspace }}
+          pattern: |
+            sbom-ios.json
+            sbom-android.json
+          merge-multiple: true
+
+      - name: ci/install-snyk
+        run: npm install -g snyk@1.1296.1
+
+      - name: ci/setup-cyclonedx-cli
+        run: |
+          curl -sSfL https://github.com/CycloneDX/cyclonedx-cli/releases/download/0.27.2/cyclonedx-linux-x64 -o cyclonedx
+          chmod +x cyclonedx
+          sudo mv cyclonedx /usr/local/bin/
+
+      - name: ci/generate-consolidated-sbom
+        env:
+          SNYK_TOKEN: "${{ secrets.SNYK_TOKEN }}"
+          SBOM_FILENAME: "sbom-${{ github.event.repository.name }}-${{ github.ref_name }}.json"
+        run: |
+          # Generate top-level SBOM
+          snyk sbom --format=cyclonedx1.6+json --json-file-output=sbom-top-level.json
+          
+          # Consolidate SBOMs
+          cyclonedx merge \
+            --input-files "sbom-top-level.json" "sbom-android.json" "sbom-ios.json" \
+            --input-format=json \
+            --output-file="$SBOM_FILENAME" \
+            --output-format=json \
+            --output-version=v1_6
+          
+          # Validate the consolidated SBOM
+          cyclonedx validate --input-file="$SBOM_FILENAME"
+        shell: bash
+
+      - name: ci/upload-consolidated-sbom
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          path: sbom-${{ github.event.repository.name }}-${{ github.ref_name }}.json
+          name: sbom-${{ github.event.repository.name }}-${{ github.ref_name }}.json
+
+  release:
+    runs-on: ubuntu-22.04
+    needs:
+      - build-ios-unsigned
+      - build-android-unsigned
+      - generate-consolidated-sbom
+    steps:
+      - name: ci/checkout-repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - uses: ruby/setup-ruby@e5ac7b085f6e63d49c8973eb0c6e04d876b881f1 # v1.230.0
 
       - name: release/setup-fastlane-dependencies
         run: bundle install
         working-directory: ./fastlane
 
       - name: ci/download-artifacts
-        uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e # v4.1.7
+        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47c8a # v4.2.1
         with:
           path: ${{ github.workspace }}
           merge-multiple: true
@@ -99,3 +187,9 @@ jobs:
           GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
         run: bundle exec fastlane github
         working-directory: ./fastlane
+
+      - name: release/upload-sbom-to-release
+        env:
+          GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
+        run: |
+          gh release upload "${{ github.ref_name }}" "sbom-${{ github.event.repository.name }}-${{ github.ref_name }}.json"

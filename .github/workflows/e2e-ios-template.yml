@@ -38,12 +38,12 @@ on:
         description: "iPhone simulator name"
         required: false
         type: string
-        default: "iPhone 16 Pro"
+        default: "iPhone 15 Pro"
       ios_device_os_name:
         description: "iPhone simulator OS version"
         required: false
         type: string
-        default: "iOS 18.1"
+        default: "iOS 17.2"
       low_bandwidth_mode:
         description: "Enable low bandwidth mode"
         required: false
@@ -81,7 +81,7 @@ env:
   WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
   FAILURE_MESSAGE: "Something has failed"
   IOS: "true"
-  RUNNING_E2E: true
+  RUNNING_E2E: "true"
 
 jobs:
   generate-specs:
@@ -124,7 +124,7 @@ jobs:
     name: ios-detox-e2e-${{ matrix.runId }}-${{ matrix.deviceName }}-${{ matrix.deviceOsVersion }}
     runs-on: macos-14
     continue-on-error: true
-    timeout-minutes: ${{ inputs.low_bandwidth_mode && 140 || 70 }}
+    timeout-minutes: ${{ inputs.low_bandwidth_mode && 240 || 180 }}
     env:
       IOS: true
     needs:
@@ -153,7 +153,10 @@ jobs:
           path: mobile-artifacts
 
       - name: Unzip iOS Simulator Build
-        run: unzip -o mobile-artifacts/*.zip -d mobile-artifacts/
+        run: |
+          unzip -o mobile-artifacts/*.zip -d mobile-artifacts/
+          # delete zip file
+          rm -f mobile-artifacts/*.zip
 
       - name: Prepare Low Bandwidth Environment
         id: prepare-low-bandwidth
@@ -167,9 +170,6 @@ jobs:
           upload_speed: "3300"
           latency: "500"
 
-      - name: Start React Native Metro Server
-        run: npm run start &
-
       - name: Install Detox Dependencies
         run: cd detox && npm i
 
@@ -180,13 +180,25 @@ jobs:
         with:
           test_server_url: ${{ env.SITE_1_URL }}
 
+      - name: Set .env with RUNNING_E2E=true
+        run: |
+          cat > .env <<EOF
+          echo "RUNNING_E2E=true" >> .env
+
       - name: Run Detox E2E Tests
         continue-on-error: true # We want to run all the tests
         run: |
+          # Start the server
+          npm run start &
+          sleep 120 # Wait for watchman to finish querying the files
           cd detox
+          npm run clean-detox
           npm run detox:config-gen
           npm run e2e:ios-test -- ${{ matrix.specs }}
         env:
+          DETOX_DISABLE_HIERARCHY_DUMP: "YES"
+          DETOX_DISABLE_SCREENSHOT_TRACKING: "YES"      
+          DETOX_LOGLEVEL: "debug"
           DETOX_DEVICE_TYPE: ${{ env.DEVICE_NAME }}
           DETOX_OS_VERSION: ${{ env.DEVICE_OS_VERSION }}
           LOW_BANDWIDTH_MODE: ${{ inputs.low_bandwidth_mode }}
@@ -204,7 +216,7 @@ jobs:
 
       - name: Upload mitmdump Flow Output
         if: ${{ inputs.low_bandwidth_mode }}
-        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: ios-mitmdump-flow-output-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
           path: |
@@ -213,7 +225,7 @@ jobs:
 
       - name: Upload iOS Test Report
         if: always()
-        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: ios-results-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
           path: detox/artifacts/
@@ -295,3 +307,36 @@ jobs:
           echo "" >> ${GITHUB_STEP_SUMMARY}
           echo "You can check the full report [here](${{ steps.set-url.outputs.TARGET_URL }})" >> ${GITHUB_STEP_SUMMARY}
           echo "There was **${{ steps.summary.outputs.PERCENTAGE }}%** success rate." >> ${GITHUB_STEP_SUMMARY}
+
+      - name: Comment report on the PR
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const prNumber = context.payload.pull_request.number;
+
+            const commentBody = `**iOS E2E Test Report**: ${process.env.MOBILE_SHA} | ${process.env.PERCENTAGE}% (${process.env.PASSES}/${process.env.TOTAL}) | [full report](${process.env.TARGET_URL})
+              | Tests | Passed ✅ | Failed ❌ | Skipped ⏭️ | Errors ⚠️ |
+              |:---:|:---:|:---:|:---:|:---:|
+              | ${process.env.TOTAL} | ${process.env.PASSES} | ${process.env.FAILURES} | ${process.env.SKIPPED} | ${process.env.ERRORS} |
+              `;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: commentBody,
+            });
+        env:
+          STATUS: ${{ steps.determine-status.outputs.STATUS }}
+          FAILURES: ${{ steps.summary.outputs.FAILURES }}
+          PASSES: ${{ steps.summary.outputs.PASSES }}
+          SKIPPED: ${{ steps.summary.outputs.SKIPPED }}
+          TOTAL: ${{ steps.summary.outputs.TOTAL }}
+          ERRORS: ${{ steps.summary.outputs.ERRORS }}
+          PERCENTAGE: ${{ steps.summary.outputs.PERCENTAGE }}
+          BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
+          RUN_TYPE: ${{ inputs.run-type }}
+          MOBILE_REF: ${{ needs.generate-specs.outputs.mobile_ref }}
+          MOBILE_SHA: ${{ needs.generate-specs.outputs.mobile_sha }}
+          TARGET_URL: ${{ steps.set-url.outputs.TARGET_URL }}

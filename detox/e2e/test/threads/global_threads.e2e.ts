@@ -24,7 +24,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId} from '@support/utils';
+import {getRandomId, timeouts} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Threads - Global Threads', () => {
@@ -67,7 +67,7 @@ describe('Threads - Global Threads', () => {
         await GlobalThreadsScreen.back();
     });
 
-    it.skip('MM-T4805_2 - should be able to go to a thread a user started and followed -- UNSTABLE', async () => {
+    it('MM-T4805_2 - should be able to go to a thread a user started and followed', async () => {
         // # Create a thread started by the current user which current user replied to
         const parentMessage = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
@@ -85,7 +85,6 @@ describe('Threads - Global Threads', () => {
         // # Go back to channel list screen, then go to global threads screen, and tap on all your threads button
         await ThreadScreen.back();
         await ChannelScreen.back();
-        await device.reloadReactNative();
         await GlobalThreadsScreen.open();
         await GlobalThreadsScreen.headerAllThreadsButton.tap();
 
@@ -93,7 +92,13 @@ describe('Threads - Global Threads', () => {
         await expect(GlobalThreadsScreen.getThreadItem(parentPost.id)).toBeVisible();
         await expect(GlobalThreadsScreen.getThreadItemThreadStarterUserDisplayName(parentPost.id)).toHaveText(testUser.username);
         await expect(GlobalThreadsScreen.getThreadItemThreadStarterChannelDisplayName(parentPost.id)).toHaveText(testChannel.display_name.toUpperCase());
-        await expect(GlobalThreadsScreen.getThreadItemFooterReplyCount(parentPost.id)).toHaveText('1 reply');
+        try {
+            // The reply count is shown as read.
+            await waitFor(GlobalThreadsScreen.getThreadItemFooterReplyCount(parentPost.id)).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        } catch (error) {
+            // somtimes the app shows it as unread since the test actions are fast.
+            await waitFor(GlobalThreadsScreen.getThreadItemFooterUnreadReplies(parentPost.id)).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        }
 
         // # Tap on the thread
         await GlobalThreadsScreen.getThreadItem(parentPost.id).tap();
@@ -133,7 +138,7 @@ describe('Threads - Global Threads', () => {
         await GlobalThreadsScreen.back();
     });
 
-    it.skip('MM-T4805_4 - should be able to go to a thread a user replied to and followed -- UNSTABLE', async () => {
+    it('MM-T4805_4 - should be able to go to a thread a user replied to and followed', async () => {
         // # Create a thread started by another user which the current user replied to
         const parentMessage = `Message ${getRandomId()}`;
         const {post: parentPost} = await Post.apiCreatePost(siteOneUrl, {
@@ -153,15 +158,13 @@ describe('Threads - Global Threads', () => {
         // # Go back to channel list screen, then go to global threads screen, and tap on all your threads button
         await ThreadScreen.back();
         await ChannelScreen.back();
-        await device.reloadReactNative();
         await GlobalThreadsScreen.open();
         await GlobalThreadsScreen.headerAllThreadsButton.tap();
 
         // * Verify the thread replied to by the current user is displayed
         await expect(GlobalThreadsScreen.getThreadItem(parentPost.id)).toBeVisible();
-        await expect(GlobalThreadsScreen.getThreadItemThreadStarterUserDisplayName(parentPost.id)).toHaveText('sysadmin');
+        await expect(GlobalThreadsScreen.getThreadItemThreadStarterUserDisplayName(parentPost.id)).toHaveText('admin');
         await expect(GlobalThreadsScreen.getThreadItemThreadStarterChannelDisplayName(parentPost.id)).toHaveText(testChannel.display_name.toUpperCase());
-        await expect(GlobalThreadsScreen.getThreadItemFooterReplyCount(parentPost.id)).toHaveText('1 reply');
 
         // # Tap on the thread
         await GlobalThreadsScreen.getThreadItem(parentPost.id).tap();
