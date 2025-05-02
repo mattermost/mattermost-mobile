@@ -20,9 +20,15 @@ on:
     types:
       - labeled
 
+# Limit permissions of the GITHUB_TOKEN
+permissions:
+  contents: read
+  pull-requests: write
+
 env:
   NODE_VERSION: 22.14.0
   TERM: xterm
+  IS_FORK: ${{ github.event.pull_request.head.repo.fork == true }}
 
 jobs:
   test:
@@ -38,7 +44,7 @@ jobs:
 
   build-ios-pr:
     runs-on: macos-14-large
-    if: ${{ github.event.label.name == 'Build Apps for PR' || github.event.label.name == 'Build App for iOS'  || (github.event_name == 'workflow_dispatch' && github.event.inputs.platform == 'ios') }}
+    if: ${{ (github.event.label.name == 'Build Apps for PR' || github.event.label.name == 'Build App for iOS' || (github.event_name == 'workflow_dispatch' && github.event.inputs.platform == 'ios')) && github.event.pull_request.head.repo.fork != true }}
     needs:
       - test
     steps:
@@ -105,7 +111,7 @@ jobs:
 
   build-android-pr:
     runs-on: ubuntu-22.04
-    if: ${{ github.event.label.name == 'Build Apps for PR' || github.event.label.name == 'Build App for Android'  || (github.event_name == 'workflow_dispatch' && github.event.inputs.platform == 'android') }}
+    if: ${{ (github.event.label.name == 'Build Apps for PR' || github.event.label.name == 'Build App for Android' || (github.event_name == 'workflow_dispatch' && github.event.inputs.platform == 'android')) && github.event.pull_request.head.repo.fork != true }}
     needs:
       - test
     steps:
@@ -159,3 +165,47 @@ jobs:
               repo: context.repo.repo,
               body: message
             });
+
+  # Redirect to fork-specific workflow if this is a fork PR
+  redirect-fork-build:
+    runs-on: ubuntu-22.04
+    if: ${{ (github.event.label.name == 'Build Apps for PR' || github.event.label.name == 'Build App for iOS' || github.event.label.name == 'Build App for Android' || (github.event_name == 'workflow_dispatch' && (github.event.inputs.platform == 'ios' || github.event.inputs.platform == 'android'))) && github.event.pull_request.head.repo.fork == true }}
+    steps:
+      - name: ci/checkout-repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          
+      - name: ci/trigger-fork-workflow
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const workflowId = 'build-fork-pr.yml';
+            
+            try {
+              await github.rest.actions.createWorkflowDispatch({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                workflow_id: workflowId,
+                ref: '${{ github.event.pull_request.head.ref }}',
+                inputs: {
+                  branch: '${{ github.event.pull_request.head.ref }}',
+                  platform: '${{ github.event.label.name == "Build App for iOS" && "ios" || github.event.label.name == "Build App for Android" && "android" || "android" }}'
+                }
+              });
+              
+              console.log(`Successfully triggered fork build workflow: ${workflowId}`);
+              
+              // Comment on the PR
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: `### Fork PR Build Triggered\n\nA separate workflow has been triggered to build this PR from a forked repository using secure credentials.\nThis may take a few minutes to complete. You'll receive another comment when the build is ready.`
+              });
+              
+            } catch (error) {
+              console.error(`Error triggering fork workflow: ${error.message}`);
+              core.setFailed(`Failed to trigger fork build workflow: ${error.message}`);
+            }
