@@ -100,7 +100,8 @@ jobs:
             }
 
             const artifactUrl = `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${artifactId}`;
-            const message = `### iOS PR Build\n\nThe iOS PR build is available for [download](${artifactUrl})\nCommit: ${{ github.event.pull_request.head.sha }}`;
+            const installUrl = `itms-services://?action=download-manifest&url=${encodeURIComponent(`${artifactUrl}/plist`)}`;
+            const message = `### iOS PR Build\n\nThe iOS PR build is available for:\n- [Download](${artifactUrl})\n- [Install](${installUrl})\n\nCommit: ${{ github.event.pull_request.head.sha }}`;
 
             github.rest.issues.createComment({
               issue_number: context.issue.number,
@@ -157,7 +158,8 @@ jobs:
             }
 
             const artifactUrl = `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${artifactId}`;
-            const message = `### Android PR Build\n\nThe Android PR build is available for [download](${artifactUrl})\nCommit: ${{ github.event.pull_request.head.sha }}`;
+            const installUrl = artifactUrl; // For Android, the download URL is the install URL
+            const message = `### Android PR Build\n\nThe Android PR build is available for:\n- [Download](${artifactUrl})\n- [Install](${installUrl})\n\nCommit: ${{ github.event.pull_request.head.sha }}`;
 
             github.rest.issues.createComment({
               issue_number: context.issue.number,

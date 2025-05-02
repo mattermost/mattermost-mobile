@@ -93,7 +93,8 @@ jobs:
             }
 
             const artifactUrl = `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${artifactId}`;
-            const message = `### iOS Fork PR Build\n\nThe iOS PR build from your forked repository is available for [download](${artifactUrl})\nCommit: ${{ github.event.pull_request.head.sha }}\n\n**Note:** This build is signed with debug credentials for testing purposes only.`;
+            const installUrl = `itms-services://?action=download-manifest&url=${encodeURIComponent(`${artifactUrl}/plist`)}`;
+            const message = `### iOS Fork PR Build\n\nThe iOS PR build from your forked repository is available for:\n- [Download](${artifactUrl})\n- [Install](${installUrl})\n\nCommit: ${{ github.event.pull_request.head.sha }}\n\n**Note:** This build is signed with debug credentials for testing purposes only.`;
 
             github.rest.issues.createComment({
               issue_number: context.issue.number,
@@ -154,7 +155,8 @@ jobs:
             }
 
             const artifactUrl = `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${artifactId}`;
-            const message = `### Android Fork PR Build\n\nThe Android PR build from your forked repository is available for [download](${artifactUrl})\nCommit: ${{ github.event.pull_request.head.sha }}\n\n**Note:** This build is signed with debug credentials for testing purposes only.`;
+            const installUrl = artifactUrl; // For Android, the download URL is the install URL
+            const message = `### Android Fork PR Build\n\nThe Android PR build from your forked repository is available for:\n- [Download](${artifactUrl})\n- [Install](${installUrl})\n\nCommit: ${{ github.event.pull_request.head.sha }}\n\n**Note:** This build is signed with debug credentials for testing purposes only.`;
 
             github.rest.issues.createComment({
               issue_number: context.issue.number,
