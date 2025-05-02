@@ -68,10 +68,14 @@ jobs:
           AWS_ACCESS_KEY_ID: "${{ secrets.FORK_AWS_ACCESS_KEY_ID }}"
           AWS_SECRET_ACCESS_KEY: "${{ secrets.FORK_AWS_SECRET_ACCESS_KEY }}"
           MATTERMOST_WEBHOOK_URL: "${{ secrets.FORK_MATTERMOST_WEBHOOK_URL }}"
+          AWS_BUCKET_NAME: "${{ secrets.FORK_AWS_BUCKET_NAME }}"
+          AWS_REGION: "${{ secrets.FORK_AWS_REGION }}"
+          AWS_FOLDER_NAME: "mobile-fork-builds"
+          BUILD_PR: "true"
         run: |
           # Modify fastlane to use debug signing
           sed -i '' 's/method = ENV\['\''IOS_BUILD_EXPORT_METHOD'\''\].nil? || ENV\['\''IOS_BUILD_EXPORT_METHOD'\''\].empty? ? '\''ad-hoc'\'' : ENV\['\''IOS_BUILD_EXPORT_METHOD'\''\]/method = '\''development'\''/' ./fastlane/Fastfile
-          bundle exec fastlane ios build --env ios.pr
+          bundle exec fastlane ios build --env ios.fork
         working-directory: ./fastlane
 
       - name: ci/upload-ios-fork-pr-build
@@ -92,9 +96,25 @@ jobs:
               return;
             }
 
+            // Get artifact URL for download
             const artifactUrl = `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${artifactId}`;
-            const installUrl = `itms-services://?action=download-manifest&url=${encodeURIComponent(`${artifactUrl}/plist`)}`;
-            const message = `### iOS Fork PR Build\n\nThe iOS PR build from your forked repository is available for:\n- [Download](${artifactUrl})\n- [Install](${installUrl})\n\nCommit: ${{ github.event.pull_request.head.sha }}\n\n**Note:** This build is signed with debug credentials for testing purposes only.`;
+            
+            // Get S3 install URL if available
+            let installUrl = '';
+            let s3Message = '';
+            
+            if ('${{ secrets.FORK_AWS_BUCKET_NAME }}') {
+              const bucketName = '${{ secrets.FORK_AWS_BUCKET_NAME }}';
+              const folderName = 'mobile-fork-builds';
+              const branch = '${{ github.event.pull_request.head.ref }}';
+              const s3Folder = `${folderName}/${branch}`;
+              const plistFile = 'Mattermost_Fork.plist';
+              
+              installUrl = `itms-services://?action=download-manifest&url=https://${bucketName}/${s3Folder}/${plistFile}`;
+              s3Message = `\n\nAlternatively, if S3 upload was successful, you can install directly from:\n- [Install from S3](${installUrl})`;
+            }
+            
+            const message = `### iOS Fork PR Build\n\nThe iOS PR build from your forked repository is available for:\n- [Download](${artifactUrl})\n- [Install](${artifactUrl})${s3Message}\n\nCommit: ${{ github.event.pull_request.head.sha }}\n\n**Note:** This build is signed with debug credentials for testing purposes only.`;
 
             github.rest.issues.createComment({
               issue_number: context.issue.number,
@@ -133,7 +153,11 @@ jobs:
           AWS_ACCESS_KEY_ID: "${{ secrets.FORK_AWS_ACCESS_KEY_ID }}"
           AWS_SECRET_ACCESS_KEY: "${{ secrets.FORK_AWS_SECRET_ACCESS_KEY }}"
           MATTERMOST_WEBHOOK_URL: "${{ secrets.FORK_MATTERMOST_WEBHOOK_URL }}"
-        run: bundle exec fastlane android build --env android.pr
+          AWS_BUCKET_NAME: "${{ secrets.FORK_AWS_BUCKET_NAME }}"
+          AWS_REGION: "${{ secrets.FORK_AWS_REGION }}"
+          AWS_FOLDER_NAME: "mobile-fork-builds"
+          BUILD_PR: "true"
+        run: bundle exec fastlane android build --env android.fork
         working-directory: ./fastlane
 
       - name: ci/upload-android-fork-pr-build
@@ -154,9 +178,24 @@ jobs:
               return;
             }
 
+            // Get artifact URL for download
             const artifactUrl = `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${artifactId}`;
-            const installUrl = artifactUrl; // For Android, the download URL is the install URL
-            const message = `### Android Fork PR Build\n\nThe Android PR build from your forked repository is available for:\n- [Download](${artifactUrl})\n- [Install](${installUrl})\n\nCommit: ${{ github.event.pull_request.head.sha }}\n\n**Note:** This build is signed with debug credentials for testing purposes only.`;
+            
+            // Get S3 install URL if available
+            let s3Message = '';
+            
+            if ('${{ secrets.FORK_AWS_BUCKET_NAME }}') {
+              const bucketName = '${{ secrets.FORK_AWS_BUCKET_NAME }}';
+              const folderName = 'mobile-fork-builds';
+              const branch = '${{ github.event.pull_request.head.ref }}';
+              const s3Folder = `${folderName}/${branch}`;
+              const apkFile = 'Mattermost_Fork.apk';
+              
+              const s3Url = `https://${bucketName}/${s3Folder}/${apkFile}`;
+              s3Message = `\n\nAlternatively, if S3 upload was successful, you can install directly from:\n- [Install from S3](${s3Url})`;
+            }
+            
+            const message = `### Android Fork PR Build\n\nThe Android PR build from your forked repository is available for:\n- [Download](${artifactUrl})\n- [Install](${artifactUrl})${s3Message}\n\nCommit: ${{ github.event.pull_request.head.sha }}\n\n**Note:** This build is signed with debug credentials for testing purposes only.`;
 
             github.rest.issues.createComment({
               issue_number: context.issue.number,

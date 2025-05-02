@@ -99,9 +99,28 @@ jobs:
               return;
             }
 
+            // Get artifact URL for download
             const artifactUrl = `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${artifactId}`;
-            const installUrl = `itms-services://?action=download-manifest&url=${encodeURIComponent(`${artifactUrl}/plist`)}`;
-            const message = `### iOS PR Build\n\nThe iOS PR build is available for:\n- [Download](${artifactUrl})\n- [Install](${installUrl})\n\nCommit: ${{ github.event.pull_request.head.sha }}`;
+            
+            // Get S3 install URL if available
+            let installUrl = '';
+            let s3Message = '';
+            
+            if ('${{ secrets.MM_MOBILE_PR_AWS_BUCKET_NAME || secrets.AWS_BUCKET_NAME }}') {
+              const bucketName = '${{ secrets.MM_MOBILE_PR_AWS_BUCKET_NAME || secrets.AWS_BUCKET_NAME }}';
+              const version = process.env.VERSION_NUMBER || '';
+              const build = process.env.BUILD_NUMBER || '';
+              const branch = '${{ github.event.pull_request.head.ref }}';
+              
+              // For PR builds, use branch name as folder
+              const s3Folder = `mattermost-mobile/${branch}`;
+              const plistFile = 'Mattermost.plist';
+              
+              installUrl = `itms-services://?action=download-manifest&url=https://${bucketName}/${s3Folder}/${plistFile}`;
+              s3Message = `\n\nAlternatively, if S3 upload was successful, you can install directly from:\n- [Install from S3](${installUrl})`;
+            }
+            
+            const message = `### iOS PR Build\n\nThe iOS PR build is available for:\n- [Download](${artifactUrl})\n- [Install](${artifactUrl})${s3Message}\n\nCommit: ${{ github.event.pull_request.head.sha }}`;
 
             github.rest.issues.createComment({
               issue_number: context.issue.number,
@@ -157,9 +176,27 @@ jobs:
               return;
             }
 
+            // Get artifact URL for download
             const artifactUrl = `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${artifactId}`;
-            const installUrl = artifactUrl; // For Android, the download URL is the install URL
-            const message = `### Android PR Build\n\nThe Android PR build is available for:\n- [Download](${artifactUrl})\n- [Install](${installUrl})\n\nCommit: ${{ github.event.pull_request.head.sha }}`;
+            
+            // Get S3 install URL if available
+            let s3Message = '';
+            
+            if ('${{ secrets.MM_MOBILE_PR_AWS_BUCKET_NAME || secrets.AWS_BUCKET_NAME }}') {
+              const bucketName = '${{ secrets.MM_MOBILE_PR_AWS_BUCKET_NAME || secrets.AWS_BUCKET_NAME }}';
+              const version = process.env.VERSION_NUMBER || '';
+              const build = process.env.BUILD_NUMBER || '';
+              const branch = '${{ github.event.pull_request.head.ref }}';
+              
+              // For PR builds, use branch name as folder
+              const s3Folder = `mattermost-mobile/${branch}`;
+              const apkFile = 'Mattermost.apk';
+              
+              const s3Url = `https://${bucketName}/${s3Folder}/${apkFile}`;
+              s3Message = `\n\nAlternatively, if S3 upload was successful, you can install directly from:\n- [Install from S3](${s3Url})`;
+            }
+            
+            const message = `### Android PR Build\n\nThe Android PR build is available for:\n- [Download](${artifactUrl})\n- [Install](${artifactUrl})${s3Message}\n\nCommit: ${{ github.event.pull_request.head.sha }}`;
 
             github.rest.issues.createComment({
               issue_number: context.issue.number,
