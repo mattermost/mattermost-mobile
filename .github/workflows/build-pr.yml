@@ -191,7 +191,7 @@ jobs:
                 ref: '${{ github.event.pull_request.head.ref }}',
                 inputs: {
                   branch: '${{ github.event.pull_request.head.ref }}',
-                  platform: '${{ github.event.label.name == "Build App for iOS" && "ios" || github.event.label.name == "Build App for Android" && "android" || "android" }}'
+                  platform: "${{ github.event.label.name == 'Build App for iOS' && 'ios' || github.event.label.name == 'Build App for Android' && 'android' || 'android' }}"
                 }
               });
               
