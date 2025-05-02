@@ -72,9 +72,8 @@ jobs:
           AWS_REGION: "${{ secrets.FORK_AWS_REGION }}"
           AWS_FOLDER_NAME: "mobile-fork-builds"
           BUILD_PR: "true"
+          IOS_BUILD_EXPORT_METHOD: "development"
         run: |
-          # Modify fastlane to use debug signing
-          sed -i '' 's/method = ENV\['\''IOS_BUILD_EXPORT_METHOD'\''\].nil? || ENV\['\''IOS_BUILD_EXPORT_METHOD'\''\].empty? ? '\''ad-hoc'\'' : ENV\['\''IOS_BUILD_EXPORT_METHOD'\''\]/method = '\''development'\''/' ./fastlane/Fastfile
           bundle exec fastlane ios build --env ios.fork
         working-directory: ./fastlane
 
@@ -139,13 +138,14 @@ jobs:
 
       - name: ci/setup-fork-android-build
         run: |
-          # Use debug keystore for signing
-          echo "Using debug keystore for fork build"
-          cp android/app/debug.keystore android/app/app.keystore
-          echo "STORE_FILE=app.keystore" >> $GITHUB_ENV
-          echo "STORE_PASSWORD=android" >> $GITHUB_ENV
-          echo "KEY_ALIAS=androiddebugkey" >> $GITHUB_ENV
-          echo "KEY_PASSWORD=android" >> $GITHUB_ENV
+          # Generate debug keystore if missing
+          debug_keystore_path="android/app/debug.keystore"
+          if [ ! -f "$debug_keystore_path" ]; then
+            mkdir -p android/app
+            keytool -genkey -v -keystore $debug_keystore_path \
+              -alias androiddebugkey -storepass android -keypass android \
+              -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=, OU=, O=, L=, S=, C="
+          fi
 
       - name: ci/build-android-fork-pr
         env:
