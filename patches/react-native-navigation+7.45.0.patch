@@ -1,5 +1,5 @@
 diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/NavigationActivity.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/NavigationActivity.java
-index f3f0d5a..3af346d 100644
+index f3f0d5a..970296d 100644
 --- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/NavigationActivity.java
 +++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/NavigationActivity.java
 @@ -1,13 +1,12 @@
@@ -37,7 +37,7 @@ index f3f0d5a..3af346d 100644
          StatusBarPresenter.Companion.init(this);
      }
  
-@@ -96,15 +94,15 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
+@@ -96,15 +94,16 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
  
      @Override
      public void invokeDefaultOnBackPressed() {
@@ -51,6 +51,7 @@ index f3f0d5a..3af346d 100644
 +        //     NavigationActivity.super.onBackPressed();
 +        //     callback.setEnabled(true);
 +        // }
++        super.invokeDefaultOnBackPressed();
      }
  
      @Override
@@ -59,7 +60,7 @@ index f3f0d5a..3af346d 100644
          super.onActivityResult(requestCode, resultCode, data);
          getReactGateway().onActivityResult(this, requestCode, resultCode, data);
      }
-@@ -126,7 +124,6 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
+@@ -126,7 +125,6 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
          return navigator;
      }
  
