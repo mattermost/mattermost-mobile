@@ -12,6 +12,7 @@ import {openChannelIfNeeded} from '@actions/remote/preference';
 import {fetchThread} from '@actions/remote/thread';
 import {fetchMissingProfilesByIds} from '@actions/remote/user';
 import {ActionType, Events, Screens} from '@constants';
+import {PostTypes} from '@constants/post';
 import DatabaseManager from '@database/manager';
 import {getChannelById, getMyChannel} from '@queries/servers/channel';
 import {getPostById} from '@queries/servers/post';
@@ -213,6 +214,13 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
     if (!oldPost) {
         EphemeralStore.addEditingPost(serverUrl, post);
         return;
+    }
+
+    if (post.type === PostTypes.EPHEMERAL && post.create_at === 0) {
+        // Updated ephemeral messages don't have a create_at value
+        // since the server has no persistence for ephemeral messages,
+        // so we need to use the old post's create_at value
+        post.create_at = oldPost.createAt;
     }
 
     if (oldPost.isPinned !== post.is_pinned) {
