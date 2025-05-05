@@ -1059,7 +1059,7 @@
   "screen.channel_files.header.recent_files": "最近のファイル",
   "screen.channel_files.results.filter.title": "ファイル形式で絞り込む",
   "screen.mentions.subtitle": "あなたがメンションされたメッセージ",
-  "screen.mentions.title": "最近のメンションされた投稿",
+  "screen.mentions.title": "最近のメンション",
   "screen.saved_messages.subtitle": "フォローアップのために保存したすべてのメッセージ",
   "screen.saved_messages.title": "保存されたメッセージ",
   "screen.search.header.files": "ファイル",
