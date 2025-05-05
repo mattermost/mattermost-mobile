@@ -122,7 +122,6 @@ const FileResults = ({
                 numOptions={numOptions}
                 onOptionsPress={onOptionsPress}
                 onPress={onPreviewPress}
-                publicLinkEnabled={publicLinkEnabled}
                 setAction={setAction}
                 updateFileForGallery={updateFileForGallery}
             />
@@ -135,7 +134,6 @@ const FileResults = ({
         onPreviewPress,
         onOptionsPress,
         numOptions,
-        publicLinkEnabled,
     ]);
 
     const noResults = useMemo(() => {
