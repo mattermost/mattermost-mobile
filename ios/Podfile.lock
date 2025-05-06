@@ -2191,6 +2191,27 @@ PODS:
   - SDWebImage/Core (5.19.7)
   - SDWebImageSVGCoder (1.7.0):
     - SDWebImage/Core (~> 5.6)
+  - secure-pdf-viewer (0.0.0):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.10.14.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - Sentry/HybridSDK (8.48.0)
   - simdjson (3.9.4)
   - SocketRocket (0.7.1)
@@ -2318,6 +2339,7 @@ DEPENDENCIES:
   - RNShare (from `../node_modules/react-native-share`)
   - RNSVG (from `../node_modules/react-native-svg`)
   - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
+  - "secure-pdf-viewer (from `../node_modules/@mattermost/secure-pdf-viewer`)"
   - Sentry/HybridSDK (= 8.48.0)
   - "simdjson (from `../node_modules/@nozbe/simdjson`)"
   - TurboLogIOSNative (from `https://github.com/larkox/react-native-turbo-log-ios-native.git`)
@@ -2561,6 +2583,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-svg"
   RNVectorIcons:
     :path: "../node_modules/react-native-vector-icons"
+  secure-pdf-viewer:
+    :path: "../node_modules/@mattermost/secure-pdf-viewer"
   simdjson:
     :path: "../node_modules/@nozbe/simdjson"
   TurboLogIOSNative:
@@ -2693,6 +2717,7 @@ SPEC CHECKSUMS:
   RNVectorIcons: 4330d8f8f8f4184f436e0c08ae9950431ffe466e
   SDWebImage: 8a6b7b160b4d710e2a22b6900e25301075c34cb3
   SDWebImageSVGCoder: 15a300a97ec1c8ac958f009c02220ac0402e936c
+  secure-pdf-viewer: 63aa9df5ba9d7df506614f5228469f38c98f1c50
   Sentry: 1ca8405451040482877dcd344dfa3ef80b646631
   simdjson: 7bb9e33d87737cec966e7b427773c67baa4458fe
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
