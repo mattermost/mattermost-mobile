@@ -12,7 +12,5 @@ export default {
     },
     SelfHostedProducts: {
         STARTER: 'starter',
-        PROFESSIONAL: 'professional',
-        ENTERPRISE: 'enterprise',
     },
 };
