@@ -4,8 +4,8 @@
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import {Button} from '@rneui/base';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {useIntl, type IntlShape} from 'react-intl';
-import {Alert, StyleSheet} from 'react-native';
+import {useIntl} from 'react-intl';
+import {StyleSheet} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import {ITEM_HEIGHT} from '@components/option_item';
@@ -14,10 +14,9 @@ import {useTheme} from '@context/theme';
 import {useGalleryItem} from '@hooks/gallery';
 import {TITLE_HEIGHT} from '@screens/bottom_sheet';
 import {bottomSheet, dismissOverlay} from '@screens/navigation';
-import {handleDeepLink, matchDeepLink} from '@utils/deep_link';
 import {isDocument} from '@utils/file';
 import {bottomSheetSnapPoint} from '@utils/helpers';
-import {normalizeProtocol, tryOpenURL} from '@utils/url';
+import {openLink} from '@utils/url/links';
 
 import BookmarkDetails from './bookmark_details';
 import BookmarkDocument from './bookmark_document';
@@ -52,37 +51,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 0,
     },
 });
-
-const openLink = async (href: string, serverUrl: string, siteURL: string, intl: IntlShape) => {
-    const url = normalizeProtocol(href);
-    if (!url) {
-        return;
-    }
-
-    const match = matchDeepLink(url, serverUrl, siteURL);
-
-    const onLinkError = () => {
-        Alert.alert(
-            intl.formatMessage({
-                id: 'mobile.link.error.title',
-                defaultMessage: 'Error',
-            }),
-            intl.formatMessage({
-                id: 'mobile.link.error.text',
-                defaultMessage: 'Unable to open the link.',
-            }),
-        );
-    };
-
-    if (match) {
-        const {error} = await handleDeepLink(match.url, intl);
-        if (error) {
-            tryOpenURL(match.url, onLinkError);
-        }
-    } else {
-        tryOpenURL(url, onLinkError);
-    }
-};
 
 const ChannelBookmark = ({
     bookmark, canDeleteBookmarks, canDownloadFiles, canEditBookmarks,
