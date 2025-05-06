@@ -311,6 +311,7 @@ class TestHelperSingleton {
             scheme_admin: false,
             last_viewed_at: 0,
             last_update_at: 0,
+            urgent_mention_count: 0,
             ...overwrite,
         };
     };
@@ -329,6 +330,7 @@ class TestHelperSingleton {
             roles: '',
             notify_props: {},
             last_update_at: 0,
+            urgent_mention_count: 0,
             ...overwrite,
         };
     };
@@ -616,6 +618,7 @@ class TestHelperSingleton {
             isUnread: false,
             roles: '',
             viewedAt: 0,
+            urgentMentionCount: 0,
             settings: this.fakeRelation(),
             resetPreparedState: jest.fn(),
             ...overwrite,
@@ -809,6 +812,7 @@ class TestHelperSingleton {
             isUnread: false,
             roles: '',
             viewedAt: 0,
+            urgentMentionCount: 0,
             channel: this.fakeRelation(),
             settings: this.fakeRelation(),
             resetPreparedState: jest.fn(),

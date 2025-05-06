@@ -78,6 +78,7 @@ describe('*** Operator: Channel Handlers tests ***', () => {
                 roles: '',
                 msg_count: 0,
                 mention_count: 0,
+                urgent_mention_count: 0,
                 last_viewed_at: 0,
                 last_update_at: 0,
                 notify_props: {
@@ -170,6 +171,7 @@ describe('*** Operator: Channel Handlers tests ***', () => {
                 last_update_at: 1617311494451,
                 mention_count: 3,
                 msg_count: 10,
+                urgent_mention_count: 0,
                 roles: 'guest',
                 notify_props: {
                     desktop: 'default',
@@ -228,6 +230,7 @@ describe('*** Operator: Channel Handlers tests ***', () => {
                 last_update_at: 1617311494451,
                 mention_count: 3,
                 msg_count: 10,
+                urgent_mention_count: 0,
                 roles: 'guest',
                 notify_props: {
                     desktop: 'default',
@@ -267,6 +270,7 @@ describe('*** Operator: Channel Handlers tests ***', () => {
                 last_viewed_at: 1613667352029,
                 msg_count: 3864,
                 mention_count: 0,
+                urgent_mention_count: 0,
                 notify_props: {
                     desktop: 'default',
                     email: 'default',
@@ -286,6 +290,7 @@ describe('*** Operator: Channel Handlers tests ***', () => {
                 last_viewed_at: 1615300540549,
                 msg_count: 16,
                 mention_count: 0,
+                urgent_mention_count: 0,
                 notify_props: {
                     desktop: 'default',
                     email: 'default',
