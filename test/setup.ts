@@ -446,7 +446,7 @@ jest.mock('@mattermost/react-native-network-client', () => ({
 
 jest.mock('react-native-safe-area-context', () => mockSafeAreaContext);
 
-require('react-native-reanimated').setUpTests();
+jest.mock('react-native-reanimated', () => require('react-native-reanimated/mock'));
 jest.mock('react-native-permissions', () => require('react-native-permissions/mock'));
 
 jest.mock('react-native-haptic-feedback', () => {
