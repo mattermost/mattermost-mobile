@@ -56,6 +56,9 @@ export default class FileModel extends Model implements FileModelInterface {
     /** width : The width of the file object/image */
     @field('width') width!: number;
 
+    /** isBlocked : Whether the file is blocked and cannot be opened */
+    @field('is_blocked') isBlocked!: boolean;
+
     /** post : The related Post record for this file */
     @immutableRelation(POST, 'post_id') post!: Relation<PostModel>;
 
