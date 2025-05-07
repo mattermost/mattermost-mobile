@@ -627,3 +627,27 @@ export const observeReportAProblemMetadata = (database: Database) => {
         })),
     );
 };
+
+export const observeIsMinimumLicenseTier = (database: Database, shortSku: string) => {
+    const license = observeLicense(database);
+    const isEnterpriseReady = observeConfigBooleanValue(database, 'BuildEnterpriseReady', false);
+
+    return combineLatest([license, isEnterpriseReady]).pipe(
+        switchMap(([lic, isEnt]) => {
+            if (!shortSku) {
+                return of$(false);
+            }
+            const isLicensed = lic?.IsLicensed === 'true';
+            if (!isEnt || !isLicensed) {
+                return of$(false);
+            }
+
+            const tier = License.LicenseSkuTier[lic.SkuShortName];
+            const targetTier = License.LicenseSkuTier[shortSku] || 0;
+            const isMinimumTier = Boolean(tier) && Boolean(targetTier) && isEnt && isLicensed && tier >= targetTier;
+
+            return of$(isMinimumTier);
+        }),
+        distinctUntilChanged(),
+    );
+};
