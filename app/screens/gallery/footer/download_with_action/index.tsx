@@ -21,11 +21,13 @@ import ProgressBar from '@components/progress_bar';
 import Toast from '@components/toast';
 import {GALLERY_FOOTER_HEIGHT} from '@constants/gallery';
 import {useServerUrl} from '@context/server';
+import {useTheme} from '@context/theme';
 import {alertFailedToOpenDocument, alertOnlyPDFSupported} from '@utils/document';
 import {getFullErrorMessage} from '@utils/errors';
 import {fileExists, getLocalFilePathFromFile, hasWriteStoragePermission, isPdf, pathWithPrefix} from '@utils/file';
 import {galleryItemToFileInfo} from '@utils/gallery';
 import {logDebug} from '@utils/log';
+import {previewPdf} from '@utils/navigation';
 import {typography} from '@utils/typography';
 
 import type {ClientResponse, ProgressPromise} from '@mattermost/react-native-network-client';
@@ -74,6 +76,7 @@ const styles = StyleSheet.create({
 const DownloadWithAction = ({action, enableSecureFilePreview, item, onDownloadSuccess, setAction, galleryView = true}: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
+    const theme = useTheme();
     const insets = useSafeAreaInsets();
     const [showToast, setShowToast] = useState<boolean|undefined>();
     const [error, setError] = useState('');
@@ -155,7 +158,7 @@ const DownloadWithAction = ({action, enableSecureFilePreview, item, onDownloadSu
                 const path = response.data.path as string;
                 if (enableSecureFilePreview) {
                     if (isPdf(galleryItemToFileInfo(item))) {
-                        // open PDF with secure file preview
+                        previewPdf(item, path, theme);
                     } else {
                         alertOnlyPDFSupported(intl);
                     }

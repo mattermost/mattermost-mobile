@@ -17,6 +17,7 @@ import {getFullErrorMessage, isErrorWithMessage} from '@utils/errors';
 import {fileExists, getLocalFilePathFromFile, isAudio, isGif, isImage, isPdf, isVideo} from '@utils/file';
 import {getImageSize} from '@utils/gallery';
 import {logDebug} from '@utils/log';
+import {previewPdf} from '@utils/navigation';
 
 import type {ClientResponse, ProgressPromise} from '@mattermost/react-native-network-client';
 import type ChannelBookmarkModel from '@typings/database/models/servers/channel_bookmark';
@@ -146,7 +147,7 @@ export const useDownloadFileAndPreview = (enableSecureFilePreview: boolean) => {
 
             if (enableSecureFilePreview) {
                 if (isPdf(file)) {
-                    // Open the document using the secure file preview
+                    previewPdf(file, path, theme, onDonePreviewingFile);
                 } else {
                     alertOnlyPDFSupported(intl);
                 }
@@ -172,7 +173,7 @@ export const useDownloadFileAndPreview = (enableSecureFilePreview: boolean) => {
                 }
             });
         }
-    }, [didCancel, preview, enableSecureFilePreview, setStatusBarColor, onDonePreviewingFile, serverUrl, intl]);
+    }, [didCancel, preview, enableSecureFilePreview, setStatusBarColor, onDonePreviewingFile, serverUrl, theme, intl]);
 
     const downloadAndPreviewFile = useCallback(async (file: FileInfo) => {
         setDidCancel(false);
