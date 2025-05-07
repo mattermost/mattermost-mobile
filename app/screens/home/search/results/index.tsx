@@ -8,7 +8,7 @@ import {switchMap} from 'rxjs/operators';
 
 import {queryChannelsById} from '@queries/servers/channel';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
-import {observeCanDownloadFiles} from '@queries/servers/security';
+import {observeCanDownloadFiles, observeEnableSecureFilePreview} from '@queries/servers/security';
 import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
 import {mapCustomEmojiNames} from '@utils/emoji/helpers';
@@ -34,6 +34,7 @@ const enhance = withObservables(['fileChannelIds'], ({database, fileChannelIds}:
         ),
         fileChannels,
         canDownloadFiles: observeCanDownloadFiles(database),
+        enableSecureFilePreview: observeEnableSecureFilePreview(database),
         publicLinkEnabled: observeConfigBooleanValue(database, 'EnablePublicLink'),
     };
 });

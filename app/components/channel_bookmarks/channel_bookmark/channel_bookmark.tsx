@@ -31,6 +31,7 @@ type Props = {
     canDeleteBookmarks: boolean;
     canDownloadFiles: boolean;
     canEditBookmarks: boolean;
+    enableSecureFilePreview: boolean;
     file?: FileModel;
     galleryIdentifier: string;
     index?: number;
@@ -53,7 +54,7 @@ const styles = StyleSheet.create({
 });
 
 const ChannelBookmark = ({
-    bookmark, canDeleteBookmarks, canDownloadFiles, canEditBookmarks,
+    bookmark, canDeleteBookmarks, canDownloadFiles, canEditBookmarks, enableSecureFilePreview,
     file, galleryIdentifier, index, onPress, publicLinkEnabled, siteURL,
 }: Props) => {
     const theme = useTheme();
@@ -74,17 +75,18 @@ const ChannelBookmark = ({
     }, [bookmark, index, intl, onPress, serverUrl, siteURL]);
 
     const handleLongPress = useCallback(() => {
-        const canShare = canDownloadFiles || bookmark.type === 'link';
-        const count = [canCopyPublicLink, canDeleteBookmarks, canShare, canEditBookmarks].
+        const canShare = !enableSecureFilePreview && (canDownloadFiles || bookmark.type === 'link');
+        const count = [(!enableSecureFilePreview && canCopyPublicLink), canDeleteBookmarks, canShare, canEditBookmarks].
             filter((e) => e).length;
 
         const renderContent = () => (
             <ChannelBookmarkOptions
                 bookmark={bookmark}
-                canCopyPublicLink={canCopyPublicLink}
+                canCopyPublicLink={!enableSecureFilePreview && canCopyPublicLink}
                 canDeleteBookmarks={canDeleteBookmarks}
-                canDownloadFiles={canDownloadFiles}
+                canDownloadFiles={!enableSecureFilePreview && canDownloadFiles}
                 canEditBookmarks={canEditBookmarks}
+                enableSecureFilePreview={enableSecureFilePreview}
                 file={file}
                 setAction={setAction}
             />
@@ -97,7 +99,7 @@ const ChannelBookmark = ({
             theme,
             closeButtonId: 'close-channel-bookmark-actions',
         });
-    }, [bookmark, canCopyPublicLink, canDeleteBookmarks, canDownloadFiles, canEditBookmarks, file, theme]);
+    }, [bookmark, canCopyPublicLink, canDeleteBookmarks, canDownloadFiles, canEditBookmarks, enableSecureFilePreview, file, theme]);
 
     const {onGestureEvent, ref} = useGalleryItem(galleryIdentifier, index || 0, handlePress);
 
@@ -112,6 +114,7 @@ const ChannelBookmark = ({
             <BookmarkDocument
                 bookmark={bookmark}
                 canDownloadFiles={canDownloadFiles}
+                enableSecureFilePreview={enableSecureFilePreview}
                 file={file!}
                 onLongPress={handleLongPress}
             />

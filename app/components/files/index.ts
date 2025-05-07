@@ -6,7 +6,7 @@ import {of as of$, from as from$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {queryFilesForPost} from '@queries/servers/file';
-import {observeCanDownloadFiles} from '@queries/servers/security';
+import {observeCanDownloadFiles, observeEnableSecureFilePreview} from '@queries/servers/security';
 import {observeConfigBooleanValue} from '@queries/servers/system';
 import {fileExists} from '@utils/file';
 
@@ -45,6 +45,7 @@ const enhance = withObservables(['post'], ({database, post}: EnhanceProps) => {
 
     return {
         canDownloadFiles: observeCanDownloadFiles(database),
+        enableSecureFilePreview: observeEnableSecureFilePreview(database),
         postId: of$(post.id),
         postProps: of$(post.props),
         publicLinkEnabled,
