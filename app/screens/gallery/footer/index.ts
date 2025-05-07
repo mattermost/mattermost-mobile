@@ -8,7 +8,8 @@ import {switchMap} from 'rxjs/operators';
 import {General} from '@constants';
 import {observeChannel} from '@queries/servers/channel';
 import {observePost} from '@queries/servers/post';
-import {observeCanDownloadFiles, observeConfigBooleanValue, observeCurrentChannelId, observeCurrentUserId} from '@queries/servers/system';
+import {observeCanDownloadFiles} from '@queries/servers/security';
+import {observeConfigBooleanValue, observeCurrentChannelId, observeCurrentUserId} from '@queries/servers/system';
 import {observeTeammateNameDisplay, observeUser} from '@queries/servers/user';
 
 import Footer from './footer';

@@ -3,7 +3,8 @@
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 
-import {observeConfigBooleanValue, observeCanDownloadFiles} from '@queries/servers/system';
+import {observeCanDownloadFiles} from '@queries/servers/security';
+import {observeConfigBooleanValue} from '@queries/servers/system';
 
 import OptionMenus from './option_menus';
 

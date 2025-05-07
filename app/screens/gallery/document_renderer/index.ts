@@ -3,7 +3,7 @@
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 
-import {observeCanDownloadFiles} from '@queries/servers/system';
+import {observeCanDownloadFiles} from '@queries/servers/security';
 
 import DocumentRenderer from './document_renderer';
 

@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable max-lines */
+
 import {Database, Q} from '@nozbe/watermelondb';
 import {nativeApplicationVersion, nativeBuildVersion} from 'expo-application';
 import {Platform} from 'react-native';
@@ -538,28 +540,6 @@ export const getExpiredSession = async (database: Database) => {
 export const observeLastDismissedAnnouncement = (database: Database) => {
     return querySystemValue(database, SYSTEM_IDENTIFIERS.LAST_DISMISSED_BANNER).observeWithColumns(['value']).pipe(
         switchMap((list) => of$(list[0]?.value)),
-    );
-};
-
-export const observeCanUploadFiles = (database: Database) => {
-    const enableFileAttachments = observeConfigBooleanValue(database, 'EnableFileAttachments', true);
-    const enableMobileFileUpload = observeConfigBooleanValue(database, 'EnableMobileFileUpload', true);
-    const license = observeLicense(database);
-
-    return combineLatest([enableFileAttachments, enableMobileFileUpload, license]).pipe(
-        switchMap(([efa, emfu, l]) => of$(
-            efa &&
-                (l?.IsLicensed !== 'true' || l?.Compliance !== 'true' || emfu),
-        )),
-    );
-};
-
-export const observeCanDownloadFiles = (database: Database) => {
-    const enableMobileFileDownload = observeConfigBooleanValue(database, 'EnableMobileFileDownload', true);
-    const license = observeLicense(database);
-
-    return combineLatest([enableMobileFileDownload, license]).pipe(
-        switchMap(([emfd, l]) => of$((l?.IsLicensed !== 'true' || l?.Compliance !== 'true' || emfd))),
     );
 };
 

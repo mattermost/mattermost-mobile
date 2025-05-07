@@ -4,7 +4,8 @@
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 
 import {observeChannel} from '@queries/servers/channel';
-import {observeCanDownloadFiles, observeConfigBooleanValue} from '@queries/servers/system';
+import {observeCanDownloadFiles} from '@queries/servers/security';
+import {observeConfigBooleanValue} from '@queries/servers/system';
 
 import ChannelFiles from './channel_files';
 

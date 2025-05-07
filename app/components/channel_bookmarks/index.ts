@@ -4,7 +4,8 @@
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 
 import {observeBookmarks, observeCanDeleteBookmarks, observeCanEditBookmarks} from '@queries/servers/channel_bookmark';
-import {observeCanDownloadFiles, observeCanUploadFiles, observeConfigBooleanValue, observeCurrentUserId} from '@queries/servers/system';
+import {observeCanDownloadFiles, observeCanUploadFiles} from '@queries/servers/security';
+import {observeConfigBooleanValue, observeCurrentUserId} from '@queries/servers/system';
 
 import ChannelBookmarks from './channel_bookmarks';
 
