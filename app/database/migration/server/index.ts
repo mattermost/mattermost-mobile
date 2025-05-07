@@ -8,9 +8,20 @@ import {addColumns, createTable, schemaMigrations, unsafeExecuteSql} from '@nozb
 
 import {MM_TABLES} from '@constants/database';
 
-const {CHANNEL_BOOKMARK, CHANNEL_INFO, DRAFT, POST, CHANNEL, CUSTOM_PROFILE_ATTRIBUTE, CUSTOM_PROFILE_FIELD, SCHEDULED_POST} = MM_TABLES.SERVER;
+const {CHANNEL_BOOKMARK, CHANNEL_INFO, DRAFT, FILE, POST, CHANNEL, CUSTOM_PROFILE_ATTRIBUTE, CUSTOM_PROFILE_FIELD, SCHEDULED_POST} = MM_TABLES.SERVER;
 
 export default schemaMigrations({migrations: [
+    {
+        toVersion: 10,
+        steps: [
+            addColumns({
+                table: FILE,
+                columns: [
+                    {name: 'is_blocked', type: 'boolean'},
+                ],
+            }),
+        ],
+    },
     {
         toVersion: 9,
         steps: [

@@ -108,6 +108,7 @@ name string
 post_id string INDEX FK >- Post.id
 size number
 width number
+is_blocked number #Determines if a file has been blocked and cannot be opened anymore
 
 Group
 -
