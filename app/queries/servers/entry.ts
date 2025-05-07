@@ -27,6 +27,7 @@ type PrepareModelsArgs = {
     prefData?: MyPreferencesRequest;
     meData?: MyUserRequest;
     isCRTEnabled?: boolean;
+    isDelete?: boolean;
 }
 
 type PrepareModelsForDeletionArgs = {
@@ -119,7 +120,6 @@ export async function truncateCrtRelatedTables(serverUrl: string): Promise<{erro
 
     try {
         await database.write(() => {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             return database.adapter.unsafeExecute({
                 sqls: [
@@ -144,4 +144,28 @@ export async function truncateCrtRelatedTables(serverUrl: string): Promise<{erro
     }
 
     return {error: false};
+}
+
+export async function processEntryModels({
+    operator,
+    teamData,
+    chData,
+    prefData,
+    meData,
+    isCRTEnabled,
+    isDelete = true,
+}: PrepareModelsArgs): Promise<Model[]> {
+    const modelPromises = await prepareEntryModels({operator, teamData, chData, prefData, meData, isCRTEnabled});
+
+    let modelsToDelete: Model[][] = [];
+    if (isDelete) {
+        const modelsToDeletePromises = await prepareEntryModelsForDeletion({operator, teamData, chData});
+        modelsToDelete = await Promise.all(modelsToDeletePromises);
+    }
+    const models = await Promise.all(modelPromises);
+
+    if (modelsToDelete.length) {
+        models.push(...modelsToDelete);
+    }
+    return models.flat();
 }

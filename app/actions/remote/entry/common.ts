@@ -4,7 +4,8 @@
 import {nativeApplicationVersion} from 'expo-application';
 import {RESULTS, checkNotifications} from 'react-native-permissions';
 
-import {fetchAllMyChannelsForAllTeams, fetchMissingDirectChannelsInfo, handleKickFromChannel, type MyChannelsRequest} from '@actions/remote/channel';
+import {PostBatchLevel} from '@actions/local/post';
+import {fetchChannelById, fetchMissingDirectChannelsInfo, fetchMyChannelsForTeam, handleKickFromChannel, type MyChannelsRequest} from '@actions/remote/channel';
 import {fetchGroupsForMember} from '@actions/remote/groups';
 import {fetchPostsForUnreadChannels} from '@actions/remote/post';
 import {type MyPreferencesRequest, fetchMyPreferences} from '@actions/remote/preference';
@@ -22,9 +23,10 @@ import {getPreferenceValue, getTeammateNameDisplaySetting} from '@helpers/api/pr
 import {selectDefaultTeam} from '@helpers/api/team';
 import {DEFAULT_LOCALE} from '@i18n';
 import NetworkManager from '@managers/network_manager';
+import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {getDeviceToken} from '@queries/app/global';
 import {getChannelById} from '@queries/servers/channel';
-import {prepareEntryModels, prepareEntryModelsForDeletion, truncateCrtRelatedTables} from '@queries/servers/entry';
+import {processEntryModels, truncateCrtRelatedTables} from '@queries/servers/entry';
 import {getHasCRTChanged} from '@queries/servers/preference';
 import {getCurrentChannelId, getCurrentTeamId, getIsDataRetentionEnabled, getPushVerificationStatus, getLastFullSync, setCurrentTeamAndChannelId, getConfigValue} from '@queries/servers/system';
 import {getTeamChannelHistory} from '@queries/servers/team';
@@ -102,13 +104,18 @@ export async function deferredAppEntryActions(
 
 const entryRest = async (serverUrl: string, teamId?: string, channelId?: string, since = 0, groupLabel?: RequestGroupLabel) => {
     try {
+        PerformanceMetricsManager.startMetric('entryRest');
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         let lastDisconnectedAt = since || await getLastFullSync(database);
+
+        PerformanceMetricsManager.mark('entryRest', {detail: `after getLastFullSync ${lastDisconnectedAt}`});
 
         const [confResp, prefData] = await Promise.all([
             fetchConfigAndLicense(serverUrl, false, groupLabel),
             fetchMyPreferences(serverUrl, true, groupLabel),
         ]);
+
+        PerformanceMetricsManager.mark('entryRest', {detail: 'after license'});
 
         const isCRTEnabled = Boolean(prefData.preferences && processIsCRTEnabled(prefData.preferences, confResp.config?.CollapsedThreads, confResp.config?.FeatureFlagCollapsedThreads, confResp.config?.Version));
         if (prefData.preferences) {
@@ -120,26 +127,27 @@ const entryRest = async (serverUrl: string, teamId?: string, channelId?: string,
                     lastDisconnectedAt = 0;
                 }
                 const {error} = await truncateCrtRelatedTables(serverUrl);
+                PerformanceMetricsManager.mark('entryRest', {detail: 'after truncateCrtRelatedTables'});
+
                 if (error) {
                     throw new Error(`Resetting CRT on ${serverUrl} failed`);
                 }
             }
         }
 
+        PerformanceMetricsManager.mark('entryRest', {detail: 'after getHasCRTChanged'});
+
         // let's start fetching in parallel all we can
-        const promises: [Promise<MyTeamsRequest>, Promise<MyUserRequest>, Promise<MyChannelsRequest>] = [
+        const promises: [Promise<MyTeamsRequest>, Promise<MyUserRequest>] = [
             fetchMyTeams(serverUrl, true, groupLabel),
             fetchMe(serverUrl, true, groupLabel),
-            fetchAllMyChannelsForAllTeams(serverUrl, lastDisconnectedAt, isCRTEnabled, true, groupLabel),
         ];
 
-        const [teamData, meData, chData] = await Promise.all(promises);
-        const error = confResp.error || prefData.error || teamData.error || meData.error || chData.error;
+        const [teamData, meData] = await Promise.all(promises);
+        const error = confResp.error || prefData.error || teamData.error || meData.error;
         if (error) {
             return {error};
         }
-
-        fetchRoles(serverUrl, teamData.memberships, chData.memberships, meData.user, false, false, groupLabel);
 
         let initialTeamId = teamId || '';
         let initialChannelId = channelId || '';
@@ -153,13 +161,13 @@ const entryRest = async (serverUrl: string, teamId?: string, channelId?: string,
                 // and if so, which team does it belong to now. That team will become the
                 // active team on mobile app after this point.
 
-                const serverChannel = chData.channels?.find((c) => c.id === channelId);
+                const fetchResult = await fetchChannelById(serverUrl, channelId);
 
                 // Although yon can convert GM only to a pirvate channel, a private channel can furthur be converted to a public channel.
                 // So between the mobile app being on the GM and reconnecting,
                 // it may have become either a public or a private channel. So we need to check for both.
-                if (serverChannel?.type === General.PRIVATE_CHANNEL || serverChannel?.type === General.OPEN_CHANNEL) {
-                    initialTeamId = serverChannel.team_id;
+                if (fetchResult.channel?.type === General.PRIVATE_CHANNEL || fetchResult.channel?.type === General.OPEN_CHANNEL) {
+                    initialTeamId = fetchResult.channel.team_id;
                     initialChannelId = channelId;
                     gmConverted = true;
                 }
@@ -186,19 +194,29 @@ const entryRest = async (serverUrl: string, teamId?: string, channelId?: string,
             }
         }
 
-        initialChannelId = await entryInitialChannelId(database, initialChannelId, teamId, initialTeamId, meData?.user?.locale || '', chData?.channels, chData?.memberships);
-
-        const dt = Date.now();
-        const modelsToDeletePromises = await prepareEntryModelsForDeletion({operator, teamData, chData});
-        const modelPromises = await prepareEntryModels({operator, teamData, chData, prefData, meData, isCRTEnabled});
-        const modelsToDelete = await Promise.all(modelsToDeletePromises);
-        const models = await Promise.all(modelPromises);
-        if (modelsToDelete.length) {
-            models.push(...modelsToDelete);
+        let chData: MyChannelsRequest = {
+            channels: [],
+            memberships: [],
+            categories: [],
+        };
+        if (initialTeamId) {
+            PerformanceMetricsManager.mark('entryRest', {detail: 'before fetchMyChannelsForTeam'});
+            chData = await fetchMyChannelsForTeam(serverUrl, initialTeamId, false, 0, true, false, isCRTEnabled, groupLabel);
+            PerformanceMetricsManager.mark('entryRest', {detail: 'after fetchMyChannelsForTeam'});
         }
-        logDebug('Process models on entry', groupLabel, models.flat().length, `${Date.now() - dt}ms`);
 
-        return {models: models.flat(), initialChannelId, initialTeamId, prefData, teamData, chData, meData, gmConverted};
+        fetchRoles(serverUrl, teamData.memberships, chData.memberships, meData.user, false, false, groupLabel);
+
+        initialChannelId = await entryInitialChannelId(database, initialChannelId, teamId, initialTeamId, meData?.user?.locale || '', chData?.channels, chData?.memberships);
+        PerformanceMetricsManager.mark('entryRest', {detail: 'after entryInitialChannelId'});
+        const dt = Date.now();
+        const models = await processEntryModels({operator, teamData, chData, prefData, meData, isCRTEnabled, isDelete: false});
+        logDebug('Process models on entry', groupLabel, models.length, `${Date.now() - dt}ms`);
+
+        PerformanceMetricsManager.mark('entryRest', {detail: 'endMetric'});
+        PerformanceMetricsManager.endMetric('entryRest', serverUrl);
+
+        return {models, initialChannelId, initialTeamId, prefData, teamData, chData, meData, gmConverted};
     } catch (error) {
         logError('entryRest', groupLabel, error);
         return {error};
@@ -263,7 +281,9 @@ export async function restDeferredAppEntryActions(
     updateCanJoinTeams(serverUrl);
 
     setTimeout(async () => {
+        PerformanceMetricsManager.startMetric('restDeferedInTimeout');
         let mySortedTeams: Team[] = [];
+
         if (teamData.teams?.length && teamData.memberships?.length) {
             const teamsOrder = preferences?.find((p) => p.category === Preferences.CATEGORIES.TEAMS_ORDER);
             const sortedTeamIds = new Set(teamsOrder?.value.split(','));
@@ -284,6 +304,48 @@ export async function restDeferredAppEntryActions(
             }
 
             const myOtherSortedTeams = mySortedTeams.filter((t) => t.id !== initialTeamId);
+
+            const combinedChannelsData: MyChannelsRequest = Object.assign({
+                channels: [],
+                memberships: [],
+                categories: [],
+            }, chData);
+
+            PerformanceMetricsManager.mark('restDeferedInTimeout', {detail: 'before fetching other teams channels'});
+
+            if (myOtherSortedTeams.length && chData?.channels && chData?.memberships && chData?.categories) {
+                const channelsForOtherTeams = await Promise.all(
+                    myOtherSortedTeams.map((team) =>
+                        fetchMyChannelsForTeam(serverUrl, team.id, false, since, true, false, isCRTEnabled, requestLabel),
+                    ),
+                );
+
+                PerformanceMetricsManager.mark('restDeferedInTimeout', {detail: 'after fetching other teams channels'});
+
+                // Combine all data directly into combinedChannelsData
+                channelsForOtherTeams.forEach((data) => {
+                    if (data.channels) {
+                        combinedChannelsData.channels = combinedChannelsData.channels.concat(data.channels);
+                    }
+                    if (data.memberships) {
+                        combinedChannelsData.memberships = combinedChannelsData.memberships.concat(data.memberships);
+                    }
+                    if (data.categories) {
+                        combinedChannelsData.categories = combinedChannelsData.categories.concat(data.categories);
+                    }
+                });
+
+                const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+                const dt = Date.now();
+                const models = await processEntryModels({operator, teamData, chData: combinedChannelsData, isCRTEnabled});
+                PerformanceMetricsManager.mark('restDeferedInTimeout', {detail: 'after processEntryModels'});
+
+                await operator.batchRecords(models, 'restDeferredAppEntryActions');
+                PerformanceMetricsManager.mark('restDeferedInTimeout', {detail: 'after batch records'});
+                logDebug('Process models deferred', groupLabel, models.length, `${Date.now() - dt}ms`);
+
+            }
+
             if (initialTeamId) {
                 const initialTeam = teamMap.get(initialTeamId);
                 if (initialTeam) {
@@ -291,25 +353,32 @@ export async function restDeferredAppEntryActions(
                 }
             }
 
-            if (chData?.channels?.length && chData.memberships?.length && initialTeamId) {
+            PerformanceMetricsManager.mark('restDeferedInTimeout', {detail: 'before initial team channels'});
+            if (combinedChannelsData?.channels?.length && combinedChannelsData.memberships?.length && initialTeamId) {
                 if (isCRTEnabled && initialTeamId) {
                     await syncTeamThreads(serverUrl, initialTeamId, {groupLabel: requestLabel});
+                    PerformanceMetricsManager.mark('restDeferedInTimeout', {detail: 'after syncTeamThreads'});
                 }
-                fetchPostsForUnreadChannels(serverUrl, mySortedTeams, chData.channels, chData.memberships, initialChannelId, isCRTEnabled, false, requestLabel);
+                fetchPostsForUnreadChannels(serverUrl, mySortedTeams, combinedChannelsData.channels, combinedChannelsData.memberships, initialChannelId, isCRTEnabled, false, requestLabel, PostBatchLevel.TEAM);
+                PerformanceMetricsManager.mark('restDeferedInTimeout', {detail: 'after fetchPostsForUnreadChannels'});
             }
 
             if (myOtherSortedTeams.length) {
                 fetchTeamsThreads(serverUrl, since, myOtherSortedTeams, isCRTEnabled, false, requestLabel);
+                PerformanceMetricsManager.mark('restDeferedInTimeout', {detail: 'after fetchTeamsThreads'});
             }
         }
+
+        // Fetch groups for current user
+        await fetchGroupsForMember(serverUrl, currentUserId, false, requestLabel);
+
+        if (initialTeamId) {
+            await fetchScheduledPosts(serverUrl, initialTeamId, true, groupLabel);
+        }
+        PerformanceMetricsManager.mark('restDeferedInTimeout', {detail: 'before endMetric'});
+        PerformanceMetricsManager.endMetric('restDeferedInTimeout', serverUrl);
     });
 
-    // Fetch groups for current user
-    fetchGroupsForMember(serverUrl, currentUserId, false, requestLabel);
-
-    if (initialTeamId) {
-        fetchScheduledPosts(serverUrl, initialTeamId, true, groupLabel);
-    }
 }
 
 export const setExtraSessionProps = async (serverUrl: string, groupLabel?: RequestGroupLabel) => {
