@@ -114,7 +114,7 @@ export default function MessageAttachment({attachment, channelId, layoutWidth, l
                     theme={theme}
                 />
                 }
-                {Boolean(attachment.fields && attachment.fields?.length) &&
+                {Boolean(attachment.fields?.length) &&
                 <AttachmentFields
                     baseTextStyle={style.message}
                     blockStyles={blockStyles}
