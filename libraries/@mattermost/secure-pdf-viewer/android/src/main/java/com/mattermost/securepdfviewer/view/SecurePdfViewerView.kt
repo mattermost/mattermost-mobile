@@ -12,7 +12,6 @@ import com.facebook.react.bridge.WritableMap
 import com.facebook.react.uimanager.UIManagerHelper
 import com.facebook.react.uimanager.events.RCTEventEmitter
 import com.github.barteksc.pdfviewer.link.LinkHandler
-import com.github.barteksc.pdfviewer.scroll.DefaultScrollHandle
 import com.github.barteksc.pdfviewer.util.FitPolicy
 import com.mattermost.securepdfviewer.BuildConfig
 import com.mattermost.securepdfviewer.enums.Events
@@ -142,7 +141,7 @@ class SecurePdfViewerView(context: Context) : FrameLayout(context) {
                 }
                 false
             }
-            .scrollHandle(DefaultScrollHandle(context))
+            .scrollHandle(ImprovedScrollHandle(context))
             .load()
     }
 
