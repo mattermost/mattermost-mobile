@@ -10,6 +10,11 @@ extension SecurePdfViewerComponentView {
         }
 
         let url = URL(fileURLWithPath: filePath)
+        if let error = PDFDiagnostics.diagnosePotentialLoadFailure(at: url) {
+            onLoadError?(["message": error.description])
+            return
+        }
+
         if let document = PDFDocument(url: url) {
             pdfDocument = document
 
@@ -19,12 +24,9 @@ extension SecurePdfViewerComponentView {
             } else {
                 pdfView.document = document
                 customThumbnailView.pdfView = pdfView
-//                thumbnailView.pdfView = pdfView
-//                updateThumbnailSize()
                 updatePageIndicator()
                 
                 if thumbnailLayoutMode == .panel {
-//                    thumbnailScrollView.isHidden = false
                     customThumbnailView.isHidden = false
                     layoutIfNeeded()
                 }
@@ -33,12 +35,7 @@ extension SecurePdfViewerComponentView {
             }
         } else {
             let error = PDFDiagnostics.diagnoseLoadFailure(at: url)
-                    
-            // Send specific error information to React Native
             onLoadError?(["message": error.description])
-            
-            // Log detailed error for debugging
-            print("PDF Error: \(error.description) for file at \(filePath)")
         }
     }
 
@@ -50,7 +47,6 @@ extension SecurePdfViewerComponentView {
         if document.unlock(withPassword: password) {
             pdfView.document = document
             customThumbnailView.pdfView = pdfView
-//            updateThumbnailSize()
             updatePageIndicator()
             onLoad?([:])
         } else {
@@ -69,11 +65,9 @@ extension SecurePdfViewerComponentView {
     @objc func toggleThumbnails() {
         switch thumbnailLayoutMode {
         case .panel:
-            // In panel mode, we slide the panel in or out
             let isCurrentlyVisible = thumbnailLeadingConstraint.constant == 0
             
             if isCurrentlyVisible {
-                // Hide panel
                 thumbnailLeadingConstraint.constant = -thumbnailWidthConstraint.constant
                 pdfViewLeadingConstraint.constant = 0
                 
@@ -82,7 +76,6 @@ extension SecurePdfViewerComponentView {
                     self.layoutIfNeeded()
                 }
             } else {
-                // Show panel
                 customThumbnailView.isHidden = false
                 thumbnailLeadingConstraint.constant = 0
                 pdfViewLeadingConstraint.constant = thumbnailWidthConstraint.constant
@@ -100,8 +93,7 @@ extension SecurePdfViewerComponentView {
             UIView.animate(withDuration: 0.3) {
                 self.layoutIfNeeded()
             }
-        case .none:
-            print("Note: Unsupported thumbnail mode '\(thumbnailLayoutMode)'")
+        case .none: break // this is to make the switch exhaustive although this one here is not reachable
         }
     }
 
@@ -119,12 +111,11 @@ extension SecurePdfViewerComponentView {
 
     func updatePageIndicator() {
         guard let doc = pdfView.document, let page = pdfView.currentPage else { return }
-
         let pageIndex = doc.index(for: page) + 1
         let totalPages = doc.pageCount
 
         pageIndicator?.updatePage(current: pageIndex, total: totalPages)
-        
+
         pageIndicator?.setAlpha(1)
         hidePageIndicator()
     }

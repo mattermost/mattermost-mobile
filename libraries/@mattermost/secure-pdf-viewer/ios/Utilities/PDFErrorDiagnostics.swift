@@ -9,6 +9,7 @@ enum PDFError: Error {
     case memoryError
     case incompatibleFormat
     case unknownError
+    case internalError(_ error: Error)
     
     var description: String {
         switch self {
@@ -26,6 +27,8 @@ enum PDFError: Error {
             return "This PDF uses unsupported features or an incompatible format."
         case .unknownError:
             return "An unknown error occurred while opening the PDF file."
+        case .internalError(let error):
+            return "An internal error occurred while opening the PDF file.\n\(error.localizedDescription)"
         }
     }
 }
@@ -108,11 +111,11 @@ class PDFDiagnostics {
         }
         
         // Check if running in simulator (for development)
-        #if targetEnvironment(simulator)
+#if targetEnvironment(simulator)
         return 600 * 1024 * 1024 // 600MB for simulator
-        #else
+#else
         return baseLimit
-        #endif
+#endif
     }
     
     /// Attempts to get the amount of free memory available on the device
@@ -139,6 +142,41 @@ class PDFDiagnostics {
     
     /// Diagnoses why a PDF document failed to load
     static func diagnoseLoadFailure(at url: URL) -> PDFError {
+        // If we have a valid PDF header but PDFDocument failed to load,
+        // try to determine if it's corrupted or has format issues
+        do {
+            // Only read a small portion of the file to check structure
+            let data = try Data(contentsOf: url, options: .alwaysMapped)
+            
+            // Try with CGPDFDocument for lower-level diagnosis
+            if let provider = CGDataProvider(data: data as CFData),
+               let _ = CGPDFDocument(provider) {
+                
+                // If CGPDFDocument loads but PDFKit's PDFDocument doesn't,
+                // it might be using unsupported features
+                return .incompatibleFormat
+            } else {
+                // Neither loads - likely corrupted
+                return .fileCorrupted
+            }
+        } catch let dataError as NSError {
+            // Check for memory-related errors by examining the error description
+            // since the specific error code varies between iOS versions
+            let errorDesc = dataError.localizedDescription.lowercased()
+            
+            if dataError.domain == NSCocoaErrorDomain &&
+                (errorDesc.contains("memory") ||
+                 errorDesc.contains("ram") ||
+                 errorDesc.contains("resource") ||
+                 errorDesc.contains("allocation")) {
+                return .memoryError
+            }
+            return .fileCorrupted
+        }
+    }
+    
+    /// Diagnoses if a PDF document will fail to load
+    static func diagnosePotentialLoadFailure(at url: URL) -> PDFError? {
         do {
             // Check file size first to avoid memory issues with large files
             let attributes = try FileManager.default.attributesOfItem(atPath: url.path)
@@ -157,41 +195,11 @@ class PDFDiagnostics {
                     return .fileNotPDF
                 }
             }
-            
-            // If we have a valid PDF header but PDFDocument failed to load,
-            // try to determine if it's corrupted or has format issues
-            do {
-                // Only read a small portion of the file to check structure
-                let data = try Data(contentsOf: url, options: .alwaysMapped)
-                
-                // Try with CGPDFDocument for lower-level diagnosis
-                if let provider = CGDataProvider(data: data as CFData),
-                   let pdfDoc = CGPDFDocument(provider) {
-                    
-                    // If CGPDFDocument loads but PDFKit's PDFDocument doesn't, 
-                    // it might be using unsupported features
-                    return .incompatibleFormat
-                } else {
-                    // Neither loads - likely corrupted
-                    return .fileCorrupted
-                }
-            } catch let dataError as NSError {
-                // Check for memory-related errors by examining the error description
-                // since the specific error code varies between iOS versions
-                let errorDesc = dataError.localizedDescription.lowercased()
-                
-                if dataError.domain == NSCocoaErrorDomain &&
-                   (errorDesc.contains("memory") ||
-                    errorDesc.contains("ram") ||
-                    errorDesc.contains("resource") ||
-                    errorDesc.contains("allocation")) {
-                    return .memoryError
-                }
-                return .fileCorrupted
-            }
-        } catch {
+        }  catch {
             print("Error diagnosing PDF: \(error.localizedDescription)")
-            return .unknownError
+            return .internalError(error)
         }
+        
+        return nil
     }
 }

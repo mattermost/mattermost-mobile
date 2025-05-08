@@ -5,12 +5,6 @@ extension SecurePdfViewerComponentView {
     func isValidCachedFile(path: String) -> Bool {
         var normalizedPath = path
 
-        if path.hasPrefix("file://") {
-            if let url = URL(string: path), url.isFileURL {
-                normalizedPath = url.path  // Extracts the /var/... portion safely
-            }
-        }
-
         let fileURL = URL(fileURLWithPath: normalizedPath).standardizedFileURL
 
         // App's cache directory

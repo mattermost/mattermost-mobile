@@ -8,7 +8,7 @@ extension SecurePdfViewerComponentView {
 
         for annotation in page.annotations where annotation.bounds.contains(pagePoint) {
             if annotation.type == "Link" {
-                return false // Let PDFView handle the link highlight and navigation
+                return false
             }
         }
 
