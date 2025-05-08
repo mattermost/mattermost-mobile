@@ -5,7 +5,8 @@ import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import React from 'react';
 
 import {DEFAULT_SERVER_MAX_FILE_SIZE} from '@constants/post_draft';
-import {observeCanUploadFiles, observeConfigIntValue, observeMaxFileCount} from '@queries/servers/system';
+import {observeCanUploadFiles} from '@queries/servers/security';
+import {observeConfigIntValue, observeMaxFileCount} from '@queries/servers/system';
 
 import DraftHandler from './draft_handler';
 

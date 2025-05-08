@@ -3,7 +3,8 @@
 
 import {withObservables} from '@nozbe/watermelondb/react';
 
-import {observeCanUploadFiles, observeConfigIntValue, observeMaxFileCount} from '@queries/servers/system';
+import {observeCanUploadFiles} from '@queries/servers/security';
+import {observeConfigIntValue, observeMaxFileCount} from '@queries/servers/system';
 
 import Attachments from './attachments';
 

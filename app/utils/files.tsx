@@ -5,10 +5,10 @@ import {fileToGalleryItem} from '@utils/gallery';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 
-export const getNumberFileMenuOptions = (canDownloadFiles: boolean, publicLinkEnabled: boolean) => {
+export const getNumberFileMenuOptions = (canDownloadFiles: boolean, enableSecureFilePreview: boolean, publicLinkEnabled: boolean) => {
     let numberItems = 1;
-    numberItems += canDownloadFiles ? 1 : 0;
-    numberItems += publicLinkEnabled ? 1 : 0;
+    numberItems += !enableSecureFilePreview && canDownloadFiles ? 1 : 0;
+    numberItems += !enableSecureFilePreview && publicLinkEnabled ? 1 : 0;
     return numberItems;
 };
 

@@ -45,6 +45,25 @@ export function alertDownloadDocumentDisabled(intl: IntlShape) {
     );
 }
 
+export function alertOnlyPDFSupported(intl: IntlShape) {
+    Alert.alert(
+        intl.formatMessage({
+            id: 'mobile.document_preview.only_pdf_title',
+            defaultMessage: 'Preview not supported',
+        }),
+        intl.formatMessage({
+            id: 'mobile.document_preview.only_pdf_description',
+            defaultMessage: 'Only PDF files can be previewed. Downloads are not allowed on this server.\n',
+        }),
+        [{
+            text: intl.formatMessage({
+                id: 'mobile.server_upgrade.button',
+                defaultMessage: 'OK',
+            }),
+        }],
+    );
+}
+
 export function alertDownloadFailed(intl: IntlShape) {
     Alert.alert(
         intl.formatMessage({

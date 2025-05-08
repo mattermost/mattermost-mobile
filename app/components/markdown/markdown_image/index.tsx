@@ -5,7 +5,7 @@ import {useManagedConfig} from '@mattermost/react-native-emm';
 import Clipboard from '@react-native-clipboard/clipboard';
 import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Platform, type StyleProp, Text, type TextStyle, TouchableWithoutFeedback, View} from 'react-native';
+import {Platform, type StyleProp, Text, type TextStyle, TouchableWithoutFeedback, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 import {SvgUri} from 'react-native-svg';
 import parseUrl from 'url-parse';
@@ -30,6 +30,7 @@ import {getMarkdownImageSize} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {secureGetFromRecord} from '@utils/types';
 import {normalizeProtocol, safeDecodeURIComponent, tryOpenURL} from '@utils/url';
+import {onOpenLinkError} from '@utils/url/links';
 
 import type {GalleryItemType} from '@typings/screens/gallery';
 
@@ -126,26 +127,17 @@ const MarkdownImage = ({
 
     const {height, width} = calculateDimensions(fileInfo.height, fileInfo.width, layoutWidth || getViewPortWidth(isReplyPost, isTablet));
 
+    const onLinkError = useCallback(() => {
+        onOpenLinkError(intl);
+    }, [intl]);
+
     const handleLinkPress = useCallback(() => {
         if (linkDestination) {
             const url = normalizeProtocol(linkDestination);
 
-            const onError = () => {
-                Alert.alert(
-                    intl.formatMessage({
-                        id: 'mobile.link.error.title',
-                        defaultMessage: 'Error',
-                    }),
-                    intl.formatMessage({
-                        id: 'mobile.link.error.text',
-                        defaultMessage: 'Unable to open the link.',
-                    }),
-                );
-            };
-
-            tryOpenURL(url, onError);
+            tryOpenURL(url, onLinkError);
         }
-    }, [linkDestination]);
+    }, [linkDestination, onLinkError]);
 
     const handleLinkLongPress = useCallback(() => {
         if (managedConfig?.copyAndPasteProtection !== 'true') {

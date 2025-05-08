@@ -24,6 +24,7 @@ const styles = StyleSheet.create({
 type Props = {
     canDownloadFiles: boolean;
     channelName?: string;
+    enableSecureFilePreview: boolean;
     fileInfo: FileInfo;
     index: number;
     numOptions: number;
@@ -38,6 +39,7 @@ const galleryIdentifier = 'search-files-location';
 const FileResult = ({
     canDownloadFiles,
     channelName,
+    enableSecureFilePreview,
     fileInfo,
     index,
     numOptions,
@@ -81,6 +83,7 @@ const FileResult = ({
                 <File
                     asCard={true}
                     canDownloadFiles={canDownloadFiles}
+                    enableSecureFilePreview={enableSecureFilePreview}
                     channelName={channelName}
                     file={fileInfo}
                     galleryIdentifier={galleryIdentifier}
