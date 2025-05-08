@@ -15,6 +15,7 @@ import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {getConfig, getLicense} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
 import TestHelper from '@test/test_helper';
+import * as logUtils from '@utils/log';
 
 import {
     handleUserUpdatedEvent,
@@ -294,7 +295,7 @@ describe('WebSocket Users Actions', () => {
 
     describe('handleCustomProfileAttributesValuesUpdatedEvent', () => {
         it('should handle missing operator', async () => {
-            jest.spyOn(console, 'error').mockImplementation(() => {});
+            jest.spyOn(logUtils, 'logError').mockImplementation(() => {});
             DatabaseManager.serverDatabases = {};
             const msg = {
                 data: {
@@ -308,7 +309,7 @@ describe('WebSocket Users Actions', () => {
                 msg,
             );
 
-            expect(console.error).toHaveBeenCalled();
+            expect(logUtils.logError).toHaveBeenCalled();
         });
 
         it('should handle custom profile attributes values update', async () => {
@@ -353,7 +354,7 @@ describe('WebSocket Users Actions', () => {
         });
 
         it('should handle errors during attributes update', async () => {
-            jest.spyOn(console, 'error').mockImplementation(() => {});
+            jest.spyOn(logUtils, 'logError').mockImplementation(() => {});
             operator.handleCustomProfileAttributes = jest.
                 fn().
                 mockRejectedValue(new Error('test error'));
@@ -370,13 +371,13 @@ describe('WebSocket Users Actions', () => {
                 msg,
             );
 
-            expect(console.error).toHaveBeenCalled();
+            expect(logUtils.logError).toHaveBeenCalled();
         });
     });
 
     describe('handleCustomProfileAttributesFieldUpdatedEvent', () => {
         it('should handle missing operator', async () => {
-            jest.spyOn(console, 'error').mockImplementation(() => {});
+            jest.spyOn(logUtils, 'logError').mockImplementation(() => {});
             DatabaseManager.serverDatabases = {};
             const msg = {
                 data: {
@@ -389,7 +390,7 @@ describe('WebSocket Users Actions', () => {
                 msg,
             );
 
-            expect(console.error).toHaveBeenCalled();
+            expect(logUtils.logError).toHaveBeenCalled();
         });
 
         it('should handle custom profile field update', async () => {
@@ -429,7 +430,7 @@ describe('WebSocket Users Actions', () => {
         });
 
         it('should handle errors during field update', async () => {
-            jest.spyOn(console, 'error').mockImplementation(() => {});
+            jest.spyOn(logUtils, 'logError').mockImplementation(() => {});
             operator.handleCustomProfileFields = jest.
                 fn().
                 mockRejectedValue(new Error('test error'));
@@ -445,13 +446,13 @@ describe('WebSocket Users Actions', () => {
                 msg,
             );
 
-            expect(console.error).toHaveBeenCalled();
+            expect(logUtils.logError).toHaveBeenCalled();
         });
     });
 
     describe('handleCustomProfileAttributesFieldDeletedEvent', () => {
         it('should handle missing operator', async () => {
-            jest.spyOn(console, 'error').mockImplementation(() => {});
+            jest.spyOn(logUtils, 'logError').mockImplementation(() => {});
             DatabaseManager.serverDatabases = {};
             const msg = {
                 data: {
@@ -464,7 +465,7 @@ describe('WebSocket Users Actions', () => {
                 msg,
             );
 
-            expect(console.error).toHaveBeenCalled();
+            expect(logUtils.logError).toHaveBeenCalled();
         });
 
         it('should handle custom profile field deletion', async () => {
@@ -511,7 +512,7 @@ describe('WebSocket Users Actions', () => {
         });
 
         it('should handle errors during field model deletion', async () => {
-            jest.spyOn(console, 'error').mockImplementation(() => {});
+            jest.spyOn(logUtils, 'logError').mockImplementation(() => {});
             operator.handleCustomProfileFields = jest.fn().mockRejectedValue(new Error('test error'));
 
             // Even if the first try/catch block fails, the code still calls deleteCustomProfileAttributesByFieldId
@@ -525,13 +526,13 @@ describe('WebSocket Users Actions', () => {
 
             await handleCustomProfileAttributesFieldDeletedEvent(serverUrl, msg);
 
-            expect(console.error).toHaveBeenCalled();
+            expect(logUtils.logError).toHaveBeenCalled();
 
             expect(deleteCustomProfileAttributesByFieldId).toHaveBeenCalled();
         });
 
         it('should handle errors during attributes deletion', async () => {
-            jest.spyOn(console, 'error').mockImplementation(() => {});
+            jest.spyOn(logUtils, 'logError').mockImplementation(() => {});
             operator.handleCustomProfileFields = jest.
                 fn().
                 mockResolvedValue([]);
@@ -550,7 +551,7 @@ describe('WebSocket Users Actions', () => {
                 msg,
             );
 
-            expect(console.error).toHaveBeenCalled();
+            expect(logUtils.logError).toHaveBeenCalled();
             expect(deleteCustomProfileAttributesByFieldId).toHaveBeenCalled();
         });
     });

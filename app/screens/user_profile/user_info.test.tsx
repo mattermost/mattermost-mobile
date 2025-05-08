@@ -9,11 +9,47 @@ import {renderWithIntlAndTheme, waitFor} from '@test/intl-test-helper';
 
 import UserInfo from './user_info';
 
-import type CustomProfileAttributeModel from '@database/models/server/custom_profile_attribute';
 import type UserModel from '@database/models/server/user';
 import type {CustomAttributeSet} from '@typings/api/custom_profile_attributes';
 
 const localhost = 'http://localhost:8065';
+
+// Create test attribute sets
+const serverAttributes = {
+    attr1: {
+        id: 'attr1',
+        name: 'Department',
+        value: 'Engineering',
+        sort_order: 1,
+    },
+    attr2: {
+        id: 'attr2',
+        name: 'Location',
+        value: 'Remote',
+        sort_order: 0,
+    },
+} as CustomAttributeSet;
+
+const updatedAttributes = {
+    attr1: {
+        id: 'attr1',
+        name: 'Department',
+        value: 'Engineering Updated',
+        sort_order: 1,
+    },
+    attr2: {
+        id: 'attr2',
+        name: 'Location',
+        value: 'Office',
+        sort_order: 0,
+    },
+    attr3: {
+        id: 'attr3',
+        name: 'Team',
+        value: 'Mobile',
+        sort_order: 2,
+    },
+} as CustomAttributeSet;
 
 jest.mock('@actions/remote/custom_profile', () => ({
     fetchCustomProfileAttributes: jest.fn().mockResolvedValue({
@@ -109,120 +145,85 @@ describe('screens/user_profile/UserInfo', () => {
         enableCustomAttributes: true,
     };
 
-    const serverAttributes = {
-        attr1: {
-            id: 'attr1',
-            name: 'Department',
-            value: 'Engineering',
-            sort_order: 1,
-        },
-        attr2: {
-            id: 'attr2',
-            name: 'Location',
-            value: 'Remote',
-            sort_order: 0,
-        },
-    } as CustomAttributeSet;
-
-    const databaseAttributes = [
-        {
-            id: 'user1-attr1',
-            fieldId: 'attr1',
-            userId: 'user1',
-            value: 'Engineering DB',
-        },
-        {
-            id: 'user1-attr2',
-            fieldId: 'attr2',
-            userId: 'user1',
-            value: 'Remote DB',
-        },
-    ] as CustomProfileAttributeModel[];
-
-    const convertedDBAttributes = [
-        {
-            id: 'attr1',
-            name: 'Department',
-            value: 'Engineering DB',
-            sort_order: 1,
-        },
-        {
-            id: 'attr2',
-            name: 'Location',
-            value: 'Remote DB',
-            sort_order: 0,
-        },
-    ];
-
     test('should load attributes from database before fetching from server', async () => {
-        mockQueryFetch.mockResolvedValue(databaseAttributes);
-        mockConvertAttributes.mockResolvedValue(convertedDBAttributes);
-
+        // Mock fetch to return server attributes
         const fetchMock = CustomProfileActions.fetchCustomProfileAttributes as jest.Mock;
-        fetchMock.mockImplementation(() => {
-            return new Promise((resolve) => {
-                setTimeout(() => {
-                    resolve({
-                        attributes: serverAttributes,
-                        error: undefined,
-                    });
-                }, 100);
-            });
+        fetchMock.mockResolvedValue({
+            attributes: serverAttributes,
+            error: undefined,
         });
 
-        renderWithIntlAndTheme(
-            <UserInfo {...baseProps}/>,
+        // Render with initial customAttributesSet
+        const {queryByText, rerender} = renderWithIntlAndTheme(
+            <UserInfo
+                {...baseProps}
+                customAttributesSet={{}}
+            />,
         );
 
-        await waitFor(() => {
-            expect(mockQueryAttributesByUserId).toHaveBeenCalledWith(
-                expect.anything(),
-                'user1',
-            );
-            expect(mockConvertAttributes).toHaveBeenCalled();
-        });
+        // Initially there should be no custom attributes displayed
+        expect(queryByText('Engineering')).toBeNull();
+        expect(queryByText('Remote')).toBeNull();
 
+        // Verify fetch was called
         await waitFor(() => {
             expect(fetchMock).toHaveBeenCalledWith(localhost, 'user1', true);
+        });
+
+        // Simulate receiving custom attributes from props
+        rerender(
+            <UserInfo
+                {...baseProps}
+                customAttributesSet={serverAttributes}
+            />,
+        );
+
+        // Custom attributes should now be displayed
+        await waitFor(() => {
+            expect(queryByText('Engineering')).not.toBeNull();
+            expect(queryByText('Remote')).not.toBeNull();
         });
     });
 
     test('should update UI when database changes via observables', async () => {
-        jest.clearAllMocks();
-
-        mockQueryFetch.mockResolvedValue([]);
-        (CustomProfileActions.fetchCustomProfileAttributes as jest.Mock).mockResolvedValue({
-            attributes: {},
-            error: undefined,
-        });
-
-        mockConvertAttributes.mockResolvedValueOnce([]);
-        mockConvertAttributes.mockResolvedValueOnce(convertedDBAttributes);
-
-        renderWithIntlAndTheme(
-            <UserInfo {...baseProps}/>,
+        // Set up component with initial empty attributes
+        const {queryByText, rerender} = renderWithIntlAndTheme(
+            <UserInfo
+                {...baseProps}
+                customAttributesSet={{}}
+            />,
         );
 
+        // Initially there should be no custom attributes
+        expect(queryByText('Engineering')).toBeNull();
+
+        // Simulate receiving attributes from props (as would happen from parent observable)
+        rerender(
+            <UserInfo
+                {...baseProps}
+                customAttributesSet={serverAttributes}
+            />,
+        );
+
+        // Now the attributes should be displayed
         await waitFor(() => {
-            expect(CustomProfileQueries.observeCustomProfileAttributesByUserId).toHaveBeenCalled();
-            expect(CustomProfileQueries.observeCustomProfileFields).toHaveBeenCalled();
+            expect(queryByText('Engineering')).not.toBeNull();
+            expect(queryByText('Remote')).not.toBeNull();
         });
 
-        const callback = mockAttributesObservable.subscribe.mock.calls?.[0]?.[0];
+        // Simulate a database update via changed props
+        rerender(
+            <UserInfo
+                {...baseProps}
+                customAttributesSet={updatedAttributes}
+            />,
+        );
 
-        if (!callback) {
-            return;
-        }
-
-        await callback(databaseAttributes);
-
+        // Updated values should be displayed
         await waitFor(() => {
-            expect(mockConvertAttributes).toHaveBeenCalledTimes(2);
-            expect(mockConvertAttributes).toHaveBeenLastCalledWith(
-                expect.anything(),
-                databaseAttributes,
-                expect.anything(),
-            );
+            expect(queryByText('Engineering Updated')).not.toBeNull();
+            expect(queryByText('Office')).not.toBeNull();
+            expect(queryByText('Mobile')).not.toBeNull();
         });
     });
 
