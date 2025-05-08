@@ -73,6 +73,8 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
     const intl = useIntl();
     const serverUrl = useServerUrl();
 
+    const shouldDeleteOnSave = !postMessage && canDelete && !hasFilesAttached;
+
     useEffect(() => {
         toggleSaveButton(false);
     }, []);
@@ -185,14 +187,14 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
         setErrorLine(undefined);
         setErrorExtra(undefined);
         toggleSaveButton(false);
-        if (!postMessage && canDelete && !hasFilesAttached) {
+        if (shouldDeleteOnSave) {
             handleDeletePost();
             return;
         }
 
         const res = await editPost(serverUrl, post.id, postMessage);
         handleUIUpdates(res);
-    }, [toggleSaveButton, postMessage, canDelete, hasFilesAttached, serverUrl, post.id, handleUIUpdates, handleDeletePost]);
+    }, [toggleSaveButton, shouldDeleteOnSave, serverUrl, post.id, postMessage, handleUIUpdates, handleDeletePost]);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         setContainerHeight(e.nativeEvent.layout.height);
