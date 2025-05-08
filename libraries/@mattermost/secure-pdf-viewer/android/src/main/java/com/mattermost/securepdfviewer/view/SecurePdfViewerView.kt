@@ -16,19 +16,20 @@ import com.github.barteksc.pdfviewer.util.FitPolicy
 import com.mattermost.securepdfviewer.BuildConfig
 import com.mattermost.securepdfviewer.enums.Events
 import com.mattermost.securepdfviewer.event.PdfViewerEvent
+import com.mattermost.securepdfviewer.manager.PasswordAttemptStore
 import com.mattermost.securepdfviewer.util.FileValidator
+import com.mattermost.securepdfviewer.util.HashUtils
 import com.mattermost.securepdfviewer.util.MemoryUtil
 import java.util.Locale
 
 class SecurePdfViewerView(context: Context) : FrameLayout(context) {
     private val TAG = "SecurePdfViewerView"
+    private val attemptStore = PasswordAttemptStore(context)
     private val pdfView: SecurePDFView = SecurePDFView(context)
 
     private var source: String? = null
     private var password: String? = null
     private var allowLinks: Boolean = false
-    private var retryAttempts = 0
-    private val maxRetryAttempts = 5
 
     private val customLinkHandler = LinkHandler { event ->
         val uri = event?.link?.uri
@@ -68,6 +69,12 @@ class SecurePdfViewerView(context: Context) : FrameLayout(context) {
     }
 
     private fun maybeLoadPdf() {
+        val fileKey = source?.let { HashUtils.sha256(it) }
+        if (!fileKey.isNullOrEmpty() && attemptStore.hasExceededLimit(fileKey)) {
+            emitPasswordFailureLimitReached()
+            return
+        }
+
         val allowedDirs = listOfNotNull(context.cacheDir, context.externalCacheDir)
         val file = FileValidator.parseSourceToFile(source, allowedDirs)
         if (file == null) {
@@ -81,6 +88,7 @@ class SecurePdfViewerView(context: Context) : FrameLayout(context) {
             emitLoadFailed("Unable to read file size")
             return
         }
+
         if (fileSize > maxSize) {
             val sizeInMB = fileSize / (1024.0 * 1024.0)
             val limitInMB = maxSize / (1024.0 * 1024.0)
@@ -113,11 +121,15 @@ class SecurePdfViewerView(context: Context) : FrameLayout(context) {
             .linkHandler(customLinkHandler)
             .onError { throwable ->
                 Log.e(TAG, "PDF load error", throwable)
-                handleLoadError(throwable)
+                if (fileKey != null) {
+                    handleLoadError(throwable, fileKey)
+                }
             }
             .onLoad {
-                resetRetries()
                 emitEvent(Events.ON_LOAD_EVENT.event, null)
+                if (!password.isNullOrEmpty() && !fileKey.isNullOrEmpty()) {
+                    attemptStore.resetAttempts(fileKey)
+                }
             }
             .onTap { event ->
                 if (!pdfView.wasTapOnLink(event)) {
@@ -145,27 +157,25 @@ class SecurePdfViewerView(context: Context) : FrameLayout(context) {
             .load()
     }
 
-    private fun handleLoadError(throwable: Throwable) {
+    private fun handleLoadError(throwable: Throwable, fileKey: String) {
         val message = throwable.message ?: ""
 
         if (message.contains("password", ignoreCase = true)) {
-            if (retryAttempts == 0 && password == null) {
-                emitPasswordRequired()
+            var retryAttempts = attemptStore.getRemainingAttempts(fileKey)
+            if (retryAttempts <= attemptStore.maxAllowedAttempts() && password == null) {
+                emitPasswordRequired(fileKey)
                 return
             }
-            retryAttempts++
-            if (retryAttempts < maxRetryAttempts) {
-                emitPasswordFailed()
+
+            retryAttempts = attemptStore.registerFailedAttempt(fileKey)
+            if (retryAttempts < attemptStore.maxAllowedAttempts()) {
+                emitPasswordFailed(retryAttempts)
             } else {
                 emitPasswordFailureLimitReached()
             }
         } else {
             emitLoadFailed(message)
         }
-    }
-
-    private fun resetRetries() {
-        retryAttempts = 0
     }
 
     private fun emitEvent(name: String, payload: WritableMap?) {
@@ -183,15 +193,17 @@ class SecurePdfViewerView(context: Context) : FrameLayout(context) {
         }
     }
 
-    private fun emitPasswordRequired() {
+    private fun emitPasswordRequired(fileKey: String?) {
+        val remaining = fileKey?.let { attemptStore.getRemainingAttempts(it) } ?: 0
         emitEvent(Events.ON_PASSWORD_REQUIRED.event, Arguments.createMap().apply {
-            putInt("maxAttempts", maxRetryAttempts)
+            putInt("maxAttempts", attemptStore.maxAllowedAttempts())
+            putInt("remainingAttempts", remaining)
         })
     }
 
-    private fun emitPasswordFailed() {
+    private fun emitPasswordFailed(remainingAttempts: Int) {
         emitEvent(Events.ON_PASSWORD_FAILED.event, Arguments.createMap().apply {
-            putInt("remainingAttempts", maxRetryAttempts - retryAttempts)
+            putInt("remainingAttempts", remainingAttempts)
         })
     }
 

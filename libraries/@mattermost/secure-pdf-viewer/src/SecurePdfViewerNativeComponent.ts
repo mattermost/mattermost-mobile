@@ -18,6 +18,7 @@ interface OnPasswordFailedPayload {
 
 interface OnPasswordRequiredPayload {
   maxAttempts: number;
+  remainingAttempts: number;
 }
 
 interface OnTapPayload {

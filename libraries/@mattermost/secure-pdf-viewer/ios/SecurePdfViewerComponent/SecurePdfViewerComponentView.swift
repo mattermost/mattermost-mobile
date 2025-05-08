@@ -4,12 +4,11 @@ import UIKit
 
 @objc(SecurePdfViewerComponentView)
 public class SecurePdfViewerComponentView: UIView, UIGestureRecognizerDelegate {
+    let attemptStore = PasswordAttemptStore()
     let pdfView = SecurePDFView()
     var pdfDocument: PDFDocument?
     var linkDelegate: PDFViewLinkDelegate?
     var normalizedSource: String = ""
-    var passwordAttempts = 0
-    let maxPasswordAttempts = 5
     var pageIndicator: PageIndicatorView?
     
     var lastLayoutWidth: CGFloat = 0

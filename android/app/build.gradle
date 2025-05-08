@@ -214,11 +214,11 @@ dependencies {
     androidTestImplementation 'com.wix:detox:20.26.2'
 
     // For animated GIF support
-  implementation 'com.facebook.fresco:animated-gif:3.6.0'
+    implementation 'com.facebook.fresco:animated-gif:3.6.0'
 
-  // For WebP support, including animated WebP
-  implementation 'com.facebook.fresco:animated-webp:3.6.0'
-  implementation 'com.facebook.fresco:webpsupport:3.6.0'
+    // For WebP support, including animated WebP
+    implementation 'com.facebook.fresco:animated-webp:3.6.0'
+    implementation 'com.facebook.fresco:webpsupport:3.6.0'
 
     implementation project(':reactnativenotifications')
     implementation project(':watermelondb-jsi')

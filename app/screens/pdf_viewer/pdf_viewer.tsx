@@ -114,7 +114,7 @@ const PdfViewer = ({allowPdfLinkNavigation, closeButtonId, componentId, fileId, 
 
     const onPasswordRequired = useCallback((event: OnPasswordRequiredEvent) => {
         setMaxAttempts(event.nativeEvent.maxAttempts);
-        setRemainingAttempts(event.nativeEvent.maxAttempts);
+        setRemainingAttempts(event.nativeEvent.remainingAttempts);
     }, []);
 
     const onTap = useCallback(() => {
@@ -128,7 +128,7 @@ const PdfViewer = ({allowPdfLinkNavigation, closeButtonId, componentId, fileId, 
     useNavButtonPressed(closeButtonId, componentId, onClose, [onClose]);
     useAndroidHardwareBackHandler(componentId, onClose);
 
-    const promptForPassword = maxAttempts !== undefined && maxAttempts > 0;
+    const promptForPassword = (maxAttempts !== undefined && maxAttempts > 0) || isBlocked;
 
     return (
         <SafeAreaView

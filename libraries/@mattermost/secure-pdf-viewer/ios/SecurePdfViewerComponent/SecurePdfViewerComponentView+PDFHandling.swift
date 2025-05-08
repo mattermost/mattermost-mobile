@@ -3,6 +3,12 @@ import PDFKit
 extension SecurePdfViewerComponentView {
     func loadPDF() {
         let filePath = normalizedSource
+        let fileKey = HashUtils.hashOfFilePathOrId(filePath)
+        
+        guard !attemptStore.hasExceededLimit(for: fileKey) else {
+            onPasswordFailureLimitReached?([:])
+            return
+        }
 
         guard isValidCachedFile(path: filePath) else {
             onLoadError?(["message": "Invalid file path"])
@@ -19,8 +25,8 @@ extension SecurePdfViewerComponentView {
             pdfDocument = document
 
             if document.isEncrypted {
-                passwordAttempts = 0
-                onPasswordRequired!(["maxAttempts": maxPasswordAttempts])
+                let passwordAttempts = attemptStore.getRemainingAttempts(for: fileKey)
+                onPasswordRequired!(["maxAttempts": attemptStore.maxAllowedAttempts, "remainingAttempts": passwordAttempts])
             } else {
                 pdfView.document = document
                 customThumbnailView.pdfView = pdfView
@@ -43,17 +49,21 @@ extension SecurePdfViewerComponentView {
         guard let password = password as String?, let document = pdfDocument else {
             return
         }
+        
+        let fileKey = HashUtils.hashOfFilePathOrId(normalizedSource)
 
         if document.unlock(withPassword: password) {
+            attemptStore.resetAttempts(for: fileKey)
             pdfView.document = document
             customThumbnailView.pdfView = pdfView
             updatePageIndicator()
             onLoad?([:])
         } else {
-            passwordAttempts += 1
-            onPasswordFailed?(["remainingAttempts": maxPasswordAttempts - passwordAttempts])
-            if passwordAttempts >= maxPasswordAttempts {
+            let remaining = attemptStore.registerFailedAttempt(for: fileKey)
+            if remaining <= 0 {
                 onPasswordFailureLimitReached?([:])
+            } else {
+                onPasswordFailed?(["remainingAttempts": remaining])
             }
         }
     }
