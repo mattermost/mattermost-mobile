@@ -1,0 +1,118 @@
+name: build-pr-fork
+
+on:
+  pull_request:
+    types: [opened, synchronize, labeled]
+  workflow_dispatch:
+    inputs:
+      build_ios:
+        description: 'Build iOS app'
+        required: false
+        type: boolean
+        default: true
+      build_android:
+        description: 'Build Android app'
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  IS_FORK: ${{ github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name }}
+
+jobs:
+  build-ios:
+    name: Build iOS (Fork)
+    if: >
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.build_ios == 'true' )||
+      ((github.event_name == 'pull_request' && (github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name )) &&
+      (contains(github.event.pull_request.labels.*.name, 'Build Apps for PR') || contains(github.event.pull_request.labels.*.name, 'Build App for iOS')))
+    runs-on: macos-14-large
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Prepare iOS debug signing
+        run: |
+          echo "Using debug code signing for fork build"
+          echo "CODE_SIGN_IDENTITY=" >> $GITHUB_ENV
+          echo "CODE_SIGNING_REQUIRED=NO" >> $GITHUB_ENV
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.x
+
+      - name: Install dependencies
+        run: |
+          gem install bundler
+          bundle install --jobs 4 --retry 3
+
+      - name: Build iOS app
+        env:
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.FORK_APPLE_API_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.FORK_APPLE_API_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY: ${{ secrets.FORK_APPLE_API_KEY }}
+          MATTERMOST_WEBHOOK_URL: ${{ secrets.FORK_MATTERMOST_WEBHOOK_URL }}
+        run: bundle exec fastlane ios build
+        working-directory: ./fastlane
+
+      - name: Upload iOS artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ios-build-pr-${{ github.run_id }}
+          path: "*.ipa"
+
+  build-android:
+    name: Build Android (Fork)
+    if: >
+        (github.event_name == 'workflow_dispatch' && github.event.inputs.build_android == 'true') ||
+        ((github.event_name == 'pull_request' && (github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name)) &&
+        contains(github.event.pull_request.labels.*.name, 'Build Apps for PR') || contains(github.event.pull_request.labels.*.name, 'Build App for Android'))
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Prepare Android debug keystore
+        run: |
+          echo "${{ secrets.FORK_DEBUG_KEYSTORE }}" | base64 -d > android/app/debug.keystore
+          echo "STORE_FILE=debug.keystore" >> $GITHUB_ENV
+          echo "STORE_PASSWORD=${{ secrets.FORK_DEBUG_KEYSTORE_PASSWORD }}" >> $GITHUB_ENV
+          echo "KEY_ALIAS=androiddebugkey" >> $GITHUB_ENV
+          echo "KEY_PASSWORD=${{ secrets.FORK_DEBUG_KEYSTORE_PASSWORD }}" >> $GITHUB_ENV
+
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.x
+
+      - name: Install dependencies
+        run: |
+          gem install bundler
+          bundle install --jobs 4 --retry 3
+
+      - name: Build Android app
+        env:
+          MATTERMOST_WEBHOOK_URL: ${{ secrets.FORK_MATTERMOST_WEBHOOK_URL }}
+        run: bundle exec fastlane android build
+        working-directory: ./fastlane
+
+      - name: Upload Android artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: android-build-pr-${{ github.run_id }}
+          path: "*.apk"
