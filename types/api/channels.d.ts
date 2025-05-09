@@ -45,6 +45,7 @@ type Channel = {
     group_constrained: boolean|null;
     shared: boolean;
     banner_info?: ChannelBannerInfo;
+    policy_enforced?: boolean;
 };
 type ChannelPatch = {
     name?: string;
@@ -170,3 +171,5 @@ type ChannelBannerInfo = {
     text?: string;
     background_color?: string;
 }
+
+type ChannelAccessControlAttributes = Record<string, string[]>;
