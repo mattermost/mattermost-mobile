@@ -42,12 +42,11 @@ export const fetchCustomProfileAttributes = async (serverUrl: string, userId: st
             return {attributes, error: undefined};
         }
 
-        const fieldBatch: Model[] = [];
-        const attributeBatch: Model[] = [];
-
         try {
             // Process each field to build attributes and collect promises
-            fields.forEach(async (field) => {
+            const attributeModelPromises: Array<Promise<Model[]>> = [];
+            const fieldModelPromises: Array<Promise<Model[]>> = [];
+            for (const field of fields) {
                 const value = attrValues[field.id] || '';
                 if (!filterEmpty || value) {
                     attributes[field.id] = {
@@ -57,7 +56,7 @@ export const fetchCustomProfileAttributes = async (serverUrl: string, userId: st
                         sort_order: field.attrs?.sort_order,
                     };
 
-                    const attributeModel = await operator.handleCustomProfileAttributes({
+                    attributeModelPromises.push(operator.handleCustomProfileAttributes({
                         attributes: [{
                             id: customProfileAttributeId(field.id, userId),
                             field_id: field.id,
@@ -65,15 +64,20 @@ export const fetchCustomProfileAttributes = async (serverUrl: string, userId: st
                             value,
                         }],
                         prepareRecordsOnly: true,
-                    });
-                    const fieldModel = await operator.handleCustomProfileFields({
+                    }));
+                    fieldModelPromises.push(operator.handleCustomProfileFields({
                         fields: [field],
                         prepareRecordsOnly: true,
-                    });
-                    fieldBatch.push(...fieldModel);
-                    attributeBatch.push(...attributeModel);
+                    }));
                 }
-            });
+            }
+
+            const [fieldResults, attributeResults] = await Promise.all([
+                Promise.all(fieldModelPromises),
+                Promise.all(attributeModelPromises),
+            ]);
+            const fieldBatch = fieldResults.flat();
+            const attributeBatch = attributeResults.flat();
 
             if (fieldBatch.length > 0) {
                 await operator.batchRecords(fieldBatch, FIELD_HANDLER_DESCRIPTION);

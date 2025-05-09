@@ -11,6 +11,7 @@ import {
 jest.mock('@database/manager', () => ({
     getServerDatabaseAndOperator: jest.fn().mockReturnValue({
         operator: {
+            batchRecords: jest.fn(),
             handleCustomProfileFields: jest.fn(),
             handleCustomProfileAttributes: jest.fn(),
         },
