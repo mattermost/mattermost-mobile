@@ -24,49 +24,70 @@ export const fetchCustomProfileAttributes = async (serverUrl: string, userId: st
     try {
         const client = NetworkManager.getClient(serverUrl);
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const [fields, attrValues] = await Promise.all([
-            client.getCustomProfileAttributeFields(),
-            client.getCustomProfileAttributeValues(userId),
-        ]);
+
+        let fields: CustomProfileField[] = [];
+        let attrValues: Record<string, string> = {};
+
+        try {
+            [fields, attrValues] = await Promise.all([
+                client.getCustomProfileAttributeFields(),
+                client.getCustomProfileAttributeValues(userId),
+            ]);
+        } catch (err) {
+            logDebug('error on fetchCustomProfileAttributes get fields and attr values', getFullErrorMessage(err));
+            return {attributes, error: err};
+        }
+
+        if (fields.length === 0) {
+            return {attributes, error: undefined};
+        }
 
         const fieldBatch: Model[] = [];
         const attributeBatch: Model[] = [];
-        if (fields?.length > 0) {
 
-            if (fields?.length > 0) {
+        try {
+            // Process each field to build attributes and collect promises
+            fields.forEach(async (field) => {
+                const value = attrValues[field.id] || '';
+                if (!filterEmpty || value) {
+                    attributes[field.id] = {
+                        id: field.id,
+                        name: field.name,
+                        value,
+                        sort_order: field.attrs?.sort_order,
+                    };
 
-                await Promise.all(fields.map(async (field: CustomProfileField) => {
-                    const value = (attrValues as Record<string, string>)[field.id] || '';
-                    if (!filterEmpty || value) {
-                        attributes[field.id] = {
-                            id: field.id,
-                            name: field.name,
+                    const attributeModel = await operator.handleCustomProfileAttributes({
+                        attributes: [{
+                            id: customProfileAttributeId(field.id, userId),
+                            field_id: field.id,
+                            user_id: userId,
                             value,
-                            sort_order: field.attrs?.sort_order,
-                        };
-                        const attributeModel = await operator.handleCustomProfileAttributes({
-                            attributes: [{
-                                id: customProfileAttributeId(field.id, userId),
-                                field_id: field.id,
-                                user_id: userId,
-                                value,
-                            }],
-                            prepareRecordsOnly: true,
-                        });
-                        attributeBatch.push(...attributeModel);
-                        const fieldModels = await operator.handleCustomProfileFields({
-                            fields,
-                            prepareRecordsOnly: true,
-                        });
-                        fieldBatch.push(...fieldModels);
-                    }
-                }));
-                if (fieldBatch.length > 0) {
-                    await operator.batchRecords(fieldBatch, FIELD_HANDLER_DESCRIPTION);
-                    await operator.batchRecords(attributeBatch, ATTRIBUTE_HANDLER_DESCRIPTION);
+                        }],
+                        prepareRecordsOnly: true,
+                    });
+                    const fieldModel = await operator.handleCustomProfileFields({
+                        fields: [field],
+                        prepareRecordsOnly: true,
+                    });
+                    fieldBatch.push(...fieldModel);
+                    attributeBatch.push(...attributeModel);
                 }
+            });
+
+            if (fieldBatch.length > 0) {
+                await operator.batchRecords(fieldBatch, FIELD_HANDLER_DESCRIPTION);
             }
+
+            if (attributeBatch.length > 0) {
+                await operator.batchRecords(attributeBatch, ATTRIBUTE_HANDLER_DESCRIPTION);
+            }
+
+        } catch (err) {
+            logDebug('error on fetchCustomProfileAttributes field iteration', getFullErrorMessage(err));
+            return {attributes, error: err};
         }
+
         return {attributes, error: undefined};
     } catch (error) {
         logDebug('error on fetchCustomProfileAttributes', getFullErrorMessage(error));
