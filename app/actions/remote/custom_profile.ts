@@ -119,7 +119,7 @@ export const updateCustomProfileAttributes = async (serverUrl: string, userId: s
 
         // Store in the database
         const attributesForDatabase: CustomProfileAttribute[] = Object.entries(attributes).map(([fieldId, attr]) => ({
-            id: `${fieldId}-${userId}`,
+            id: customProfileAttributeId(fieldId, userId),
             field_id: fieldId,
             user_id: userId,
             value: attr.value,
