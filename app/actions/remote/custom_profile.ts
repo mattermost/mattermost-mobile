@@ -35,7 +35,7 @@ export const fetchCustomProfileAttributes = async (serverUrl: string, userId: st
 
             if (fields?.length > 0) {
 
-                Promise.all(fields.map(async (field: CustomProfileField) => {
+                await Promise.all(fields.map(async (field: CustomProfileField) => {
                     const value = (attrValues as Record<string, string>)[field.id] || '';
                     if (!filterEmpty || value) {
                         attributes[field.id] = {
