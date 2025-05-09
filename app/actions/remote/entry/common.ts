@@ -4,7 +4,6 @@
 import {nativeApplicationVersion} from 'expo-application';
 import {RESULTS, checkNotifications} from 'react-native-permissions';
 
-import {PostBatchLevel} from '@actions/local/post';
 import {fetchChannelById, fetchMissingDirectChannelsInfo, fetchMyChannelsForTeam, handleKickFromChannel, type MyChannelsRequest} from '@actions/remote/channel';
 import {fetchGroupsForMember} from '@actions/remote/groups';
 import {fetchPostsForUnreadChannels} from '@actions/remote/post';
@@ -23,7 +22,6 @@ import {getPreferenceValue, getTeammateNameDisplaySetting} from '@helpers/api/pr
 import {selectDefaultTeam} from '@helpers/api/team';
 import {DEFAULT_LOCALE} from '@i18n';
 import NetworkManager from '@managers/network_manager';
-import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {getDeviceToken} from '@queries/app/global';
 import {getChannelById} from '@queries/servers/channel';
 import {processEntryModels, truncateCrtRelatedTables} from '@queries/servers/entry';
@@ -104,18 +102,13 @@ export async function deferredAppEntryActions(
 
 const entryRest = async (serverUrl: string, teamId?: string, channelId?: string, since = 0, groupLabel?: RequestGroupLabel) => {
     try {
-        PerformanceMetricsManager.startMetric('entryRest');
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         let lastDisconnectedAt = since || await getLastFullSync(database);
-
-        PerformanceMetricsManager.mark('entryRest', {detail: `after getLastFullSync ${lastDisconnectedAt}`});
 
         const [confResp, prefData] = await Promise.all([
             fetchConfigAndLicense(serverUrl, false, groupLabel),
             fetchMyPreferences(serverUrl, true, groupLabel),
         ]);
-
-        PerformanceMetricsManager.mark('entryRest', {detail: 'after license'});
 
         const isCRTEnabled = Boolean(prefData.preferences && processIsCRTEnabled(prefData.preferences, confResp.config?.CollapsedThreads, confResp.config?.FeatureFlagCollapsedThreads, confResp.config?.Version));
         if (prefData.preferences) {
@@ -127,15 +120,12 @@ const entryRest = async (serverUrl: string, teamId?: string, channelId?: string,
                     lastDisconnectedAt = 0;
                 }
                 const {error} = await truncateCrtRelatedTables(serverUrl);
-                PerformanceMetricsManager.mark('entryRest', {detail: 'after truncateCrtRelatedTables'});
 
                 if (error) {
                     throw new Error(`Resetting CRT on ${serverUrl} failed`);
                 }
             }
         }
-
-        PerformanceMetricsManager.mark('entryRest', {detail: 'after getHasCRTChanged'});
 
         // let's start fetching in parallel all we can
         const promises: [Promise<MyTeamsRequest>, Promise<MyUserRequest>] = [
@@ -200,21 +190,15 @@ const entryRest = async (serverUrl: string, teamId?: string, channelId?: string,
             categories: [],
         };
         if (initialTeamId) {
-            PerformanceMetricsManager.mark('entryRest', {detail: 'before fetchMyChannelsForTeam'});
-            chData = await fetchMyChannelsForTeam(serverUrl, initialTeamId, false, 0, true, false, isCRTEnabled, groupLabel);
-            PerformanceMetricsManager.mark('entryRest', {detail: 'after fetchMyChannelsForTeam'});
+            chData = await fetchMyChannelsForTeam(serverUrl, initialTeamId, false, lastDisconnectedAt, true, false, isCRTEnabled, groupLabel);
         }
 
         fetchRoles(serverUrl, teamData.memberships, chData.memberships, meData.user, false, false, groupLabel);
 
         initialChannelId = await entryInitialChannelId(database, initialChannelId, teamId, initialTeamId, meData?.user?.locale || '', chData?.channels, chData?.memberships);
-        PerformanceMetricsManager.mark('entryRest', {detail: 'after entryInitialChannelId'});
         const dt = Date.now();
         const models = await processEntryModels({operator, teamData, chData, prefData, meData, isCRTEnabled, isDelete: false});
         logDebug('Process models on entry', groupLabel, models.length, `${Date.now() - dt}ms`);
-
-        PerformanceMetricsManager.mark('entryRest', {detail: 'endMetric'});
-        PerformanceMetricsManager.endMetric('entryRest', serverUrl);
 
         return {models, initialChannelId, initialTeamId, prefData, teamData, chData, meData, gmConverted};
     } catch (error) {
@@ -281,7 +265,6 @@ export async function restDeferredAppEntryActions(
     updateCanJoinTeams(serverUrl);
 
     setTimeout(async () => {
-        PerformanceMetricsManager.startMetric('restDeferedInTimeout');
         let mySortedTeams: Team[] = [];
 
         if (teamData.teams?.length && teamData.memberships?.length) {
@@ -311,16 +294,12 @@ export async function restDeferredAppEntryActions(
                 categories: [],
             }, chData);
 
-            PerformanceMetricsManager.mark('restDeferedInTimeout', {detail: 'before fetching other teams channels'});
-
             if (myOtherSortedTeams.length && chData?.channels && chData?.memberships && chData?.categories) {
                 const channelsForOtherTeams = await Promise.all(
                     myOtherSortedTeams.map((team) =>
                         fetchMyChannelsForTeam(serverUrl, team.id, false, since, true, false, isCRTEnabled, requestLabel),
                     ),
                 );
-
-                PerformanceMetricsManager.mark('restDeferedInTimeout', {detail: 'after fetching other teams channels'});
 
                 // Combine all data directly into combinedChannelsData
                 channelsForOtherTeams.forEach((data) => {
@@ -338,12 +317,9 @@ export async function restDeferredAppEntryActions(
                 const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
                 const dt = Date.now();
                 const models = await processEntryModels({operator, teamData, chData: combinedChannelsData, isCRTEnabled});
-                PerformanceMetricsManager.mark('restDeferedInTimeout', {detail: 'after processEntryModels'});
 
                 await operator.batchRecords(models, 'restDeferredAppEntryActions');
-                PerformanceMetricsManager.mark('restDeferedInTimeout', {detail: 'after batch records'});
                 logDebug('Process models deferred', groupLabel, models.length, `${Date.now() - dt}ms`);
-
             }
 
             if (initialTeamId) {
@@ -353,19 +329,15 @@ export async function restDeferredAppEntryActions(
                 }
             }
 
-            PerformanceMetricsManager.mark('restDeferedInTimeout', {detail: 'before initial team channels'});
             if (combinedChannelsData?.channels?.length && combinedChannelsData.memberships?.length && initialTeamId) {
                 if (isCRTEnabled && initialTeamId) {
                     await syncTeamThreads(serverUrl, initialTeamId, {groupLabel: requestLabel});
-                    PerformanceMetricsManager.mark('restDeferedInTimeout', {detail: 'after syncTeamThreads'});
                 }
                 fetchPostsForUnreadChannels(serverUrl, mySortedTeams, combinedChannelsData.channels, combinedChannelsData.memberships, initialChannelId, isCRTEnabled, false, requestLabel, PostBatchLevel.TEAM);
-                PerformanceMetricsManager.mark('restDeferedInTimeout', {detail: 'after fetchPostsForUnreadChannels'});
             }
 
             if (myOtherSortedTeams.length) {
                 fetchTeamsThreads(serverUrl, since, myOtherSortedTeams, isCRTEnabled, false, requestLabel);
-                PerformanceMetricsManager.mark('restDeferedInTimeout', {detail: 'after fetchTeamsThreads'});
             }
         }
 
@@ -375,10 +347,7 @@ export async function restDeferredAppEntryActions(
         if (initialTeamId) {
             await fetchScheduledPosts(serverUrl, initialTeamId, true, groupLabel);
         }
-        PerformanceMetricsManager.mark('restDeferedInTimeout', {detail: 'before endMetric'});
-        PerformanceMetricsManager.endMetric('restDeferedInTimeout', serverUrl);
     });
-
 }
 
 export const setExtraSessionProps = async (serverUrl: string, groupLabel?: RequestGroupLabel) => {
