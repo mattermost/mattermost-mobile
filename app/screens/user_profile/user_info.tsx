@@ -5,12 +5,6 @@ import React, {useEffect, useState, useRef} from 'react';
 
 import {fetchCustomProfileAttributes} from '@actions/remote/custom_profile';
 import {useServerUrl} from '@context/server';
-import DatabaseManager from '@database/manager';
-import {
-    convertProfileAttributesToCustomAttributes,
-    queryCustomProfileAttributesByUserId,
-} from '@queries/servers/custom_profile';
-import {logError} from '@utils/log';
 import {getUserCustomStatus, sortCustomProfileAttributes} from '@utils/user';
 
 import CustomAttributes from './custom_attributes';
@@ -45,7 +39,6 @@ const UserInfo = ({
     const customStatus = getUserCustomStatus(user);
     const serverUrl = useServerUrl();
     const [customAttributes, setCustomAttributes] = useState<CustomAttribute[]>(emptyList);
-    const database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
     const lastRequest = useRef(0);
 
     // Initial load from database and server if customAttributesSet is not provided
@@ -57,29 +50,6 @@ const UserInfo = ({
                 return;
             }
 
-            // Otherwise, do the old way
-            const loadFromDatabase = async () => {
-                try {
-                    // Load from database first
-                    const attrs = await queryCustomProfileAttributesByUserId(database, user.id).fetch();
-                    if (attrs.length) {
-                        const converted = await convertProfileAttributesToCustomAttributes(
-                            database,
-                            attrs,
-                            sortCustomProfileAttributes,
-                        );
-                        if (converted.length) {
-                            setCustomAttributes(converted);
-                        }
-                    }
-                } catch (error) {
-                    logError('Error loading custom attributes from database', error);
-                }
-
-                // After database load, fetch from server for latest data
-                fetchFromServer();
-            };
-
             const fetchFromServer = async () => {
                 const reqTime = Date.now();
                 lastRequest.current = reqTime;
@@ -90,11 +60,11 @@ const UserInfo = ({
                 }
             };
 
-            loadFromDatabase();
+            fetchFromServer();
         } else {
             setCustomAttributes(emptyList);
         }
-    }, [enableCustomAttributes, serverUrl, user.id, database, customAttributesSet]);
+    }, [enableCustomAttributes, serverUrl, user.id, customAttributesSet]);
 
     return (
         <>
