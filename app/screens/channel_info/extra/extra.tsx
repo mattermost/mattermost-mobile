@@ -5,7 +5,7 @@ import {useManagedConfig} from '@mattermost/react-native-emm';
 import Clipboard from '@react-native-clipboard/clipboard';
 import moment from 'moment';
 import React, {useCallback, useMemo} from 'react';
-import {useIntl} from 'react-intl';
+import {useIntl, defineMessages} from 'react-intl';
 import {Platform, StyleSheet, Text, View} from 'react-native';
 
 import CustomStatusExpiry from '@components/custom_status/custom_status_expiry';
@@ -20,7 +20,7 @@ import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {ANDROID_33, OS_VERSION} from '@constants/versions';
 import {useTheme} from '@context/theme';
 import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
-import {bottomSheetSnapPoint} from '@utils/helpers';
+import {bottomSheetSnapPoint, isEmail} from '@utils/helpers';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {showSnackBar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -84,6 +84,17 @@ const style = StyleSheet.create({
 
 const headerTestId = 'channel_info.extra.header';
 
+const messages = defineMessages({
+    copyEmail: {
+        id: 'mobile.markdown.link.copy_email',
+        defaultMessage: 'Copy Email Address',
+    },
+    copyURL: {
+        id: 'mobile.markdown.link.copy_url',
+        defaultMessage: 'Copy URL',
+    },
+});
+
 const onCopy = async (text: string, isLink?: boolean) => {
     Clipboard.setString(text);
     await dismissBottomSheet();
@@ -114,6 +125,10 @@ const Extra = ({channelId, createdAt, createdBy, customStatus, header, isCustomS
 
     const handleLongPress = useCallback((url?: string) => {
         if (managedConfig?.copyAndPasteProtection !== 'true') {
+
+            const cleanUrl = url?.replace(/^mailto:/, '') || '';
+            const isEmailLink = isEmail(cleanUrl);
+
             const renderContent = () => (
                 <View
                     testID={`${headerTestId}.bottom_sheet`}
@@ -134,13 +149,10 @@ const Extra = ({channelId, createdAt, createdBy, customStatus, header, isCustomS
                         <SlideUpPanelItem
                             leftIcon='link-variant'
                             onPress={() => {
-                                onCopy(url!, true);
+                                onCopy(cleanUrl, true);
                             }}
                             testID={`${headerTestId}.bottom_sheet.copy_url`}
-                            text={intl.formatMessage({
-                                id: 'mobile.markdown.link.copy_url',
-                                defaultMessage: 'Copy URL',
-                            })}
+                            text={intl.formatMessage(isEmailLink ? messages.copyEmail : messages.copyURL)}
                         />
                     )}
                     <SlideUpPanelItem
