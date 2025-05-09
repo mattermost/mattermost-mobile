@@ -3,7 +3,7 @@
 
 import React, {useEffect, useMemo, useState} from 'react';
 import {View, useWindowDimensions} from 'react-native';
-import Animated, {Extrapolate, interpolate, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import Animated, {Extrapolate, interpolate, useAnimatedStyle, useReducedMotion, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -67,17 +67,18 @@ const FIRST_SLIDE = 0;
 const SlideItem = ({theme, item, scrollX, index, lastSlideIndex}: Props) => {
     const {width} = useWindowDimensions();
     const styles = getStyleSheet(theme);
+    const reducedMotion = useReducedMotion();
 
     /**
      * Code used to animate the first image load
      */
     const [firstLoad, setFirstLoad] = useState(true);
 
-    const initialImagePosition = useSharedValue(width);
-    const initialTitlePosition = useSharedValue(width);
-    const initialDescriptionPosition = useSharedValue(width);
+    const initialImagePosition = useSharedValue(reducedMotion ? 0 : width);
+    const initialTitlePosition = useSharedValue(reducedMotion ? 0 : width);
+    const initialDescriptionPosition = useSharedValue(reducedMotion ? 0 : width);
 
-    const initialElementsOpacity = useSharedValue(0);
+    const initialElementsOpacity = useSharedValue(reducedMotion ? 1 : 0);
 
     useEffect(() => {
         if (index === FIRST_SLIDE) {
