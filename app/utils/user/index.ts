@@ -10,7 +10,7 @@ import {CustomStatusDurationEnum} from '@constants/custom_status';
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
 import {toTitleCase} from '@utils/helpers';
 
-import type {CustomAttribute} from '@typings/api/custom_profile_attributes';
+import type {CustomAttribute, CustomAttributeSet} from '@typings/api/custom_profile_attributes';
 import type UserModel from '@typings/database/models/servers/user';
 import type {IntlShape} from 'react-intl';
 
@@ -406,4 +406,20 @@ export const sortCustomProfileAttributes = (a: CustomAttribute, b: CustomAttribu
     const orderA = a.sort_order ?? Number.MAX_SAFE_INTEGER;
     const orderB = b.sort_order ?? Number.MAX_SAFE_INTEGER;
     return orderA === orderB ? a.name.localeCompare(b.name) : orderA - orderB;
+};
+
+/**
+ * Converts an array of custom profile attributes to a map of attributes by their id.
+ * @param convertedAttributes - The array of custom profile attributes to convert
+ * @returns A map of attributes by their id
+ */
+export const convertToAttributesMap = (convertedAttributes: any): CustomAttributeSet => {
+    if (!Array.isArray(convertedAttributes)) {
+        return {} as CustomAttributeSet;
+    }
+    const attributesMap: CustomAttributeSet = {};
+    convertedAttributes.forEach((attr) => {
+        attributesMap[attr.id] = attr;
+    });
+    return attributesMap;
 };

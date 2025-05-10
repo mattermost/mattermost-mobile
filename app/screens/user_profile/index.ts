@@ -14,23 +14,12 @@ import {observeCanManageChannelMembers, observePermissionForChannel} from '@quer
 import {observeConfigBooleanValue, observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
 import {observeTeammateNameDisplay, observeCurrentUser, observeUser, observeUserIsChannelAdmin, observeUserIsTeamAdmin} from '@queries/servers/user';
 import {isDefaultChannel} from '@utils/channel';
-import {isSystemAdmin, sortCustomProfileAttributes} from '@utils/user';
+import {isSystemAdmin, sortCustomProfileAttributes, convertToAttributesMap} from '@utils/user';
 
 import UserProfile from './user_profile';
 
 import type {CustomAttributeSet} from '@typings/api/custom_profile_attributes';
 import type {WithDatabaseArgs} from '@typings/database/database';
-
-const convertToAttributesMap = (convertedAttributes: any): CustomAttributeSet => {
-    if (!Array.isArray(convertedAttributes)) {
-        return {} as CustomAttributeSet;
-    }
-    const attributesMap: CustomAttributeSet = {};
-    convertedAttributes.forEach((attr) => {
-        attributesMap[attr.id] = attr;
-    });
-    return attributesMap;
-};
 
 type EnhancedProps = WithDatabaseArgs & {
     userId: string;

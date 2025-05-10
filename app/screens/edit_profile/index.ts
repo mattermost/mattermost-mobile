@@ -8,23 +8,12 @@ import {switchMap} from 'rxjs/operators';
 import {observeCustomProfileAttributesByUserId, observeCustomProfileFields, convertProfileAttributesToCustomAttributes} from '@queries/servers/custom_profile';
 import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
-import {sortCustomProfileAttributes} from '@utils/user';
+import {sortCustomProfileAttributes, convertToAttributesMap} from '@utils/user';
 
 import EditProfile from './edit_profile';
 
 import type {CustomAttributeSet} from '@typings/api/custom_profile_attributes';
 import type {WithDatabaseArgs} from '@typings/database/database';
-
-const convertToAttributesMap = (convertedAttributes: any): CustomAttributeSet => {
-    if (!Array.isArray(convertedAttributes)) {
-        return {} as CustomAttributeSet;
-    }
-    const attributesMap: CustomAttributeSet = {};
-    convertedAttributes.forEach((attr) => {
-        attributesMap[attr.id] = attr;
-    });
-    return attributesMap;
-};
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const currentUser = observeCurrentUser(database);
