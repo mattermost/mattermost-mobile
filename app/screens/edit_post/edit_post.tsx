@@ -8,6 +8,7 @@ import {Alert, Keyboard, type LayoutChangeEvent, Platform, SafeAreaView, View, S
 import {deletePost, editPost} from '@actions/remote/post';
 import Autocomplete from '@components/autocomplete';
 import Loading from '@components/loading';
+import {ExtraKeyboardProvider} from '@context/extra_keyboard';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
@@ -40,6 +41,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
+    inputContainer: {
+        flex: 1,
+    },
 });
 
 const RIGHT_BUTTON = buildNavigationButton('edit-post', 'edit_post.save.button');
@@ -69,6 +73,8 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
     const intl = useIntl();
     const serverUrl = useServerUrl();
 
+    const shouldDeleteOnSave = !postMessage && canDelete && !hasFilesAttached;
+
     useEffect(() => {
         toggleSaveButton(false);
     }, []);
@@ -93,11 +99,11 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
     const onClose = useCallback(() => {
         Keyboard.dismiss();
         dismissModal({componentId});
-    }, []);
+    }, [componentId]);
 
     const onTextSelectionChange = useCallback((curPos: number = cursorPosition) => {
         setCursorPosition(curPos);
-    }, [cursorPosition, postMessage]);
+    }, [cursorPosition]);
 
     const toggleSaveButton = useCallback((enabled = true) => {
         setButtons(componentId, {
@@ -128,7 +134,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
         setPostMessage(message);
         propagateValue(message);
         onChangeTextCommon(message);
-    }, [onChangeTextCommon]);
+    }, [onChangeTextCommon, propagateValue]);
 
     const onInputChangeText = useCallback((message: string) => {
         if (!shouldProcessEvent(message)) {
@@ -136,7 +142,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
         }
         setPostMessage(message);
         onChangeTextCommon(message);
-    }, [onChangeTextCommon]);
+    }, [onChangeTextCommon, shouldProcessEvent]);
 
     const handleUIUpdates = useCallback((res: {error?: unknown}) => {
         if (res.error) {
@@ -148,7 +154,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
             setIsUpdating(false);
             onClose();
         }
-    }, []);
+    }, [intl, onClose]);
 
     const handleDeletePost = useCallback(async () => {
         Alert.alert(
@@ -174,21 +180,21 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
                 },
             }],
         );
-    }, [serverUrl, editingMessage]);
+    }, [intl, toggleSaveButton, editingMessage, serverUrl, post, handleUIUpdates]);
 
     const onSavePostMessage = useCallback(async () => {
         setIsUpdating(true);
         setErrorLine(undefined);
         setErrorExtra(undefined);
         toggleSaveButton(false);
-        if (!postMessage && canDelete && !hasFilesAttached) {
+        if (shouldDeleteOnSave) {
             handleDeletePost();
             return;
         }
 
         const res = await editPost(serverUrl, post.id, postMessage);
         handleUIUpdates(res);
-    }, [toggleSaveButton, serverUrl, post.id, postMessage, onClose]);
+    }, [toggleSaveButton, shouldDeleteOnSave, serverUrl, post.id, postMessage, handleUIUpdates, handleDeletePost]);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         setContainerHeight(e.nativeEvent.layout.height);
@@ -201,8 +207,6 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
     const overlap = useKeyboardOverlap(mainView, containerHeight);
     const autocompletePosition = overlap + AUTOCOMPLETE_SEPARATION;
     const autocompleteAvailableSpace = containerHeight - autocompletePosition;
-
-    const inputHeight = containerHeight - overlap;
 
     const [animatedAutocompletePosition, animatedAutocompleteAvailableSpace] = useAutocompleteDefaultAnimatedValues(autocompletePosition, autocompleteAvailableSpace);
 
@@ -225,25 +229,28 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
                 onLayout={onLayout}
                 nativeID={SecurityManager.getShieldScreenId(componentId)}
             >
-                <View
-                    style={styles.body}
-                    ref={mainView}
-                >
-                    {Boolean((errorLine || errorExtra)) &&
-                        <PostError
-                            errorExtra={errorExtra}
-                            errorLine={errorLine}
-                        />
-                    }
-                    <EditPostInput
-                        inputHeight={inputHeight}
-                        hasError={Boolean(errorLine)}
-                        message={postMessage}
-                        onChangeText={onInputChangeText}
-                        onTextSelectionChange={onTextSelectionChange}
-                        ref={postInputRef}
-                    />
-                </View>
+                <ExtraKeyboardProvider>
+                    <View
+                        style={styles.body}
+                        ref={mainView}
+                    >
+                        {Boolean((errorLine || errorExtra)) &&
+                            <PostError
+                                errorExtra={errorExtra}
+                                errorLine={errorLine}
+                            />
+                        }
+                        <View style={styles.inputContainer}>
+                            <EditPostInput
+                                hasError={Boolean(errorLine)}
+                                message={postMessage}
+                                onChangeText={onInputChangeText}
+                                onTextSelectionChange={onTextSelectionChange}
+                                ref={postInputRef}
+                            />
+                        </View>
+                    </View>
+                </ExtraKeyboardProvider>
             </SafeAreaView>
             <Autocomplete
                 channelId={post.channelId}

@@ -5,8 +5,9 @@ import {useManagedConfig} from '@mattermost/react-native-emm';
 import PasteInput, {type PasteInputRef} from '@mattermost/react-native-paste-input';
 import React, {forwardRef, useCallback, useImperativeHandle, useMemo, useRef} from 'react';
 import {useIntl} from 'react-intl';
-import {type NativeSyntheticEvent, type TextInputSelectionChangeEventData, View} from 'react-native';
+import {type NativeSyntheticEvent, Platform, type TextInputSelectionChangeEventData, View} from 'react-native';
 
+import {ExtraKeyboard, useExtraKeyboardContext} from '@context/extra_keyboard';
 import {useTheme} from '@context/theme';
 import {emptyFunction} from '@utils/general';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
@@ -17,11 +18,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         color: theme.centerChannelColor,
         padding: 15,
         textAlignVertical: 'top',
+        flex: 1,
         ...typography('Body', 200),
     },
     inputContainer: {
         backgroundColor: theme.centerChannelBg,
         marginTop: 2,
+        flex: 1,
     },
 }));
 
@@ -30,7 +33,6 @@ export type EditPostInputRef = {
 }
 
 type PostInputProps = {
-    inputHeight: number;
     message: string;
     hasError: boolean;
     onTextSelectionChange: (curPos: number) => void;
@@ -38,7 +40,6 @@ type PostInputProps = {
 }
 
 const EditPostInput = forwardRef<EditPostInputRef, PostInputProps>(({
-    inputHeight,
     message,
     onChangeText,
     onTextSelectionChange,
@@ -52,9 +53,19 @@ const EditPostInput = forwardRef<EditPostInputRef, PostInputProps>(({
 
     const inputRef = useRef<PasteInputRef>();
 
+    const keyboardContext = useExtraKeyboardContext();
+
+    const onFocus = useCallback(() => {
+        keyboardContext?.registerTextInputFocus();
+    }, [keyboardContext]);
+
+    const onBlur = useCallback(() => {
+        keyboardContext?.registerTextInputBlur();
+    }, [keyboardContext]);
+
     const inputStyle = useMemo(() => {
-        return [styles.input, {height: inputHeight}];
-    }, [inputHeight, styles]);
+        return [styles.input];
+    }, [styles]);
 
     const onSelectionChange = useCallback((event: NativeSyntheticEvent<TextInputSelectionChangeEventData>) => {
         const curPos = event.nativeEvent.selection.end;
@@ -64,12 +75,11 @@ const EditPostInput = forwardRef<EditPostInputRef, PostInputProps>(({
     const containerStyle = useMemo(() => [
         styles.inputContainer,
         hasError && {marginTop: 0},
-        {height: inputHeight},
-    ], [styles, inputHeight]);
+    ], [styles, hasError]);
 
     useImperativeHandle(ref, () => ({
         focus: () => inputRef.current?.focus(),
-    }), [inputRef.current]);
+    }), []);
 
     return (
         <View style={containerStyle}>
@@ -91,7 +101,10 @@ const EditPostInput = forwardRef<EditPostInputRef, PostInputProps>(({
                 testID='edit_post.message.input'
                 underlineColorAndroid='transparent'
                 value={message}
+                onFocus={onFocus}
+                onBlur={onBlur}
             />
+            {Platform.select({ios: <ExtraKeyboard/>})}
         </View>
     );
 });
