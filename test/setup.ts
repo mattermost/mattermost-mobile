@@ -254,7 +254,9 @@ jest.doMock('react-native', () => {
     const Keyboard = {
         ...RNKeyboard,
         dismiss: jest.fn(),
-        addListener: jest.fn(),
+        addListener: jest.fn(() => ({
+            remove: jest.fn(),
+        })),
     };
 
     return Object.setPrototypeOf({
