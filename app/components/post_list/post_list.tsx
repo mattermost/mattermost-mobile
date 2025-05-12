@@ -403,8 +403,4 @@ const PostList = ({
     );
 };
 
-export const exportedForTesting = {
-    PostListProps: {} as Props,
-};
-
 export default PostList;

@@ -9,6 +9,7 @@ import {fetchGroupsForMember} from '@actions/remote/groups';
 import {fetchPostsForUnreadChannels} from '@actions/remote/post';
 import {type MyPreferencesRequest, fetchMyPreferences} from '@actions/remote/preference';
 import {fetchRoles} from '@actions/remote/role';
+import {fetchScheduledPosts} from '@actions/remote/scheduled_post';
 import {fetchConfigAndLicense, fetchDataRetentionPolicy} from '@actions/remote/systems';
 import {fetchMyTeams, fetchTeamsThreads, handleKickFromTeam, type MyTeamsRequest, updateCanJoinTeams} from '@actions/remote/team';
 import {syncTeamThreads} from '@actions/remote/thread';
@@ -28,7 +29,7 @@ import {getHasCRTChanged} from '@queries/servers/preference';
 import {getCurrentChannelId, getCurrentTeamId, getIsDataRetentionEnabled, getPushVerificationStatus, getLastFullSync, setCurrentTeamAndChannelId, getConfigValue} from '@queries/servers/system';
 import {getTeamChannelHistory} from '@queries/servers/team';
 import NavigationStore from '@store/navigation_store';
-import {isDMorGM, sortChannelsByDisplayName} from '@utils/channel';
+import {isDefaultChannel, isDMorGM, sortChannelsByDisplayName} from '@utils/channel';
 import {getFullErrorMessage} from '@utils/errors';
 import {isMinimumServerVersion, isTablet} from '@utils/helpers';
 import {logDebug, logError} from '@utils/log';
@@ -105,7 +106,7 @@ const entryRest = async (serverUrl: string, teamId?: string, channelId?: string,
         let lastDisconnectedAt = since || await getLastFullSync(database);
 
         const [confResp, prefData] = await Promise.all([
-            fetchConfigAndLicense(serverUrl, true, groupLabel),
+            fetchConfigAndLicense(serverUrl, false, groupLabel),
             fetchMyPreferences(serverUrl, true, groupLabel),
         ]);
 
@@ -221,13 +222,13 @@ export async function entryInitialChannelId(database: Database, requestedChannel
     // Check if we are still members of any channel on the history
     const teamChannelHistory = await getTeamChannelHistory(database, initialTeamId);
     for (const c of teamChannelHistory) {
-        if (membershipIds.has(c) || c === Screens.GLOBAL_THREADS) {
+        if (membershipIds.has(c) || c === Screens.GLOBAL_THREADS || c === Screens.GLOBAL_DRAFTS) {
             return c;
         }
     }
 
     // Check if we are member of the default channel.
-    const defaultChannel = channels?.find((c) => c.name === General.DEFAULT_CHANNEL && c.team_id === initialTeamId);
+    const defaultChannel = channels?.find((c) => isDefaultChannel(c) && c.team_id === initialTeamId);
     const iAmMemberOfTheTeamDefaultChannel = Boolean(defaultChannel && membershipIds.has(defaultChannel.id));
     if (iAmMemberOfTheTeamDefaultChannel) {
         return defaultChannel!.id;
@@ -305,6 +306,10 @@ export async function restDeferredAppEntryActions(
 
     // Fetch groups for current user
     fetchGroupsForMember(serverUrl, currentUserId, false, requestLabel);
+
+    if (initialTeamId) {
+        fetchScheduledPosts(serverUrl, initialTeamId, true, groupLabel);
+    }
 }
 
 export const setExtraSessionProps = async (serverUrl: string, groupLabel?: RequestGroupLabel) => {

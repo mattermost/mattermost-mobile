@@ -66,8 +66,10 @@ describe('Smoke Test - Channels', () => {
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await BrowseChannelsScreen.open();
         await BrowseChannelsScreen.searchInput.replaceText(channel.name);
-        await wait(timeouts.ONE_SEC);
+        await BrowseChannelsScreen.searchInput.tapReturnKey();
+        await wait(timeouts.FOUR_SEC);
         await BrowseChannelsScreen.getChannelItem(channel.name).multiTap(2);
+        await ChannelScreen.closeScheduledMessageTooltip();
 
         // * Verify on newly joined channel screen
         await ChannelScreen.toBeVisible();
@@ -90,8 +92,9 @@ describe('Smoke Test - Channels', () => {
         // # Open create channel screen and create a new channel
         const displayName = `Channel ${getRandomId()}`;
         await CreateOrEditChannelScreen.openCreateChannel();
-        await CreateOrEditChannelScreen.displayNameInput.replaceText(displayName);
-        await CreateOrEditChannelScreen.createButton.tap();
+        await CreateOrEditChannelScreen.displayNameInput.typeText(displayName);
+        await wait(timeouts.FOUR_SEC);
+        await CreateOrEditChannelScreen.clickonCreateButton();
 
         // * Verify on newly created public channel
         await ChannelScreen.toBeVisible();
@@ -106,8 +109,10 @@ describe('Smoke Test - Channels', () => {
         await CreateDirectMessageScreen.open();
         await CreateDirectMessageScreen.closeTutorial();
         await CreateDirectMessageScreen.searchInput.replaceText(newUserDisplayName);
+        await CreateDirectMessageScreen.searchInput.tapReturnKey();
         await wait(timeouts.ONE_SEC);
         await CreateDirectMessageScreen.getUserItem(newUser.id).tap();
+        await wait(timeouts.ONE_SEC);
         await CreateDirectMessageScreen.startButton.tap();
 
         // * Verify on direct message channel screen for the new user
@@ -138,7 +143,8 @@ describe('Smoke Test - Channels', () => {
         // # Open find channels screen, search for the channel to navigate to, and tap on the target channel item
         await FindChannelsScreen.open();
         await FindChannelsScreen.searchInput.replaceText(testChannel.name);
-        await wait(timeouts.ONE_SEC);
+        await FindChannelsScreen.searchInput.tapReturnKey();
+        await waitFor(FindChannelsScreen.getFilteredChannelItem(testChannel.name)).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await FindChannelsScreen.getFilteredChannelItem(testChannel.name).tap();
 
         // * Verify on target channel screen

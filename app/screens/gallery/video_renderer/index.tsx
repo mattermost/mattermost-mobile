@@ -11,7 +11,7 @@ import Animated, {
     type WithTimingConfig,
 } from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import Video, {SelectedTrackType, type OnPlaybackRateChangeData, type VideoRef} from 'react-native-video';
+import Video, {SelectedTrackType, type OnPlaybackRateChangeData, type ReactVideoPoster, type ReactVideoSource, type VideoRef} from 'react-native-video';
 
 import {updateLocalFilePath} from '@actions/local/file';
 import {CaptionsEnabledContext} from '@calls/context';
@@ -58,12 +58,16 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
     const [videoUri, setVideoUri] = useState(item.uri);
     const [downloading, setDownloading] = useState(false);
     const [hasError, setHasError] = useState(false);
-    const source = useMemo(() => ({uri: videoUri}), [videoUri]);
     const {tracks, selected} = useMemo(() => getTranscriptionUri(serverUrl, item.postProps), [serverUrl, item.postProps]);
+    const source: ReactVideoSource = useMemo(() => ({uri: videoUri, textTracks: tracks}), [videoUri, tracks]);
+    const poster: ReactVideoPoster = useMemo(() => ({
+        source: {uri: item.posterUri},
+        resizeMode: 'center',
+    }), [item.posterUri]);
 
-    const setFullscreen = (value: boolean) => {
+    const setFullscreen = useCallback((value: boolean) => {
         fullscreen.value = value;
-    };
+    }, []);
 
     const onDownloadSuccess = (path: string) => {
         setVideoUri(path);
@@ -77,7 +81,7 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
         showControls.current = true;
         setPaused(true);
         videoRef.current?.dismissFullscreenPlayer();
-    }, [onShouldHideControls]);
+    }, [onShouldHideControls, setFullscreen]);
 
     const onError = useCallback(() => {
         setHasError(true);
@@ -87,13 +91,13 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
         setFullscreen(false);
         showControls.current = !paused;
         onShouldHideControls(showControls.current);
-    }, [paused, onShouldHideControls]);
+    }, [setFullscreen, paused, onShouldHideControls]);
 
     const onFullscreenPlayerWillPresent = useCallback(() => {
         setFullscreen(true);
         onShouldHideControls(true);
         showControls.current = true;
-    }, [onShouldHideControls]);
+    }, [onShouldHideControls, setFullscreen]);
 
     const onPlaybackRateChange = useCallback(({playbackRate}: OnPlaybackRateChangeData) => {
         if (isPageActive.value) {
@@ -101,11 +105,7 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
             showControls.current = isPlaying;
             onShouldHideControls(isPlaying);
         }
-    }, [onShouldHideControls]);
-
-    const onPlaybackStateChange = useCallback(({isPlaying}: {isPlaying: boolean}) => {
-        setPaused(!isPlaying);
-    }, []);
+    }, [isPageActive.value, onShouldHideControls]);
 
     const onReadyForDisplay = useCallback(() => {
         setVideoReady(true);
@@ -161,20 +161,17 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
                 ref={videoRef}
                 source={source}
                 paused={paused}
-                poster={item.posterUri}
-                posterResizeMode='center'
+                poster={poster}
                 onError={onError}
                 style={[styles.video, dimensionsStyle]}
                 controls={isPageActive.value}
                 onPlaybackRateChange={onPlaybackRateChange}
                 onFullscreenPlayerWillDismiss={onFullscreenPlayerWillDismiss}
                 onFullscreenPlayerWillPresent={onFullscreenPlayerWillPresent}
-                onPlaybackStateChanged={onPlaybackStateChange}
                 onReadyForDisplay={onReadyForDisplay}
                 onEnd={onEnd}
                 onTouchStart={handleTouchStart}
                 resizeMode='none'
-                textTracks={tracks}
                 selectedTextTrack={captionsEnabled[index] ? selected : {type: SelectedTrackType.DISABLED, value: ''}}
             />
             {hasError &&

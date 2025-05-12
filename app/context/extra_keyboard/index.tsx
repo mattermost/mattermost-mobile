@@ -183,9 +183,6 @@ const ExtraKeyboardComponent = () => {
 
     const animatedStyle = useAnimatedStyle(() => {
         let height = keyb.height.value + offset;
-        if (keyb.height.value < 70) {
-            height = 0; // When using a hw keyboard
-        }
         if (context?.isExtraKeyboardVisible) {
             height = withTiming(maxKeyboardHeight.value, {duration: 250});
         } else if (keyb.state.value === KeyboardState.CLOSED || keyb.state.value === KeyboardState.UNKNOWN) {

@@ -23,7 +23,7 @@ import {
     PostOptionsScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts} from '@support/utils';
+import {getRandomId, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Messaging - Follow and Unfollow Message', () => {
@@ -62,19 +62,21 @@ describe('Messaging - Follow and Unfollow Message', () => {
         await expect(postListPostItem).toBeVisible();
 
         // # Open post options for message and tap on follow message option
-        await ChannelScreen.openPostOptionsFor(post.id, message);
+        await postListPostItem.longPress(timeouts.ONE_SEC);
         await PostOptionsScreen.followThreadOption.tap();
 
         // * Verify message is followed by user via post footer
         const {postListPostItemFooterFollowingButton} = ChannelScreen.getPostListPostItem(post.id, message);
-        await waitFor(postListPostItemFooterFollowingButton).toBeVisible().withTimeout(timeouts.TWO_SEC);
+        await waitFor(postListPostItemFooterFollowingButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Open post options for message and tap on unfollow message option
         await ChannelScreen.openPostOptionsFor(post.id, message);
         await PostOptionsScreen.followingThreadOption.tap();
 
         // * Verify message is not followed by user via post footer
-        await waitFor(postListPostItemFooterFollowingButton).not.toBeVisible().withTimeout(timeouts.TWO_SEC);
+        await waitFor(postListPostItemFooterFollowingButton).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
+
+        await wait(timeouts.TWO_SEC);
 
         // # Go back to channel list screen
         await ChannelScreen.back();

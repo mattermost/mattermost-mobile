@@ -7,13 +7,12 @@ import Animated, {useAnimatedStyle, useDerivedValue, useSharedValue, withTiming}
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import Button from '@components/button';
-import {USER_CHIP_BOTTOM_MARGIN, USER_CHIP_HEIGHT} from '@components/selected_chip';
+import {CHIP_BOTTOM_MARGIN, CHIP_HEIGHT} from '@components/chips/constants';
+import SelectedUserChip from '@components/chips/selected_user_chip';
 import Toast from '@components/toast';
 import {useTheme} from '@context/theme';
 import {useIsTablet, useKeyboardHeightWithDuration} from '@hooks/device';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-
-import SelectedUser from './selected_user';
 
 type Props = {
 
@@ -84,8 +83,8 @@ type Props = {
 }
 
 const BUTTON_HEIGHT = 48;
-const CHIP_HEIGHT_WITH_MARGIN = USER_CHIP_HEIGHT + USER_CHIP_BOTTOM_MARGIN;
-const EXPOSED_CHIP_HEIGHT = 0.33 * USER_CHIP_HEIGHT;
+const CHIP_HEIGHT_WITH_MARGIN = CHIP_HEIGHT + CHIP_BOTTOM_MARGIN;
+const EXPOSED_CHIP_HEIGHT = 0.33 * CHIP_HEIGHT;
 const MAX_CHIP_ROWS = 2;
 const SCROLL_MARGIN_TOP = 20;
 const SCROLL_MARGIN_BOTTOM = 12;
@@ -164,18 +163,20 @@ export default function SelectedUsers({
 
     const users = useMemo(() => {
         const u = [];
-        for (const [id, user] of Object.entries(selectedIds)) {
+        for (const user of Object.values(selectedIds)) {
             if (!user) {
                 continue;
             }
 
+            const userItemTestID = `${testID}.${user.id}`;
+
             u.push(
-                <SelectedUser
-                    key={id}
+                <SelectedUserChip
+                    key={user.id}
                     user={user}
+                    onPress={onRemove}
                     teammateNameDisplay={teammateNameDisplay}
-                    onRemove={onRemove}
-                    testID={`${testID}.selected_user`}
+                    testID={userItemTestID}
                 />,
             );
         }
@@ -195,7 +196,7 @@ export default function SelectedUsers({
             USERS_CHIPS_MAX_HEIGHT,
             e.nativeEvent.layout.height,
         );
-    }, []);
+    }, [usersChipsHeight]);
 
     const androidMaxHeight = Platform.select({
         android: {
@@ -268,7 +269,6 @@ export default function SelectedUsers({
                         onPress={handlePress}
                         iconName={buttonIcon}
                         text={buttonText}
-                        iconSize={20}
                         theme={theme}
                         buttonType={isDisabled ? 'disabled' : 'default'}
                         emphasis={'primary'}

@@ -19,8 +19,10 @@ class BrowseChannelsScreen {
         channelDropdownTextArchived: 'browse_channels.channel_dropdown.text.archived',
         channelDropdownTextShared: 'browse_channels.channel_dropdown.text.shared',
         flatChannelList: 'browse_channels.channel_list.flat_list',
+        scheduledPostTooltipCloseButton: 'scheduled_post.tooltip.close.button',
     };
 
+    scheduledPostTooltipCloseButton = element(by.id(this.testID.scheduledPostTooltipCloseButton));
     browseChannelsScreen = element(by.id(this.testID.browseChannelsScreen));
     closeButton = element(by.id(this.testID.closeButton));
     createButton = element(by.id(this.testID.createButton));
@@ -59,6 +61,15 @@ class BrowseChannelsScreen {
     close = async () => {
         await this.closeButton.tap();
         await expect(this.browseChannelsScreen).not.toBeVisible();
+    };
+
+    dismissScheduledPostTooltip = async () => {
+        try {
+            await this.scheduledPostTooltipCloseButton.tap();
+        } catch (error) {
+            // eslint-disable-next-line no-console
+            console.log('Element not visible, skipping click');
+        }
     };
 }
 

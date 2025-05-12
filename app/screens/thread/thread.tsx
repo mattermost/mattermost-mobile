@@ -11,6 +11,7 @@ import FloatingCallContainer from '@calls/components/floating_call_container';
 import FreezeScreen from '@components/freeze_screen';
 import PostDraft from '@components/post_draft';
 import RoundedHeaderContext from '@components/rounded_header_context';
+import ScheduledPostIndicator from '@components/scheduled_post_indicator';
 import {Screens} from '@constants';
 import {ExtraKeyboardProvider} from '@context/extra_keyboard';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
@@ -33,6 +34,7 @@ type ThreadProps = {
     showIncomingCalls: boolean;
     rootId: string;
     rootPost?: PostModel;
+    scheduledPostCount: number;
 };
 
 const edges: Edge[] = ['left', 'right'];
@@ -49,6 +51,7 @@ const Thread = ({
     showJoinCallBanner,
     isInACall,
     showIncomingCalls,
+    scheduledPostCount,
 }: ThreadProps) => {
     const [containerHeight, setContainerHeight] = useState(0);
 
@@ -126,6 +129,14 @@ const Thread = ({
                             rootPost={rootPost!}
                         />
                     </View>
+                    <>
+                        {scheduledPostCount > 0 &&
+                            <ScheduledPostIndicator
+                                isThread={true}
+                                scheduledPostCount={scheduledPostCount}
+                            />
+                        }
+                    </>
                     <PostDraft
                         channelId={rootPost!.channelId}
                         rootId={rootId}
