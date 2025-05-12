@@ -1,9 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Q, type Model} from '@nozbe/watermelondb';
+
 import {MM_TABLES} from '@constants/database';
 
-import type {Model} from '@nozbe/watermelondb';
+import type {AssociationInfo, HasManyAssociation} from '@nozbe/watermelondb/Model';
 import type {IdenticalRecordArgs, RangeOfValueArgs, RecordPair, RetrieveRecordsArgs} from '@typings/database/database';
 
 const {CHANNEL, POST, TEAM, USER} = MM_TABLES.SERVER;
@@ -90,4 +92,53 @@ export const getUniqueRawsBy = <T extends RawValue>({raws, key}: { raws: T[]; ke
  */
 export const retrieveRecords = <T extends Model>({database, tableName, condition}: RetrieveRecordsArgs) => {
     return database.collections.get<T>(tableName).query(condition).fetch();
+};
+
+export function isHasManyAssociation(associated: AssociationInfo) {
+    return associated.type === 'has_many' && 'foreignKey' in associated;
+}
+
+/**
+ * prepareDestroyPermanentlyAssociatedRecords: prepares children associated records
+ * for permanent deletion
+ * @param {Model[]} records
+ * @returns {Promise<Model[]>}
+ */
+export const prepareDestroyPermanentlyChildrenAssociatedRecords = async (records: Model[]): Promise<Model[]> => {
+    const associationPromises: Array<Promise<Model[]>> = [];
+
+    const recordsByTable = records.reduce((acc, record) => {
+        const tableName = (record.constructor as typeof Model).table;
+        if (!acc[tableName]) {
+            acc[tableName] = [];
+        }
+        acc[tableName].push(record);
+        return acc;
+    }, {} as Record<string, Model[]>);
+
+    for (const groupedRecords of Object.values(recordsByTable)) {
+        const associations = (groupedRecords[0].constructor as typeof Model).associations;
+
+        const promises = Object.entries(associations).
+            filter(([, associated]) => isHasManyAssociation(associated)).
+            map(async ([associationName, associated]) => {
+                const preparedRecords: Model[] = [];
+                const child = associated as HasManyAssociation; // this is a guard as we know that we are in a has_many association
+                const relatedRecords = await retrieveRecords({
+                    database: groupedRecords[0].database,
+                    tableName: associationName,
+                    condition: Q.where(child.foreignKey, Q.oneOf(groupedRecords.map((r) => r.id))),
+                });
+
+                const childPreparedRecords = await prepareDestroyPermanentlyChildrenAssociatedRecords(relatedRecords);
+                preparedRecords.push(...childPreparedRecords);
+                preparedRecords.push(...relatedRecords.map((relatedRecord) => relatedRecord.prepareDestroyPermanently()));
+                return preparedRecords;
+            });
+
+        associationPromises.push(...promises);
+    }
+
+    const results = await Promise.all(associationPromises);
+    return results.flat();
 };

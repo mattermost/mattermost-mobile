@@ -596,6 +596,7 @@ class TestHelperSingleton {
             info: this.fakeRelation(),
             membership: this.fakeRelation(),
             categoryChannel: this.fakeRelation(),
+            playbookRuns: this.fakeQuery([]),
             toApi: jest.fn(),
             ...overwrite,
         };
@@ -738,6 +739,7 @@ class TestHelperSingleton {
             teamChannelHistory: this.fakeRelation(),
             members: this.fakeQuery([]),
             teamSearchHistories: this.fakeQuery([]),
+            playbookRuns: this.fakeQuery([]),
             ...overwrite,
         };
     };
