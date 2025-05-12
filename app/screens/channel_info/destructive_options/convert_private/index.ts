@@ -5,10 +5,11 @@ import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of as of$} from 'rxjs';
 import {combineLatestWith, switchMap} from 'rxjs/operators';
 
-import {General, Permissions} from '@constants';
+import {Permissions} from '@constants';
 import {observeChannel} from '@queries/servers/channel';
 import {observePermissionForChannel} from '@queries/servers/role';
 import {observeCurrentUser} from '@queries/servers/user';
+import {isDefaultChannel} from '@utils/channel';
 
 import ConvertPrivate from './convert_private';
 
@@ -24,7 +25,7 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: Props) =
     const canConvert = channel.pipe(
         combineLatestWith(currentUser),
         switchMap(([ch, u]) => {
-            if (!ch || !u || ch.name === General.DEFAULT_CHANNEL) {
+            if (!ch || !u || isDefaultChannel(ch)) {
                 return of$(false);
             }
 

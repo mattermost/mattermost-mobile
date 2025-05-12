@@ -16,7 +16,18 @@ type PostType =
     | 'system_join_leave'
     | 'system_leave_channel'
     | 'system_purpose_change'
-    | 'system_remove_from_channel';
+    | 'system_remove_from_channel'
+    | 'system_ephemeral_add_to_channel'
+    | 'system_guest_join_channel'
+    | 'system_add_guest_to_chan'
+    | 'system_join_team'
+    | 'system_leave_team'
+    | 'system_remove_from_team'
+    | 'system_combined_user_activity'
+    | 'add_bot_teams_channels'
+    | 'system_auto_responder'
+    | 'custom_calls'
+    | 'custom_calls_recording';
 
 type PostEmbedType = 'image' | 'message_attachment' | 'opengraph';
 

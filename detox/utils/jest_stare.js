@@ -129,9 +129,9 @@ function collectReportSuites(reports) {
     };
 }
 
-function generateJestStareHtmlReport(outputDir, outputFile, inputFilePath) {
+function generateJestStareHtmlReport(outputDir, outputFile, inputFilePath, platform) {
     const suites = fse.readJsonSync(inputFilePath);
-    processor(suites, {log: false, resultDir: outputDir, resultHtml: outputFile, reportHeadline: 'Mobile App E2E with Detox and Jest'});
+    processor(suites, {log: false, resultDir: outputDir, resultHtml: outputFile, reportHeadline: `${platform} Mobile App E2E with Detox and Jest`});
 }
 
 async function mergeJestStareJsonFiles(outputFilePath, inputFiles) {

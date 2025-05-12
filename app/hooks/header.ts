@@ -44,7 +44,7 @@ export const useHeaderHeight = () => {
         defaultHeight,
         largeHeight,
         headerOffset,
-    }), [defaultHeight, largeHeight]);
+    }), [defaultHeight, headerOffset, largeHeight]);
 };
 
 export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset: number) => void) => {

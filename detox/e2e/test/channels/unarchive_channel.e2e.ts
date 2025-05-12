@@ -17,16 +17,18 @@ import {
     ServerScreen,
     ChannelInfoScreen,
 } from '@support/ui/screen';
-import {getAdminAccount, getRandomId, timeouts} from '@support/utils';
+import {getAdminAccount, getRandomId, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Unarchive Channel', () => {
     const serverOneDisplayName = 'Server 1';
 
     beforeAll(async () => {
+
         // # Log in to server as admin
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.loginAsAdmin(getAdminAccount());
+        await wait(timeouts.TWO_SEC);
     });
 
     beforeEach(async () => {
@@ -45,6 +47,9 @@ describe('Channels - Unarchive Channel', () => {
         await CreateOrEditChannelScreen.openCreateChannel();
         await CreateOrEditChannelScreen.displayNameInput.replaceText(channelDisplayName);
         await CreateOrEditChannelScreen.createButton.tap();
+        await wait(timeouts.TWO_SEC);
+        await expect(ChannelScreen.scheduledPostTooltipCloseButtonAdminAccount).toBeVisible();
+        await ChannelScreen.scheduledPostTooltipCloseButtonAdminAccount.tap();
         await ChannelInfoScreen.open();
         await ChannelInfoScreen.archivePublicChannel({confirm: true});
 

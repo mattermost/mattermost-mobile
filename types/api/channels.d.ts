@@ -44,6 +44,7 @@ type Channel = {
     fake?: boolean;
     group_constrained: boolean|null;
     shared: boolean;
+    banner_info?: ChannelBannerInfo;
 };
 type ChannelPatch = {
     name?: string;
@@ -162,4 +163,10 @@ type ChannelBookmarkWithFileInfo = ChannelBookmark & {
 type UpdateChannelBookmarkResponse = {
     updated: ChannelBookmarkWithFileInfo;
     deleted?: ChannelBookmarkWithFileInfo;
+}
+
+type ChannelBannerInfo = {
+    enabled?: boolean;
+    text?: string;
+    background_color?: string;
 }

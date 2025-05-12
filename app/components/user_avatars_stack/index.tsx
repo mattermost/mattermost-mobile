@@ -8,11 +8,11 @@ import {Platform, type StyleProp, Text, type TextStyle, TouchableOpacity, View, 
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {BOTTOM_SHEET_ANDROID_OFFSET} from '@screens/bottom_sheet';
 import {TITLE_HEIGHT} from '@screens/bottom_sheet/content';
 import {bottomSheet} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
-import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -25,7 +25,7 @@ const OVERFLOW_DISPLAY_LIMIT = 99;
 const USER_ROW_HEIGHT = 40;
 
 type Props = {
-    channelId: string;
+    channelId?: string;
     location: string;
     users: UserModel[];
     breakAt?: number;
@@ -100,10 +100,11 @@ const UserAvatarsStack = ({
     overflowTextStyle,
 }: Props) => {
     const theme = useTheme();
+    const style = getStyleSheet(theme);
     const intl = useIntl();
     const isTablet = useIsTablet();
 
-    const showParticipantsList = useCallback(preventDoubleTap(() => {
+    const showParticipantsList = usePreventDoubleTap(useCallback(() => {
         const renderContent = () => (
             <>
                 {!isTablet && (
@@ -141,12 +142,10 @@ const UserAvatarsStack = ({
             title: intl.formatMessage({id: 'mobile.participants.header', defaultMessage: 'Thread Participants'}),
             theme,
         });
-    }), [isTablet, theme, users, channelId, location]);
+    }, [users, intl, theme, isTablet, style.listHeader, style.listHeaderText, channelId, location]));
 
     const displayUsers = users.slice(0, breakAt);
     const overflowUsersCount = Math.min(users.length - displayUsers.length, OVERFLOW_DISPLAY_LIMIT);
-
-    const style = getStyleSheet(theme);
 
     return (
         <TouchableOpacity

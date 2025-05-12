@@ -3,12 +3,11 @@
 
 /* eslint-disable max-lines */
 
-import {Database, Model, Query, Relation, Q} from '@nozbe/watermelondb';
+import {Database, Q} from '@nozbe/watermelondb';
 import {of as of$} from 'rxjs';
 
 import {General, Permissions} from '@constants';
 import {MM_TABLES} from '@constants/database';
-import DatabaseManager from '@database/manager';
 import ServerDataOperator from '@database/operator/server_data_operator';
 import TestHelper from '@test/test_helper';
 import {hasPermission} from '@utils/role';
@@ -18,7 +17,6 @@ import {prepareChannels,
     prepareMyChannelsForTeam,
     prepareDeleteChannel,
     prepareDeleteBookmarks,
-    type ChannelMembershipsExtended,
     queryAllChannels,
     queryAllChannelsForTeam,
     queryAllChannelsInfo,
@@ -64,20 +62,15 @@ import {prepareChannels,
     queryChannelMembers,
     queryChannelsForAutocomplete,
     observeChannelMembers,
-    observeMyChannelUnreads,
-    prepareAllMyChannels,
 } from './channel';
 import {queryRoles} from './role';
 import {getCurrentChannelId, observeCurrentChannelId, observeCurrentUserId} from './system';
 import {observeTeammateNameDisplay} from './user';
 
-import type {UserModel} from '@database/models/server';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type ChannelBookmarkModel from '@typings/database/models/servers/channel_bookmark';
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
 import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
-import type MyChannelModel from '@typings/database/models/servers/my_channel';
-import type MyChannelSettingsModel from '@typings/database/models/servers/my_channel_settings';
 
 jest.mock('./role');
 jest.mock('./system');
@@ -98,10 +91,22 @@ describe('prepareChannels', () => {
     });
 
     it('should prepare channels, channelInfos, channelMemberships, memberships, and myChannelSettings', () => {
-        const channels = [{id: 'channel1'}, {id: 'channel2'}] as Channel[];
-        const channelInfos = [{id: 'channel1'}, {id: 'channel2'}] as ChannelInfo[];
-        const channelMemberships = [{channel_id: 'channel1', user_id: 'user1'}, {channel_id: 'channel2', user_id: 'user2'}] as ChannelMembershipsExtended[];
-        const memberships = [{channel_id: 'channel1', user_id: 'user1'}, {channel_id: 'channel2', user_id: 'user2'}] as ChannelMembership[];
+        const channels = [
+            TestHelper.fakeChannel({id: 'channel1'}),
+            TestHelper.fakeChannel({id: 'channel2'}),
+        ];
+        const channelInfos = [
+            TestHelper.fakeChannelInfo({id: 'channel1'}),
+            TestHelper.fakeChannelInfo({id: 'channel2'}),
+        ];
+        const channelMemberships = [
+            TestHelper.fakeChannelMember({channel_id: 'channel1', user_id: 'user1'}),
+            TestHelper.fakeChannelMember({channel_id: 'channel2', user_id: 'user2'}),
+        ];
+        const memberships = [
+            TestHelper.fakeChannelMember({channel_id: 'channel1', user_id: 'user1'}),
+            TestHelper.fakeChannelMember({channel_id: 'channel2', user_id: 'user2'}),
+        ];
 
         const channelRecords = Promise.resolve([]);
         const channelInfoRecords = Promise.resolve([]);
@@ -109,11 +114,11 @@ describe('prepareChannels', () => {
         const myChannelRecords = Promise.resolve([]);
         const myChannelSettingsRecords = Promise.resolve([]);
 
-        (operator.handleChannel as jest.Mock).mockReturnValue(channelRecords);
-        (operator.handleChannelInfo as jest.Mock).mockReturnValue(channelInfoRecords);
-        (operator.handleChannelMembership as jest.Mock).mockReturnValue(membershipRecords);
-        (operator.handleMyChannel as jest.Mock).mockReturnValue(myChannelRecords);
-        (operator.handleMyChannelSettings as jest.Mock).mockReturnValue(myChannelSettingsRecords);
+        jest.mocked(operator.handleChannel).mockReturnValue(channelRecords);
+        jest.mocked(operator.handleChannelInfo).mockReturnValue(channelInfoRecords);
+        jest.mocked(operator.handleChannelMembership).mockReturnValue(membershipRecords);
+        jest.mocked(operator.handleMyChannel).mockReturnValue(myChannelRecords);
+        jest.mocked(operator.handleMyChannelSettings).mockReturnValue(myChannelSettingsRecords);
 
         const result = prepareChannels(operator, channels, channelInfos, channelMemberships, memberships, true);
 
@@ -126,7 +131,7 @@ describe('prepareChannels', () => {
     });
 
     it('should return an empty array if an error occurs', () => {
-        (operator.handleChannel as jest.Mock).mockImplementation(() => {
+        jest.mocked(operator.handleChannel).mockImplementation(() => {
             throw new Error('Test error');
         });
 
@@ -151,13 +156,13 @@ describe('prepareMissingChannelsForAllTeams', () => {
 
     it('should prepare missing channels for all teams', () => {
         const channels = [
-            {id: 'channel1', header: 'header1', purpose: 'purpose1', last_post_at: 123, last_root_post_at: 456},
-            {id: 'channel2', header: 'header2', purpose: 'purpose2', last_post_at: 789, last_root_post_at: 101112},
-        ] as Channel[];
+            TestHelper.fakeChannel({id: 'channel1', header: 'header1', purpose: 'purpose1', last_post_at: 123, last_root_post_at: 456}),
+            TestHelper.fakeChannel({id: 'channel2', header: 'header2', purpose: 'purpose2', last_post_at: 789, last_root_post_at: 101112}),
+        ];
         const channelMembers = [
-            {channel_id: 'channel1', user_id: 'user1'},
-            {channel_id: 'channel2', user_id: 'user2'},
-        ] as ChannelMembership[];
+            TestHelper.fakeChannelMember({channel_id: 'channel1', user_id: 'user1'}),
+            TestHelper.fakeChannelMember({channel_id: 'channel2', user_id: 'user2'}),
+        ];
 
         const channelRecords = Promise.resolve([]);
         const channelInfoRecords = Promise.resolve([]);
@@ -165,11 +170,11 @@ describe('prepareMissingChannelsForAllTeams', () => {
         const myChannelRecords = Promise.resolve([]);
         const myChannelSettingsRecords = Promise.resolve([]);
 
-        (operator.handleChannel as jest.Mock).mockReturnValue(channelRecords);
-        (operator.handleChannelInfo as jest.Mock).mockReturnValue(channelInfoRecords);
-        (operator.handleChannelMembership as jest.Mock).mockReturnValue(membershipRecords);
-        (operator.handleMyChannel as jest.Mock).mockReturnValue(myChannelRecords);
-        (operator.handleMyChannelSettings as jest.Mock).mockReturnValue(myChannelSettingsRecords);
+        jest.mocked(operator.handleChannel).mockReturnValue(channelRecords);
+        jest.mocked(operator.handleChannelInfo).mockReturnValue(channelInfoRecords);
+        jest.mocked(operator.handleChannelMembership).mockReturnValue(membershipRecords);
+        jest.mocked(operator.handleMyChannel).mockReturnValue(myChannelRecords);
+        jest.mocked(operator.handleMyChannelSettings).mockReturnValue(myChannelSettingsRecords);
 
         const result = prepareMissingChannelsForAllTeams(operator, channels, channelMembers, true);
 
@@ -184,31 +189,31 @@ describe('prepareMissingChannelsForAllTeams', () => {
         });
         expect(operator.handleChannelMembership).toHaveBeenCalledWith({
             channelMemberships: [
-                {channel_id: 'channel1', user_id: 'user1', id: 'channel1', last_post_at: 123, last_root_post_at: 456},
-                {channel_id: 'channel2', user_id: 'user2', id: 'channel2', last_post_at: 789, last_root_post_at: 101112},
+                expect.objectContaining({channel_id: 'channel1', user_id: 'user1', id: 'channel1', last_post_at: 123, last_root_post_at: 456}),
+                expect.objectContaining({channel_id: 'channel2', user_id: 'user2', id: 'channel2', last_post_at: 789, last_root_post_at: 101112}),
             ],
             prepareRecordsOnly: true,
         });
         expect(operator.handleMyChannel).toHaveBeenCalledWith({
             channels,
             myChannels: [
-                {channel_id: 'channel1', user_id: 'user1', id: 'channel1', last_post_at: 123, last_root_post_at: 456},
-                {channel_id: 'channel2', user_id: 'user2', id: 'channel2', last_post_at: 789, last_root_post_at: 101112},
+                expect.objectContaining({channel_id: 'channel1', user_id: 'user1', id: 'channel1', last_post_at: 123, last_root_post_at: 456}),
+                expect.objectContaining({channel_id: 'channel2', user_id: 'user2', id: 'channel2', last_post_at: 789, last_root_post_at: 101112}),
             ],
             prepareRecordsOnly: true,
             isCRTEnabled: true,
         });
         expect(operator.handleMyChannelSettings).toHaveBeenCalledWith({
             settings: [
-                {channel_id: 'channel1', user_id: 'user1', id: 'channel1', last_post_at: 123, last_root_post_at: 456},
-                {channel_id: 'channel2', user_id: 'user2', id: 'channel2', last_post_at: 789, last_root_post_at: 101112},
+                expect.objectContaining({channel_id: 'channel1', user_id: 'user1', id: 'channel1', last_post_at: 123, last_root_post_at: 456}),
+                expect.objectContaining({channel_id: 'channel2', user_id: 'user2', id: 'channel2', last_post_at: 789, last_root_post_at: 101112}),
             ],
             prepareRecordsOnly: true,
         });
     });
 
     it('should return an empty array if an error occurs', () => {
-        (operator.handleChannel as jest.Mock).mockImplementation(() => {
+        jest.mocked(operator.handleChannel).mockImplementation(() => {
             throw new Error('Test error');
         });
 
@@ -245,13 +250,13 @@ describe('prepareMyChannelsForTeam', () => {
     it('should prepare my channels for a team', async () => {
         const teamId = 'team_id';
         const channels = [
-            {id: 'channel1', header: 'header1', purpose: 'purpose1', last_post_at: 123, last_root_post_at: 456},
-            {id: 'channel2', header: 'header2', purpose: 'purpose2', last_post_at: 789, last_root_post_at: 101112},
-        ] as Channel[];
+            TestHelper.fakeChannel({id: 'channel1', header: 'header1', purpose: 'purpose1', last_post_at: 123, last_root_post_at: 456}),
+            TestHelper.fakeChannel({id: 'channel2', header: 'header2', purpose: 'purpose2', last_post_at: 789, last_root_post_at: 101112}),
+        ];
         const channelMembers = [
-            {channel_id: 'channel1', user_id: 'user1'},
-            {channel_id: 'channel2', user_id: 'user2'},
-        ] as ChannelMembership[];
+            TestHelper.fakeChannelMember({channel_id: 'channel1', user_id: 'user1'}),
+            TestHelper.fakeChannelMember({channel_id: 'channel2', user_id: 'user2'}),
+        ];
 
         const allChannelsForTeam = {
             channel1: {id: 'channel1'},
@@ -274,11 +279,11 @@ describe('prepareMyChannelsForTeam', () => {
         const myChannelRecords = Promise.resolve([]);
         const myChannelSettingsRecords = Promise.resolve([]);
 
-        (operator.handleChannel as jest.Mock).mockReturnValue(channelRecords);
-        (operator.handleChannelInfo as jest.Mock).mockReturnValue(channelInfoRecords);
-        (operator.handleChannelMembership as jest.Mock).mockReturnValue(membershipRecords);
-        (operator.handleMyChannel as jest.Mock).mockReturnValue(myChannelRecords);
-        (operator.handleMyChannelSettings as jest.Mock).mockReturnValue(myChannelSettingsRecords);
+        jest.mocked(operator.handleChannel).mockReturnValue(channelRecords);
+        jest.mocked(operator.handleChannelInfo).mockReturnValue(channelInfoRecords);
+        jest.mocked(operator.handleChannelMembership).mockReturnValue(membershipRecords);
+        jest.mocked(operator.handleMyChannel).mockReturnValue(myChannelRecords);
+        jest.mocked(operator.handleMyChannelSettings).mockReturnValue(myChannelSettingsRecords);
 
         query = jest.fn().mockResolvedValueOnce(Object.entries(allChannelsForTeam).map((c) => c[1])).mockResolvedValueOnce(Object.entries(allChannelsInfoForTeam).map((i) => i[1]));
         const result = await prepareMyChannelsForTeam(operator, teamId, channels, channelMembers, true);
@@ -288,31 +293,31 @@ describe('prepareMyChannelsForTeam', () => {
         expect(operator.handleChannel).toHaveBeenCalledWith({channels, prepareRecordsOnly: true});
         expect(operator.handleChannelInfo).toHaveBeenCalledWith({
             channelInfos: [
-                {id: 'channel1', header: 'header1', purpose: 'purpose1', guest_count: 2, member_count: 10, pinned_post_count: 1, files_count: 5},
-                {id: 'channel2', header: 'header2', purpose: 'purpose2', guest_count: 3, member_count: 20, pinned_post_count: 2, files_count: 10},
+                expect.objectContaining({id: 'channel1', header: 'header1', purpose: 'purpose1', guest_count: 2, member_count: 10, pinned_post_count: 1, files_count: 5}),
+                expect.objectContaining({id: 'channel2', header: 'header2', purpose: 'purpose2', guest_count: 3, member_count: 20, pinned_post_count: 2, files_count: 10}),
             ],
             prepareRecordsOnly: true,
         });
         expect(operator.handleChannelMembership).toHaveBeenCalledWith({
             channelMemberships: [
-                {channel_id: 'channel1', user_id: 'user1'},
-                {channel_id: 'channel2', user_id: 'user2'},
+                expect.objectContaining({channel_id: 'channel1', user_id: 'user1'}),
+                expect.objectContaining({channel_id: 'channel2', user_id: 'user2'}),
             ],
             prepareRecordsOnly: true,
         });
         expect(operator.handleMyChannel).toHaveBeenCalledWith({
             channels,
             myChannels: [
-                {channel_id: 'channel1', user_id: 'user1', id: 'channel1'},
-                {channel_id: 'channel2', user_id: 'user2', id: 'channel2'},
+                expect.objectContaining({channel_id: 'channel1', user_id: 'user1', id: 'channel1'}),
+                expect.objectContaining({channel_id: 'channel2', user_id: 'user2', id: 'channel2'}),
             ],
             prepareRecordsOnly: true,
             isCRTEnabled: true,
         });
         expect(operator.handleMyChannelSettings).toHaveBeenCalledWith({
             settings: [
-                {channel_id: 'channel1', user_id: 'user1', id: 'channel1'},
-                {channel_id: 'channel2', user_id: 'user2', id: 'channel2'},
+                expect.objectContaining({channel_id: 'channel1', user_id: 'user1', id: 'channel1'}),
+                expect.objectContaining({channel_id: 'channel2', user_id: 'user2', id: 'channel2'}),
             ],
             prepareRecordsOnly: true,
         });
@@ -323,38 +328,35 @@ describe('prepareDeleteChannel', () => {
     let channel: ChannelModel;
 
     beforeEach(() => {
-        channel = {
+        channel = TestHelper.fakeChannelModel({
             prepareDestroyPermanently: jest.fn().mockReturnValue({}),
-            membership: {fetch: jest.fn()} as unknown as Relation<Model>,
-            info: {fetch: jest.fn()} as unknown as Relation<Model>,
-            categoryChannel: {fetch: jest.fn()} as unknown as Relation<Model>,
-            members: {fetch: jest.fn()} as unknown as Query<Model>,
-            drafts: {fetch: jest.fn()} as unknown as Query<Model>,
-            postsInChannel: {fetch: jest.fn()} as unknown as Query<Model>,
-            posts: {fetch: jest.fn()} as unknown as Query<Model>,
-            bookmarks: {fetch: jest.fn()} as unknown as Query<Model>,
-        } as unknown as ChannelModel;
+        });
     });
 
     it('should prepare models for deletion', async () => {
-        const prepareDestroyPermanently = jest.fn().mockReturnValue({});
-        const membershipModel = {prepareDestroyPermanently: jest.fn().mockReturnValue({id: 'membership'})};
-        const infoModel = {prepareDestroyPermanently: jest.fn().mockReturnValue({id: 'info'})};
-        const categoryChannelModel = {prepareDestroyPermanently: jest.fn().mockReturnValue({id: 'category'})};
-        const memberModels = [{prepareDestroyPermanently: jest.fn().mockReturnValue({id: 'member'})}];
-        const draftModels = [{prepareDestroyPermanently: jest.fn().mockReturnValue({id: 'draft'})}];
-        const postsInChannelModels = [{prepareDestroyPermanently}];
-        const postModels = [{id: 'post1', prepareDestroyPermanently: jest.fn().mockReturnValue({id: 'post'})}];
-        const bookmarkModels = [{id: 'bookmark1', prepareDestroyPermanently: jest.fn().mockReturnValue({id: 'bookmark'})}];
+        const membershipModel = TestHelper.fakeMyChannelMembershipModel({prepareDestroyPermanently: jest.fn().mockReturnValue({id: 'membership'})});
+        const infoModel = TestHelper.fakeChannelInfoModel({prepareDestroyPermanently: jest.fn().mockReturnValue({id: 'info'})});
+        const categoryChannelModel = TestHelper.fakeCategoryChannelModel({prepareDestroyPermanently: jest.fn().mockReturnValue({id: 'category'})});
+        const memberModels = [TestHelper.fakeChannelMembershipModel({prepareDestroyPermanently: jest.fn().mockReturnValue({id: 'member'})})];
+        const draftModels = [TestHelper.fakeDraftModel({prepareDestroyPermanently: jest.fn().mockReturnValue({id: 'draft'})})];
+        const postsInChannelModels = [
+            TestHelper.fakePostsInChannelModel({prepareDestroyPermanently: jest.fn().mockReturnValue({id: 'postsInChannel'})}),
+        ];
+        const postModels = [
+            TestHelper.fakePostModel({id: 'post1', prepareDestroyPermanently: jest.fn().mockReturnValue({id: 'post'})}),
+        ];
+        const bookmarkModels = [
+            TestHelper.fakeChannelBookmarkModel({id: 'bookmark1', prepareDestroyPermanently: jest.fn().mockReturnValue({id: 'bookmark'})}),
+        ];
 
-        (channel.membership.fetch as jest.Mock).mockResolvedValue(membershipModel);
-        (channel.info.fetch as jest.Mock).mockResolvedValue(infoModel);
-        (channel.categoryChannel.fetch as jest.Mock).mockResolvedValue(categoryChannelModel);
-        (channel.members.fetch as jest.Mock).mockResolvedValue(memberModels);
-        (channel.drafts.fetch as jest.Mock).mockResolvedValue(draftModels);
-        (channel.postsInChannel.fetch as jest.Mock).mockResolvedValue(postsInChannelModels);
-        (channel.posts.fetch as jest.Mock).mockResolvedValue(postModels);
-        (channel.bookmarks.fetch as jest.Mock).mockResolvedValue(bookmarkModels);
+        jest.mocked(channel.membership.fetch).mockResolvedValue(membershipModel);
+        jest.mocked(channel.info.fetch).mockResolvedValue(infoModel);
+        jest.mocked(channel.categoryChannel.fetch).mockResolvedValue(categoryChannelModel);
+        jest.mocked(channel.members.fetch).mockResolvedValue(memberModels);
+        jest.mocked(channel.drafts.fetch).mockResolvedValue(draftModels);
+        jest.mocked(channel.postsInChannel.fetch).mockResolvedValue(postsInChannelModels);
+        jest.mocked(channel.posts.fetch).mockResolvedValue(postModels);
+        jest.mocked(channel.bookmarks.fetch).mockResolvedValue(bookmarkModels);
 
         const result = await prepareDeleteChannel(channel);
 
@@ -365,7 +367,7 @@ describe('prepareDeleteChannel', () => {
             {id: 'category'},
             {id: 'member'},
             {id: 'draft'},
-            {},
+            {id: 'postsInChannel'},
             {id: 'post'},
             {id: 'bookmark'},
         ]);
@@ -381,9 +383,9 @@ describe('prepareDeleteChannel', () => {
     });
 
     it('should handle errors gracefully', async () => {
-        (channel.membership.fetch as jest.Mock).mockRejectedValue(new Error('Test error'));
-        (channel.info.fetch as jest.Mock).mockRejectedValue(new Error('Test error'));
-        (channel.categoryChannel.fetch as jest.Mock).mockRejectedValue(new Error('Test error'));
+        jest.mocked(channel.membership.fetch).mockRejectedValue(new Error('Test error'));
+        jest.mocked(channel.info.fetch).mockRejectedValue(new Error('Test error'));
+        jest.mocked(channel.categoryChannel.fetch).mockRejectedValue(new Error('Test error'));
 
         const result = await prepareDeleteChannel(channel);
 
@@ -396,17 +398,16 @@ describe('prepareDeleteBookmarks', () => {
     let bookmark: ChannelBookmarkModel;
 
     beforeEach(() => {
-        bookmark = {
+        bookmark = TestHelper.fakeChannelBookmarkModel({
             prepareDestroyPermanently: jest.fn().mockReturnValue({}),
-            file: {fetch: jest.fn()} as unknown as Relation<Model>,
             fileId: 'file_id',
-        } as unknown as ChannelBookmarkModel;
+        });
     });
 
     it('should prepare bookmark and associated file for deletion', async () => {
-        const fileModel = {prepareDestroyPermanently: jest.fn().mockReturnValue({})};
+        const fileModel = TestHelper.fakeFileModel({prepareDestroyPermanently: jest.fn().mockReturnValue({})});
 
-        (bookmark.file.fetch as jest.Mock).mockResolvedValue(fileModel);
+        jest.mocked(bookmark.file.fetch).mockResolvedValue(fileModel);
 
         const result = await prepareDeleteBookmarks(bookmark);
 
@@ -417,7 +418,7 @@ describe('prepareDeleteBookmarks', () => {
     });
 
     it('should handle errors gracefully when fetching associated file', async () => {
-        (bookmark.file.fetch as jest.Mock).mockRejectedValue(new Error('Test error'));
+        jest.mocked(bookmark.file.fetch).mockRejectedValue(new Error('Test error'));
 
         const result = await prepareDeleteBookmarks(bookmark);
 
@@ -692,10 +693,10 @@ describe('Channel Functions', () => {
     describe('getMyChannel', () => {
         it('should return the channel member if found', async () => {
             const channelId = 'channel_id';
-            const mockMember = {id: channelId} as MyChannelModel;
-            (database.get as jest.Mock).mockReturnValue({
+            const mockMember = TestHelper.fakeMyChannelModel({id: channelId});
+            jest.mocked(database.get).mockReturnValue({
                 find: jest.fn().mockResolvedValue(mockMember),
-            });
+            } as any);
 
             const result = await getMyChannel(database, channelId);
 
@@ -705,9 +706,9 @@ describe('Channel Functions', () => {
 
         it('should return undefined if the channel member is not found', async () => {
             const channelId = 'channel_id';
-            (database.get as jest.Mock).mockReturnValue({
+            jest.mocked(database.get).mockReturnValue({
                 find: jest.fn().mockRejectedValue(new Error('Not found')),
-            });
+            } as any);
 
             const result = await getMyChannel(database, channelId);
 
@@ -722,9 +723,9 @@ describe('Channel Functions', () => {
             const mockQuery = jest.fn().mockReturnValue({
                 observe: jest.fn().mockReturnValue(of$([{id: channelId, observe: jest.fn().mockReturnValue(of$({id: channelId}))}])),
             });
-            (database.get as jest.Mock).mockReturnValue({
+            jest.mocked(database.get).mockReturnValue({
                 query: mockQuery,
-            });
+            } as any);
 
             const result = observeMyChannel(database, channelId);
 
@@ -740,9 +741,9 @@ describe('Channel Functions', () => {
             const mockQuery = jest.fn().mockReturnValue({
                 observe: jest.fn().mockReturnValue(of$([])),
             });
-            (database.get as jest.Mock).mockReturnValue({
+            jest.mocked(database.get).mockReturnValue({
                 query: mockQuery,
-            });
+            } as any);
 
             const result = observeMyChannel(database, channelId);
 
@@ -761,9 +762,9 @@ describe('Channel Functions', () => {
             const mockQuery = jest.fn().mockReturnValue({
                 observe: jest.fn().mockReturnValue(of$([{id: channelId, roles, observe: jest.fn().mockReturnValue(of$({roles}))}])),
             });
-            (database.get as jest.Mock).mockReturnValue({
+            jest.mocked(database.get).mockReturnValue({
                 query: mockQuery,
-            });
+            } as any);
 
             const result = observeMyChannelRoles(database, channelId);
 
@@ -777,9 +778,9 @@ describe('Channel Functions', () => {
             const mockQuery = jest.fn().mockReturnValue({
                 observe: jest.fn().mockReturnValue(of$([])),
             });
-            (database.get as jest.Mock).mockReturnValue({
+            jest.mocked(database.get).mockReturnValue({
                 query: mockQuery,
-            });
+            } as any);
 
             const result = observeMyChannelRoles(database, channelId);
 
@@ -792,10 +793,10 @@ describe('Channel Functions', () => {
     describe('getChannelById', () => {
         it('should return the channel if found', async () => {
             const channelId = 'channel_id';
-            const mockedChannel = {id: channelId} as ChannelModel;
-            (database.get as jest.Mock).mockReturnValue({
+            const mockedChannel = TestHelper.fakeChannelModel({id: channelId});
+            jest.mocked(database.get).mockReturnValue({
                 find: jest.fn().mockResolvedValue(mockedChannel),
-            });
+            } as any);
 
             const result = await getChannelById(database, channelId);
 
@@ -805,9 +806,9 @@ describe('Channel Functions', () => {
 
         it('should return undefined if the channel is not found', async () => {
             const channelId = 'channel_id';
-            (database.get as jest.Mock).mockReturnValue({
+            jest.mocked(database.get).mockReturnValue({
                 find: jest.fn().mockRejectedValue(new Error('Not found')),
-            });
+            } as any);
 
             const result = await getChannelById(database, channelId);
 
@@ -822,9 +823,9 @@ describe('Channel Functions', () => {
             const mockQuery = jest.fn().mockReturnValue({
                 observe: jest.fn().mockReturnValue(of$([{id: channelId, observe: jest.fn().mockReturnValue(of$({id: channelId}))}])),
             });
-            (database.get as jest.Mock).mockReturnValue({
+            jest.mocked(database.get).mockReturnValue({
                 query: mockQuery,
-            });
+            } as any);
 
             const result = observeChannel(database, channelId);
 
@@ -840,9 +841,9 @@ describe('Channel Functions', () => {
             const mockQuery = jest.fn().mockReturnValue({
                 observe: jest.fn().mockReturnValue(of$([])),
             });
-            (database.get as jest.Mock).mockReturnValue({
+            jest.mocked(database.get).mockReturnValue({
                 query: mockQuery,
-            });
+            } as any);
 
             const result = observeChannel(database, channelId);
 
@@ -858,12 +859,12 @@ describe('Channel Functions', () => {
         it('should return the channel if found', async () => {
             const teamId = 'team_id';
             const channelName = 'channel_name';
-            const mockedChannel = {id: 'channel_id', name: channelName} as ChannelModel;
-            (database.get as jest.Mock).mockReturnValue({
+            const mockedChannel = TestHelper.fakeChannelModel({id: 'channel_id', name: channelName});
+            jest.mocked(database.get).mockReturnValue({
                 query: jest.fn().mockReturnValue({
                     fetch: jest.fn().mockResolvedValue([mockedChannel]),
                 }),
-            });
+            } as any);
 
             const result = await getChannelByName(database, teamId, channelName);
 
@@ -874,11 +875,11 @@ describe('Channel Functions', () => {
         it('should return undefined if the channel is not found', async () => {
             const teamId = 'team_id';
             const channelName = 'channel_name';
-            (database.get as jest.Mock).mockReturnValue({
+            jest.mocked(database.get).mockReturnValue({
                 query: jest.fn().mockReturnValue({
                     fetch: jest.fn().mockResolvedValue([]),
                 }),
-            });
+            } as any);
 
             const result = await getChannelByName(database, teamId, channelName);
 
@@ -890,10 +891,10 @@ describe('Channel Functions', () => {
     describe('getChannelInfo', () => {
         it('should return the channel info if found', async () => {
             const channelId = 'channel_id';
-            const mockChannelInfo = {id: channelId} as ChannelInfoModel;
-            (database.get as jest.Mock).mockReturnValue({
+            const mockChannelInfo = TestHelper.fakeChannelInfoModel({id: channelId});
+            jest.mocked(database.get).mockReturnValue({
                 find: jest.fn().mockResolvedValue(mockChannelInfo),
-            });
+            } as any);
 
             const result = await getChannelInfo(database, channelId);
 
@@ -903,9 +904,9 @@ describe('Channel Functions', () => {
 
         it('should return undefined if the channel info is not found', async () => {
             const channelId = 'channel_id';
-            (database.get as jest.Mock).mockReturnValue({
+            jest.mocked(database.get).mockReturnValue({
                 find: jest.fn().mockRejectedValue(new Error('Not found')),
-            });
+            } as any);
 
             const result = await getChannelInfo(database, channelId);
 
@@ -927,12 +928,12 @@ describe('Channel Functions', () => {
 
         it('should return the default channel for the team', async () => {
             const teamId = 'team_id';
-            const defaultChannel = {id: 'default_channel', name: General.DEFAULT_CHANNEL} as ChannelModel;
-            const myFirstTeamChannel = {id: 'first_team_channel'} as ChannelModel;
-            const roles = [{permissions: [Permissions.JOIN_PUBLIC_CHANNELS]}];
-            (queryRoles as jest.Mock).mockReturnValue({fetch: jest.fn().mockResolvedValue(roles)});
-            (hasPermission as jest.Mock).mockReturnValue(true);
-            (mockQuery as jest.Mock).mockReturnValue({
+            const defaultChannel = TestHelper.fakeChannelModel({id: 'default_channel', name: General.DEFAULT_CHANNEL});
+            const myFirstTeamChannel = TestHelper.fakeChannelModel({id: 'first_team_channel'});
+            const roles = [TestHelper.fakeRoleModel({permissions: [Permissions.JOIN_PUBLIC_CHANNELS]})];
+            jest.mocked(queryRoles).mockReturnValue(TestHelper.fakeQuery(roles));
+            jest.mocked(hasPermission).mockReturnValue(true);
+            jest.mocked(mockQuery).mockReturnValue({
                 fetch: jest.fn().mockResolvedValue([defaultChannel, myFirstTeamChannel]),
             });
 
@@ -955,11 +956,11 @@ describe('Channel Functions', () => {
 
         it('should return the default channel for the team with ignore id', async () => {
             const teamId = 'team_id';
-            const defaultChannel = {id: 'default_channel', name: General.DEFAULT_CHANNEL} as ChannelModel;
-            const myFirstTeamChannel = {id: 'first_team_channel'} as ChannelModel;
-            (queryRoles as jest.Mock).mockReturnValue({fetch: jest.fn().mockResolvedValue([])});
-            (hasPermission as jest.Mock).mockReturnValue(true);
-            (mockQuery as jest.Mock).mockReturnValue({
+            const defaultChannel = TestHelper.fakeChannelModel({id: 'default_channel', name: General.DEFAULT_CHANNEL});
+            const myFirstTeamChannel = TestHelper.fakeChannelModel({id: 'first_team_channel'});
+            jest.mocked(queryRoles).mockReturnValue(TestHelper.fakeQuery([]));
+            jest.mocked(hasPermission).mockReturnValue(true);
+            jest.mocked(mockQuery).mockReturnValue({
                 fetch: jest.fn().mockResolvedValue([defaultChannel, myFirstTeamChannel]),
             });
 
@@ -982,11 +983,11 @@ describe('Channel Functions', () => {
 
         it('should return the first team channel if no default channel is found', async () => {
             const teamId = 'team_id';
-            const myFirstTeamChannel = {id: 'first_team_channel'} as ChannelModel;
-            const roles = [{permissions: []}];
-            (queryRoles as jest.Mock).mockReturnValue({fetch: jest.fn().mockResolvedValue(roles)});
-            (hasPermission as jest.Mock).mockReturnValue(false);
-            (mockQuery as jest.Mock).mockReturnValue({
+            const myFirstTeamChannel = TestHelper.fakeChannelModel({id: 'first_team_channel'});
+            const roles = [TestHelper.fakeRoleModel({permissions: []})];
+            jest.mocked(queryRoles).mockReturnValue(TestHelper.fakeQuery(roles));
+            jest.mocked(hasPermission).mockReturnValue(false);
+            jest.mocked(mockQuery).mockReturnValue({
                 fetch: jest.fn().mockResolvedValue([myFirstTeamChannel]),
             });
 
@@ -1009,10 +1010,10 @@ describe('Channel Functions', () => {
 
         it('should return undefined if no channels are found', async () => {
             const teamId = 'team_id';
-            const roles = [{permissions: [Permissions.JOIN_PUBLIC_CHANNELS]}];
-            (queryRoles as jest.Mock).mockReturnValue({fetch: jest.fn().mockResolvedValue(roles)});
-            (hasPermission as jest.Mock).mockReturnValue(true);
-            (mockQuery as jest.Mock).mockReturnValue({
+            const roles = [TestHelper.fakeRoleModel({permissions: [Permissions.JOIN_PUBLIC_CHANNELS]})];
+            jest.mocked(queryRoles).mockReturnValue(TestHelper.fakeQuery(roles));
+            jest.mocked(hasPermission).mockReturnValue(true);
+            jest.mocked(mockQuery).mockReturnValue({
                 fetch: jest.fn().mockResolvedValue([]),
             });
 
@@ -1037,11 +1038,11 @@ describe('Channel Functions', () => {
     describe('getCurrentChannel', () => {
         it('should return the current channel if found', async () => {
             const currentChannelId = 'current_channel_id';
-            const mockedChannel = {id: currentChannelId} as ChannelModel;
-            (getCurrentChannelId as jest.Mock).mockResolvedValue(currentChannelId);
-            (database.get as jest.Mock).mockReturnValue({
+            const mockedChannel = TestHelper.fakeChannelModel({id: currentChannelId});
+            jest.mocked(getCurrentChannelId).mockResolvedValue(currentChannelId);
+            jest.mocked(database.get).mockReturnValue({
                 find: jest.fn().mockResolvedValue(mockedChannel),
-            });
+            } as any);
 
             const result = await getCurrentChannel(database);
 
@@ -1051,7 +1052,7 @@ describe('Channel Functions', () => {
         });
 
         it('should return undefined if no current channel is found', async () => {
-            (getCurrentChannelId as jest.Mock).mockResolvedValue(undefined);
+            jest.mocked(getCurrentChannelId).mockResolvedValue('');
 
             const result = await getCurrentChannel(database);
 
@@ -1063,11 +1064,11 @@ describe('Channel Functions', () => {
     describe('getCurrentChannelInfo', () => {
         it('should return the current channel info if found', async () => {
             const currentChannelId = 'current_channel_id';
-            const mockChannelInfo = {id: currentChannelId} as ChannelInfoModel;
-            (getCurrentChannelId as jest.Mock).mockResolvedValue(currentChannelId);
-            (database.get as jest.Mock).mockReturnValue({
+            const mockChannelInfo = TestHelper.fakeChannelInfoModel({id: currentChannelId});
+            jest.mocked(getCurrentChannelId).mockResolvedValue(currentChannelId);
+            jest.mocked(database.get).mockReturnValue({
                 find: jest.fn().mockResolvedValue(mockChannelInfo),
-            });
+            } as any);
 
             const result = await getCurrentChannelInfo(database);
 
@@ -1077,7 +1078,7 @@ describe('Channel Functions', () => {
         });
 
         it('should return undefined if no current channel info is found', async () => {
-            (getCurrentChannelId as jest.Mock).mockResolvedValue(undefined);
+            jest.mocked(getCurrentChannelId).mockResolvedValue('');
 
             const result = await getCurrentChannelInfo(database);
 
@@ -1089,14 +1090,14 @@ describe('Channel Functions', () => {
     describe('observeCurrentChannel', () => {
         it('should observe the current channel', () => {
             const currentChannelId = 'current_channel_id';
-            const mockedChannel = {id: currentChannelId, observe: jest.fn().mockReturnValue(of$({id: currentChannelId}))} as unknown as ChannelModel;
+            const mockedChannel = TestHelper.fakeChannelModel({id: currentChannelId, observe: jest.fn().mockReturnValue(of$({id: currentChannelId}))});
             const mockQuery = jest.fn().mockReturnValue({
                 observe: jest.fn().mockReturnValue(of$([mockedChannel])),
             });
-            (database.get as jest.Mock).mockReturnValue({
+            jest.mocked(database.get).mockReturnValue({
                 query: mockQuery,
-            });
-            (observeCurrentChannelId as jest.Mock).mockReturnValue(of$(currentChannelId));
+            } as any);
+            jest.mocked(observeCurrentChannelId).mockReturnValue(of$(currentChannelId));
 
             const result = observeCurrentChannel(database);
 
@@ -1111,10 +1112,10 @@ describe('Channel Functions', () => {
             const mockQuery = jest.fn().mockReturnValue({
                 observe: jest.fn().mockReturnValue(of$([])),
             });
-            (database.get as jest.Mock).mockReturnValue({
+            jest.mocked(database.get).mockReturnValue({
                 query: mockQuery,
-            });
-            (observeCurrentChannelId as jest.Mock).mockReturnValue(of$(currentChannelId));
+            } as any);
+            jest.mocked(observeCurrentChannelId).mockReturnValue(of$(currentChannelId));
 
             const result = observeCurrentChannel(database);
 
@@ -1128,10 +1129,10 @@ describe('Channel Functions', () => {
     describe('getChannelInfo', () => {
         it('should return the channel info if found', async () => {
             const channelId = 'channel_id';
-            const mockChannelInfo = {id: channelId} as ChannelInfoModel;
-            (database.get as jest.Mock).mockReturnValue({
+            const mockChannelInfo = TestHelper.fakeChannelInfoModel({id: channelId});
+            jest.mocked(database.get).mockReturnValue({
                 find: jest.fn().mockResolvedValue(mockChannelInfo),
-            });
+            } as any);
 
             const result = await getChannelInfo(database, channelId);
 
@@ -1141,9 +1142,9 @@ describe('Channel Functions', () => {
 
         it('should return undefined if the channel info is not found', async () => {
             const channelId = 'channel_id';
-            (database.get as jest.Mock).mockReturnValue({
+            jest.mocked(database.get).mockReturnValue({
                 find: jest.fn().mockRejectedValue(new Error('Not found')),
-            });
+            } as any);
 
             const result = await getChannelInfo(database, channelId);
 
@@ -1172,14 +1173,12 @@ describe('Channel Membership Functions', () => {
         it('should delete channel membership and return models', async () => {
             const userId = 'user_id';
             const channelId = 'channel_id';
-            const mockMembership = {
-                prepareDestroyPermanently: jest.fn().mockReturnValue({}),
-            } as unknown as ChannelMembershipModel;
-            (database.get as jest.Mock).mockReturnValue({
+            const mockMembership = TestHelper.fakeChannelMembershipModel({prepareDestroyPermanently: jest.fn().mockReturnValue({})});
+            jest.mocked(database.get).mockReturnValue({
                 query: jest.fn().mockReturnValue({
                     fetch: jest.fn().mockResolvedValue([mockMembership]),
                 }),
-            });
+            } as any);
 
             const result = await deleteChannelMembership(operator, userId, channelId);
 
@@ -1191,14 +1190,12 @@ describe('Channel Membership Functions', () => {
         it('should return models without batching if prepareRecordsOnly is true', async () => {
             const userId = 'user_id';
             const channelId = 'channel_id';
-            const mockMembership = {
-                prepareDestroyPermanently: jest.fn().mockReturnValue({}),
-            } as unknown as ChannelMembershipModel;
-            (database.get as jest.Mock).mockReturnValue({
+            const mockMembership = TestHelper.fakeChannelMembershipModel({prepareDestroyPermanently: jest.fn().mockReturnValue({})});
+            jest.mocked(database.get).mockReturnValue({
                 query: jest.fn().mockReturnValue({
                     fetch: jest.fn().mockResolvedValue([mockMembership]),
                 }),
-            });
+            } as any);
 
             const result = await deleteChannelMembership(operator, userId, channelId, true);
 
@@ -1211,11 +1208,11 @@ describe('Channel Membership Functions', () => {
             const userId = 'user_id';
             const channelId = 'channel_id';
             const error = new Error('Test error');
-            (database.get as jest.Mock).mockReturnValue({
+            jest.mocked(database.get).mockReturnValue({
                 query: jest.fn().mockReturnValue({
                     fetch: jest.fn().mockRejectedValue(error),
                 }),
-            });
+            } as any);
 
             const result = await deleteChannelMembership(operator, userId, channelId);
 
@@ -1241,7 +1238,7 @@ describe('Channel Membership Functions', () => {
             const userId = 'user_id';
             const channelId = 'channel_id';
             const error = new Error('Test error');
-            (operator.handleChannelMembership as jest.Mock).mockRejectedValue(error);
+            jest.mocked(operator.handleChannelMembership).mockRejectedValue(error);
 
             const result = await addChannelMembership(operator, userId, channelId);
 
@@ -1264,11 +1261,11 @@ describe('Channel Membership Functions', () => {
         it('should return the members count by channel IDs', async () => {
             const channelsId = ['channel1', 'channel2'];
             const mockMemberships = [
-                {channelId: 'channel1'},
-                {channelId: 'channel1'},
-                {channelId: 'channel2'},
-            ] as ChannelMembershipModel[];
-            (mockQuery as jest.Mock).mockReturnValue({
+                TestHelper.fakeChannelMembershipModel({channelId: 'channel1'}),
+                TestHelper.fakeChannelMembershipModel({channelId: 'channel1'}),
+                TestHelper.fakeChannelMembershipModel({channelId: 'channel2'}),
+            ];
+            jest.mocked(mockQuery).mockReturnValue({
                 fetch: jest.fn().mockResolvedValue(mockMemberships),
             });
 
@@ -1281,8 +1278,8 @@ describe('Channel Membership Functions', () => {
 
         it('should return zero counts for channels with no members', async () => {
             const channelsId = ['channel1', 'channel2'];
-            const mockMemberships = [] as ChannelMembershipModel[];
-            (mockQuery as jest.Mock).mockReturnValue({
+            const mockMemberships: ChannelMembershipModel[] = [];
+            jest.mocked(mockQuery).mockReturnValue({
                 fetch: jest.fn().mockResolvedValue(mockMemberships),
             });
 
@@ -1296,7 +1293,7 @@ describe('Channel Membership Functions', () => {
         it('should handle errors gracefully', async () => {
             const channelsId = ['channel1', 'channel2'];
             const error = new Error('Test error');
-            (mockQuery as jest.Mock).mockReturnValue({
+            jest.mocked(mockQuery).mockReturnValue({
                 fetch: jest.fn().mockRejectedValue(error),
             });
 
@@ -1336,9 +1333,9 @@ describe('Channel Observations', () => {
 
     it('should observe all my channel notify props', () => {
         const mockSettings = [
-            {id: 'id1', notifyProps: {mark_unread: 'all'}},
-            {id: 'id2', notifyProps: {mark_unread: 'mention'}},
-        ] as MyChannelSettingsModel[];
+            TestHelper.fakeMyChannelSettingsModel({id: 'id1', notifyProps: {mark_unread: 'all'}}),
+            TestHelper.fakeMyChannelSettingsModel({id: 'id2', notifyProps: {mark_unread: 'mention'}}),
+        ];
         mockQuery.mockReturnValue({
             observeWithColumns: jest.fn().mockReturnValue(of$(mockSettings)),
         });
@@ -1356,13 +1353,13 @@ describe('Channel Observations', () => {
 
     it('should observe notify props by channels', () => {
         const channels = [
-            {id: 'channel1'},
-            {id: 'channel2'},
-        ] as ChannelModel[];
+            TestHelper.fakeChannelModel({id: 'channel1'}),
+            TestHelper.fakeChannelModel({id: 'channel2'}),
+        ];
         const mockSettings = [
-            {id: 'channel1', notifyProps: {mark_unread: 'all'}},
-            {id: 'channel2', notifyProps: {mark_unread: 'mention'}},
-        ] as MyChannelSettingsModel[];
+            TestHelper.fakeMyChannelSettingsModel({id: 'channel1', notifyProps: {mark_unread: 'all'}}),
+            TestHelper.fakeMyChannelSettingsModel({id: 'channel2', notifyProps: {mark_unread: 'mention'}}),
+        ];
         mockQuery.mockReturnValue({
             observeWithColumns: jest.fn().mockReturnValue(of$(mockSettings)),
         });
@@ -1381,9 +1378,9 @@ describe('Channel Observations', () => {
     it('should observe my channel mention count', () => {
         const teamId = 'team_id';
         const mockChannels = [
-            {mentionsCount: 2, isUnread: true},
-            {mentionsCount: 3, isUnread: false},
-        ] as MyChannelModel[];
+            TestHelper.fakeMyChannelModel({mentionsCount: 2, isUnread: true}),
+            TestHelper.fakeMyChannelModel({mentionsCount: 3, isUnread: false}),
+        ];
         mockQuery.mockReturnValue({
             observeWithColumns: jest.fn().mockReturnValue(of$(mockChannels)),
         });
@@ -1398,9 +1395,9 @@ describe('Channel Observations', () => {
 
     it('should observe my channel mention count with no team id', () => {
         const mockChannels = [
-            {mentionsCount: 2, isUnread: true},
-            {mentionsCount: 3, isUnread: false},
-        ] as MyChannelModel[];
+            TestHelper.fakeMyChannelModel({mentionsCount: 2, isUnread: true}),
+            TestHelper.fakeMyChannelModel({mentionsCount: 3, isUnread: false}),
+        ];
         mockQuery.mockReturnValue({
             observeWithColumns: jest.fn().mockReturnValue(of$(mockChannels)),
         });
@@ -1416,8 +1413,8 @@ describe('Channel Observations', () => {
     it('should observe direct channels by term', () => {
         const term = '@test';
         const mockCurrentUserId = 'user_id';
-        const mockChannels = [{id: 'channel1'}] as MyChannelModel[];
-        (observeCurrentUserId as jest.Mock).mockReturnValue(of$(mockCurrentUserId));
+        const mockChannels = [TestHelper.fakeMyChannelModel({id: 'channel1'})];
+        jest.mocked(observeCurrentUserId).mockReturnValue(of$(mockCurrentUserId));
         mockQuery.mockReturnValue({
             observe: jest.fn().mockReturnValue(of$(mockChannels)),
         });
@@ -1432,8 +1429,8 @@ describe('Channel Observations', () => {
     it('should observe not direct channels by term', () => {
         const term = 'test';
         const mockTeammateNameSetting = General.TEAMMATE_NAME_DISPLAY.SHOW_USERNAME;
-        const mockUsers = [{id: 'user1'}] as UserModel[];
-        (observeTeammateNameDisplay as jest.Mock).mockReturnValue(of$(mockTeammateNameSetting));
+        const mockUsers = [TestHelper.fakeUserModel({id: 'user1'})];
+        jest.mocked(observeTeammateNameDisplay).mockReturnValue(of$(mockTeammateNameSetting));
         mockQuery.mockReturnValue({
             observe: jest.fn().mockReturnValue(of$(mockUsers)),
         });
@@ -1447,7 +1444,7 @@ describe('Channel Observations', () => {
 
     it('should observe joined channels by term', () => {
         const term = 'test';
-        const mockChannels = [{id: 'channel1'}] as MyChannelModel[];
+        const mockChannels = [TestHelper.fakeMyChannelModel({id: 'channel1'})];
         mockQuery.mockReturnValue({
             observe: jest.fn().mockReturnValue(of$(mockChannels)),
         });
@@ -1472,7 +1469,7 @@ describe('Channel Observations', () => {
 
     it('should observe archive channels by term', () => {
         const term = 'test';
-        const mockChannels = [{id: 'channel1'}] as MyChannelModel[];
+        const mockChannels = [TestHelper.fakeMyChannelModel({id: 'channel1'})];
         mockQuery.mockReturnValue({
             observe: jest.fn().mockReturnValue(of$(mockChannels)),
         });
@@ -1497,7 +1494,9 @@ describe('Channel Observations', () => {
 
     it('should observe channel settings', () => {
         const channelId = 'channel_id';
-        const mockSettings = {id: channelId, observe: jest.fn().mockReturnValue(of$({id: channelId}))} as unknown as MyChannelSettingsModel;
+        const mockSettings = TestHelper.fakeMyChannelSettingsModel({id: channelId});
+        jest.mocked(mockSettings.observe).mockReturnValue(of$(mockSettings));
+
         mockQuery.mockReturnValue({
             observe: jest.fn().mockReturnValue(of$([mockSettings])),
         });
@@ -1506,13 +1505,14 @@ describe('Channel Observations', () => {
 
         expect(database.get).toHaveBeenCalledWith(MM_TABLES.SERVER.MY_CHANNEL_SETTINGS);
         result.subscribe((value) => {
-            expect(value).toEqual({id: channelId});
+            expect(value).toMatchObject({id: channelId});
         });
     });
 
     it('should observe is muted setting', () => {
         const channelId = 'channel_id';
-        const mockSettings = {id: channelId, notifyProps: {mark_unread: General.MENTION}, observe: jest.fn().mockReturnValue(of$({id: channelId, notifyProps: {mark_unread: General.MENTION}}))} as unknown as MyChannelSettingsModel;
+        const mockSettings = TestHelper.fakeMyChannelSettingsModel({id: channelId, notifyProps: {mark_unread: General.MENTION}});
+        jest.mocked(mockSettings.observe).mockReturnValue(of$(mockSettings));
         mockQuery.mockReturnValue({
             observe: jest.fn().mockReturnValue(of$([mockSettings])),
         });
@@ -1526,8 +1526,8 @@ describe('Channel Observations', () => {
     });
 
     it('should observe channels by last post at', () => {
-        const myChannels = [{id: 'channel1'}] as MyChannelModel[];
-        const mockChannels = [{id: 'channel1'}] as ChannelModel[];
+        const myChannels = [TestHelper.fakeMyChannelModel({id: 'channel1'})];
+        const mockChannels = [TestHelper.fakeChannelModel({id: 'channel1'})];
         mockQuery.mockReturnValue({
             observe: jest.fn().mockReturnValue(of$(mockChannels)),
         });
@@ -1542,7 +1542,10 @@ describe('Channel Observations', () => {
 
     it('should observe channel members', () => {
         const channelId = 'channel_id';
-        const mockMembers = [{id: 'member1'}, {id: 'member2'}] as ChannelMembershipModel[];
+        const mockMembers = [
+            TestHelper.fakeChannelMembershipModel({id: 'member1'}),
+            TestHelper.fakeChannelMembershipModel({id: 'member2'}),
+        ];
         mockQuery.mockReturnValue({
             observe: jest.fn().mockReturnValue(of$(mockMembers)),
         });
@@ -1554,218 +1557,5 @@ describe('Channel Observations', () => {
         result.subscribe((value) => {
             expect(value).toEqual(mockMembers);
         });
-    });
-});
-
-describe('observeMyChannelUnreads', () => {
-    const teamId = 'team_id';
-    const userId = 'user_id';
-    const serverUrl = 'baseHandler.test.com';
-    const waitTime = 50;
-    let database: Database;
-    let operator: ServerDataOperator;
-
-    jest.restoreAllMocks();
-
-    beforeEach(async () => {
-        await DatabaseManager.init([serverUrl]);
-        const serverDatabaseAndOperator = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        database = serverDatabaseAndOperator.database;
-        operator = serverDatabaseAndOperator.operator;
-    });
-
-    afterEach(async () => {
-        await DatabaseManager.deleteServerDatabase(serverUrl);
-    });
-
-    it('should return true when there are unread channels that are not muted', async () => {
-        const subscriptionNext = jest.fn();
-        const notify_props = {mark_unread: 'all' as const};
-        const result = observeMyChannelUnreads(database, teamId);
-        result.subscribe({next: subscriptionNext});
-
-        TestHelper.wait(waitTime);
-
-        // Subscription always returns the first value
-        expect(subscriptionNext).toHaveBeenCalledWith(false);
-        subscriptionNext.mockClear();
-
-        let models = (await Promise.all((await prepareAllMyChannels(
-            operator,
-            [TestHelper.fakeChannel({id: 'channel1', team_id: teamId, total_msg_count: 20})],
-            [TestHelper.fakeMyChannel({channel_id: 'channel1', user_id: userId, notify_props, msg_count: 20})],
-            false,
-        )))).flat();
-        await operator.batchRecords(models, 'test');
-        TestHelper.wait(waitTime);
-
-        // No change
-        expect(subscriptionNext).not.toHaveBeenCalled();
-
-        models = (await Promise.all((await prepareAllMyChannels(
-            operator,
-            [TestHelper.fakeChannel({id: 'channel1', team_id: teamId, total_msg_count: 30})],
-            [TestHelper.fakeMyChannel({channel_id: 'channel1', user_id: userId, notify_props, msg_count: 20})],
-            false,
-        )))).flat();
-        await operator.batchRecords(models, 'test');
-        TestHelper.wait(waitTime);
-
-        expect(subscriptionNext).toHaveBeenCalledWith(true);
-        subscriptionNext.mockClear();
-
-        models = (await Promise.all((await prepareAllMyChannels(
-            operator,
-            [TestHelper.fakeChannel({id: 'channel1', team_id: teamId, total_msg_count: 30})],
-            [TestHelper.fakeMyChannel({channel_id: 'channel1', user_id: userId, notify_props, msg_count: 30})],
-            false,
-        )))).flat();
-        await operator.batchRecords(models, 'test');
-        TestHelper.wait(waitTime);
-
-        expect(subscriptionNext).toHaveBeenCalledWith(false);
-    });
-
-    it('should return false when all unread channels are muted', async () => {
-        const subscriptionNext = jest.fn();
-        const notify_props = {mark_unread: 'mention' as const};
-        const result = observeMyChannelUnreads(database, teamId);
-        result.subscribe({next: subscriptionNext});
-
-        TestHelper.wait(waitTime);
-
-        // Subscription always returns the first value
-        expect(subscriptionNext).toHaveBeenCalledWith(false);
-        subscriptionNext.mockClear();
-
-        let models = (await Promise.all((await prepareAllMyChannels(
-            operator,
-            [TestHelper.fakeChannel({id: 'channel1', team_id: teamId, total_msg_count: 20})],
-            [TestHelper.fakeMyChannel({channel_id: 'channel1', user_id: userId, notify_props, msg_count: 20})],
-            false,
-        )))).flat();
-        await operator.batchRecords(models, 'test');
-        TestHelper.wait(waitTime);
-
-        // No change
-        expect(subscriptionNext).not.toHaveBeenCalled();
-
-        models = (await Promise.all((await prepareAllMyChannels(
-            operator,
-            [TestHelper.fakeChannel({id: 'channel1', team_id: teamId, total_msg_count: 30})],
-            [TestHelper.fakeMyChannel({channel_id: 'channel1', user_id: userId, notify_props, msg_count: 20})],
-            false,
-        )))).flat();
-        await operator.batchRecords(models, 'test');
-        TestHelper.wait(waitTime);
-
-        expect(subscriptionNext).not.toHaveBeenCalled();
-
-        models = (await Promise.all((await prepareAllMyChannels(
-            operator,
-            [TestHelper.fakeChannel({id: 'channel1', team_id: teamId, total_msg_count: 30})],
-            [TestHelper.fakeMyChannel({channel_id: 'channel1', user_id: userId, notify_props, msg_count: 30})],
-            false,
-        )))).flat();
-        await operator.batchRecords(models, 'test');
-        TestHelper.wait(waitTime);
-
-        expect(subscriptionNext).not.toHaveBeenCalled();
-    });
-
-    it('missing notify props are considered unmuted', async () => {
-        const subscriptionNext = jest.fn();
-        const notify_props = {};
-        const result = observeMyChannelUnreads(database, teamId);
-        result.subscribe({next: subscriptionNext});
-
-        TestHelper.wait(waitTime);
-
-        // Subscription always returns the first value
-        expect(subscriptionNext).toHaveBeenCalledWith(false);
-        subscriptionNext.mockClear();
-
-        let models = (await Promise.all((await prepareAllMyChannels(
-            operator,
-            [TestHelper.fakeChannel({id: 'channel1', team_id: teamId, total_msg_count: 20})],
-            [TestHelper.fakeMyChannel({channel_id: 'channel1', user_id: userId, notify_props, msg_count: 20})],
-            false,
-        )))).flat();
-        await operator.batchRecords(models, 'test');
-        TestHelper.wait(waitTime);
-
-        // No change
-        expect(subscriptionNext).not.toHaveBeenCalled();
-
-        models = (await Promise.all((await prepareAllMyChannels(
-            operator,
-            [TestHelper.fakeChannel({id: 'channel1', team_id: teamId, total_msg_count: 30})],
-            [TestHelper.fakeMyChannel({channel_id: 'channel1', user_id: userId, notify_props, msg_count: 20})],
-            false,
-        )))).flat();
-        await operator.batchRecords(models, 'test');
-        TestHelper.wait(waitTime);
-
-        expect(subscriptionNext).toHaveBeenCalledWith(true);
-        subscriptionNext.mockClear();
-
-        models = (await Promise.all((await prepareAllMyChannels(
-            operator,
-            [TestHelper.fakeChannel({id: 'channel1', team_id: teamId, total_msg_count: 30})],
-            [TestHelper.fakeMyChannel({channel_id: 'channel1', user_id: userId, notify_props, msg_count: 30})],
-            false,
-        )))).flat();
-        await operator.batchRecords(models, 'test');
-        TestHelper.wait(waitTime);
-
-        expect(subscriptionNext).toHaveBeenCalledWith(false);
-    });
-
-    it('should not retrigger the subscription when there are changes in other teams', async () => {
-        const subscriptionNext = jest.fn();
-        const otherTeamId = 'other_team_id';
-        const notify_props = {mark_unread: 'all' as const};
-        const result = observeMyChannelUnreads(database, teamId);
-        result.subscribe({next: subscriptionNext});
-
-        TestHelper.wait(waitTime);
-
-        // Subscription always returns the first value
-        expect(subscriptionNext).toHaveBeenCalledWith(false);
-        subscriptionNext.mockClear();
-
-        let models = (await Promise.all((await prepareAllMyChannels(
-            operator,
-            [TestHelper.fakeChannel({id: 'channel1', team_id: otherTeamId, total_msg_count: 20})],
-            [TestHelper.fakeMyChannel({channel_id: 'channel1', user_id: userId, notify_props, msg_count: 20})],
-            false,
-        )))).flat();
-        await operator.batchRecords(models, 'test');
-        TestHelper.wait(waitTime);
-
-        // No change
-        expect(subscriptionNext).not.toHaveBeenCalled();
-
-        models = (await Promise.all((await prepareAllMyChannels(
-            operator,
-            [TestHelper.fakeChannel({id: 'channel1', team_id: otherTeamId, total_msg_count: 30})],
-            [TestHelper.fakeMyChannel({channel_id: 'channel1', user_id: userId, notify_props, msg_count: 20})],
-            false,
-        )))).flat();
-        await operator.batchRecords(models, 'test');
-        TestHelper.wait(waitTime);
-
-        expect(subscriptionNext).not.toHaveBeenCalled();
-
-        models = (await Promise.all((await prepareAllMyChannels(
-            operator,
-            [TestHelper.fakeChannel({id: 'channel1', team_id: otherTeamId, total_msg_count: 30})],
-            [TestHelper.fakeMyChannel({channel_id: 'channel1', user_id: userId, notify_props, msg_count: 30})],
-            false,
-        )))).flat();
-        await operator.batchRecords(models, 'test');
-        TestHelper.wait(waitTime);
-
-        expect(subscriptionNext).not.toHaveBeenCalled();
     });
 });

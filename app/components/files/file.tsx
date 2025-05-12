@@ -31,7 +31,6 @@ type FileProps = {
     isSingleImage?: boolean;
     nonVisibleImagesCount: number;
     onPress: (index: number) => void;
-    publicLinkEnabled: boolean;
     channelName?: string;
     onOptionsPress?: (fileInfo: FileInfo) => void;
     optionSelected?: boolean;
@@ -84,7 +83,6 @@ const File = ({
     onOptionsPress,
     onPress,
     optionSelected,
-    publicLinkEnabled,
     showDate = false,
     updateFileForGallery,
     wrapperWidth = 300,
@@ -148,7 +146,7 @@ const File = ({
     );
 
     let fileComponent;
-    if (isVideo(file) && publicLinkEnabled) {
+    if (isVideo(file)) {
         const renderVideoFile = (
             <TouchableWithoutFeedback
                 disabled={isPressDisabled}

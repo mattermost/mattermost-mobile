@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fireEvent, waitFor} from '@testing-library/react-native';
+import {act, fireEvent, waitFor} from '@testing-library/react-native';
 import React from 'react';
 
 import {addSearchToTeamSearchHistory} from '@actions/local/team';
@@ -20,7 +20,6 @@ import type {Database} from '@nozbe/watermelondb';
 jest.mock('@react-native-camera-roll/camera-roll', () => ({}));
 
 jest.mock('@react-navigation/native', () => ({
-    ...jest.requireActual('@react-navigation/native'),
     useNavigation: () => ({
         getState: () => ({
             index: 0,
@@ -97,7 +96,9 @@ describe('SearchScreen', () => {
         );
 
         const searchInput = getByTestId('navigation.header.search_bar.search.input');
-        fireEvent.changeText(searchInput, 'test search');
+        act(() => {
+            fireEvent.changeText(searchInput, 'test search');
+        });
         expect(searchInput.props.value).toBe('test search');
     });
 
@@ -108,8 +109,13 @@ describe('SearchScreen', () => {
         );
 
         const searchInput = getByTestId('navigation.header.search_bar.search.input');
-        fireEvent.changeText(searchInput, 'test search');
-        fireEvent(searchInput, 'submitEditing');
+        await act(async () => {
+            fireEvent.changeText(searchInput, 'test search');
+        });
+
+        await act(async () => {
+            fireEvent(searchInput, 'submitEditing');
+        });
 
         await waitFor(() => {
             expect(searchPosts).toHaveBeenCalledWith(
@@ -132,7 +138,9 @@ describe('SearchScreen', () => {
         );
 
         const teamPicker = getByTestId('team_picker.button');
-        fireEvent.press(teamPicker);
+        act(() => {
+            fireEvent.press(teamPicker);
+        });
 
         expect(teamPicker).toBeTruthy();
         expect(bottomSheet).toHaveBeenCalled();
@@ -145,10 +153,14 @@ describe('SearchScreen', () => {
         );
 
         const searchInput = getByTestId('navigation.header.search_bar.search.input');
-        fireEvent.changeText(searchInput, 'test search');
+        act(() => {
+            fireEvent.changeText(searchInput, 'test search');
+        });
 
         const clearButton = getByTestId('navigation.header.search_bar.search.clear.button');
-        fireEvent.press(clearButton);
+        act(() => {
+            fireEvent.press(clearButton);
+        });
 
         expect(searchInput.props.value).toBe('');
     });
@@ -160,8 +172,12 @@ describe('SearchScreen', () => {
         );
 
         const searchInput = getByTestId('navigation.header.search_bar.search.input');
-        fireEvent.changeText(searchInput, 'test search');
-        fireEvent(searchInput, 'submitEditing');
+        await act(async () => {
+            fireEvent.changeText(searchInput, 'test search');
+        });
+        await act(async () => {
+            fireEvent(searchInput, 'submitEditing');
+        });
 
         await waitFor(() => {
             expect(addSearchToTeamSearchHistory).toHaveBeenCalledWith(

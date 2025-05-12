@@ -25,6 +25,7 @@ import {typography} from '@utils/typography';
 type Props = {
     allowDismissal: boolean;
     bannerText: string;
+    headingText?: string;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -55,6 +56,7 @@ const close = () => {
 const ExpandedAnnouncementBanner = ({
     allowDismissal,
     bannerText,
+    headingText,
 }: Props) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
@@ -88,14 +90,16 @@ const ExpandedAnnouncementBanner = ({
 
     const Scroll = useMemo(() => (isTablet ? ScrollView : BottomSheetScrollView), [isTablet]);
 
+    const heading = headingText || intl.formatMessage({
+        id: 'mobile.announcement_banner.title',
+        defaultMessage: 'Announcement',
+    });
+
     return (
         <View style={containerStyle}>
             {!isTablet && (
                 <Text style={style.title}>
-                    {intl.formatMessage({
-                        id: 'mobile.announcement_banner.title',
-                        defaultMessage: 'Announcement',
-                    })}
+                    {heading}
                 </Text>
             )}
             <Scroll

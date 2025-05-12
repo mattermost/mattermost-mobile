@@ -21,13 +21,13 @@ const TouchableOptionTypes = {
     SELECT: 'select',
 };
 
-const OptionType = {
+const OptionTypeConst = {
     NONE: 'none',
     TOGGLE: 'toggle',
     ...TouchableOptionTypes,
 } as const;
 
-export type OptionType = typeof OptionType[keyof typeof OptionType];
+export type OptionType = typeof OptionTypeConst[keyof typeof OptionTypeConst];
 
 export const ITEM_HEIGHT = 48;
 const DESCRIPTION_MARGIN_TOP = 2;
@@ -182,7 +182,7 @@ const OptionItem = ({
 
     let actionComponent;
     let radioComponent;
-    if (type === OptionType.SELECT && selected) {
+    if (type === OptionTypeConst.SELECT && selected) {
         actionComponent = (
             <CompassIcon
                 color={theme.linkColor}
@@ -191,7 +191,7 @@ const OptionItem = ({
                 testID={`${testID}.selected`}
             />
         );
-    } else if (type === OptionType.RADIO) {
+    } else if (type === OptionTypeConst.RADIO) {
         const radioComponentTestId = selected ? `${testID}.selected` : `${testID}.not_selected`;
         radioComponent = (
             <RadioItem
@@ -200,7 +200,7 @@ const OptionItem = ({
                 testID={radioComponentTestId}
             />
         );
-    } else if (type === OptionType.TOGGLE) {
+    } else if (type === OptionTypeConst.TOGGLE) {
         const trackColor = Platform.select({
             ios: {true: theme.buttonBg, false: changeOpacity(theme.centerChannelColor, 0.16)},
             default: {true: changeOpacity(theme.buttonBg, 0.32), false: changeOpacity(theme.centerChannelColor, 0.24)},
@@ -217,7 +217,7 @@ const OptionItem = ({
                 testID={`${testID}.toggled.${selected}.button`}
             />
         );
-    } else if (type === OptionType.ARROW) {
+    } else if (type === OptionTypeConst.ARROW) {
         actionComponent = (
             <CompassIcon
                 color={changeOpacity(theme.centerChannelColor, 0.32)}
@@ -226,7 +226,7 @@ const OptionItem = ({
                 style={arrowStyle}
             />
         );
-    } else if (type === OptionType.REMOVE) {
+    } else if (type === OptionTypeConst.REMOVE) {
         actionComponent = (
             <TouchableWithFeedback
                 hitSlop={hitSlop}
@@ -265,7 +265,7 @@ const OptionItem = ({
                             />
                         </View>
                     )}
-                    {type === OptionType.RADIO && radioComponent}
+                    {type === OptionTypeConst.RADIO && radioComponent}
                     <View style={labelStyle}>
                         <Text
                             style={[labelTextStyle, optionLabelTextStyle]}

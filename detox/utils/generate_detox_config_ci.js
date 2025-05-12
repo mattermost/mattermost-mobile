@@ -4,8 +4,8 @@
 /* eslint-disable no-process-env */
 /* eslint-disable no-console */
 const fs = require('fs');
-const deviceName = process.env.DEVICE_NAME || 'iPhone 16 Pro';
-const deviceOSVersion = process.env.DEVICE_OS_VERSION || 'iOS 18.1';
+const deviceName = process.env.DEVICE_NAME || 'iPhone 15 Pro';
+const deviceOSVersion = process.env.DEVICE_OS_VERSION || 'iOS 17.2';
 const detoxConfigTemplate = fs.readFileSync('../.detoxrc.json', 'utf8');
 const detoxConfig = detoxConfigTemplate.replace('__DEVICE_NAME__', deviceName).replace('__DEVICE_OS_VERSION__', deviceOSVersion);
 

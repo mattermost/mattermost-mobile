@@ -2,20 +2,19 @@
 // See LICENSE.txt for license information.
 
 import {fireEvent} from '@testing-library/react-native';
-import React from 'react';
+import React, {type ComponentProps} from 'react';
 
 import {renderWithIntl} from '@test/intl-test-helper';
+import TestHelper from '@test/test_helper';
 
 import ProfileForm from './form';
 
 import type {CustomAttributeSet} from '@typings/api/custom_profile_attributes';
-import type UserModel from '@typings/database/models/servers/user';
-import type {UserInfo} from '@typings/screens/edit_profile';
 
 describe('ProfileForm', () => {
-    const baseProps = {
+    const baseProps: ComponentProps<typeof ProfileForm> = {
         canSave: false,
-        currentUser: {
+        currentUser: TestHelper.fakeUserModel({
             id: 'user1',
             firstName: 'First',
             lastName: 'Last',
@@ -24,7 +23,7 @@ describe('ProfileForm', () => {
             nickname: 'nick',
             position: 'position',
             authService: '',
-        } as UserModel,
+        }),
         isTablet: false,
         lockedFirstName: false,
         lockedLastName: false,
@@ -40,7 +39,7 @@ describe('ProfileForm', () => {
             nickname: 'nick',
             position: 'position',
             customAttributes: {},
-        } as UserInfo,
+        },
         enableCustomAttributes: false,
     };
 
