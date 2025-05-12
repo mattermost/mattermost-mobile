@@ -47,7 +47,6 @@ const UserInfo = ({
             // If customAttributesSet is provided by the parent, use it
             if (customAttributesSet && Object.keys(customAttributesSet).length > 0) {
                 setCustomAttributes(Object.values(customAttributesSet).sort(sortCustomProfileAttributes));
-                return;
             }
 
             const fetchFromServer = async () => {

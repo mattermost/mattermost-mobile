@@ -22,9 +22,6 @@ export interface CustomProfileHandlerMix {
     handleCustomProfileFields: ({fields, prepareRecordsOnly}: HandleCustomProfileFieldsArgs) => Promise<Model[]>;
     handleCustomProfileAttributes: ({attributes, prepareRecordsOnly}: HandleCustomProfileAttributesArgs) => Promise<Model[]>;
 }
-
-export const FIELD_HANDLER_DESCRIPTION = 'handleCustomProfileFields';
-export const ATTRIBUTE_HANDLER_DESCRIPTION = 'handleCustomProfileAttributes';
 const CustomProfileHandler = <TBase extends Constructor<ServerDataOperatorBase>>(superclass: TBase) => class extends superclass {
     /**
      * handleCustomProfileFields: Handler responsible for the Create/Update operations occurring on the CUSTOM_PROFILE_FIELD table from the 'Server' schema
@@ -49,7 +46,7 @@ const CustomProfileHandler = <TBase extends Constructor<ServerDataOperatorBase>>
             createOrUpdateRawValues,
             tableName: CUSTOM_PROFILE_FIELD,
             prepareRecordsOnly,
-        }, FIELD_HANDLER_DESCRIPTION);
+        }, 'handleCustomProfileFields');
     };
 
     /**
@@ -75,7 +72,7 @@ const CustomProfileHandler = <TBase extends Constructor<ServerDataOperatorBase>>
             createOrUpdateRawValues,
             tableName: CUSTOM_PROFILE_ATTRIBUTE,
             prepareRecordsOnly,
-        }, ATTRIBUTE_HANDLER_DESCRIPTION);
+        }, 'handleCustomProfileAttributes');
     };
 };
 

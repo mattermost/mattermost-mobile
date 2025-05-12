@@ -3,7 +3,6 @@
 
 import {forceLogoutIfNecessary} from '@actions/remote/session';
 import DatabaseManager from '@database/manager';
-import {ATTRIBUTE_HANDLER_DESCRIPTION, FIELD_HANDLER_DESCRIPTION} from '@database/operator/server_data_operator/handlers/custom_profile';
 import NetworkManager from '@managers/network_manager';
 import {customProfileAttributeId} from '@utils/custom_profile_attribute';
 import {getFullErrorMessage} from '@utils/errors';
@@ -80,11 +79,11 @@ export const fetchCustomProfileAttributes = async (serverUrl: string, userId: st
             const attributeBatch = attributeResults.flat();
 
             if (fieldBatch.length > 0) {
-                await operator.batchRecords(fieldBatch, FIELD_HANDLER_DESCRIPTION);
+                await operator.batchRecords(fieldBatch, 'updateCustomProfileFields');
             }
 
             if (attributeBatch.length > 0) {
-                await operator.batchRecords(attributeBatch, ATTRIBUTE_HANDLER_DESCRIPTION);
+                await operator.batchRecords(attributeBatch, 'updateCustomProfileAttributes');
             }
 
         } catch (err) {
