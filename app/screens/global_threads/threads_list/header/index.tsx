@@ -1,6 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useMemo, type ComponentProps} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, TouchableOpacity, View} from 'react-native';
 
@@ -8,11 +8,12 @@ import {updateTeamThreadsAsRead} from '@actions/remote/thread';
 import CompassIcon from '@components/compass_icon';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import Tabs from '@hooks/use_tabs/tabs';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 export type Props = {
-    tabsComponent: React.ReactNode;
+    tabsProps: ComponentProps<typeof Tabs>;
     teamId: string;
     testID: string;
     hasUnreads: boolean;
@@ -40,7 +41,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const Header = ({tabsComponent, teamId, testID, hasUnreads}: Props) => {
+const Header = ({tabsProps, teamId, testID, hasUnreads}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const intl = useIntl();
@@ -82,7 +83,7 @@ const Header = ({tabsComponent, teamId, testID, hasUnreads}: Props) => {
 
     return (
         <View style={styles.container}>
-            {tabsComponent}
+            <Tabs {...tabsProps}/>
             <View style={styles.markAllReadIconContainer}>
                 <TouchableOpacity
                     disabled={!hasUnreads}

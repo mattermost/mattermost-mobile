@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {View} from 'react-native';
 
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import {FileFilters} from '@utils/file';
@@ -24,6 +23,17 @@ describe('Header', () => {
         {id: 'team2', displayName: 'Team 2'},
     ] as TeamModel[];
 
+    const baseTabsProps = {
+        tabs: [{
+            id: 'tab1',
+            name: {id: 'tab1.name', defaultMessage: 'Tab 1'},
+            hasDot: true,
+        }],
+        selectedTab: 'tab1',
+        onTabChange: jest.fn(),
+        testID: 'testID',
+    };
+
     it('should not render TeamPicker when there is only one team', () => {
         const {queryByText} = renderWithIntlAndTheme(
             <Header
@@ -34,7 +44,7 @@ describe('Header', () => {
                 selectedFilter={FileFilters.ALL}
                 teams={[teams[0]]}
                 crossTeamSearchEnabled={false}
-                tabsComponent={<View/>}
+                tabsProps={baseTabsProps}
             />,
         );
 
@@ -51,7 +61,7 @@ describe('Header', () => {
                 selectedFilter={FileFilters.ALL}
                 teams={teams}
                 crossTeamSearchEnabled={false}
-                tabsComponent={<View/>}
+                tabsProps={baseTabsProps}
             />,
         );
 
@@ -71,7 +81,7 @@ describe('Header', () => {
                 selectedFilter={FileFilters.ALL}
                 teams={teams}
                 crossTeamSearchEnabled={false}
-                tabsComponent={<View/>}
+                tabsProps={baseTabsProps}
             />,
         );
 
@@ -83,8 +93,6 @@ describe('Header', () => {
     });
 
     it('should render the provided tabsComponent', () => {
-        const testId = 'tabsComponent';
-
         const {getByTestId} = renderWithIntlAndTheme(
             <Header
                 teamId='team1'
@@ -94,10 +102,10 @@ describe('Header', () => {
                 selectedFilter={FileFilters.ALL}
                 teams={teams}
                 crossTeamSearchEnabled={false}
-                tabsComponent={<View testID={testId}/>}
+                tabsProps={baseTabsProps}
             />,
         );
 
-        expect(getByTestId(testId)).toBeTruthy();
+        expect(getByTestId('testID.tab1.button')).toBeTruthy();
     });
 });

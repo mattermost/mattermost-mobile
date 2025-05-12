@@ -87,7 +87,7 @@ const Tab = <T extends string>({
                     {hasDot ? (
                         <View
                             style={styles.dot}
-                            testID={`${testID}.dot`}
+                            testID={`${testID}.${id}.dot`}
                         />
                     ) : null}
                 </View>

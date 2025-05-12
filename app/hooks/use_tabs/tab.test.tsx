@@ -18,7 +18,7 @@ describe('Tab', () => {
         id: 'test',
         handleTabChange: jest.fn(),
         isSelected: false,
-        testID: 'test.tab',
+        testID: 'tabs',
     };
 
     beforeEach(() => {
@@ -55,7 +55,7 @@ describe('Tab', () => {
             />,
         );
 
-        expect(getByTestId('test.tab.dot')).toBeTruthy();
+        expect(getByTestId('tabs.test.dot')).toBeTruthy();
     });
 
     it('does not show dot indicator when hasDot is false', () => {
@@ -66,7 +66,7 @@ describe('Tab', () => {
             />,
         );
 
-        expect(queryByTestId('test.tab.dot')).toBeNull();
+        expect(queryByTestId('tabs.test.dot')).toBeNull();
     });
 
     it('calls handleTabChange when pressed', () => {
@@ -78,7 +78,7 @@ describe('Tab', () => {
             />,
         );
 
-        const button = getByTestId('test.tab.test.button');
+        const button = getByTestId('tabs.test.button');
         fireEvent.press(button);
 
         expect(handleTabChange).toHaveBeenCalledWith('test');

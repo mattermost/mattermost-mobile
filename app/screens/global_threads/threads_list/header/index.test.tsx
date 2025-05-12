@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React, {type ComponentProps} from 'react';
-import {View} from 'react-native';
 
 import {renderWithIntl} from '@test/intl-test-helper';
 
@@ -10,7 +9,16 @@ import Header from './index';
 
 describe('components/global_threads/threads_list/header', () => {
     const baseProps: ComponentProps<typeof Header> = {
-        tabsComponent: <View testID='tabComponent'/>,
+        tabsProps: {
+            tabs: [{
+                id: 'tab1',
+                name: {id: 'tab1.name', defaultMessage: 'Tab 1'},
+                hasDot: true,
+            }],
+            selectedTab: 'tab1',
+            onTabChange: jest.fn(),
+            testID: 'testID',
+        },
         teamId: 'teamId',
         testID: 'testID',
         hasUnreads: true,
@@ -26,7 +34,7 @@ describe('components/global_threads/threads_list/header', () => {
         );
 
         // Verify the tab component is rendered
-        expect(getByTestId('tabComponent')).toBeTruthy();
+        expect(getByTestId('testID.tab1.button')).toBeTruthy();
     });
 });
 

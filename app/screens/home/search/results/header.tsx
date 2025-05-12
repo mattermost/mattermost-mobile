@@ -1,6 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useMemo, type ComponentProps} from 'react';
 import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 
@@ -9,6 +9,7 @@ import CompassIcon from '@components/compass_icon';
 import Filter, {DIVIDERS_HEIGHT, FILTER_ITEM_HEIGHT, NUMBER_FILTER_ITEMS} from '@components/files/file_filter';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import Tabs from '@hooks/use_tabs/tabs';
 import {TITLE_SEPARATOR_MARGIN, TITLE_SEPARATOR_MARGIN_TABLET, TITLE_HEIGHT} from '@screens/bottom_sheet/content';
 import TeamPicker from '@screens/home/search/team_picker';
 import {bottomSheet} from '@screens/navigation';
@@ -27,7 +28,7 @@ type Props = {
     teamId: string;
     teams: TeamModel[];
     crossTeamSearchEnabled: boolean;
-    tabsComponent: React.ReactNode;
+    tabsProps: ComponentProps<typeof Tabs>;
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
@@ -75,7 +76,7 @@ const Header = ({
     selectedFilter,
     teams,
     crossTeamSearchEnabled,
-    tabsComponent,
+    tabsProps,
 }: Props) => {
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
@@ -119,7 +120,7 @@ const Header = ({
     return (
         <View style={styles.container}>
             <View style={styles.header}>
-                {tabsComponent}
+                <Tabs {...tabsProps}/>
                 {showFilterIcon && (
                     <View style={styles.filterContainer}>
                         <CompassIcon

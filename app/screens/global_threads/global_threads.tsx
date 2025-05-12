@@ -75,7 +75,7 @@ const GlobalThreads = ({componentId, globalThreadsTab, hasUnreads, teamId}: Prop
         flatListRef.current?.scrollToOffset({offset: 0});
     }, []);
 
-    const [tab, tabsComponent] = useTabs<GlobalThreadsTab>(globalThreadsTab, tabs, tabOnChange);
+    const [tab, tabsProps] = useTabs<GlobalThreadsTab>(globalThreadsTab, tabs, tabOnChange);
     const mounted = useRef(false);
 
     const containerStyle = useMemo(() => {
@@ -139,7 +139,7 @@ const GlobalThreads = ({componentId, globalThreadsTab, hasUnreads, teamId}: Prop
                     teamId={teamId}
                     testID={`${testID}.header`}
                     hasUnreads={hasUnreads}
-                    tabsComponent={tabsComponent}
+                    tabsProps={tabsProps}
                 />
                 <ThreadsList
                     tab={tab}

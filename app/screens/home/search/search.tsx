@@ -129,7 +129,7 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
     const [fileInfos, setFileInfos] = useState<FileInfo[]>(emptyFileResults);
     const [fileChannelIds, setFileChannelIds] = useState<string[]>([]);
 
-    const [selectedTab, tabsComponent] = useTabs(TabTypes.MESSAGES, tabs, undefined, 'search.tabs');
+    const [selectedTab, tabsProps] = useTabs(TabTypes.MESSAGES, tabs, undefined, 'search.tabs');
 
     useEffect(() => {
         setSearchTeamId(teamId);
@@ -428,7 +428,7 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
                                 selectedFilter={filter}
                                 teams={teams}
                                 crossTeamSearchEnabled={crossTeamSearchEnabled}
-                                tabsComponent={tabsComponent}
+                                tabsProps={tabsProps}
                             />
                             }
                         </Animated.View>
