@@ -50,7 +50,7 @@ describe('useAccessControlAttributes', () => {
         jest.resetAllMocks();
     });
 
-    it('should return empty tags when policy is not enforced', async () => {
+    it('should return empty tags when abac policy is not enforced', async () => {
         const {result} = renderHook(() => useAccessControlAttributes('channel', mockEntityId, false));
 
         expect(result.current.attributeTags).toEqual([]);
@@ -68,7 +68,7 @@ describe('useAccessControlAttributes', () => {
         expect(ChannelAccessControlAttributesActions.fetchChannelAccessControlAttributes).not.toHaveBeenCalled();
     });
 
-    it('should fetch and process attributes when policy is enforced', async () => {
+    it('should fetch and process attributes when abac policy is enforced', async () => {
         (ChannelAccessControlAttributesActions.fetchChannelAccessControlAttributes as jest.Mock).mockResolvedValue({
             attributes: mockAttributes,
         });

@@ -36,9 +36,6 @@ type Props = {
     currentUserId: string;
     tutorialWatched: boolean;
     teammateDisplayNameSetting: string;
-
-    // Optional props for the alert banner (for backward compatibility)
-    channelRestricted?: boolean;
     channel?: ChannelModel;
 }
 
@@ -85,7 +82,6 @@ export default function ManageChannelMembers({
     currentUserId,
     tutorialWatched,
     teammateDisplayNameSetting,
-    channelRestricted,
     channel: channelProp,
 }: Props) {
     const serverUrl = useServerUrl();
@@ -98,7 +94,7 @@ export default function ManageChannelMembers({
     const pageRef = useRef(0);
 
     // Use the hook to fetch access control attributes
-    const {attributeTags} = useAccessControlAttributes('channel', channelId, channelProp?.policyEnforced);
+    const {attributeTags} = useAccessControlAttributes('channel', channelId, channelProp?.abacPolicyEnforced);
 
     const [isManageMode, setIsManageMode] = useState(false);
     const [profiles, setProfiles] = useState<UserProfile[]>(EMPTY);
@@ -306,17 +302,16 @@ export default function ManageChannelMembers({
             testID='manage_members.screen'
             nativeID={SecurityManager.getShieldScreenId(componentId)}
         >
-            {/* Show banner if channelRestricted is explicitly true (for backward compatibility)
-                or if the channel has policy_enforced=true */}
-            {(channelRestricted === true || channelProp?.policyEnforced === true) && (
+            {/* or if the channel has abac_policy_enforced=true */}
+            {channelProp?.abacPolicyEnforced === true && (
                 <AlertBanner
                     type='info'
                     message={formatMessage({
-                        id: 'channel.policy_enforced.title',
+                        id: 'channel.abac_policy_enforced.title',
                         defaultMessage: 'Channel access is restricted by user attributes',
                     })}
                     description={formatMessage({
-                        id: 'channel.policy_enforced.description',
+                        id: 'channel.abac_policy_enforced.description',
                         defaultMessage: 'Only people who match the specified access rules can be selected and added to this channel.',
                     })}
                     tags={attributeTags.length > 0 ? attributeTags : undefined}

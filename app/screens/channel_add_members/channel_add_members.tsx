@@ -138,7 +138,7 @@ export default function ChannelAddMembers({
     const [showBanner, setShowBanner] = useState(true);
 
     // Use the hook to fetch access control attributes
-    const {attributeTags} = useAccessControlAttributes('channel', channel?.id, channel?.policyEnforced);
+    const {attributeTags} = useAccessControlAttributes('channel', channel?.id, channel?.abacPolicyEnforced);
 
     const clearSearch = useCallback(() => {
         setTerm('');
@@ -264,15 +264,15 @@ export default function ChannelAddMembers({
             edges={['top', 'left', 'right']}
             nativeID={SecurityManager.getShieldScreenId(componentId)}
         >
-            {showBanner && channel?.policyEnforced && (
+            {showBanner && channel?.abacPolicyEnforced && (
                 <AlertBanner
                     type='info'
                     message={formatMessage({
-                        id: 'channel.policy_enforced.title',
+                        id: 'channel.abac_policy_enforced.title',
                         defaultMessage: 'Channel access is restricted by user attributes',
                     })}
                     description={formatMessage({
-                        id: 'channel.policy_enforced.description',
+                        id: 'channel.abac_policy_enforced.description',
                         defaultMessage: 'Only people who match the specified access rules can be selected and added to this channel.',
                     })}
                     tags={attributeTags.length > 0 ? attributeTags : undefined}

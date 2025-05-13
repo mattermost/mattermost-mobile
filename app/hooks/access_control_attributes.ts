@@ -21,13 +21,13 @@ const CACHE_TTL = 5 * 60 * 1000;
  *
  * @param entityType - The type of entity (e.g., 'channel')
  * @param entityId - The ID of the entity
- * @param hasPolicyEnforced - Whether the entity has policy enforcement enabled
+ * @param hasAbacPolicyEnforced - Whether the entity has abac policy enforcement enabled
  * @returns An object containing the attribute tags, loading state, and fetch function
  */
 export const useAccessControlAttributes = (
     entityType: 'channel',
     entityId: string | undefined,
-    hasPolicyEnforced: boolean | undefined,
+    hasAbacPolicyEnforced: boolean | undefined,
 ) => {
     const serverUrl = useServerUrl();
     const [attributeTags, setAttributeTags] = useState<string[]>([]);
@@ -67,7 +67,7 @@ export const useAccessControlAttributes = (
     }, []);
 
     const fetchAttributes = useCallback(async (forceRefresh = false) => {
-        if (!entityId || !hasPolicyEnforced) {
+        if (!entityId || !hasAbacPolicyEnforced) {
             return;
         }
 
@@ -117,7 +117,7 @@ export const useAccessControlAttributes = (
                 setLoading(false);
             }
         }
-    }, [entityType, entityId, hasPolicyEnforced, serverUrl, processAttributeData]);
+    }, [entityType, entityId, hasAbacPolicyEnforced, serverUrl, processAttributeData]);
 
     // Fetch attributes when the component mounts or when dependencies change
     useEffect(() => {
