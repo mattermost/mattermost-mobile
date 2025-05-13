@@ -56,8 +56,8 @@ declare class ChannelModel extends Model {
 
     bannerInfo?: ChannelBannerInfo;
 
-    /** abac_policy_enforced : Whether the policy is enforced for this channel */
-    abacPolicyEnforced?: boolean;
+    /** Whether the channel has Attribute-Based Access Control (ABAC) policy enforcement enabled, controlling access based on user attributes */
+    policyEnforced?: boolean;
 
     /** members : Users belonging to this channel */
     members: Query<ChannelMembershipModel>;
