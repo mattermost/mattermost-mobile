@@ -108,4 +108,15 @@ describe('BaseChip', () => {
         expect(getByTestId('base_chip').props.entering).toBeUndefined();
         expect(getByTestId('base_chip').props.exiting).toBeUndefined();
     });
+
+    it('should not have a touchable if onPress is not provided', () => {
+        const {queryByTestId} = renderWithIntlAndTheme(
+            <BaseChip
+                label='Test Label'
+                testID='base_chip'
+            />,
+        );
+
+        expect(queryByTestId('base_chip.chip_button')).toBeNull();
+    });
 });
