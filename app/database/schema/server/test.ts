@@ -126,7 +126,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         type: {name: 'type', type: 'string'},
                         update_at: {name: 'update_at', type: 'number'},
                         banner_info: {name: 'banner_info', type: 'string', isOptional: true},
-                        abac_policy_enforced: {name: 'abac_policy_enforced', type: 'boolean', isOptional: true},
+                        policy_enforced: {name: 'policy_enforced', type: 'boolean', isOptional: true},
                     },
                     columnArray: [
                         {name: 'create_at', type: 'number'},
@@ -140,7 +140,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'type', type: 'string'},
                         {name: 'update_at', type: 'number'},
                         {name: 'banner_info', type: 'string', isOptional: true},
-                        {name: 'abac_policy_enforced', type: 'boolean', isOptional: true},
+                        {name: 'policy_enforced', type: 'boolean', isOptional: true},
                     ],
                 },
                 [CHANNEL_BOOKMARK]: {
