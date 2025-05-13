@@ -303,7 +303,7 @@ export default function ManageChannelMembers({
             nativeID={SecurityManager.getShieldScreenId(componentId)}
         >
             {/* or if the channel has abac_policy_enforced=true */}
-            {channelProp?.abacPolicyEnforced === true && (
+            {channelProp?.policyEnforced === true && (
                 <AlertBanner
                     type='info'
                     message={formatMessage({

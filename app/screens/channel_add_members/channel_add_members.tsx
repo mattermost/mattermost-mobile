@@ -138,7 +138,7 @@ export default function ChannelAddMembers({
     const [showBanner, setShowBanner] = useState(true);
 
     // Use the hook to fetch access control attributes
-    const {attributeTags} = useAccessControlAttributes('channel', channel?.id, channel?.abacPolicyEnforced);
+    const {attributeTags} = useAccessControlAttributes('channel', channel?.id, channel?.policyEnforced);
 
     const clearSearch = useCallback(() => {
         setTerm('');
