@@ -49,6 +49,7 @@ const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
             left: undefined,
             top: undefined,
             borderWidth: 0,
+            ...typography('Body', 100, 'SemiBold'),
         },
     };
 });

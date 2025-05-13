@@ -99,8 +99,8 @@ describe('GlobalThreads', () => {
         expect(useTabs).toHaveBeenCalledWith(
             expect.any(String),
             expect.arrayContaining([
-                expect.objectContaining({id: 'unreads', hasDot: true}),
-                expect.objectContaining({id: 'all', hasDot: false}),
+                expect.objectContaining({id: 'unreads', requiresUserAttention: true}),
+                expect.objectContaining({id: 'all', requiresUserAttention: false}),
             ]),
             expect.any(Function),
         );
@@ -117,8 +117,8 @@ describe('GlobalThreads', () => {
         expect(useTabs).toHaveBeenCalledWith(
             expect.any(String),
             expect.arrayContaining([
-                expect.objectContaining({id: 'unreads', hasDot: false}),
-                expect.objectContaining({id: 'all', hasDot: false}),
+                expect.objectContaining({id: 'unreads', requiresUserAttention: false}),
+                expect.objectContaining({id: 'all', requiresUserAttention: false}),
             ]),
             expect.any(Function),
         );
