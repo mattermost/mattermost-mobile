@@ -35,14 +35,14 @@ describe('hooks/useTabs', () => {
 
     it('should render tabs with dots when specified', () => {
         const tabsWithDot: Array<TabDefinition<string>> = [
-            {id: 'tab1', name: {id: 'tab1.name', defaultMessage: 'Tab 1'}, hasDot: true},
+            {id: 'tab1', name: {id: 'tab1.name', defaultMessage: 'Tab 1'}, requiresUserAttention: true},
             {id: 'tab2', name: {id: 'tab2.name', defaultMessage: 'Tab 2'}},
         ];
 
         const {result} = renderHook(() => useTabs('tab1', tabsWithDot));
         const [, tabsProps] = result.current;
 
-        expect(tabsProps.tabs[0].hasDot).toBe(true);
+        expect(tabsProps.tabs[0].requiresUserAttention).toBe(true);
     });
 
     it('should use provided testID', () => {

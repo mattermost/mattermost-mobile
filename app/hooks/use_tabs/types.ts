@@ -6,5 +6,5 @@ import type {MessageDescriptor} from 'react-intl';
 export type TabDefinition<T extends string> = {
     name: MessageDescriptor;
     id: T;
-    hasDot?: boolean;
+    requiresUserAttention?: boolean;
 }

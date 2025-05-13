@@ -13,7 +13,7 @@ describe('components/global_threads/threads_list/header', () => {
             tabs: [{
                 id: 'tab1',
                 name: {id: 'tab1.name', defaultMessage: 'Tab 1'},
-                hasDot: true,
+                requiresUserAttention: true,
             }],
             selectedTab: 'tab1',
             onTabChange: jest.fn(),

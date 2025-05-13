@@ -51,7 +51,7 @@ describe('Tab', () => {
         const {getByTestId} = renderWithIntl(
             <Tab
                 {...baseProps}
-                hasDot={true}
+                requiresUserAttention={true}
             />,
         );
 
@@ -62,7 +62,7 @@ describe('Tab', () => {
         const {queryByTestId} = renderWithIntl(
             <Tab
                 {...baseProps}
-                hasDot={false}
+                requiresUserAttention={false}
             />,
         );
 

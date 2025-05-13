@@ -60,7 +60,7 @@ const GlobalThreads = ({componentId, globalThreadsTab, hasUnreads, teamId}: Prop
                 defaultMessage: 'All your threads',
             }),
             id: 'all',
-            hasDot: false,
+            requiresUserAttention: false,
         },
         {
             name: defineMessage({
@@ -68,7 +68,7 @@ const GlobalThreads = ({componentId, globalThreadsTab, hasUnreads, teamId}: Prop
                 defaultMessage: 'Unreads',
             }),
             id: 'unreads',
-            hasDot: hasUnreads,
+            requiresUserAttention: hasUnreads,
         },
     ], [hasUnreads]);
     const tabOnChange = useCallback(() => {

@@ -33,14 +33,14 @@ export default function Tabs<T extends string>({
     onTabChange,
     testID,
 }: Props<T>) {
-    const tabsComponents = tabs.map(({name, id, hasDot}) => {
+    const tabsComponents = tabs.map(({name, id, requiresUserAttention}) => {
         const isSelected = selectedTab === id;
         return (
             <Tab
                 key={id}
                 name={name}
                 id={id}
-                hasDot={hasDot}
+                requiresUserAttention={requiresUserAttention}
                 handleTabChange={onTabChange}
                 isSelected={isSelected}
                 testID={testID || 'tabs'}

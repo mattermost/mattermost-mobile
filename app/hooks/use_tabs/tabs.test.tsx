@@ -24,7 +24,7 @@ describe('Tabs', () => {
                     defaultMessage: 'Test Tab 1',
                 },
                 id: 'tab1',
-                hasDot: false,
+                requiresUserAttention: false,
             },
             {
                 name: {
@@ -32,7 +32,7 @@ describe('Tabs', () => {
                     defaultMessage: 'Test Tab 2',
                 },
                 id: 'tab2',
-                hasDot: true,
+                requiresUserAttention: true,
             },
         ],
         selectedTab: 'tab1',

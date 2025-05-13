@@ -44,7 +44,7 @@ const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
 type TabProps<T extends string> = {
     name: MessageDescriptor;
     id: T;
-    hasDot?: boolean;
+    requiresUserAttention?: boolean;
     handleTabChange: (value: T) => void;
     isSelected: boolean;
     testID: string;
@@ -53,7 +53,7 @@ type TabProps<T extends string> = {
 const Tab = <T extends string>({
     name,
     id,
-    hasDot,
+    requiresUserAttention,
     handleTabChange,
     isSelected,
     testID,
@@ -84,7 +84,7 @@ const Tab = <T extends string>({
                         {...name}
                         style={textStyle}
                     />
-                    {hasDot ? (
+                    {requiresUserAttention ? (
                         <View
                             style={styles.dot}
                             testID={`${testID}.${id}.dot`}
