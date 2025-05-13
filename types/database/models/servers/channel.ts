@@ -56,8 +56,8 @@ declare class ChannelModel extends Model {
 
     bannerInfo?: ChannelBannerInfo;
 
-    /** policy_enforced : Whether the policy is enforced for this channel */
-    policyEnforced?: boolean;
+    /** abac_policy_enforced : Whether the policy is enforced for this channel */
+    abacPolicyEnforced?: boolean;
 
     /** members : Users belonging to this channel */
     members: Query<ChannelMembershipModel>;
