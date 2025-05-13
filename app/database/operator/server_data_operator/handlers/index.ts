@@ -12,6 +12,7 @@ import {
     transformSystemRecord,
 } from '@database/operator/server_data_operator/transformers/general';
 import {getUniqueRawsBy} from '@database/operator/utils/general';
+import {queryCustomEmojisByName} from '@queries/servers/custom_emoji';
 import {logWarning} from '@utils/log';
 
 import {sanitizeReactions} from '../../utils/reaction';
@@ -53,11 +54,20 @@ export default class ServerDataOperatorBase extends BaseDataOperator {
             return [];
         }
 
+        const names = Array.from(new Set(emojis.map((e) => e.name)));
+
+        const locals = await queryCustomEmojisByName(this.database, names).fetch();
+
+        const deleteRawValues = locals.
+            filter((local) => !emojis.find((raw) => raw.id === local.id)).
+            map((local) => ({name: local.name}));
+
         return this.handleRecords({
             fieldName: 'name',
             transformer: transformCustomEmojiRecord,
             prepareRecordsOnly,
             createOrUpdateRawValues: getUniqueRawsBy({raws: emojis, key: 'name'}),
+            deleteRawValues,
             tableName: CUSTOM_EMOJI,
         }, 'handleCustomEmojis') as Promise<CustomEmojiModel[]>;
     };
