@@ -170,3 +170,5 @@ type ChannelBannerInfo = {
     text?: string;
     background_color?: string;
 }
+
+type ChannelAccessControlAttributes = Record<string, string[]>;
