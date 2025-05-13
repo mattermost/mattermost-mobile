@@ -5,7 +5,8 @@ import {ActionType} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import websocketManager from '@managers/websocket_manager';
-import {getConfigValue, getCurrentUserId} from '@queries/servers/system';
+import {getIsScheduledPostEnabled} from '@queries/servers/scheduled_post';
+import {getCurrentUserId} from '@queries/servers/system';
 import ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 import {getFullErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
@@ -71,7 +72,7 @@ export async function fetchScheduledPosts(serverUrl: string, teamId: string, inc
 
         const client = NetworkManager.getClient(serverUrl);
 
-        const scheduledPostEnabled = (await getConfigValue(database, 'ScheduledPosts')) === 'true';
+        const scheduledPostEnabled = await getIsScheduledPostEnabled(database);
         if (!scheduledPostEnabled) {
             return {scheduledPosts: []};
         }

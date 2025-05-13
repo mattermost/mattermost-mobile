@@ -19,5 +19,6 @@ export default tableSchema({
         {name: 'post_id', type: 'string', isIndexed: true},
         {name: 'size', type: 'number'},
         {name: 'width', type: 'number'},
+        {name: 'is_blocked', type: 'boolean'},
     ],
 });

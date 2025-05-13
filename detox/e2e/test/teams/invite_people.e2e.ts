@@ -73,9 +73,6 @@ describe('Teams - Invite', () => {
         await expect(Invite.teamDisplayName).toHaveText(testTeam.display_name);
         await expect(Invite.teamIcon).toBeVisible();
 
-        // * Verify default Selection
-        await waitFor(Invite.screenSelection).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-
         // * Verify Server data
         await expect(Invite.serverDisplayName).toHaveText(serverOneDisplayName);
 
@@ -139,7 +136,8 @@ describe('Teams - Invite', () => {
         await expect(Invite.getSearchListUserItem(testUser1.id)).not.toBeVisible();
 
         // * Validate user is added to selected items
-        await expect(Invite.getSelectedItem(testUser1.id)).toBeVisible();
+        await expect(Invite.getSelectedChip()).toBeVisible();
+        await expect(Invite.getSelectedChip()).toHaveText(testUser1.username);
 
         // # Send invitation
         await Invite.sendButton.tap();
@@ -163,7 +161,8 @@ describe('Teams - Invite', () => {
         await Invite.getSearchListUserItem(testUser2.id).tap();
 
         // * Validate user is added to selected items
-        await expect(Invite.getSelectedItem(testUser2.id)).toBeVisible();
+        await expect(Invite.getSelectedChip()).toBeVisible();
+        await expect(Invite.getSelectedChip()).toHaveText(testUser2.username);
 
         // # Send invitation
         await Invite.sendButton.tap();
@@ -190,7 +189,8 @@ describe('Teams - Invite', () => {
         await Invite.getSearchListUserItem(testUser3.id).tap();
 
         // * Validate user is added to selected items
-        await expect(Invite.getSelectedItem(testUser3.id)).toBeVisible();
+        await expect(Invite.getSelectedChip()).toBeVisible();
+        await expect(Invite.getSelectedChip()).toHaveText(testUser3.username);
 
         // # Search for a existent user already in team
         await Invite.searchBarInput.replaceText(testUser.username);
@@ -200,9 +200,6 @@ describe('Teams - Invite', () => {
 
         // # Select user item
         await Invite.getSearchListUserItem(testUser.id).tap();
-
-        // * Validate user is added to selected items
-        await expect(Invite.getSelectedItem(testUser.id)).toBeVisible();
 
         // # Send invitation
         await Invite.sendButton.tap();

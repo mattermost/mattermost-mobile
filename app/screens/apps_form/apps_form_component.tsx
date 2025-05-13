@@ -10,6 +10,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {handleGotoLocation} from '@actions/remote/command';
 import CompassIcon from '@components/compass_icon';
 import Markdown from '@components/markdown';
+import {Screens} from '@constants';
 import {AppCallResponseTypes} from '@constants/apps';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -401,7 +402,7 @@ function AppsFormComponent({
                             baseTextStyle={style.errorLabel}
                             textStyles={getMarkdownTextStyles(theme)}
                             blockStyles={getMarkdownBlockStyles(theme)}
-                            location=''
+                            location={Screens.APPS_FORM}
                             disableAtMentions={true}
                             value={error}
                             theme={theme}

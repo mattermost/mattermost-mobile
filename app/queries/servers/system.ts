@@ -2,6 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {Database, Q} from '@nozbe/watermelondb';
+import {nativeApplicationVersion, nativeBuildVersion} from 'expo-application';
+import {Platform} from 'react-native';
 import {of as of$, Observable, combineLatest} from 'rxjs';
 import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
@@ -624,3 +626,24 @@ const observeIsSelfHosterStarter = (database: Database) => {
     );
 };
 
+export const observeReportAProblemMetadata = (database: Database) => {
+    const currentUserId = observeCurrentUserId(database);
+    const currentTeamId = observeCurrentTeamId(database);
+    const serverVersion = observeConfigValue(database, 'Version');
+    const buildNumber = observeConfigValue(database, 'BuildNumber');
+
+    return combineLatest([
+        currentUserId,
+        currentTeamId,
+        serverVersion,
+        buildNumber,
+    ]).pipe(
+        switchMap(([userId, teamId, version = 'Unknown', build = 'Unknown']) => of$({
+            currentUserId: userId,
+            currentTeamId: teamId,
+            serverVersion: `${version} (Build ${build})`,
+            appVersion: `${nativeApplicationVersion} (Build ${nativeBuildVersion})`,
+            appPlatform: Platform.OS,
+        })),
+    );
+};

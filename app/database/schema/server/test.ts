@@ -49,7 +49,7 @@ const {
 describe('*** Test schema for SERVER database ***', () => {
     it('=> The SERVER SCHEMA should strictly match', () => {
         expect(serverSchema).toEqual({
-            version: 9,
+            version: 10,
             unsafeSql: undefined,
             tables: {
                 [CATEGORY]: {
@@ -334,6 +334,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         post_id: {name: 'post_id', type: 'string', isIndexed: true},
                         size: {name: 'size', type: 'number'},
                         width: {name: 'width', type: 'number'},
+                        is_blocked: {name: 'is_blocked', type: 'boolean'},
                     },
                     columnArray: [
                         {name: 'extension', type: 'string'},
@@ -345,6 +346,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'post_id', type: 'string', isIndexed: true},
                         {name: 'size', type: 'number'},
                         {name: 'width', type: 'number'},
+                        {name: 'is_blocked', type: 'boolean'},
                     ],
                 },
                 [GROUP]: {

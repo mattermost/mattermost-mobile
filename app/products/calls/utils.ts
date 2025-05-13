@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {makeCallsBaseAndBadgeRGB, rgbToCSS} from '@mattermost/calls';
-import {type CallsConfig, type CallPostProps, isCaption, type Caption, isCallJobMetadata, type CallJobMetadata} from '@mattermost/calls/lib/types';
+import {type CallsConfig, type CallPostProps, isCaption, type Caption, isCallJobMetadata, type CallJobMetadata, type CallsVersionInfo} from '@mattermost/calls/lib/types';
 import {Alert} from 'react-native';
 import {SelectedTrackType, TextTrackType, type ISO639_1, type SelectedTrack, type TextTracks} from 'react-native-video';
 
@@ -17,7 +17,6 @@ import type {
     CallsConfigState,
     CallSession,
     CallsTheme,
-    CallsVersion,
 } from '@calls/types/calls';
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
@@ -96,7 +95,7 @@ export function isSupportedServerCalls(serverVersion?: string) {
     return false;
 }
 
-export function isMultiSessionSupported(callsVersion: CallsVersion) {
+export function isMultiSessionSupported(callsVersion: CallsVersionInfo) {
     return isMinimumServerVersion(
         callsVersion.version,
         Calls.MultiSessionCallsVersion.MAJOR_VERSION,

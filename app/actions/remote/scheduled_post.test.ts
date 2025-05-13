@@ -5,7 +5,7 @@ import {forceLogoutIfNecessary} from '@actions/remote/session';
 import {ActionType} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
-import {getConfigValue, getCurrentTeamId} from '@queries/servers/system';
+import {getConfigValue, getCurrentTeamId, getLicense} from '@queries/servers/system';
 import {logError} from '@utils/log';
 
 import {createScheduledPost, deleteScheduledPost, fetchScheduledPosts, updateScheduledPost} from './scheduled_post';
@@ -86,6 +86,7 @@ const mockWebSocketClient = {
 };
 jest.mock('@queries/servers/system', () => ({
     getConfigValue: jest.fn(),
+    getLicense: jest.fn(),
     getCurrentTeamId: jest.fn(),
     getCurrentUserId: jest.fn(),
 }));
@@ -101,6 +102,7 @@ jest.mock('@utils/scheduled_post', () => {
 });
 
 const mockedGetConfigValue = jest.mocked(getConfigValue);
+const mockedGetLicense = jest.mocked(getLicense);
 
 beforeAll(() => {
     // eslint-disable-next-line
@@ -177,9 +179,18 @@ describe('fetchScheduledPosts', () => {
         expect(mockClient.getScheduledPostsForTeam).not.toHaveBeenCalled();
     });
 
+    it('handle scheduled post disabled is no license', async () => {
+        mockedGetConfigValue.mockResolvedValueOnce('true');
+        mockedGetLicense.mockResolvedValueOnce({IsLicensed: 'false'} as ClientLicense);
+        const result = await fetchScheduledPosts(serverUrl, 'bar');
+        expect(result.scheduledPosts).toEqual([]);
+        expect(mockClient.getScheduledPostsForTeam).not.toHaveBeenCalled();
+    });
+
     it('handle scheduled post enabled', async () => {
         jest.mocked(getCurrentTeamId).mockResolvedValue('bar');
         mockedGetConfigValue.mockResolvedValueOnce('true');
+        mockedGetLicense.mockResolvedValueOnce({IsLicensed: 'true'} as ClientLicense);
         const spyHandleScheduledPosts = jest.spyOn(operator, 'handleScheduledPosts');
         const result = await fetchScheduledPosts(serverUrl, 'bar');
         expect(result.scheduledPosts).toEqual(scheduledPostsResponse.bar);

@@ -10,9 +10,10 @@ import {isArrayOf} from '@utils/types';
 import EmbeddedBinding from './embedded_binding';
 
 import type PostModel from '@typings/database/models/servers/post';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
-    location: string;
+    location: AvailableScreens;
     post: PostModel;
     theme: Theme;
 }
