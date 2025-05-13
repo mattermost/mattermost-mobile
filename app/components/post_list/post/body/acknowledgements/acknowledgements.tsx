@@ -23,12 +23,13 @@ import {USER_ROW_HEIGHT} from './users_list/user_list_item';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     currentUserId: UserModel['id'];
     currentUserTimezone: UserModel['timezone'];
     hasReactions: boolean;
-    location: string;
+    location: AvailableScreens;
     post: PostModel;
     theme: Theme;
 };

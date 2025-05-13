@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {render} from '@testing-library/react-native';
-import React from 'react';
+import React, {type ComponentProps} from 'react';
 
 import Preferences from '@constants/preferences';
 
@@ -81,7 +81,7 @@ describe('MessageAttachment', () => {
         jest.clearAllMocks();
     });
 
-    const baseProps = {
+    const baseProps: ComponentProps<typeof MessageAttachment> = {
         attachment: {
             id: 1,
             text: 'This is the text of an attachment',
@@ -113,7 +113,7 @@ describe('MessageAttachment', () => {
         },
         channelId: 'channel-id',
         postId: 'post-id',
-        location: 'CENTER',
+        location: 'Channel',
         theme: Preferences.THEMES.denim,
         metadata: {
             images: {

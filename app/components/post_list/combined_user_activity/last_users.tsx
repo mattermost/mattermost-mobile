@@ -14,10 +14,12 @@ import {secureGetFromRecord} from '@utils/types';
 
 import {postTypeMessages, systemMessages} from './messages';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 type LastUsersProps = {
     actor: string;
     channelId?: string;
-    location: string;
+    location: AvailableScreens;
     postType: string;
     usernames: string[];
     theme: Theme;

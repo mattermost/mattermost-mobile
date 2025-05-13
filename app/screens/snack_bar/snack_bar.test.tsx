@@ -36,6 +36,7 @@ jest.mock('react-native-navigation', () => ({
             registerComponentDidDisappearListener: jest.fn(),
         }),
         dismissOverlay: jest.fn(),
+        setDefaultOptions: jest.fn(),
     },
 }));
 
