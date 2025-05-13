@@ -7,12 +7,12 @@ import {type StyleProp, StyleSheet, Text, type TextStyle, View, type ViewStyle, 
 
 import CompassIcon from '@components/compass_icon';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
-import {changeOpacity} from '@utils/theme';
 
 type Props = Omit<ButtonProps, 'size'> & {
     theme: Theme;
     backgroundStyle?: StyleProp<ViewStyle>;
     buttonContainerStyle?: StyleProp<ViewStyle>;
+    buttonDisabledStyle?: StyleProp<ViewStyle>;
     textStyle?: StyleProp<TextStyle>;
     size?: ButtonSize;
     emphasis?: ButtonEmphasis;
@@ -47,6 +47,7 @@ const Button = ({
     theme,
     backgroundStyle,
     buttonContainerStyle,
+    buttonDisabledStyle,
     textStyle,
     size = 'm',
     emphasis,
@@ -60,7 +61,6 @@ const Button = ({
     iconComponent,
     disabled,
     hitSlop,
-    ...otherProps
 }: Props) => {
     const bgStyle = useMemo(() => [
         buttonBackgroundStyle(theme, size, emphasis, buttonType, buttonState),
@@ -72,13 +72,16 @@ const Button = ({
         textStyle,
     ], [theme, textStyle, size, emphasis, buttonType]);
 
-    let buttonStyle = StyleSheet.flatten(bgStyle);
-    if (disabled) {
-        buttonStyle = {
-            ...buttonStyle,
-            backgroundColor: changeOpacity(buttonStyle.backgroundColor! as string, 0.4),
-        };
-    }
+    const disabledStyle = useMemo(() => {
+        if (disabled) {
+            return [
+                buttonBackgroundStyle(theme, size, emphasis, 'disabled'),
+                buttonDisabledStyle,
+            ];
+        }
+        return undefined;
+
+    }, [buttonDisabledStyle, disabled, emphasis, size, theme]);
 
     let icon: ReactNode;
 
@@ -100,9 +103,9 @@ const Button = ({
 
     return (
         <ElementButton
-            {...otherProps}
-            buttonStyle={buttonStyle}
+            buttonStyle={bgStyle}
             containerStyle={buttonContainerStyle}
+            disabledStyle={disabledStyle}
             onPress={onPress}
             testID={testID}
             disabled={disabled}

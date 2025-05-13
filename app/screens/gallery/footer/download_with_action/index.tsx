@@ -156,6 +156,7 @@ const DownloadWithAction = ({action, enableSecureFilePreview, item, onDownloadSu
         if (mounted.current) {
             if (response.data?.path) {
                 const path = response.data.path as string;
+                onDownloadSuccess?.(path);
                 if (enableSecureFilePreview) {
                     if (isPdf(galleryItemToFileInfo(item))) {
                         previewPdf(item, path, theme);
@@ -172,8 +173,6 @@ const DownloadWithAction = ({action, enableSecureFilePreview, item, onDownloadSu
                         alertFailedToOpenDocument(file, intl);
                     });
                 }
-
-                onDownloadSuccess?.(path);
             }
             setShowToast(false);
         }

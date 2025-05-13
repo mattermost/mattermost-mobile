@@ -127,17 +127,13 @@ const MarkdownImage = ({
 
     const {height, width} = calculateDimensions(fileInfo.height, fileInfo.width, layoutWidth || getViewPortWidth(isReplyPost, isTablet));
 
-    const onLinkError = useCallback(() => {
-        onOpenLinkError(intl);
-    }, [intl]);
-
     const handleLinkPress = useCallback(() => {
         if (linkDestination) {
             const url = normalizeProtocol(linkDestination);
 
-            tryOpenURL(url, onLinkError);
+            tryOpenURL(url, () => onOpenLinkError(intl));
         }
-    }, [linkDestination, onLinkError]);
+    }, [intl, linkDestination]);
 
     const handleLinkLongPress = useCallback(() => {
         if (managedConfig?.copyAndPasteProtection !== 'true') {

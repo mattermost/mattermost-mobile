@@ -63,7 +63,7 @@ const ChannelBookmark = ({
     const intl = useIntl();
     const [action, setAction] = useState<GalleryAction>('none');
     const isDocumentFile = useMemo(() => isDocument(file), [file]);
-    const canCopyPublicLink = Boolean((bookmark.type === 'link' || (file?.id && publicLinkEnabled)) && managedConfig.copyAndPasteProtection !== 'true');
+    const canCopyPublicLink = !enableSecureFilePreview && Boolean((bookmark.type === 'link' || (file?.id && publicLinkEnabled)) && managedConfig.copyAndPasteProtection !== 'true');
 
     const handlePress = useCallback(() => {
         if (bookmark.linkUrl) {
@@ -76,13 +76,13 @@ const ChannelBookmark = ({
 
     const handleLongPress = useCallback(() => {
         const canShare = !enableSecureFilePreview && (canDownloadFiles || bookmark.type === 'link');
-        const count = [(!enableSecureFilePreview && canCopyPublicLink), canDeleteBookmarks, canShare, canEditBookmarks].
+        const count = [canCopyPublicLink, canDeleteBookmarks, canShare, canEditBookmarks].
             filter((e) => e).length;
 
         const renderContent = () => (
             <ChannelBookmarkOptions
                 bookmark={bookmark}
-                canCopyPublicLink={!enableSecureFilePreview && canCopyPublicLink}
+                canCopyPublicLink={canCopyPublicLink}
                 canDeleteBookmarks={canDeleteBookmarks}
                 canDownloadFiles={!enableSecureFilePreview && canDownloadFiles}
                 canEditBookmarks={canEditBookmarks}

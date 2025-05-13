@@ -10,7 +10,6 @@ import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
-import {buttonBackgroundStyle} from '@utils/buttonStyles';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -201,7 +200,6 @@ const PdfPassword = forwardRef<PasswordRef, Props>(({isBlocked, maxAttempts, rem
                 testID='pdf_password_unlock'
                 text={intl.formatMessage(messages.unlock)}
                 theme={theme}
-                disabledStyle={buttonBackgroundStyle(theme, 'm', 'primary', 'disabled')}
             />
         </View>
     );
