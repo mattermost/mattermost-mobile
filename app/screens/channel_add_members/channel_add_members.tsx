@@ -264,7 +264,7 @@ export default function ChannelAddMembers({
             edges={['top', 'left', 'right']}
             nativeID={SecurityManager.getShieldScreenId(componentId)}
         >
-            {showBanner && channel?.abacPolicyEnforced && (
+            {showBanner && channel?.policyEnforced && (
                 <AlertBanner
                     type='info'
                     message={formatMessage({

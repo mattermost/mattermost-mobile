@@ -269,7 +269,7 @@ describe('useAccessControlAttributes', () => {
 
             // @ts-ignore - Accessing private module variable for testing
             AccessControlAttributesModule.attributesCache[cacheKey] = {
-                data: mockAttributes,
+                processedTags: ['group1', 'group2', 'location1', 'department1', 'department2', 'department3'],
                 timestamp: currentTime - 1000, // Set timestamp to 1 second ago
             };
 

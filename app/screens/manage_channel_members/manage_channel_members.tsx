@@ -94,7 +94,7 @@ export default function ManageChannelMembers({
     const pageRef = useRef(0);
 
     // Use the hook to fetch access control attributes
-    const {attributeTags} = useAccessControlAttributes('channel', channelId, channelProp?.abacPolicyEnforced);
+    const {attributeTags} = useAccessControlAttributes('channel', channelId, channelProp?.policyEnforced);
 
     const [isManageMode, setIsManageMode] = useState(false);
     const [profiles, setProfiles] = useState<UserProfile[]>(EMPTY);

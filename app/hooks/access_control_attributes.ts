@@ -7,9 +7,9 @@ import {fetchChannelAccessControlAttributes} from '@actions/remote/channel_acces
 import {useServerUrl} from '@context/server';
 
 // Module-level cache for access control attributes
-// The cache stores data with a timestamp to implement a TTL (time-to-live)
+// The cache stores processed tags with a timestamp to implement a TTL (time-to-live)
 const attributesCache: Record<string, {
-    data: Record<string, string[]>;
+    processedTags: string[];
     timestamp: number;
 }> = {};
 
@@ -82,8 +82,8 @@ export const useAccessControlAttributes = (
 
             // Use cache if it exists and is not too old and forceRefresh is false
             if (!forceRefresh && cachedEntry && (now - cachedEntry.timestamp < CACHE_TTL)) {
-                const tags = processAttributeData(cachedEntry.data);
-                setAttributeTags(tags);
+                // Use the pre-processed tags directly from the cache
+                setAttributeTags(cachedEntry.processedTags);
                 setLoading(false);
                 return;
             }
@@ -94,13 +94,16 @@ export const useAccessControlAttributes = (
 
                 if (isMounted.current) {
                     if (result?.attributes && typeof result.attributes === 'object') {
-                        // Store in cache
+                        // Process the data once
+                        const tags = processAttributeData(result.attributes);
+
+                        // Store only the processed tags in cache
                         attributesCache[cacheKey] = {
-                            data: result.attributes,
+                            processedTags: tags,
                             timestamp: now,
                         };
 
-                        const tags = processAttributeData(result.attributes);
+                        // Update the state
                         setAttributeTags(tags);
                     } else {
                         setAttributeTags([]);
