@@ -22,7 +22,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         paddingLeft: 12,
         marginVertical: 12,
-        flex: 1,
         overflow: 'hidden',
     },
 });
@@ -33,7 +32,7 @@ export default function Tabs<T extends string>({
     onTabChange,
     testID,
 }: Props<T>) {
-    const tabsComponents = tabs.map(({name, id, requiresUserAttention}) => {
+    const tabsComponents = tabs.map(({name, id, requiresUserAttention, count}) => {
         const isSelected = selectedTab === id;
         return (
             <Tab
@@ -43,6 +42,7 @@ export default function Tabs<T extends string>({
                 requiresUserAttention={requiresUserAttention}
                 handleTabChange={onTabChange}
                 isSelected={isSelected}
+                count={count}
                 testID={testID || 'tabs'}
             />
         );

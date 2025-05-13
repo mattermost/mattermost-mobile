@@ -64,5 +64,18 @@ describe('hooks/useTabs', () => {
         const [selectedTab] = result.current;
         expect(selectedTab).toBe('tab2');
     });
+
+    it('should use provided count', () => {
+        const tabsWithCount: Array<TabDefinition<string>> = [
+            {id: 'tab1', name: {id: 'tab1.name', defaultMessage: 'Tab 1'}, count: 1},
+            {id: 'tab2', name: {id: 'tab2.name', defaultMessage: 'Tab 2'}, count: 2},
+        ];
+
+        const {result} = renderHook(() => useTabs('tab1', tabsWithCount));
+        const [, tabsProps] = result.current;
+
+        expect(tabsProps.tabs[0].count).toBe(1);
+        expect(tabsProps.tabs[1].count).toBe(2);
+    });
 });
 

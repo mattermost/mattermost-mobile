@@ -4,6 +4,7 @@
 import React, {useCallback, useMemo} from 'react';
 import {TouchableOpacity, View} from 'react-native';
 
+import Badge from '@components/badge';
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -16,6 +17,8 @@ const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
         menuItemContainer: {
             paddingVertical: 8,
             paddingHorizontal: 16,
+            flexDirection: 'row',
+            gap: 4,
         },
         menuItemContainerSelected: {
             backgroundColor: changeOpacity(theme.buttonBg, 0.08),
@@ -35,8 +38,17 @@ const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
             height: 6,
             borderRadius: 3,
             backgroundColor: theme.sidebarTextActiveBorder,
-            right: -6,
-            top: 4,
+            right: 8,
+            top: 8,
+        },
+        badge: {
+            position: undefined,
+            color: changeOpacity(theme.centerChannelColor, 0.75),
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
+            alignSelf: 'center',
+            left: undefined,
+            top: undefined,
+            borderWidth: 0,
         },
     };
 });
@@ -47,6 +59,7 @@ type TabProps<T extends string> = {
     requiresUserAttention?: boolean;
     handleTabChange: (value: T) => void;
     isSelected: boolean;
+    count?: number;
     testID: string;
 }
 
@@ -56,6 +69,7 @@ const Tab = <T extends string>({
     requiresUserAttention,
     handleTabChange,
     isSelected,
+    count,
     testID,
 }: TabProps<T>) => {
     const theme = useTheme();
@@ -77,20 +91,27 @@ const Tab = <T extends string>({
             key={id}
             onPress={onPress}
             testID={`${testID}.${id}.button`}
+            accessibilityState={{selected: isSelected}}
         >
             <View style={containerStyle}>
-                <View>
-                    <FormattedText
-                        {...name}
-                        style={textStyle}
+                <FormattedText
+                    {...name}
+                    style={textStyle}
+                />
+                {count ? (
+                    <Badge
+                        value={count}
+                        visible={count !== 0}
+                        testID={`${testID}.${id}.badge`}
+                        style={styles.badge}
                     />
-                    {requiresUserAttention ? (
-                        <View
-                            style={styles.dot}
-                            testID={`${testID}.${id}.dot`}
-                        />
-                    ) : null}
-                </View>
+                ) : null}
+                {requiresUserAttention ? (
+                    <View
+                        style={styles.dot}
+                        testID={`${testID}.${id}.dot`}
+                    />
+                ) : null}
             </View>
         </TouchableOpacity>
     );

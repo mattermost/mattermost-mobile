@@ -84,4 +84,27 @@ describe('Tab', () => {
         expect(handleTabChange).toHaveBeenCalledWith('test');
         expect(handleTabChange).toHaveBeenCalledTimes(1);
     });
+
+    it('should use provided count', () => {
+        const {getByTestId} = renderWithIntl(
+            <Tab
+                {...baseProps}
+                count={1}
+            />,
+        );
+
+        expect(getByTestId('tabs.test.badge')).toBeTruthy();
+        expect(getByTestId('tabs.test.badge')).toHaveTextContent('1');
+    });
+
+    it('should not show badge when count is 0', () => {
+        const {queryByTestId} = renderWithIntl(
+            <Tab
+                {...baseProps}
+                count={0}
+            />,
+        );
+
+        expect(queryByTestId('tabs.test.badge')).toBeNull();
+    });
 });

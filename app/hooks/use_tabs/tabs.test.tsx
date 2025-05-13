@@ -25,6 +25,7 @@ describe('Tabs', () => {
                 },
                 id: 'tab1',
                 requiresUserAttention: false,
+                count: 2,
             },
             {
                 name: {
@@ -55,17 +56,19 @@ describe('Tabs', () => {
 
         expect(tab1.props.name).toEqual(baseProps.tabs[0].name);
         expect(tab1.props.id).toBe('tab1');
-        expect(tab1.props.hasDot).toBe(false);
+        expect(tab1.props.requiresUserAttention).toBe(false);
         expect(tab1.props.isSelected).toBe(true);
         expect(tab1.props.handleTabChange).toBe(baseProps.onTabChange);
         expect(tab1.props.testID).toBe('test.tabs');
+        expect(tab1.props.count).toBe(2);
 
         expect(tab2.props.name).toEqual(baseProps.tabs[1].name);
         expect(tab2.props.id).toBe('tab2');
-        expect(tab2.props.hasDot).toBe(true);
+        expect(tab2.props.requiresUserAttention).toBe(true);
         expect(tab2.props.isSelected).toBe(false);
         expect(tab2.props.handleTabChange).toBe(baseProps.onTabChange);
         expect(tab2.props.testID).toBe('test.tabs');
+        expect(tab2.props.count).toBe(undefined);
     });
 
     it('uses `tabs` as testID when testID prop is not provided', () => {

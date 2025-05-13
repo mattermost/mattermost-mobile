@@ -7,4 +7,5 @@ export type TabDefinition<T extends string> = {
     name: MessageDescriptor;
     id: T;
     requiresUserAttention?: boolean;
+    count?: number;
 }
