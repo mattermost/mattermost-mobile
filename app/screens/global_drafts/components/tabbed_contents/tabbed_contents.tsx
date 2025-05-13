@@ -3,6 +3,7 @@
 
 import React, {type ReactNode, useState, useMemo, useCallback} from 'react';
 import {Freeze} from 'react-freeze';
+import {defineMessage} from 'react-intl';
 import {StyleSheet, View, type LayoutChangeEvent} from 'react-native';
 import Animated, {runOnJS, useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
@@ -49,12 +50,12 @@ export default function TabbedContents({draftsCount, scheduledPostCount, initial
     const [selectedTab, tabProps] = useTabs(initialTab, [
         {
             id: DRAFT_SCREEN_TAB_DRAFTS,
-            name: {id: 'drafts_tab.title.drafts', defaultMessage: 'Drafts'},
+            name: defineMessage({id: 'drafts_tab.title.drafts', defaultMessage: 'Drafts'}),
             count: draftsCount,
         },
         {
             id: DRAFT_SCREEN_TAB_SCHEDULED_POSTS,
-            name: {id: 'drafts_tab.title.scheduled', defaultMessage: 'Scheduled'},
+            name: defineMessage({id: 'drafts_tab.title.scheduled', defaultMessage: 'Scheduled'}),
             count: scheduledPostCount,
         },
     ], onSelectTab);
