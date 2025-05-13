@@ -26,7 +26,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isIos} from '@support/utils';
+import {isAndroid, isIos, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Edit Channel', () => {
@@ -112,6 +112,10 @@ describe('Channels - Edit Channel', () => {
         await ChannelInfoScreen.toBeVisible();
         await expect(ChannelInfoScreen.publicPrivateTitleDisplayName).toHaveText(`${testChannel.display_name} name`);
         await expect(ChannelInfoScreen.publicPrivateTitlePurpose).toHaveText(`Channel purpose: ${testChannel.display_name.toLowerCase()} purpose`);
+
+        if (isAndroid()) {
+            await ChannelInfoScreen.scrollView.scrollTo('top');
+        }
         await expect(element(by.text(`Channel header: ${testChannel.display_name.toLowerCase()}\nheader1\nheader2`))).toBeVisible();
 
         // # Go back to channel screen
@@ -154,8 +158,11 @@ describe('Channels - Edit Channel', () => {
         await CreateDirectMessageScreen.searchInput.replaceText(testOtherUser1.username);
         await CreateDirectMessageScreen.getUserItem(testOtherUser1.id).tap();
         await CreateDirectMessageScreen.searchInput.replaceText(testOtherUser2.username);
+        await CreateDirectMessageScreen.searchInput.tapReturnKey();
+        await wait(timeouts.TWO_SEC);
         await CreateDirectMessageScreen.getUserItem(testOtherUser2.id).tap();
         await CreateDirectMessageScreen.startButton.tap();
+        await wait(timeouts.TWO_SEC);
 
         // * Verify on group message channel screen
         await ChannelScreen.toBeVisible();

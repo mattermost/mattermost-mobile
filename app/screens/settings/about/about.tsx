@@ -18,11 +18,10 @@ import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {t} from '@i18n';
 import {popTopScreen} from '@screens/navigation';
-import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {showSnackBar} from '@utils/snack_bar';
-import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {tryOpenURL} from '@utils/url';
@@ -115,7 +114,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 type AboutProps = {
     componentId: AvailableScreens;
     config: ClientConfig;
-    license: ClientLicense;
+    license?: ClientLicense;
 }
 const About = ({componentId, config, license}: AboutProps) => {
     const intl = useIntl();
@@ -126,7 +125,7 @@ const About = ({componentId, config, license}: AboutProps) => {
 
     useEffect(() => {
         const fetchLoadMetric = async () => {
-            const isLicensed = license.IsLicensed === 'true';
+            const isLicensed = license?.IsLicensed === 'true';
             const result = await getLicenseLoadMetric(serverUrl, config.Version, isLicensed);
 
             // Only set the metric if we got a number back
@@ -136,7 +135,7 @@ const About = ({componentId, config, license}: AboutProps) => {
         };
 
         fetchLoadMetric();
-    }, [config.Version, license.IsLicensed, serverUrl]);
+    }, [config.Version, license?.IsLicensed, serverUrl]);
 
     const openURL = useCallback((url: string) => {
         const onError = () => {
@@ -153,27 +152,27 @@ const About = ({componentId, config, license}: AboutProps) => {
         };
 
         tryOpenURL(url, onError);
-    }, []);
+    }, [intl]);
 
-    const handleAboutTeam = useCallback(preventDoubleTap(() => {
+    const handleAboutTeam = usePreventDoubleTap(useCallback(() => {
         return openURL(Config.WebsiteURL);
-    }), []);
+    }, [openURL]));
 
-    const handlePlatformNotice = useCallback(preventDoubleTap(() => {
+    const handlePlatformNotice = usePreventDoubleTap(useCallback(() => {
         return openURL(Config.ServerNoticeURL);
-    }), []);
+    }, [openURL]));
 
-    const handleMobileNotice = useCallback(preventDoubleTap(() => {
+    const handleMobileNotice = usePreventDoubleTap(useCallback(() => {
         return openURL(Config.MobileNoticeURL);
-    }), []);
+    }, [openURL]));
 
-    const handleTermsOfService = useCallback(preventDoubleTap(() => {
+    const handleTermsOfService = usePreventDoubleTap(useCallback(() => {
         return openURL(AboutLinks.TERMS_OF_SERVICE);
-    }), []);
+    }, [openURL]));
 
-    const handlePrivacyPolicy = useCallback(preventDoubleTap(() => {
+    const handlePrivacyPolicy = usePreventDoubleTap(useCallback(() => {
         return openURL(AboutLinks.PRIVACY_POLICY);
-    }), []);
+    }, [openURL]));
 
     const serverVersion = useMemo(() => {
         const buildNumber = config.BuildNumber;
@@ -210,7 +209,7 @@ const About = ({componentId, config, license}: AboutProps) => {
             Clipboard.setString(copiedString);
             showSnackBar({barType: SNACK_BAR_TYPE.INFO_COPIED, sourceScreen: componentId});
         },
-        [intl, config, loadMetric],
+        [intl, config.BuildNumber, config.Version, config.SQLDriverName, config.SchemaVersion, loadMetric, componentId],
     );
 
     return (
@@ -306,18 +305,18 @@ const About = ({componentId, config, license}: AboutProps) => {
                         {config.SchemaVersion}
                     </Text>
                 </View>
-                <Button
-                    theme={theme}
-                    backgroundStyle={[buttonBackgroundStyle(theme, 'm', 'tertiary'), styles.copyInfoButtonContainer]}
-                    onPress={copyToClipboard}
-                    textStyle={buttonTextStyle(theme, 'm', 'tertiary', 'default')}
-                    text={intl.formatMessage({id: 'settings.about.button.copyInfo', defaultMessage: 'Copy info'})}
-                    testID={'about.copy_info'}
-                    iconName='content-copy'
-                    iconSize={15}
-                    buttonType={'default'}
-                />
-                {license.IsLicensed === 'true' && (
+                <View style={styles.copyInfoButtonContainer}>
+                    <Button
+                        theme={theme}
+                        onPress={copyToClipboard}
+                        text={intl.formatMessage({id: 'settings.about.button.copyInfo', defaultMessage: 'Copy info'})}
+                        testID={'about.copy_info'}
+                        iconName='content-copy'
+                        emphasis='tertiary'
+                        size='m'
+                    />
+                </View>
+                {license?.IsLicensed === 'true' && (
                     <View style={styles.licenseContainer}>
                         <FormattedText
                             defaultMessage='Licensed to: {company}'

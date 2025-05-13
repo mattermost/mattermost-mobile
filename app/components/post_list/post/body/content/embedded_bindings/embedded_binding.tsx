@@ -13,10 +13,11 @@ import EmbedTitle from './embed_title';
 import EmbedSubBindings from './embedded_sub_bindings';
 
 import type PostModel from '@typings/database/models/servers/post';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     embed: AppBinding;
-    location: string;
+    location: AvailableScreens;
     post: PostModel;
     theme: Theme;
 }
@@ -72,6 +73,7 @@ const EmbeddedBinding = ({embed, location, post, theme}: Props) => {
                     bindings={cleanedBindings}
                     post={post}
                     theme={theme}
+                    location={location}
                 />
                 }
             </View>

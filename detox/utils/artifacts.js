@@ -20,10 +20,8 @@ const {
     DETOX_AWS_S3_BUCKET,
     DETOX_AWS_ACCESS_KEY_ID,
     DETOX_AWS_SECRET_ACCESS_KEY,
-    IOS,
     REPORT_PATH,
 } = process.env;
-const platform = IOS === 'true' ? 'ios' : 'android';
 
 const s3 = new S3({
     credentials: {
@@ -36,7 +34,7 @@ function getFiles(dirPath) {
     return fs.existsSync(dirPath) ? readdir(dirPath) : [];
 }
 
-async function saveArtifacts() {
+async function saveArtifacts(platform) {
     if (!DETOX_AWS_S3_BUCKET || !DETOX_AWS_ACCESS_KEY_ID || !DETOX_AWS_SECRET_ACCESS_KEY) {
         console.log('No AWS credentials found. Test artifacts not uploaded to S3.');
 

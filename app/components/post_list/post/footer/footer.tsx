@@ -17,10 +17,11 @@ import {typography} from '@utils/typography';
 
 import type ThreadModel from '@typings/database/models/servers/thread';
 import type UserModel from '@typings/database/models/servers/user';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     channelId: string;
-    location: string;
+    location: AvailableScreens;
     participants: UserModel[];
     teamId?: string;
     thread: ThreadModel;

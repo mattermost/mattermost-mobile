@@ -34,6 +34,24 @@ export const updateLocalFilePath = async (serverUrl: string, fileId: string, loc
     }
 };
 
+export const setFileAsBlocked = async (serverUrl: string, fileId: string) => {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const file = await getFileById(database, fileId);
+        if (file) {
+            await database.write(async () => {
+                await file.update((r) => {
+                    r.isBlocked = true;
+                });
+            });
+        }
+        return {error: undefined};
+    } catch (error) {
+        logError('Failed setFileAsBlocked', error);
+        return {error};
+    }
+};
+
 export const getLocalFileInfo = async (serverUrl: string, fileId: string) => {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);

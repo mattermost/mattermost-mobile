@@ -20,13 +20,14 @@ import UserAvatar from './user_avatar';
 import UsersList from './users_list';
 
 import type UserModel from '@typings/database/models/servers/user';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 const OVERFLOW_DISPLAY_LIMIT = 99;
 const USER_ROW_HEIGHT = 40;
 
 type Props = {
     channelId?: string;
-    location: string;
+    location: AvailableScreens;
     users: UserModel[];
     breakAt?: number;
     style?: StyleProp<ViewStyle>;

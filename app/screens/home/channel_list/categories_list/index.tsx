@@ -6,8 +6,8 @@ import {of} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {observeDraftCount} from '@queries/servers/drafts';
-import {observeScheduledPostsForTeam} from '@queries/servers/scheduled_post';
-import {observeConfigBooleanValue, observeCurrentTeamId} from '@queries/servers/system';
+import {observeScheduledPostEnabled, observeScheduledPostsForTeam} from '@queries/servers/scheduled_post';
+import {observeCurrentTeamId} from '@queries/servers/system';
 import {observeTeamLastChannelId} from '@queries/servers/team';
 import {hasScheduledPostError} from '@utils/scheduled_post';
 
@@ -26,7 +26,7 @@ const enchanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const scheduledPostHasError = allScheduledPost.pipe(
         switchMap((scheduledPosts) => of(hasScheduledPostError(scheduledPosts))),
     );
-    const scheduledPostsEnabled = observeConfigBooleanValue(database, 'ScheduledPosts');
+    const scheduledPostsEnabled = observeScheduledPostEnabled(database);
 
     return {
         lastChannelId,

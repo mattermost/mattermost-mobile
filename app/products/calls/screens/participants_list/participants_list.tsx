@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {BottomSheetFlatList} from '@gorhom/bottom-sheet';
+import {BottomSheetFlashList} from '@gorhom/bottom-sheet';
+import {FlashList, type ListRenderItemInfo} from '@shopify/flash-list';
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {type ListRenderItemInfo, Text, TouchableOpacity, useWindowDimensions, View} from 'react-native';
-import {FlatList} from 'react-native-gesture-handler';
+import {Text, TouchableOpacity, useWindowDimensions, View} from 'react-native';
 
 import {hostMuteOthers} from '@calls/actions/calls';
 import {useHostControlsAvailable, useHostMenus} from '@calls/hooks';
@@ -16,7 +16,6 @@ import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
-import {useBottomSheetListsFix} from '@hooks/bottom_sheet_lists_fix';
 import {useIsTablet} from '@hooks/device';
 import BottomSheet from '@screens/bottom_sheet';
 import {bottomSheetSnapPoint} from '@utils/helpers';
@@ -81,8 +80,7 @@ export const ParticipantsList = ({
     const hostControlsAvailable = useHostControlsAvailable();
     const {height} = useWindowDimensions();
     const isTablet = useIsTablet();
-    const {enabled, panResponder} = useBottomSheetListsFix();
-    const List = useMemo(() => (isTablet ? FlatList : BottomSheetFlatList), [isTablet]);
+    const List = useMemo(() => (isTablet ? FlashList : BottomSheetFlashList), [isTablet]);
     const styles = getStyleSheet(theme);
 
     const sessions = sortSessions(intl.locale, teammateNameDisplay, sessionsDict);
@@ -139,9 +137,7 @@ export const ParticipantsList = ({
                 <List
                     data={sessions}
                     renderItem={renderItem}
-                    overScrollMode={'auto'}
-                    scrollEnabled={enabled}
-                    {...panResponder.panHandlers}
+                    estimatedItemSize={ROW_HEIGHT}
                 />
             </>
         );

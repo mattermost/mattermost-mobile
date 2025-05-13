@@ -50,7 +50,7 @@ describe('ChannelBanner', () => {
             });
         });
 
-        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: License.SKU_SHORT_NAME.Premium}}], prepareRecordsOnly: false});
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: License.SKU_SHORT_NAME.EnterpriseAdvanced}}], prepareRecordsOnly: false});
     });
 
     it('renders correctly with valid props', () => {

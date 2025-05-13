@@ -25,6 +25,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Create Direct Message', () => {
@@ -87,10 +88,12 @@ describe('Channels - Create Direct Message', () => {
         await CreateDirectMessageScreen.getUserItem(newUser.id).tap();
 
         // * Verify the new user is selected
-        await expect(CreateDirectMessageScreen.getSelectedUserDisplayName(newUser.id)).toBeVisible();
+        await expect(CreateDirectMessageScreen.getSelectedDMUserDisplayName(newUser.id)).toBeVisible();
 
         // # Tap on start button
         await CreateDirectMessageScreen.startButton.tap();
+        await waitFor(ChannelScreen.scheduledPostTooltipCloseButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await ChannelScreen.scheduledPostTooltipCloseButton.tap();
 
         // * Verify on direct message channel screen for the new user
         await ChannelScreen.toBeVisible();
@@ -123,17 +126,21 @@ describe('Channels - Create Direct Message', () => {
         // # Open create direct message screen, search for the first new user and tap on the first new user item
         await CreateDirectMessageScreen.open();
         await CreateDirectMessageScreen.searchInput.replaceText(firstNewUser.username);
+        await CreateDirectMessageScreen.searchInput.tapReturnKey();
+        await wait(timeouts.ONE_SEC);
         await CreateDirectMessageScreen.getUserItem(firstNewUser.id).tap();
 
         // * Verify the first new user is selected
-        await expect(CreateDirectMessageScreen.getSelectedUserDisplayName(firstNewUser.id)).toBeVisible();
+        await expect(CreateDirectMessageScreen.getSelectedDMUserDisplayName(firstNewUser.id)).toBeVisible();
 
         // # Search for the second new user and tap on the second new user item
         await CreateDirectMessageScreen.searchInput.replaceText(secondNewUser.username);
+        await CreateDirectMessageScreen.searchInput.tapReturnKey();
+        await wait(timeouts.ONE_SEC);
         await CreateDirectMessageScreen.getUserItem(secondNewUser.id).tap();
 
         // * Verify the second new user is selected
-        await expect(CreateDirectMessageScreen.getSelectedUserDisplayName(secondNewUser.id)).toBeVisible();
+        await expect(CreateDirectMessageScreen.getSelectedDMUserDisplayName(secondNewUser.id)).toBeVisible();
 
         // # Tap on start button
         await CreateDirectMessageScreen.startButton.tap();
@@ -154,10 +161,43 @@ describe('Channels - Create Direct Message', () => {
         const searchTerm = 'blahblahblahblah';
         await CreateDirectMessageScreen.open();
         await CreateDirectMessageScreen.searchInput.replaceText(searchTerm);
+        await CreateDirectMessageScreen.searchInput.tapReturnKey();
+        await wait(timeouts.ONE_SEC);
 
         // * Verify empty search state for create direct message
         await expect(element(by.text(`No matches found for “${searchTerm}”`))).toBeVisible();
         await expect(element(by.text('Check the spelling or try another search.'))).toBeVisible();
+
+        // # Go back to channel list screen
+        await CreateDirectMessageScreen.close();
+    });
+
+    it('MM-T63374 - should not display deactivated users in the create direct message screen', async () => {
+        // # As admin, create a new user to test with
+        const {user: deactivatedUser} = await User.apiCreateUser(siteOneUrl);
+        await Team.apiAddUserToTeam(siteOneUrl, deactivatedUser.id, testTeam.id);
+
+        // # Open create direct message screen and verify we can find the user
+        await CreateDirectMessageScreen.open();
+        await CreateDirectMessageScreen.searchInput.replaceText(deactivatedUser.username);
+        await wait(timeouts.ONE_SEC);
+
+        // * Verify the new user appears in search results before deactivation
+        await expect(CreateDirectMessageScreen.getUserItemDisplayName(deactivatedUser.id)).toBeVisible();
+
+        // # Close the create direct message screen
+        await CreateDirectMessageScreen.close();
+
+        // # Deactivate the user
+        await User.apiDeactivateUser(siteOneUrl, deactivatedUser.id);
+
+        // # Open create direct message screen again and search for the deactivated user
+        await CreateDirectMessageScreen.open();
+        await CreateDirectMessageScreen.searchInput.replaceText(deactivatedUser.username);
+        await wait(timeouts.ONE_SEC);
+
+        // * Verify the deactivated user does not appear in search results
+        await expect(element(by.text(`No matches found for “${deactivatedUser.username}”`))).toBeVisible();
 
         // # Go back to channel list screen
         await CreateDirectMessageScreen.close();

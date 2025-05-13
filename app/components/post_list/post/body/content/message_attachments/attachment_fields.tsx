@@ -8,13 +8,14 @@ import Markdown from '@components/markdown';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {MarkdownBlockStyles, MarkdownTextStyles} from '@typings/global/markdown';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     baseTextStyle: StyleProp<TextStyle>;
     blockStyles?: MarkdownBlockStyles;
     channelId: string;
     fields: MessageAttachmentField[];
-    location: string;
+    location: AvailableScreens;
     metadata?: PostMetadata | null;
     textStyles?: MarkdownTextStyles;
     theme: Theme;

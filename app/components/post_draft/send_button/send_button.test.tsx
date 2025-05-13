@@ -9,11 +9,12 @@ import {SendButton} from '@components/post_draft/send_button/send_button';
 import {fireEvent, renderWithIntl} from '@test/intl-test-helper';
 
 describe('components/post_draft/send_button', () => {
-    const baseProps = {
+    const baseProps: Parameters<typeof SendButton>[0] = {
         disabled: false,
         sendMessage: jest.fn(),
         testID: 'test_id',
         showScheduledPostOptions: jest.fn(),
+        scheduledPostEnabled: true,
         scheduledPostFeatureTooltipWatched: true,
     };
 
@@ -136,6 +137,24 @@ describe('components/post_draft/send_button', () => {
 
         act(() => {
             expect(queryByText(text)).toBeTruthy();
+        });
+    });
+
+    it('should not show the tooltip if the scheduled post feature is disabled', async () => {
+        const handle = InteractionManager.createInteractionHandle();
+        const props = {...baseProps, scheduledPostFeatureTooltipWatched: false, scheduledPostEnabled: false};
+        const {queryByText} = renderWithIntl(
+            <SendButton
+                {...props}
+            />,
+        );
+        const text = 'Type a message and long press the send button to schedule it for a later time.';
+
+        InteractionManager.clearInteractionHandle(handle);
+        await new Promise((resolve) => setImmediate(resolve));
+
+        act(() => {
+            expect(queryByText(text)).toBeFalsy();
         });
     });
 });

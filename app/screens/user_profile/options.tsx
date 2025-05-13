@@ -15,10 +15,12 @@ import {useTheme} from '@context/theme';
 import {dismissBottomSheet} from '@screens/navigation';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 export type OptionsType = 'all' | 'message';
 
 type Props = {
-    location: string;
+    location?: AvailableScreens;
     type: OptionsType;
     userId: string;
     username: string;

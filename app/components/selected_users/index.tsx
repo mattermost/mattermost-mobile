@@ -198,7 +198,7 @@ export default function SelectedUsers({
             USERS_CHIPS_MAX_HEIGHT,
             e.nativeEvent.layout.height,
         );
-    }, []);
+    }, [usersChipsHeight]);
 
     const androidMaxHeight = Platform.select({
         android: {
@@ -271,7 +271,6 @@ export default function SelectedUsers({
                         onPress={handlePress}
                         iconName={buttonIcon}
                         text={buttonText}
-                        iconSize={20}
                         theme={theme}
                         buttonType={isDisabled ? 'disabled' : 'default'}
                         emphasis={'primary'}
