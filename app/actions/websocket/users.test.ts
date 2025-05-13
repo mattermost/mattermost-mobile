@@ -469,10 +469,9 @@ describe('WebSocket Users Actions', () => {
         });
 
         it('should handle custom profile field deletion', async () => {
-            const mockHandleCustomProfileFields = jest.
-                fn().
-                mockResolvedValue([]);
-            operator.handleCustomProfileFields = mockHandleCustomProfileFields;
+
+            // Add explicit mock setup for deleteCustomProfileAttributesByFieldId
+            jest.mocked(deleteCustomProfileAttributesByFieldId).mockResolvedValue();
 
             const mockDate = 1635812400000; // Nov 1, 2021
             jest.spyOn(Date, 'now').mockReturnValue(mockDate);
@@ -488,23 +487,6 @@ describe('WebSocket Users Actions', () => {
                 msg,
             );
 
-            expect(mockHandleCustomProfileFields).toHaveBeenCalledWith({
-                fields: [
-                    {
-                        id: 'field1',
-                        group_id: '',
-                        name: '',
-                        type: '',
-                        target_id: '',
-                        target_type: '',
-                        create_at: 0,
-                        update_at: 0,
-                        delete_at: mockDate,
-                        attrs: {},
-                    },
-                ],
-                prepareRecordsOnly: false,
-            });
             expect(deleteCustomProfileAttributesByFieldId).toHaveBeenCalledWith(
                 operator.database,
                 'field1',
@@ -515,8 +497,7 @@ describe('WebSocket Users Actions', () => {
             jest.spyOn(logUtils, 'logError').mockImplementation(() => {});
             operator.handleCustomProfileFields = jest.fn().mockRejectedValue(new Error('test error'));
 
-            // Even if the first try/catch block fails, the code still calls deleteCustomProfileAttributesByFieldId
-            // in the second try/catch block
+            jest.mocked(deleteCustomProfileAttributesByFieldId).mockResolvedValue();
 
             const msg = {
                 data: {
@@ -528,17 +509,13 @@ describe('WebSocket Users Actions', () => {
 
             expect(logUtils.logError).toHaveBeenCalled();
 
-            expect(deleteCustomProfileAttributesByFieldId).toHaveBeenCalled();
+            expect(deleteCustomProfileAttributesByFieldId).not.toHaveBeenCalled();
         });
 
         it('should handle errors during attributes deletion', async () => {
             jest.spyOn(logUtils, 'logError').mockImplementation(() => {});
-            operator.handleCustomProfileFields = jest.
-                fn().
-                mockResolvedValue([]);
-            jest.mocked(
-                deleteCustomProfileAttributesByFieldId,
-            ).mockRejectedValue(new Error('test error'));
+
+            jest.mocked(deleteCustomProfileAttributesByFieldId).mockRejectedValue(new Error('test error'));
 
             const msg = {
                 data: {
