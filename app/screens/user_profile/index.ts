@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
-import {of as of$, combineLatest} from 'rxjs';
+import {of as of$, combineLatest, from} from 'rxjs';
 import {map, switchMap} from 'rxjs/operators';
 
 import {General, Permissions, Preferences} from '@constants';
@@ -59,8 +59,7 @@ const enhanced = withObservables([], ({channelId, database, userId}: EnhancedPro
             if (!enabled || !attributes?.length) {
                 return of$({} as CustomAttributeSet);
             }
-
-            return of$(convertProfileAttributesToCustomAttributes(database, attributes, sortCustomProfileAttributes));
+            return from(convertProfileAttributesToCustomAttributes(database, attributes, sortCustomProfileAttributes));
         }),
         switchMap((converted) => of$(convertToAttributesMap(converted))),
     );

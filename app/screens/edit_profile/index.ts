@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
-import {of as of$, combineLatest} from 'rxjs';
+import {of as of$, combineLatest, from} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {observeCustomProfileAttributesByUserId, observeCustomProfileFields, convertProfileAttributesToCustomAttributes} from '@queries/servers/custom_profile';
@@ -43,7 +43,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
                     return of$({} as CustomAttributeSet);
                 }
 
-                return of$(convertProfileAttributesToCustomAttributes(database, attributes, sortCustomProfileAttributes));
+                return from(convertProfileAttributesToCustomAttributes(database, attributes, sortCustomProfileAttributes));
             }),
             switchMap((converted) => of$(convertToAttributesMap(converted))),
         );
