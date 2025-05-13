@@ -11,7 +11,6 @@ import DatabaseManager from '@database/manager';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import WebsocketManager from '@managers/websocket_manager';
 import {queryChannelsByTypes, queryUserChannelsByTypes} from '@queries/servers/channel';
-import {deleteCustomProfileAttributesByFieldId} from '@queries/servers/custom_profile';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {getConfig, getLicense} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
@@ -198,12 +197,6 @@ export async function handleCustomProfileAttributesFieldDeletedEvent(serverUrl: 
             });
         } catch (error) {
             logError('Error handling custom profile field deleted event', error);
-        }
-        try {
-            // Also delete any attributes associated with this field
-            await deleteCustomProfileAttributesByFieldId(operator.database, field_id);
-        } catch (error) {
-            logError('Error handling related attributes to a custom profile field deleted event', error);
         }
     } catch (error) {
         logError('Error getting the operator for the custom profile field deleted event', error);

@@ -413,9 +413,9 @@ export const sortCustomProfileAttributes = (a: CustomAttribute, b: CustomAttribu
  * @param attributesToConvert - The array of custom profile attributes to convert
  * @returns A map of attributes by their id
  */
-export const convertToAttributesMap = (attributesToConvert: any): CustomAttributeSet => {
+export const convertToAttributesMap = (attributesToConvert: CustomAttributeSet | Promise<CustomAttribute[]>): CustomAttributeSet => {
     if (!Array.isArray(attributesToConvert)) {
-        return {} as CustomAttributeSet;
+        return attributesToConvert as CustomAttributeSet;
     }
     const attributesMap: CustomAttributeSet = {};
     attributesToConvert.forEach((attr) => {

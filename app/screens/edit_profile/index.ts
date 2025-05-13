@@ -26,24 +26,28 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const samlLastNameAttributeSet = observeConfigBooleanValue(database, 'SamlLastNameAttributeSet');
     const samlNicknameAttributeSet = observeConfigBooleanValue(database, 'SamlNicknameAttributeSet');
     const samlPositionAttributeSet = observeConfigBooleanValue(database, 'SamlPositionAttributeSet');
+    const customAttributesEnabled = observeConfigBooleanValue(database, 'FeatureFlagCustomProfileAttributes');
 
     const rawCustomAttributes = currentUser.pipe(
         switchMap((u) => (u ? observeCustomProfileAttributesByUserId(database, u.id) : of$([]))),
     );
+    let formattedCustomAttributes;
+    let customFields;
+    if (customAttributesEnabled) {
+        customFields = observeCustomProfileFields(database);
 
-    const customFields = observeCustomProfileFields(database);
+        // Convert attributes to the format expected by the component
+        formattedCustomAttributes = combineLatest([rawCustomAttributes, customFields]).pipe(
+            switchMap(([attributes]) => {
+                if (!attributes?.length) {
+                    return of$({} as CustomAttributeSet);
+                }
 
-    // Convert attributes to the format expected by the component
-    const formattedCustomAttributes = combineLatest([rawCustomAttributes, customFields]).pipe(
-        switchMap(([attributes]) => {
-            if (!attributes?.length) {
-                return of$({} as CustomAttributeSet);
-            }
-
-            return of$(convertProfileAttributesToCustomAttributes(database, attributes, sortCustomProfileAttributes));
-        }),
-        switchMap((converted) => of$(convertToAttributesMap(converted))),
-    );
+                return of$(convertProfileAttributesToCustomAttributes(database, attributes, sortCustomProfileAttributes));
+            }),
+            switchMap((converted) => of$(convertToAttributesMap(converted))),
+        );
+    }
 
     return {
         currentUser,
