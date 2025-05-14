@@ -728,6 +728,7 @@
   "mobile.markdown.code.plusMoreLines": "+{count, number} meer {count, plural, one {line} other {lines}}",
   "mobile.markdown.copy_header": "Hoofding kopiëren",
   "mobile.markdown.image.too_large": "Afbeelding overschrijdt de maximumgrootte van {maxWidth} op {maxHeight}:",
+  "mobile.markdown.link.copy_email": "E-mailadres kopiëren",
   "mobile.markdown.link.copy_url": "Kopieer URL",
   "mobile.mention.copy_mention": "Kopieer vermelding",
   "mobile.message_length.message": "Je huidige bericht is te lang. Huidige aantal tekens: {count}/{max}",
