@@ -347,6 +347,7 @@ export default function ManageChannelMembers({
                 tutorialWatched={tutorialWatched}
                 includeUserMargin={true}
                 fetchMore={handleReachedBottom}
+                location={Screens.MANAGE_CHANNEL_MEMBERS}
             />
         </SafeAreaView>
     );

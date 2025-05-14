@@ -7,6 +7,7 @@ import {View} from 'react-native';
 
 import {sendTestNotification} from '@actions/remote/notifications';
 import SectionNotice from '@components/section_notice';
+import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useExternalLink} from '@hooks/use_external_link';
 import {isMinimumServerVersion} from '@utils/helpers';
@@ -131,6 +132,7 @@ const SendTestNotificationNotice = ({
                 primaryButton={primaryButton}
                 secondaryButton={secondaryButton}
                 type='hint'
+                location={Screens.SETTINGS_NOTIFICATION_PUSH}
             />
         </View>
     );

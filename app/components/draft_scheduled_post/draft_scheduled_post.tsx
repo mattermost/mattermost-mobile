@@ -23,10 +23,11 @@ import type ChannelModel from '@typings/database/models/servers/channel';
 import type DraftModel from '@typings/database/models/servers/draft';
 import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 import type UserModel from '@typings/database/models/servers/user';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     channel: ChannelModel;
-    location: string;
+    location: AvailableScreens;
     postReceiverUser?: UserModel;
     post: DraftModel | ScheduledPostModel;
     layoutWidth: number;

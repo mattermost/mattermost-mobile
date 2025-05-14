@@ -14,7 +14,7 @@ import Loading from '@components/loading';
 import Search from '@components/search';
 import SelectedUsers from '@components/selected_users';
 import ServerUserList from '@components/server_user_list';
-import {General} from '@constants';
+import {General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useAccessControlAttributes} from '@hooks/access_control_attributes';
@@ -304,6 +304,7 @@ export default function ChannelAddMembers({
                 fetchFunction={userFetchFunction}
                 searchFunction={userSearchFunction}
                 createFilter={createUserFilter}
+                location={Screens.CHANNEL_ADD_MEMBERS}
             />
             <SelectedUsers
                 keyboardOverlap={keyboardOverlap}

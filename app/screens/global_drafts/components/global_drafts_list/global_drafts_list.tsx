@@ -17,10 +17,11 @@ import DraftAndScheduledPostSwipeActions from '../draft_and_scheduled_post_swipe
 import DraftEmptyComponent from '../draft_empty_component';
 
 import type DraftModel from '@typings/database/models/servers/draft';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     allDrafts: DraftModel[];
-    location: string;
+    location: AvailableScreens;
     tutorialWatched: boolean;
 }
 
