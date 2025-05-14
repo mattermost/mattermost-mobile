@@ -3,7 +3,7 @@
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 
-import {SendButton} from '@components/post_draft/send_button/send_button';
+import SendButton from '@components/post_draft/send_button/send_button';
 import {Tutorial} from '@constants';
 import {observeTutorialWatched} from '@queries/app/global';
 

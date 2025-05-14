@@ -50,13 +50,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-export function SendButton({
+const SendButton: React.FC<Props> = ({
     testID,
     disabled,
     sendMessage,
     showScheduledPostOptions,
     scheduledPostFeatureTooltipWatched,
-}: Props) {
+}) => {
     const theme = useTheme();
     const sendButtonTestID = `${testID}.send.button` + (disabled ? '.disabled' : '');
     const style = getStyleSheet(theme);
@@ -114,4 +114,6 @@ export function SendButton({
             </Tooltip>
         </TouchableWithFeedback>
     );
-}
+};
+
+export default SendButton;
