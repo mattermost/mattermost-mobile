@@ -1,0 +1,132 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+
+import React from 'react';
+
+import {storeGlobal} from '@actions/app/global';
+import {ActionType, Tutorial} from '@constants';
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
+import DatabaseManager from '@database/manager';
+import {act, renderWithEverything, waitFor} from '@test/intl-test-helper';
+import TestHelper from '@test/test_helper';
+
+import GlobalScheduledPostList from './global_scheduled_post_list';
+
+import EnhancedGlobalScheduledPostList from './index';
+
+import type ServerDataOperator from '@database/operator/server_data_operator';
+import type {Database} from '@nozbe/watermelondb';
+
+jest.mock('./global_scheduled_post_list', () => ({
+    __esModule: true,
+    default: jest.fn(),
+}));
+
+jest.mocked(GlobalScheduledPostList).mockImplementation((props) => React.createElement('GlobalScheduledPostList', {...props, testID: 'global-scheduled-post-list'}));
+
+describe('GlobalScheduledPostList', () => {
+    const serverUrl = 'server-1';
+    const teamId = 'team1';
+    let database: Database;
+    let operator: ServerDataOperator;
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        const serverDatabaseAndOperator = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        database = serverDatabaseAndOperator.database;
+        operator = serverDatabaseAndOperator.operator;
+
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
+        await operator.handleTeam({teams: [TestHelper.fakeTeam({id: teamId})], prepareRecordsOnly: false});
+        await operator.handleConfigs({
+            configs: [
+                {id: 'Version', value: '7.6.0'},
+            ],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('should return empty array is there is no scheduled post', async () => {
+        const {getByTestId} = renderWithEverything(
+            <EnhancedGlobalScheduledPostList
+                location={'location'}
+            />,
+            {database},
+        );
+
+        const globalScheduledPostList = getByTestId('global-scheduled-post-list');
+        expect(globalScheduledPostList.props.allScheduledPosts).toStrictEqual([]);
+    });
+
+    it('should show scheduled post when one exists', async () => {
+        const {getByTestId} = renderWithEverything(
+            <EnhancedGlobalScheduledPostList
+                location={'location'}
+            />,
+            {database},
+        );
+
+        const globalScheduledPostList = getByTestId('global-scheduled-post-list');
+        expect(globalScheduledPostList.props.allScheduledPosts).toStrictEqual([]);
+
+        const channelId = 'channel1';
+        await operator.handleChannel({
+            channels: [TestHelper.fakeChannel({id: channelId, team_id: teamId})],
+            prepareRecordsOnly: false,
+        });
+
+        const scheduledPosts = [TestHelper.fakeScheduledPost({
+            message: 'test message',
+            files: [],
+            channel_id: channelId,
+        })];
+
+        await act(async () => {
+            await operator.handleScheduledPosts({
+                actionType: ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST,
+                scheduledPosts,
+                includeDirectChannelPosts: false,
+                prepareRecordsOnly: false,
+            });
+        });
+
+        await waitFor(() => {
+            const updatedGlobalScheduledPostList = getByTestId('global-scheduled-post-list');
+            expect(updatedGlobalScheduledPostList.props.allScheduledPosts).toHaveLength(1);
+            expect(updatedGlobalScheduledPostList.props.allScheduledPosts[0].id).toStrictEqual(scheduledPosts[0].id);
+        });
+    });
+
+    it('tutorial watched should be false if not watched', async () => {
+        const {getByTestId} = renderWithEverything(
+            <EnhancedGlobalScheduledPostList
+                location={'location'}
+            />,
+            {database},
+        );
+
+        const globalScheduledPostList = getByTestId('global-scheduled-post-list');
+        expect(globalScheduledPostList.props.tutorialWatched).toBe(false);
+    });
+
+    it('tutorial watched should be true if watched', async () => {
+        const {getByTestId} = renderWithEverything(
+            <EnhancedGlobalScheduledPostList
+                location={'location'}
+            />,
+            {database},
+        );
+
+        await storeGlobal(Tutorial.SCHEDULED_POSTS_LIST, 'true', false);
+
+        await waitFor(() => {
+            const globalScheduledPostList = getByTestId('global-scheduled-post-list');
+            expect(globalScheduledPostList.props.tutorialWatched).toBe(true);
+        });
+    });
+});
