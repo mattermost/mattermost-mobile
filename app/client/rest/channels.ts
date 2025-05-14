@@ -36,6 +36,7 @@ export interface ClientChannelsMix {
     removeFromChannel: (userId: string, channelId: string) => Promise<any>;
     getChannelStats: (channelId: string, groupLabel?: RequestGroupLabel) => Promise<ChannelStats>;
     getChannelMemberCountsByGroup: (channelId: string, includeTimezones: boolean) => Promise<ChannelMemberCountByGroup[]>;
+    getChannelAccessControlAttributes: (channelId: string) => Promise<ChannelAccessControlAttributes>;
     viewMyChannel: (channelId: string, prevChannelId?: string, groupLabel?: RequestGroupLabel) => Promise<any>;
     autocompleteChannels: (teamId: string, name: string) => Promise<Channel[]>;
     autocompleteChannelsForSearch: (teamId: string, name: string) => Promise<Channel[]>;
@@ -283,6 +284,13 @@ const ClientChannels = <TBase extends Constructor<ClientBase>>(superclass: TBase
     getChannelMemberCountsByGroup = async (channelId: string, includeTimezones: boolean) => {
         return this.doFetch(
             `${this.getChannelRoute(channelId)}/member_counts_by_group?include_timezones=${includeTimezones}`,
+            {method: 'get'},
+        );
+    };
+
+    getChannelAccessControlAttributes = async (channelId: string) => {
+        return this.doFetch(
+            `${this.getChannelRoute(channelId)}/access_control/attributes`,
             {method: 'get'},
         );
     };

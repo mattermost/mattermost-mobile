@@ -37,6 +37,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         tutorialWatched: observeTutorialWatched(Tutorial.PROFILE_LONG_PRESS),
         canChangeMemberRoles,
         teammateDisplayNameSetting,
+        channel: currentChannel,
     };
 });
 
