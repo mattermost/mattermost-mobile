@@ -17,7 +17,7 @@ export default schemaMigrations({migrations: [
             addColumns({
                 table: CHANNEL,
                 columns: [
-                    {name: 'policy_enforced', type: 'boolean', isOptional: true},
+                    {name: 'abac_policy_enforced', type: 'boolean', isOptional: true},
                 ],
             }),
         ],
