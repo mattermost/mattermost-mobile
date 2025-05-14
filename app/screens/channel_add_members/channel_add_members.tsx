@@ -138,7 +138,7 @@ export default function ChannelAddMembers({
     const [showBanner, setShowBanner] = useState(true);
 
     // Use the hook to fetch access control attributes
-    const {attributeTags} = useAccessControlAttributes('channel', channel?.id, channel?.policyEnforced);
+    const {attributeTags} = useAccessControlAttributes('channel', channel?.id, channel?.abacPolicyEnforced);
 
     const clearSearch = useCallback(() => {
         setTerm('');
@@ -264,7 +264,7 @@ export default function ChannelAddMembers({
             edges={['top', 'left', 'right']}
             nativeID={SecurityManager.getShieldScreenId(componentId)}
         >
-            {showBanner && channel?.policyEnforced && (
+            {showBanner && channel?.abacPolicyEnforced && (
                 <AlertBanner
                     type='info'
                     message={formatMessage({

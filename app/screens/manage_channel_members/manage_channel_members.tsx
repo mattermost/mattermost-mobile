@@ -94,7 +94,7 @@ export default function ManageChannelMembers({
     const pageRef = useRef(0);
 
     // Use the hook to fetch access control attributes
-    const {attributeTags} = useAccessControlAttributes('channel', channelId, channelProp?.policyEnforced);
+    const {attributeTags} = useAccessControlAttributes('channel', channelId, channelProp?.abacPolicyEnforced);
 
     const [isManageMode, setIsManageMode] = useState(false);
     const [profiles, setProfiles] = useState<UserProfile[]>(EMPTY);
@@ -303,7 +303,7 @@ export default function ManageChannelMembers({
             nativeID={SecurityManager.getShieldScreenId(componentId)}
         >
             {/* or if the channel has abac_policy_enforced=true */}
-            {channelProp?.policyEnforced === true && (
+            {channelProp?.abacPolicyEnforced === true && (
                 <AlertBanner
                     type='info'
                     message={formatMessage({
