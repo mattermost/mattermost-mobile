@@ -16,8 +16,6 @@ import {typography} from '@utils/typography';
 
 import Tag from './tag';
 
-type GestureResponderEvent = import('react-native').GestureResponderEvent;
-
 type AlertBannerProps = {
     type: 'info' | 'warning' | 'error';
     message: string;
@@ -117,8 +115,7 @@ const AlertBanner = ({
     const styles = getStyleFromTheme(theme);
     const iconName = iconByType[type];
 
-    const handleDismiss = useCallback((e: GestureResponderEvent) => {
-        e.stopPropagation();
+    const handleDismiss = useCallback(() => {
         if (onDismiss) {
             onDismiss();
         }
