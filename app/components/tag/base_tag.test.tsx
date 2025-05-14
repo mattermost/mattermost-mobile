@@ -33,17 +33,17 @@ describe('Tag', () => {
                 testID='test-tag'
             />,
         );
-        expect(queryByTestId('test-tag.icon')).not.toBeDefined();
+        expect(queryByTestId('test-tag.icon')).toBeNull();
     });
 
     it('should render uppercase correctly', () => {
-        const {getByText, queryByText} = renderWithIntlAndTheme(
+        const {getByText} = renderWithIntlAndTheme(
             <Tag
                 {...defaultProps}
                 uppercase={true}
             />,
         );
-        expect(getByText('TEST TAG')).toBeDefined();
-        expect(queryByText('Test Tag')).not.toBeDefined();
+        expect(getByText('Test Tag')).toBeDefined();
+        expect(getByText('Test Tag')).toHaveStyle({textTransform: 'uppercase'});
     });
 });
