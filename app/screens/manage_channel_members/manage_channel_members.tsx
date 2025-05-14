@@ -9,13 +9,11 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {fetchChannelMemberships} from '@actions/remote/channel';
 import {fetchUsersByIds, searchProfiles} from '@actions/remote/user';
 import {PER_PAGE_DEFAULT} from '@client/rest/constants';
-import AlertBanner from '@components/alert_banner';
 import Search from '@components/search';
 import UserList from '@components/user_list';
 import {Events, General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {useAccessControlAttributes} from '@hooks/access_control_attributes';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import SecurityManager from '@managers/security_manager';
@@ -25,7 +23,6 @@ import {showRemoveChannelUserSnackbar} from '@utils/snack_bar';
 import {changeOpacity, getKeyboardAppearanceFromTheme} from '@utils/theme';
 import {displayUsername, filterProfilesMatchingTerm} from '@utils/user';
 
-import type ChannelModel from '@typings/database/models/servers/channel';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
@@ -36,7 +33,6 @@ type Props = {
     currentUserId: string;
     tutorialWatched: boolean;
     teammateDisplayNameSetting: string;
-    channel?: ChannelModel;
 }
 
 const styles = StyleSheet.create({
@@ -82,7 +78,6 @@ export default function ManageChannelMembers({
     currentUserId,
     tutorialWatched,
     teammateDisplayNameSetting,
-    channel: channelProp,
 }: Props) {
     const serverUrl = useServerUrl();
     const theme = useTheme();
@@ -92,9 +87,6 @@ export default function ManageChannelMembers({
     const mounted = useRef(false);
     const hasMoreProfiles = useRef(true);
     const pageRef = useRef(0);
-
-    // Use the hook to fetch access control attributes
-    const {attributeTags} = useAccessControlAttributes('channel', channelId, channelProp?.abacPolicyEnforced);
 
     const [isManageMode, setIsManageMode] = useState(false);
     const [profiles, setProfiles] = useState<UserProfile[]>(EMPTY);
@@ -302,22 +294,6 @@ export default function ManageChannelMembers({
             testID='manage_members.screen'
             nativeID={SecurityManager.getShieldScreenId(componentId)}
         >
-            {/* or if the channel has abac_policy_enforced=true */}
-            {channelProp?.abacPolicyEnforced === true && (
-                <AlertBanner
-                    type='info'
-                    message={formatMessage({
-                        id: 'channel.abac_policy_enforced.title',
-                        defaultMessage: 'Channel access is restricted by user attributes',
-                    })}
-                    description={formatMessage({
-                        id: 'channel.abac_policy_enforced.description',
-                        defaultMessage: 'Only people who match the specified access rules can be selected and added to this channel.',
-                    })}
-                    tags={attributeTags.length > 0 ? attributeTags : undefined}
-                    testID='manage_members.alert_banner'
-                />
-            )}
             <View style={styles.searchBar}>
                 <Search
                     autoCapitalize='none'
