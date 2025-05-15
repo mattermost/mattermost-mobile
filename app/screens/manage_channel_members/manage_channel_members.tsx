@@ -9,8 +9,8 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {fetchChannelMemberships} from '@actions/remote/channel';
 import {fetchUsersByIds, searchProfiles} from '@actions/remote/user';
 import {PER_PAGE_DEFAULT} from '@client/rest/constants';
-import AlertBanner from '@components/alert_banner';
 import Search from '@components/search';
+import SectionNotice from '@components/section_notice';
 import UserList from '@components/user_list';
 import {Events, General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
@@ -73,6 +73,7 @@ const EMPTY_MEMBERS: ChannelMembership[] = [];
 const EMPTY_IDS = {};
 const {USER_PROFILE} = Screens;
 const CLOSE_BUTTON_ID = 'close-user-profile';
+const TEST_ID = 'manage_members';
 
 export default function ManageChannelMembers({
     canManageAndRemoveMembers,
@@ -183,7 +184,7 @@ export default function ManageChannelMembers({
                 enabled: true,
                 id: MANAGE_BUTTON,
                 showAsAction: 'always',
-                testID: 'manage_members.button',
+                testID: `${TEST_ID}.button`,
                 text: formatMessage(manage ? messages.button_done : messages.button_manage),
             }],
         });
@@ -299,23 +300,20 @@ export default function ManageChannelMembers({
     return (
         <SafeAreaView
             style={styles.container}
-            testID='manage_members.screen'
+            testID={`${TEST_ID}.screen`}
             nativeID={SecurityManager.getShieldScreenId(componentId)}
         >
             {/* or if the channel has abac_policy_enforced=true */}
             {channelProp?.abacPolicyEnforced === true && (
-                <AlertBanner
+                <SectionNotice
                     type='info'
-                    message={formatMessage({
+                    title={formatMessage({
                         id: 'channel.abac_policy_enforced.title',
                         defaultMessage: 'Channel access is restricted by user attributes',
                     })}
-                    description={formatMessage({
-                        id: 'channel.abac_policy_enforced.description',
-                        defaultMessage: 'Only people who match the specified access rules can be selected and added to this channel.',
-                    })}
                     tags={attributeTags.length > 0 ? attributeTags : undefined}
-                    testID='manage_members.alert_banner'
+                    location={Screens.MANAGE_CHANNEL_MEMBERS}
+                    testID={`${TEST_ID}.abac_alert_banner`}
                 />
             )}
             <View style={styles.searchBar}>
@@ -328,7 +326,7 @@ export default function ManageChannelMembers({
                     onSubmitEditing={search}
                     placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                     placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                    testID='manage_members.search_bar'
+                    testID={`${TEST_ID}.search_bar`}
                     value={term}
                 />
             </View>
@@ -343,7 +341,7 @@ export default function ManageChannelMembers({
                 showManageMode={canManageAndRemoveMembers && isManageMode}
                 showNoResults={!loading}
                 term={searchedTerm}
-                testID='manage_members.user_list'
+                testID={`${TEST_ID}.user_list`}
                 tutorialWatched={tutorialWatched}
                 includeUserMargin={true}
                 fetchMore={handleReachedBottom}

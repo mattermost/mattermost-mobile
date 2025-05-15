@@ -17,6 +17,7 @@ type TagProps = {
     style?: StyleProp<ViewStyle>;
     testID?: string;
     textStyle?: StyleProp<TextStyle>;
+    isAbacTag?: boolean;
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
@@ -37,6 +38,21 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
         title: {
             backgroundColor: changeOpacity(theme.sidebarHeaderTextColor, 0.15),
             color: changeOpacity(theme.sidebarHeaderTextColor, 0.6),
+        },
+
+        // Special styles for ABAC tags
+        abacTagContainer: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
+            borderWidth: 0,
+            borderRadius: 6,
+            paddingVertical: 4,
+            paddingHorizontal: 8,
+            marginRight: 4,
+        },
+        abacTagText: {
+            color: theme.centerChannelColor,
+            fontSize: 12,
+            textTransform: 'none',
         },
     };
 });
@@ -67,7 +83,7 @@ export function GuestTag(props: Omit<TagProps, 'id' | 'defaultMessage'>) {
     );
 }
 
-const Tag = ({id, defaultMessage, inTitle, show = true, style, testID, textStyle}: TagProps) => {
+const Tag = ({id, defaultMessage, inTitle, show = true, style, testID, textStyle, isAbacTag}: TagProps) => {
     const theme = useTheme();
 
     if (!show) {
@@ -77,11 +93,22 @@ const Tag = ({id, defaultMessage, inTitle, show = true, style, testID, textStyle
     const styles = getStyleFromTheme(theme);
 
     return (
-        <View style={[styles.container, style]}>
+        <View
+            style={[
+                styles.container,
+                isAbacTag && styles.abacTagContainer,
+                style,
+            ]}
+        >
             <FormattedText
                 id={id}
                 defaultMessage={defaultMessage}
-                style={[styles.text, inTitle ? styles.title : null, textStyle]}
+                style={[
+                    styles.text,
+                    inTitle ? styles.title : null,
+                    isAbacTag && styles.abacTagText,
+                    textStyle,
+                ]}
                 testID={testID}
             />
         </View>

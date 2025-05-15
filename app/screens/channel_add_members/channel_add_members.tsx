@@ -8,10 +8,10 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {addMembersToChannel} from '@actions/remote/channel';
 import {fetchProfilesNotInChannel, searchProfiles} from '@actions/remote/user';
-import AlertBanner from '@components/alert_banner';
 import CompassIcon from '@components/compass_icon';
 import Loading from '@components/loading';
 import Search from '@components/search';
+import SectionNotice from '@components/section_notice';
 import SelectedUsers from '@components/selected_users';
 import ServerUserList from '@components/server_user_list';
 import {General, Screens} from '@constants';
@@ -265,20 +265,21 @@ export default function ChannelAddMembers({
             nativeID={SecurityManager.getShieldScreenId(componentId)}
         >
             {showBanner && channel?.abacPolicyEnforced && (
-                <AlertBanner
+                <SectionNotice
                     type='info'
-                    message={formatMessage({
+                    title={formatMessage({
                         id: 'channel.abac_policy_enforced.title',
                         defaultMessage: 'Channel access is restricted by user attributes',
                     })}
-                    description={formatMessage({
+                    text={formatMessage({
                         id: 'channel.abac_policy_enforced.description',
                         defaultMessage: 'Only people who match the specified access rules can be selected and added to this channel.',
                     })}
                     tags={attributeTags.length > 0 ? attributeTags : undefined}
                     isDismissable={true}
-                    onDismiss={() => setShowBanner(false)}
-                    testID={`${TEST_ID}.alert_banner`}
+                    onDismissClick={() => setShowBanner(false)}
+                    location={Screens.CHANNEL_ADD_MEMBERS}
+                    testID={`${TEST_ID}.abac_alert_banner`}
                 />
             )}
             <View style={style.searchBar}>
