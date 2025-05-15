@@ -12,6 +12,17 @@ const {CHANNEL_BOOKMARK, CHANNEL_INFO, DRAFT, FILE, POST, CHANNEL, CUSTOM_PROFIL
 
 export default schemaMigrations({migrations: [
     {
+        toVersion: 11,
+        steps: [
+            addColumns({
+                table: CHANNEL,
+                columns: [
+                    {name: 'abac_policy_enforced', type: 'boolean', isOptional: true},
+                ],
+            }),
+        ],
+    },
+    {
         toVersion: 10,
         steps: [
             addColumns({
