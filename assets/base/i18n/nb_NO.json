@@ -1142,6 +1142,7 @@
   "settings.about.database.schema": "Databaseskjemaversjon: {version}",
   "settings.about.database.schema.title": "Databaseskjemaversjon:",
   "settings.about.database.title": "Database:",
+  "settings.about.license.load_metric": "Belastning: {load}",
   "settings.about.license.load_metric.title": "Belastning:",
   "settings.about.licensed": "Lisensiert til: {company}",
   "settings.about.powered_by": "{site} er drevet av Mattermost",
