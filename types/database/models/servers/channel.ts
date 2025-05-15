@@ -54,6 +54,11 @@ declare class ChannelModel extends Model {
     /** type : The type of the channel ( e.g. G: group messages, D: direct messages, P: private channel and O: public channel) */
     type: ChannelType;
 
+    bannerInfo?: ChannelBannerInfo;
+
+    /** Whether the channel has Attribute-Based Access Control (ABAC) policy enforcement enabled, controlling access based on user attributes */
+    abacPolicyEnforced?: boolean;
+
     /** members : Users belonging to this channel */
     members: Query<ChannelMembershipModel>;
 

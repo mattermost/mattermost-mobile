@@ -573,3 +573,12 @@ export const getAllFilesInCachesDirectory = async (serverUrl: string) => {
         return {error};
     }
 };
+
+export const pathWithPrefix = (prefix: string, path: string) => {
+    const p = path.startsWith(prefix) ? '' : prefix;
+    return `${p}${path}`;
+};
+
+export const deleteFile = async (path: string) => {
+    await deleteAsync(pathWithPrefix('file://', path));
+};

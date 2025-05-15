@@ -85,7 +85,7 @@ describe('Messaging - At-Mention', () => {
         await ChannelScreen.back();
     });
 
-    it.skip('MM-T4874_2 - should display confirmation dialog when posting @all, @channel, and @here -- UNSTABLE', async () => {
+    it('MM-T4874_2 - should display confirmation dialog when posting @all, @channel, and @here', async () => {
         // # Add more users to the channel, open a channel screen, and post @all
         [...Array(3).keys()].forEach(async (key) => {
             const {user} = await User.apiCreateUser(siteOneUrl, {prefix: `a-${key}-`});

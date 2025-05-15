@@ -394,7 +394,17 @@ describe('SecurityManager', () => {
     });
 
     describe('goToPreviousServer', () => {
+        afterAll(() => {
+            jest.clearAllMocks();
+        });
+
         test('should switch to previous server', async () => {
+            jest.mocked(Emm.isDeviceSecured).mockResolvedValue(true);
+            jest.mocked(Emm.authenticate).mockResolvedValue(true);
+            jest.mocked(switchToServer).mockImplementation((serverUrl: string) => {
+                SecurityManager.setActiveServer(serverUrl);
+                return Promise.resolve();
+            });
             SecurityManager.activeServer = undefined;
             SecurityManager.addServer('server-10', {MobileEnableBiometrics: 'true'} as ClientConfig);
             SecurityManager.setActiveServer('server-10');
@@ -402,6 +412,7 @@ describe('SecurityManager', () => {
             SecurityManager.setActiveServer('server-11');
             await SecurityManager.goToPreviousServer(['server-10', 'server-11']);
             expect(switchToServer).toHaveBeenCalledWith('server-10', expect.anything(), expect.anything());
+            expect(SecurityManager.activeServer).toBe('server-10');
         });
     });
 

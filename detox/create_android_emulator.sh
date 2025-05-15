@@ -28,7 +28,7 @@ create_avd() {
     local cpu_arch_family cpu_arch
     read cpu_arch_family cpu_arch < <(get_cpu_architecture)
 
-    avdmanager create avd -n "$AVD_NAME" -k "system-images;android-${SDK_VERSION};default;${cpu_arch_family}" -p "$AVD_NAME" -d 'pixel'
+    avdmanager create avd -n "$AVD_NAME" -k "system-images;android-${SDK_VERSION};google_apis;${cpu_arch_family}" -p "$AVD_NAME" -d 'pixel_5'
 
     cp -r android_emulator/ "$AVD_NAME/"
     sed -i -e "s|AvdId = change_avd_id|AvdId = ${AVD_NAME}|g" "$AVD_NAME/config.ini"
@@ -50,7 +50,7 @@ start_adb_server() {
 
 start_emulator() {
     echo "Starting the emulator..."
-    local emulator_opts="-avd $AVD_NAME -no-snapshot -no-boot-anim -no-audio -no-window"
+    local emulator_opts="-avd $AVD_NAME -no-snapshot -no-boot-anim -no-audio -gpu off -no-window"
     
     if [[ "$CI" == "true" || "$(uname -s)" == "Linux" ]]; then
         emulator $emulator_opts -gpu host -accel on -qemu -m 4096 &
@@ -82,6 +82,7 @@ start_server() {
     cd ..
     RUNNING_E2E=true npm run start &
     local timeout=120 interval=5 elapsed=0
+    sleep $timeout
 
     until nc -z localhost 8081; do
         if [[ $elapsed -ge $timeout ]]; then

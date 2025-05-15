@@ -145,7 +145,7 @@ const SkinToneSelector = ({skinTone = 'default', containerWidth, isSearching, tu
             >
                 <Animated.View
                     style={widthAnimatedStyle}
-                    exiting={FadeOut}
+                    exiting={Platform.OS === 'android' ? undefined : FadeOut /* https://mattermost.atlassian.net/browse/MM-63814?focusedCommentId=178584 */}
                     entering={FadeIn}
                 >
                     <Animated.View style={[styles.container, opacityStyle]}>

@@ -21,7 +21,7 @@ import {
     ServerScreen,
     SettingsScreen,
 } from '@support/ui/screen';
-import {getRandomId, isIos} from '@support/utils';
+import {getRandomId, isIos, timeouts} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Account - Settings - Mention Notification Settings', () => {
@@ -84,7 +84,7 @@ describe('Account - Settings - Mention Notification Settings', () => {
             const triggerMentionKeyword = await MentionNotificationSettingsScreen.getKeywordTriggerElement(keywords);
             await expect(triggerMentionKeyword).toHaveText(keywords.replace(/ /g, '').toLowerCase());
         } else {
-            await expect(MentionNotificationSettingsScreen.keywordsInput).toHaveText(keywords.replace(/ /g, '').toLowerCase());
+            await waitFor(element(by.text(keywords.replace(/ /g, '').toLowerCase()))).toExist().withTimeout(timeouts.TWO_SEC);
         }
 
         // # Switch toggles back to original state, clear keywords, tap on back button, and go back to mention notifications screen
