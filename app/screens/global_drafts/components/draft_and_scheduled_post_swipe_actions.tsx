@@ -22,11 +22,12 @@ import {typography} from '@utils/typography';
 
 import type DraftModel from '@typings/database/models/servers/draft';
 import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     draftType: DraftType;
     item: DraftModel | ScheduledPostModel;
-    location: string;
+    location: AvailableScreens;
     layoutWidth: number;
     firstItem?: boolean;
 }

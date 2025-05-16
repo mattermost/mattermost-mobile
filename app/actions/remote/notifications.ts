@@ -119,6 +119,37 @@ export const backgroundNotification = async (serverUrl: string, notification: No
 
             if (posts) {
                 const postsData = processPostsFetched(posts);
+
+                // We need to convert the following properties from 1/0 to true/false, because
+                // we validate message attachments before displaying them.
+                // This is a problem from the NSJSONSerialization call in AppDelegate.mm -- there
+                // is no true/false in Objective-C, only NSNumber with value 1 or 0
+                if (Platform.OS === 'ios') {
+                    // Convert attachment.fields.short, and attachment.actions.disabled
+                    postsData.posts.forEach((post) => {
+                        if (post.props?.attachments) {
+                            (post.props.attachments as MessageAttachment[])?.forEach((attachment) => {
+                                if (attachment.fields?.length) {
+                                    // eslint-disable-next-line max-nested-callbacks
+                                    attachment.fields.forEach((field) => {
+                                        if (field.short !== undefined) {
+                                            field.short = Boolean(field.short);
+                                        }
+                                    });
+                                }
+                                if (attachment.actions?.length) {
+                                    // eslint-disable-next-line max-nested-callbacks
+                                    attachment.actions.forEach((action) => {
+                                        if (action.disabled !== undefined) {
+                                            action.disabled = Boolean(action.disabled);
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+
                 const isThreadNotification = isCRTEnabled && Boolean(notification.payload.root_id);
                 const actionType = isThreadNotification ? ActionType.POSTS.RECEIVED_IN_THREAD : ActionType.POSTS.RECEIVED_IN_CHANNEL;
 

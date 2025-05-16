@@ -4,7 +4,7 @@
 /* eslint-disable max-lines */
 
 import merge from 'deepmerge';
-import {Appearance, DeviceEventEmitter, StatusBar, Platform, Alert, type EmitterSubscription} from 'react-native';
+import {Appearance, DeviceEventEmitter, StatusBar, Platform, Alert, type EmitterSubscription, Keyboard} from 'react-native';
 import {type ComponentWillAppearEvent, type ImageResource, type LayoutOrientation, Navigation, type Options, OptionsModalPresentationStyle, type OptionsTopBarButton, type ScreenPoppedEvent, type EventSubscription} from 'react-native-navigation';
 import tinyColor from 'tinycolor2';
 
@@ -20,8 +20,11 @@ import {appearanceControlledScreens, mergeNavigationOptions} from '@utils/naviga
 import {changeOpacity, setNavigatorStyles} from '@utils/theme';
 
 import type {BottomSheetFooterProps} from '@gorhom/bottom-sheet';
+import type {default as UserProfileScreen} from '@screens/user_profile';
 import type {LaunchProps} from '@typings/launch';
 import type {AvailableScreens, NavButtons} from '@typings/screens/navigation';
+import type {ComponentProps} from 'react';
+import type {IntlShape} from 'react-intl';
 
 const alpha = {
     from: 0,
@@ -888,4 +891,21 @@ export async function findChannels(title: string, theme: Theme) {
         {closeButtonId},
         options,
     );
+}
+
+export async function openUserProfileModal(
+    intl: IntlShape,
+    theme: Theme,
+    props: Omit<ComponentProps<typeof UserProfileScreen>, 'closeButtonId'>,
+    screenToDismiss?: AvailableScreens,
+) {
+    if (screenToDismiss) {
+        await dismissBottomSheet(screenToDismiss);
+    }
+    const screen = Screens.USER_PROFILE;
+    const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
+    const closeButtonId = 'close-user-profile';
+
+    Keyboard.dismiss();
+    openAsBottomSheet({screen, title, theme, closeButtonId, props: {...props}});
 }

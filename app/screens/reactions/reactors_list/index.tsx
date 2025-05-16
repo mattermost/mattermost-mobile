@@ -13,9 +13,10 @@ import {useBottomSheetListsFix} from '@hooks/bottom_sheet_lists_fix';
 import Reactor from './reactor';
 
 import type ReactionModel from '@typings/database/models/servers/reaction';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
-    location: string;
+    location: AvailableScreens;
     reactions: ReactionModel[];
     type?: BottomSheetList;
 }

@@ -5,7 +5,7 @@ import {fireEvent, waitFor} from '@testing-library/react-native';
 import React from 'react';
 import {DeviceEventEmitter} from 'react-native';
 
-import {Events} from '@constants';
+import {Events, Screens} from '@constants';
 import {renderWithIntl} from '@test/intl-test-helper';
 import * as DraftUtils from '@utils/draft';
 import * as ScheduledPostUtils from '@utils/scheduled_post';
@@ -65,7 +65,7 @@ describe('DraftAndScheduledPostSwipeActions', () => {
             <DraftAndScheduledPostSwipeActions
                 draftType={DRAFT_TYPE_DRAFT}
                 item={mockDraft}
-                location='global_drafts'
+                location={Screens.GLOBAL_DRAFTS}
                 layoutWidth={300}
             />,
         );
@@ -79,7 +79,7 @@ describe('DraftAndScheduledPostSwipeActions', () => {
             <DraftAndScheduledPostSwipeActions
                 draftType={DRAFT_TYPE_SCHEDULED}
                 item={mockScheduledPost}
-                location='global_drafts'
+                location={Screens.GLOBAL_DRAFTS}
                 layoutWidth={300}
             />,
         );
@@ -95,7 +95,7 @@ describe('DraftAndScheduledPostSwipeActions', () => {
             <DraftAndScheduledPostSwipeActions
                 draftType={DRAFT_TYPE_DRAFT}
                 item={mockDraft}
-                location='global_drafts'
+                location={Screens.GLOBAL_DRAFTS}
                 layoutWidth={300}
             />,
         );
@@ -110,7 +110,7 @@ describe('DraftAndScheduledPostSwipeActions', () => {
             <DraftAndScheduledPostSwipeActions
                 draftType={DRAFT_TYPE_DRAFT}
                 item={mockDraft}
-                location='global_drafts'
+                location={Screens.GLOBAL_DRAFTS}
                 layoutWidth={300}
             />,
         );
@@ -134,7 +134,7 @@ describe('DraftAndScheduledPostSwipeActions', () => {
             <DraftAndScheduledPostSwipeActions
                 draftType={DRAFT_TYPE_SCHEDULED}
                 item={mockScheduledPost}
-                location='global_drafts'
+                location={Screens.GLOBAL_DRAFTS}
                 layoutWidth={300}
             />,
         );
