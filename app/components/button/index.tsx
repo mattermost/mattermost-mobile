@@ -1,18 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Button as ElementButton} from '@rneui/base';
+import {Button as ElementButton, type ButtonProps} from '@rneui/base';
 import React, {useMemo, type ReactNode} from 'react';
 import {type StyleProp, StyleSheet, Text, type TextStyle, View, type ViewStyle, type Insets} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
-import {changeOpacity} from '@utils/theme';
 
-type Props = {
+type Props = Omit<ButtonProps, 'size'> & {
     theme: Theme;
     backgroundStyle?: StyleProp<ViewStyle>;
     buttonContainerStyle?: StyleProp<ViewStyle>;
+    buttonDisabledStyle?: StyleProp<ViewStyle>;
     textStyle?: StyleProp<TextStyle>;
     size?: ButtonSize;
     emphasis?: ButtonEmphasis;
@@ -47,6 +47,7 @@ const Button = ({
     theme,
     backgroundStyle,
     buttonContainerStyle,
+    buttonDisabledStyle,
     textStyle,
     size = 'm',
     emphasis,
@@ -71,13 +72,16 @@ const Button = ({
         textStyle,
     ], [theme, textStyle, size, emphasis, buttonType]);
 
-    let buttonStyle = StyleSheet.flatten(bgStyle);
-    if (disabled) {
-        buttonStyle = {
-            ...buttonStyle,
-            backgroundColor: changeOpacity(buttonStyle.backgroundColor! as string, 0.4),
-        };
-    }
+    const disabledStyle = useMemo(() => {
+        if (disabled) {
+            return [
+                buttonBackgroundStyle(theme, size, emphasis, 'disabled'),
+                buttonDisabledStyle,
+            ];
+        }
+        return undefined;
+
+    }, [buttonDisabledStyle, disabled, emphasis, size, theme]);
 
     let icon: ReactNode;
 
@@ -99,8 +103,9 @@ const Button = ({
 
     return (
         <ElementButton
-            buttonStyle={buttonStyle}
+            buttonStyle={bgStyle}
             containerStyle={buttonContainerStyle}
+            disabledStyle={disabledStyle}
             onPress={onPress}
             testID={testID}
             disabled={disabled}

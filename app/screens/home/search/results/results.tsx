@@ -43,6 +43,7 @@ type Props = {
     canDownloadFiles: boolean;
     currentTimezone: string;
     customEmojiNames: string[];
+    enableSecureFilePreview: boolean;
     fileChannels: ChannelModel[];
     fileInfos: FileInfo[];
     loading: boolean;
@@ -59,6 +60,7 @@ const Results = ({
     canDownloadFiles,
     currentTimezone,
     customEmojiNames,
+    enableSecureFilePreview,
     fileChannels,
     fileInfos,
     loading,
@@ -117,6 +119,7 @@ const Results = ({
                     <Freeze freeze={selectedTab !== TabTypes.FILES}>
                         <FileResults
                             canDownloadFiles={canDownloadFiles}
+                            enableSecureFilePreview={enableSecureFilePreview}
                             fileChannels={fileChannels}
                             fileInfos={fileInfos}
                             paddingTop={paddingTop}

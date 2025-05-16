@@ -60,6 +60,7 @@ jest.mocked(File).mockImplementation((props) => (
         <Text testID={`${props.file.id}-nonVisibleImagesCount`}>{String(props.nonVisibleImagesCount)}</Text>
         <Text testID={`${props.file.id}-wrapperWidth`}>{props.wrapperWidth}</Text>
         <Text testID={`${props.file.id}-inViewPort`}>{String(props.inViewPort)}</Text>
+        <Text testID={`${props.file.id}-enableSecureFilePreview`}>{String(props.enableSecureFilePreview)}</Text>
         <TouchableOpacity
             testID={`${props.file.id}-onPress`}
             onPress={() => props.onPress(props.index)}
@@ -74,6 +75,7 @@ jest.mocked(File).mockImplementation((props) => (
 function getBaseProps(): ComponentProps<typeof Files> {
     return {
         canDownloadFiles: true,
+        enableSecureFilePreview: false,
         failed: false,
         filesInfo: [],
         isReplyPost: false,
@@ -170,16 +172,40 @@ describe('Files', () => {
         const baseProps = getBaseProps();
         baseProps.filesInfo = filesInfo;
         baseProps.canDownloadFiles = false;
+        baseProps.enableSecureFilePreview = false;
 
         const {getByTestId, rerender} = render(<Files {...baseProps}/>);
         expect(getByTestId('1-canDownloadFiles')).toHaveTextContent('false');
+        expect(getByTestId('1-enableSecureFilePreview')).toHaveTextContent('false');
         expect(getByTestId('2-canDownloadFiles')).toHaveTextContent('false');
+        expect(getByTestId('2-enableSecureFilePreview')).toHaveTextContent('false');
 
         baseProps.canDownloadFiles = true;
+        baseProps.enableSecureFilePreview = true;
 
         rerender(<Files {...baseProps}/>);
         expect(getByTestId('1-canDownloadFiles')).toHaveTextContent('true');
+        expect(getByTestId('1-enableSecureFilePreview')).toHaveTextContent('true');
         expect(getByTestId('2-canDownloadFiles')).toHaveTextContent('true');
+        expect(getByTestId('2-enableSecureFilePreview')).toHaveTextContent('true');
+
+        baseProps.canDownloadFiles = true;
+        baseProps.enableSecureFilePreview = true;
+
+        rerender(<Files {...baseProps}/>);
+        expect(getByTestId('1-canDownloadFiles')).toHaveTextContent('true');
+        expect(getByTestId('1-enableSecureFilePreview')).toHaveTextContent('true');
+        expect(getByTestId('2-canDownloadFiles')).toHaveTextContent('true');
+        expect(getByTestId('2-enableSecureFilePreview')).toHaveTextContent('true');
+
+        baseProps.canDownloadFiles = false;
+        baseProps.enableSecureFilePreview = false;
+
+        rerender(<Files {...baseProps}/>);
+        expect(getByTestId('1-canDownloadFiles')).toHaveTextContent('false');
+        expect(getByTestId('1-enableSecureFilePreview')).toHaveTextContent('false');
+        expect(getByTestId('2-canDownloadFiles')).toHaveTextContent('false');
+        expect(getByTestId('2-enableSecureFilePreview')).toHaveTextContent('false');
     });
 
     it('should set layoutWidth if provided', () => {

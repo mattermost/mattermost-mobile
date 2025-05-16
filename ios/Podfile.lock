@@ -1454,7 +1454,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-emm (1.6.1):
+  - react-native-emm (1.6.2):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1498,7 +1498,7 @@ PODS:
     - Yoga
   - react-native-netinfo (11.4.1):
     - React-Core
-  - react-native-network-client (1.8.2):
+  - react-native-network-client (1.8.3):
     - Alamofire (~> 5.10.2)
     - DoubleConversion
     - glog
@@ -2191,6 +2191,27 @@ PODS:
   - SDWebImage/Core (5.19.7)
   - SDWebImageSVGCoder (1.7.0):
     - SDWebImage/Core (~> 5.6)
+  - secure-pdf-viewer (0.0.0):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.10.14.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - Sentry/HybridSDK (8.48.0)
   - simdjson (3.9.4)
   - SocketRocket (0.7.1)
@@ -2318,6 +2339,7 @@ DEPENDENCIES:
   - RNShare (from `../node_modules/react-native-share`)
   - RNSVG (from `../node_modules/react-native-svg`)
   - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
+  - "secure-pdf-viewer (from `../node_modules/@mattermost/secure-pdf-viewer`)"
   - Sentry/HybridSDK (= 8.48.0)
   - "simdjson (from `../node_modules/@nozbe/simdjson`)"
   - TurboLogIOSNative (from `https://github.com/larkox/react-native-turbo-log-ios-native.git`)
@@ -2561,6 +2583,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-svg"
   RNVectorIcons:
     :path: "../node_modules/react-native-vector-icons"
+  secure-pdf-viewer:
+    :path: "../node_modules/@mattermost/secure-pdf-viewer"
   simdjson:
     :path: "../node_modules/@nozbe/simdjson"
   TurboLogIOSNative:
@@ -2636,10 +2660,10 @@ SPEC CHECKSUMS:
   react-native-cameraroll: e44a37bd8dd502cb4e9017b78e15bdc658dff2e6
   react-native-cookies: d648ab7025833b977c0b19e142503034f5f29411
   react-native-document-picker: befd8fe34fcfc606ec7ee427ab21747fbdb6bc44
-  react-native-emm: 4fc2959929839f2bb253e3e26127989ad7f7a687
+  react-native-emm: 983a347e31aef8a93cbc51b6cea08708dacada84
   react-native-image-picker: 32515318a4ecfbc864f5f94a1c67df1ce4b8d854
   react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187
-  react-native-network-client: fa65831f32ebc3ece1fc68e6302c52c09434fba2
+  react-native-network-client: fef3bd3f68ce3416057e53959a4e5b50284e45c7
   react-native-notifications: 3bafa1237ae8a47569a84801f17d80242fe9f6a5
   react-native-paste-input: e151e40812741262c997fcb859ee806cbfabf617
   react-native-performance: 125a96c145e29918b55b45ce25cbba54f1e24dcd
@@ -2693,6 +2717,7 @@ SPEC CHECKSUMS:
   RNVectorIcons: 4330d8f8f8f4184f436e0c08ae9950431ffe466e
   SDWebImage: 8a6b7b160b4d710e2a22b6900e25301075c34cb3
   SDWebImageSVGCoder: 15a300a97ec1c8ac958f009c02220ac0402e936c
+  secure-pdf-viewer: 63aa9df5ba9d7df506614f5228469f38c98f1c50
   Sentry: 1ca8405451040482877dcd344dfa3ef80b646631
   simdjson: 7bb9e33d87737cec966e7b427773c67baa4458fe
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
