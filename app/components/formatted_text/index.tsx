@@ -2,14 +2,14 @@
 // See LICENSE.txt for license information.
 
 import {createElement, isValidElement} from 'react';
-import {useIntl} from 'react-intl';
+import {useIntl, type MessageDescriptor} from 'react-intl';
 import {type StyleProp, Text, type TextProps, type TextStyle} from 'react-native';
 
 import {generateId} from '@utils/general';
 
 type FormattedTextProps = TextProps & {
-    id: string;
-    defaultMessage?: string;
+    id?: MessageDescriptor['id'];
+    defaultMessage?: MessageDescriptor['defaultMessage'];
     values?: Record<string, any>;
     testID?: string;
     style?: StyleProp<TextStyle>;

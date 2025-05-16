@@ -3,11 +3,13 @@
 
 import React, {type ReactNode, useState, useMemo, useCallback} from 'react';
 import {Freeze} from 'react-freeze';
+import {defineMessage} from 'react-intl';
 import {StyleSheet, View, type LayoutChangeEvent} from 'react-native';
 import Animated, {runOnJS, useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
 import {DRAFT_SCREEN_TAB_DRAFTS, DRAFT_SCREEN_TAB_SCHEDULED_POSTS, type DraftScreenTab} from '@constants/draft';
-import {DraftTabsHeader} from '@screens/global_drafts/components/tabbed_contents/draft_tabs_header';
+import useTabs from '@hooks/use_tabs';
+import Tabs from '@hooks/use_tabs/tabs';
 
 const duration = 250;
 
@@ -38,7 +40,25 @@ const getStyleSheet = (width: number) => {
 };
 
 export default function TabbedContents({draftsCount, scheduledPostCount, initialTab, drafts, scheduledPosts}: Props) {
-    const [selectedTab, setSelectedTab] = useState(initialTab);
+    const onSelectTab = useCallback((tab: DraftScreenTab) => {
+        if (tab === DRAFT_SCREEN_TAB_DRAFTS) {
+            setFreezeDraft(false);
+        } else {
+            setFreezeScheduledPosts(false);
+        }
+    }, []);
+    const [selectedTab, tabProps] = useTabs(initialTab, [
+        {
+            id: DRAFT_SCREEN_TAB_DRAFTS,
+            name: defineMessage({id: 'drafts_tab.title.drafts', defaultMessage: 'Drafts'}),
+            count: draftsCount,
+        },
+        {
+            id: DRAFT_SCREEN_TAB_SCHEDULED_POSTS,
+            name: defineMessage({id: 'drafts_tab.title.scheduled', defaultMessage: 'Scheduled'}),
+            count: scheduledPostCount,
+        },
+    ], onSelectTab);
     const [freezeDraft, setFreezeDraft] = useState(initialTab !== DRAFT_SCREEN_TAB_DRAFTS);
     const [freezeScheduledPosts, setFreezeScheduledPosts] = useState(initialTab !== DRAFT_SCREEN_TAB_SCHEDULED_POSTS);
     const [width, setWidth] = useState(0);
@@ -69,28 +89,15 @@ export default function TabbedContents({draftsCount, scheduledPostCount, initial
         zIndex: 0,
     }));
 
-    const onSelectTab = useCallback((tab: DraftScreenTab) => {
-        setSelectedTab(tab);
-        if (tab === DRAFT_SCREEN_TAB_DRAFTS) {
-            setFreezeDraft(false);
-        } else {
-            setFreezeScheduledPosts(false);
-        }
-    }, []);
-
     return (
         <View
             style={styles.tabContainer}
             onLayout={onLayout}
             testID='tabbed_contents'
         >
-            <DraftTabsHeader
-                draftsCount={draftsCount}
-                scheduledPostCount={scheduledPostCount}
-                selectedTab={selectedTab}
-                onTabChange={onSelectTab}
-            />
-
+            <View>
+                <Tabs {...tabProps}/>
+            </View>
             <Animated.View style={[styles.tabContentContainer]}>
                 <Animated.View
                     style={[firstTabStyle, styles.tabContent]}
