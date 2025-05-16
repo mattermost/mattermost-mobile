@@ -2,11 +2,13 @@
 // See LICENSE.txt for license information.
 
 import {Platform, type StyleProp, StyleSheet, type TextStyle} from 'react-native';
+import parseUrl from 'url-parse';
 
 import {getViewPortWidth} from '@utils/images';
 import {logError} from '@utils/log';
 import {changeOpacity, concatStyles, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+import {safeDecodeURIComponent} from '@utils/url';
 
 import type {MarkdownTextStyles, SearchPattern} from '@typings/global/markdown';
 
@@ -363,3 +365,12 @@ export function convertSearchTermToRegex(term: string): SearchPattern {
         term,
     };
 }
+
+export const removeImageProxyForKey = (key: string) => {
+    const parseKey = parseUrl(key, true);
+    if (parseKey.query.url) {
+        return safeDecodeURIComponent(parseKey.query.url);
+    }
+
+    return key;
+};
