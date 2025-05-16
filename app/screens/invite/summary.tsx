@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {defineMessage, useIntl} from 'react-intl';
+import {defineMessages, useIntl} from 'react-intl';
 import {View, Text, ScrollView} from 'react-native';
 
 import Button from '@components/button';
@@ -95,6 +95,21 @@ type SummaryProps = {
     onBack: () => void;
 }
 
+const messages = defineMessages({
+    done: {
+        id: 'invite.summary.done',
+        defaultMessage: 'Done',
+    },
+    tryAgain: {
+        id: 'invite.summary.try_again',
+        defaultMessage: 'Try again',
+    },
+    back: {
+        id: 'invite.summary.back',
+        defaultMessage: 'Go back',
+    },
+});
+
 export default function Summary({
     result,
     selectedIds,
@@ -175,27 +190,18 @@ export default function Summary({
             case SummaryButtonType.BACK:
                 onPress = onBack;
                 iconName = 'chevron-left';
-                text = defineMessage({
-                    id: 'invite.summary.back',
-                    defaultMessage: 'Go back',
-                });
+                text = messages.back;
                 emphasis = 'tertiary';
                 break;
             case SummaryButtonType.RETRY:
                 onPress = onRetry;
                 iconName = 'refresh';
-                text = defineMessage({
-                    id: 'invite.summary.try_again',
-                    defaultMessage: 'Try again',
-                });
+                text = messages.tryAgain;
                 break;
             case SummaryButtonType.DONE:
             default:
                 onPress = onClose;
-                text = defineMessage({
-                    id: 'invite.summary.done',
-                    defaultMessage: 'Done',
-                });
+                text = messages.done;
                 break;
         }
 
