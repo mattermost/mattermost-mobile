@@ -59,7 +59,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             justifyContent: 'flex-end',
         },
         filterContainer: {
-            flex: 1,
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'center',
@@ -123,34 +122,37 @@ const Header = ({
                 <Tabs {...tabsProps}/>
                 {showFilterIcon && (
                     <View style={styles.filterContainer}>
-                        <CompassIcon
-                            name={'filter-variant'}
-                            testID='search.filters.file_type_icon'
-                            size={24}
-                            color={changeOpacity(
-                                theme.centerChannelColor,
-                                0.56,
-                            )}
-                            onPress={handleFilterPress}
-                        />
-                        <Badge
-                            style={styles.badge}
-                            visible={hasFilters}
-                            testID={'search.filters.badge'}
-                            value={-1}
-                        />
+                        <View>
+                            <CompassIcon
+                                name={'filter-variant'}
+                                testID='search.filters.file_type_icon'
+                                size={24}
+                                color={changeOpacity(
+                                    theme.centerChannelColor,
+                                    0.56,
+                                )}
+                                onPress={handleFilterPress}
+                            />
+                            <Badge
+                                style={styles.badge}
+                                visible={hasFilters}
+                                testID={'search.filters.badge'}
+                                value={-1}
+                            />
+                        </View>
                     </View>
                 )}
-                <View style={styles.teamPickerContainer}>
-                    {teams.length > 1 && (
+                {teams.length > 1 && (
+                    <View style={styles.teamPickerContainer}>
                         <TeamPicker
                             setTeamId={setTeamId}
                             teamId={teamId}
                             teams={teams}
                             crossTeamSearchEnabled={crossTeamSearchEnabled}
                         />
-                    )}
-                </View>
+                    </View>
+                )}
+
             </View>
         </View>
     );
