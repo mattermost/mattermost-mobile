@@ -2,14 +2,14 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {ActivityIndicator, type StyleProp, View, type ViewStyle, Text, type TextStyle} from 'react-native';
+import {ActivityIndicator, type StyleProp, View, type ViewStyle, Text, type TextStyle, type ColorValue} from 'react-native';
 
 import {useTheme} from '@context/theme';
 
 type LoadingProps = {
     containerStyle?: StyleProp<ViewStyle>;
     size?: number | 'small' | 'large';
-    color?: string;
+    color?: ColorValue;
     themeColor?: keyof Theme;
     footerText?: string;
     footerTextStyles?: TextStyle;

@@ -2,21 +2,19 @@
 // See LICENSE.txt for license information.
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
-import {Button} from '@rneui/base';
+import {Button as RNEButton} from '@rneui/base';
 import React, {useCallback, useEffect, useMemo, useRef, useState, type RefObject} from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessages, useIntl} from 'react-intl';
 import {Keyboard, TextInput, TouchableOpacity, View} from 'react-native';
 
 import {login} from '@actions/remote/session';
+import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
 import FloatingTextInput from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
-import Loading from '@components/loading';
 import {FORGOT_PASSWORD, MFA} from '@constants/screens';
 import {useAvoidKeyboard} from '@hooks/device';
-import {t} from '@i18n';
 import {goToScreen, loginAnimationOptions, resetToHome} from '@screens/navigation';
-import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {getFullErrorMessage, getServerError, isErrorWithMessage, isServerError} from '@utils/errors';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -67,18 +65,24 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         fontSize: 14,
         fontFamily: 'OpenSans-SemiBold',
     },
-    loadingContainerStyle: {
-        marginRight: 10,
-        padding: 0,
-        top: -2,
-    },
-    loginButton: {
+    loginButtonContainer: {
         marginTop: 25,
     },
     endAdornment: {
         top: 2,
     },
 }));
+
+const messages = defineMessages({
+    signIn: {
+        id: 'login.signIn',
+        defaultMessage: 'Log In',
+    },
+    signingIn: {
+        id: 'login.signingIn',
+        defaultMessage: 'Logging In',
+    },
+});
 
 const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchError, launchType, license, serverUrl, theme}: LoginProps) => {
     const styles = getStyleSheet(theme);
@@ -256,44 +260,20 @@ const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchEr
     }, [loginId, password]);
 
     const renderProceedButton = useMemo(() => {
-        const buttonType = buttonDisabled ? 'disabled' : 'default';
-        const styleButtonText = buttonTextStyle(theme, 'lg', 'primary', buttonType);
-        const styleButtonBackground = buttonBackgroundStyle(theme, 'lg', 'primary', buttonType);
-
-        let buttonID = t('login.signIn');
-        let buttonText = 'Log In';
-        let buttonIcon;
-
-        if (isLoading) {
-            buttonID = t('login.signingIn');
-            buttonText = 'Logging In';
-            buttonIcon = (
-                <Loading
-                    containerStyle={styles.loadingContainerStyle}
-                    color={theme.buttonColor}
-                />
-            );
-        }
-
-        const signinButtonTestId = buttonDisabled ? 'login_form.signin.button.disabled' : 'login_form.signin.button';
-
         return (
-            <Button
-                disabled={buttonDisabled}
-                onPress={onLogin}
-                buttonStyle={[styles.loginButton, styleButtonBackground]}
-                disabledStyle={[styles.loginButton, styleButtonBackground]}
-                testID={signinButtonTestId}
-            >
-                {buttonIcon}
-                <FormattedText
-                    id={buttonID}
-                    defaultMessage={buttonText}
-                    style={styleButtonText}
+            <View style={styles.loginButtonContainer}>
+                <Button
+                    disabled={buttonDisabled}
+                    onPress={onLogin}
+                    size='lg'
+                    testID={buttonDisabled ? 'login_form.signin.button.disabled' : 'login_form.signin.button'}
+                    text={intl.formatMessage(isLoading ? messages.signingIn : messages.signIn)}
+                    showLoader={isLoading}
+                    theme={theme}
                 />
-            </Button>
+            </View>
         );
-    }, [buttonDisabled, loginId, password, isLoading, theme]);
+    }, [styles.loginButtonContainer, buttonDisabled, onLogin, intl, isLoading, theme]);
 
     const endAdornment = (
         <TouchableOpacity
@@ -356,7 +336,7 @@ const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchEr
             />
 
             {(emailEnabled || usernameEnabled) && config.PasswordEnableForgotLink !== 'false' && (
-                <Button
+                <RNEButton
                     onPress={onPressForgotPassword}
                     buttonStyle={[styles.forgotPasswordBtn, error ? styles.forgotPasswordError : undefined]}
                     testID='login_form.forgot_password.button'
@@ -366,7 +346,7 @@ const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchEr
                         defaultMessage='Forgot your password?'
                         style={styles.forgotPasswordTxt}
                     />
-                </Button>
+                </RNEButton>
             )}
             {renderProceedButton}
         </View>
