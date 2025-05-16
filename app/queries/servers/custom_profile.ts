@@ -168,7 +168,7 @@ export const queryCustomProfileAttributesByFieldId = (database: Database, fieldI
  * @returns Promise that resolves when the deletion is complete
  */
 export const deleteCustomProfileAttributesByFieldId = async (database: Database, fieldId: string, batchSize = 100) => {
-    const attributes = await queryCustomProfileAttributesByFieldId(database, fieldId).fetch();
+    const attributes = await prepareCustomProfileAttributesForDeletionByFieldId(database, fieldId);
 
     if (!attributes.length) {
         return;
@@ -177,11 +177,8 @@ export const deleteCustomProfileAttributesByFieldId = async (database: Database,
     // Process attributes in batches to avoid performance issues with large datasets
     const promises = [];
     for (let i = 0; i < attributes.length; i += batchSize) {
-        const batch = attributes.slice(i, i + batchSize);
-        const preparedModels = batch.map((attribute) => attribute.prepareDestroyPermanently());
-
         const batchPromise = database.write(async () => {
-            await database.batch(...preparedModels);
+            await database.batch(...(attributes.slice(i, i + batchSize)));
         }, `deleteCustomProfileAttributesByFieldId:${fieldId}:batch:${i}`);
 
         promises.push(batchPromise);
@@ -190,3 +187,14 @@ export const deleteCustomProfileAttributesByFieldId = async (database: Database,
     await Promise.all(promises);
 };
 
+export const prepareCustomProfileAttributesForDeletionByFieldId = async (database: Database, fieldId: string) => {
+    const field = await getCustomProfileFieldById(database, fieldId);
+    if (!field) {
+        return [];
+    }
+    const attributes = await field.customProfileAttributes.fetch();
+    if (attributes.length === 0) {
+        return [];
+    }
+    return attributes.map((attribute) => attribute.prepareDestroyPermanently());
+};
