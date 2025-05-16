@@ -1,17 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Button} from '@rneui/base';
 import React, {type RefObject, useCallback, useRef} from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessages, useIntl} from 'react-intl';
 import {Keyboard, View} from 'react-native';
 
+import Button from '@components/button';
 import FloatingTextInput, {type FloatingTextInputRef} from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
-import Loading from '@components/loading';
 import {useAvoidKeyboard} from '@hooks/device';
-import {t} from '@i18n';
-import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -52,21 +49,24 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginTop: 8,
         ...typography('Body', 75, 'Regular'),
     },
-    connectButton: {
+    connectButtonContainer: {
         width: '100%',
         marginTop: 32,
         marginLeft: 20,
         marginRight: 20,
     },
-    connectingIndicator: {
-        marginRight: 10,
-    },
-    loadingContainerStyle: {
-        marginRight: 10,
-        padding: 0,
-        top: -2,
-    },
 }));
+
+const messages = defineMessages({
+    connect: {
+        id: 'mobile.components.select_server_view.connect',
+        defaultMessage: 'Connect',
+    },
+    connecting: {
+        id: 'mobile.components.select_server_view.connecting',
+        defaultMessage: 'Connecting',
+    },
+});
 
 const ServerForm = ({
     autoFocus = false,
@@ -98,25 +98,6 @@ const ServerForm = ({
     const onUrlSubmit = useCallback(() => {
         displayNameRef.current?.focus();
     }, []);
-
-    const buttonType = buttonDisabled ? 'disabled' : 'default';
-    const styleButtonText = buttonTextStyle(theme, 'lg', 'primary', buttonType);
-    const styleButtonBackground = buttonBackgroundStyle(theme, 'lg', 'primary', buttonType);
-
-    let buttonID = t('mobile.components.select_server_view.connect');
-    let buttonText = 'Connect';
-    let buttonIcon;
-
-    if (connecting) {
-        buttonID = t('mobile.components.select_server_view.connecting');
-        buttonText = 'Connecting';
-        buttonIcon = (
-            <Loading
-                containerStyle={styles.loadingContainerStyle}
-                color={theme.buttonColor}
-            />
-        );
-    }
 
     const connectButtonTestId = buttonDisabled ? 'server_form.connect.button.disabled' : 'server_form.connect.button';
 
@@ -175,21 +156,17 @@ const ServerForm = ({
                 testID={'server_form.display_help'}
             />
             }
-            <Button
-                containerStyle={styles.connectButton}
-                disabled={buttonDisabled}
-                onPress={onConnect}
-                testID={connectButtonTestId}
-                buttonStyle={styleButtonBackground}
-                disabledStyle={styleButtonBackground}
-            >
-                {buttonIcon}
-                <FormattedText
-                    defaultMessage={buttonText}
-                    id={buttonID}
-                    style={styleButtonText}
+            <View style={styles.connectButtonContainer}>
+                <Button
+                    disabled={buttonDisabled}
+                    onPress={onConnect}
+                    testID={connectButtonTestId}
+                    size='lg'
+                    theme={theme}
+                    text={formatMessage(connecting ? messages.connecting : messages.connect)}
+                    showLoader={connecting}
                 />
-            </Button>
+            </View>
         </View>
     );
 };

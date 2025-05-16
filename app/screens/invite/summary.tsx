@@ -1,19 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Button} from '@rneui/base';
 import React, {useCallback, useMemo} from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessage, useIntl} from 'react-intl';
 import {View, Text, ScrollView} from 'react-native';
 
-import CompassIcon from '@components/compass_icon';
-import FormattedText from '@components/formatted_text';
+import Button from '@components/button';
 import AlertSvg from '@components/illustrations/alert';
 import ErrorSvg from '@components/illustrations/error';
 import SuccessSvg from '@components/illustrations/success';
 import {useTheme} from '@context/theme';
-import {t} from '@i18n';
-import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -77,17 +73,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flexGrow: 1,
             flexDirection: 'row',
             justifyContent: 'center',
-        },
-        summaryButtonTextContainer: {
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            height: 24,
-        },
-        summaryButtonIcon: {
-            marginRight: 7,
-            color: theme.buttonColor,
-
+            gap: 8,
         },
         summaryButtonContainerStyle: {flexGrow: 1},
     };
@@ -118,7 +104,7 @@ export default function Summary({
     onRetry,
     onBack,
 }: SummaryProps) {
-    const {formatMessage, locale} = useIntl();
+    const {formatMessage} = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -183,64 +169,50 @@ export default function Summary({
         let onPress;
         let iconName = '';
         let text;
-        let styleButtonText = buttonTextStyle(theme, 'lg', 'primary');
-        let styleButtonBackground = buttonBackgroundStyle(theme, 'lg', 'primary');
-        const styleButtonIcon = [];
-        styleButtonIcon.push(styles.summaryButtonIcon);
+        let emphasis: ButtonEmphasis = 'primary';
 
         switch (type) {
             case SummaryButtonType.BACK:
                 onPress = onBack;
                 iconName = 'chevron-left';
-                text = {
-                    id: t('invite.summary.back'),
+                text = defineMessage({
+                    id: 'invite.summary.back',
                     defaultMessage: 'Go back',
-                };
-                styleButtonText = buttonTextStyle(theme, 'lg', 'tertiary');
-                styleButtonBackground = [buttonBackgroundStyle(theme, 'lg', 'tertiary'), {marginRight: 8}];
-                styleButtonIcon.push({color: theme.buttonBg});
+                });
+                emphasis = 'tertiary';
                 break;
             case SummaryButtonType.RETRY:
                 onPress = onRetry;
                 iconName = 'refresh';
-                text = {
-                    id: t('invite.summary.try_again'),
+                text = defineMessage({
+                    id: 'invite.summary.try_again',
                     defaultMessage: 'Try again',
-                };
+                });
                 break;
             case SummaryButtonType.DONE:
             default:
                 onPress = onClose;
-                text = {
-                    id: t('invite.summary.done'),
+                text = defineMessage({
+                    id: 'invite.summary.done',
                     defaultMessage: 'Done',
-                };
+                });
                 break;
         }
 
         return (
-            <Button
-                containerStyle={styles.summaryButtonContainerStyle}
-                buttonStyle={styleButtonBackground}
-                onPress={onPress}
-                testID={`invite.summary_button.${SummaryButtonType.RETRY}`}
-            >
-                <View style={styles.summaryButtonTextContainer}>
-                    {iconName && (
-                        <CompassIcon
-                            name={iconName}
-                            size={24}
-                            style={styleButtonIcon}
-                        />
-                    )}
-                    <FormattedText
-                        {...text}
-                        style={styleButtonText}
-                    />
-                </View>
-            </Button>
+            <View style={styles.summaryButtonContainerStyle}>
+                <Button
+                    onPress={onPress}
+                    testID={`invite.summary_button.${SummaryButtonType.RETRY}`}
+                    text={formatMessage(text)}
+                    iconName={iconName}
+                    emphasis={emphasis}
+                    size='lg'
+                    theme={theme}
+                />
+            </View>
         );
-    }, [theme, locale, onClose, onRetry, onBack]);
+    }, [styles.summaryButtonContainerStyle, formatMessage, theme, onBack, onRetry, onClose]);
 
     return (
         <View

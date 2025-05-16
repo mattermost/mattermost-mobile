@@ -6,6 +6,7 @@ import React, {useMemo, type ReactNode} from 'react';
 import {type StyleProp, StyleSheet, Text, type TextStyle, View, type ViewStyle, type Insets} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
+import Loading from '@components/loading';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {changeOpacity} from '@utils/theme';
 
@@ -19,13 +20,14 @@ type Props = {
     buttonType?: ButtonType;
     buttonState?: ButtonState;
     testID?: string;
-    onPress: () => void;
+    onPress?: () => void;
     text: string;
     iconComponent?: ReactNode;
     disabled?: boolean;
     hitSlop?: Insets;
     isIconOnTheRight?: boolean;
     iconName?: string;
+    showLoader?: boolean;
 };
 
 const styles = StyleSheet.create({
@@ -60,6 +62,7 @@ const Button = ({
     iconComponent,
     disabled,
     hitSlop,
+    showLoader = false,
 }: Props) => {
     const bgStyle = useMemo(() => [
         buttonBackgroundStyle(theme, size, emphasis, buttonType, buttonState),
@@ -79,6 +82,14 @@ const Button = ({
         };
     }
 
+    const flattenedTxtStyle = StyleSheet.flatten(txtStyle);
+
+    const loadingComponent = (
+        <Loading
+            color={flattenedTxtStyle.color}
+        />
+    );
+
     let icon: ReactNode;
 
     if (iconComponent) {
@@ -90,7 +101,7 @@ const Button = ({
                 <CompassIcon
                     name={iconName!}
                     size={iconSizePerSize[size]}
-                    color={StyleSheet.flatten(txtStyle).color}
+                    color={flattenedTxtStyle.color}
                     testID={`${testID}-icon`}
                 />
             </View>
@@ -110,9 +121,10 @@ const Button = ({
                 style={styles.container}
                 testID={`${testID}-text-container`}
             >
+                {showLoader && loadingComponent}
                 {!isIconOnTheRight && icon}
                 <Text
-                    style={[txtStyle]}
+                    style={flattenedTxtStyle}
                     numberOfLines={1}
                 >
                     {text}
