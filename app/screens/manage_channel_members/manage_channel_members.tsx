@@ -10,10 +10,12 @@ import {fetchChannelMemberships} from '@actions/remote/channel';
 import {fetchUsersByIds, searchProfiles} from '@actions/remote/user';
 import {PER_PAGE_DEFAULT} from '@client/rest/constants';
 import Search from '@components/search';
+import SectionNotice from '@components/section_notice';
 import UserList from '@components/user_list';
 import {Events, General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {useAccessControlAttributes} from '@hooks/access_control_attributes';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import SecurityManager from '@managers/security_manager';
@@ -23,6 +25,7 @@ import {showRemoveChannelUserSnackbar} from '@utils/snack_bar';
 import {changeOpacity, getKeyboardAppearanceFromTheme} from '@utils/theme';
 import {displayUsername, filterProfilesMatchingTerm} from '@utils/user';
 
+import type ChannelModel from '@typings/database/models/servers/channel';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
@@ -33,6 +36,7 @@ type Props = {
     currentUserId: string;
     tutorialWatched: boolean;
     teammateDisplayNameSetting: string;
+    channel?: ChannelModel;
 }
 
 const styles = StyleSheet.create({
@@ -69,6 +73,7 @@ const EMPTY_MEMBERS: ChannelMembership[] = [];
 const EMPTY_IDS = {};
 const {USER_PROFILE} = Screens;
 const CLOSE_BUTTON_ID = 'close-user-profile';
+const TEST_ID = 'manage_members';
 
 export default function ManageChannelMembers({
     canManageAndRemoveMembers,
@@ -78,6 +83,7 @@ export default function ManageChannelMembers({
     currentUserId,
     tutorialWatched,
     teammateDisplayNameSetting,
+    channel: channelProp,
 }: Props) {
     const serverUrl = useServerUrl();
     const theme = useTheme();
@@ -87,6 +93,9 @@ export default function ManageChannelMembers({
     const mounted = useRef(false);
     const hasMoreProfiles = useRef(true);
     const pageRef = useRef(0);
+
+    // Use the hook to fetch access control attributes
+    const {attributeTags} = useAccessControlAttributes('channel', channelId, channelProp?.abacPolicyEnforced);
 
     const [isManageMode, setIsManageMode] = useState(false);
     const [profiles, setProfiles] = useState<UserProfile[]>(EMPTY);
@@ -175,7 +184,7 @@ export default function ManageChannelMembers({
                 enabled: true,
                 id: MANAGE_BUTTON,
                 showAsAction: 'always',
-                testID: 'manage_members.button',
+                testID: `${TEST_ID}.button`,
                 text: formatMessage(manage ? messages.button_done : messages.button_manage),
             }],
         });
@@ -291,9 +300,22 @@ export default function ManageChannelMembers({
     return (
         <SafeAreaView
             style={styles.container}
-            testID='manage_members.screen'
+            testID={`${TEST_ID}.screen`}
             nativeID={SecurityManager.getShieldScreenId(componentId)}
         >
+            {/* or if the channel has abac_policy_enforced=true */}
+            {channelProp?.abacPolicyEnforced === true && (
+                <SectionNotice
+                    type='info'
+                    title={formatMessage({
+                        id: 'channel.abac_policy_enforced.title',
+                        defaultMessage: 'Channel access is restricted by user attributes',
+                    })}
+                    tags={attributeTags.length > 0 ? attributeTags : undefined}
+                    location={Screens.MANAGE_CHANNEL_MEMBERS}
+                    testID={`${TEST_ID}.abac_alert_banner`}
+                />
+            )}
             <View style={styles.searchBar}>
                 <Search
                     autoCapitalize='none'
@@ -304,7 +326,7 @@ export default function ManageChannelMembers({
                     onSubmitEditing={search}
                     placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                     placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                    testID='manage_members.search_bar'
+                    testID={`${TEST_ID}.search_bar`}
                     value={term}
                 />
             </View>
@@ -319,7 +341,7 @@ export default function ManageChannelMembers({
                 showManageMode={canManageAndRemoveMembers && isManageMode}
                 showNoResults={!loading}
                 term={searchedTerm}
-                testID='manage_members.user_list'
+                testID={`${TEST_ID}.user_list`}
                 tutorialWatched={tutorialWatched}
                 includeUserMargin={true}
                 fetchMore={handleReachedBottom}

@@ -22,6 +22,7 @@ exports[`SendTestNotificationNotice should match snapshot 1`] = `
           "backgroundColor": "rgba(93,137,234,0.08)",
           "borderColor": "rgba(93,137,234,0.16)",
         },
+        undefined,
       ]
     }
     testID="sectionNoticeContainer"
@@ -60,9 +61,9 @@ exports[`SendTestNotificationNotice should match snapshot 1`] = `
             {
               "color": "#3f4350",
               "fontFamily": "OpenSans-SemiBold",
-              "fontSize": 16,
+              "fontSize": 14,
               "fontWeight": "600",
-              "lineHeight": 24,
+              "lineHeight": 20,
               "margin": 0,
             }
           }
@@ -88,9 +89,9 @@ exports[`SendTestNotificationNotice should match snapshot 1`] = `
                 {
                   "color": "#3f4350",
                   "fontFamily": "OpenSans",
-                  "fontSize": 16,
+                  "fontSize": 14,
                   "fontWeight": "400",
-                  "lineHeight": 24,
+                  "lineHeight": 20,
                 }
               }
               testID="markdown_text"

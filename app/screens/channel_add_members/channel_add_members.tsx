@@ -11,11 +11,13 @@ import {fetchProfilesNotInChannel, searchProfiles} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
 import Loading from '@components/loading';
 import Search from '@components/search';
+import SectionNotice from '@components/section_notice';
 import SelectedUsers from '@components/selected_users';
 import ServerUserList from '@components/server_user_list';
 import {General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {useAccessControlAttributes} from '@hooks/access_control_attributes';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useKeyboardOverlap} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
@@ -133,6 +135,10 @@ export default function ChannelAddMembers({
     const [term, setTerm] = useState('');
     const [addingMembers, setAddingMembers] = useState(false);
     const [selectedIds, setSelectedIds] = useState<{[id: string]: UserProfile}>({});
+    const [showBanner, setShowBanner] = useState(true);
+
+    // Use the hook to fetch access control attributes
+    const {attributeTags} = useAccessControlAttributes('channel', channel?.id, channel?.abacPolicyEnforced);
 
     const clearSearch = useCallback(() => {
         setTerm('');
@@ -239,7 +245,7 @@ export default function ChannelAddMembers({
 
     useEffect(() => {
         updateNavigationButtons();
-    }, [updateNavigationButtons]);
+    }, [updateNavigationButtons, channel, serverUrl]);
 
     if (addingMembers) {
         return (
@@ -258,6 +264,24 @@ export default function ChannelAddMembers({
             edges={['top', 'left', 'right']}
             nativeID={SecurityManager.getShieldScreenId(componentId)}
         >
+            {showBanner && channel?.abacPolicyEnforced && (
+                <SectionNotice
+                    type='info'
+                    title={formatMessage({
+                        id: 'channel.abac_policy_enforced.title',
+                        defaultMessage: 'Channel access is restricted by user attributes',
+                    })}
+                    text={formatMessage({
+                        id: 'channel.abac_policy_enforced.description',
+                        defaultMessage: 'Only people who match the specified access rules can be selected and added to this channel.',
+                    })}
+                    tags={attributeTags.length > 0 ? attributeTags : undefined}
+                    isDismissable={true}
+                    onDismissClick={() => setShowBanner(false)}
+                    location={Screens.CHANNEL_ADD_MEMBERS}
+                    testID={`${TEST_ID}.abac_alert_banner`}
+                />
+            )}
             <View style={style.searchBar}>
                 <Search
                     testID={`${TEST_ID}.search_bar`}
@@ -296,4 +320,3 @@ export default function ChannelAddMembers({
         </SafeAreaView>
     );
 }
-
