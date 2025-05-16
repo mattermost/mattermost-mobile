@@ -7,7 +7,8 @@ import {
     transformCustomProfileAttributeRecord,
 } from '@database/operator/server_data_operator/transformers/custom_profile';
 import {getUniqueRawsBy} from '@database/operator/utils/general';
-import {logWarning} from '@utils/log';
+import {deleteCustomProfileAttributesByFieldId} from '@queries/servers/custom_profile';
+import {logError, logWarning} from '@utils/log';
 
 import type ServerDataOperatorBase from '.';
 import type Model from '@nozbe/watermelondb/Model';
@@ -22,7 +23,6 @@ export interface CustomProfileHandlerMix {
     handleCustomProfileFields: ({fields, prepareRecordsOnly}: HandleCustomProfileFieldsArgs) => Promise<Model[]>;
     handleCustomProfileAttributes: ({attributes, prepareRecordsOnly}: HandleCustomProfileAttributesArgs) => Promise<Model[]>;
 }
-
 const CustomProfileHandler = <TBase extends Constructor<ServerDataOperatorBase>>(superclass: TBase) => class extends superclass {
     /**
      * handleCustomProfileFields: Handler responsible for the Create/Update operations occurring on the CUSTOM_PROFILE_FIELD table from the 'Server' schema
@@ -40,6 +40,12 @@ const CustomProfileHandler = <TBase extends Constructor<ServerDataOperatorBase>>
         }
 
         const createOrUpdateRawValues = getUniqueRawsBy({raws: fields, key: 'id'});
+        try {
+            const deletedFields = fields.filter((field) => field.delete_at !== 0).map((field) => deleteCustomProfileAttributesByFieldId(this.database, field.id));
+            await Promise.all(deletedFields);
+        } catch (error) {
+            logError('Error deleting custom profile attributes by field id', error);
+        }
 
         return this.handleRecords({
             fieldName: 'id',
