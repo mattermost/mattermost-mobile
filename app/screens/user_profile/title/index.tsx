@@ -48,6 +48,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     details: {
         marginLeft: 24,
         justifyContent: 'center',
+        alignItems: 'flex-start',
+        gap: 4,
         flex: 1,
     },
     displayName: {

@@ -2,10 +2,9 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {StyleSheet} from 'react-native';
+import {defineMessage} from 'react-intl';
 
 import Tag, {BotTag, GuestTag} from '@components/tag';
-import {t} from '@i18n';
 
 type HeaderTagProps = {
     isAutomation?: boolean;
@@ -13,38 +12,25 @@ type HeaderTagProps = {
     showGuestTag?: boolean;
 }
 
-const style = StyleSheet.create({
-    tag: {
-        marginLeft: 0,
-        marginRight: 5,
-        marginBottom: 5,
-    },
-});
+const autoResponderMessage = defineMessage({id: 'post_info.auto_responder', defaultMessage: 'Automatic Reply'});
 
 const HeaderTag = ({
     isAutomation, isAutoResponder, showGuestTag,
 }: HeaderTagProps) => {
     if (isAutomation) {
         return (
-            <BotTag
-                style={style.tag}
-                testID='post_header.bot.tag'
-            />
+            <BotTag testID='post_header.bot.tag'/>
         );
     } else if (showGuestTag) {
         return (
-            <GuestTag
-                style={style.tag}
-                testID='post_header.guest.tag'
-            />
+            <GuestTag testID='post_header.guest.tag'/>
         );
     } else if (isAutoResponder) {
         return (
             <Tag
-                id={t('post_info.auto_responder')}
-                defaultMessage={'Automatic Reply'}
-                style={style.tag}
+                message={autoResponderMessage}
                 testID='post_header.auto_responder.tag'
+                uppercase={true}
             />
         );
     }
