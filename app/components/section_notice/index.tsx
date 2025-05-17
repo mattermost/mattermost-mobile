@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {Pressable, Text, View} from 'react-native';
+import {Pressable, Text, View, type StyleProp, type ViewStyle} from 'react-native';
 
 import Tag from '@components/tag';
 import {useTheme} from '@context/theme';
@@ -27,7 +27,10 @@ type Props = {
     onDismissClick?: () => void;
     location: AvailableScreens;
     tags?: string[];
+    tagsVariant?: 'default' | 'subtle';
     testID?: string;
+    containerStyle?: StyleProp<ViewStyle>;
+    iconSize?: number;
 }
 
 const iconByType = {
@@ -147,13 +150,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         tagsContainer: {
             flexDirection: 'row',
             flexWrap: 'wrap',
+            marginTop: 16,
         },
 
-        // Special styles for ABAC alert banner
-        abacAlertContainer: {
-            borderBottomLeftRadius: 0,
-            borderBottomRightRadius: 0,
-        },
     };
 });
 
@@ -168,7 +167,10 @@ const SectionNotice = ({
     type = 'info',
     location,
     tags,
+    tagsVariant = 'default',
     testID,
+    containerStyle,
+    iconSize = 20,
 }: Props) => {
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
@@ -178,16 +180,15 @@ const SectionNotice = ({
     const hasButtons = primaryButton || secondaryButton || linkButton;
     const showTags = tags && tags.length > 0;
 
-    const isAbacAlert = testID?.includes('abac_alert_banner');
-    const containerStyle = useMemo(() => [
+    const combinedContainerStyle = useMemo(() => [
         styles.container,
         styles[`${type}Container`],
-        isAbacAlert && styles.abacAlertContainer,
-    ], [type, isAbacAlert]);
+        containerStyle,
+    ], [type, containerStyle]);
     const iconStyle = useMemo(() => styles[`${type}Icon`], [type]);
     return (
         <View
-            style={containerStyle}
+            style={combinedContainerStyle}
             testID={testID || 'sectionNoticeContainer'}
         >
             <View style={styles.content}>
@@ -195,7 +196,7 @@ const SectionNotice = ({
                     <CompassIcon
                         name={icon}
                         style={iconStyle}
-                        size={isAbacAlert ? 24 : 20}
+                        size={iconSize}
                         testID='sectionNoticeHeaderIcon'
                     />
                 )}
@@ -216,8 +217,7 @@ const SectionNotice = ({
                                     key={tag + '-' + index}
                                     id={`tag.${tag}`}
                                     defaultMessage={tag}
-                                    style={isAbacAlert ? undefined : {marginRight: 8, marginBottom: 4}}
-                                    isAbacTag={isAbacAlert}
+                                    variant={tagsVariant}
                                 />
                             ))}
                         </View>

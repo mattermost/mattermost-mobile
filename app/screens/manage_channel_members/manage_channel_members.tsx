@@ -313,7 +313,10 @@ export default function ManageChannelMembers({
                     })}
                     tags={attributeTags.length > 0 ? attributeTags : undefined}
                     location={Screens.MANAGE_CHANNEL_MEMBERS}
-                    testID={`${TEST_ID}.abac_alert_banner`}
+                    testID={`${TEST_ID}.notice`}
+                    containerStyle={{borderBottomLeftRadius: 0, borderBottomRightRadius: 0}}
+                    iconSize={24}
+                    tagsVariant='subtle'
                 />
             )}
             <View style={styles.searchBar}>

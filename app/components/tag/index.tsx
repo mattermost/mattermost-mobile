@@ -17,7 +17,7 @@ type TagProps = {
     style?: StyleProp<ViewStyle>;
     testID?: string;
     textStyle?: StyleProp<TextStyle>;
-    isAbacTag?: boolean;
+    variant?: 'default' | 'subtle';
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
@@ -40,17 +40,15 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             color: changeOpacity(theme.sidebarHeaderTextColor, 0.6),
         },
 
-        // Special styles for ABAC tags
-        abacTagContainer: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
-            borderWidth: 0,
+        // Variant styles
+        subtleContainer: {
             borderRadius: 6,
             paddingVertical: 4,
             paddingHorizontal: 8,
-            marginRight: 4,
+            marginRight: 8,
+            marginBottom: 8,
         },
-        abacTagText: {
-            color: theme.centerChannelColor,
+        subtleText: {
             fontSize: 12,
             textTransform: 'none',
         },
@@ -83,7 +81,7 @@ export function GuestTag(props: Omit<TagProps, 'id' | 'defaultMessage'>) {
     );
 }
 
-const Tag = ({id, defaultMessage, inTitle, show = true, style, testID, textStyle, isAbacTag}: TagProps) => {
+const Tag = ({id, defaultMessage, inTitle, show = true, style, testID, textStyle, variant = 'default'}: TagProps) => {
     const theme = useTheme();
 
     if (!show) {
@@ -96,7 +94,7 @@ const Tag = ({id, defaultMessage, inTitle, show = true, style, testID, textStyle
         <View
             style={[
                 styles.container,
-                isAbacTag && styles.abacTagContainer,
+                variant === 'subtle' && styles.subtleContainer,
                 style,
             ]}
         >
@@ -106,7 +104,7 @@ const Tag = ({id, defaultMessage, inTitle, show = true, style, testID, textStyle
                 style={[
                     styles.text,
                     inTitle ? styles.title : null,
-                    isAbacTag && styles.abacTagText,
+                    variant === 'subtle' && styles.subtleText,
                     textStyle,
                 ]}
                 testID={testID}
