@@ -5,12 +5,17 @@ import RNUtils from '@mattermost/rnutils';
 import {AppState, type AppStateStatus} from 'react-native';
 import performance from 'react-native-performance';
 
-import {logDebug, logWarning} from '@utils/log';
+import {logDebug, logInfo, logWarning} from '@utils/log';
 
 import Batcher from './performance_metrics_batcher';
 
 import type {NetworkRequestMetrics} from './constant';
 import type {MarkOptions} from 'react-native-performance/lib/typescript/performance';
+
+interface PerformanceMarkWithDetail {
+    startTime: number;
+    detail?: string;
+}
 
 type Target = 'HOME' | 'CHANNEL' | 'THREAD' | undefined;
 
@@ -87,26 +92,48 @@ class PerformanceMetricsManagerSingleton {
     }
 
     public startMetric(metricName: MetricName) {
-        performance.mark(metricName);
+        performance.mark(metricName, {detail: 'startMetric'});
+    }
+
+    public mark(metricName: MetricName, options?: MarkOptions) {
+        performance.mark(metricName, options);
     }
 
     public endMetric(metricName: MetricName, serverUrl: string) {
-        const marks = performance.getEntriesByName(metricName, 'mark');
+        const marks = performance.getEntriesByName(metricName, 'mark') as PerformanceMarkWithDetail[];
         if (!marks.length) {
             return;
         }
 
-        const measureName = `${metricName}_measure`;
-        const measure = performance.measure(measureName, metricName);
+        let duration = 0;
+        if (marks.length === 1) {
+            const measureName = `measure_${metricName}`;
+            const measure = performance.measure(measureName, metricName);
+            duration = measure.duration;
+            performance.clearMeasures(measureName);
+        } else {
+            // get additional details when using mark()s
+            // measure() returns duration value that is not the same as the diff between the last and first mark
+            duration = marks[marks.length - 1].startTime - marks[0].startTime;
+
+            logInfo(`Performance marks for ${metricName}:`);
+            for (let i = 1; i < marks.length; i++) {
+                const markDuration = marks[i].startTime - marks[i - 1].startTime;
+                const timeStr = markDuration.toFixed(2).padStart(8, ' ');
+                const markRange = `Mark ${i - 1} => ${i}:`.padEnd(15, ' ');
+                const details = `[${marks[i - 1].detail || 'no detail'} => ${marks[i].detail || 'no detail'}]`;
+                logInfo(`${markRange}${timeStr}ms    ${details}`);
+            }
+            logInfo(`${'Total:'.padEnd(15, ' ')}${duration.toFixed(2).padStart(8, ' ')}ms`);
+        }
 
         this.ensureBatcher(serverUrl).addToBatch({
             metric: metricName,
-            value: measure.duration,
+            value: duration,
             timestamp: Date.now(),
         });
 
         performance.clearMarks(metricName);
-        performance.clearMeasures(measureName);
     }
 
     public startTimeToInteraction(options?: MarkOptions) {

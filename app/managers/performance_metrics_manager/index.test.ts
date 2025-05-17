@@ -7,7 +7,7 @@ import performance from 'react-native-performance';
 
 import {mockApiClient} from '@test/mock_api_client';
 import TestHelper from '@test/test_helper';
-import {logWarning} from '@utils/log';
+import {logInfo, logWarning} from '@utils/log';
 
 import NetworkManager from '../network_manager';
 
@@ -28,8 +28,10 @@ const {
 } = batcherTestExports;
 
 const TEST_EPOCH = 1577836800000;
+
 jest.mock('@utils/log', () => ({
     logDebug: jest.fn(),
+    logInfo: jest.fn(),
     logWarning: jest.fn(),
 }));
 
@@ -377,6 +379,31 @@ describe('performance_metrics_manager', () => {
             await TestHelper.tick();
             expect(mockApiClient.post).toHaveBeenCalledWith(expectedUrl1, expectedRequest1);
             expect(mockApiClient.post).toHaveBeenCalledWith(expectedUrl2, expectedRequest2);
+        });
+
+        it('handles multiple marks with detailed logging', async () => {
+            const timestamp = TEST_EPOCH + 200;
+            const expectedRequest = getBaseReportRequest(timestamp, timestamp + 1);
+            expectedRequest.body.histograms = [{
+                metric: 'mobile_channel_switch',
+                timestamp,
+                value: 50,
+            }];
+
+            PerformanceMetricsManager.startMetric('mobile_channel_switch');
+            jest.advanceTimersByTime(50);
+            PerformanceMetricsManager.mark('mobile_channel_switch', {detail: 'middle'});
+            jest.advanceTimersByTime(150);
+            PerformanceMetricsManager.endMetric('mobile_channel_switch', serverUrl1);
+            await TestHelper.tick();
+
+            jest.advanceTimersByTime(INTERVAL_TIME);
+            await TestHelper.tick();
+            expect(mockApiClient.post).toHaveBeenCalledWith(expectedUrl1, expectedRequest);
+
+            expect(logInfo).toHaveBeenCalledWith('Performance marks for mobile_channel_switch:');
+            expect(logInfo).toHaveBeenCalledWith('Mark 0 => 1:      50.00ms    [startMetric => middle]');
+            expect(logInfo).toHaveBeenCalledWith('Total:            50.00ms');
         });
     });
 });
