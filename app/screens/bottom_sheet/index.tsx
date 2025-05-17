@@ -4,7 +4,7 @@
 import BottomSheetM, {BottomSheetBackdrop, BottomSheetView, type BottomSheetBackdropProps} from '@gorhom/bottom-sheet';
 import React, {type ReactNode, useCallback, useEffect, useMemo, useRef} from 'react';
 import {DeviceEventEmitter, type Handle, InteractionManager, Keyboard, type StyleProp, View, type ViewStyle} from 'react-native';
-import {ReduceMotion, type WithSpringConfig} from 'react-native-reanimated';
+import {ReduceMotion, useReducedMotion, type WithSpringConfig} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {Events} from '@constants';
@@ -86,7 +86,6 @@ export const animatedConfig: Omit<WithSpringConfig, 'velocity'> = {
     overshootClamping: true,
     restSpeedThreshold: 0.3,
     restDisplacementThreshold: 0.3,
-    reduceMotion: ReduceMotion.Never,
 };
 
 const BottomSheet = ({
@@ -100,6 +99,7 @@ const BottomSheet = ({
     testID,
     enableDynamicSizing = false,
 }: Props) => {
+    const reducedMotion = useReducedMotion();
     const sheetRef = useRef<BottomSheetM>(null);
     const isTablet = useIsTablet();
     const insets = useSafeAreaInsets();
@@ -221,7 +221,7 @@ const BottomSheet = ({
             backdropComponent={renderBackdrop}
             onAnimate={handleAnimationStart}
             onChange={handleChange}
-            animationConfigs={animatedConfig}
+            animationConfigs={{...animatedConfig, reduceMotion: reducedMotion ? ReduceMotion.Always : ReduceMotion.Never}}
             handleComponent={Indicator}
             style={styles.bottomSheet}
             backgroundStyle={bottomSheetBackgroundStyle}
