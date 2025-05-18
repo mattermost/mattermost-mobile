@@ -133,6 +133,11 @@ const ChannelItem = ({
     const styles = getStyleSheet(theme);
 
     const channelName = (showChannelName && !isDMorGM(channel)) ? channel.name : '';
+
+    // Note: urgentMentionCount is a subset of mentionsCount.
+    // All urgent mentions are also included in mentionsCount,
+    // so we use urgentMentionCount only for styling (e.g., red badge),
+    // not for counting total mentions.
     const hasUrgent = urgentMentionCount > 0;
 
     // Make it bolded if it has unreads or mentions

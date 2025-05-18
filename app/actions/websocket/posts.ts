@@ -149,11 +149,13 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
             preparedMyChannelHack(myChannel);
             const {member: unreadAt} = await markChannelAsUnread(
                 serverUrl,
-                post.channel_id,
-                myChannel.messageCount + 1,
-                myChannel.mentionsCount + (hasMentions ? 1 : 0),
-                myChannel.lastViewedAt,
-                myChannel.urgentMentionCount + (hasUrgentMentions ? 1 : 0),
+                {
+                    channelId: post.channel_id,
+                    messageCount: myChannel.messageCount + 1,
+                    mentionsCount: myChannel.mentionsCount + (hasMentions ? 1 : 0),
+                    lastViewed: myChannel.lastViewedAt,
+                    urgentMentionCount: myChannel.urgentMentionCount + (hasUrgentMentions ? 1 : 0),
+                },
                 true,
             );
             if (unreadAt) {
@@ -326,7 +328,13 @@ export async function handlePostUnread(serverUrl: string, msg: WebSocketMessage)
         const postNumber = isCRTEnabled ? channel?.total_msg_count_root : channel?.total_msg_count;
         const delta = postNumber ? postNumber - messages : messages;
 
-        markChannelAsUnread(serverUrl, channelId, delta, mentions, lastViewedAt, membership?.urgent_mention_count || 0);
+        markChannelAsUnread(serverUrl, {
+            channelId,
+            messageCount: delta,
+            mentionsCount: mentions,
+            urgentMentionCount: membership?.urgent_mention_count || 0,
+            lastViewed: lastViewedAt,
+        });
     }
 }
 
