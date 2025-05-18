@@ -37,6 +37,7 @@ type Props = {
     isOnCenterBg?: boolean;
     showChannelName?: boolean;
     isOnHome?: boolean;
+    urgentMentionCount?: number;
 }
 
 export const ROW_HEIGHT = 40;
@@ -80,6 +81,10 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         backgroundColor: theme.buttonBg,
         borderColor: theme.centerChannelBg,
     },
+    hasUrgent: {
+        color: theme.sidebarText,
+        backgroundColor: theme.dndIndicator,
+    },
     mutedBadge: {
         opacity: 0.32,
     },
@@ -120,6 +125,7 @@ const ChannelItem = ({
     isOnCenterBg = false,
     showChannelName = false,
     isOnHome = false,
+    urgentMentionCount = 0,
 }: Props) => {
     const {formatMessage} = useIntl();
     const theme = useTheme();
@@ -127,6 +133,12 @@ const ChannelItem = ({
     const styles = getStyleSheet(theme);
 
     const channelName = (showChannelName && !isDMorGM(channel)) ? channel.name : '';
+
+    // Note: urgentMentionCount is a subset of mentionsCount.
+    // All urgent mentions are also included in mentionsCount,
+    // so we use urgentMentionCount only for styling (e.g., red badge),
+    // not for counting total mentions.
+    const hasUrgent = urgentMentionCount > 0;
 
     // Make it bolded if it has unreads or mentions
     const isBolded = isUnread || mentionsCount > 0;
@@ -202,9 +214,15 @@ const ChannelItem = ({
                 />
                 <View style={styles.filler}/>
                 <Badge
+                    testID={`${channelItemTestId}.badge`}
                     visible={mentionsCount > 0}
                     value={mentionsCount}
-                    style={[styles.badge, isMuted && styles.mutedBadge, isOnCenterBg && styles.badgeOnCenterBg]}
+                    style={[
+                        styles.badge,
+                        isMuted && styles.mutedBadge,
+                        isOnCenterBg && styles.badgeOnCenterBg,
+                        hasUrgent && styles.hasUrgent,
+                    ]}
                 />
                 {hasCall &&
                 <CompassIcon
