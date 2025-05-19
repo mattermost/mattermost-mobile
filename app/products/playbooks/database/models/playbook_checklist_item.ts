@@ -12,6 +12,7 @@ import type {Relation} from '@nozbe/watermelondb';
 import type PlaybookChecklistItemModelInterface from '@playbooks//types/database/models/playbook_checklist_item';
 import type PlaybookChecklistModel from '@playbooks/types/database/models/playbook_checklist';
 import type {SyncStatus} from '@typings/database/database';
+import type UserModel from '@typings/database/models/servers/user';
 
 const {USER} = MM_TABLES.SERVER;
 const {PLAYBOOK_CHECKLIST_ITEM, PLAYBOOK_CHECKLIST} = PLAYBOOK_TABLES;
@@ -80,4 +81,7 @@ export default class PlaybookChecklistItemModel extends Model implements Playboo
 
     /** checklist : The checklist to which this checklist item belongs */
     @immutableRelation(PLAYBOOK_CHECKLIST, 'checklist_id') checklist!: Relation<PlaybookChecklistModel>;
+
+    /** user : The user to whom this checklist item is assigned */
+    @immutableRelation(USER, 'assignee_id') assignee?: Relation<UserModel>;
 }

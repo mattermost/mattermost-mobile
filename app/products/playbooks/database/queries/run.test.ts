@@ -7,7 +7,6 @@
 import {filter} from 'rxjs/operators';
 
 import DatabaseManager from '@database/manager';
-import {createPlaybookItem, createPlaybookRuns} from '@playbooks/database/operators/handlers/index.test';
 import TestHelper from '@test/test_helper';
 
 import {
@@ -37,7 +36,7 @@ describe('Playbook Run Queries', () => {
     describe('queryPlaybookRunsPerChannel', () => {
         it('should query playbook runs for a channel without finished status', async () => {
             const channelId = 'channel1';
-            const mockRuns = createPlaybookRuns(2, 0, 0).map((run, index) => ({
+            const mockRuns = TestHelper.createPlaybookRuns(2, 0, 0).map((run, index) => ({
                 ...run,
                 channel_id: channelId,
                 end_at: index === 0 ? 0 : 1620000000000, // First run is not finished, second is finished
@@ -59,7 +58,7 @@ describe('Playbook Run Queries', () => {
 
         it('should query playbook runs for a channel with finished status', async () => {
             const channelId = 'channel2';
-            const mockRuns = createPlaybookRuns(2, 0, 0).map((run, index) => ({
+            const mockRuns = TestHelper.createPlaybookRuns(2, 0, 0).map((run, index) => ({
                 ...run,
                 channel_id: channelId,
                 end_at: index === 0 ? 0 : 1620000000000, // First run is not finished, second is finished
@@ -79,7 +78,7 @@ describe('Playbook Run Queries', () => {
 
         it('should query playbook runs for a channel with unfinished status', async () => {
             const channelId = 'channel3';
-            const mockRuns = createPlaybookRuns(2, 0, 0).map((run, index) => ({
+            const mockRuns = TestHelper.createPlaybookRuns(2, 0, 0).map((run, index) => ({
                 ...run,
                 channel_id: channelId,
                 end_at: index === 0 ? 0 : 1620000000000, // First run is not finished, second is finished
@@ -100,7 +99,7 @@ describe('Playbook Run Queries', () => {
 
     describe('getPlaybookRunById', () => {
         it('should return the playbook run if found', async () => {
-            const mockRuns = createPlaybookRuns(1, 0, 0);
+            const mockRuns = TestHelper.createPlaybookRuns(1, 0, 0);
             await operator.handlePlaybookRun({
                 runs: mockRuns,
                 prepareRecordsOnly: false,
@@ -129,7 +128,7 @@ describe('Playbook Run Queries', () => {
         });
 
         it('should observe the playbook run if found', (done) => {
-            const mockRuns = createPlaybookRuns(1, 0, 0);
+            const mockRuns = TestHelper.createPlaybookRuns(1, 0, 0);
             operator.handlePlaybookRun({
                 runs: mockRuns,
                 prepareRecordsOnly: false,
@@ -166,7 +165,7 @@ describe('Playbook Run Queries', () => {
 
         it('should observe playbook runs for a channel without finished status', (done) => {
             const channelId = 'channel4';
-            const mockRuns = createPlaybookRuns(2, 0, 0).map((run, index) => ({
+            const mockRuns = TestHelper.createPlaybookRuns(2, 0, 0).map((run, index) => ({
                 ...run,
                 channel_id: channelId,
                 end_at: index === 0 ? 0 : 1620000000000, // First run is not finished, second is finished
@@ -189,7 +188,7 @@ describe('Playbook Run Queries', () => {
 
         it('should observe playbook runs for a channel with finished status', (done) => {
             const channelId = 'channel5';
-            const mockRuns = createPlaybookRuns(2, 0, 0).map((run, index) => ({
+            const mockRuns = TestHelper.createPlaybookRuns(2, 0, 0).map((run, index) => ({
                 ...run,
                 channel_id: channelId,
                 end_at: index === 0 ? 0 : 1620000000000, // First run is not finished, second is finished
@@ -211,7 +210,7 @@ describe('Playbook Run Queries', () => {
 
         it('should observe playbook runs for a channel with unfinished status', (done) => {
             const channelId = 'channel6';
-            const mockRuns = createPlaybookRuns(2, 0, 0).map((run, index) => ({
+            const mockRuns = TestHelper.createPlaybookRuns(2, 0, 0).map((run, index) => ({
                 ...run,
                 channel_id: channelId,
                 end_at: index === 0 ? 0 : 1620000000000, // First run is not finished, second is finished
@@ -241,7 +240,7 @@ describe('Playbook Run Queries', () => {
         });
 
         it('should return 0 when there are no checklist', (done) => {
-            const mockRuns = createPlaybookRuns(1, 0, 0);
+            const mockRuns = TestHelper.createPlaybookRuns(1, 0, 0);
             operator.handlePlaybookRun({
                 runs: mockRuns,
                 prepareRecordsOnly: false,
@@ -257,7 +256,7 @@ describe('Playbook Run Queries', () => {
         });
 
         it('should return 0 when there are no checklist items', (done) => {
-            const mockRuns = createPlaybookRuns(1, 1, 0);
+            const mockRuns = TestHelper.createPlaybookRuns(1, 1, 0);
             operator.handlePlaybookRun({
                 runs: mockRuns,
                 prepareRecordsOnly: false,
@@ -274,7 +273,7 @@ describe('Playbook Run Queries', () => {
         });
 
         it('should return 100 when all checklist items are completed', (done) => {
-            const mockRuns = createPlaybookRuns(1, 1, 2);
+            const mockRuns = TestHelper.createPlaybookRuns(1, 1, 2);
             mockRuns[0].checklists[0].items.forEach((item) => {
                 item.state = 'done';
                 item.completed_at = Date.now();
@@ -295,13 +294,13 @@ describe('Playbook Run Queries', () => {
         });
 
         it('should return correct progress when some checklist items are completed', (done) => {
-            const mockRuns = createPlaybookRuns(1, 1, 9);
+            const mockRuns = TestHelper.createPlaybookRuns(1, 1, 9);
             if (mockRuns[0].checklists[0].items.length < 3) {
                 const index = mockRuns[0].checklists[0].items.length - 1;
                 mockRuns[0].checklists[0].items.push(
-                    createPlaybookItem(mockRuns[0].checklists[0].id, index + 1),
-                    createPlaybookItem(mockRuns[0].checklists[0].id, index + 2),
-                    createPlaybookItem(mockRuns[0].checklists[0].id, index + 3),
+                    TestHelper.createPlaybookItem(mockRuns[0].checklists[0].id, index + 1),
+                    TestHelper.createPlaybookItem(mockRuns[0].checklists[0].id, index + 2),
+                    TestHelper.createPlaybookItem(mockRuns[0].checklists[0].id, index + 3),
                 );
             }
             const totalItems = mockRuns[0].checklists[0].items.length;
@@ -331,7 +330,7 @@ describe('Playbook Run Queries', () => {
         });
 
         it('should return 0 when all checklist items are open', (done) => {
-            const mockRuns = createPlaybookRuns(1, 1, 2);
+            const mockRuns = TestHelper.createPlaybookRuns(1, 1, 2);
 
             operator.handlePlaybookRun({
                 runs: mockRuns,
@@ -384,7 +383,7 @@ describe('Playbook Run Queries', () => {
         });
 
         it('should return an empty array if the playbook run has no participants', (done) => {
-            const mockRuns = createPlaybookRuns(1, 0, 0);
+            const mockRuns = TestHelper.createPlaybookRuns(1, 0, 0);
             mockRuns[0].participant_ids = [];
             operator.handlePlaybookRun({
                 runs: mockRuns,
@@ -401,7 +400,7 @@ describe('Playbook Run Queries', () => {
         });
 
         it('should return the participants of the playbook run', (done) => {
-            const mockRuns = createPlaybookRuns(1, 0, 0);
+            const mockRuns = TestHelper.createPlaybookRuns(1, 0, 0);
             mockRuns[0].participant_ids = updatedUsers.map((user) => user.id);
 
             operator.handlePlaybookRun({
@@ -422,7 +421,7 @@ describe('Playbook Run Queries', () => {
         });
 
         it('should update participants when the playbook run is updated', (done) => {
-            const mockRuns = createPlaybookRuns(1, 0, 0);
+            const mockRuns = TestHelper.createPlaybookRuns(1, 0, 0);
             mockRuns[0].participant_ids = initialUsers.map((user) => user.id);
 
             operator.handlePlaybookRun({

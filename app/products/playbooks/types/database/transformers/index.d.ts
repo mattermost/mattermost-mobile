@@ -3,7 +3,6 @@
 
 type PlaybookChecklistWithRun = {
     id: string;
-    delete_at: number;
     run_id: string;
     title: string;
     order: number;
@@ -25,5 +24,4 @@ type PlaybookChecklistItemWithChecklist = {
     task_actions?: TaskAction[] | null;
     order: number;
     completed_at: number;
-    delete_at: number;
 }

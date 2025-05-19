@@ -444,7 +444,6 @@ describe('*** Test schema for SERVER database ***', () => {
                         post_id: {name: 'post_id', type: 'string', isOptional: true},
                         create_at: {name: 'create_at', type: 'number'},
                         end_at: {name: 'end_at', type: 'number'},
-                        delete_at: {name: 'delete_at', type: 'number'},
                         active_stage: {name: 'active_stage', type: 'number'},
                         active_stage_title: {name: 'active_stage_title', type: 'string'},
                         participant_ids: {name: 'participant_ids', type: 'string'}, // JSON string
@@ -468,7 +467,6 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'post_id', type: 'string', isOptional: true},
                         {name: 'create_at', type: 'number'},
                         {name: 'end_at', type: 'number'},
-                        {name: 'delete_at', type: 'number'},
                         {name: 'active_stage', type: 'number'},
                         {name: 'active_stage_title', type: 'string'},
                         {name: 'participant_ids', type: 'string'}, // JSON string

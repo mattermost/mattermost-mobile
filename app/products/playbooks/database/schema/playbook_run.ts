@@ -20,7 +20,6 @@ export default tableSchema({
         {name: 'post_id', type: 'string', isOptional: true},
         {name: 'create_at', type: 'number'},
         {name: 'end_at', type: 'number'},
-        {name: 'delete_at', type: 'number'},
         {name: 'active_stage', type: 'number'},
         {name: 'active_stage_title', type: 'string'},
         {name: 'participant_ids', type: 'string'}, // JSON string

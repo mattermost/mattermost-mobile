@@ -41,9 +41,6 @@ declare class PlaybookRunModel extends Model {
     // Timestamp when the run ended (0 if not finished)
     endAt: number;
 
-    // Timestamp when deleted (0 if not deleted)
-    deleteAt: number;
-
     // Name of the playbook run
     name: string;
 
@@ -89,7 +86,7 @@ declare class PlaybookRunModel extends Model {
     /** post : the post that created the run (nullable) */
     post: Relation<PostModel>;
 
-    /** team : The TEAM to which this Playbook Run belongs */
+    /** team : The TEAM to which the run channel belongs */
     team: Relation<TeamModel>;
 
     /** owner : The USER who commands this Playbook Run*/

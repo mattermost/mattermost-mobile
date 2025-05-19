@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import DatabaseManager from '@database/manager';
-import {createPlaybookItem} from '@playbooks/database/operators/handlers/index.test';
+import TestHelper from '@test/test_helper';
 
 import {
     queryPlaybookChecklistItemsByChecklist,
@@ -29,13 +29,12 @@ describe('Checklist Item Queries', () => {
         it('should query checklist items by checklistId and sort by order ascending', async () => {
             const checklistId = 'checklist123';
             const mockItems = [
-                createPlaybookItem(checklistId, 1), // Item with order 1
-                createPlaybookItem(checklistId, 0), // Item with order 0
+                TestHelper.createPlaybookItem(checklistId, 1), // Item with order 1
+                TestHelper.createPlaybookItem(checklistId, 0), // Item with order 0
             ].map((item, index) => ({
                 ...item,
                 checklist_id: checklistId,
                 order: index,
-                delete_at: 0,
             }));
 
             await operator.handlePlaybookChecklistItem({
@@ -55,10 +54,9 @@ describe('Checklist Item Queries', () => {
     describe('getPlaybookChecklistItemById', () => {
         it('should return a checklist item if found', async () => {
             const mockItem = {
-                ...createPlaybookItem('checklist123', 0),
+                ...TestHelper.createPlaybookItem('checklist123', 0),
                 checklist_id: 'checklist123',
                 order: 0,
-                delete_at: 0,
             };
 
             await operator.handlePlaybookChecklistItem({
@@ -82,10 +80,9 @@ describe('Checklist Item Queries', () => {
     describe('observePlaybookChecklistItemById', () => {
         it('should observe a checklist item by id', (done) => {
             const mockItem = {
-                ...createPlaybookItem('checklist123', 0),
+                ...TestHelper.createPlaybookItem('checklist123', 0),
                 checklist_id: 'checklist123',
                 order: 0,
-                delete_at: 0,
             };
 
             operator.handlePlaybookChecklistItem({
@@ -116,13 +113,12 @@ describe('Checklist Item Queries', () => {
         it('should observe checklist items by checklistId', (done) => {
             const checklistId = 'checklist123';
             const mockItems = [
-                createPlaybookItem(checklistId, 1), // Item with order 1
-                createPlaybookItem(checklistId, 0), // Item with order 0
+                TestHelper.createPlaybookItem(checklistId, 1), // Item with order 1
+                TestHelper.createPlaybookItem(checklistId, 0), // Item with order 0
             ].map((item, index) => ({
                 ...item,
                 checklist_id: checklistId,
                 order: index,
-                delete_at: 0,
             }));
 
             operator.handlePlaybookChecklistItem({

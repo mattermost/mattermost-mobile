@@ -19,12 +19,12 @@ type HandlePlaybookRunArgs = {
     prepareRecordsOnly: boolean;
     removeAssociatedRecords?: boolean;
     processChildren?: boolean;
+    keepFinishedRuns?: boolean;
     runs?: PlaybookRun[];
 }
 
 type HandlePlaybookChecklistArgs = {
     prepareRecordsOnly: boolean;
-    removeAssociatedRecords?: boolean;
     processChildren?: boolean;
     checklists?: PlaybookChecklistWithRun[];
 }
@@ -52,7 +52,7 @@ const PlaybookHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supe
      * @param {PlaybookRun[]} [args.runs] - The playbook run records to handle.
      * @returns {Promise<any[]>} - A promise that resolves to an array of handled playbook run records.
      */
-    handlePlaybookRun = async ({runs, prepareRecordsOnly, processChildren = false, removeAssociatedRecords = false}: HandlePlaybookRunArgs): Promise<Model[]> => {
+    handlePlaybookRun = async ({runs, keepFinishedRuns, prepareRecordsOnly, processChildren, removeAssociatedRecords}: HandlePlaybookRunArgs): Promise<Model[]> => {
         if (!runs?.length) {
             logWarning(
                 'An empty or undefined "runs" array has been passed to the handlePlaybookRun method',
@@ -67,47 +67,63 @@ const PlaybookHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supe
             Q.where('id', Q.oneOf(keys)),
         ).fetch();
         const existingRecordsMap = new Map(existingRecords.map((record) => [record.id, record]));
-        const raws = uniqueRaws.reduce<{createOrUpdateRaws: PlaybookRun[]; deleteRaws: PlaybookRun[]}>((res, raw) => {
+
+        // get the raws to create or update, will handle deletion later
+        const createOrUpdateRaws = uniqueRaws.reduce<PlaybookRun[]>((res, raw) => {
             const existingRecord = existingRecordsMap.get(raw.id);
             if (!existingRecord) {
-                if (!raw.delete_at) {
-                    res.createOrUpdateRaws.push(raw);
-                }
-                return res;
-            }
-
-            if (!raw.delete_at && shouldUpdatePlaybookRunRecord(existingRecord, raw)) {
-                res.createOrUpdateRaws.push(raw);
-            }
-
-            if (raw.delete_at) {
-                res.deleteRaws.push(raw);
+                res.push(raw);
+            } else if (shouldUpdatePlaybookRunRecord(existingRecord, raw)) {
+                res.push(raw);
             }
 
             return res;
-        }, {createOrUpdateRaws: [], deleteRaws: []});
+        }, []);
 
-        if (!raws.createOrUpdateRaws.length && !raws.deleteRaws.length) {
-            return [];
-        }
-
-        if (raws.createOrUpdateRaws.length || raws.deleteRaws.length) {
+        if (createOrUpdateRaws.length) {
             const records = await this.handleRecords({
                 fieldName: 'id',
                 tableName: PLAYBOOK_RUN,
                 prepareRecordsOnly: true,
-                createOrUpdateRawValues: raws.createOrUpdateRaws,
-                deleteRawValues: raws.deleteRaws,
+                createOrUpdateRawValues: createOrUpdateRaws,
                 transformer: transformPlaybookRunRecord,
-            }, 'handlePlaybookRun');
+            }, 'handlePlaybookRun prepare');
             batchRecords.push(...records);
         }
 
-        if (raws.deleteRaws.length && removeAssociatedRecords) {
-            const toRemoveIds = new Set(raws.deleteRaws.map((raw) => raw.id));
-            const toRemove = existingRecords.filter((record) => toRemoveIds.has(record.id));
-            const records = await prepareDestroyPermanentlyChildrenAssociatedRecords(toRemove);
-            batchRecords.push(...records);
+        const toRemove: Model[] = [];
+        if (!keepFinishedRuns) {
+            const finishedRaws = new Set(createOrUpdateRaws.filter((raw) => raw.end_at).map((raw) => (raw.id)));
+            const numNewFinished = finishedRaws.size;
+
+            const clauses: Q.Clause[] = [
+                Q.where('end_at', Q.notEq(0)),
+                Q.sortBy('end_at', 'desc'),
+            ];
+
+            if (numNewFinished < 5) {
+                clauses.push(Q.skip(5 - numNewFinished));
+                clauses.push(Q.take(9999)); // Required when using skip
+            }
+
+            const existingFinishedRecords = await this.database.collections.get<PlaybookRunModel>(PLAYBOOK_RUN).
+                query(...clauses).
+                fetch();
+
+            for (const record of existingFinishedRecords) {
+                if (!finishedRaws.has(record.id)) {
+                    record.prepareDestroyPermanently();
+                    batchRecords.push(record);
+                    if (removeAssociatedRecords) {
+                        toRemove.push(record);
+                    }
+                }
+            }
+
+            if (toRemove.length) {
+                const childrenToRemove = await prepareDestroyPermanentlyChildrenAssociatedRecords(toRemove);
+                batchRecords.push(...childrenToRemove);
+            }
         }
 
         if (processChildren) {
@@ -116,11 +132,11 @@ const PlaybookHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supe
                     let lists: PlaybookChecklistWithRun[] = raw.checklists.map((checklist, index) => ({
                         ...checklist,
                         order: index,
-                        delete_at: raw.delete_at,
                         run_id: raw.id,
                     }));
-                    if (removeAssociatedRecords) {
-                        lists = lists.filter((item) => !item.delete_at); // Filter out items that are already marked for deletion
+                    if (removeAssociatedRecords && toRemove.length) {
+                        const deletedRunIds = new Set(toRemove.map((run) => run.id));
+                        lists = lists.filter((item) => !deletedRunIds.has(item.run_id)); // Filter out items that are already marked for deletion
                     }
                     res.push(...lists);
                 }
@@ -132,7 +148,7 @@ const PlaybookHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supe
         }
 
         if (batchRecords.length && !prepareRecordsOnly) {
-            await this.batchRecords(batchRecords, 'handlePlaybookRun');
+            await this.batchRecords(batchRecords, 'handlePlaybookRun batch');
         }
 
         return batchRecords;
@@ -143,11 +159,10 @@ const PlaybookHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supe
      * @param {HandlePlaybookChecklistArgs} args - The arguments for handling playbook checklist records.
      * @param {boolean} args.prepareRecordsOnly - If true, only prepares the records without saving them.
      * @param {boolean} [args.processChildren] - If true, process child records.
-     * @param {boolean} [args.removeAssociatedRecords] - If true, remove associated records.
      * @param {PlaybookChecklistWithRun[]} [args.checklists] - The playbook checklist records to handle.
      * @returns {Promise<Model[]>} - A promise that resolves to an array of handled playbook checklist records.
      */
-    handlePlaybookChecklist = async ({checklists, prepareRecordsOnly, processChildren = false, removeAssociatedRecords = false}: HandlePlaybookChecklistArgs): Promise<Model[]> => {
+    handlePlaybookChecklist = async ({checklists, prepareRecordsOnly, processChildren = false}: HandlePlaybookChecklistArgs): Promise<Model[]> => {
         if (!checklists?.length) {
             logWarning(
                 'An empty or undefined "checklists" array has been passed to the handlePlaybookChecklist method',
@@ -162,63 +177,38 @@ const PlaybookHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supe
             Q.where('id', Q.oneOf(keys)),
         ).fetch();
         const existingRecordsMap = new Map(existingRecords.map((record) => [record.id, record]));
-        const raws = uniqueRaws.reduce<{createOrUpdateRaws: PlaybookChecklistWithRun[]; deleteRaws: PlaybookChecklistWithRun[]}>((res, raw) => {
+        const createOrUpdateRaws = uniqueRaws.reduce<PlaybookChecklistWithRun[]>((res, raw) => {
             const existingRecord = existingRecordsMap.get(raw.id);
             if (!existingRecord) {
-                if (!raw.delete_at) {
-                    res.createOrUpdateRaws.push(raw);
-                }
-                return res;
-            }
-
-            if (!raw.delete_at && shouldHandlePlaybookChecklistRecord(existingRecord, raw)) {
-                res.createOrUpdateRaws.push(raw);
-            }
-
-            if (raw.delete_at) {
-                res.deleteRaws.push(raw);
+                res.push(raw);
+            } else if (shouldHandlePlaybookChecklistRecord(existingRecord, raw)) {
+                res.push(raw);
             }
 
             return res;
-        }, {createOrUpdateRaws: [], deleteRaws: []});
+        }, []);
 
-        if (!raws.createOrUpdateRaws.length && !raws.deleteRaws.length) {
-            return [];
-        }
-
-        if (raws.createOrUpdateRaws.length || raws.deleteRaws.length) {
+        if (createOrUpdateRaws.length) {
             const records = await this.handleRecords({
                 fieldName: 'id',
                 tableName: PLAYBOOK_CHECKLIST,
                 prepareRecordsOnly: true,
-                createOrUpdateRawValues: raws.createOrUpdateRaws,
-                deleteRawValues: raws.deleteRaws,
-                transformer: transformPlaybookChecklistRecord, // Replace with appropriate transformer for checklists
-            }, 'handlePlaybookChecklist');
-            batchRecords.push(...records);
-        }
-
-        if (raws.deleteRaws.length && removeAssociatedRecords) {
-            const toRemoveIds = new Set(raws.deleteRaws.map((raw) => raw.id));
-            const toRemove = existingRecords.filter((record) => toRemoveIds.has(record.id));
-            const records = await prepareDestroyPermanentlyChildrenAssociatedRecords(toRemove);
+                createOrUpdateRawValues: createOrUpdateRaws,
+                transformer: transformPlaybookChecklistRecord,
+            }, 'handlePlaybookChecklist prepare');
             batchRecords.push(...records);
         }
 
         if (processChildren) {
             const items = uniqueRaws.reduce<PlaybookChecklistItemWithChecklist[]>((res, raw) => {
                 if (raw.items?.length) {
-                    let lists: PlaybookChecklistItemWithChecklist[] = raw.items.
+                    const lists: PlaybookChecklistItemWithChecklist[] = raw.items.
                         map((item, index) => ({
                             ...item,
-                            delete_at: raw.delete_at,
                             checklist_id: raw.id,
                             order: index,
                         }));
 
-                    if (removeAssociatedRecords) {
-                        lists = lists.filter((item) => !item.delete_at); // Filter out items that are already marked for deletion
-                    }
                     res.push(...lists);
                 }
                 return res;
@@ -228,7 +218,7 @@ const PlaybookHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supe
         }
 
         if (batchRecords.length && !prepareRecordsOnly) {
-            await this.batchRecords(batchRecords, 'handlePlaybookChecklist');
+            await this.batchRecords(batchRecords, 'handlePlaybookChecklist batch');
         }
 
         return batchRecords;
@@ -255,27 +245,18 @@ const PlaybookHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supe
             Q.where('id', Q.oneOf(keys)),
         ).fetch();
         const existingRecordsMap = new Map(existingRecords.map((record) => [record.id, record]));
-        const raws = uniqueRaws.reduce<{createOrUpdateRaws: PlaybookChecklistItemWithChecklist[]; deleteRaws: PlaybookChecklistItemWithChecklist[]}>((res, raw) => {
+        const createOrUpdateRaws = uniqueRaws.reduce<PlaybookChecklistItemWithChecklist[]>((res, raw) => {
             const existingRecord = existingRecordsMap.get(raw.id);
             if (!existingRecord) {
-                if (!raw.delete_at) {
-                    res.createOrUpdateRaws.push(raw);
-                }
-                return res;
-            }
-
-            if (!raw.delete_at && !shouldHandlePlaybookChecklistItemRecord(existingRecord, raw)) {
-                res.createOrUpdateRaws.push(raw);
-            }
-
-            if (raw.delete_at) {
-                res.deleteRaws.push(raw);
+                res.push(raw);
+            } else if (shouldHandlePlaybookChecklistItemRecord(existingRecord, raw)) {
+                res.push(raw);
             }
 
             return res;
-        }, {createOrUpdateRaws: [], deleteRaws: []});
+        }, []);
 
-        if (!raws.createOrUpdateRaws.length && !raws.deleteRaws.length) {
+        if (!createOrUpdateRaws.length) {
             return [];
         }
 
@@ -283,13 +264,12 @@ const PlaybookHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supe
             fieldName: 'id',
             tableName: PLAYBOOK_CHECKLIST_ITEM,
             prepareRecordsOnly: true,
-            createOrUpdateRawValues: raws.createOrUpdateRaws,
-            deleteRawValues: raws.deleteRaws,
+            createOrUpdateRawValues: createOrUpdateRaws,
             transformer: transformPlaybookChecklistItemRecord,
-        }, 'handlePlaybookChecklistItem');
+        }, 'handlePlaybookChecklistItem prepare');
 
         if (records.length && !prepareRecordsOnly) {
-            await this.batchRecords(records, 'handlePlaybookChecklistItem');
+            await this.batchRecords(records, 'handlePlaybookChecklistItem batch');
         }
 
         return records;

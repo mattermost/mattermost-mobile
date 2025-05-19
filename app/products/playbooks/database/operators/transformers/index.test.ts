@@ -36,7 +36,6 @@ describe('*** PLAYBOOK_RUN Prepare Records Test ***', () => {
                     channel_id: 'channel_1',
                     create_at: 1620000000000,
                     end_at: 0,
-                    delete_at: 0,
                     name: 'Test Playbook Run',
                     description: 'This is a test playbook run',
                     is_active: true,
@@ -94,7 +93,6 @@ describe('*** PLAYBOOK_RUN Prepare Records Test ***', () => {
                 record.channelId = 'channel_2';
                 record.createAt = 1620000000000;
                 record.endAt = 0;
-                record.deleteAt = 0;
                 record.name = 'Existing Playbook Run';
                 record.description = 'This is an existing playbook run';
                 record.isActive = true;
@@ -124,7 +122,6 @@ describe('*** PLAYBOOK_RUN Prepare Records Test ***', () => {
                     channel_id: 'channel_2',
                     create_at: 1620000000000,
                     end_at: 1620000003000,
-                    delete_at: 0,
                     name: 'Updated Playbook Run',
                     description: 'This is an updated playbook run',
                     is_active: false,
@@ -190,7 +187,6 @@ describe('*** PLAYBOOK_RUN Prepare Records Test ***', () => {
                         channel_id: 'channel_3',
                         create_at: 1620000000000,
                         end_at: 0,
-                        delete_at: 0,
                         name: 'Invalid Playbook Run',
                         description: 'This should throw an error',
                         is_active: true,
@@ -243,7 +239,6 @@ describe('*** PLAYBOOK_CHECKLIST Prepare Records Test ***', () => {
                 raw: {
                     id: 'checklist_1',
                     run_id: 'playbook_run_1',
-                    delete_at: 0,
                     title: 'Checklist 1',
                     order: 1,
                 },
@@ -280,7 +275,6 @@ describe('*** PLAYBOOK_CHECKLIST Prepare Records Test ***', () => {
                     run_id: 'playbook_run_2',
                     title: 'Updated Checklist',
                     order: 2,
-                    delete_at: 0,
                 },
             },
         });
@@ -311,7 +305,6 @@ describe('*** PLAYBOOK_CHECKLIST Prepare Records Test ***', () => {
                         run_id: 'playbook_run_3',
                         title: 'Invalid Checklist',
                         order: 1,
-                        delete_at: 0,
                     },
                 },
             }),
@@ -346,7 +339,6 @@ describe('*** PLAYBOOK_CHECKLIST_ITEM Prepare Records Test ***', () => {
                     due_date: 1620000003000,
                     completed_at: 0,
                     task_actions: null,
-                    delete_at: 0,
                 },
             },
         });
@@ -401,7 +393,6 @@ describe('*** PLAYBOOK_CHECKLIST_ITEM Prepare Records Test ***', () => {
                     due_date: 1620000007000,
                     completed_at: 1620000008000,
                     task_actions: null,
-                    delete_at: 0,
                 },
             },
         });
@@ -442,7 +433,6 @@ describe('*** PLAYBOOK_CHECKLIST_ITEM Prepare Records Test ***', () => {
                         due_date: 1620000003000,
                         completed_at: 0,
                         task_actions: null,
-                        delete_at: 0,
                     },
                 },
             }),

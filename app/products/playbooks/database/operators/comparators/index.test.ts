@@ -1,15 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {shouldUpdatePlaybookRunRecord, shouldHandlePlaybookChecklistRecord, shouldHandlePlaybookChecklistItemRecord} from './';
+import TestHelper from '@test/test_helper';
 
-import type PlaybookChecklistModel from '@playbooks/types/database/models/playbook_checklist';
-import type PlaybookChecklistItemModel from '@playbooks/types/database/models/playbook_checklist_item';
-import type PlaybookRunModel from '@playbooks/types/database/models/playbook_run';
+import {shouldUpdatePlaybookRunRecord, shouldHandlePlaybookChecklistRecord, shouldHandlePlaybookChecklistItemRecord} from './';
 
 describe('shouldUpdatePlaybookRunRecord', () => {
     it('should return false when all fields are identical', () => {
-        const existingRecord = {
+        const existingRecord = TestHelper.fakePlaybookRunModel({
             lastStatusUpdateAt: 123,
             endAt: 456,
             activeStage: 1,
@@ -17,9 +15,9 @@ describe('shouldUpdatePlaybookRunRecord', () => {
             currentStatus: 'InProgress',
             retrospectiveEnabled: true,
             retrospectivePublishedAt: 789,
-            participantIds: [] as string[],
-        } as PlaybookRunModel;
-        const raw = {
+        });
+        const raw = TestHelper.fakePlaybookRun({
+            id: existingRecord.id,
             last_status_update_at: 123,
             end_at: 456,
             active_stage: 1,
@@ -28,13 +26,13 @@ describe('shouldUpdatePlaybookRunRecord', () => {
             retrospective_enabled: true,
             retrospective_published_at: 789,
             participant_ids: [] as string[],
-        } as PlaybookRun;
+        });
 
         expect(shouldUpdatePlaybookRunRecord(existingRecord, raw)).toBe(false);
     });
 
     it('should return true when any field is different', () => {
-        const existingRecord = {
+        const existingRecord = TestHelper.fakePlaybookRunModel({
             lastStatusUpdateAt: 123,
             endAt: 456,
             activeStage: 1,
@@ -43,8 +41,9 @@ describe('shouldUpdatePlaybookRunRecord', () => {
             retrospectiveEnabled: true,
             retrospectivePublishedAt: 789,
             participantIds: [] as string[],
-        } as PlaybookRunModel;
-        const raw = {
+        });
+        const raw = TestHelper.fakePlaybookRun({
+            id: existingRecord.id,
             last_status_update_at: 124, // Different field
             end_at: 456,
             active_stage: 1,
@@ -53,7 +52,7 @@ describe('shouldUpdatePlaybookRunRecord', () => {
             retrospective_enabled: true,
             retrospective_published_at: 789,
             participant_ids: [] as string[],
-        } as PlaybookRun;
+        });
 
         expect(shouldUpdatePlaybookRunRecord(existingRecord, raw)).toBe(true);
     });
@@ -61,15 +60,15 @@ describe('shouldUpdatePlaybookRunRecord', () => {
 
 describe('shouldHandlePlaybookChecklistRecord', () => {
     it('should return false when title is identical', () => {
-        const existingRecord = {title: 'Checklist Title'} as PlaybookChecklistModel;
-        const raw = {title: 'Checklist Title'} as PlaybookChecklistWithRun;
+        const existingRecord = TestHelper.fakePlaybookChecklistModel({title: 'Checklist Title'});
+        const raw = TestHelper.fakePlaybookChecklist(existingRecord.runId, {title: 'Checklist Title'});
 
         expect(shouldHandlePlaybookChecklistRecord(existingRecord, raw)).toBe(false);
     });
 
     it('should return true when title is different', () => {
-        const existingRecord = {title: 'Checklist Title'} as PlaybookChecklistModel;
-        const raw = {title: 'Different Title'} as PlaybookChecklistWithRun;
+        const existingRecord = TestHelper.fakePlaybookChecklistModel({title: 'Checklist Title'});
+        const raw = TestHelper.fakePlaybookChecklist(existingRecord.runId, {title: 'Different Title'});
 
         expect(shouldHandlePlaybookChecklistRecord(existingRecord, raw)).toBe(true);
     });
@@ -77,7 +76,7 @@ describe('shouldHandlePlaybookChecklistRecord', () => {
 
 describe('shouldHandlePlaybookChecklistItemRecord', () => {
     it('should return false when all fields are identical', () => {
-        const existingRecord = {
+        const existingRecord = TestHelper.fakePlaybookChecklistItemModel({
             title: 'Item Title',
             description: 'Description',
             state: 'Open',
@@ -85,8 +84,8 @@ describe('shouldHandlePlaybookChecklistItemRecord', () => {
             command: '/command',
             dueDate: 123456,
             order: 1,
-        } as PlaybookChecklistItemModel;
-        const raw = {
+        });
+        const raw = TestHelper.fakePlaybookChecklistItem(existingRecord.checklistId, {
             title: 'Item Title',
             description: 'Description',
             state: 'Open',
@@ -94,13 +93,13 @@ describe('shouldHandlePlaybookChecklistItemRecord', () => {
             command: '/command',
             due_date: 123456,
             order: 1,
-        } as PlaybookChecklistItemWithChecklist;
+        });
 
         expect(shouldHandlePlaybookChecklistItemRecord(existingRecord, raw)).toBe(false);
     });
 
     it('should return true when any field is different', () => {
-        const existingRecord = {
+        const existingRecord = TestHelper.fakePlaybookChecklistItemModel({
             title: 'Item Title',
             description: 'Description',
             state: 'Open',
@@ -108,16 +107,16 @@ describe('shouldHandlePlaybookChecklistItemRecord', () => {
             command: '/command',
             dueDate: 123456,
             order: 1,
-        } as PlaybookChecklistItemModel;
-        const raw = {
-            title: 'Different Title', // Different field
+        });
+        const raw = TestHelper.fakePlaybookChecklistItem(existingRecord.checklistId, {
+            title: 'Different Title',
             description: 'Description',
             state: 'Open',
             assignee_id: 'user1',
             command: '/command',
             due_date: 123456,
             order: 1,
-        } as PlaybookChecklistItemWithChecklist;
+        });
 
         expect(shouldHandlePlaybookChecklistItemRecord(existingRecord, raw)).toBe(true);
     });

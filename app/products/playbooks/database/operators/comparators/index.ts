@@ -28,6 +28,6 @@ export const shouldHandlePlaybookChecklistItemRecord = (existingRecord: Playbook
         existingRecord.assigneeId !== raw.assignee_id ||
         existingRecord.command !== raw.command ||
         existingRecord.dueDate !== raw.due_date ||
-        existingRecord.taskActions !== raw.task_actions ||
+        existingRecord.taskActions?.length !== raw.task_actions?.length ||
         existingRecord.order !== raw.order);
 };

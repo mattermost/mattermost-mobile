@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import DatabaseManager from '@database/manager';
-import {createPlaybookChecklist, createPlaybookItem} from '@playbooks/database/operators/handlers/index.test';
+import TestHelper from '@test/test_helper';
 
 import {
     queryPlaybookChecklistByRun,
@@ -30,13 +30,12 @@ describe('Checklist Queries', () => {
         it('should query checklists by runId and sort by order ascending', async () => {
             const runId = 'run123';
             const mockChecklists = [
-                createPlaybookChecklist(runId, 0, 1), // Checklist with order 1
-                createPlaybookChecklist(runId, 0, 0), // Checklist with order 0
+                TestHelper.createPlaybookChecklist(runId, 0, 1), // Checklist with order 1
+                TestHelper.createPlaybookChecklist(runId, 0, 0), // Checklist with order 0
             ].map((checklist, index) => ({
                 ...checklist,
                 run_id: runId,
                 order: index,
-                delete_at: 0,
             })).reverse();
 
             await operator.handlePlaybookChecklist({
@@ -56,10 +55,9 @@ describe('Checklist Queries', () => {
     describe('getPlaybookChecklistById', () => {
         it('should return a checklist if found', async () => {
             const mockChecklist = {
-                ...createPlaybookChecklist('run123', 0, 0),
+                ...TestHelper.createPlaybookChecklist('run123', 0, 0),
                 run_id: 'run123',
                 order: 0,
-                delete_at: 0,
             };
 
             await operator.handlePlaybookChecklist({
@@ -83,10 +81,9 @@ describe('Checklist Queries', () => {
     describe('observePlaybookChecklistById', () => {
         it('should observe a checklist by id', (done) => {
             const mockChecklist = {
-                ...createPlaybookChecklist('run123', 0, 0),
+                ...TestHelper.createPlaybookChecklist('run123', 0, 0),
                 run_id: 'run123',
                 order: 0,
-                delete_at: 0,
             };
 
             operator.handlePlaybookChecklist({
@@ -117,13 +114,12 @@ describe('Checklist Queries', () => {
         it('should observe checklists by runId', (done) => {
             const runId = 'run123';
             const mockChecklists = [
-                createPlaybookChecklist(runId, 0, 1), // Checklist with order 1
-                createPlaybookChecklist(runId, 0, 0), // Checklist with order 0
+                TestHelper.createPlaybookChecklist(runId, 0, 1), // Checklist with order 1
+                TestHelper.createPlaybookChecklist(runId, 0, 0), // Checklist with order 0
             ].map((checklist, index) => ({
                 ...checklist,
                 run_id: runId,
                 order: index,
-                delete_at: 0,
             })).reverse();
 
             operator.handlePlaybookChecklist({
@@ -162,20 +158,19 @@ describe('Checklist Queries', () => {
         it('should calculate progress percentage based on completed items', (done) => {
             const runId = 'run123';
             const mockChecklists = [
-                createPlaybookChecklist(runId, 0, 9), // Checklist with order 1
+                TestHelper.createPlaybookChecklist(runId, 0, 9), // Checklist with order 1
             ].map((checklist, index) => ({
                 ...checklist,
                 run_id: runId,
                 order: index,
-                delete_at: 0,
             }));
 
             if (mockChecklists[0].items.length < 3) {
                 const index = mockChecklists[0].items.length - 1;
                 mockChecklists[0].items.push(
-                    createPlaybookItem(mockChecklists[0].id, index + 1),
-                    createPlaybookItem(mockChecklists[0].id, index + 2),
-                    createPlaybookItem(mockChecklists[0].id, index + 3),
+                    TestHelper.createPlaybookItem(mockChecklists[0].id, index + 1),
+                    TestHelper.createPlaybookItem(mockChecklists[0].id, index + 2),
+                    TestHelper.createPlaybookItem(mockChecklists[0].id, index + 3),
                 );
             }
             const totalItems = mockChecklists[0].items.length;

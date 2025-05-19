@@ -3,7 +3,7 @@
 
 import DatabaseManager from '@database/manager';
 import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
-import {createPlaybookItem, createPlaybookRuns} from '@playbooks/database/operators/handlers/index.test';
+import TestHelper from '@test/test_helper';
 
 import {isHasManyAssociation, prepareDestroyPermanentlyChildrenAssociatedRecords} from './general';
 
@@ -63,7 +63,7 @@ describe('prepareDestroyPermanentlyChildrenAssociatedRecords', () => {
 
     it('should prepare associated records for permanent deletion', async () => {
         // Create playbook runs with associated checklists and items
-        const mockRuns = createPlaybookRuns(1, 1, 2); // 1 run, 1 checklist, 2 items
+        const mockRuns = TestHelper.createPlaybookRuns(1, 1, 2); // 1 run, 1 checklist, 2 items
         await operator.handlePlaybookRun({
             runs: mockRuns,
             prepareRecordsOnly: false,
@@ -99,8 +99,7 @@ describe('prepareDestroyPermanentlyChildrenAssociatedRecords', () => {
     it('should handle records with no associations', async () => {
         // Create a playbook run without any checklists or items
         const mockItem: PlaybookChecklistItemWithChecklist = {
-            ...createPlaybookItem('playbook_run_1-checklist_1', 1),
-            delete_at: 0,
+            ...TestHelper.createPlaybookItem('playbook_run_1-checklist_1', 1),
             checklist_id: 'checklist_1',
         };
         await operator.handlePlaybookChecklistItem({
