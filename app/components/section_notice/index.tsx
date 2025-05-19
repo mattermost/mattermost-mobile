@@ -150,7 +150,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         tagsContainer: {
             flexDirection: 'row',
             flexWrap: 'wrap',
-            marginTop: 16,
         },
 
     };
