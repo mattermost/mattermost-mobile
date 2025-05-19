@@ -17,11 +17,12 @@ import {typography} from '@utils/typography';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
+import type {AvailableScreens} from '@typings/screens/navigation';
 import type {PrimitiveType} from 'intl-messageformat';
 
 type SystemMessageProps = {
     author?: UserModel;
-    location: string;
+    location: AvailableScreens;
     post: PostModel;
 }
 

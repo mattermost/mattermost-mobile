@@ -7,6 +7,7 @@ import {
     updateLocalFile,
     updateLocalFilePath,
     getLocalFileInfo,
+    setFileAsBlocked,
 } from './file';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -71,5 +72,29 @@ describe('files', () => {
         expect(error).toBeUndefined();
         expect(file).toBeDefined();
         expect(file!.id).toBe(fileInfo.id);
+    });
+
+    it('setFileAsBlocked - handle not found database', async () => {
+        const {error} = await setFileAsBlocked('foo', fileInfo.id!);
+        expect(error).toBeTruthy();
+    });
+
+    it('setFileAsBlocked', async () => {
+        await operator.handleFiles({files: [fileInfo], prepareRecordsOnly: false});
+
+        const {error} = await setFileAsBlocked(serverUrl, fileInfo.id!);
+        expect(error).toBeUndefined();
+
+        const {file} = await getLocalFileInfo(serverUrl, fileInfo.id!);
+        expect(file).toBeDefined();
+        expect(file!.isBlocked).toBe(true);
+    });
+
+    it('setFileAsBlocked - no file', async () => {
+        const {error} = await setFileAsBlocked(serverUrl, fileInfo.id!);
+        expect(error).toBeUndefined();
+
+        const {file} = await getLocalFileInfo(serverUrl, fileInfo.id!);
+        expect(file).toBeUndefined();
     });
 });

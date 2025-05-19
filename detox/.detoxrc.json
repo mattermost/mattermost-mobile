@@ -60,11 +60,35 @@
     }
   },
   "artifacts": {
-    "pathBuilder": "./e2e/path_builder.js"
+    "pathBuilder": "./e2e/path_builder.js",
+    "plugins": {
+      "screenshot": {
+        "shouldTakeAutomaticSnapshots": true,
+        "keepOnlyFailedTestsArtifacts": true
+      },
+      "video": {
+        "enabled": false
+      },
+      "log": {
+        "enabled": true
+      }
+    }
   },
   "behavior": {
     "init": {
+      "reinstallApp": true,
       "launchApp": false
+    },
+    "cleanup": {
+      "shutdownDevice": false
     }
+  },
+  "session": {
+    "sessionId": "mobile-test-session",
+    "debugSynchronization": 5000,
+    "autoStart": true
+  },
+  "visibility": {
+    "threshold": 75
   }
 }

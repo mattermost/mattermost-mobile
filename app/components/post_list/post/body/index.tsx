@@ -21,6 +21,7 @@ import Reactions from './reactions';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type {SearchPattern} from '@typings/global/markdown';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type BodyProps = {
     appsEnabled: boolean;
@@ -36,7 +37,7 @@ type BodyProps = {
     isPendingOrFailed: boolean;
     isPostAcknowledgementEnabled?: boolean;
     isPostAddChannelMember: boolean;
-    location: string;
+    location: AvailableScreens;
     post: PostModel;
     searchPatterns?: SearchPattern[];
     showAddReaction?: boolean;

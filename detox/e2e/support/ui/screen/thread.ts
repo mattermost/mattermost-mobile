@@ -92,7 +92,7 @@ class ThreadScreen {
 
     back = async () => {
         await this.backButton.tap();
-        await expect(this.threadScreen).not.toBeVisible();
+        await waitFor(this.threadScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
     };
 
     openPostOptionsFor = async (postId: string, text: string) => {
@@ -110,6 +110,17 @@ class ThreadScreen {
         await this.postInput.tap();
         await this.postInput.replaceText(message);
         await this.tapSendButton();
+    };
+
+    enterMessageToSchedule = async (message: string) => {
+        await this.postInput.tap();
+        await this.postInput.clearText();
+        await this.postInput.replaceText(message);
+    };
+
+    longPressSendButton = async () => {
+        // # Long press send button
+        await this.sendButton.longPress();
     };
 
     tapSendButton = async () => {

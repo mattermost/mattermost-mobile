@@ -41,6 +41,7 @@ import type RoleModel from '@typings/database/models/servers/role';
 import type TeamModel from '@typings/database/models/servers/team';
 import type ThreadModel from '@typings/database/models/servers/thread';
 import type UserModel from '@typings/database/models/servers/user';
+import type {IntlShape} from 'react-intl';
 
 const DEFAULT_LOCALE = 'en';
 
@@ -202,6 +203,14 @@ class TestHelperSingleton {
         };
 
         return new Client(mockApiClient, mockApiClient.baseUrl);
+    };
+
+    fakeIntl = (): IntlShape => {
+        return {
+            formatMessage: jest.fn((message) => {
+                return message.defaultMessage;
+            }),
+        } as unknown as IntlShape;
     };
 
     fakeCategory = (teamId: string): Category => {
@@ -462,6 +471,7 @@ class TestHelperSingleton {
         return {
             fetch: jest.fn().mockImplementation(async () => returnValue),
             observe: jest.fn().mockImplementation(() => of$(returnValue)),
+            observeCount: jest.fn().mockImplementation(() => of$(returnValue.length)),
         } as unknown as Query<T>;
     };
 
@@ -698,6 +708,7 @@ class TestHelperSingleton {
             postId: this.generateId(),
             post: this.fakeRelation(),
             toFileInfo: jest.fn(),
+            isBlocked: false,
             ...overwrite,
         };
     };

@@ -19,6 +19,7 @@ type Props = {
     sendMessage: () => void;
     showScheduledPostOptions: () => void;
     scheduledPostFeatureTooltipWatched: boolean;
+    scheduledPostEnabled: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
@@ -56,6 +57,7 @@ export function SendButton({
     sendMessage,
     showScheduledPostOptions,
     scheduledPostFeatureTooltipWatched,
+    scheduledPostEnabled,
 }: Props) {
     const theme = useTheme();
     const sendButtonTestID = `${testID}.send.button` + (disabled ? '.disabled' : '');
@@ -64,7 +66,7 @@ export function SendButton({
     const [scheduledPostTooltipVisible, setScheduledPostTooltipVisible] = useState(false);
 
     useEffect(() => {
-        if (scheduledPostFeatureTooltipWatched) {
+        if (scheduledPostFeatureTooltipWatched || !scheduledPostEnabled) {
             return;
         }
 
@@ -94,7 +96,7 @@ export function SendButton({
             style={style.sendButtonContainer}
             type={'opacity'}
             disabled={disabled}
-            onLongPress={showScheduledPostOptions}
+            onLongPress={scheduledPostEnabled ? showScheduledPostOptions : undefined}
         >
             <Tooltip
                 isVisible={scheduledPostTooltipVisible}

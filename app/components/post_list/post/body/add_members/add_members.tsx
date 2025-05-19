@@ -17,11 +17,12 @@ import {isStringArray} from '@utils/types';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type AddMembersProps = {
     channelType: string | null;
     currentUser?: UserModel;
-    location: string;
+    location: AvailableScreens;
     post: PostModel;
     theme: Theme;
 }

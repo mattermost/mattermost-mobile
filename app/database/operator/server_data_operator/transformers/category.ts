@@ -32,7 +32,7 @@ export const transformCategoryRecord = ({action, database, value}: TransformerAr
     const fieldsMapper = (category: CategoryModel) => {
         category._raw.id = isCreateAction ? (raw?.id ?? category.id) : record!.id;
         category.displayName = raw.display_name;
-        category.sorting = raw.sorting || 'recent';
+        category.sorting = raw.sorting ?? '';
         category.sortOrder = raw.sort_order === 0 ? 0 : raw.sort_order / 10; // Sort order from server is in multiples of 10
         category.muted = raw.muted ?? false;
         category.collapsed = isCreateAction ? false : record!.collapsed;

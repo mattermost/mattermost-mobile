@@ -12,10 +12,11 @@ import DraftAndScheduledPostMessage from './draft_and_scheduled_post_message';
 
 import type DraftModel from '@typings/database/models/servers/draft';
 import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     post: DraftModel | ScheduledPostModel;
-    location: string;
+    location: AvailableScreens;
     layoutWidth: number;
 }
 

@@ -152,7 +152,7 @@ describe('Messaging - Emojis and Reactions', () => {
         await EmojiPickerScreen.open();
 
         // * Verify emojis exist in recently used section
-        await expect(element(by.text('RECENTLY USED'))).toExist();
+        await expect(element(by.text('RECENTLY USED')).atIndex(0)).toBeVisible();
         await expect(element(by.text('🦊')).atIndex(0)).toExist();
         await expect(element(by.text('🐶')).atIndex(0)).toExist();
 
@@ -175,5 +175,9 @@ describe('Messaging - Emojis and Reactions', () => {
         // * Verify empty search state for emoji picker
         await expect(element(by.text(`No matches found for “${searchTerm}”`))).toBeVisible();
         await expect(element(by.text('Check the spelling or try another search.'))).toBeVisible();
+
+        // # Go back to channel list screen
+        await EmojiPickerScreen.close();
+        await ChannelScreen.back();
     });
 });

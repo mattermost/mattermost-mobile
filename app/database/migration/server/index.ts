@@ -16,6 +16,7 @@ const {
     CUSTOM_PROFILE_ATTRIBUTE,
     CUSTOM_PROFILE_FIELD,
     DRAFT,
+    FILE,
     POST,
     SCHEDULED_POST,
 } = MM_TABLES.SERVER;
@@ -24,7 +25,7 @@ const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM} = PLAYBOOK_TAB
 
 export default schemaMigrations({migrations: [
     {
-        toVersion: 10,
+        toVersion: 11,
         steps: [
             createTable({
                 name: PLAYBOOK_RUN,
@@ -74,6 +75,17 @@ export default schemaMigrations({migrations: [
                     {name: 'completed_at', type: 'number'},
                     {name: 'task_actions', type: 'string', isOptional: true}, // JSON string
                     {name: 'order', type: 'number'},
+                ],
+            }),
+        ],
+    },
+    {
+        toVersion: 10,
+        steps: [
+            addColumns({
+                table: FILE,
+                columns: [
+                    {name: 'is_blocked', type: 'boolean'},
                 ],
             }),
         ],

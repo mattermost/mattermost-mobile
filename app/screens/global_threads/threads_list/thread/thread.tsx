@@ -28,11 +28,12 @@ import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
 import type ThreadModel from '@typings/database/models/servers/thread';
 import type UserModel from '@typings/database/models/servers/user';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     author?: UserModel;
     channel?: ChannelModel;
-    location: string;
+    location: AvailableScreens;
     post?: PostModel;
     teammateNameDisplay: string;
     testID: string;

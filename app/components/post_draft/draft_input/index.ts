@@ -3,14 +3,14 @@
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 
-import {observeConfigBooleanValue} from '@queries/servers/system';
+import {observeScheduledPostEnabled} from '@queries/servers/scheduled_post';
 
 import DraftInput from './draft_input';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
-    const scheduledPostsEnabled = observeConfigBooleanValue(database, 'ScheduledPosts');
+    const scheduledPostsEnabled = observeScheduledPostEnabled(database);
     return {
         scheduledPostsEnabled,
     };
