@@ -112,6 +112,9 @@ export default class ChannelModel extends Model implements ChannelModelInterface
     /** bannerInfo : The banner information for the channel */
     @json('banner_info', safeParseJSON) bannerInfo?: ChannelBannerInfo;
 
+    /** policy_enforced : Whether the Attribute-Based Access Control (ABAC) policy is enforced for this channel, controlling access based on user attributes */
+    @field('abac_policy_enforced') abacPolicyEnforced?: boolean;
+
     /** members : Users belonging to this channel */
     @children(CHANNEL_MEMBERSHIP) members!: Query<ChannelMembershipModel>;
 
@@ -163,6 +166,7 @@ export default class ChannelModel extends Model implements ChannelModelInterface
             group_constrained: null,
             shared: this.shared,
             banner_info: this.bannerInfo,
+            policy_enforced: this.abacPolicyEnforced,
         };
     };
 }

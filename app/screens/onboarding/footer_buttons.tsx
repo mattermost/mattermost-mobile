@@ -22,6 +22,7 @@ type Props = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     button: {
         marginTop: 5,
+        flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -36,9 +37,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         position: 'absolute',
         justifyContent: 'center',
         width: 120,
-    },
-    signInButtonText: {
-        flexDirection: 'row',
     },
     footerButtonsContainer: {
         flexDirection: 'column',
@@ -131,7 +129,7 @@ const FooterButtons = ({
     );
 
     const signInButtonText = (
-        <Animated.View style={[styles.signInButtonText, opacitySignInTextStyle]}>
+        <Animated.View style={opacitySignInTextStyle}>
             <FormattedText
                 id='mobile.onboarding.sign_in_to_get_started'
                 defaultMessage='Sign in to get started'

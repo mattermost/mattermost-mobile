@@ -186,6 +186,8 @@ describe('Threads - Follow and Unfollow Thread', () => {
         await wait(timeouts.ONE_SEC);
         await expect(GlobalThreadsScreen.getThreadItem(parentPost.id)).not.toBeVisible();
 
+        await wait(timeouts.FOUR_SEC);
+
         // # Go back to channel list screen
         await GlobalThreadsScreen.back();
     });

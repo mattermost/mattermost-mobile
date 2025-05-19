@@ -119,6 +119,7 @@ jest.mock('react-native-navigation', () => ({
         pop: jest.fn(() => Promise.resolve({
             catch: jest.fn(),
         })),
+        setDefaultOptions: jest.fn(),
     },
 }));
 
@@ -971,7 +972,14 @@ describe('Actions.Calls', () => {
             mockClient.getCallForChannel.mockReturnValueOnce({
                 call: {
                     channel_id: 'channel-1',
-                    users: ['user-1'],
+                    sessions: [
+                        {
+                            session_id: 'session-1',
+                            user_id: 'user-1',
+                            unmuted: false,
+                            raised_hand: 0,
+                        },
+                    ],
                 },
                 enabled: true});
             const successResult = await CallsActions.loadCallForChannel('server1', 'channel-1');

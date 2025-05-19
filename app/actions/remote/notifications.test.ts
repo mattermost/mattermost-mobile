@@ -5,6 +5,7 @@
 
 import {Platform} from 'react-native';
 
+import * as PostActions from '@actions/local/post';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
@@ -229,5 +230,169 @@ describe('sendTestNotification', () => {
         const result = await sendTestNotification('bad server url');
         expect(result.error).toBeTruthy();
         expect(mockClient.sendTestNotification).not.toHaveBeenCalled();
+    });
+});
+
+describe('backgroundNotification boolean conversion', () => {
+    const postId = 'postWithBooleans';
+    const samplePostData = {
+        posts: [
+            {
+                id: postId,
+                props: {
+                    attachments: [
+                        {
+                            id: 1,
+                            fields: [
+                                {title: 'Field1', short: 1},
+                                {title: 'Field2', short: 0},
+                                {title: 'Field3', short: true},
+                                {title: 'Field4', short: false},
+                                {title: 'Field5', short: undefined},
+                                {title: 'Field6'},
+                            ],
+                            actions: [
+                                {id: 'action1', disabled: 1},
+                                {id: 'action2', disabled: 0},
+                                {id: 'action3', disabled: true},
+                                {id: 'action4', disabled: false},
+                                {id: 'action5', disabled: undefined},
+                                {id: 'action6'},
+                            ],
+                        },
+                        {
+                            id: 2,
+                        },
+                    ],
+                },
+
+                // Other necessary post props
+                channel_id: channelId,
+                create_at: 12345,
+                update_at: 12345,
+                delete_at: 0,
+                message: 'Test message',
+                user_id: user1.id,
+                type: '',
+                metadata: {},
+                is_pinned: false, // Add other base post props as needed
+                reply_count: 0,
+
+                // Add potentially missing required props for type check, even if empty
+                edit_at: 0,
+                root_id: '',
+                original_id: '',
+                hashtags: '',
+                pending_post_id: '',
+            } as any, // Use 'as any' to bypass strict type checking for test data
+        ],
+        order: [postId],
+        previousPostId: '',
+    } as ProcessedPosts;
+
+    let storePostsSpy: jest.SpyInstance;
+    let freshNotificationWithBooleanPost: NotificationWithData;
+
+    beforeEach(async () => {
+        // Reset mocks and setup basic DB state for each test
+        jest.clearAllMocks();
+
+        // Reconstruct the notification object with deep-copied post data for each test
+        const currentSamplePostData = JSON.parse(JSON.stringify(samplePostData)); // Deep copy
+        freshNotificationWithBooleanPost = {
+            payload: {
+                ...notificationData,
+                post_id: postId,
+                data: {
+                    ...notificationExtraData,
+                    posts: {
+                        posts: {[postId]: currentSamplePostData.posts[0]},
+                        order: currentSamplePostData.order,
+
+                        // Ensure previousPostId is handled if needed by processPostsFetched
+                        prev_post_id: currentSamplePostData.previousPostId,
+                    },
+                },
+            },
+
+            // Add other required NotificationWithData properties
+            identifier: 'test-identifier',
+            foreground: false,
+            userInteraction: false,
+        } as any; // Use 'as any' to bypass strict type checking for test data
+
+        // Spy on the actual function and provide a mock implementation that matches the return type
+        storePostsSpy = jest.spyOn(PostActions, 'storePostsForChannel').mockImplementation(async () => ({models: []}));
+
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}, {id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
+    });
+
+    afterEach(() => {
+        // Restore the original implementation after each test
+        storePostsSpy.mockRestore();
+    });
+
+    it('should convert numeric booleans to true/false on iOS', async () => {
+        Platform.OS = 'ios';
+
+        await backgroundNotification(serverUrl, freshNotificationWithBooleanPost);
+
+        // Check the arguments passed to the spy
+        expect(storePostsSpy).toHaveBeenCalledTimes(1);
+        const storedPosts = storePostsSpy.mock.calls[0][2] as Post[]; // 3rd argument is posts
+        expect(storedPosts).toHaveLength(1);
+
+        const attachments = storedPosts[0].props!.attachments as MessageAttachment[];
+        expect(attachments).toHaveLength(2);
+
+        // Check fields conversion
+        const fields = attachments[0].fields!;
+        expect(fields[0].short).toBe(true); // 1 -> true
+        expect(fields[1].short).toBe(false); // 0 -> false
+        expect(fields[2].short).toBe(true); // true -> true
+        expect(fields[3].short).toBe(false); // false -> false
+        expect(fields[4].short).toBe(undefined);
+        expect(fields[5].short).toBe(undefined);
+
+        // Check actions conversion
+        const actions = attachments[0].actions!;
+        expect(actions[0].disabled).toBe(true); // 1 -> true
+        expect(actions[1].disabled).toBe(false); // 0 -> false
+        expect(actions[2].disabled).toBe(true); // true -> true
+        expect(actions[3].disabled).toBe(false); // false -> false
+        expect(actions[4].disabled).toBe(undefined);
+        expect(actions[5].disabled).toBe(undefined);
+    });
+
+    it('should NOT convert numeric booleans on Android (it wouldnt be needed)', async () => {
+        Platform.OS = 'android';
+
+        await backgroundNotification(serverUrl, freshNotificationWithBooleanPost);
+
+        // Check the arguments passed to the spy
+        expect(storePostsSpy).toHaveBeenCalledTimes(1);
+        const storedPosts = storePostsSpy.mock.calls[0][2] as Post[]; // 3rd argument is posts
+        expect(storedPosts).toHaveLength(1);
+
+        const attachments = storedPosts[0].props!.attachments as MessageAttachment[];
+        expect(attachments).toHaveLength(2);
+
+        // Check fields remain unchanged
+        const fields = attachments[0].fields!;
+        expect(fields[0].short).toBe(1); // 1 -> 1
+        expect(fields[1].short).toBe(0); // 0 -> 0
+        expect(fields[2].short).toBe(true);
+        expect(fields[3].short).toBe(false);
+        expect(fields[4].short).toBe(undefined);
+        expect(fields[5].short).toBe(undefined);
+
+        // Check actions remain unchanged
+        const actions = attachments[0].actions!;
+        expect(actions[0].disabled).toBe(1); // 1 -> 1
+        expect(actions[1].disabled).toBe(0); // 0 -> 0
+        expect(actions[2].disabled).toBe(true);
+        expect(actions[3].disabled).toBe(false);
+        expect(actions[4].disabled).toBe(undefined);
+        expect(actions[5].disabled).toBe(undefined);
     });
 });

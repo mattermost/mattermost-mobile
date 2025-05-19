@@ -9,9 +9,7 @@ import CompassIcon from '@components/compass_icon';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {changeOpacity} from '@utils/theme';
 
-type ConditionalProps = | {iconName: string; iconSize: number} | {iconName?: never; iconSize?: never}
-
-type Props = ConditionalProps & {
+type Props = {
     theme: Theme;
     backgroundStyle?: StyleProp<ViewStyle>;
     buttonContainerStyle?: StyleProp<ViewStyle>;
@@ -26,19 +24,31 @@ type Props = ConditionalProps & {
     iconComponent?: ReactNode;
     disabled?: boolean;
     hitSlop?: Insets;
+    isIconOnTheRight?: boolean;
+    iconName?: string;
 };
 
 const styles = StyleSheet.create({
-    container: {flexDirection: 'row'},
-    icon: {marginRight: 7},
+    container: {
+        flexDirection: 'row',
+        gap: 7,
+        alignItems: 'center',
+    },
 });
+
+const iconSizePerSize: Record<ButtonSize, number> = {
+    xs: 14,
+    s: 14,
+    m: 18,
+    lg: 22,
+};
 
 const Button = ({
     theme,
     backgroundStyle,
     buttonContainerStyle,
     textStyle,
-    size,
+    size = 'm',
     emphasis,
     buttonType,
     buttonState,
@@ -46,7 +56,7 @@ const Button = ({
     text,
     testID,
     iconName,
-    iconSize,
+    isIconOnTheRight = false,
     iconComponent,
     disabled,
     hitSlop,
@@ -61,15 +71,6 @@ const Button = ({
         textStyle,
     ], [theme, textStyle, size, emphasis, buttonType]);
 
-    const textContainerStyle = useMemo(
-        () =>
-            (iconSize ? [
-                styles.container,
-                {minHeight: iconSize},
-            ] : styles.container),
-        [iconSize],
-    );
-
     let buttonStyle = StyleSheet.flatten(bgStyle);
     if (disabled) {
         buttonStyle = {
@@ -83,13 +84,16 @@ const Button = ({
     if (iconComponent) {
         icon = iconComponent;
     } else if (iconName) {
+        // We wrap the icon in a view to avoid it to follow text layout
         icon = (
-            <CompassIcon
-                name={iconName!}
-                size={iconSize}
-                color={StyleSheet.flatten(txtStyle).color}
-                style={styles.icon}
-            />
+            <View>
+                <CompassIcon
+                    name={iconName!}
+                    size={iconSizePerSize[size]}
+                    color={StyleSheet.flatten(txtStyle).color}
+                    testID={`${testID}-icon`}
+                />
+            </View>
         );
     }
 
@@ -102,14 +106,18 @@ const Button = ({
             disabled={disabled}
             hitSlop={hitSlop}
         >
-            <View style={textContainerStyle}>
-                {icon}
+            <View
+                style={styles.container}
+                testID={`${testID}-text-container`}
+            >
+                {!isIconOnTheRight && icon}
                 <Text
-                    style={txtStyle}
+                    style={[txtStyle]}
                     numberOfLines={1}
                 >
                     {text}
                 </Text>
+                {isIconOnTheRight && icon}
             </View>
         </ElementButton>
     );

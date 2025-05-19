@@ -549,6 +549,7 @@ class TestHelperSingleton {
 
             channelsCreated: this.fakeQuery([]),
             channels: this.fakeQuery([]),
+            customProfileAttributes: this.fakeQuery([]),
             posts: this.fakeQuery([]),
             preferences: this.fakeQuery([]),
             reactions: this.fakeQuery([]),
@@ -693,6 +694,7 @@ class TestHelperSingleton {
             postId: this.generateId(),
             post: this.fakeRelation(),
             toFileInfo: jest.fn(),
+            isBlocked: false,
             ...overwrite,
         };
     };

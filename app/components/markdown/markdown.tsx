@@ -38,6 +38,7 @@ import type {
     MarkdownAtMentionRenderer, MarkdownBaseRenderer, MarkdownBlockStyles, MarkdownChannelMentionRenderer,
     MarkdownEmojiRenderer, MarkdownImageRenderer, MarkdownLatexRenderer, MarkdownTextStyles, SearchPattern, UserMentionKey, HighlightWithoutNotificationKey,
 } from '@typings/global/markdown';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type MarkdownProps = {
     autolinkedUrlSchemes?: string[];
@@ -65,7 +66,7 @@ type MarkdownProps = {
     isSearchResult?: boolean;
     layoutHeight?: number;
     layoutWidth?: number;
-    location: string;
+    location: AvailableScreens;
     maxNodes: number;
     mentionKeys?: UserMentionKey[];
     minimumHashtagLength?: number;

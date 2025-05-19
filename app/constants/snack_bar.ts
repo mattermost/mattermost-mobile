@@ -19,6 +19,11 @@ export const SNACK_BAR_TYPE = keyMirror({
     UNFAVORITE_CHANNEL: null,
     UNMUTE_CHANNEL: null,
     UNFOLLOW_THREAD: null,
+    CREATE_POST_ERROR: null,
+    CONNECTION_ERROR: null,
+    SCHEDULED_POST_CREATION_ERROR: null,
+    RESCHEDULED_POST: null,
+    DELETE_SCHEDULED_POST_ERROR: null,
 });
 
 export const MESSAGE_TYPE = {
@@ -27,7 +32,7 @@ export const MESSAGE_TYPE = {
     DEFAULT: 'default',
 };
 
-type SnackBarConfig = {
+export type SnackBarConfig = {
     id: string;
     defaultMessage: string;
     iconName: string;

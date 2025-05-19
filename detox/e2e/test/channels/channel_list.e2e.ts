@@ -82,6 +82,7 @@ describe('Channels - Channel List', () => {
     it('MM-T4728_2 - should be able to switch between channels', async () => {
         // # Tap on a first channel
         await ChannelListScreen.getChannelItemDisplayName(channelsCategory, testChannel.name).tap();
+        await ChannelScreen.closeScheduledMessageTooltip();
 
         // * Verify on first channel
         await ChannelScreen.toBeVisible();

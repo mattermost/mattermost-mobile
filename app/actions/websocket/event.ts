@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import * as bookmark from '@actions/local/channel_bookmark';
+import * as scheduledPost from '@actions/websocket/scheduled_post';
 import * as calls from '@calls/connection/websocket_event_handlers';
 import {WebsocketEvents} from '@constants';
 
@@ -177,17 +178,6 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
         case WebsocketEvents.CALLS_CHANNEL_DISABLED:
             calls.handleCallChannelDisabled(serverUrl, msg);
             break;
-
-        // DEPRECATED in favour of user_joined (since v0.21.0)
-        case WebsocketEvents.CALLS_USER_CONNECTED:
-            calls.handleCallUserConnected(serverUrl, msg);
-            break;
-
-        // DEPRECATED in favour of user_left (since v0.21.0)
-        case WebsocketEvents.CALLS_USER_DISCONNECTED:
-            calls.handleCallUserDisconnected(serverUrl, msg);
-            break;
-
         case WebsocketEvents.CALLS_USER_JOINED:
             calls.handleCallUserJoined(serverUrl, msg);
             break;
@@ -226,11 +216,6 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
             break;
         case WebsocketEvents.CALLS_USER_REACTED:
             calls.handleCallUserReacted(serverUrl, msg);
-            break;
-
-        // DEPRECATED in favour of CALLS_JOB_STATE (since v2.15.0)
-        case WebsocketEvents.CALLS_RECORDING_STATE:
-            calls.handleCallRecordingState(serverUrl, msg);
             break;
         case WebsocketEvents.CALLS_JOB_STATE:
             calls.handleCallJobState(serverUrl, msg);
@@ -293,6 +278,15 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
             break;
         case WebsocketEvents.CHANNEL_BOOKMARK_SORTED:
             bookmark.handleBookmarkSorted(serverUrl, msg);
+            break;
+
+        // scheduled posts
+        case WebsocketEvents.SCHEDULED_POST_CREATED:
+        case WebsocketEvents.SCHEDULED_POST_UPDATED:
+            scheduledPost.handleCreateOrUpdateScheduledPost(serverUrl, msg);
+            break;
+        case WebsocketEvents.SCHEDULED_POST_DELETED:
+            scheduledPost.handleDeleteScheduledPost(serverUrl, msg);
             break;
     }
 }

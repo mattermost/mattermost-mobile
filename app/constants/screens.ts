@@ -23,7 +23,7 @@ export const COMPONENT_LIBRARY = 'ComponentLibrary';
 export const CUSTOM_STATUS = 'CustomStatus';
 export const CUSTOM_STATUS_CLEAR_AFTER = 'CustomStatusClearAfter';
 export const DRAFT = 'Draft';
-export const DRAFT_OPTIONS = 'DraftOptions';
+export const DRAFT_SCHEDULED_POST_OPTIONS = 'DraftScheduledPostOptions';
 export const EDIT_POST = 'EditPost';
 export const EDIT_PROFILE = 'EditProfile';
 export const EDIT_SERVER = 'EditServer';
@@ -50,8 +50,11 @@ export const PINNED_MESSAGES = 'PinnedMessages';
 export const POST_OPTIONS = 'PostOptions';
 export const POST_PRIORITY_PICKER = 'PostPriorityPicker';
 export const REACTIONS = 'Reactions';
+export const REPORT_PROBLEM = 'ReportProblem';
+export const RESCHEDULE_DRAFT = 'RescheduleDraft';
 export const REVIEW_APP = 'ReviewApp';
 export const SAVED_MESSAGES = 'SavedMessages';
+export const SCHEDULED_POST_OPTIONS = 'ScheduledPostOptions';
 export const SEARCH = 'Search';
 export const SELECT_TEAM = 'SelectTeam';
 export const SERVER = 'Server';
@@ -81,6 +84,8 @@ export const THREAD_OPTIONS = 'ThreadOptions';
 export const USER_PROFILE = 'UserProfile';
 export const CHANNEL_BOOKMARK = 'ChannelBookmarkAddOrEdit';
 export const GENERIC_OVERLAY = 'GenericOverlay';
+export const GLOBAL_DRAFTS_AND_SCHEDULED_POSTS = 'GlobalDraftsAndScheduledPosts';
+export const CHANNEL_BANNER = 'ChannelBanner';
 
 export default {
     ABOUT,
@@ -105,7 +110,7 @@ export default {
     CREATE_TEAM,
     CUSTOM_STATUS,
     CUSTOM_STATUS_CLEAR_AFTER,
-    DRAFT_OPTIONS,
+    DRAFT_SCHEDULED_POST_OPTIONS,
     EDIT_POST,
     EDIT_PROFILE,
     EDIT_SERVER,
@@ -132,6 +137,8 @@ export default {
     POST_OPTIONS,
     POST_PRIORITY_PICKER,
     REACTIONS,
+    REPORT_PROBLEM,
+    RESCHEDULE_DRAFT,
     REVIEW_APP,
     SAVED_MESSAGES,
     SEARCH,
@@ -162,6 +169,9 @@ export default {
     THREAD_OPTIONS,
     USER_PROFILE,
     GENERIC_OVERLAY,
+    SCHEDULED_POST_OPTIONS,
+    GLOBAL_DRAFTS_AND_SCHEDULED_POSTS,
+    CHANNEL_BANNER,
 } as const;
 
 export const MODAL_SCREENS_WITHOUT_BACK = new Set<string>([
@@ -179,6 +189,7 @@ export const MODAL_SCREENS_WITHOUT_BACK = new Set<string>([
     MANAGE_CHANNEL_MEMBERS,
     INVITE,
     PERMALINK,
+    RESCHEDULE_DRAFT,
 ]);
 
 export const SCREENS_WITH_TRANSPARENT_BACKGROUND = new Set<string>([
@@ -190,7 +201,7 @@ export const SCREENS_WITH_TRANSPARENT_BACKGROUND = new Set<string>([
 
 export const SCREENS_AS_BOTTOM_SHEET = new Set<string>([
     BOTTOM_SHEET,
-    DRAFT_OPTIONS,
+    DRAFT_SCHEDULED_POST_OPTIONS,
     EMOJI_PICKER,
     POST_OPTIONS,
     POST_PRIORITY_PICKER,
@@ -199,6 +210,7 @@ export const SCREENS_AS_BOTTOM_SHEET = new Set<string>([
     USER_PROFILE,
     CALL_PARTICIPANTS,
     CALL_HOST_CONTROLS,
+    SCHEDULED_POST_OPTIONS,
 ]);
 
 export const SCREENS_WITH_EXTRA_KEYBOARD = new Set<string>([CHANNEL, THREAD]);
