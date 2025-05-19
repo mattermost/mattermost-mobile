@@ -728,6 +728,7 @@
   "mobile.markdown.code.plusMoreLines": "+{count, number} více {count, plural, one {linka} other {linky}}",
   "mobile.markdown.copy_header": "Kopírovat text hlavičky",
   "mobile.markdown.image.too_large": "Obrázek překračuje povolené rozměry {maxWidth} x {maxHeight}:",
+  "mobile.markdown.link.copy_email": "Kopírovat e-mailovou adresu",
   "mobile.markdown.link.copy_url": "Zkopírovat URL",
   "mobile.mention.copy_mention": "Zkopírovat Zmínku",
   "mobile.message_length.message": "Vaše zpráva je příliš dlouhá. Aktuální počet znaků: {count}/{max}",

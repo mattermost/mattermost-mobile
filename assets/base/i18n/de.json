@@ -728,6 +728,7 @@
   "mobile.markdown.code.plusMoreLines": "+{count, number} weitere {count, plural, one {Zeile} other {Zeilen}}",
   "mobile.markdown.copy_header": "Kopieren von Kopfzeilentext",
   "mobile.markdown.image.too_large": "Bild überschreitet die maximale Auflösung von {maxWidth} x {maxHeight}:",
+  "mobile.markdown.link.copy_email": "E-Mail Adresse kopieren",
   "mobile.markdown.link.copy_url": "Adresse (URL) kopieren",
   "mobile.mention.copy_mention": "Erwähnung kopieren",
   "mobile.message_length.message": "Die Nachricht ist zu lang. Anzahl der Zeichen: {count}/{max}",
