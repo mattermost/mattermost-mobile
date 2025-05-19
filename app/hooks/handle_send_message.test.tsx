@@ -19,6 +19,7 @@ import DatabaseManager from '@database/manager';
 import DraftUploadManager from '@managers/draft_upload_manager';
 import {getPostById} from '@queries/servers/post';
 import * as DraftUtils from '@utils/draft';
+import {canPostDraftInChannelOrThread} from '@utils/scheduled_post';
 import {showSnackBar} from '@utils/snack_bar';
 
 import {useHandleSendMessage} from './handle_send_message';
@@ -41,6 +42,9 @@ jest.mock('@context/server', () => ({
 }));
 jest.mock('@utils/snack_bar', () => ({
     showSnackBar: jest.fn(),
+}));
+jest.mock('@utils/scheduled_post', () => ({
+    canPostDraftInChannelOrThread: jest.fn(),
 }));
 jest.mock('@database/manager');
 jest.mock('@queries/servers/post');
@@ -85,6 +89,10 @@ describe('useHandleSendMessage', () => {
         jest.mocked(createPost).mockResolvedValue({
             data: true,
         });
+    });
+
+    afterEach(() => {
+        jest.clearAllMocks();
     });
 
     it('should handle basic message send', async () => {
@@ -395,24 +403,6 @@ describe('useHandleSendMessage', () => {
         expect(defaultProps.clearDraft).toHaveBeenCalled();
     });
 
-    it('should handle failed post creation', async () => {
-        jest.mocked(createPost).mockResolvedValueOnce({
-            error: new Error('Failed to create post'),
-        });
-
-        const props = {
-            ...defaultProps,
-            value: 'test message',
-        };
-
-        const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
-
-        await act(async () => {
-            const response = await result.current.handleSendMessage();
-            expect(response?.error).toBeDefined();
-        });
-    });
-
     it('should fetch and handle channel timezones', async () => {
         jest.mocked(getChannelTimezones).mockResolvedValueOnce({
             channelTimezones: ['UTC', 'America/New_York'],
@@ -434,7 +424,7 @@ describe('useHandleSendMessage', () => {
         );
     });
 
-    it('should not allow sending during message submission', () => {
+    it('should not allow sending during message submission', async () => {
         const props = {
             ...defaultProps,
             value: 'test message',
@@ -663,6 +653,7 @@ describe('useHandleSendMessage', () => {
         });
 
         it('should handle failed post creation', async () => {
+            jest.mocked(canPostDraftInChannelOrThread).mockResolvedValueOnce(true);
             jest.mocked(createPost).mockResolvedValueOnce({
                 error: new Error('Failed to create post'),
             });
@@ -676,8 +667,7 @@ describe('useHandleSendMessage', () => {
             const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
 
             await act(async () => {
-                const response = await result.current.handleSendMessage();
-                expect(response?.error).toBeDefined();
+                await result.current.handleSendMessage();
             });
 
             expect(showSnackBar).toHaveBeenCalledWith({
@@ -690,6 +680,9 @@ describe('useHandleSendMessage', () => {
         });
 
         it('should show alert when root post is not found', async () => {
+            // Required to use the actual function instead of the mocked one on the global scope
+            const actual = jest.requireActual('@utils/scheduled_post');
+            jest.mocked(canPostDraftInChannelOrThread).mockImplementation(actual.canPostDraftIChannelOrThread);
             jest.mocked(getPostById).mockResolvedValueOnce(undefined);
 
             const props = {

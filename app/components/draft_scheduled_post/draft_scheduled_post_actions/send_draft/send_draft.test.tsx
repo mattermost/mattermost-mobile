@@ -162,6 +162,7 @@ describe('Send Draft', () => {
     });
 
     it('should call dismissBottomSheet after sending the draft and should call createPost', async () => {
+        jest.mocked(canPostDraftInChannelOrThread).mockResolvedValueOnce(true);
         jest.mocked(sendMessageWithAlert).mockImplementation(() => {
             return Promise.resolve();
         });
