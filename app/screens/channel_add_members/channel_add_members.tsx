@@ -144,6 +144,10 @@ export default function ChannelAddMembers({
     // Use the hook to fetch access control attributes
     const {attributeTags} = useAccessControlAttributes('channel', channel?.id, channel?.abacPolicyEnforced);
 
+    const handleDismissBanner = useCallback(() => {
+        setShowBanner(false);
+    }, []);
+
     const clearSearch = useCallback(() => {
         setTerm('');
     }, []);
@@ -281,7 +285,7 @@ export default function ChannelAddMembers({
                     })}
                     tags={attributeTags.length > 0 ? attributeTags : undefined}
                     isDismissable={true}
-                    onDismissClick={useCallback(() => setShowBanner(false), [])}
+                    onDismissClick={handleDismissBanner}
                     location={Screens.CHANNEL_ADD_MEMBERS}
                     testID={`${TEST_ID}.notice`}
                     containerStyle={style.flatBottomBanner}

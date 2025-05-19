@@ -35,7 +35,7 @@ type Props = {
     currentUserId: string;
     tutorialWatched: boolean;
     teammateDisplayNameSetting: string;
-    channelAbacPolicyEnforced?: boolean;
+    channelAbacPolicyEnforced: boolean;
 }
 
 const styles = StyleSheet.create({
@@ -306,8 +306,7 @@ export default function ManageChannelMembers({
             testID={`${TEST_ID}.screen`}
             nativeID={SecurityManager.getShieldScreenId(componentId)}
         >
-            {/* or if the channel has abac_policy_enforced=true */}
-            {channelAbacPolicyEnforced === true && (
+            {channelAbacPolicyEnforced && (
                 <SectionNotice
                     type='info'
                     title={formatMessage({
