@@ -104,6 +104,10 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.5),
             ...typography('Body', 600, 'Regular'),
         },
+        flatBottomBanner: {
+            borderBottomLeftRadius: 0,
+            borderBottomRightRadius: 0,
+        },
     };
 });
 
@@ -135,7 +139,7 @@ export default function ChannelAddMembers({
     const [term, setTerm] = useState('');
     const [addingMembers, setAddingMembers] = useState(false);
     const [selectedIds, setSelectedIds] = useState<{[id: string]: UserProfile}>({});
-    const [showBanner, setShowBanner] = useState(true);
+    const [showBanner, setShowBanner] = useState(Boolean(channel?.abacPolicyEnforced));
 
     // Use the hook to fetch access control attributes
     const {attributeTags} = useAccessControlAttributes('channel', channel?.id, channel?.abacPolicyEnforced);
@@ -264,7 +268,7 @@ export default function ChannelAddMembers({
             edges={['top', 'left', 'right']}
             nativeID={SecurityManager.getShieldScreenId(componentId)}
         >
-            {showBanner && channel?.abacPolicyEnforced && (
+            {showBanner && (
                 <SectionNotice
                     type='info'
                     title={formatMessage({
@@ -277,10 +281,10 @@ export default function ChannelAddMembers({
                     })}
                     tags={attributeTags.length > 0 ? attributeTags : undefined}
                     isDismissable={true}
-                    onDismissClick={() => setShowBanner(false)}
+                    onDismissClick={useCallback(() => setShowBanner(false), [])}
                     location={Screens.CHANNEL_ADD_MEMBERS}
                     testID={`${TEST_ID}.notice`}
-                    containerStyle={{borderBottomLeftRadius: 0, borderBottomRightRadius: 0}}
+                    containerStyle={style.flatBottomBanner}
                     iconSize={24}
                     tagsVariant='subtle'
                 />

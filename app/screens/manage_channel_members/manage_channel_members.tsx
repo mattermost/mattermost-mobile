@@ -25,7 +25,6 @@ import {showRemoveChannelUserSnackbar} from '@utils/snack_bar';
 import {changeOpacity, getKeyboardAppearanceFromTheme} from '@utils/theme';
 import {displayUsername, filterProfilesMatchingTerm} from '@utils/user';
 
-import type ChannelModel from '@typings/database/models/servers/channel';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
@@ -36,7 +35,7 @@ type Props = {
     currentUserId: string;
     tutorialWatched: boolean;
     teammateDisplayNameSetting: string;
-    channel?: ChannelModel;
+    channelAbacPolicyEnforced?: boolean;
 }
 
 const styles = StyleSheet.create({
@@ -47,6 +46,10 @@ const styles = StyleSheet.create({
         marginLeft: 12,
         marginRight: Platform.select({ios: 4, default: 12}),
         marginVertical: 12,
+    },
+    flatBottomBanner: {
+        borderBottomLeftRadius: 0,
+        borderBottomRightRadius: 0,
     },
 });
 
@@ -83,7 +86,7 @@ export default function ManageChannelMembers({
     currentUserId,
     tutorialWatched,
     teammateDisplayNameSetting,
-    channel: channelProp,
+    channelAbacPolicyEnforced,
 }: Props) {
     const serverUrl = useServerUrl();
     const theme = useTheme();
@@ -95,7 +98,7 @@ export default function ManageChannelMembers({
     const pageRef = useRef(0);
 
     // Use the hook to fetch access control attributes
-    const {attributeTags} = useAccessControlAttributes('channel', channelId, channelProp?.abacPolicyEnforced);
+    const {attributeTags} = useAccessControlAttributes('channel', channelId, channelAbacPolicyEnforced);
 
     const [isManageMode, setIsManageMode] = useState(false);
     const [profiles, setProfiles] = useState<UserProfile[]>(EMPTY);
@@ -304,7 +307,7 @@ export default function ManageChannelMembers({
             nativeID={SecurityManager.getShieldScreenId(componentId)}
         >
             {/* or if the channel has abac_policy_enforced=true */}
-            {channelProp?.abacPolicyEnforced === true && (
+            {channelAbacPolicyEnforced === true && (
                 <SectionNotice
                     type='info'
                     title={formatMessage({
@@ -314,7 +317,7 @@ export default function ManageChannelMembers({
                     tags={attributeTags.length > 0 ? attributeTags : undefined}
                     location={Screens.MANAGE_CHANNEL_MEMBERS}
                     testID={`${TEST_ID}.notice`}
-                    containerStyle={{borderBottomLeftRadius: 0, borderBottomRightRadius: 0}}
+                    containerStyle={styles.flatBottomBanner}
                     iconSize={24}
                     tagsVariant='subtle'
                 />

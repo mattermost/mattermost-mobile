@@ -211,9 +211,9 @@ const SectionNotice = ({
                     )}
                     {showTags && (
                         <View style={styles.tagsContainer}>
-                            {tags.map((tag, index) => (
+                            {tags.map((tag) => (
                                 <Tag
-                                    key={tag + '-' + index}
+                                    key={tag}
                                     id={`tag.${tag}`}
                                     defaultMessage={tag}
                                     variant={tagsVariant}
