@@ -11,7 +11,7 @@ type Props = {
 
 const emitter = new NativeEventEmitter(RNUtils);
 
-export let info = RNUtils.isRunningInSplitView();
+let info = RNUtils.isRunningInSplitView();
 
 export const DeviceContext = createContext(info);
 const {Provider} = DeviceContext;
