@@ -10,6 +10,7 @@ import {CustomStatusDurationEnum} from '@constants/custom_status';
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
 import {toTitleCase} from '@utils/helpers';
 
+import type {CustomProfileFieldModel, CustomProfileAttributeModel} from '@database/models/server';
 import type {CustomAttribute, CustomAttributeSet} from '@typings/api/custom_profile_attributes';
 import type UserModel from '@typings/database/models/servers/user';
 import type {IntlShape} from 'react-intl';
@@ -422,4 +423,39 @@ export const convertToAttributesMap = (attributesToConvert: CustomAttributeSet |
         attributesMap[attr.id] = attr;
     });
     return attributesMap;
+};
+
+/**
+ * Convert custom profile attributes to the UI-ready CustomAttribute format
+ * @param attributes - Array of custom profile attribute models
+ * @param fields - Array of custom profile field models
+ * @param sortFn - Optional sort function
+ * @returns Array of formatted CustomAttribute objects
+ */
+export const convertProfileAttributesToCustomAttributes = (
+    attributes: CustomProfileAttributeModel[] | null | undefined,
+    fields: CustomProfileFieldModel[] | null | undefined,
+    sortFn?: (a: CustomAttribute, b: CustomAttribute) => number,
+): CustomAttribute[] => {
+    if (!attributes?.length) {
+        return [];
+    }
+
+    const fieldsMap = new Map();
+    fields?.forEach((field) => {
+        fieldsMap.set(field.id, {
+            name: field.name,
+            sort_order: field.attrs?.sort_order || Number.MAX_SAFE_INTEGER,
+        });
+    });
+
+    const customAttrs = attributes.map((attr) => ({
+        id: attr.fieldId,
+        name: fieldsMap.get(attr.fieldId)?.name || attr.fieldId,
+        value: attr.value,
+        sort_order: fieldsMap.get(attr.fieldId)?.sort_order || Number.MAX_SAFE_INTEGER,
+    }));
+
+    // Sort if a sort function is provided
+    return sortFn ? customAttrs.sort(sortFn) : customAttrs;
 };

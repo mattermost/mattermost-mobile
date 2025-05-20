@@ -8,7 +8,6 @@ import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 import {MM_TABLES} from '@constants/database';
 import {customProfileAttributeId} from '@utils/custom_profile_attribute';
 
-import type {CustomAttribute} from '@typings/api/custom_profile_attributes';
 import type CustomProfileAttributeModel from 'app/database/models/server/custom_profile_attribute';
 import type CustomProfileFieldModel from 'app/database/models/server/custom_profile_field';
 
@@ -83,48 +82,6 @@ export const observeCustomProfileAttribute = (database: Database, fieldId: strin
  */
 export const observeCustomProfileAttributesByUserId = (database: Database, userId: string): Observable<CustomProfileAttributeModel[]> => {
     return queryCustomProfileAttributesByUserId(database, userId).observeWithColumns(['value']).pipe(distinctUntilChanged());
-};
-
-/**
- * Convert custom profile attributes to the UI-ready CustomAttribute format
- * @param database - The database instance
- * @param attributes - Array of custom profile attribute models
- * @returns Promise resolving to array of formatted CustomAttribute objects
- */
-export const convertProfileAttributesToCustomAttributes = async (
-    database: Database,
-    attributes: CustomProfileAttributeModel[] | null | undefined,
-    sortFn?: (a: CustomAttribute, b: CustomAttribute) => number,
-): Promise<CustomAttribute[]> => {
-    if (!attributes?.length) {
-        return [];
-    }
-
-    // We need to fetch field details for names and sorting
-    const fieldIds = attributes.map((attr) => attr.fieldId);
-    const fieldsQuery = await database.get<CustomProfileFieldModel>(CUSTOM_PROFILE_FIELD).query(
-        Q.where('id', Q.oneOf(fieldIds)),
-    ).fetch();
-
-    // Create a map of field IDs to names
-    const fieldsMap = new Map();
-    fieldsQuery.forEach((field) => {
-        fieldsMap.set(field.id, {
-            name: field.name,
-            sort_order: field.attrs?.sort_order || 0,
-        });
-    });
-
-    // Convert DB attributes to CustomAttribute format
-    const customAttrs = attributes.map((attr) => ({
-        id: attr.fieldId,
-        name: fieldsMap.get(attr.fieldId)?.name || attr.fieldId,
-        value: attr.value,
-        sort_order: fieldsMap.get(attr.fieldId)?.sort_order || 0,
-    }));
-
-    // Sort if a sort function is provided
-    return sortFn ? customAttrs.sort(sortFn) : customAttrs;
 };
 
 /**

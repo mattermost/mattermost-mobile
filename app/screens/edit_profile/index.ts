@@ -2,17 +2,17 @@
 // See LICENSE.txt for license information.
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
-import {of as of$, combineLatest, from} from 'rxjs';
+import {of as of$, combineLatest} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {observeCustomProfileAttributesByUserId, observeCustomProfileFields, convertProfileAttributesToCustomAttributes} from '@queries/servers/custom_profile';
+import {observeCustomProfileAttributesByUserId, observeCustomProfileFields} from '@queries/servers/custom_profile';
 import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
-import {sortCustomProfileAttributes, convertToAttributesMap} from '@utils/user';
+import {sortCustomProfileAttributes, convertToAttributesMap, convertProfileAttributesToCustomAttributes} from '@utils/user';
 
 import EditProfile from './edit_profile';
 
-import type {CustomAttributeSet} from '@typings/api/custom_profile_attributes';
+import type {CustomAttribute} from '@typings/api/custom_profile_attributes';
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
@@ -38,12 +38,12 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
 
         // Convert attributes to the format expected by the component
         formattedCustomAttributes = combineLatest([rawCustomAttributes, customFields]).pipe(
-            switchMap(([attributes]) => {
+            switchMap(([attributes, fields]) => {
                 if (!attributes?.length) {
-                    return of$({} as CustomAttributeSet);
+                    return of$([] as CustomAttribute[]);
                 }
 
-                return from(convertProfileAttributesToCustomAttributes(database, attributes, sortCustomProfileAttributes));
+                return of$(convertProfileAttributesToCustomAttributes(attributes, fields, sortCustomProfileAttributes));
             }),
             switchMap((converted) => of$(convertToAttributesMap(converted))),
         );
