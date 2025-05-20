@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import RNUtils from '@mattermost/rnutils';
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {Platform, StyleSheet, View} from 'react-native';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {Platform, StyleSheet, View, type LayoutChangeEvent} from 'react-native';
 
 import {CaptionsEnabledContext} from '@calls/context';
 import {hasCaptions} from '@calls/utils';
@@ -40,7 +40,7 @@ const GalleryScreen = ({componentId, galleryIdentifier, hideActions, initialInde
     const [captionsEnabled, setCaptionsEnabled] = useState<boolean[]>(new Array(items.length).fill(true));
     const [captionsAvailable, setCaptionsAvailable] = useState<boolean[]>([]);
     const {setControlsHidden, headerStyles, footerStyles} = useGalleryControls();
-    const dimensions = useMemo(() => ({width: dim.width, height: dim.height}), [dim]);
+    const [dimensions, setDimensions] = useState(dim);
     const galleryRef = useRef<GalleryRef>(null);
 
     useEffect(() => {
@@ -50,6 +50,13 @@ const GalleryScreen = ({componentId, galleryIdentifier, hideActions, initialInde
         }, [] as boolean[]);
         setCaptionsAvailable(captions);
     }, [items]);
+
+    const onLayout = useCallback((e: LayoutChangeEvent) => {
+        setDimensions({
+            width: e.nativeEvent.layout.width,
+            height: e.nativeEvent.layout.height,
+        });
+    }, []);
 
     const onCaptionsPressIdx = useCallback((idx: number) => {
         const enabled = [...captionsEnabled];
@@ -92,6 +99,7 @@ const GalleryScreen = ({componentId, galleryIdentifier, hideActions, initialInde
             <View
                 style={styles.flex}
                 nativeID={SecurityManager.getShieldScreenId(componentId)}
+                onLayout={onLayout}
             >
                 <Header
                     index={localIndex}

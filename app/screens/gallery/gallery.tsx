@@ -2,12 +2,15 @@
 // See LICENSE.txt for license information.
 
 import {Image} from 'expo-image';
-import React, {forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState} from 'react';
+import React, {forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState} from 'react';
 import {BackHandler} from 'react-native';
 import Animated, {runOnJS, runOnUI, useAnimatedReaction} from 'react-native-reanimated';
 
+import {buildFilePreviewUrl} from '@actions/remote/file';
 import {useGallery} from '@context/gallery';
-import {freezeOtherScreens, measureItem} from '@utils/gallery';
+import {useServerUrl} from '@context/server';
+import {isGif} from '@utils/file';
+import {freezeOtherScreens, galleryItemToFileInfo, measureItem} from '@utils/gallery';
 
 import LightboxSwipeout, {type LightboxSwipeoutRef, type RenderItemInfo} from './lightbox_swipeout';
 import Backdrop, {type BackdropProps} from './lightbox_swipeout/backdrop';
@@ -46,6 +49,8 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({
     const [localIndex, setLocalIndex] = useState(initialIndex);
     const lightboxRef = useRef<LightboxSwipeoutRef>(null);
     const item = items[localIndex];
+    const fileInfo = useMemo(() => galleryItemToFileInfo(item), [item]);
+    const serverUrl = useServerUrl();
 
     const close = () => {
         lightboxRef.current?.closeLightbox();
@@ -146,7 +151,8 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({
             return (
                 <AnimatedImage
                     source={{uri: item.posterUri}}
-                    style={info.itemStyles}
+                    style={[info.itemStyles]}
+                    contentFit='cover'
                 />
             );
         }
@@ -177,13 +183,21 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({
         }
     }, []);
 
+    const source = useMemo(() => {
+        if (isGif(fileInfo) && fileInfo.id) {
+            return buildFilePreviewUrl(serverUrl, fileInfo.id);
+        }
+
+        return fileInfo.localPath || fileInfo.uri || item.uri;
+    }, [fileInfo, item.uri, serverUrl]);
+
     return (
         <LightboxSwipeout
             ref={lightboxRef}
             target={item}
             onAnimationFinished={hideLightboxItem}
             sharedValues={sharedValues}
-            source={item.uri}
+            source={source}
             onSwipeActive={onSwipeActive}
             onSwipeFailure={onSwipeFailure}
             renderBackdropComponent={renderBackdropComponent}

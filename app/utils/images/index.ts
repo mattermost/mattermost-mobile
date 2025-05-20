@@ -13,7 +13,7 @@ import {
     VIEWPORT_IMAGE_REPLY_OFFSET,
 } from '@constants/image';
 
-export const calculateDimensions = (height?: number, width?: number, viewPortWidth = 0, viewPortHeight = 0) => {
+export const calculateDimensions = (height?: number, width?: number, viewPortWidth = 0, viewPortHeight = 0, matchViewPort?: boolean) => {
     'worklet';
 
     if (!height || !width) {
@@ -46,6 +46,12 @@ export const calculateDimensions = (height?: number, width?: number, viewPortWid
     } else if (viewPortHeight && imageHeight > viewPortHeight) {
         imageHeight = viewPortHeight;
         imageWidth = imageHeight * heightRatio;
+    }
+
+    if (matchViewPort && width < viewPortWidth && height < viewPortHeight) {
+        // If the image is smaller than the viewport, we want it to take the full width
+        imageWidth = viewPortWidth;
+        imageHeight = imageWidth * ratio;
     }
 
     return {

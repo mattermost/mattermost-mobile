@@ -17,7 +17,6 @@ export default function useTransformerDoubleTap(enabled: boolean) {
         enabled(enabled).
         numberOfTaps(2).
         maxDuration(500).
-        maxDelay(1000).
         maxDeltaX(16).
         maxDeltaY(16).
         onStart((evt) => {

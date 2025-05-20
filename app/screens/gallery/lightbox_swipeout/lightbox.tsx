@@ -69,6 +69,7 @@ export default function Lightbox({
 
             childrenOpacity.value = 1;
             runOnJS(setRenderChildren)(true);
+            runOnJS(onChildrenLayout)();
         });
     };
 
@@ -81,9 +82,9 @@ export default function Lightbox({
             return;
         }
 
-        requestAnimationFrame(() => {
+        setTimeout(() => {
             imageOpacity.value = 0;
-        });
+        }, 300);
     }
 
     const childrenAnimateStyle = useAnimatedStyle(
@@ -115,11 +116,12 @@ export default function Lightbox({
             target.width,
             targetDimensions.width,
             targetDimensions.height,
+            true,
         );
 
         const targetX = (targetDimensions.width - tw) / 2;
         const targetY =
-            (targetDimensions.height - th) / 2;
+            ((targetDimensions.height) - th) / 2;
 
         const top =
             translateY.value +
@@ -150,7 +152,7 @@ export default function Lightbox({
                     translateY: childTranslateY,
                 })}
 
-            <Animated.View style={StyleSheet.absoluteFillObject}>
+            <Animated.View style={StyleSheet.absoluteFill}>
                 {
                     target.type !== 'image' &&
                     target.type !== 'avatar' &&
@@ -165,6 +167,7 @@ export default function Lightbox({
                             <AnimatedImage
                                 source={imageSource}
                                 style={itemStyles}
+                                autoplay={false}
                             />
                         )
                 }
@@ -173,14 +176,7 @@ export default function Lightbox({
             <Animated.View
                 style={[StyleSheet.absoluteFill, childrenAnimateStyle]}
             >
-                {renderChildren && (
-                    <Animated.View
-                        style={[StyleSheet.absoluteFill]}
-                        onLayout={onChildrenLayout}
-                    >
-                        {children}
-                    </Animated.View>
-                )}
+                {renderChildren && children}
             </Animated.View>
         </View>
     );

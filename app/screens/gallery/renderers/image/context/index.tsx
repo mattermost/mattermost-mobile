@@ -197,6 +197,8 @@ export const useTransformerSharedValues = () => {
             scaleOffset.value = 1;
 
             vec.set(offset, () => withTiming(0, transformerTimingConfig));
+            vec.set(translation, () => withTiming(0, transformerTimingConfig));
+            vec.set(scaleTranslation, () => withTiming(0, transformerTimingConfig));
         } else {
             scale.value = 1;
             scaleOffset.value = 1;

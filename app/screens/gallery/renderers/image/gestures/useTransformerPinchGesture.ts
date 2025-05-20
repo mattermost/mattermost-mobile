@@ -21,6 +21,7 @@ export default function useTransformerPinchGesture(enabled: boolean) {
         scaleOffset,
         scaleTranslation,
         maybeRunOnEnd,
+        resetSharedState,
     } = useTransformerSharedValues();
     const origin = vec.useSharedVector(0, 0);
     const adjustedFocal = vec.useSharedVector(0, 0);
@@ -64,22 +65,26 @@ export default function useTransformerPinchGesture(enabled: boolean) {
             vec.set(scaleTranslation, nextTranslation);
             scale.value = pinchNextScale.value;
         }).
-        onEnd((evt) => {
-            if (!shouldHandleEvent(evt)) {
-                return;
-            }
-
+        onEnd(() => {
             scaleOffset.value = scale.value;
-            if (scaleOffset.value < 1) {
+
+            // If scale is less than or equal to 1, reset all values
+            if (scaleOffset.value <= 1) {
                 scaleOffset.value = 1;
                 scale.value = withTiming(1, transformerTimingConfig);
+                vec.set(offset, 0);
+                vec.set(scaleTranslation, 0);
+                resetSharedState(true);
             } else if (scaleOffset.value > MAX_SCALE) {
                 scaleOffset.value = MAX_SCALE;
                 scale.value = withTiming(MAX_SCALE, transformerTimingConfig);
+                vec.set(offset, vec.add(offset, scaleTranslation));
+                vec.set(scaleTranslation, 0);
+            } else {
+                vec.set(offset, vec.add(offset, scaleTranslation));
+                vec.set(scaleTranslation, 0);
             }
 
-            vec.set(offset, vec.add(offset, scaleTranslation));
-            vec.set(scaleTranslation, 0);
             maybeRunOnEnd();
         });
 }

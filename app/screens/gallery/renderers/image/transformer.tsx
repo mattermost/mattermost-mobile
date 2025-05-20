@@ -105,7 +105,8 @@ const ImageTransformer = (
         };
     }, []);
 
-    const pinchGesture = useTransformerPinchGesture(enabled);
+    const pinchGesture = useTransformerPinchGesture(true);
+    pinchGesture.simultaneousWithExternalGesture(pagerPanGesture, lightboxPanGesture);
 
     const panGesture = useTransformerPanGesture(enabled);
     panGesture.simultaneousWithExternalGesture(pagerPanGesture, lightboxPanGesture);
@@ -117,9 +118,9 @@ const ImageTransformer = (
     tapGesture.simultaneousWithExternalGesture(pagerTapGesture);
 
     const composedGesture = Gesture.Exclusive(
+        Gesture.Simultaneous(pinchGesture, panGesture),
         doubleTapGesture,
         tapGesture,
-        Gesture.Simultaneous(panGesture, pinchGesture),
     );
 
     let element;

@@ -20,7 +20,7 @@ const Backdrop = ({animatedStyles, translateY}: BackdropProps) => {
     const customBackdropStyles = useAnimatedStyle(() => {
         return {
             opacity: interpolate(
-                Math.abs(translateY.value),
+                Math.abs(translateY.value / 3),
                 [0, 100],
                 [1, 0],
                 'clamp',
