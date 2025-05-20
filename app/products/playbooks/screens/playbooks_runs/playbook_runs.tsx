@@ -16,7 +16,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import EmptyState from './empty_state';
 import PlaybookCard, {CARD_HEIGHT} from './playbook_card';
 
-import type PlaybookRunModel from '@typings/database/models/servers/playbook_run_model';
+import type PlaybookRunModel from '@playbooks/types/database/models/playbook_run';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
@@ -80,7 +80,7 @@ const PlaybookRuns = ({
         const finished: PlaybookRunModel[] = [];
 
         allRuns.forEach((run) => {
-            if (run.end_at) {
+            if (run.endAt) {
                 finished.push(run);
             } else {
                 inProgress.push(run);

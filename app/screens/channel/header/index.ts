@@ -7,7 +7,7 @@ import {of as of$} from 'rxjs';
 import {combineLatestWith, distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import {General} from '@constants';
-import {queryActivePlaybookRunsPerChannel, queryPlaybookRunsPerChannel} from '@playbooks/queries/playbooks';
+import {queryActivePlaybookRunsPerChannel, queryPlaybookRunsPerChannel} from '@playbooks/database/queries/playbooks';
 import {observeChannel, observeChannelInfo} from '@queries/servers/channel';
 import {observeCanAddBookmarks, queryBookmarks} from '@queries/servers/channel_bookmark';
 import {observeConfigBooleanValue, observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';

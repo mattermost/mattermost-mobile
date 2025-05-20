@@ -5,7 +5,7 @@ import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {queryActivePlaybookRunsPerChannel} from '@playbooks/queries/playbooks';
+import {queryActivePlaybookRunsPerChannel} from '@playbooks/database/queries/playbooks';
 import {observeChannel} from '@queries/servers/channel';
 
 import PlaybookRunsOption from './playbook_runs_option';

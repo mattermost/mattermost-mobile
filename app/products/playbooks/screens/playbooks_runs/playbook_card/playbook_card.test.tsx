@@ -9,12 +9,12 @@ import UserChip from '@components/chips/user_chip';
 import UserAvatarsStack from '@components/user_avatars_stack';
 import {Preferences} from '@constants';
 import {useTheme} from '@context/theme';
+import ProgressBar from '@playbooks/components/progress_bar/progress_bar';
 import {goToPlaybookRun} from '@playbooks/screens/navigation';
 import {renderWithIntl} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
 import PlaybookCard from './playbook_card';
-import ProgressBar from './progress_bar';
 
 jest.mock('@context/theme', () => ({
     useTheme: jest.fn(),

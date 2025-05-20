@@ -11,13 +11,12 @@ import FriendlyDate from '@components/friendly_date';
 import Tag from '@components/tag';
 import UserAvatarsStack from '@components/user_avatars_stack';
 import {useTheme} from '@context/theme';
+import ProgressBar from '@playbooks/components/progress_bar';
 import {goToPlaybookRun} from '@playbooks/screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import ProgressBar from './progress_bar';
-
-import type PlaybookRunModel from '@typings/database/models/servers/playbook_run_model';
+import type PlaybookRunModel from '@playbooks/types/database/models/playbook_run';
 import type UserModel from '@typings/database/models/servers/user';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
@@ -92,7 +91,7 @@ const PlaybookCard = ({
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
     const dimensions = useWindowDimensions();
-    const finished = Boolean(run.end_at);
+    const finished = Boolean(run.endAt);
     const tagMaxWidth = dimensions.width * 0.25;
 
     const tagContainerStyle = useMemo(() => ({
@@ -132,7 +131,7 @@ const PlaybookCard = ({
                     />
                 )}
                 <UserAvatarsStack
-                    channelId={run.channel_id}
+                    channelId={run.channelId}
                     location={location}
                     users={participants}
                     bottomSheetTitle={bottomSheetTitleMessage}
@@ -150,7 +149,7 @@ const PlaybookCard = ({
                         }, {
                             date: (
                                 <FriendlyDate
-                                    value={run.last_update_at}
+                                    value={run.lastStatusUpdateAt}
                                     style={styles.lastUpdatedText}
                                 />
                             ),
