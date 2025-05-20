@@ -273,7 +273,7 @@ class SecurityManagerSingleton {
      * Gets the last accessed server.
      */
     getLastAccessedServer = (otherServers: string[]) => {
-        const lastAccessed = otherServers.map((s) => this.serverConfig[s].lastAccessed).sort().reverse()[0];
+        const lastAccessed = otherServers.map((s) => this.serverConfig[s].lastAccessed).sort((a: number, b: number) => b - a)[0];
         return Object.keys(this.serverConfig).find((s) => this.serverConfig[s].lastAccessed === lastAccessed);
     };
 
