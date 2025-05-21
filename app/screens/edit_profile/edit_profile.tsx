@@ -216,7 +216,7 @@ const EditProfile = ({
         const update = {...userInfo};
         if (fieldKey.startsWith(CUSTOM_ATTRS_PREFIX_NAME)) {
             const attrKey = fieldKey.slice(CUSTOM_ATTRS_PREFIX_NAME.length);
-            update.customAttributes = {...update.customAttributes, [attrKey]: {id: attrKey, name: userInfo.customAttributes[attrKey].name, value, sort_order: userInfo.customAttributes[attrKey].sort_order}};
+            update.customAttributes = {...update.customAttributes, [attrKey]: {id: attrKey, name: userInfo.customAttributes[attrKey].name, value, type: userInfo.customAttributes[attrKey].type, sort_order: userInfo.customAttributes[attrKey].sort_order}};
         } else {
             switch (fieldKey) {
             // typescript doesn't like to do update[fieldkey] as it might containg a customAttribute case

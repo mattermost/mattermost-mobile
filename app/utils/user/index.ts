@@ -425,6 +425,13 @@ export const convertToAttributesMap = (attributesToConvert: CustomAttributeSet |
     return attributesMap;
 };
 
+export const getDisplayType = (field: CustomProfileFieldModel): string => {
+    if (field.type === 'text' && field.attrs?.value_type !== undefined && field.attrs.value_type !== '') {
+        return field.attrs.value_type;
+    }
+    return field.type;
+};
+
 /**
  * Convert custom profile attributes to the UI-ready CustomAttribute format
  * @param attributes - Array of custom profile attribute models
@@ -436,6 +443,7 @@ export const convertProfileAttributesToCustomAttributes = (
     attributes: CustomProfileAttributeModel[] | null | undefined,
     fields: CustomProfileFieldModel[] | null | undefined,
     sortFn?: (a: CustomAttribute, b: CustomAttribute) => number,
+    useDisplayType: boolean = false,
 ): CustomAttribute[] => {
     if (!attributes?.length) {
         return [];
@@ -443,18 +451,24 @@ export const convertProfileAttributesToCustomAttributes = (
 
     const fieldsMap = new Map();
     fields?.forEach((field) => {
+        const customType = useDisplayType ? getDisplayType(field) : field.type;
         fieldsMap.set(field.id, {
             name: field.name,
+            type: customType,
             sort_order: field.attrs?.sort_order || Number.MAX_SAFE_INTEGER,
         });
     });
 
-    const customAttrs = attributes.map((attr) => ({
-        id: attr.fieldId,
-        name: fieldsMap.get(attr.fieldId)?.name || attr.fieldId,
-        value: attr.value,
-        sort_order: fieldsMap.get(attr.fieldId)?.sort_order || Number.MAX_SAFE_INTEGER,
-    }));
+    const customAttrs = attributes.map((attr) => {
+        const field = fieldsMap.get(attr.fieldId);
+        return ({
+            id: attr.fieldId,
+            name: field?.name || attr.fieldId,
+            type: field?.type || 'text',
+            value: attr.value,
+            sort_order: field?.sort_order || Number.MAX_SAFE_INTEGER,
+        });
+    });
 
     // Sort if a sort function is provided
     return sortFn ? customAttrs.sort(sortFn) : customAttrs;

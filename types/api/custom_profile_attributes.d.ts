@@ -16,7 +16,7 @@ type CustomProfileField = {
     /** name of the field **/
     name: string;
 
-    /** type of values accepted. Currently only text is supported **/
+    /** type of values accepted. **/
     type: string;
 
     /** any extra properties of the field **/
@@ -66,6 +66,7 @@ export type CustomAttribute = {
     id: string;
     name: string;
     value: string;
+    type: string;
     sort_order?: number;
 }
 

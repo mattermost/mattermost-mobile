@@ -19,18 +19,21 @@ const serverAttributesSet: CustomAttributeSet = {
         name: 'Custom Attribute 1',
         value: 'server value 1',
         sort_order: 1,
+        type: 'text',
     },
     attr2: {
         id: 'attr2',
         name: 'Custom Attribute 2',
         value: 'server value 2',
         sort_order: 2,
+        type: 'text',
     },
     attr3: {
         id: 'attr3',
         name: 'Custom Attribute 3',
         value: 'server value 3',
         sort_order: 3,
+        type: 'text',
     },
 };
 
@@ -40,12 +43,14 @@ const dbAttributesSet: CustomAttributeSet = {
         name: 'Custom Attribute 1',
         value: 'db value 1',
         sort_order: 1,
+        type: 'text',
     },
     attr2: {
         id: 'attr2',
         name: 'Custom Attribute 2',
         value: 'db value 2',
         sort_order: 2,
+        type: 'text',
     },
 };
 
@@ -359,18 +364,21 @@ describe('EditProfile', () => {
                 name: 'Custom Attribute 1',
                 value: 'updated db value 1',
                 sort_order: 1,
+                type: 'text',
             },
             attr2: {
                 id: 'attr2',
                 name: 'Custom Attribute 2',
                 value: 'updated db value 2',
                 sort_order: 2,
+                type: 'text',
             },
             attr4: {
                 id: 'attr4',
                 name: 'New Attribute',
                 value: 'new db value',
                 sort_order: 4,
+                type: 'text',
             },
         };
 
