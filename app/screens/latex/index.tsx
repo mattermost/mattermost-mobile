@@ -2,9 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
+import {useIntl} from 'react-intl';
 import {Platform, ScrollView, Text, View} from 'react-native';
 import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
+import ErrorBoundary from '@components/markdown/error_boundary';
 import MathView from '@components/math_view';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
@@ -60,6 +62,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const Latex = ({componentId, content}: Props) => {
+    const intl = useIntl();
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const lines = splitLatexCodeInLines(content);
@@ -93,20 +96,27 @@ const Latex = ({componentId, content}: Props) => {
                     contentContainerStyle={style.scrollCode}
                     horizontal={true}
                 >
-                    {lines.map((latexCode) => (
-                        <View
-                            style={style.code}
-                            key={latexCode}
-                        >
-                            <MathView
-                                math={latexCode}
-                                onError={onErrorMessage}
-                                renderError={onRenderErrorMessage}
-                                resizeMode={'cover'}
-                                style={style.mathStyle}
-                            />
-                        </View>
-                    ))}
+                    <ErrorBoundary
+                        error={intl.formatMessage({id: 'markdown.latex.error', defaultMessage: 'Latex render error'})}
+                        theme={theme}
+                    >
+                        <>
+                            {lines.map((latexCode) => (
+                                <View
+                                    style={style.code}
+                                    key={latexCode}
+                                >
+                                    <MathView
+                                        math={latexCode}
+                                        onError={onErrorMessage}
+                                        renderError={onRenderErrorMessage}
+                                        resizeMode={'cover'}
+                                        style={style.mathStyle}
+                                    />
+                                </View>
+                            ))}
+                        </>
+                    </ErrorBoundary>
                 </ScrollView>
             </ScrollView>
         </SafeAreaView>

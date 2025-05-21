@@ -5,28 +5,28 @@ import {useManagedConfig} from '@mattermost/react-native-emm';
 import Clipboard from '@react-native-clipboard/clipboard';
 import React, {useCallback, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {type GestureResponderEvent, Keyboard, type StyleProp, StyleSheet, Text, type TextStyle, View} from 'react-native';
+import {type GestureResponderEvent, type StyleProp, StyleSheet, Text, type TextStyle, View} from 'react-native';
 
 import {fetchUserOrGroupsByMentionsInBatch} from '@actions/remote/user';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
-import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import GroupModel from '@database/models/server/group';
 import {useMemoMentionedGroup, useMemoMentionedUser} from '@hooks/markdown';
-import {bottomSheet, dismissBottomSheet, openAsBottomSheet} from '@screens/navigation';
+import {bottomSheet, dismissBottomSheet, openUserProfileModal} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {displayUsername} from '@utils/user';
 
 import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
 import type UserModelType from '@typings/database/models/servers/user';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type AtMentionProps = {
     channelId?: string;
     currentUserId: string;
     disableAtChannelMentionHighlight?: boolean;
     isSearchResult?: boolean;
-    location: string;
+    location: AvailableScreens;
     mentionKeys?: Array<{key: string }>;
     mentionName: string;
     mentionStyle: StyleProp<TextStyle>;
@@ -95,13 +95,11 @@ const AtMention = ({
             return;
         }
 
-        const screen = Screens.USER_PROFILE;
-        const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
-        const closeButtonId = 'close-user-profile';
-        const props = {closeButtonId, location, userId: user.id, channelId};
-
-        Keyboard.dismiss();
-        openAsBottomSheet({screen, title, theme, closeButtonId, props});
+        openUserProfileModal(intl, theme, {
+            location,
+            userId: user.id,
+            channelId,
+        });
     };
 
     const handleLongPress = useCallback(() => {

@@ -39,7 +39,7 @@ type Props = {
     isSystemAdmin: boolean;
     isTeamAdmin: boolean;
     manageMode?: boolean;
-    location: AvailableScreens;
+    location?: AvailableScreens;
     teamId: string;
     teammateDisplayName: string;
     user: UserModel;
@@ -91,7 +91,7 @@ const UserProfile = ({
 }: Props) => {
     const {formatMessage, locale} = useIntl();
     const serverUrl = useServerUrl();
-    const channelContext = channelContextScreens.includes(location);
+    const channelContext = location ? channelContextScreens.includes(location) : false;
     const showOptions: OptionsType = channelContext && !user.isBot ? 'all' : 'message';
     const override = Boolean(userIconOverride || usernameOverride);
     const {bottom} = useSafeAreaInsets();

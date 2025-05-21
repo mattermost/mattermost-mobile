@@ -171,4 +171,35 @@ describe('Channels - Create Direct Message', () => {
         // # Go back to channel list screen
         await CreateDirectMessageScreen.close();
     });
+
+    it('MM-T63374 - should not display deactivated users in the create direct message screen', async () => {
+        // # As admin, create a new user to test with
+        const {user: deactivatedUser} = await User.apiCreateUser(siteOneUrl);
+        await Team.apiAddUserToTeam(siteOneUrl, deactivatedUser.id, testTeam.id);
+
+        // # Open create direct message screen and verify we can find the user
+        await CreateDirectMessageScreen.open();
+        await CreateDirectMessageScreen.searchInput.replaceText(deactivatedUser.username);
+        await wait(timeouts.ONE_SEC);
+
+        // * Verify the new user appears in search results before deactivation
+        await expect(CreateDirectMessageScreen.getUserItemDisplayName(deactivatedUser.id)).toBeVisible();
+
+        // # Close the create direct message screen
+        await CreateDirectMessageScreen.close();
+
+        // # Deactivate the user
+        await User.apiDeactivateUser(siteOneUrl, deactivatedUser.id);
+
+        // # Open create direct message screen again and search for the deactivated user
+        await CreateDirectMessageScreen.open();
+        await CreateDirectMessageScreen.searchInput.replaceText(deactivatedUser.username);
+        await wait(timeouts.ONE_SEC);
+
+        // * Verify the deactivated user does not appear in search results
+        await expect(element(by.text(`No matches found for “${deactivatedUser.username}”`))).toBeVisible();
+
+        // # Go back to channel list screen
+        await CreateDirectMessageScreen.close();
+    });
 });

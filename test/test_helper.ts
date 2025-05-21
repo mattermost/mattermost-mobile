@@ -694,6 +694,7 @@ class TestHelperSingleton {
             postId: this.generateId(),
             post: this.fakeRelation(),
             toFileInfo: jest.fn(),
+            isBlocked: false,
             ...overwrite,
         };
     };
