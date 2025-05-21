@@ -34,13 +34,14 @@ function ImageRenderer({
     const scaleTranslation = vec.useSharedVector(0, 0);
     const offset = vec.useSharedVector(0, 0);
     const canvas = vec.create(windowDimensions.width, windowDimensions.height);
-    const image = vec.create(targetDimensions.width, targetDimensions.height);
-    const {width: targetWidth, height: targetHeight} = calculateDimensions(
+    const {width: targetWidth, height: targetHeight} = useMemo(() => calculateDimensions(
         item.height,
         item.width,
         targetDimensions.width,
         targetDimensions.height,
-    );
+        true,
+    ), [item.width, item.height, targetDimensions.width, targetDimensions.height]);
+    const image = vec.create(targetWidth, targetHeight);
 
     const sharedValues: TransformerSharedValues = useMemo(() => ({
         interactionsEnabled,

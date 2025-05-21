@@ -5,7 +5,7 @@
 // See LICENSE.txt for license information.
 
 import {Image, type ImageSource} from 'expo-image';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {type ImageStyle, StyleSheet, View, type ViewStyle} from 'react-native';
 import Animated, {
     interpolate, runOnJS, runOnUI,
@@ -77,6 +77,14 @@ export default function Lightbox({
         runOnUI(animateOnMount)();
     }, []);
 
+    const {width: tw, height: th} = useMemo(() => calculateDimensions(
+        target.height,
+        target.width,
+        targetDimensions.width,
+        targetDimensions.height,
+        true,
+    ), [targetDimensions.width, targetDimensions.height, target.width, target.height]);
+
     function onChildrenLayout() {
         if (imageOpacity.value === 0) {
             return;
@@ -110,14 +118,6 @@ export default function Lightbox({
     const itemStyles = useAnimatedStyle(() => {
         const interpolateProgress = (range: [number, number]) =>
             interpolate(animationProgress.value, [0, 1], range);
-
-        const {width: tw, height: th} = calculateDimensions(
-            target.height,
-            target.width,
-            targetDimensions.width,
-            targetDimensions.height,
-            true,
-        );
 
         const targetX = (targetDimensions.width - tw) / 2;
         const targetY =

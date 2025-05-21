@@ -48,10 +48,20 @@ export const calculateDimensions = (height?: number, width?: number, viewPortWid
         imageWidth = imageHeight * heightRatio;
     }
 
-    if (matchViewPort && width < viewPortWidth && height < viewPortHeight) {
-        // If the image is smaller than the viewport, we want it to take the full width
-        imageWidth = viewPortWidth;
-        imageHeight = imageWidth * ratio;
+    if (
+        matchViewPort &&
+        width < viewPortWidth &&
+        height < viewPortHeight
+    ) {
+        if (height > width) {
+            // Portrait: fit to viewport height
+            imageHeight = viewPortHeight;
+            imageWidth = imageHeight * heightRatio;
+        } else {
+            // Landscape or square: fit to viewport width
+            imageWidth = viewPortWidth;
+            imageHeight = imageWidth * ratio;
+        }
     }
 
     return {
