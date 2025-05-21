@@ -53,6 +53,7 @@ export default class CustomProfileFieldModel extends Model implements CustomProf
     /** attrs : Any extra properties of the field */
     @json('attrs', safeParseJSON) attrs!: {
         sort_order?: number;
+        value_type?: string;
         [key: string]: unknown;
     } | null;
 

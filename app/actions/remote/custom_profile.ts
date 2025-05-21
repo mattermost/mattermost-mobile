@@ -51,6 +51,7 @@ export const fetchCustomProfileAttributes = async (serverUrl: string, userId: st
                     attributes[field.id] = {
                         id: field.id,
                         name: field.name,
+                        type: field.type || 'text',
                         value,
                         sort_order: field.attrs?.sort_order,
                     };

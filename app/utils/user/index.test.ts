@@ -39,6 +39,7 @@ import {
     isShared,
     isSystemAdmin,
     removeUserFromList,
+    getDisplayType,
 } from './index';
 
 import type {CustomAttribute, CustomAttributeSet} from '@typings/api/custom_profile_attributes';
@@ -684,20 +685,20 @@ describe('confirmOutOfOfficeDisabled', () => {
 describe('convertToAttributesMap', () => {
     it('should convert an array of custom attributes to a map', () => {
         const attributes: CustomAttribute[] = [
-            {id: 'attr1', name: 'Attribute 1', value: 'value1', sort_order: 1},
-            {id: 'attr2', name: 'Attribute 2', value: 'value2', sort_order: 2},
+            {id: 'attr1', name: 'Attribute 1', type: 'text', value: 'value1', sort_order: 1},
+            {id: 'attr2', name: 'Attribute 2', type: 'text', value: 'value2', sort_order: 2},
         ];
         const result = convertToAttributesMap(attributes);
         expect(result).toEqual({
-            attr1: {id: 'attr1', name: 'Attribute 1', value: 'value1', sort_order: 1},
-            attr2: {id: 'attr2', name: 'Attribute 2', value: 'value2', sort_order: 2},
+            attr1: {id: 'attr1', name: 'Attribute 1', type: 'text', value: 'value1', sort_order: 1},
+            attr2: {id: 'attr2', name: 'Attribute 2', type: 'text', value: 'value2', sort_order: 2},
         });
     });
 
     it('should return the input if it is already a map', () => {
         const attributesMap: CustomAttributeSet = {
-            attr1: {id: 'attr1', name: 'Attribute 1', value: 'value1', sort_order: 1},
-            attr2: {id: 'attr2', name: 'Attribute 2', value: 'value2', sort_order: 2},
+            attr1: {id: 'attr1', name: 'Attribute 1', type: 'text', value: 'value1', sort_order: 1},
+            attr2: {id: 'attr2', name: 'Attribute 2', type: 'text', value: 'value2', sort_order: 2},
         };
         const result = convertToAttributesMap(attributesMap);
         expect(result).toBe(attributesMap);
@@ -709,22 +710,22 @@ describe('convertToAttributesMap', () => {
     });
 
     it('should handle array with single attribute', () => {
-        const attributes: CustomAttribute[] = [{id: 'attr1', name: 'Attribute 1', value: 'value1', sort_order: 1}];
+        const attributes: CustomAttribute[] = [{id: 'attr1', name: 'Attribute 1', type: 'text', value: 'value1', sort_order: 1}];
         const result = convertToAttributesMap(attributes);
         expect(result).toEqual({
-            attr1: {id: 'attr1', name: 'Attribute 1', value: 'value1', sort_order: 1},
+            attr1: {id: 'attr1', name: 'Attribute 1', type: 'text', value: 'value1', sort_order: 1},
         });
     });
 
     it('should handle attributes with missing optional fields', () => {
         const attributes: CustomAttribute[] = [
-            {id: 'attr1', name: 'Attribute 1', value: ''},
-            {id: 'attr2', name: 'Attribute 2', value: 'value2'},
+            {id: 'attr1', name: 'Attribute 1', type: 'text', value: ''},
+            {id: 'attr2', name: 'Attribute 2', type: 'text', value: 'value2'},
         ];
         const result = convertToAttributesMap(attributes);
         expect(result).toEqual({
-            attr1: {id: 'attr1', name: 'Attribute 1', value: ''},
-            attr2: {id: 'attr2', name: 'Attribute 2', value: 'value2'},
+            attr1: {id: 'attr1', name: 'Attribute 1', type: 'text', value: ''},
+            attr2: {id: 'attr2', name: 'Attribute 2', type: 'text', value: 'value2'},
         });
     });
 });
@@ -876,5 +877,49 @@ describe('convertProfileAttributesToCustomAttributes', () => {
                 sort_order: 1,
             },
         ]);
+    });
+});
+
+describe('getDisplayType', () => {
+    it('should return value_type when field type is text and value_type exists', () => {
+        const field = {
+            type: 'text',
+            attrs: {
+                value_type: 'email',
+            },
+        } as CustomProfileFieldModel;
+
+        expect(getDisplayType(field)).toBe('email');
+    });
+
+    it('should return field type when value_type is empty string', () => {
+        const field = {
+            type: 'text',
+            attrs: {
+                value_type: '',
+            },
+        } as CustomProfileFieldModel;
+
+        expect(getDisplayType(field)).toBe('text');
+    });
+
+    it('should return field type when value_type is undefined', () => {
+        const field = {
+            type: 'text',
+            attrs: {},
+        } as CustomProfileFieldModel;
+
+        expect(getDisplayType(field)).toBe('text');
+    });
+
+    it('should return field type when field type is not text', () => {
+        const field = {
+            type: 'select',
+            attrs: {
+                value_type: 'email',
+            },
+        } as CustomProfileFieldModel;
+
+        expect(getDisplayType(field)).toBe('select');
     });
 });

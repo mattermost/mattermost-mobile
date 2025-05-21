@@ -22,6 +22,7 @@ const renderAttribute: ListRenderItem<CustomAttribute> = ({item}) => (
         title={item.name}
         description={item.value}
         testID={`custom_attribute.${item.id}`}
+        type={item.type}
     />
 );
 
@@ -29,29 +30,31 @@ const CustomAttributes = ({nickname, position, localTime, customAttributes}: Pro
     const {formatMessage} = useIntl();
 
     // Combine standard and custom attributes
-    const mergeAttributes = [
+    const mergeAttributes: CustomAttribute[] = [
         (nickname ? {
             id: 'nickname',
             name: formatMessage({id: 'channel_info.nickname', defaultMessage: 'Nickname'}),
+            type: 'text',
             value: nickname,
-        } : {}),
+        } : {} as CustomAttribute),
         (position ? {
             id: 'position',
             name: formatMessage({id: 'channel_info.position', defaultMessage: 'Position'}),
+            type: 'text',
             value: position,
-        } : {}),
+        } : {} as CustomAttribute),
         (localTime ? {
             id: 'local_time',
             name: formatMessage({id: 'channel_info.local_time', defaultMessage: 'Local Time'}),
+            type: 'text',
             value: localTime,
-        } : {}),
+        } : {} as CustomAttribute),
 
         ...(customAttributes ?? []),
     ];
 
     // remove any empty objects
-    const attributes = mergeAttributes.filter((v) => Object.entries(v).length !== 0);
-
+    const attributes: CustomAttribute[] = mergeAttributes.filter((v: CustomAttribute) => Object.entries(v).length !== 0);
     return (
         <View style={styles.container}>
             <FlatList

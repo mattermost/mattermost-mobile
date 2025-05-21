@@ -62,11 +62,13 @@ describe('ProfileForm', () => {
                     field1: {
                         id: 'field1',
                         name: 'Field 1',
+                        type: 'text',
                         value: 'value1',
                     },
                     field2: {
                         id: 'field2',
                         name: 'Field 2',
+                        type: 'text',
                         value: 'value2',
                     },
                 },
@@ -94,6 +96,7 @@ describe('ProfileForm', () => {
                     field1: {
                         id: 'field1',
                         name: 'Field 1',
+                        type: 'text',
                         value: 'value1',
                     },
                 },
@@ -134,18 +137,21 @@ describe('ProfileForm', () => {
                 name: 'Department',
                 value: 'Engineering',
                 sort_order: 1,
+                type: 'text',
             },
             attr2: {
                 id: 'attr2',
                 name: 'Location',
                 value: 'Remote',
                 sort_order: 0,
+                type: 'text',
             },
             attr3: {
                 id: 'attr3',
                 name: 'Start Date',
                 value: '2023',
                 sort_order: 2,
+                type: 'text',
             },
         };
 

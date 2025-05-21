@@ -138,11 +138,13 @@ describe('Custom Profile Attributes', () => {
             field1: {
                 id: 'field1',
                 name: 'Field 1',
+                type: 'text',
                 value: 'new value 1',
             },
             field2: {
                 id: 'field2',
                 name: 'Field 2',
+                type: 'text',
                 value: 'new value 2',
             },
         };
@@ -165,6 +167,7 @@ describe('Custom Profile Attributes', () => {
             field1: {
                 id: 'field1',
                 name: 'Field 1',
+                type: 'text',
                 value: 'new value 1',
             },
         };

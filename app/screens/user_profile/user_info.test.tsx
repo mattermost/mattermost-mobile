@@ -15,41 +15,46 @@ import type {CustomAttributeSet} from '@typings/api/custom_profile_attributes';
 const localhost = 'http://localhost:8065';
 
 // Create test attribute sets
-const serverAttributes = {
+const serverAttributes: CustomAttributeSet = {
     attr1: {
         id: 'attr1',
         name: 'Department',
         value: 'Engineering',
+        type: 'text',
         sort_order: 1,
     },
     attr2: {
         id: 'attr2',
         name: 'Location',
         value: 'Remote',
+        type: 'text',
         sort_order: 0,
     },
-} as CustomAttributeSet;
+};
 
-const updatedAttributes = {
+const updatedAttributes: CustomAttributeSet = {
     attr1: {
         id: 'attr1',
         name: 'Department',
         value: 'Engineering Updated',
+        type: 'text',
         sort_order: 1,
     },
     attr2: {
         id: 'attr2',
         name: 'Location',
         value: 'Office',
+        type: 'text',
         sort_order: 0,
     },
     attr3: {
         id: 'attr3',
         name: 'Team',
         value: 'Mobile',
+        type: 'text',
         sort_order: 2,
     },
-} as CustomAttributeSet;
+};
 
 jest.mock('@actions/remote/custom_profile', () => ({
     fetchCustomProfileAttributes: jest.fn().mockResolvedValue({
