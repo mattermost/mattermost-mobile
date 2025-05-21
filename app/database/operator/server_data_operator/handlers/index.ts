@@ -54,12 +54,14 @@ export default class ServerDataOperatorBase extends BaseDataOperator {
             return [];
         }
 
-        const names = Array.from(new Set(emojis.map((e) => e.name)));
+        const uniqueNamesToSearch = [...new Set(emojis.map((e) => e.name))];
 
-        const locals = await queryCustomEmojisByName(this.database, names).fetch();
+        const customEmojisFound = await queryCustomEmojisByName(this.database, uniqueNamesToSearch).fetch();
 
-        const deleteRawValues = locals.
-            filter((local) => !emojis.find((raw) => raw.id === local.id)).
+        const emojiIds = new Set(emojis.map((e) => e.id));
+
+        const deleteRawValues = customEmojisFound.
+            filter((local) => !emojiIds.has(local.id)).
             map((local) => ({name: local.name}));
 
         return this.handleRecords({
