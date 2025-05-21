@@ -184,7 +184,7 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({
     }, []);
 
     const source = useMemo(() => {
-        if (isGif(fileInfo) && fileInfo.id) {
+        if (isGif(fileInfo) && fileInfo.id && !fileInfo.id.startsWith('uid')) {
             return buildFilePreviewUrl(serverUrl, fileInfo.id);
         }
 
