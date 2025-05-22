@@ -67,6 +67,9 @@ import React
 
             isSplitView(screen: screen, bounds: bounds)
             
+            if width == 0 || height == 0 {
+                return
+            }
             delegate?.sendEvent(name: "DimensionsChanged", result: [
                 "width": width,
                 "height": height
