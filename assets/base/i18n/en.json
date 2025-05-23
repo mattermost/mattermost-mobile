@@ -378,6 +378,7 @@
   "gallery.preparing": "Preparing...",
   "gallery.save_failed": "Unable to save the file",
   "gallery.unsupported": "Preview isn't supported for this file type. Try downloading or sharing to open it in another app.",
+  "gallery.video_hint": "Tap to show video controls",
   "gallery.video_saved": "Video saved",
   "general_settings.about": "About {appTitle}",
   "general_settings.advanced_settings": "Advanced Settings",
