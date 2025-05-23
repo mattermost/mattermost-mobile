@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Button} from '@rneui/base';
 import React from 'react';
+import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
+import Button from '@components/button';
 import FormattedText from '@components/formatted_text';
-import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -18,7 +18,7 @@ interface AuthErrorProps {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
-        button: {
+        buttonContainer: {
             marginTop: 25,
         },
         errorText: {
@@ -44,6 +44,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const AuthError = ({error, retry, theme}: AuthErrorProps) => {
+    const intl = useIntl();
     const style = getStyleSheet(theme);
 
     return (
@@ -57,17 +58,15 @@ const AuthError = ({error, retry, theme}: AuthErrorProps) => {
             <Text style={style.errorText}>
                 {`${error}.`}
             </Text>
-            <Button
-                buttonStyle={[style.button, buttonBackgroundStyle(theme, 'lg', 'primary', 'default')]}
-                testID='mobile.oauth.try_again'
-                onPress={retry}
-            >
-                <FormattedText
-                    id='mobile.oauth.try_again'
-                    defaultMessage='Try again'
-                    style={buttonTextStyle(theme, 'lg', 'primary', 'default')}
+            <View style={style.buttonContainer}>
+                <Button
+                    testID='mobile.oauth.try_again'
+                    onPress={retry}
+                    size='lg'
+                    text={intl.formatMessage({id: 'mobile.oauth.try_again', defaultMessage: 'Try again'})}
+                    theme={theme}
                 />
-            </Button>
+            </View>
         </View>
     );
 };

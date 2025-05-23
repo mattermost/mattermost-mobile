@@ -155,11 +155,17 @@ const UserProfile = ({
             '90%',
         ];
     }, [
-        headerText, showUserProfileOptions, showCustomStatus,
-        showNickname, showPosition, showLocalTime,
-        manageMode, bottom, showOptions,
-        canChangeMemberRoles, canManageAndRemoveMembers,
-        enableCustomAttributes,
+        headerText,
+        showUserProfileOptions,
+        showCustomStatus,
+        showNickname,
+        showPosition,
+        showLocalTime,
+        manageMode,
+        bottom,
+        showOptions,
+        canChangeMemberRoles,
+        canManageAndRemoveMembers,
     ]);
 
     useEffect(() => {
