@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
@@ -52,11 +52,17 @@ const TeamPicker = ({setTeamId, teams, teamId, crossTeamSearchEnabled}: Props) =
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
+    const AllTeams: TeamModel = useMemo(() => ({id: ALL_TEAMS_ID, displayName: intl.formatMessage({id: 'mobile.search.team.all_teams', defaultMessage: 'All teams'})} as TeamModel), [intl]);
 
-    let selectedTeam = teams.find((t) => t.id === teamId);
-    if (teamId === ALL_TEAMS_ID) {
-        selectedTeam = {id: ALL_TEAMS_ID, displayName: intl.formatMessage({id: 'mobile.search.team.all_teams', defaultMessage: 'All teams'})} as TeamModel;
-    }
+    const teamList = useMemo(() => {
+        const list = [...teams];
+        if (crossTeamSearchEnabled) {
+            list.unshift(AllTeams);
+        }
+        return list;
+    }, [teams, crossTeamSearchEnabled, AllTeams]);
+
+    const selectedTeam = teamList.find((t) => t.id === teamId);
 
     const title = intl.formatMessage({id: 'mobile.search.team.select', defaultMessage: 'Select a team to search'});
 
@@ -65,7 +71,7 @@ const TeamPicker = ({setTeamId, teams, teamId, crossTeamSearchEnabled}: Props) =
             return (
                 <BottomSheetTeamList
                     setTeamId={setTeamId}
-                    teams={teams}
+                    teams={teamList}
                     teamId={teamId}
                     title={title}
                     crossTeamSearchEnabled={crossTeamSearchEnabled}
@@ -75,10 +81,12 @@ const TeamPicker = ({setTeamId, teams, teamId, crossTeamSearchEnabled}: Props) =
 
         const snapPoints: Array<string | number> = [
             1,
-            teams.length ? bottomSheetSnapPoint(Math.min(3, teams.length), ITEM_HEIGHT) + (2 * TITLE_HEIGHT) : NO_TEAMS_HEIGHT,
+
+            // use teams to check if teams is empty
+            teams.length ? bottomSheetSnapPoint(Math.min(3, teamList.length), ITEM_HEIGHT) + (2 * TITLE_HEIGHT) : NO_TEAMS_HEIGHT,
         ];
 
-        if (teams.length > 3) {
+        if (teamList.length > 3) {
             snapPoints.push('80%');
         }
 
@@ -89,7 +97,7 @@ const TeamPicker = ({setTeamId, teams, teamId, crossTeamSearchEnabled}: Props) =
             theme,
             title,
         });
-    }, [teams, theme, title, setTeamId, teamId, crossTeamSearchEnabled]));
+    }, [teams, teamList, theme, title, setTeamId, teamId, crossTeamSearchEnabled]));
 
     return (
         <>
