@@ -33,6 +33,7 @@ type Props = {
     canDeleteBookmarks: boolean;
     canDownloadFiles: boolean;
     canEditBookmarks: boolean;
+    enableSecureFilePreview: boolean;
     file?: FileModel;
     setAction: React.Dispatch<React.SetStateAction<GalleryAction>>;
 }
@@ -54,6 +55,7 @@ const ChannelBookmarkOptions = ({
     canDeleteBookmarks,
     canDownloadFiles,
     canEditBookmarks,
+    enableSecureFilePreview,
     file,
     setAction,
 }: Props) => {
@@ -86,7 +88,7 @@ const ChannelBookmarkOptions = ({
             return item;
         }
         return null;
-    }, [bookmark, file]);
+    }, [bookmark.ownerId, file, isImageFile, isVideoFile]);
 
     const handleDelete = useCallback(async () => {
         const {error} = await deleteChannelBookmark(serverUrl, bookmark.channelId, bookmark.id);
@@ -141,7 +143,7 @@ const ChannelBookmarkOptions = ({
                 style: 'cancel',
             }],
         );
-    }, [bookmark, handleDelete]);
+    }, [bookmark.displayName, handleDelete, intl]);
 
     const onEdit = useCallback(async () => {
         await dismissBottomSheet();
@@ -181,6 +183,7 @@ const ChannelBookmarkOptions = ({
                     children: (
                         <DownloadWithAction
                             action={'sharing'}
+                            enableSecureFilePreview={enableSecureFilePreview}
                             galleryView={false}
                             item={galleryItem!}
                             setAction={setAction}
@@ -203,7 +206,7 @@ const ChannelBookmarkOptions = ({
                 // do nothing
             });
         }
-    }, [bookmark, file, serverUrl, setAction]);
+    }, [bookmark.displayName, bookmark.id, bookmark.linkUrl, bookmark.type, enableSecureFilePreview, file, galleryItem, setAction]);
 
     return (
         <>
@@ -226,7 +229,7 @@ const ChannelBookmarkOptions = ({
                         type='default'
                     />
                 }
-                {canCopyPublicLink &&
+                {!enableSecureFilePreview && canCopyPublicLink &&
                     <OptionItem
                         action={onCopy}
                         label={intl.formatMessage({id: 'channel_bookmark.copy_option', defaultMessage: 'Copy Link'})}
@@ -234,7 +237,7 @@ const ChannelBookmarkOptions = ({
                         type='default'
                     />
                 }
-                {canShare &&
+                {!enableSecureFilePreview && canShare &&
                     <OptionItem
                         action={onShare}
                         label={intl.formatMessage({id: 'channel_bookmark.share_option', defaultMessage: 'Share'})}

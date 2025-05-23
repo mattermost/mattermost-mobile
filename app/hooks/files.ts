@@ -12,16 +12,17 @@ import {getLocalFileInfo} from '@actions/local/file';
 import {buildFilePreviewUrl, buildFileUrl, downloadFile} from '@actions/remote/file';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {alertDownloadFailed, alertFailedToOpenDocument} from '@utils/document';
+import {alertDownloadFailed, alertFailedToOpenDocument, alertOnlyPDFSupported} from '@utils/document';
 import {getFullErrorMessage, isErrorWithMessage} from '@utils/errors';
-import {fileExists, getLocalFilePathFromFile, isAudio, isGif, isImage, isVideo} from '@utils/file';
+import {fileExists, getLocalFilePathFromFile, isAudio, isGif, isImage, isPdf, isVideo} from '@utils/file';
 import {getImageSize} from '@utils/gallery';
 import {logDebug} from '@utils/log';
+import {previewPdf} from '@utils/navigation';
 
 import type {ClientResponse, ProgressPromise} from '@mattermost/react-native-network-client';
 import type ChannelBookmarkModel from '@typings/database/models/servers/channel_bookmark';
 
-const getFileInfo = async (serverUrl: string, bookmarks: ChannelBookmarkModel[], publicLinkEnabled: boolean, cb: (files: FileInfo[]) => void) => {
+const getFileInfo = async (serverUrl: string, bookmarks: ChannelBookmarkModel[], cb: (files: FileInfo[]) => void) => {
     const fileInfos: FileInfo[] = [];
     for await (const b of bookmarks) {
         if (b.fileId) {
@@ -32,7 +33,7 @@ const getFileInfo = async (serverUrl: string, bookmarks: ChannelBookmarkModel[],
                 const videoFile = isVideo(fileInfo);
 
                 let uri;
-                if (imageFile || (videoFile && publicLinkEnabled)) {
+                if (imageFile || videoFile) {
                     if (fileInfo.localPath) {
                         uri = fileInfo.localPath;
                     } else {
@@ -87,18 +88,18 @@ export const useImageAttachments = (filesInfo: FileInfo[]) => {
     }, [filesInfo, serverUrl]);
 };
 
-export const useChannelBookmarkFiles = (bookmarks: ChannelBookmarkModel[], publicLinkEnabled: boolean) => {
+export const useChannelBookmarkFiles = (bookmarks: ChannelBookmarkModel[]) => {
     const serverUrl = useServerUrl();
     const [files, setFiles] = useState<FileInfo[]>([]);
 
     useEffect(() => {
-        getFileInfo(serverUrl, bookmarks, publicLinkEnabled, setFiles);
-    }, [serverUrl, bookmarks, publicLinkEnabled]);
+        getFileInfo(serverUrl, bookmarks, setFiles);
+    }, [serverUrl, bookmarks]);
 
     return files;
 };
 
-export const useDownloadFileAndPreview = () => {
+export const useDownloadFileAndPreview = (enableSecureFilePreview: boolean) => {
     const serverUrl = useServerUrl();
     const intl = useIntl();
     const theme = useTheme();
@@ -144,6 +145,15 @@ export const useDownloadFileAndPreview = () => {
                 path = getLocalFilePathFromFile(serverUrl, file);
             }
 
+            if (enableSecureFilePreview) {
+                if (isPdf(file)) {
+                    previewPdf(file, path, theme, onDonePreviewingFile);
+                } else {
+                    alertOnlyPDFSupported(intl);
+                }
+                return;
+            }
+
             setPreview(true);
             setStatusBarColor('dark-content');
             FileViewer.open(path!.replace('file://', ''), {
@@ -163,7 +173,7 @@ export const useDownloadFileAndPreview = () => {
                 }
             });
         }
-    }, [didCancel, preview, serverUrl, intl, onDonePreviewingFile, setStatusBarColor]);
+    }, [didCancel, preview, enableSecureFilePreview, setStatusBarColor, onDonePreviewingFile, serverUrl, theme, intl]);
 
     const downloadAndPreviewFile = useCallback(async (file: FileInfo) => {
         setDidCancel(false);

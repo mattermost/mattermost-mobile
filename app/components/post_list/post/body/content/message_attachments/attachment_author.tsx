@@ -2,12 +2,13 @@
 // See LICENSE.txt for license information.
 
 import {Image} from 'expo-image';
-import React from 'react';
+import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Text, View} from 'react-native';
+import {Text, View} from 'react-native';
 
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
+import {onOpenLinkError} from '@utils/url/links';
 
 type Props = {
     icon?: string;
@@ -39,24 +40,15 @@ const AttachmentAuthor = ({icon, link, name, theme}: Props) => {
     const intl = useIntl();
     const style = getStyleSheet(theme);
 
-    const openLink = () => {
+    const openLink = useCallback(() => {
         if (link) {
             const onError = () => {
-                Alert.alert(
-                    intl.formatMessage({
-                        id: 'mobile.link.error.title',
-                        defaultMessage: 'Error',
-                    }),
-                    intl.formatMessage({
-                        id: 'mobile.link.error.text',
-                        defaultMessage: 'Unable to open the link.',
-                    }),
-                );
+                onOpenLinkError(intl);
             };
 
             tryOpenURL(link, onError);
         }
-    };
+    }, [intl, link]);
 
     return (
         <View style={style.container}>

@@ -5,7 +5,7 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import {applicationId, nativeApplicationVersion, nativeBuildVersion} from 'expo-application';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Text, View} from 'react-native';
+import {Text, View} from 'react-native';
 
 import {getLicenseLoadMetric} from '@actions/remote/license';
 import Config from '@assets/config.json';
@@ -25,6 +25,7 @@ import {showSnackBar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {tryOpenURL} from '@utils/url';
+import {onOpenLinkError} from '@utils/url/links';
 
 import LearnMore from './learn_more';
 import Subtitle from './subtitle';
@@ -139,16 +140,7 @@ const About = ({componentId, config, license}: AboutProps) => {
 
     const openURL = useCallback((url: string) => {
         const onError = () => {
-            Alert.alert(
-                intl.formatMessage({
-                    id: 'settings.link.error.title',
-                    defaultMessage: 'Error',
-                }),
-                intl.formatMessage({
-                    id: 'settings.link.error.text',
-                    defaultMessage: 'Unable to open the link.',
-                }),
-            );
+            onOpenLinkError(intl);
         };
 
         tryOpenURL(url, onError);

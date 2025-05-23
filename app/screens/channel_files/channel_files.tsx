@@ -30,6 +30,7 @@ type Props = {
     channel: ChannelModel;
     componentId: AvailableScreens;
     canDownloadFiles: boolean;
+    enableSecureFilePreview: boolean;
     publicLinkEnabled: boolean;
 }
 
@@ -76,6 +77,7 @@ function ChannelFiles({
     channel,
     componentId,
     canDownloadFiles,
+    enableSecureFilePreview,
     publicLinkEnabled,
 }: Props) {
     const theme = useTheme();
@@ -172,6 +174,7 @@ function ChannelFiles({
                 {!loading &&
                 <FileResults
                     canDownloadFiles={canDownloadFiles}
+                    enableSecureFilePreview={enableSecureFilePreview}
                     fileChannels={fileChannels}
                     fileInfos={fileInfos}
                     paddingTop={styles.noPaddingTop}
