@@ -11,6 +11,8 @@ import TestHelper from '@test/test_helper';
 
 import {
     confirmOutOfOfficeDisabled,
+    convertProfileAttributesToCustomAttributes,
+    convertToAttributesMap,
     displayGroupMessageName,
     displayUsername,
     filterProfilesMatchingTerm,
@@ -39,6 +41,7 @@ import {
     removeUserFromList,
 } from './index';
 
+import type {CustomAttribute, CustomAttributeSet} from '@typings/api/custom_profile_attributes';
 import type {IntlShape} from 'react-intl';
 
 describe('displayUsername', () => {
@@ -675,5 +678,203 @@ describe('confirmOutOfOfficeDisabled', () => {
         okButton?.onPress?.();
 
         expect(updateStatus).toHaveBeenCalledWith('online');
+    });
+});
+
+describe('convertToAttributesMap', () => {
+    it('should convert an array of custom attributes to a map', () => {
+        const attributes: CustomAttribute[] = [
+            {id: 'attr1', name: 'Attribute 1', value: 'value1', sort_order: 1},
+            {id: 'attr2', name: 'Attribute 2', value: 'value2', sort_order: 2},
+        ];
+        const result = convertToAttributesMap(attributes);
+        expect(result).toEqual({
+            attr1: {id: 'attr1', name: 'Attribute 1', value: 'value1', sort_order: 1},
+            attr2: {id: 'attr2', name: 'Attribute 2', value: 'value2', sort_order: 2},
+        });
+    });
+
+    it('should return the input if it is already a map', () => {
+        const attributesMap: CustomAttributeSet = {
+            attr1: {id: 'attr1', name: 'Attribute 1', value: 'value1', sort_order: 1},
+            attr2: {id: 'attr2', name: 'Attribute 2', value: 'value2', sort_order: 2},
+        };
+        const result = convertToAttributesMap(attributesMap);
+        expect(result).toBe(attributesMap);
+    });
+
+    it('should handle empty array input', () => {
+        const result = convertToAttributesMap([]);
+        expect(result).toEqual({});
+    });
+
+    it('should handle array with single attribute', () => {
+        const attributes: CustomAttribute[] = [{id: 'attr1', name: 'Attribute 1', value: 'value1', sort_order: 1}];
+        const result = convertToAttributesMap(attributes);
+        expect(result).toEqual({
+            attr1: {id: 'attr1', name: 'Attribute 1', value: 'value1', sort_order: 1},
+        });
+    });
+
+    it('should handle attributes with missing optional fields', () => {
+        const attributes: CustomAttribute[] = [
+            {id: 'attr1', name: 'Attribute 1', value: ''},
+            {id: 'attr2', name: 'Attribute 2', value: 'value2'},
+        ];
+        const result = convertToAttributesMap(attributes);
+        expect(result).toEqual({
+            attr1: {id: 'attr1', name: 'Attribute 1', value: ''},
+            attr2: {id: 'attr2', name: 'Attribute 2', value: 'value2'},
+        });
+    });
+});
+
+describe('convertProfileAttributesToCustomAttributes', () => {
+    const mockFields = [
+        TestHelper.fakeCustomProfileFieldModel({
+            id: 'field1',
+            name: 'Field 1',
+            type: 'text',
+            attrs: {sort_order: 1},
+        }),
+        TestHelper.fakeCustomProfileFieldModel({
+            id: 'field2',
+            name: 'Field 2',
+            type: 'text',
+            attrs: {sort_order: 2},
+        }),
+    ];
+
+    const mockAttributes = [
+        TestHelper.fakeCustomProfileAttributeModel({
+            fieldId: 'field1',
+            value: 'value1',
+        }),
+        TestHelper.fakeCustomProfileAttributeModel({
+            fieldId: 'field2',
+            value: 'value2',
+        }),
+    ];
+
+    it('should convert profile attributes to custom attributes', () => {
+        const result = convertProfileAttributesToCustomAttributes(mockAttributes, mockFields);
+        expect(result).toEqual([
+            {
+                id: 'field1',
+                name: 'Field 1',
+                value: 'value1',
+                sort_order: 1,
+            },
+            {
+                id: 'field2',
+                name: 'Field 2',
+                value: 'value2',
+                sort_order: 2,
+            },
+        ]);
+    });
+
+    it('should handle missing fields', () => {
+        const attributes = [TestHelper.fakeCustomProfileAttributeModel({
+            fieldId: 'unknown_field',
+            value: 'value',
+        })];
+        const result = convertProfileAttributesToCustomAttributes(attributes, mockFields);
+        expect(result).toEqual([{
+            id: 'unknown_field',
+            name: 'unknown_field',
+            value: 'value',
+            sort_order: Number.MAX_SAFE_INTEGER,
+        }]);
+    });
+
+    it('should handle missing sort_order in field attrs', () => {
+        const fields = [TestHelper.fakeCustomProfileFieldModel({
+            id: 'field1',
+            name: 'Field 1',
+            type: 'text',
+            attrs: {},
+        })];
+        const attributes = [TestHelper.fakeCustomProfileAttributeModel({
+            fieldId: 'field1',
+            value: 'value1',
+        })];
+        const result = convertProfileAttributesToCustomAttributes(attributes, fields);
+        expect(result).toEqual([{
+            id: 'field1',
+            name: 'Field 1',
+            value: 'value1',
+            sort_order: Number.MAX_SAFE_INTEGER,
+        }]);
+    });
+
+    it('should handle empty attributes array', () => {
+        const result = convertProfileAttributesToCustomAttributes([], mockFields);
+        expect(result).toEqual([]);
+    });
+
+    it('should handle null attributes', () => {
+        const result = convertProfileAttributesToCustomAttributes(null, mockFields);
+        expect(result).toEqual([]);
+    });
+
+    it('should handle undefined attributes', () => {
+        const result = convertProfileAttributesToCustomAttributes(undefined, mockFields);
+        expect(result).toEqual([]);
+    });
+
+    it('should handle null fields', () => {
+        const result = convertProfileAttributesToCustomAttributes(mockAttributes, null);
+        expect(result).toEqual([
+            {
+                id: 'field1',
+                name: 'field1',
+                value: 'value1',
+                sort_order: Number.MAX_SAFE_INTEGER,
+            },
+            {
+                id: 'field2',
+                name: 'field2',
+                value: 'value2',
+                sort_order: Number.MAX_SAFE_INTEGER,
+            },
+        ]);
+    });
+
+    it('should handle undefined fields', () => {
+        const result = convertProfileAttributesToCustomAttributes(mockAttributes, undefined);
+        expect(result).toEqual([
+            {
+                id: 'field1',
+                name: 'field1',
+                value: 'value1',
+                sort_order: Number.MAX_SAFE_INTEGER,
+            },
+            {
+                id: 'field2',
+                name: 'field2',
+                value: 'value2',
+                sort_order: Number.MAX_SAFE_INTEGER,
+            },
+        ]);
+    });
+
+    it('should sort attributes when sort function is provided', () => {
+        const customSort = (a: CustomAttribute, b: CustomAttribute) => (b.sort_order ?? 0) - (a.sort_order ?? 0);
+        const result = convertProfileAttributesToCustomAttributes(mockAttributes, mockFields, customSort);
+        expect(result).toEqual([
+            {
+                id: 'field2',
+                name: 'Field 2',
+                value: 'value2',
+                sort_order: 2,
+            },
+            {
+                id: 'field1',
+                name: 'Field 1',
+                value: 'value1',
+                sort_order: 1,
+            },
+        ]);
     });
 });

@@ -2,10 +2,7 @@
 // See LICENSE.txt for license information.
 /* eslint-disable max-lines */
 
-import {random} from 'lodash';
-
 import DatabaseManager from '@database/manager';
-import {customProfileAttributeId} from '@utils/custom_profile_attribute';
 
 import {
     getCustomProfileFieldById,
@@ -13,7 +10,6 @@ import {
     getCustomProfileAttribute,
     observeCustomProfileAttribute,
     observeCustomProfileAttributesByUserId,
-    convertProfileAttributesToCustomAttributes,
     queryCustomProfileFields,
     queryCustomProfileAttributesByUserId,
     queryCustomProfileAttributesByFieldId,
@@ -22,7 +18,6 @@ import {
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database} from '@nozbe/watermelondb';
-import type {CustomAttribute} from '@typings/api/custom_profile_attributes';
 
 describe('Custom Profile Queries', () => {
     const serverUrl = 'custom-profile.test.com';
@@ -282,165 +277,6 @@ describe('Custom Profile Queries', () => {
                 },
                 error: done,
             });
-        });
-    });
-
-    describe('convertProfileAttributesToCustomAttributes', () => {
-        it('should convert profile attributes to custom attributes', async () => {
-            const fieldId1 = 'field1';
-            const fieldId2 = 'field2';
-            const userId = 'user1';
-
-            await operator.handleCustomProfileFields({
-                fields: [
-                    {
-                        id: fieldId1,
-                        name: 'Test Field 1',
-                        type: 'text',
-                        delete_at: 0,
-                        group_id: '',
-                        target_id: '',
-                        target_type: 'user',
-                        create_at: 1000,
-                        update_at: 1000,
-                        attrs: {sort_order: 1},
-                    },
-                    {
-                        id: fieldId2,
-                        name: 'Test Field 2',
-                        type: 'select',
-                        delete_at: 0,
-                        group_id: '',
-                        target_id: '',
-                        target_type: 'user',
-                        create_at: 1000,
-                        update_at: 1000,
-                        attrs: {sort_order: 0},
-                    },
-                ],
-                prepareRecordsOnly: false,
-            });
-
-            await operator.handleCustomProfileAttributes({
-                attributes: [
-                    {
-                        id: `${fieldId1}_${userId}`,
-                        field_id: fieldId1,
-                        user_id: userId,
-                        value: 'Value 1',
-                    },
-                    {
-                        id: `${fieldId2}_${userId}`,
-                        field_id: fieldId2,
-                        user_id: userId,
-                        value: 'Value 2',
-                    },
-                ],
-                prepareRecordsOnly: false,
-            });
-
-            const attributes = await queryCustomProfileAttributesByUserId(database, userId).fetch();
-            const customAttributes = await convertProfileAttributesToCustomAttributes(database, attributes);
-
-            expect(customAttributes.length).toBe(2);
-            if (customAttributes[0].id === fieldId1) {
-                expect(customAttributes[0].id).toBe(fieldId1);
-                expect(customAttributes[0].name).toBe('Test Field 1');
-                expect(customAttributes[0].value).toBe('Value 1');
-                expect(customAttributes[0].sort_order).toBe(1);
-
-                expect(customAttributes[1].id).toBe(fieldId2);
-                expect(customAttributes[1].name).toBe('Test Field 2');
-                expect(customAttributes[1].value).toBe('Value 2');
-                expect(customAttributes[1].sort_order).toBe(0);
-            } else {
-                expect(customAttributes[0].id).toBe(fieldId2);
-                expect(customAttributes[0].name).toBe('Test Field 2');
-                expect(customAttributes[0].value).toBe('Value 2');
-                expect(customAttributes[0].sort_order).toBe(0);
-
-                expect(customAttributes[1].id).toBe(fieldId1);
-                expect(customAttributes[1].name).toBe('Test Field 1');
-                expect(customAttributes[1].value).toBe('Value 1');
-                expect(customAttributes[1].sort_order).toBe(1);
-            }
-        });
-
-        it('should sort custom attributes by custom sort function', async () => {
-            const fieldId1 = 'field1';
-            const fieldId2 = 'field2';
-            const userId = 'user1';
-
-            await operator.handleCustomProfileFields({
-                fields: [
-                    {
-                        id: fieldId1,
-                        name: 'Test Field 1',
-                        type: 'text',
-                        delete_at: 0,
-                        group_id: '',
-                        target_id: '',
-                        target_type: 'user',
-                        create_at: 1000,
-                        update_at: 1000,
-                        attrs: {sort_order: 1},
-                    },
-                    {
-                        id: fieldId2,
-                        name: 'Test Field 2',
-                        type: 'select',
-                        delete_at: 0,
-                        group_id: '',
-                        target_id: '',
-                        target_type: 'user',
-                        create_at: 1000,
-                        update_at: 1000,
-                        attrs: {sort_order: 0},
-                    },
-                ],
-                prepareRecordsOnly: false,
-            });
-
-            await operator.handleCustomProfileAttributes({
-                attributes: [
-                    {
-                        id: `${fieldId1}_${userId}`,
-                        field_id: fieldId1,
-                        user_id: userId,
-                        value: 'Value 1',
-                    },
-                    {
-                        id: `${fieldId2}_${userId}`,
-                        field_id: fieldId2,
-                        user_id: userId,
-                        value: 'Value 2',
-                    },
-                ],
-                prepareRecordsOnly: false,
-            });
-
-            const attributes = await queryCustomProfileAttributesByUserId(database, userId).fetch();
-
-            // Sort by sort_order in ascending order
-            const customAttributes = await convertProfileAttributesToCustomAttributes(
-                database,
-                attributes,
-                (a, b) => (a.sort_order || 0) - (b.sort_order || 0),
-            );
-
-            expect(customAttributes.length).toBe(2);
-            expect(customAttributes[0].id).toBe(fieldId2); // This has sort_order 0
-            expect(customAttributes[1].id).toBe(fieldId1); // This has sort_order 1
-        });
-
-        it('should handle empty attributes array', async () => {
-            const customAttributes = await convertProfileAttributesToCustomAttributes(database, []);
-            expect(customAttributes).toEqual([]);
-        });
-
-        it('should handle null attributes', async () => {
-            const customAttributes = await convertProfileAttributesToCustomAttributes(database, null);
-            expect(customAttributes).toEqual([]);
         });
     });
 
@@ -720,71 +556,6 @@ describe('Custom Profile Queries', () => {
 
             // Function should complete without errors
             expect(true).toBe(true);
-        });
-    });
-
-    describe('Performance Tests', () => {
-        it('should profile convertProfileAttributesToCustomAttributes performance', async () => {
-            jest.setTimeout(30000); // Increase timeout for this test
-
-            // Create a larger dataset to test performance
-            const fieldCount = 200;
-            const userCount = 5;
-
-            // Create fields
-            const fields = Array.from({length: fieldCount}, (_, i) => ({
-                id: `field${i}`,
-                name: `Test Field ${i}`,
-                type: 'text',
-                delete_at: 0,
-                group_id: '',
-                target_id: '',
-                target_type: 'user',
-                create_at: 1000,
-                update_at: 1000,
-                attrs: {sort_order: i + random(0, 1000)},
-            }));
-
-            await operator.handleCustomProfileFields({
-                fields,
-                prepareRecordsOnly: false,
-            });
-
-            // Create attributes (10 attributes per user)
-            const attributes = [];
-            for (let u = 0; u < userCount; u++) {
-                const userId = `user${u}`;
-                for (let f = 0; f < fieldCount; f++) {
-                    const fieldId = `field${f}`;
-                    attributes.push({
-                        id: customProfileAttributeId(fieldId, userId),
-                        field_id: fieldId,
-                        user_id: userId,
-                        value: `Value for user ${u} field ${f}`,
-                    });
-                }
-            }
-
-            await operator.handleCustomProfileAttributes({
-                attributes,
-                prepareRecordsOnly: false,
-            });
-
-            // Profile the function for one specific user
-            const userId = 'user0';
-            const userAttributes = await queryCustomProfileAttributesByUserId(database, userId).fetch();
-
-            console.log(`Testing conversion of ${userAttributes.length} attributes`);
-
-            // Run the function once to get performance data
-            const sortFn = (a: CustomAttribute, b: CustomAttribute) => (a.sort_order || 0) - (b.sort_order || 0);
-
-            const startTime = performance.now();
-            await convertProfileAttributesToCustomAttributes(database, userAttributes, sortFn);
-            const endTime = performance.now();
-            console.log(`Time with sorting: ${(endTime - startTime).toFixed(2)}ms`);
-
-            expect(true).toBe(true); // No assertions needed for profiling
         });
     });
 });
