@@ -10,6 +10,8 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import Footer from './footer';
 import Label from './label';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 type Props = {
     label?: string;
     value?: boolean;
@@ -21,6 +23,7 @@ type Props = {
     disabled?: boolean;
     onChange: (value: boolean) => void;
     testID: string;
+    location: AvailableScreens;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -62,6 +65,7 @@ function BoolSetting({
     disabled = false,
     onChange,
     testID,
+    location,
 }: Props) {
     const theme = useTheme();
     const style = getStyleSheet(theme);
@@ -98,6 +102,7 @@ function BoolSetting({
                     disabledText={disabledText}
                     errorText={errorText}
                     helpText={helpText}
+                    location={location}
                 />
             </View>
         </>

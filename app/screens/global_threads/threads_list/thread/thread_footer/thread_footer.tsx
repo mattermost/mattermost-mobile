@@ -12,11 +12,12 @@ import {typography} from '@utils/typography';
 
 import type ThreadModel from '@typings/database/models/servers/thread';
 import type UserModel from '@typings/database/models/servers/user';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     author?: UserModel;
     channelId: string;
-    location: string;
+    location: AvailableScreens;
     participants: UserModel[];
     testID: string;
     thread: ThreadModel;

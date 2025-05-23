@@ -58,7 +58,6 @@ jest.mocked(File).mockImplementation((props) => (
         <Text testID={`${props.file.id}-index`}>{props.index}</Text>
         <Text testID={`${props.file.id}-isSingleImage`}>{String(props.isSingleImage)}</Text>
         <Text testID={`${props.file.id}-nonVisibleImagesCount`}>{String(props.nonVisibleImagesCount)}</Text>
-        <Text testID={`${props.file.id}-publicLinkEnabled`}>{String(props.publicLinkEnabled)}</Text>
         <Text testID={`${props.file.id}-wrapperWidth`}>{props.wrapperWidth}</Text>
         <Text testID={`${props.file.id}-inViewPort`}>{String(props.inViewPort)}</Text>
         <TouchableOpacity
@@ -82,7 +81,6 @@ function getBaseProps(): ComponentProps<typeof Files> {
         location: 'test-location',
         postId: 'test-post-id',
         postProps: {},
-        publicLinkEnabled: true,
     };
 }
 
@@ -172,40 +170,16 @@ describe('Files', () => {
         const baseProps = getBaseProps();
         baseProps.filesInfo = filesInfo;
         baseProps.canDownloadFiles = false;
-        baseProps.publicLinkEnabled = false;
 
         const {getByTestId, rerender} = render(<Files {...baseProps}/>);
         expect(getByTestId('1-canDownloadFiles')).toHaveTextContent('false');
-        expect(getByTestId('1-publicLinkEnabled')).toHaveTextContent('false');
         expect(getByTestId('2-canDownloadFiles')).toHaveTextContent('false');
-        expect(getByTestId('2-publicLinkEnabled')).toHaveTextContent('false');
 
         baseProps.canDownloadFiles = true;
-        baseProps.publicLinkEnabled = true;
 
         rerender(<Files {...baseProps}/>);
         expect(getByTestId('1-canDownloadFiles')).toHaveTextContent('true');
-        expect(getByTestId('1-publicLinkEnabled')).toHaveTextContent('true');
         expect(getByTestId('2-canDownloadFiles')).toHaveTextContent('true');
-        expect(getByTestId('2-publicLinkEnabled')).toHaveTextContent('true');
-
-        baseProps.canDownloadFiles = true;
-        baseProps.publicLinkEnabled = false;
-
-        rerender(<Files {...baseProps}/>);
-        expect(getByTestId('1-canDownloadFiles')).toHaveTextContent('true');
-        expect(getByTestId('1-publicLinkEnabled')).toHaveTextContent('false');
-        expect(getByTestId('2-canDownloadFiles')).toHaveTextContent('true');
-        expect(getByTestId('2-publicLinkEnabled')).toHaveTextContent('false');
-
-        baseProps.canDownloadFiles = false;
-        baseProps.publicLinkEnabled = true;
-
-        rerender(<Files {...baseProps}/>);
-        expect(getByTestId('1-canDownloadFiles')).toHaveTextContent('false');
-        expect(getByTestId('1-publicLinkEnabled')).toHaveTextContent('true');
-        expect(getByTestId('2-canDownloadFiles')).toHaveTextContent('false');
-        expect(getByTestId('2-publicLinkEnabled')).toHaveTextContent('true');
     });
 
     it('should set layoutWidth if provided', () => {
