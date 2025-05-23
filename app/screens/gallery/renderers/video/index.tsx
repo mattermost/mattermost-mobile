@@ -5,12 +5,10 @@ import React, {useCallback, useContext, useEffect, useMemo, useRef, useState} fr
 import {DeviceEventEmitter, Platform, StyleSheet} from 'react-native';
 import Animated, {
     runOnJS,
-    runOnUI,
     useAnimatedReaction,
     useAnimatedStyle,
     useSharedValue,
     withTiming,
-    type SharedValue,
 } from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Video, {SelectedTrackType, type OnPlaybackStateChangedData, type ReactVideoPoster, type ReactVideoSource, type VideoRef} from 'react-native-video';
@@ -19,13 +17,15 @@ import {updateLocalFilePath} from '@actions/local/file';
 import {CaptionsEnabledContext} from '@calls/context';
 import {getTranscriptionUri} from '@calls/utils';
 import {Events} from '@constants';
-import {GALLERY_FOOTER_HEIGHT, VIDEO_INSET} from '@constants/gallery';
+import {ANDROID_VIDEO_INSET, GALLERY_FOOTER_HEIGHT, VIDEO_INSET} from '@constants/gallery';
 import {useServerUrl} from '@context/server';
 import {transformerTimingConfig} from '@screens/gallery/animation_config/timing';
 import DownloadWithAction from '@screens/gallery/footer/download_with_action';
 import {useLightboxSharedValues} from '@screens/gallery/lightbox_swipeout/context';
 
 import VideoError from './error';
+import VideoHint from './hint';
+import {useStateFromSharedValue, useVideoControlsHint} from './hooks';
 
 import type {GalleryAction, GalleryPagerItem} from '@typings/screens/gallery';
 
@@ -43,30 +43,6 @@ const styles = StyleSheet.create({
     },
 });
 
-function useStateFromSharedValue<T>(sharedValue: SharedValue<T> | undefined, defaultValue: T): T {
-    const [state, setState] = useState(defaultValue);
-    useAnimatedReaction(
-        () => sharedValue?.value,
-        (currentValue, previousValue) => {
-            if (currentValue !== previousValue) {
-                runOnJS(setState)(currentValue ?? defaultValue);
-            }
-        }, [defaultValue],
-    );
-
-    useEffect(() => {
-        if (sharedValue) {
-            runOnUI(() => {
-                'worklet';
-                const currentValue = sharedValue.value;
-                runOnJS(setState)(currentValue);
-            })();
-        }
-    }, [sharedValue]);
-
-    return state;
-}
-
 const VideoRenderer = ({height, index, initialIndex, item, isPageActive, isPagerInProgress, hideHeaderAndFooter, width}: VideoRendererProps) => {
     const {headerAndFooterHidden} = useLightboxSharedValues();
     const fullscreen = useSharedValue(false);
@@ -81,6 +57,16 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, isPager
     const [hasError, setHasError] = useState(false);
     const [headerHidden, setHeaderHidden] = useState(false);
 
+    const {
+        showControlsHint,
+        onControlsVisibilityChange,
+        onVideoPlay,
+    } = useVideoControlsHint({
+        isPageActive,
+        paused,
+        videoReady,
+    });
+
     const {tracks, selected} = useMemo(() => getTranscriptionUri(serverUrl, item.postProps), [serverUrl, item.postProps]);
     const source: ReactVideoSource = useMemo(() => ({uri: videoUri, textTracks: tracks}), [videoUri, tracks]);
     const poster: ReactVideoPoster = useMemo(() => ({
@@ -89,7 +75,8 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, isPager
     }), [item.posterUri]);
     const dimensionsStyle = useMemo(() => {
         const w = width;
-        const insets = headerHidden && Platform.OS === 'ios' ? 0 : VIDEO_INSET + GALLERY_FOOTER_HEIGHT + Platform.select({default: 0, android: 20});
+        const extra = VIDEO_INSET + GALLERY_FOOTER_HEIGHT + Platform.select({default: 0, android: ANDROID_VIDEO_INSET});
+        const insets = headerHidden && Platform.OS === 'ios' ? 0 : extra;
         const h = height - (insets + bottom);
         return {width: w, height: h};
     }, [width, height, bottom, headerHidden]);
@@ -130,11 +117,15 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, isPager
                 if (isPageActiveValue) {
                     hideHeaderAndFooter(isPlaying);
                     setPaused(!isPlaying);
+
+                    if (isPlaying) {
+                        onVideoPlay();
+                    }
                 }
             }, 200);
         };
 
-    }, [isPageActiveValue, hideHeaderAndFooter])();
+    }, [isPageActiveValue, hideHeaderAndFooter, onVideoPlay])();
 
     const onReadyForDisplay = useCallback(() => {
         setVideoReady(true);
@@ -196,6 +187,7 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, isPager
                 onError={onError}
                 style={[styles.video, dimensionsStyle]}
                 controls={true}
+                onControlsVisibilityChange={onControlsVisibilityChange}
                 onPlaybackStateChanged={onPlaybackStateChanged}
                 onReadyForDisplay={onReadyForDisplay}
                 onEnd={onEnd}
@@ -223,6 +215,7 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, isPager
                 item={item}
             />
             }
+            {showControlsHint && <VideoHint/>}
         </Animated.View>
     );
 };

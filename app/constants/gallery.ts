@@ -3,6 +3,7 @@
 
 export const GALLERY_FOOTER_HEIGHT = 75;
 export const VIDEO_INSET = 100;
+export const ANDROID_VIDEO_INSET = 20;
 
 export const DOUBLE_TAP_SCALE = 4;
 export const MAX_SCALE = 7;
