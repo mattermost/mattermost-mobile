@@ -147,7 +147,6 @@ const InAppNotification = ({componentId, serverName, serverUrl, notification}: I
     }, [animate, insets.top]);
 
     const message = notification.payload?.body || notification.payload?.message;
-    // eslint-disable-next-line new-cap
     const gesture = Gesture.Pan().activeOffsetY(-20).onStart(() => runOnJS(animateDismissOverlay)());
 
     const database = secureGetFromRecord(DatabaseManager.serverDatabases, serverUrl)?.database;

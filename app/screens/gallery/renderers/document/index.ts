@@ -5,7 +5,7 @@ import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 
 import {observeCanDownloadFiles} from '@queries/servers/system';
 
-import DocumentRenderer from './document_renderer';
+import DocumentRenderer from './document';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 

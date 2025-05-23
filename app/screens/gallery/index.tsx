@@ -30,7 +30,9 @@ type Props = {
 }
 
 const styles = StyleSheet.create({
-    flex: {flex: 1},
+    container: {
+        flex: 1,
+    },
 });
 
 const GalleryScreen = ({componentId, galleryIdentifier, hideActions, initialIndex, items}: Props) => {
@@ -39,8 +41,7 @@ const GalleryScreen = ({componentId, galleryIdentifier, hideActions, initialInde
     const [localIndex, setLocalIndex] = useState(initialIndex);
     const [captionsEnabled, setCaptionsEnabled] = useState<boolean[]>(new Array(items.length).fill(true));
     const [captionsAvailable, setCaptionsAvailable] = useState<boolean[]>([]);
-    const {setControlsHidden, headerStyles, footerStyles} = useGalleryControls();
-    const dimensions = useMemo(() => ({width: dim.width, height: dim.height}), [dim]);
+    const {headerAndFooterHidden, hideHeaderAndFooter, headerStyles, footerStyles} = useGalleryControls();
     const galleryRef = useRef<GalleryRef>(null);
 
     useEffect(() => {
@@ -50,6 +51,14 @@ const GalleryScreen = ({componentId, galleryIdentifier, hideActions, initialInde
         }, [] as boolean[]);
         setCaptionsAvailable(captions);
     }, [items]);
+
+    const containerStyle = useMemo(() => {
+        if (Platform.OS === 'ios') {
+            return dim;
+        }
+
+        return styles.container;
+    }, [dim]);
 
     const onCaptionsPressIdx = useCallback((idx: number) => {
         const enabled = [...captionsEnabled];
@@ -79,7 +88,7 @@ const GalleryScreen = ({componentId, galleryIdentifier, hideActions, initialInde
         requestAnimationFrame(async () => {
             dismissOverlay(componentId);
         });
-    }, [isTablet]);
+    }, [componentId, isTablet]);
 
     const onIndexChange = useCallback((index: number) => {
         setLocalIndex(index);
@@ -90,7 +99,7 @@ const GalleryScreen = ({componentId, galleryIdentifier, hideActions, initialInde
     return (
         <CaptionsEnabledContext.Provider value={captionsEnabled}>
             <View
-                style={styles.flex}
+                style={containerStyle}
                 nativeID={SecurityManager.getShieldScreenId(componentId)}
             >
                 <Header
@@ -100,14 +109,15 @@ const GalleryScreen = ({componentId, galleryIdentifier, hideActions, initialInde
                     total={items.length}
                 />
                 <Gallery
+                    headerAndFooterHidden={headerAndFooterHidden}
                     galleryIdentifier={galleryIdentifier}
                     initialIndex={initialIndex}
                     items={items}
                     onHide={close}
                     onIndexChange={onIndexChange}
-                    onShouldHideControls={setControlsHidden}
+                    hideHeaderAndFooter={hideHeaderAndFooter}
                     ref={galleryRef}
-                    targetDimensions={dimensions}
+                    targetDimensions={dim}
                 />
                 <Footer
                     hideActions={hideActions}

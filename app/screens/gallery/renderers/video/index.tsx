@@ -2,41 +2,38 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useContext, useEffect, useMemo, useRef, useState} from 'react';
-import {DeviceEventEmitter, StyleSheet} from 'react-native';
+import {DeviceEventEmitter, Platform, StyleSheet} from 'react-native';
 import Animated, {
-    Easing,
+    runOnJS,
+    useAnimatedReaction,
     useAnimatedStyle,
     useSharedValue,
     withTiming,
-    type WithTimingConfig,
 } from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import Video, {SelectedTrackType, type OnPlaybackRateChangeData, type ReactVideoPoster, type ReactVideoSource, type VideoRef} from 'react-native-video';
+import Video, {SelectedTrackType, type OnPlaybackStateChangedData, type ReactVideoPoster, type ReactVideoSource, type VideoRef} from 'react-native-video';
 
 import {updateLocalFilePath} from '@actions/local/file';
 import {CaptionsEnabledContext} from '@calls/context';
 import {getTranscriptionUri} from '@calls/utils';
 import {Events} from '@constants';
-import {GALLERY_FOOTER_HEIGHT, VIDEO_INSET} from '@constants/gallery';
+import {ANDROID_VIDEO_INSET, GALLERY_FOOTER_HEIGHT, VIDEO_INSET} from '@constants/gallery';
 import {useServerUrl} from '@context/server';
-
-import DownloadWithAction from '../footer/download_with_action';
+import {transformerTimingConfig} from '@screens/gallery/animation_config/timing';
+import DownloadWithAction from '@screens/gallery/footer/download_with_action';
+import {useLightboxSharedValues} from '@screens/gallery/lightbox_swipeout/context';
 
 import VideoError from './error';
+import VideoHint from './hint';
+import {useStateFromSharedValue, useVideoControlsHint} from './hooks';
 
-import type {ImageRendererProps} from '../image_renderer';
-import type {GalleryAction} from '@typings/screens/gallery';
+import type {GalleryAction, GalleryPagerItem} from '@typings/screens/gallery';
 
-interface VideoRendererProps extends ImageRendererProps {
+interface VideoRendererProps extends GalleryPagerItem {
     index: number;
     initialIndex: number;
-    onShouldHideControls: (hide: boolean) => void;
+    hideHeaderAndFooter: (hide?: boolean) => void;
 }
-
-const timingConfig: WithTimingConfig = {
-    duration: 250,
-    easing: Easing.bezier(0.33, 0.01, 0, 1),
-};
 
 const styles = StyleSheet.create({
     video: {
@@ -46,76 +43,101 @@ const styles = StyleSheet.create({
     },
 });
 
-const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShouldHideControls, width}: VideoRendererProps) => {
+const VideoRenderer = ({height, index, initialIndex, item, isPageActive, isPagerInProgress, hideHeaderAndFooter, width}: VideoRendererProps) => {
+    const {headerAndFooterHidden} = useLightboxSharedValues();
     const fullscreen = useSharedValue(false);
     const {bottom} = useSafeAreaInsets();
     const serverUrl = useServerUrl();
     const videoRef = useRef<VideoRef>();
-    const showControls = useRef(!(initialIndex === index));
     const captionsEnabled = useContext(CaptionsEnabledContext);
     const [paused, setPaused] = useState(!(initialIndex === index));
     const [videoReady, setVideoReady] = useState(false);
     const [videoUri, setVideoUri] = useState(item.uri);
     const [downloading, setDownloading] = useState(false);
     const [hasError, setHasError] = useState(false);
+    const [headerHidden, setHeaderHidden] = useState(false);
+
+    const {
+        showControlsHint,
+        onControlsVisibilityChange,
+        onVideoPlay,
+    } = useVideoControlsHint({
+        isPageActive,
+        paused,
+        videoReady,
+    });
+
     const {tracks, selected} = useMemo(() => getTranscriptionUri(serverUrl, item.postProps), [serverUrl, item.postProps]);
     const source: ReactVideoSource = useMemo(() => ({uri: videoUri, textTracks: tracks}), [videoUri, tracks]);
     const poster: ReactVideoPoster = useMemo(() => ({
         source: {uri: item.posterUri},
-        resizeMode: 'center',
+        resizeMode: 'contain',
     }), [item.posterUri]);
+    const dimensionsStyle = useMemo(() => {
+        const w = width;
+        const extra = VIDEO_INSET + GALLERY_FOOTER_HEIGHT + Platform.select({default: 0, android: ANDROID_VIDEO_INSET});
+        const insets = headerHidden && Platform.OS === 'ios' ? 0 : extra;
+        const h = height - (insets + bottom);
+        return {width: w, height: h};
+    }, [width, height, bottom, headerHidden]);
+
+    const isPageActiveValue = useStateFromSharedValue(isPageActive, false);
+    const isPagerInProgressValue = useStateFromSharedValue(isPagerInProgress, false);
+    const headerAndFooterHiddenValue = useStateFromSharedValue(headerAndFooterHidden, false);
 
     const setFullscreen = useCallback((value: boolean) => {
         fullscreen.value = value;
     }, []);
 
-    const onDownloadSuccess = (path: string) => {
+    const onDownloadSuccess = useCallback((path: string) => {
         setVideoUri(path);
         setHasError(false);
         updateLocalFilePath(serverUrl, item.id, path);
-    };
+    }, [serverUrl, item.id]);
 
     const onEnd = useCallback(() => {
         setFullscreen(false);
-        onShouldHideControls(true);
-        showControls.current = true;
+        hideHeaderAndFooter(true);
         setPaused(true);
         videoRef.current?.dismissFullscreenPlayer();
-    }, [onShouldHideControls, setFullscreen]);
+    }, [hideHeaderAndFooter, setFullscreen]);
 
     const onError = useCallback(() => {
         setHasError(true);
     }, []);
 
-    const onFullscreenPlayerWillDismiss = useCallback(() => {
-        setFullscreen(false);
-        showControls.current = !paused;
-        onShouldHideControls(showControls.current);
-    }, [setFullscreen, paused, onShouldHideControls]);
+    const onPlaybackStateChanged = useCallback(() => {
+        let debounceTimeout: NodeJS.Timeout | null = null;
 
-    const onFullscreenPlayerWillPresent = useCallback(() => {
-        setFullscreen(true);
-        onShouldHideControls(true);
-        showControls.current = true;
-    }, [onShouldHideControls, setFullscreen]);
+        return ({isPlaying}: OnPlaybackStateChangedData) => {
+            if (debounceTimeout) {
+                clearTimeout(debounceTimeout);
+            }
+            debounceTimeout = setTimeout(() => {
+                if (isPageActiveValue) {
+                    hideHeaderAndFooter(isPlaying);
+                    setPaused(!isPlaying);
 
-    const onPlaybackRateChange = useCallback(({playbackRate}: OnPlaybackRateChangeData) => {
-        if (isPageActive.value) {
-            const isPlaying = Boolean(playbackRate);
-            showControls.current = isPlaying;
-            onShouldHideControls(isPlaying);
-        }
-    }, [isPageActive.value, onShouldHideControls]);
+                    if (isPlaying) {
+                        onVideoPlay();
+                    }
+                }
+            }, 200);
+        };
+
+    }, [isPageActiveValue, hideHeaderAndFooter, onVideoPlay])();
 
     const onReadyForDisplay = useCallback(() => {
         setVideoReady(true);
         setHasError(false);
     }, []);
 
-    const handleTouchStart = useCallback(() => {
-        showControls.current = !showControls.current;
-        onShouldHideControls(showControls.current);
-    }, [onShouldHideControls]);
+    const handleTouchEnd = useCallback(() => {
+        if (!isPagerInProgressValue && paused) {
+            hideHeaderAndFooter(!headerAndFooterHiddenValue);
+
+        }
+    }, [headerAndFooterHiddenValue, isPagerInProgressValue, paused, hideHeaderAndFooter]);
 
     const setGalleryAction = useCallback((action: GalleryAction) => {
         DeviceEventEmitter.emit(Events.GALLERY_ACTIONS, action);
@@ -124,17 +146,17 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
         }
     }, []);
 
-    const dimensionsStyle = useMemo(() => {
-        const w = width;
-        const h = height - (VIDEO_INSET + GALLERY_FOOTER_HEIGHT + bottom);
-
-        return {width: w, height: h};
-    }, [width, height, bottom]);
+    useAnimatedReaction(
+        () => headerAndFooterHidden.value,
+        (isHidden) => {
+            runOnJS(setHeaderHidden)(isHidden);
+        },
+    );
 
     const animatedStyle = useAnimatedStyle(() => {
         return {
-            width: withTiming(dimensionsStyle.width, timingConfig),
-            height: withTiming(dimensionsStyle.height, timingConfig),
+            width: withTiming(dimensionsStyle.width, transformerTimingConfig),
+            height: withTiming(dimensionsStyle.height, transformerTimingConfig),
         };
     }, [dimensionsStyle]);
 
@@ -147,11 +169,11 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
     }, [index, initialIndex, videoReady]);
 
     useEffect(() => {
-        if (!isPageActive.value && !paused) {
+        if (!isPageActiveValue && !paused) {
             setPaused(true);
             videoRef.current?.dismissFullscreenPlayer();
         }
-    }, [isPageActive.value, paused]);
+    }, [isPageActiveValue, paused]);
 
     return (
         <Animated.View style={animatedStyle}>
@@ -164,13 +186,12 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
                 poster={poster}
                 onError={onError}
                 style={[styles.video, dimensionsStyle]}
-                controls={isPageActive.value}
-                onPlaybackRateChange={onPlaybackRateChange}
-                onFullscreenPlayerWillDismiss={onFullscreenPlayerWillDismiss}
-                onFullscreenPlayerWillPresent={onFullscreenPlayerWillPresent}
+                controls={true}
+                onControlsVisibilityChange={onControlsVisibilityChange}
+                onPlaybackStateChanged={onPlaybackStateChanged}
                 onReadyForDisplay={onReadyForDisplay}
                 onEnd={onEnd}
-                onTouchStart={handleTouchStart}
+                onTouchEnd={handleTouchEnd}
                 resizeMode='none'
                 selectedTextTrack={captionsEnabled[index] ? selected : {type: SelectedTrackType.DISABLED, value: ''}}
             />
@@ -179,7 +200,7 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
                 filename={item.name}
                 isDownloading={downloading}
                 isRemote={videoUri.startsWith('http')}
-                onShouldHideControls={handleTouchStart}
+                handleTouchEnd={handleTouchEnd}
                 posterUri={item.posterUri}
                 setDownloading={setDownloading}
                 height={item.height}
@@ -194,6 +215,7 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
                 item={item}
             />
             }
+            {showControlsHint && <VideoHint/>}
         </Animated.View>
     );
 };
