@@ -49,7 +49,7 @@ export default function Lightbox({
     sharedValues, source,
 }: LightboxProps) {
     const imageSource: ImageSource = typeof source === 'string' ? {uri: source} : source;
-    const {x, y, width, height, targetWidth, targetHeight} = sharedValues;
+    const {x, y, width, height} = sharedValues;
     const {
         animationProgress,
         childTranslateY,
@@ -165,8 +165,8 @@ export default function Lightbox({
                     typeof renderItem === 'function' ? (
                             renderItem({
                                 source: imageSource,
-                                width: targetWidth.value,
-                                height: targetHeight.value,
+                                width: target.width,
+                                height: target.height,
                                 itemStyles,
                             })
                         ) : (

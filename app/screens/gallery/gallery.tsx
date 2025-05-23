@@ -95,7 +95,7 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({
         (index) => {
             const galleryItems = refsByIndexSV.value;
 
-            if (index > -1 && galleryItems[index]) {
+            if (index > -1 && galleryItems[index] && items[index].type !== 'file') {
                 measureItem(galleryItems[index].ref, sharedValues);
             }
         },

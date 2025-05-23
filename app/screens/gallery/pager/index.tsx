@@ -40,7 +40,7 @@ const Pager = ({
         return -(t + g);
     };
 
-    const toValueAnimation = useSharedValue(getPageTranslate(initialIndex));
+    const toValueAnimation = useSharedValue(getPageTranslate(initialIndex, width));
 
     const totalWidth = useDerivedValue(() => ((length.value * width) + ((gutterWidthToUse * length.value) - 2)), [width, gutterWidthToUse]);
 

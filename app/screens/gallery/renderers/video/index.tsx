@@ -5,6 +5,7 @@ import React, {useCallback, useContext, useEffect, useMemo, useRef, useState} fr
 import {DeviceEventEmitter, Platform, StyleSheet} from 'react-native';
 import Animated, {
     runOnJS,
+    runOnUI,
     useAnimatedReaction,
     useAnimatedStyle,
     useSharedValue,
@@ -43,36 +44,27 @@ const styles = StyleSheet.create({
 });
 
 function useStateFromSharedValue<T>(sharedValue: SharedValue<T> | undefined, defaultValue: T): T {
-    const [state, setState] = useState(sharedValue?.value ?? defaultValue);
+    const [state, setState] = useState(defaultValue);
     useAnimatedReaction(
         () => sharedValue?.value,
         (currentValue, previousValue) => {
             if (currentValue !== previousValue) {
                 runOnJS(setState)(currentValue ?? defaultValue);
             }
-        },
+        }, [defaultValue],
     );
+
+    useEffect(() => {
+        if (sharedValue) {
+            runOnUI(() => {
+                'worklet';
+                const currentValue = sharedValue.value;
+                runOnJS(setState)(currentValue);
+            })();
+        }
+    }, [sharedValue]);
+
     return state;
-}
-
-function useMemoFromSharedValue<T, R>(
-    sharedValue: SharedValue<T>,
-    computeFn: (value: T) => R,
-    dependencies: React.DependencyList,
-): R {
-    const [reactValue, setReactValue] = useState(sharedValue.value);
-
-    useAnimatedReaction(
-        () => sharedValue.value,
-        (currentValue, previousValue) => {
-            if (currentValue !== previousValue) {
-                runOnJS(setReactValue)(currentValue);
-            }
-        },
-    );
-
-    const memoizedValue = useMemo(() => computeFn(reactValue), [computeFn, reactValue, ...dependencies]);
-    return memoizedValue;
 }
 
 const VideoRenderer = ({height, index, initialIndex, item, isPageActive, isPagerInProgress, hideHeaderAndFooter, width}: VideoRendererProps) => {
@@ -87,12 +79,20 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, isPager
     const [videoUri, setVideoUri] = useState(item.uri);
     const [downloading, setDownloading] = useState(false);
     const [hasError, setHasError] = useState(false);
+    const [headerHidden, setHeaderHidden] = useState(false);
+
     const {tracks, selected} = useMemo(() => getTranscriptionUri(serverUrl, item.postProps), [serverUrl, item.postProps]);
     const source: ReactVideoSource = useMemo(() => ({uri: videoUri, textTracks: tracks}), [videoUri, tracks]);
     const poster: ReactVideoPoster = useMemo(() => ({
         source: {uri: item.posterUri},
         resizeMode: 'contain',
     }), [item.posterUri]);
+    const dimensionsStyle = useMemo(() => {
+        const w = width;
+        const insets = headerHidden && Platform.OS === 'ios' ? 0 : VIDEO_INSET + GALLERY_FOOTER_HEIGHT + Platform.select({default: 0, android: 20});
+        const h = height - (insets + bottom);
+        return {width: w, height: h};
+    }, [width, height, bottom, headerHidden]);
 
     const isPageActiveValue = useStateFromSharedValue(isPageActive, false);
     const isPagerInProgressValue = useStateFromSharedValue(isPagerInProgress, false);
@@ -102,11 +102,11 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, isPager
         fullscreen.value = value;
     }, []);
 
-    const onDownloadSuccess = (path: string) => {
+    const onDownloadSuccess = useCallback((path: string) => {
         setVideoUri(path);
         setHasError(false);
         updateLocalFilePath(serverUrl, item.id, path);
-    };
+    }, [serverUrl, item.id]);
 
     const onEnd = useCallback(() => {
         setFullscreen(false);
@@ -155,15 +155,12 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, isPager
         }
     }, []);
 
-    const dimensionsStyle = useMemoFromSharedValue(
-        headerAndFooterHidden,
+    useAnimatedReaction(
+        () => headerAndFooterHidden.value,
         (isHidden) => {
-            const w = width;
-            const insets = isHidden && Platform.OS === 'ios' ? 0 : VIDEO_INSET + GALLERY_FOOTER_HEIGHT + Platform.select({default: 0, android: 20});
-            const h = height - (insets + bottom);
-
-            return {width: w, height: h};
-        }, [width, height, bottom]);
+            runOnJS(setHeaderHidden)(isHidden);
+        },
+    );
 
     const animatedStyle = useAnimatedStyle(() => {
         return {
