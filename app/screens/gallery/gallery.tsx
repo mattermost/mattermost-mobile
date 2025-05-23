@@ -4,7 +4,7 @@
 import {Image} from 'expo-image';
 import React, {forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState} from 'react';
 import {BackHandler} from 'react-native';
-import Animated, {runOnJS, runOnUI, useAnimatedReaction} from 'react-native-reanimated';
+import Animated, {runOnJS, runOnUI, useAnimatedReaction, type SharedValue} from 'react-native-reanimated';
 
 import {buildFilePreviewUrl} from '@actions/remote/file';
 import {useGallery} from '@context/gallery';
@@ -23,13 +23,14 @@ import type {GalleryItemType, GalleryPagerItem} from '@typings/screens/gallery';
 const AnimatedImage = Animated.createAnimatedComponent(Image);
 
 interface GalleryProps {
+    headerAndFooterHidden: SharedValue<boolean>;
     galleryIdentifier: string;
     initialIndex: number;
     items: GalleryItemType[];
     onIndexChange?: (index: number) => void;
     onHide: () => void;
     targetDimensions: { width: number; height: number };
-    setControlsHidden: (hide: boolean) => void;
+    hideHeaderAndFooter: (hide: boolean) => void;
 }
 
 export interface GalleryRef {
@@ -37,12 +38,13 @@ export interface GalleryRef {
 }
 
 const Gallery = forwardRef<GalleryRef, GalleryProps>(({
+    headerAndFooterHidden,
     galleryIdentifier,
     initialIndex,
     items,
     onHide,
     targetDimensions,
-    setControlsHidden,
+    hideHeaderAndFooter,
     onIndexChange,
 }: GalleryProps, ref) => {
     const {refsByIndexSV, sharedValues} = useGallery(galleryIdentifier);
@@ -122,7 +124,7 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({
         'worklet';
 
         if (Math.abs(translateY) > 8) {
-            setControlsHidden(true);
+            hideHeaderAndFooter(true);
         }
     }
 
@@ -130,10 +132,10 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({
         'worklet';
 
         runOnJS(freezeOtherScreens)(true);
-        setControlsHidden(false);
+        hideHeaderAndFooter(false);
     }
 
-    function hideLightboxItem() {
+    const hideLightboxItem = useCallback(() => {
         'worklet';
 
         sharedValues.width.value = 0;
@@ -144,7 +146,7 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({
         sharedValues.y.value = 0;
 
         runOnJS(onHide)();
-    }
+    }, []);
 
     const onRenderItem = useCallback((info: RenderItemInfo) => {
         if (item.type === 'video' && item.posterUri) {
@@ -168,14 +170,14 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({
                         {...props}
                         index={idx}
                         initialIndex={initialIndex}
-                        setControlsHidden={setControlsHidden}
+                        hideHeaderAndFooter={hideHeaderAndFooter}
                     />
                 );
             case 'file':
                 return (
                     <DocumentRenderer
                         item={props.item}
-                        setControlsHidden={setControlsHidden}
+                        hideHeaderAndFooter={hideHeaderAndFooter}
                     />
                 );
             default:
@@ -193,6 +195,7 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({
 
     return (
         <LightboxSwipeout
+            headerAndFooterHidden={headerAndFooterHidden}
             ref={lightboxRef}
             target={item}
             onAnimationFinished={hideLightboxItem}
@@ -207,7 +210,7 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({
             <GalleryViewer
                 items={items}
                 onIndexChange={onIndexChangeWorklet}
-                setControlsHidden={setControlsHidden}
+                hideHeaderAndFooter={hideHeaderAndFooter}
                 height={targetDimensions.height}
                 width={targetDimensions.width}
                 initialIndex={initialIndex}

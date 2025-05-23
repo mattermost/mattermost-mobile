@@ -61,26 +61,26 @@ describe('gallery hooks', () => {
         const {result} = renderHook(() => useGalleryControls());
 
         act(() => {
-            result.current.setControlsHidden(true);
+            result.current.hideHeaderAndFooter(true);
         });
 
-        expect(result.current.controlsHidden.value).toBe(true);
+        expect(result.current.headerAndFooterHidden.value).toBe(true);
 
         act(() => {
-            result.current.setControlsHidden(false);
+            result.current.hideHeaderAndFooter(false);
         });
 
-        expect(result.current.controlsHidden.value).toBe(false);
+        expect(result.current.headerAndFooterHidden.value).toBe(false);
     });
 
-    test('useGalleryControls does not update controlsHidden when same value is set', () => {
+    test('useGalleryControls does not update headerAndFooterHidden when same value is set', () => {
         const mockWithTiming = jest.fn();
         (useSharedValue as jest.Mock).mockImplementationOnce(() => ({value: true}));
 
         const {result} = renderHook(() => useGalleryControls());
 
         act(() => {
-            result.current.setControlsHidden(true);
+            result.current.hideHeaderAndFooter(true);
         });
 
         expect(mockWithTiming).not.toHaveBeenCalled();

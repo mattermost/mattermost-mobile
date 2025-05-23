@@ -18,12 +18,12 @@ export interface GalleryViewerProps {
     onIndexChange?: (nextIndex: number) => void;
     renderPage?: (props: GalleryPagerItem, index: number) => JSX.Element | null;
     width: number;
-    setControlsHidden: (hide: boolean) => void;
+    hideHeaderAndFooter: (hide: boolean) => void;
 }
 
 const GalleryViewer = ({
     gutterWidth, height, initialIndex, items, numToRender,
-    onIndexChange, renderPage, width, setControlsHidden,
+    onIndexChange, renderPage, width, hideHeaderAndFooter,
 }: GalleryViewerProps) => {
     const tempIndex = useRef<number>(initialIndex || 0);
 
@@ -70,7 +70,7 @@ const GalleryViewer = ({
             onIndexChange={onIndexChangeWorklet}
             renderPage={pageToRender}
             numToRender={numToRender}
-            setControlsHidden={setControlsHidden}
+            hideHeaderAndFooter={hideHeaderAndFooter}
             shouldRenderGutter={true}
         />
     );

@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import RNUtils from '@mattermost/rnutils';
-import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {Platform, StyleSheet, View, type LayoutChangeEvent} from 'react-native';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {Platform, StyleSheet, View} from 'react-native';
 
 import {CaptionsEnabledContext} from '@calls/context';
 import {hasCaptions} from '@calls/utils';
@@ -30,7 +30,9 @@ type Props = {
 }
 
 const styles = StyleSheet.create({
-    flex: {flex: 1},
+    container: {
+        flex: 1,
+    },
 });
 
 const GalleryScreen = ({componentId, galleryIdentifier, hideActions, initialIndex, items}: Props) => {
@@ -39,8 +41,7 @@ const GalleryScreen = ({componentId, galleryIdentifier, hideActions, initialInde
     const [localIndex, setLocalIndex] = useState(initialIndex);
     const [captionsEnabled, setCaptionsEnabled] = useState<boolean[]>(new Array(items.length).fill(true));
     const [captionsAvailable, setCaptionsAvailable] = useState<boolean[]>([]);
-    const {setControlsHidden, headerStyles, footerStyles} = useGalleryControls();
-    const [dimensions, setDimensions] = useState(dim);
+    const {headerAndFooterHidden, hideHeaderAndFooter, headerStyles, footerStyles} = useGalleryControls();
     const galleryRef = useRef<GalleryRef>(null);
 
     useEffect(() => {
@@ -51,12 +52,13 @@ const GalleryScreen = ({componentId, galleryIdentifier, hideActions, initialInde
         setCaptionsAvailable(captions);
     }, [items]);
 
-    const onLayout = useCallback((e: LayoutChangeEvent) => {
-        setDimensions({
-            width: e.nativeEvent.layout.width,
-            height: e.nativeEvent.layout.height,
-        });
-    }, []);
+    const containerStyle = useMemo(() => {
+        if (Platform.OS === 'ios') {
+            return dim;
+        }
+
+        return styles.container;
+    }, [dim]);
 
     const onCaptionsPressIdx = useCallback((idx: number) => {
         const enabled = [...captionsEnabled];
@@ -97,9 +99,8 @@ const GalleryScreen = ({componentId, galleryIdentifier, hideActions, initialInde
     return (
         <CaptionsEnabledContext.Provider value={captionsEnabled}>
             <View
-                style={styles.flex}
+                style={containerStyle}
                 nativeID={SecurityManager.getShieldScreenId(componentId)}
-                onLayout={onLayout}
             >
                 <Header
                     index={localIndex}
@@ -108,14 +109,15 @@ const GalleryScreen = ({componentId, galleryIdentifier, hideActions, initialInde
                     total={items.length}
                 />
                 <Gallery
+                    headerAndFooterHidden={headerAndFooterHidden}
                     galleryIdentifier={galleryIdentifier}
                     initialIndex={initialIndex}
                     items={items}
                     onHide={close}
                     onIndexChange={onIndexChange}
-                    setControlsHidden={setControlsHidden}
+                    hideHeaderAndFooter={hideHeaderAndFooter}
                     ref={galleryRef}
-                    targetDimensions={dimensions}
+                    targetDimensions={dim}
                 />
                 <Footer
                     hideActions={hideActions}

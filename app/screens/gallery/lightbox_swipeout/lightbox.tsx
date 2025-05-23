@@ -38,6 +38,12 @@ interface LightboxProps {
 
 const AnimatedImage = Animated.createAnimatedComponent(Image);
 
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+    },
+});
+
 export default function Lightbox({
     children, renderBackdropComponent, renderItem,
     sharedValues, source,
@@ -145,7 +151,7 @@ export default function Lightbox({
     });
 
     return (
-        <View style={{flex: 1}}>
+        <View style={styles.container}>
             {renderBackdropComponent &&
                 renderBackdropComponent({
                     animatedStyles: backdropStyles,

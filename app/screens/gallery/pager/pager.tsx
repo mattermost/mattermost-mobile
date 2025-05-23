@@ -24,7 +24,7 @@ export type PagerContentProps = {
     width: number;
     height: number;
     numToRender?: number;
-    setControlsHidden: (hidden?: boolean) => void;
+    hideHeaderAndFooter: (hidden?: boolean) => void;
 };
 
 const styles = StyleSheet.create({
@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
 
 export function PagerContent({
     totalCount, pages, renderPage, shouldRenderGutter,
-    width, height, numToRender = 2, setControlsHidden,
+    width, height, numToRender = 2, hideHeaderAndFooter,
 }: PagerContentProps) {
     const sharedValues = usePagerSharedValues();
     const [diffValue, setDiffValue] = useState(0);
@@ -50,7 +50,7 @@ export function PagerContent({
 
     const panGesture = usePagerPanGesture();
     const lightboxPanGesture = useLightboxPanGesture();
-    const tapGesture = usePagerTapGesture(pages, setControlsHidden);
+    const tapGesture = usePagerTapGesture(pages, hideHeaderAndFooter);
 
     useEffect(() => {
         setDiffValue(numToRender);
@@ -116,10 +116,17 @@ export function PagerContent({
         }
 
         return temp;
-    }, [totalCount, pages, activeIndex, diffValue, index, onPageStateChange, gutterWidthToUse, renderPage, getPageTranslate, width, height, isPagerInProgress, shouldRenderGutter, panGesture, tapGesture]);
+
+        // The missing dependencies are intentional as they are SharedValues or DerivedValues
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [
+        totalCount, pages, activeIndex, diffValue, onPageStateChange,
+        gutterWidthToUse, renderPage, getPageTranslate,
+        width, height, shouldRenderGutter, panGesture, tapGesture, lightboxPanGesture,
+    ]);
 
     return (
-        <View style={StyleSheet.absoluteFillObject}>
+        <View style={StyleSheet.absoluteFill}>
             <GestureDetector gesture={Gesture.Simultaneous(panGesture, lightboxPanGesture, tapGesture)}>
                 <Animated.View style={[styles.pager, pagerStyles]}>
                     {pagesToRender}

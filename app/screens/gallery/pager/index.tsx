@@ -20,7 +20,7 @@ const GUTTER_WIDTH = 10;
 const Pager = ({
     gutterWidth = GUTTER_WIDTH, initialIndex,
     numToRender = 2, onIndexChange, pages, renderPage,
-    shouldRenderGutter = false, totalCount, width, height, setControlsHidden,
+    shouldRenderGutter = false, totalCount, width, height, hideHeaderAndFooter,
 }: PagerProps) => {
     const gutterWidthToUse = shouldRenderGutter ? gutterWidth : 0;
     const [activeIndex, setActiveIndex] = useState(initialIndex);
@@ -30,6 +30,7 @@ const Pager = ({
     const index = useSharedValue(initialIndex);
     const length = useSharedValue(totalCount);
     const pagerX = useSharedValue(0);
+    const skipAnimation = useSharedValue(false);
 
     const getPageTranslate = (i: number, w?: number) => {
         'worklet';
@@ -44,6 +45,10 @@ const Pager = ({
     const totalWidth = useDerivedValue(() => ((length.value * width) + ((gutterWidthToUse * length.value) - 2)), [width, gutterWidthToUse]);
 
     const offsetX = useDerivedValue(() => {
+        if (skipAnimation.value) {
+            return toValueAnimation.value;
+        }
+
         const config = pagerSpringVelocityConfig(velocity.value);
         return withSpring(
             toValueAnimation.value,
@@ -98,12 +103,22 @@ const Pager = ({
     }), [gutterWidthToUse, activeIndex, onIndexChangeCb]);
 
     useEffect(() => {
+        skipAnimation.value = true;
         sharedWidth.value = width;
-    }, [sharedWidth, width]);
+        const timer = setTimeout(() => {
+            skipAnimation.value = false;
+        }, 100);
+
+        return () => {
+            clearTimeout(timer);
+        };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [width]);
 
     useEffect(() => {
         index.value = initialIndex;
         onIndexChangeCb(initialIndex);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [initialIndex]);
 
     return (
@@ -116,7 +131,7 @@ const Pager = ({
                 shouldRenderGutter={shouldRenderGutter}
                 width={width}
                 height={height}
-                setControlsHidden={setControlsHidden}
+                hideHeaderAndFooter={hideHeaderAndFooter}
             />
         </PagerProvider>
     );

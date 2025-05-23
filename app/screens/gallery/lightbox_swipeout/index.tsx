@@ -7,6 +7,7 @@ import {type ImageSize, type ImageStyle, type ViewStyle} from 'react-native';
 import {
     cancelAnimation,
     useAnimatedReaction, useSharedValue, withTiming,
+    type SharedValue,
 } from 'react-native-reanimated';
 
 import {pagerTimingConfig} from '@screens/gallery/animation_config/timing';
@@ -26,6 +27,7 @@ export interface RenderItemInfo {
 
 interface LightboxSwipeoutProps {
     children: React.ReactNode;
+    headerAndFooterHidden: SharedValue<boolean>;
     onAnimationFinished: () => void;
     onSwipeActive: (translateY: number) => void;
     onSwipeFailure: () => void;
@@ -42,7 +44,7 @@ export interface LightboxSwipeoutRef {
 }
 
 const LightboxSwipeout = forwardRef<LightboxSwipeoutRef, LightboxSwipeoutProps>(({
-    onAnimationFinished, children, onSwipeActive, onSwipeFailure,
+    onAnimationFinished, children, headerAndFooterHidden, onSwipeActive, onSwipeFailure,
     renderBackdropComponent, renderItem,
     sharedValues, source, target, targetDimensions,
 }: LightboxSwipeoutProps, ref) => {
@@ -103,6 +105,7 @@ const LightboxSwipeout = forwardRef<LightboxSwipeoutRef, LightboxSwipeoutProps>(
     };
 
     const lightboxSharedValues: LightboxSharedValues = useMemo(() => ({
+        headerAndFooterHidden,
         animationProgress,
         childrenOpacity,
         childTranslateY,

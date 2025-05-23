@@ -8,7 +8,7 @@ import {usePagerSharedValues} from '../context';
 
 import type {GalleryItemType} from '@typings/screens/gallery';
 
-export default function useTransformerPanGesture(pages: GalleryItemType[], setControlsHidden: (hidden?: boolean) => void) {
+export default function useTransformerPanGesture(pages: GalleryItemType[], hideHeaderAndFooter: (hidden?: boolean) => void) {
     const {
         activeIndex,
         offsetX,
@@ -29,7 +29,7 @@ export default function useTransformerPanGesture(pages: GalleryItemType[], setCo
         onEnd((evt) => {
             if (evt.numberOfPointers === 1) {
                 toValueAnimation.value = getPageTranslate(index.value);
-                setControlsHidden();
+                hideHeaderAndFooter();
             }
         });
 }

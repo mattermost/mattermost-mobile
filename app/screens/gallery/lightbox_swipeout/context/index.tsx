@@ -8,6 +8,7 @@ import type {ImageSize} from 'react-native';
 import type {SharedValue} from 'react-native-reanimated';
 
 export type LightboxSharedValues = {
+    headerAndFooterHidden: SharedValue<boolean>;
     animationProgress: SharedValue<number>;
     childrenOpacity: SharedValue<number>;
     childTranslateY: SharedValue<number>;

@@ -21,7 +21,7 @@ import type {GalleryAction, GalleryItemType} from '@typings/screens/gallery';
 type Props = {
     canDownloadFiles: boolean;
     item: GalleryItemType;
-    setControlsHidden: (hide?: boolean) => void;
+    hideHeaderAndFooter: (hide?: boolean) => void;
 }
 
 const styles = StyleSheet.create({
@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const DocumentRenderer = ({canDownloadFiles, item, setControlsHidden}: Props) => {
+const DocumentRenderer = ({canDownloadFiles, item, hideHeaderAndFooter}: Props) => {
     const {formatMessage} = useIntl();
     const file = useMemo(() => galleryItemToFileInfo(item), [item]);
     const [enabled, setEnabled] = useState(true);
@@ -73,8 +73,8 @@ const DocumentRenderer = ({canDownloadFiles, item, setControlsHidden}: Props) =>
     }, []);
 
     const handlePress = useCallback(() => {
-        setControlsHidden();
-    }, [setControlsHidden]);
+        hideHeaderAndFooter();
+    }, [hideHeaderAndFooter]);
 
     return (
         <>

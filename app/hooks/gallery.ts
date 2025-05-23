@@ -33,7 +33,7 @@ export function diff(context: any, name: string, value: any) {
 }
 
 export function useGalleryControls() {
-    const controlsHidden = useSharedValue(false);
+    const headerAndFooterHidden = useSharedValue(false);
 
     const translateYConfig: WithTimingConfig = {
         duration: 400,
@@ -41,10 +41,10 @@ export function useGalleryControls() {
     };
 
     const headerStyles = useAnimatedStyle(() => ({
-        opacity: controlsHidden.value ? withTiming(0) : withTiming(1),
+        opacity: headerAndFooterHidden.value ? withTiming(0) : withTiming(1),
         transform: [
             {
-                translateY: controlsHidden.value ? withTiming(-100, translateYConfig) : withTiming(0, translateYConfig),
+                translateY: headerAndFooterHidden.value ? withTiming(-100, translateYConfig) : withTiming(0, translateYConfig),
             },
         ],
         position: 'absolute',
@@ -54,10 +54,10 @@ export function useGalleryControls() {
     }));
 
     const footerStyles = useAnimatedStyle(() => ({
-        opacity: controlsHidden.value ? withTiming(0) : withTiming(1),
+        opacity: headerAndFooterHidden.value ? withTiming(0) : withTiming(1),
         transform: [
             {
-                translateY: controlsHidden.value ? withTiming(100, translateYConfig) : withTiming(0, translateYConfig),
+                translateY: headerAndFooterHidden.value ? withTiming(100, translateYConfig) : withTiming(0, translateYConfig),
             },
         ],
         position: 'absolute',
@@ -66,27 +66,27 @@ export function useGalleryControls() {
         zIndex: 1,
     }));
 
-    const setControlsHidden = useCallback((hidden?: boolean) => {
+    const hideHeaderAndFooter = useCallback((hidden?: boolean) => {
         'worklet';
 
         if (hidden == null) {
             // if we don't pass hidden, then we toggle the current value
-            controlsHidden.value = !controlsHidden.value;
+            headerAndFooterHidden.value = !headerAndFooterHidden.value;
             return;
         }
 
-        if (controlsHidden.value === hidden) {
+        if (headerAndFooterHidden.value === hidden) {
             return;
         }
 
-        controlsHidden.value = hidden;
+        headerAndFooterHidden.value = hidden;
     }, []);
 
     return {
-        controlsHidden,
+        headerAndFooterHidden,
         headerStyles,
         footerStyles,
-        setControlsHidden,
+        hideHeaderAndFooter,
     };
 }
 
