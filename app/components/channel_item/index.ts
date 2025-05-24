@@ -4,15 +4,17 @@
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import React from 'react';
 import {of as of$} from 'rxjs';
-import {switchMap, distinctUntilChanged} from 'rxjs/operators';
+import {switchMap, distinctUntilChanged, map} from 'rxjs/operators';
 
 import {observeChannelsWithCalls} from '@calls/state';
 import {General} from '@constants';
 import {withServerUrl} from '@context/server';
+import {observeAliasStringByChannelId} from '@queries/servers/aliases';
 import {observeIsMutedSetting, observeMyChannel, queryChannelMembers} from '@queries/servers/channel';
 import {queryDraft} from '@queries/servers/drafts';
 import {observeCurrentChannelId, observeCurrentUserId} from '@queries/servers/system';
 import {observeTeam} from '@queries/servers/team';
+import {getUserIdFromChannelName} from '@utils/user';
 
 import ChannelItem from './channel_item';
 
@@ -100,6 +102,25 @@ const enhance = withObservables(['channel', 'showTeamName', 'shouldHighlightActi
         distinctUntilChanged(),
     );
 
+    const teammateId$ = currentUserId.pipe(
+        map((userId) => {
+            if (channel.type === General.DM_CHANNEL && userId) {
+                return getUserIdFromChannelName(userId, channel.name);
+            }
+            return undefined;
+        }),
+        distinctUntilChanged(),
+    );
+
+    const alias = teammateId$.pipe(
+        switchMap((teammateId) => {
+            if (teammateId) {
+                return observeAliasStringByChannelId(database, teammateId);
+            }
+            return of$(undefined);
+        }),
+        distinctUntilChanged(),
+    );
     return {
         channel: 'observe' in channel ? channel.observe() : of$(channel),
         currentUserId,
@@ -111,6 +132,7 @@ const enhance = withObservables(['channel', 'showTeamName', 'shouldHighlightActi
         mentionsCount,
         teamDisplayName,
         hasCall,
+        alias,
     };
 });
 

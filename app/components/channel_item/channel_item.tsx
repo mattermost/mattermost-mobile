@@ -3,7 +3,7 @@
 
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {StyleSheet, TouchableOpacity, View} from 'react-native';
+import {StyleSheet, TouchableOpacity, View, Text} from 'react-native';
 
 import Badge from '@components/badge';
 import ChannelIcon from '@components/channel_icon';
@@ -37,6 +37,7 @@ type Props = {
     isOnCenterBg?: boolean;
     showChannelName?: boolean;
     isOnHome?: boolean;
+    alias?: string;
 }
 
 export const ROW_HEIGHT = 40;
@@ -97,6 +98,9 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     filler: {
         flex: 1,
     },
+    alias: {
+        color: changeOpacity(theme.sidebarText, 0.5),
+    },
 }));
 
 export const textStyle = StyleSheet.create({
@@ -120,6 +124,7 @@ const ChannelItem = ({
     isOnCenterBg = false,
     showChannelName = false,
     isOnHome = false,
+    alias,
 }: Props) => {
     const {formatMessage} = useIntl();
     const theme = useTheme();
@@ -200,6 +205,7 @@ const ChannelItem = ({
                     textStyles={textStyles}
                     channelName={channelName}
                 />
+                {alias && <Text style={styles.alias}> {`(${alias})`}</Text>}
                 <View style={styles.filler}/>
                 <Badge
                     visible={mentionsCount > 0}

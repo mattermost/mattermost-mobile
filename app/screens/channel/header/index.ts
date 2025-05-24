@@ -7,6 +7,7 @@ import {of as of$} from 'rxjs';
 import {combineLatestWith, distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import {General} from '@constants';
+import {observeAliasStringByChannelId} from '@queries/servers/aliases';
 import {observeChannel, observeChannelInfo} from '@queries/servers/channel';
 import {observeCanAddBookmarks, queryBookmarks} from '@queries/servers/channel_bookmark';
 import {observeConfigBooleanValue, observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
@@ -86,6 +87,16 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: OwnProps
     const isBookmarksEnabled = observeConfigBooleanValue(database, 'FeatureFlagChannelBookmarks');
     const canAddBookmarks = observeCanAddBookmarks(database, channelId);
 
+    const alias = dmUser.pipe(
+        switchMap((user) => {
+            if (user) {
+                return observeAliasStringByChannelId(database, user.id);
+            }
+            return of$(undefined);
+        }),
+        distinctUntilChanged(),
+    );
+
     return {
         canAddBookmarks,
         channelType,
@@ -99,6 +110,7 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: OwnProps
         memberCount,
         searchTerm,
         teamId,
+        alias,
     };
 });
 

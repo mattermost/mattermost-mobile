@@ -5,6 +5,7 @@ import ClientCalls, {type ClientCallsMix} from '@calls/client/rest';
 import ClientPlugins, {type ClientPluginsMix} from '@client/rest/plugins';
 import mix from '@utils/mix';
 
+import ClientAliases, {type ClientAliasesMix} from './aliases';
 import ClientApps, {type ClientAppsMix} from './apps';
 import ClientBase from './base';
 import ClientCategories, {type ClientCategoriesMix} from './categories';
@@ -46,7 +47,8 @@ interface Client extends ClientBase,
     ClientCallsMix,
     ClientPluginsMix,
     ClientNPSMix,
-    ClientCustomAttributesMix
+    ClientCustomAttributesMix,
+    ClientAliasesMix
 {}
 
 class Client extends mix(ClientBase).with(
@@ -69,6 +71,7 @@ class Client extends mix(ClientBase).with(
     ClientPlugins,
     ClientNPS,
     ClientCustomAttributes,
+    ClientAliases,
 ) {
     // eslint-disable-next-line no-useless-constructor
     constructor(apiClient: APIClientInterface, serverUrl: string, bearerToken?: string, csrfToken?: string) {

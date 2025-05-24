@@ -42,6 +42,7 @@ export default {
     RESTRICT_DIRECT_MESSAGE_ANY: 'any',
     TIME_TO_FIRST_REVIEW: toMilliseconds({days: 14}),
     TIME_TO_NEXT_REVIEW: toMilliseconds({days: 90}),
+    ALIASES_PLUGIN_ID: 'com.mattermost.plugin-name-aliases',
     NPS_PLUGIN_ID: 'com.mattermost.nps',
     NPS_PLUGIN_BOT_USERNAME: 'feedbackbot',
 };

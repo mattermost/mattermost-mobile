@@ -34,3 +34,4 @@ export {default as ThreadInTeamSchema} from './thread_in_team';
 export {default as TeamThreadsSyncSchema} from './team_threads_sync';
 export {default as UserSchema} from './user';
 export {default as ConfigSchema} from './config';
+export {default as AliasesSchema} from './aliases';
