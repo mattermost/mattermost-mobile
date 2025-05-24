@@ -25,7 +25,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isIos, timeouts, wait} from '@support/utils';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Find Channels', () => {
@@ -68,8 +68,7 @@ describe('Channels - Find Channels', () => {
         await FindChannelsScreen.close();
     });
 
-    // TODO: Uncomment this test when the issue is fixed https://mattermost.atlassian.net/browse/MM-63814
-    (device.getPlatform() === 'ios' ? it : it.skip)('MM-T4907_2 - should be able to find and navigate to a public channel', async () => {
+    it('MM-T4907_2 - should be able to find and navigate to a public channel', async () => {
         // # Open find channels screen and search for a public channel to navigate to
         await FindChannelsScreen.open();
         await FindChannelsScreen.searchInput.replaceText(testChannel.display_name);
@@ -99,7 +98,7 @@ describe('Channels - Find Channels', () => {
         await FindChannelsScreen.close();
     });
 
-    (isIos() ? it : it.skip)('MM-T4907_4 - should be able to find direct and group message channels', async () => {
+    it('MM-T4907_4 - should be able to find direct and group message channels', async () => {
         // # Create direct and group message channels, open find channels screen, and search for the direct message channel
         const {user: testOtherUser1} = await User.apiCreateUser(siteOneUrl, {prefix: 'a'});
         await Team.apiAddUserToTeam(siteOneUrl, testOtherUser1.id, testTeam.id);
@@ -128,7 +127,7 @@ describe('Channels - Find Channels', () => {
         await ChannelScreen.back();
     });
 
-    (device.getPlatform() === 'ios' ? it : it.skip)('MM-T4907_5 - should be able to find an archived channel', async () => {
+    it('MM-T4907_5 - should be able to find an archived channel', async () => {
         // # Archive a channel, open find channels screen, and search for the archived channel
         const {channel: archivedChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, archivedChannel.id);

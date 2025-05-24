@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {SectionList, type SectionListRenderItemInfo, StyleSheet} from 'react-native';
+import {Platform, SectionList, type SectionListRenderItemInfo, StyleSheet} from 'react-native';
 import Animated, {FadeInDown, FadeOutUp} from 'react-native-reanimated';
 
 import {switchToChannelById} from '@actions/remote/channel';
@@ -81,7 +81,7 @@ const UnfilteredList = ({close, keyboardOverlap, recentChannels, showTeamName, t
     return (
         <Animated.View
             entering={FadeInDown.duration(200)}
-            exiting={FadeOutUp.duration(100)}
+            exiting={Platform.select({ios: FadeOutUp.duration(100)}) /* https://mattermost.atlassian.net/browse/MM-63814?focusedCommentId=178584 */}
             style={style.flex}
         >
             <SectionList

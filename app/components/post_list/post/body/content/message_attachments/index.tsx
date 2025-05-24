@@ -6,11 +6,13 @@ import {StyleSheet, View} from 'react-native';
 
 import MessageAttachment from './message_attachment';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 type Props = {
     attachments: MessageAttachment[];
     channelId: string;
     layoutWidth?: number;
-    location: string;
+    location: AvailableScreens;
     metadata?: PostMetadata | undefined | null;
     postId: string;
     theme: Theme;

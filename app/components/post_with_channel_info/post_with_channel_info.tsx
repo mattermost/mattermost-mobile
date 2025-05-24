@@ -10,13 +10,14 @@ import ChannelInfo from './channel_info';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type {SearchPattern} from '@typings/global/markdown';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     appsEnabled: boolean;
     customEmojiNames: string[];
     isCRTEnabled: boolean;
     post: PostModel;
-    location: string;
+    location: AvailableScreens;
     testID?: string;
     searchPatterns?: SearchPattern[];
     skipSavedPostsHighlight?: boolean;

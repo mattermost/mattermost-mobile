@@ -15,6 +15,8 @@ import Archived from './archived';
 import DraftHandler from './draft_handler';
 import ReadOnly from './read_only';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 const AUTOCOMPLETE_ADJUST = -5;
 type Props = {
     testID?: string;
@@ -30,6 +32,7 @@ type Props = {
     containerHeight: number;
     isChannelScreen: boolean;
     canShowPostPriority?: boolean;
+    location: AvailableScreens;
 }
 
 function PostDraft({
@@ -46,6 +49,7 @@ function PostDraft({
     containerHeight,
     isChannelScreen,
     canShowPostPriority,
+    location,
 }: Props) {
     const [value, setValue] = useState(message);
     const [cursorPosition, setCursorPosition] = useState(message.length);
@@ -73,6 +77,7 @@ function PostDraft({
             <Archived
                 testID={archivedTestID}
                 deactivated={deactivatedChannel}
+                location={location}
             />
         );
     }
