@@ -5,7 +5,7 @@ import {useHardwareKeyboardEvents} from '@mattermost/hardware-keyboard';
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {Freeze} from 'react-freeze';
-import {useIntl} from 'react-intl';
+import {defineMessage, useIntl} from 'react-intl';
 import {FlatList, type LayoutChangeEvent, Platform, type ViewStyle, KeyboardAvoidingView, Keyboard, StyleSheet} from 'react-native';
 import Animated, {useAnimatedStyle, useDerivedValue, withTiming, type AnimatedStyle} from 'react-native-reanimated';
 import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -25,9 +25,10 @@ import {useTheme} from '@context/theme';
 import {useKeyboardHeight} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
 import {useCollapsibleHeader} from '@hooks/header';
+import useTabs from '@hooks/use_tabs';
 import NavigationStore from '@store/navigation_store';
 import {type FileFilter, FileFilters, filterFileExtensions} from '@utils/file';
-import {TabTypes, type TabType} from '@utils/search';
+import {TabTypes} from '@utils/search';
 
 import Initial from './initial';
 import Results from './results';
@@ -81,6 +82,21 @@ const searchScreenIndex = 1;
 
 const CHANNEL_AND_USER_FILTERS_REGEX = /(?:from|channel|in):\s?[^\s\n]+/gi;
 
+const tabs = [{
+    name: defineMessage({
+        id: 'screen.search.header.messages',
+        defaultMessage: 'Messages',
+    }),
+    id: TabTypes.MESSAGES,
+},
+{
+    name: defineMessage({
+        id: 'screen.search.header.files',
+        defaultMessage: 'Files',
+    }),
+    id: TabTypes.FILES,
+}];
+
 const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
     const nav = useNavigation();
     const isFocused = useIsFocused();
@@ -100,7 +116,6 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
     const [cursorPosition, setCursorPosition] = useState(searchTerm?.length || 0);
     const [searchValue, setSearchValue] = useState<string>(searchTerm || '');
     const [searchTeamId, setSearchTeamId] = useState<string>(teamId);
-    const [selectedTab, setSelectedTab] = useState<TabType>(TabTypes.MESSAGES);
     const [filter, setFilter] = useState<FileFilter>(FileFilters.ALL);
     const [showResults, setShowResults] = useState(false);
     const [containerHeight, setContainerHeight] = useState(0);
@@ -113,6 +128,8 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
     const [matches, setMatches] = useState<SearchMatches|undefined>();
     const [fileInfos, setFileInfos] = useState<FileInfo[]>(emptyFileResults);
     const [fileChannelIds, setFileChannelIds] = useState<string[]>([]);
+
+    const [selectedTab, tabsProps] = useTabs(TabTypes.MESSAGES, tabs, undefined, 'search.tabs');
 
     useEffect(() => {
         setSearchTeamId(teamId);
@@ -406,12 +423,12 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
                             <Header
                                 teamId={searchTeamId}
                                 setTeamId={handleResultsTeamChange}
-                                onTabSelect={setSelectedTab}
                                 onFilterChanged={handleFilterChange}
                                 selectedTab={selectedTab}
                                 selectedFilter={filter}
                                 teams={teams}
                                 crossTeamSearchEnabled={crossTeamSearchEnabled}
+                                tabsProps={tabsProps}
                             />
                             }
                         </Animated.View>

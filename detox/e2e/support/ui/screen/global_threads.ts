@@ -13,9 +13,9 @@ class GlobalThreadsScreen {
     testID = {
         threadItemPrefix: 'global_threads.threads_list.thread_item.',
         globalThreadsScreen: 'global_threads.screen',
-        headerAllThreadsButton: 'global_threads.threads_list.header.all_threads.button',
-        headerUnreadThreadsButton: 'global_threads.threads_list.header.unread_threads.button',
-        headerUnreadDotBadge: 'global_threads.threads_list.header.unread_dot.badge',
+        headerAllThreadsButton: 'global_threads.threads_list.header.all.button',
+        headerUnreadThreadsButton: 'global_threads.threads_list.header.unreads.button',
+        headerUnreadDotBadge: 'global_threads.threads_list.header.unreads.badge',
         headerMarkAllAsReadButton: 'global_threads.threads_list.header.mark_all_as_read.button',
         emptyThreadsList: 'global_threads.threads_list.empty_state',
         flatThreadsList: 'global_threads.threads_list.flat_list',
