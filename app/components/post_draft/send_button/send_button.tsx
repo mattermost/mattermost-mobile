@@ -51,7 +51,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-export function SendButton({
+const SendButton: React.FC<Props> = ({
     testID,
     disabled,
     sendMessage,
@@ -116,4 +116,6 @@ export function SendButton({
             </Tooltip>
         </TouchableWithFeedback>
     );
-}
+};
+
+export default SendButton;
