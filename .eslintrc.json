@@ -27,6 +27,7 @@
     "eol-last": ["error", "always"],
     "global-require": 0,
     "no-undefined": 0,
+    "linebreak-style": "windows",
     "no-shadow": "off",
     "react/display-name": [2, { "ignoreTranspilerName": false }],
     "react/jsx-filename-extension": 0,

@@ -22,6 +22,7 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 type Props = {
     closeButtonId: string;
     componentId: AvailableScreens;
+    onPress?: () => unknown;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -42,7 +43,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const FindChannels = ({closeButtonId, componentId}: Props) => {
+const FindChannels = ({closeButtonId, componentId, onPress}: Props) => {
     const theme = useTheme();
     const [term, setTerm] = useState('');
     const [loading, setLoading] = useState(false);
@@ -116,6 +117,7 @@ const FindChannels = ({closeButtonId, componentId}: Props) => {
                     close={close}
                     keyboardOverlap={overlap}
                     testID='find_channels.unfiltered_list'
+                    onPress={onPress}
                 />
                 }
                 {Boolean(term) &&
@@ -126,6 +128,7 @@ const FindChannels = ({closeButtonId, componentId}: Props) => {
                     onLoading={setLoading}
                     term={term}
                     testID='find_channels.filtered_list'
+                    onPress={onPress}
                 />
                 }
             </View>

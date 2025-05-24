@@ -871,7 +871,7 @@ export const showShareFeedbackOverlay = () => {
     );
 };
 
-export async function findChannels(title: string, theme: Theme) {
+export async function findChannels(title: string, theme: Theme, passProps?: Record<string, unknown>) {
     const options: Options = {};
     const closeButtonId = 'close-find-channels';
     const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
@@ -886,7 +886,7 @@ export async function findChannels(title: string, theme: Theme) {
     showModal(
         Screens.FIND_CHANNELS,
         title,
-        {closeButtonId},
+        {closeButtonId, ...passProps},
         options,
     );
 }
