@@ -98,6 +98,8 @@
   "camera_type.photo.option": "Przechwyć zdjęcie",
   "camera_type.video.option": "Nagraj wideo",
   "center_panel.archived.closeChannel": "Zamknij Kanał",
+  "channel.abac_policy_enforced.description": "Tylko osoby spełniające określone reguły dostępu mogą zostać wybrane i dodane do tego kanału.",
+  "channel.abac_policy_enforced.title": "Dostęp do Kanałów jest ograniczony przez atrybuty użytkownika",
   "channel.banner.bottom_sheet.title": "Baner kanału",
   "channel_add_members.add_members.button": "Dodaj Użytkowników",
   "channel_bookmark.add.detail_title": "Tytuł",
