@@ -4,7 +4,7 @@
 import React from 'react';
 
 import {storeGlobal} from '@actions/app/global';
-import {ActionType, Tutorial} from '@constants';
+import {ActionType, Tutorial, Screens} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {act, renderWithEverything, waitFor} from '@test/intl-test-helper';
@@ -54,7 +54,7 @@ describe('GlobalScheduledPostList', () => {
     it('should return empty array is there is no scheduled post', async () => {
         const {getByTestId} = renderWithEverything(
             <EnhancedGlobalScheduledPostList
-                location={'location'}
+                location={Screens.GLOBAL_DRAFTS}
             />,
             {database},
         );
@@ -66,7 +66,7 @@ describe('GlobalScheduledPostList', () => {
     it('should show scheduled post when one exists', async () => {
         const {getByTestId} = renderWithEverything(
             <EnhancedGlobalScheduledPostList
-                location={'location'}
+                location={Screens.GLOBAL_DRAFTS}
             />,
             {database},
         );
@@ -105,7 +105,7 @@ describe('GlobalScheduledPostList', () => {
     it('tutorial watched should be false if not watched', async () => {
         const {getByTestId} = renderWithEverything(
             <EnhancedGlobalScheduledPostList
-                location={'location'}
+                location={Screens.GLOBAL_DRAFTS}
             />,
             {database},
         );
@@ -117,7 +117,7 @@ describe('GlobalScheduledPostList', () => {
     it('tutorial watched should be true if watched', async () => {
         const {getByTestId} = renderWithEverything(
             <EnhancedGlobalScheduledPostList
-                location={'location'}
+                location={Screens.GLOBAL_DRAFTS}
             />,
             {database},
         );

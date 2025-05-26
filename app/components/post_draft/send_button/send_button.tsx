@@ -58,7 +58,7 @@ const SendButton: React.FC<Props> = ({
     showScheduledPostOptions,
     scheduledPostFeatureTooltipWatched,
     scheduledPostEnabled,
-}: Props) {
+}: Props) => {
     const theme = useTheme();
     const sendButtonTestID = `${testID}.send.button` + (disabled ? '.disabled' : '');
     const style = getStyleSheet(theme);

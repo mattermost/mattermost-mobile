@@ -15,6 +15,7 @@ import DraftAndScheduledPost from './draft_scheduled_post';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type DraftModel from '@typings/database/models/servers/draft';
 import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 jest.mock('@actions/local/thread', () => ({
     switchToThread: jest.fn(),
@@ -48,7 +49,7 @@ describe('DraftAndScheduledPost', () => {
             id: 'channel-id',
             teamId: 'team-id',
         } as ChannelModel,
-        location: 'location',
+        location: 'location' as AvailableScreens,
         post: {
             rootId: '',
             updateAt: 1234567890,

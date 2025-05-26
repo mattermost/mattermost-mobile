@@ -56,6 +56,7 @@ describe('SendButton', () => {
         disabled: false,
         sendMessage: jest.fn(),
         showScheduledPostOptions: jest.fn(),
+        scheduledPostEnabled: true,
     };
 
     it('should return false if the scheduled post tutorial is not watched', async () => {
