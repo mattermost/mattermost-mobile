@@ -152,16 +152,8 @@ export const useHandleSendMessage = ({
                 return;
             }
 
-            response = await createPost(serverUrl, post, postFiles);
-            if (response.error) {
-                showSnackBar({
-                    barType: SNACK_BAR_TYPE.CREATE_POST_ERROR,
-                    customMessage: getErrorMessage(response.error),
-                    type: MESSAGE_TYPE.ERROR,
-                });
-            } else {
-                clearDraft();
-            }
+            createPost(serverUrl, post, postFiles);
+            clearDraft();
 
             // Early return to avoid calling DeviceEventEmitter.emit
             return;

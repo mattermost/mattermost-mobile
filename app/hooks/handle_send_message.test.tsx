@@ -13,14 +13,11 @@ import {createPost} from '@actions/remote/post';
 import {createScheduledPost} from '@actions/remote/scheduled_post';
 import {handleCallsSlashCommand} from '@calls/actions';
 import {Events, Screens} from '@constants';
-import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useServerUrl} from '@context/server';
 import DatabaseManager from '@database/manager';
 import DraftUploadManager from '@managers/draft_upload_manager';
 import {getPostById} from '@queries/servers/post';
 import * as DraftUtils from '@utils/draft';
-import {canPostDraftInChannelOrThread} from '@utils/scheduled_post';
-import {showSnackBar} from '@utils/snack_bar';
 
 import {useHandleSendMessage} from './handle_send_message';
 
@@ -42,9 +39,6 @@ jest.mock('@context/server', () => ({
 }));
 jest.mock('@utils/snack_bar', () => ({
     showSnackBar: jest.fn(),
-}));
-jest.mock('@utils/scheduled_post', () => ({
-    canPostDraftInChannelOrThread: jest.fn(),
 }));
 jest.mock('@database/manager');
 jest.mock('@queries/servers/post');
@@ -424,21 +418,6 @@ describe('useHandleSendMessage', () => {
         );
     });
 
-    it('should not allow sending during message submission', async () => {
-        const props = {
-            ...defaultProps,
-            value: 'test message',
-        };
-
-        const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
-
-        act(() => {
-            result.current.handleSendMessage();
-        });
-
-        expect(result.current.canSend).toBe(false);
-    });
-
     it('should handle channel-wide mentions confirmation', async () => {
         jest.spyOn(DraftUtils, 'textContainsAtAllAtChannel').mockReturnValue(true);
         jest.spyOn(DraftUtils, 'alertChannelWideMention');
@@ -652,37 +631,7 @@ describe('useHandleSendMessage', () => {
             });
         });
 
-        it('should handle failed post creation', async () => {
-            jest.mocked(canPostDraftInChannelOrThread).mockResolvedValueOnce(true);
-            jest.mocked(createPost).mockResolvedValueOnce({
-                error: new Error('Failed to create post'),
-            });
-
-            const props = {
-                ...defaultProps,
-                isFromDraftView: true,
-                value: 'test message',
-            };
-
-            const {result} = renderHook(() => useHandleSendMessage(props), {wrapper});
-
-            await act(async () => {
-                await result.current.handleSendMessage();
-            });
-
-            expect(showSnackBar).toHaveBeenCalledWith({
-                barType: SNACK_BAR_TYPE.CREATE_POST_ERROR,
-                customMessage: 'Failed to create post',
-                type: 'error',
-            });
-            expect(defaultProps.clearDraft).not.toHaveBeenCalled();
-            expect(DeviceEventEmitter.emit).not.toHaveBeenCalled();
-        });
-
         it('should show alert when root post is not found', async () => {
-            // Required to use the actual function instead of the mocked one on the global scope
-            const actual = jest.requireActual('@utils/scheduled_post');
-            jest.mocked(canPostDraftInChannelOrThread).mockImplementation(actual.canPostDraftIChannelOrThread);
             jest.mocked(getPostById).mockResolvedValueOnce(undefined);
 
             const props = {
