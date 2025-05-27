@@ -2,11 +2,9 @@
 // See LICENSE.txt for license information.
 
 import RNUtils from '@mattermost/rnutils';
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {Platform, StyleSheet, View} from 'react-native';
 
-import {CaptionsEnabledContext} from '@calls/context';
-import {hasCaptions} from '@calls/utils';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet, useWindowDimensions} from '@hooks/device';
 import {useGalleryControls} from '@hooks/gallery';
@@ -39,18 +37,8 @@ const GalleryScreen = ({componentId, galleryIdentifier, hideActions, initialInde
     const dim = useWindowDimensions();
     const isTablet = useIsTablet();
     const [localIndex, setLocalIndex] = useState(initialIndex);
-    const [captionsEnabled, setCaptionsEnabled] = useState<boolean[]>(new Array(items.length).fill(true));
-    const [captionsAvailable, setCaptionsAvailable] = useState<boolean[]>([]);
     const {headerAndFooterHidden, hideHeaderAndFooter, headerStyles, footerStyles} = useGalleryControls();
     const galleryRef = useRef<GalleryRef>(null);
-
-    useEffect(() => {
-        const captions = items.reduce((acc, item) => {
-            acc.push(hasCaptions(item.postProps));
-            return acc;
-        }, [] as boolean[]);
-        setCaptionsAvailable(captions);
-    }, [items]);
 
     const containerStyle = useMemo(() => {
         if (Platform.OS === 'ios') {
@@ -59,13 +47,6 @@ const GalleryScreen = ({componentId, galleryIdentifier, hideActions, initialInde
 
         return styles.container;
     }, [dim]);
-
-    const onCaptionsPressIdx = useCallback((idx: number) => {
-        const enabled = [...captionsEnabled];
-        enabled[idx] = !enabled[idx];
-        setCaptionsEnabled(enabled);
-    }, [captionsEnabled, setCaptionsEnabled]);
-    const onCaptionsPress = useCallback(() => onCaptionsPressIdx(localIndex), [localIndex, onCaptionsPressIdx]);
 
     const onClose = useCallback(() => {
         // We keep the un freeze here as we want
@@ -97,38 +78,33 @@ const GalleryScreen = ({componentId, galleryIdentifier, hideActions, initialInde
     useAndroidHardwareBackHandler(componentId, close);
 
     return (
-        <CaptionsEnabledContext.Provider value={captionsEnabled}>
-            <View
-                style={containerStyle}
-                nativeID={SecurityManager.getShieldScreenId(componentId)}
-            >
-                <Header
-                    index={localIndex}
-                    onClose={onClose}
-                    style={headerStyles}
-                    total={items.length}
-                />
-                <Gallery
-                    headerAndFooterHidden={headerAndFooterHidden}
-                    galleryIdentifier={galleryIdentifier}
-                    initialIndex={initialIndex}
-                    items={items}
-                    onHide={close}
-                    onIndexChange={onIndexChange}
-                    hideHeaderAndFooter={hideHeaderAndFooter}
-                    ref={galleryRef}
-                    targetDimensions={dim}
-                />
-                <Footer
-                    hideActions={hideActions}
-                    item={items[localIndex]}
-                    style={footerStyles}
-                    hasCaptions={captionsAvailable[localIndex]}
-                    captionEnabled={captionsEnabled[localIndex]}
-                    onCaptionsPress={onCaptionsPress}
-                />
-            </View>
-        </CaptionsEnabledContext.Provider>
+        <View
+            style={containerStyle}
+            nativeID={SecurityManager.getShieldScreenId(componentId)}
+        >
+            <Header
+                index={localIndex}
+                onClose={onClose}
+                style={headerStyles}
+                total={items.length}
+            />
+            <Gallery
+                headerAndFooterHidden={headerAndFooterHidden}
+                galleryIdentifier={galleryIdentifier}
+                initialIndex={initialIndex}
+                items={items}
+                onHide={close}
+                onIndexChange={onIndexChange}
+                hideHeaderAndFooter={hideHeaderAndFooter}
+                ref={galleryRef}
+                targetDimensions={dim}
+            />
+            <Footer
+                hideActions={hideActions}
+                item={items[localIndex]}
+                style={footerStyles}
+            />
+        </View>
     );
 };
 
