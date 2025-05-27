@@ -32,13 +32,13 @@ export function diff(context: any, name: string, value: any) {
     return d.stash;
 }
 
+export const translateYConfig: WithTimingConfig = {
+    duration: 400,
+    easing: Easing.bezier(0.33, 0.01, 0, 1),
+};
+
 export function useGalleryControls() {
     const headerAndFooterHidden = useSharedValue(false);
-
-    const translateYConfig: WithTimingConfig = {
-        duration: 400,
-        easing: Easing.bezier(0.33, 0.01, 0, 1),
-    };
 
     const headerStyles = useAnimatedStyle(() => ({
         opacity: headerAndFooterHidden.value ? withTiming(0) : withTiming(1),
