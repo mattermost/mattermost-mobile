@@ -433,6 +433,77 @@ export const getDisplayType = (field: CustomProfileFieldModel): string => {
 };
 
 /**
+ * Get the options from a select or multiselect field as a map of option IDs to option names
+ * @param field - The custom profile field
+ * @returns A record where keys are option IDs and values are option names
+ */
+export const getFieldOptions = (field: CustomProfileFieldModel): Record<string, string> => {
+    if (!field.attrs || (field.type !== 'select' && field.type !== 'multiselect')) {
+        return {};
+    }
+
+    const options = field.attrs.options as Array<{id: string; name: string}> | undefined;
+    if (!options || !Array.isArray(options)) {
+        return {};
+    }
+
+    const optionsMap: Record<string, string> = {};
+    options.forEach((option) => {
+        if (option.id && option.name) {
+            optionsMap[option.id] = option.name;
+        }
+    });
+
+    return optionsMap;
+};
+
+/**
+ * Convert option IDs to display values for select/multiselect fields
+ * @param value - The stored value (option ID or comma-separated IDs)
+ * @param fieldType - The field type ('select' or 'multiselect')
+ * @param optionsMap - Map of option IDs to option names
+ * @returns The display value with option names
+ */
+const convertOptionsToDisplayValue = (value: string, fieldType: string, optionsMap: Record<string, string>): string => {
+    if (!value || !optionsMap) {
+        return value;
+    }
+
+    if (fieldType === 'select') {
+        // Single select: just return the option name for the ID
+        return optionsMap[value] || value;
+    }
+
+    if (fieldType === 'multiselect') {
+        // Multi-select: handle comma-separated IDs or JSON array
+        let optionIds: string[] = [];
+
+        // Try parsing as JSON array first
+        try {
+            const parsed = JSON.parse(value);
+            if (Array.isArray(parsed)) {
+                optionIds = parsed;
+            } else {
+                // Fallback to comma-separated string
+                optionIds = value.split(',').map((id) => id.trim());
+            }
+        } catch {
+            // Fallback to comma-separated string
+            optionIds = value.split(',').map((id) => id.trim());
+        }
+
+        // Convert IDs to names and filter out empty values
+        const optionNames = optionIds.
+            map((id) => optionsMap[id] || id).
+            filter((name) => name.trim() !== '');
+
+        return optionNames.join(', ');
+    }
+
+    return value;
+};
+
+/**
  * Convert custom profile attributes to the UI-ready CustomAttribute format
  * @param attributes - Array of custom profile attribute models
  * @param fields - Array of custom profile field models
@@ -450,22 +521,40 @@ export const convertProfileAttributesToCustomAttributes = (
     }
 
     const fieldsMap = new Map();
+    const fieldOptionsMap = new Map<string, Record<string, string>>();
     fields?.forEach((field) => {
         const customType = useDisplayType ? getDisplayType(field) : field.type;
         fieldsMap.set(field.id, {
             name: field.name,
             type: customType,
             sort_order: field.attrs?.sort_order || Number.MAX_SAFE_INTEGER,
+            originalField: field,
         });
+
+        // Store options map for select/multiselect fields
+        if (field.type === 'select' || field.type === 'multiselect') {
+            fieldOptionsMap.set(field.id, getFieldOptions(field));
+        }
     });
 
     const customAttrs = attributes.map((attr) => {
         const field = fieldsMap.get(attr.fieldId);
+        let displayValue = attr.value;
+
+        // Convert option IDs to names for select/multiselect fields
+        if (field && (field.type === 'select' || field.type === 'multiselect')) {
+            const optionsMap = fieldOptionsMap.get(attr.fieldId);
+
+            if (optionsMap && Object.keys(optionsMap).length > 0) {
+                displayValue = convertOptionsToDisplayValue(attr.value, field.type, optionsMap);
+            }
+        }
+
         return ({
             id: attr.fieldId,
             name: field?.name || attr.fieldId,
             type: field?.type || 'text',
-            value: attr.value,
+            value: displayValue,
             sort_order: field?.sort_order || Number.MAX_SAFE_INTEGER,
         });
     });

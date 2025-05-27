@@ -42,6 +42,7 @@ import {
     getDisplayType,
 } from './index';
 
+import type {CustomProfileFieldModel} from '@database/models/server';
 import type {CustomAttribute, CustomAttributeSet} from '@typings/api/custom_profile_attributes';
 import type {IntlShape} from 'react-intl';
 
@@ -763,12 +764,14 @@ describe('convertProfileAttributesToCustomAttributes', () => {
             {
                 id: 'field1',
                 name: 'Field 1',
+                type: 'text',
                 value: 'value1',
                 sort_order: 1,
             },
             {
                 id: 'field2',
                 name: 'Field 2',
+                type: 'text',
                 value: 'value2',
                 sort_order: 2,
             },
@@ -784,6 +787,7 @@ describe('convertProfileAttributesToCustomAttributes', () => {
         expect(result).toEqual([{
             id: 'unknown_field',
             name: 'unknown_field',
+            type: 'text',
             value: 'value',
             sort_order: Number.MAX_SAFE_INTEGER,
         }]);
@@ -804,6 +808,7 @@ describe('convertProfileAttributesToCustomAttributes', () => {
         expect(result).toEqual([{
             id: 'field1',
             name: 'Field 1',
+            type: 'text',
             value: 'value1',
             sort_order: Number.MAX_SAFE_INTEGER,
         }]);
@@ -830,12 +835,14 @@ describe('convertProfileAttributesToCustomAttributes', () => {
             {
                 id: 'field1',
                 name: 'field1',
+                type: 'text',
                 value: 'value1',
                 sort_order: Number.MAX_SAFE_INTEGER,
             },
             {
                 id: 'field2',
                 name: 'field2',
+                type: 'text',
                 value: 'value2',
                 sort_order: Number.MAX_SAFE_INTEGER,
             },
@@ -848,12 +855,14 @@ describe('convertProfileAttributesToCustomAttributes', () => {
             {
                 id: 'field1',
                 name: 'field1',
+                type: 'text',
                 value: 'value1',
                 sort_order: Number.MAX_SAFE_INTEGER,
             },
             {
                 id: 'field2',
                 name: 'field2',
+                type: 'text',
                 value: 'value2',
                 sort_order: Number.MAX_SAFE_INTEGER,
             },
@@ -867,16 +876,217 @@ describe('convertProfileAttributesToCustomAttributes', () => {
             {
                 id: 'field2',
                 name: 'Field 2',
+                type: 'text',
                 value: 'value2',
                 sort_order: 2,
             },
             {
                 id: 'field1',
                 name: 'Field 1',
+                type: 'text',
                 value: 'value1',
                 sort_order: 1,
             },
         ]);
+    });
+
+    it('should not convert values for non-select/multiselect fields', () => {
+        const textField = TestHelper.fakeCustomProfileFieldModel({
+            id: 'text_field',
+            name: 'Text Field',
+            type: 'text',
+            attrs: {sort_order: 1},
+        });
+
+        const attributes = [TestHelper.fakeCustomProfileAttributeModel({
+            fieldId: 'text_field',
+            value: 'some text value',
+        })];
+
+        const result = convertProfileAttributesToCustomAttributes(attributes, [textField]);
+        expect(result).toEqual([{
+            id: 'text_field',
+            name: 'Text Field',
+            type: 'text',
+            value: 'some text value',
+            sort_order: 1,
+        }]);
+    });
+
+    // Additional tests for edge cases and robustness
+    it('should handle multiselect fields with JSON array values containing spaces', () => {
+        const multiselectField = TestHelper.fakeCustomProfileFieldModel({
+            id: 'multiselect_field',
+            name: 'Multiselect Field',
+            type: 'multiselect',
+            attrs: {
+                sort_order: 1,
+                options: [
+                    {id: 'opt1', name: 'Option 1'},
+                    {id: 'opt2', name: 'Option 2'},
+                    {id: 'opt3', name: 'Option 3'},
+                ],
+            },
+        });
+
+        const attributes = [TestHelper.fakeCustomProfileAttributeModel({
+            fieldId: 'multiselect_field',
+            value: '["opt1", "opt2", "opt3"]', // JSON with spaces
+        })];
+
+        const result = convertProfileAttributesToCustomAttributes(attributes, [multiselectField]);
+        expect(result).toEqual([{
+            id: 'multiselect_field',
+            name: 'Multiselect Field',
+            type: 'multiselect',
+            value: 'Option 1, Option 2, Option 3',
+            sort_order: 1,
+        }]);
+    });
+
+    it('should handle multiselect fields with mixed valid and invalid option IDs', () => {
+        const multiselectField = TestHelper.fakeCustomProfileFieldModel({
+            id: 'multiselect_field',
+            name: 'Multiselect Field',
+            type: 'multiselect',
+            attrs: {
+                sort_order: 1,
+                options: [
+                    {id: 'opt1', name: 'Option 1'},
+                    {id: 'opt2', name: 'Option 2'},
+                ],
+            },
+        });
+
+        const attributes = [TestHelper.fakeCustomProfileAttributeModel({
+            fieldId: 'multiselect_field',
+            value: '["opt1", "invalid_opt", "opt2"]',
+        })];
+
+        const result = convertProfileAttributesToCustomAttributes(attributes, [multiselectField]);
+        expect(result).toEqual([{
+            id: 'multiselect_field',
+            name: 'Multiselect Field',
+            type: 'multiselect',
+            value: 'Option 1, invalid_opt, Option 2',
+            sort_order: 1,
+        }]);
+    });
+
+    it('should handle multiselect fields with empty JSON array', () => {
+        const multiselectField = TestHelper.fakeCustomProfileFieldModel({
+            id: 'multiselect_field',
+            name: 'Multiselect Field',
+            type: 'multiselect',
+            attrs: {
+                sort_order: 1,
+                options: [
+                    {id: 'opt1', name: 'Option 1'},
+                ],
+            },
+        });
+
+        const attributes = [TestHelper.fakeCustomProfileAttributeModel({
+            fieldId: 'multiselect_field',
+            value: '[]',
+        })];
+
+        const result = convertProfileAttributesToCustomAttributes(attributes, [multiselectField]);
+        expect(result).toEqual([{
+            id: 'multiselect_field',
+            name: 'Multiselect Field',
+            type: 'multiselect',
+            value: '',
+            sort_order: 1,
+        }]);
+    });
+
+    it('should handle multiselect fields with malformed JSON gracefully', () => {
+        const multiselectField = TestHelper.fakeCustomProfileFieldModel({
+            id: 'multiselect_field',
+            name: 'Multiselect Field',
+            type: 'multiselect',
+            attrs: {
+                sort_order: 1,
+                options: [
+                    {id: 'opt1', name: 'Option 1'},
+                    {id: 'opt2', name: 'Option 2'},
+                ],
+            },
+        });
+
+        const attributes = [TestHelper.fakeCustomProfileAttributeModel({
+            fieldId: 'multiselect_field',
+            value: '["opt1", "opt2"', // Malformed JSON (missing closing bracket)
+        })];
+
+        const result = convertProfileAttributesToCustomAttributes(attributes, [multiselectField]);
+
+        // Should fallback to comma-separated parsing
+        expect(result).toEqual([{
+            id: 'multiselect_field',
+            name: 'Multiselect Field',
+            type: 'multiselect',
+            value: '["opt1", "opt2"', // Should return original value since it can't be parsed
+            sort_order: 1,
+        }]);
+    });
+
+    it('should handle select/multiselect fields with no options defined', () => {
+        const selectFieldNoOptions = TestHelper.fakeCustomProfileFieldModel({
+            id: 'select_field',
+            name: 'Select Field',
+            type: 'select',
+            attrs: {
+                sort_order: 1,
+
+                // No options defined
+            },
+        });
+
+        const attributes = [TestHelper.fakeCustomProfileAttributeModel({
+            fieldId: 'select_field',
+            value: 'some_value',
+        })];
+
+        const result = convertProfileAttributesToCustomAttributes(attributes, [selectFieldNoOptions]);
+        expect(result).toEqual([{
+            id: 'select_field',
+            name: 'Select Field',
+            type: 'select',
+            value: 'some_value', // Should return original value
+            sort_order: 1,
+        }]);
+    });
+
+    it('should handle multiselect fields with comma-separated values containing spaces', () => {
+        const multiselectField = TestHelper.fakeCustomProfileFieldModel({
+            id: 'multiselect_field',
+            name: 'Multiselect Field',
+            type: 'multiselect',
+            attrs: {
+                sort_order: 1,
+                options: [
+                    {id: 'opt1', name: 'Option 1'},
+                    {id: 'opt2', name: 'Option 2'},
+                    {id: 'opt3', name: 'Option 3'},
+                ],
+            },
+        });
+
+        const attributes = [TestHelper.fakeCustomProfileAttributeModel({
+            fieldId: 'multiselect_field',
+            value: 'opt1, opt2 , opt3', // Comma-separated with spaces
+        })];
+
+        const result = convertProfileAttributesToCustomAttributes(attributes, [multiselectField]);
+        expect(result).toEqual([{
+            id: 'multiselect_field',
+            name: 'Multiselect Field',
+            type: 'multiselect',
+            value: 'Option 1, Option 2, Option 3',
+            sort_order: 1,
+        }]);
     });
 });
 

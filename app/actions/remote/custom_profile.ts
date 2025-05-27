@@ -25,13 +25,23 @@ export const fetchCustomProfileAttributes = async (serverUrl: string, userId: st
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         let fields: CustomProfileField[] = [];
-        let attrValues: Record<string, string> = {};
+        let attrValues: Record<string, string | string[]> = {};
 
         try {
             [fields, attrValues] = await Promise.all([
                 client.getCustomProfileAttributeFields(),
                 client.getCustomProfileAttributeValues(userId),
             ]);
+
+            // Debug: Log what the server returns for multiselect fields
+            logDebug('Server response - fields:', fields.filter((f) => f.type === 'multiselect').map((f) => ({
+                id: f.id,
+                name: f.name,
+                type: f.type,
+                hasOptions: Boolean(f.attrs?.options),
+                optionsCount: Array.isArray(f.attrs?.options) ? f.attrs.options.length : 0,
+            })));
+            logDebug('Server response - attrValues:', attrValues);
         } catch (err) {
             logDebug('error on fetchCustomProfileAttributes get fields and attr values', getFullErrorMessage(err));
             return {attributes, error: err};
@@ -46,7 +56,33 @@ export const fetchCustomProfileAttributes = async (serverUrl: string, userId: st
             const attributeModelPromises: Array<Promise<Model[]>> = [];
             const fieldModelPromises: Array<Promise<Model[]>> = [];
             for (const field of fields) {
-                const value = attrValues[field.id] || '';
+                const rawValue = attrValues[field.id];
+                let value = '';
+
+                // Handle different value types properly
+                if (rawValue !== undefined && rawValue !== null) {
+                    if (Array.isArray(rawValue)) {
+                        // For arrays (multiselect), serialize to JSON string
+                        value = JSON.stringify(rawValue);
+                    } else {
+                        // For other types, convert to string
+                        value = String(rawValue);
+                    }
+                }
+
+                // Debug: Log multiselect field processing
+                if (field.type === 'multiselect') {
+                    logDebug('Processing multiselect field:', {
+                        fieldId: field.id,
+                        fieldName: field.name,
+                        rawValue: attrValues[field.id],
+                        processedValue: value,
+                        valueType: typeof attrValues[field.id],
+                        hasValueInResponse: field.id in attrValues,
+                        isArray: Array.isArray(rawValue),
+                    });
+                }
+
                 if (!filterEmpty || value) {
                     attributes[field.id] = {
                         id: field.id,
