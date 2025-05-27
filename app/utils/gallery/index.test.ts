@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {DeviceEventEmitter, Image, Keyboard} from 'react-native';
+import {DeviceEventEmitter, Image, Keyboard, View} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import {measure, type AnimatedRef} from 'react-native-reanimated';
 
-import {clamp, clampVelocity, fileToGalleryItem, freezeOtherScreens, friction, galleryItemToFileInfo, getImageSize, getShouldRender, measureItem, openGalleryAtIndex, typedMemo} from '.';
+import {clamp, clampVelocity, fileToGalleryItem, freezeOtherScreens, friction, galleryItemToFileInfo, getImageSize, getShouldRender, measureItem, measureViewInWindow, openGalleryAtIndex, typedMemo} from '.';
 
 import type {GalleryItemType, GalleryManagerSharedValues} from '@typings/screens/gallery';
 
@@ -266,6 +266,27 @@ describe('Gallery utils', () => {
             });
 
             await expect(getImageSize('test-uri')).rejects.toThrow('Failed to get size');
+        });
+    });
+
+    describe('measureViewInWindow', () => {
+        it('should resolve with measured values when ref.current exists', async () => {
+            const measureMock = jest.fn((cb) => {
+            // x, y, width, height, pageX, pageY
+                cb(0, 0, 120, 80, 50, 60);
+            });
+            const ref = {current: {measure: measureMock}} as unknown as React.RefObject<View>;
+
+            const result = await measureViewInWindow(ref);
+            expect(result).toEqual({x: 50, y: 60, width: 120, height: 80});
+            expect(measureMock).toHaveBeenCalled();
+        });
+
+        it('should resolve with zeros when ref.current does not exist', async () => {
+            const ref = {current: null} as unknown as React.RefObject<View>;
+
+            const result = await measureViewInWindow(ref);
+            expect(result).toEqual({x: 0, y: 0, width: 0, height: 0});
         });
     });
 });
