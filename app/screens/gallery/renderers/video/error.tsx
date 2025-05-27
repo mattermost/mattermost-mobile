@@ -11,6 +11,7 @@ import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {Preferences} from '@constants';
+import {useLightboxSharedValues} from '@screens/gallery/lightbox_swipeout/context';
 import {calculateDimensions} from '@utils/images';
 import {typography} from '@utils/typography';
 
@@ -48,13 +49,14 @@ type Props = {
     height: number;
     isDownloading: boolean;
     isRemote: boolean;
-    handleTouchEnd: () => void;
     posterUri?: string;
     setDownloading: Dispatch<SetStateAction<boolean>>;
     width: number;
+    hideHeaderAndFooter: (hide?: boolean) => void;
 }
 
-const VideoError = ({filename, height, isDownloading, isRemote, handleTouchEnd, posterUri, setDownloading, width}: Props) => {
+const VideoError = ({filename, height, isDownloading, isRemote, posterUri, setDownloading, width, hideHeaderAndFooter}: Props) => {
+    const {headerAndFooterHidden} = useLightboxSharedValues();
     const [hasPoster, setHasPoster] = useState(false);
     const [loadPosterError, setLoadPosterError] = useState(false);
     const dimensions = useWindowDimensions();
@@ -71,6 +73,13 @@ const VideoError = ({filename, height, isDownloading, isRemote, handleTouchEnd, 
     const handlePosterError = useCallback(() => {
         setLoadPosterError(true);
     }, []);
+
+    const onPress = useCallback(() => {
+        hideHeaderAndFooter(!headerAndFooterHidden.value);
+
+    // No need to add shared values to the dependency array here,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [hideHeaderAndFooter]);
 
     let poster;
     if (posterUri && !loadPosterError) {
@@ -95,7 +104,7 @@ const VideoError = ({filename, height, isDownloading, isRemote, handleTouchEnd, 
 
     return (
         <TouchableWithoutFeedback
-            onPress={handleTouchEnd}
+            onPress={onPress}
             style={styles.container}
         >
             <Animated.View style={styles.container}>
