@@ -10,10 +10,12 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
 import {onOpenLinkError} from '@utils/url/links';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 type Props = {
     channelId: string;
     link?: string;
-    location: string;
+    location: AvailableScreens;
     theme: Theme;
     value?: string;
 }

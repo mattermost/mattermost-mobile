@@ -4,27 +4,28 @@
 import {BottomSheetFlatList} from '@gorhom/bottom-sheet';
 import React, {useCallback, useRef} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, type ListRenderItemInfo, type NativeScrollEvent, type NativeSyntheticEvent} from 'react-native';
+import {type ListRenderItemInfo, type NativeScrollEvent, type NativeSyntheticEvent} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
 
 import UserItem from '@components/user_item';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {useBottomSheetListsFix} from '@hooks/bottom_sheet_lists_fix';
-import {dismissBottomSheet, openAsBottomSheet} from '@screens/navigation';
+import {openUserProfileModal} from '@screens/navigation';
 
 import type UserModel from '@typings/database/models/servers/user';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     channelId?: string;
-    location: string;
+    location: AvailableScreens;
     type?: BottomSheetList;
     users: UserModel[];
 };
 
 type ItemProps = {
     channelId?: string;
-    location: string;
+    location: AvailableScreens;
     user: UserModel;
 }
 
@@ -33,14 +34,11 @@ const Item = ({channelId, location, user}: ItemProps) => {
     const theme = useTheme();
 
     const openUserProfile = useCallback(async (u: UserModel | UserProfile) => {
-        await dismissBottomSheet(Screens.BOTTOM_SHEET);
-        const screen = Screens.USER_PROFILE;
-        const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
-        const closeButtonId = 'close-user-profile';
-        const props = {closeButtonId, location, userId: u.id, channelId};
-
-        Keyboard.dismiss();
-        openAsBottomSheet({screen, title, theme, closeButtonId, props});
+        openUserProfileModal(intl, theme, {
+            userId: u.id,
+            channelId,
+            location,
+        }, Screens.BOTTOM_SHEET);
     }, [location, channelId, theme, intl]);
 
     return (

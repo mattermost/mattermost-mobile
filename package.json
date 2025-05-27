@@ -1,6 +1,6 @@
 {
   "name": "mattermost-mobile",
-  "version": "2.28.0",
+  "version": "2.29.0",
   "description": "Mattermost Mobile with React Native",
   "repository": "git@github.com:mattermost/mattermost-mobile.git",
   "author": "Mattermost, Inc.",
@@ -18,7 +18,7 @@
     "@formatjs/intl-numberformat": "8.15.4",
     "@formatjs/intl-pluralrules": "5.4.4",
     "@gorhom/bottom-sheet": "5.1.2",
-    "@mattermost/calls": "github:mattermost/calls-common#02b04117fcec88f158d3d9ba62546d8d942ed647",
+    "@mattermost/calls": "github:mattermost/calls-common#e2607dcd3abde43ccffa2a77e843172dc0347712",
     "@mattermost/compass-icons": "0.1.48",
     "@mattermost/hardware-keyboard": "file:./libraries/@mattermost/hardware-keyboard",
     "@mattermost/react-native-emm": "1.6.2",

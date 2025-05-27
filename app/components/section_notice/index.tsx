@@ -2,8 +2,9 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {Pressable, Text, View} from 'react-native';
+import {Pressable, Text, View, type StyleProp, type ViewStyle} from 'react-native';
 
+import Tag from '@components/tag';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -12,6 +13,8 @@ import CompassIcon from '../compass_icon';
 import Markdown from '../markdown';
 
 import SectionNoticeButton from './section_notice_button';
+
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     title: string;
@@ -22,6 +25,12 @@ type Props = {
     type?: 'info' | 'success' | 'danger' | 'welcome' | 'warning' | 'hint';
     isDismissable?: boolean;
     onDismissClick?: () => void;
+    location: AvailableScreens;
+    tags?: string[];
+    tagsVariant?: 'default' | 'subtle';
+    testID?: string;
+    containerStyle?: StyleProp<ViewStyle>;
+    iconSize?: number;
 }
 
 const iconByType = {
@@ -58,7 +67,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         title: {
             margin: 0,
             color: theme.centerChannelColor,
-            ...typography('Body', 200, 'SemiBold'),
+            ...typography('Body', 100, 'SemiBold'),
         },
         welcomeTitle: {
             margin: 0,
@@ -67,7 +76,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         baseText: {
             color: theme.centerChannelColor,
-            ...typography('Body', 200, 'Regular'),
+            ...typography('Body', 100, 'Regular'),
         },
         infoText: {
             color: theme.centerChannelColor,
@@ -138,6 +147,11 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             width: 32,
             height: 32,
         },
+        tagsContainer: {
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+        },
+
     };
 });
 
@@ -150,6 +164,12 @@ const SectionNotice = ({
     secondaryButton,
     text,
     type = 'info',
+    location,
+    tags,
+    tagsVariant = 'default',
+    testID,
+    containerStyle,
+    iconSize = 20,
 }: Props) => {
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
@@ -157,20 +177,25 @@ const SectionNotice = ({
     const icon = iconByType[type];
     const showDismiss = Boolean(isDismissable && onDismissClick);
     const hasButtons = primaryButton || secondaryButton || linkButton;
+    const showTags = tags && tags.length > 0;
 
-    const containerStyle = useMemo(() => [styles.container, styles[`${type}Container`]], [type]);
+    const combinedContainerStyle = useMemo(() => [
+        styles.container,
+        styles[`${type}Container`],
+        containerStyle,
+    ], [type, containerStyle]);
     const iconStyle = useMemo(() => styles[`${type}Icon`], [type]);
     return (
         <View
-            style={containerStyle}
-            testID={'sectionNoticeContainer'}
+            style={combinedContainerStyle}
+            testID={testID || 'sectionNoticeContainer'}
         >
             <View style={styles.content}>
                 {icon && (
                     <CompassIcon
                         name={icon}
                         style={iconStyle}
-                        size={20}
+                        size={iconSize}
                         testID='sectionNoticeHeaderIcon'
                     />
                 )}
@@ -179,10 +204,22 @@ const SectionNotice = ({
                     {text && (
                         <Markdown
                             theme={theme}
-                            location=''
+                            location={location}
                             baseTextStyle={styles.baseText}
                             value={text}
                         />
+                    )}
+                    {showTags && (
+                        <View style={styles.tagsContainer}>
+                            {tags.map((tag) => (
+                                <Tag
+                                    key={tag}
+                                    id={`tag.${tag}`}
+                                    defaultMessage={tag}
+                                    variant={tagsVariant}
+                                />
+                            ))}
+                        </View>
                     )}
                     {hasButtons && (
                         <View style={styles.actions}>

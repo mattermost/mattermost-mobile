@@ -7,12 +7,13 @@ import {type StyleProp, StyleSheet, type TextStyle, View} from 'react-native';
 import Markdown from '@components/markdown';
 
 import type {MarkdownBlockStyles, MarkdownTextStyles} from '@typings/global/markdown';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     baseTextStyle: StyleProp<TextStyle>;
     blockStyles?: MarkdownBlockStyles;
     channelId: string;
-    location: string;
+    location: AvailableScreens;
     metadata?: PostMetadata | null;
     textStyles?: MarkdownTextStyles;
     theme: Theme;

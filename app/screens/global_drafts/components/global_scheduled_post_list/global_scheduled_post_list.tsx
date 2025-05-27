@@ -21,10 +21,11 @@ import DraftAndScheduledPostSwipeActions from '../draft_and_scheduled_post_swipe
 import ScheduledPostEmptyComponent from '../scheduled_post_empty_component';
 
 import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     allScheduledPosts: ScheduledPostModel[];
-    location: string;
+    location: AvailableScreens;
     tutorialWatched: boolean;
 };
 
