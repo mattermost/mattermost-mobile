@@ -395,7 +395,7 @@ export const fetchPostsForUnreadChannels = async (
 
     for (const channelIds of Object.values(sortedUnreadchannelIdsByTeam)) {
         /* eslint-disable-next-line no-await-in-loop */
-        await processChannelPostsByTeam(serverUrl, channelIds, true, groupLabel, isCRTEnabled);
+        await processChannelPostsByTeam(serverUrl, channelIds, false, groupLabel, isCRTEnabled);
     }
 };
 
