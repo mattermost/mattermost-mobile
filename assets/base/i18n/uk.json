@@ -728,6 +728,7 @@
   "mobile.markdown.code.plusMoreLines": "ще +{count, number} {count, plural, one {рядок} few {рядка} other {рядків}}",
   "mobile.markdown.copy_header": "Скопіювати текст заголовка",
   "mobile.markdown.image.too_large": "Зображення перевищує максимальні розміри {maxWidth} на {maxHeight}:",
+  "mobile.markdown.link.copy_email": "Скопіювати адресу електронної пошти",
   "mobile.markdown.link.copy_url": "Скопіювати URL-адресу",
   "mobile.mention.copy_mention": "Копіювати згадування",
   "mobile.message_length.message": "Ваше поточне повідомлення занадто довге. Поточна кількість символів: {count}/{max}",
