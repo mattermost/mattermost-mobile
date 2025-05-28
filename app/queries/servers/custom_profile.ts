@@ -8,7 +8,6 @@ import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 import {MM_TABLES} from '@constants/database';
 import {customProfileAttributeId} from '@utils/custom_profile_attribute';
 
-import type {CustomAttribute} from '@typings/api/custom_profile_attributes';
 import type CustomProfileAttributeModel from 'app/database/models/server/custom_profile_attribute';
 import type CustomProfileFieldModel from 'app/database/models/server/custom_profile_field';
 
@@ -86,48 +85,6 @@ export const observeCustomProfileAttributesByUserId = (database: Database, userI
 };
 
 /**
- * Convert custom profile attributes to the UI-ready CustomAttribute format
- * @param database - The database instance
- * @param attributes - Array of custom profile attribute models
- * @returns Promise resolving to array of formatted CustomAttribute objects
- */
-export const convertProfileAttributesToCustomAttributes = async (
-    database: Database,
-    attributes: CustomProfileAttributeModel[] | null | undefined,
-    sortFn?: (a: CustomAttribute, b: CustomAttribute) => number,
-): Promise<CustomAttribute[]> => {
-    if (!attributes?.length) {
-        return [];
-    }
-
-    // We need to fetch field details for names and sorting
-    const fieldIds = attributes.map((attr) => attr.fieldId);
-    const fieldsQuery = await database.get<CustomProfileFieldModel>(CUSTOM_PROFILE_FIELD).query(
-        Q.where('id', Q.oneOf(fieldIds)),
-    ).fetch();
-
-    // Create a map of field IDs to names
-    const fieldsMap = new Map();
-    fieldsQuery.forEach((field) => {
-        fieldsMap.set(field.id, {
-            name: field.name,
-            sort_order: field.attrs?.sort_order || 0,
-        });
-    });
-
-    // Convert DB attributes to CustomAttribute format
-    const customAttrs = attributes.map((attr) => ({
-        id: attr.fieldId,
-        name: fieldsMap.get(attr.fieldId)?.name || attr.fieldId,
-        value: attr.value,
-        sort_order: fieldsMap.get(attr.fieldId)?.sort_order || 0,
-    }));
-
-    // Sort if a sort function is provided
-    return sortFn ? customAttrs.sort(sortFn) : customAttrs;
-};
-
-/**
  * Query to fetch all custom profile fields
  * @param database - The database instance
  * @returns Query for custom profile fields
@@ -168,7 +125,7 @@ export const queryCustomProfileAttributesByFieldId = (database: Database, fieldI
  * @returns Promise that resolves when the deletion is complete
  */
 export const deleteCustomProfileAttributesByFieldId = async (database: Database, fieldId: string, batchSize = 100) => {
-    const attributes = await queryCustomProfileAttributesByFieldId(database, fieldId).fetch();
+    const attributes = await prepareCustomProfileAttributesForDeletionByFieldId(database, fieldId);
 
     if (!attributes.length) {
         return;
@@ -177,11 +134,8 @@ export const deleteCustomProfileAttributesByFieldId = async (database: Database,
     // Process attributes in batches to avoid performance issues with large datasets
     const promises = [];
     for (let i = 0; i < attributes.length; i += batchSize) {
-        const batch = attributes.slice(i, i + batchSize);
-        const preparedModels = batch.map((attribute) => attribute.prepareDestroyPermanently());
-
         const batchPromise = database.write(async () => {
-            await database.batch(...preparedModels);
+            await database.batch(...(attributes.slice(i, i + batchSize)));
         }, `deleteCustomProfileAttributesByFieldId:${fieldId}:batch:${i}`);
 
         promises.push(batchPromise);
@@ -190,3 +144,14 @@ export const deleteCustomProfileAttributesByFieldId = async (database: Database,
     await Promise.all(promises);
 };
 
+export const prepareCustomProfileAttributesForDeletionByFieldId = async (database: Database, fieldId: string) => {
+    const field = await getCustomProfileFieldById(database, fieldId);
+    if (!field) {
+        return [];
+    }
+    const attributes = await field.customProfileAttributes.fetch();
+    if (attributes.length === 0) {
+        return [];
+    }
+    return attributes.map((attribute) => attribute.prepareDestroyPermanently());
+};

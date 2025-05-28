@@ -3,7 +3,7 @@
 
 import React, {useEffect, useState, useRef} from 'react';
 
-import {fetchCustomAttributes} from '@actions/remote/user';
+import {fetchCustomProfileAttributes} from '@actions/remote/custom_profile';
 import {useServerUrl} from '@context/server';
 import {getUserCustomStatus, sortCustomProfileAttributes} from '@utils/user';
 
@@ -11,7 +11,7 @@ import CustomAttributes from './custom_attributes';
 import UserProfileCustomStatus from './custom_status';
 
 import type {UserModel} from '@database/models/server';
-import type {CustomAttribute} from '@typings/api/custom_profile_attributes';
+import type {CustomAttribute, CustomAttributeSet} from '@typings/api/custom_profile_attributes';
 
 type Props = {
     localTime?: string;
@@ -21,36 +21,49 @@ type Props = {
     showPosition: boolean;
     user: UserModel;
     enableCustomAttributes?: boolean;
+    customAttributesSet?: CustomAttributeSet;
 }
 
 const emptyList: CustomAttribute[] = []; /** avoid re-renders **/
 
-const UserInfo = ({localTime, showCustomStatus, showLocalTime, showNickname, showPosition, user, enableCustomAttributes}: Props) => {
+const UserInfo = ({
+    localTime,
+    showCustomStatus,
+    showLocalTime,
+    showNickname,
+    showPosition,
+    user,
+    enableCustomAttributes,
+    customAttributesSet,
+}: Props) => {
     const customStatus = getUserCustomStatus(user);
     const serverUrl = useServerUrl();
     const [customAttributes, setCustomAttributes] = useState<CustomAttribute[]>(emptyList);
-
     const lastRequest = useRef(0);
 
+    // Initial load from database and server if customAttributesSet is not provided
     useEffect(() => {
         if (enableCustomAttributes) {
-            const fetchData = async () => {
+            // If customAttributesSet is provided by the parent, use it
+            if (customAttributesSet && Object.keys(customAttributesSet).length > 0) {
+                setCustomAttributes(Object.values(customAttributesSet).sort(sortCustomProfileAttributes));
+            }
+
+            const fetchFromServer = async () => {
                 const reqTime = Date.now();
                 lastRequest.current = reqTime;
-                const {attributes, error} = await fetchCustomAttributes(serverUrl, user.id, true);
-                if (!error && lastRequest.current === reqTime) {
+                const {attributes, error} = await fetchCustomProfileAttributes(serverUrl, user.id, true);
+                if (!error && lastRequest.current === reqTime && Object.keys(attributes).length > 0) {
                     const attributesList = Object.values(attributes).sort(sortCustomProfileAttributes);
                     setCustomAttributes(attributesList);
-                } else {
-                    setCustomAttributes(emptyList);
                 }
             };
 
-            fetchData();
+            fetchFromServer();
         } else {
             setCustomAttributes(emptyList);
         }
-    }, [enableCustomAttributes, serverUrl, user.id]);
+    }, [enableCustomAttributes, serverUrl, user.id, customAttributesSet]);
 
     return (
         <>
