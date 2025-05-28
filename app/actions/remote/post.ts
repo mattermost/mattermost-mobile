@@ -27,7 +27,7 @@ import {logDebug, logError} from '@utils/log';
 import {processPostsFetched} from '@utils/post';
 import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
 
-import {processChannelPostsByTeam} from './post.auxilary';
+import {processChannelPostsByTeam} from './post.auxiliary';
 import {forceLogoutIfNecessary} from './session';
 
 import type {Client} from '@client/rest';

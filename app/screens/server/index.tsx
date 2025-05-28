@@ -297,7 +297,7 @@ const Server = ({
             cancelPing = undefined;
         };
 
-        const ping = await getServerUrlAfterRedirect(pingUrl, !retryWithHttp);
+        const ping = await getServerUrlAfterRedirect(pingUrl, true);
         if (!ping.url) {
             cancelPing();
             if (retryWithHttp) {

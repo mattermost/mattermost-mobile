@@ -32,7 +32,7 @@ import {
     fetchSavedPosts,
     fetchPinnedPosts,
 } from './post';
-import * as PostAuxilaryFunctions from './post.auxilary';
+import * as PostAuxilaryFunctions from './post.auxiliary';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 

@@ -6,7 +6,7 @@ import {queryPostsById} from '@queries/servers/post';
 import TestHelper from '@test/test_helper';
 
 import {fetchPostAuthors, fetchPostsForChannel} from './post';
-import {processChannelPostsByTeam} from './post.auxilary';
+import {processChannelPostsByTeam} from './post.auxiliary';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 
