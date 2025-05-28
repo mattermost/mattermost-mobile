@@ -584,7 +584,7 @@ describe('get posts', () => {
 
         await fetchPostsForUnreadChannels(serverUrl, [{id: teamId}] as Team[], [channel1, {...channel1, id: 'channelid2', total_msg_count: 10}], [{...channelMember1, msg_count: 5}, {...channelMember1, channel_id: 'channelid2', msg_count: 10}], 'testid');
 
-        expect(spyOnProcessChannelPostsByTeam).toHaveBeenCalledWith(serverUrl, ['channelid1'], true, undefined, undefined);
+        expect(spyOnProcessChannelPostsByTeam).toHaveBeenCalledWith(serverUrl, ['channelid1'], false, undefined, undefined);
     });
 
     it('fetchPosts - handle database not found', async () => {
