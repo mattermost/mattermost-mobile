@@ -81,6 +81,7 @@ describe('GlobalThreads', () => {
                 expect.objectContaining({id: 'all', name: expect.objectContaining({defaultMessage: 'All your threads'})}),
             ]),
             expect.any(Function),
+            expect.any(String),
         );
     });
 
@@ -103,6 +104,7 @@ describe('GlobalThreads', () => {
                 expect.objectContaining({id: 'all', requiresUserAttention: false}),
             ]),
             expect.any(Function),
+            expect.any(String),
         );
 
         jest.mocked(useTabs).mockClear();
@@ -121,6 +123,7 @@ describe('GlobalThreads', () => {
                 expect.objectContaining({id: 'all', requiresUserAttention: false}),
             ]),
             expect.any(Function),
+            expect.any(String),
         );
     });
 
