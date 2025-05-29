@@ -22,6 +22,7 @@ import AppDataOperator from '@database/operator/app_data_operator';
 import ServerDataOperator from '@database/operator/server_data_operator';
 import {schema as appSchema} from '@database/schema/app';
 import {serverSchema} from '@database/schema/server';
+import {PlaybookRunModel, PlaybookChecklistModel, PlaybookChecklistItemModel} from '@playbooks/database/models';
 import {deleteIOSDatabase} from '@utils/mattermost_managed';
 import {urlSafeBase64Encode} from '@utils/security';
 import {removeProtocol} from '@utils/url';
@@ -33,7 +34,7 @@ const {SERVERS} = MM_TABLES.APP;
 const APP_DATABASE = 'app';
 
 if (__DEV__) {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
     // @ts-ignore
     logger.silence();
 }
@@ -53,6 +54,7 @@ class DatabaseManagerSingleton {
             PostModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, ReactionModel, RoleModel,
             ScheduledPostModel, SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,
             ThreadModel, ThreadParticipantModel, ThreadInTeamModel, TeamThreadsSyncModel, UserModel,
+            PlaybookRunModel, PlaybookChecklistModel, PlaybookChecklistItemModel,
         ];
         this.databaseDirectory = '';
     }
@@ -60,6 +62,7 @@ class DatabaseManagerSingleton {
     public init = async (serverUrls: string[]): Promise<void> => {
         await this.createAppDatabase();
         for await (const serverUrl of serverUrls) {
+            await this.destroyServerDatabase(serverUrl);
             await this.initServerDatabase(serverUrl);
         }
         this.appDatabase?.operator.handleInfo({
