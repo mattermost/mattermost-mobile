@@ -338,7 +338,11 @@ export default class ClientTracking {
             requestOptions.timeoutInterval = options.timeoutInterval;
         }
         if (options.headers) {
-            requestOptions.headers = {...requestOptions.headers, ...options.headers};
+            requestOptions.headers = {
+                [ClientConstants.HEADER_ACCEPT]: 'application/json',
+                ...requestOptions.headers,
+                ...options.headers,
+            };
         }
         return requestOptions;
     }
