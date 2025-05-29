@@ -1,5 +1,5 @@
 ﻿-- Exported from QuickDBD: https://www.quickdatabasediagrams.com/
--- Link to schema: https://app.quickdatabasediagrams.com/#/d/y8OBmj
+-- Link to schema: https://app.quickdatabasediagrams.com/#/d/7cAwTM
 -- NOTE! If you have used non-SQL datatypes in your design, you will have to change these here.
 
 -- Server Database - Schema Version 2
@@ -54,7 +54,8 @@ CREATE TABLE [Channel] (
     [team_id] string  NOT NULL ,
     [type] string  NOT NULL ,
     [update_at] number  NOT NULL ,
-    [banner_info] string,
+    [banner_info] string  NOT NULL ,
+    [abac_policy_enforced] boolean  NOT NULL ,
     CONSTRAINT [PK_Channel] PRIMARY KEY CLUSTERED (
         [id] ASC
     )
@@ -660,9 +661,6 @@ ON [Post] ([channel_id])
 
 CREATE INDEX [idx_Post_pending_post_id]
 ON [Post] ([pending_post_id])
-
-CREATE INDEX [idx_Post_type]
-ON [Post] ([type])
 
 CREATE INDEX [idx_Post_user_id]
 ON [Post] ([user_id])
