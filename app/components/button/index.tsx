@@ -8,7 +8,6 @@ import {type StyleProp, StyleSheet, Text, type TextStyle, View, type ViewStyle, 
 import CompassIcon from '@components/compass_icon';
 import Loading from '@components/loading';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
-import {changeOpacity} from '@utils/theme';
 
 type Props = {
     theme: Theme;
@@ -17,8 +16,6 @@ type Props = {
     textStyle?: StyleProp<TextStyle>;
     size?: ButtonSize;
     emphasis?: ButtonEmphasis;
-    buttonType?: ButtonType;
-    buttonState?: ButtonState;
     testID?: string;
     onPress?: () => void;
     text: string;
@@ -28,6 +25,8 @@ type Props = {
     isIconOnTheRight?: boolean;
     iconName?: string;
     showLoader?: boolean;
+    isInverted?: boolean;
+    isDestructive?: boolean;
 };
 
 const styles = StyleSheet.create({
@@ -52,8 +51,6 @@ const Button = ({
     textStyle,
     size = 'm',
     emphasis,
-    buttonType,
-    buttonState,
     onPress,
     text,
     testID,
@@ -63,30 +60,41 @@ const Button = ({
     disabled,
     hitSlop,
     showLoader = false,
+    isInverted = false,
+    isDestructive = false,
 }: Props) => {
-    const bgStyle = useMemo(() => [
-        buttonBackgroundStyle(theme, size, emphasis, buttonType, buttonState),
-        backgroundStyle,
-    ], [theme, backgroundStyle, size, emphasis, buttonType, buttonState]);
-
-    const txtStyle = useMemo(() => [
-        buttonTextStyle(theme, size, emphasis, buttonType),
-        textStyle,
-    ], [theme, textStyle, size, emphasis, buttonType]);
-
-    let buttonStyle = StyleSheet.flatten(bgStyle);
-    if (disabled) {
-        buttonStyle = {
-            ...buttonStyle,
-            backgroundColor: changeOpacity(buttonStyle.backgroundColor! as string, 0.4),
-        };
+    let buttonType: ButtonType = 'default';
+    if (isDestructive) {
+        buttonType = 'destructive';
+    } else if (isInverted) {
+        buttonType = 'inverted';
     }
 
-    const flattenedTxtStyle = StyleSheet.flatten(txtStyle);
+    const bgStyle = useMemo(() => [
+        buttonBackgroundStyle(theme, size, emphasis, buttonType),
+        backgroundStyle,
+    ], [theme, backgroundStyle, size, emphasis, buttonType]);
+
+    const bgDisabledStyle = useMemo(() => [
+        buttonBackgroundStyle(theme, size, emphasis, 'disabled'),
+        backgroundStyle,
+    ], [theme, backgroundStyle, size, emphasis]);
+
+    const txtStyle = useMemo(() => StyleSheet.flatten([
+        buttonTextStyle(theme, size, emphasis, buttonType),
+        textStyle,
+    ]), [theme, textStyle, size, emphasis, buttonType]);
+
+    const txtDisabledStyle = useMemo(() => StyleSheet.flatten([
+        buttonTextStyle(theme, size, emphasis, 'disabled'),
+        textStyle,
+    ]), [theme, textStyle, size, emphasis]);
+
+    const txtStyleToUse = disabled ? txtDisabledStyle : txtStyle;
 
     const loadingComponent = (
         <Loading
-            color={flattenedTxtStyle.color}
+            color={txtStyleToUse.color}
         />
     );
 
@@ -101,7 +109,7 @@ const Button = ({
                 <CompassIcon
                     name={iconName!}
                     size={iconSizePerSize[size]}
-                    color={flattenedTxtStyle.color}
+                    color={txtStyleToUse.color}
                     testID={`${testID}-icon`}
                 />
             </View>
@@ -110,8 +118,9 @@ const Button = ({
 
     return (
         <ElementButton
-            buttonStyle={buttonStyle}
+            buttonStyle={bgStyle}
             containerStyle={buttonContainerStyle}
+            disabledStyle={bgDisabledStyle}
             onPress={onPress}
             testID={testID}
             disabled={disabled}
@@ -124,7 +133,7 @@ const Button = ({
                 {showLoader && loadingComponent}
                 {!isIconOnTheRight && icon}
                 <Text
-                    style={flattenedTxtStyle}
+                    style={txtStyleToUse}
                     numberOfLines={1}
                 >
                     {text}

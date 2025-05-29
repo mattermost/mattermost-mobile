@@ -76,7 +76,7 @@ function EmptyUnreads({onlyUnreads}: Props) {
                     size='lg'
                     onPress={onPress}
                     emphasis='tertiary'
-                    buttonType='inverted'
+                    isInverted={true}
                 />
             </View>
         </View>

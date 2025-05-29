@@ -213,12 +213,12 @@ const MFA = ({componentId, config, goToHome, license, loginId, password, serverD
                                 <Button
                                     testID='login_mfa.submit'
                                     size='lg'
-                                    buttonType={error ? 'destructive' : 'default'}
                                     disabled={!token}
                                     onPress={submit}
                                     theme={theme}
                                     showLoader={isLoading}
                                     text={formatMessage({id: 'mobile.components.select_server_view.proceed', defaultMessage: 'Proceed'})}
+                                    isDestructive={Boolean(error)}
                                 />
                             </View>
                         </View>
