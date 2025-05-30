@@ -106,7 +106,7 @@ export const useHandleSendMessage = ({
         setSendingMessage(false);
     }, [serverUrl, rootId, clearDraft]);
 
-    const doSubmitMessage = useCallback(async (schedulingInfo?: SchedulingInfo): Promise<CreateResponse> => {
+    const doSubmitMessage = useCallback(async (schedulingInfo?: SchedulingInfo) => {
         const postFiles = files.filter((f) => !f.failed);
         const post = {
             user_id: currentUserId,
@@ -128,20 +128,16 @@ export const useHandleSendMessage = ({
         let response: CreateResponse;
         if (schedulingInfo) {
             response = await createScheduledPost(serverUrl, scheduledPostFromPost(post, schedulingInfo, postPriority, postFiles));
-        } else {
-            response = await createPost(serverUrl, post, postFiles);
-        }
-
-        if (response.error && isFromDraftView) {
-            showSnackBar({
-                barType: SNACK_BAR_TYPE.CREATE_POST_ERROR,
-                customMessage: getErrorMessage(response.error),
-                type: MESSAGE_TYPE.ERROR,
-            });
-            return response;
-        }
-
-        if (isFromDraftView) {
+            if (response.error) {
+                showSnackBar({
+                    barType: SNACK_BAR_TYPE.SCHEDULED_POST_CREATION_ERROR,
+                    customMessage: getErrorMessage(response.error),
+                    type: MESSAGE_TYPE.ERROR,
+                });
+            } else {
+                clearDraft();
+            }
+        } else if (isFromDraftView) {
             const shouldClearDraft = await canPostDraftInChannelOrThread({
                 serverUrl,
                 rootId,
@@ -152,16 +148,23 @@ export const useHandleSendMessage = ({
                 deactivatedChannel,
             });
 
-            if (shouldClearDraft) {
-                clearDraft();
+            if (!shouldClearDraft) {
+                return;
             }
+
+            createPost(serverUrl, post, postFiles);
+            clearDraft();
+
+            // Early return to avoid calling DeviceEventEmitter.emit
+            return;
         } else {
+            // Response error is handled at the post level so don't have to wait to clear draft
+            createPost(serverUrl, post, postFiles);
             clearDraft();
         }
+
         setSendingMessage(false);
         DeviceEventEmitter.emit(Events.POST_LIST_SCROLL_TO_BOTTOM, rootId ? Screens.THREAD : Screens.CHANNEL);
-
-        return response;
     }, [files, currentUserId, channelId, rootId, value, postPriority, isFromDraftView, serverUrl, intl, canPost, channelIsArchived, channelIsReadOnly, deactivatedChannel, clearDraft]);
 
     const showSendToAllOrChannelOrHereAlert = useCallback((calculatedMembersCount: number, atHere: boolean, schedulingInfo?: SchedulingInfo) => {
