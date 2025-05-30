@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {type GestureResponderEvent, Text, useWindowDimensions, View} from 'react-native';
+import {Text, useWindowDimensions, View} from 'react-native';
 
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -15,7 +15,7 @@ type Props = {
     buttonText?: string;
     children: React.ReactNode;
     disableButton?: boolean;
-    onPress?: (e: GestureResponderEvent) => void;
+    onPress?: () => void;
     showButton: boolean;
     showTitle: boolean;
     testID?: string;

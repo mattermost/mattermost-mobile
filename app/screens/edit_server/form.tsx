@@ -1,17 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Button} from '@rneui/base';
 import React, {type MutableRefObject, useCallback, useEffect, useRef} from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessages, useIntl} from 'react-intl';
 import {Keyboard, Platform, useWindowDimensions, View} from 'react-native';
 
+import Button from '@components/button';
 import FloatingTextInput, {type FloatingTextInputRef} from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
-import Loading from '@components/loading';
 import {useIsTablet} from '@hooks/device';
-import {t} from '@i18n';
-import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {removeProtocol, stripTrailingSlashes} from '@utils/url';
@@ -49,23 +46,22 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginTop: 8,
         ...typography('Body', 75, 'Regular'),
     },
-    connectButton: {
-        backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
+    buttonContainer: {
         width: '100%',
         marginTop: 32,
-        marginLeft: 20,
-        marginRight: 20,
-    },
-    loadingContainerStyle: {
-        marginRight: 10,
-        padding: 0,
-        top: -2,
-    },
-    loading: {
-        height: 20,
-        width: 20,
     },
 }));
+
+const messages = defineMessages({
+    save: {
+        id: 'edit_server.save',
+        defaultMessage: 'Save',
+    },
+    saving: {
+        id: 'edit_server.saving',
+        defaultMessage: 'Saving',
+    },
+});
 
 const EditServerForm = ({
     buttonDisabled,
@@ -91,7 +87,7 @@ const EditServerForm = ({
                 keyboardAwareRef.current?.scrollToPosition(0, 0);
             }
         }
-    }, []);
+    }, [keyboardAwareRef]);
 
     const onUpdate = useCallback(() => {
         Keyboard.dismiss();
@@ -114,7 +110,7 @@ const EditServerForm = ({
                 keyboardAwareRef.current?.scrollToPosition(0, offsetY);
             });
         }
-    }, [dimensions, isTablet]);
+    }, [dimensions, isTablet, keyboardAwareRef]);
 
     useEffect(() => {
         if (Platform.OS === 'ios' && isTablet) {
@@ -125,25 +121,6 @@ const EditServerForm = ({
             }
         }
     }, [onFocus]);
-
-    const buttonType = buttonDisabled ? 'disabled' : 'default';
-    const styleButtonText = buttonTextStyle(theme, 'lg', 'primary', buttonType);
-    const styleButtonBackground = buttonBackgroundStyle(theme, 'lg', 'primary', buttonType);
-
-    let buttonID = t('edit_server.save');
-    let buttonText = 'Save';
-    let buttonIcon;
-
-    if (connecting) {
-        buttonID = t('edit_server.saving');
-        buttonText = 'Saving';
-        buttonIcon = (
-            <Loading
-                containerStyle={styles.loadingContainerStyle}
-                color={theme.buttonColor}
-            />
-        );
-    }
 
     const saveButtonTestId = buttonDisabled ? 'edit_server_form.save.button.disabled' : 'edit_server_form.save.button';
 
@@ -180,21 +157,17 @@ const EditServerForm = ({
                 values={{url: removeProtocol(stripTrailingSlashes(serverUrl))}}
             />
             }
-            <Button
-                containerStyle={styles.connectButton}
-                buttonStyle={styleButtonBackground}
-                disabledStyle={styleButtonBackground}
-                disabled={buttonDisabled}
-                onPress={onUpdate}
-                testID={saveButtonTestId}
-            >
-                {buttonIcon}
-                <FormattedText
-                    defaultMessage={buttonText}
-                    id={buttonID}
-                    style={styleButtonText}
+            <View style={styles.buttonContainer}>
+                <Button
+                    disabled={buttonDisabled || connecting}
+                    onPress={onUpdate}
+                    testID={saveButtonTestId}
+                    size='lg'
+                    theme={theme}
+                    text={formatMessage(connecting ? messages.saving : messages.save)}
+                    showLoader={connecting}
                 />
-            </Button>
+            </View>
         </View>
     );
 };
