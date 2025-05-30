@@ -85,7 +85,6 @@ const MutedBanner = ({channelId}: Props) => {
             />
             <View style={styles.button}>
                 <Button
-                    buttonType='default'
                     onPress={onPress}
                     text={formatMessage({
                         id: 'channel_notification_preferences.unmute_content',

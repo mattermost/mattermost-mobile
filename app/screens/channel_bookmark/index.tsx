@@ -303,7 +303,6 @@ const ChannelBookmarkAddOrEdit = ({
                 {canDeleteBookmarks &&
                 <View style={styles.deleteContainer}>
                     <Button
-                        buttonType='destructive'
                         size='m'
                         text='Delete bookmark'
                         iconName='trash-can-outline'
@@ -311,6 +310,7 @@ const ChannelBookmarkAddOrEdit = ({
                         onPress={onDelete}
                         theme={theme}
                         disabled={isSaving}
+                        isDestructive={true}
                     />
                 </View>
                 }

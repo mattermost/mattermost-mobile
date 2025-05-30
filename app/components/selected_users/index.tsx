@@ -270,10 +270,10 @@ export default function SelectedUsers({
                         iconName={buttonIcon}
                         text={buttonText}
                         theme={theme}
-                        buttonType={isDisabled ? 'disabled' : 'default'}
                         emphasis={'primary'}
                         size={'lg'}
                         testID={`${testID}.start.button`}
+                        disabled={isDisabled}
                     />
                 </Animated.View>
             </Animated.View>
