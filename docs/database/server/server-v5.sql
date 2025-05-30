@@ -54,7 +54,7 @@ CREATE TABLE [Channel] (
     [team_id] string  NOT NULL ,
     [type] string  NOT NULL ,
     [update_at] number  NOT NULL ,
-    [banner_info] string  NOT NULL ,
+    [banner_info] string,
     [abac_policy_enforced] boolean  NOT NULL ,
     CONSTRAINT [PK_Channel] PRIMARY KEY CLUSTERED (
         [id] ASC
