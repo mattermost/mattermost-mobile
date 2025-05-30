@@ -11,6 +11,7 @@ import {fetchPostAuthors} from '@actions/remote/post';
 import {fetchThread} from '@actions/remote/thread';
 import {fetchMissingProfilesByIds} from '@actions/remote/user';
 import {Events, Screens} from '@constants';
+import {PostTypes} from '@constants/post';
 import DatabaseManager from '@database/manager';
 import {PostsInChannelModel} from '@database/models/server';
 import {getChannelById, getMyChannel} from '@queries/servers/channel';
@@ -50,7 +51,7 @@ describe('WebSocket Post Actions', () => {
     let operator: ServerDataOperator;
 
     const post = TestHelper.fakePost({id: 'post1', channel_id: 'channel1', user_id: 'user1', create_at: 12345, message: 'hello'});
-    const postModels = [TestHelper.fakePostModel({channelId: post.channel_id, userId: post.user_id, message: post.message, isPinned: true})];
+    const postModels = [TestHelper.fakePostModel({channelId: post.channel_id, userId: post.user_id, message: post.message, isPinned: true, createAt: 12345})];
     const myChannelModel = TestHelper.fakeMyChannelModel({id: 'channel1', manuallyUnread: false, messageCount: 4, mentionsCount: 0, lastViewedAt: 1});
 
     const mockedGetPostById = jest.mocked(getPostById);
@@ -79,6 +80,10 @@ describe('WebSocket Post Actions', () => {
         await DatabaseManager.init([serverUrl]);
         operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
         jest.clearAllMocks();
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.deleteServerDatabase(serverUrl);
     });
 
     describe('handleNewPostEvent', () => {
@@ -309,6 +314,23 @@ describe('WebSocket Post Actions', () => {
 
             expect(mockedGetPostById).not.toHaveBeenCalled();
             expect(batchRecordsSpy).not.toHaveBeenCalled();
+        });
+
+        it('should not update create_at for ephemeral messages', async () => {
+            const batchRecordsSpy = jest.spyOn(operator, 'batchRecords').mockImplementation(jest.fn());
+            const ephemeralMsg = {
+                data: {post: JSON.stringify(
+                    TestHelper.fakePost({type: PostTypes.EPHEMERAL, create_at: 0}),
+                )},
+            } as WebSocketMessage;
+
+            mockedGetPostById.mockResolvedValueOnce(postModels[0]);
+            mockedFetchPostAuthors.mockResolvedValue({authors: []});
+            mockedGetIsCRTEnabled.mockResolvedValue(false);
+
+            await handlePostEdited(serverUrl, ephemeralMsg);
+
+            expect(batchRecordsSpy).toHaveBeenCalledWith(expect.arrayContaining([expect.objectContaining({createAt: 12345})]), 'handlePostEdited');
         });
     });
 
