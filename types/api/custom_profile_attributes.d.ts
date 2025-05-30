@@ -59,7 +59,7 @@ type CustomProfileAttribute = {
  * @description simpler type to display a field id with its value, when we already know it all belongs to the same user
  **/
 type UserCustomProfileAttributeSimple = {
-    [field_id: string]: string;
+    [field_id: string]: string|string[];
 }
 
 export type CustomAttribute = {

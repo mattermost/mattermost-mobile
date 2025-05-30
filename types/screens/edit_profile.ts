@@ -43,3 +43,28 @@ export type FieldSequence = Record<string, {
 
 export type FieldConfig = Pick<FieldProps, 'blurOnSubmit' | 'enablesReturnKeyAutomatically' | 'onFocusNextField' | 'onTextChange' | 'returnKeyType'>
 
+export type SelectFieldProps = {
+    fieldKey: string;
+    label: string;
+    value: string;
+    options: DialogOption[];
+    isDisabled?: boolean;
+    onValueChange: (fieldKey: string, value: string) => void;
+    onFocusNextField: (fieldKey: string) => void;
+    testID: string;
+    isOptional?: boolean;
+    isMultiselect?: boolean;
+}
+
+export type CustomFieldRenderProps = {
+    fieldKey: string;
+    field: CustomProfileFieldModel;
+    value: string;
+    isDisabled: boolean;
+    onUpdateField: (fieldKey: string, value: string) => void;
+    onFocusNextField: (fieldKey: string) => void;
+    testID: string;
+    isOptional?: boolean;
+    returnKeyType?: 'next' | 'done';
+}
+

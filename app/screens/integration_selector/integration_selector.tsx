@@ -154,7 +154,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             ...typography('Body', 600, 'Regular'),
         },
         searchBarInput: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
             color: theme.centerChannelColor,
             ...typography('Body', 200, 'Regular'),
         },

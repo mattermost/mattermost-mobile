@@ -10,12 +10,14 @@ import useFieldRefs from '@hooks/field_refs';
 import {t} from '@i18n';
 import {getErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
-import {sortCustomProfileAttributes} from '@utils/user';
+import {sortCustomProfileAttributes, formatOptionsForSelector} from '@utils/user';
 
 import DisabledFields from './disabled_fields';
 import EmailField from './email_field';
 import Field from './field';
+import SelectField from './select_field';
 
+import type {CustomProfileFieldModel} from '@database/models/server';
 import type UserModel from '@typings/database/models/servers/user';
 import type {FieldConfig, FieldSequence, UserInfo} from '@typings/screens/edit_profile';
 
@@ -32,6 +34,7 @@ type Props = {
     userInfo: UserInfo;
     submitUser: () => void;
     enableCustomAttributes?: boolean;
+    customFields?: CustomProfileFieldModel[];
 }
 
 const includesSsoService = (sso: string) => ['gitlab', 'google', 'office365'].includes(sso);
@@ -87,7 +90,7 @@ const profileKeys = [FIRST_NAME_FIELD, LAST_NAME_FIELD, USERNAME_FIELD, EMAIL_FI
 const ProfileForm = ({
     canSave, currentUser, isTablet,
     lockedFirstName, lockedLastName, lockedNickname, lockedPosition,
-    onUpdateField, userInfo, submitUser, error, enableCustomAttributes,
+    onUpdateField, userInfo, submitUser, error, enableCustomAttributes, customFields,
 }: Props) => {
     const theme = useTheme();
     const intl = useIntl();
@@ -108,6 +111,15 @@ const ProfileForm = ({
 
         return total_custom_attrs === 0 ? profileKeys : [...profileKeys, ...newKeys];
     }, [userInfo.customAttributes, total_custom_attrs]);
+
+    // Create a map of field definitions for quick lookup
+    const customFieldsMap = useMemo(() => {
+        const map = new Map<string, CustomProfileFieldModel>();
+        customFields?.forEach((field) => {
+            map.set(field.id, field);
+        });
+        return map;
+    }, [customFields]);
 
     const userProfileFields: FieldSequence = useMemo(() => {
         const service = currentUser.authService;
@@ -250,13 +262,35 @@ const ProfileForm = ({
 
     const renderCustomAttribute = (key: string, notLast: boolean) => {
         const fieldID = getFieldID(key);
+        const customAttribute = userInfo.customAttributes[fieldID];
+        const fieldDefinition = customFieldsMap.get(fieldID);
 
+        // Check if this is a select or multiselect field
+        if (fieldDefinition && (fieldDefinition.type === 'select' || fieldDefinition.type === 'multiselect')) {
+            const options = formatOptionsForSelector(fieldDefinition);
+
+            return (
+                <SelectField
+                    fieldKey={key}
+                    label={customAttribute.name}
+                    value={getValue(key)}
+                    options={options}
+                    isDisabled={userProfileFields[key].isDisabled}
+                    onValueChange={onUpdateField}
+                    onFocusNextField={onFocusNextField}
+                    testID={`edit_profile_form.${key}`}
+                    isMultiselect={fieldDefinition.type === 'multiselect'}
+                />
+            );
+        }
+
+        // Default to text field for other types
         return (
             <Field
                 fieldKey={key}
                 isDisabled={userProfileFields[key].isDisabled}
                 fieldRef={setRef(key)}
-                label={userInfo.customAttributes[fieldID].name}
+                label={customAttribute.name}
                 maxLength={128}
                 testID={`edit_profile_form.${key}`}
                 {...fieldConfig}
@@ -264,6 +298,7 @@ const ProfileForm = ({
                 value={getValue(key)}
             />);
     };
+
     const renderAttribute = (key: string, notLast: boolean) => {
         if (key.startsWith(CUSTOM_ATTRS_PREFIX)) {
             return renderCustomAttribute(key, notLast);

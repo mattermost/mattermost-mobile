@@ -897,7 +897,7 @@ export const fetchCustomAttributes = async (serverUrl: string, userId: string, f
                         id: field.id,
                         name: field.name,
                         type: field.type,
-                        value,
+                        value: Array.isArray(value) ? JSON.stringify(value) : value,
                         sort_order: field.attrs?.sort_order,
                     };
                 }

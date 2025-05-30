@@ -562,3 +562,143 @@ export const convertProfileAttributesToCustomAttributes = (
     // Sort if a sort function is provided
     return sortFn ? customAttrs.sort(sortFn) : customAttrs;
 };
+
+/**
+ * Convert display values back to option IDs for select/multiselect fields
+ * @param displayValue - The display value (option names)
+ * @param fieldType - The field type ('select' or 'multiselect')
+ * @param optionsMap - Map of option IDs to option names
+ * @returns The option IDs as string (select) or JSON array string (multiselect)
+ */
+export const convertDisplayValueToOptionIds = (displayValue: string, fieldType: string, optionsMap: Record<string, string>): string => {
+    if (!displayValue || !optionsMap) {
+        return displayValue;
+    }
+
+    // Create reverse map (option names to IDs)
+    const reverseOptionsMap: Record<string, string> = {};
+    Object.entries(optionsMap).forEach(([id, name]) => {
+        reverseOptionsMap[name] = id;
+    });
+
+    if (fieldType === 'select') {
+        // Single select: return the option ID for the name
+        return reverseOptionsMap[displayValue] || displayValue;
+    }
+
+    if (fieldType === 'multiselect') {
+        // Multi-select: split display names and convert to IDs
+        const optionNames = displayValue.split(',').map((name) => name.trim()).filter((name) => name !== '');
+        const optionIds = optionNames.map((name) => reverseOptionsMap[name] || name);
+        return JSON.stringify(optionIds);
+    }
+
+    return displayValue;
+};
+
+/**
+ * Get selected option IDs from a custom attribute value
+ * @param value - The stored value (option ID or JSON array string)
+ * @param fieldType - The field type ('select' or 'multiselect')
+ * @returns Array of selected option IDs
+ */
+export const getSelectedOptionIds = (value: string, fieldType: string): string[] => {
+    if (!value) {
+        return [];
+    }
+
+    if (fieldType === 'select') {
+        return [value];
+    }
+
+    if (fieldType === 'multiselect') {
+        try {
+            const parsed = JSON.parse(value);
+            if (Array.isArray(parsed)) {
+                return parsed;
+            }
+
+            // Fallback to comma-separated string
+            return value.split(',').map((id) => id.trim()).filter((id) => id !== '');
+        } catch {
+            // Fallback to comma-separated string
+            return value.split(',').map((id) => id.trim()).filter((id) => id !== '');
+        }
+    }
+
+    return [];
+};
+
+/**
+ * Format field options for use with AutocompleteSelector component
+ * @param field - The custom profile field
+ * @returns Array of DialogOption objects for the selector
+ */
+export const formatOptionsForSelector = (field: CustomProfileFieldModel): DialogOption[] => {
+    if (!field.attrs || (field.type !== 'select' && field.type !== 'multiselect')) {
+        return [];
+    }
+
+    const options = field.attrs.options as Array<{id: string; name: string}> | undefined;
+    if (!options || !Array.isArray(options)) {
+        return [];
+    }
+
+    return options.map((option) => ({
+        text: option.name,
+        value: option.id,
+    }));
+};
+
+/**
+ * Convert selected option IDs to the format expected by the server
+ * @param value - The stored value (option ID or JSON array string)
+ * @param fieldType - The field type ('select' or 'multiselect')
+ * @returns String for select, array for multiselect
+ */
+export const convertValueForServer = (value: string, fieldType: string): string|string[] => {
+    if (fieldType !== 'multiselect') {
+        return value;
+    }
+    if (!value) {
+        return [];
+    }
+
+    try {
+        const parsed = JSON.parse(value);
+        if (Array.isArray(parsed)) {
+            return parsed;
+        }
+    } catch {
+        const parsed = value.split(',').map((id) => id.trim()).filter((id) => id !== '');
+        return parsed;
+    }
+    return [];
+};
+
+/**
+ * Convert server response values to the format expected by the UI
+ * @param value - The value from server (string or array)
+ * @param fieldType - The field type ('select' or 'multiselect')
+ * @returns String representation for UI storage
+ */
+export const convertValueFromServer = (value: string | string[], fieldType: string): string => {
+    if (value === null || value === undefined) {
+        return '';
+    }
+
+    if (fieldType === 'select') {
+        return Array.isArray(value) ? (value[0] || '') : String(value);
+    }
+
+    if (fieldType === 'multiselect') {
+        if (Array.isArray(value)) {
+            return JSON.stringify(value);
+        }
+
+        // If it's already a string, assume it's JSON or comma-separated
+        return String(value);
+    }
+
+    return String(value);
+};
