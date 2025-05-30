@@ -6,7 +6,8 @@ import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {customProfileAttributeId} from '@utils/custom_profile_attribute';
 import {getFullErrorMessage} from '@utils/errors';
-import {logDebug} from '@utils/log';
+import {logError} from '@utils/log';
+import {convertValueForServer} from '@utils/user';
 
 import type Model from '@nozbe/watermelondb/Model';
 import type {CustomProfileField, CustomAttribute, CustomAttributeSet, CustomProfileAttribute, UserCustomProfileAttributeSimple} from '@typings/api/custom_profile_attributes';
@@ -33,17 +34,8 @@ export const fetchCustomProfileAttributes = async (serverUrl: string, userId: st
                 client.getCustomProfileAttributeValues(userId),
             ]);
 
-            // Debug: Log what the server returns for multiselect fields
-            logDebug('Server response - fields:', fields.filter((f) => f.type === 'multiselect').map((f) => ({
-                id: f.id,
-                name: f.name,
-                type: f.type,
-                hasOptions: Boolean(f.attrs?.options),
-                optionsCount: Array.isArray(f.attrs?.options) ? f.attrs.options.length : 0,
-            })));
-            logDebug('Server response - attrValues:', attrValues);
         } catch (err) {
-            logDebug('error on fetchCustomProfileAttributes get fields and attr values', getFullErrorMessage(err));
+            logError('error on fetchCustomProfileAttributes get fields and attr values', getFullErrorMessage(err));
             return {attributes, error: err};
         }
 
@@ -68,19 +60,6 @@ export const fetchCustomProfileAttributes = async (serverUrl: string, userId: st
                         // For other types, convert to string
                         value = String(rawValue);
                     }
-                }
-
-                // Debug: Log multiselect field processing
-                if (field.type === 'multiselect') {
-                    logDebug('Processing multiselect field:', {
-                        fieldId: field.id,
-                        fieldName: field.name,
-                        rawValue: attrValues[field.id],
-                        processedValue: value,
-                        valueType: typeof attrValues[field.id],
-                        hasValueInResponse: field.id in attrValues,
-                        isArray: Array.isArray(rawValue),
-                    });
                 }
 
                 if (!filterEmpty || value) {
@@ -124,13 +103,13 @@ export const fetchCustomProfileAttributes = async (serverUrl: string, userId: st
             }
 
         } catch (err) {
-            logDebug('error on fetchCustomProfileAttributes field iteration', getFullErrorMessage(err));
+            logError('error on fetchCustomProfileAttributes field iteration', getFullErrorMessage(err));
             return {attributes, error: err};
         }
 
         return {attributes, error: undefined};
     } catch (error) {
-        logDebug('error on fetchCustomProfileAttributes', getFullErrorMessage(error));
+        logError('error on fetchCustomProfileAttributes', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         return {attributes, error};
     }
@@ -151,7 +130,7 @@ export const updateCustomProfileAttributes = async (serverUrl: string, userId: s
 
         // Convert attributes to the format expected by the API
         Object.entries(attributes).forEach(([id, attr]) => {
-            attributeValues[id] = attr.value;
+            attributeValues[id] = convertValueForServer(attr.value, attr.type);
         });
 
         // Update on the server
@@ -174,7 +153,7 @@ export const updateCustomProfileAttributes = async (serverUrl: string, userId: s
 
         return {success: true, error: undefined};
     } catch (error) {
-        logDebug('error on updateCustomProfileAttributes', getFullErrorMessage(error));
+        logError('error on updateCustomProfileAttributes', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         return {success: false, error};
     }

@@ -49,7 +49,7 @@ const CUSTOM_ATTRS_PREFIX_NAME = `${CUSTOM_ATTRS_PREFIX}.`;
 const EditProfile = ({
     componentId, currentUser, isModal, isTablet,
     lockedFirstName, lockedLastName, lockedNickname, lockedPosition, lockedPicture, enableCustomAttributes,
-    customAttributesSet,
+    customAttributesSet, customFields,
 }: EditProfileProps) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
@@ -307,6 +307,7 @@ const EditProfile = ({
                 userInfo={userInfo}
                 submitUser={submitUser}
                 enableCustomAttributes={enableCustomAttributes}
+                customFields={customFields}
             />
         </KeyboardAwareScrollView>
     ) : null;
