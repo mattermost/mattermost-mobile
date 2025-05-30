@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Button} from '@rneui/base';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, Platform, Text, useWindowDimensions, View} from 'react-native';
@@ -11,6 +10,7 @@ import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-nati
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {sendPasswordResetEmail} from '@actions/remote/session';
+import Button from '@components/button';
 import FloatingTextInput from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
@@ -18,7 +18,6 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useAvoidKeyboard} from '@hooks/device';
 import SecurityManager from '@managers/security_manager';
 import Background from '@screens/background';
-import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {isEmail} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -65,7 +64,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         justifyContent: 'center',
         paddingHorizontal: 24,
     },
-    returnButton: {
+    returnButtonContainer: {
         marginTop: 32,
     },
     subheader: {
@@ -158,17 +157,15 @@ const ForgotPassword = ({componentId, serverUrl, theme}: Props) => {
                     <Text style={styles.successText}>
                         {email}
                     </Text>
-                    <Button
-                        testID='password_send.return'
-                        onPress={onReturn}
-                        buttonStyle={[styles.returnButton, buttonBackgroundStyle(theme, 'lg', 'primary', 'default')]}
-                    >
-                        <FormattedText
-                            id='password_send.return'
-                            defaultMessage='Return to Log In'
-                            style={buttonTextStyle(theme, 'lg', 'primary', 'default')}
+                    <View style={styles.returnButtonContainer}>
+                        <Button
+                            testID='password_send.return'
+                            onPress={onReturn}
+                            size='lg'
+                            theme={theme}
+                            text={formatMessage({id: 'password_send.return', defaultMessage: 'Return to Log In'})}
                         />
-                    </Button>
+                    </View>
                 </View>
             );
         }
@@ -221,19 +218,16 @@ const ForgotPassword = ({componentId, serverUrl, theme}: Props) => {
                             theme={theme}
                             value={email}
                         />
-                        <Button
-                            testID='forgot.password.button'
-                            buttonStyle={[styles.returnButton, buttonBackgroundStyle(theme, 'lg', 'primary', 'default'), error ? styles.error : undefined]}
-                            disabledStyle={[styles.returnButton, buttonBackgroundStyle(theme, 'lg', 'primary', 'disabled'), error ? styles.error : undefined]}
-                            disabled={!email}
-                            onPress={submitResetPassword}
-                        >
-                            <FormattedText
-                                id='password_send.reset'
-                                defaultMessage='Reset my password'
-                                style={buttonTextStyle(theme, 'lg', 'primary', email ? 'default' : 'disabled')}
+                        <View style={styles.returnButtonContainer}>
+                            <Button
+                                testID='forgot.password.button'
+                                disabled={!email}
+                                onPress={submitResetPassword}
+                                size='lg'
+                                text={formatMessage({id: 'password_send.reset', defaultMessage: 'Reset my password'})}
+                                theme={theme}
                             />
-                        </Button>
+                        </View>
                     </View>
                 </View>
             </KeyboardAwareScrollView>
