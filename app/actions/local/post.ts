@@ -15,7 +15,7 @@ import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
 
 import {updateLastPostAt, updateMyChannelLastFetchedAt} from './channel';
 
-import type {Q} from '@nozbe/watermelondb';
+import type {Model, Q} from '@nozbe/watermelondb';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
@@ -173,6 +173,81 @@ export async function markPostAsDeleted(serverUrl: string, post: Post, prepareRe
     }
 }
 
+/**
+ * Prepare the models related to the posts of a channel.
+ * @param {string} serverUrl the server URL for this channel
+ * @param {string} channelId the channel id
+ * @param {Post[]} posts the posts in the channel
+ * @param {string} actionType the action type for posts if it's `NEW`, `RECEIVED_IN_CHANNEL`, `RECEIVED_IN_THREAD`, etc.
+ * @param {string[]} order the order of the posts
+ * @param {string} previousPostId the previous post id
+ * @param {UserProfile[]} authors the authors of the posts
+ * @param {boolean} isCRTEnabled whether CRT is enabled for this channel
+ * @returns {Promise<Model[]>} the models
+ */
+export async function prepareModelsForChannelPosts(
+    serverUrl: string,
+    channelId: string,
+    posts: Post[],
+    actionType: string,
+    order: string[],
+    previousPostId: string,
+    authors: UserProfile[],
+    isCRTEnabled: boolean,
+): Promise<Model[]> {
+    const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+    const models = [];
+
+    const postModels = await operator.handlePosts({
+        actionType,
+        order,
+        posts,
+        previousPostId,
+        prepareRecordsOnly: true,
+    });
+    models.push(...postModels);
+
+    if (authors.length) {
+        const userModels = await operator.handleUsers({users: authors, prepareRecordsOnly: true});
+        models.push(...userModels);
+    }
+
+    const lastFetchedAt = getLastFetchedAtFromPosts(posts);
+    let myChannelModel: MyChannelModel | undefined;
+    if (lastFetchedAt) {
+        const {member} = await updateMyChannelLastFetchedAt(serverUrl, channelId, lastFetchedAt, true);
+        myChannelModel = member;
+    }
+
+    let lastPostAt = 0;
+    for (const post of posts) {
+        const isCrtReply = isCRTEnabled && post.root_id !== '';
+        if (!isCrtReply) {
+            lastPostAt = post.create_at > lastPostAt ? post.create_at : lastPostAt;
+        }
+    }
+
+    if (lastPostAt) {
+        const {member} = await updateLastPostAt(serverUrl, channelId, lastPostAt, true);
+        if (member) {
+            myChannelModel = member;
+        }
+    }
+
+    if (myChannelModel) {
+        models.push(myChannelModel);
+    }
+
+    if (isCRTEnabled) {
+        const threadModels = await prepareThreadsFromReceivedPosts(operator, posts, false);
+        if (threadModels?.length) {
+            models.push(...threadModels);
+        }
+    }
+
+    return models;
+}
+
 export async function storePostsForChannel(
     serverUrl: string, channelId: string, posts: Post[], order: string[], previousPostId: string,
     actionType: string, authors: UserProfile[], prepareRecordsOnly = false,
@@ -182,53 +257,16 @@ export async function storePostsForChannel(
 
         const isCRTEnabled = await getIsCRTEnabled(database);
 
-        const models = [];
-        const postModels = await operator.handlePosts({
+        const models = await prepareModelsForChannelPosts(
+            serverUrl,
+            channelId,
+            posts,
             actionType,
             order,
-            posts,
             previousPostId,
-            prepareRecordsOnly: true,
-        });
-        models.push(...postModels);
-
-        if (authors.length) {
-            const userModels = await operator.handleUsers({users: authors, prepareRecordsOnly: true});
-            models.push(...userModels);
-        }
-
-        const lastFetchedAt = getLastFetchedAtFromPosts(posts);
-        let myChannelModel: MyChannelModel | undefined;
-        if (lastFetchedAt) {
-            const {member} = await updateMyChannelLastFetchedAt(serverUrl, channelId, lastFetchedAt, true);
-            myChannelModel = member;
-        }
-
-        let lastPostAt = 0;
-        for (const post of posts) {
-            const isCrtReply = isCRTEnabled && post.root_id !== '';
-            if (!isCrtReply) {
-                lastPostAt = post.create_at > lastPostAt ? post.create_at : lastPostAt;
-            }
-        }
-
-        if (lastPostAt) {
-            const {member} = await updateLastPostAt(serverUrl, channelId, lastPostAt, true);
-            if (member) {
-                myChannelModel = member;
-            }
-        }
-
-        if (myChannelModel) {
-            models.push(myChannelModel);
-        }
-
-        if (isCRTEnabled) {
-            const threadModels = await prepareThreadsFromReceivedPosts(operator, posts, false);
-            if (threadModels?.length) {
-                models.push(...threadModels);
-            }
-        }
+            authors,
+            isCRTEnabled,
+        );
 
         if (models.length && !prepareRecordsOnly) {
             await operator.batchRecords(models, 'storePostsForChannel');

@@ -295,7 +295,7 @@ export async function restDeferredAppEntryActions(
                 if (isCRTEnabled && initialTeamId) {
                     await syncTeamThreads(serverUrl, initialTeamId, {groupLabel: requestLabel});
                 }
-                fetchPostsForUnreadChannels(serverUrl, mySortedTeams, chData.channels, chData.memberships, initialChannelId, isCRTEnabled, false, requestLabel);
+                fetchPostsForUnreadChannels(serverUrl, mySortedTeams, chData.channels, chData.memberships, initialChannelId, isCRTEnabled, requestLabel);
             }
 
             if (myOtherSortedTeams.length) {
