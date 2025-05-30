@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, Platform, Text, View} from 'react-native';
 
@@ -19,6 +19,7 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {usePreventDoubleTap} from '@hooks/utils';
+import {fetchPlaybookRunsForChannel} from '@playbooks/actions/remote/runs';
 import {goToPlaybookRun, goToPlaybookRuns} from '@playbooks/screens/navigation';
 import {BOTTOM_SHEET_ANDROID_OFFSET} from '@screens/bottom_sheet';
 import ChannelBanner from '@screens/channel/header/channel_banner';
@@ -295,6 +296,10 @@ const ChannelHeader = ({
 
         return undefined;
     }, [memberCount, customStatus, isCustomStatusExpired, theme.sidebarHeaderTextColor, styles.customStatusContainer, styles.customStatusEmoji, styles.customStatusText, styles.subtitle, isCustomStatusEnabled]);
+
+    useEffect(() => {
+        fetchPlaybookRunsForChannel(serverUrl, channelId);
+    }, [channelId, serverUrl]);
 
     const showBookmarkBar = isBookmarksEnabled && hasBookmarks && shouldRenderBookmarks;
 
