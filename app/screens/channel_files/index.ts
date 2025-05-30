@@ -4,7 +4,8 @@
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 
 import {observeChannel} from '@queries/servers/channel';
-import {observeCanDownloadFiles, observeConfigBooleanValue} from '@queries/servers/system';
+import {observeCanDownloadFiles, observeEnableSecureFilePreview} from '@queries/servers/security';
+import {observeConfigBooleanValue} from '@queries/servers/system';
 
 import ChannelFiles from './channel_files';
 
@@ -19,6 +20,7 @@ const enhance = withObservables(['channelId'], ({channelId, database}: Props) =>
     return {
         channel,
         canDownloadFiles: observeCanDownloadFiles(database),
+        enableSecureFilePreview: observeEnableSecureFilePreview(database),
         publicLinkEnabled: observeConfigBooleanValue(database, 'EnablePublicLink'),
     };
 });

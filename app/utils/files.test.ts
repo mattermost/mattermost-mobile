@@ -50,10 +50,14 @@ describe('Files utils', () => {
     };
 
     test('getNumberFileMenuOptions', () => {
-        expect(getNumberFileMenuOptions(false, false)).toBe(1);
-        expect(getNumberFileMenuOptions(true, false)).toBe(2);
-        expect(getNumberFileMenuOptions(false, true)).toBe(2);
-        expect(getNumberFileMenuOptions(true, true)).toBe(3);
+        expect(getNumberFileMenuOptions(false, false, false)).toBe(1);
+        expect(getNumberFileMenuOptions(true, false, false)).toBe(2);
+        expect(getNumberFileMenuOptions(false, false, true)).toBe(2);
+        expect(getNumberFileMenuOptions(true, false, true)).toBe(3);
+
+        expect(getNumberFileMenuOptions(true, true, true)).toBe(1);
+        expect(getNumberFileMenuOptions(false, true, true)).toBe(1);
+        expect(getNumberFileMenuOptions(false, true, false)).toBe(1);
     });
 
     test('getChannelNamesWithID', () => {

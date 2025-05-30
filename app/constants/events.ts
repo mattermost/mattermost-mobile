@@ -8,6 +8,7 @@ export default keyMirror({
     CHANNEL_ARCHIVED: null,
     CHANNEL_SWITCH: null,
     CLOSE_BOTTOM_SHEET: null,
+    CLOSE_GALLERY: null,
     CONFIG_CHANGED: null,
     FREEZE_SCREEN: null,
     GALLERY_ACTIONS: null,

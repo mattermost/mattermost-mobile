@@ -18,6 +18,7 @@ import type FileModel from '@typings/database/models/servers/file';
 type Props = {
     bookmark: ChannelBookmarkModel;
     canDownloadFiles: boolean;
+    enableSecureFilePreview: boolean;
     file: FileModel;
     onLongPress: () => void;
 }
@@ -33,10 +34,10 @@ const styles = StyleSheet.create({
     },
 });
 
-const BookmarkDocument = ({bookmark, canDownloadFiles, file, onLongPress}: Props) => {
+const BookmarkDocument = ({bookmark, canDownloadFiles, enableSecureFilePreview, file, onLongPress}: Props) => {
     const document = useRef<DocumentRef>(null);
     const theme = useTheme();
-    const {progress, toggleDownloadAndPreview} = useDownloadFileAndPreview();
+    const {progress, toggleDownloadAndPreview} = useDownloadFileAndPreview(enableSecureFilePreview);
 
     const handlePress = useCallback(async () => {
         if (document.current) {
@@ -47,6 +48,7 @@ const BookmarkDocument = ({bookmark, canDownloadFiles, file, onLongPress}: Props
     return (
         <Document
             canDownloadFiles={canDownloadFiles}
+            enableSecureFilePreview={enableSecureFilePreview}
             file={file.toFileInfo(bookmark.ownerId)}
             downloadAndPreviewFile={toggleDownloadAndPreview}
             ref={document}
