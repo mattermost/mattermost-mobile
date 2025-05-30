@@ -329,7 +329,7 @@ describe('*** PLAYBOOK_CHECKLIST_ITEM Prepare Records Test ***', () => {
                     checklist_id: 'checklist_1',
                     title: 'Checklist Item 1',
                     order: 1,
-                    state: 'Open',
+                    state: '',
                     state_modified: 1620000000000,
                     assignee_id: 'user_1',
                     assignee_modified: 1620000001000,
@@ -360,7 +360,7 @@ describe('*** PLAYBOOK_CHECKLIST_ITEM Prepare Records Test ***', () => {
                 record.checklistId = 'checklist_2';
                 record.title = 'Existing Checklist Item';
                 record.order = 1;
-                record.state = 'Open';
+                record.state = '';
                 record.stateModified = 1620000000000;
                 record.assigneeId = 'user_2';
                 record.assigneeModified = 1620000001000;
@@ -383,7 +383,7 @@ describe('*** PLAYBOOK_CHECKLIST_ITEM Prepare Records Test ***', () => {
                     checklist_id: 'checklist_2',
                     title: 'Updated Checklist Item',
                     order: 2,
-                    state: 'Closed',
+                    state: 'closed',
                     state_modified: 1620000004000,
                     assignee_id: 'user_3',
                     assignee_modified: 1620000005000,
@@ -423,7 +423,7 @@ describe('*** PLAYBOOK_CHECKLIST_ITEM Prepare Records Test ***', () => {
                         checklist_id: 'checklist_3',
                         title: 'Invalid Checklist Item',
                         order: 1,
-                        state: 'Open',
+                        state: '',
                         state_modified: 1620000000000,
                         assignee_id: 'user_4',
                         assignee_modified: 1620000001000,

@@ -14,7 +14,7 @@ type PlaybookChecklistItemWithChecklist = {
     checklist_id: string;
     title: string;
     description: string;
-    state: string;
+    state: ChecklistItemState;
     state_modified: number;
     assignee_id: string;
     assignee_modified: number;

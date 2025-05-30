@@ -44,7 +44,7 @@ export default class PlaybookChecklistItemModel extends Model implements Playboo
     @field('order') order!: number;
 
     /** state : The state of the checklist item */
-    @field('state') state!: string;
+    @field('state') state!: ChecklistItemState;
 
     /** state_modified : The timestamp when the checklist item was modified */
     @field('state_modified') stateModified!: number;
