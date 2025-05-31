@@ -1,0 +1,205 @@
+---
+name: build-fork-pr
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to build'
+        required: true
+        default: 'main'
+      platform:
+        description: 'Platform to build'
+        required: true
+        type: choice
+        default: 'android'
+        options:
+          - ios
+          - android
+
+  pull_request:
+    types:
+      - labeled
+
+# Limit permissions of the GITHUB_TOKEN
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  NODE_VERSION: 22.14.0
+  TERM: xterm
+  IS_FORK: ${{ github.event.pull_request.head.repo.fork == true }}
+
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+    if: ${{ (github.event.label.name == 'Build Apps for PR' || github.event.label.name == 'Build App for iOS' || github.event.label.name == 'Build App for Android' || (github.event_name == 'workflow_dispatch' && (github.event.inputs.platform == 'ios' || github.event.inputs.platform == 'android'))) && github.event.pull_request.head.repo.fork == true }}
+    steps:
+      - name: ci/checkout-repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: ci/test
+        uses: ./.github/actions/test
+
+  build-ios-fork-pr:
+    runs-on: macos-14-large
+    if: ${{ (github.event.label.name == 'Build Apps for PR' || github.event.label.name == 'Build App for iOS' || (github.event_name == 'workflow_dispatch' && github.event.inputs.platform == 'ios')) && github.event.pull_request.head.repo.fork == true }}
+    needs:
+      - test
+    steps:
+      - name: ci/checkout-repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: ci/prepare-ios-build
+        uses: ./.github/actions/prepare-ios-build
+
+      - name: ci/setup-fork-ios-build
+        run: |
+          echo "Using debug code signing for fork build"
+          echo "CODE_SIGN_IDENTITY=" >> $GITHUB_ENV
+          echo "CODE_SIGNING_REQUIRED=NO" >> $GITHUB_ENV
+
+      - name: ci/build-ios-fork-pr
+        env:
+          BRANCH_TO_BUILD: "${{ github.event.pull_request.head.ref }}"
+          AWS_ACCESS_KEY_ID: "${{ secrets.FORK_AWS_ACCESS_KEY_ID }}"
+          AWS_SECRET_ACCESS_KEY: "${{ secrets.FORK_AWS_SECRET_ACCESS_KEY }}"
+          MATTERMOST_WEBHOOK_URL: "${{ secrets.FORK_MATTERMOST_WEBHOOK_URL }}"
+          AWS_BUCKET_NAME: "${{ secrets.FORK_AWS_BUCKET_NAME }}"
+          AWS_REGION: "${{ secrets.FORK_AWS_REGION }}"
+          AWS_FOLDER_NAME: "mobile-fork-builds"
+          BUILD_PR: "true"
+          IOS_BUILD_EXPORT_METHOD: "development"
+        run: |
+          bundle exec fastlane ios build --env ios.fork
+        working-directory: ./fastlane
+
+      - name: ci/upload-ios-fork-pr-build
+        id: ci-upload-ios-fork-pr-build
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ios-fork-build-pr-${{ github.run_id }}
+          path: "*.ipa"
+
+      - name: ci/post-artifact-link-to-pr
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const artifactId = '${{ steps.ci-upload-ios-fork-pr-build.outputs.artifact-id }}';
+            if (!artifactId) {
+              console.log('No iOS artifact ID found');
+              return;
+            }
+
+            // Get artifact URL for download
+            const artifactUrl = `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${artifactId}`;
+            
+            // Get S3 install URL if available
+            let installUrl = '';
+            let s3Message = '';
+            
+            if ('${{ secrets.FORK_AWS_BUCKET_NAME }}') {
+              const bucketName = '${{ secrets.FORK_AWS_BUCKET_NAME }}';
+              const folderName = 'mobile-fork-builds';
+              const branch = '${{ github.event.pull_request.head.ref }}';
+              const s3Folder = `${folderName}/${branch}`;
+              const plistFile = 'Mattermost_Fork.plist';
+              
+              installUrl = `itms-services://?action=download-manifest&url=https://${bucketName}/${s3Folder}/${plistFile}`;
+              s3Message = `\n\nAlternatively, if S3 upload was successful, you can install directly from:\n- [Install from S3](${installUrl})`;
+            }
+            
+            const message = `### iOS Fork PR Build\n\nThe iOS PR build from your forked repository is available for:\n- [Download](${artifactUrl})\n- [Install](${artifactUrl})${s3Message}\n\nCommit: ${{ github.event.pull_request.head.sha }}\n\n**Note:** This build is signed with debug credentials for testing purposes only.`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: message
+            });
+
+  build-android-fork-pr:
+    runs-on: ubuntu-22.04
+    if: ${{ (github.event.label.name == 'Build Apps for PR' || github.event.label.name == 'Build App for Android' || (github.event_name == 'workflow_dispatch' && github.event.inputs.platform == 'android')) && github.event.pull_request.head.repo.fork == true }}
+    needs:
+      - test
+    steps:
+      - name: ci/checkout-repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: ci/prepare-android-build
+        uses: ./.github/actions/prepare-android-build
+
+      - name: ci/setup-fork-android-build
+        run: |
+          # Generate debug keystore if missing
+          debug_keystore_path="android/app/debug.keystore"
+          if [ ! -f "$debug_keystore_path" ]; then
+            mkdir -p android/app
+            keytool -genkey -v -keystore $debug_keystore_path \
+              -alias androiddebugkey -storepass android -keypass android \
+              -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=, OU=, O=, L=, S=, C="
+          fi
+
+      - name: ci/build-android-fork-pr
+        env:
+          BRANCH_TO_BUILD: "${{ github.event.pull_request.head.ref }}"
+          AWS_ACCESS_KEY_ID: "${{ secrets.FORK_AWS_ACCESS_KEY_ID }}"
+          AWS_SECRET_ACCESS_KEY: "${{ secrets.FORK_AWS_SECRET_ACCESS_KEY }}"
+          MATTERMOST_WEBHOOK_URL: "${{ secrets.FORK_MATTERMOST_WEBHOOK_URL }}"
+          AWS_BUCKET_NAME: "${{ secrets.FORK_AWS_BUCKET_NAME }}"
+          AWS_REGION: "${{ secrets.FORK_AWS_REGION }}"
+          AWS_FOLDER_NAME: "mobile-fork-builds"
+          BUILD_PR: "true"
+        run: bundle exec fastlane android build --env android.fork
+        working-directory: ./fastlane
+
+      - name: ci/upload-android-fork-pr-build
+        id: ci-upload-android-fork-pr-build
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: android-fork-build-pr-${{ github.run_id }}
+          path: "*.apk"
+
+      - name: ci/post-artifact-link-to-pr
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const artifactId = '${{ steps.ci-upload-android-fork-pr-build.outputs.artifact-id }}';
+            if (!artifactId) {
+              console.log('No Android artifact ID found');
+              return;
+            }
+
+            // Get artifact URL for download
+            const artifactUrl = `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${artifactId}`;
+            
+            // Get S3 install URL if available
+            let s3Message = '';
+            
+            if ('${{ secrets.FORK_AWS_BUCKET_NAME }}') {
+              const bucketName = '${{ secrets.FORK_AWS_BUCKET_NAME }}';
+              const folderName = 'mobile-fork-builds';
+              const branch = '${{ github.event.pull_request.head.ref }}';
+              const s3Folder = `${folderName}/${branch}`;
+              const apkFile = 'Mattermost_Fork.apk';
+              
+              const s3Url = `https://${bucketName}/${s3Folder}/${apkFile}`;
+              s3Message = `\n\nAlternatively, if S3 upload was successful, you can install directly from:\n- [Install from S3](${s3Url})`;
+            }
+            
+            const message = `### Android Fork PR Build\n\nThe Android PR build from your forked repository is available for:\n- [Download](${artifactUrl})\n- [Install](${artifactUrl})${s3Message}\n\nCommit: ${{ github.event.pull_request.head.sha }}\n\n**Note:** This build is signed with debug credentials for testing purposes only.`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: message
+            });
