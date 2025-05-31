@@ -13,7 +13,7 @@ import {
     VIEWPORT_IMAGE_REPLY_OFFSET,
 } from '@constants/image';
 
-export const calculateDimensions = (height?: number, width?: number, viewPortWidth = 0, viewPortHeight = 0) => {
+export const calculateDimensions = (height?: number, width?: number, viewPortWidth = 0, viewPortHeight = 0, matchViewPort?: boolean) => {
     'worklet';
 
     if (!height || !width) {
@@ -46,6 +46,22 @@ export const calculateDimensions = (height?: number, width?: number, viewPortWid
     } else if (viewPortHeight && imageHeight > viewPortHeight) {
         imageHeight = viewPortHeight;
         imageWidth = imageHeight * heightRatio;
+    }
+
+    if (
+        matchViewPort &&
+        width < viewPortWidth &&
+        height < viewPortHeight
+    ) {
+        if (height > width) {
+            // Portrait: fit to viewport height
+            imageHeight = viewPortHeight;
+            imageWidth = imageHeight * heightRatio;
+        } else {
+            // Landscape or square: fit to viewport width
+            imageWidth = viewPortWidth;
+            imageHeight = imageWidth * ratio;
+        }
     }
 
     return {

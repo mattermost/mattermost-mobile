@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {useEffect, useLayoutEffect} from 'react';
-import Animated, {makeMutable, runOnUI, type AnimatedRef} from 'react-native-reanimated';
+import {makeMutable, runOnUI, type AnimatedRef, type SharedValue} from 'react-native-reanimated';
 
 import type {GalleryManagerSharedValues} from '@typings/screens/gallery';
 
@@ -24,7 +24,7 @@ class Gallery {
     private init = false;
     private timeout: NodeJS.Timeout | null = null;
 
-    public refsByIndexSV: Animated.SharedValue<GalleryManagerItems> = makeMutable({});
+    public refsByIndexSV: SharedValue<GalleryManagerItems> = makeMutable({});
 
     public sharedValues: GalleryManagerSharedValues = {
         width: makeMutable(0),
@@ -35,6 +35,7 @@ class Gallery {
         activeIndex: makeMutable(0),
         targetWidth: makeMutable(0),
         targetHeight: makeMutable(0),
+        scale: makeMutable(1),
     };
 
     public items = new Map<number, GalleryManagerItem>();
