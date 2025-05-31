@@ -84,6 +84,8 @@ export default class ClientTracking {
     getRequestHeaders(requestMethod: string) {
         const headers = {...this.requestHeaders};
 
+        headers[ClientConstants.HEADER_ACCEPT]= 'application/json';
+
         if (this.csrfToken && requestMethod.toLowerCase() !== 'get') {
             headers[ClientConstants.HEADER_X_CSRF_TOKEN] = this.csrfToken;
         }
