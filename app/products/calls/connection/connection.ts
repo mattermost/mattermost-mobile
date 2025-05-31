@@ -458,7 +458,7 @@ export async function newConnection(
     });
 
     const waitForPeerConnection = () => {
-        const waitForReadyImpl = (callback: () => void, fail: (reason: string) => void, timeout: number) => {
+        const waitForReadyImpl = (callback: (sessionId: string) => void, fail: (reason: string) => void, timeout: number) => {
             if (timeout <= 0) {
                 fail('timed out waiting for peer connection');
                 return;
@@ -466,14 +466,14 @@ export async function newConnection(
             setTimeout(() => {
                 if (peer?.connected) {
                     rtcMonitor?.start();
-                    callback();
+                    callback(ws.sessionID);
                 } else {
                     waitForReadyImpl(callback, fail, timeout - 200);
                 }
             }, 200);
         };
 
-        return new Promise<void>((resolve, reject) => {
+        return new Promise<string>((resolve, reject) => {
             waitForReadyImpl(resolve, reject, peerConnectTimeout);
         });
     };
