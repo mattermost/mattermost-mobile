@@ -190,7 +190,6 @@ const PdfPassword = forwardRef<PasswordRef, Props>(({isBlocked, maxAttempts, rem
                 accessibilityLabel={intl.formatMessage(messages.unlock)}
                 accessibilityHint={intl.formatMessage(messages.enter_password)}
                 accessibilityRole='button'
-                buttonType={disabled ? 'disabled' : 'default'}
                 disabled={disabled}
                 emphasis={'primary'}
                 hitSlop={hitSlop}
