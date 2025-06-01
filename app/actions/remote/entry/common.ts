@@ -365,7 +365,6 @@ export async function restDeferredAppEntryActions(
                 // teams or channels until we have fetched all the data for the team, which now is later in the code
                 prepareEntryModelsForDeletion({operator, teamData, chData: combinedChannelsData});
 
-                console.log('doSomethingElseLater', combinedChannelsData?.channels?.length, combinedChannelsData.memberships?.length, initialTeamId);
                 if (combinedChannelsData?.channels?.length && combinedChannelsData.memberships?.length && initialTeamId) {
                     if (isCRTEnabled && initialTeamId) {
                         await syncTeamThreads(serverUrl, initialTeamId, {groupLabel: requestLabel});
