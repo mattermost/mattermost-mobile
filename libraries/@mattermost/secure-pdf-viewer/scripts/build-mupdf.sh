@@ -178,9 +178,7 @@ MuPDF Build Information
 ======================
 Version: $MUPDF_VERSION
 Build Date: $(date)
-NDK Path: $NDK_ROOT
-Java Home: $JAVA_HOME
-Build Host: $(uname -a)
+NDK Path: $NDK_VERSION
 
 Files Generated:
 - JAR: mupdf-$MUPDF_VERSION.jar
