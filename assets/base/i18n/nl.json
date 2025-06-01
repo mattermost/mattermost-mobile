@@ -464,6 +464,7 @@
   "load_channels_error.title": "Kon {teamDisplayName} niet laden",
   "load_teams_error.message": "Er was een probleem met het laden van de inhoud voor deze server.",
   "load_teams_error.title": "Kon{serverName} niet laden",
+  "loading_error.retry": "Opnieuw proberen",
   "login.email": "E-mail",
   "login.forgot": "Wachtwoord vergeten?",
   "login.invalid_credentials": "De combinatie van e-mail en wachtwoord is foutief",
