@@ -32,6 +32,7 @@ import {
     fetchSavedPosts,
     fetchPinnedPosts,
 } from './post';
+import * as PostAuxilaryFunctions from './post.auxiliary';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 
@@ -132,7 +133,6 @@ jest.mock('@actions/local/reactions', () => {
 });
 
 beforeAll(() => {
-    // eslint-disable-next-line
     // @ts-ignore
     NetworkManager.getClient = () => mockClient;
 });
@@ -578,13 +578,13 @@ describe('get posts', () => {
     });
 
     it('fetchPostsForUnreadChannels - base case', async () => {
+        const spyOnProcessChannelPostsByTeam = jest.spyOn(PostAuxilaryFunctions, 'processChannelPostsByTeam');
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
         await operator.handleMyChannel({channels: [channel1], myChannels: [channelMember1], prepareRecordsOnly: false});
 
-        const result = await fetchPostsForUnreadChannels(serverUrl, [{id: teamId}] as Team[], [channel1, {...channel1, id: 'channelid2', total_msg_count: 10}], [{...channelMember1, msg_count: 5}, {...channelMember1, channel_id: 'channelid2', msg_count: 10}], 'testid');
-        expect(result).toBeDefined();
-        expect(result?.length).toBe(1); // Only returns the response for the channel with unread messages
-        expect(result?.[0].posts?.[0].channel_id).toBe(channel1.id);
+        await fetchPostsForUnreadChannels(serverUrl, [{id: teamId}] as Team[], [channel1, {...channel1, id: 'channelid2', total_msg_count: 10}], [{...channelMember1, msg_count: 5}, {...channelMember1, channel_id: 'channelid2', msg_count: 10}], 'testid');
+
+        expect(spyOnProcessChannelPostsByTeam).toHaveBeenCalledWith(serverUrl, ['channelid1'], false, undefined, undefined);
     });
 
     it('fetchPosts - handle database not found', async () => {
