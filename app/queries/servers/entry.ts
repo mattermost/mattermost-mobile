@@ -153,19 +153,15 @@ export async function processEntryModels({
     prefData,
     meData,
     isCRTEnabled,
-    isDelete = true,
 }: PrepareModelsArgs): Promise<Model[]> {
     const modelPromises = await prepareEntryModels({operator, teamData, chData, prefData, meData, isCRTEnabled});
 
     let modelsToDelete: Model[][] = [];
-    if (isDelete) {
-        const modelsToDeletePromises = await prepareEntryModelsForDeletion({operator, teamData, chData});
-        modelsToDelete = await Promise.all(modelsToDeletePromises);
-    }
+    const modelsToDeletePromises = await prepareEntryModelsForDeletion({operator, teamData, chData});
+    modelsToDelete = await Promise.all(modelsToDeletePromises);
+
     const models = await Promise.all(modelPromises);
 
-    if (modelsToDelete.length) {
-        models.push(...modelsToDelete);
-    }
+    models.push(...modelsToDelete);
     return models.flat();
 }
