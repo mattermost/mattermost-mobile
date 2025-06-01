@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import DatabaseManager from '@database/manager';
-import {queryPostsById} from '@queries/servers/post';
+import {queryPostsById, queryPostsChunk} from '@queries/servers/post';
 import TestHelper from '@test/test_helper';
 
 import {fetchPostAuthors, fetchPostsForChannel} from './post';
@@ -37,13 +37,13 @@ describe('post.auxilary', () => {
 
     it('should batch record once for multiple posts', async () => {
         (fetchPostsForChannel as jest.Mock).mockResolvedValue({
-            posts: [post1, post2],
+            posts: Array.from({length: 20}, (_, index) => TestHelper.fakePost({channel_id: 'channelid1', id: `postid${index}`, user_id: user1.id})),
         });
         await processChannelPostsByTeam(serverUrl, ['channelid1']);
         expect(spyOnBatchRecords).toHaveBeenCalledTimes(1);
 
-        const posts = await queryPostsById(operator.database, ['postid1', 'postid2']);
-        expect(posts.length).toBe(2);
+        const postsByChannel = await queryPostsChunk(operator.database, 'channelid1', 0, Date.now());
+        expect(postsByChannel.length).toBe(20);
     });
 
     it('should fetch post authors', async () => {
