@@ -370,7 +370,7 @@ export async function restDeferredAppEntryActions(
                         await syncTeamThreads(serverUrl, initialTeamId, {groupLabel: requestLabel});
                     }
 
-                    fetchPostsForUnreadChannels(serverUrl, mySortedTeams, combinedChannelsData.channels, combinedChannelsData.memberships, initialChannelId, isCRTEnabled, false, requestLabel);
+                    fetchPostsForUnreadChannels(serverUrl, mySortedTeams, combinedChannelsData.channels, combinedChannelsData.memberships, initialChannelId, isCRTEnabled, requestLabel);
                 }
 
                 if (myOtherSortedTeams.length) {
