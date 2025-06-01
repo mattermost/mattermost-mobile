@@ -1,0 +1,15 @@
+MuPDF Build Information
+======================
+Version: 1.26.1
+Build Date: Sun Jun  1 21:49:40 PST 2025
+NDK Path: /Users/enahum/Library/Android/sdk/ndk/27.1.12297006
+Java Home: /opt/homebrew/opt/openjdk@17
+Build Host: Darwin Elias-MacBook-Pro.local 24.4.0 Darwin Kernel Version 24.4.0: Fri Apr 11 18:33:39 PDT 2025; root:xnu-11417.101.15~117/RELEASE_ARM64_T6020 arm64
+
+Files Generated:
+- JAR: mupdf-1.26.1.jar
+- Native libs in: src/main/jniLibs/
+
+Integration:
+Add to app/build.gradle dependencies:
+    implementation files('libs/mupdf-1.26.1.jar')
