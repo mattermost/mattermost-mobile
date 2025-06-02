@@ -68,6 +68,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
     const thumbOpacity = useSharedValue(0);
     const isDraggingShared = useSharedValue(false);
     const localProgress = useSharedValue(progress);
+    const seekTimestamp = useSharedValue(0);
 
     React.useEffect(() => {
         runOnUI(() => {
@@ -106,14 +107,26 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
             dragPosition.value = Math.max(0, Math.min(progressWidth.value, event.x));
             const newProgress = dragPosition.value / progressWidth.value;
             localProgress.value = newProgress;
-            const newTime = newProgress * duration;
-            runOnJS(onSeek)(newTime);
+
+            // Throttle the actual seeking to avoid too many calls
+            const now = Date.now();
+            const lastSeekTime = seekTimestamp.value;
+            if (now - lastSeekTime > 100) {
+                seekTimestamp.value = now;
+                const newTime = newProgress * duration;
+                runOnJS(onSeek)(newTime);
+            }
         }).
         onEnd(() => {
+            // Always seek to final position
+            const finalProgress = dragPosition.value / progressWidth.value;
+            const finalTime = finalProgress * duration;
+            runOnJS(onSeek)(finalTime);
             runOnJS(stopDragging)();
         }).
         onFinalize(() => {
             // Ensure we stop dragging even if gesture is cancelled
+            seekTimestamp.value = 0; // Reset timestamp
             runOnJS(stopDragging)();
         });
 
