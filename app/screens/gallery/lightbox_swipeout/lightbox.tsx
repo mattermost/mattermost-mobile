@@ -183,7 +183,8 @@ export default function Lightbox({
                             })
                         ) : (
                             <AnimatedImage
-                                source={imageSource}
+                                placeholder={imageSource}
+                                placeholderContentFit='cover'
                                 style={itemStyles}
                                 autoplay={false}
                             />

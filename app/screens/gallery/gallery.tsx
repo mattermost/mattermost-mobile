@@ -152,9 +152,9 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({
         if (item.type === 'video' && item.posterUri) {
             return (
                 <AnimatedImage
-                    source={{uri: item.posterUri}}
-                    style={[info.itemStyles]}
-                    contentFit='cover'
+                    placeholder={{uri: item.posterUri}}
+                    style={info.itemStyles}
+                    placeholderContentFit='cover'
                 />
             );
         }
