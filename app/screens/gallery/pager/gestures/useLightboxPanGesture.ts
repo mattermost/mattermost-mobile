@@ -25,7 +25,7 @@ export default function useLightboxPanGesture() {
         onSwipeFailure,
     } = useLightboxSharedValues();
 
-    const {isActive} = usePagerSharedValues();
+    const {isActive, isPagerInProgress} = usePagerSharedValues();
     const isGestureActive = useSharedValue(false);
 
     const shouldAllowPanGesture = (evt: GestureUpdateEvent<PanGestureHandlerEventPayload>) => {
@@ -35,7 +35,7 @@ export default function useLightboxPanGesture() {
             evt.numberOfPointers <= 1 && isActive.value &&
             Math.abs(evt.velocityX) < Math.abs(evt.velocityY) &&
             Math.abs(evt.translationY) > Math.abs(evt.translationX) &&
-            animationProgress.value === 1
+            animationProgress.value === 1 && !isPagerInProgress.value
         );
 
         if (shouldHandle) {
