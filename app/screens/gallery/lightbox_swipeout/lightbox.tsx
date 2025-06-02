@@ -6,12 +6,14 @@
 
 import {Image, type ImageSource} from 'expo-image';
 import React, {useEffect, useMemo, useState} from 'react';
-import {type ImageStyle, StyleSheet, View, type ViewStyle} from 'react-native';
+import {type ImageStyle, Platform, StyleSheet, View, type ViewStyle} from 'react-native';
 import Animated, {
     interpolate, runOnJS, runOnUI,
     useAnimatedStyle, withTiming,
 } from 'react-native-reanimated';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import {useDefaultHeaderHeight} from '@hooks/header';
 import {calculateDimensions} from '@utils/images';
 
 import {pagerTimingConfig} from '../animation_config/timing';
@@ -63,6 +65,10 @@ export default function Lightbox({
         targetDimensions,
     } = useLightboxSharedValues();
     const [renderChildren, setRenderChildren] = useState<boolean>(false);
+    const childLayoutTimeoutRef = React.useRef<NodeJS.Timeout>();
+    const insets = useSafeAreaInsets();
+    const headerHeight = useDefaultHeaderHeight() - insets.top;
+    const targetHeightDiff = Platform.OS === 'ios' ? 0 : (headerHeight / 2);
 
     const animateOnMount = () => {
         'worklet';
@@ -81,6 +87,13 @@ export default function Lightbox({
 
     useEffect(() => {
         runOnUI(animateOnMount)();
+
+        return () => {
+            if (childLayoutTimeoutRef.current) {
+                clearTimeout(childLayoutTimeoutRef.current);
+                childLayoutTimeoutRef.current = undefined;
+            }
+        };
     }, []);
 
     const {width: tw, height: th} = useMemo(() => calculateDimensions(
@@ -96,8 +109,8 @@ export default function Lightbox({
             return;
         }
 
-        setTimeout(() => {
-            imageOpacity.value = 0;
+        childLayoutTimeoutRef.current = setTimeout(() => {
+            imageOpacity.value = withTiming(0, {duration: 300});
         }, 300);
     }
 
@@ -126,8 +139,7 @@ export default function Lightbox({
             interpolate(animationProgress.value, [0, 1], range);
 
         const targetX = (targetDimensions.width - tw) / 2;
-        const targetY =
-            ((targetDimensions.height) - th) / 2;
+        const targetY = ((targetDimensions.height - th) / 2) - targetHeightDiff;
 
         const top =
             translateY.value +
