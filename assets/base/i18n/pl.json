@@ -464,6 +464,7 @@
   "load_channels_error.title": "Nie można załadować {teamDisplayName}",
   "load_teams_error.message": "Wystąpił problem z załadowaniem treści dla tego serwera.",
   "load_teams_error.title": "Nie można załadować {serverName}",
+  "loading_error.retry": "Ponów",
   "login.email": "E-mail",
   "login.forgot": "Zapomniałeś hasła?",
   "login.invalid_credentials": "Kombinacja adresu e-mail i hasła jest nieprawidłowa",
