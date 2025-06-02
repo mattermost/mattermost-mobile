@@ -464,6 +464,7 @@
   "load_channels_error.title": "Konnte nicht geladen werden {teamDisplayName}",
   "load_teams_error.message": "Es gab ein Problem beim Laden von Inhalten für diesen Server.",
   "load_teams_error.title": "Konnte nicht geladen werden {serverName}",
+  "loading_error.retry": "Erneut versuchen",
   "login.email": "E-Mail",
   "login.forgot": "Passwort vergessen?",
   "login.invalid_credentials": "Die Kombination aus E-Mail und Passwort ist falsch",
