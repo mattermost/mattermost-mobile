@@ -263,16 +263,16 @@ export async function restDeferredAppEntryActions(
     const channelsToFetchProfiles = new Set<Channel>(directChannels);
     const requestLabel: RequestGroupLabel|undefined = groupLabel ? `${groupLabel} Deferred` : undefined;
 
+    // sidebar DM & GM profiles
+    if (channelsToFetchProfiles.size) {
+        const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], config.LockTeammateNameDisplay, config.TeammateNameDisplay, license);
+        fetchMissingDirectChannelsInfo(serverUrl, Array.from(channelsToFetchProfiles), currentUserLocale, teammateDisplayNameSetting, currentUserId, false, requestLabel);
+    }
+
+    updateAllUsersSince(serverUrl, since, false, requestLabel);
+    updateCanJoinTeams(serverUrl);
+
     setTimeout(async () => {
-        // sidebar DM & GM profiles
-        if (channelsToFetchProfiles.size) {
-            const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], config.LockTeammateNameDisplay, config.TeammateNameDisplay, license);
-            fetchMissingDirectChannelsInfo(serverUrl, Array.from(channelsToFetchProfiles), currentUserLocale, teammateDisplayNameSetting, currentUserId, false, requestLabel);
-        }
-
-        updateAllUsersSince(serverUrl, since, false, requestLabel);
-        updateCanJoinTeams(serverUrl);
-
         let mySortedTeams: Team[] = [];
 
         if (teamData.teams?.length && teamData.memberships?.length) {
@@ -345,15 +345,20 @@ export async function restDeferredAppEntryActions(
                     });
 
                     if (!teamQueue.length) {
-                        // do something else later
-                        doSomethingElseLater();
+                        // let's remove duplicates from combinedChannelsData for all channels, memberships, and categories
+                        const uniqueChannelsData: MyChannelsRequest = {
+                            channels: Array.from(new Map(combinedChannelsData.channels?.map((c) => [c.id, c])).values()),
+                            memberships: Array.from(new Map(combinedChannelsData.memberships?.map((m) => [m.channel_id, m])).values()),
+                            categories: Array.from(new Map(combinedChannelsData.categories?.map((c) => [c.id, c])).values()),
+                        };
+                        internalSecondPhaseDeferredProcesses(uniqueChannelsData);
                     }
                 }
             };
 
             processNextTeam();
 
-            const doSomethingElseLater = async () => {
+            const internalSecondPhaseDeferredProcesses = async (uniqueChannelsData: MyChannelsRequest) => {
                 if (initialTeamId) {
                     const initialTeam = teamMap.get(initialTeamId);
                     if (initialTeam) {
@@ -361,16 +366,21 @@ export async function restDeferredAppEntryActions(
                     }
                 }
 
-                // previously we were deleting the models via processEntryModels, but we don't want to delete the any
+                // previously we were deleting the models via processEntryModels, but we don't want to delete any
                 // teams or channels until we have fetched all the data for the team, which now is later in the code
-                prepareEntryModelsForDeletion({operator, teamData, chData: combinedChannelsData});
+                const modelsToDeletePromises = await prepareEntryModelsForDeletion({operator, teamData, chData: uniqueChannelsData});
 
-                if (combinedChannelsData?.channels?.length && combinedChannelsData.memberships?.length && initialTeamId) {
+                const modelsToDelete = await Promise.all(modelsToDeletePromises);
+                if (modelsToDelete.flat().length) {
+                    operator.batchRecords(modelsToDelete.flat(), 'prepareEntryModelsForDeletion');
+                }
+
+                if (uniqueChannelsData?.channels?.length && uniqueChannelsData.memberships?.length && initialTeamId) {
                     if (isCRTEnabled && initialTeamId) {
                         await syncTeamThreads(serverUrl, initialTeamId, {groupLabel: requestLabel});
                     }
 
-                    fetchPostsForUnreadChannels(serverUrl, mySortedTeams, combinedChannelsData.channels, combinedChannelsData.memberships, initialChannelId, isCRTEnabled, requestLabel);
+                    fetchPostsForUnreadChannels(serverUrl, mySortedTeams, uniqueChannelsData.channels, uniqueChannelsData.memberships, initialChannelId, isCRTEnabled, requestLabel);
                 }
 
                 if (myOtherSortedTeams.length) {
