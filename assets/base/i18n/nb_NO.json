@@ -464,6 +464,7 @@
   "load_channels_error.title": "Kunne ikke laste inn {teamDisplayName}",
   "load_teams_error.message": "Det oppsto et problem med å laste innhold for denne tjeneren.",
   "load_teams_error.title": "Kunne ikke laste inn {serverName}",
+  "loading_error.retry": "Forsøk på nytt",
   "login.email": "E-post",
   "login.forgot": "Glemt ditt passord?",
   "login.invalid_credentials": "Kombinasjonen av e-post og passord er feil",
