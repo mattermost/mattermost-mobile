@@ -17,6 +17,7 @@ type TagProps = {
     style?: StyleProp<ViewStyle>;
     testID?: string;
     textStyle?: StyleProp<TextStyle>;
+    variant?: 'default' | 'subtle';
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
@@ -37,6 +38,19 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
         title: {
             backgroundColor: changeOpacity(theme.sidebarHeaderTextColor, 0.15),
             color: changeOpacity(theme.sidebarHeaderTextColor, 0.6),
+        },
+
+        // Variant styles
+        subtleContainer: {
+            borderRadius: 6,
+            paddingVertical: 4,
+            paddingHorizontal: 8,
+            marginRight: 8,
+            marginBottom: 8,
+        },
+        subtleText: {
+            fontSize: 12,
+            textTransform: 'none',
         },
     };
 });
@@ -67,7 +81,7 @@ export function GuestTag(props: Omit<TagProps, 'id' | 'defaultMessage'>) {
     );
 }
 
-const Tag = ({id, defaultMessage, inTitle, show = true, style, testID, textStyle}: TagProps) => {
+const Tag = ({id, defaultMessage, inTitle, show = true, style, testID, textStyle, variant = 'default'}: TagProps) => {
     const theme = useTheme();
 
     if (!show) {
@@ -77,11 +91,22 @@ const Tag = ({id, defaultMessage, inTitle, show = true, style, testID, textStyle
     const styles = getStyleFromTheme(theme);
 
     return (
-        <View style={[styles.container, style]}>
+        <View
+            style={[
+                styles.container,
+                variant === 'subtle' && styles.subtleContainer,
+                style,
+            ]}
+        >
             <FormattedText
                 id={id}
                 defaultMessage={defaultMessage}
-                style={[styles.text, inTitle ? styles.title : null, textStyle]}
+                style={[
+                    styles.text,
+                    inTitle ? styles.title : null,
+                    variant === 'subtle' && styles.subtleText,
+                    textStyle,
+                ]}
                 testID={testID}
             />
         </View>

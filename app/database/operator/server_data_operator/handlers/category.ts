@@ -98,7 +98,33 @@ const CategoryHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supe
             return [];
         }
 
-        const createOrUpdateRawValues = getUniqueRawsBy({raws: categoryChannels, key: 'id'});
+        const uniqueRaws = getUniqueRawsBy({raws: categoryChannels, key: 'id'}) as CategoryChannel[];
+        const ids = uniqueRaws.map((c) => c.id).filter((id): id is string => id !== undefined);
+        const db: Database = this.database;
+        const exists = await db.get<CategoryChannelModel>(CATEGORY_CHANNEL).query(
+            Q.where('id', Q.oneOf(ids)),
+        ).fetch();
+        const categoryChannelMap = new Map<string, CategoryChannelModel>(exists.map((c) => [c.id, c]));
+        const createOrUpdateRawValues = uniqueRaws.reduce((res: CategoryChannel[], c) => {
+            if (!c.id) {
+                return res;
+            }
+            const e = categoryChannelMap.get(c.id);
+            if (!e) {
+                res.push(c);
+            } else if (
+                e.categoryId !== c.category_id ||
+                e.channelId !== c.channel_id ||
+                e.sortOrder !== c.sort_order
+            ) {
+                res.push(c);
+            }
+            return res;
+        }, []);
+
+        if (!createOrUpdateRawValues.length) {
+            return [];
+        }
 
         return this.handleRecords({
             fieldName: 'id',
