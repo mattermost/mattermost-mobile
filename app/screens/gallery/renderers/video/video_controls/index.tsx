@@ -95,12 +95,18 @@ const VideoControls: React.FC<VideoControlsWithSeekProps> = ({
     const [showSpeedMenu, setShowSpeedMenu] = useState(false);
 
     const isInteractingWithControlsRef = useRef(false);
+    const isInteractingWithControlsTimeoutRef = useRef<NodeJS.Timeout>();
     const hideControlsTimeoutRef = useRef<NodeJS.Timeout>();
 
     const cancelHideControls = useCallback(() => {
         if (hideControlsTimeoutRef.current) {
             clearTimeout(hideControlsTimeoutRef.current);
             hideControlsTimeoutRef.current = undefined;
+        }
+
+        if (isInteractingWithControlsTimeoutRef.current) {
+            clearTimeout(isInteractingWithControlsTimeoutRef.current);
+            isInteractingWithControlsTimeoutRef.current = undefined;
         }
     }, []);
 
@@ -122,7 +128,7 @@ const VideoControls: React.FC<VideoControlsWithSeekProps> = ({
         isInteractingWithControlsRef.current = true;
         action?.();
 
-        setTimeout(() => {
+        isInteractingWithControlsTimeoutRef.current = setTimeout(() => {
             isInteractingWithControlsRef.current = false;
         }, 300);
 
