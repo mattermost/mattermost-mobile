@@ -47,8 +47,7 @@ const Header = ({index, onClose, style, total}: Props) => {
     const insets = useSafeAreaInsets();
     const {width} = useWindowDimensions();
     const height = useDefaultHeaderHeight() - insets.top;
-    const {top} = useSafeAreaInsets();
-    const topContainerStyle = useMemo(() => [{height: top, backgroundColor: '#000'}], [top]);
+    const topContainerStyle = useMemo(() => [{height: insets.top, backgroundColor: '#000'}], [insets.top]);
     const containerStyle = useMemo(() => [styles.container, {height, paddingHorizontal: insets.left / 2}], [height, insets.left]);
     const iconStyle = useMemo(() => [{width: height}, styles.icon], [height]);
     const titleStyle = useMemo(() => ({width: width - (height * 2)}), [height, width]);
