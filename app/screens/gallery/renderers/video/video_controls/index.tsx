@@ -40,6 +40,8 @@ type Control = 'play' | 'pause' | 'seek' | 'rewind' | 'forward' | 'selectSpeed' 
 
 const persistentControls = new Set<Control>(['pause', 'selectSpeed']);
 
+const SHOW_CONTROLS_TIMEOUT = 4000; // 4 seconds
+
 const styles = StyleSheet.create({
     container: {
         position: 'absolute',
@@ -110,7 +112,7 @@ const VideoControls: React.FC<VideoControlsWithSeekProps> = ({
         }
     }, []);
 
-    const scheduleAutoHideControls = useCallback((control?: Control, delay: number = 4000) => {
+    const scheduleAutoHideControls = useCallback((control?: Control, delay: number = SHOW_CONTROLS_TIMEOUT) => {
         if (!paused || control === 'play') {
             hideControlsTimeoutRef.current = setTimeout(() => {
                 setShowCustomControls(false);
