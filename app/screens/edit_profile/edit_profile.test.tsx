@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import {act} from '@testing-library/react-hooks';
-import {fireEvent} from '@testing-library/react-native';
+import {fireEvent, screen, waitFor} from '@testing-library/react-native';
 import React from 'react';
 
 import AvailableScreens from '@constants/screens';
@@ -70,9 +70,16 @@ const mockFetchCustomProfileAttributes = jest.fn();
 // Add mock for updateCustomProfileAttributes to track calls
 const mockUpdateCustomProfileAttributes = jest.fn();
 
+// Mock logError function
+const mockLogError = jest.fn();
+
 jest.mock('@actions/remote/custom_profile', () => ({
     fetchCustomProfileAttributes: (...args: any[]) => mockFetchCustomProfileAttributes(...args),
     updateCustomProfileAttributes: (...args: any[]) => mockUpdateCustomProfileAttributes(...args),
+}));
+
+jest.mock('@utils/log', () => ({
+    logError: (...args: any[]) => mockLogError(...args),
 }));
 
 jest.mock('@actions/remote/user', () => ({
@@ -161,6 +168,9 @@ describe('EditProfile', () => {
 
         // Reset updateCustomProfileAttributes mock
         mockUpdateCustomProfileAttributes.mockResolvedValue({success: true, error: undefined});
+
+        // Reset logError mock
+        mockLogError.mockClear();
     });
 
     it('should update custom attribute value while preserving name and sort order', async () => {
@@ -541,7 +551,7 @@ describe('EditProfile', () => {
                 error: new Error('Failed to update custom attributes'),
             });
 
-            const {getByTestId, findAllByTestId} = renderWithIntlAndTheme(
+            renderWithIntlAndTheme(
                 <EditProfile
                     componentId={AvailableScreens.EDIT_PROFILE}
                     currentUser={mockCurrentUser}
@@ -565,13 +575,13 @@ describe('EditProfile', () => {
             });
 
             // Modify a custom attribute to trigger the hasUpdateUserInfo flag
-            const customAttributeItems = await findAllByTestId(new RegExp('^edit_profile_form.customAttributes.attr[0-9]+.input$'));
+            const customAttributeItems = await screen.findAllByTestId(new RegExp('^edit_profile_form.customAttributes.attr[0-9]+.input$'));
             await act(async () => {
                 fireEvent.changeText(customAttributeItems[0], 'modified value that will error');
             });
 
             // Trigger form submission
-            const saveButton = getByTestId('edit_profile.save.button');
+            const saveButton = screen.getByTestId('edit_profile.save.button');
             await act(async () => {
                 fireEvent.press(saveButton);
             });
@@ -579,8 +589,15 @@ describe('EditProfile', () => {
             // Verify that updateCustomProfileAttributes was called
             expect(mockUpdateCustomProfileAttributes).toHaveBeenCalled();
 
-            // Verify error handling - component should show error state
-            // (The actual error handling behavior would depend on the resetScreen function)
+            // Verify error handling - check that error is logged
+            await waitFor(() => {
+                expect(mockLogError).toHaveBeenCalledWith(
+                    'Error updating custom attributes',
+                    expect.objectContaining({
+                        message: 'Failed to update custom attributes',
+                    }),
+                );
+            });
         });
     });
 });

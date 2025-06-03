@@ -27,6 +27,7 @@ import Updating from './components/updating';
 import UserProfilePicture from './components/user_profile_picture';
 
 import type {EditProfileProps, NewProfileImage, UserInfo} from '@typings/screens/edit_profile';
+import { logError } from '@utils/log';
 
 const edges: Edge[] = ['bottom', 'left', 'right'];
 
@@ -189,7 +190,8 @@ const EditProfile = ({
                 if (userInfo.customAttributes && enableCustomAttributes) {
                     const {error: attrError} = await updateCustomProfileAttributes(serverUrl, currentUser.id, userInfo.customAttributes);
                     if (attrError) {
-                        resetScreen(attrError);
+                        logError('Error updating custom attributes', attrError);
+                        resetScreenForProfileError(attrError);
                         return;
                     }
                 }
