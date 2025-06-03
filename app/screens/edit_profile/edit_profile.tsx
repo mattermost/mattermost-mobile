@@ -19,6 +19,7 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import SecurityManager from '@managers/security_manager';
 import {dismissModal, popTopScreen, setButtons} from '@screens/navigation';
+import {logError} from '@utils/log';
 import {preventDoubleTap} from '@utils/tap';
 
 import ProfileForm, {CUSTOM_ATTRS_PREFIX} from './components/form';
@@ -27,7 +28,6 @@ import Updating from './components/updating';
 import UserProfilePicture from './components/user_profile_picture';
 
 import type {EditProfileProps, NewProfileImage, UserInfo} from '@typings/screens/edit_profile';
-import { logError } from '@utils/log';
 
 const edges: Edge[] = ['bottom', 'left', 'right'];
 
