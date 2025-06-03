@@ -186,7 +186,7 @@ const EditProfile = ({
                 }
 
                 // Update custom attributes if changed
-                if (userInfo.customAttributes) {
+                if (userInfo.customAttributes && enableCustomAttributes) {
                     const {error: attrError} = await updateCustomProfileAttributes(serverUrl, currentUser.id, userInfo.customAttributes);
                     if (attrError) {
                         resetScreen(attrError);
