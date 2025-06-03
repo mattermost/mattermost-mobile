@@ -407,7 +407,7 @@ describe('EditProfile', () => {
 
     describe('Submission Logic', () => {
         it('should update custom attributes when enableCustomAttributes is true and customAttributes exist', async () => {
-            const {getByTestId, findAllByTestId} = renderWithIntlAndTheme(
+            renderWithIntlAndTheme(
                 <EditProfile
                     componentId={AvailableScreens.EDIT_PROFILE}
                     currentUser={mockCurrentUser}
@@ -426,18 +426,19 @@ describe('EditProfile', () => {
             );
 
             // Wait for component to load and custom attributes to be fetched
-            await act(async () => {
-                await new Promise((resolve) => setTimeout(resolve, 100));
+            await waitFor(async() => {
+                const customAttributeItems = await screen.findAllByTestId(new RegExp('^edit_profile_form.customAttributes.attr[0-9]+.input$'));
+                expect(customAttributeItems.length).toBeGreaterThan(0);
             });
 
             // Modify a field to trigger the hasUpdateUserInfo flag
-            const customAttributeItems = await findAllByTestId(new RegExp('^edit_profile_form.customAttributes.attr[0-9]+.input$'));
             await act(async () => {
+                const customAttributeItems = await screen.findAllByTestId(new RegExp('^edit_profile_form.customAttributes.attr[0-9]+.input$'));
                 fireEvent.changeText(customAttributeItems[0], 'modified value');
             });
 
             // Trigger form submission
-            const saveButton = getByTestId('edit_profile.save.button');
+            const saveButton = screen.getByTestId('edit_profile.save.button');
             await act(async () => {
                 fireEvent.press(saveButton);
             });
