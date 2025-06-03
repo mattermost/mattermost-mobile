@@ -427,7 +427,7 @@ export function observeMentionCount(database: Database, teamId?: string, include
 
 export function observeIsTeamUnread(database: Database, teamId: string): Observable<boolean> {
     const channelUnreads = observeMyChannelUnreads(database, teamId);
-    const threadsUnreadsAndMentions = observeUnreadsAndMentionsInTeam(database, teamId);
+    const threadsUnreadsAndMentions = observeUnreadsAndMentionsInTeam(database, teamId, false);
 
     return channelUnreads.pipe(
         combineLatestWith(threadsUnreadsAndMentions),
