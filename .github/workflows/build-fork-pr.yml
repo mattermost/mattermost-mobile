@@ -64,13 +64,15 @@ jobs:
 
       - name: ci/build-ios-fork-pr
         env:
-          BRANCH_TO_BUILD: "${{ github.event.pull_request.head.ref }}"
+          BRANCH_TO_BUILD: "${{ github.event.pull_request.head.ref || github.event.inputs.branch }}"
+          GITHUB_PR_NUMBER: "${{ github.event.pull_request.number }}"
+          GITHUB_EVENT_NAME: "${{ github.event_name }}"
           AWS_ACCESS_KEY_ID: "${{ secrets.FORK_AWS_ACCESS_KEY_ID }}"
           AWS_SECRET_ACCESS_KEY: "${{ secrets.FORK_AWS_SECRET_ACCESS_KEY }}"
           MATTERMOST_WEBHOOK_URL: "${{ secrets.FORK_MATTERMOST_WEBHOOK_URL }}"
           AWS_BUCKET_NAME: "${{ secrets.FORK_AWS_BUCKET_NAME }}"
           AWS_REGION: "${{ secrets.FORK_AWS_REGION }}"
-          AWS_FOLDER_NAME: "mobile-fork-builds"
+          AWS_FOLDER_NAME: "mattermost-mobile"
           BUILD_PR: "true"
           IOS_BUILD_EXPORT_METHOD: "development"
           SENTRY_ENABLED: "false"
@@ -86,35 +88,14 @@ jobs:
           path: "*.ipa"
 
       - name: ci/post-artifact-link-to-pr
+        if: github.event_name == 'pull_request'
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const artifactId = '${{ steps.ci-upload-ios-fork-pr-build.outputs.artifact-id }}';
-            if (!artifactId) {
-              console.log('No iOS artifact ID found');
-              return;
-            }
-
-            // Get artifact URL for download
-            const artifactUrl = `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${artifactId}`;
-            
-            // Get S3 install URL if available
-            let installUrl = '';
-            let s3Message = '';
-            
-            if ('${{ secrets.FORK_AWS_BUCKET_NAME }}') {
-              const bucketName = '${{ secrets.FORK_AWS_BUCKET_NAME }}';
-              const folderName = 'mobile-fork-builds';
-              const branch = '${{ github.event.pull_request.head.ref }}';
-              const s3Folder = `${folderName}/${branch}`;
-              const plistFile = 'Mattermost_Beta.plist';
-              
-              installUrl = `itms-services://?action=download-manifest&url=https://${bucketName}/${s3Folder}/${plistFile}`;
-              s3Message = `\n\nAlternatively, if S3 upload was successful, you can install directly from:\n- [Install from S3](${installUrl})`;
-            }
-            
-            const message = `### iOS Fork PR Build\n\nThe iOS PR build from your forked repository is available for:\n- [Download](${artifactUrl})\n- [Install](${artifactUrl})${s3Message}\n\nCommit: ${{ github.event.pull_request.head.sha }}\n\n**Note:** This build is signed with debug credentials for testing purposes only.`;
+            const prNumber = '${{ github.event.pull_request.number }}';
+            const installUrl = `itms-services://?action=download-manifest&url=https://pr-builds.mattermost.com/mattermost-mobile/${prNumber}/merge/Mattermost_Beta.plist`;
+            const message = `### iOS PR Build\n\nYou can install the iOS app directly from:\n- [Install from PR Builds](${installUrl})\n\nCommit: ${{ github.event.pull_request.head.sha }}`;
 
             github.rest.issues.createComment({
               issue_number: context.issue.number,
@@ -150,13 +131,15 @@ jobs:
 
       - name: ci/build-android-fork-pr
         env:
-          BRANCH_TO_BUILD: "${{ github.event.pull_request.head.ref }}"
+          BRANCH_TO_BUILD: "${{ github.event.pull_request.head.ref || github.event.inputs.branch }}"
+          GITHUB_PR_NUMBER: "${{ github.event.pull_request.number }}"
+          GITHUB_EVENT_NAME: "${{ github.event_name }}"
           AWS_ACCESS_KEY_ID: "${{ secrets.FORK_AWS_ACCESS_KEY_ID }}"
           AWS_SECRET_ACCESS_KEY: "${{ secrets.FORK_AWS_SECRET_ACCESS_KEY }}"
           MATTERMOST_WEBHOOK_URL: "${{ secrets.FORK_MATTERMOST_WEBHOOK_URL }}"
           AWS_BUCKET_NAME: "${{ secrets.FORK_AWS_BUCKET_NAME }}"
           AWS_REGION: "${{ secrets.FORK_AWS_REGION }}"
-          AWS_FOLDER_NAME: "mobile-fork-builds"
+          AWS_FOLDER_NAME: "mattermost-mobile"
           BUILD_PR: "true"
           SENTRY_ENABLED: "false"
         run: bundle exec fastlane android build --env android.pr
@@ -170,34 +153,15 @@ jobs:
           path: "*.apk"
 
       - name: ci/post-artifact-link-to-pr
+        if: github.event_name == 'pull_request'
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const artifactId = '${{ steps.ci-upload-android-fork-pr-build.outputs.artifact-id }}';
-            if (!artifactId) {
-              console.log('No Android artifact ID found');
-              return;
-            }
-
-            // Get artifact URL for download
-            const artifactUrl = `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${artifactId}`;
+            const prNumber = '${{ github.event.pull_request.number }}';
+            const installUrl = `https://pr-builds.mattermost.com/mattermost-mobile/${prNumber}/merge/Mattermost_Beta.apk`;
             
-            // Get S3 install URL if available
-            let s3Message = '';
-            
-            if ('${{ secrets.FORK_AWS_BUCKET_NAME }}') {
-              const bucketName = '${{ secrets.FORK_AWS_BUCKET_NAME }}';
-              const folderName = 'mobile-fork-builds';
-              const branch = '${{ github.event.pull_request.head.ref }}';
-              const s3Folder = `${folderName}/${branch}`;
-              const apkFile = 'Mattermost_Beta.apk';
-              
-              const s3Url = `https://${bucketName}/${s3Folder}/${apkFile}`;
-              s3Message = `\n\nAlternatively, if S3 upload was successful, you can install directly from:\n- [Install from S3](${s3Url})`;
-            }
-            
-            const message = `### Android Fork PR Build\n\nThe Android PR build from your forked repository is available for:\n- [Download](${artifactUrl})\n- [Install](${artifactUrl})${s3Message}\n\nCommit: ${{ github.event.pull_request.head.sha }}\n\n**Note:** This build is signed with debug credentials for testing purposes only.`;
+            const message = `### Android PR Build\n\nYou can install the Android APK build directly from:\n- [Install from PR Builds](${installUrl})\n\nCommit: ${{ github.event.pull_request.head.sha }}`;
 
             github.rest.issues.createComment({
               issue_number: context.issue.number,
