@@ -73,8 +73,9 @@ jobs:
           AWS_FOLDER_NAME: "mobile-fork-builds"
           BUILD_PR: "true"
           IOS_BUILD_EXPORT_METHOD: "development"
+          SENTRY_ENABLED: "false"
         run: |
-          bundle exec fastlane ios build --env ios.fork
+          bundle exec fastlane ios build --env ios.pr
         working-directory: ./fastlane
 
       - name: ci/upload-ios-fork-pr-build
@@ -107,7 +108,7 @@ jobs:
               const folderName = 'mobile-fork-builds';
               const branch = '${{ github.event.pull_request.head.ref }}';
               const s3Folder = `${folderName}/${branch}`;
-              const plistFile = 'Mattermost_Fork.plist';
+              const plistFile = 'Mattermost_Beta.plist';
               
               installUrl = `itms-services://?action=download-manifest&url=https://${bucketName}/${s3Folder}/${plistFile}`;
               s3Message = `\n\nAlternatively, if S3 upload was successful, you can install directly from:\n- [Install from S3](${installUrl})`;
@@ -157,7 +158,8 @@ jobs:
           AWS_REGION: "${{ secrets.FORK_AWS_REGION }}"
           AWS_FOLDER_NAME: "mobile-fork-builds"
           BUILD_PR: "true"
-        run: bundle exec fastlane android build --env android.fork
+          SENTRY_ENABLED: "false"
+        run: bundle exec fastlane android build --env android.pr
         working-directory: ./fastlane
 
       - name: ci/upload-android-fork-pr-build
@@ -189,7 +191,7 @@ jobs:
               const folderName = 'mobile-fork-builds';
               const branch = '${{ github.event.pull_request.head.ref }}';
               const s3Folder = `${folderName}/${branch}`;
-              const apkFile = 'Mattermost_Fork.apk';
+              const apkFile = 'Mattermost_Beta.apk';
               
               const s3Url = `https://${bucketName}/${s3Folder}/${apkFile}`;
               s3Message = `\n\nAlternatively, if S3 upload was successful, you can install directly from:\n- [Install from S3](${s3Url})`;
