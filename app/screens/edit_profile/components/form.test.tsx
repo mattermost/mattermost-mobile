@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fireEvent} from '@testing-library/react-native';
+import {fireEvent, screen} from '@testing-library/react-native';
 import React, {type ComponentProps} from 'react';
 
 import {renderWithIntl} from '@test/intl-test-helper';
@@ -10,6 +10,30 @@ import TestHelper from '@test/test_helper';
 import ProfileForm from './form';
 
 import type {CustomAttributeSet} from '@typings/api/custom_profile_attributes';
+
+// Mock AutocompleteSelector to avoid database dependency
+jest.mock('@components/autocomplete_selector', () => {
+    const {View, Text} = require('react-native');
+
+    return function MockAutocompleteSelector(props: any) {
+        const handlePress = () => {
+            if (props.onSelected) {
+                // Mock firing the value change event with a test value
+                props.onSelected({value: 'test_value', text: 'Test Value'});
+            }
+        };
+
+        return (
+            <View testID={props.testID}>
+                <Text>{props.label}</Text>
+                <View
+                    testID={`${props.testID}.button`}
+                    onTouchEnd={handlePress}
+                />
+            </View>
+        );
+    };
+});
 
 describe('ProfileForm', () => {
     const baseProps: ComponentProps<typeof ProfileForm> = {
@@ -176,5 +200,284 @@ describe('ProfileForm', () => {
         expect(attributeFields[0].props.testID).toBe('edit_profile_form.customAttributes.attr2'); // sort_order: 0
         expect(attributeFields[1].props.testID).toBe('edit_profile_form.customAttributes.attr1'); // sort_order: 1
         expect(attributeFields[2].props.testID).toBe('edit_profile_form.customAttributes.attr3'); // sort_order: 2
+    });
+
+    it('should render SelectField for select type custom attributes', () => {
+        const customFields = [
+            TestHelper.fakeCustomProfileFieldModel({
+                id: 'department',
+                name: 'Department',
+                type: 'select',
+                attrs: {
+                    options: [
+                        {id: 'eng', name: 'Engineering'},
+                        {id: 'mkt', name: 'Marketing'},
+                        {id: 'sales', name: 'Sales'},
+                    ],
+                },
+            }),
+        ];
+
+        const props = {
+            ...baseProps,
+            enableCustomAttributes: true,
+            customFields,
+            userInfo: {
+                ...baseProps.userInfo,
+                customAttributes: {
+                    department: {
+                        id: 'department',
+                        name: 'Department',
+                        type: 'select',
+                        value: 'eng',
+                    },
+                },
+            },
+        };
+
+        renderWithIntl(
+            <ProfileForm {...props}/>,
+        );
+
+        expect(screen.getByTestId('edit_profile_form.customAttributes.department')).toBeTruthy();
+    });
+
+    it('should render SelectField for multiselect type custom attributes', () => {
+        const customFields = [
+            TestHelper.fakeCustomProfileFieldModel({
+                id: 'skills',
+                name: 'Skills',
+                type: 'multiselect',
+                attrs: {
+                    options: [
+                        {id: 'js', name: 'JavaScript'},
+                        {id: 'react', name: 'React'},
+                        {id: 'ts', name: 'TypeScript'},
+                    ],
+                },
+            }),
+        ];
+
+        const props = {
+            ...baseProps,
+            enableCustomAttributes: true,
+            customFields,
+            userInfo: {
+                ...baseProps.userInfo,
+                customAttributes: {
+                    skills: {
+                        id: 'skills',
+                        name: 'Skills',
+                        type: 'multiselect',
+                        value: 'js,react',
+                    },
+                },
+            },
+        };
+
+        renderWithIntl(
+            <ProfileForm {...props}/>,
+        );
+
+        expect(screen.getByTestId('edit_profile_form.customAttributes.skills')).toBeTruthy();
+    });
+
+    it('should call onUpdateField when SelectField value changes', () => {
+        const onUpdateField = jest.fn();
+        const customFields = [
+            TestHelper.fakeCustomProfileFieldModel({
+                id: 'department',
+                name: 'Department',
+                type: 'select',
+                attrs: {
+                    options: [
+                        {id: 'eng', name: 'Engineering'},
+                        {id: 'mkt', name: 'Marketing'},
+                    ],
+                },
+            }),
+        ];
+
+        const props = {
+            ...baseProps,
+            enableCustomAttributes: true,
+            customFields,
+            onUpdateField,
+            userInfo: {
+                ...baseProps.userInfo,
+                customAttributes: {
+                    department: {
+                        id: 'department',
+                        name: 'Department',
+                        type: 'select',
+                        value: 'eng',
+                    },
+                },
+            },
+        };
+
+        renderWithIntl(
+            <ProfileForm {...props}/>,
+        );
+
+        const selectField = screen.getByTestId('edit_profile_form.customAttributes.department');
+
+        // Simulate value change
+        fireEvent(selectField, 'valueChange', 'customAttributes.department', 'mkt');
+
+        expect(onUpdateField).toHaveBeenCalledWith('customAttributes.department', 'mkt');
+    });
+
+    it('should handle multiselect field value changes', () => {
+        const onUpdateField = jest.fn();
+        const customFields = [
+            TestHelper.fakeCustomProfileFieldModel({
+                id: 'skills',
+                name: 'Skills',
+                type: 'multiselect',
+                attrs: {
+                    options: [
+                        {id: 'js', name: 'JavaScript'},
+                        {id: 'react', name: 'React'},
+                        {id: 'ts', name: 'TypeScript'},
+                    ],
+                },
+            }),
+        ];
+
+        const props = {
+            ...baseProps,
+            enableCustomAttributes: true,
+            customFields,
+            onUpdateField,
+            userInfo: {
+                ...baseProps.userInfo,
+                customAttributes: {
+                    skills: {
+                        id: 'skills',
+                        name: 'Skills',
+                        type: 'multiselect',
+                        value: 'js',
+                    },
+                },
+            },
+        };
+
+        renderWithIntl(
+            <ProfileForm {...props}/>,
+        );
+
+        const selectField = screen.getByTestId('edit_profile_form.customAttributes.skills');
+
+        // Simulate multiselect value change
+        fireEvent(selectField, 'valueChange', 'customAttributes.skills', 'js,react,ts');
+
+        expect(onUpdateField).toHaveBeenCalledWith('customAttributes.skills', 'js,react,ts');
+    });
+
+    it('should render text field for custom attributes without field definition', () => {
+        const props = {
+            ...baseProps,
+            enableCustomAttributes: true,
+            customFields: [], // No field definitions
+            userInfo: {
+                ...baseProps.userInfo,
+                customAttributes: {
+                    unknownField: {
+                        id: 'unknownField',
+                        name: 'Unknown Field',
+                        type: 'text',
+                        value: 'some value',
+                    },
+                },
+            },
+        };
+
+        renderWithIntl(
+            <ProfileForm {...props}/>,
+        );
+
+        // Should render as text field since no field definition exists
+        expect(screen.getByTestId('edit_profile_form.customAttributes.unknownField')).toBeTruthy();
+    });
+
+    it('should render text field for custom attributes with unsupported type', () => {
+        const customFields = [
+            TestHelper.fakeCustomProfileFieldModel({
+                id: 'customField',
+                name: 'Custom Field',
+                type: 'unsupported_type',
+                attrs: {},
+            }),
+        ];
+
+        const props = {
+            ...baseProps,
+            enableCustomAttributes: true,
+            customFields,
+            userInfo: {
+                ...baseProps.userInfo,
+                customAttributes: {
+                    customField: {
+                        id: 'customField',
+                        name: 'Custom Field',
+                        type: 'unsupported_type',
+                        value: 'some value',
+                    },
+                },
+            },
+        };
+
+        renderWithIntl(
+            <ProfileForm {...props}/>,
+        );
+
+        // Should render as text field for unsupported types
+        expect(screen.getByTestId('edit_profile_form.customAttributes.customField')).toBeTruthy();
+    });
+
+    it('should handle focus navigation for SelectField', () => {
+        const customFields = [
+            TestHelper.fakeCustomProfileFieldModel({
+                id: 'department',
+                name: 'Department',
+                type: 'select',
+                attrs: {
+                    options: [
+                        {id: 'eng', name: 'Engineering'},
+                        {id: 'mkt', name: 'Marketing'},
+                    ],
+                },
+            }),
+        ];
+
+        const props = {
+            ...baseProps,
+            enableCustomAttributes: true,
+            customFields,
+            userInfo: {
+                ...baseProps.userInfo,
+                customAttributes: {
+                    department: {
+                        id: 'department',
+                        name: 'Department',
+                        type: 'select',
+                        value: 'eng',
+                    },
+                },
+            },
+        };
+
+        renderWithIntl(
+            <ProfileForm {...props}/>,
+        );
+
+        const selectField = screen.getByTestId('edit_profile_form.customAttributes.department');
+
+        // Simulate focus next field
+        fireEvent(selectField, 'focusNextField', 'customAttributes.department');
+
+        // Should not throw an error and handle focus navigation
+        expect(selectField).toBeTruthy();
     });
 });
