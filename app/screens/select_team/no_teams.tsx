@@ -3,11 +3,10 @@
 
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {StyleSheet, Text, View} from 'react-native';
+import {Text, View} from 'react-native';
 
 import Empty from '@components/illustrations/no_team';
 import {useTheme} from '@context/theme';
-import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -40,21 +39,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginTop: 12,
         ...typography('Body', 200, 'Regular'),
     },
-    buttonStyle: {
-        ...StyleSheet.flatten(buttonBackgroundStyle(theme, 'lg', 'primary', 'default')),
-        flexDirection: 'row',
-        marginTop: 24,
-    },
-    buttonText: {
-        ...StyleSheet.flatten(buttonTextStyle(theme, 'lg', 'primary', 'default')),
-        marginLeft: 8,
-    },
-    plusIcon: {
-        color: theme.sidebarText,
-        fontSize: 24,
-        lineHeight: 22,
-    },
-
 }));
 
 const NoTeams = () => {
@@ -73,7 +57,7 @@ const NoTeams = () => {
             <Text style={styles.description}>
                 {intl.formatMessage({id: 'select_team.no_team.description', defaultMessage: 'To join a team, ask a team admin for an invite, or create your own team. You may also want to check your email inbox for an invitation.'})}
             </Text>
-            {/* {canCreateTeams && // TODO https://mattermost.atlassian.net/browse/MM-43622
+            {/* {canCreateTeams && // TODO https://mattermost.atlassian.net/browse/MM-43622 (Use Button component instead of touchable)
                 <TouchableWithFeedback
                     style={styles.buttonStyle}
                     type={'opacity'}

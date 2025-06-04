@@ -25,6 +25,8 @@ import type ChannelModel from '@typings/database/models/servers/channel';
 import type ChannelBookmarkModel from '@typings/database/models/servers/channel_bookmark';
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
 import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
+import type CustomProfileAttributeModel from '@typings/database/models/servers/custom_profile_attribute';
+import type CustomProfileFieldModel from '@typings/database/models/servers/custom_profile_field';
 import type DraftModel from '@typings/database/models/servers/draft';
 import type FileModel from '@typings/database/models/servers/file';
 import type GroupModel from '@typings/database/models/servers/group';
@@ -694,6 +696,7 @@ class TestHelperSingleton {
             postId: this.generateId(),
             post: this.fakeRelation(),
             toFileInfo: jest.fn(),
+            isBlocked: false,
             ...overwrite,
         };
     };
@@ -859,6 +862,35 @@ class TestHelperSingleton {
             category: '',
             name: '',
             userId: '',
+            user: this.fakeRelation(),
+            ...overwrite,
+        };
+    };
+
+    fakeCustomProfileFieldModel = (overwrite?: Partial<CustomProfileFieldModel>): CustomProfileFieldModel => {
+        return {
+            ...this.fakeModel(),
+            groupId: '',
+            name: `field_${this.generateId()}`,
+            type: 'text',
+            targetId: '',
+            targetType: 'user',
+            createAt: Date.now(),
+            updateAt: Date.now(),
+            deleteAt: 0,
+            attrs: {sort_order: 1},
+            customProfileAttributes: this.fakeQuery([]),
+            ...overwrite,
+        };
+    };
+
+    fakeCustomProfileAttributeModel = (overwrite?: Partial<CustomProfileAttributeModel>): CustomProfileAttributeModel => {
+        return {
+            ...this.fakeModel(),
+            fieldId: this.generateId(),
+            userId: this.generateId(),
+            value: '',
+            field: this.fakeRelation(),
             user: this.fakeRelation(),
             ...overwrite,
         };

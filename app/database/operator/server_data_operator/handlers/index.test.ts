@@ -70,10 +70,68 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
         expect(spyOnHandleRecords).toHaveBeenCalledWith({
             fieldName: 'name',
             createOrUpdateRawValues: emojis,
+            deleteRawValues: [],
             tableName: 'CustomEmoji',
             prepareRecordsOnly: false,
             transformer: transformCustomEmojiRecord,
         }, 'handleCustomEmojis');
+    });
+
+    it('=> HandleCustomEmojis: should write to the CUSTOM_EMOJI table and delete custom emojis that have the same name but the id is different', async () => {
+        expect.assertions(2);
+
+        const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
+        const emojis: CustomEmoji[] = [
+            {
+                id: 'i',
+                create_at: 1580913641769,
+                update_at: 1580913641769,
+                delete_at: 0,
+                creator_id: '4cprpki7ri81mbx8efixcsb8jo',
+                name: 'boomI',
+            },
+        ];
+
+        await operator.handleCustomEmojis({
+            emojis,
+            prepareRecordsOnly: false,
+        });
+
+        const emojiWithTheSameName: CustomEmoji[] = [
+            {
+                id: 'j',
+                create_at: 1580913641770,
+                update_at: 1580913641770,
+                delete_at: 0,
+                creator_id: 'ounobhp3c7f6xcj3bs6ngenhdo',
+                name: 'boomI',
+            },
+        ];
+
+        await operator.handleCustomEmojis({
+            emojis: emojiWithTheSameName,
+            prepareRecordsOnly: false,
+        });
+
+        expect(spyOnHandleRecords).toHaveBeenCalledTimes(2);
+        expect(spyOnHandleRecords.mock.calls).toEqual([
+            [{
+                fieldName: 'name',
+                createOrUpdateRawValues: emojis,
+                deleteRawValues: [],
+                tableName: 'CustomEmoji',
+                prepareRecordsOnly: false,
+                transformer: transformCustomEmojiRecord,
+            }, 'handleCustomEmojis'],
+            [{
+                fieldName: 'name',
+                createOrUpdateRawValues: emojiWithTheSameName,
+                deleteRawValues: [{name: 'boomI'}],
+                tableName: 'CustomEmoji',
+                prepareRecordsOnly: false,
+                transformer: transformCustomEmojiRecord,
+            }, 'handleCustomEmojis'],
+        ]);
     });
 
     it('=> HandleSystem: should write to the SYSTEM table', async () => {

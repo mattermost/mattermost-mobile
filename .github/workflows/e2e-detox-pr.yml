@@ -178,7 +178,7 @@ jobs:
       - run-ios-tests-on-pr
     steps:
       - name: e2e/remove-label-from-pr
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        uses: actions/github-script@e7aeb8c663f696059ebb5f9ab1425ed2ef511bdb # v7.0.1
         continue-on-error: true # Label might have been removed manually
         with:
           script: |
@@ -200,7 +200,7 @@ jobs:
       - run-android-tests-on-pr
     steps:
       - name: e2e/remove-label-from-pr
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        uses: actions/github-script@e7aeb8c663f696059ebb5f9ab1425ed2ef511bdb # v7.0.1
         continue-on-error: true # Label might have been removed manually
         with:
           script: |

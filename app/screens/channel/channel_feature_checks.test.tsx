@@ -6,7 +6,7 @@ import {shouldShowChannelBanner} from '@screens/channel/channel_feature_checks';
 
 describe('shouldShowChannelBanner', () => {
     const validLicense = {
-        SkuShortName: License.SKU_SHORT_NAME.Premium,
+        SkuShortName: License.SKU_SHORT_NAME.EnterpriseAdvanced,
     } as ClientLicense;
 
     const validBannerInfo = {
@@ -24,17 +24,17 @@ describe('shouldShowChannelBanner', () => {
     });
 
     it('should return false when license is not professional', () => {
-        const nonPremiumLicense = {
+        const nonEnterpriseAdvancedLicense = {
             SkuShortName: License.SKU_SHORT_NAME.Professional,
         } as ClientLicense;
-        expect(shouldShowChannelBanner(General.OPEN_CHANNEL, nonPremiumLicense, validBannerInfo)).toBe(false);
+        expect(shouldShowChannelBanner(General.OPEN_CHANNEL, nonEnterpriseAdvancedLicense, validBannerInfo)).toBe(false);
     });
 
     it('should return false when license is not enterprise', () => {
-        const nonPremiumLicense = {
+        const nonEnterpriseAdvancedLicense = {
             SkuShortName: License.SKU_SHORT_NAME.Enterprise,
         } as ClientLicense;
-        expect(shouldShowChannelBanner(General.OPEN_CHANNEL, nonPremiumLicense, validBannerInfo)).toBe(false);
+        expect(shouldShowChannelBanner(General.OPEN_CHANNEL, nonEnterpriseAdvancedLicense, validBannerInfo)).toBe(false);
     });
 
     it('should return false when banner info is incomplete', () => {
@@ -60,11 +60,11 @@ describe('shouldShowChannelBanner', () => {
         expect(shouldShowChannelBanner(General.GM_CHANNEL, validLicense, validBannerInfo)).toBe(false);
     });
 
-    it('should return true for valid open channel with complete banner info and premium license', () => {
+    it('should return true for valid open channel with complete banner info and enterprise advanced license', () => {
         expect(shouldShowChannelBanner(General.OPEN_CHANNEL, validLicense, validBannerInfo)).toBe(true);
     });
 
-    it('should return true for valid private channel with complete banner info and premium license', () => {
+    it('should return true for valid private channel with complete banner info and enterprise advanced license', () => {
         expect(shouldShowChannelBanner(General.PRIVATE_CHANNEL, validLicense, validBannerInfo)).toBe(true);
     });
 });

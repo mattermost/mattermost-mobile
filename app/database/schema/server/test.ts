@@ -49,7 +49,7 @@ const {
 describe('*** Test schema for SERVER database ***', () => {
     it('=> The SERVER SCHEMA should strictly match', () => {
         expect(serverSchema).toEqual({
-            version: 9,
+            version: 11,
             unsafeSql: undefined,
             tables: {
                 [CATEGORY]: {
@@ -126,7 +126,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         type: {name: 'type', type: 'string'},
                         update_at: {name: 'update_at', type: 'number'},
                         banner_info: {name: 'banner_info', type: 'string', isOptional: true},
-
+                        abac_policy_enforced: {name: 'abac_policy_enforced', type: 'boolean', isOptional: true},
                     },
                     columnArray: [
                         {name: 'create_at', type: 'number'},
@@ -140,6 +140,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'type', type: 'string'},
                         {name: 'update_at', type: 'number'},
                         {name: 'banner_info', type: 'string', isOptional: true},
+                        {name: 'abac_policy_enforced', type: 'boolean', isOptional: true},
                     ],
                 },
                 [CHANNEL_BOOKMARK]: {
@@ -334,6 +335,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         post_id: {name: 'post_id', type: 'string', isIndexed: true},
                         size: {name: 'size', type: 'number'},
                         width: {name: 'width', type: 'number'},
+                        is_blocked: {name: 'is_blocked', type: 'boolean'},
                     },
                     columnArray: [
                         {name: 'extension', type: 'string'},
@@ -345,6 +347,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'post_id', type: 'string', isIndexed: true},
                         {name: 'size', type: 'number'},
                         {name: 'width', type: 'number'},
+                        {name: 'is_blocked', type: 'boolean'},
                     ],
                 },
                 [GROUP]: {

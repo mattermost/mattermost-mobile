@@ -1,24 +1,24 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, StyleSheet, TouchableOpacity, View} from 'react-native';
+import {DeviceEventEmitter, StyleSheet, View} from 'react-native';
 
 import {createDirectChannel, switchToChannelById} from '@actions/remote/channel';
-import CompassIcon from '@components/compass_icon';
-import FormattedText from '@components/formatted_text';
+import Button from '@components/button';
 import OptionBox, {OPTIONS_HEIGHT} from '@components/option_box';
 import {Events, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {dismissBottomSheet} from '@screens/navigation';
-import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
+
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 export type OptionsType = 'all' | 'message';
 
 type Props = {
-    location: string;
+    location?: AvailableScreens;
     type: OptionsType;
     userId: string;
     username: string;
@@ -43,9 +43,7 @@ const styles = StyleSheet.create({
         width: '100%',
     },
     singleContainer: {
-        flexDirection: 'row',
         marginBottom: 20,
-        width: '100%',
     },
 });
 
@@ -53,10 +51,6 @@ const UserProfileOptions = ({location, type, userId, username}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const serverUrl = useServerUrl();
-
-    const buttonStyle = useMemo(() => {
-        return buttonBackgroundStyle(theme, 'lg', 'tertiary', 'default');
-    }, [theme]);
 
     const mentionUser = useCallback(async () => {
         await dismissBottomSheet(Screens.USER_PROFILE);
@@ -78,7 +72,7 @@ const UserProfileOptions = ({location, type, userId, username}: Props) => {
                     iconName='send'
                     onPress={openChannel}
                     testID='user_profile_options.send_message.option'
-                    text={intl.formatMessage({id: 'channel_info.send_mesasge', defaultMessage: 'Send message'})}
+                    text={intl.formatMessage({id: 'channel_info.send_a_mesasge', defaultMessage: 'Send message'})}
                 />
                 <View style={styles.divider}/>
                 <OptionBox
@@ -93,22 +87,15 @@ const UserProfileOptions = ({location, type, userId, username}: Props) => {
 
     return (
         <View style={styles.singleContainer}>
-            <TouchableOpacity
-                style={[buttonStyle, styles.singleButton]}
+            <Button
                 onPress={openChannel}
                 testID='user_profile_options.send_message.option'
-            >
-                <CompassIcon
-                    color={theme.buttonBg}
-                    name='send'
-                    style={styles.icon}
-                />
-                <FormattedText
-                    id='channel_info.send_a_mesasge'
-                    defaultMessage='Send a message'
-                    style={[buttonTextStyle(theme, 'lg', 'tertiary', 'default'), {marginLeft: 8}]}
-                />
-            </TouchableOpacity>
+                size='lg'
+                emphasis='tertiary'
+                theme={theme}
+                text={intl.formatMessage({id: 'channel_info.send_mesasge', defaultMessage: 'Send message'})}
+                iconName='send'
+            />
         </View>
     );
 };
