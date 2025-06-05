@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {useIntl} from 'react-intl';
+import {useIntl, type MessageDescriptor} from 'react-intl';
 import {Platform, type StyleProp, Text, type TextStyle, TouchableOpacity, View, type ViewStyle} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
@@ -36,6 +36,7 @@ type Props = {
     overflowContainerStyle?: StyleProp<ViewStyle>;
     overflowItemStyle?: StyleProp<ViewStyle>;
     overflowTextStyle?: StyleProp<TextStyle>;
+    bottomSheetTitle: MessageDescriptor;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -99,6 +100,7 @@ const UserAvatarsStack = ({
     overflowContainerStyle,
     overflowItemStyle,
     overflowTextStyle,
+    bottomSheetTitle,
 }: Props) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
@@ -111,8 +113,7 @@ const UserAvatarsStack = ({
                 {!isTablet && (
                     <View style={style.listHeader}>
                         <FormattedText
-                            id='mobile.participants.header'
-                            defaultMessage={'Thread Participants'}
+                            {...bottomSheetTitle}
                             style={style.listHeaderText}
                         />
                     </View>
@@ -140,10 +141,10 @@ const UserAvatarsStack = ({
             renderContent,
             initialSnapIndex: 1,
             snapPoints,
-            title: intl.formatMessage({id: 'mobile.participants.header', defaultMessage: 'Thread Participants'}),
+            title: intl.formatMessage(bottomSheetTitle),
             theme,
         });
-    }, [users, intl, theme, isTablet, style.listHeader, style.listHeaderText, channelId, location]));
+    }, [users, intl, bottomSheetTitle, theme, isTablet, style.listHeader, style.listHeaderText, channelId, location]));
 
     const displayUsers = users.slice(0, breakAt);
     const overflowUsersCount = Math.min(users.length - displayUsers.length, OVERFLOW_DISPLAY_LIMIT);
