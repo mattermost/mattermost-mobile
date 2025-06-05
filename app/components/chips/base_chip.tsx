@@ -2,11 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {Platform, Text, TouchableOpacity, useWindowDimensions} from 'react-native';
+import {Platform, Text, TouchableOpacity} from 'react-native';
 import Animated, {FadeIn, FadeOut} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
+import {useWindowDimensions} from '@hooks/device';
 import {nonBreakingString} from '@utils/strings';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -65,6 +66,8 @@ export default function BaseChip({
     const style = getStyleFromTheme(theme);
     const dimensions = useWindowDimensions();
     const textStyle = useMemo(() => {
+        // We set the max width to 70% of the screen width to make sure
+        // text like names get ellipsized correctly.
         const textMaxWidth = maxWidth || dimensions.width * 0.70;
         const marginRight = showRemoveOption ? undefined : 7;
         return [style.text, {maxWidth: textMaxWidth, marginRight}];
