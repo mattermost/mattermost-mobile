@@ -45,8 +45,14 @@ const SelectField = ({
     const isTablet = useIsTablet();
     const styles = getStyleSheet(theme);
 
-    const optionalText = intl.formatMessage({id: 'channel_modal.optional', defaultMessage: '(optional)'});
-    const formattedLabel = isOptional ? `${label} ${optionalText}` : label;
+    const optionalText = intl.formatMessage(
+        {
+            id: 'channel_modal.optional',
+            defaultMessage: '{labelName} (optional)',
+        },
+        {labelName: label},
+    );
+    const formattedLabel = isOptional ? optionalText : label;
 
     // Convert stored value to selected format for AutocompleteSelector
     const selectedValue = useMemo(() => {
@@ -82,10 +88,10 @@ const SelectField = ({
         onFocusNextField(fieldKey);
     }, [fieldKey, onValueChange, onFocusNextField]);
 
-    const containerStyle = [
+    const containerStyle = useMemo(() => [
         styles.container,
         isTablet && styles.tabletContainer,
-    ];
+    ], [isTablet, styles]);
 
     return (
         <View
