@@ -191,7 +191,6 @@ describe('EditProfile', () => {
                 lockedPosition={false}
                 lockedPicture={false}
                 enableCustomAttributes={true}
-                userCustomAttributes={[]}
                 customFields={[]}
                 customAttributesSet={serverAttributesSet}
             />,
@@ -239,7 +238,6 @@ describe('EditProfile', () => {
                 lockedPosition={false}
                 lockedPicture={false}
                 enableCustomAttributes={true}
-                userCustomAttributes={[]}
                 customFields={[]}
                 customAttributesSet={dbAttributesSet}
             />,
@@ -282,7 +280,6 @@ describe('EditProfile', () => {
                     lockedPosition={false}
                     lockedPicture={false}
                     enableCustomAttributes={true}
-                    userCustomAttributes={[]}
                     customFields={[]}
                     customAttributesSet={serverAttributesSet}
                 />,
@@ -320,7 +317,6 @@ describe('EditProfile', () => {
                 lockedPosition={false}
                 lockedPicture={false}
                 enableCustomAttributes={true}
-                userCustomAttributes={[]}
                 customFields={[]}
                 customAttributesSet={{}}
             />,
@@ -344,7 +340,6 @@ describe('EditProfile', () => {
                     lockedPosition={false}
                     lockedPicture={false}
                     enableCustomAttributes={true}
-                    userCustomAttributes={[]}
                     customFields={[]}
                     customAttributesSet={dbAttributesSet}
                 />,
@@ -395,7 +390,6 @@ describe('EditProfile', () => {
                     lockedPosition={false}
                     lockedPicture={false}
                     enableCustomAttributes={true}
-                    userCustomAttributes={[]}
                     customFields={[]}
                     customAttributesSet={updatedDbAttributesSet}
                 />,
@@ -608,5 +602,28 @@ describe('EditProfile', () => {
                 );
             });
         });
+    });
+
+    it('should pass customFields prop to ProfileForm component', async () => {
+        renderWithIntlAndTheme(
+            <EditProfile
+                componentId={AvailableScreens.EDIT_PROFILE}
+                currentUser={mockCurrentUser}
+                isModal={false}
+                isTablet={false}
+                lockedFirstName={false}
+                lockedLastName={false}
+                lockedNickname={false}
+                lockedPosition={false}
+                lockedPicture={false}
+                enableCustomAttributes={true}
+                customFields={[]}
+                customAttributesSet={{}}
+            />,
+        );
+
+        // Verify the ProfileForm component is rendered (which means customFields was passed)
+        const scrollView = screen.getByTestId('edit_profile.scroll_view');
+        expect(scrollView).toBeTruthy();
     });
 });

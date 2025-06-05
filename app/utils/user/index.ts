@@ -8,7 +8,7 @@ import {General, Permissions, Preferences} from '@constants';
 import {Ringtone} from '@constants/calls';
 import {CustomStatusDurationEnum} from '@constants/custom_status';
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
-import {toTitleCase} from '@utils/helpers';
+import {safeParseJSON, toTitleCase} from '@utils/helpers';
 
 import type {CustomProfileFieldModel, CustomProfileAttributeModel} from '@database/models/server';
 import type {CustomAttribute, CustomAttributeSet} from '@typings/api/custom_profile_attributes';
@@ -613,15 +613,14 @@ export const getSelectedOptionIds = (value: string, fieldType: string): string[]
 
     if (fieldType === 'multiselect') {
         try {
-            const parsed = JSON.parse(value);
+            const parsed: unknown = safeParseJSON(value);
             if (Array.isArray(parsed)) {
                 return parsed;
             }
 
             // Fallback to comma-separated string
             return value.split(',').map((id) => id.trim()).filter((id) => id !== '');
-        } catch {
-            // Fallback to comma-separated string
+        } catch (error) {
             return value.split(',').map((id) => id.trim()).filter((id) => id !== '');
         }
     }
