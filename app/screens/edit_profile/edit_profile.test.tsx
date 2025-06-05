@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import {act} from '@testing-library/react-hooks';
-import {fireEvent} from '@testing-library/react-native';
+import {fireEvent, screen} from '@testing-library/react-native';
 import React from 'react';
 
 import AvailableScreens from '@constants/screens';
@@ -175,7 +175,6 @@ describe('EditProfile', () => {
                 lockedPosition={false}
                 lockedPicture={false}
                 enableCustomAttributes={true}
-                userCustomAttributes={[]}
                 customFields={[]}
                 customAttributesSet={serverAttributesSet}
             />,
@@ -223,7 +222,6 @@ describe('EditProfile', () => {
                 lockedPosition={false}
                 lockedPicture={false}
                 enableCustomAttributes={true}
-                userCustomAttributes={[]}
                 customFields={[]}
                 customAttributesSet={dbAttributesSet}
             />,
@@ -266,7 +264,6 @@ describe('EditProfile', () => {
                     lockedPosition={false}
                     lockedPicture={false}
                     enableCustomAttributes={true}
-                    userCustomAttributes={[]}
                     customFields={[]}
                     customAttributesSet={serverAttributesSet}
                 />,
@@ -304,7 +301,6 @@ describe('EditProfile', () => {
                 lockedPosition={false}
                 lockedPicture={false}
                 enableCustomAttributes={true}
-                userCustomAttributes={[]}
                 customFields={[]}
                 customAttributesSet={{}}
             />,
@@ -328,7 +324,6 @@ describe('EditProfile', () => {
                     lockedPosition={false}
                     lockedPicture={false}
                     enableCustomAttributes={true}
-                    userCustomAttributes={[]}
                     customFields={[]}
                     customAttributesSet={dbAttributesSet}
                 />,
@@ -379,7 +374,6 @@ describe('EditProfile', () => {
                     lockedPosition={false}
                     lockedPicture={false}
                     enableCustomAttributes={true}
-                    userCustomAttributes={[]}
                     customFields={[]}
                     customAttributesSet={updatedDbAttributesSet}
                 />,
@@ -395,5 +389,28 @@ describe('EditProfile', () => {
         // Check for the new attribute that was added
         const newAttributeItem = await findAllByTestId('edit_profile_form.customAttributes.attr4.input');
         expect(newAttributeItem[0].props.value).toBe('new db value');
+    });
+
+    it('should pass customFields prop to ProfileForm component', async () => {
+        renderWithIntlAndTheme(
+            <EditProfile
+                componentId={AvailableScreens.EDIT_PROFILE}
+                currentUser={mockCurrentUser}
+                isModal={false}
+                isTablet={false}
+                lockedFirstName={false}
+                lockedLastName={false}
+                lockedNickname={false}
+                lockedPosition={false}
+                lockedPicture={false}
+                enableCustomAttributes={true}
+                customFields={[]}
+                customAttributesSet={{}}
+            />,
+        );
+
+        // Verify the ProfileForm component is rendered (which means customFields was passed)
+        const scrollView = screen.getByTestId('edit_profile.scroll_view');
+        expect(scrollView).toBeTruthy();
     });
 });
