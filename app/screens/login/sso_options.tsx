@@ -1,15 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Button} from '@rneui/base';
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {Image, type ImageSourcePropType, Text, View} from 'react-native';
+import {Image, type ImageSourcePropType, StyleSheet, View} from 'react-native';
 
-import CompassIcon from '@components/compass_icon';
+import Button from '@components/button';
 import {Sso} from '@constants';
-import {buttonBackgroundStyle} from '@utils/buttonStyles';
-import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
 type SsoInfo = {
     text: string;
@@ -26,8 +23,6 @@ type Props = {
 
 const SsoOptions = ({goToSso, ssoOnly, ssoOptions, theme}: Props) => {
     const {formatMessage} = useIntl();
-    const styles = getStyleSheet(theme);
-    const styleButtonBackground = buttonBackgroundStyle(theme, 'lg', 'primary');
 
     const getSsoButtonOptions = ((ssoType: string): SsoInfo => {
         const sso: SsoInfo = {} as SsoInfo;
@@ -63,12 +58,8 @@ const SsoOptions = ({goToSso, ssoOnly, ssoOptions, theme}: Props) => {
         (ssoType: string) => ssoOptions[ssoType].enabled,
     );
 
-    let styleViewContainer;
-    let styleButtonContainer;
-    if (enabledSSOs.length === 2 && !ssoOnly) {
-        styleViewContainer = styles.containerAsRow;
-        styleButtonContainer = styles.buttonContainer;
-    }
+    const styleViewContainer = enabledSSOs.length === 2 && !ssoOnly ? styles.containerAsRow : undefined;
+    const styleButtonWrapper = enabledSSOs.length === 2 && !ssoOnly ? styles.buttonWrapper : undefined;
 
     const componentArray = [];
     for (const ssoType of enabledSSOs) {
@@ -78,38 +69,24 @@ const SsoOptions = ({goToSso, ssoOnly, ssoOptions, theme}: Props) => {
         };
 
         componentArray.push(
-            <Button
-                key={ssoType}
-                onPress={handlePress}
-                buttonStyle={[styleButtonBackground, styles.button]}
-                containerStyle={styleButtonContainer}
-            >
-                {imageSrc && (
-                    <Image
-                        key={'image' + ssoType}
-                        source={imageSrc}
-                        style={styles.logoStyle}
-                    />
-                )}
-                {compassIcon &&
-                <CompassIcon
-                    name={compassIcon}
-                    size={16}
-                    color={theme.centerChannelColor}
+            <View style={styleButtonWrapper}>
+                <Button
+                    key={ssoType}
+                    onPress={handlePress}
+                    size='lg'
+                    theme={theme}
+                    iconName={compassIcon}
+                    emphasis='secondary'
+                    iconComponent={imageSrc ? (
+                        <Image
+                            key={'image' + ssoType}
+                            source={imageSrc}
+                            style={styles.logoStyle}
+                        />
+                    ) : undefined}
+                    text={text}
                 />
-                }
-                <View
-                    style={styles.buttonTextContainer}
-                >
-                    <Text
-                        key={ssoType}
-                        style={styles.buttonText}
-                        testID={text}
-                    >
-                        {text}
-                    </Text>
-                </View>
-            </Button>,
+            </View>,
         );
     }
 
@@ -120,41 +97,23 @@ const SsoOptions = ({goToSso, ssoOnly, ssoOptions, theme}: Props) => {
     );
 };
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+const styles = StyleSheet.create({
     container: {
         marginVertical: 24,
+        gap: 8,
     },
     containerAsRow: {
         flexDirection: 'row',
         alignItems: 'center',
     },
-    buttonContainer: {
-        width: '48%',
-        marginRight: 8,
-    },
-    button: {
-        marginVertical: 4,
-        backgroundColor: 'transparent',
-        borderWidth: 1,
-        borderColor: changeOpacity(theme.centerChannelColor, 0.16),
-    },
-    buttonTextContainer: {
-        color: theme.centerChannelColor,
-        flexDirection: 'row',
-        marginLeft: 9,
-    },
-    buttonText: {
-        color: theme.centerChannelColor,
-        fontFamily: 'OpenSans-SemiBold',
-        fontSize: 16,
-        lineHeight: 18,
-        top: 2,
+    buttonWrapper: {
+        flex: 1,
     },
     logoStyle: {
         height: 18,
         marginRight: 5,
         width: 18,
     },
-}));
+});
 
 export default SsoOptions;
