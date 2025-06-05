@@ -54,6 +54,7 @@
             "@managers/*": ["app/managers/*"],
             "@playbooks/*": ["app/products/playbooks/*"],
             "@queries/*": ["app/queries/*"],
+            "@playbooks/*": ["app/products/playbooks/*"],
             "@screens/*": ["app/screens/*"],
             "@selectors/*": ["app/selectors/*"],
             "@share/*": ["share_extension/*"],

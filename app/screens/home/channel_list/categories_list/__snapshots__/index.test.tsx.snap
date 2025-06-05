@@ -256,61 +256,106 @@ exports[`components/categories_list should render channels error 1`] = `
       There was a problem loading content for this team.
     </Text>
     <View
-      accessibilityState={
-        {
-          "busy": undefined,
-          "checked": undefined,
-          "disabled": undefined,
-          "expanded": undefined,
-          "selected": undefined,
-        }
-      }
-      accessibilityValue={
-        {
-          "max": undefined,
-          "min": undefined,
-          "now": undefined,
-          "text": undefined,
-        }
-      }
-      accessible={true}
-      collapsable={false}
-      focusable={true}
-      onClick={[Function]}
-      onResponderGrant={[Function]}
-      onResponderMove={[Function]}
-      onResponderRelease={[Function]}
-      onResponderTerminate={[Function]}
-      onResponderTerminationRequest={[Function]}
-      onStartShouldSetResponder={[Function]}
       style={
         {
-          "backgroundColor": "#ffffff",
-          "borderRadius": 4,
           "marginTop": 24,
-          "opacity": 1,
-          "paddingHorizontal": 24,
-          "paddingVertical": 12,
         }
       }
     >
-      <Text
+      <View
         style={
           [
             {
-              "fontFamily": "OpenSans-SemiBold",
-              "fontSize": 16,
-              "fontWeight": "600",
-              "lineHeight": 24,
+              "overflow": "hidden",
             },
             {
-              "color": "#1c58d9",
+              "borderRadius": 2,
             },
+            undefined,
+            false,
           ]
         }
+        testID="RNE_BUTTON_WRAPPER"
       >
-        Retry
-      </Text>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "busy": false,
+              "checked": undefined,
+              "disabled": false,
+              "expanded": undefined,
+              "selected": undefined,
+            }
+          }
+          accessibilityValue={
+            {
+              "max": undefined,
+              "min": undefined,
+              "now": undefined,
+              "text": undefined,
+            }
+          }
+          accessible={true}
+          collapsable={false}
+          focusable={true}
+          onClick={[Function]}
+          onResponderGrant={[Function]}
+          onResponderMove={[Function]}
+          onResponderRelease={[Function]}
+          onResponderTerminate={[Function]}
+          onResponderTerminationRequest={[Function]}
+          onStartShouldSetResponder={[Function]}
+          style={
+            {
+              "opacity": 1,
+            }
+          }
+        >
+          <View
+            style={
+              {
+                "alignItems": "center",
+                "backgroundColor": "#1c58d9",
+                "borderColor": "#2089dc",
+                "borderRadius": 4,
+                "borderWidth": 0,
+                "flexDirection": "row",
+                "justifyContent": "center",
+                "padding": 8,
+                "paddingHorizontal": 24,
+                "paddingVertical": 12,
+              }
+            }
+          >
+            <View
+              style={
+                {
+                  "alignItems": "center",
+                  "flexDirection": "row",
+                  "gap": 7,
+                }
+              }
+              testID="undefined-text-container"
+            >
+              <Text
+                numberOfLines={1}
+                style={
+                  {
+                    "color": "#ffffff",
+                    "fontFamily": "OpenSans-SemiBold",
+                    "fontSize": 16,
+                    "fontWeight": "600",
+                    "lineHeight": 24,
+                  }
+                }
+              >
+                Retry
+              </Text>
+            </View>
+          </View>
+        </View>
+      </View>
     </View>
   </View>
 </View>
@@ -643,61 +688,106 @@ exports[`components/categories_list should render team error 1`] = `
       There was a problem loading content for this server.
     </Text>
     <View
-      accessibilityState={
-        {
-          "busy": undefined,
-          "checked": undefined,
-          "disabled": undefined,
-          "expanded": undefined,
-          "selected": undefined,
-        }
-      }
-      accessibilityValue={
-        {
-          "max": undefined,
-          "min": undefined,
-          "now": undefined,
-          "text": undefined,
-        }
-      }
-      accessible={true}
-      collapsable={false}
-      focusable={true}
-      onClick={[Function]}
-      onResponderGrant={[Function]}
-      onResponderMove={[Function]}
-      onResponderRelease={[Function]}
-      onResponderTerminate={[Function]}
-      onResponderTerminationRequest={[Function]}
-      onStartShouldSetResponder={[Function]}
       style={
         {
-          "backgroundColor": "#ffffff",
-          "borderRadius": 4,
           "marginTop": 24,
-          "opacity": 1,
-          "paddingHorizontal": 24,
-          "paddingVertical": 12,
         }
       }
     >
-      <Text
+      <View
         style={
           [
             {
-              "fontFamily": "OpenSans-SemiBold",
-              "fontSize": 16,
-              "fontWeight": "600",
-              "lineHeight": 24,
+              "overflow": "hidden",
             },
             {
-              "color": "#1c58d9",
+              "borderRadius": 2,
             },
+            undefined,
+            false,
           ]
         }
+        testID="RNE_BUTTON_WRAPPER"
       >
-        Retry
-      </Text>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "busy": false,
+              "checked": undefined,
+              "disabled": false,
+              "expanded": undefined,
+              "selected": undefined,
+            }
+          }
+          accessibilityValue={
+            {
+              "max": undefined,
+              "min": undefined,
+              "now": undefined,
+              "text": undefined,
+            }
+          }
+          accessible={true}
+          collapsable={false}
+          focusable={true}
+          onClick={[Function]}
+          onResponderGrant={[Function]}
+          onResponderMove={[Function]}
+          onResponderRelease={[Function]}
+          onResponderTerminate={[Function]}
+          onResponderTerminationRequest={[Function]}
+          onStartShouldSetResponder={[Function]}
+          style={
+            {
+              "opacity": 1,
+            }
+          }
+        >
+          <View
+            style={
+              {
+                "alignItems": "center",
+                "backgroundColor": "#1c58d9",
+                "borderColor": "#2089dc",
+                "borderRadius": 4,
+                "borderWidth": 0,
+                "flexDirection": "row",
+                "justifyContent": "center",
+                "padding": 8,
+                "paddingHorizontal": 24,
+                "paddingVertical": 12,
+              }
+            }
+          >
+            <View
+              style={
+                {
+                  "alignItems": "center",
+                  "flexDirection": "row",
+                  "gap": 7,
+                }
+              }
+              testID="undefined-text-container"
+            >
+              <Text
+                numberOfLines={1}
+                style={
+                  {
+                    "color": "#ffffff",
+                    "fontFamily": "OpenSans-SemiBold",
+                    "fontSize": 16,
+                    "fontWeight": "600",
+                    "lineHeight": 24,
+                  }
+                }
+              >
+                Retry
+              </Text>
+            </View>
+          </View>
+        </View>
+      </View>
     </View>
   </View>
 </View>

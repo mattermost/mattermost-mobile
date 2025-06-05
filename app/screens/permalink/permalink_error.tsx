@@ -2,16 +2,15 @@
 // See LICENSE.txt for license information.
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {Text, TouchableOpacity, View} from 'react-native';
+import {Text, View} from 'react-native';
 
-import FormattedText from '@components/formatted_text';
+import Button from '@components/button';
 import JoinPrivateChannel from '@components/illustrations/join_private_channel';
 import JoinPublicChannel from '@components/illustrations/join_public_channel';
 import MessageNotViewable from '@components/illustrations/message_not_viewable';
 import Markdown from '@components/markdown';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
-import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -49,6 +48,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             borderTopWidth: 1,
             borderTopColor: changeOpacity(theme.centerChannelColor, 0.16),
             padding: 20,
+            gap: 8,
         },
 
     };
@@ -63,9 +63,6 @@ function PermalinkError({
     const style = getStyleSheet(theme);
     const intl = useIntl();
 
-    const buttonStylePrimary = buttonBackgroundStyle(theme, 'lg', 'primary');
-    const buttonTextStylePrimary = buttonTextStyle(theme, 'lg', 'primary');
-
     if (error.notExist || error.unreachable) {
         const title = intl.formatMessage({id: 'permalink.error.access.title', defaultMessage: 'Message not viewable'});
         const text = intl.formatMessage({id: 'permalink.error.access.text', defaultMessage: 'The message you are trying to view is in a channel you don’t have access to or has been deleted.'});
@@ -77,24 +74,16 @@ function PermalinkError({
                     <Text style={style.errorText}>{text}</Text>
                 </View>
                 <View style={style.errorButtonContainer}>
-                    <TouchableOpacity
-                        style={buttonStylePrimary}
+                    <Button
+                        size='lg'
+                        text={intl.formatMessage({id: 'permalink.error.okay', defaultMessage: 'Okay'})}
+                        theme={theme}
                         onPress={handleClose}
-                    >
-                        <FormattedText
-                            testID='permalink.error.okay'
-                            id='permalink.error.okay'
-                            defaultMessage='Okay'
-                            style={buttonTextStylePrimary}
-                        />
-                    </TouchableOpacity>
+                    />
                 </View>
             </>
         );
     }
-
-    const buttonStyleTertiary = buttonBackgroundStyle(theme, 'lg', 'tertiary');
-    const buttonTextStyleTertiary = buttonTextStyle(theme, 'lg', 'tertiary');
 
     const isPrivate = error.privateChannel || error.privateTeam;
     let image;
@@ -143,23 +132,19 @@ function PermalinkError({
                 />
             </View>
             <View style={style.errorButtonContainer}>
-                <TouchableOpacity
-                    style={buttonStylePrimary}
+                <Button
+                    size='lg'
+                    text={button}
+                    theme={theme}
                     onPress={handleJoin}
-                >
-                    <Text style={buttonTextStylePrimary}>{button}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={[buttonStyleTertiary, {marginTop: 8}]}
+                />
+                <Button
+                    size='lg'
+                    emphasis='tertiary'
                     onPress={handleClose}
-                >
-                    <FormattedText
-                        testID='permalink.error.cancel'
-                        id='permalink.error.cancel'
-                        defaultMessage='Cancel'
-                        style={buttonTextStyleTertiary}
-                    />
-                </TouchableOpacity>
+                    text={intl.formatMessage({id: 'permalink.error.cancel', defaultMessage: 'Cancel'})}
+                    theme={theme}
+                />
             </View>
         </>
     );

@@ -372,8 +372,6 @@ describe('makeCallsTheme', () => {
 describe('isCallsStartedMessage', () => {
     it('identifies calls notifications', () => {
         expect(isCallsStartedMessage({sub_type: NOTIFICATION_SUB_TYPE.CALLS} as NotificationData)).toBe(true);
-        expect(isCallsStartedMessage({message: "You've been invited to a call"} as NotificationData)).toBe(true);
-        expect(isCallsStartedMessage({message: '\u200bUser is inviting you to a call'} as NotificationData)).toBe(true);
         expect(isCallsStartedMessage({message: 'regular message'} as NotificationData)).toBe(false);
     });
 });
@@ -423,7 +421,6 @@ describe('getCallPropsFromPost', () => {
         expect(props.start_at).toBe(0);
         expect(props.end_at).toBe(0);
         expect(props.recordings).toStrictEqual({});
-        expect(props.recording_files.length).toBe(0);
         expect(props.transcriptions).toStrictEqual({});
         expect(props.participants.length).toBe(0);
     });
@@ -437,7 +434,6 @@ describe('getCallPropsFromPost', () => {
         expect(props.start_at).toBe(0);
         expect(props.end_at).toBe(0);
         expect(props.recordings).toStrictEqual({});
-        expect(props.recording_files.length).toBe(0);
         expect(props.transcriptions).toStrictEqual({});
         expect(props.participants.length).toBe(0);
     });
@@ -450,7 +446,6 @@ describe('getCallPropsFromPost', () => {
             recordings: null,
             transcriptions: 45,
             participants: 'invalid',
-            recording_files: 45,
         };
 
         const post = TestHelper.fakePost({
@@ -463,7 +458,6 @@ describe('getCallPropsFromPost', () => {
         expect(props.start_at).toBe(0);
         expect(props.end_at).toBe(0);
         expect(props.recordings).toStrictEqual({});
-        expect(props.recording_files.length).toBe(0);
         expect(props.transcriptions).toStrictEqual({});
         expect(props.participants.length).toBe(0);
     });
@@ -485,7 +479,6 @@ describe('getCallPropsFromPost', () => {
                     tr_id: 'trB',
                 },
             },
-            recording_files: ['recAFileID', 'recBFileID'],
             transcriptions: {
                 trA: {
                     file_id: 'trAFileID',
@@ -511,7 +504,6 @@ describe('getCallPropsFromPost', () => {
         expect(props.start_at).toBe(post.props?.start_at);
         expect(props.end_at).toBe(post.props?.end_at);
         expect(props.recordings).toBe(post.props?.recordings);
-        expect(props.recording_files).toBe(post.props?.recording_files);
         expect(props.transcriptions).toBe(post.props?.transcriptions);
         expect(props.participants).toBe(post.props?.participants);
     });

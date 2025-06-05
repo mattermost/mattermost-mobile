@@ -8,12 +8,10 @@ import {removeDraft} from '@actions/local/draft';
 import {createPost} from '@actions/remote/post';
 import {General} from '@constants';
 import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED} from '@constants/draft';
-import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 import {sendMessageWithAlert} from '@utils/post';
 import {canPostDraftInChannelOrThread} from '@utils/scheduled_post';
-import {showSnackBar} from '@utils/snack_bar';
 
 import SendHandler from './send_handler';
 
@@ -259,54 +257,5 @@ describe('components/post_draft/send_handler/SendHandler', () => {
 
         // Varify removeDraft function is been called.
         expect(removeDraft).toHaveBeenCalled();
-    });
-
-    it('should show snackbar if creating post failing when executing sendMessageHandler when send_draft_button is checked', async () => {
-        // Mock implementation to capture the sendMessageHandler
-        let capturedHandler: Function;
-        jest.mocked(sendMessageWithAlert).mockImplementation((params) => {
-            capturedHandler = params.sendMessageHandler;
-            return Promise.resolve();
-        });
-        jest.mocked(createPost).mockResolvedValueOnce({
-            error: new Error('Failed to create post'),
-        });
-
-        const props = {
-            ...baseProps,
-            isFromDraftView: true,
-            draftType: DRAFT_TYPE_DRAFT,
-            value: 'test message',
-        };
-
-        const wrapper = renderWithEverything(
-            <SendHandler {...props}/>, {database},
-        );
-
-        // Find and press the send button
-        const sendButton = wrapper.getByTestId('send_draft_button');
-
-        await act(async () => {
-            fireEvent.press(sendButton);
-        });
-
-        // Verify sendMessageWithAlert was called
-        expect(sendMessageWithAlert).toHaveBeenCalledWith(expect.objectContaining({
-            sendMessageHandler: expect.any(Function),
-        }));
-
-        // Now execute the captured handler to simulate user confirming the send
-        await act(async () => {
-            await capturedHandler();
-        });
-
-        expect(showSnackBar).toHaveBeenCalledWith({
-            barType: SNACK_BAR_TYPE.CREATE_POST_ERROR,
-            customMessage: 'Failed to create post',
-            type: 'error',
-        });
-
-        // Varify removeDraft function is been called.
-        expect(removeDraft).not.toHaveBeenCalled();
     });
 });

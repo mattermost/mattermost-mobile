@@ -26,7 +26,7 @@ import {fileToGalleryItem, openGalleryAtIndex} from '@utils/gallery';
 import {generateId} from '@utils/general';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {calculateDimensions, getViewPortWidth, isGifTooLarge} from '@utils/images';
-import {getMarkdownImageSize} from '@utils/markdown';
+import {getMarkdownImageSize, removeImageProxyForKey} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {secureGetFromRecord} from '@utils/types';
 import {normalizeProtocol, safeDecodeURIComponent, tryOpenURL} from '@utils/url';
@@ -79,7 +79,7 @@ const MarkdownImage = ({
     const style = getStyleSheet(theme);
     const managedConfig = useManagedConfig<ManagedConfig>();
     const genericFileId = useRef(generateId('uid')).current;
-    const metadata = secureGetFromRecord(imagesMetadata, source) || Object.values(imagesMetadata || {})[0];
+    const metadata = secureGetFromRecord(imagesMetadata, removeImageProxyForKey(source)) || Object.values(imagesMetadata || {})[0];
     const [failed, setFailed] = useState(isGifTooLarge(metadata));
     const originalSize = getMarkdownImageSize(isReplyPost, isTablet, sourceSize, metadata, layoutWidth, layoutHeight);
     const serverUrl = useServerUrl();

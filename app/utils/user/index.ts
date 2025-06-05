@@ -10,7 +10,8 @@ import {CustomStatusDurationEnum} from '@constants/custom_status';
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
 import {toTitleCase} from '@utils/helpers';
 
-import type {CustomAttribute} from '@typings/api/custom_profile_attributes';
+import type {CustomProfileFieldModel, CustomProfileAttributeModel} from '@database/models/server';
+import type {CustomAttribute, CustomAttributeSet} from '@typings/api/custom_profile_attributes';
 import type UserModel from '@typings/database/models/servers/user';
 import type {IntlShape} from 'react-intl';
 
@@ -406,4 +407,55 @@ export const sortCustomProfileAttributes = (a: CustomAttribute, b: CustomAttribu
     const orderA = a.sort_order ?? Number.MAX_SAFE_INTEGER;
     const orderB = b.sort_order ?? Number.MAX_SAFE_INTEGER;
     return orderA === orderB ? a.name.localeCompare(b.name) : orderA - orderB;
+};
+
+/**
+ * Converts an array of custom profile attributes to a map of attributes by their id.
+ * @param attributesToConvert - The array of custom profile attributes to convert
+ * @returns A map of attributes by their id
+ */
+export const convertToAttributesMap = (attributesToConvert: CustomAttributeSet | CustomAttribute[]): CustomAttributeSet => {
+    if (!Array.isArray(attributesToConvert)) {
+        return attributesToConvert as CustomAttributeSet;
+    }
+    const attributesMap: CustomAttributeSet = {};
+    attributesToConvert.forEach((attr) => {
+        attributesMap[attr.id] = attr;
+    });
+    return attributesMap;
+};
+
+/**
+ * Convert custom profile attributes to the UI-ready CustomAttribute format
+ * @param attributes - Array of custom profile attribute models
+ * @param fields - Array of custom profile field models
+ * @param sortFn - Optional sort function
+ * @returns Array of formatted CustomAttribute objects
+ */
+export const convertProfileAttributesToCustomAttributes = (
+    attributes: CustomProfileAttributeModel[] | null | undefined,
+    fields: CustomProfileFieldModel[] | null | undefined,
+    sortFn?: (a: CustomAttribute, b: CustomAttribute) => number,
+): CustomAttribute[] => {
+    if (!attributes?.length) {
+        return [];
+    }
+
+    const fieldsMap = new Map();
+    fields?.forEach((field) => {
+        fieldsMap.set(field.id, {
+            name: field.name,
+            sort_order: field.attrs?.sort_order || Number.MAX_SAFE_INTEGER,
+        });
+    });
+
+    const customAttrs = attributes.map((attr) => ({
+        id: attr.fieldId,
+        name: fieldsMap.get(attr.fieldId)?.name || attr.fieldId,
+        value: attr.value,
+        sort_order: fieldsMap.get(attr.fieldId)?.sort_order || Number.MAX_SAFE_INTEGER,
+    }));
+
+    // Sort if a sort function is provided
+    return sortFn ? customAttrs.sort(sortFn) : customAttrs;
 };
