@@ -8,7 +8,8 @@ import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {updateLocalUser} from '@actions/local/user';
-import {setDefaultProfileImage, updateMe, uploadUserProfileImage, fetchCustomAttributes, updateCustomAttributes} from '@actions/remote/user';
+import {fetchCustomProfileAttributes, updateCustomProfileAttributes} from '@actions/remote/custom_profile';
+import {setDefaultProfileImage, updateMe, uploadUserProfileImage} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
 import TabletTitle from '@components/tablet_title';
 import {Events} from '@constants';
@@ -47,6 +48,7 @@ const CUSTOM_ATTRS_PREFIX_NAME = `${CUSTOM_ATTRS_PREFIX}.`;
 const EditProfile = ({
     componentId, currentUser, isModal, isTablet,
     lockedFirstName, lockedLastName, lockedNickname, lockedPosition, lockedPicture, enableCustomAttributes,
+    customAttributesSet,
 }: EditProfileProps) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
@@ -67,6 +69,7 @@ const EditProfile = ({
     const [error, setError] = useState<unknown>();
     const [usernameError, setUsernameError] = useState<unknown>();
     const [updating, setUpdating] = useState(false);
+    const lastRequest = useRef(0);
 
     const buttonText = intl.formatMessage({id: 'mobile.account.settings.save', defaultMessage: 'Save'});
     const rightButton = useMemo(() => {
@@ -125,14 +128,25 @@ const EditProfile = ({
             if (!currentUser) {
                 return;
             }
-            const {error: fetchError, attributes} = await fetchCustomAttributes(serverUrl, currentUser.id);
-            if (!fetchError && attributes) {
-                setUserInfo((prev: UserInfo) => ({...prev, customAttributes: attributes} as UserInfo));
+
+            if (enableCustomAttributes) {
+                setUserInfo((prev) => ({
+                    ...prev,
+                    customAttributes: customAttributesSet || {},
+                }));
+            }
+
+            // Then fetch from server for latest data
+            const reqTime = Date.now();
+            lastRequest.current = reqTime;
+            const {error: fetchError, attributes} = await fetchCustomProfileAttributes(serverUrl, currentUser.id);
+            if (!fetchError && attributes && lastRequest.current === reqTime) {
+                setUserInfo((prev) => ({...prev, customAttributes: attributes}));
             }
         };
 
         loadCustomAttributes();
-    }, [currentUser, serverUrl]);
+    }, [currentUser, serverUrl, enableCustomAttributes, customAttributesSet]);
 
     const submitUser = useCallback(preventDoubleTap(async () => {
         if (!currentUser) {
@@ -173,7 +187,7 @@ const EditProfile = ({
 
                 // Update custom attributes if changed
                 if (userInfo.customAttributes) {
-                    const {error: attrError} = await updateCustomAttributes(serverUrl, userInfo.customAttributes);
+                    const {error: attrError} = await updateCustomProfileAttributes(serverUrl, currentUser.id, userInfo.customAttributes);
                     if (attrError) {
                         resetScreen(attrError);
                         return;

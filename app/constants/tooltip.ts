@@ -6,8 +6,8 @@ import {StyleSheet} from 'react-native';
 export const staticStyles = StyleSheet.create({
     tooltipContent: {
         borderRadius: 8,
-        width: 247,
+        maxWidth: 247,
         padding: 16,
-        height: 160,
+        maxHeight: 160,
     },
 });

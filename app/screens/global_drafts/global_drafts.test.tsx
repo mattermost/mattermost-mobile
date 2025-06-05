@@ -45,9 +45,8 @@ describe('screens/global_drafts', () => {
             await TestHelper.wait(200); // Wait until the badge renders
         });
 
-        expect(getByTestId('draft_tab_container')).toBeVisible();
-        expect(getByTestId('draft_tab')).toBeVisible();
-        expect(getByTestId('scheduled_post_tab')).toBeVisible();
+        expect(getByTestId('tabs.drafts.button')).toBeVisible();
+        expect(getByTestId('tabs.scheduled_posts.button')).toBeVisible();
     });
 
     it('should switch between tabs', async () => {
@@ -62,8 +61,8 @@ describe('screens/global_drafts', () => {
             await TestHelper.wait(200); // Wait until the badge renders
         });
 
-        const draftTab = getByTestId('draft_tab');
-        const scheduledTab = getByTestId('scheduled_post_tab');
+        const draftTab = getByTestId('tabs.drafts.button');
+        const scheduledTab = getByTestId('tabs.scheduled_posts.button');
         const tabbedContents = getByTestId('tabbed_contents');
 
         await act(async () => {
