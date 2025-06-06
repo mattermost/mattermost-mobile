@@ -3,7 +3,7 @@
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of as of$, combineLatest} from 'rxjs';
-import {map, switchMap} from 'rxjs/operators';
+import {map, mergeMap, switchMap} from 'rxjs/operators';
 
 import {General, Permissions, Preferences} from '@constants';
 import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
@@ -57,13 +57,13 @@ const enhanced = withObservables([], ({channelId, database, userId}: EnhancedPro
 
     // Convert attributes to the format expected by the component
     const formattedCustomAttributes = combineLatest([rawCustomAttributes, customFields, enableCustomAttributes]).pipe(
-        switchMap(([attributes, fields, enabled]) => {
+        mergeMap(([attributes, fields, enabled]) => {
             if (!enabled || !attributes?.length) {
                 return of$([] as CustomAttribute[]);
             }
-            return of$(convertProfileAttributesToCustomAttributes(attributes, fields, sortCustomProfileAttributes));
+            return of$(convertProfileAttributesToCustomAttributes(attributes, fields, sortCustomProfileAttributes, true));
         }),
-        switchMap((converted) => of$(convertToAttributesMap(converted))),
+        mergeMap((converted) => of$(convertToAttributesMap(converted))),
     );
 
     // can remove member

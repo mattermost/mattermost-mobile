@@ -182,7 +182,7 @@ function AutoCompleteSelector({
         if (onSelected) {
             onSelected(selectedOptions);
         }
-    }, [teammateNameDisplay, intl, dataSource]);
+    }, [teammateNameDisplay, intl, dataSource, onSelected]);
 
     // Handle the text for the default value.
     useEffect(() => {
@@ -202,7 +202,7 @@ function AutoCompleteSelector({
         Promise.all(namePromises).then((names) => {
             setItemText(names.join(', '));
         });
-    }, []);
+    }, [dataSource, teammateNameDisplay, intl, options, selected, serverUrl]);
 
     return (
         <View style={style.container}>

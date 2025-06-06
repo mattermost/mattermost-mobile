@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable max-lines */
+
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
@@ -35,6 +37,8 @@ import {
     autoUpdateTimezone,
     fetchTeamAndChannelMembership,
     getAllSupportedTimezones,
+    fetchCustomAttributes,
+    updateCustomAttributes,
 } from './user';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -490,5 +494,318 @@ describe('user status', () => {
         const result = await unsetCustomStatus(serverUrl);
         expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
+    });
+});
+
+describe('fetchCustomAttributes', () => {
+    beforeEach(() => {
+        // Reset mocks before each test
+        mockClient.getCustomProfileAttributeFields.mockReset();
+        mockClient.getCustomProfileAttributeValues.mockReset();
+    });
+
+    it('fetchCustomAttributes - handle not found database', async () => {
+        // Mock NetworkManager.getClient to throw an error for invalid server URL
+        const originalGetClient = NetworkManager.getClient;
+        NetworkManager.getClient = jest.fn((url: string) => {
+            if (url === 'foo') {
+                throw new Error('foo client not found');
+            }
+            return originalGetClient(url);
+        });
+
+        const result = await fetchCustomAttributes('foo', user1.id);
+        expect(result?.error).toBeDefined();
+
+        // Restore original implementation
+        NetworkManager.getClient = originalGetClient;
+    });
+
+    it('fetchCustomAttributes - base case with fields and values', async () => {
+        const mockFields = [
+            {
+                id: 'field1',
+                name: 'Field 1',
+                type: 'text',
+                attrs: {sort_order: 1},
+            },
+            {
+                id: 'field2',
+                name: 'Field 2',
+                type: 'select',
+                attrs: {sort_order: 2},
+            },
+        ];
+        const mockValues = {
+            field1: 'value1',
+            field2: 'value2',
+        };
+
+        mockClient.getCustomProfileAttributeFields.mockResolvedValue(mockFields);
+        mockClient.getCustomProfileAttributeValues.mockResolvedValue(mockValues);
+
+        const result = await fetchCustomAttributes(serverUrl, user1.id);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.attributes).toBeDefined();
+        expect(Object.keys(result.attributes)).toHaveLength(2);
+        expect(result.attributes.field1).toEqual({
+            id: 'field1',
+            name: 'Field 1',
+            type: 'text',
+            value: 'value1',
+            sort_order: 1,
+        });
+        expect(result.attributes.field2).toEqual({
+            id: 'field2',
+            name: 'Field 2',
+            type: 'select',
+            value: 'value2',
+            sort_order: 2,
+        });
+    });
+
+    it('fetchCustomAttributes - no fields', async () => {
+        mockClient.getCustomProfileAttributeFields.mockResolvedValue([]);
+        mockClient.getCustomProfileAttributeValues.mockResolvedValue({});
+
+        const result = await fetchCustomAttributes(serverUrl, user1.id);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.attributes).toEqual({});
+    });
+
+    it('fetchCustomAttributes - filterEmpty true with empty values', async () => {
+        const mockFields = [
+            {
+                id: 'field1',
+                name: 'Field 1',
+                type: 'text',
+                attrs: {sort_order: 1},
+            },
+            {
+                id: 'field2',
+                name: 'Field 2',
+                type: 'text',
+                attrs: {sort_order: 2},
+            },
+            {
+                id: 'field3',
+                name: 'Field 3',
+                type: 'text',
+                attrs: {sort_order: 3},
+            },
+        ];
+        const mockValues = {
+            field1: 'value1',
+            field2: '',
+
+            // field3 is missing entirely
+        };
+
+        mockClient.getCustomProfileAttributeFields.mockResolvedValue(mockFields);
+        mockClient.getCustomProfileAttributeValues.mockResolvedValue(mockValues);
+
+        const result = await fetchCustomAttributes(serverUrl, user1.id, true);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.attributes).toBeDefined();
+        expect(Object.keys(result.attributes)).toHaveLength(1);
+        expect(result.attributes.field1).toBeDefined();
+        expect(result.attributes.field2).toBeUndefined();
+        expect(result.attributes.field3).toBeUndefined();
+    });
+
+    it('fetchCustomAttributes - filterEmpty false includes empty values', async () => {
+        const mockFields = [
+            {
+                id: 'field1',
+                name: 'Field 1',
+                type: 'text',
+                attrs: {sort_order: 1},
+            },
+            {
+                id: 'field2',
+                name: 'Field 2',
+                type: 'text',
+                attrs: {sort_order: 2},
+            },
+        ];
+        const mockValues = {
+            field1: 'value1',
+            field2: '',
+        };
+
+        mockClient.getCustomProfileAttributeFields.mockResolvedValue(mockFields);
+        mockClient.getCustomProfileAttributeValues.mockResolvedValue(mockValues);
+
+        const result = await fetchCustomAttributes(serverUrl, user1.id, false);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.attributes).toBeDefined();
+        expect(Object.keys(result.attributes)).toHaveLength(2);
+        expect(result.attributes.field1).toBeDefined();
+        expect(result.attributes.field2).toBeDefined();
+        expect(result.attributes.field2.value).toBe('');
+    });
+
+    it('fetchCustomAttributes - handles array values', async () => {
+        const mockFields = [
+            {
+                id: 'field1',
+                name: 'Field 1',
+                type: 'multiselect',
+                attrs: {sort_order: 1},
+            },
+            {
+                id: 'field2',
+                name: 'Field 2',
+                type: 'text',
+                attrs: {sort_order: 2},
+            },
+        ];
+        const mockValues = {
+            field1: ['option1', 'option2', 'option3'],
+            field2: 'text value',
+        };
+
+        mockClient.getCustomProfileAttributeFields.mockResolvedValue(mockFields);
+        mockClient.getCustomProfileAttributeValues.mockResolvedValue(mockValues);
+
+        const result = await fetchCustomAttributes(serverUrl, user1.id);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.attributes).toBeDefined();
+        expect(result.attributes.field1.value).toBe('["option1","option2","option3"]');
+        expect(result.attributes.field2.value).toBe('text value');
+    });
+
+    it('fetchCustomAttributes - handles missing attrs', async () => {
+        const mockFields = [
+            {
+                id: 'field1',
+                name: 'Field 1',
+                type: 'text',
+
+                // No attrs property
+            },
+        ];
+        const mockValues = {
+            field1: 'value1',
+        };
+
+        mockClient.getCustomProfileAttributeFields.mockResolvedValue(mockFields);
+        mockClient.getCustomProfileAttributeValues.mockResolvedValue(mockValues);
+
+        const result = await fetchCustomAttributes(serverUrl, user1.id);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.attributes).toBeDefined();
+        expect(result.attributes.field1.sort_order).toBeUndefined();
+    });
+
+    it('fetchCustomAttributes - handles API error', async () => {
+        mockClient.getCustomProfileAttributeFields.mockRejectedValue(new Error('API Error'));
+
+        const result = await fetchCustomAttributes(serverUrl, user1.id);
+        expect(result).toBeDefined();
+        expect(result.error).toBeDefined();
+        expect(result.attributes).toEqual({});
+    });
+});
+
+describe('updateCustomAttributes', () => {
+    beforeEach(() => {
+        // Reset mocks before each test
+        mockClient.updateCustomProfileAttributeValues.mockReset();
+    });
+
+    it('updateCustomAttributes - handle not found database', async () => {
+        // Mock NetworkManager.getClient to throw an error for invalid server URL
+        const originalGetClient = NetworkManager.getClient;
+        NetworkManager.getClient = jest.fn((url: string) => {
+            if (url === 'foo') {
+                throw new Error('foo client not found');
+            }
+            return originalGetClient(url);
+        });
+
+        const attributes = {
+            field1: {
+                id: 'field1',
+                name: 'Field 1',
+                type: 'text',
+                value: 'value1',
+                sort_order: 1,
+            },
+        };
+
+        const result = await updateCustomAttributes('foo', attributes);
+        expect(result?.error).toBeDefined();
+        expect(result.success).toBe(false);
+
+        // Restore original implementation
+        NetworkManager.getClient = originalGetClient;
+    });
+
+    it('updateCustomAttributes - base case', async () => {
+        const attributes = {
+            field1: {
+                id: 'field1',
+                name: 'Field 1',
+                type: 'text',
+                value: 'value1',
+                sort_order: 1,
+            },
+            field2: {
+                id: 'field2',
+                name: 'Field 2',
+                type: 'select',
+                value: 'value2',
+                sort_order: 2,
+            },
+        };
+
+        mockClient.updateCustomProfileAttributeValues.mockResolvedValue(undefined);
+
+        const result = await updateCustomAttributes(serverUrl, attributes);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.success).toBe(true);
+        expect(mockClient.updateCustomProfileAttributeValues).toHaveBeenCalledWith({
+            field1: 'value1',
+            field2: 'value2',
+        });
+    });
+
+    it('updateCustomAttributes - handles API error', async () => {
+        const attributes = {
+            field1: {
+                id: 'field1',
+                name: 'Field 1',
+                type: 'text',
+                value: 'value1',
+                sort_order: 1,
+            },
+        };
+
+        mockClient.updateCustomProfileAttributeValues.mockRejectedValue(new Error('API Error'));
+
+        const result = await updateCustomAttributes(serverUrl, attributes);
+        expect(result).toBeDefined();
+        expect(result.error).toBeDefined();
+        expect(result.success).toBe(false);
+    });
+
+    it('updateCustomAttributes - empty attributes', async () => {
+        const attributes = {};
+
+        mockClient.updateCustomProfileAttributeValues.mockResolvedValue(undefined);
+
+        const result = await updateCustomAttributes(serverUrl, attributes);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.success).toBe(true);
+        expect(mockClient.updateCustomProfileAttributeValues).toHaveBeenCalledWith({});
     });
 });
