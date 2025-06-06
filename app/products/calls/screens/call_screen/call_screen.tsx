@@ -371,26 +371,52 @@ const CallScreen = ({
     const hideCCTitle = intl.formatMessage({id: 'mobile.calls_hide_cc', defaultMessage: 'Hide live captions'});
 
     useEffect(() => {
-        mergeNavigationOptions('Call', {
-            layout: {
-                componentBackgroundColor: callsTheme.callsBg,
-                orientation: allOrientations,
-            },
-            topBar: {
-                visible: false,
-            },
-        });
-        if (Platform.OS === 'ios') {
-            RNUtils.unlockOrientation();
-        }
+        const setOrientation = () => {
+            mergeNavigationOptions('Call', {
+                layout: {
+                    componentBackgroundColor: callsTheme.callsBg,
+                    orientation: allOrientations,
+                },
+                topBar: {
+                    visible: false,
+                },
+            });
+            if (Platform.OS === 'ios') {
+                RNUtils.unlockOrientation();
+            }
+        };
 
-        return () => {
+        const unsetOrientation = () => {
             setScreensOrientation(isTablet);
             if (Platform.OS === 'ios' && !isTablet) {
                 // We need both the navigation & the module
                 RNUtils.lockPortrait();
             }
             freezeOtherScreens(false);
+        };
+
+        // Handle component disappearing (e.g. device is locked)
+        const didDismissListener = Navigation.events().registerComponentDidDisappearListener(async ({componentId: screen}) => {
+            if (componentId === screen) {
+                unsetOrientation();
+            }
+        });
+
+        // Handle component re-appearing (e.g. device is unlocked)
+        const didAppearListener = Navigation.events().registerComponentWillAppearListener(async ({componentId: screen}) => {
+            if (componentId === screen) {
+                setOrientation();
+            }
+        });
+
+        // Set orientation on component mount.
+        setOrientation();
+
+        return () => {
+            didDismissListener.remove();
+            didAppearListener.remove();
+
+            unsetOrientation();
         };
     }, []);
 
@@ -565,16 +591,6 @@ const CallScreen = ({
     }, [componentId]);
 
     useAndroidHardwareBackHandler(componentId, collapse);
-
-    useEffect(() => {
-        const didDismissListener = Navigation.events().registerComponentDidDisappearListener(async ({componentId: screen}) => {
-            if (componentId === screen) {
-                setScreensOrientation(isTablet);
-            }
-        });
-
-        return () => didDismissListener.remove();
-    }, [isTablet]);
 
     useEffect(() => {
         if (!layout || !layout.height || !layout.width) {
