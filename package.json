@@ -18,7 +18,7 @@
     "@formatjs/intl-numberformat": "8.15.4",
     "@formatjs/intl-pluralrules": "5.4.4",
     "@gorhom/bottom-sheet": "5.1.2",
-    "@mattermost/calls": "github:mattermost/calls-common#e2607dcd3abde43ccffa2a77e843172dc0347712",
+    "@mattermost/calls": "github:mattermost/calls-common#ab53c24053b89e4d3d853bbe1244892899517f45",
     "@mattermost/compass-icons": "0.1.48",
     "@mattermost/hardware-keyboard": "file:./libraries/@mattermost/hardware-keyboard",
     "@mattermost/react-native-emm": "1.6.1",
