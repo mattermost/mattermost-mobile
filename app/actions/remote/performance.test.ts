@@ -56,7 +56,7 @@ describe('sendPerformanceReport', () => {
     it('happy path', async () => {
         const {error} = await sendPerformanceReport(serverUrl, report);
         expect(error).toBeFalsy();
-        expect(mockApiClient.post).toHaveBeenCalledWith(`${serverUrl}/api/v4/client_perf`, {body: report, headers: {}});
+        expect(mockApiClient.post).toHaveBeenCalledWith(`${serverUrl}/api/v4/client_perf`, {body: report, headers: {Accept: 'application/json'}});
     });
 
     it('properly returns error', async () => {
