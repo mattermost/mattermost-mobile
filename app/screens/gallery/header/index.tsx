@@ -2,13 +2,14 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {type StyleProp, StyleSheet, useWindowDimensions, View, type ViewStyle} from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
+import {type StyleProp, StyleSheet, View, type ViewStyle} from 'react-native';
 import Animated, {type AnimatedStyle} from 'react-native-reanimated';
 import {SafeAreaView, type Edge, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
+import PressableOpacity from '@components/pressable_opacity';
+import {useWindowDimensions} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -39,16 +40,15 @@ const styles = StyleSheet.create({
     },
 });
 
-const edges: Edge[] = ['left', 'right'];
+const edges: Edge[] = [];
 const AnimatedSafeAreaView = Animated.createAnimatedComponent(SafeAreaView);
 
 const Header = ({index, onClose, style, total}: Props) => {
     const insets = useSafeAreaInsets();
     const {width} = useWindowDimensions();
     const height = useDefaultHeaderHeight() - insets.top;
-    const {top} = useSafeAreaInsets();
-    const topContainerStyle = useMemo(() => [{height: top, backgroundColor: '#000'}], [top]);
-    const containerStyle = useMemo(() => [styles.container, {height}], [height]);
+    const topContainerStyle = useMemo(() => [{height: insets.top, backgroundColor: '#000'}], [insets.top]);
+    const containerStyle = useMemo(() => [styles.container, {height, paddingHorizontal: insets.left / 2}], [height, insets.left]);
     const iconStyle = useMemo(() => [{width: height}, styles.icon], [height]);
     const titleStyle = useMemo(() => ({width: width - (height * 2)}), [height, width]);
     const titleValue = useMemo(() => ({index: index + 1, total}), [index, total]);
@@ -60,7 +60,7 @@ const Header = ({index, onClose, style, total}: Props) => {
         >
             <Animated.View style={topContainerStyle}/>
             <Animated.View style={containerStyle}>
-                <TouchableOpacity
+                <PressableOpacity
                     onPress={onClose}
                     style={iconStyle}
                 >
@@ -69,7 +69,7 @@ const Header = ({index, onClose, style, total}: Props) => {
                         name='close'
                         size={24}
                     />
-                </TouchableOpacity>
+                </PressableOpacity>
                 <View style={titleStyle}>
                     <FormattedText
                         id='mobile.gallery.title'
