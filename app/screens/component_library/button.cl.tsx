@@ -14,8 +14,6 @@ const propPossibilities = {};
 
 const buttonSizeValues = ['xs', 's', 'm', 'lg'];
 const buttonEmphasisValues = ['primary', 'secondary', 'tertiary', 'link'];
-const buttonTypeValues = ['default', 'destructive', 'inverted', 'disabled'];
-const buttonStateValues = ['default', 'hover', 'active', 'focus'];
 
 const onPress = () => Alert.alert('Button pressed!');
 
@@ -25,28 +23,32 @@ const ButtonComponentLibrary = () => {
     const [disabled, disabledSelector] = useBooleanProp('disabled', false);
     const [buttonSize, buttonSizePosibilities, buttonSizeSelector] = useDropdownProp('size', 'm', buttonSizeValues, true);
     const [buttonEmphasis, buttonEmphasisPosibilities, buttonEmphasisSelector] = useDropdownProp('emphasis', 'primary', buttonEmphasisValues, true);
-    const [buttonType, buttonTypePosibilities, buttonTypeSelector] = useDropdownProp('buttonType', 'default', buttonTypeValues, true);
-    const [buttonState, buttonStatePosibilities, buttonStateSelector] = useDropdownProp('buttonState', 'default', buttonStateValues, true);
+    const [iconName, iconNameSelector] = useStringProp('iconName', '', true);
+    const [isIconOnTheRight, isIconOnTheRightSelector] = useBooleanProp('isIconOnTheRight', false);
+    const [showLoader, showLoaderSelector] = useBooleanProp('showLoader', false);
+    const [isInverted, isInvertedSelector] = useBooleanProp('isInverted', false);
+    const [isDestructive, isDestructiveSelector] = useBooleanProp('isDestructive', false);
 
     const components = useMemo(
         () => buildComponent(Button, propPossibilities, [
             buttonSizePosibilities,
             buttonEmphasisPosibilities,
-            buttonTypePosibilities,
-            buttonStatePosibilities,
         ], [
             text,
             disabled,
             buttonSize,
             buttonEmphasis,
-            buttonType,
-            buttonState,
+            iconName,
+            isIconOnTheRight,
+            showLoader,
+            isInverted,
+            isDestructive,
             {
                 theme,
                 onPress,
             },
         ]),
-        [buttonEmphasis, buttonEmphasisPosibilities, buttonSize, buttonSizePosibilities, buttonState, buttonStatePosibilities, buttonType, buttonTypePosibilities, disabled, text, theme],
+        [buttonEmphasis, buttonEmphasisPosibilities, buttonSize, buttonSizePosibilities, disabled, text, theme, iconName, isIconOnTheRight, showLoader, isInverted, isDestructive],
     );
 
     return (
@@ -55,8 +57,11 @@ const ButtonComponentLibrary = () => {
             {disabledSelector}
             {buttonSizeSelector}
             {buttonEmphasisSelector}
-            {buttonTypeSelector}
-            {buttonStateSelector}
+            {iconNameSelector}
+            {isIconOnTheRightSelector}
+            {showLoaderSelector}
+            {isInvertedSelector}
+            {isDestructiveSelector}
             <View>{components}</View>
         </>
     );

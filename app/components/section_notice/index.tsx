@@ -2,10 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {Pressable, Text, View, type StyleProp, type ViewStyle} from 'react-native';
+import {Pressable, Text, View} from 'react-native';
 
 import Tag from '@components/tag';
 import {useTheme} from '@context/theme';
+import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -27,10 +28,8 @@ type Props = {
     onDismissClick?: () => void;
     location: AvailableScreens;
     tags?: string[];
-    tagsVariant?: 'default' | 'subtle';
     testID?: string;
-    containerStyle?: StyleProp<ViewStyle>;
-    iconSize?: number;
+    squareCorners?: boolean;
 }
 
 const iconByType = {
@@ -47,6 +46,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         container: {
             borderWidth: 1,
             borderStyle: 'solid',
+        },
+        roundCorners: {
             borderRadius: 4,
         },
         content: {
@@ -150,6 +151,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         tagsContainer: {
             flexDirection: 'row',
             flexWrap: 'wrap',
+            gap: 4,
         },
 
     };
@@ -166,10 +168,8 @@ const SectionNotice = ({
     type = 'info',
     location,
     tags,
-    tagsVariant = 'default',
+    squareCorners,
     testID,
-    containerStyle,
-    iconSize = 20,
 }: Props) => {
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
@@ -182,9 +182,9 @@ const SectionNotice = ({
     const combinedContainerStyle = useMemo(() => [
         styles.container,
         styles[`${type}Container`],
-        containerStyle,
-    ], [type, containerStyle]);
-    const iconStyle = useMemo(() => styles[`${type}Icon`], [type]);
+        !squareCorners && styles.roundCorners,
+    ], [styles, type, squareCorners]);
+    const iconStyle = useMemo(() => styles[`${type}Icon`], [styles, type]);
     return (
         <View
             style={combinedContainerStyle}
@@ -195,7 +195,7 @@ const SectionNotice = ({
                     <CompassIcon
                         name={icon}
                         style={iconStyle}
-                        size={iconSize}
+                        size={20}
                         testID='sectionNoticeHeaderIcon'
                     />
                 )}
@@ -206,6 +206,8 @@ const SectionNotice = ({
                             theme={theme}
                             location={location}
                             baseTextStyle={styles.baseText}
+                            textStyles={getMarkdownTextStyles(theme)}
+                            blockStyles={getMarkdownBlockStyles(theme)}
                             value={text}
                         />
                     )}
@@ -214,9 +216,8 @@ const SectionNotice = ({
                             {tags.map((tag) => (
                                 <Tag
                                     key={tag}
-                                    id={`tag.${tag}`}
-                                    defaultMessage={tag}
-                                    variant={tagsVariant}
+                                    testID={`tag.${tag}`}
+                                    message={tag}
                                 />
                             ))}
                         </View>

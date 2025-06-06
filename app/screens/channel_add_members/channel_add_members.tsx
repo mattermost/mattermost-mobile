@@ -288,9 +288,7 @@ export default function ChannelAddMembers({
                     onDismissClick={handleDismissBanner}
                     location={Screens.CHANNEL_ADD_MEMBERS}
                     testID={`${TEST_ID}.notice`}
-                    containerStyle={style.flatBottomBanner}
-                    iconSize={24}
-                    tagsVariant='subtle'
+                    squareCorners={true}
                 />
             )}
             <View style={style.searchBar}>
