@@ -19,6 +19,7 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import SecurityManager from '@managers/security_manager';
 import {dismissModal, popTopScreen, setButtons} from '@screens/navigation';
+import {logError} from '@utils/log';
 import {preventDoubleTap} from '@utils/tap';
 
 import ProfileForm, {CUSTOM_ATTRS_PREFIX} from './components/form';
@@ -186,10 +187,11 @@ const EditProfile = ({
                 }
 
                 // Update custom attributes if changed
-                if (userInfo.customAttributes) {
+                if (userInfo.customAttributes && enableCustomAttributes) {
                     const {error: attrError} = await updateCustomProfileAttributes(serverUrl, currentUser.id, userInfo.customAttributes);
                     if (attrError) {
-                        resetScreen(attrError);
+                        logError('Error updating custom attributes', attrError);
+                        resetScreenForProfileError(attrError);
                         return;
                     }
                 }
