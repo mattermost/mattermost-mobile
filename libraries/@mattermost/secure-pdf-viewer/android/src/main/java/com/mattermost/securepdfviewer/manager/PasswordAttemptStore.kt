@@ -28,7 +28,9 @@ class PasswordAttemptStore(context: Context) {
 
     companion object {
         private const val PREF_NAME = "secure_pdf_attempts"
-        private const val MAX_ATTEMPTS = 5
+        private const val MAX_ATTEMPTS = 10
+        private const val RESET_DELAY_MILLIS = 10 * 60 * 1000L
+        private const val TIMESTAMP_SUFFIX = "_ts"
     }
 
     // Lazy initialization of encrypted preferences to avoid blocking the main thread
@@ -43,6 +45,8 @@ class PasswordAttemptStore(context: Context) {
      * @return Number of attempts remaining before lockout (0 if already locked out)
      */
     fun getRemainingAttempts(fileKey: String): Int {
+        maybeResetIfExpired(fileKey)
+
         val failed = prefs.getInt(fileKey, 0)
         return (MAX_ATTEMPTS - failed).coerceAtLeast(0)
     }
@@ -54,9 +58,16 @@ class PasswordAttemptStore(context: Context) {
      * @return Number of attempts remaining after this failure (0 if now locked out)
      */
     fun registerFailedAttempt(fileKey: String): Int {
-        val updated = prefs.getInt(fileKey, 0) + 1
-        prefs.edit { putInt(fileKey, updated) }
-        return (MAX_ATTEMPTS - updated).coerceAtLeast(0)
+        maybeResetIfExpired(fileKey)
+
+        val current = prefs.getInt(fileKey, 0) + 1
+        prefs.edit {
+            putInt(fileKey, current)
+            if (current >= MAX_ATTEMPTS) {
+                putLong(fileKey + TIMESTAMP_SUFFIX, System.currentTimeMillis())
+            }
+        }
+        return (MAX_ATTEMPTS - current).coerceAtLeast(0)
     }
 
     /**
@@ -66,6 +77,7 @@ class PasswordAttemptStore(context: Context) {
      * @return true if the document is locked out due to too many failed attempts
      */
     fun hasExceededLimit(fileKey: String): Boolean {
+        maybeResetIfExpired(fileKey)
         return prefs.getInt(fileKey, 0) >= MAX_ATTEMPTS
     }
 
@@ -76,7 +88,10 @@ class PasswordAttemptStore(context: Context) {
      * @param fileKey Unique identifier for the document
      */
     fun resetAttempts(fileKey: String) {
-        prefs.edit { remove(fileKey) }
+        prefs.edit {
+            remove(fileKey)
+            remove(fileKey + TIMESTAMP_SUFFIX)
+        }
     }
 
     /**
@@ -87,6 +102,16 @@ class PasswordAttemptStore(context: Context) {
     fun maxAllowedAttempts(): Int = MAX_ATTEMPTS
 
     // Private encryption setup
+
+    private fun maybeResetIfExpired(fileKey: String) {
+        val timestamp = prefs.getLong(fileKey + TIMESTAMP_SUFFIX, -1L)
+        if (timestamp <= 0) return
+
+        val now = System.currentTimeMillis()
+        if (now - timestamp >= RESET_DELAY_MILLIS) {
+            resetAttempts(fileKey)
+        }
+    }
 
     /**
      * Creates encrypted SharedPreferences instance with strong encryption.

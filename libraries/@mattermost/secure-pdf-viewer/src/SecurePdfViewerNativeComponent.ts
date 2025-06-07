@@ -21,6 +21,10 @@ interface OnPasswordRequiredPayload {
   remainingAttempts: number;
 }
 
+interface OnPasswordLimitReached {
+  maxAttempts: number;
+}
+
 interface OnTapPayload {
   x: number;
   y: number;
@@ -33,6 +37,7 @@ interface OnTapPayload {
 export type OnLinkPressedEvent = NativeSyntheticEvent<OnLinkPressedPayload>;
 export type OnLoadErrorEvent = NativeSyntheticEvent<OnLoadErrorPayload>;
 export type OnPasswordFailedEvent = NativeSyntheticEvent<OnPasswordFailedPayload>;
+export type OnPasswordLimitReachedEvent = NativeSyntheticEvent<OnPasswordLimitReached>;
 export type OnPasswordRequiredEvent = NativeSyntheticEvent<OnPasswordRequiredPayload>;
 export type OnTapEvent = NativeSyntheticEvent<OnTapPayload>;
 
@@ -45,7 +50,7 @@ export interface NativeProps extends ViewProps {
   onLoad?: () => void;
   onPasswordRequired?: (event: OnPasswordRequiredEvent) => void;
   onPasswordFailed?: (event: OnPasswordFailedEvent) => void;
-  onPasswordFailureLimitReached?: () => void;
+  onPasswordFailureLimitReached?: (event: OnPasswordLimitReachedEvent) => void;
   onLoadError?: (event: OnLoadErrorEvent) => void;
   onTap?: (event: OnTapEvent) => void;
 }

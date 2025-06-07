@@ -14,7 +14,6 @@ import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} 
 import {typography} from '@utils/typography';
 
 type Props = {
-    isBlocked: boolean;
     setPassword: (text: string | undefined) => void;
     maxAttempts?: number;
     remainingAttempts?: number;
@@ -60,6 +59,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         textAlignVertical: 'center',
         height: 40,
         width: '80%',
+        maxWidth: 400,
         marginBottom: 10,
     },
 }));
@@ -87,12 +87,12 @@ const messages = defineMessages({
     },
 });
 
-const PdfPassword = forwardRef<PasswordRef, Props>(({isBlocked, maxAttempts, remainingAttempts, setPassword}, ref) => {
+const PdfPassword = forwardRef<PasswordRef, Props>(({maxAttempts, remainingAttempts, setPassword}, ref) => {
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const [inputValue, setInputValue] = useState<string | undefined>(undefined);
-    const limitReached = isBlocked || (maxAttempts !== undefined && maxAttempts > 0 && remainingAttempts === 0);
+    const limitReached = (maxAttempts !== undefined && maxAttempts > 0 && remainingAttempts === 0);
     const hasFailed = maxAttempts !== undefined && maxAttempts > 0 && remainingAttempts !== undefined && remainingAttempts < maxAttempts;
     const disabled = inputValue === undefined || inputValue.length === 0 || limitReached;
 

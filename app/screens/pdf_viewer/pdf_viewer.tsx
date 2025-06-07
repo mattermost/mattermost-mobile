@@ -6,6 +6,7 @@ import {
     type OnLinkPressedEvent,
     type OnLoadErrorEvent,
     type OnPasswordFailedEvent,
+    type OnPasswordLimitReachedEvent,
     type OnPasswordRequiredEvent,
 } from '@mattermost/secure-pdf-viewer';
 import {deleteAsync} from 'expo-file-system';
@@ -35,7 +36,6 @@ type Props = {
     allowPdfLinkNavigation: boolean;
     componentId: AvailableScreens;
     closeButtonId: string;
-    isBlocked: boolean;
     fileId: string;
     filePath: string;
     onDismiss?: () => void;
@@ -52,7 +52,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const PdfViewer = ({allowPdfLinkNavigation, closeButtonId, componentId, fileId, filePath, isBlocked, onDismiss, siteURL}: Props) => {
+const PdfViewer = ({allowPdfLinkNavigation, closeButtonId, componentId, fileId, filePath, onDismiss, siteURL}: Props) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();
     const intl = useIntl();
@@ -106,8 +106,9 @@ const PdfViewer = ({allowPdfLinkNavigation, closeButtonId, componentId, fileId, 
         passwordRef.current?.clear();
     }, []);
 
-    const onPasswordFailureLimitReached = useCallback(() => {
+    const onPasswordFailureLimitReached = useCallback((event: OnPasswordLimitReachedEvent) => {
         passwordRef.current?.clear();
+        setMaxAttempts(event.nativeEvent.maxAttempts);
         setRemainingAttempts(0);
         setFileAsBlocked(serverUrl, fileId);
     }, [serverUrl, fileId]);
@@ -128,7 +129,7 @@ const PdfViewer = ({allowPdfLinkNavigation, closeButtonId, componentId, fileId, 
     useNavButtonPressed(closeButtonId, componentId, onClose, [onClose]);
     useAndroidHardwareBackHandler(componentId, onClose);
 
-    const promptForPassword = (maxAttempts !== undefined && maxAttempts > 0) || isBlocked;
+    const promptForPassword = (maxAttempts !== undefined && maxAttempts > 0);
 
     return (
         <SafeAreaView
@@ -138,7 +139,6 @@ const PdfViewer = ({allowPdfLinkNavigation, closeButtonId, componentId, fileId, 
             {Boolean(errorMessage) && <PdfLoadError message={errorMessage}/>}
             {promptForPassword &&
                 <PdfPassword
-                    isBlocked={isBlocked}
                     maxAttempts={maxAttempts}
                     ref={passwordRef}
                     remainingAttempts={remainingAttempts}

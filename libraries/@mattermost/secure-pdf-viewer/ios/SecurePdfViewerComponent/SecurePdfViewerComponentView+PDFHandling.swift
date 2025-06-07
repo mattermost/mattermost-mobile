@@ -6,7 +6,8 @@ extension SecurePdfViewerComponentView {
         let fileKey = HashUtils.hashOfFilePathOrId(filePath)
         
         guard !attemptStore.hasExceededLimit(for: fileKey) else {
-            onPasswordFailureLimitReached?([:])
+            
+            onPasswordFailureLimitReached?(["maxAttempts": attemptStore.maxAllowedAttempts])
             return
         }
 
@@ -61,7 +62,7 @@ extension SecurePdfViewerComponentView {
         } else {
             let remaining = attemptStore.registerFailedAttempt(for: fileKey)
             if remaining <= 0 {
-                onPasswordFailureLimitReached?([:])
+                onPasswordFailureLimitReached?(["maxAttempts": attemptStore.maxAllowedAttempts])
             } else {
                 onPasswordFailed?(["remainingAttempts": remaining])
             }

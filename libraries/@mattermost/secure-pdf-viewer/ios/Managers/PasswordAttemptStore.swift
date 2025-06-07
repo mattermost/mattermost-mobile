@@ -3,17 +3,27 @@ import Security
 
 class PasswordAttemptStore {
     private let service = "com.mattermost.securepdfviewer.password.attempts"
-    private let maxAttempts = 5
+    private let maxAttempts = 10
+    private let restDelay: TimeInterval = 10 * 60
 
     func getRemainingAttempts(for fileKey: String) -> Int {
-        let failed = getFailedAttempts(for: fileKey)
+        maybeResetIfExperied(for: fileKey)
+        let failed = getAttemptInfo(for: fileKey)?.count ?? 0
         return max(maxAttempts - failed, 0)
     }
 
     func registerFailedAttempt(for fileKey: String) -> Int {
-        let failed = getFailedAttempts(for: fileKey) + 1
-        saveAttempts(for: fileKey, count: failed)
-        return max(maxAttempts - failed, 0)
+        maybeResetIfExperied(for: fileKey)
+        
+        var info = getAttemptInfo(for: fileKey) ?? AttemptInfo(count: 0, timestap: nil)
+        info.count += 1
+        
+        if info.count >= maxAttempts {
+            info.timestap = Date()
+        }
+        
+        saveAttempts(for: fileKey, info: info)
+        return max(maxAttempts - info.count, 0)
     }
 
     func resetAttempts(for fileKey: String) {
@@ -21,7 +31,8 @@ class PasswordAttemptStore {
     }
 
     func hasExceededLimit(for fileKey: String) -> Bool {
-        return getFailedAttempts(for: fileKey) >= maxAttempts
+        maybeResetIfExperied(for: fileKey)
+        return getAttemptInfo(for: fileKey)?.count ?? 0 >= maxAttempts
     }
 
     var maxAllowedAttempts: Int {
@@ -29,17 +40,34 @@ class PasswordAttemptStore {
     }
 
     // MARK: - Private
-
-    private func getFailedAttempts(for key: String) -> Int {
-        guard let data = getData(forKey: key),
-              let count = try? JSONDecoder().decode(Int.self, from: data) else {
-            return 0
+    
+    private struct AttemptInfo: Codable {
+        var count: Int
+        var timestap: Date?
+    }
+    
+    private func maybeResetIfExperied(for key: String) {
+        guard let info = getAttemptInfo(for: key),
+              info.count >= maxAttempts,
+              let ts = info.timestap else {
+            return
         }
-        return count
+        
+        if Date().timeIntervalSince(ts) >= restDelay {
+            resetAttempts(for: key)
+        }
+    }
+    
+    private func getAttemptInfo(for key: String) -> AttemptInfo? {
+        guard let data = getData(forKey: key),
+              let info = try? JSONDecoder().decode(AttemptInfo.self, from: data) else {
+            return nil
+        }
+        return info
     }
 
-    private func saveAttempts(for key: String, count: Int) {
-        guard let data = try? JSONEncoder().encode(count) else { return }
+    private func saveAttempts(for key: String, info: AttemptInfo) {
+        guard let data = try? JSONEncoder().encode(info) else { return }
 
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,

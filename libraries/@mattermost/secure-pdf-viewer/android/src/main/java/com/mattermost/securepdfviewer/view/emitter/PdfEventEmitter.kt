@@ -106,7 +106,9 @@ class PdfEventEmitter(
      * Emits password limit reached event (lockout condition).
      */
     fun emitPasswordFailureLimitReached() {
-        emitEvent(Events.ON_PASSWORD_LIMIT_REACHED.event, null)
+        emitEvent(Events.ON_PASSWORD_LIMIT_REACHED.event, Arguments.createMap().apply {
+            putInt("maxAttempts", attemptStore.maxAllowedAttempts())
+        })
     }
 
     /**
