@@ -50,10 +50,8 @@ android {
         } else {
             java.srcDirs += ['src/oldarch']
         }
-
-        jniLibs.srcDirs = ['src/main/jniLibs']
     }
-}
+  }
 }
 
 repositories {
@@ -67,7 +65,7 @@ repositories {
 
 dependencies {
     implementation 'com.facebook.react:react-native'
-    implementation files('./libs/mupdf-1.26.1.jar')
     implementation 'androidx.security:security-crypto:1.0.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
+    implementation 'com.github.mattermost:mattermost-android-pdfium:v1.0.1'
 }

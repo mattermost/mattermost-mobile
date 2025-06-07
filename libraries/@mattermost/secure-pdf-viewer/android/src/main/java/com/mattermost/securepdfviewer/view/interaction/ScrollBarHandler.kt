@@ -7,8 +7,8 @@ import android.util.Log
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.core.view.isVisible
-import com.mattermost.securepdfviewer.mupdf.MuPDFView
-import com.mattermost.securepdfviewer.mupdf.util.ViewUtils
+import com.mattermost.securepdfviewer.pdfium.PdfView
+import com.mattermost.securepdfviewer.pdfium.util.ViewUtils
 import com.mattermost.securepdfviewer.view.SecurePdfViewerView
 import com.mattermost.securepdfviewer.view.scrollhandle.BubbleView
 import com.mattermost.securepdfviewer.view.scrollhandle.ScrollBarView
@@ -39,7 +39,7 @@ class ScrollBarHandler @JvmOverloads constructor(
     // Properties & state management
 
     /** Reference to the parent PDF viewer container */
-    private var pdfViewer: SecurePdfViewerView? = null
+    private var securePdfView: SecurePdfViewerView? = null
 
     /** Current page number (1-based) */
     private var currentPage = 0
@@ -125,6 +125,8 @@ class ScrollBarHandler @JvmOverloads constructor(
         visibility = INVISIBLE
         clipChildren = false
         clipToPadding = false
+        setWillNotDraw(false)
+
 
         // Create scroll bar track
         scrollBar = ScrollBarView(context, scrollBarColor, scrollBarWidth)
@@ -162,21 +164,21 @@ class ScrollBarHandler @JvmOverloads constructor(
     /**
      * Sets up the scroll handle within the PDF viewer layout.
      *
-     * @param pdfView The parent PDF viewer container that will host this scroll handle
+     * @param securePdfView The parent PDF viewer container that will host this scroll handle
      */
-    fun setupLayout(pdfView: SecurePdfViewerView) {
+    fun setupLayout(securePdfView: SecurePdfViewerView) {
         val layoutParams = LayoutParams(
             LayoutParams.MATCH_PARENT,
             LayoutParams.MATCH_PARENT
         )
         layoutParams.setMargins(0, dp(12f), 0, dp(12f))
 
-        pdfView.addView(this, layoutParams)
-        this.pdfViewer = pdfView
+        securePdfView.addView(this, layoutParams)
+        this.securePdfView = securePdfView
 
-        // Get page count from the MuPDF view
-        val muPDFView = pdfView.getChildAt(0) as? MuPDFView
-        this.pageCount = muPDFView?.getPageCount() ?: 0
+        // Get page count from the Pdf view
+        val pdfView = securePdfView.getChildAt(0) as? PdfView
+        this.pageCount = pdfView?.getPageCount() ?: 0
 
         post {
             updateComponentPositions()
@@ -188,7 +190,7 @@ class ScrollBarHandler @JvmOverloads constructor(
      * Cleans up resources and removes the scroll handle from its parent.
      */
     fun destroy() {
-        pdfViewer?.removeView(this)
+        securePdfView?.removeView(this)
         handler.removeCallbacks(hidePageScrollerRunnable)
     }
 
@@ -217,10 +219,10 @@ class ScrollBarHandler @JvmOverloads constructor(
             setPosition(position)
 
             // Update page information display
-            val muPdfView = pdfViewer?.getChildAt(0) as? MuPDFView
-            muPdfView?.let { pdfView ->
-                val visiblePages = getVisiblePageRange(pdfView)
-                val totalPages = pdfView.getPageCount()
+            val pdfView = securePdfView?.getChildAt(0) as? PdfView
+            pdfView?.let { view ->
+                val visiblePages = getVisiblePageRange(view)
+                val totalPages = view.getPageCount()
 
                 updatePageText(visiblePages.first, visiblePages.second, totalPages)
             }
@@ -239,10 +241,10 @@ class ScrollBarHandler @JvmOverloads constructor(
     fun setPageNum(pageNum: Int) {
         this.currentPage = pageNum
 
-        val muPdfView = pdfViewer?.getChildAt(0) as? MuPDFView
-        muPdfView?.let { pdfView ->
-            val visiblePages = getVisiblePageRange(pdfView)
-            val totalPages = pdfView.getPageCount()
+        val pdfView = securePdfView?.getChildAt(0) as? PdfView
+        pdfView?.let { view ->
+            val visiblePages = getVisiblePageRange(view)
+            val totalPages = view.getPageCount()
 
             updatePageText(visiblePages.first, visiblePages.second, totalPages)
         }
@@ -256,8 +258,8 @@ class ScrollBarHandler @JvmOverloads constructor(
             updateScrollThumbSize()
             updateComponentPositions()
 
-            val muPdfView = pdfViewer?.getChildAt(0) as? MuPDFView
-            this.pageCount = muPdfView?.getPageCount() ?: 0
+            val pdfView = securePdfView?.getChildAt(0) as? PdfView
+            this.pageCount = pdfView?.getPageCount() ?: 0
         }
     }
 
@@ -270,27 +272,27 @@ class ScrollBarHandler @JvmOverloads constructor(
      * detect and display page ranges (e.g., "2-4 / 20"). For documents with full-height
      * pages, it displays single page numbers (e.g., "3 / 20").
      *
-     * @param muPdfView The MuPDF view to analyze
+     * @param pdfView The PDF view to analyze
      * @return Pair of (first visible page, last visible page) in 1-based numbering
      */
-    private fun getVisiblePageRange(muPdfView: MuPDFView): Pair<Int, Int> {
+    private fun getVisiblePageRange(pdfView: PdfView): Pair<Int, Int> {
         return try {
-            val currentPage = muPdfView.getCurrentPage() + 1 // Convert to 1-based
+            val currentPage = pdfView.getCurrentPage() + 1 // Convert to 1-based
 
             // When zoomed in, always show single page
-            val currentZoom = muPdfView.getCurrentZoomScale()
+            val currentZoom = pdfView.getCurrentZoomScale()
             if (currentZoom > 1.1f) {
                 return Pair(currentPage, currentPage)
             }
 
             // Check if pages are short enough to warrant multi-page display
-            val areShortPages = checkIfPagesAreShort(muPdfView)
+            val areShortPages = checkIfPagesAreShort(pdfView)
             if (!areShortPages) {
                 return Pair(currentPage, currentPage)
             }
 
             // Calculate visible pages based on screen coverage
-            val visiblePages = calculateSignificantlyVisiblePages(muPdfView)
+            val visiblePages = calculateSignificantlyVisiblePages(pdfView)
 
             if (visiblePages.size <= 1) {
                 Pair(currentPage, currentPage)
@@ -301,7 +303,7 @@ class ScrollBarHandler @JvmOverloads constructor(
             }
 
         } catch (e: Exception) {
-            val fallbackPage = muPdfView.getCurrentPage() + 1
+            val fallbackPage = pdfView.getCurrentPage() + 1
             Pair(fallbackPage, fallbackPage)
         }
     }
@@ -309,21 +311,21 @@ class ScrollBarHandler @JvmOverloads constructor(
     /**
      * Calculates which pages are significantly visible (>60% on screen).
      *
-     * @param muPdfView The MuPDF view to analyze
+     * @param pdfView The PDF view to analyze
      * @return List of page numbers (0-based) that are significantly visible
      */
-    private fun calculateSignificantlyVisiblePages(muPdfView: MuPDFView): List<Int> {
+    private fun calculateSignificantlyVisiblePages(pdfView: PdfView): List<Int> {
         return try {
-            val viewHeight = muPdfView.height.toFloat()
-            val scrollY = muPdfView.getCurrentScrollY()
+            val viewHeight = pdfView.viewHeight.toFloat()
+            val scrollY = pdfView.getCurrentScrollY()
             val viewBottom = scrollY + viewHeight
 
             val visiblePages = mutableListOf<Int>()
-            val pageCount = muPdfView.getPageCount()
+            val pageCount = pdfView.getPageCount()
 
             for (pageNum in 0 until pageCount) {
                 val pageVisibility =
-                    calculatePageVisibilityPercentage(muPdfView, pageNum, scrollY, viewBottom)
+                    calculatePageVisibilityPercentage(pdfView, pageNum, scrollY, viewBottom)
 
                 if (pageVisibility > 0.6f) { // More than 60% visible
                     visiblePages.add(pageNum)
@@ -331,28 +333,28 @@ class ScrollBarHandler @JvmOverloads constructor(
             }
 
             if (visiblePages.isEmpty()) {
-                visiblePages.add(muPdfView.getCurrentPage())
+                visiblePages.add(pdfView.getCurrentPage())
             }
 
             visiblePages.sorted()
         } catch (e: Exception) {
-            listOf(muPdfView.getCurrentPage())
+            listOf(pdfView.getCurrentPage())
         }
     }
 
     /**
      * Calculates what percentage of a specific page is visible in the viewport.
      *
-     * @param muPdfView The MuPDF view
+     * @param pdfView The PDF view
      * @param pageNum Page number to check (0-based)
      * @param viewTop Top edge of the viewport
      * @param viewBottom Bottom edge of the viewport
      * @return Percentage of page visible (0.0 to 1.0)
      */
-    private fun calculatePageVisibilityPercentage(muPdfView: MuPDFView, pageNum: Int, viewTop: Float, viewBottom: Float): Float {
+    private fun calculatePageVisibilityPercentage(pdfView: PdfView, pageNum: Int, viewTop: Float, viewBottom: Float): Float {
         return try {
-            val pageBounds = muPdfView.layoutCalculator.getEstimatedPageBounds(pageNum)
-                ?: return if (pageNum == muPdfView.getCurrentPage()) 1.0f else 0.0f
+            val pageBounds = pdfView.getEstimatedPageBounds(pageNum)
+                ?: return if (pageNum == pdfView.getCurrentPage()) 1.0f else 0.0f
 
             val pageTop = pageBounds.first
             val pageBottom = pageBounds.second
@@ -368,7 +370,7 @@ class ScrollBarHandler @JvmOverloads constructor(
             // Return percentage of page that's visible
             (intersectionHeight / pageHeight).coerceIn(0f, 1f)
         } catch (e: Exception) {
-            if (pageNum == muPdfView.getCurrentPage()) 1.0f else 0.0f
+            if (pageNum == pdfView.getCurrentPage()) 1.0f else 0.0f
         }
     }
 
@@ -378,14 +380,14 @@ class ScrollBarHandler @JvmOverloads constructor(
      * Pages are considered "short" if they occupy less than 50% of the screen height,
      * which means multiple pages could be visible simultaneously.
      *
-     * @param muPdfView The MuPDF view to analyze
+     * @param pdfView The PDF view to analyze
      * @return True if pages are short enough for multi-page display
      */
-    private fun checkIfPagesAreShort(muPdfView: MuPDFView): Boolean {
+    private fun checkIfPagesAreShort(pdfView: PdfView): Boolean {
         return try {
-            val viewHeight = muPdfView.height.toFloat()
+            val viewHeight = pdfView.viewHeight.toFloat()
 
-            val pageBounds = muPdfView.layoutCalculator.getEstimatedPageBounds(0) // Use first page as reference
+            val pageBounds = pdfView.getEstimatedPageBounds(0) // Use first page as reference
             if (pageBounds != null) {
                 val pageHeight = pageBounds.second - pageBounds.first
                 pageHeight < (viewHeight * 0.5f) // Less than 50% of screen height
@@ -439,10 +441,10 @@ class ScrollBarHandler @JvmOverloads constructor(
      * Longer documents have smaller thumbs, shorter documents have larger thumbs.
      */
     private fun updateScrollThumbSize() {
-        val pdfViewHeight = pdfViewer?.height ?: return
+        val pdfViewHeight = securePdfView?.height ?: return
 
-        val muPdfView = pdfViewer?.getChildAt(0) as? MuPDFView
-        val totalDocHeight = muPdfView?.getTotalDocumentHeight() ?: (pdfViewHeight.toFloat() * pageCount)
+        val pdfView = securePdfView?.getChildAt(0) as? PdfView
+        val totalDocHeight = pdfView?.getTotalDocumentHeight() ?: (pdfViewHeight.toFloat() * pageCount)
 
         val maxThumbHeight = pdfViewHeight * 0.2f // Max 20% of scroll bar height
         val minThumbHeight = scrollThumbMinHeight.toFloat()
@@ -513,7 +515,7 @@ class ScrollBarHandler @JvmOverloads constructor(
      */
     private fun relayoutBubbleView() {
         bubbleView.measure(
-            MeasureSpec.makeMeasureSpec(pdfViewer?.width ?: 0, MeasureSpec.AT_MOST),
+            MeasureSpec.makeMeasureSpec(securePdfView?.width ?: 0, MeasureSpec.AT_MOST),
             MeasureSpec.makeMeasureSpec(bubbleHeight, MeasureSpec.EXACTLY)
         )
         bubbleView.layout(

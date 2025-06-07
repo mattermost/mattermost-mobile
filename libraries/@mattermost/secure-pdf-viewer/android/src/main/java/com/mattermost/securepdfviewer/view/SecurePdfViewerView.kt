@@ -4,7 +4,7 @@ import android.content.Context
 import android.graphics.drawable.ColorDrawable
 import android.widget.FrameLayout
 import com.mattermost.securepdfviewer.manager.PasswordAttemptStore
-import com.mattermost.securepdfviewer.mupdf.MuPDFView
+import com.mattermost.securepdfviewer.pdfium.PdfView
 import com.mattermost.securepdfviewer.view.callbacks.PdfViewCallbacks
 import com.mattermost.securepdfviewer.view.emitter.PdfEventEmitter
 import com.mattermost.securepdfviewer.view.interaction.ScrollBarHandler
@@ -32,8 +32,11 @@ import com.mattermost.securepdfviewer.view.manager.PdfLoadManager
  */
 class SecurePdfViewerView(context: Context) : FrameLayout(context) {
 
+    private var isAttached = false
+    private var pendingLoad = false
+
     /** The main PDF rendering view powered by MuPDF */
-    private val pdfView: MuPDFView = MuPDFView(context)
+    private val pdfView: PdfView = PdfView(context)
 
     /** Store for tracking password attempt limits per document */
     private val attemptStore = PasswordAttemptStore(context)
@@ -44,21 +47,21 @@ class SecurePdfViewerView(context: Context) : FrameLayout(context) {
     // Component Managers
 
     /** Handles all React Native event emission for PDF viewer interactions */
-    private val eventEmitter = PdfEventEmitter(context, this, attemptStore)
+    private var eventEmitter: PdfEventEmitter? = null
 
     /** Manages PDF view event callbacks and coordination between components */
     private val pdfCallbacks = PdfViewCallbacks(
         this,
         pdfView,
         attemptStore,
-        eventEmitter,
+        this::eventEmitter,
     )
 
     /** Handles PDF document loading, validation, and security checks */
     private val loadManager = PdfLoadManager(
         context,
         pdfView,
-        eventEmitter,
+        this::eventEmitter,
         attemptStore,
         this.background as ColorDrawable?,
     )
@@ -76,10 +79,6 @@ class SecurePdfViewerView(context: Context) : FrameLayout(context) {
 
     init {
         pdfCallbacks.setupCallbacks()
-
-        post {
-            setupScrollHandle()
-        }
     }
 
     /**
@@ -101,7 +100,11 @@ class SecurePdfViewerView(context: Context) : FrameLayout(context) {
      */
     fun setSource(path: String?) {
         source = path
-        maybeLoadPdf()
+        if (isAttached) {
+            maybeLoadPdf()
+        } else {
+            pendingLoad = true
+        }
     }
 
     /**
@@ -113,7 +116,11 @@ class SecurePdfViewerView(context: Context) : FrameLayout(context) {
     fun setPassword(pass: String?) {
         password = pass
         if (source != null && pass != null) {
-            maybeLoadPdf()
+            if (isAttached) {
+                maybeLoadPdf()
+            } else {
+                pendingLoad = true
+            }
         }
     }
 
@@ -190,6 +197,17 @@ class SecurePdfViewerView(context: Context) : FrameLayout(context) {
 
     // Lifecycle management
 
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        isAttached = true
+        eventEmitter = PdfEventEmitter(context, this.id, attemptStore)
+        setupScrollHandle()
+        if (pendingLoad) {
+            maybeLoadPdf()
+            pendingLoad = false
+        }
+    }
+
     /**
      * Handles view detachment and performs comprehensive cleanup.
      *
@@ -202,8 +220,5 @@ class SecurePdfViewerView(context: Context) : FrameLayout(context) {
         // Clean up scroll handle resources
         scrollBarHandle?.destroy()
         scrollBarHandle = null
-
-        // Clean up PDF view resources
-        pdfView.documentManager.safeCleanup()
     }
 }

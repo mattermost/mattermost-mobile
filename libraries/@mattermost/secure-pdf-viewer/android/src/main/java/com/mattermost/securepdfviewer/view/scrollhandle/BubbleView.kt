@@ -8,7 +8,7 @@ import android.util.AttributeSet
 import android.util.Log
 import android.util.TypedValue
 import android.view.View
-import com.mattermost.securepdfviewer.mupdf.util.ViewUtils
+import com.mattermost.securepdfviewer.pdfium.util.ViewUtils
 
 /**
  * Custom view that displays a floating bubble with page information in the scroll handle.
@@ -141,7 +141,7 @@ class BubbleView @JvmOverloads constructor(
             // Measure new text dimensions for accurate layout
             textPaint.getTextBounds(text, 0, text.length, textBounds)
 
-            requestLayout() // Triggers remeasurement for new text width
+            requestLayout() // Triggers re-measurement for new text width
             invalidate() // Triggers redraw with new text content
         }
     }

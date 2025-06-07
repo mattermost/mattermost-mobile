@@ -1,8 +1,12 @@
 package com.mattermost.securepdfviewer.view.callbacks
 
 import android.util.Log
+import android.view.View.MeasureSpec
+import android.widget.FrameLayout
+import com.mattermost.pdfium.exceptions.InvalidPasswordException
+import com.mattermost.pdfium.exceptions.PasswordRequiredException
 import com.mattermost.securepdfviewer.manager.PasswordAttemptStore
-import com.mattermost.securepdfviewer.mupdf.MuPDFView
+import com.mattermost.securepdfviewer.pdfium.PdfView
 import com.mattermost.securepdfviewer.util.HashUtils
 import com.mattermost.securepdfviewer.view.SecurePdfViewerView
 import com.mattermost.securepdfviewer.view.emitter.PdfEventEmitter
@@ -21,9 +25,9 @@ import com.mattermost.securepdfviewer.view.emitter.PdfEventEmitter
  */
 class PdfViewCallbacks(
     private val viewer: SecurePdfViewerView,
-    private val pdfView: MuPDFView,
+    private val pdfView: PdfView,
     private val attemptStore: PasswordAttemptStore,
-    private val eventEmitter: PdfEventEmitter,
+    private val eventEmitter: () -> PdfEventEmitter?,
 ) {
 
     companion object {
@@ -55,7 +59,7 @@ class PdfViewCallbacks(
 
             val screenLocation = IntArray(2)
             viewer.getLocationOnScreen(screenLocation)
-            eventEmitter.emitTapEvent(event, screenLocation)
+            eventEmitter()?.emitTapEvent(event, screenLocation)
         }
 
         /**
@@ -65,10 +69,10 @@ class PdfViewCallbacks(
         pdfView.onLinkTapped = { link ->
             when {
                 link.isExternal() && viewer.getAllowLinks() -> {
-                    eventEmitter.emitLinkPressed(link.uri ?: "")
+                    eventEmitter()?.emitLinkPressed(link.uri ?: "")
                 }
                 link.isExternal() && !viewer.getAllowLinks() -> {
-                    eventEmitter.emitLinkPressedDisabled()
+                    eventEmitter()?.emitLinkPressedDisabled()
                 }
                 link.isInternal() -> {
                     // Internal links are handled automatically by MuPDFView
@@ -113,8 +117,25 @@ class PdfViewCallbacks(
             if (pdfView.parent == viewer) {
                 viewer.removeView(pdfView)
             }
-            viewer.addView(pdfView)
-            eventEmitter.emitLoadComplete()
+            val layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
+            )
+            val width = viewer.measuredWidth
+            val height = viewer.measuredHeight
+            if (width > 0 && height > 0) {
+                pdfView.markViewReady()
+                viewer.addView(pdfView, layoutParams)
+                pdfView.measure(
+                    MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
+                    MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY)
+                )
+                pdfView.layout(0, 0, width, height)
+                pdfView.invalidate()
+            } else {
+                Log.w(TAG, "Cannot layout PdfView, parent has 0 size")
+            }
+            eventEmitter()?.emitLoadComplete()
 
             // Reset password attempts on successful load
             val fileKey = viewer.getSource()?.let { HashUtils.sha256(it) }
@@ -124,6 +145,10 @@ class PdfViewCallbacks(
 
             // Initialize scroll handle for newly loaded document
             viewer.getScrollBarHandle()?.let { handle ->
+                if (handle.parent != null) {
+                    handle.bringToFront()
+                    handle.invalidate()
+                }
                 handle.updateForDocumentChange()
                 handle.setPageNum(1) // Show "1 / total pages"
                 handle.show()
@@ -140,9 +165,11 @@ class PdfViewCallbacks(
             if (fileKey != null) {
                 handleLoadError(exception, fileKey)
             } else {
-                eventEmitter.emitLoadFailed(exception.message ?: "Unknown error")
+                eventEmitter()?.emitLoadFailed(exception.message ?: "Unknown error")
             }
         }
+
+        pdfView.setContextCallbacks()
     }
 
     /**
@@ -157,21 +184,27 @@ class PdfViewCallbacks(
     private fun handleLoadError(throwable: Throwable, fileKey: String) {
         val message = throwable.message ?: ""
 
-        if (message.contains("password", ignoreCase = true)) {
-            var retryAttempts = attemptStore.getRemainingAttempts(fileKey)
-            if (retryAttempts <= attemptStore.maxAllowedAttempts() && viewer.getPassword() == null) {
-                eventEmitter.emitPasswordRequired(fileKey)
-                return
+        val remainingAttempts = attemptStore.getRemainingAttempts(fileKey)
+        val maxAllowedAttempts = attemptStore.maxAllowedAttempts()
+        when(throwable) {
+            is PasswordRequiredException -> {
+                if (remainingAttempts <= maxAllowedAttempts && viewer.getPassword() == null) {
+                    eventEmitter()?.emitPasswordRequired(fileKey)
+                } else {
+                    eventEmitter()?.emitPasswordFailed(remainingAttempts)
+                }
             }
-
-            retryAttempts = attemptStore.registerFailedAttempt(fileKey)
-            if (retryAttempts < attemptStore.maxAllowedAttempts()) {
-                eventEmitter.emitPasswordFailed(retryAttempts)
-            } else {
-                eventEmitter.emitPasswordFailureLimitReached()
+            is InvalidPasswordException -> {
+                attemptStore.registerFailedAttempt(fileKey)
+                if ((remainingAttempts - 1) < maxAllowedAttempts) {
+                    eventEmitter()?.emitPasswordFailed(maxOf(remainingAttempts - 1, 0))
+                } else {
+                    eventEmitter()?.emitPasswordFailureLimitReached()
+                }
             }
-        } else {
-            eventEmitter.emitLoadFailed(message)
+            else -> {
+                eventEmitter()?.emitLoadFailed(message)
+            }
         }
     }
 }

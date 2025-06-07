@@ -11,7 +11,6 @@ import com.mattermost.securepdfviewer.BuildConfig
 import com.mattermost.securepdfviewer.enums.Events
 import com.mattermost.securepdfviewer.event.PdfViewerEvent
 import com.mattermost.securepdfviewer.manager.PasswordAttemptStore
-import com.mattermost.securepdfviewer.view.SecurePdfViewerView
 
 /**
  * Handles all React Native event emission for the PDF viewer.
@@ -28,7 +27,7 @@ import com.mattermost.securepdfviewer.view.SecurePdfViewerView
  */
 class PdfEventEmitter(
     private val context: Context,
-    private val viewer: SecurePdfViewerView,
+    private val viewId: Int,
     private val attemptStore: PasswordAttemptStore
 ) {
 
@@ -40,7 +39,6 @@ class PdfEventEmitter(
      */
     private fun emitEvent(name: String, payload: WritableMap?) {
         val reactContext = context as ReactContext
-        val viewId = viewer.id
 
         if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
             // New Architecture (Fabric) event dispatch

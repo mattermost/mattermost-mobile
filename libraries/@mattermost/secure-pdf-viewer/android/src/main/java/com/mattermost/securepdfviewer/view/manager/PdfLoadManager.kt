@@ -4,11 +4,10 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import com.mattermost.securepdfviewer.manager.PasswordAttemptStore
-import com.mattermost.securepdfviewer.mupdf.MuPDFView
+import com.mattermost.securepdfviewer.pdfium.PdfView
 import com.mattermost.securepdfviewer.util.FileValidator
 import com.mattermost.securepdfviewer.util.HashUtils
 import com.mattermost.securepdfviewer.util.MemoryUtil
-
 import com.mattermost.securepdfviewer.view.emitter.PdfEventEmitter
 import java.util.Locale
 
@@ -27,8 +26,8 @@ import java.util.Locale
  */
 class PdfLoadManager(
     private val context: Context,
-    private val pdfView: MuPDFView,
-    private val eventEmitter: PdfEventEmitter,
+    private val pdfView: PdfView,
+    private val eventEmitter: () -> PdfEventEmitter?,
     private val attemptStore: PasswordAttemptStore,
     private val backgroundColor: ColorDrawable?
 ) {
@@ -47,14 +46,14 @@ class PdfLoadManager(
      */
     fun loadPdf(source: String?, password: String?) {
         if (source == null) {
-            eventEmitter.emitLoadFailed("No source specified")
+            eventEmitter()?.emitLoadFailed("No source specified")
             return
         }
 
         // Check password attempt limits for security
         val fileKey = HashUtils.sha256(source)
         if (attemptStore.hasExceededLimit(fileKey)) {
-            eventEmitter.emitPasswordFailureLimitReached()
+            eventEmitter()?.emitPasswordFailureLimitReached()
             return
         }
 
@@ -62,7 +61,7 @@ class PdfLoadManager(
         val allowedDirs = listOfNotNull(context.cacheDir, context.externalCacheDir)
         val file = FileValidator.parseSourceToFile(source, allowedDirs)
         if (file == null) {
-            eventEmitter.emitLoadFailed("Invalid or unauthorized file")
+            eventEmitter()?.emitLoadFailed("Invalid or unauthorized file")
             return
         }
 
@@ -70,7 +69,7 @@ class PdfLoadManager(
         val fileSize = FileValidator.getSafeFileSize(file)
         val maxSize = MemoryUtil.getMaxPdfSize(context)
         if (fileSize == null) {
-            eventEmitter.emitLoadFailed("Unable to read file size")
+            eventEmitter()?.emitLoadFailed("Unable to read file size")
             return
         }
 
@@ -83,7 +82,7 @@ class PdfLoadManager(
                 sizeInMB,
                 limitInMB
             )
-            eventEmitter.emitLoadFailed(error)
+            eventEmitter()?.emitLoadFailed(error)
             return
         }
 
