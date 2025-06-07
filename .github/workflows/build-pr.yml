@@ -15,6 +15,7 @@ on:
         options:
           - ios
           - android
+          - both
 
   pull_request:
     types:
@@ -24,34 +25,53 @@ on:
 permissions:
   contents: read
   pull-requests: write
+  actions: write
 
 env:
   NODE_VERSION: 22.14.0
   TERM: xterm
-  IS_FORK: ${{ github.event.pull_request.head.repo.fork == true }}
+  # Consistent ref for checkout: PR's head SHA, or the ref the workflow_dispatch runs on.
+  CHECKOUT_REF: ${{ github.event.pull_request.head.sha || github.ref }}
+  # Branch to build: PR's head ref (branch name) or the input branch for workflow_dispatch
+  BRANCH_TO_BUILD: ${{ github.event.pull_request.head.ref || github.event.inputs.branch }}
 
 jobs:
   test:
+    if: ${{ (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch') }}
     runs-on: ubuntu-22.04
-    if: ${{ github.event.label.name == 'Build Apps for PR' || github.event.label.name == 'Build App for iOS' || github.event.label.name == 'Build App for Android' || (github.event_name == 'workflow_dispatch' && (github.event.inputs.platform == 'ios' || github.event.inputs.platform == 'android')) }}
     steps:
       - name: ci/checkout-repo
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ env.CHECKOUT_REF }}
       - name: ci/test
         uses: ./.github/actions/test
 
   build-ios-pr:
     runs-on: macos-14-large
-    if: ${{ (github.event.label.name == 'Build Apps for PR' || github.event.label.name == 'Build App for iOS' || (github.event_name == 'workflow_dispatch' && github.event.inputs.platform == 'ios')) && github.event.pull_request.head.repo.fork != true }}
-    needs:
-      - test
+    needs: test
+    if: |
+      (
+        github.event.label.name == 'Build Apps for PR' || 
+        github.event.label.name == 'Build App for iOS' || 
+        (github.event_name == 'workflow_dispatch' && (github.event.inputs.platform == 'ios' || github.event.inputs.platform == 'both'))
+      ) && 
+      (github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.fork != true)
+    env:
+      AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_PR_AWS_ACCESS_KEY_ID }}"
+      AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_PR_AWS_SECRET_ACCESS_KEY }}"
+      FASTLANE_TEAM_ID: "${{ secrets.MM_MOBILE_FASTLANE_TEAM_ID }}"
+      IOS_API_ISSUER_ID: "${{ secrets.MM_MOBILE_IOS_API_ISSUER_ID }}"
+      IOS_API_KEY: "${{ secrets.MM_MOBILE_IOS_API_KEY }}"
+      IOS_API_KEY_ID: "${{ secrets.MM_MOBILE_IOS_API_KEY_ID }}"
+      MATCH_GIT_URL: "${{ secrets.MM_MOBILE_MATCH_GIT_URL }}"
+      MATCH_PASSWORD: "${{ secrets.MM_MOBILE_MATCH_PASSWORD }}"
+      MATTERMOST_WEBHOOK_URL: "${{ secrets.MM_MOBILE_PR_MATTERMOST_WEBHOOK_URL }}"
     steps:
       - name: ci/checkout-repo
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ env.CHECKOUT_REF }}
 
       - name: ci/prepare-ios-build
         uses: ./.github/actions/prepare-ios-build
@@ -67,18 +87,9 @@ jobs:
 
       - name: ci/build-ios-pr
         env:
-          BRANCH_TO_BUILD: "${{ github.event.pull_request.head.ref || github.event.inputs.branch }}"
           GITHUB_PR_NUMBER: "${{ github.event.pull_request.number }}"
           GITHUB_EVENT_NAME: "${{ github.event_name }}"
-          AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_PR_AWS_ACCESS_KEY_ID }}"
-          AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_PR_AWS_SECRET_ACCESS_KEY }}"
-          FASTLANE_TEAM_ID: "${{ secrets.MM_MOBILE_FASTLANE_TEAM_ID }}"
-          IOS_API_ISSUER_ID: "${{ secrets.MM_MOBILE_IOS_API_ISSUER_ID }}"
-          IOS_API_KEY: "${{ secrets.MM_MOBILE_IOS_API_KEY }}"
-          IOS_API_KEY_ID: "${{ secrets.MM_MOBILE_IOS_API_KEY_ID }}"
-          MATCH_GIT_URL: "${{ secrets.MM_MOBILE_MATCH_GIT_URL }}"
-          MATCH_PASSWORD: "${{ secrets.MM_MOBILE_MATCH_PASSWORD }}"
-          MATTERMOST_WEBHOOK_URL: "${{ secrets.MM_MOBILE_PR_MATTERMOST_WEBHOOK_URL }}"
+          BRANCH_TO_BUILD: "${{ env.BRANCH_TO_BUILD }}"
         run: bundle exec fastlane ios build --env ios.pr
         working-directory: ./fastlane
 
@@ -97,8 +108,7 @@ jobs:
           script: |
             const prNumber = '${{ github.event.pull_request.number }}';
             const installUrl = `itms-services://?action=download-manifest&url=https://pr-builds.mattermost.com/mattermost-mobile/${prNumber}/merge/Mattermost_Beta.plist`;
-
-            const message = `### iOS PR Build\n\nYou can install the iOS app directly from:\n- [Install from PR Builds](${installUrl})\n\nCommit: ${{ github.event.pull_request.head.sha }}`;
+            const message = `### iOS PR Build\n\nYou can install the iOS app directly from:\n- [Install from PR Builds](${installUrl})\n\nCommit: ${{ env.CHECKOUT_REF }}`;
 
             github.rest.issues.createComment({
               issue_number: context.issue.number,
@@ -109,14 +119,23 @@ jobs:
 
   build-android-pr:
     runs-on: ubuntu-22.04
-    if: ${{ (github.event.label.name == 'Build Apps for PR' || github.event.label.name == 'Build App for Android' || (github.event_name == 'workflow_dispatch' && github.event.inputs.platform == 'android')) && github.event.pull_request.head.repo.fork != true }}
-    needs:
-      - test
+    needs: test
+    if: |
+      (
+        github.event.label.name == 'Build Apps for PR' || 
+        github.event.label.name == 'Build App for Android' || 
+        (github.event_name == 'workflow_dispatch' && (github.event.inputs.platform == 'android' || github.event.inputs.platform == 'both'))
+      ) && 
+      (github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.fork != true)
+    env:
+      AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_PR_AWS_ACCESS_KEY_ID }}"
+      AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_PR_AWS_SECRET_ACCESS_KEY }}"
+      MATTERMOST_WEBHOOK_URL: "${{ secrets.MM_MOBILE_PR_MATTERMOST_WEBHOOK_URL }}"
     steps:
       - name: ci/checkout-repo
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ env.CHECKOUT_REF }}
 
       - name: ci/prepare-android-build
         uses: ./.github/actions/prepare-android-build
@@ -128,12 +147,9 @@ jobs:
 
       - name: ci/build-android-pr
         env:
-          BRANCH_TO_BUILD: "${{ github.event.pull_request.head.ref || github.event.inputs.branch }}"
           GITHUB_PR_NUMBER: "${{ github.event.pull_request.number }}"
           GITHUB_EVENT_NAME: "${{ github.event_name }}"
-          AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_PR_AWS_ACCESS_KEY_ID }}"
-          AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_PR_AWS_SECRET_ACCESS_KEY }}"
-          MATTERMOST_WEBHOOK_URL: "${{ secrets.MM_MOBILE_PR_MATTERMOST_WEBHOOK_URL }}"
+          BRANCH_TO_BUILD: "${{ env.BRANCH_TO_BUILD }}"
         run: bundle exec fastlane android build --env android.pr
         working-directory: ./fastlane
 
@@ -152,8 +168,7 @@ jobs:
           script: |
             const prNumber = '${{ github.event.pull_request.number }}';
             const installUrl = `https://pr-builds.mattermost.com/mattermost-mobile/${prNumber}/merge/Mattermost_Beta.apk`;
-            
-            const message = `### Android PR Build\n\nYou can install the Android APK build directly from:\n- [Install from PR Builds](${installUrl})\n\nCommit: ${{ github.event.pull_request.head.sha }}`;
+            const message = `### Android PR Build\n\nYou can install the Android APK build directly from:\n- [Install from PR Builds](${installUrl})\n\nCommit: ${{ env.CHECKOUT_REF }}`;
 
             github.rest.issues.createComment({
               issue_number: context.issue.number,
@@ -162,46 +177,79 @@ jobs:
               body: message
             });
 
-  # Redirect to fork-specific workflow if this is a fork PR
   redirect-fork-build:
     runs-on: ubuntu-22.04
-    if: ${{ (github.event.label.name == 'Build Apps for PR' || github.event.label.name == 'Build App for iOS' || github.event.label.name == 'Build App for Android' || (github.event_name == 'workflow_dispatch' && (github.event.inputs.platform == 'ios' || github.event.inputs.platform == 'android'))) && github.event.pull_request.head.repo.fork == true }}
+    if: |
+      (
+        github.event.label.name == 'Build Apps for PR' || 
+        github.event.label.name == 'Build App for iOS' || 
+        github.event.label.name == 'Build App for Android' || 
+        (github.event_name == 'workflow_dispatch' && github.event.inputs.platform != '')
+      ) && 
+      github.event_name == 'pull_request' && 
+      github.event.pull_request.head.repo.fork == true
     steps:
-      - name: ci/checkout-repo
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          
+      - name: ci/determine-platform
+        id: determine-platform
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            PLATFORM="${{ github.event.inputs.platform }}"
+          elif [[ "${{ github.event.label.name }}" == "Build App for iOS" ]]; then
+            PLATFORM="ios"
+          elif [[ "${{ github.event.label.name }}" == "Build App for Android" ]]; then
+            PLATFORM="android"
+          else
+            PLATFORM="both"
+          fi
+          echo "platform=${PLATFORM}" >> $GITHUB_OUTPUT
+          echo "Determined platform: ${PLATFORM}"
+
       - name: ci/trigger-fork-workflow
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const workflowId = 'build-fork-pr.yml';
-            
+            const platformInput = '${{ steps.determine-platform.outputs.platform }}';
+            const prHeadRef = '${{ github.event.pull_request.head.ref }}';
+            const prNumber = '${{ github.event.pull_request.number }}';
+
+            console.log(`Triggering fork build workflow for PR #${prNumber}`);
+            console.log(`Branch: ${prHeadRef}, Platform: ${platformInput}`);
+
             try {
               await github.rest.actions.createWorkflowDispatch({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 workflow_id: workflowId,
-                ref: '${{ github.event.pull_request.head.ref }}',
+                ref: prHeadRef,
                 inputs: {
-                  branch: '${{ github.event.pull_request.head.ref }}',
-                  platform: "${{ github.event.label.name == 'Build App for iOS' && 'ios' || github.event.label.name == 'Build App for Android' && 'android' || 'android' }}"
+                  branch: prHeadRef,
+                  platform: platformInput
                 }
               });
               
-              console.log(`Successfully triggered fork build workflow: ${workflowId}`);
+              console.log(`Successfully triggered fork build workflow`);
               
-              // Comment on the PR
               await github.rest.issues.createComment({
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                body: `### Fork PR Build Triggered\n\nA separate workflow has been triggered to build this PR from a forked repository using secure credentials.\nThis may take a few minutes to complete. You'll receive another comment when the build is ready.`
+                body: `### Fork PR Build Triggered 🚀\n\nA separate workflow (**${workflowId}**) has been triggered to build this PR from the forked repository.\n\n**Details:**\n- Platform: **${platformInput}**\n- Branch: **${prHeadRef}**\n- PR: #${prNumber}\n\nThis may take a few minutes to complete. You'll receive another comment when the build is ready.`
               });
               
             } catch (error) {
               console.error(`Error triggering fork workflow: ${error.message}`);
+
+              try {
+                await github.rest.issues.createComment({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  body: `⚠️ **Failed to trigger fork PR build workflow**\n\n**Error:** ${error.message}\n\nPlease check the workflow configuration and try again.`
+                });
+              } catch (commentError) {
+                console.error(`Failed to comment on PR: ${commentError.message}`);
+              }
               core.setFailed(`Failed to trigger fork build workflow: ${error.message}`);
             }
