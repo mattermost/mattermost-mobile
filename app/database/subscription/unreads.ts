@@ -9,7 +9,7 @@ import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {observeAllMyChannelNotifyProps} from '@queries/servers/channel';
 import {queryMyTeams} from '@queries/servers/team';
-import {getIsCRTEnabled, observeThreadMentionCount, queryThreads, observeUnreadsAndMentionsInTeam} from '@queries/servers/thread';
+import {getIsCRTEnabled, observeThreadMentionCount, queryThreads, observeUnreadsAndMentions} from '@queries/servers/thread';
 
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 
@@ -41,7 +41,7 @@ export const subscribeServerUnreadAndMentions = (serverUrl: string, observer: Un
             observeWithColumns(['is_unread', 'mentions_count']).
             pipe(
                 combineLatestWith(observeAllMyChannelNotifyProps(server.database)),
-                combineLatestWith(observeUnreadsAndMentionsInTeam(server.database, undefined, true)),
+                combineLatestWith(observeUnreadsAndMentions(server.database, {includeDmGm: true})),
                 map$(([[myChannels, settings], {unreads, mentions}]) => ({myChannels, settings, threadUnreads: unreads, threadMentionCount: mentions})),
             ).
             subscribe(observer);
@@ -60,7 +60,7 @@ export const subscribeMentionsByServer = (serverUrl: string, observer: ServerUnr
             query(Q.on(CHANNEL, Q.where('delete_at', Q.eq(0)))).
             observeWithColumns(['mentions_count']).
             pipe(
-                combineLatestWith(observeThreadMentionCount(server.database, undefined, true)),
+                combineLatestWith(observeThreadMentionCount(server.database, {includeDmGm: true})),
                 map$(([myChannels, threadMentionCount]) => ({myChannels, threadMentionCount})),
             ).
             subscribe(observer.bind(undefined, serverUrl));
@@ -79,7 +79,7 @@ export const subscribeUnreadAndMentionsByServer = (serverUrl: string, observer: 
             observeWithColumns(['mentions_count', 'is_unread']).
             pipe(
                 combineLatestWith(observeAllMyChannelNotifyProps(server.database)),
-                combineLatestWith(observeUnreadsAndMentionsInTeam(server.database, undefined, true)),
+                combineLatestWith(observeUnreadsAndMentions(server.database, {includeDmGm: true})),
                 map$(([[myChannels, settings], {unreads, mentions}]) => ({myChannels, settings, threadUnreads: unreads, threadMentionCount: mentions})),
             ).
             subscribe(observer.bind(undefined, serverUrl));
@@ -108,7 +108,7 @@ export const getTotalMentionsForServer = async (serverUrl: string) => {
             let includeDmGm = true;
             const myTeamIds = await queryMyTeams(database).fetchIds();
             for await (const teamId of myTeamIds) {
-                const threads = await queryThreads(database, teamId, false, includeDmGm).extend(
+                const threads = await queryThreads(database, {teamId, includeDmGm}).extend(
                     Q.where('unread_mentions', Q.gt(0)),
                 ).fetch();
                 includeDmGm = false;

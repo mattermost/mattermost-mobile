@@ -6,7 +6,7 @@ import {switchMap} from 'rxjs/operators';
 
 import {observeCurrentChannelId, observeCurrentTeamId} from '@queries/servers/system';
 import {observeTeamLastChannelId} from '@queries/servers/team';
-import {observeUnreadsAndMentionsInTeam} from '@queries/servers/thread';
+import {observeUnreadsAndMentions} from '@queries/servers/thread';
 
 import ThreadsButton from './threads_button';
 
@@ -24,7 +24,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         ),
         unreadsAndMentions: currentTeamId.pipe(
             switchMap(
-                (teamId) => observeUnreadsAndMentionsInTeam(database, teamId),
+                (teamId) => observeUnreadsAndMentions(database, {teamId, includeDmGm: true}),
             ),
         ),
     };

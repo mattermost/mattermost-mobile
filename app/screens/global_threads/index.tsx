@@ -14,7 +14,7 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const teamId = observeCurrentTeamId(database);
-    const unreadsCount = teamId.pipe(switchMap((id) => queryThreadsInTeam(database, id, true, true, true).observeCount(false)));
+    const unreadsCount = teamId.pipe(switchMap((id) => queryThreadsInTeam(database, id, {onlyUnreads: true, hasReplies: true, isFollowing: true}).observeCount(false)));
     const hasUnreads = unreadsCount.pipe(
         switchMap((count) => of$(count > 0)),
         distinctUntilChanged(),
