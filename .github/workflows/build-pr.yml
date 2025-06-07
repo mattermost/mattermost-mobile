@@ -217,39 +217,22 @@ jobs:
             console.log(`Triggering fork build workflow for PR #${prNumber}`);
             console.log(`Branch: ${prHeadRef}, Platform: ${platformInput}`);
 
-            try {
-              await github.rest.actions.createWorkflowDispatch({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                workflow_id: workflowId,
-                ref: prHeadRef,
-                inputs: {
-                  branch: prHeadRef,
-                  platform: platformInput
-                }
-              });
-              
-              console.log(`Successfully triggered fork build workflow`);
-              
-              await github.rest.issues.createComment({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: `### Fork PR Build Triggered 🚀\n\nA separate workflow (**${workflowId}**) has been triggered to build this PR from the forked repository.\n\n**Details:**\n- Platform: **${platformInput}**\n- Branch: **${prHeadRef}**\n- PR: #${prNumber}\n\nThis may take a few minutes to complete. You'll receive another comment when the build is ready.`
-              });
-              
-            } catch (error) {
-              console.error(`Error triggering fork workflow: ${error.message}`);
-
-              try {
-                await github.rest.issues.createComment({
-                  issue_number: context.issue.number,
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  body: `⚠️ **Failed to trigger fork PR build workflow**\n\n**Error:** ${error.message}\n\nPlease check the workflow configuration and try again.`
-                });
-              } catch (commentError) {
-                console.error(`Failed to comment on PR: ${commentError.message}`);
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.payload.pull_request.head.repo.owner.login,
+              repo: context.payload.pull_request.head.repo.name,
+              workflow_id: workflowId,
+              ref: prHeadRef,
+              inputs: {
+                branch: prHeadRef,
+                platform: platformInput
               }
-              core.setFailed(`Failed to trigger fork build workflow: ${error.message}`);
-            }
+            });
+
+            console.log(`Successfully triggered fork build workflow`);
+
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `### Fork PR Build Triggered 🚀\n\nA separate workflow (**${workflowId}**) has been triggered to build this PR from the forked repository.\n\n**Details:**\n- Platform: **${platformInput}**\n- Branch: **${prHeadRef}**\n- PR: #${prNumber}\n\nThis may take a few minutes to complete. You'll receive another comment when the build is ready.`
+            });
