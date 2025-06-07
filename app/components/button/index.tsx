@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Button as ElementButton} from '@rneui/base';
+import {Button as ElementButton, type ButtonProps} from '@rneui/base';
 import React, {useMemo, type ReactNode} from 'react';
 import {type StyleProp, StyleSheet, Text, type TextStyle, View, type ViewStyle, type Insets} from 'react-native';
 
@@ -9,7 +9,7 @@ import CompassIcon from '@components/compass_icon';
 import Loading from '@components/loading';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 
-type Props = {
+type Props = Omit<ButtonProps, 'size'> & {
     theme: Theme;
     backgroundStyle?: StyleProp<ViewStyle>;
     buttonContainerStyle?: StyleProp<ViewStyle>;

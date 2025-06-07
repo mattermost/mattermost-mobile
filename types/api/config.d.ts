@@ -150,7 +150,9 @@ interface ClientConfig {
     MaxNotificationsPerChannel: string;
     MaxPostSize: string;
     MinimumHashtagLength: string;
+    MobileAllowPdfLinkNavigation: string;
     MobileEnableBiometrics: string;
+    MobileEnableSecureFilePreview: string;
     MobileJailbreakProtection: string;
     MobilePreventScreenCapture: string;
     MobileExternalBrowser: string;

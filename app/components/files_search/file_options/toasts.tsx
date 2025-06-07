@@ -24,6 +24,7 @@ const Toasts = ({
             return (
                 <DownloadWithAction
                     action={action}
+                    enableSecureFilePreview={false}
                     galleryView={false}
                     item={galleryItem}
                     setAction={setAction}
