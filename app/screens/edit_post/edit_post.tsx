@@ -3,11 +3,13 @@
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Keyboard, type LayoutChangeEvent, Platform, SafeAreaView, View, StyleSheet} from 'react-native';
+import {Alert, Keyboard, type LayoutChangeEvent, Platform, SafeAreaView, View, StyleSheet, DeviceEventEmitter} from 'react-native';
 
 import {deletePost, editPost} from '@actions/remote/post';
 import Autocomplete from '@components/autocomplete';
 import Loading from '@components/loading';
+import Uploads from '@components/post_draft/uploads';
+import {Events} from '@constants';
 import {ExtraKeyboardProvider} from '@context/extra_keyboard';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -55,8 +57,9 @@ type EditPostProps = {
     maxPostSize: number;
     hasFilesAttached: boolean;
     canDelete: boolean;
+    files?: FileInfo[];
 }
-const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttached, canDelete}: EditPostProps) => {
+const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttached, canDelete, files}: EditPostProps) => {
     const editingMessage = post.messageSource || post.message;
     const [postMessage, setPostMessage] = useState(editingMessage);
     const [cursorPosition, setCursorPosition] = useState(editingMessage.length);
@@ -65,6 +68,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
     const [isUpdating, setIsUpdating] = useState(false);
     const [containerHeight, setContainerHeight] = useState(0);
     const [propagateValue, shouldProcessEvent] = useInputPropagation();
+    const postFilesRef = useRef<FileInfo[]>(files || []);
 
     const mainView = useRef<View>(null);
 
@@ -116,6 +120,49 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
             }],
         });
     }, [componentId, intl, theme]);
+
+    const handleFileRemoval = useCallback((id: string) => {
+        const filterFileById = (file: FileInfo) => {
+            return file.id !== id;
+        };
+        Alert.alert(
+            intl.formatMessage({
+                id: 'edit_post.delete_file.title',
+                defaultMessage: 'Delete attachment',
+            }),
+            intl.formatMessage({
+                id: 'edit_post.delete_file.confirmation',
+                defaultMessage: 'Are you sure you want to remove {filename}?',
+            }, {
+                filename: postFilesRef.current?.find((file) => file.id === id)?.name || '',
+            }),
+            [
+                {
+                    text: intl.formatMessage({
+                        id: 'edit_post.delete_file.cancel',
+                        defaultMessage: 'Cancel',
+                    }),
+                    style: 'cancel',
+                },
+                {
+                    text: intl.formatMessage({
+                        id: 'edit_post.delete_file.confirm',
+                        defaultMessage: 'Delete',
+                    }),
+                    style: 'destructive',
+                    onPress: () => {
+                        postFilesRef.current = postFilesRef.current?.filter(filterFileById) || [];
+                        toggleSaveButton(true);
+                    },
+                },
+            ],
+        );
+    }, [intl, toggleSaveButton]);
+
+    useEffect(() => {
+        const onFileAddRemoved = DeviceEventEmitter.addListener(Events.FILE_ADD_REMOVED, handleFileRemoval);
+        return () => onFileAddRemoved.remove();
+    }, [handleFileRemoval]);
 
     const onChangeTextCommon = useCallback((message: string) => {
         const tooLong = message.trim().length > maxPostSize;
@@ -192,9 +239,13 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
             return;
         }
 
-        const res = await editPost(serverUrl, post.id, postMessage);
+        const currentFileIds = new Set(postFilesRef.current.map((f) => f.id).filter((id): id is string => id !== undefined));
+        const isFileRemoved = (file: FileInfo) => file.id && !currentFileIds.has(file.id);
+        const removed_file_ids = post.metadata?.files?.filter(isFileRemoved).map((file) => file.id).map((id) => id || '') || [];
+
+        const res = await editPost(serverUrl, post.id, postMessage, Array.from(currentFileIds), removed_file_ids);
         handleUIUpdates(res);
-    }, [toggleSaveButton, shouldDeleteOnSave, serverUrl, post.id, postMessage, handleUIUpdates, handleDeletePost]);
+    }, [toggleSaveButton, shouldDeleteOnSave, post.metadata?.files, post.id, serverUrl, postMessage, handleUIUpdates, handleDeletePost]);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         setContainerHeight(e.nativeEvent.layout.height);
@@ -250,6 +301,14 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
                             />
                         </View>
                     </View>
+                    <Uploads
+                        channelId={post.channelId}
+                        currentUserId={post.userId}
+                        files={postFilesRef.current}
+                        uploadFileError={undefined}
+                        rootId={post.rootId}
+                        isEditMode={true}
+                    />
                 </ExtraKeyboardProvider>
             </SafeAreaView>
             <Autocomplete

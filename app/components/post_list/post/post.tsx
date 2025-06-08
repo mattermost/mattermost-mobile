@@ -72,6 +72,7 @@ type PostProps = {
     style?: StyleProp<ViewStyle>;
     testID?: string;
     thread?: ThreadModel;
+    files?: FileInfo[];
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -145,6 +146,7 @@ const Post = ({
     thread,
     previousPost,
     isLastPost,
+    files,
 }: PostProps) => {
     const pressDetected = useRef(false);
     const intl = useIntl();
@@ -223,7 +225,7 @@ const Post = ({
         }
 
         Keyboard.dismiss();
-        const passProps = {sourceScreen: location, post, showAddReaction, serverUrl};
+        const passProps = {sourceScreen: location, post, showAddReaction, serverUrl, files};
         const title = isTablet ? intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}) : '';
 
         openAsBottomSheet({
@@ -234,7 +236,7 @@ const Post = ({
             props: passProps,
         });
     }, [
-        canDelete, hasBeenDeleted, intl,
+        canDelete, hasBeenDeleted, intl, files,
         isEphemeral, isPendingOrFailed, isTablet, isSystemPost,
         location, post, serverUrl, showAddReaction, theme,
     ]);

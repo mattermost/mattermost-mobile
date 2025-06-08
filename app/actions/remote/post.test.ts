@@ -411,7 +411,7 @@ describe('create, update & delete posts', () => {
 
     it('editPost - handle error', async () => {
         mockClient.deletePost.mockImplementationOnce(jest.fn(throwFunc));
-        const result = await editPost('foo', '', '');
+        const result = await editPost('foo', '', '', [], []);
         expect(result).toBeDefined();
         expect(result.error).toBeTruthy();
     });
@@ -424,7 +424,7 @@ describe('create, update & delete posts', () => {
             prepareRecordsOnly: false,
         });
 
-        const result = await editPost(serverUrl, post1.id, 'new message');
+        const result = await editPost(serverUrl, post1.id, 'new message', [], []);
         expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
         expect(result.post).toBeDefined();

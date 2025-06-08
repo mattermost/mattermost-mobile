@@ -2,11 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {View, Platform} from 'react-native';
+import {View, Platform, DeviceEventEmitter} from 'react-native';
 
 import {removeDraftFile} from '@actions/local/draft';
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {Events} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import DraftUploadManager from '@managers/draft_upload_manager';
@@ -16,6 +17,8 @@ type Props = {
     channelId: string;
     rootId: string;
     clientId: string;
+    isEditMode: boolean;
+    fileId: string;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
@@ -46,12 +49,18 @@ export default function UploadRemove({
     channelId,
     rootId,
     clientId,
+    isEditMode,
+    fileId,
 }: Props) {
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const serverUrl = useServerUrl();
 
     const onPress = () => {
+        if (isEditMode) {
+            DeviceEventEmitter.emit(Events.FILE_ADD_REMOVED, fileId);
+            return;
+        }
         DraftUploadManager.cancel(clientId);
         removeDraftFile(serverUrl, channelId, rootId, clientId);
     };
