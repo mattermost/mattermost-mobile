@@ -10,6 +10,7 @@ import * as category from './category';
 import * as channel from './channel';
 import * as group from './group';
 import {handleOpenDialogEvent} from './integrations';
+import {handlePluginDisabled, handlePluginEnabled} from './plugins';
 import * as posts from './posts';
 import * as preferences from './preferences';
 import {handleAddCustomEmoji, handleReactionRemovedFromPostEvent, handleReactionAddedToPostEvent} from './reactions';
@@ -263,9 +264,13 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
 
         // Plugins
         case WebsocketEvents.PLUGIN_STATUSES_CHANGED:
-        case WebsocketEvents.PLUGIN_ENABLED:
-        case WebsocketEvents.PLUGIN_DISABLED:
             // Do nothing, this event doesn't need logic in the mobile app
+            break;
+        case WebsocketEvents.PLUGIN_ENABLED:
+            handlePluginEnabled(serverUrl, msg);
+            break;
+        case WebsocketEvents.PLUGIN_DISABLED:
+            handlePluginDisabled(serverUrl, msg);
             break;
 
         // bookmarks
