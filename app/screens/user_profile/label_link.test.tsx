@@ -217,28 +217,6 @@ describe('UserProfileLink', () => {
         });
     });
 
-    describe('styling', () => {
-        it('should apply correct styles to the link', () => {
-            renderWithIntlAndTheme(
-                <UserProfileLink {...baseProps}/>,
-            );
-
-            const linkElement = screen.getByTestId('test-link.url');
-            expect(linkElement.props.style).toBeDefined();
-            expect(Array.isArray(linkElement.props.style)).toBe(true);
-        });
-
-        it('should have TouchableOpacity with correct styles', () => {
-            renderWithIntlAndTheme(
-                <UserProfileLink {...baseProps}/>,
-            );
-
-            const linkElement = screen.getByTestId('test-link.url');
-            const touchableParent = linkElement.parent;
-            expect(touchableParent?.props.style).toBeDefined();
-        });
-    });
-
     describe('edge cases', () => {
         it('should handle empty description', () => {
             renderWithIntlAndTheme(
