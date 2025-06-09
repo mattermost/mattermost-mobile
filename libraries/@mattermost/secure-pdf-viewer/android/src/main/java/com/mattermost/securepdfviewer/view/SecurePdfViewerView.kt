@@ -14,12 +14,12 @@ import com.mattermost.securepdfviewer.view.manager.PdfLoadManager
  * Main PDF viewer component that integrates with React Native.
  *
  * This is the primary view component that gets mounted in React Native applications.
- * It serves as a container and coordinator between the native MuPDF rendering engine,
+ * It serves as a container and coordinator between the native PDFium rendering engine,
  * the scroll handle UI, and the React Native bridge for event communication.
  *
  * Key responsibilities:
  * - Managing PDF document loading and authentication
- * - Coordinating between MuPDFView and ScrollHandle components
+ * - Coordinating between PdfView and ScrollHandle components
  * - Handling security features (password attempts, file validation)
  * - Emitting events to React Native layer
  * - Managing component lifecycle and cleanup
@@ -35,7 +35,7 @@ class SecurePdfViewerView(context: Context) : FrameLayout(context) {
     private var isAttached = false
     private var pendingLoad = false
 
-    /** The main PDF rendering view powered by MuPDF */
+    /** The main PDF rendering view powered by PDFium */
     private val pdfView: PdfView = PdfView(context)
 
     /** Store for tracking password attempt limits per document */

@@ -21,7 +21,7 @@ import java.util.Locale
  * - File path validation against allowed directories
  * - Password attempt limit checking and enforcement
  * - File size validation to prevent memory exhaustion
- * - Document loading coordination with MuPDF
+ * - Document loading coordination with PDFium
  * - Security state management during loading process
  */
 class PdfLoadManager(
@@ -90,7 +90,7 @@ class PdfLoadManager(
         val bgColor = backgroundColor?.color ?: Color.LTGRAY
         pdfView.setBackgroundColor(bgColor)
 
-        // Load document through MuPDF
+        // Load document through PDFium
         pdfView.loadDocument(file.absolutePath, password)
     }
 }

@@ -75,7 +75,7 @@ class PdfViewCallbacks(
                     eventEmitter()?.emitLinkPressedDisabled()
                 }
                 link.isInternal() -> {
-                    // Internal links are handled automatically by MuPDFView
+                    // Internal links are handled automatically by PdfView
                     Log.d(TAG, "Internal link handled: page ${link.destinationPage}")
                 }
             }
