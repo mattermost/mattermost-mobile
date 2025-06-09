@@ -238,11 +238,13 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
             return;
         }
 
-        const currentFileIds = new Set(postFiles.map((f) => f.id).filter((id): id is string => id !== undefined));
-        const isFileRemoved = (file: FileInfo) => file.id && !currentFileIds.has(file.id);
-        const removed_file_ids = post.metadata?.files?.filter(isFileRemoved).map((file) => file.id).filter((id): id is string => id !== undefined) || [];
+        const currentFileIds = postFiles.map((file) => file.id).filter((id): id is string => Boolean(id));
+        const originalFiles = post.metadata?.files || [];
+        const originalFileIds = originalFiles.map((file) => file.id).filter((id): id is string => Boolean(id));
+        const currentFileIdSet = new Set(currentFileIds);
+        const removedFileIds = originalFileIds.filter((id) => !currentFileIdSet.has(id));
 
-        const res = await editPost(serverUrl, post.id, postMessage, Array.from(currentFileIds), removed_file_ids);
+        const res = await editPost(serverUrl, post.id, postMessage, currentFileIds, removedFileIds);
         handleUIUpdates(res);
     }, [toggleSaveButton, shouldDeleteOnSave, post.metadata?.files, post.id, serverUrl, postMessage, handleUIUpdates, handleDeletePost, postFiles]);
 
