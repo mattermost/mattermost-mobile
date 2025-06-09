@@ -1108,6 +1108,7 @@
   "screens.channel_info.gm": "Group message info",
   "search_bar.search": "Search",
   "search_bar.search.placeholder": "Search timezone",
+  "select_field.optional": "{labelName} (optional)",
   "select_team.description": "You are not yet a member of any teams. Select one below to get started.",
   "select_team.no_team.description": "To join a team, ask a team admin for an invite, or create your own team. You may also want to check your email inbox for an invitation.",
   "select_team.no_team.title": "No teams are available to join",

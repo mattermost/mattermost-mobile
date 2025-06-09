@@ -30,28 +30,32 @@ const CustomAttributes = ({nickname, position, localTime, customAttributes}: Pro
     const {formatMessage} = useIntl();
 
     // Combine standard and custom attributes
-    const mergeAttributes: CustomAttribute[] = [
-        (nickname ? {
+    const mergeAttributes: CustomAttribute[] = [];
+    if (nickname) {
+        mergeAttributes.push({
             id: 'nickname',
             name: formatMessage({id: 'channel_info.nickname', defaultMessage: 'Nickname'}),
             type: 'text',
             value: nickname,
-        } : {} as CustomAttribute),
-        (position ? {
+        });
+    }
+    if (position) {
+        mergeAttributes.push({
             id: 'position',
             name: formatMessage({id: 'channel_info.position', defaultMessage: 'Position'}),
             type: 'text',
             value: position,
-        } : {} as CustomAttribute),
-        (localTime ? {
+        });
+    }
+    if (localTime) {
+        mergeAttributes.push({
             id: 'local_time',
             name: formatMessage({id: 'channel_info.local_time', defaultMessage: 'Local Time'}),
             type: 'text',
             value: localTime,
-        } : {} as CustomAttribute),
-
-        ...(customAttributes ?? []),
-    ];
+        });
+    }
+    mergeAttributes.push(...(customAttributes ?? []));
 
     // remove any empty objects
     const attributes: CustomAttribute[] = mergeAttributes.filter((v: CustomAttribute) => Object.entries(v).length !== 0);

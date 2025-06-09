@@ -45,14 +45,16 @@ const SelectField = ({
     const isTablet = useIsTablet();
     const styles = getStyleSheet(theme);
 
-    const optionalText = intl.formatMessage(
-        {
-            id: 'channel_modal.optional',
-            defaultMessage: '{labelName} (optional)',
-        },
-        {labelName: label},
-    );
-    const formattedLabel = isOptional ? optionalText : label;
+    let formattedLabel = label;
+    if (isOptional) {
+        formattedLabel = intl.formatMessage(
+            {
+                id: 'select_field.optional',
+                defaultMessage: '{labelName} (optional)',
+            },
+            {labelName: label},
+        );
+    }
 
     // Convert stored value to selected format for AutocompleteSelector
     const selectedValue = useMemo(() => {

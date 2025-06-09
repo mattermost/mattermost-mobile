@@ -5,6 +5,7 @@ import {fireEvent} from '@testing-library/react-native';
 import React from 'react';
 
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
+import * as urlUtils from '@utils/url';
 
 import UserProfileLabel from './label';
 
@@ -14,8 +15,8 @@ jest.mock('@utils/url', () => ({
     tryOpenURL: jest.fn(),
 }));
 
-const mockGetScheme = require('@utils/url').getScheme as jest.Mock;
-const mockTryOpenURL = require('@utils/url').tryOpenURL as jest.Mock;
+const mockGetScheme = jest.mocked(urlUtils.getScheme);
+const mockTryOpenURL = jest.mocked(urlUtils.tryOpenURL);
 
 describe('UserProfileLabel', () => {
     const baseProps = {
