@@ -590,6 +590,7 @@ class TestHelperSingleton {
             shared: false,
             teamId: this.generateId(),
             type: 'O' as const,
+            lastPlaybookFetchAt: 0,
             members: this.fakeQuery([]),
             drafts: this.fakeQuery([]),
             bookmarks: this.fakeQuery([]),
