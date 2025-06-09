@@ -3,38 +3,141 @@
 
 import React from 'react';
 
-import {fetchCustomAttributes} from '@actions/remote/user';
-import {renderWithIntlAndTheme, screen, waitFor} from '@test/intl-test-helper';
-import TestHelper from '@test/test_helper';
+import * as CustomProfileActions from '@actions/remote/custom_profile';
+import * as CustomProfileQueries from '@queries/servers/custom_profile';
+import {renderWithIntlAndTheme, waitFor} from '@test/intl-test-helper';
 
 import UserInfo from './user_info';
 
+import type UserModel from '@database/models/server/user';
+import type {CustomAttributeSet} from '@typings/api/custom_profile_attributes';
+
 const localhost = 'http://localhost:8065';
 
-jest.mock('@actions/remote/user', () => ({
-    fetchCustomAttributes: jest.fn().mockResolvedValue({}),
+// Create test attribute sets
+const serverAttributes = {
+    attr1: {
+        id: 'attr1',
+        name: 'Department',
+        value: 'Engineering',
+        sort_order: 1,
+    },
+    attr2: {
+        id: 'attr2',
+        name: 'Location',
+        value: 'Remote',
+        sort_order: 0,
+    },
+} as CustomAttributeSet;
+
+const updatedAttributes = {
+    attr1: {
+        id: 'attr1',
+        name: 'Department',
+        value: 'Engineering Updated',
+        sort_order: 1,
+    },
+    attr2: {
+        id: 'attr2',
+        name: 'Location',
+        value: 'Office',
+        sort_order: 0,
+    },
+    attr3: {
+        id: 'attr3',
+        name: 'Team',
+        value: 'Mobile',
+        sort_order: 2,
+    },
+} as CustomAttributeSet;
+
+jest.mock('@actions/remote/custom_profile', () => ({
+    fetchCustomProfileAttributes: jest.fn().mockResolvedValue({
+        attributes: {},
+        error: undefined,
+    }),
 }));
 
 jest.mock('@context/server', () => ({
     useServerUrl: jest.fn().mockReturnValue(localhost),
 }));
 
+jest.mock('@database/manager', () => {
+    const mockDatabase = {
+        get: jest.fn().mockReturnValue({
+            query: jest.fn().mockReturnValue({
+                fetch: jest.fn().mockResolvedValue([]),
+            }),
+        }),
+    };
+
+    return {
+        getServerDatabaseAndOperator: jest.fn().mockReturnValue({
+            database: mockDatabase,
+            operator: {},
+        }),
+    };
+});
+
+const mockQueryFetch = jest.fn().mockResolvedValue([]);
+const mockQueryAttributesByUserId = jest.fn().mockReturnValue({
+    fetch: mockQueryFetch,
+});
+
+const mockAttributesCallback = jest.fn();
+const mockFieldsCallback = jest.fn();
+
+const mockAttributesObservable = {
+    subscribe: jest.fn().mockImplementation((callback) => {
+        mockAttributesCallback.mockImplementation(callback);
+        return {unsubscribe: jest.fn()};
+    }),
+};
+
+const mockFieldsObservable = {
+    subscribe: jest.fn().mockImplementation((callback) => {
+        mockFieldsCallback.mockImplementation(callback);
+        return {unsubscribe: jest.fn()};
+    }),
+};
+
+const mockConvertAttributes = jest.fn().mockResolvedValue([]);
+
+jest.mock('@queries/servers/custom_profile', () => {
+    return {
+        queryCustomProfileAttributesByUserId: jest.fn().mockImplementation((...args) =>
+            mockQueryAttributesByUserId(...args),
+        ),
+        observeCustomProfileAttributesByUserId: jest.fn().mockReturnValue(mockAttributesObservable),
+        observeCustomProfileFields: jest.fn().mockReturnValue(mockFieldsObservable),
+        convertProfileAttributesToCustomAttributes: jest.fn().mockImplementation((...args) =>
+            mockConvertAttributes(...args),
+        ),
+    };
+});
+
 describe('screens/user_profile/UserInfo', () => {
     beforeEach(() => {
-        // Reset mock before each test
-        jest.mocked(fetchCustomAttributes).mockReset();
+        jest.clearAllMocks();
+
+        (CustomProfileActions.fetchCustomProfileAttributes as jest.Mock).mockResolvedValue({
+            attributes: {},
+            error: undefined,
+        });
+
+        mockQueryFetch.mockResolvedValue([]);
+        mockConvertAttributes.mockResolvedValue([]);
     });
 
     const baseProps = {
-        user: TestHelper.fakeUserModel({
+        user: {
             id: 'user1',
             firstName: 'First',
             lastName: 'Last',
             username: 'username',
             nickname: 'nick',
             position: 'Developer',
-        }),
-        isMyUser: false,
+        } as UserModel,
         showCustomStatus: false,
         showLocalTime: true,
         showNickname: true,
@@ -42,146 +145,103 @@ describe('screens/user_profile/UserInfo', () => {
         enableCustomAttributes: true,
     };
 
-    const baseCustomAttributes = {
-        attr1: {
-            id: 'attr1',
-            name: 'Department',
-            value: 'Engineering',
-            sort_order: 1,
-        },
-        attr2: {
-            id: 'attr2',
-            name: 'Location',
-            value: 'Remote',
-            sort_order: 0,
-        },
-        attr3: {
-            id: 'attr3',
-            name: 'Start Date',
-            value: '2023',
-            sort_order: 2,
-        },
-    };
+    test('should load attributes from database before fetching from server', async () => {
+        // Mock fetch to return server attributes
+        const fetchMock = CustomProfileActions.fetchCustomProfileAttributes as jest.Mock;
+        fetchMock.mockResolvedValue({
+            attributes: serverAttributes,
+            error: undefined,
+        });
 
-    test('should display custom attributes in sort order', async () => {
-        jest.mocked(fetchCustomAttributes).mockResolvedValue({attributes: baseCustomAttributes});
-
-        renderWithIntlAndTheme(
-            <UserInfo {...baseProps}/>,
+        // Render with initial customAttributesSet
+        const {queryByText, rerender} = renderWithIntlAndTheme(
+            <UserInfo
+                {...baseProps}
+                customAttributesSet={{}}
+            />,
         );
 
-        // Wait for the fetch to be called
+        // Initially there should be no custom attributes displayed
+        expect(queryByText('Engineering')).toBeNull();
+        expect(queryByText('Remote')).toBeNull();
+
+        // Verify fetch was called
         await waitFor(() => {
-            expect(fetchCustomAttributes).toHaveBeenCalledWith(
-                localhost,
-                'user1',
-                true,
-            );
+            expect(fetchMock).toHaveBeenCalledWith(localhost, 'user1', true);
         });
 
-        // Wait for all items to be rendered
+        // Simulate receiving custom attributes from props
+        rerender(
+            <UserInfo
+                {...baseProps}
+                customAttributesSet={serverAttributes}
+            />,
+        );
+
+        // Custom attributes should now be displayed
         await waitFor(() => {
-            // Standard attributes
-            expect(screen.getByText('Nickname')).toBeTruthy();
-            expect(screen.getByText('Position')).toBeTruthy();
-            expect(screen.getByText('nick')).toBeTruthy();
-            expect(screen.getByText('Developer')).toBeTruthy();
-
-            // Custom attributes (sorted by sort_order)
-            expect(screen.getByText('Location')).toBeTruthy(); // sort_order: 0
-            expect(screen.getByText('Remote')).toBeTruthy();
-            expect(screen.getByText('Department')).toBeTruthy(); // sort_order: 1
-            expect(screen.getByText('Engineering')).toBeTruthy();
-            expect(screen.getByText('Start Date')).toBeTruthy(); // sort_order: 2
-            expect(screen.getByText('2023')).toBeTruthy();
+            expect(queryByText('Engineering')).not.toBeNull();
+            expect(queryByText('Remote')).not.toBeNull();
         });
-
-        // Verify the order of elements
-        const titles = screen.getAllByTestId(/.*\.title$/);
-        expect(titles.map((el) => el.props.children)).toEqual([
-            'Nickname',
-            'Position',
-            'Location', // sort_order: 0
-            'Department', // sort_order: 1
-            'Start Date', // sort_order: 2
-        ]);
-
-        const descriptions = screen.getAllByTestId(/.*\.description$/);
-        expect(descriptions.map((el) => el.props.children)).toEqual([
-            'nick',
-            'Developer',
-            'Remote', // sort_order: 0
-            'Engineering', // sort_order: 1
-            '2023', // sort_order: 2
-        ]);
     });
-    it('should display custom attributes in order when some have no order', async () => {
-        const withEmptyCustomAttributes = {
-            attr1: {
-                id: 'attr1',
-                name: 'Department',
-                value: 'Engineering',
-            },
-            attr2: {
-                id: 'attr2',
-                name: 'Location',
-                value: 'Remote',
-                sort_order: 0,
-            },
-            attr3: {
-                id: 'attr3',
-                name: 'Start Date',
-                value: '2023',
-                sort_order: 2,
-            },
-        };
-        jest.mocked(fetchCustomAttributes).mockResolvedValue({attributes: withEmptyCustomAttributes});
 
-        renderWithIntlAndTheme(
-            <UserInfo {...baseProps}/>,
+    test('should update UI when database changes via observables', async () => {
+        // Set up component with initial empty attributes
+        const {queryByText, rerender} = renderWithIntlAndTheme(
+            <UserInfo
+                {...baseProps}
+                customAttributesSet={{}}
+            />,
         );
 
+        // Initially there should be no custom attributes
+        expect(queryByText('Engineering')).toBeNull();
+
+        // Simulate receiving attributes from props (as would happen from parent observable)
+        rerender(
+            <UserInfo
+                {...baseProps}
+                customAttributesSet={serverAttributes}
+            />,
+        );
+
+        // Now the attributes should be displayed
         await waitFor(() => {
-            expect(fetchCustomAttributes).toHaveBeenCalledWith(
-                localhost,
-                'user1',
-                true,
-            );
+            expect(queryByText('Engineering')).not.toBeNull();
+            expect(queryByText('Remote')).not.toBeNull();
         });
 
+        // Simulate a database update via changed props
+        rerender(
+            <UserInfo
+                {...baseProps}
+                customAttributesSet={updatedAttributes}
+            />,
+        );
+
+        // Updated values should be displayed
         await waitFor(() => {
-            // Standard attributes remain
-            expect(screen.getByText('Nickname')).toBeTruthy();
-            expect(screen.getByText('Position')).toBeTruthy();
-            expect(screen.getByText('nick')).toBeTruthy();
-            expect(screen.getByText('Developer')).toBeTruthy();
-
-            // Custom attributes (sorted by sort_order)
-            expect(screen.getByText('Location')).toBeTruthy(); // sort_order: 0
-            expect(screen.getByText('Remote')).toBeTruthy();
-            expect(screen.getByText('Start Date')).toBeTruthy(); // sort_order: 2
-            expect(screen.getByText('2023')).toBeTruthy();
-            expect(screen.queryByText('Department')).toBeTruthy(); // sort_order: undefined
-            expect(screen.queryByText('Engineering')).toBeTruthy();
+            expect(queryByText('Engineering Updated')).not.toBeNull();
+            expect(queryByText('Office')).not.toBeNull();
+            expect(queryByText('Mobile')).not.toBeNull();
         });
+    });
 
-        // Verify the order of elements
-        const titles = screen.getAllByTestId(/.*\.title$/);
-        expect(titles.map((el) => el.props.children)).toEqual([
-            'Nickname',
-            'Position',
-            'Location', // sort_order: 0
-            'Start Date', // sort_order: 2
-            'Department', // sort_order: undefined
-        ]);
+    test('should not fetch data if custom attributes are disabled', async () => {
+        const fetchMock = CustomProfileActions.fetchCustomProfileAttributes as jest.Mock;
 
-        const descriptions = screen.getAllByTestId(/.*\.description$/);
-        expect(descriptions.map((el) => el.props.children)).toEqual([
-            'nick',
-            'Developer',
-            'Remote', // sort_order: 0
-            '2023', // sort_order: 2
-            'Engineering', // sort_order: undefined
-        ]);
+        renderWithIntlAndTheme(
+            <UserInfo
+                {...baseProps}
+                enableCustomAttributes={false}
+            />,
+        );
+
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        expect(fetchMock).not.toHaveBeenCalled();
+        expect(mockQueryAttributesByUserId).not.toHaveBeenCalled();
+        expect(CustomProfileQueries.observeCustomProfileAttributesByUserId).not.toHaveBeenCalled();
+        expect(CustomProfileQueries.observeCustomProfileFields).not.toHaveBeenCalled();
     });
 });

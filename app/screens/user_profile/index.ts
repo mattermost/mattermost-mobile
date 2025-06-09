@@ -8,15 +8,17 @@ import {map, switchMap} from 'rxjs/operators';
 import {General, Permissions, Preferences} from '@constants';
 import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
 import {observeChannel} from '@queries/servers/channel';
+import {observeCustomProfileAttributesByUserId, observeCustomProfileFields} from '@queries/servers/custom_profile';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {observeCanManageChannelMembers, observePermissionForChannel} from '@queries/servers/role';
 import {observeConfigBooleanValue, observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
 import {observeTeammateNameDisplay, observeCurrentUser, observeUser, observeUserIsChannelAdmin, observeUserIsTeamAdmin} from '@queries/servers/user';
 import {isDefaultChannel} from '@utils/channel';
-import {isSystemAdmin} from '@utils/user';
+import {isSystemAdmin, sortCustomProfileAttributes, convertToAttributesMap, convertProfileAttributesToCustomAttributes} from '@utils/user';
 
 import UserProfile from './user_profile';
 
+import type {CustomAttribute} from '@typings/api/custom_profile_attributes';
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 type EnhancedProps = WithDatabaseArgs & {
@@ -46,6 +48,23 @@ const enhanced = withObservables([], ({channelId, database, userId}: EnhancedPro
         observeWithColumns(['value']);
     const isMilitaryTime = preferences.pipe(map((prefs) => getDisplayNamePreferenceAsBool(prefs, Preferences.USE_MILITARY_TIME)));
     const isCustomStatusEnabled = observeConfigBooleanValue(database, 'EnableCustomUserStatuses');
+    const enableCustomAttributes = observeConfigBooleanValue(database, 'FeatureFlagCustomProfileAttributes');
+
+    // Custom profile attributes
+    const rawCustomAttributes = observeCustomProfileAttributesByUserId(database, userId);
+
+    const customFields = observeCustomProfileFields(database);
+
+    // Convert attributes to the format expected by the component
+    const formattedCustomAttributes = combineLatest([rawCustomAttributes, customFields, enableCustomAttributes]).pipe(
+        switchMap(([attributes, fields, enabled]) => {
+            if (!enabled || !attributes?.length) {
+                return of$([] as CustomAttribute[]);
+            }
+            return of$(convertProfileAttributesToCustomAttributes(attributes, fields, sortCustomProfileAttributes));
+        }),
+        switchMap((converted) => of$(convertToAttributesMap(converted))),
+    );
 
     // can remove member
     const canManageAndRemoveMembers = combineLatest([channel, currentUser]).pipe(
@@ -71,7 +90,8 @@ const enhanced = withObservables([], ({channelId, database, userId}: EnhancedPro
         user,
         canChangeMemberRoles,
         hideGuestTags: observeConfigBooleanValue(database, 'HideGuestTags'),
-        enableCustomAttributes: observeConfigBooleanValue(database, 'FeatureFlagCustomProfileAttributes'),
+        enableCustomAttributes,
+        customAttributesSet: formattedCustomAttributes,
     };
 });
 

@@ -219,20 +219,6 @@ export type LiveCaptionMobile = {
     text: string;
 }
 
-// DEPRECATED in favour of CallJobState since v2.16
-export type CallRecordingState = {
-    init_at: number;
-    start_at: number;
-    end_at: number;
-    err?: string;
-    error_at?: number;
-}
-
-export type CallRecordingStateData = {
-    recState: CallRecordingState;
-    callID: string;
-}
-
 // TODO: MM-57919, refactor wsmsg data to calls-common
 export type HostControlsMsgData = {
     channel_id: string;

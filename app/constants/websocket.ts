@@ -61,15 +61,9 @@ const WebsocketEvents = {
     DELETE_TEAM: 'delete_team',
     RESTORE_TEAM: 'restore_team',
     APPS_FRAMEWORK_REFRESH_BINDINGS: 'custom_com.mattermost.apps_refresh_bindings',
+
     CALLS_CHANNEL_ENABLED: `custom_${Calls.PluginId}_channel_enable_voice`,
     CALLS_CHANNEL_DISABLED: `custom_${Calls.PluginId}_channel_disable_voice`,
-
-    // DEPRECATED in favour of user_joined (since v0.21.0)
-    CALLS_USER_CONNECTED: `custom_${Calls.PluginId}_user_connected`,
-
-    // DEPRECATED in favour of user_left (since v0.21.0)
-    CALLS_USER_DISCONNECTED: `custom_${Calls.PluginId}_user_disconnected`,
-
     CALLS_USER_JOINED: `custom_${Calls.PluginId}_user_joined`,
     CALLS_USER_LEFT: `custom_${Calls.PluginId}_user_left`,
     CALLS_USER_MUTED: `custom_${Calls.PluginId}_user_muted`,
@@ -83,9 +77,6 @@ const WebsocketEvents = {
     CALLS_USER_RAISE_HAND: `custom_${Calls.PluginId}_user_raise_hand`,
     CALLS_USER_UNRAISE_HAND: `custom_${Calls.PluginId}_user_unraise_hand`,
     CALLS_USER_REACTED: `custom_${Calls.PluginId}_user_reacted`,
-
-    // DEPRECATED in favour of CALLS_JOB_STATE (since v2.15.0)
-    CALLS_RECORDING_STATE: `custom_${Calls.PluginId}_call_recording_state`,
     CALLS_JOB_STATE: `custom_${Calls.PluginId}_call_job_state`,
     CALLS_HOST_CHANGED: `custom_${Calls.PluginId}_call_host_changed`,
     CALLS_USER_DISMISSED_NOTIFICATION: `custom_${Calls.PluginId}_user_dismissed_notification`,
@@ -110,5 +101,9 @@ const WebsocketEvents = {
     SCHEDULED_POST_CREATED: 'scheduled_post_created',
     SCHEDULED_POST_UPDATED: 'scheduled_post_updated',
     SCHEDULED_POST_DELETED: 'scheduled_post_deleted',
+    CUSTOM_PROFILE_ATTRIBUTES_VALUES_UPDATED: 'custom_profile_attributes_values_updated',
+    CUSTOM_PROFILE_ATTRIBUTES_FIELD_UPDATED: 'custom_profile_attributes_field_updated',
+    CUSTOM_PROFILE_ATTRIBUTES_FIELD_CREATED: 'custom_profile_attributes_field_created',
+    CUSTOM_PROFILE_ATTRIBUTES_FIELD_DELETED: 'custom_profile_attributes_field_deleted',
 };
 export default WebsocketEvents;

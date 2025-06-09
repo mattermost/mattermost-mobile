@@ -1,12 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
-import {useIntl} from 'react-intl';
+import React, {useCallback} from 'react';
 import {StyleSheet, View} from 'react-native';
 
 import TeamList from '@components/team_list';
-import {ALL_TEAMS_ID} from '@constants/team';
 import {useIsTablet} from '@hooks/device';
 import BottomSheetContent from '@screens/bottom_sheet/content';
 import {dismissBottomSheet} from '@screens/navigation';
@@ -28,7 +26,6 @@ const styles = StyleSheet.create({
 });
 
 export default function BottomSheetTeamList({teams, title, setTeamId, teamId, crossTeamSearchEnabled}: Props) {
-    const intl = useIntl();
     const isTablet = useIsTablet();
     const showTitle = !isTablet && Boolean(teams.length);
 
@@ -36,14 +33,6 @@ export default function BottomSheetTeamList({teams, title, setTeamId, teamId, cr
         setTeamId(newTeamId);
         dismissBottomSheet();
     }, [setTeamId]);
-
-    const teamList = useMemo(() => {
-        const list = [...teams];
-        if (crossTeamSearchEnabled) {
-            list.unshift({id: ALL_TEAMS_ID, displayName: intl.formatMessage({id: 'mobile.search.team.all_teams', defaultMessage: 'All teams'})} as TeamModel);
-        }
-        return list;
-    }, [teams, crossTeamSearchEnabled, intl]);
 
     return (
         <BottomSheetContent
@@ -55,7 +44,7 @@ export default function BottomSheetTeamList({teams, title, setTeamId, teamId, cr
             <View style={styles.container} >
                 <TeamList
                     selectedTeamId={teamId}
-                    teams={teamList}
+                    teams={teams}
                     onPress={onPress}
                     testID='search.select_team_slide_up.team_list'
                     type={isTablet ? 'FlatList' : 'BottomSheetFlatList'}

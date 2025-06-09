@@ -25,7 +25,7 @@ const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM} = PLAYBOOK_TAB
 
 export default schemaMigrations({migrations: [
     {
-        toVersion: 11,
+        toVersion: 12,
         steps: [
             createTable({
                 name: PLAYBOOK_RUN,
@@ -75,6 +75,17 @@ export default schemaMigrations({migrations: [
                     {name: 'completed_at', type: 'number'},
                     {name: 'task_actions', type: 'string', isOptional: true}, // JSON string
                     {name: 'order', type: 'number'},
+                ],
+            }),
+        ],
+    },
+    {
+        toVersion: 11,
+        steps: [
+            addColumns({
+                table: CHANNEL,
+                columns: [
+                    {name: 'abac_policy_enforced', type: 'boolean', isOptional: true},
                 ],
             }),
         ],

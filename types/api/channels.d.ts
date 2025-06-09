@@ -45,6 +45,9 @@ type Channel = {
     group_constrained: boolean|null;
     shared: boolean;
     banner_info?: ChannelBannerInfo;
+
+    /** Whether the channel has Attribute-Based Access Control (ABAC) policy enforcement enabled, controlling access based on user attributes */
+    policy_enforced?: boolean;
 };
 type ChannelPatch = {
     name?: string;
@@ -170,3 +173,5 @@ type ChannelBannerInfo = {
     text?: string;
     background_color?: string;
 }
+
+type ChannelAccessControlAttributes = Record<string, string[]>;
