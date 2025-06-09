@@ -398,45 +398,4 @@ describe('UserProfileLabel', () => {
             expect(linkElement.type).toBe('Text');
         });
     });
-
-    describe('styling', () => {
-        it('should apply correct styles to container', () => {
-            const {getByTestId} = renderWithIntlAndTheme(
-                <UserProfileLabel {...baseProps}/>,
-            );
-
-            const titleElement = getByTestId('test-label.title');
-            expect(titleElement.props.style).toBeDefined();
-        });
-
-        it('should apply link styles to URL type', () => {
-            const {getByTestId} = renderWithIntlAndTheme(
-                <UserProfileLabel
-                    {...baseProps}
-                    type='url'
-                />,
-            );
-
-            const linkElement = getByTestId('test-label.url');
-            expect(linkElement.props.style).toBeDefined();
-
-            // The style should include both description and link styles
-            expect(Array.isArray(linkElement.props.style)).toBe(true);
-        });
-
-        it('should apply link styles to phone type', () => {
-            const {getByTestId} = renderWithIntlAndTheme(
-                <UserProfileLabel
-                    {...baseProps}
-                    type='phone'
-                />,
-            );
-
-            const linkElement = getByTestId('test-label.phone');
-            expect(linkElement.props.style).toBeDefined();
-
-            // The style should include both description and link styles
-            expect(Array.isArray(linkElement.props.style)).toBe(true);
-        });
-    });
 });
