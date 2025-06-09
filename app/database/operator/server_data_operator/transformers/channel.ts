@@ -53,7 +53,6 @@ export const transformChannelRecord = ({action, database, value}: TransformerArg
         channel.type = raw.type;
         channel.bannerInfo = raw.banner_info;
         channel.abacPolicyEnforced = Boolean(raw.policy_enforced);
-        channel.lastPlaybookFetchAt = channel.lastPlaybookFetchAt || 0;
     };
 
     return prepareBaseRecord({
@@ -156,6 +155,7 @@ export const transformMyChannelRecord = async ({action, database, value}: Transf
         myChannel.lastViewedAt = raw.last_viewed_at;
         myChannel.viewedAt = record?.viewedAt || 0;
         myChannel.lastFetchedAt = record?.lastFetchedAt || 0;
+        myChannel.lastPlaybookFetchAt = record?.lastPlaybookFetchAt || 0;
     };
 
     return prepareBaseRecord({

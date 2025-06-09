@@ -17,6 +17,7 @@ const {
     CUSTOM_PROFILE_FIELD,
     DRAFT,
     FILE,
+    MY_CHANNEL,
     POST,
     SCHEDULED_POST,
 } = MM_TABLES.SERVER;
@@ -28,7 +29,7 @@ export default schemaMigrations({migrations: [
         toVersion: 13,
         steps: [
             addColumns({
-                table: CHANNEL,
+                table: MY_CHANNEL,
                 columns: [
                     {name: 'last_playbook_fetch_at', type: 'number'},
                 ],

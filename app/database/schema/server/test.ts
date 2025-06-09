@@ -268,6 +268,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         roles: {name: 'roles', type: 'string'},
                         viewed_at: {name: 'viewed_at', type: 'number'},
                         last_fetched_at: {name: 'last_fetched_at', type: 'number', isIndexed: true},
+                        last_playbook_fetch_at: {name: 'last_playbook_fetch_at', type: 'number'},
                     },
                     columnArray: [
                         {name: 'is_unread', type: 'boolean'},

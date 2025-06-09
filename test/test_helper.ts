@@ -590,7 +590,6 @@ class TestHelperSingleton {
             shared: false,
             teamId: this.generateId(),
             type: 'O' as const,
-            lastPlaybookFetchAt: 0,
             members: this.fakeQuery([]),
             drafts: this.fakeQuery([]),
             bookmarks: this.fakeQuery([]),
@@ -617,24 +616,6 @@ class TestHelperSingleton {
             memberUser: this.fakeRelation(),
             getAllChannelsForUser: this.fakeQuery([]),
             getAllUsersInChannel: this.fakeQuery([]),
-            ...overwrite,
-        };
-    };
-    fakeMyChannelMembershipModel = (overwrite?: Partial<MyChannelModel>): MyChannelModel => {
-        return {
-            ...this.fakeModel(),
-            channel: this.fakeRelation(),
-            lastPostAt: 0,
-            lastFetchedAt: 0,
-            lastViewedAt: 0,
-            manuallyUnread: false,
-            mentionsCount: 0,
-            messageCount: 0,
-            isUnread: false,
-            roles: '',
-            viewedAt: 0,
-            settings: this.fakeRelation(),
-            resetPreparedState: jest.fn(),
             ...overwrite,
         };
     };
@@ -828,6 +809,7 @@ class TestHelperSingleton {
             isUnread: false,
             roles: '',
             viewedAt: 0,
+            lastPlaybookFetchAt: 0,
             channel: this.fakeRelation(),
             settings: this.fakeRelation(),
             resetPreparedState: jest.fn(),

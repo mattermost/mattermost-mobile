@@ -10,10 +10,11 @@ import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
 
 import type PlaybookChecklistItemModel from '@playbooks/types/database/models/playbook_checklist_item';
 import type PlaybookRunModel from '@playbooks/types/database/models/playbook_run';
+import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type UserModel from '@typings/database/models/servers/user';
 
 const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM} = PLAYBOOK_TABLES;
-const {USER} = MM_TABLES.SERVER;
+const {USER, MY_CHANNEL} = MM_TABLES.SERVER;
 
 export const queryPlaybookRunsPerChannel = (database: Database, channelId: string, finished?: boolean) => {
     const conditions = [Q.where('channel_id', channelId)];
@@ -88,4 +89,11 @@ export const observePlaybookRunParticipants = (database: Database, runId: string
         }),
         map((users) => (users || [])),
     );
+};
+
+export const getLastPlaybookFetchAt = async (database: Database, channelId: string) => {
+    const myChannel = await database.get<MyChannelModel>(MY_CHANNEL).query(
+        Q.where('id', channelId),
+    ).fetch();
+    return myChannel[0]?.lastPlaybookFetchAt || 0;
 };
