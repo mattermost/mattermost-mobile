@@ -53,6 +53,7 @@ export const transformChannelRecord = ({action, database, value}: TransformerArg
         channel.type = raw.type;
         channel.bannerInfo = raw.banner_info;
         channel.abacPolicyEnforced = Boolean(raw.policy_enforced);
+        channel.lastPlaybookFetchAt = channel.lastPlaybookFetchAt || 0;
     };
 
     return prepareBaseRecord({

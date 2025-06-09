@@ -25,6 +25,17 @@ const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM} = PLAYBOOK_TAB
 
 export default schemaMigrations({migrations: [
     {
+        toVersion: 13,
+        steps: [
+            addColumns({
+                table: CHANNEL,
+                columns: [
+                    {name: 'last_playbook_fetch_at', type: 'number'},
+                ],
+            }),
+        ],
+    },
+    {
         toVersion: 12,
         steps: [
             createTable({

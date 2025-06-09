@@ -60,6 +60,9 @@ declare class ChannelModel extends Model {
     /** Whether the channel has Attribute-Based Access Control (ABAC) policy enforcement enabled, controlling access based on user attributes */
     abacPolicyEnforced?: boolean;
 
+    /** last_playbook_fetch_at : The timestamp of the last playbook fetch for this channel */
+    lastPlaybookFetchAt: number;
+
     /** members : Users belonging to this channel */
     members: Query<ChannelMembershipModel>;
 

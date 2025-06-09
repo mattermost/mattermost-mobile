@@ -121,6 +121,9 @@ export default class ChannelModel extends Model implements ChannelModelInterface
     /** policy_enforced : Whether the Attribute-Based Access Control (ABAC) policy is enforced for this channel, controlling access based on user attributes */
     @field('abac_policy_enforced') abacPolicyEnforced?: boolean;
 
+    /** last_playbook_fetch_at : The timestamp of the last playbook fetch for this channel */
+    @field('last_playbook_fetch_at') lastPlaybookFetchAt!: number;
+
     /** members : Users belonging to this channel */
     @children(CHANNEL_MEMBERSHIP) members!: Query<ChannelMembershipModel>;
 
