@@ -136,7 +136,7 @@ function Uploads({
                     galleryIdentifier={galleryIdentifier}
                     index={index}
                     file={file}
-                    key={file.clientId}
+                    key={file.clientId || file.id}
                     openGallery={openGallery}
                     rootId={rootId}
                     isEditMode={isEditMode}

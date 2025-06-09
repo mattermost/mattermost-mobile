@@ -125,6 +125,7 @@ export default function UploadItem({
                 backgroundColor={changeOpacity(theme.centerChannelColor, 0.08)}
                 iconSize={60}
                 file={file}
+                testID={file.id}
             />
         );
     }, [file, ref, theme.centerChannelColor]);
