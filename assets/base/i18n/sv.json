@@ -464,6 +464,7 @@
   "load_channels_error.title": "Kunde inte ladda {teamDisplayName}",
   "load_teams_error.message": "Det är problem att ladda innehåll från den här servern.",
   "load_teams_error.title": "Kunde inte ladda {serverName}",
+  "loading_error.retry": "Försök igen",
   "login.email": "E-post",
   "login.forgot": "Har du glömt ditt lösenord?",
   "login.invalid_credentials": "Kombinationen av mejladress och lösenord är felaktig",
