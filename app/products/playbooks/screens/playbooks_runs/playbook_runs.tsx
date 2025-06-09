@@ -10,13 +10,14 @@ import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useTabs, {type TabDefinition} from '@hooks/use_tabs';
+import Tabs from '@hooks/use_tabs/tabs';
 import {popTopScreen} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import EmptyState from './empty_state';
 import PlaybookCard, {CARD_HEIGHT} from './playbook_card';
 
-import type PlaybookRunModel from '@typings/database/models/servers/playbook_run_model';
+import type PlaybookRunModel from '@playbooks/types/database/models/playbook_run';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
@@ -24,7 +25,7 @@ type Props = {
     componentId: AvailableScreens;
 };
 
-type Tabs = 'in-progress' | 'finished';
+type TabsNames = 'in-progress' | 'finished';
 
 const itemSeparatorStyle = StyleSheet.create({
     itemSeparator: {
@@ -45,7 +46,7 @@ const ItemSeparator = () => {
     return <View style={itemSeparatorStyle.itemSeparator}/>;
 };
 
-const tabs: Array<TabDefinition<Tabs>> = [
+const tabs: Array<TabDefinition<TabsNames>> = [
     {
         id: 'in-progress',
         name: defineMessage({
@@ -80,7 +81,7 @@ const PlaybookRuns = ({
         const finished: PlaybookRunModel[] = [];
 
         allRuns.forEach((run) => {
-            if (run.end_at) {
+            if (run.endAt) {
                 finished.push(run);
             } else {
                 inProgress.push(run);
@@ -90,8 +91,8 @@ const PlaybookRuns = ({
         return [inProgress, finished] as const;
     }, [allRuns]);
 
-    const initialTab: Tabs = inProgressRuns.length ? 'in-progress' : 'finished';
-    const [activeTab, tabsComponent] = useTabs<Tabs>(initialTab, tabs);
+    const initialTab: TabsNames = inProgressRuns.length ? 'in-progress' : 'finished';
+    const [activeTab, tabsProps] = useTabs<TabsNames>(initialTab, tabs);
 
     const data = activeTab === 'in-progress' ? inProgressRuns : finishedRuns;
     const isEmpty = data.length === 0;
@@ -121,7 +122,7 @@ const PlaybookRuns = ({
     return (
         <>
             <View style={styles.tabContainer}>
-                {tabsComponent}
+                <Tabs {...tabsProps}/>
             </View>
             {content}
         </>

@@ -1186,6 +1186,7 @@ class TestHelperSingleton {
             channel: this.fakeRelation(),
             owner: this.fakeRelation(),
             checklists: this.fakeQuery([]),
+            participants: () => this.fakeQuery([]),
             ...overwrite,
         };
     };

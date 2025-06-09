@@ -3,7 +3,7 @@
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 
-import {queryPlaybookRunsPerChannel} from '@playbooks/queries/playbooks';
+import {queryPlaybookRunsPerChannel} from '@playbooks/database/queries/run';
 
 import PlaybookRuns from './playbook_runs';
 

@@ -39,12 +39,12 @@ jest.mocked(PlaybookCard).mockImplementation((props) => React.createElement('Pla
 describe('PlaybookRuns', () => {
     const inProgressRun = TestHelper.fakePlaybookRunModel({
         name: 'In Progress Run',
-        end_at: 0,
+        endAt: 0,
     });
 
     const finishedRun = TestHelper.fakePlaybookRunModel({
         name: 'Finished Run',
-        end_at: 1234567890,
+        endAt: 1234567890,
     });
 
     it('shows empty state when no runs in selected tab', () => {
@@ -85,7 +85,7 @@ describe('PlaybookRuns', () => {
     it('correctly separates in-progress and finished runs', () => {
         const anotherRun = TestHelper.fakePlaybookRunModel({
             name: 'Another In Progress',
-            end_at: 0,
+            endAt: 0,
         });
         const runs = [
             inProgressRun,
