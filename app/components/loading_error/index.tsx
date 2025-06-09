@@ -1,14 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo} from 'react';
+import React from 'react';
+import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
+import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
 import Loading from '@components/loading';
-import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useTheme} from '@context/theme';
-import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -49,14 +49,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         textAlign: 'center',
         marginTop: 4,
     },
+    buttonContainer: {
+        marginTop: 24,
+    },
 }));
 
 const LoadingError = ({loading, message, onRetry, title}: Props) => {
     const theme = useTheme();
+    const intl = useIntl();
     const styles = getStyleSheet(theme);
-    const buttonStyle = useMemo(() => {
-        return [{marginTop: 24}, buttonBackgroundStyle(theme, 'lg', 'primary', 'inverted')];
-    }, [theme]);
 
     if (loading) {
         return (
@@ -81,13 +82,14 @@ const LoadingError = ({loading, message, onRetry, title}: Props) => {
             <Text style={[typography('Body', 200), styles.body]}>
                 {message}
             </Text>
-            <TouchableWithFeedback
-                style={buttonStyle}
-                onPress={onRetry}
-                type={'opacity'}
-            >
-                <Text style={buttonTextStyle(theme, 'lg', 'primary', 'inverted')}>{'Retry'}</Text>
-            </TouchableWithFeedback>
+            <View style={styles.buttonContainer}>
+                <Button
+                    text={intl.formatMessage({id: 'loading_error.retry', defaultMessage: 'Retry'})}
+                    onPress={onRetry}
+                    size='lg'
+                    theme={theme}
+                />
+            </View>
         </View>
     );
 };

@@ -59,8 +59,8 @@ describe('TabbedContents', () => {
             await TestHelper.wait(300); // Wait until the badge renders
         });
 
-        const scheduledTab = screen.getByTestId('scheduled_post_tab');
-        const draftTab = screen.getByTestId('draft_tab');
+        const scheduledTab = screen.getByTestId('tabs.scheduled_posts.button');
+        const draftTab = screen.getByTestId('tabs.drafts.button');
 
         // Check that the drafts tab is selected
         expect(scheduledTab.props.accessibilityState).toEqual({selected: false});
@@ -86,8 +86,8 @@ describe('TabbedContents', () => {
             await TestHelper.wait(300);
         });
 
-        const scheduledTab = screen.getByTestId('scheduled_post_tab');
-        const draftTab = screen.getByTestId('draft_tab');
+        const scheduledTab = screen.getByTestId('tabs.scheduled_posts.button');
+        const draftTab = screen.getByTestId('tabs.drafts.button');
 
         // ✅ Check accessibilityState
         expect(scheduledTab.props.accessibilityState).toEqual({selected: true});
@@ -105,19 +105,19 @@ describe('TabbedContents', () => {
             await TestHelper.wait(300); // Wait until the badge renders
         });
 
-        expect(screen.getByTestId('draft_tab')).toBeTruthy();
+        expect(screen.getByTestId('tabs.drafts.button')).toBeTruthy();
 
         expect(screen.getByTestId('drafts-content')).toBeTruthy();
 
         await act(async () => {
-            fireEvent.press(screen.getByTestId('scheduled_post_tab'));
+            fireEvent.press(screen.getByTestId('tabs.scheduled_posts.button'));
             await TestHelper.wait(0);
         });
 
         expect(screen.getByTestId('scheduled-posts-content')).toBeTruthy();
 
         await act(async () => {
-            fireEvent.press(screen.getByTestId('draft_tab'));
+            fireEvent.press(screen.getByTestId('tabs.drafts.button'));
             await TestHelper.wait(0);
         });
 
@@ -149,7 +149,7 @@ describe('TabbedContents', () => {
 
         // Click on scheduled posts tab to make that content visible
         await act(async () => {
-            fireEvent.press(screen.getByTestId('scheduled_post_tab'));
+            fireEvent.press(screen.getByTestId('tabs.scheduled_posts.button'));
 
             // Add a small delay to allow animations to complete
             await TestHelper.wait(0);

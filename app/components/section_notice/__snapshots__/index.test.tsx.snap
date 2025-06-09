@@ -186,22 +186,13 @@ exports[`Section notice match snapshot 1`] = `
                 <Text
                   numberOfLines={1}
                   style={
-                    [
-                      [
-                        [
-                          {
-                            "fontFamily": "OpenSans-SemiBold",
-                            "fontSize": 14,
-                            "fontWeight": "600",
-                            "lineHeight": 20,
-                          },
-                          {
-                            "color": "#ffffff",
-                          },
-                        ],
-                        undefined,
-                      ],
-                    ]
+                    {
+                      "color": "#ffffff",
+                      "fontFamily": "OpenSans-SemiBold",
+                      "fontSize": 14,
+                      "fontWeight": "600",
+                      "lineHeight": 20,
+                    }
                   }
                 >
                   primary button
@@ -297,22 +288,13 @@ exports[`Section notice match snapshot 1`] = `
                 <Text
                   numberOfLines={1}
                   style={
-                    [
-                      [
-                        [
-                          {
-                            "fontFamily": "OpenSans-SemiBold",
-                            "fontSize": 14,
-                            "fontWeight": "600",
-                            "lineHeight": 20,
-                          },
-                          {
-                            "color": "#1c58d9",
-                          },
-                        ],
-                        undefined,
-                      ],
-                    ]
+                    {
+                      "color": "#1c58d9",
+                      "fontFamily": "OpenSans-SemiBold",
+                      "fontSize": 14,
+                      "fontWeight": "600",
+                      "lineHeight": 20,
+                    }
                   }
                 >
                   secondary button
@@ -408,22 +390,13 @@ exports[`Section notice match snapshot 1`] = `
                 <Text
                   numberOfLines={1}
                   style={
-                    [
-                      [
-                        [
-                          {
-                            "fontFamily": "OpenSans-SemiBold",
-                            "fontSize": 14,
-                            "fontWeight": "600",
-                            "lineHeight": 20,
-                          },
-                          {
-                            "color": "#1c58d9",
-                          },
-                        ],
-                        undefined,
-                      ],
-                    ]
+                    {
+                      "color": "#1c58d9",
+                      "fontFamily": "OpenSans-SemiBold",
+                      "fontSize": 14,
+                      "fontWeight": "600",
+                      "lineHeight": 20,
+                    }
                   }
                 >
                   link button
