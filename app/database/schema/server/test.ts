@@ -52,7 +52,7 @@ const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM} = PLAYBOOK_TAB
 describe('*** Test schema for SERVER database ***', () => {
     it('=> The SERVER SCHEMA should strictly match', () => {
         expect(serverSchema).toEqual({
-            version: 11,
+            version: 13,
             unsafeSql: undefined,
             tables: {
                 [CATEGORY]: {
@@ -280,6 +280,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'roles', type: 'string'},
                         {name: 'viewed_at', type: 'number'},
                         {name: 'last_fetched_at', type: 'number', isIndexed: true},
+                        {name: 'last_playbook_fetch_at', type: 'number'},
                     ],
                 },
                 [MY_CHANNEL_SETTINGS]: {
