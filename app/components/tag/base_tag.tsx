@@ -27,6 +27,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             borderRadius: 4,
             paddingVertical: 2,
             paddingHorizontal: 4,
+            alignItems: 'center',
+            justifyContent: 'center',
         },
         generalContainer: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),

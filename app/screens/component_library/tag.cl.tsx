@@ -50,7 +50,7 @@ const TagComponentLibrary = () => {
             {uppercaseSelector}
             {tagTypeSelector}
             {tagSizeSelector}
-            <View style={{flexDirection: 'row', flexWrap: 'wrap', gap: 8}}>{components}</View>
+            <View style={{gap: 8, alignItems: 'flex-start'}}>{components}</View>
         </>
     );
 };

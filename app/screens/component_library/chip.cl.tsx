@@ -32,7 +32,7 @@ const ChipComponentLibrary = () => {
                         name='account-outline'
                         size={16}
                         color={theme.centerChannelColor}
-                        style={{marginLeft: 8}}
+                        style={{marginLeft: 6}}
                     />
                 ) : undefined,
                 testID: 'chip-example',
