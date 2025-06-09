@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo} from 'react';
+import React, {useCallback} from 'react';
 import {Text, TouchableOpacity} from 'react-native';
 
 import {useTheme} from '@context/theme';
@@ -19,7 +19,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     link: {
         color: theme.linkColor,
         overflow: 'hidden',
-        numberOfLines: 1,
         flex: 2,
         ...typography('Body', 200),
     },
@@ -39,11 +38,12 @@ const UserProfileLink = ({description, linkType, testID}: Props) => {
 
     return (
         <TouchableOpacity
-            onPress={useMemo(() => () => tryOpenURL(url), [url])}
+            onPress={useCallback(() => tryOpenURL(url), [url])}
             style={styles.button}
         >
             <Text
                 style={styles.link}
+                numberOfLines={1}
                 testID={`${testID}.${linkType}`}
             >
                 {description}

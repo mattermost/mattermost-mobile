@@ -48,7 +48,7 @@ const UserProfileLabel = ({title, description, testID, type = 'text'}: Props) =>
                 <UserProfileLink
                     description={description}
                     linkType={type}
-                    testID={testID!}
+                    testID={testID}
                 />
             );
             break;
