@@ -56,6 +56,7 @@ type ChannelProps = {
     shouldRenderChannelBanner: boolean;
     hasPlaybookRuns: boolean;
     playbooksActiveRuns: number;
+    isPlaybooksEnabled: boolean;
     activeRunId?: string;
 
     // searchTerm: string;
@@ -107,6 +108,7 @@ const ChannelHeader = ({
     shouldRenderChannelBanner,
     playbooksActiveRuns,
     hasPlaybookRuns,
+    isPlaybooksEnabled,
     activeRunId,
 }: ChannelProps) => {
     const intl = useIntl();
@@ -298,8 +300,10 @@ const ChannelHeader = ({
     }, [memberCount, customStatus, isCustomStatusExpired, theme.sidebarHeaderTextColor, styles.customStatusContainer, styles.customStatusEmoji, styles.customStatusText, styles.subtitle, isCustomStatusEnabled]);
 
     useEffect(() => {
-        fetchPlaybookRunsForChannel(serverUrl, channelId);
-    }, [channelId, serverUrl]);
+        if (isPlaybooksEnabled) {
+            fetchPlaybookRunsForChannel(serverUrl, channelId);
+        }
+    }, [channelId, serverUrl, isPlaybooksEnabled]);
 
     const showBookmarkBar = isBookmarksEnabled && hasBookmarks && shouldRenderBookmarks;
 

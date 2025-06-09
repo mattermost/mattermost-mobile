@@ -17,20 +17,32 @@ export const fetchPlaybookRunsForChannel = async (serverUrl: string, channelId: 
         const client = NetworkManager.getClient(serverUrl);
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-        const {items: runs} = await client.fetchPlaybookRuns({
-            page: 0,
-            per_page: 100,
-            channel_id: channelId,
-        });
+        let hasMore = true;
+        let page = 0;
+        const allRuns: PlaybookRun[] = [];
+        while (hasMore) {
+            // We want to call the API secuentially for pagination
+            // eslint-disable-next-line no-await-in-loop
+            const {items: runs, has_more} = await client.fetchPlaybookRuns({
+                page,
+                per_page: 100,
+                channel_id: channelId,
+                active_gte: 0, // TODO use last playbook fetch at
+            });
+            hasMore = has_more;
+            allRuns.push(...runs);
+            page++;
+        }
 
         if (!fetchOnly) {
             await operator.handlePlaybookRun({
-                runs,
+                runs: allRuns,
                 prepareRecordsOnly: false,
+                processChildren: true,
             });
         }
 
-        return {runs};
+        return {runs: allRuns};
     } catch (error) {
         logDebug('error on fetchPlaybookRunsForChannel', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
