@@ -8,7 +8,6 @@ import {Alert, Keyboard, type LayoutChangeEvent, Platform, SafeAreaView, View, S
 import {deletePost, editPost} from '@actions/remote/post';
 import Autocomplete from '@components/autocomplete';
 import Loading from '@components/loading';
-import Uploads from '@components/post_draft/uploads';
 import {Events} from '@constants';
 import {ExtraKeyboardProvider} from '@context/extra_keyboard';
 import {useServerUrl} from '@context/server';
@@ -298,17 +297,11 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
                                 onChangeText={onInputChangeText}
                                 onTextSelectionChange={onTextSelectionChange}
                                 ref={postInputRef}
+                                post={post}
+                                postFilesRef={postFilesRef}
                             />
                         </View>
                     </View>
-                    <Uploads
-                        channelId={post.channelId}
-                        currentUserId={post.userId}
-                        files={postFilesRef.current}
-                        uploadFileError={undefined}
-                        rootId={post.rootId}
-                        isEditMode={true}
-                    />
                 </ExtraKeyboardProvider>
             </SafeAreaView>
             <Autocomplete

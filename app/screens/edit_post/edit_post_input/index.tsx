@@ -7,11 +7,14 @@ import React, {forwardRef, useCallback, useImperativeHandle, useMemo, useRef} fr
 import {useIntl} from 'react-intl';
 import {type NativeSyntheticEvent, Platform, type TextInputSelectionChangeEventData, View} from 'react-native';
 
+import Uploads from '@components/post_draft/uploads';
 import {ExtraKeyboard, useExtraKeyboardContext} from '@context/extra_keyboard';
 import {useTheme} from '@context/theme';
 import {emptyFunction} from '@utils/general';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+
+import type PostModel from '@typings/database/models/servers/post';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     input: {
@@ -35,6 +38,8 @@ export type EditPostInputRef = {
 type PostInputProps = {
     message: string;
     hasError: boolean;
+    post: PostModel;
+    postFilesRef: React.MutableRefObject<FileInfo[]>;
     onTextSelectionChange: (curPos: number) => void;
     onChangeText: (text: string) => void;
 }
@@ -44,6 +49,8 @@ const EditPostInput = forwardRef<EditPostInputRef, PostInputProps>(({
     onChangeText,
     onTextSelectionChange,
     hasError,
+    post,
+    postFilesRef,
 }: PostInputProps, ref) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -103,6 +110,14 @@ const EditPostInput = forwardRef<EditPostInputRef, PostInputProps>(({
                 value={message}
                 onFocus={onFocus}
                 onBlur={onBlur}
+            />
+            <Uploads
+                channelId={post.channelId}
+                currentUserId={post.userId}
+                files={postFilesRef.current}
+                uploadFileError={undefined} // TODO: Add upload file error
+                rootId={post.rootId}
+                isEditMode={true}
             />
             {Platform.select({ios: <ExtraKeyboard/>})}
         </View>
