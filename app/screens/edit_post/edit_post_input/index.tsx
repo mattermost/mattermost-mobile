@@ -39,7 +39,7 @@ type PostInputProps = {
     message: string;
     hasError: boolean;
     post: PostModel;
-    postFilesRef: React.MutableRefObject<FileInfo[]>;
+    postFiles: FileInfo[];
     onTextSelectionChange: (curPos: number) => void;
     onChangeText: (text: string) => void;
 }
@@ -50,7 +50,7 @@ const EditPostInput = forwardRef<EditPostInputRef, PostInputProps>(({
     onTextSelectionChange,
     hasError,
     post,
-    postFilesRef,
+    postFiles,
 }: PostInputProps, ref) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -114,7 +114,7 @@ const EditPostInput = forwardRef<EditPostInputRef, PostInputProps>(({
             <Uploads
                 channelId={post.channelId}
                 currentUserId={post.userId}
-                files={postFilesRef.current}
+                files={postFiles}
                 uploadFileError={undefined} // TODO: Add upload file error
                 rootId={post.rootId}
                 isEditMode={true}
