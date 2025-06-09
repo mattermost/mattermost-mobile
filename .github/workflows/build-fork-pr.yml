@@ -205,7 +205,8 @@ jobs:
             
             const message = `### 🤖 Android Fork PR Build Complete\n\n` +
               `**Build Artifact:** [${artifactName}](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${runId})\n` +
-              `**Install URL:** [Install from PR Builds](${installUrl})\n\n` +
+              `**Install URL:** [Install from PR Builds](${installUrl})\n` +
+              `**Copy this URL:** ${installUrl}\n\n` +
               `**Details:**\n` +
               `- Commit: \`${{ env.CHECKOUT_REF }}\`\n` +
               `- Branch: \`${{ env.BRANCH_TO_BUILD }}\`\n` +

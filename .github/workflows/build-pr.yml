@@ -168,7 +168,7 @@ jobs:
           script: |
             const prNumber = '${{ github.event.pull_request.number }}';
             const installUrl = `https://pr-builds.mattermost.com/mattermost-mobile/${prNumber}/merge/Mattermost_Beta.apk`;
-            const message = `### Android PR Build\n\nYou can install the Android APK build directly from:\n- [Install from PR Builds](${installUrl})\n\nCommit: ${{ env.CHECKOUT_REF }}`;
+            const message = `### iOS PR Build\n\nYou can install the iOS app directly from:\n- [Install from PR Builds](${installUrl})\n- Or copy this URL: \`${installUrl}\`\n\nCommit: ${{ env.CHECKOUT_REF }}`;
 
             github.rest.issues.createComment({
               issue_number: context.issue.number,
