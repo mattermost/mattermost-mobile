@@ -2,12 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {View, Platform, DeviceEventEmitter} from 'react-native';
+import {View, Platform} from 'react-native';
 
 import {removeDraftFile} from '@actions/local/draft';
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {Events} from '@constants';
+import {useEditPost} from '@context/edit_post';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import DraftUploadManager from '@managers/draft_upload_manager';
@@ -55,10 +55,11 @@ export default function UploadRemove({
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const serverUrl = useServerUrl();
+    const {onFileRemove} = useEditPost();
 
     const onPress = () => {
         if (isEditMode) {
-            DeviceEventEmitter.emit(Events.FILE_ADD_REMOVED, fileId);
+            onFileRemove?.(fileId);
             return;
         }
         DraftUploadManager.cancel(clientId);

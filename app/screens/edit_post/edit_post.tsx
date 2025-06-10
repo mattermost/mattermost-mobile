@@ -3,12 +3,12 @@
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Keyboard, type LayoutChangeEvent, Platform, SafeAreaView, View, StyleSheet, DeviceEventEmitter} from 'react-native';
+import {Alert, Keyboard, type LayoutChangeEvent, Platform, SafeAreaView, View, StyleSheet} from 'react-native';
 
 import {deletePost, editPost} from '@actions/remote/post';
 import Autocomplete from '@components/autocomplete';
 import Loading from '@components/loading';
-import {Events} from '@constants';
+import {EditPostProvider} from '@context/edit_post';
 import {ExtraKeyboardProvider} from '@context/extra_keyboard';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -158,11 +158,6 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
         );
     }, [intl, toggleSaveButton, postFiles]);
 
-    useEffect(() => {
-        const onFileAddRemoved = DeviceEventEmitter.addListener(Events.FILE_ADD_REMOVED, handleFileRemoval);
-        return () => onFileAddRemoved.remove();
-    }, [handleFileRemoval]);
-
     const onChangeTextCommon = useCallback((message: string) => {
         const tooLong = message.trim().length > maxPostSize;
         setErrorLine(undefined);
@@ -274,7 +269,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
     }
 
     return (
-        <>
+        <EditPostProvider onFileRemove={handleFileRemoval}>
             <SafeAreaView
                 testID='edit_post.screen'
                 style={styles.container}
@@ -319,7 +314,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
                 inPost={false}
                 serverUrl={serverUrl}
             />
-        </>
+        </EditPostProvider>
     );
 };
 
