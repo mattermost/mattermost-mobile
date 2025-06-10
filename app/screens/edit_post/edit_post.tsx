@@ -24,8 +24,8 @@ import {buildNavigationButton, dismissModal, setButtons} from '@screens/navigati
 import {changeOpacity} from '@utils/theme';
 
 import EditPostInput from './edit_post_input';
-import {type EditPostInputRef} from './edit_post_input/edit_post_input';
 
+import type {PasteInputRef} from '@mattermost/react-native-paste-input';
 import type PostModel from '@typings/database/models/servers/post';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
@@ -72,7 +72,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
 
     const mainView = useRef<View>(null);
 
-    const postInputRef = useRef<EditPostInputRef>(null);
+    const postInputRef = useRef<PasteInputRef | undefined>(undefined);
     const theme = useTheme();
     const intl = useIntl();
     const serverUrl = useServerUrl();
@@ -294,7 +294,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
                                 message={postMessage}
                                 onChangeText={onInputChangeText}
                                 onTextSelectionChange={onTextSelectionChange}
-                                ref={postInputRef}
+                                inputRef={postInputRef}
                                 post={post}
                                 postFiles={postFiles}
                             />

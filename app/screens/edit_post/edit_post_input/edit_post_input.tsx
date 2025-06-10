@@ -3,7 +3,7 @@
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import PasteInput, {type PasteInputRef} from '@mattermost/react-native-paste-input';
-import React, {forwardRef, useCallback, useImperativeHandle, useMemo, useRef} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {type NativeSyntheticEvent, Platform, type TextInputSelectionChangeEventData, View} from 'react-native';
 
@@ -35,10 +35,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     },
 }));
 
-export type EditPostInputRef = {
-    focus: () => void;
-}
-
 type PostInputProps = {
     message: string;
     hasError: boolean;
@@ -47,9 +43,10 @@ type PostInputProps = {
     config: ClientConfig;
     onTextSelectionChange: (curPos: number) => void;
     onChangeText: (text: string) => void;
+    inputRef: React.MutableRefObject<PasteInputRef | undefined>;
 }
 
-const EditPostInput = forwardRef<EditPostInputRef, PostInputProps>(({
+const EditPostInput = ({
     message,
     onChangeText,
     onTextSelectionChange,
@@ -57,14 +54,13 @@ const EditPostInput = forwardRef<EditPostInputRef, PostInputProps>(({
     post,
     postFiles,
     config,
-}: PostInputProps, ref) => {
+    inputRef,
+}: PostInputProps) => {
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const managedConfig = useManagedConfig<ManagedConfig>();
     const disableCopyAndPaste = managedConfig.copyAndPasteProtection === 'true';
-
-    const inputRef = useRef<PasteInputRef>();
 
     const keyboardContext = useExtraKeyboardContext();
 
@@ -90,10 +86,6 @@ const EditPostInput = forwardRef<EditPostInputRef, PostInputProps>(({
         hasError && {marginTop: 0},
     ], [styles, hasError]);
 
-    useImperativeHandle(ref, () => ({
-        focus: () => inputRef.current?.focus(),
-    }), []);
-
     return (
         <View style={containerStyle}>
             <PasteInput
@@ -118,19 +110,21 @@ const EditPostInput = forwardRef<EditPostInputRef, PostInputProps>(({
                 onBlur={onBlur}
             />
             {isMinimumServerVersion(config.Version, MAJOR_VERSION_TO_SHOW_ATTACHMENTS, MINOR_VERSION_TO_SHOW_ATTACHMENTS) &&
-                <Uploads
-                    channelId={post.channelId}
-                    currentUserId={post.userId}
-                    files={postFiles}
-                    uploadFileError={undefined} // TODO: Add upload file error
-                    rootId={post.rootId}
-                    isEditMode={true}
-                />
+                <>
+                    <Uploads
+                        channelId={post.channelId}
+                        currentUserId={post.userId}
+                        files={postFiles}
+                        uploadFileError={undefined} // TODO: Add upload file error
+                        rootId={post.rootId}
+                        isEditMode={true}
+                    />
+                </>
             }
             {Platform.select({ios: <ExtraKeyboard/>})}
         </View>
     );
-});
+};
 
 EditPostInput.displayName = 'EditPostInput';
 

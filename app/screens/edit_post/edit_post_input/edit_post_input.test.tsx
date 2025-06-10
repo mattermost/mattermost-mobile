@@ -54,6 +54,7 @@ describe('EditPostInput', () => {
         config: {
             Version: '10.5.0',
         } as ClientConfig,
+        inputRef: {current: undefined},
         onTextSelectionChange: jest.fn(),
         onChangeText: jest.fn(),
     };
