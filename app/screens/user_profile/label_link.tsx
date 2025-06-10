@@ -35,10 +35,11 @@ const UserProfileLink = ({description, linkType, testID}: Props) => {
     if (!getScheme(description)) {
         url = linkType === 'url' ? `https://${description}` : `tel:${description}`;
     }
+    const openURL = useCallback(() => tryOpenURL(url), [url]);
 
     return (
         <TouchableOpacity
-            onPress={useCallback(() => tryOpenURL(url), [url])}
+            onPress={openURL}
             style={styles.button}
         >
             <Text
