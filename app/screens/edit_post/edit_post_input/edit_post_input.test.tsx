@@ -6,7 +6,7 @@ import {Database} from '@nozbe/watermelondb';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
-import EditPostInput from '.';
+import EditPostInput from './edit_post_input';
 
 import type PostModel from '@typings/database/models/servers/post';
 
@@ -51,6 +51,9 @@ describe('EditPostInput', () => {
                 width: 100,
             },
         ],
+        config: {
+            Version: '10.5.0',
+        } as ClientConfig,
         onTextSelectionChange: jest.fn(),
         onChangeText: jest.fn(),
     };
@@ -75,5 +78,11 @@ describe('EditPostInput', () => {
         const {getByTestId} = renderWithEverything(<EditPostInput {...baseProps}/>, {database, serverUrl});
         expect(getByTestId('uploads')).toBeVisible();
         expect(getByTestId('uploads').children).toHaveLength(2);
+    });
+
+    it('should not render attachments if the server version is less than 10.5.0', () => {
+        const props = {...baseProps, config: {...baseProps.config, Version: '10.4.0'}};
+        const {queryByTestId} = renderWithEverything(<EditPostInput {...props}/>, {database, serverUrl});
+        expect(queryByTestId('uploads')).toBeNull();
     });
 });

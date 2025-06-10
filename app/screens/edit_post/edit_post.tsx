@@ -23,7 +23,8 @@ import PostError from '@screens/edit_post/post_error';
 import {buildNavigationButton, dismissModal, setButtons} from '@screens/navigation';
 import {changeOpacity} from '@utils/theme';
 
-import EditPostInput, {type EditPostInputRef} from './edit_post_input';
+import EditPostInput from './edit_post_input';
+import {type EditPostInputRef} from './edit_post_input/edit_post_input';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type {AvailableScreens} from '@typings/screens/navigation';

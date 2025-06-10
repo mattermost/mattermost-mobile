@@ -61,6 +61,14 @@ describe('Edit Post', () => {
     beforeAll(async () => {
         const server = await TestHelper.setupServerDatabase(serverUrl);
         database = server.database;
+        const operator = server.operator;
+        operator.handleConfigs({
+            configs: [
+                {id: 'Version', value: '10.5.0'},
+            ],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
     });
 
     beforeEach(() => {
