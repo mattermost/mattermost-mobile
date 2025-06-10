@@ -47,13 +47,12 @@ type PostOptionsProps = {
     componentId: AvailableScreens;
     bindings: AppBinding[];
     serverUrl: string;
-    files?: FileInfo[];
 };
 const PostOptions = ({
     canAddReaction, canDelete, canEdit,
     canMarkAsUnread, canPin, canReply,
     combinedPost, componentId, isSaved,
-    sourceScreen, post, thread, bindings, serverUrl, files,
+    sourceScreen, post, thread, bindings, serverUrl,
 }: PostOptionsProps) => {
     const managedConfig = useManagedConfig<ManagedConfig>();
     const isTablet = useIsTablet();
@@ -160,7 +159,6 @@ const PostOptions = ({
                     bottomSheetId={Screens.POST_OPTIONS}
                     post={post}
                     canDelete={canDelete}
-                    files={files}
                 />
                 }
                 {canDelete &&

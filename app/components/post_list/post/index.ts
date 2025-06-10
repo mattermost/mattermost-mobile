@@ -3,17 +3,16 @@
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import React from 'react';
-import {of as of$, combineLatest, from as from$} from 'rxjs';
+import {of as of$, combineLatest} from 'rxjs';
 import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {Permissions, Preferences, Screens} from '@constants';
-import {observeFilesForPost, queryFilesForPost} from '@queries/servers/file';
+import {queryFilesForPost} from '@queries/servers/file';
 import {observePost, observePostAuthor, queryPostsBetween, observeIsPostPriorityEnabled} from '@queries/servers/post';
 import {queryReactionsForPost} from '@queries/servers/reaction';
 import {observeCanManageChannelMembers, observePermissionForPost} from '@queries/servers/role';
 import {observeThreadById} from '@queries/servers/thread';
 import {observeCurrentUser} from '@queries/servers/user';
-import {filesLocalPathValidation} from '@utils/file';
 import {areConsecutivePosts, isPostEphemeral} from '@utils/post';
 
 import Post from './post';
@@ -140,10 +139,6 @@ const withPost = withObservables(
             distinctUntilChanged(),
         );
 
-        const files = observeFilesForPost(database, post.id).pipe(
-            switchMap((fs) => from$(filesLocalPathValidation(fs, post.userId))),
-        );
-
         return {
             canDelete,
             differentThreadSequence: of$(differentThreadSequence),
@@ -160,7 +155,6 @@ const withPost = withObservables(
             thread: isCRTEnabled ? observeThreadById(database, post.id) : of$(undefined),
             hasReactions,
             isLastPost: of$(!nextPost),
-            files,
         };
     });
 
