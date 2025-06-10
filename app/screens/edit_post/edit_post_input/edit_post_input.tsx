@@ -110,16 +110,14 @@ const EditPostInput = ({
                 onBlur={onBlur}
             />
             {isMinimumServerVersion(config.Version, MAJOR_VERSION_TO_SHOW_ATTACHMENTS, MINOR_VERSION_TO_SHOW_ATTACHMENTS) &&
-                <>
-                    <Uploads
-                        channelId={post.channelId}
-                        currentUserId={post.userId}
-                        files={postFiles}
-                        uploadFileError={undefined} // TODO: Add upload file error
-                        rootId={post.rootId}
-                        isEditMode={true}
-                    />
-                </>
+                <Uploads
+                    channelId={post.channelId}
+                    currentUserId={post.userId}
+                    files={postFiles}
+                    uploadFileError={undefined} // TODO: Add upload file error
+                    rootId={post.rootId}
+                    isEditMode={true}
+                />
             }
             {Platform.select({ios: <ExtraKeyboard/>})}
         </View>
