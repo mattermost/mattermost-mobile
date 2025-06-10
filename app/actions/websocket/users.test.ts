@@ -10,12 +10,22 @@ import {Events} from '@constants';
 import DatabaseManager from '@database/manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {queryChannelsByTypes, queryUserChannelsByTypes} from '@queries/servers/channel';
+import {deleteCustomProfileAttributesByFieldId} from '@queries/servers/custom_profile';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {getConfig, getLicense} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
 import TestHelper from '@test/test_helper';
+import * as logUtils from '@utils/log';
 
-import {handleUserUpdatedEvent, handleUserTypingEvent, handleStatusChangedEvent, userTyping} from './users';
+import {
+    handleUserUpdatedEvent,
+    handleUserTypingEvent,
+    handleStatusChangedEvent,
+    userTyping,
+    handleCustomProfileAttributesValuesUpdatedEvent,
+    handleCustomProfileAttributesFieldUpdatedEvent,
+    handleCustomProfileAttributesFieldDeletedEvent,
+} from './users';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 
@@ -26,6 +36,7 @@ jest.mock('@database/manager');
 jest.mock('@helpers/api/preference');
 jest.mock('@managers/websocket_manager');
 jest.mock('@queries/servers/channel');
+jest.mock('@queries/servers/custom_profile');
 jest.mock('@queries/servers/preference');
 jest.mock('@queries/servers/system');
 jest.mock('@queries/servers/user');
@@ -206,13 +217,22 @@ describe('WebSocket Users Actions', () => {
 
             jest.mocked(getConfig).mockResolvedValue(mockConfig as any);
             jest.mocked(fetchUsersByIds).mockResolvedValue({
-                users: [TestHelper.fakeUser({id: otherUserId, username: 'other-user'})],
+                users: [
+                    TestHelper.fakeUser({
+                        id: otherUserId,
+                        username: 'other-user',
+                    }),
+                ],
                 existingUsers: [],
             });
 
-            jest.mocked(queryDisplayNamePreferences).mockReturnValue(TestHelper.fakeQuery([TestHelper.fakePreferenceModel({
-                value: 'full_name',
-            })]));
+            jest.mocked(queryDisplayNamePreferences).mockReturnValue(
+                TestHelper.fakeQuery([
+                    TestHelper.fakePreferenceModel({
+                        value: 'full_name',
+                    }),
+                ]),
+            );
 
             jest.mocked(getLicense).mockResolvedValue({} as ClientLicense);
 
@@ -270,6 +290,246 @@ describe('WebSocket Users Actions', () => {
 
             expect(setCurrentUserStatus).toHaveBeenCalledWith(serverUrl, 'online');
             jest.useRealTimers();
+        });
+    });
+
+    describe('handleCustomProfileAttributesValuesUpdatedEvent', () => {
+        it('should handle missing operator', async () => {
+            jest.spyOn(logUtils, 'logError').mockImplementation(() => {});
+            DatabaseManager.serverDatabases = {};
+            const msg = {
+                data: {
+                    user_id: 'user1',
+                    values: {field1: 'value1'},
+                },
+            } as WebSocketMessage;
+
+            await handleCustomProfileAttributesValuesUpdatedEvent(
+                serverUrl,
+                msg,
+            );
+
+            expect(logUtils.logError).toHaveBeenCalled();
+        });
+
+        it('should handle custom profile attributes values update', async () => {
+            const mockHandleCustomProfileAttributes = jest.
+                fn().
+                mockResolvedValue([]);
+            operator.handleCustomProfileAttributes =
+                mockHandleCustomProfileAttributes;
+
+            const msg = {
+                data: {
+                    user_id: 'user1',
+                    values: {
+                        field1: 'value1',
+                        field2: 'value2',
+                    },
+                },
+            } as WebSocketMessage;
+
+            await handleCustomProfileAttributesValuesUpdatedEvent(
+                serverUrl,
+                msg,
+            );
+
+            expect(mockHandleCustomProfileAttributes).toHaveBeenCalledWith({
+                attributes: [
+                    {
+                        id: 'field1-user1',
+                        field_id: 'field1',
+                        user_id: 'user1',
+                        value: 'value1',
+                    },
+                    {
+                        id: 'field2-user1',
+                        field_id: 'field2',
+                        user_id: 'user1',
+                        value: 'value2',
+                    },
+                ],
+                prepareRecordsOnly: false,
+            });
+        });
+
+        it('should handle errors during attributes update', async () => {
+            jest.spyOn(logUtils, 'logError').mockImplementation(() => {});
+            operator.handleCustomProfileAttributes = jest.
+                fn().
+                mockRejectedValue(new Error('test error'));
+
+            const msg = {
+                data: {
+                    user_id: 'user1',
+                    values: {field1: 'value1'},
+                },
+            } as WebSocketMessage;
+
+            await handleCustomProfileAttributesValuesUpdatedEvent(
+                serverUrl,
+                msg,
+            );
+
+            expect(logUtils.logError).toHaveBeenCalled();
+        });
+    });
+
+    describe('handleCustomProfileAttributesFieldUpdatedEvent', () => {
+        it('should handle missing operator', async () => {
+            jest.spyOn(logUtils, 'logError').mockImplementation(() => {});
+            DatabaseManager.serverDatabases = {};
+            const msg = {
+                data: {
+                    field: {id: 'field1'},
+                },
+            } as WebSocketMessage;
+
+            await handleCustomProfileAttributesFieldUpdatedEvent(
+                serverUrl,
+                msg,
+            );
+
+            expect(logUtils.logError).toHaveBeenCalled();
+        });
+
+        it('should handle custom profile field update', async () => {
+            const mockHandleCustomProfileFields = jest.
+                fn().
+                mockResolvedValue([]);
+            operator.handleCustomProfileFields = mockHandleCustomProfileFields;
+
+            const mockField = {
+                id: 'field1',
+                group_id: 'group1',
+                name: 'Field 1',
+                type: 'text',
+                target_id: 'target1',
+                target_type: 'user',
+                create_at: 1000,
+                update_at: 2000,
+                delete_at: 0,
+                attrs: {required: true},
+            };
+
+            const msg = {
+                data: {
+                    field: mockField,
+                },
+            } as WebSocketMessage;
+
+            await handleCustomProfileAttributesFieldUpdatedEvent(
+                serverUrl,
+                msg,
+            );
+
+            expect(mockHandleCustomProfileFields).toHaveBeenCalledWith({
+                fields: [mockField],
+                prepareRecordsOnly: false,
+            });
+        });
+
+        it('should handle errors during field update', async () => {
+            jest.spyOn(logUtils, 'logError').mockImplementation(() => {});
+            operator.handleCustomProfileFields = jest.
+                fn().
+                mockRejectedValue(new Error('test error'));
+
+            const msg = {
+                data: {
+                    field: {id: 'field1'},
+                },
+            } as WebSocketMessage;
+
+            await handleCustomProfileAttributesFieldUpdatedEvent(
+                serverUrl,
+                msg,
+            );
+
+            expect(logUtils.logError).toHaveBeenCalled();
+        });
+    });
+
+    describe('handleCustomProfileAttributesFieldDeletedEvent', () => {
+        it('should handle missing operator', async () => {
+            jest.spyOn(logUtils, 'logError').mockImplementation(() => {});
+            DatabaseManager.serverDatabases = {};
+            const msg = {
+                data: {
+                    field_id: 'field1',
+                },
+            } as WebSocketMessage;
+
+            await handleCustomProfileAttributesFieldDeletedEvent(
+                serverUrl,
+                msg,
+            );
+
+            expect(logUtils.logError).toHaveBeenCalled();
+        });
+
+        it('should handle custom profile field deletion', async () => {
+
+            // Add explicit mock setup for deleteCustomProfileAttributesByFieldId
+            jest.mocked(deleteCustomProfileAttributesByFieldId).mockResolvedValue();
+
+            const mockDate = 1635812400000; // Nov 1, 2021
+            jest.spyOn(Date, 'now').mockReturnValue(mockDate);
+
+            const msg = {
+                data: {
+                    field_id: 'field1',
+                },
+            } as WebSocketMessage;
+
+            await handleCustomProfileAttributesFieldDeletedEvent(
+                serverUrl,
+                msg,
+            );
+
+            expect(deleteCustomProfileAttributesByFieldId).toHaveBeenCalledWith(
+                operator.database,
+                'field1',
+            );
+        });
+
+        it('should handle errors during field model deletion', async () => {
+            jest.spyOn(logUtils, 'logError').mockImplementation(() => {});
+            operator.handleCustomProfileFields = jest.fn().mockRejectedValue(new Error('test error'));
+
+            jest.mocked(deleteCustomProfileAttributesByFieldId).mockResolvedValue();
+
+            const msg = {
+                data: {
+                    field_id: 'field1',
+                },
+            } as WebSocketMessage;
+
+            await handleCustomProfileAttributesFieldDeletedEvent(serverUrl, msg);
+
+            expect(logUtils.logError).toHaveBeenCalled();
+
+            expect(deleteCustomProfileAttributesByFieldId).not.toHaveBeenCalled();
+        });
+
+        it('should handle errors during attributes deletion', async () => {
+            jest.spyOn(logUtils, 'logError').mockImplementation(() => {});
+
+            jest.mocked(deleteCustomProfileAttributesByFieldId).mockRejectedValue(new Error('test error'));
+
+            const msg = {
+                data: {
+                    field_id: 'field1',
+                },
+            } as WebSocketMessage;
+
+            await handleCustomProfileAttributesFieldDeletedEvent(
+                serverUrl,
+                msg,
+            );
+
+            expect(logUtils.logError).toHaveBeenCalled();
+            expect(deleteCustomProfileAttributesByFieldId).toHaveBeenCalled();
         });
     });
 });

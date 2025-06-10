@@ -98,6 +98,8 @@
   "camera_type.photo.option": "Pořídit Fotografii",
   "camera_type.video.option": "Nahrát video",
   "center_panel.archived.closeChannel": "Zavřít kanál",
+  "channel.abac_policy_enforced.description": "Pouze osoby, které odpovídají specifikovaným pravidlům přístupu, mohou být vybrány a přidány do tohoto kanálu.",
+  "channel.abac_policy_enforced.title": "Přístup ke kanálu je omezen atributy uživatele",
   "channel.banner.bottom_sheet.title": "Banner kanálu",
   "channel_add_members.add_members.button": "Přidat Členy",
   "channel_bookmark.add.detail_title": "Název",
