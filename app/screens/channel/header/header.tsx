@@ -24,6 +24,7 @@ import {goToPlaybookRun, goToPlaybookRuns} from '@playbooks/screens/navigation';
 import {BOTTOM_SHEET_ANDROID_OFFSET} from '@screens/bottom_sheet';
 import ChannelBanner from '@screens/channel/header/channel_banner';
 import {bottomSheet, popTopScreen, showModal} from '@screens/navigation';
+import EphemeralStore from '@store/ephemeral_store';
 import {isTypeDMorGM} from '@utils/channel';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -300,9 +301,15 @@ const ChannelHeader = ({
     }, [memberCount, customStatus, isCustomStatusExpired, theme.sidebarHeaderTextColor, styles.customStatusContainer, styles.customStatusEmoji, styles.customStatusText, styles.subtitle, isCustomStatusEnabled]);
 
     useEffect(() => {
-        if (isPlaybooksEnabled) {
-            fetchPlaybookRunsForChannel(serverUrl, channelId);
-        }
+        const asyncEffect = async () => {
+            if (isPlaybooksEnabled && !EphemeralStore.getChannelPlaybooksSynced(serverUrl, channelId)) {
+                const res = await fetchPlaybookRunsForChannel(serverUrl, channelId);
+                if (!('error' in res)) {
+                    EphemeralStore.setChannelPlaybooksSynced(serverUrl, channelId);
+                }
+            }
+        };
+        asyncEffect();
     }, [channelId, serverUrl, isPlaybooksEnabled]);
 
     const showBookmarkBar = isBookmarksEnabled && hasBookmarks && shouldRenderBookmarks;

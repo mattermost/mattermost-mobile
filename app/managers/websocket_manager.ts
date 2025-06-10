@@ -16,6 +16,7 @@ import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getCurrentUserId} from '@queries/servers/system';
 import {queryAllUsers} from '@queries/servers/user';
+import EphemeralStore from '@store/ephemeral_store';
 import {toMilliseconds} from '@utils/datetime';
 import {isMainActivity} from '@utils/helpers';
 import {logError} from '@utils/log';
@@ -189,6 +190,7 @@ class WebsocketManagerSingleton {
     };
 
     private onWebsocketClose = async (serverUrl: string, connectFailCount: number) => {
+        EphemeralStore.clearChannelPlaybooksSynced(serverUrl);
         this.getConnectedSubject(serverUrl).next('not_connected');
         if (connectFailCount <= 1) { // First fail
             await setCurrentUserStatus(serverUrl, General.OFFLINE);

@@ -33,4 +33,5 @@ type FetchPlaybookRunsParams = {
     started_gte?: number;
     started_lt?: number;
     channel_id?: string;
+    since?: number;
 }
