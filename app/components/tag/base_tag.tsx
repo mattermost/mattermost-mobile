@@ -139,7 +139,10 @@ const Tag = ({
         <View style={containerStyle}>
             {/* We wrap the icon and text in a Text component to avoid
             the ellipsis to go out of the box on iOS */}
-            <Text numberOfLines={1}>
+            <Text
+                numberOfLines={1}
+                style={textStyle}
+            >
                 {iconComponent}
                 {' '}
                 {textComponent}
