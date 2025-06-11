@@ -4,6 +4,7 @@
 import type PlaybookChecklistModel from './playbook_checklist';
 import type {Relation, Model} from '@nozbe/watermelondb';
 import type {Associations} from '@nozbe/watermelondb/Model';
+import type {SyncStatus} from '@typings/database/database';
 import type UserModel from '@typings/database/models/servers/user';
 
 /**
@@ -53,7 +54,7 @@ declare class PlaybookChecklistItemModel extends Model {
     completedAt: number;
 
     // The sync status of the checklist item
-    sync: string;
+    sync: SyncStatus;
 
     // The timestamp when the checklist item was last synced
     lastSyncAt: number;
@@ -64,8 +65,8 @@ declare class PlaybookChecklistItemModel extends Model {
     /** checklist : The checklist to which this checklist item belongs */
     checklist: Relation<PlaybookChecklistModel>;
 
-    /** assignee : The user who is assigned to the checklist item */
-    assignee: Relation<UserModel>;
+    /** assignee : The user to whom this checklist item is assigned */
+    assignee?: Relation<UserModel>;
 }
 
 export default PlaybookChecklistItemModel;

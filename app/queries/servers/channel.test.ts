@@ -334,7 +334,7 @@ describe('prepareDeleteChannel', () => {
     });
 
     it('should prepare models for deletion', async () => {
-        const membershipModel = TestHelper.fakeMyChannelMembershipModel({prepareDestroyPermanently: jest.fn().mockReturnValue({id: 'membership'})});
+        const membershipModel = TestHelper.fakeMyChannelModel({prepareDestroyPermanently: jest.fn().mockReturnValue({id: 'membership'})});
         const infoModel = TestHelper.fakeChannelInfoModel({prepareDestroyPermanently: jest.fn().mockReturnValue({id: 'info'})});
         const categoryChannelModel = TestHelper.fakeCategoryChannelModel({prepareDestroyPermanently: jest.fn().mockReturnValue({id: 'category'})});
         const memberModels = [TestHelper.fakeChannelMembershipModel({prepareDestroyPermanently: jest.fn().mockReturnValue({id: 'member'})})];

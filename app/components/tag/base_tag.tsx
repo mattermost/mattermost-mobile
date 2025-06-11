@@ -27,6 +27,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             borderRadius: 4,
             paddingVertical: 2,
             paddingHorizontal: 4,
+            alignItems: 'center',
+            justifyContent: 'center',
         },
         generalContainer: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
@@ -109,6 +111,7 @@ const Tag = ({
                 size={iconSizePerSize[size]}
                 name={icon}
                 color={styles[`${type}Text`].color}
+                testID={testID ? `${testID}.icon` : undefined}
             />
         );
     }
@@ -136,7 +139,10 @@ const Tag = ({
         <View style={containerStyle}>
             {/* We wrap the icon and text in a Text component to avoid
             the ellipsis to go out of the box on iOS */}
-            <Text numberOfLines={1}>
+            <Text
+                numberOfLines={1}
+                style={textStyle}
+            >
                 {iconComponent}
                 {' '}
                 {textComponent}

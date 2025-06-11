@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Q, type Query, type Relation} from '@nozbe/watermelondb';
 import {children, field, immutableRelation, json} from '@nozbe/watermelondb/decorators';
 import Model, {type Associations} from '@nozbe/watermelondb/Model';
 
@@ -8,7 +9,6 @@ import {MM_TABLES} from '@constants/database';
 import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
 import {safeParseJSON} from '@utils/helpers';
 
-import type {Query, Relation} from '@nozbe/watermelondb';
 import type PlaybookRunModelInterface from '@playbooks//types/database/models/playbook_run';
 import type PlaybookChecklistModel from '@playbooks/types/database/models/playbook_checklist';
 import type {SyncStatus} from '@typings/database/database';
@@ -45,7 +45,7 @@ export default class PlaybookRunModel extends Model implements PlaybookRunModelI
         /** A TEAM can be associated to PLAYBOOK_RUN (relationship is 1:1) */
         [TEAM]: {type: 'belongs_to', key: 'team_id'},
 
-        /** A USER can that commands the PLAYBOOK_RUN (relationship is 1:1) */
+        /** A USER that commands the PLAYBOOK_RUN (relationship is 1:1) */
         [USER]: {type: 'belongs_to', key: 'owner_user_id'},
 
         [PLAYBOOK_CHECKLIST]: {type: 'has_many', foreignKey: 'run_id'},
@@ -80,9 +80,6 @@ export default class PlaybookRunModel extends Model implements PlaybookRunModelI
 
     /** end_at: Timestamp when the run ended (0 if not finished) */
     @field('end_at') endAt!: number;
-
-    /** delete_at : Timestamp when deleted (0 if not deleted) */
-    @field('delete_at') deleteAt!: number;
 
     /** active_stage : Zero-based index of the currently active stage */
     @field('active_stage') activeStage!: number;
@@ -120,14 +117,18 @@ export default class PlaybookRunModel extends Model implements PlaybookRunModelI
     /** post : The POST to which this PLAYBOOK_RUN belongs (can be null) */
     @immutableRelation(POST, 'post_id') post!: Relation<PostModel>;
 
-    /** team : The TEAM to which this CHANNEL belongs */
+    /** team : The TEAM to which the run CHANNEL belongs */
     @immutableRelation(TEAM, 'team_id') team!: Relation<TeamModel>;
 
-    /** team : The CHANNEL to which this PLAYBOOK_RUN belongs */
+    /** channel : The CHANNEL to which this PLAYBOOK_RUN belongs */
     @immutableRelation(CHANNEL, 'channel_id') channel!: Relation<ChannelModel>;
 
     /** creator : The USER who created this CHANNEL*/
     @immutableRelation(USER, 'owner_user_id') owner!: Relation<UserModel>;
 
     @children(PLAYBOOK_CHECKLIST) checklists!: Query<PlaybookChecklistModel>;
+
+    participants = (): Query<UserModel> => {
+        return this.database.get<UserModel>(USER).query(Q.where('id', Q.oneOf(this.participantIds)));
+    };
 }

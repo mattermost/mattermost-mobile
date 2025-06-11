@@ -13,6 +13,8 @@ import type {Class} from '@nozbe/watermelondb/types';
 import type {CustomProfileField, CustomProfileAttribute} from '@typings/api/custom_profile_attributes';
 import type System from '@typings/database/models/servers/system';
 
+export type SyncStatus = 'synced' | 'pending' | 'failed';
+
 export type WithDatabaseArgs = { database: Database }
 
 export type CreateServerDatabaseConfig = {

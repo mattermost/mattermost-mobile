@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
-import {of as of$, combineLatest, switchMap} from 'rxjs';
+import {of as of$, combineLatest, switchMap, distinctUntilChanged} from 'rxjs';
 
 import {Permissions, Tutorial} from '@constants';
 import {observeTutorialWatched} from '@queries/app/global';
@@ -37,6 +37,10 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         tutorialWatched: observeTutorialWatched(Tutorial.PROFILE_LONG_PRESS),
         canChangeMemberRoles,
         teammateDisplayNameSetting,
+        channelAbacPolicyEnforced: currentChannel.pipe(
+            switchMap((channel) => of$(channel?.abacPolicyEnforced || false)),
+            distinctUntilChanged(),
+        ),
     };
 });
 

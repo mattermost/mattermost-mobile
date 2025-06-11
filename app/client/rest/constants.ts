@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 export const HEADER_AUTH = 'Authorization';
+export const HEADER_ACCEPT = 'Accept';
 export const HEADER_ACCEPT_LANGUAGE = 'Accept-Language';
 export const HEADER_BEARER = 'BEARER';
 export const HEADER_CACHE_CONTROL = 'Cache-Control';

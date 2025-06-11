@@ -2,11 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {Platform, Text, TouchableOpacity, useWindowDimensions} from 'react-native';
+import {Platform, Text, TouchableOpacity} from 'react-native';
 import Animated, {FadeIn, FadeOut} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
+import {useWindowDimensions} from '@hooks/device';
 import {nonBreakingString} from '@utils/strings';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -37,13 +38,13 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             padding: 2,
         },
         text: {
-            marginLeft: 8,
             color: theme.centerChannelColor,
-            ...typography('Body', 75),
+            ...typography('Body', 100),
         },
         remove: {
             justifyContent: 'center',
-            marginLeft: 7,
+            marginLeft: 5,
+            marginRight: 4,
         },
         chipContent: {
             flexDirection: 'row',
@@ -65,10 +66,13 @@ export default function BaseChip({
     const style = getStyleFromTheme(theme);
     const dimensions = useWindowDimensions();
     const textStyle = useMemo(() => {
+        // We set the max width to 70% of the screen width to make sure
+        // text like names get ellipsized correctly.
         const textMaxWidth = maxWidth || dimensions.width * 0.70;
         const marginRight = showRemoveOption ? undefined : 7;
-        return [style.text, {maxWidth: textMaxWidth, marginRight}];
-    }, [maxWidth, dimensions.width, showRemoveOption, style.text]);
+        const marginLeft = prefix ? 5 : 7;
+        return [style.text, {maxWidth: textMaxWidth, marginRight, marginLeft}];
+    }, [maxWidth, dimensions.width, showRemoveOption, style.text, prefix]);
 
     const chipContent = (
         <>
@@ -95,7 +99,7 @@ export default function BaseChip({
                 >
                     <CompassIcon
                         name='close-circle'
-                        size={18}
+                        size={16}
                         color={changeOpacity(theme.centerChannelColor, 0.32)}
                     />
                 </TouchableOpacity>

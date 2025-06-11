@@ -1,26 +1,24 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback} from 'react';
 import {defineMessage, useIntl} from 'react-intl';
-import {Text, TouchableOpacity, View, useWindowDimensions} from 'react-native';
+import {Text, TouchableOpacity, View} from 'react-native';
 
 import {CHIP_HEIGHT} from '@components/chips/constants';
 import UserChip from '@components/chips/user_chip';
 import FriendlyDate from '@components/friendly_date';
-import Tag from '@components/tag';
 import UserAvatarsStack from '@components/user_avatars_stack';
 import {useTheme} from '@context/theme';
 import ProgressBar from '@playbooks/components/progress_bar';
 import {goToPlaybookRun} from '@playbooks/screens/navigation';
+import {openUserProfileModal} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import type PlaybookRunModel from '@playbooks/types/database/models/playbook_run';
 import type UserModel from '@typings/database/models/servers/user';
 import type {AvailableScreens} from '@typings/screens/navigation';
-
-// import {openUserProfileModal} from '@screens/navigation';
 
 const VERTICAL_PADDING = 16;
 const TITLE_HEIGHT = 24; // From typography at 200 size
@@ -69,12 +67,11 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => ({
 }));
 
 type Props = {
-    run: PlaybookRunModel;
+    run: PlaybookRunModel | PlaybookRun;
     location: AvailableScreens;
     participants: UserModel[];
     progress: number;
     owner?: UserModel;
-    playbookName?: string;
 };
 
 const bottomSheetTitleMessage = defineMessage({id: 'playbook.participants', defaultMessage: 'Run Participants'});
@@ -85,31 +82,27 @@ const PlaybookCard = ({
     participants,
     progress,
     owner,
-    playbookName,
 }: Props) => {
+    const endAt = 'endAt' in run ? run.endAt : run.end_at;
+    const channelId = 'channelId' in run ? run.channelId : run.channel_id;
+    const lastStatusUpdateAt = 'lastStatusUpdateAt' in run ? run.lastStatusUpdateAt : run.last_status_update_at;
+
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
-    const dimensions = useWindowDimensions();
-    const finished = Boolean(run.endAt);
-    const tagMaxWidth = dimensions.width * 0.25;
-
-    const tagContainerStyle = useMemo(() => ({
-        maxWidth: tagMaxWidth,
-    }), [tagMaxWidth]);
+    const finished = Boolean(endAt);
 
     const onCardPress = useCallback(() => {
         goToPlaybookRun(intl, run.id);
     }, [run.id, intl]);
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const onUserChipPress = useCallback((userId: string) => {
-        // openUserProfileModal(intl, theme, {
-        //     userId,
-        //     channelId: run.channel_id,
-        //     location,
-        // });
-    }, []);
+        openUserProfileModal(intl, theme, {
+            userId,
+            channelId,
+            location,
+        });
+    }, [channelId, intl, theme, location]);
 
     return (
         <TouchableOpacity
@@ -131,7 +124,7 @@ const PlaybookCard = ({
                     />
                 )}
                 <UserAvatarsStack
-                    channelId={run.channelId}
+                    channelId={channelId}
                     location={location}
                     users={participants}
                     bottomSheetTitle={bottomSheetTitleMessage}
@@ -149,21 +142,13 @@ const PlaybookCard = ({
                         }, {
                             date: (
                                 <FriendlyDate
-                                    value={run.lastStatusUpdateAt}
+                                    value={lastStatusUpdateAt}
                                     style={styles.lastUpdatedText}
                                 />
                             ),
                         })}
                     </Text>
                 </View>
-                {playbookName && (
-                    <View style={tagContainerStyle}>
-                        <Tag
-                            message={playbookName}
-                            icon={'book-outline'}
-                        />
-                    </View>
-                )}
             </View>
             <ProgressBar
                 progress={progress}

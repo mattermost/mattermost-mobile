@@ -4,7 +4,9 @@
 import React, {useMemo} from 'react';
 import {Pressable, Text, View} from 'react-native';
 
+import Tag from '@components/tag';
 import {useTheme} from '@context/theme';
+import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -25,6 +27,9 @@ type Props = {
     isDismissable?: boolean;
     onDismissClick?: () => void;
     location: AvailableScreens;
+    tags?: string[];
+    testID?: string;
+    squareCorners?: boolean;
 }
 
 const iconByType = {
@@ -41,6 +46,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         container: {
             borderWidth: 1,
             borderStyle: 'solid',
+        },
+        roundCorners: {
             borderRadius: 4,
         },
         content: {
@@ -61,7 +68,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         title: {
             margin: 0,
             color: theme.centerChannelColor,
-            ...typography('Body', 200, 'SemiBold'),
+            ...typography('Body', 100, 'SemiBold'),
         },
         welcomeTitle: {
             margin: 0,
@@ -70,7 +77,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         baseText: {
             color: theme.centerChannelColor,
-            ...typography('Body', 200, 'Regular'),
+            ...typography('Body', 100, 'Regular'),
         },
         infoText: {
             color: theme.centerChannelColor,
@@ -141,6 +148,12 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             width: 32,
             height: 32,
         },
+        tagsContainer: {
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            gap: 4,
+        },
+
     };
 });
 
@@ -154,6 +167,9 @@ const SectionNotice = ({
     text,
     type = 'info',
     location,
+    tags,
+    squareCorners,
+    testID,
 }: Props) => {
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
@@ -161,13 +177,18 @@ const SectionNotice = ({
     const icon = iconByType[type];
     const showDismiss = Boolean(isDismissable && onDismissClick);
     const hasButtons = primaryButton || secondaryButton || linkButton;
+    const showTags = tags && tags.length > 0;
 
-    const containerStyle = useMemo(() => [styles.container, styles[`${type}Container`]], [type]);
-    const iconStyle = useMemo(() => styles[`${type}Icon`], [type]);
+    const combinedContainerStyle = useMemo(() => [
+        styles.container,
+        styles[`${type}Container`],
+        !squareCorners && styles.roundCorners,
+    ], [styles, type, squareCorners]);
+    const iconStyle = useMemo(() => styles[`${type}Icon`], [styles, type]);
     return (
         <View
-            style={containerStyle}
-            testID={'sectionNoticeContainer'}
+            style={combinedContainerStyle}
+            testID={testID || 'sectionNoticeContainer'}
         >
             <View style={styles.content}>
                 {icon && (
@@ -185,8 +206,21 @@ const SectionNotice = ({
                             theme={theme}
                             location={location}
                             baseTextStyle={styles.baseText}
+                            textStyles={getMarkdownTextStyles(theme)}
+                            blockStyles={getMarkdownBlockStyles(theme)}
                             value={text}
                         />
+                    )}
+                    {showTags && (
+                        <View style={styles.tagsContainer}>
+                            {tags.map((tag) => (
+                                <Tag
+                                    key={tag}
+                                    testID={`tag.${tag}`}
+                                    message={tag}
+                                />
+                            ))}
+                        </View>
                     )}
                     {hasButtons && (
                         <View style={styles.actions}>

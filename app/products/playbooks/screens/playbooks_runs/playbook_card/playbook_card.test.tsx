@@ -54,7 +54,7 @@ jest.mocked(ProgressBar).mockImplementation((props) => React.createElement('Prog
 describe('PlaybookCard', () => {
     const mockRun = TestHelper.fakePlaybookRunModel({
         name: 'Test Playbook Run',
-        last_update_at: 1234567890,
+        lastStatusUpdateAt: 1234567890,
     });
     const mockOwner = TestHelper.fakeUserModel({
         username: 'test-owner',
@@ -90,7 +90,7 @@ describe('PlaybookCard', () => {
 
         const userAvatarsStack = getByTestId('user-avatars-stack');
         expect(userAvatarsStack.props.users).toEqual(mockParticipants);
-        expect(userAvatarsStack.props.channelId).toBe(mockRun.channel_id);
+        expect(userAvatarsStack.props.channelId).toBe(mockRun.channelId);
         expect(userAvatarsStack.props.location).toBe(baseProps.location);
 
         const baseChip = getByTestId('base-chip');
@@ -119,7 +119,7 @@ describe('PlaybookCard', () => {
 
     it('shows finished state when run is complete', () => {
         const completedRun = TestHelper.fakePlaybookRunModel({
-            end_at: 1234567890,
+            endAt: 1234567890,
         });
 
         const {getByTestId} = renderWithIntl(
@@ -135,7 +135,7 @@ describe('PlaybookCard', () => {
 
     it('shows active state when run is ongoing', () => {
         const activeRun = TestHelper.fakePlaybookRunModel({
-            end_at: 0,
+            endAt: 0,
         });
 
         const {getByTestId} = renderWithIntl(

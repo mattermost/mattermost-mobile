@@ -18,7 +18,7 @@ describe('Tab', () => {
         id: 'test',
         handleTabChange: jest.fn(),
         isSelected: false,
-        testID: 'test.tab',
+        testID: 'tabs',
     };
 
     beforeEach(() => {
@@ -51,22 +51,22 @@ describe('Tab', () => {
         const {getByTestId} = renderWithIntl(
             <Tab
                 {...baseProps}
-                hasDot={true}
+                requiresUserAttention={true}
             />,
         );
 
-        expect(getByTestId('test.tab.dot')).toBeTruthy();
+        expect(getByTestId('tabs.test.dot')).toBeTruthy();
     });
 
     it('does not show dot indicator when hasDot is false', () => {
         const {queryByTestId} = renderWithIntl(
             <Tab
                 {...baseProps}
-                hasDot={false}
+                requiresUserAttention={false}
             />,
         );
 
-        expect(queryByTestId('test.tab.dot')).toBeNull();
+        expect(queryByTestId('tabs.test.dot')).toBeNull();
     });
 
     it('calls handleTabChange when pressed', () => {
@@ -78,10 +78,33 @@ describe('Tab', () => {
             />,
         );
 
-        const button = getByTestId('test.tab.test.button');
+        const button = getByTestId('tabs.test.button');
         fireEvent.press(button);
 
         expect(handleTabChange).toHaveBeenCalledWith('test');
         expect(handleTabChange).toHaveBeenCalledTimes(1);
+    });
+
+    it('should use provided count', () => {
+        const {getByTestId} = renderWithIntl(
+            <Tab
+                {...baseProps}
+                count={1}
+            />,
+        );
+
+        expect(getByTestId('tabs.test.badge')).toBeTruthy();
+        expect(getByTestId('tabs.test.badge')).toHaveTextContent('1');
+    });
+
+    it('should not show badge when count is 0', () => {
+        const {queryByTestId} = renderWithIntl(
+            <Tab
+                {...baseProps}
+                count={0}
+            />,
+        );
+
+        expect(queryByTestId('tabs.test.badge')).toBeNull();
     });
 });

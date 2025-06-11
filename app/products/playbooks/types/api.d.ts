@@ -46,14 +46,12 @@ type RunMetricData = {
 type StatusPost = {
     id: string;
     create_at: number;
-    delete_at: number;
 }
 
 type TimelineEvent = {
     id: string;
     playbook_run_id: string;
     create_at: number;
-    delete_at: number;
     event_at: number;
     event_type: string;
     summary: string;
@@ -80,7 +78,6 @@ type PlaybookRun = {
     channel_id: string;
     create_at: number;
     end_at: number;
-    delete_at: number;
     post_id?: string;
     playbook_id: string;
     current_status: PlaybookRunStatusType;
