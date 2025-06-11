@@ -34,7 +34,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         displayName: {
             color: theme.centerChannelColor,
             flexGrow: 1,
-            marginRight: 5,
             ...typography('Body', 200, 'SemiBold'),
         },
         displayNameCustomEmojiWidth: {
