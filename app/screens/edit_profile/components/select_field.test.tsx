@@ -196,7 +196,7 @@ describe('SelectField', () => {
             // Verify basic props
             expect(selector.props.testID).toBe('test_field.selector');
             expect(selector.props.label).toBe('Test Field (optional)');
-            expect(selector.props.placeholder).toBe('Select an option');
+            expect(selector.props.placeholder).toBe('Select one or more options');
             expect(selector.props.disabled).toBe(true);
             expect(selector.props.isMultiselect).toBe(true);
             expect(selector.props.options).toBe(mockOptions);

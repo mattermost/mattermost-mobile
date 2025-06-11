@@ -95,6 +95,19 @@ const SelectField = ({
         isTablet && styles.tabletContainer,
     ], [isTablet, styles]);
 
+    const placeholder = useMemo(() => {
+        if (isMultiselect) {
+            return intl.formatMessage({
+                id: 'mobile.action_menu.select_multiple',
+                defaultMessage: 'Select one or more options',
+            });
+        }
+        return intl.formatMessage({
+            id: 'mobile.action_menu.select',
+            defaultMessage: 'Select an option',
+        });
+    }, [intl, isMultiselect]);
+
     return (
         <View
             style={containerStyle}
@@ -109,10 +122,7 @@ const SelectField = ({
                 isMultiselect={isMultiselect}
                 testID={`${testID}.selector`}
                 location={Screens.EDIT_PROFILE}
-                placeholder={intl.formatMessage({
-                    id: 'mobile.action_menu.select',
-                    defaultMessage: 'Select an option',
-                })}
+                placeholder={placeholder}
             />
         </View>
     );
