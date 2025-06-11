@@ -421,7 +421,6 @@ describe('EditProfile', () => {
                     lockedPosition={false}
                     lockedPicture={false}
                     enableCustomAttributes={true}
-                    userCustomAttributes={[]}
                     customFields={[]}
                     customAttributesSet={serverAttributesSet}
                 />,
@@ -470,7 +469,6 @@ describe('EditProfile', () => {
                     lockedPosition={false}
                     lockedPicture={false}
                     enableCustomAttributes={false}
-                    userCustomAttributes={[]}
                     customFields={[]}
                     customAttributesSet={serverAttributesSet}
                 />,
@@ -516,7 +514,6 @@ describe('EditProfile', () => {
                     lockedPosition={false}
                     lockedPicture={false}
                     enableCustomAttributes={true}
-                    userCustomAttributes={[]}
                     customFields={[]}
                     customAttributesSet={{}}
                 />,
@@ -566,7 +563,6 @@ describe('EditProfile', () => {
                     lockedPosition={false}
                     lockedPicture={false}
                     enableCustomAttributes={true}
-                    userCustomAttributes={[]}
                     customFields={[]}
                     customAttributesSet={serverAttributesSet}
                 />,
