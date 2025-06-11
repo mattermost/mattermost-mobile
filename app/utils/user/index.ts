@@ -9,6 +9,7 @@ import {Ringtone} from '@constants/calls';
 import {CustomStatusDurationEnum} from '@constants/custom_status';
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
 import {safeParseJSON, toTitleCase} from '@utils/helpers';
+import {logError} from '@utils/log';
 
 import type {CustomProfileFieldModel, CustomProfileAttributeModel} from '@database/models/server';
 import type {CustomAttribute, CustomAttributeSet} from '@typings/api/custom_profile_attributes';
@@ -692,10 +693,14 @@ export const convertValueFromServer = (value: string | string[], fieldType: stri
 
     if (fieldType === 'multiselect') {
         if (Array.isArray(value)) {
-            return JSON.stringify(value);
+            try {
+                return JSON.stringify(value);
+            } catch (error) {
+                logError('Error converting value from server to string', error);
+                return '';
+            }
         }
 
-        // If it's already a string, assume it's JSON or comma-separated
         return String(value);
     }
 

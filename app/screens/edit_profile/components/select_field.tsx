@@ -9,6 +9,7 @@ import AutocompleteSelector from '@components/autocomplete_selector';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import {logError} from '@utils/log';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {getSelectedOptionIds} from '@utils/user';
 
@@ -80,7 +81,14 @@ const SelectField = ({
         if (Array.isArray(newSelection)) {
             // Multiselect: convert array of selections to JSON string of IDs
             const selectedIds = newSelection.map((option) => option.value);
-            onValueChange(fieldKey, JSON.stringify(selectedIds));
+            let stringifiedIds;
+            try {
+                stringifiedIds = JSON.stringify(selectedIds);
+            } catch (e) {
+                logError('Error serializing selected IDs', e);
+                stringifiedIds = '';
+            }
+            onValueChange(fieldKey, stringifiedIds);
         } else {
             // Single select: store the option ID
             onValueChange(fieldKey, newSelection.value);
