@@ -619,24 +619,6 @@ class TestHelperSingleton {
             ...overwrite,
         };
     };
-    fakeMyChannelMembershipModel = (overwrite?: Partial<MyChannelModel>): MyChannelModel => {
-        return {
-            ...this.fakeModel(),
-            channel: this.fakeRelation(),
-            lastPostAt: 0,
-            lastFetchedAt: 0,
-            lastViewedAt: 0,
-            manuallyUnread: false,
-            mentionsCount: 0,
-            messageCount: 0,
-            isUnread: false,
-            roles: '',
-            viewedAt: 0,
-            settings: this.fakeRelation(),
-            resetPreparedState: jest.fn(),
-            ...overwrite,
-        };
-    };
 
     fakeCategoryChannelModel = (overwrite?: Partial<CategoryChannelModel>): CategoryChannelModel => {
         return {
@@ -827,6 +809,7 @@ class TestHelperSingleton {
             isUnread: false,
             roles: '',
             viewedAt: 0,
+            lastPlaybookFetchAt: 0,
             channel: this.fakeRelation(),
             settings: this.fakeRelation(),
             resetPreparedState: jest.fn(),

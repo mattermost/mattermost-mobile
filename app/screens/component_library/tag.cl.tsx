@@ -17,7 +17,7 @@ const tagSizeValues = ['xs', 's', 'm'];
 
 const TagComponentLibrary = () => {
     const theme = useTheme();
-    const [text, textSelector] = useStringProp('text', 'Tag text', false);
+    const [message, messageSelector] = useStringProp('message', 'Tag text', false);
     const [icon, iconSelector] = useStringProp('icon', 'check', false);
     const [useIcon, useIconSelector] = useBooleanProp('useIcon', true);
     const [uppercase, uppercaseSelector] = useBooleanProp('uppercase', true);
@@ -29,28 +29,28 @@ const TagComponentLibrary = () => {
             tagTypePossibilities,
             tagSizePossibilities,
         ], [
+            message,
+            uppercase,
             {
-                message: text.text,
                 icon: useIcon.useIcon ? icon.icon : undefined,
                 theme,
                 testID: 'tag-example',
-                uppercase: uppercase.uppercase,
             },
             tagType,
             tagSize,
         ]),
-        [tagTypePossibilities, tagSizePossibilities, text.text, useIcon.useIcon, icon.icon, theme, uppercase.uppercase, tagType, tagSize],
+        [tagTypePossibilities, tagSizePossibilities, message, uppercase, useIcon.useIcon, icon.icon, theme, tagType, tagSize],
     );
 
     return (
         <>
-            {textSelector}
+            {messageSelector}
             {iconSelector}
             {useIconSelector}
             {uppercaseSelector}
             {tagTypeSelector}
             {tagSizeSelector}
-            <View style={{flexDirection: 'row', flexWrap: 'wrap', gap: 8}}>{components}</View>
+            <View style={{gap: 8, alignItems: 'flex-start'}}>{components}</View>
         </>
     );
 };
