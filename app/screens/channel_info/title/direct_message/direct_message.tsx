@@ -25,17 +25,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     displayName: {
         flexDirection: 'row',
+        gap: 12,
+        alignItems: 'center',
     },
     position: {
         color: changeOpacity(theme.centerChannelColor, 0.72),
         ...typography('Body', 200),
-    },
-    tagContainer: {
-        marginLeft: 12,
-    },
-    tag: {
-        color: theme.centerChannelColor,
-        ...typography('Body', 100, 'SemiBold'),
     },
     titleContainer: {
         flex: 1,
@@ -81,15 +76,13 @@ const DirectMessage = ({
                     </Text>
                     {user?.isGuest && !hideGuestTags &&
                     <GuestTag
-                        textStyle={styles.tag}
-                        style={styles.tagContainer}
+                        size={'m'}
                         testID={`${directMessageUserTestId}.guest.tag`}
                     />
                     }
                     {user?.isBot &&
                     <BotTag
-                        textStyle={styles.tag}
-                        style={styles.tagContainer}
+                        size={'m'}
                         testID={`${directMessageUserTestId}.bot.tag`}
                     />
                     }

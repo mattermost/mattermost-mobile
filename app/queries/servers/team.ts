@@ -14,7 +14,7 @@ import {prepareDeleteCategory} from './categories';
 import {prepareDeleteChannel, getDefaultChannelForTeam, observeMyChannelMentionCount, observeMyChannelUnreads} from './channel';
 import {queryPreferencesByCategoryAndName} from './preference';
 import {patchTeamHistory, getConfig, getTeamHistory, observeCurrentTeamId, getCurrentTeamId} from './system';
-import {observeThreadMentionCount, observeUnreadsAndMentionsInTeam} from './thread';
+import {observeThreadMentionCount, observeUnreadsAndMentions} from './thread';
 import {getCurrentUser} from './user';
 
 import type {MyChannelModel} from '@database/models/server';
@@ -416,7 +416,7 @@ export const observeCurrentTeam = (database: Database) => {
 
 export function observeMentionCount(database: Database, teamId?: string, includeDmGm?: boolean): Observable<number> {
     const channelMentionCountObservable = observeMyChannelMentionCount(database, teamId);
-    const threadMentionCountObservable = observeThreadMentionCount(database, teamId, includeDmGm);
+    const threadMentionCountObservable = observeThreadMentionCount(database, {teamId, includeDmGm});
 
     return channelMentionCountObservable.pipe(
         combineLatestWith(threadMentionCountObservable),
@@ -427,7 +427,7 @@ export function observeMentionCount(database: Database, teamId?: string, include
 
 export function observeIsTeamUnread(database: Database, teamId: string): Observable<boolean> {
     const channelUnreads = observeMyChannelUnreads(database, teamId);
-    const threadsUnreadsAndMentions = observeUnreadsAndMentionsInTeam(database, teamId);
+    const threadsUnreadsAndMentions = observeUnreadsAndMentions(database, {teamId});
 
     return channelUnreads.pipe(
         combineLatestWith(threadsUnreadsAndMentions),
