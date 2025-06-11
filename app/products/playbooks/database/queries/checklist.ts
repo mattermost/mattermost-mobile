@@ -55,7 +55,7 @@ export const observePlaybookChecklistProgress = (database: Database, checklistId
                 return of$(0);
             }
 
-            const completedItems = checklistsItems.filter((item) => item.state === 'done' || item.state === 'closed').length;
+            const completedItems = checklistsItems.filter((item) => item.state === 'skipped' || item.state === 'closed').length;
             return of$(parseFloat(((completedItems / totalItems) * 100).toFixed(2)));
         }),
     );

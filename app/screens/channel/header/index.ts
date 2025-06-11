@@ -7,7 +7,8 @@ import {of as of$} from 'rxjs';
 import {combineLatestWith, distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import {General} from '@constants';
-import {queryActivePlaybookRunsPerChannel, queryPlaybookRunsPerChannel} from '@playbooks/queries/playbooks';
+import {queryPlaybookRunsPerChannel} from '@playbooks/database/queries/run';
+import {observeIsPlaybooksEnabled} from '@playbooks/database/queries/version';
 import {observeChannel, observeChannelInfo} from '@queries/servers/channel';
 import {observeCanAddBookmarks, queryBookmarks} from '@queries/servers/channel_bookmark';
 import {observeConfigBooleanValue, observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
@@ -61,6 +62,7 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: OwnProps
     );
 
     const isCustomStatusEnabled = observeConfigBooleanValue(database, 'EnableCustomUserStatuses');
+    const isPlaybooksEnabled = observeIsPlaybooksEnabled(database);
 
     // const searchTerm = channel.pipe(
     //     combineLatestWith(dmUser),
@@ -87,7 +89,14 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: OwnProps
     const isBookmarksEnabled = observeConfigBooleanValue(database, 'FeatureFlagChannelBookmarks');
     const canAddBookmarks = observeCanAddBookmarks(database, channelId);
 
-    const activeRuns = queryActivePlaybookRunsPerChannel(database, channelId).observe();
+    const activeRuns = isPlaybooksEnabled.pipe(
+        switchMap((enabled) => {
+            if (!enabled) {
+                return of$([]);
+            }
+            return queryPlaybookRunsPerChannel(database, channelId, false).observe();
+        }),
+    );
     const activeRunId = activeRuns.pipe(
         switchMap((runs) => {
             if (runs.length !== 1) {
@@ -112,10 +121,19 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: OwnProps
         memberCount,
         teamId,
         playbooksActiveRuns: activeRuns.pipe(switchMap((r) => of$(r.length))),
-        hasPlaybookRuns: queryPlaybookRunsPerChannel(database, channelId).observeCount().pipe(
-            switchMap((v) => of$(v > 0)),
-            distinctUntilChanged(),
+        hasPlaybookRuns: isPlaybooksEnabled.pipe(
+            switchMap((enabled) => {
+                if (!enabled) {
+                    return of$(false);
+                }
+                return queryPlaybookRunsPerChannel(database, channelId).observeCount().pipe(
+                    // eslint-disable-next-line max-nested-callbacks
+                    switchMap((v) => of$(v > 0)),
+                    distinctUntilChanged(),
+                );
+            }),
         ),
+        isPlaybooksEnabled,
         activeRunId,
 
         // searchTerm,

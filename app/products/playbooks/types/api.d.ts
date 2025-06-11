@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+type ChecklistItemState = '' | 'in_progress' | 'closed' | 'skipped';
+
 const PlaybookRunStatus = {
     InProgres = 'InProgress',
     Finished = 'Finished',
@@ -20,7 +22,7 @@ type PlaybookChecklistItem = {
     id: string;
     title: string;
     description: string;
-    state: string;
+    state: ChecklistItemState;
     state_modified: number;
     assignee_id: string;
     assignee_modified: number;

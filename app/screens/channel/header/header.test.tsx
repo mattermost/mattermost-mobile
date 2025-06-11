@@ -49,6 +49,7 @@ describe('ChannelHeader', () => {
             isCustomStatusExpired: false,
             isOwnDirectMessage: false,
             shouldRenderChannelBanner: false,
+            isPlaybooksEnabled: true,
         };
     }
 

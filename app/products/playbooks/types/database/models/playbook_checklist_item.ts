@@ -27,7 +27,7 @@ declare class PlaybookChecklistItemModel extends Model {
     order: number;
 
     // state of the checklist item (todo, in_progress, done)
-    state: string;
+    state: ChecklistItemState;
 
     // timestamp when the checklist item was modified
     stateModified: number;
