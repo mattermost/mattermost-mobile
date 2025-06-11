@@ -7,6 +7,7 @@ import {map, switchMap} from 'rxjs/operators';
 
 import {MM_TABLES} from '@constants/database';
 import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
+import {isItemCompleted} from '@playbooks/utils/progress';
 
 import type PlaybookChecklistItemModel from '@playbooks/types/database/models/playbook_checklist_item';
 import type PlaybookRunModel from '@playbooks/types/database/models/playbook_run';
@@ -65,7 +66,7 @@ export const observePlaybookRunProgress = (database: Database, runId: string) =>
                 return 0;
             }
 
-            const completedItems = checklistsItems.filter((item) => item.state === 'done' || item.state === 'closed').length;
+            const completedItems = checklistsItems.filter(isItemCompleted).length;
 
             return parseFloat(((completedItems / totalItems) * 100).toFixed(2));
         }),

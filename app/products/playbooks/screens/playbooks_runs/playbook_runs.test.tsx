@@ -52,6 +52,7 @@ describe('PlaybookRuns', () => {
             <PlaybookRuns
                 allRuns={[]}
                 componentId={'PlaybookRuns'}
+                channelId={'channel-id-1'}
             />,
         );
 
@@ -65,6 +66,7 @@ describe('PlaybookRuns', () => {
             <PlaybookRuns
                 allRuns={[inProgressRun, finishedRun]}
                 componentId={'PlaybookRuns'}
+                channelId={'channel-id-1'}
             />,
         );
 
@@ -97,6 +99,7 @@ describe('PlaybookRuns', () => {
             <PlaybookRuns
                 allRuns={runs}
                 componentId={'PlaybookRuns'}
+                channelId={'channel-id-1'}
             />,
         );
 

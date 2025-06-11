@@ -17,7 +17,7 @@ export function goToPlaybookRuns(intl: IntlShape, channelId: string, channelName
     });
 }
 
-export async function goToPlaybookRun(intl: IntlShape, playbookRunId: string) {
+export async function goToPlaybookRun(intl: IntlShape, playbookRunId: string, playbookRun?: PlaybookRun) {
     const title = intl.formatMessage({id: 'playbooks.playbook_run.title', defaultMessage: 'Playbook run'});
-    goToScreen(Screens.PLAYBOOK_RUN, title, {playbookRunId}, {});
+    goToScreen(Screens.PLAYBOOK_RUN, title, {playbookRunId, playbookRun}, {});
 }

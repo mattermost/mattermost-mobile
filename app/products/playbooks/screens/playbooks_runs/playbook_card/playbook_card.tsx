@@ -68,7 +68,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => ({
 }));
 
 type Props = {
-    run: PlaybookRunModel;
+    run: PlaybookRunModel | PlaybookRun;
     location: AvailableScreens;
     participants: UserModel[];
     progress: number;
@@ -84,10 +84,14 @@ const PlaybookCard = ({
     progress,
     owner,
 }: Props) => {
+    const endAt = 'endAt' in run ? run.endAt : run.end_at;
+    const channelId = 'channelId' in run ? run.channelId : run.channel_id;
+    const lastStatusUpdateAt = 'lastStatusUpdateAt' in run ? run.lastStatusUpdateAt : run.last_status_update_at;
+
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
-    const finished = Boolean(run.endAt);
+    const finished = Boolean(endAt);
 
     const onCardPress = useCallback(() => {
         goToPlaybookRun(intl, run.id);
@@ -96,10 +100,10 @@ const PlaybookCard = ({
     const onUserChipPress = useCallback((userId: string) => {
         openUserProfileModal(intl, theme, {
             userId,
-            channelId: run.channelId,
+            channelId,
             location,
         });
-    }, [run.channelId, intl, theme, location]);
+    }, [channelId, intl, theme, location]);
 
     return (
         <TouchableOpacity
@@ -121,7 +125,7 @@ const PlaybookCard = ({
                     />
                 )}
                 <UserAvatarsStack
-                    channelId={run.channelId}
+                    channelId={channelId}
                     location={location}
                     users={participants}
                     bottomSheetTitle={bottomSheetTitleMessage}
@@ -139,7 +143,7 @@ const PlaybookCard = ({
                         }, {
                             date: (
                                 <FriendlyDate
-                                    value={run.lastStatusUpdateAt}
+                                    value={lastStatusUpdateAt}
                                     style={styles.lastUpdatedText}
                                 />
                             ),
