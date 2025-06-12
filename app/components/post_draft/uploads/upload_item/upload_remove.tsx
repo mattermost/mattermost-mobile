@@ -10,14 +10,13 @@ import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useEditPost} from '@context/edit_post';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import DraftUploadManager from '@managers/draft_upload_manager';
+import DraftEditPostUploadManager from '@managers/draft_upload_manager';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
 type Props = {
     channelId: string;
     rootId: string;
     clientId: string;
-    isEditMode: boolean;
     fileId: string;
 }
 
@@ -49,20 +48,21 @@ export default function UploadRemove({
     channelId,
     rootId,
     clientId,
-    isEditMode,
     fileId,
 }: Props) {
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const serverUrl = useServerUrl();
-    const {onFileRemove} = useEditPost();
+    const {onFileRemove, isEditMode} = useEditPost();
+
+    const effectiveIsEditMode = isEditMode ?? false; // Use context value if available when wrapped by EditPostProvider, else fall back to prop for draft mode.
 
     const onPress = () => {
-        if (isEditMode) {
+        if (effectiveIsEditMode) {
             onFileRemove?.(fileId);
             return;
         }
-        DraftUploadManager.cancel(clientId);
+        DraftEditPostUploadManager.cancel(clientId);
         removeDraftFile(serverUrl, channelId, rootId, clientId);
     };
 

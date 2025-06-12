@@ -16,16 +16,20 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
 import {useKeyboardOverlap} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
+import useFileUploadError from '@hooks/file_upload_error';
 import {useInputPropagation} from '@hooks/input';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import DraftEditPostUploadManager from '@managers/draft_upload_manager';
 import SecurityManager from '@managers/security_manager';
 import PostError from '@screens/edit_post/post_error';
 import {buildNavigationButton, dismissModal, setButtons} from '@screens/navigation';
+import {fileMaxWarning, fileSizeWarning, uploadDisabledWarning} from '@utils/file';
 import {changeOpacity} from '@utils/theme';
 
 import EditPostInput from './edit_post_input';
 
 import type {PasteInputRef} from '@mattermost/react-native-paste-input';
+import type {ErrorHandlers} from '@typings/components/upload_error_handlers';
 import type PostModel from '@typings/database/models/servers/post';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
@@ -58,8 +62,23 @@ type EditPostProps = {
     hasFilesAttached: boolean;
     canDelete: boolean;
     files?: FileInfo[];
+    maxFileCount: number;
+    maxFileSize: number;
+    canUploadFiles: boolean;
 }
-const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttached, canDelete, files}: EditPostProps) => {
+
+const EditPost = ({
+    componentId,
+    maxPostSize,
+    post,
+    closeButtonId,
+    hasFilesAttached,
+    canDelete,
+    files,
+    maxFileCount,
+    maxFileSize,
+    canUploadFiles,
+}: EditPostProps) => {
     const editingMessage = post.messageSource || post.message;
     const [postMessage, setPostMessage] = useState(editingMessage);
     const [cursorPosition, setCursorPosition] = useState(editingMessage.length);
@@ -71,6 +90,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
     const [postFiles, setPostFiles] = useState<FileInfo[]>(files || []);
 
     const mainView = useRef<View>(null);
+    const uploadErrorHandlers = useRef<ErrorHandlers>({});
 
     const postInputRef = useRef<PasteInputRef | undefined>(undefined);
     const theme = useTheme();
@@ -78,6 +98,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
     const serverUrl = useServerUrl();
 
     const shouldDeleteOnSave = !postMessage && canDelete && !hasFilesAttached;
+    const {uploadError, newUploadError} = useFileUploadError();
 
     useEffect(() => {
         toggleSaveButton(false);
@@ -121,10 +142,82 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
         });
     }, [componentId, intl, theme]);
 
+    const updateFileInPostFiles = useCallback((updatedFile: FileInfo) => {
+        const hasSameClientId = (file: FileInfo) => {
+            return file.clientId === updatedFile.clientId;
+        };
+
+        setPostFiles((prevFiles) => {
+            const fileIndex = prevFiles.findIndex(hasSameClientId);
+            if (fileIndex >= 0) {
+                const newFiles = [...prevFiles];
+                newFiles[fileIndex] = updatedFile;
+                return newFiles;
+            }
+            return prevFiles;
+        });
+    }, []);
+
+    const addFiles = useCallback((newFiles: FileInfo[]) => {
+        if (!newFiles.length) {
+            return;
+        }
+
+        if (!canUploadFiles) {
+            newUploadError(uploadDisabledWarning(intl));
+            return;
+        }
+
+        const currentFileCount = postFiles?.length || 0;
+        const availableCount = maxFileCount - currentFileCount;
+        if (newFiles.length > availableCount) {
+            newUploadError(fileMaxWarning(intl, maxFileCount));
+            return;
+        }
+
+        const largeFile = newFiles.find((file) => file.size > maxFileSize);
+        if (largeFile) {
+            newUploadError(fileSizeWarning(intl, maxFileSize));
+        }
+
+        setPostFiles((prevFiles) => [...prevFiles, ...newFiles]);
+
+        // Start uploads for new files using the upload manager
+        for (const file of newFiles) {
+            DraftEditPostUploadManager.prepareUpload(
+                serverUrl,
+                file,
+                post.channelId,
+                post.rootId,
+                0,
+                true, // isEditPost = true
+                updateFileInPostFiles,
+            );
+            uploadErrorHandlers.current[file.clientId!] = DraftEditPostUploadManager.registerErrorHandler(file.clientId!, newUploadError);
+        }
+
+        newUploadError(null);
+        toggleSaveButton(true);
+    }, [canUploadFiles, postFiles?.length, maxFileCount, newUploadError, toggleSaveButton, intl, maxFileSize, serverUrl, post.channelId, post.rootId, updateFileInPostFiles]);
+
     const handleFileRemoval = useCallback((id: string) => {
         const filterFileById = (file: FileInfo) => {
             return file.id !== id;
         };
+
+        const removeFileAction = () => {
+            const fileToRemove = postFiles?.find((file) => file.id === id);
+            if (fileToRemove?.clientId && DraftEditPostUploadManager.isUploading(fileToRemove.clientId)) {
+                DraftEditPostUploadManager.cancel(fileToRemove.clientId);
+                if (uploadErrorHandlers.current[fileToRemove.clientId]) {
+                    uploadErrorHandlers.current[fileToRemove.clientId]?.();
+                    delete uploadErrorHandlers.current[fileToRemove.clientId];
+                }
+            }
+            setPostFiles((prevFiles) => prevFiles?.filter(filterFileById) || []);
+            toggleSaveButton(true);
+        };
+
         Alert.alert(
             intl.formatMessage({
                 id: 'edit_post.delete_file.title',
@@ -150,14 +243,31 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
                         defaultMessage: 'Delete',
                     }),
                     style: 'destructive',
-                    onPress: () => {
-                        setPostFiles((prevFiles) => prevFiles?.filter(filterFileById) || []);
-                        toggleSaveButton(true);
-                    },
+                    onPress: removeFileAction,
                 },
             ],
         );
     }, [intl, toggleSaveButton, postFiles]);
+
+    useEffect(() => {
+        let loadingFiles: FileInfo[] = [];
+        if (postFiles) {
+            loadingFiles = postFiles.filter((v) => v.clientId && DraftEditPostUploadManager.isUploading(v.clientId));
+        }
+
+        for (const key of Object.keys(uploadErrorHandlers.current)) {
+            if (!loadingFiles.find((v) => v.clientId === key)) {
+                uploadErrorHandlers.current[key]?.();
+                delete uploadErrorHandlers.current[key];
+            }
+        }
+
+        for (const file of loadingFiles) {
+            if (file.clientId && !uploadErrorHandlers.current[file.clientId]) {
+                uploadErrorHandlers.current[file.clientId] = DraftEditPostUploadManager.registerErrorHandler(file.clientId, newUploadError);
+            }
+        }
+    }, [postFiles, newUploadError]);
 
     const onChangeTextCommon = useCallback((message: string) => {
         const tooLong = message.trim().length > maxPostSize;
@@ -270,7 +380,11 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
     }
 
     return (
-        <EditPostProvider onFileRemove={handleFileRemoval}>
+        <EditPostProvider
+            onFileRemove={handleFileRemoval}
+            updateFileCallback={updateFileInPostFiles}
+            isEditMode={true}
+        >
             <SafeAreaView
                 testID='edit_post.screen'
                 style={styles.container}
@@ -297,6 +411,8 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
                                 inputRef={postInputRef}
                                 post={post}
                                 postFiles={postFiles}
+                                addFiles={addFiles}
+                                uploadFileError={uploadError}
                             />
                         </View>
                     </View>
