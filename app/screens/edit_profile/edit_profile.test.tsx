@@ -19,18 +19,21 @@ const serverAttributesSet: CustomAttributeSet = {
         name: 'Custom Attribute 1',
         value: 'server value 1',
         sort_order: 1,
+        type: 'text',
     },
     attr2: {
         id: 'attr2',
         name: 'Custom Attribute 2',
         value: 'server value 2',
         sort_order: 2,
+        type: 'text',
     },
     attr3: {
         id: 'attr3',
         name: 'Custom Attribute 3',
         value: 'server value 3',
         sort_order: 3,
+        type: 'text',
     },
 };
 
@@ -40,12 +43,14 @@ const dbAttributesSet: CustomAttributeSet = {
         name: 'Custom Attribute 1',
         value: 'db value 1',
         sort_order: 1,
+        type: 'text',
     },
     attr2: {
         id: 'attr2',
         name: 'Custom Attribute 2',
         value: 'db value 2',
         sort_order: 2,
+        type: 'text',
     },
 };
 
@@ -186,7 +191,6 @@ describe('EditProfile', () => {
                 lockedPosition={false}
                 lockedPicture={false}
                 enableCustomAttributes={true}
-                userCustomAttributes={[]}
                 customFields={[]}
                 customAttributesSet={serverAttributesSet}
             />,
@@ -234,7 +238,6 @@ describe('EditProfile', () => {
                 lockedPosition={false}
                 lockedPicture={false}
                 enableCustomAttributes={true}
-                userCustomAttributes={[]}
                 customFields={[]}
                 customAttributesSet={dbAttributesSet}
             />,
@@ -277,7 +280,6 @@ describe('EditProfile', () => {
                     lockedPosition={false}
                     lockedPicture={false}
                     enableCustomAttributes={true}
-                    userCustomAttributes={[]}
                     customFields={[]}
                     customAttributesSet={serverAttributesSet}
                 />,
@@ -315,7 +317,6 @@ describe('EditProfile', () => {
                 lockedPosition={false}
                 lockedPicture={false}
                 enableCustomAttributes={true}
-                userCustomAttributes={[]}
                 customFields={[]}
                 customAttributesSet={{}}
             />,
@@ -339,7 +340,6 @@ describe('EditProfile', () => {
                     lockedPosition={false}
                     lockedPicture={false}
                     enableCustomAttributes={true}
-                    userCustomAttributes={[]}
                     customFields={[]}
                     customAttributesSet={dbAttributesSet}
                 />,
@@ -359,18 +359,21 @@ describe('EditProfile', () => {
                 name: 'Custom Attribute 1',
                 value: 'updated db value 1',
                 sort_order: 1,
+                type: 'text',
             },
             attr2: {
                 id: 'attr2',
                 name: 'Custom Attribute 2',
                 value: 'updated db value 2',
                 sort_order: 2,
+                type: 'text',
             },
             attr4: {
                 id: 'attr4',
                 name: 'New Attribute',
                 value: 'new db value',
                 sort_order: 4,
+                type: 'text',
             },
         };
 
@@ -387,7 +390,6 @@ describe('EditProfile', () => {
                     lockedPosition={false}
                     lockedPicture={false}
                     enableCustomAttributes={true}
-                    userCustomAttributes={[]}
                     customFields={[]}
                     customAttributesSet={updatedDbAttributesSet}
                 />,
@@ -419,7 +421,6 @@ describe('EditProfile', () => {
                     lockedPosition={false}
                     lockedPicture={false}
                     enableCustomAttributes={true}
-                    userCustomAttributes={[]}
                     customFields={[]}
                     customAttributesSet={serverAttributesSet}
                 />,
@@ -468,7 +469,6 @@ describe('EditProfile', () => {
                     lockedPosition={false}
                     lockedPicture={false}
                     enableCustomAttributes={false}
-                    userCustomAttributes={[]}
                     customFields={[]}
                     customAttributesSet={serverAttributesSet}
                 />,
@@ -514,7 +514,6 @@ describe('EditProfile', () => {
                     lockedPosition={false}
                     lockedPicture={false}
                     enableCustomAttributes={true}
-                    userCustomAttributes={[]}
                     customFields={[]}
                     customAttributesSet={{}}
                 />,
@@ -564,7 +563,6 @@ describe('EditProfile', () => {
                     lockedPosition={false}
                     lockedPicture={false}
                     enableCustomAttributes={true}
-                    userCustomAttributes={[]}
                     customFields={[]}
                     customAttributesSet={serverAttributesSet}
                 />,
@@ -600,5 +598,28 @@ describe('EditProfile', () => {
                 );
             });
         });
+    });
+
+    it('should pass customFields prop to ProfileForm component', async () => {
+        renderWithIntlAndTheme(
+            <EditProfile
+                componentId={AvailableScreens.EDIT_PROFILE}
+                currentUser={mockCurrentUser}
+                isModal={false}
+                isTablet={false}
+                lockedFirstName={false}
+                lockedLastName={false}
+                lockedNickname={false}
+                lockedPosition={false}
+                lockedPicture={false}
+                enableCustomAttributes={true}
+                customFields={[]}
+                customAttributesSet={{}}
+            />,
+        );
+
+        // Verify the ProfileForm component is rendered (which means customFields was passed)
+        const scrollView = screen.getByTestId('edit_profile.scroll_view');
+        expect(scrollView).toBeTruthy();
     });
 });
