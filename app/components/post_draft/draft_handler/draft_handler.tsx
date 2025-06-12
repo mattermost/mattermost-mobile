@@ -1,15 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef} from 'react';
 import {useIntl} from 'react-intl';
 
 import {addFilesToDraft, removeDraft} from '@actions/local/draft';
 import {useServerUrl} from '@context/server';
-import DraftUploadManager from '@managers/draft_upload_manager';
+import useFileUploadError from '@hooks/file_upload_error';
+import DraftEditPostUploadManager from '@managers/draft_upload_manager';
 import {fileMaxWarning, fileSizeWarning, uploadDisabledWarning} from '@utils/file';
 
 import SendHandler from '../send_handler';
+
+import type {ErrorHandlers} from '@typings/components/upload_error_handlers';
 
 type Props = {
     testID?: string;
@@ -29,11 +32,6 @@ type Props = {
 }
 
 const emptyFileList: FileInfo[] = [];
-const UPLOAD_ERROR_SHOW_INTERVAL = 5000;
-
-type ErrorHandlers = {
-    [clientId: string]: (() => void) | null;
-}
 
 export default function DraftHandler(props: Props) {
     const {
@@ -56,26 +54,13 @@ export default function DraftHandler(props: Props) {
     const serverUrl = useServerUrl();
     const intl = useIntl();
 
-    const [uploadError, setUploadError] = useState<React.ReactNode>(null);
-
-    const uploadErrorTimeout = useRef<NodeJS.Timeout>();
     const uploadErrorHandlers = useRef<ErrorHandlers>({});
+    const {uploadError, newUploadError} = useFileUploadError();
 
     const clearDraft = useCallback(() => {
         removeDraft(serverUrl, channelId, rootId);
         updateValue('');
     }, [serverUrl, channelId, rootId]);
-
-    const newUploadError = useCallback((error: React.ReactNode) => {
-        if (uploadErrorTimeout.current) {
-            clearTimeout(uploadErrorTimeout.current);
-        }
-        setUploadError(error);
-
-        uploadErrorTimeout.current = setTimeout(() => {
-            setUploadError(null);
-        }, UPLOAD_ERROR_SHOW_INTERVAL);
-    }, []);
 
     const addFiles = useCallback((newFiles: FileInfo[]) => {
         if (!newFiles.length) {
@@ -103,8 +88,8 @@ export default function DraftHandler(props: Props) {
         addFilesToDraft(serverUrl, channelId, rootId, newFiles);
 
         for (const file of newFiles) {
-            DraftUploadManager.prepareUpload(serverUrl, file, channelId, rootId);
-            uploadErrorHandlers.current[file.clientId!] = DraftUploadManager.registerErrorHandler(file.clientId!, newUploadError);
+            DraftEditPostUploadManager.prepareUpload(serverUrl, file, channelId, rootId);
+            uploadErrorHandlers.current[file.clientId!] = DraftEditPostUploadManager.registerErrorHandler(file.clientId!, newUploadError);
         }
 
         newUploadError(null);
@@ -115,7 +100,7 @@ export default function DraftHandler(props: Props) {
     useEffect(() => {
         let loadingFiles: FileInfo[] = [];
         if (files) {
-            loadingFiles = files.filter((v) => v.clientId && DraftUploadManager.isUploading(v.clientId));
+            loadingFiles = files.filter((v) => v.clientId && DraftEditPostUploadManager.isUploading(v.clientId));
         }
 
         for (const key of Object.keys(uploadErrorHandlers.current)) {
@@ -127,7 +112,7 @@ export default function DraftHandler(props: Props) {
 
         for (const file of loadingFiles) {
             if (!uploadErrorHandlers.current[file.clientId!]) {
-                uploadErrorHandlers.current[file.clientId!] = DraftUploadManager.registerErrorHandler(file.clientId!, newUploadError);
+                uploadErrorHandlers.current[file.clientId!] = DraftEditPostUploadManager.registerErrorHandler(file.clientId!, newUploadError);
             }
         }
     }, [files]);

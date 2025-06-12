@@ -16,14 +16,15 @@ type Props = {
     fileCount: number;
     isPostPriorityEnabled: boolean;
     canShowPostPriority?: boolean;
+    canShowSlashCommands?: boolean;
     maxFileCount: number;
 
     // Draft Handler
     value: string;
     updateValue: (value: string) => void;
     addFiles: (file: FileInfo[]) => void;
-    postPriority: PostPriority;
-    updatePostPriority: (postPriority: PostPriority) => void;
+    postPriority?: PostPriority;
+    updatePostPriority?: (postPriority: PostPriority) => void;
     focus: () => void;
 }
 
@@ -41,6 +42,7 @@ export default function QuickActions({
     value,
     fileCount,
     isPostPriorityEnabled,
+    canShowSlashCommands = true,
     canShowPostPriority,
     maxFileCount,
     updateValue,
@@ -79,13 +81,15 @@ export default function QuickActions({
                 updateValue={updateValue}
                 focus={focus}
             />
-            <InputAction
-                testID={slashInputActionTestID}
-                disabled={slashDisabled}
-                inputType='slash'
-                updateValue={updateValue}
-                focus={focus}
-            />
+            {canShowSlashCommands && (
+                <InputAction
+                    testID={slashInputActionTestID}
+                    disabled={slashDisabled}
+                    inputType='slash'
+                    updateValue={updateValue}
+                    focus={focus}
+                />
+            )}
             <FileAction
                 testID={fileActionTestID}
                 {...uploadProps}

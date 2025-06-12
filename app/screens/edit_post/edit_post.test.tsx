@@ -56,6 +56,9 @@ describe('Edit Post', () => {
                 width: 100,
             },
         ],
+        maxFileCount: 10,
+        maxFileSize: 1000,
+        canUploadFiles: true,
     };
 
     beforeAll(async () => {
