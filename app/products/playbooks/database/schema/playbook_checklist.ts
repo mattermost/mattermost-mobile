@@ -12,7 +12,6 @@ export default tableSchema({
     columns: [
         {name: 'run_id', type: 'string', isIndexed: true},
         {name: 'title', type: 'string'},
-        {name: 'order', type: 'number'},
         {name: 'sync', type: 'string', isIndexed: true, isOptional: true},
         {name: 'last_sync_at', type: 'number', isOptional: true},
         {name: 'sort_order', type: 'string'}, // JSON string
