@@ -58,6 +58,22 @@ export default defineConfig([
       "global-require": "off",
       "no-undefined": "off",
       "no-shadow": "off",
+      "new-cap": [
+        "error", 
+        { 
+          "capIsNewExceptions": [
+            "Gesture.Pan",
+            "Gesture.Tap",
+            "Gesture.LongPress",
+            "Gesture.Pinch",
+            "Gesture.Rotate",
+            "Gesture.ForceTouch",
+            "Gesture.Exclusive",
+            "Gesture.Simultaneous",
+            "Gesture.Race",
+          ]
+        }
+      ],
       "react/display-name": [2, { "ignoreTranspilerName": false }],
       "react/jsx-filename-extension": "off",
       "react-hooks/exhaustive-deps": "warn",
