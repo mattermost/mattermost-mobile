@@ -7,6 +7,7 @@ import {View, Platform} from 'react-native';
 import {removeDraftFile} from '@actions/local/draft';
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {useEditPost} from '@context/edit_post';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import DraftUploadManager from '@managers/draft_upload_manager';
@@ -16,6 +17,8 @@ type Props = {
     channelId: string;
     rootId: string;
     clientId: string;
+    isEditMode: boolean;
+    fileId: string;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
@@ -46,12 +49,19 @@ export default function UploadRemove({
     channelId,
     rootId,
     clientId,
+    isEditMode,
+    fileId,
 }: Props) {
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const serverUrl = useServerUrl();
+    const {onFileRemove} = useEditPost();
 
     const onPress = () => {
+        if (isEditMode) {
+            onFileRemove?.(fileId);
+            return;
+        }
         DraftUploadManager.cancel(clientId);
         removeDraftFile(serverUrl, channelId, rootId, clientId);
     };

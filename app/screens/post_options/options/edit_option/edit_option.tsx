@@ -18,8 +18,9 @@ type Props = {
     bottomSheetId: AvailableScreens;
     post: PostModel;
     canDelete: boolean;
+    files?: FileInfo[];
 }
-const EditOption = ({bottomSheetId, post, canDelete}: Props) => {
+const EditOption = ({bottomSheetId, post, canDelete, files}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
 
@@ -29,7 +30,7 @@ const EditOption = ({bottomSheetId, post, canDelete}: Props) => {
         const title = intl.formatMessage({id: 'mobile.edit_post.title', defaultMessage: 'Editing Message'});
         const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
         const closeButtonId = 'close-edit-post';
-        const passProps = {post, closeButtonId, canDelete};
+        const passProps = {post, closeButtonId, canDelete, files};
         const options = {
             topBar: {
                 leftButtons: [{
@@ -40,7 +41,7 @@ const EditOption = ({bottomSheetId, post, canDelete}: Props) => {
             },
         };
         showModal(Screens.EDIT_POST, title, passProps, options);
-    }, [bottomSheetId, post]);
+    }, [bottomSheetId, canDelete, files, intl, post, theme.sidebarHeaderTextColor]);
 
     return (
         <BaseOption
