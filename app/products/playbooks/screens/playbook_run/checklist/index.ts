@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
+import {of as of$} from 'rxjs';
 
 import Checklist from './checklist';
 
@@ -9,12 +10,20 @@ import type PlaybookChecklistModel from '@playbooks/types/database/models/playbo
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 type OwnProps = {
-    checklist: PlaybookChecklistModel;
+    checklist: PlaybookChecklistModel | PlaybookChecklist;
 } & WithDatabaseArgs;
 
 const enhanced = withObservables(['checklist'], ({checklist}: OwnProps) => {
+    if ('observe' in checklist) {
+        return {
+            checklist: checklist.observe(),
+            items: checklist.items.observeWithColumns(['state']),
+        };
+    }
+
     return {
-        items: checklist.items.observe(),
+        checklist: of$(checklist),
+        items: of$(checklist.items),
     };
 });
 

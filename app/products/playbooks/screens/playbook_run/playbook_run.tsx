@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {View, Text, ScrollView} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -11,7 +11,9 @@ import Markdown from '@components/markdown';
 import UserAvatarsStack from '@components/user_avatars_stack';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import {popTopScreen} from '@screens/navigation';
+import {getRunScheduledTimestamp, isRunFinished} from '@playbooks/utils/run';
+import {getSortOrder} from '@playbooks/utils/sort_order';
+import {openUserProfileModal, popTopScreen} from '@screens/navigation';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -96,14 +98,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     },
 }));
 
-const noop = () => {/* do nothing */};
-
 type Props = {
-    playbookRun: PlaybookRunModel;
+    playbookRun?: PlaybookRunModel | PlaybookRun;
     owner?: UserModel;
     participants: UserModel[];
     componentId: AvailableScreens;
-    checklists: PlaybookChecklistModel[];
+    checklists: Array<PlaybookChecklistModel | PlaybookChecklist>;
 }
 
 export default function PlaybookRun({
@@ -118,6 +118,8 @@ export default function PlaybookRun({
     const intl = useIntl();
     const insets = useSafeAreaInsets();
 
+    const channelId = playbookRun && 'channelId' in playbookRun ? playbookRun.channelId : (playbookRun?.channel_id || '');
+
     useAndroidHardwareBackHandler(componentId, () => {
         popTopScreen();
         return true;
@@ -129,6 +131,40 @@ export default function PlaybookRun({
             {paddingBottom: insets.bottom},
         ];
     }, [insets.bottom, styles.container]);
+
+    const orderedChecklists = useMemo(() => {
+        if (!playbookRun) {
+            return [];
+        }
+
+        if ('table' in playbookRun) {
+            const sortOrder = getSortOrder(checklists); // TODO: get sort order from the playbook object
+            const sortOrderMap = sortOrder.reduce((acc, id, index) => {
+                acc[id] = index;
+                return acc;
+            }, {} as Record<string, number>);
+            return checklists.sort((a, b) => sortOrderMap[a.id] - sortOrderMap[b.id]);
+        }
+
+        return checklists;
+    }, [checklists, playbookRun]);
+
+    const openOwnerProfile = useCallback(() => {
+        if (!owner) {
+            return;
+        }
+
+        openUserProfileModal(intl, theme, {
+            userId: owner.id,
+            channelId,
+            location: componentId,
+        });
+    }, [owner, intl, theme, channelId, componentId]);
+
+    if (!playbookRun) {
+        // TODO: create a error state
+        return null;
+    }
 
     return (
         <View style={containerStyle}>
@@ -155,7 +191,7 @@ export default function PlaybookRun({
                                     <View style={styles.ownerRow}>
                                         <UserChip
                                             user={owner}
-                                            onPress={noop}
+                                            onPress={openOwnerProfile}
                                             teammateNameDisplay='username'
                                         />
                                     </View>
@@ -176,14 +212,20 @@ export default function PlaybookRun({
                         </View>
                     )}
                     <StatusUpdateIndicator
-                        lastStatusUpdateAt={playbookRun.lastStatusUpdateAt}
+                        isFinished={isRunFinished(playbookRun)}
+                        timestamp={getRunScheduledTimestamp(playbookRun)}
                     />
                 </View>
                 <View style={styles.tasksContainer}>
                     <Text style={styles.tasksHeader}>
                         {intl.formatMessage(messages.tasks)}
                     </Text>
-                    <ChecklistList checklists={checklists}/>
+                    <ChecklistList
+                        checklists={orderedChecklists}
+                        channelId={channelId}
+                        playbookRunId={playbookRun.id}
+                        isFinished={isRunFinished(playbookRun)}
+                    />
                 </View>
             </ScrollView>
         </View>

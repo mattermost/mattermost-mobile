@@ -19,39 +19,57 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         alignItems: 'center',
         backgroundColor: theme.centerChannelBg,
     },
+    disabled: {
+        borderColor: changeOpacity(theme.centerChannelColor, 0.12),
+    },
     checkedBox: {
         backgroundColor: theme.buttonBg,
         borderColor: theme.buttonBg,
     },
+    checkedBoxDisabled: {
+        backgroundColor: changeOpacity(theme.centerChannelColor, 0.12),
+        borderColor: changeOpacity(theme.centerChannelColor, 0.12),
+    },
     checkIcon: {
         color: theme.buttonColor,
         fontSize: 18,
+    },
+    disabledCheckIcon: {
+        color: theme.centerChannelColor,
     },
 }));
 
 type Props = {
     checked: boolean;
     onPress: () => void;
+    disabled?: boolean;
 }
 
-function Checkbox({checked, onPress}: Props) {
+function Checkbox({checked, onPress, disabled}: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
     const buttonStyle = useMemo(() => [
         styles.checkbox,
-        checked && styles.checkedBox,
-    ], [styles.checkbox, checked, styles.checkedBox]);
+        checked && (disabled ? styles.checkedBoxDisabled : styles.checkedBox),
+        disabled && styles.disabled,
+    ], [styles.checkbox, styles.checkedBoxDisabled, styles.checkedBox, styles.disabled, checked, disabled]);
+
+    const iconStyle = useMemo(() => [
+        styles.checkIcon,
+        disabled && styles.disabledCheckIcon,
+    ], [styles.checkIcon, styles.disabledCheckIcon, disabled]);
 
     return (
         <TouchableOpacity
             onPress={onPress}
             style={buttonStyle}
+            disabled={disabled}
         >
             {checked && (
                 <CompassIcon
                     name='check'
-                    style={styles.checkIcon}
+                    style={iconStyle}
                 />
             )}
         </TouchableOpacity>

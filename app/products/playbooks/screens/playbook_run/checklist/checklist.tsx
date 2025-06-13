@@ -8,6 +8,7 @@ import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-nati
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
 import ProgressBar from '@playbooks/components/progress_bar';
+import {getSortOrder} from '@playbooks/utils/sort_order';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -26,12 +27,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         overflow: 'hidden',
     },
     checklistHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingVertical: 10,
-        paddingHorizontal: 8,
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.04),
-        gap: 8,
     },
     checklistTitle: {
         ...typography('Body', 200, 'SemiBold'),
@@ -55,16 +51,31 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         position: 'absolute',
         opacity: 0,
     },
+    checklistHeaderContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        paddingVertical: 10,
+        paddingHorizontal: 8,
+    },
 }));
 
 type Props = {
-    checklist: PlaybookChecklistModel;
-    items: PlaybookChecklistItemModel[];
+    checklist: PlaybookChecklistModel | PlaybookChecklist;
+    checklistNumber: number;
+    items: Array<PlaybookChecklistItemModel | PlaybookChecklistItem>;
+    channelId: string;
+    playbookRunId: string;
+    isFinished: boolean;
 }
 
 const Checklist = ({
     checklist,
+    checklistNumber,
     items,
+    channelId,
+    playbookRunId,
+    isFinished,
 }: Props) => {
     const [expanded, setExpanded] = useState(true);
     const theme = useTheme();
@@ -72,12 +83,25 @@ const Checklist = ({
     const height = useSharedValue(0);
     const windowDimensions = useWindowDimensions();
 
+    const sortedItems = useMemo(() => {
+        if ('table' in checklist) {
+            const sortOrder = getSortOrder(items);
+            const sortOrderMap = sortOrder.reduce((acc, id, index) => {
+                acc[id] = index;
+                return acc;
+            }, {} as Record<string, number>);
+            return items.sort((a, b) => sortOrderMap[a.id] - sortOrderMap[b.id]);
+        }
+
+        return items;
+    }, [items, checklist]);
+
     const toggleExpanded = useCallback(() => {
         setExpanded((prev) => !prev);
     }, []);
 
     const completed = useMemo(() => {
-        return items.filter((item) => item.state === 'done').length;
+        return items.filter((item) => item.state === 'closed').length;
     }, [items]);
 
     const progressPercentage = useMemo(() => {
@@ -109,24 +133,31 @@ const Checklist = ({
                 style={styles.checklistHeader}
                 onPress={toggleExpanded}
             >
-                <CompassIcon
-                    name={expanded ? 'chevron-down' : 'chevron-right'}
-                    style={styles.chevron}
-                />
-                <Text style={styles.checklistTitle}>{checklist.title}</Text>
-                <Text style={styles.progressText}>{`${completed} / ${items.length} done`}</Text>
+                <View style={styles.checklistHeaderContent}>
+                    <CompassIcon
+                        name={expanded ? 'chevron-down' : 'chevron-right'}
+                        style={styles.chevron}
+                    />
+                    <Text style={styles.checklistTitle}>{checklist.title}</Text>
+                    <Text style={styles.progressText}>{`${completed} / ${items.length} done`}</Text>
+                </View>
                 <ProgressBar
                     progress={progressPercentage}
-                    isActive={true}
+                    isActive={!isFinished}
                 />
             </TouchableOpacity>
             <Animated.View
                 style={[styles.checklistItemsContainer, animatedStyle]}
             >
-                {items.map((item) => (
+                {sortedItems.map((item, index) => (
                     <ChecklistItem
                         key={item.id}
                         item={item}
+                        channelId={channelId}
+                        checklistNumber={checklistNumber}
+                        itemNumber={index}
+                        playbookRunId={playbookRunId}
+                        isFinished={isFinished}
                     />
                 ))}
             </Animated.View>
@@ -135,10 +166,15 @@ const Checklist = ({
                 style={calculatorStyle}
                 onLayout={calculatorOnLayout}
             >
-                {items.map((item) => (
+                {sortedItems.map((item, index) => (
                     <ChecklistItem
                         key={item.id}
                         item={item}
+                        channelId={channelId}
+                        checklistNumber={checklistNumber}
+                        itemNumber={index}
+                        playbookRunId={playbookRunId}
+                        isFinished={isFinished}
                     />
                 ))}
             </View>

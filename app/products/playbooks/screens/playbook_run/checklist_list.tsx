@@ -9,18 +9,28 @@ import Checklist from './checklist';
 import type PlaybookChecklistModel from '@playbooks/types/database/models/playbook_checklist';
 
 type Props = {
-    checklists: PlaybookChecklistModel[];
+    checklists: Array<PlaybookChecklistModel | PlaybookChecklist>;
+    channelId: string;
+    playbookRunId: string;
+    isFinished: boolean;
 }
 
 const ChecklistList = ({
     checklists,
+    channelId,
+    playbookRunId,
+    isFinished,
 }: Props) => {
     return (
         <View>
-            {checklists.map((checklist) => (
+            {checklists.map((checklist, index) => (
                 <Checklist
                     key={checklist.id}
                     checklist={checklist}
+                    channelId={channelId}
+                    playbookRunId={playbookRunId}
+                    checklistNumber={index}
+                    isFinished={isFinished}
                 />
             ))}
         </View>

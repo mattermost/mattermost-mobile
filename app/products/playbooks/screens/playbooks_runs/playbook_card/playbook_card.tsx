@@ -28,12 +28,8 @@ export const ITEM_HEIGHT = (VERTICAL_PADDING * 2) + TITLE_HEIGHT + GAPS + (CHIP_
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => ({
     cardContainer: {
-        margin: 0,
-        paddingVertical: VERTICAL_PADDING,
-        paddingHorizontal: 20,
         borderRadius: 4,
         backgroundColor: theme.centerChannelBg,
-        flexDirection: 'column',
         borderWidth: 1,
         borderColor: changeOpacity(theme.centerChannelColor, 0.08),
         shadowColor: '#000',
@@ -41,7 +37,12 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => ({
         shadowOpacity: 0.08,
         shadowRadius: 3,
         elevation: 2,
+    },
+    contentContainer: {
+        paddingVertical: VERTICAL_PADDING,
+        paddingHorizontal: 20,
         gap: GAP,
+        flexDirection: 'column',
     },
     cardTitle: {
         ...typography('Body', 200, 'SemiBold'),
@@ -109,45 +110,47 @@ const PlaybookCard = ({
             onPress={onCardPress}
             style={styles.cardContainer}
         >
-            <Text
-                style={styles.cardTitle}
-                numberOfLines={1}
-            >
-                {run.name}
-            </Text>
-            <View style={styles.peopleRow}>
-                {owner && (
-                    <UserChip
-                        user={owner}
-                        teammateNameDisplay='username'
-                        onPress={onUserChipPress}
+            <View style={styles.contentContainer}>
+                <Text
+                    style={styles.cardTitle}
+                    numberOfLines={1}
+                >
+                    {run.name}
+                </Text>
+                <View style={styles.peopleRow}>
+                    {owner && (
+                        <UserChip
+                            user={owner}
+                            teammateNameDisplay='username'
+                            onPress={onUserChipPress}
+                        />
+                    )}
+                    <UserAvatarsStack
+                        channelId={channelId}
+                        location={location}
+                        users={participants}
+                        bottomSheetTitle={bottomSheetTitleMessage}
                     />
-                )}
-                <UserAvatarsStack
-                    channelId={channelId}
-                    location={location}
-                    users={participants}
-                    bottomSheetTitle={bottomSheetTitleMessage}
-                />
-            </View>
-            <View style={styles.infoRow}>
-                <View style={styles.flex}>
-                    <Text
-                        style={styles.lastUpdatedText}
-                        numberOfLines={1}
-                    >
-                        {intl.formatMessage({
-                            id: 'playbook.last_updated',
-                            defaultMessage: 'Last updated {date}',
-                        }, {
-                            date: (
-                                <FriendlyDate
-                                    value={lastStatusUpdateAt}
-                                    style={styles.lastUpdatedText}
-                                />
-                            ),
-                        })}
-                    </Text>
+                </View>
+                <View style={styles.infoRow}>
+                    <View style={styles.flex}>
+                        <Text
+                            style={styles.lastUpdatedText}
+                            numberOfLines={1}
+                        >
+                            {intl.formatMessage({
+                                id: 'playbook.last_updated',
+                                defaultMessage: 'Last updated {date}',
+                            }, {
+                                date: (
+                                    <FriendlyDate
+                                        value={lastStatusUpdateAt}
+                                        style={styles.lastUpdatedText}
+                                    />
+                                ),
+                            })}
+                        </Text>
+                    </View>
                 </View>
             </View>
             <ProgressBar

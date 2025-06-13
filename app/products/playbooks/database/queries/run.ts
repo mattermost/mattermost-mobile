@@ -56,19 +56,19 @@ export const observePlaybookRunsPerChannel = (database: Database, channelId: str
 export const observePlaybookRunProgress = (database: Database, runId: string) => {
     const items = database.get<PlaybookChecklistItemModel>(PLAYBOOK_CHECKLIST_ITEM).query(
         Q.on(PLAYBOOK_CHECKLIST, 'run_id', runId),
-    ).observe();
+    ).observeWithColumns(['state']);
 
     return items.pipe(
-        map((checklistsItems) => {
+        switchMap((checklistsItems) => {
             const totalItems = checklistsItems.length;
 
             if (totalItems === 0) {
-                return 0;
+                return of$(0);
             }
 
             const completedItems = checklistsItems.filter(isItemCompleted).length;
 
-            return parseFloat(((completedItems / totalItems) * 100).toFixed(2));
+            return of$(parseFloat(((completedItems / totalItems) * 100).toFixed(2)));
         }),
     );
 };

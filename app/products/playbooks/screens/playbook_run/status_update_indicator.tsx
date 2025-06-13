@@ -2,16 +2,18 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessages, useIntl} from 'react-intl';
 import {View, Text} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
+import FriendlyDate from '@components/friendly_date';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 type StatusUpdateIndicatorProps = {
-    lastStatusUpdateAt: number;
+    isFinished: boolean;
+    timestamp: number;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
@@ -38,10 +40,37 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     },
 }));
 
-const StatusUpdateIndicator = ({lastStatusUpdateAt}: StatusUpdateIndicatorProps) => {
+const messages = defineMessages({
+    updateOverdue: {
+        id: 'playbooks.playbook_run.status_update_overdue',
+        defaultMessage: 'Status update overdue {time}',
+    },
+    updateDue: {
+        id: 'playbooks.playbook_run.status_update_due',
+        defaultMessage: 'Status update due {time}',
+    },
+    finished: {
+        id: 'playbooks.playbook_run.status_update_finished',
+        defaultMessage: 'Run finished {time}',
+    },
+});
+
+const StatusUpdateIndicator = ({
+    isFinished,
+    timestamp,
+}: StatusUpdateIndicatorProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const intl = useIntl();
+
+    const values = {time: <FriendlyDate value={timestamp}/>};
+
+    let message = messages.updateDue;
+    if (isFinished) {
+        message = messages.finished;
+    } else if (timestamp < Date.now()) {
+        message = messages.updateOverdue;
+    }
 
     return (
         <View style={styles.container}>
@@ -50,10 +79,7 @@ const StatusUpdateIndicator = ({lastStatusUpdateAt}: StatusUpdateIndicatorProps)
                 style={styles.icon}
             />
             <Text style={styles.text}>
-                {intl.formatMessage({
-                    id: 'playbooks.playbook_run.status_update_due',
-                    defaultMessage: 'Status update due in {time}',
-                }, {time: lastStatusUpdateAt})}
+                {intl.formatMessage(message, values)}
             </Text>
         </View>
     );

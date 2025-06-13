@@ -2,12 +2,17 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
+import {useIntl} from 'react-intl';
 import {View, Text} from 'react-native';
 
 import BaseChip from '@components/chips/base_chip';
 import UserChip from '@components/chips/user_chip';
 import CompassIcon from '@components/compass_icon';
+import {getFriendlyDate} from '@components/friendly_date';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {updateChecklistItem} from '@playbooks/actions/remote/checklist';
+import {openUserProfileModal} from '@screens/navigation';
 import {logDebug} from '@utils/log';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -52,33 +57,50 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     },
 }));
 
-const noop = () => {/* do nothing */};
-
 type Props = {
-    item: PlaybookChecklistItemModel;
+    item: PlaybookChecklistItemModel | PlaybookChecklistItem;
     assignee?: UserModel;
     teammateNameDisplay: string;
+    channelId: string;
+    checklistNumber: number;
+    itemNumber: number;
+    playbookRunId: string;
+    isFinished: boolean;
 }
 
 const ChecklistItem = ({
     item,
     assignee,
     teammateNameDisplay,
+    channelId,
+    checklistNumber,
+    itemNumber,
+    playbookRunId,
+    isFinished,
 }: Props) => {
+    const dueDate = 'dueDate' in item ? item.dueDate : item.due_date;
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const intl = useIntl();
+    const serverUrl = useServerUrl();
 
-    const checked = item.state === 'done';
+    const checked = item.state === 'closed';
 
-    const dueIn = item.dueDate ? item.dueDate - Date.now() : null;
+    const onUserChipPress = useCallback((userId: string) => {
+        openUserProfileModal(intl, theme, {
+            userId,
+            channelId,
+            location: 'PlabyookRun',
+        });
+    }, [channelId, intl, theme]);
 
-    const executeCommand = () => {
+    const executeCommand = useCallback(() => {
         logDebug('executeCommand', item.command);
-    };
+    }, [item.command]);
 
     const toggleChecked = useCallback(() => {
-        // Connect with API
-    }, []);
+        updateChecklistItem(serverUrl, playbookRunId, item.id, checklistNumber, itemNumber, checked ? '' : 'closed');
+    }, [serverUrl, playbookRunId, checklistNumber, itemNumber, checked, item.id]);
 
     return (
         <View style={styles.checklistItem}>
@@ -86,6 +108,7 @@ const ChecklistItem = ({
                 <Checkbox
                     checked={checked}
                     onPress={toggleChecked}
+                    disabled={isFinished}
                 />
             </View>
             <View style={styles.itemDetails}>
@@ -96,19 +119,19 @@ const ChecklistItem = ({
                     )}
                 </View>
 
-                {(assignee || item.dueDate || (item.command)) && (
+                {(assignee || dueDate || (item.command)) && (
                     <View style={styles.chipsRow}>
                         {assignee && (
                             <UserChip
                                 user={assignee}
-                                onPress={noop}
+                                onPress={onUserChipPress}
                                 teammateNameDisplay={teammateNameDisplay}
                             />
                         )}
 
-                        {item.dueDate && (
+                        {Boolean(dueDate) && (
                             <BaseChip
-                                label={`Due in ${dueIn}`}
+                                label={intl.formatMessage({id: 'playbook_run.checklist.dueIn', defaultMessage: 'Due {dueDate}'}, {dueDate: getFriendlyDate(intl, dueDate)})}
                                 prefix={
                                     <CompassIcon
                                         name='clock-outline'
@@ -120,7 +143,7 @@ const ChecklistItem = ({
 
                         {item.command && (
                             <BaseChip
-                                label={item.command}
+                                label={item.command.substring(1)}
                                 onPress={executeCommand}
                                 prefix={
                                     <CompassIcon
