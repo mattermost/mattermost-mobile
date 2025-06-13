@@ -43,10 +43,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         gap: 20,
     },
     body: {
-        paddingHorizontal: 20,
+        flex: 1,
     },
     content: {
         gap: 16,
+        paddingHorizontal: 20,
     },
     detailsTitle: {
         ...typography('Heading', 200, 'SemiBold'),
