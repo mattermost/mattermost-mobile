@@ -51,9 +51,7 @@ describe('EditPostInput', () => {
                 width: 100,
             },
         ],
-        config: {
-            Version: '10.5.0',
-        } as ClientConfig,
+        version: '10.5.0',
         inputRef: {current: undefined},
         onTextSelectionChange: jest.fn(),
         onChangeText: jest.fn(),
@@ -82,7 +80,7 @@ describe('EditPostInput', () => {
     });
 
     it('should not render attachments if the server version is less than 10.5.0', () => {
-        const props = {...baseProps, config: {...baseProps.config, Version: '10.4.0'}};
+        const props = {...baseProps, version: '10.4.0'};
         const {queryByTestId} = renderWithEverything(<EditPostInput {...props}/>, {database, serverUrl});
         expect(queryByTestId('uploads')).toBeNull();
     });

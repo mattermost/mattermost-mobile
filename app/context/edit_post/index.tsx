@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {createContext, useContext, type ReactNode} from 'react';
+import React, {createContext, useContext, useMemo, type ReactNode} from 'react';
 
 type EditPostContextType = {
     onFileRemove?: (fileId: string) => void;
@@ -15,8 +15,12 @@ type EditPostProviderProps = {
 };
 
 export const EditPostProvider = ({children, onFileRemove}: EditPostProviderProps) => {
+    const contextValue = useMemo(() => ({
+        onFileRemove,
+    }), [onFileRemove]);
+
     return (
-        <EditPostContext.Provider value={{onFileRemove}}>
+        <EditPostContext.Provider value={contextValue}>
             {children}
         </EditPostContext.Provider>
     );

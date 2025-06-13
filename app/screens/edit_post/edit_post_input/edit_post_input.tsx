@@ -40,7 +40,7 @@ type PostInputProps = {
     hasError: boolean;
     post: PostModel;
     postFiles: FileInfo[];
-    config: ClientConfig;
+    version?: string;
     onTextSelectionChange: (curPos: number) => void;
     onChangeText: (text: string) => void;
     inputRef: React.MutableRefObject<PasteInputRef | undefined>;
@@ -53,7 +53,7 @@ const EditPostInput = ({
     hasError,
     post,
     postFiles,
-    config,
+    version,
     inputRef,
 }: PostInputProps) => {
     const intl = useIntl();
@@ -109,7 +109,7 @@ const EditPostInput = ({
                 onFocus={onFocus}
                 onBlur={onBlur}
             />
-            {isMinimumServerVersion(config.Version, MAJOR_VERSION_TO_SHOW_ATTACHMENTS, MINOR_VERSION_TO_SHOW_ATTACHMENTS) &&
+            {isMinimumServerVersion(version, MAJOR_VERSION_TO_SHOW_ATTACHMENTS, MINOR_VERSION_TO_SHOW_ATTACHMENTS) &&
                 <Uploads
                     channelId={post.channelId}
                     currentUserId={post.userId}

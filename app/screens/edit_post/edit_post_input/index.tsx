@@ -3,14 +3,14 @@
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 
-import {observeConfig} from '@queries/servers/system';
+import {observeConfigValue} from '@queries/servers/system';
 
 import EditPostInput from './edit_post_input';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
-    config: observeConfig(database),
+    version: observeConfigValue(database, 'Version'),
 }));
 
 export default withDatabase(enhanced(EditPostInput));
