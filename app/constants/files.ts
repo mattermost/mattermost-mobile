@@ -47,4 +47,6 @@ Files.DOCUMENT_TYPES = Files.WORD_TYPES.concat(Files.PDF_TYPES, Files.TEXT_TYPES
 
 export const PROGRESS_TIME_TO_STORE = toMilliseconds({seconds: 60});
 
+export const UPLOAD_ERROR_SHOW_INTERVAL = 5000;
+
 export default Files;

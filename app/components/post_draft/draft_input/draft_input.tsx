@@ -242,7 +242,6 @@ function DraftInput({
                         uploadFileError={uploadFileError}
                         channelId={channelId}
                         rootId={rootId}
-                        isEditMode={false}
                     />
                     <View style={style.actionsContainer}>
                         <QuickActions
