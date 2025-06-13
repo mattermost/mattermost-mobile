@@ -9,7 +9,11 @@ type EditPostContextType = {
     isEditMode?: boolean;
 };
 
-const EditPostContext = createContext<EditPostContextType>({});
+const EditPostContext = createContext<EditPostContextType>({
+    onFileRemove: undefined,
+    updateFileCallback: undefined,
+    isEditMode: false,
+});
 
 type EditPostProviderProps = {
     children: ReactNode;
