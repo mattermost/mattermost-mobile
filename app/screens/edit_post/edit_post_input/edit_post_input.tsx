@@ -8,6 +8,7 @@ import {useIntl} from 'react-intl';
 import {type NativeSyntheticEvent, Platform, type TextInputSelectionChangeEventData, View} from 'react-native';
 
 import QuickActions from '@components/post_draft/quick_actions/';
+import {INITIAL_PRIORITY} from '@components/post_draft/send_handler/send_handler';
 import Uploads from '@components/post_draft/uploads';
 import {ExtraKeyboard, useExtraKeyboardContext} from '@context/extra_keyboard';
 import {useTheme} from '@context/theme';
@@ -143,6 +144,7 @@ const EditPostInput = ({
                         value={message}
                         updatePostPriority={emptyFunction}
                         canShowPostPriority={false}
+                        postPriority={INITIAL_PRIORITY}
                         canShowSlashCommands={false}
                         focus={focus}
                     />
