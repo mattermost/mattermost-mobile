@@ -3,7 +3,7 @@
 
 import {useCallback, useRef, useState} from 'react';
 
-const UPLOAD_ERROR_SHOW_INTERVAL = 5000;
+import {UPLOAD_ERROR_SHOW_INTERVAL} from '@constants/files';
 
 const useFileUploadError = () => {
     const [uploadError, setUploadError] = useState<React.ReactNode>(null);
