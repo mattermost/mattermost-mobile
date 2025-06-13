@@ -16,8 +16,8 @@ import {changeOpacity} from '@utils/theme';
 
 type Props = {
     testID?: string;
-    postPriority?: PostPriority;
-    updatePostPriority?: (postPriority: PostPriority) => void;
+    postPriority: PostPriority;
+    updatePostPriority: (postPriority: PostPriority) => void;
 }
 
 const style = StyleSheet.create({
