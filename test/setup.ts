@@ -457,7 +457,12 @@ jest.mock('@mattermost/react-native-network-client', () => ({
 
 jest.mock('react-native-safe-area-context', () => mockSafeAreaContext);
 
-jest.mock('react-native-reanimated', () => require('react-native-reanimated/mock'));
+jest.mock('react-native-reanimated', () => {
+    const Reanimated = require('react-native-reanimated/mock');
+    Reanimated.default.call = () => undefined;
+    Reanimated.useReducedMotion = jest.fn(() => false);
+    return Reanimated;
+});
 jest.mock('react-native-permissions', () => require('react-native-permissions/mock'));
 
 jest.mock('react-native-haptic-feedback', () => {
