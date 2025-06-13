@@ -62,6 +62,9 @@ declare class PlaybookChecklistItemModel extends Model {
     // JSON string representing the task actions
     taskActions: TaskAction[] | null;
 
+    // The timestamp when the checklist item was updated
+    updateAt: number;
+
     /** checklist : The checklist to which this checklist item belongs */
     checklist: Relation<PlaybookChecklistModel>;
 

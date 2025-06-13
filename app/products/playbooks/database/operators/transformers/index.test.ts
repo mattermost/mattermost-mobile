@@ -67,6 +67,7 @@ describe('*** PLAYBOOK_RUN Prepare Records Test ***', () => {
                     status_posts: [],
                     checklists: [],
                     metrics_data: [],
+                    update_at: 1620000003000,
                 },
             },
         });
@@ -105,6 +106,7 @@ describe('*** PLAYBOOK_RUN Prepare Records Test ***', () => {
                 record.retrospectiveEnabled = true;
                 record.retrospective = 'Existing retrospective';
                 record.retrospectivePublishedAt = 1620000002000;
+                record.updateAt = 1620000003000;
             });
         });
 
@@ -153,6 +155,7 @@ describe('*** PLAYBOOK_RUN Prepare Records Test ***', () => {
                     status_posts: [],
                     checklists: [],
                     metrics_data: [],
+                    update_at: 1620000004000,
                 },
             },
         });
@@ -218,6 +221,7 @@ describe('*** PLAYBOOK_RUN Prepare Records Test ***', () => {
                         status_posts: [],
                         checklists: [],
                         metrics_data: [],
+                        update_at: 1620000005000,
                     },
                 },
             }),
@@ -240,7 +244,7 @@ describe('*** PLAYBOOK_CHECKLIST Prepare Records Test ***', () => {
                     id: 'checklist_1',
                     run_id: 'playbook_run_1',
                     title: 'Checklist 1',
-                    order: 1,
+                    update_at: 0,
                 },
             },
         });
@@ -261,7 +265,7 @@ describe('*** PLAYBOOK_CHECKLIST Prepare Records Test ***', () => {
                 record._raw.id = 'checklist_2';
                 record.runId = 'playbook_run_2';
                 record.title = 'Existing Checklist';
-                record.order = 1;
+                record.updateAt = 0;
             });
         });
 
@@ -274,7 +278,7 @@ describe('*** PLAYBOOK_CHECKLIST Prepare Records Test ***', () => {
                     id: 'checklist_2',
                     run_id: 'playbook_run_2',
                     title: 'Updated Checklist',
-                    order: 2,
+                    update_at: 0,
                 },
             },
         });
@@ -304,7 +308,7 @@ describe('*** PLAYBOOK_CHECKLIST Prepare Records Test ***', () => {
                         id: 'checklist_3',
                         run_id: 'playbook_run_3',
                         title: 'Invalid Checklist',
-                        order: 1,
+                        update_at: 0,
                     },
                 },
             }),
@@ -328,7 +332,6 @@ describe('*** PLAYBOOK_CHECKLIST_ITEM Prepare Records Test ***', () => {
                     id: 'checklist_item_1',
                     checklist_id: 'checklist_1',
                     title: 'Checklist Item 1',
-                    order: 1,
                     state: 'Open',
                     state_modified: 1620000000000,
                     assignee_id: 'user_1',
@@ -339,6 +342,7 @@ describe('*** PLAYBOOK_CHECKLIST_ITEM Prepare Records Test ***', () => {
                     due_date: 1620000003000,
                     completed_at: 0,
                     task_actions: null,
+                    update_at: 0,
                 },
             },
         });
@@ -359,7 +363,6 @@ describe('*** PLAYBOOK_CHECKLIST_ITEM Prepare Records Test ***', () => {
                 record._raw.id = 'checklist_item_2';
                 record.checklistId = 'checklist_2';
                 record.title = 'Existing Checklist Item';
-                record.order = 1;
                 record.state = 'Open';
                 record.stateModified = 1620000000000;
                 record.assigneeId = 'user_2';
@@ -370,6 +373,7 @@ describe('*** PLAYBOOK_CHECKLIST_ITEM Prepare Records Test ***', () => {
                 record.dueDate = 1620000003000;
                 record.completedAt = 0;
                 record.taskActions = null;
+                record.updateAt = 0;
             });
         });
 
@@ -382,7 +386,6 @@ describe('*** PLAYBOOK_CHECKLIST_ITEM Prepare Records Test ***', () => {
                     id: 'checklist_item_2',
                     checklist_id: 'checklist_2',
                     title: 'Updated Checklist Item',
-                    order: 2,
                     state: 'Closed',
                     state_modified: 1620000004000,
                     assignee_id: 'user_3',
@@ -393,6 +396,7 @@ describe('*** PLAYBOOK_CHECKLIST_ITEM Prepare Records Test ***', () => {
                     due_date: 1620000007000,
                     completed_at: 1620000008000,
                     task_actions: null,
+                    update_at: 0,
                 },
             },
         });
@@ -422,7 +426,6 @@ describe('*** PLAYBOOK_CHECKLIST_ITEM Prepare Records Test ***', () => {
                         id: 'checklist_item_3',
                         checklist_id: 'checklist_3',
                         title: 'Invalid Checklist Item',
-                        order: 1,
                         state: 'Open',
                         state_modified: 1620000000000,
                         assignee_id: 'user_4',
@@ -433,6 +436,7 @@ describe('*** PLAYBOOK_CHECKLIST_ITEM Prepare Records Test ***', () => {
                         due_date: 1620000003000,
                         completed_at: 0,
                         task_actions: null,
+                        update_at: 0,
                     },
                 },
             }),

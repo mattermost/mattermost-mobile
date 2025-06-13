@@ -83,7 +83,6 @@ describe('shouldHandlePlaybookChecklistItemRecord', () => {
             assigneeId: 'user1',
             command: '/command',
             dueDate: 123456,
-            order: 1,
         });
         const raw = TestHelper.fakePlaybookChecklistItem(existingRecord.checklistId, {
             title: 'Item Title',
@@ -92,7 +91,6 @@ describe('shouldHandlePlaybookChecklistItemRecord', () => {
             assignee_id: 'user1',
             command: '/command',
             due_date: 123456,
-            order: 1,
         });
 
         expect(shouldHandlePlaybookChecklistItemRecord(existingRecord, raw)).toBe(false);
@@ -106,7 +104,6 @@ describe('shouldHandlePlaybookChecklistItemRecord', () => {
             assigneeId: 'user1',
             command: '/command',
             dueDate: 123456,
-            order: 1,
         });
         const raw = TestHelper.fakePlaybookChecklistItem(existingRecord.checklistId, {
             title: 'Different Title',
@@ -115,7 +112,6 @@ describe('shouldHandlePlaybookChecklistItemRecord', () => {
             assignee_id: 'user1',
             command: '/command',
             due_date: 123456,
-            order: 1,
         });
 
         expect(shouldHandlePlaybookChecklistItemRecord(existingRecord, raw)).toBe(true);

@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {children, field, immutableRelation} from '@nozbe/watermelondb/decorators';
+import {children, field, immutableRelation, json} from '@nozbe/watermelondb/decorators';
 import Model, {type Associations} from '@nozbe/watermelondb/Model';
 
 import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
+import {safeParseJSON} from '@utils/helpers';
 
 import type {Query, Relation} from '@nozbe/watermelondb';
 import type PlaybookChecklistModelInterface from '@playbooks/types/database/models/playbook_checklist';
@@ -44,6 +45,12 @@ export default class PlaybookChecklistModel extends Model implements PlaybookChe
 
     /** last_sync_at : The timestamp when the checklist was last synced */
     @field('last_sync_at') lastSyncAt!: number;
+
+    /** sort_order : The sort order of the checklist */
+    @json('sort_order', safeParseJSON) sortOrder!: string[];
+
+    /** update_at : The timestamp when the checklist was updated */
+    @field('update_at') updateAt!: number;
 
     /** items : All the items associated with this checklist */
     @children(PLAYBOOK_CHECKLIST_ITEM) items!: Query<PlaybookChecklistItemModel>;

@@ -114,6 +114,15 @@ export default class PlaybookRunModel extends Model implements PlaybookRunModelI
     /** last_sync_at : The timestamp when the playbook run was last synced */
     @field('last_sync_at') lastSyncAt!: number;
 
+    /** previous_reminder : Timestamp of the previous reminder */
+    @field('previous_reminder') previousReminder!: number;
+
+    /** sort_order : The sort order of the playbook run */
+    @json('sort_order', safeParseJSON) sortOrder!: string[];
+
+    /** update_at : The timestamp when the playbook run was updated */
+    @field('update_at') updateAt!: number;
+
     /** post : The POST to which this PLAYBOOK_RUN belongs (can be null) */
     @immutableRelation(POST, 'post_id') post!: Relation<PostModel>;
 

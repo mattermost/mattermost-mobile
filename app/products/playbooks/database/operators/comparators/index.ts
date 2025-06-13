@@ -14,11 +14,13 @@ export const shouldUpdatePlaybookRunRecord = (existingRecord: PlaybookRunModel, 
         existingRecord.retrospectiveEnabled !== raw.retrospective_enabled ||
         existingRecord.retrospectivePublishedAt !== raw.retrospective_published_at ||
         existingRecord.participantIds.length !== raw.participant_ids.length ||
-        !existingRecord.participantIds.every((id, index) => id === raw.participant_ids[index]));
+        !existingRecord.participantIds.every((id, index) => id === raw.participant_ids[index]) ||
+        existingRecord.updateAt !== raw.update_at);
 };
 
 export const shouldHandlePlaybookChecklistRecord = (existingRecord: PlaybookChecklistModel, raw: PlaybookChecklistWithRun): boolean => {
-    return Boolean(existingRecord.title !== raw.title);
+    return Boolean(existingRecord.title !== raw.title ||
+        existingRecord.updateAt !== raw.update_at);
 };
 
 export const shouldHandlePlaybookChecklistItemRecord = (existingRecord: PlaybookChecklistItemModel, raw: PlaybookChecklistItemWithChecklist): boolean => {
@@ -29,5 +31,5 @@ export const shouldHandlePlaybookChecklistItemRecord = (existingRecord: Playbook
         existingRecord.command !== raw.command ||
         existingRecord.dueDate !== raw.due_date ||
         existingRecord.taskActions?.length !== raw.task_actions?.length ||
-        existingRecord.order !== raw.order);
+        existingRecord.updateAt !== raw.update_at);
 };

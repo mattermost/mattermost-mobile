@@ -23,14 +23,17 @@ declare class PlaybookChecklistModel extends Model {
     // title of the checklist
     title: string;
 
-    // Order of the checklist
-    order: number;
-
     // The sync status of the checklist
     sync: SyncStatus;
 
     // The timestamp when the checklist was last synced
     lastSyncAt: number;
+
+    // The sort order of the checklist
+    sortOrder: string[];
+
+    // The timestamp when the checklist was updated
+    updateAt: number;
 
     /** run : The playbook run to which this checklist belongs */
     run: Relation<PlaybookRunModel>;

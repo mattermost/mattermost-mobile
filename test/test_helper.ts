@@ -1039,9 +1039,9 @@ class TestHelperSingleton {
         command: '',
         command_last_run: 0,
         due_date: 0,
-        order: 0,
         completed_at: 0,
         task_actions: [],
+        update_at: 0,
     });
 
     createPlaybookChecklist = (prefix: string, itemsCount: number, index: number): PlaybookChecklist => {
@@ -1054,6 +1054,7 @@ class TestHelperSingleton {
         return {
             id: `${prefix}-checklist_${index}`,
             title: `Checklist ${index + 1} of Playbook Run ${prefix}`,
+            update_at: 0,
             items,
         };
     };
@@ -1107,6 +1108,7 @@ class TestHelperSingleton {
                 status_posts: [],
                 metrics_data: [],
                 checklists,
+                update_at: Date.now() + i,
             });
         }
         return playbookRuns;
@@ -1125,7 +1127,6 @@ class TestHelperSingleton {
         const checklist = this.createPlaybookChecklist(runId, 1, 0);
         return {
             run_id: runId,
-            order: 0,
             ...checklist,
             ...overwite,
         };
@@ -1169,6 +1170,9 @@ class TestHelperSingleton {
             channel: this.fakeRelation(),
             owner: this.fakeRelation(),
             checklists: this.fakeQuery([]),
+            previousReminder: 0,
+            sortOrder: [],
+            updateAt: 0,
             ...overwrite,
         };
     };
@@ -1179,11 +1183,12 @@ class TestHelperSingleton {
             runId: this.generateId(),
             title: 'title',
             items: this.fakeQuery([]),
-            order: 0,
             id: this.generateId(),
             sync: 'synced',
             lastSyncAt: 0,
             run: this.fakeRelation(),
+            sortOrder: [],
+            updateAt: 0,
             ...overwrite,
         };
     };
@@ -1207,6 +1212,7 @@ class TestHelperSingleton {
             lastSyncAt: 0,
             taskActions: [],
             checklist: this.fakeRelation(),
+            updateAt: 0,
             ...overwrite,
         };
     };

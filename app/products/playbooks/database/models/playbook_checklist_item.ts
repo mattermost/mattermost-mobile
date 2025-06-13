@@ -79,6 +79,9 @@ export default class PlaybookChecklistItemModel extends Model implements Playboo
     /** last_sync_at : The timestamp when the checklist item was last synced */
     @field('last_sync_at') lastSyncAt!: number;
 
+    /** update_at : The timestamp when the checklist item was updated */
+    @field('update_at') updateAt!: number;
+
     /** checklist : The checklist to which this checklist item belongs */
     @immutableRelation(PLAYBOOK_CHECKLIST, 'checklist_id') checklist!: Relation<PlaybookChecklistModel>;
 

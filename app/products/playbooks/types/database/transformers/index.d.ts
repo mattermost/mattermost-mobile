@@ -5,8 +5,8 @@ type PlaybookChecklistWithRun = {
     id: string;
     run_id: string;
     title: string;
-    order: number;
     items?: PlaybookChecklistItem[];
+    update_at: number;
 }
 
 type PlaybookChecklistItemWithChecklist = {
@@ -22,6 +22,6 @@ type PlaybookChecklistItemWithChecklist = {
     command_last_run: number;
     due_date: number;
     task_actions?: TaskAction[] | null;
-    order: number;
     completed_at: number;
+    update_at: number;
 }
