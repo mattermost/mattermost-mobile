@@ -25,5 +25,6 @@ export default tableSchema({
         {name: 'order', type: 'number'},
         {name: 'sync', type: 'string', isIndexed: true, isOptional: true},
         {name: 'last_sync_at', type: 'number', isOptional: true},
+        {name: 'update_at', type: 'number'},
     ],
 });
