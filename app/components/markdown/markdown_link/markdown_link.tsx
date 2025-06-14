@@ -5,17 +5,16 @@ import {useManagedConfig} from '@mattermost/react-native-emm';
 import Clipboard from '@react-native-clipboard/clipboard';
 import React, {Children, type ReactElement, useCallback} from 'react';
 import {useIntl, defineMessages} from 'react-intl';
-import {Alert, StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, Text, View} from 'react-native';
 import urlParse from 'url-parse';
 
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
-import {handleDeepLink, matchDeepLink} from '@utils/deep_link';
 import {bottomSheetSnapPoint, isEmail} from '@utils/helpers';
-import {preventDoubleTap} from '@utils/tap';
-import {normalizeProtocol, tryOpenURL} from '@utils/url';
+import {openLink} from '@utils/url/links';
 
 type MarkdownLinkProps = {
     children: ReactElement;
@@ -61,39 +60,9 @@ const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteU
     const serverUrl = useServerUrl();
     const theme = useTheme();
 
-    const {formatMessage} = intl;
-
-    const handlePress = useCallback(preventDoubleTap(async () => {
-        const url = normalizeProtocol(href);
-
-        if (!url) {
-            return;
-        }
-
-        const onError = () => {
-            Alert.alert(
-                formatMessage({
-                    id: 'mobile.link.error.title',
-                    defaultMessage: 'Error',
-                }),
-                formatMessage({
-                    id: 'mobile.link.error.text',
-                    defaultMessage: 'Unable to open the link.',
-                }),
-            );
-        };
-
-        const match = matchDeepLink(url, serverUrl, siteURL);
-
-        if (match) {
-            const {error} = await handleDeepLink(match.url, intl);
-            if (error) {
-                tryOpenURL(match.url, onError);
-            }
-        } else {
-            tryOpenURL(url, onError);
-        }
-    }), [href, intl.locale, serverUrl, siteURL]);
+    const handlePress = usePreventDoubleTap(useCallback(() => {
+        openLink(href, serverUrl, siteURL, intl);
+    }, [href, intl, serverUrl, siteURL]));
 
     const parseChildren = useCallback(() => {
         return Children.map(children, (child: ReactElement) => {
@@ -102,7 +71,7 @@ const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteU
             }
 
             const {props, ...otherChildProps} = child;
-            // eslint-disable-next-line react/prop-types
+
             const {literal, ...otherProps} = props;
 
             const nextProps = {

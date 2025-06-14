@@ -5,7 +5,8 @@ import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import React from 'react';
 
 import {observeIsPostPriorityEnabled} from '@queries/servers/post';
-import {observeCanUploadFiles, observeMaxFileCount} from '@queries/servers/system';
+import {observeCanUploadFiles} from '@queries/servers/security';
+import {observeMaxFileCount} from '@queries/servers/system';
 
 import QuickActions from './quick_actions';
 

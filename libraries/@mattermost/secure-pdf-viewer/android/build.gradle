@@ -1,0 +1,71 @@
+buildscript {
+  ext.safeExtGet = {prop, fallback ->
+    rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
+  }
+  repositories {
+    google()
+    gradlePluginPortal()
+  }
+  def kotlin_version = rootProject.ext.has('kotlinVersion') ? rootProject.ext.get('kotlinVersion') : "1.9.25"
+  dependencies {
+    classpath("com.android.tools.build:gradle:8.6.0")
+    classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version")
+  }
+}
+
+def isNewArchitectureEnabled() {
+    return project.hasProperty("newArchEnabled") && project.newArchEnabled == "true"
+}
+
+apply plugin: 'com.android.library'
+apply plugin: 'org.jetbrains.kotlin.android'
+if (isNewArchitectureEnabled()) {
+    apply plugin: 'com.facebook.react'
+}
+
+android {
+  compileSdkVersion safeExtGet('compileSdkVersion', 34)
+  namespace "com.mattermost.securepdfviewer"
+
+  defaultConfig {
+      minSdkVersion safeExtGet('minSdkVersion', 24)
+      targetSdkVersion safeExtGet('targetSdkVersion', 34)
+      buildConfigField("boolean", "IS_NEW_ARCHITECTURE_ENABLED", isNewArchitectureEnabled().toString())
+      ndk {
+          abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64'
+      }
+  }
+
+  packagingOptions {
+      exclude 'lib/arm64-v8a/libc++_shared.so'
+      exclude 'lib/x86_64/libc++_shared.so'
+      exclude 'lib/armeabi-v7a/libc++_shared.so'
+      exclude 'lib/x86/libc++_shared.so'
+  }
+
+  sourceSets {
+    main {
+        if (isNewArchitectureEnabled()) {
+            java.srcDirs += ['src/newarch']
+        } else {
+            java.srcDirs += ['src/oldarch']
+        }
+    }
+  }
+}
+
+repositories {
+  google()
+  mavenCentral()
+  maven {
+      // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
+      url "$projectDir/../node_modules/react-native/android"
+  }
+}
+
+dependencies {
+    implementation 'com.facebook.react:react-native'
+    implementation 'androidx.security:security-crypto:1.0.0'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib"
+    implementation 'com.github.mattermost:mattermost-android-pdfium:v1.0.1'
+}

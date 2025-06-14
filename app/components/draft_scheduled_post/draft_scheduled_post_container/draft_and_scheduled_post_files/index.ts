@@ -4,13 +4,15 @@
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 
 import Files from '@components/files/files';
-import {observeCanDownloadFiles, observeConfigBooleanValue} from '@queries/servers/system';
+import {observeCanDownloadFiles, observeEnableSecureFilePreview} from '@queries/servers/security';
+import {observeConfigBooleanValue} from '@queries/servers/system';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
     return {
         canDownloadFiles: observeCanDownloadFiles(database),
+        enableSecureFilePreview: observeEnableSecureFilePreview(database),
         publicLinkEnabled: observeConfigBooleanValue(database, 'EnablePublicLink'),
     };
 });

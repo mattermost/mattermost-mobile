@@ -1,0 +1,23 @@
+{
+  "name": "@mattermost/secure-pdf-viewer",
+  "version": "1.0.0",
+  "description": "A secure in-app PDF viewer for React Native with password protection support.",
+  "main": "src/index.ts",
+  "author": "Mattermost, Inc.",
+  "license": "MIT",
+  "private": true,
+  "homepage": "#readme",
+  "codegenConfig": {
+    "name": "SecurePdfViewer",
+    "type": "components",
+    "jsSrcsDir": "src",
+    "android": {
+      "javaPackageName": "com.mattermost.securepdfviewer"
+    },
+    "ios": {
+      "componentProvider": {
+        "RNSecurePdfViewer": "SecurePdfViewer"
+      }
+    }
+  }
+}
