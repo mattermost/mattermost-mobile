@@ -3,8 +3,8 @@
 
 import {Image} from 'expo-image';
 import React, {forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState} from 'react';
-import {BackHandler} from 'react-native';
-import Animated, {runOnJS, runOnUI, useAnimatedReaction} from 'react-native-reanimated';
+import {BackHandler, type ImageStyle} from 'react-native';
+import Animated, {runOnJS, runOnUI, useAnimatedReaction, type AnimatedStyle} from 'react-native-reanimated';
 
 import {useGallery} from '@context/gallery';
 import {freezeOtherScreens, measureItem} from '@utils/gallery';
@@ -147,7 +147,7 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({
             return (
                 <AnimatedImage
                     source={{uri: item.posterUri}}
-                    style={info.itemStyles}
+                    style={info.itemStyles as AnimatedStyle<ImageStyle>}
                 />
             );
         }
