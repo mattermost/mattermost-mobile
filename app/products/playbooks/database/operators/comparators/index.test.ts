@@ -15,6 +15,7 @@ describe('shouldUpdatePlaybookRunRecord', () => {
             currentStatus: 'InProgress',
             retrospectiveEnabled: true,
             retrospectivePublishedAt: 789,
+            updateAt: 112233,
         });
         const raw = TestHelper.fakePlaybookRun({
             id: existingRecord.id,
@@ -26,6 +27,7 @@ describe('shouldUpdatePlaybookRunRecord', () => {
             retrospective_enabled: true,
             retrospective_published_at: 789,
             participant_ids: [] as string[],
+            update_at: 112233,
         });
 
         expect(shouldUpdatePlaybookRunRecord(existingRecord, raw)).toBe(false);
