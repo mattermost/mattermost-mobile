@@ -86,4 +86,15 @@ describe('EditPostInput', () => {
         const {queryByTestId} = renderWithEverything(<EditPostInput {...props}/>, {database, serverUrl});
         expect(queryByTestId('uploads')).toBeNull();
     });
+
+    it('should render quick actions in edit mode', () => {
+        const {getByTestId, queryByTestId} = renderWithEverything(<EditPostInput {...baseProps}/>, {database, serverUrl});
+        expect(getByTestId('edit_post.quick_actions')).toBeVisible();
+        expect(getByTestId('edit_post.quick_actions.at_input_action')).toBeVisible();
+        expect(getByTestId('edit_post.quick_actions.file_action')).toBeVisible();
+        expect(getByTestId('edit_post.quick_actions.image_action')).toBeVisible();
+        expect(getByTestId('edit_post.quick_actions.camera_action')).toBeVisible();
+        expect(queryByTestId('edit_post.quick_actions.slash_input_action')).toBeNull();
+        expect(queryByTestId('edit_post.quick_actions.post_priority_action')).toBeNull();
+    });
 });
