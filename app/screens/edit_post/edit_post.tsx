@@ -1,9 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Keyboard, type LayoutChangeEvent, Platform, SafeAreaView, View, StyleSheet} from 'react-native';
+import {Alert, Keyboard, type LayoutChangeEvent, Platform, View, StyleSheet} from 'react-native';
+import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
 import {deletePost, editPost} from '@actions/remote/post';
 import Autocomplete from '@components/autocomplete';
@@ -14,7 +15,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
-import {useKeyboardOverlap} from '@hooks/device';
+import {useKeyboardOverlap, useKeyboardHeight} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
 import useFileUploadError from '@hooks/file_upload_error';
 import {useInputPropagation} from '@hooks/input';
@@ -41,6 +42,8 @@ const styles = StyleSheet.create({
     },
     container: {
         flex: 1,
+        borderWidth: 1,
+        borderColor: 'green',
     },
     loader: {
         flex: 1,
@@ -96,6 +99,7 @@ const EditPost = ({
     const theme = useTheme();
     const intl = useIntl();
     const serverUrl = useServerUrl();
+    const keyboardHeight = useKeyboardHeight();
 
     const shouldDeleteOnSave = !postMessage && canDelete && !hasFilesAttached;
     const {uploadError, newUploadError} = useFileUploadError();
@@ -369,6 +373,11 @@ const EditPost = ({
 
     const [animatedAutocompletePosition, animatedAutocompleteAvailableSpace] = useAutocompleteDefaultAnimatedValues(autocompletePosition, autocompleteAvailableSpace);
 
+    // Exclude bottom edge from SafeAreaView when keyboard is visible to prevent gap between attachments and keyboard.
+    const safeAreaEdges: Edge[] = useMemo(() => {
+        return keyboardHeight > 0 ? ['top', 'left', 'right'] : ['top', 'left', 'right', 'bottom'];
+    }, [keyboardHeight]);
+
     if (isUpdating) {
         return (
             <View
@@ -389,6 +398,7 @@ const EditPost = ({
             <SafeAreaView
                 testID='edit_post.screen'
                 style={styles.container}
+                edges={safeAreaEdges}
                 onLayout={onLayout}
                 nativeID={SecurityManager.getShieldScreenId(componentId)}
             >
