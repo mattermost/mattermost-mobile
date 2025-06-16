@@ -585,6 +585,7 @@ describe('newConnection', () => {
                 }
             },
             send: jest.fn(),
+            sessionID: 'sessionID',
         }));
 
         connection = await newConnection(
@@ -600,7 +601,7 @@ describe('newConnection', () => {
 
         res = connection.waitForPeerConnection();
         jest.runAllTimers();
-        await expect(res).resolves.not.toThrow();
+        await expect(res).resolves.toBe('sessionID');
         jest.useRealTimers();
     });
 });
