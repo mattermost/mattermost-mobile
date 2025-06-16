@@ -178,6 +178,7 @@ const EditPost = ({
         const largeFile = newFiles.find((file) => file.size > maxFileSize);
         if (largeFile) {
             newUploadError(fileSizeWarning(intl, maxFileSize));
+            return;
         }
 
         setPostFiles((prevFiles) => [...prevFiles, ...newFiles]);

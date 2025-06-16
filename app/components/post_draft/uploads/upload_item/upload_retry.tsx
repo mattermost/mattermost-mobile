@@ -31,6 +31,7 @@ export default function UploadRetry({
             style={style.failed}
             onPress={onPress}
             type='opacity'
+            testID='retry-button'
         >
             <CompassIcon
                 name='refresh'

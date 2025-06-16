@@ -71,6 +71,7 @@ export default function UploadRemove({
             style={style.tappableContainer}
             onPress={onPress}
             type={'opacity'}
+            testID={`remove-button-${fileId}`}
         >
             <View style={style.removeButton}>
                 <CompassIcon
