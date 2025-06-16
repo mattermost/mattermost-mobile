@@ -42,8 +42,6 @@ const styles = StyleSheet.create({
     },
     container: {
         flex: 1,
-        borderWidth: 1,
-        borderColor: 'green',
     },
     loader: {
         flex: 1,
