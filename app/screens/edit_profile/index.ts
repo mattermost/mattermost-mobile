@@ -37,13 +37,14 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         customFields = observeCustomProfileFields(database);
 
         // Convert attributes to the format expected by the component
+        // NOTE: useDisplayType = false to keep raw option IDs for editing
         formattedCustomAttributes = combineLatest([rawCustomAttributes, customFields]).pipe(
             switchMap(([attributes, fields]) => {
                 if (!attributes?.length) {
                     return of$([] as CustomAttribute[]);
                 }
 
-                return of$(convertProfileAttributesToCustomAttributes(attributes, fields, sortCustomProfileAttributes));
+                return of$(convertProfileAttributesToCustomAttributes(attributes, fields, sortCustomProfileAttributes, false));
             }),
             switchMap((converted) => of$(convertToAttributesMap(converted))),
         );
