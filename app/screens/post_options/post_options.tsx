@@ -167,12 +167,6 @@ const PostOptions = ({
                     canDelete={canDelete}
                 />
                 }
-                {canDelete &&
-                <DeletePostOption
-                    bottomSheetId={Screens.POST_OPTIONS}
-                    combinedPost={combinedPost}
-                    post={post}
-                />}
                 {!isSystemPost && hasFiles &&
                 <ShareFileOption
                     bottomSheetId={Screens.POST_OPTIONS}
@@ -180,6 +174,12 @@ const PostOptions = ({
                     sourceScreen={sourceScreen}
                 />
                 }
+                {canDelete &&
+                <DeletePostOption
+                    bottomSheetId={Screens.POST_OPTIONS}
+                    combinedPost={combinedPost}
+                    post={post}
+                />}
                 {shouldShowBindings &&
                 <AppBindingsPostOptions
                     bottomSheetId={Screens.POST_OPTIONS}
