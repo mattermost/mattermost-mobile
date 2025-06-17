@@ -145,17 +145,13 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
             }
         } else if (!isCRTEnabled || !post.root_id) {
             const hasMentions = msg.data.mentions?.includes(currentUserId);
-            const hasUrgentMentions = post.metadata.priority?.priority === 'urgent';
             preparedMyChannelHack(myChannel);
             const {member: unreadAt} = await markChannelAsUnread(
                 serverUrl,
-                {
-                    channelId: post.channel_id,
-                    messageCount: myChannel.messageCount + 1,
-                    mentionsCount: myChannel.mentionsCount + (hasMentions ? 1 : 0),
-                    lastViewed: myChannel.lastViewedAt,
-                    urgentMentionCount: myChannel.urgentMentionCount + (hasUrgentMentions ? 1 : 0),
-                },
+                post.channel_id,
+                myChannel.messageCount + 1,
+                myChannel.mentionsCount + (hasMentions ? 1 : 0),
+                myChannel.lastViewedAt,
                 true,
             );
             if (unreadAt) {
@@ -322,19 +318,12 @@ export async function handlePostUnread(serverUrl: string, msg: WebSocketMessage)
     }
 
     if (!myChannel?.manuallyUnread) {
-        const {channels, memberships} = await fetchMyChannel(serverUrl, teamId, channelId, true);
+        const {channels} = await fetchMyChannel(serverUrl, teamId, channelId, true);
         const channel = channels?.[0];
-        const membership = memberships?.[0];
         const postNumber = isCRTEnabled ? channel?.total_msg_count_root : channel?.total_msg_count;
         const delta = postNumber ? postNumber - messages : messages;
 
-        markChannelAsUnread(serverUrl, {
-            channelId,
-            messageCount: delta,
-            mentionsCount: mentions,
-            urgentMentionCount: membership?.urgent_mention_count || 0,
-            lastViewed: lastViewedAt,
-        });
+        markChannelAsUnread(serverUrl, channelId, delta, mentions, lastViewedAt);
     }
 }
 

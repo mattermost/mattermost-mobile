@@ -395,16 +395,7 @@ describe('WebSocket Post Actions', () => {
 
             await handlePostUnread(serverUrl, msg);
 
-            expect(mockedMarkChannelAsUnread).toHaveBeenCalledWith(
-                serverUrl,
-                {
-                    channelId: 'channel1',
-                    messageCount: 1,
-                    mentionsCount: 1,
-                    lastViewed: 12345,
-                    urgentMentionCount: 0,
-                },
-            );
+            expect(mockedMarkChannelAsUnread).toHaveBeenCalledWith(serverUrl, 'channel1', 1, 1, 12345);
         });
 
         it('should handle post unread event - CRT enabled, manually marked read', async () => {

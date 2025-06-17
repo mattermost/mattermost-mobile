@@ -632,33 +632,13 @@ describe('markChannelAsUnread', () => {
     });
 
     it('handle not found database', async () => {
-        const {member, error} = await markChannelAsUnread(
-            'foo',
-            {
-                channelId,
-                messageCount: 10,
-                mentionsCount: 1,
-                lastViewed: 123,
-                urgentMentionCount: 0,
-            },
-            false,
-        );
+        const {member, error} = await markChannelAsUnread('foo', channelId, 10, 1, 123, false);
         expect(error).toBeTruthy();
         expect(member).toBeUndefined();
     });
 
     it('handle no member', async () => {
-        const {member, error} = await markChannelAsUnread(
-            serverUrl,
-            {
-                channelId,
-                messageCount: 10,
-                mentionsCount: 1,
-                lastViewed: 123,
-                urgentMentionCount: 0,
-            },
-            false,
-        );
+        const {member, error} = await markChannelAsUnread(serverUrl, channelId, 10, 1, 123, false);
         expect(error).toBe('not a member');
         expect(member).toBeUndefined();
     });
@@ -667,46 +647,13 @@ describe('markChannelAsUnread', () => {
         await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
         await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
 
-        const {member, error} = await markChannelAsUnread(
-            serverUrl, {
-                channelId,
-                messageCount: 10,
-                mentionsCount: 1,
-                urgentMentionCount: 0,
-                lastViewed: 123,
-            },
-            false,
-        );
+        const {member, error} = await markChannelAsUnread(serverUrl, channelId, 10, 1, 123, false);
         expect(error).toBeUndefined();
         expect(member).toBeDefined();
         expect(member?.viewedAt).toBe(122);
         expect(member?.lastViewedAt).toBe(122);
         expect(member?.messageCount).toBe(10);
         expect(member?.mentionsCount).toBe(1);
-    });
-
-    it('mark channel as unread with with urgent mention count', async () => {
-        await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
-        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
-
-        const {member, error} = await markChannelAsUnread(
-            serverUrl,
-            {
-                channelId,
-                messageCount: 10,
-                mentionsCount: 1,
-                lastViewed: 123,
-                urgentMentionCount: 1,
-            },
-            false,
-        );
-        expect(error).toBeUndefined();
-        expect(member).toBeDefined();
-        expect(member?.viewedAt).toBe(122);
-        expect(member?.lastViewedAt).toBe(122);
-        expect(member?.messageCount).toBe(10);
-        expect(member?.mentionsCount).toBe(1);
-        expect(member?.urgentMentionCount).toBe(1);
     });
 });
 
