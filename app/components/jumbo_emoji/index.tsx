@@ -6,10 +6,12 @@ import Renderer from 'commonmark-react-renderer';
 import React, {type ReactElement, useRef} from 'react';
 import {Platform, type StyleProp, Text, type TextStyle, View} from 'react-native';
 
+import CompassIcon from '@components/compass_icon';
 import Emoji from '@components/emoji';
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {blendColors, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 type JumboEmojiProps = {
     baseTextStyle: StyleProp<TextStyle>;
@@ -21,7 +23,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     // Android has trouble giving text transparency depending on how it's nested,
     // so we calculate the resulting colour manually
     const editedOpacity = Platform.select({
-        ios: 0.3,
+        ios: 0.56,
         android: 1.0,
     });
     const editedColor = Platform.select({
@@ -38,6 +40,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         editedIndicatorText: {
             color: editedColor,
             opacity: editedOpacity,
+            fontStyle: 'italic',
+            ...typography('Body', 25, 'Regular'),
         },
         jumboEmoji: {
             fontSize: 50,
@@ -83,7 +87,7 @@ const JumboEmoji = ({baseTextStyle, isEdited, value}: JumboEmojiProps) => {
     const renderEditedIndicator = ({context}: {context: string[]}) => {
         let spacer = '';
         if (context[0] === 'paragraph') {
-            spacer = ' ';
+            spacer = '  ';
         }
 
         const styles = [
@@ -97,10 +101,17 @@ const JumboEmoji = ({baseTextStyle, isEdited, value}: JumboEmojiProps) => {
                 testID='edited_indicator'
             >
                 {spacer}
-                <FormattedText
-                    id='post_message_view.edited'
-                    defaultMessage='(edited)'
+                <CompassIcon
+                    name='pencil-outline'
+                    size={16}
+                    color={theme.centerChannelColor}
                 />
+                <Text style={{marginLeft: 2}}>
+                    <FormattedText
+                        id='post_message_view.edited'
+                        defaultMessage='Edited'
+                    />
+                </Text>
             </Text>
         );
     };
