@@ -108,7 +108,7 @@ jobs:
           script: |
             const prNumber = '${{ github.event.pull_request.number }}';
             const installUrl = `itms-services://?action=download-manifest&url=https://pr-builds.mattermost.com/mattermost-mobile/${prNumber}/merge/Mattermost_Beta.plist`;
-            const message = `### iOS PR Build\n\nYou can install the iOS app directly from:\n- [Install from PR Builds](${installUrl})\n\nCommit: ${{ env.CHECKOUT_REF }}`;
+            const message = `### iOS PR Build\n\nYou can install the iOS app directly from:\n- [Install from PR Builds](${installUrl})\n- Or copy this URL: \`${installUrl}\`\n\nCommit: ${{ env.CHECKOUT_REF }}`;
 
             github.rest.issues.createComment({
               issue_number: context.issue.number,
