@@ -36,23 +36,27 @@ const ShareFileOption = ({post}: Props) => {
                 return;
             }
 
-            const file = files[0];
-            const fileInfo = file.toFileInfo(post.userId);
+            const filePaths: string[] = [];
+            for (const file of files) {
+                const fileInfo = file.toFileInfo(post.userId);
+                const path = getLocalFilePathFromFile(serverUrl, fileInfo);
+                if (!path) {
+                    continue;
+                }
 
-            const path = getLocalFilePathFromFile(serverUrl, fileInfo);
-            if (!path) {
-                return;
+                const response = await downloadFile(serverUrl, fileInfo.id!, path);
+                if (response.data?.path) {
+                    const filePath = response.data.path as string;
+                    updateLocalFilePath(serverUrl, fileInfo.id!, filePath);
+                    filePaths.push(pathWithPrefix('file://', filePath));
+                }
             }
 
-            const response = await downloadFile(serverUrl, fileInfo.id!, path);
-            if (response.data?.path) {
-                const filePath = response.data.path as string;
-                updateLocalFilePath(serverUrl, fileInfo.id!, filePath);
-
+            if (filePaths.length > 0) {
                 await Share.open({
                     message: '',
                     title: '',
-                    url: pathWithPrefix('file://', filePath),
+                    urls: filePaths,
                     showAppsToView: true,
                 });
             }
