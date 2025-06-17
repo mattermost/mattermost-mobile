@@ -48,11 +48,10 @@ const DisplayTheme = ({allowedThemeKeys, componentId, currentTeamId, currentUser
         const differentTheme = theme.type?.toLowerCase() !== newTheme?.toLowerCase();
 
         if (!differentTheme) {
-            close();
             return;
         }
         setThemePreference();
-    }, [close, newTheme, setThemePreference, theme.type]);
+    }, [newTheme, setThemePreference, theme.type]);
 
     const onAndroidBack = () => {
         setThemePreference();
