@@ -52,11 +52,7 @@ const UserInfo = ({
             const fetchFromServer = async () => {
                 const reqTime = Date.now();
                 lastRequest.current = reqTime;
-                const {attributes, error} = await fetchCustomProfileAttributes(serverUrl, user.id, true);
-                if (!error && lastRequest.current === reqTime && Object.keys(attributes).length > 0) {
-                    const attributesList = Object.values(attributes).sort(sortCustomProfileAttributes);
-                    setCustomAttributes(attributesList);
-                }
+                fetchCustomProfileAttributes(serverUrl, user.id, true);
             };
 
             fetchFromServer();
