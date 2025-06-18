@@ -5,7 +5,7 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {Platform, useWindowDimensions, View, type LayoutChangeEvent} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {Navigation} from 'react-native-navigation';
-import Animated, {useAnimatedStyle, useReducedMotion, useSharedValue, withTiming} from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import FormattedText from '@components/formatted_text';
@@ -14,6 +14,7 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import {useScreenTransitionAnimation} from '@hooks/screen_transition_animation';
 import NetworkManager from '@managers/network_manager';
 import SecurityManager from '@managers/security_manager';
 import Background from '@screens/background';
@@ -86,8 +87,6 @@ const LoginOptions = ({
     const dimensions = useWindowDimensions();
     const defaultHeaderHeight = useDefaultHeaderHeight();
     const isTablet = useIsTablet();
-    const reducedMotion = useReducedMotion();
-    const translateX = useSharedValue(reducedMotion ? 0 : dimensions.width);
     const [contentFillScreen, setContentFillScreen] = useState(false);
     const numberSSOs = useMemo(() => {
         return Object.values(ssoOptions).filter((v) => v.enabled).length;
@@ -133,13 +132,6 @@ const LoginOptions = ({
         />
     );
 
-    const transform = useAnimatedStyle(() => {
-        const duration = Platform.OS === 'android' ? 250 : 350;
-        return {
-            transform: [{translateX: withTiming(translateX.value, {duration})}],
-        };
-    }, []);
-
     const dismiss = () => {
         dismissModal({componentId});
     };
@@ -164,23 +156,7 @@ const LoginOptions = ({
         return () => navigationEvents.remove();
     }, [closeButtonId, componentId, serverUrl]);
 
-    useEffect(() => {
-        translateX.value = 0;
-    }, []);
-
-    useEffect(() => {
-        const listener = {
-            componentDidAppear: () => {
-                translateX.value = 0;
-            },
-            componentDidDisappear: () => {
-                translateX.value = reducedMotion ? 0 : -dimensions.width;
-            },
-        };
-        const unsubscribe = Navigation.events().registerComponentListener(listener, Screens.LOGIN);
-
-        return () => unsubscribe.remove();
-    }, [dimensions, translateX, reducedMotion]);
+    const animatedStyles = useScreenTransitionAnimation(Screens.LOGIN);
 
     useNavButtonPressed(closeButtonId || '', componentId, dismiss, []);
     useAndroidHardwareBackHandler(componentId, pop);
@@ -218,7 +194,7 @@ const LoginOptions = ({
             nativeID={SecurityManager.getShieldScreenId(componentId, false, true)}
         >
             <Background theme={theme}/>
-            <AnimatedSafeArea style={[styles.container, transform]}>
+            <AnimatedSafeArea style={[styles.container, animatedStyles]}>
                 <KeyboardAwareScrollView
                     bounces={true}
                     contentContainerStyle={[styles.innerContainer, additionalContainerStyle]}

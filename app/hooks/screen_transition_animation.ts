@@ -1,5 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import {useEffect} from 'react';
 import {Platform, useWindowDimensions} from 'react-native';
 import {Navigation} from 'react-native-navigation';
@@ -25,14 +26,14 @@ export const useScreenTransitionAnimation = (componentId: string) => {
                 translateX.value = 0;
             },
             componentDidDisappear: () => {
-                translateX.value = -width;
+                translateX.value = reducedMotion ? 0 : -width;
             },
         };
 
         const unsubscribe = Navigation.events().registerComponentListener(listener, componentId);
 
         return () => unsubscribe.remove();
-    }, [componentId, translateX, width]);
+    }, [componentId, translateX, width, reducedMotion]);
 
     return animatedStyle;
 };
