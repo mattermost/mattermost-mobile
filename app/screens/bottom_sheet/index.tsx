@@ -108,6 +108,11 @@ const BottomSheet = ({
     const interaction = useRef<Handle>();
     const timeoutRef = useRef<NodeJS.Timeout>();
 
+    const animationConfigs = useMemo(() => ({
+        ...animatedConfig,
+        reduceMotion: reducedMotion ? ReduceMotion.Always : ReduceMotion.Never,
+    }), [reducedMotion]);
+
     useEffect(() => {
         interaction.current = InteractionManager.createInteractionHandle();
     }, []);
@@ -221,7 +226,7 @@ const BottomSheet = ({
             backdropComponent={renderBackdrop}
             onAnimate={handleAnimationStart}
             onChange={handleChange}
-            animationConfigs={{...animatedConfig, reduceMotion: reducedMotion ? ReduceMotion.Always : ReduceMotion.Never}}
+            animationConfigs={animationConfigs}
             handleComponent={Indicator}
             style={styles.bottomSheet}
             backgroundStyle={bottomSheetBackgroundStyle}
