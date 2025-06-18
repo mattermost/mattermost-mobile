@@ -168,14 +168,14 @@ public class ShareExtension: NSObject {
     
     func getErrorMessage(error_identifier: String = NETWORK_ERROR_I18N_ID) -> String {
         if error_identifier == FILE_ERROR_I18N_ID {
-            return NSLocalizedString(FILE_ERROR_I18N_ID, comment: FILE_ERROR_MESSAGE)
+            return NSLocalizedString(FILE_ERROR_I18N_ID, bundle: Bundle.main, comment: FILE_ERROR_MESSAGE)
         }
-        return NSLocalizedString(NETWORK_ERROR_I18N_ID, comment: NETWORK_ERROR_MESSAGE)
+        return NSLocalizedString(NETWORK_ERROR_I18N_ID, bundle: Bundle.main, comment: NETWORK_ERROR_MESSAGE)
     }
     
     func scheduleFailNotification(timeout: Double = SHARE_TIMEOUT, error_id: String = NETWORK_ERROR_I18N_ID) -> String {
         let failNotification = UNMutableNotificationContent()
-        failNotification.title = NSLocalizedString("share_extension.notification.title", comment: "Share content failed")
+        failNotification.title = NSLocalizedString("share_extension.notification.title", bundle: Bundle.main, comment: "Share content failed")
         failNotification.body = getErrorMessage(error_identifier: error_id)
 
         let timeoutTrigger = UNTimeIntervalNotificationTrigger(timeInterval: timeout, repeats: false)
