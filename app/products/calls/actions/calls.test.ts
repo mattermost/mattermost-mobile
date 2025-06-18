@@ -28,6 +28,7 @@ import {
     userJoinedCall,
     getCurrentCall,
 } from '@calls/state';
+import * as StateActions from '@calls/state/actions';
 import {
     type Call,
     type CallsState,
@@ -86,7 +87,7 @@ jest.mock('@calls/connection/connection', () => ({
         disconnect: jest.fn((err?: Error) => onClose(err)),
         mute: jest.fn(),
         unmute: jest.fn(),
-        waitForPeerConnection: jest.fn(() => Promise.resolve()),
+        waitForPeerConnection: jest.fn(() => Promise.resolve('session-id')),
         initializeVoiceTrack: jest.fn(),
         sendReaction: jest.fn(),
     })),
@@ -119,6 +120,7 @@ jest.mock('react-native-navigation', () => ({
         pop: jest.fn(() => Promise.resolve({
             catch: jest.fn(),
         })),
+        setDefaultOptions: jest.fn(),
     },
 }));
 
@@ -257,6 +259,7 @@ describe('Actions.Calls', () => {
             return [useCallsState('server1'), useCurrentCall()];
         });
         addFakeCall('server1', 'channel-id');
+        const setCurrentCallConnectedMock = jest.spyOn(StateActions, 'setCurrentCallConnected');
 
         let response: { data?: string };
         await act(async () => {
@@ -264,6 +267,8 @@ describe('Actions.Calls', () => {
                 locale: 'en',
                 messages: {},
             }));
+
+            expect(setCurrentCallConnectedMock).toHaveBeenCalledWith('channel-id', 'session-id');
 
             // manually call newCurrentConnection because newConnection is mocked
             newCurrentCall('server1', 'channel-id', 'myUserId');
@@ -971,7 +976,14 @@ describe('Actions.Calls', () => {
             mockClient.getCallForChannel.mockReturnValueOnce({
                 call: {
                     channel_id: 'channel-1',
-                    users: ['user-1'],
+                    sessions: [
+                        {
+                            session_id: 'session-1',
+                            user_id: 'user-1',
+                            unmuted: false,
+                            raised_hand: 0,
+                        },
+                    ],
                 },
                 enabled: true});
             const successResult = await CallsActions.loadCallForChannel('server1', 'channel-1');

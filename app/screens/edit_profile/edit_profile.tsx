@@ -8,7 +8,8 @@ import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {updateLocalUser} from '@actions/local/user';
-import {setDefaultProfileImage, updateMe, uploadUserProfileImage, fetchCustomAttributes, updateCustomAttributes} from '@actions/remote/user';
+import {fetchCustomProfileAttributes, updateCustomProfileAttributes} from '@actions/remote/custom_profile';
+import {setDefaultProfileImage, updateMe, uploadUserProfileImage} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
 import TabletTitle from '@components/tablet_title';
 import {Events} from '@constants';
@@ -18,6 +19,7 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import SecurityManager from '@managers/security_manager';
 import {dismissModal, popTopScreen, setButtons} from '@screens/navigation';
+import {logError} from '@utils/log';
 import {preventDoubleTap} from '@utils/tap';
 
 import ProfileForm, {CUSTOM_ATTRS_PREFIX} from './components/form';
@@ -47,6 +49,7 @@ const CUSTOM_ATTRS_PREFIX_NAME = `${CUSTOM_ATTRS_PREFIX}.`;
 const EditProfile = ({
     componentId, currentUser, isModal, isTablet,
     lockedFirstName, lockedLastName, lockedNickname, lockedPosition, lockedPicture, enableCustomAttributes,
+    customAttributesSet, customFields,
 }: EditProfileProps) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
@@ -67,6 +70,7 @@ const EditProfile = ({
     const [error, setError] = useState<unknown>();
     const [usernameError, setUsernameError] = useState<unknown>();
     const [updating, setUpdating] = useState(false);
+    const lastRequest = useRef(0);
 
     const buttonText = intl.formatMessage({id: 'mobile.account.settings.save', defaultMessage: 'Save'});
     const rightButton = useMemo(() => {
@@ -125,14 +129,25 @@ const EditProfile = ({
             if (!currentUser) {
                 return;
             }
-            const {error: fetchError, attributes} = await fetchCustomAttributes(serverUrl, currentUser.id);
-            if (!fetchError && attributes) {
-                setUserInfo((prev: UserInfo) => ({...prev, customAttributes: attributes} as UserInfo));
+
+            if (enableCustomAttributes) {
+                setUserInfo((prev) => ({
+                    ...prev,
+                    customAttributes: customAttributesSet || {},
+                }));
+            }
+
+            // Then fetch from server for latest data
+            const reqTime = Date.now();
+            lastRequest.current = reqTime;
+            const {error: fetchError, attributes} = await fetchCustomProfileAttributes(serverUrl, currentUser.id);
+            if (!fetchError && attributes && lastRequest.current === reqTime) {
+                setUserInfo((prev) => ({...prev, customAttributes: attributes}));
             }
         };
 
         loadCustomAttributes();
-    }, [currentUser, serverUrl]);
+    }, [currentUser, serverUrl, enableCustomAttributes, customAttributesSet]);
 
     const submitUser = useCallback(preventDoubleTap(async () => {
         if (!currentUser) {
@@ -172,10 +187,11 @@ const EditProfile = ({
                 }
 
                 // Update custom attributes if changed
-                if (userInfo.customAttributes) {
-                    const {error: attrError} = await updateCustomAttributes(serverUrl, userInfo.customAttributes);
+                if (userInfo.customAttributes && enableCustomAttributes) {
+                    const {error: attrError} = await updateCustomProfileAttributes(serverUrl, currentUser.id, userInfo.customAttributes);
                     if (attrError) {
-                        resetScreen(attrError);
+                        logError('Error updating custom attributes', attrError);
+                        resetScreenForProfileError(attrError);
                         return;
                     }
                 }
@@ -200,7 +216,7 @@ const EditProfile = ({
         const update = {...userInfo};
         if (fieldKey.startsWith(CUSTOM_ATTRS_PREFIX_NAME)) {
             const attrKey = fieldKey.slice(CUSTOM_ATTRS_PREFIX_NAME.length);
-            update.customAttributes = {...update.customAttributes, [attrKey]: {id: attrKey, name: userInfo.customAttributes[attrKey].name, value, sort_order: userInfo.customAttributes[attrKey].sort_order}};
+            update.customAttributes = {...update.customAttributes, [attrKey]: {id: attrKey, name: userInfo.customAttributes[attrKey].name, value, type: userInfo.customAttributes[attrKey].type, sort_order: userInfo.customAttributes[attrKey].sort_order}};
         } else {
             switch (fieldKey) {
             // typescript doesn't like to do update[fieldkey] as it might containg a customAttribute case
@@ -291,6 +307,7 @@ const EditProfile = ({
                 userInfo={userInfo}
                 submitUser={submitUser}
                 enableCustomAttributes={enableCustomAttributes}
+                customFields={customFields}
             />
         </KeyboardAwareScrollView>
     ) : null;

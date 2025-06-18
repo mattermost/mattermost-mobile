@@ -6,6 +6,7 @@ import React from 'react';
 
 import {addSearchToTeamSearchHistory} from '@actions/local/team';
 import {searchPosts, searchFiles} from '@actions/remote/search';
+import useTabs from '@hooks/use_tabs';
 import {bottomSheet} from '@screens/navigation';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
@@ -47,6 +48,11 @@ jest.mock('@mattermost/hardware-keyboard', () => ({
 
 jest.mock('@screens/navigation', () => ({
     bottomSheet: jest.fn(),
+}));
+
+jest.mock('@hooks/use_tabs', () => ({
+    __esModule: true,
+    default: jest.fn(jest.requireActual('@hooks/use_tabs').default),
 }));
 
 describe('SearchScreen', () => {
@@ -180,5 +186,22 @@ describe('SearchScreen', () => {
                 'test search',
             );
         });
+    });
+
+    it('initializes with correct tabs configuration', () => {
+        renderWithEverything(
+            <SearchScreen {...baseProps}/>,
+            {database},
+        );
+
+        expect(useTabs).toHaveBeenCalledWith(
+            'MESSAGES',
+            [
+                expect.objectContaining({id: 'MESSAGES', name: expect.objectContaining({defaultMessage: 'Messages'})}),
+                expect.objectContaining({id: 'FILES', name: expect.objectContaining({defaultMessage: 'Files'})}),
+            ],
+            undefined,
+            expect.any(String),
+        );
     });
 });

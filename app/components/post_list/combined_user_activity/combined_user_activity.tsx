@@ -22,11 +22,13 @@ import {secureGetFromRecord} from '@utils/types';
 import LastUsers from './last_users';
 import {postTypeMessages} from './messages';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 type Props = {
     canDelete: boolean;
     currentUserId?: string;
     currentUsername?: string;
-    location: string;
+    location: AvailableScreens;
     post: Post | null;
     showJoinLeave: boolean;
     testID?: string;

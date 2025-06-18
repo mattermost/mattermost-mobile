@@ -326,18 +326,6 @@ describe('handleWebSocketEvent', () => {
         expect(calls.handleCallChannelDisabled).toHaveBeenCalledWith(serverUrl, msg);
     });
 
-    it('should handle CALLS_USER_CONNECTED event', async () => {
-        msg.event = WebsocketEvents.CALLS_USER_CONNECTED;
-        await handleWebSocketEvent(serverUrl, msg);
-        expect(calls.handleCallUserConnected).toHaveBeenCalledWith(serverUrl, msg);
-    });
-
-    it('should handle CALLS_USER_DISCONNECTED event', async () => {
-        msg.event = WebsocketEvents.CALLS_USER_DISCONNECTED;
-        await handleWebSocketEvent(serverUrl, msg);
-        expect(calls.handleCallUserDisconnected).toHaveBeenCalledWith(serverUrl, msg);
-    });
-
     it('should handle CALLS_USER_JOINED event', async () => {
         msg.event = WebsocketEvents.CALLS_USER_JOINED;
         await handleWebSocketEvent(serverUrl, msg);
@@ -414,12 +402,6 @@ describe('handleWebSocketEvent', () => {
         msg.event = WebsocketEvents.CALLS_USER_REACTED;
         await handleWebSocketEvent(serverUrl, msg);
         expect(calls.handleCallUserReacted).toHaveBeenCalledWith(serverUrl, msg);
-    });
-
-    it('should handle CALLS_RECORDING_STATE event', async () => {
-        msg.event = WebsocketEvents.CALLS_RECORDING_STATE;
-        await handleWebSocketEvent(serverUrl, msg);
-        expect(calls.handleCallRecordingState).toHaveBeenCalledWith(serverUrl, msg);
     });
 
     it('should handle CALLS_JOB_STATE event', async () => {

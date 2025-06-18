@@ -30,6 +30,7 @@ import {
     useCallsConfig,
     useCallsState,
     useChannelsWithCalls,
+    setCurrentCallConnected,
     useCurrentCall,
     useGlobalCallsState,
     useIncomingCalls,
@@ -113,6 +114,7 @@ jest.mock('react-native-navigation', () => ({
         pop: jest.fn(() => Promise.resolve({
             catch: jest.fn(),
         })),
+        setDefaultOptions: jest.fn(),
     },
 }));
 
@@ -1625,6 +1627,39 @@ describe('useCallsState', () => {
         await act(async () => setCallForChannel('server1', 'channel-3', undefined, true));
         assert.deepEqual(result.current[0].enabled['channel-3'], true);
         assert.deepEqual(result.current[1], {'channel-2': true});
+    });
+
+    it('setCurrentCallConnected', () => {
+        const initialCurrentCallState: CurrentCall = {
+            ...DefaultCurrentCall,
+            serverUrl: 'server1',
+            myUserId: 'myUserId',
+            connected: false,
+            mySessionId: '',
+            ...call1,
+        };
+
+        // setup
+        const {result} = renderHook(() => useCurrentCall());
+        act(() => {
+            setCurrentCall(initialCurrentCallState);
+        });
+        assert.deepEqual(result.current, initialCurrentCallState);
+
+        // test
+        act(() => setCurrentCallConnected('channel-1', 'session-test-id'));
+        assert.deepEqual(result.current, {
+            ...initialCurrentCallState,
+            connected: true,
+            mySessionId: 'session-test-id',
+        });
+
+        // test with wrong channel ID (should not change state)
+        act(() => {
+            setCurrentCall(initialCurrentCallState);
+            setCurrentCallConnected('wrong-channel', 'session-test-id');
+        });
+        assert.deepEqual(result.current, initialCurrentCallState);
     });
 
     it('captions', () => {

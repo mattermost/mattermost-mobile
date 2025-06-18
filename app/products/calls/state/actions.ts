@@ -451,6 +451,20 @@ export const newCurrentCall = (serverUrl: string, channelId: string, myUserId: s
     });
 };
 
+export const setCurrentCallConnected = (channelId: string, sessionId: string) => {
+    const currentCall = getCurrentCall();
+    if (!currentCall || currentCall.channelId !== channelId) {
+        return;
+    }
+
+    const nextCurrentCall: CurrentCall = {
+        ...currentCall,
+        connected: true,
+        mySessionId: sessionId,
+    };
+    setCurrentCall(nextCurrentCall);
+};
+
 export const myselfLeftCall = () => {
     setCurrentCall(null);
 

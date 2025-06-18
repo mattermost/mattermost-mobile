@@ -11,6 +11,6 @@ export function getBaseReportRequest(start: number, end: number): {body: Perform
             histograms: [],
             counters: [],
         },
-        headers: {},
+        headers: {Accept: 'application/json'},
     };
 }

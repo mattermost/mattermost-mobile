@@ -3,21 +3,22 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, Text, TouchableOpacity, useWindowDimensions, View} from 'react-native';
+import {Text, TouchableOpacity, useWindowDimensions, View} from 'react-native';
 
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 import FormattedText from '@components/formatted_text';
-import {Screens} from '@constants';
-import {openAsBottomSheet} from '@screens/navigation';
-import {preventDoubleTap} from '@utils/tap';
+import {usePreventDoubleTap} from '@hooks/utils';
+import {openUserProfileModal} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type HeaderDisplayNameProps = {
     channelId: string;
     commentCount: number;
     displayName?: string;
-    location: string;
+    location: AvailableScreens;
     rootPostAuthor?: string;
     shouldRenderReplyButton?: boolean;
     theme: Theme;
@@ -33,7 +34,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         displayName: {
             color: theme.centerChannelColor,
             flexGrow: 1,
-            marginRight: 5,
             ...typography('Body', 200, 'SemiBold'),
         },
         displayNameCustomEmojiWidth: {
@@ -71,15 +71,15 @@ const HeaderDisplayName = ({
     const intl = useIntl();
     const style = getStyleSheet(theme);
 
-    const onPress = useCallback(preventDoubleTap(() => {
-        const screen = Screens.USER_PROFILE;
-        const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
-        const closeButtonId = 'close-user-profile';
-        const props = {closeButtonId, userId, channelId, location, userIconOverride, usernameOverride};
-
-        Keyboard.dismiss();
-        openAsBottomSheet({screen, title, theme, closeButtonId, props});
-    }), [intl.locale, channelId, userIconOverride, userId, usernameOverride, theme]);
+    const onPress = usePreventDoubleTap(useCallback(() => {
+        openUserProfileModal(intl, theme, {
+            location,
+            userId,
+            channelId,
+            userIconOverride,
+            usernameOverride,
+        });
+    }, [intl, userId, channelId, location, userIconOverride, usernameOverride, theme]));
 
     const calcNameWidth = () => {
         const isLandscape = dimensions.width > dimensions.height;

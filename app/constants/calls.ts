@@ -12,13 +12,6 @@ const RequiredServer = {
     PATCH_VERSION: 0,
 };
 
-const MultiSessionCallsVersion = {
-    FULL_VERSION: '0.21.0',
-    MAJOR_VERSION: 0,
-    MIN_VERSION: 21,
-    PATCH_VERSION: 0,
-};
-
 const HostControlsCallsVersion = {
     FULL_VERSION: '0.27.0',
     MAJOR_VERSION: 0,
@@ -59,7 +52,6 @@ const JOB_TYPE_CAPTIONING = 'captioning';
 export default {
     RefreshConfigMillis,
     RequiredServer,
-    MultiSessionCallsVersion,
     HostControlsCallsVersion,
     PluginId,
     REACTION_TIMEOUT,

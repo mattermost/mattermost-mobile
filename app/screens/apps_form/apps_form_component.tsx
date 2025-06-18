@@ -1,15 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Button} from '@rneui/base';
 import React, {useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, ScrollView, Text, View} from 'react-native';
+import {Keyboard, ScrollView, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {handleGotoLocation} from '@actions/remote/command';
+import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
 import Markdown from '@components/markdown';
+import {Screens} from '@constants';
 import {AppCallResponseTypes} from '@constants/apps';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -17,7 +18,6 @@ import useDidUpdate from '@hooks/did_update';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import SecurityManager from '@managers/security_manager';
 import {filterEmptyOptions} from '@utils/apps';
-import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {checkDialogElementForError, checkIfErrorsMatchElements} from '@utils/integrations';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -382,9 +382,6 @@ function AppsFormComponent({
     useNavButtonPressed(CLOSE_BUTTON_ID, componentId, close, [close]);
     useNavButtonPressed(SUBMIT_BUTTON_ID, componentId, handleSubmit, [handleSubmit]);
 
-    const submitButtonStyle = useMemo(() => buttonBackgroundStyle(theme, 'lg', 'primary', 'default'), [theme]);
-    const submitButtonTextStyle = useMemo(() => buttonTextStyle(theme, 'lg', 'primary', 'default'), [theme]);
-
     return (
         <SafeAreaView
             testID='interactive_dialog.screen'
@@ -401,7 +398,7 @@ function AppsFormComponent({
                             baseTextStyle={style.errorLabel}
                             textStyles={getMarkdownTextStyles(theme)}
                             blockStyles={getMarkdownBlockStyles(theme)}
-                            location=''
+                            location={Screens.APPS_FORM}
                             disableAtMentions={true}
                             value={error}
                             theme={theme}
@@ -443,10 +440,10 @@ function AppsFormComponent({
                         >
                             <Button
                                 onPress={() => handleSubmit(o.value)}
-                                buttonStyle={submitButtonStyle}
-                            >
-                                <Text style={submitButtonTextStyle}>{o.label}</Text>
-                            </Button>
+                                theme={theme}
+                                size='lg'
+                                text={o.label || ''}
+                            />
                         </View>
                     ))}
                 </View>
