@@ -3,16 +3,24 @@
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 
+import {queryUsersOnChannel} from '@queries/servers/channel';
 import {observeScheduledPostEnabled} from '@queries/servers/scheduled_post';
 
 import DraftInput from './draft_input';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
+type OwnProps = {
+    channelId: string;
+}
+
+const enhanced = withObservables(['channelId'], ({database, channelId}: WithDatabaseArgs & OwnProps) => {
     const scheduledPostsEnabled = observeScheduledPostEnabled(database);
+    const channelUsers = channelId ? queryUsersOnChannel(database, channelId).observe() : [];
+    
     return {
         scheduledPostsEnabled,
+        channelUsers,
     };
 });
 
