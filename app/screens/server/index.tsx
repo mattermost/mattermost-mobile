@@ -4,10 +4,10 @@
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, BackHandler, Platform, useWindowDimensions, View} from 'react-native';
+import {Alert, BackHandler, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {Navigation} from 'react-native-navigation';
-import Animated, {useAnimatedStyle, useReducedMotion, useSharedValue, withTiming} from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {doPing} from '@actions/remote/general';
@@ -16,6 +16,7 @@ import LocalConfig from '@assets/config.json';
 import AppVersion from '@components/app_version';
 import {Screens, Launch, DeepLink} from '@constants';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import {useScreenTransitionAnimation} from '@hooks/screen_transition_animation';
 import {t} from '@i18n';
 import {getServerCredentials} from '@init/credentials';
 import PushNotifications from '@init/push_notifications';
@@ -81,9 +82,6 @@ const Server = ({
 }: ServerProps) => {
     const intl = useIntl();
     const managedConfig = useManagedConfig<ManagedConfig>();
-    const dimensions = useWindowDimensions();
-    const reducedMotion = useReducedMotion();
-    const translateX = useSharedValue(animated && !reducedMotion ? dimensions.width : 0);
     const keyboardAwareRef = useRef<KeyboardAwareScrollView>(null);
     const [connecting, setConnecting] = useState(false);
     const [displayName, setDisplayName] = useState<string>('');
@@ -100,6 +98,8 @@ const Server = ({
         NetworkManager.invalidateClient(url);
         dismissModal({componentId});
     };
+
+    const animatedStyles = useScreenTransitionAnimation(componentId, animated);
 
     useEffect(() => {
         let serverName: string | undefined = defaultDisplayName || managedConfig?.serverName || LocalConfig.DefaultServerName;
@@ -151,19 +151,15 @@ const Server = ({
     useEffect(() => {
         const listener = {
             componentDidAppear: () => {
-                translateX.value = 0;
                 if (url) {
                     NetworkManager.invalidateClient(url);
                 }
-            },
-            componentDidDisappear: () => {
-                translateX.value = reducedMotion ? 0 : -dimensions.width;
             },
         };
         const unsubscribe = Navigation.events().registerComponentListener(listener, componentId);
 
         return () => unsubscribe.remove();
-    }, [componentId, dimensions, reducedMotion, translateX, url]);
+    }, [componentId, url]);
 
     useEffect(() => {
         const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -182,10 +178,6 @@ const Server = ({
         PushNotifications.registerIfNeeded();
 
         return () => backHandler.remove();
-    }, []);
-
-    useEffect(() => {
-        translateX.value = 0;
     }, []);
 
     useNavButtonPressed(closeButtonId || '', componentId, dismiss, []);
@@ -374,13 +366,6 @@ const Server = ({
         displayLogin(ping.url, data.config!, data.license!);
     };
 
-    const transform = useAnimatedStyle(() => {
-        const duration = Platform.OS === 'android' ? 250 : 350;
-        return {
-            transform: [{translateX: withTiming(translateX.value, {duration})}],
-        };
-    }, []);
-
     return (
         <View
             style={styles.flex}
@@ -390,7 +375,7 @@ const Server = ({
             <Background theme={theme}/>
             <AnimatedSafeArea
                 key={'server_content'}
-                style={[styles.flex, transform]}
+                style={[styles.flex, animatedStyles]}
             >
                 <KeyboardAwareScrollView
                     bounces={false}
