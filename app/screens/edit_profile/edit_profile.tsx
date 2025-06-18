@@ -19,6 +19,7 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import SecurityManager from '@managers/security_manager';
 import {dismissModal, popTopScreen, setButtons} from '@screens/navigation';
+import {logError} from '@utils/log';
 import {preventDoubleTap} from '@utils/tap';
 
 import ProfileForm, {CUSTOM_ATTRS_PREFIX} from './components/form';
@@ -48,7 +49,7 @@ const CUSTOM_ATTRS_PREFIX_NAME = `${CUSTOM_ATTRS_PREFIX}.`;
 const EditProfile = ({
     componentId, currentUser, isModal, isTablet,
     lockedFirstName, lockedLastName, lockedNickname, lockedPosition, lockedPicture, enableCustomAttributes,
-    customAttributesSet,
+    customAttributesSet, customFields,
 }: EditProfileProps) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
@@ -186,10 +187,11 @@ const EditProfile = ({
                 }
 
                 // Update custom attributes if changed
-                if (userInfo.customAttributes) {
+                if (userInfo.customAttributes && enableCustomAttributes) {
                     const {error: attrError} = await updateCustomProfileAttributes(serverUrl, currentUser.id, userInfo.customAttributes);
                     if (attrError) {
-                        resetScreen(attrError);
+                        logError('Error updating custom attributes', attrError);
+                        resetScreenForProfileError(attrError);
                         return;
                     }
                 }
@@ -214,7 +216,7 @@ const EditProfile = ({
         const update = {...userInfo};
         if (fieldKey.startsWith(CUSTOM_ATTRS_PREFIX_NAME)) {
             const attrKey = fieldKey.slice(CUSTOM_ATTRS_PREFIX_NAME.length);
-            update.customAttributes = {...update.customAttributes, [attrKey]: {id: attrKey, name: userInfo.customAttributes[attrKey].name, value, sort_order: userInfo.customAttributes[attrKey].sort_order}};
+            update.customAttributes = {...update.customAttributes, [attrKey]: {id: attrKey, name: userInfo.customAttributes[attrKey].name, value, type: userInfo.customAttributes[attrKey].type, sort_order: userInfo.customAttributes[attrKey].sort_order}};
         } else {
             switch (fieldKey) {
             // typescript doesn't like to do update[fieldkey] as it might containg a customAttribute case
@@ -305,6 +307,7 @@ const EditProfile = ({
                 userInfo={userInfo}
                 submitUser={submitUser}
                 enableCustomAttributes={enableCustomAttributes}
+                customFields={customFields}
             />
         </KeyboardAwareScrollView>
     ) : null;

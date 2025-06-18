@@ -8,7 +8,8 @@ import {General, Permissions, Preferences} from '@constants';
 import {Ringtone} from '@constants/calls';
 import {CustomStatusDurationEnum} from '@constants/custom_status';
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
-import {toTitleCase} from '@utils/helpers';
+import {safeParseJSON, toTitleCase} from '@utils/helpers';
+import {logError} from '@utils/log';
 
 import type {CustomProfileFieldModel, CustomProfileAttributeModel} from '@database/models/server';
 import type {CustomAttribute, CustomAttributeSet} from '@typings/api/custom_profile_attributes';
@@ -425,6 +426,84 @@ export const convertToAttributesMap = (attributesToConvert: CustomAttributeSet |
     return attributesMap;
 };
 
+export const getDisplayType = (field: CustomProfileFieldModel): string => {
+    if (field.type === 'text' && field.attrs?.value_type !== undefined && field.attrs.value_type !== '') {
+        return field.attrs.value_type;
+    }
+    return field.type;
+};
+
+/**
+ * Get the options from a select or multiselect field as a map of option IDs to option names
+ * @param field - The custom profile field
+ * @returns A record where keys are option IDs and values are option names
+ */
+export const getFieldOptions = (field: CustomProfileFieldModel): Record<string, string> => {
+    if (!field.attrs || (field.type !== 'select' && field.type !== 'multiselect')) {
+        return {};
+    }
+
+    const options = field.attrs.options as Array<{id: string; name: string}> | undefined;
+    if (!options || !Array.isArray(options)) {
+        return {};
+    }
+
+    const optionsMap: Record<string, string> = {};
+    options.forEach((option) => {
+        if (option.id && option.name) {
+            optionsMap[option.id] = option.name;
+        }
+    });
+
+    return optionsMap;
+};
+
+/**
+ * Convert option IDs to display values for select/multiselect fields
+ * @param value - The stored value (option ID or comma-separated IDs)
+ * @param fieldType - The field type ('select' or 'multiselect')
+ * @param optionsMap - Map of option IDs to option names
+ * @returns The display value with option names
+ */
+const convertOptionsToDisplayValue = (value: string, fieldType: string, optionsMap: Record<string, string>): string => {
+    if (!value || !optionsMap) {
+        return value;
+    }
+
+    if (fieldType === 'select') {
+        // Single select: just return the option name for the ID
+        return optionsMap[value] || value;
+    }
+
+    if (fieldType === 'multiselect') {
+        // Multi-select: handle comma-separated IDs or JSON array
+        let optionIds: string[] = [];
+
+        // Try parsing as JSON array first
+        try {
+            const parsed = JSON.parse(value);
+            if (Array.isArray(parsed)) {
+                optionIds = parsed;
+            } else {
+                // Fallback to comma-separated string
+                optionIds = value.split(',').map((id) => id.trim());
+            }
+        } catch {
+            // Fallback to comma-separated string
+            optionIds = value.split(',').map((id) => id.trim());
+        }
+
+        // Convert IDs to names and filter out empty values
+        const optionNames = optionIds.
+            map((id) => optionsMap[id] || id).
+            filter((name) => name.trim() !== '');
+
+        return optionNames.join(', ');
+    }
+
+    return value;
+};
+
 /**
  * Convert custom profile attributes to the UI-ready CustomAttribute format
  * @param attributes - Array of custom profile attribute models
@@ -436,26 +515,194 @@ export const convertProfileAttributesToCustomAttributes = (
     attributes: CustomProfileAttributeModel[] | null | undefined,
     fields: CustomProfileFieldModel[] | null | undefined,
     sortFn?: (a: CustomAttribute, b: CustomAttribute) => number,
+    useDisplayType: boolean = false,
 ): CustomAttribute[] => {
     if (!attributes?.length) {
         return [];
     }
 
     const fieldsMap = new Map();
+    const fieldOptionsMap = new Map<string, Record<string, string>>();
     fields?.forEach((field) => {
+        const customType = useDisplayType ? getDisplayType(field) : field.type;
         fieldsMap.set(field.id, {
             name: field.name,
+            type: customType,
             sort_order: field.attrs?.sort_order || Number.MAX_SAFE_INTEGER,
+            originalField: field,
+        });
+
+        // Store options map for select/multiselect fields
+        if (field.type === 'select' || field.type === 'multiselect') {
+            fieldOptionsMap.set(field.id, getFieldOptions(field));
+        }
+    });
+
+    const customAttrs = attributes.map((attr) => {
+        const field = fieldsMap.get(attr.fieldId);
+        let displayValue = attr.value;
+
+        // Convert option IDs to names for select/multiselect fields
+        if (field && (field.type === 'select' || field.type === 'multiselect')) {
+            const optionsMap = fieldOptionsMap.get(attr.fieldId);
+
+            if (optionsMap && Object.keys(optionsMap).length > 0) {
+                displayValue = convertOptionsToDisplayValue(attr.value, field.type, optionsMap);
+            }
+        }
+
+        return ({
+            id: attr.fieldId,
+            name: field?.name || attr.fieldId,
+            type: field?.type || 'text',
+            value: displayValue,
+            sort_order: field?.sort_order || Number.MAX_SAFE_INTEGER,
         });
     });
 
-    const customAttrs = attributes.map((attr) => ({
-        id: attr.fieldId,
-        name: fieldsMap.get(attr.fieldId)?.name || attr.fieldId,
-        value: attr.value,
-        sort_order: fieldsMap.get(attr.fieldId)?.sort_order || Number.MAX_SAFE_INTEGER,
-    }));
-
     // Sort if a sort function is provided
     return sortFn ? customAttrs.sort(sortFn) : customAttrs;
+};
+
+/**
+ * Convert display values back to option IDs for select/multiselect fields
+ * @param displayValue - The display value (option names)
+ * @param fieldType - The field type ('select' or 'multiselect')
+ * @param optionsMap - Map of option IDs to option names
+ * @returns The option IDs as string (select) or JSON array string (multiselect)
+ */
+export const convertDisplayValueToOptionIds = (displayValue: string, fieldType: string, optionsMap: Record<string, string>): string => {
+    if (!displayValue || !optionsMap) {
+        return displayValue;
+    }
+
+    // Create reverse map (option names to IDs)
+    const reverseOptionsMap: Record<string, string> = {};
+    Object.entries(optionsMap).forEach(([id, name]) => {
+        reverseOptionsMap[name] = id;
+    });
+
+    if (fieldType === 'select') {
+        // Single select: return the option ID for the name
+        return reverseOptionsMap[displayValue] || displayValue;
+    }
+
+    if (fieldType === 'multiselect') {
+        // Multi-select: split display names and convert to IDs
+        const optionNames = displayValue.split(',').map((name) => name.trim()).filter((name) => name !== '');
+        const optionIds = optionNames.map((name) => reverseOptionsMap[name] || name);
+        return JSON.stringify(optionIds);
+    }
+
+    return displayValue;
+};
+
+/**
+ * Get selected option IDs from a custom attribute value
+ * @param value - The stored value (option ID or JSON array string)
+ * @param fieldType - The field type ('select' or 'multiselect')
+ * @returns Array of selected option IDs
+ */
+export const getSelectedOptionIds = (value: string, fieldType: string): string[] => {
+    if (!value) {
+        return [];
+    }
+
+    if (fieldType === 'select') {
+        return [value];
+    }
+
+    if (fieldType === 'multiselect') {
+        try {
+            const parsed: unknown = safeParseJSON(value);
+            if (Array.isArray(parsed)) {
+                return parsed;
+            }
+
+            // Fallback to comma-separated string
+            return value.split(',').map((id) => id.trim()).filter((id) => id !== '');
+        } catch (error) {
+            return value.split(',').map((id) => id.trim()).filter((id) => id !== '');
+        }
+    }
+
+    return [];
+};
+
+/**
+ * Format field options for use with AutocompleteSelector component
+ * @param field - The custom profile field
+ * @returns Array of DialogOption objects for the selector
+ */
+export const formatOptionsForSelector = (field: CustomProfileFieldModel): DialogOption[] => {
+    if (!field.attrs || (field.type !== 'select' && field.type !== 'multiselect')) {
+        return [];
+    }
+
+    const options = field.attrs.options as Array<{id: string; name: string}> | undefined;
+    if (!options || !Array.isArray(options)) {
+        return [];
+    }
+
+    return options.map((option) => ({
+        text: option.name,
+        value: option.id,
+    }));
+};
+
+/**
+ * Convert selected option IDs to the format expected by the server
+ * @param value - The stored value (option ID or JSON array string)
+ * @param fieldType - The field type ('select' or 'multiselect')
+ * @returns String for select, array for multiselect
+ */
+export const convertValueForServer = (value: string, fieldType: string): string|string[] => {
+    if (fieldType !== 'multiselect') {
+        return value;
+    }
+    if (!value) {
+        return [];
+    }
+
+    try {
+        const parsed = JSON.parse(value);
+        if (Array.isArray(parsed)) {
+            return parsed;
+        }
+    } catch {
+        const parsed = value.split(',').map((id) => id.trim()).filter((id) => id !== '');
+        return parsed;
+    }
+    return [];
+};
+
+/**
+ * Convert server response values to the format expected by the UI
+ * @param value - The value from server (string or array)
+ * @param fieldType - The field type ('select' or 'multiselect')
+ * @returns String representation for UI storage
+ */
+export const convertValueFromServer = (value: string | string[], fieldType: string): string => {
+    if (value === null || value === undefined) {
+        return '';
+    }
+
+    if (fieldType === 'select') {
+        return Array.isArray(value) ? (value[0] || '') : String(value);
+    }
+
+    if (fieldType === 'multiselect') {
+        if (Array.isArray(value)) {
+            try {
+                return JSON.stringify(value);
+            } catch (error) {
+                logError('Error converting value from server to string', error);
+                return '';
+            }
+        }
+
+        return String(value);
+    }
+
+    return String(value);
 };

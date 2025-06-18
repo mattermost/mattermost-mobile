@@ -40,6 +40,7 @@ team_id string INDEX FK >- Team.id
 type string
 update_at number
 banner_info string
+abac_policy_enforced boolean
 
 
 ChannelInfo
