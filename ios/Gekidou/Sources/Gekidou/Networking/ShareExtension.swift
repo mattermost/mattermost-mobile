@@ -41,8 +41,8 @@ struct UploadSessionData {
         let fileIds = dict["fileIds"] as! [String]
         let message = dict["message"] as! String
         let totalFiles = dict["totalFiles"] as! Int
-        let failNotificationID = dict["failNotificationID"] as! String
-        let failTimeout = dict["failTimeout"] as! Date
+        let failNotificationID = dict["failNotificationID"] as? String
+        let failTimeout = dict["failTimeout"] as? Date
         
         return UploadSessionData(
             serverUrl: serverUrl,
