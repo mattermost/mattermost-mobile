@@ -26,15 +26,14 @@ describe('Checklist Item Queries', () => {
     });
 
     describe('queryPlaybookChecklistItemsByChecklist', () => {
-        it('should query checklist items by checklistId and sort by order ascending', async () => {
+        it('should query checklist items by checklistId', async () => {
             const checklistId = 'checklist123';
             const mockItems = [
                 TestHelper.createPlaybookItem(checklistId, 1), // Item with order 1
                 TestHelper.createPlaybookItem(checklistId, 0), // Item with order 0
-            ].map((item, index) => ({
+            ].map((item) => ({
                 ...item,
                 checklist_id: checklistId,
-                order: index,
             }));
 
             await operator.handlePlaybookChecklistItem({
@@ -46,8 +45,9 @@ describe('Checklist Item Queries', () => {
             const fetchedItems = await result.fetch();
 
             expect(fetchedItems.length).toBe(2);
-            expect(fetchedItems[0].id).toBe(mockItems[0].id);
-            expect(fetchedItems[1].id).toBe(mockItems[1].id);
+            const fetchedIds = fetchedItems.map((item) => item.id);
+            expect(fetchedIds).toContain(mockItems[0].id);
+            expect(fetchedIds).toContain(mockItems[1].id);
         });
     });
 
@@ -56,7 +56,6 @@ describe('Checklist Item Queries', () => {
             const mockItem = {
                 ...TestHelper.createPlaybookItem('checklist123', 0),
                 checklist_id: 'checklist123',
-                order: 0,
             };
 
             await operator.handlePlaybookChecklistItem({
@@ -82,7 +81,6 @@ describe('Checklist Item Queries', () => {
             const mockItem = {
                 ...TestHelper.createPlaybookItem('checklist123', 0),
                 checklist_id: 'checklist123',
-                order: 0,
             };
 
             operator.handlePlaybookChecklistItem({
@@ -115,10 +113,9 @@ describe('Checklist Item Queries', () => {
             const mockItems = [
                 TestHelper.createPlaybookItem(checklistId, 1), // Item with order 1
                 TestHelper.createPlaybookItem(checklistId, 0), // Item with order 0
-            ].map((item, index) => ({
+            ].map((item) => ({
                 ...item,
                 checklist_id: checklistId,
-                order: index,
             }));
 
             operator.handlePlaybookChecklistItem({
@@ -129,8 +126,9 @@ describe('Checklist Item Queries', () => {
 
                 observable.subscribe((items) => {
                     expect(items.length).toBe(2);
-                    expect(items[0].id).toBe(mockItems[0].id);
-                    expect(items[1].id).toBe(mockItems[1].id);
+                    const fetchedIds = items.map((item) => item.id);
+                    expect(fetchedIds).toContain(mockItems[0].id);
+                    expect(fetchedIds).toContain(mockItems[1].id);
                     done();
                 });
             });

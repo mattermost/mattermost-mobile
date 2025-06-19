@@ -14,7 +14,6 @@ const {PLAYBOOK_CHECKLIST_ITEM} = PLAYBOOK_TABLES;
 export const queryPlaybookChecklistItemsByChecklist = (database: Database, checklistId: string) => {
     return database.get<PlaybookChecklistItemModel>(PLAYBOOK_CHECKLIST_ITEM).query(
         Q.where('checklist_id', checklistId),
-        Q.sortBy('order', 'asc'),
     );
 };
 

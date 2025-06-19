@@ -15,6 +15,7 @@ describe('shouldUpdatePlaybookRunRecord', () => {
             currentStatus: 'InProgress',
             retrospectiveEnabled: true,
             retrospectivePublishedAt: 789,
+            updateAt: 112233,
         });
         const raw = TestHelper.fakePlaybookRun({
             id: existingRecord.id,
@@ -26,6 +27,7 @@ describe('shouldUpdatePlaybookRunRecord', () => {
             retrospective_enabled: true,
             retrospective_published_at: 789,
             participant_ids: [] as string[],
+            update_at: 112233,
         });
 
         expect(shouldUpdatePlaybookRunRecord(existingRecord, raw)).toBe(false);
@@ -82,7 +84,6 @@ describe('shouldHandlePlaybookChecklistItemRecord', () => {
             assigneeId: 'user1',
             command: '/command',
             dueDate: 123456,
-            order: 1,
         });
         const raw = TestHelper.fakePlaybookChecklistItem(existingRecord.checklistId, {
             title: 'Item Title',
@@ -90,7 +91,6 @@ describe('shouldHandlePlaybookChecklistItemRecord', () => {
             assignee_id: 'user1',
             command: '/command',
             due_date: 123456,
-            order: 1,
         });
 
         expect(shouldHandlePlaybookChecklistItemRecord(existingRecord, raw)).toBe(false);
@@ -103,7 +103,6 @@ describe('shouldHandlePlaybookChecklistItemRecord', () => {
             assigneeId: 'user1',
             command: '/command',
             dueDate: 123456,
-            order: 1,
         });
         const raw = TestHelper.fakePlaybookChecklistItem(existingRecord.checklistId, {
             title: 'Different Title',
@@ -111,7 +110,6 @@ describe('shouldHandlePlaybookChecklistItemRecord', () => {
             assignee_id: 'user1',
             command: '/command',
             due_date: 123456,
-            order: 1,
         });
 
         expect(shouldHandlePlaybookChecklistItemRecord(existingRecord, raw)).toBe(true);
