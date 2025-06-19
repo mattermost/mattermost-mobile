@@ -10,12 +10,11 @@ import UserChip from '@components/chips/user_chip';
 import FriendlyDate from '@components/friendly_date';
 import UserAvatarsStack from '@components/user_avatars_stack';
 import {useTheme} from '@context/theme';
+import ProgressBar from '@playbooks/components/progress_bar';
 import {goToPlaybookRun} from '@playbooks/screens/navigation';
 import {openUserProfileModal} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
-
-import ProgressBar from './progress_bar';
 
 import type PlaybookRunModel from '@playbooks/types/database/models/playbook_run';
 import type UserModel from '@typings/database/models/servers/user';
@@ -29,12 +28,8 @@ export const ITEM_HEIGHT = (VERTICAL_PADDING * 2) + TITLE_HEIGHT + GAPS + (CHIP_
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => ({
     cardContainer: {
-        margin: 0,
-        paddingVertical: VERTICAL_PADDING,
-        paddingHorizontal: 20,
         borderRadius: 4,
         backgroundColor: theme.centerChannelBg,
-        flexDirection: 'column',
         borderWidth: 1,
         borderColor: changeOpacity(theme.centerChannelColor, 0.08),
         shadowColor: '#000',
@@ -42,7 +37,12 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => ({
         shadowOpacity: 0.08,
         shadowRadius: 3,
         elevation: 2,
+    },
+    contentContainer: {
+        paddingVertical: VERTICAL_PADDING,
+        paddingHorizontal: 20,
         gap: GAP,
+        flexDirection: 'column',
     },
     cardTitle: {
         ...typography('Body', 200, 'SemiBold'),
@@ -110,45 +110,47 @@ const PlaybookCard = ({
             onPress={onCardPress}
             style={styles.cardContainer}
         >
-            <Text
-                style={styles.cardTitle}
-                numberOfLines={1}
-            >
-                {run.name}
-            </Text>
-            <View style={styles.peopleRow}>
-                {owner && (
-                    <UserChip
-                        user={owner}
-                        teammateNameDisplay='username'
-                        onPress={onUserChipPress}
+            <View style={styles.contentContainer}>
+                <Text
+                    style={styles.cardTitle}
+                    numberOfLines={1}
+                >
+                    {run.name}
+                </Text>
+                <View style={styles.peopleRow}>
+                    {owner && (
+                        <UserChip
+                            user={owner}
+                            teammateNameDisplay='username'
+                            onPress={onUserChipPress}
+                        />
+                    )}
+                    <UserAvatarsStack
+                        channelId={channelId}
+                        location={location}
+                        users={participants}
+                        bottomSheetTitle={bottomSheetTitleMessage}
                     />
-                )}
-                <UserAvatarsStack
-                    channelId={channelId}
-                    location={location}
-                    users={participants}
-                    bottomSheetTitle={bottomSheetTitleMessage}
-                />
-            </View>
-            <View style={styles.infoRow}>
-                <View style={styles.flex}>
-                    <Text
-                        style={styles.lastUpdatedText}
-                        numberOfLines={1}
-                    >
-                        {intl.formatMessage({
-                            id: 'playbook.last_updated',
-                            defaultMessage: 'Last updated {date}',
-                        }, {
-                            date: (
-                                <FriendlyDate
-                                    value={lastStatusUpdateAt}
-                                    style={styles.lastUpdatedText}
-                                />
-                            ),
-                        })}
-                    </Text>
+                </View>
+                <View style={styles.infoRow}>
+                    <View style={styles.flex}>
+                        <Text
+                            style={styles.lastUpdatedText}
+                            numberOfLines={1}
+                        >
+                            {intl.formatMessage({
+                                id: 'playbook.last_updated',
+                                defaultMessage: 'Last updated {date}',
+                            }, {
+                                date: (
+                                    <FriendlyDate
+                                        value={lastStatusUpdateAt}
+                                        style={styles.lastUpdatedText}
+                                    />
+                                ),
+                            })}
+                        </Text>
+                    </View>
                 </View>
             </View>
             <ProgressBar

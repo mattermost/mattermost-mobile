@@ -1,0 +1,235 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+
+import React, {useCallback, useMemo} from 'react';
+import {defineMessages, useIntl} from 'react-intl';
+import {View, Text, ScrollView} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
+
+import UserChip from '@components/chips/user_chip';
+import Markdown from '@components/markdown';
+import UserAvatarsStack from '@components/user_avatars_stack';
+import {useTheme} from '@context/theme';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {getRunScheduledTimestamp, isRunFinished} from '@playbooks/utils/run';
+import {getSortOrder} from '@playbooks/utils/sort_order';
+import {openUserProfileModal, popTopScreen} from '@screens/navigation';
+import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
+import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
+import {typography} from '@utils/typography';
+
+import ChecklistList from './checklist_list';
+import StatusUpdateIndicator from './status_update_indicator';
+
+import type PlaybookChecklistModel from '@playbooks/types/database/models/playbook_checklist';
+import type PlaybookRunModel from '@playbooks/types/database/models/playbook_run';
+import type UserModel from '@typings/database/models/servers/user';
+import type {AvailableScreens} from '@typings/screens/navigation';
+
+const messages = defineMessages({
+    owner: {
+        id: 'playbooks.playbook_run.owner',
+        defaultMessage: 'Owner',
+    },
+    participants: {
+        id: 'playbooks.playbook_run.participants',
+        defaultMessage: 'Participants',
+    },
+    tasks: {
+        id: 'playbooks.playbook_run.tasks',
+        defaultMessage: 'Tasks',
+    },
+    statusUpdateDue: {
+        id: 'playbooks.playbook_run.status_update_due',
+        defaultMessage: 'Status update due in {time}',
+    },
+    participantsTitle: {
+        id: 'playbooks.playbook_run.participants_title',
+        defaultMessage: 'Run Participants',
+    },
+    runDetails: {
+        id: 'playbooks.playbook_run.run_details',
+        defaultMessage: 'Run details',
+    },
+});
+
+const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
+    container: {
+        flex: 1,
+        backgroundColor: theme.centerChannelBg,
+        marginHorizontal: 20,
+    },
+    intro: {
+        gap: 32,
+        marginVertical: 24,
+    },
+    titleAndDescription: {
+        gap: 10,
+    },
+    title: {
+        ...typography('Heading', 400, 'SemiBold'),
+        color: theme.centerChannelColor,
+    },
+    infoText: {
+        ...typography('Body', 100, 'Regular'),
+        color: theme.centerChannelColor,
+    },
+    peopleRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+    },
+    peopleRowCol: {
+        flex: 1,
+        gap: 6,
+    },
+    peopleRowColHeader: {
+        ...typography('Heading', 100, 'SemiBold'),
+        color: changeOpacity(theme.centerChannelColor, 0.72),
+    },
+    ownerRow: {
+        alignItems: 'flex-start',
+    },
+    tasksContainer: {
+        gap: 12,
+    },
+    tasksHeader: {
+        ...typography('Heading', 200, 'SemiBold'),
+        color: theme.centerChannelColor,
+    },
+}));
+
+type Props = {
+    playbookRun?: PlaybookRunModel | PlaybookRun;
+    owner?: UserModel;
+    participants: UserModel[];
+    componentId: AvailableScreens;
+    checklists: Array<PlaybookChecklistModel | PlaybookChecklist>;
+}
+
+export default function PlaybookRun({
+    playbookRun,
+    owner,
+    participants,
+    checklists,
+    componentId,
+}: Props) {
+    const theme = useTheme();
+    const styles = getStyleSheet(theme);
+    const intl = useIntl();
+    const insets = useSafeAreaInsets();
+
+    const channelId = playbookRun && 'channelId' in playbookRun ? playbookRun.channelId : (playbookRun?.channel_id || '');
+
+    useAndroidHardwareBackHandler(componentId, () => {
+        popTopScreen();
+        return true;
+    });
+
+    const containerStyle = useMemo(() => {
+        return [
+            styles.container,
+            {paddingBottom: insets.bottom},
+        ];
+    }, [insets.bottom, styles.container]);
+
+    const orderedChecklists = useMemo(() => {
+        if (!playbookRun) {
+            return [];
+        }
+
+        if ('table' in playbookRun) {
+            const sortOrder = getSortOrder(checklists); // TODO: get sort order from the playbook object
+            const sortOrderMap = sortOrder.reduce((acc, id, index) => {
+                acc[id] = index;
+                return acc;
+            }, {} as Record<string, number>);
+            return checklists.sort((a, b) => sortOrderMap[a.id] - sortOrderMap[b.id]);
+        }
+
+        return checklists;
+    }, [checklists, playbookRun]);
+
+    const openOwnerProfile = useCallback(() => {
+        if (!owner) {
+            return;
+        }
+
+        openUserProfileModal(intl, theme, {
+            userId: owner.id,
+            channelId,
+            location: componentId,
+        });
+    }, [owner, intl, theme, channelId, componentId]);
+
+    if (!playbookRun) {
+        // TODO: create a error state
+        return null;
+    }
+
+    return (
+        <View style={containerStyle}>
+            <ScrollView>
+                <View style={styles.intro}>
+                    <View style={styles.titleAndDescription}>
+                        <Text style={styles.title}>{playbookRun.name}</Text>
+                        <Markdown
+                            value={playbookRun.description}
+                            theme={theme}
+                            location={componentId}
+                            baseTextStyle={styles.infoText}
+                            blockStyles={getMarkdownBlockStyles(theme)}
+                            textStyles={getMarkdownTextStyles(theme)}
+                        />
+                    </View>
+                    {(owner || participants.length > 0) && (
+                        <View style={styles.peopleRow}>
+                            {owner && (
+                                <View style={styles.peopleRowCol}>
+                                    <Text style={styles.peopleRowColHeader}>
+                                        {intl.formatMessage(messages.owner)}
+                                    </Text>
+                                    <View style={styles.ownerRow}>
+                                        <UserChip
+                                            user={owner}
+                                            onPress={openOwnerProfile}
+                                            teammateNameDisplay='username'
+                                        />
+                                    </View>
+                                </View>
+                            )}
+                            {participants.length > 0 && (
+                                <View style={styles.peopleRowCol}>
+                                    <Text style={styles.peopleRowColHeader}>
+                                        {intl.formatMessage(messages.participants)}
+                                    </Text>
+                                    <UserAvatarsStack
+                                        users={participants}
+                                        location={componentId}
+                                        bottomSheetTitle={messages.participantsTitle}
+                                    />
+                                </View>
+                            )}
+                        </View>
+                    )}
+                    <StatusUpdateIndicator
+                        isFinished={isRunFinished(playbookRun)}
+                        timestamp={getRunScheduledTimestamp(playbookRun)}
+                    />
+                </View>
+                <View style={styles.tasksContainer}>
+                    <Text style={styles.tasksHeader}>
+                        {intl.formatMessage(messages.tasks)}
+                    </Text>
+                    <ChecklistList
+                        checklists={orderedChecklists}
+                        channelId={channelId}
+                        playbookRunId={playbookRun.id}
+                        isFinished={isRunFinished(playbookRun)}
+                    />
+                </View>
+            </ScrollView>
+        </View>
+    );
+}
+
+PlaybookRun.displayName = 'PlaybookRun';

@@ -31,9 +31,9 @@ function ProgressBar({progress, isActive, testID}: Props) {
         styles.progressBar,
         {
             width: `${progress}%`,
-            backgroundColor: isActive ? theme.onlineIndicator : changeOpacity(theme.centerChannelBg, 0.4),
+            backgroundColor: isActive ? theme.onlineIndicator : changeOpacity(theme.centerChannelColor, 0.4),
         },
-    ], [styles.progressBar, progress, isActive, theme.onlineIndicator, theme.centerChannelBg]);
+    ], [styles.progressBar, progress, isActive, theme.onlineIndicator, theme.centerChannelColor]);
 
     return (
         <View

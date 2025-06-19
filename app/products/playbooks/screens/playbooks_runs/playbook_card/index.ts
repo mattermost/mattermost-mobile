@@ -20,6 +20,7 @@ type OwnProps = {
 const enhanced = withObservables(['run'], ({run, database}: OwnProps) => {
     if ('participants' in run) {
         return {
+            run: run.observe(),
             participants: run.participants().observe(),
             progress: observePlaybookRunProgress(database, run.id),
             owner: run.owner.observe(),
@@ -30,6 +31,7 @@ const enhanced = withObservables(['run'], ({run, database}: OwnProps) => {
     const owner = observeUser(database, run.owner_user_id);
 
     return {
+        run: of$(run),
         participants,
         progress: of$(getProgressFromRun(run)),
         owner,
