@@ -34,4 +34,5 @@ export default keyMirror({
     JOIN_CALL_BAR_VISIBLE: null,
     DRAFT_SWIPEABLE: null,
     ACTIVE_SCREEN: null,
+    FILE_ADD_REMOVED: null,
 });

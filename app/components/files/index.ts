@@ -8,33 +8,16 @@ import {switchMap} from 'rxjs/operators';
 import {queryFilesForPost} from '@queries/servers/file';
 import {observeCanDownloadFiles, observeEnableSecureFilePreview} from '@queries/servers/security';
 import {observeConfigBooleanValue} from '@queries/servers/system';
-import {fileExists} from '@utils/file';
+import {filesLocalPathValidation} from '@utils/file';
 
 import Files from './files';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type FileModel from '@typings/database/models/servers/file';
 import type PostModel from '@typings/database/models/servers/post';
 
 type EnhanceProps = WithDatabaseArgs & {
     post: PostModel;
 }
-
-const filesLocalPathValidation = async (files: FileModel[], authorId: string) => {
-    const filesInfo: FileInfo[] = [];
-    for await (const f of files) {
-        const info = f.toFileInfo(authorId);
-        if (info.localPath) {
-            const exists = await fileExists(info.localPath);
-            if (!exists) {
-                info.localPath = '';
-            }
-        }
-        filesInfo.push(info);
-    }
-
-    return filesInfo;
-};
 
 const enhance = withObservables(['post'], ({database, post}: EnhanceProps) => {
     const publicLinkEnabled = observeConfigBooleanValue(database, 'EnablePublicLink');
