@@ -28,6 +28,7 @@ type Props = {
     file: FileInfo;
     openGallery: (file: FileInfo) => void;
     rootId: string;
+    isEditMode: boolean;
 }
 
 const style = StyleSheet.create({
@@ -62,7 +63,7 @@ const style = StyleSheet.create({
 
 export default function UploadItem({
     channelId, galleryIdentifier, index, file,
-    rootId, openGallery,
+    rootId, openGallery, isEditMode,
 }: Props) {
     const theme = useTheme();
     const serverUrl = useServerUrl();
