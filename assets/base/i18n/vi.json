@@ -940,8 +940,6 @@
   "settings.advanced.delete_message.confirmation": "\nĐiều này sẽ xóa tất cả các tệp được tải xuống thông qua ứng dụng dành cho máy chủ này. Vui lòng xác nhận để tiếp tục.\n",
   "settings.advanced_settings": "Cài đặt nâng cao",
   "settings.display": "Hiển thị",
-  "settings.link.error.text": "Không thể mở liên kết.",
-  "settings.link.error.title": "Lỗi",
   "settings.notice_mobile_link": "ứng dụng di động",
   "settings.notice_platform_link": "máy chủ",
   "settings.notice_text": "Điều quan trọng nhất là có thể thực hiện được nhờ phần mềm mã nguồn mở được sử dụng trong {platform} và {mobile} của chúng tôi.",

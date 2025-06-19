@@ -1158,8 +1158,6 @@
   "settings.advanced_settings": "Advanced Settings",
   "settings.advanced_settings.component_library": "Component library",
   "settings.display": "Display",
-  "settings.link.error.text": "Unable to open the link.",
-  "settings.link.error.title": "Error",
   "settings.notice_mobile_link": "Mobile Apps",
   "settings.notice_platform_link": "Server",
   "settings.notice_text": "Mattermost is made possible by the open source software used in our {platform} and {mobile}.",

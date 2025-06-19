@@ -1164,8 +1164,6 @@
   "settings.advanced_settings": "詳細設定",
   "settings.advanced_settings.component_library": "コンポーネント・ライブラリ",
   "settings.display": "表示",
-  "settings.link.error.text": "リンクを開けませんでした。",
-  "settings.link.error.title": "エラー",
   "settings.notice_mobile_link": "モバイルアプリ",
   "settings.notice_platform_link": "サーバー",
   "settings.notice_text": "Mattermostはオープンソースとして {platform} と {mobile} で開発されています。",
