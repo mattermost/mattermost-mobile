@@ -373,6 +373,7 @@
   "gallery.downloading": "Laster ned...",
   "gallery.footer.channel_name": "Delt i {channelName}",
   "gallery.image_saved": "Bilde lagret",
+  "gallery.only_pdf": "Bare PDF-filer støttes for sikker forhåndsvisning av filer.",
   "gallery.open_file": "Åpne fil",
   "gallery.opening": "Åpner...",
   "gallery.preparing": "Klargjør...",
