@@ -7,7 +7,7 @@ import Animated, {useAnimatedStyle, useDerivedValue, useSharedValue, withTiming}
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import Button from '@components/button';
-import {CHIP_BOTTOM_MARGIN, CHIP_HEIGHT} from '@components/chips/constants';
+import {CHIP_HEIGHT} from '@components/chips/constants';
 import SelectedUserChip from '@components/chips/selected_user_chip';
 import Toast from '@components/toast';
 import {useTheme} from '@context/theme';
@@ -83,7 +83,8 @@ type Props = {
 }
 
 const BUTTON_HEIGHT = 48;
-const CHIP_HEIGHT_WITH_MARGIN = CHIP_HEIGHT + CHIP_BOTTOM_MARGIN;
+const CHIP_GAP = 8;
+const CHIP_HEIGHT_WITH_MARGIN = CHIP_HEIGHT + CHIP_GAP;
 const EXPOSED_CHIP_HEIGHT = 0.33 * CHIP_HEIGHT;
 const MAX_CHIP_ROWS = 2;
 const SCROLL_MARGIN_TOP = 20;
@@ -125,6 +126,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
             flexGrow: 1,
             flexWrap: 'wrap',
+            gap: CHIP_GAP,
         },
         message: {
             color: theme.centerChannelBg,

@@ -316,9 +316,7 @@ export default function ManageChannelMembers({
                     tags={attributeTags.length > 0 ? attributeTags : undefined}
                     location={Screens.MANAGE_CHANNEL_MEMBERS}
                     testID={`${TEST_ID}.notice`}
-                    containerStyle={styles.flatBottomBanner}
-                    iconSize={24}
-                    tagsVariant='subtle'
+                    squareCorners={true}
                 />
             )}
             <View style={styles.searchBar}>
