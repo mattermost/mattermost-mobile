@@ -12,18 +12,20 @@ import {dismissBottomSheet} from '@screens/navigation';
 type Props = {
     channelId: string;
     playbooksActiveRuns: number;
+    channelName: string;
 }
 
 const PlaybookRunsOption = ({
     channelId,
     playbooksActiveRuns,
+    channelName,
 }: Props) => {
     const intl = useIntl();
 
     const onPress = useCallback(async () => {
         await dismissBottomSheet();
-        goToPlaybookRuns(intl, channelId);
-    }, [intl, channelId]);
+        goToPlaybookRuns(intl, channelId, channelName);
+    }, [intl, channelId, channelName]);
 
     return (
         <OptionItem
