@@ -70,8 +70,6 @@ export default function UploadItem({
     const [progress, setProgress] = useState(0);
     const {updateFileCallback, isEditMode} = useEditPost();
 
-    const effectiveIsEditMode = isEditMode ?? false; // Use context value if available when wrapped by EditPostProvider, else fall back to prop for draft mode.
-
     const loading = DraftEditPostUploadManager.isUploading(file.clientId!);
 
     const handlePress = useCallback(() => {
@@ -106,7 +104,7 @@ export default function UploadItem({
         const newFile = {...file};
         newFile.failed = false;
 
-        if (effectiveIsEditMode && updateFileCallback) {
+        if (isEditMode && updateFileCallback) {
             // In edit mode, use the context callback to update the file
             updateFileCallback(newFile);
             DraftEditPostUploadManager.prepareUpload(
@@ -125,7 +123,7 @@ export default function UploadItem({
         }
 
         DraftEditPostUploadManager.registerProgressHandler(newFile.clientId!, setProgress);
-    }, [serverUrl, channelId, rootId, file, effectiveIsEditMode, updateFileCallback]);
+    }, [serverUrl, channelId, rootId, file, isEditMode, updateFileCallback]);
 
     const {styles, onGestureEvent, ref} = useGalleryItem(galleryIdentifier, index, handlePress);
 

@@ -6,7 +6,7 @@ import React, {createContext, useContext, useMemo, type ReactNode} from 'react';
 type EditPostContextType = {
     onFileRemove?: (fileId: string) => void;
     updateFileCallback?: (fileInfo: FileInfo) => void;
-    isEditMode?: boolean;
+    isEditMode: boolean;
 };
 
 const EditPostContext = createContext<EditPostContextType>({
