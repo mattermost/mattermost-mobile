@@ -19,10 +19,10 @@ type EditPostProviderProps = {
     children: ReactNode;
     onFileRemove?: (fileId: string) => void;
     updateFileCallback?: (fileInfo: FileInfo) => void;
-    isEditMode?: boolean;
+    isEditMode: boolean;
 };
 
-export const EditPostProvider = ({children, onFileRemove, updateFileCallback, isEditMode = false}: EditPostProviderProps) => {
+export const EditPostProvider = ({children, onFileRemove, updateFileCallback, isEditMode}: EditPostProviderProps) => {
     const contextValue = useMemo(() => ({
         onFileRemove,
         updateFileCallback,

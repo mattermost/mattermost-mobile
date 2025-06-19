@@ -29,7 +29,6 @@ type Props = {
     uploadFileError: React.ReactNode;
     channelId: string;
     rootId: string;
-    isEditMode: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
@@ -75,7 +74,6 @@ function Uploads({
     uploadFileError,
     channelId,
     rootId,
-    isEditMode,
 }: Props) {
     const galleryIdentifier = `${channelId}-uploadedItems-${rootId}`;
     const theme = useTheme();
@@ -139,7 +137,6 @@ function Uploads({
                     key={file.clientId || file.id}
                     openGallery={openGallery}
                     rootId={rootId}
-                    isEditMode={isEditMode}
                 />
             );
         });
