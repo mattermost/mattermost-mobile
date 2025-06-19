@@ -4,11 +4,11 @@
 import {forceLogoutIfNecessary} from '@actions/remote/session';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
+import {updateLastPlaybookFetchAt} from '@playbooks/actions/local/channel';
+import {handlePlaybookRuns} from '@playbooks/actions/local/run';
 import {getLastPlaybookFetchAt} from '@playbooks/database/queries/run';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
-
-import {updateLastPlaybookFetchAt} from '../local/channel';
 
 type PlaybookRunsRequest = {
     runs?: PlaybookRun[];
@@ -18,7 +18,7 @@ type PlaybookRunsRequest = {
 export const fetchPlaybookRunsForChannel = async (serverUrl: string, channelId: string, fetchOnly = false): Promise<PlaybookRunsRequest> => {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         const lastFetchAt = await getLastPlaybookFetchAt(database, channelId);
 
@@ -52,11 +52,7 @@ export const fetchPlaybookRunsForChannel = async (serverUrl: string, channelId: 
         updateLastPlaybookFetchAt(serverUrl, channelId, Date.now());
 
         if (!fetchOnly) {
-            await operator.handlePlaybookRun({
-                runs: allRuns,
-                prepareRecordsOnly: false,
-                processChildren: true,
-            });
+            handlePlaybookRuns(serverUrl, allRuns, false, true);
         }
 
         return {runs: allRuns};

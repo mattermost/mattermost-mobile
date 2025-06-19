@@ -5,12 +5,12 @@ import * as bookmark from '@actions/local/channel_bookmark';
 import * as scheduledPost from '@actions/websocket/scheduled_post';
 import * as calls from '@calls/connection/websocket_event_handlers';
 import {WebsocketEvents} from '@constants';
+import {handlePlaybookEvents} from '@playbooks/actions/websocket/events';
 
 import * as category from './category';
 import * as channel from './channel';
 import * as group from './group';
 import {handleOpenDialogEvent} from './integrations';
-import {handlePluginDisabled, handlePluginEnabled} from './plugins';
 import * as posts from './posts';
 import * as preferences from './preferences';
 import {handleAddCustomEmoji, handleReactionRemovedFromPostEvent, handleReactionAddedToPostEvent} from './reactions';
@@ -264,13 +264,9 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
 
         // Plugins
         case WebsocketEvents.PLUGIN_STATUSES_CHANGED:
-            // Do nothing, this event doesn't need logic in the mobile app
-            break;
         case WebsocketEvents.PLUGIN_ENABLED:
-            handlePluginEnabled(serverUrl, msg);
-            break;
         case WebsocketEvents.PLUGIN_DISABLED:
-            handlePluginDisabled(serverUrl, msg);
+            // Do nothing, this event doesn't need logic in the mobile app
             break;
 
         // bookmarks
@@ -306,4 +302,5 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
             handleCustomProfileAttributesFieldDeletedEvent(serverUrl, msg);
             break;
     }
+    handlePlaybookEvents(serverUrl, msg);
 }
