@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo, useState} from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessages, useIntl} from 'react-intl';
 import {DeviceEventEmitter, StyleSheet, Text, View} from 'react-native';
 import {RectButton, TouchableWithoutFeedback} from 'react-native-gesture-handler';
 import Animated from 'react-native-reanimated';
@@ -10,7 +10,7 @@ import Animated from 'react-native-reanimated';
 import FileIcon from '@components/files/file_icon';
 import {Events, Preferences} from '@constants';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
-import {isDocument} from '@utils/file';
+import {isDocument, isPdf} from '@utils/file';
 import {galleryItemToFileInfo} from '@utils/gallery';
 import {changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -21,6 +21,7 @@ import type {GalleryAction, GalleryItemType} from '@typings/screens/gallery';
 
 type Props = {
     canDownloadFiles: boolean;
+    enableSecureFilePreview: boolean;
     item: GalleryItemType;
     onShouldHideControls: (hide: boolean) => void;
 }
@@ -49,19 +50,46 @@ const styles = StyleSheet.create({
     },
 });
 
-const DocumentRenderer = ({canDownloadFiles, item, onShouldHideControls}: Props) => {
+const messages = defineMessages({
+    unsupported: {
+        id: 'gallery.unsupported',
+        defaultMessage: "Preview isn't supported for this file type. Try downloading or sharing to open it in another app.",
+    },
+    openFile: {
+        id: 'gallery.open_file',
+        defaultMessage: 'Open file',
+    },
+    onlyPdf: {
+        id: 'gallery.only_pdf',
+        defaultMessage: 'Only PDF files are supported for secure file preview.',
+    },
+});
+
+const DocumentRenderer = ({canDownloadFiles, enableSecureFilePreview, item, onShouldHideControls}: Props) => {
     const {formatMessage} = useIntl();
     const file = useMemo(() => galleryItemToFileInfo(item), [item]);
     const [controls, setControls] = useState(true);
     const [enabled, setEnabled] = useState(true);
     const isSupported = useMemo(() => isDocument(file), [file]);
-    const optionText = isSupported ? formatMessage({
-        id: 'gallery.open_file',
-        defaultMessage: 'Open file',
-    }) : formatMessage({
-        id: 'gallery.unsupported',
-        defaultMessage: "Preview isn't supported for this file type. Try downloading or sharing to open it in another app.",
-    });
+    const canOpenFile = useMemo(() => {
+        if (!isSupported) {
+            return false;
+        }
+        if (enableSecureFilePreview && isPdf(file)) {
+            return true;
+        }
+
+        return !enableSecureFilePreview && canDownloadFiles;
+    }, [canDownloadFiles, enableSecureFilePreview, file, isSupported]);
+
+    const optionText = useMemo(() => {
+        if (enableSecureFilePreview && !isPdf(file)) {
+            return formatMessage(messages.onlyPdf);
+        } else if (!isSupported) {
+            return formatMessage(messages.unsupported);
+        }
+        return formatMessage(messages.openFile);
+    }, [enableSecureFilePreview, file, formatMessage, isSupported]);
 
     const handleHideControls = useCallback(() => {
         onShouldHideControls(controls);
@@ -78,6 +106,12 @@ const DocumentRenderer = ({canDownloadFiles, item, onShouldHideControls}: Props)
     const handleOpenFile = useCallback(() => {
         setEnabled(false);
     }, []);
+
+    const handlePdfPreview = useCallback(() => {
+        if (enableSecureFilePreview && isPdf(file)) {
+            DeviceEventEmitter.emit(Events.CLOSE_GALLERY);
+        }
+    }, [file, enableSecureFilePreview]);
 
     return (
         <>
@@ -97,7 +131,7 @@ const DocumentRenderer = ({canDownloadFiles, item, onShouldHideControls}: Props)
                     {!isSupported &&
                     <Text style={styles.unsupported}>{optionText}</Text>
                     }
-                    {isSupported && canDownloadFiles &&
+                    {canOpenFile &&
                     <View style={{marginTop: 16}}>
                         <RectButton
                             enabled={enabled}
@@ -116,8 +150,10 @@ const DocumentRenderer = ({canDownloadFiles, item, onShouldHideControls}: Props)
             {!enabled &&
             <DownloadWithAction
                 action='opening'
+                enableSecureFilePreview={enableSecureFilePreview}
                 setAction={setGalleryAction}
                 item={item}
+                onDownloadSuccess={handlePdfPreview}
             />
             }
         </>

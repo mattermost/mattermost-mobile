@@ -198,7 +198,7 @@ export const getBackgroundStyles = (theme: Theme): BackgroundStyles => {
             },
             inverted: {
                 default: {
-                    backgroundColor: changeOpacity(theme.sidebarText, 0.12),
+                    backgroundColor: changeOpacity(theme.buttonColor, 0.12),
                 },
                 hover: {
                     backgroundColor: changeOpacity(theme.sidebarText, 0.16),

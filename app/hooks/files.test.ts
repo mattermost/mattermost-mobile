@@ -181,7 +181,7 @@ describe('useChannelBookmarkFiles', () => {
         (buildFilePreviewUrl as jest.Mock).mockImplementation((url, id) => `${url}/files/${id}/preview`);
         (getImageSize as jest.Mock).mockImplementation(() => ({width: 100, height: 100}));
 
-        const {result, waitForNextUpdate} = renderHook(() => useChannelBookmarkFiles(bookmarks, true));
+        const {result, waitForNextUpdate} = renderHook(() => useChannelBookmarkFiles(bookmarks));
 
         await waitForNextUpdate();
 

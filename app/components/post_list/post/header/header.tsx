@@ -59,23 +59,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         wrapper: {
             flex: 1,
             flexDirection: 'row',
+            alignItems: 'center',
+            gap: 5,
         },
         time: {
             color: theme.centerChannelColor,
-            marginTop: 5,
             opacity: 0.5,
             ...typography('Body', 75, 'Regular'),
         },
         visibleToYou: {
             color: theme.centerChannelColor,
-            marginTop: 5,
-            marginLeft: 5,
             opacity: 0.5,
             ...typography('Body', 75, 'Regular'),
-        },
-        postPriority: {
-            alignSelf: 'center',
-            marginLeft: 6,
         },
     };
 });
@@ -142,11 +137,9 @@ const Header = (props: HeaderProps) => {
                         />
                     )}
                     {showPostPriority && post.metadata?.priority?.priority && (
-                        <View style={style.postPriority}>
-                            <PostPriorityLabel
-                                label={post.metadata.priority.priority}
-                            />
-                        </View>
+                        <PostPriorityLabel
+                            label={post.metadata.priority.priority}
+                        />
                     )}
                     {!isCRTEnabled && showReply && commentCount > 0 &&
                         <HeaderReply

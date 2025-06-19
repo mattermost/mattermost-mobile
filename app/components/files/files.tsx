@@ -18,6 +18,7 @@ import File from './file';
 
 type FilesProps = {
     canDownloadFiles: boolean;
+    enableSecureFilePreview: boolean;
     failed?: boolean;
     filesInfo: FileInfo[];
     layoutWidth?: number;
@@ -50,6 +51,7 @@ const styles = StyleSheet.create({
 
 const Files = ({
     canDownloadFiles,
+    enableSecureFilePreview,
     failed,
     filesInfo,
     isReplyPost,
@@ -106,6 +108,7 @@ const Files = ({
                         galleryIdentifier={galleryIdentifier}
                         key={file.id}
                         canDownloadFiles={canDownloadFiles}
+                        enableSecureFilePreview={enableSecureFilePreview}
                         file={file}
                         index={attachmentIndex(file.id!)}
                         onPress={handlePreviewPress}
