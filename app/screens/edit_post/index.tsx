@@ -7,7 +7,8 @@ import {switchMap} from 'rxjs/operators';
 
 import {DEFAULT_SERVER_MAX_FILE_SIZE, MAX_MESSAGE_LENGTH_FALLBACK} from '@constants/post_draft';
 import {observeFilesForPost} from '@queries/servers/file';
-import {observeCanUploadFiles, observeConfigIntValue, observeMaxFileCount} from '@queries/servers/system';
+import {observeCanUploadFiles} from '@queries/servers/security';
+import {observeConfigIntValue, observeMaxFileCount} from '@queries/servers/system';
 
 import EditPost from './edit_post';
 
