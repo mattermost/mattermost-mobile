@@ -52,6 +52,7 @@ class FoldableObserver(activity: Activity) {
         if (disposable?.isDisposed == true) {
             onCreate()
         }
+
         disposable = observable.observeOn(AndroidSchedulers.mainThread())
                 .subscribe { layoutInfo ->
                     setIsDeviceFolded(layoutInfo)
@@ -82,7 +83,7 @@ class FoldableObserver(activity: Activity) {
         }
     }
 
-    private fun handleWindowLayoutInfo() {
+    fun handleWindowLayoutInfo() {
         val bounds = getWindowSize()
 
         if (bounds?.width() != windowBounds?.width()) {
