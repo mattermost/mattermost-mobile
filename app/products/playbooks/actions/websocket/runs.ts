@@ -6,7 +6,7 @@ import EphemeralStore from '@store/ephemeral_store';
 import {safeParseJSON} from '@utils/helpers';
 
 export const handlePlaybookRunCreated = async (serverUrl: string, msg: WebSocketMessage) => {
-    if (msg.data.payload) {
+    if (!msg.data.payload) {
         return;
     }
     const data = safeParseJSON(msg.data.payload);
