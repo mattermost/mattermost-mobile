@@ -18,12 +18,12 @@
     "android.debug": {
       "type": "android.apk",
       "binaryPath": "../android/app/build/outputs/apk/debug/app-debug.apk",
-      "build": "cd .. && ./node_modules/.bin/jetify && cd android && ./gradlew clean && ./gradlew assembleDebug assembleAndroidTest -DtestBuildType=debug && cd ../detox"
+      "build": "cd ../android && ./gradlew clean && ./gradlew assembleDebug assembleAndroidTest -DtestBuildType=debug && cd ../detox"
     },
     "android.release": {
       "type": "android.apk",
       "binaryPath": "../android/app/build/outputs/apk/release/app-release.apk",
-      "build": "cd .. && ./node_modules/.bin/jetify && cd android && ./gradlew clean && ./gradlew assembleRelease assembleAndroidTest -DtestBuildType=release && cd ../detox"
+      "build": "cd ../android && ./gradlew clean && ./gradlew assembleRelease assembleAndroidTest -DtestBuildType=release && cd ../detox"
     }
   },
   "devices": {

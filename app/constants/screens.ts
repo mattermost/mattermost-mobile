@@ -11,6 +11,8 @@ export const CALL_PARTICIPANTS = 'CallParticipants';
 export const CALL_HOST_CONTROLS = 'CallHostControls';
 export const CHANNEL = 'Channel';
 export const CHANNEL_ADD_MEMBERS = 'ChannelAddMembers';
+export const CHANNEL_BANNER = 'ChannelBanner';
+export const CHANNEL_BOOKMARK = 'ChannelBookmarkAddOrEdit';
 export const CHANNEL_FILES = 'ChannelFiles';
 export const CHANNEL_INFO = 'ChannelInfo';
 export const CHANNEL_NOTIFICATION_PREFERENCES = 'ChannelNotificationPreferences';
@@ -31,7 +33,9 @@ export const EMOJI_PICKER = 'EmojiPicker';
 export const FIND_CHANNELS = 'FindChannels';
 export const FORGOT_PASSWORD = 'ForgotPassword';
 export const GALLERY = 'Gallery';
+export const GENERIC_OVERLAY = 'GenericOverlay';
 export const GLOBAL_DRAFTS = 'GlobalDrafts';
+export const GLOBAL_DRAFTS_AND_SCHEDULED_POSTS = 'GlobalDraftsAndScheduledPosts';
 export const GLOBAL_THREADS = 'GlobalThreads';
 export const HOME = 'Home';
 export const INTEGRATION_SELECTOR = 'IntegrationSelector';
@@ -45,6 +49,7 @@ export const MANAGE_CHANNEL_MEMBERS = 'ManageChannelMembers';
 export const MENTIONS = 'Mentions';
 export const MFA = 'MFA';
 export const ONBOARDING = 'Onboarding';
+export const PDF_VIEWER = 'PdfViewer';
 export const PERMALINK = 'Permalink';
 export const PINNED_MESSAGES = 'PinnedMessages';
 export const POST_OPTIONS = 'PostOptions';
@@ -82,10 +87,6 @@ export const THREAD = 'Thread';
 export const THREAD_FOLLOW_BUTTON = 'ThreadFollowButton';
 export const THREAD_OPTIONS = 'ThreadOptions';
 export const USER_PROFILE = 'UserProfile';
-export const CHANNEL_BOOKMARK = 'ChannelBookmarkAddOrEdit';
-export const GENERIC_OVERLAY = 'GenericOverlay';
-export const GLOBAL_DRAFTS_AND_SCHEDULED_POSTS = 'GlobalDraftsAndScheduledPosts';
-export const CHANNEL_BANNER = 'ChannelBanner';
 
 export default {
     ABOUT,
@@ -98,6 +99,7 @@ export default {
     CALL_HOST_CONTROLS,
     CHANNEL,
     CHANNEL_ADD_MEMBERS,
+    CHANNEL_BANNER,
     CHANNEL_BOOKMARK,
     CHANNEL_FILES,
     CHANNEL_INFO,
@@ -118,7 +120,9 @@ export default {
     FIND_CHANNELS,
     FORGOT_PASSWORD,
     GALLERY,
+    GENERIC_OVERLAY,
     GLOBAL_DRAFTS,
+    GLOBAL_DRAFTS_AND_SCHEDULED_POSTS,
     GLOBAL_THREADS,
     HOME,
     INTEGRATION_SELECTOR,
@@ -132,6 +136,7 @@ export default {
     MENTIONS,
     MFA,
     ONBOARDING,
+    PDF_VIEWER,
     PERMALINK,
     PINNED_MESSAGES,
     POST_OPTIONS,
@@ -141,6 +146,7 @@ export default {
     RESCHEDULE_DRAFT,
     REVIEW_APP,
     SAVED_MESSAGES,
+    SCHEDULED_POST_OPTIONS,
     SEARCH,
     SELECT_TEAM,
     SERVER,
@@ -168,10 +174,6 @@ export default {
     THREAD_FOLLOW_BUTTON,
     THREAD_OPTIONS,
     USER_PROFILE,
-    GENERIC_OVERLAY,
-    SCHEDULED_POST_OPTIONS,
-    GLOBAL_DRAFTS_AND_SCHEDULED_POSTS,
-    CHANNEL_BANNER,
 } as const;
 
 export const MODAL_SCREENS_WITHOUT_BACK = new Set<string>([
@@ -186,8 +188,9 @@ export const MODAL_SCREENS_WITHOUT_BACK = new Set<string>([
     EDIT_SERVER,
     FIND_CHANNELS,
     GALLERY,
-    MANAGE_CHANNEL_MEMBERS,
     INVITE,
+    MANAGE_CHANNEL_MEMBERS,
+    PDF_VIEWER,
     PERMALINK,
     RESCHEDULE_DRAFT,
 ]);

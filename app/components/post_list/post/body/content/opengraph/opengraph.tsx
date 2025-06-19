@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Text, TouchableOpacity, View} from 'react-native';
+import {Text, TouchableOpacity, View} from 'react-native';
 
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
+import {onOpenLinkError} from '@utils/url/links';
 
 import OpengraphImage from './opengraph_image';
 
@@ -75,22 +76,13 @@ const Opengraph = ({isReplyPost, layoutWidth, location, metadata, postId, showLi
         openGraphData.images.length &&
         metadata?.images);
 
-    const goToLink = () => {
+    const goToLink = useCallback(() => {
         const onError = () => {
-            Alert.alert(
-                intl.formatMessage({
-                    id: 'mobile.link.error.title',
-                    defaultMessage: 'Error',
-                }),
-                intl.formatMessage({
-                    id: 'mobile.link.error.text',
-                    defaultMessage: 'Unable to open the link.',
-                }),
-            );
+            onOpenLinkError(intl);
         };
 
         tryOpenURL(link, onError);
-    };
+    }, [intl, link]);
 
     let siteName;
     if (openGraphData.site_name) {
