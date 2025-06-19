@@ -52,7 +52,7 @@ const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM} = PLAYBOOK_TAB
 describe('*** Test schema for SERVER database ***', () => {
     it('=> The SERVER SCHEMA should strictly match', () => {
         expect(serverSchema).toEqual({
-            version: 13,
+            version: 12,
             unsafeSql: undefined,
             tables: {
                 [CATEGORY]: {
@@ -460,6 +460,9 @@ describe('*** Test schema for SERVER database ***', () => {
                         retrospective_published_at: {name: 'retrospective_published_at', type: 'number'},
                         sync: {name: 'sync', type: 'string', isIndexed: true, isOptional: true},
                         last_sync_at: {name: 'last_sync_at', type: 'number', isOptional: true},
+                        sort_order: {name: 'sort_order', type: 'string'},
+                        previous_reminder: {name: 'previous_reminder', type: 'number', isOptional: true},
+                        update_at: {name: 'update_at', type: 'number'},
                     },
                     columnArray: [
                         {name: 'playbook_id', type: 'string'},
@@ -483,6 +486,9 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'retrospective_published_at', type: 'number'},
                         {name: 'sync', type: 'string', isIndexed: true, isOptional: true},
                         {name: 'last_sync_at', type: 'number', isOptional: true},
+                        {name: 'previous_reminder', type: 'number', isOptional: true},
+                        {name: 'sort_order', type: 'string'},
+                        {name: 'update_at', type: 'number'},
                     ],
                 },
                 [PLAYBOOK_CHECKLIST]: {
@@ -491,16 +497,18 @@ describe('*** Test schema for SERVER database ***', () => {
                     columns: {
                         run_id: {name: 'run_id', type: 'string', isIndexed: true},
                         title: {name: 'title', type: 'string'},
-                        order: {name: 'order', type: 'number'},
                         sync: {name: 'sync', type: 'string', isIndexed: true, isOptional: true},
                         last_sync_at: {name: 'last_sync_at', type: 'number', isOptional: true},
+                        sort_order: {name: 'sort_order', type: 'string'},
+                        update_at: {name: 'update_at', type: 'number'},
                     },
                     columnArray: [
                         {name: 'run_id', type: 'string', isIndexed: true},
                         {name: 'title', type: 'string'},
-                        {name: 'order', type: 'number'},
                         {name: 'sync', type: 'string', isIndexed: true, isOptional: true},
                         {name: 'last_sync_at', type: 'number', isOptional: true},
+                        {name: 'sort_order', type: 'string'},
+                        {name: 'update_at', type: 'number'},
                     ],
                 },
                 [PLAYBOOK_CHECKLIST_ITEM]: {
@@ -519,9 +527,9 @@ describe('*** Test schema for SERVER database ***', () => {
                         due_date: {name: 'due_date', type: 'number'},
                         completed_at: {name: 'completed_at', type: 'number'},
                         task_actions: {name: 'task_actions', type: 'string', isOptional: true}, // JSON string
-                        order: {name: 'order', type: 'number'},
                         sync: {name: 'sync', type: 'string', isIndexed: true, isOptional: true},
                         last_sync_at: {name: 'last_sync_at', type: 'number', isOptional: true},
+                        update_at: {name: 'update_at', type: 'number'},
                     },
                     columnArray: [
                         {name: 'checklist_id', type: 'string', isIndexed: true},
@@ -536,9 +544,9 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'due_date', type: 'number'},
                         {name: 'completed_at', type: 'number'},
                         {name: 'task_actions', type: 'string', isOptional: true}, // JSON string
-                        {name: 'order', type: 'number'},
                         {name: 'sync', type: 'string', isIndexed: true, isOptional: true},
                         {name: 'last_sync_at', type: 'number', isOptional: true},
+                        {name: 'update_at', type: 'number'},
                     ],
                 },
                 [POSTS_IN_THREAD]: {
