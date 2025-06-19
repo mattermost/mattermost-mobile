@@ -4,6 +4,15 @@ on:
   push:
     tags:
       - v[0-9]+.[0-9]+.[0-9]+*
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag (e.g., v2.10.0)"
+        required: true
+        type: string
+
+env:
+  RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
 
 jobs:
   test:
@@ -36,7 +45,7 @@ jobs:
 
       - name: ci/build-ios-unsigned
         env:
-          TAG: "${{ github.ref_name }}"
+          TAG: "${{ env.RELEASE_TAG }}"
           GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
         run: bundle exec fastlane ios unsigned
         working-directory: ./fastlane
@@ -79,7 +88,7 @@ jobs:
 
       - name: ci/build-android-beta
         env:
-          TAG: "${{ github.ref_name }}"
+          TAG: "${{ env.RELEASE_TAG }}"
           GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
         run: bundle exec fastlane android unsigned
         working-directory: ./fastlane
@@ -137,11 +146,11 @@ jobs:
       - name: ci/generate-consolidated-sbom
         env:
           SNYK_TOKEN: "${{ secrets.SNYK_TOKEN }}"
-          SBOM_FILENAME: "sbom-${{ github.event.repository.name }}-${{ github.ref_name }}.json"
+          SBOM_FILENAME: "sbom-${{ github.event.repository.name }}-${{ env.RELEASE_TAG }}.json"
         run: |
           # Generate top-level SBOM
           snyk sbom --format=cyclonedx1.6+json --json-file-output=sbom-top-level.json
-          
+
           # Consolidate SBOMs
           cyclonedx merge \
             --input-files "sbom-top-level.json" "sbom-android.json" "sbom-ios.json" \
@@ -149,7 +158,7 @@ jobs:
             --output-file="$SBOM_FILENAME" \
             --output-format=json \
             --output-version=v1_6
-          
+
           # Validate the consolidated SBOM
           cyclonedx validate --input-file="$SBOM_FILENAME"
         shell: bash
@@ -157,8 +166,8 @@ jobs:
       - name: ci/upload-consolidated-sbom
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          path: sbom-${{ github.event.repository.name }}-${{ github.ref_name }}.json
-          name: sbom-${{ github.event.repository.name }}-${{ github.ref_name }}.json
+          path: sbom-${{ github.event.repository.name }}-${{ env.RELEASE_TAG }}.json
+          name: sbom-${{ github.event.repository.name }}-${{ env.RELEASE_TAG }}.json
 
   release:
     runs-on: ubuntu-22.04
@@ -192,4 +201,4 @@ jobs:
         env:
           GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
         run: |
-          gh release upload "${{ github.ref_name }}" "sbom-${{ github.event.repository.name }}-${{ github.ref_name }}.json"
+          gh release upload "${{ env.RELEASE_TAG }}" "sbom-${{ github.event.repository.name }}-${{ env.RELEASE_TAG }}.json"
