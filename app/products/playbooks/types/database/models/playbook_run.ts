@@ -83,6 +83,15 @@ declare class PlaybookRunModel extends Model {
     // Timestamp of the last sync operation
     lastSyncAt: number;
 
+    // Timestamp of the previous reminder
+    previousReminder: number;
+
+    // The sort order of the playbook run
+    sortOrder: string[];
+
+    // The timestamp when the playbook run was updated
+    updateAt: number;
+
     /** post : the post that created the run (nullable) */
     post: Relation<PostModel>;
 

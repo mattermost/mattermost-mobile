@@ -22,8 +22,8 @@ export default tableSchema({
         {name: 'due_date', type: 'number'},
         {name: 'completed_at', type: 'number'},
         {name: 'task_actions', type: 'string', isOptional: true}, // JSON string
-        {name: 'order', type: 'number'},
         {name: 'sync', type: 'string', isIndexed: true, isOptional: true},
         {name: 'last_sync_at', type: 'number', isOptional: true},
+        {name: 'update_at', type: 'number'},
     ],
 });

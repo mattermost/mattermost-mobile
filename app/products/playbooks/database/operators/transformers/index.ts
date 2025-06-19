@@ -4,6 +4,7 @@
 import {OperationType} from '@constants/database';
 import {prepareBaseRecord} from '@database/operator/server_data_operator/transformers/index';
 import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
+import {areSortOrdersEqual, getSortOrder} from '@playbooks/utils/sort_order';
 
 import type PlaybookChecklistModel from '@playbooks/types/database/models/playbook_checklist';
 import type PlaybookChecklistItemModel from '@playbooks/types/database/models/playbook_checklist_item';
@@ -46,9 +47,14 @@ export const transformPlaybookRunRecord = ({action, database, value}: Transforme
         run.summary = raw.summary || record?.summary || '';
         run.currentStatus = raw.current_status || record?.currentStatus || '';
         run.lastStatusUpdateAt = raw.last_status_update_at || record?.lastStatusUpdateAt || 0;
+        run.previousReminder = raw.previous_reminder || record?.previousReminder || 0;
         run.retrospectiveEnabled = raw.retrospective_enabled || record?.retrospectiveEnabled || false;
         run.retrospective = raw.retrospective || record?.retrospective || '';
         run.retrospectivePublishedAt = raw.retrospective_published_at || record?.retrospectivePublishedAt || 0;
+        run.updateAt = raw.update_at || record?.updateAt || raw.create_at || record?.createAt || 0;
+
+        const sortOrder = getSortOrder(raw.checklists);
+        run.sortOrder = areSortOrdersEqual(sortOrder, record?.sortOrder) ? record!.sortOrder : sortOrder;
     };
 
     return prepareBaseRecord({
@@ -79,7 +85,10 @@ export const transformPlaybookChecklistRecord = ({action, database, value}: Tran
         checklist._raw.id = isCreateAction ? (raw?.id ?? checklist.id) : record!.id;
         checklist.runId = raw.run_id ?? record?.runId;
         checklist.title = raw.title ?? record?.title;
-        checklist.order = raw.order ?? record?.order;
+        checklist.updateAt = raw.update_at || record?.updateAt || 0;
+
+        const sortOrder = getSortOrder(raw.items ?? []);
+        checklist.sortOrder = areSortOrdersEqual(sortOrder, record?.sortOrder) ? record!.sortOrder : sortOrder;
     };
 
     return prepareBaseRecord({
@@ -110,7 +119,6 @@ export const transformPlaybookChecklistItemRecord = ({action, database, value}: 
         item._raw.id = isCreateAction ? (raw?.id ?? item.id) : record!.id;
         item.checklistId = raw.checklist_id ?? record?.checklistId;
         item.title = raw.title ?? record?.title;
-        item.order = raw.order ?? record?.order;
         item.state = raw.state ?? record?.state;
         item.stateModified = raw.state_modified ?? raw.state_modified ?? 0;
         item.assigneeId = raw.assignee_id ?? record?.assigneeId ?? null;
@@ -121,6 +129,7 @@ export const transformPlaybookChecklistItemRecord = ({action, database, value}: 
         item.dueDate = raw.due_date ?? raw.due_date ?? 0;
         item.completedAt = raw.completed_at ?? raw.completed_at ?? 0;
         item.taskActions = raw.task_actions ?? record?.taskActions ?? null;
+        item.updateAt = raw.update_at ?? record?.updateAt ?? 0;
     };
 
     return prepareBaseRecord({
