@@ -1161,8 +1161,6 @@
   "settings.advanced_settings": "高级设定",
   "settings.advanced_settings.component_library": "组件库",
   "settings.display": "显示",
-  "settings.link.error.text": "无法打开此链接。",
-  "settings.link.error.title": "错误",
   "settings.notice_mobile_link": "移动应用",
   "settings.notice_platform_link": "服务器",
   "settings.notice_text": "Mattermost是由我们{platform}和{mobile}的开源软件进行开发才成为可能。",

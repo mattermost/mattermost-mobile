@@ -1162,8 +1162,6 @@
   "settings.advanced_settings": "Avancerade inställningar",
   "settings.advanced_settings.component_library": "Komponentbibliotek",
   "settings.display": "Utseende",
-  "settings.link.error.text": "Kunde inte öppna länken.",
-  "settings.link.error.title": "Fel",
   "settings.notice_mobile_link": "mobilappar",
   "settings.notice_platform_link": "server",
   "settings.notice_text": "Mattermost möjliggörs genom programvara med öppen källkod som används i vår {platform} och {mobile}.",

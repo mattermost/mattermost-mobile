@@ -1162,8 +1162,6 @@
   "settings.advanced_settings": "Geavanceerde instellingen",
   "settings.advanced_settings.component_library": "Componentenbibliotheek",
   "settings.display": "Weergave",
-  "settings.link.error.text": "Fout bij het openen van de link.",
-  "settings.link.error.title": "Fout",
   "settings.notice_mobile_link": "mobiele apps",
   "settings.notice_platform_link": "server",
   "settings.notice_text": "Mattermost wordt mogelijk gemaakt door de open source software die gebruikt wordt in ons {platform} en {mobile}.",

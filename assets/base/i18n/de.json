@@ -1164,8 +1164,6 @@
   "settings.advanced_settings": "Erweiterte Einstellungen",
   "settings.advanced_settings.component_library": "Komponentenbibliothek",
   "settings.display": "Anzeige",
-  "settings.link.error.text": "Link kann nicht geöffnet werden.",
-  "settings.link.error.title": "Fehler",
   "settings.notice_mobile_link": "mobile Apps",
   "settings.notice_platform_link": "Server",
   "settings.notice_text": "Mattermost wird durch die in {platform} und {mobile} verwendete Open-Source-Software ermöglicht.",

@@ -1164,8 +1164,6 @@
   "settings.advanced_settings": "Avanserte innstillinger",
   "settings.advanced_settings.component_library": "Komponentbibliotek",
   "settings.display": "Visning",
-  "settings.link.error.text": "Kan ikke åpne lenken.",
-  "settings.link.error.title": "Feil",
   "settings.notice_mobile_link": "mobilapper",
   "settings.notice_platform_link": "server",
   "settings.notice_text": "Mattermost er muliggjort av åpen kildekode-programvare som brukes i vår {platform} og {mobile}.",

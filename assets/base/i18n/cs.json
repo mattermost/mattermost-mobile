@@ -1161,8 +1161,6 @@
   "settings.advanced_settings": "Pokročilá Nastavení",
   "settings.advanced_settings.component_library": "Knihovna komponent",
   "settings.display": "Zobrazení",
-  "settings.link.error.text": "Odkaz nelze otevřít.",
-  "settings.link.error.title": "Chyba",
   "settings.notice_mobile_link": "mobilní aplikace",
   "settings.notice_platform_link": "server",
   "settings.notice_text": "Mattermost je vytvořený díky softwaru s otevřeným zdrojovým kódem, který se používá na naší {platform} a {mobile}.",
