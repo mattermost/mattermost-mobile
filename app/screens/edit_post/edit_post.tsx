@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Keyboard, type LayoutChangeEvent, Platform, View, StyleSheet} from 'react-native';
 import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
@@ -9,13 +9,14 @@ import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 import {deletePost, editPost} from '@actions/remote/post';
 import Autocomplete from '@components/autocomplete';
 import Loading from '@components/loading';
+import {QUICK_ACTIONS_HEIGHT} from '@components/post_draft/quick_actions/quick_actions';
 import {EditPostProvider} from '@context/edit_post';
 import {ExtraKeyboardProvider} from '@context/extra_keyboard';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
-import {useKeyboardOverlap, useKeyboardHeight} from '@hooks/device';
+import {useKeyboardOverlap} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
 import useFileUploadError from '@hooks/file_upload_error';
 import {useInputPropagation} from '@hooks/input';
@@ -54,6 +55,9 @@ const styles = StyleSheet.create({
 });
 
 const RIGHT_BUTTON = buildNavigationButton('edit-post', 'edit_post.save.button');
+
+// Exclude bottom edge from SafeAreaView to prevent gap between attachments and keyboard.
+const safeAreaEdges: Edge[] = ['top', 'left', 'right'];
 
 type EditPostProps = {
     componentId: AvailableScreens;
@@ -97,7 +101,6 @@ const EditPost = ({
     const theme = useTheme();
     const intl = useIntl();
     const serverUrl = useServerUrl();
-    const keyboardHeight = useKeyboardHeight();
 
     const shouldDeleteOnSave = !postMessage && canDelete && !hasFilesAttached;
     const {uploadError, newUploadError} = useFileUploadError();
@@ -366,15 +369,10 @@ const EditPost = ({
     useAndroidHardwareBackHandler(componentId, onClose);
 
     const overlap = useKeyboardOverlap(mainView, containerHeight);
-    const autocompletePosition = overlap + AUTOCOMPLETE_SEPARATION;
+    const autocompletePosition = overlap + AUTOCOMPLETE_SEPARATION + QUICK_ACTIONS_HEIGHT;
     const autocompleteAvailableSpace = containerHeight - autocompletePosition;
 
     const [animatedAutocompletePosition, animatedAutocompleteAvailableSpace] = useAutocompleteDefaultAnimatedValues(autocompletePosition, autocompleteAvailableSpace);
-
-    // Exclude bottom edge from SafeAreaView when keyboard is visible to prevent gap between attachments and keyboard.
-    const safeAreaEdges: Edge[] = useMemo(() => {
-        return keyboardHeight > 0 ? ['top', 'left', 'right'] : ['top', 'left', 'right', 'bottom'];
-    }, [keyboardHeight]);
 
     if (isUpdating) {
         return (
