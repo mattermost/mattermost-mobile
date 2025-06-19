@@ -139,7 +139,7 @@ jobs:
 
       - name: ci/setup-cyclonedx-cli
         run: |
-          curl -sSfL https://github.com/CycloneDX/cyclonedx-cli/releases/download/0.27.2/cyclonedx-linux-x64 -o cyclonedx
+          curl -sSfL https://github.com/CycloneDX/cyclonedx-cli/releases/download/v0.27.2/cyclonedx-linux-x64 -o cyclonedx
           chmod +x cyclonedx
           sudo mv cyclonedx /usr/local/bin/
 
