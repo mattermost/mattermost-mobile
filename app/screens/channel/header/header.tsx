@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, Platform, Text, View} from 'react-native';
 
@@ -19,10 +19,12 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {usePreventDoubleTap} from '@hooks/utils';
+import {fetchPlaybookRunsForChannel} from '@playbooks/actions/remote/runs';
 import {goToPlaybookRun, goToPlaybookRuns} from '@playbooks/screens/navigation';
 import {BOTTOM_SHEET_ANDROID_OFFSET} from '@screens/bottom_sheet';
 import ChannelBanner from '@screens/channel/header/channel_banner';
 import {bottomSheet, popTopScreen, showModal} from '@screens/navigation';
+import EphemeralStore from '@store/ephemeral_store';
 import {isTypeDMorGM} from '@utils/channel';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -55,6 +57,7 @@ type ChannelProps = {
     shouldRenderChannelBanner: boolean;
     hasPlaybookRuns: boolean;
     playbooksActiveRuns: number;
+    isPlaybooksEnabled: boolean;
     activeRunId?: string;
 
     // searchTerm: string;
@@ -106,6 +109,7 @@ const ChannelHeader = ({
     shouldRenderChannelBanner,
     playbooksActiveRuns,
     hasPlaybookRuns,
+    isPlaybooksEnabled,
     activeRunId,
 }: ChannelProps) => {
     const intl = useIntl();
@@ -295,6 +299,18 @@ const ChannelHeader = ({
 
         return undefined;
     }, [memberCount, customStatus, isCustomStatusExpired, theme.sidebarHeaderTextColor, styles.customStatusContainer, styles.customStatusEmoji, styles.customStatusText, styles.subtitle, isCustomStatusEnabled]);
+
+    useEffect(() => {
+        const asyncEffect = async () => {
+            if (isPlaybooksEnabled && !EphemeralStore.getChannelPlaybooksSynced(serverUrl, channelId)) {
+                const res = await fetchPlaybookRunsForChannel(serverUrl, channelId);
+                if (!('error' in res)) {
+                    EphemeralStore.setChannelPlaybooksSynced(serverUrl, channelId);
+                }
+            }
+        };
+        asyncEffect();
+    }, [channelId, serverUrl, isPlaybooksEnabled]);
 
     const showBookmarkBar = isBookmarksEnabled && hasBookmarks && shouldRenderBookmarks;
 

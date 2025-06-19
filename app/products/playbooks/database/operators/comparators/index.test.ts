@@ -81,7 +81,6 @@ describe('shouldHandlePlaybookChecklistItemRecord', () => {
         const existingRecord = TestHelper.fakePlaybookChecklistItemModel({
             title: 'Item Title',
             description: 'Description',
-            state: 'Open',
             assigneeId: 'user1',
             command: '/command',
             dueDate: 123456,
@@ -89,7 +88,6 @@ describe('shouldHandlePlaybookChecklistItemRecord', () => {
         const raw = TestHelper.fakePlaybookChecklistItem(existingRecord.checklistId, {
             title: 'Item Title',
             description: 'Description',
-            state: 'Open',
             assignee_id: 'user1',
             command: '/command',
             due_date: 123456,
@@ -102,7 +100,6 @@ describe('shouldHandlePlaybookChecklistItemRecord', () => {
         const existingRecord = TestHelper.fakePlaybookChecklistItemModel({
             title: 'Item Title',
             description: 'Description',
-            state: 'Open',
             assigneeId: 'user1',
             command: '/command',
             dueDate: 123456,
@@ -110,7 +107,6 @@ describe('shouldHandlePlaybookChecklistItemRecord', () => {
         const raw = TestHelper.fakePlaybookChecklistItem(existingRecord.checklistId, {
             title: 'Different Title',
             description: 'Description',
-            state: 'Open',
             assignee_id: 'user1',
             command: '/command',
             due_date: 123456,

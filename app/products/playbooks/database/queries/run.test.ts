@@ -275,7 +275,7 @@ describe('Playbook Run Queries', () => {
         it('should return 100 when all checklist items are completed', (done) => {
             const mockRuns = TestHelper.createPlaybookRuns(1, 1, 2);
             mockRuns[0].checklists[0].items.forEach((item) => {
-                item.state = 'done';
+                item.state = 'closed';
                 item.completed_at = Date.now();
             });
             operator.handlePlaybookRun({

@@ -6,7 +6,8 @@ import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {customProfileAttributeId} from '@utils/custom_profile_attribute';
 import {getFullErrorMessage} from '@utils/errors';
-import {logDebug} from '@utils/log';
+import {logError} from '@utils/log';
+import {convertValueForServer} from '@utils/user';
 
 import type Model from '@nozbe/watermelondb/Model';
 import type {CustomProfileField, CustomAttribute, CustomAttributeSet, CustomProfileAttribute, UserCustomProfileAttributeSimple} from '@typings/api/custom_profile_attributes';
@@ -25,15 +26,16 @@ export const fetchCustomProfileAttributes = async (serverUrl: string, userId: st
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         let fields: CustomProfileField[] = [];
-        let attrValues: Record<string, string> = {};
+        let attrValues: Record<string, string | string[]> = {};
 
         try {
             [fields, attrValues] = await Promise.all([
                 client.getCustomProfileAttributeFields(),
                 client.getCustomProfileAttributeValues(userId),
             ]);
+
         } catch (err) {
-            logDebug('error on fetchCustomProfileAttributes get fields and attr values', getFullErrorMessage(err));
+            logError('error on fetchCustomProfileAttributes get fields and attr values', getFullErrorMessage(err));
             return {attributes, error: err};
         }
 
@@ -46,11 +48,25 @@ export const fetchCustomProfileAttributes = async (serverUrl: string, userId: st
             const attributeModelPromises: Array<Promise<Model[]>> = [];
             const fieldModelPromises: Array<Promise<Model[]>> = [];
             for (const field of fields) {
-                const value = attrValues[field.id] || '';
+                const rawValue = attrValues[field.id];
+                let value = '';
+
+                // Handle different value types properly
+                if (rawValue !== undefined && rawValue !== null) {
+                    if (Array.isArray(rawValue)) {
+                        // For arrays (multiselect), serialize to JSON string
+                        value = JSON.stringify(rawValue);
+                    } else {
+                        // For other types, convert to string
+                        value = String(rawValue);
+                    }
+                }
+
                 if (!filterEmpty || value) {
                     attributes[field.id] = {
                         id: field.id,
                         name: field.name,
+                        type: field.type || 'text',
                         value,
                         sort_order: field.attrs?.sort_order,
                     };
@@ -87,13 +103,13 @@ export const fetchCustomProfileAttributes = async (serverUrl: string, userId: st
             }
 
         } catch (err) {
-            logDebug('error on fetchCustomProfileAttributes field iteration', getFullErrorMessage(err));
+            logError('error on fetchCustomProfileAttributes field iteration', getFullErrorMessage(err));
             return {attributes, error: err};
         }
 
         return {attributes, error: undefined};
     } catch (error) {
-        logDebug('error on fetchCustomProfileAttributes', getFullErrorMessage(error));
+        logError('error on fetchCustomProfileAttributes', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         return {attributes, error};
     }
@@ -114,7 +130,7 @@ export const updateCustomProfileAttributes = async (serverUrl: string, userId: s
 
         // Convert attributes to the format expected by the API
         Object.entries(attributes).forEach(([id, attr]) => {
-            attributeValues[id] = attr.value;
+            attributeValues[id] = convertValueForServer(attr.value, attr.type);
         });
 
         // Update on the server
@@ -137,7 +153,7 @@ export const updateCustomProfileAttributes = async (serverUrl: string, userId: s
 
         return {success: true, error: undefined};
     } catch (error) {
-        logDebug('error on updateCustomProfileAttributes', getFullErrorMessage(error));
+        logError('error on updateCustomProfileAttributes', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         return {success: false, error};
     }

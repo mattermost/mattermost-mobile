@@ -180,4 +180,8 @@ export class WebSocketClient extends EventEmitter {
         }
         return this.ws.readyState;
     }
+
+    get sessionID() {
+        return this.originalConnID;
+    }
 }
