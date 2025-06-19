@@ -108,7 +108,7 @@ jobs:
         env:
           SNYK_TOKEN: "${{ secrets.SNYK_TOKEN }}"
         run: |
-          snyk sbom --format=cyclonedx1.6+json --all-projects --json-file-output=sbom-android.json
+          snyk sbom --format=cyclonedx1.6+json --all-projects --json-file-output=../sbom-android.json
         working-directory: ./android
         shell: bash
 
