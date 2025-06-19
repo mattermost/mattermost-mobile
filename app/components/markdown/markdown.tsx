@@ -1,5 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+/* eslint-disable max-lines */
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import {Parser, Node} from 'commonmark';
@@ -84,7 +85,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     // Android has trouble giving text transparency depending on how it's nested,
     // so we calculate the resulting colour manually
     const editedOpacity = Platform.select({
-        ios: 0.3,
+        ios: 0.56,
         android: 1.0,
     });
     const editedColor = Platform.select({
@@ -101,6 +102,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         editedIndicatorText: {
             color: editedColor,
             opacity: editedOpacity,
+            fontStyle: 'italic',
+            ...typography('Body', 25, 'Regular'),
         },
         errorMessage: {
             color: theme.errorTextColor,
@@ -114,6 +117,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         bold: {
             fontWeight: '600',
+        },
+        pencilIconStyle: {
+            color: editedColor,
         },
     };
 });
@@ -265,8 +271,9 @@ const Markdown = ({
         let spacer = '';
         const styles = [baseTextStyle, style.editedIndicatorText];
 
-        if (context[0] === 'paragraph') {
-            spacer = ' ';
+        // Add space for both paragraphs and headings to make it inline
+        if (context[0] === 'paragraph' || context[0]?.startsWith('heading')) {
+            spacer = '  ';
         }
 
         return (
@@ -275,10 +282,17 @@ const Markdown = ({
                 testID='edited_indicator'
             >
                 {spacer}
-                <FormattedText
-                    id='post_message_view.edited'
-                    defaultMessage='(edited)'
+                <CompassIcon
+                    name='pencil-outline'
+                    size={16}
+                    color={theme.centerChannelColor}
                 />
+                <Text style={{marginLeft: 2}}>
+                    <FormattedText
+                        id='post_message_view.edited'
+                        defaultMessage='Edited'
+                    />
+                </Text>
             </Text>
         );
     };
@@ -638,7 +652,7 @@ const Markdown = ({
         if (isEdited) {
             const editIndicatorNode = new Node('edited_indicator');
             if (ast.lastChild && ['heading', 'paragraph'].includes(ast.lastChild.type)) {
-                ast.appendChild(editIndicatorNode);
+                ast.lastChild.appendChild(editIndicatorNode);
             } else {
                 const node = new Node('paragraph');
                 node.appendChild(editIndicatorNode);
