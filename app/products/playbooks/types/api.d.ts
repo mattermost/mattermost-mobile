@@ -30,14 +30,15 @@ type PlaybookChecklistItem = {
     command_last_run: number;
     due_date: number;
     task_actions?: TaskAction[];
-    order: number;
     completed_at: number;
+    update_at: number;
 }
 
 type PlaybookChecklist = {
     id: string;
     title: string;
     items: PlaybookChecklistItem[];
+    update_at: number;
 }
 
 type RunMetricData = {
@@ -107,4 +108,5 @@ type PlaybookRun = {
     status_posts: StatusPost[];
     checklists: PlaybookChecklist[];
     metrics_data: RunMetricData[];
+    update_at: number;
 }
