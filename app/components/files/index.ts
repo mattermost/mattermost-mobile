@@ -6,7 +6,8 @@ import {of as of$, from as from$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {queryFilesForPost} from '@queries/servers/file';
-import {observeCanDownloadFiles, observeConfigBooleanValue} from '@queries/servers/system';
+import {observeCanDownloadFiles, observeEnableSecureFilePreview} from '@queries/servers/security';
+import {observeConfigBooleanValue} from '@queries/servers/system';
 import {filesLocalPathValidation} from '@utils/file';
 
 import Files from './files';
