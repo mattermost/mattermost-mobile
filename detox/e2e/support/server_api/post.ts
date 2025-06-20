@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {timeouts, wait} from '@support/utils';
+
 import client from './client';
 import {getResponseFromError} from './common';
 
@@ -72,6 +74,7 @@ export const apiGetPostsInChannel = async (baseUrl: string, channelId: string): 
  * @return {Object} returns {post} on success or {error, status} on error
  */
 export const apiGetLastPostInChannel = async (baseUrl: string, channelId: string): Promise<any> => {
+    await wait(timeouts.TWO_SEC);
     const {posts} = await apiGetPostsInChannel(baseUrl, channelId);
     return {post: posts[0]};
 };

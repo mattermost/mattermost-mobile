@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {children, field, immutableRelation} from '@nozbe/watermelondb/decorators';
+import {children, field, immutableRelation, json} from '@nozbe/watermelondb/decorators';
 import Model, {type Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
+import {safeParseJSON} from '@utils/helpers';
 
 import type {Query, Relation} from '@nozbe/watermelondb';
 import type CategoryChannelModel from '@typings/database/models/servers/category_channel';
@@ -108,6 +109,12 @@ export default class ChannelModel extends Model implements ChannelModelInterface
     /** type : The type of the channel ( e.g. G: group messages, D: direct messages, P: private channel and O: public channel) */
     @field('type') type!: ChannelType;
 
+    /** bannerInfo : The banner information for the channel */
+    @json('banner_info', safeParseJSON) bannerInfo?: ChannelBannerInfo;
+
+    /** policy_enforced : Whether the Attribute-Based Access Control (ABAC) policy is enforced for this channel, controlling access based on user attributes */
+    @field('abac_policy_enforced') abacPolicyEnforced?: boolean;
+
     /** members : Users belonging to this channel */
     @children(CHANNEL_MEMBERSHIP) members!: Query<ChannelMembershipModel>;
 
@@ -158,6 +165,8 @@ export default class ChannelModel extends Model implements ChannelModelInterface
             scheme_id: null,
             group_constrained: null,
             shared: this.shared,
+            banner_info: this.bannerInfo,
+            policy_enforced: this.abacPolicyEnforced,
         };
     };
 }

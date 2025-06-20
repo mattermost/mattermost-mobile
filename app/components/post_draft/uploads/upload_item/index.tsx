@@ -27,6 +27,7 @@ type Props = {
     file: FileInfo;
     openGallery: (file: FileInfo) => void;
     rootId: string;
+    isEditMode: boolean;
 }
 
 const style = StyleSheet.create({
@@ -40,7 +41,6 @@ const style = StyleSheet.create({
         borderRadius: 4,
     },
     progress: {
-        alignItems: 'center',
         backgroundColor: 'rgba(0, 0, 0, 0.1)',
         height: 53,
         width: 53,
@@ -48,6 +48,11 @@ const style = StyleSheet.create({
         position: 'absolute',
         borderRadius: 4,
         paddingLeft: 3,
+    },
+    progressContainer: {
+        paddingVertical: undefined,
+        position: undefined,
+        justifyContent: undefined,
     },
     filePreview: {
         width: 56,
@@ -57,7 +62,7 @@ const style = StyleSheet.create({
 
 export default function UploadItem({
     channelId, galleryIdentifier, index, file,
-    rootId, openGallery,
+    rootId, openGallery, isEditMode,
 }: Props) {
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -120,9 +125,10 @@ export default function UploadItem({
                 backgroundColor={changeOpacity(theme.centerChannelColor, 0.08)}
                 iconSize={60}
                 file={file}
+                testID={file.id}
             />
         );
-    }, [file]);
+    }, [file, ref, theme.centerChannelColor]);
 
     return (
         <View
@@ -145,6 +151,7 @@ export default function UploadItem({
                     <ProgressBar
                         progress={progress || 0}
                         color={theme.buttonBg}
+                        containerStyle={style.progressContainer}
                     />
                 </View>
                 }
@@ -153,6 +160,8 @@ export default function UploadItem({
                 clientId={file.clientId!}
                 channelId={channelId}
                 rootId={rootId}
+                isEditMode={isEditMode}
+                fileId={file.id!}
             />
         </View>
     );

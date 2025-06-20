@@ -8,6 +8,8 @@ import {Alert, Keyboard, type LayoutChangeEvent, Platform, SafeAreaView, View, S
 import {deletePost, editPost} from '@actions/remote/post';
 import Autocomplete from '@components/autocomplete';
 import Loading from '@components/loading';
+import {EditPostProvider} from '@context/edit_post';
+import {ExtraKeyboardProvider} from '@context/extra_keyboard';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
@@ -21,8 +23,9 @@ import PostError from '@screens/edit_post/post_error';
 import {buildNavigationButton, dismissModal, setButtons} from '@screens/navigation';
 import {changeOpacity} from '@utils/theme';
 
-import EditPostInput, {type EditPostInputRef} from './edit_post_input';
+import EditPostInput from './edit_post_input';
 
+import type {PasteInputRef} from '@mattermost/react-native-paste-input';
 import type PostModel from '@typings/database/models/servers/post';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
@@ -40,6 +43,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
+    inputContainer: {
+        flex: 1,
+    },
 });
 
 const RIGHT_BUTTON = buildNavigationButton('edit-post', 'edit_post.save.button');
@@ -51,8 +57,9 @@ type EditPostProps = {
     maxPostSize: number;
     hasFilesAttached: boolean;
     canDelete: boolean;
+    files?: FileInfo[];
 }
-const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttached, canDelete}: EditPostProps) => {
+const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttached, canDelete, files}: EditPostProps) => {
     const editingMessage = post.messageSource || post.message;
     const [postMessage, setPostMessage] = useState(editingMessage);
     const [cursorPosition, setCursorPosition] = useState(editingMessage.length);
@@ -61,13 +68,16 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
     const [isUpdating, setIsUpdating] = useState(false);
     const [containerHeight, setContainerHeight] = useState(0);
     const [propagateValue, shouldProcessEvent] = useInputPropagation();
+    const [postFiles, setPostFiles] = useState<FileInfo[]>(files || []);
 
     const mainView = useRef<View>(null);
 
-    const postInputRef = useRef<EditPostInputRef>(null);
+    const postInputRef = useRef<PasteInputRef | undefined>(undefined);
     const theme = useTheme();
     const intl = useIntl();
     const serverUrl = useServerUrl();
+
+    const shouldDeleteOnSave = !postMessage && canDelete && !hasFilesAttached;
 
     useEffect(() => {
         toggleSaveButton(false);
@@ -93,11 +103,11 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
     const onClose = useCallback(() => {
         Keyboard.dismiss();
         dismissModal({componentId});
-    }, []);
+    }, [componentId]);
 
     const onTextSelectionChange = useCallback((curPos: number = cursorPosition) => {
         setCursorPosition(curPos);
-    }, [cursorPosition, postMessage]);
+    }, [cursorPosition]);
 
     const toggleSaveButton = useCallback((enabled = true) => {
         setButtons(componentId, {
@@ -110,6 +120,44 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
             }],
         });
     }, [componentId, intl, theme]);
+
+    const handleFileRemoval = useCallback((id: string) => {
+        const filterFileById = (file: FileInfo) => {
+            return file.id !== id;
+        };
+        Alert.alert(
+            intl.formatMessage({
+                id: 'edit_post.delete_file.title',
+                defaultMessage: 'Delete attachment',
+            }),
+            intl.formatMessage({
+                id: 'edit_post.delete_file.confirmation',
+                defaultMessage: 'Are you sure you want to remove {filename}?',
+            }, {
+                filename: postFiles?.find((file) => file.id === id)?.name || '',
+            }),
+            [
+                {
+                    text: intl.formatMessage({
+                        id: 'edit_post.delete_file.cancel',
+                        defaultMessage: 'Cancel',
+                    }),
+                    style: 'cancel',
+                },
+                {
+                    text: intl.formatMessage({
+                        id: 'edit_post.delete_file.confirm',
+                        defaultMessage: 'Delete',
+                    }),
+                    style: 'destructive',
+                    onPress: () => {
+                        setPostFiles((prevFiles) => prevFiles?.filter(filterFileById) || []);
+                        toggleSaveButton(true);
+                    },
+                },
+            ],
+        );
+    }, [intl, toggleSaveButton, postFiles]);
 
     const onChangeTextCommon = useCallback((message: string) => {
         const tooLong = message.trim().length > maxPostSize;
@@ -128,7 +176,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
         setPostMessage(message);
         propagateValue(message);
         onChangeTextCommon(message);
-    }, [onChangeTextCommon]);
+    }, [onChangeTextCommon, propagateValue]);
 
     const onInputChangeText = useCallback((message: string) => {
         if (!shouldProcessEvent(message)) {
@@ -136,7 +184,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
         }
         setPostMessage(message);
         onChangeTextCommon(message);
-    }, [onChangeTextCommon]);
+    }, [onChangeTextCommon, shouldProcessEvent]);
 
     const handleUIUpdates = useCallback((res: {error?: unknown}) => {
         if (res.error) {
@@ -148,7 +196,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
             setIsUpdating(false);
             onClose();
         }
-    }, []);
+    }, [intl, onClose]);
 
     const handleDeletePost = useCallback(async () => {
         Alert.alert(
@@ -174,35 +222,39 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
                 },
             }],
         );
-    }, [serverUrl, editingMessage]);
+    }, [intl, toggleSaveButton, editingMessage, serverUrl, post, handleUIUpdates]);
 
     const onSavePostMessage = useCallback(async () => {
         setIsUpdating(true);
         setErrorLine(undefined);
         setErrorExtra(undefined);
         toggleSaveButton(false);
-        if (!postMessage && canDelete && !hasFilesAttached) {
+        if (shouldDeleteOnSave) {
             handleDeletePost();
             return;
         }
 
-        const res = await editPost(serverUrl, post.id, postMessage);
+        const currentFileIds = postFiles.map((file) => file.id).filter((id): id is string => Boolean(id));
+        const originalFiles = post.metadata?.files || [];
+        const originalFileIds = originalFiles.map((file) => file.id).filter((id): id is string => Boolean(id));
+        const currentFileIdSet = new Set(currentFileIds);
+        const removedFileIds = originalFileIds.filter((id) => !currentFileIdSet.has(id));
+
+        const res = await editPost(serverUrl, post.id, postMessage, currentFileIds, removedFileIds);
         handleUIUpdates(res);
-    }, [toggleSaveButton, serverUrl, post.id, postMessage, onClose]);
+    }, [toggleSaveButton, shouldDeleteOnSave, post.metadata?.files, post.id, serverUrl, postMessage, handleUIUpdates, handleDeletePost, postFiles]);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         setContainerHeight(e.nativeEvent.layout.height);
     }, []);
 
-    useNavButtonPressed(RIGHT_BUTTON.id, componentId, onSavePostMessage, [postMessage]);
+    useNavButtonPressed(RIGHT_BUTTON.id, componentId, onSavePostMessage, [postMessage, postFiles]);
     useNavButtonPressed(closeButtonId, componentId, onClose, []);
     useAndroidHardwareBackHandler(componentId, onClose);
 
     const overlap = useKeyboardOverlap(mainView, containerHeight);
     const autocompletePosition = overlap + AUTOCOMPLETE_SEPARATION;
     const autocompleteAvailableSpace = containerHeight - autocompletePosition;
-
-    const inputHeight = containerHeight - overlap;
 
     const [animatedAutocompletePosition, animatedAutocompleteAvailableSpace] = useAutocompleteDefaultAnimatedValues(autocompletePosition, autocompleteAvailableSpace);
 
@@ -218,32 +270,37 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
     }
 
     return (
-        <>
+        <EditPostProvider onFileRemove={handleFileRemoval}>
             <SafeAreaView
                 testID='edit_post.screen'
                 style={styles.container}
                 onLayout={onLayout}
                 nativeID={SecurityManager.getShieldScreenId(componentId)}
             >
-                <View
-                    style={styles.body}
-                    ref={mainView}
-                >
-                    {Boolean((errorLine || errorExtra)) &&
-                        <PostError
-                            errorExtra={errorExtra}
-                            errorLine={errorLine}
-                        />
-                    }
-                    <EditPostInput
-                        inputHeight={inputHeight}
-                        hasError={Boolean(errorLine)}
-                        message={postMessage}
-                        onChangeText={onInputChangeText}
-                        onTextSelectionChange={onTextSelectionChange}
-                        ref={postInputRef}
-                    />
-                </View>
+                <ExtraKeyboardProvider>
+                    <View
+                        style={styles.body}
+                        ref={mainView}
+                    >
+                        {Boolean((errorLine || errorExtra)) &&
+                            <PostError
+                                errorExtra={errorExtra}
+                                errorLine={errorLine}
+                            />
+                        }
+                        <View style={styles.inputContainer}>
+                            <EditPostInput
+                                hasError={Boolean(errorLine)}
+                                message={postMessage}
+                                onChangeText={onInputChangeText}
+                                onTextSelectionChange={onTextSelectionChange}
+                                inputRef={postInputRef}
+                                post={post}
+                                postFiles={postFiles}
+                            />
+                        </View>
+                    </View>
+                </ExtraKeyboardProvider>
             </SafeAreaView>
             <Autocomplete
                 channelId={post.channelId}
@@ -258,7 +315,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
                 inPost={false}
                 serverUrl={serverUrl}
             />
-        </>
+        </EditPostProvider>
     );
 };
 

@@ -154,7 +154,7 @@ describe('Autocomplete - Slash Suggestion', () => {
         await slashSuggestionAutocomplete.tap();
 
         // * Verify slash suggestion list disappears
-        await expect(Autocomplete.flatSlashSuggestionList).not.toBeVisible();
+        await waitFor(Autocomplete.flatSlashSuggestionList).not.toExist().withTimeout(timeouts.FOUR_SEC);
 
         // # Type in "/" again to re-activate slash suggestion list
         await ChannelScreen.postInput.typeText('/');

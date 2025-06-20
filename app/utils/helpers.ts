@@ -135,6 +135,9 @@ export function getRoundedTime(value: Moment) {
 
 export function isTablet() {
     const result: SplitViewResult = RNUtils.isRunningInSplitView();
+    if (!result) {
+        return false;
+    }
     return result.isTablet && !result.isSplit;
 }
 
@@ -157,7 +160,7 @@ export function hasTrailingSpaces(term: string) {
 export function isMainActivity() {
     if (Platform.OS === 'android') {
         const MattermostShare = require('@mattermost/rnshare').default;
-        return MattermostShare?.getCurrentActivityName() === 'MainActivity';
+        return MattermostShare?.getCurrentActivityName().includes('MainActivity');
     }
 
     return true;

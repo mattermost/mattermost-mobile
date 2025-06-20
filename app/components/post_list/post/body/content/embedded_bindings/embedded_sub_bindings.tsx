@@ -7,14 +7,21 @@ import ButtonBinding from './button_binding';
 import BindingMenu from './menu_binding';
 
 import type PostModel from '@typings/database/models/servers/post';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     bindings: AppBinding[];
     post: PostModel;
     theme: Theme;
+    location: AvailableScreens;
 }
 
-const EmbeddedSubBindings = ({bindings, post, theme}: Props) => {
+const EmbeddedSubBindings = ({
+    bindings,
+    post,
+    theme,
+    location,
+}: Props) => {
     const content: React.ReactNode[] = [];
 
     bindings.forEach((binding) => {
@@ -28,6 +35,7 @@ const EmbeddedSubBindings = ({bindings, post, theme}: Props) => {
                     key={binding.location}
                     binding={binding}
                     post={post}
+                    location={location}
                 />,
             );
             return;

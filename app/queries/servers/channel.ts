@@ -4,18 +4,20 @@
 /* eslint-disable max-lines */
 
 import {Database, Model, Q, Query, Relation} from '@nozbe/watermelondb';
-import {of as of$, Observable} from 'rxjs';
-import {map as map$, switchMap, distinctUntilChanged} from 'rxjs/operators';
+import {of as of$, Observable, combineLatest} from 'rxjs';
+import {map as map$, switchMap, distinctUntilChanged, combineLatestWith} from 'rxjs/operators';
 
 import {General, Permissions} from '@constants';
 import {MM_TABLES} from '@constants/database';
 import {sanitizeLikeString} from '@helpers/database';
+import {isDefaultChannel} from '@utils/channel';
 import {hasPermission} from '@utils/role';
+import {isSystemAdmin} from '@utils/user';
 
 import {prepareDeletePost} from './post';
 import {queryRoles} from './role';
-import {observeCurrentChannelId, getCurrentChannelId, observeCurrentUserId} from './system';
-import {observeTeammateNameDisplay} from './user';
+import {observeCurrentChannelId, getCurrentChannelId, observeCurrentUserId, observeConfigBooleanValue} from './system';
+import {observeCurrentUser, observeTeammateNameDisplay} from './user';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Clause} from '@nozbe/watermelondb/QueryDescription';
@@ -340,7 +342,7 @@ export const getDefaultChannelForTeam = async (database: Database, teamId: strin
         Q.sortBy('display_name', Q.asc),
     ).fetch();
 
-    const defaultChannel = myChannels.find((c) => c.name === General.DEFAULT_CHANNEL);
+    const defaultChannel = myChannels.find((c) => isDefaultChannel(c));
     const myFirstTeamChannel = myChannels[0];
 
     if (defaultChannel || canIJoinPublicChannelsInTeam) {
@@ -534,6 +536,19 @@ export function observeMyChannelMentionCount(database: Database, teamId?: string
             }, 0))),
             distinctUntilChanged(),
         );
+}
+
+export function observeMyChannelUnreads(database: Database, teamId: string) {
+    const myChannels = queryMyChannelsByTeam(database, teamId).observeWithColumns(['is_unread']);
+    const notifyProps = observeAllMyChannelNotifyProps(database);
+    return myChannels.pipe(
+        combineLatestWith(notifyProps),
+        switchMap(([mycs, notify]) => of$(mycs.reduce((acc, v) => {
+            const isMuted = notify?.[v.id]?.mark_unread === 'mention';
+            return acc || (v.isUnread && !isMuted);
+        }, false))),
+        distinctUntilChanged(),
+    );
 }
 
 export function queryMyRecentChannels(database: Database, take: number) {
@@ -737,4 +752,13 @@ export const queryChannelMembers = (database: Database, channelId: string) => {
 
 export const observeChannelMembers = (database: Database, channelId: string) => {
     return queryChannelMembers(database, channelId).observe();
+};
+
+export const observeIsReadOnlyChannel = (database: Database, channelId: string) => {
+    const channel = observeChannel(database, channelId);
+    const experimentalTownSquareIsReadOnly = observeConfigBooleanValue(database, 'ExperimentalTownSquareIsReadOnly');
+    const user = observeCurrentUser(database);
+    return combineLatest([channel, user, experimentalTownSquareIsReadOnly]).pipe(
+        switchMap(([c, u, readOnly]) => of$(isDefaultChannel(c) && !isSystemAdmin(u?.roles || '') && readOnly)),
+    );
 };

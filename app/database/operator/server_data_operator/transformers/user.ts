@@ -17,14 +17,14 @@ const {PREFERENCE, USER} = MM_TABLES.SERVER;
  * @param {RecordPair} operator.value
  * @returns {Promise<UserModel>}
  */
-export const transformUserRecord = ({action, database, value}: TransformerArgs): Promise<UserModel> => {
-    const raw = value.raw as UserProfile;
-    const record = value.record as UserModel;
+export const transformUserRecord = ({action, database, value}: TransformerArgs<UserModel, UserProfile>): Promise<UserModel> => {
+    const raw = value.raw;
+    const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
 
     // id of user comes from server response
     const fieldsMapper = (user: UserModel) => {
-        user._raw.id = isCreateAction ? (raw?.id ?? user.id) : record.id;
+        user._raw.id = isCreateAction ? (raw?.id ?? user.id) : record?.id || '';
         user.authService = raw.auth_service;
         user.deleteAt = raw.delete_at;
         user.updateAt = raw.update_at;
@@ -71,7 +71,7 @@ export const transformUserRecord = ({action, database, value}: TransformerArgs):
         tableName: USER,
         value,
         fieldsMapper,
-    }) as Promise<UserModel>;
+    });
 };
 
 /**
@@ -81,14 +81,14 @@ export const transformUserRecord = ({action, database, value}: TransformerArgs):
  * @param {RecordPair} operator.value
  * @returns {Promise<PreferenceModel>}
  */
-export const transformPreferenceRecord = ({action, database, value}: TransformerArgs): Promise<PreferenceModel> => {
-    const raw = value.raw as PreferenceType;
-    const record = value.record as PreferenceModel;
+export const transformPreferenceRecord = ({action, database, value}: TransformerArgs<PreferenceModel, PreferenceType>): Promise<PreferenceModel> => {
+    const raw = value.raw;
+    const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
 
     // id of preference comes from server response
     const fieldsMapper = (preference: PreferenceModel) => {
-        preference._raw.id = isCreateAction ? preference.id : record.id;
+        preference._raw.id = isCreateAction ? preference.id : record?.id || '';
         preference.category = raw.category;
         preference.name = raw.name;
         preference.userId = raw.user_id;
@@ -101,6 +101,6 @@ export const transformPreferenceRecord = ({action, database, value}: Transformer
         tableName: PREFERENCE,
         value,
         fieldsMapper,
-    }) as Promise<PreferenceModel>;
+    });
 };
 

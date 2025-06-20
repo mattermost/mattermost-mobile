@@ -16,7 +16,7 @@ type CustomProfileField = {
     /** name of the field **/
     name: string;
 
-    /** type of values accepted. Currently only text is supported **/
+    /** type of values accepted. **/
     type: string;
 
     /** any extra properties of the field **/
@@ -37,16 +37,36 @@ type CustomProfileField = {
 
 /**
  * CustomProfileAttributeSimple
- * @description simpler type to display a field id with its value.
+ * @description Type representing a custom profile attribute with its field ID, user ID, and value.
  **/
-type CustomProfileAttributeSimple = {
-    [field_id: string]: string;
+type CustomProfileAttribute = {
+
+    /** ID of the custom profile attribute */
+    id: string;
+
+    /** ID of the custom profile field this attribute is for */
+    field_id: string;
+
+    /** ID of the user this attribute belongs to */
+    user_id: string;
+
+    /** Value of the attribute */
+    value: string;
+}
+
+/**
+ * UserCustomProfileAttributeSimple
+ * @description simpler type to display a field id with its value, when we already know it all belongs to the same user
+ **/
+type UserCustomProfileAttributeSimple = {
+    [field_id: string]: string|string[];
 }
 
 export type CustomAttribute = {
     id: string;
     name: string;
     value: string;
+    type: string;
     sort_order?: number;
 }
 

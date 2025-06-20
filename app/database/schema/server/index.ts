@@ -12,6 +12,8 @@ import {
     ChannelMembershipSchema,
     ConfigSchema,
     CustomEmojiSchema,
+    CustomProfileFieldSchema,
+    CustomProfileAttributeSchema,
     DraftSchema,
     FileSchema,
     GroupSchema,
@@ -27,6 +29,7 @@ import {
     PreferenceSchema,
     ReactionSchema,
     RoleSchema,
+    ScheduledPostSchema,
     SystemSchema,
     TeamChannelHistorySchema,
     TeamMembershipSchema,
@@ -40,7 +43,7 @@ import {
 } from './table_schemas';
 
 export const serverSchema: AppSchema = appSchema({
-    version: 6,
+    version: 11,
     tables: [
         CategorySchema,
         CategoryChannelSchema,
@@ -50,6 +53,8 @@ export const serverSchema: AppSchema = appSchema({
         ChannelMembershipSchema,
         ConfigSchema,
         CustomEmojiSchema,
+        CustomProfileFieldSchema,
+        CustomProfileAttributeSchema,
         DraftSchema,
         FileSchema,
         GroupSchema,
@@ -65,6 +70,7 @@ export const serverSchema: AppSchema = appSchema({
         PreferenceSchema,
         ReactionSchema,
         RoleSchema,
+        ScheduledPostSchema,
         SystemSchema,
         TeamChannelHistorySchema,
         TeamMembershipSchema,

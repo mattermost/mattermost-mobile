@@ -14,8 +14,8 @@ import {
 } from 'react-native';
 import Animated, {useAnimatedStyle, useDerivedValue} from 'react-native-reanimated';
 
-import SelectedChip from '@components/selected_chip';
-import SelectedUser from '@components/selected_users/selected_user';
+import SelectedChip from '@components/chips/selected_chip';
+import SelectedUserChip from '@components/chips/selected_user_chip';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import UserItem from '@components/user_item';
 import {MAX_LIST_HEIGHT, MAX_LIST_TABLET_DIFF} from '@constants/autocomplete';
@@ -96,6 +96,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flexWrap: 'wrap',
             marginHorizontal: 20,
             marginVertical: 16,
+            gap: 8,
         },
     };
 });
@@ -267,11 +268,11 @@ export default function Selection({
                     testID={`invite.selected_item.${selectedItem}`}
                 />
             ) : (
-                <SelectedUser
+                <SelectedUserChip
                     key={id}
                     user={selectedItem}
                     teammateNameDisplay={teammateNameDisplay}
-                    onRemove={handleOnRemoveItem}
+                    onPress={handleOnRemoveItem}
                     testID='invite.selected_item'
                 />
             ));

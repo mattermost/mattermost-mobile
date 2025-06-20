@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {RTCMonitor, RTCPeer, parseRTCStats} from '@mattermost/calls/lib';
+import {hasDCSignalingLockSupport} from '@mattermost/calls/lib/utils';
 import {zlibSync, strToU8} from 'fflate';
 import {DeviceEventEmitter, type EmitterSubscription, NativeEventEmitter, NativeModules, Platform} from 'react-native';
 import InCallManager from 'react-native-incall-manager';
@@ -88,10 +89,11 @@ export async function newConnection(
     const credentials = await getServerCredentials(serverUrl);
 
     let config;
+    let version;
     try {
-        config = await client.getCallsConfig();
+        [config, version] = await Promise.all([client.getCallsConfig(), client.getVersion()]);
     } catch (err) {
-        throw new Error(`calls: fetching calls config: ${getFullErrorMessage(err)}`);
+        throw new Error(`calls: fetching calls config and version info: ${getFullErrorMessage(err)}`);
     }
 
     let av1Support = false;
@@ -387,6 +389,7 @@ export async function newConnection(
             iceServers: iceConfigs || [],
             logger,
             dcSignaling: config.EnableDCSignaling,
+            dcLocking: hasDCSignalingLockSupport(version),
         });
 
         collectICEStats();
@@ -455,7 +458,7 @@ export async function newConnection(
     });
 
     const waitForPeerConnection = () => {
-        const waitForReadyImpl = (callback: () => void, fail: (reason: string) => void, timeout: number) => {
+        const waitForReadyImpl = (callback: (sessionId: string) => void, fail: (reason: string) => void, timeout: number) => {
             if (timeout <= 0) {
                 fail('timed out waiting for peer connection');
                 return;
@@ -463,14 +466,14 @@ export async function newConnection(
             setTimeout(() => {
                 if (peer?.connected) {
                     rtcMonitor?.start();
-                    callback();
+                    callback(ws.sessionID);
                 } else {
                     waitForReadyImpl(callback, fail, timeout - 200);
                 }
             }, 200);
         };
 
-        return new Promise<void>((resolve, reject) => {
+        return new Promise<string>((resolve, reject) => {
             waitForReadyImpl(resolve, reject, peerConnectTimeout);
         });
     };

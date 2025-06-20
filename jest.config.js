@@ -16,7 +16,7 @@ module.exports = {
     clearMocks: true,
     setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
     collectCoverageFrom: ['app/**/*.{js,jsx,ts,tsx}'],
-    coverageReporters: ['lcov', 'text-summary'],
+    coverageReporters: ['lcov', 'text-summary', 'json-summary'],
     testPathIgnorePatterns: ['/node_modules/'],
     coveragePathIgnorePatterns: ['/node_modules/', '/components/', '/screens/'],
     transformIgnorePatterns: [

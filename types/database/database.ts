@@ -10,6 +10,7 @@ import type {Database} from '@nozbe/watermelondb';
 import type Model from '@nozbe/watermelondb/Model';
 import type {Clause} from '@nozbe/watermelondb/QueryDescription';
 import type {Class} from '@nozbe/watermelondb/types';
+import type {CustomProfileField, CustomProfileAttribute} from '@typings/api/custom_profile_attributes';
 import type System from '@typings/database/models/servers/system';
 
 export type WithDatabaseArgs = { database: Database }
@@ -43,24 +44,24 @@ export type ServerDatabases = {
   [x: string]: ServerDatabase | undefined;
 };
 
-export type TransformerArgs = {
+export type TransformerArgs<T extends Model, R extends RawValue> = {
   action: string;
   database: Database;
   fieldsMapper?: (model: Model) => void;
   tableName?: string;
-  value: RecordPair;
+  value: RecordPair<T, R>;
 };
 
-export type PrepareBaseRecordArgs = TransformerArgs & {
+export type PrepareBaseRecordArgs<T extends Model, R extends RawValue> = TransformerArgs<T, R> & {
   fieldsMapper: (model: Model) => void;
 }
 
-export type OperationArgs<T extends Model> = {
+export type OperationArgs<T extends Model, R extends RawValue> = {
   tableName: string;
-  createRaws?: RecordPair[];
-  updateRaws?: RecordPair[];
+  createRaws?: Array<RecordPair<T, R>>;
+  updateRaws?: Array<RecordPair<T, R>>;
   deleteRaws?: T[];
-  transformer: (args: TransformerArgs) => Promise<T>;
+  transformer: (args: TransformerArgs<T, R>) => Promise<T>;
 };
 
 export type Models = Array<Class<Model>>;
@@ -137,9 +138,9 @@ export type SanitizePostsArgs = {
   posts: Post[];
 };
 
-export type IdenticalRecordArgs = {
-  existingRecord: Model;
-  newValue: RawValue;
+export type IdenticalRecordArgs<T extends Model, R extends RawValue> = {
+  existingRecord: T;
+  newValue: R;
   tableName: string;
 };
 
@@ -149,21 +150,21 @@ export type RetrieveRecordsArgs = {
   condition: Clause;
 };
 
-export type ProcessRecordsArgs = {
-  createOrUpdateRawValues: RawValue[];
-  deleteRawValues: RawValue[];
+export type ProcessRecordsArgs<R extends RawValue> = {
+  createOrUpdateRawValues: R[];
+  deleteRawValues: R[];
   tableName: string;
   fieldName: string;
   buildKeyRecordBy?: (obj: Record<string, any>) => string;
   shouldUpdate?: (existing: Record<string, any>, newRaw: Record<string, any>) => boolean;
 };
 
-export type HandleRecordsArgs<T extends Model> = {
+export type HandleRecordsArgs<T extends Model, R extends RawValue> = {
   buildKeyRecordBy?: (obj: Record<string, any>) => string;
   fieldName: string;
-  transformer: (args: TransformerArgs) => Promise<T>;
-  createOrUpdateRawValues: RawValue[];
-  deleteRawValues?: RawValue[];
+  transformer: (args: TransformerArgs<T, R>) => Promise<T>;
+  createOrUpdateRawValues: R[];
+  deleteRawValues?: R[];
   tableName: string;
   prepareRecordsOnly: boolean;
   shouldUpdate?: (existingRecord: T, newRaw: RawValue) => boolean;
@@ -174,9 +175,9 @@ export type RangeOfValueArgs = {
   fieldName: string;
 };
 
-export type RecordPair = {
-  record?: Model;
-  raw: RawValue;
+export type RecordPair<T extends Model, R extends RawValue> = {
+  record?: T;
+  raw: R;
 };
 
 type PrepareOnly = {
@@ -294,6 +295,25 @@ export type HandleDraftArgs = PrepareOnly & {
   drafts?: Draft[];
 };
 
+export type HandleScheduledPostsArgs = PrepareOnly & {
+  actionType: string;
+  scheduledPosts?: ScheduledPost[];
+  includeDirectChannelPosts?: boolean;
+};
+
+export type HandleScheduledPostErrorCodeArgs = PrepareOnly & {
+  scheduledPostId: string;
+  errorCode: string;
+}
+
+export type HandleCustomProfileFieldsArgs = PrepareOnly & {
+  fields?: CustomProfileField[];
+};
+
+export type HandleCustomProfileAttributesArgs = PrepareOnly & {
+  attributes?: CustomProfileAttribute[];
+};
+
 export type LoginArgs = {
   config: Partial<ClientConfig>;
   ldapOnly?: boolean;
@@ -317,8 +337,8 @@ export type GetDatabaseConnectionArgs = {
   setAsActiveDatabase: boolean;
 }
 
-export type ProcessRecordResults<T extends Model> = {
-    createRaws: RecordPair[];
-    updateRaws: RecordPair[];
+export type ProcessRecordResults<T extends Model, R extends RawValue> = {
+    createRaws: Array<RecordPair<T, R>>;
+    updateRaws: Array<RecordPair<T, R>>;
     deleteRaws: T[];
 }

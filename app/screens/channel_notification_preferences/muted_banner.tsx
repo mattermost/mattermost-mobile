@@ -12,7 +12,7 @@ import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {preventDoubleTap} from '@utils/tap';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -57,9 +57,9 @@ const MutedBanner = ({channelId}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
-    const onPress = useCallback(preventDoubleTap(() => {
+    const onPress = usePreventDoubleTap(useCallback(() => {
         toggleMuteChannel(serverUrl, channelId, false);
-    }), [channelId, serverUrl]);
+    }, [channelId, serverUrl]));
 
     return (
         <Animated.View
@@ -83,18 +83,17 @@ const MutedBanner = ({channelId}: Props) => {
                 defaultMessage='You can change the notification settings, but you will not receive notifications until the channel is unmuted.'
                 style={styles.contentText}
             />
-            <Button
-                buttonType='default'
-                onPress={onPress}
-                text={formatMessage({
-                    id: 'channel_notification_preferences.unmute_content',
-                    defaultMessage: 'Unmute channel',
-                })}
-                theme={theme}
-                backgroundStyle={styles.button}
-                iconName='bell-outline'
-                iconSize={18}
-            />
+            <View style={styles.button}>
+                <Button
+                    onPress={onPress}
+                    text={formatMessage({
+                        id: 'channel_notification_preferences.unmute_content',
+                        defaultMessage: 'Unmute channel',
+                    })}
+                    theme={theme}
+                    iconName='bell-outline'
+                />
+            </View>
         </Animated.View>
     );
 };

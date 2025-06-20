@@ -1,13 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {render, fireEvent} from '@testing-library/react-native';
+import {render, fireEvent, act} from '@testing-library/react-native';
 import React, {useMemo, type ComponentProps} from 'react';
 import {DeviceEventEmitter, Text, TouchableOpacity, View} from 'react-native';
 
 import {Events} from '@constants';
 import {useIsTablet} from '@hooks/device';
 import {useImageAttachments} from '@hooks/files';
-import {mockFileInfo} from '@test/api_mocks/file';
+import TestHelper from '@test/test_helper';
 import {isImage, isVideo} from '@utils/file';
 import {fileToGalleryItem, openGalleryAtIndex} from '@utils/gallery';
 import {getViewPortWidth} from '@utils/images';
@@ -58,9 +58,9 @@ jest.mocked(File).mockImplementation((props) => (
         <Text testID={`${props.file.id}-index`}>{props.index}</Text>
         <Text testID={`${props.file.id}-isSingleImage`}>{String(props.isSingleImage)}</Text>
         <Text testID={`${props.file.id}-nonVisibleImagesCount`}>{String(props.nonVisibleImagesCount)}</Text>
-        <Text testID={`${props.file.id}-publicLinkEnabled`}>{String(props.publicLinkEnabled)}</Text>
         <Text testID={`${props.file.id}-wrapperWidth`}>{props.wrapperWidth}</Text>
         <Text testID={`${props.file.id}-inViewPort`}>{String(props.inViewPort)}</Text>
+        <Text testID={`${props.file.id}-enableSecureFilePreview`}>{String(props.enableSecureFilePreview)}</Text>
         <TouchableOpacity
             testID={`${props.file.id}-onPress`}
             onPress={() => props.onPress(props.index)}
@@ -75,6 +75,7 @@ jest.mocked(File).mockImplementation((props) => (
 function getBaseProps(): ComponentProps<typeof Files> {
     return {
         canDownloadFiles: true,
+        enableSecureFilePreview: false,
         failed: false,
         filesInfo: [],
         isReplyPost: false,
@@ -82,17 +83,16 @@ function getBaseProps(): ComponentProps<typeof Files> {
         location: 'test-location',
         postId: 'test-post-id',
         postProps: {},
-        publicLinkEnabled: true,
     };
 }
 
 describe('Files', () => {
     it('should render attachments, with images in the image row', () => {
         const filesInfo = [
-            mockFileInfo({id: '1'}),
-            mockFileInfo({id: '2'}),
-            mockFileInfo({id: '3'}),
-            mockFileInfo({id: '4'}),
+            TestHelper.fakeFileInfo({id: '1'}),
+            TestHelper.fakeFileInfo({id: '2'}),
+            TestHelper.fakeFileInfo({id: '3'}),
+            TestHelper.fakeFileInfo({id: '4'}),
         ];
         jest.mocked(useImageAttachments).mockImplementation((fi) => {
             return useMemo(() => ({
@@ -119,8 +119,8 @@ describe('Files', () => {
 
     it('should not show the image row if no images', () => {
         const filesInfo = [
-            mockFileInfo({id: '3'}),
-            mockFileInfo({id: '4'}),
+            TestHelper.fakeFileInfo({id: '3'}),
+            TestHelper.fakeFileInfo({id: '4'}),
         ];
         jest.mocked(useImageAttachments).mockImplementation((fi) => {
             return useMemo(() => ({
@@ -158,8 +158,8 @@ describe('Files', () => {
 
     it('should drill all relevant props', () => {
         const filesInfo = [
-            mockFileInfo({id: '1'}),
-            mockFileInfo({id: '2'}),
+            TestHelper.fakeFileInfo({id: '1'}),
+            TestHelper.fakeFileInfo({id: '2'}),
         ];
 
         jest.mocked(useImageAttachments).mockImplementation((fi) => {
@@ -172,46 +172,46 @@ describe('Files', () => {
         const baseProps = getBaseProps();
         baseProps.filesInfo = filesInfo;
         baseProps.canDownloadFiles = false;
-        baseProps.publicLinkEnabled = false;
+        baseProps.enableSecureFilePreview = false;
 
         const {getByTestId, rerender} = render(<Files {...baseProps}/>);
         expect(getByTestId('1-canDownloadFiles')).toHaveTextContent('false');
-        expect(getByTestId('1-publicLinkEnabled')).toHaveTextContent('false');
+        expect(getByTestId('1-enableSecureFilePreview')).toHaveTextContent('false');
         expect(getByTestId('2-canDownloadFiles')).toHaveTextContent('false');
-        expect(getByTestId('2-publicLinkEnabled')).toHaveTextContent('false');
+        expect(getByTestId('2-enableSecureFilePreview')).toHaveTextContent('false');
 
         baseProps.canDownloadFiles = true;
-        baseProps.publicLinkEnabled = true;
+        baseProps.enableSecureFilePreview = true;
 
         rerender(<Files {...baseProps}/>);
         expect(getByTestId('1-canDownloadFiles')).toHaveTextContent('true');
-        expect(getByTestId('1-publicLinkEnabled')).toHaveTextContent('true');
+        expect(getByTestId('1-enableSecureFilePreview')).toHaveTextContent('true');
         expect(getByTestId('2-canDownloadFiles')).toHaveTextContent('true');
-        expect(getByTestId('2-publicLinkEnabled')).toHaveTextContent('true');
+        expect(getByTestId('2-enableSecureFilePreview')).toHaveTextContent('true');
 
         baseProps.canDownloadFiles = true;
-        baseProps.publicLinkEnabled = false;
+        baseProps.enableSecureFilePreview = true;
 
         rerender(<Files {...baseProps}/>);
         expect(getByTestId('1-canDownloadFiles')).toHaveTextContent('true');
-        expect(getByTestId('1-publicLinkEnabled')).toHaveTextContent('false');
+        expect(getByTestId('1-enableSecureFilePreview')).toHaveTextContent('true');
         expect(getByTestId('2-canDownloadFiles')).toHaveTextContent('true');
-        expect(getByTestId('2-publicLinkEnabled')).toHaveTextContent('false');
+        expect(getByTestId('2-enableSecureFilePreview')).toHaveTextContent('true');
 
         baseProps.canDownloadFiles = false;
-        baseProps.publicLinkEnabled = true;
+        baseProps.enableSecureFilePreview = false;
 
         rerender(<Files {...baseProps}/>);
         expect(getByTestId('1-canDownloadFiles')).toHaveTextContent('false');
-        expect(getByTestId('1-publicLinkEnabled')).toHaveTextContent('true');
+        expect(getByTestId('1-enableSecureFilePreview')).toHaveTextContent('false');
         expect(getByTestId('2-canDownloadFiles')).toHaveTextContent('false');
-        expect(getByTestId('2-publicLinkEnabled')).toHaveTextContent('true');
+        expect(getByTestId('2-enableSecureFilePreview')).toHaveTextContent('false');
     });
 
     it('should set layoutWidth if provided', () => {
         const filesInfo = [
-            mockFileInfo({id: '1'}),
-            mockFileInfo({id: '2'}),
+            TestHelper.fakeFileInfo({id: '1'}),
+            TestHelper.fakeFileInfo({id: '2'}),
         ];
 
         jest.mocked(useImageAttachments).mockImplementation((fi) => {
@@ -239,8 +239,8 @@ describe('Files', () => {
 
     it('should use ((getViewportWidth result) - 6) if layoutWidth is not provided', () => {
         const filesInfo = [
-            mockFileInfo({id: '1'}),
-            mockFileInfo({id: '2'}),
+            TestHelper.fakeFileInfo({id: '1'}),
+            TestHelper.fakeFileInfo({id: '2'}),
         ];
 
         jest.mocked(useImageAttachments).mockImplementation((fi) => {
@@ -276,8 +276,8 @@ describe('Files', () => {
 
     it('calling onPress on the child should open gallery', () => {
         const filesInfo = [
-            mockFileInfo({id: '1'}),
-            mockFileInfo({id: '2'}),
+            TestHelper.fakeFileInfo({id: '1'}),
+            TestHelper.fakeFileInfo({id: '2'}),
         ];
 
         jest.mocked(useImageAttachments).mockImplementation((fi) => {
@@ -322,8 +322,8 @@ describe('Files', () => {
 
     it('calling updateFileForGallery updates the file', () => {
         const filesInfo = [
-            mockFileInfo({id: '1', uri: 'original'}),
-            mockFileInfo({id: '2', uri: 'original'}),
+            TestHelper.fakeFileInfo({id: '1', uri: 'original'}),
+            TestHelper.fakeFileInfo({id: '2', uri: 'original'}),
         ];
 
         jest.mocked(useImageAttachments).mockImplementation((fi) => {
@@ -375,7 +375,7 @@ describe('Files', () => {
             />,
         );
         const newFilesInfo = [
-            mockFileInfo({id: '1', name: 'image1.png', user_id: 'user1'}),
+            TestHelper.fakeFileInfo({id: '1', name: 'image1.png', user_id: 'user1'}),
         ];
         rerender(
             <Files
@@ -388,8 +388,8 @@ describe('Files', () => {
 
     it('should set inViewPort to true on ITEM_IN_VIEWPORT event', () => {
         const filesInfo = [
-            mockFileInfo({id: '1', name: 'image1.png', user_id: 'user1'}),
-            mockFileInfo({id: '2', name: 'image2.png', user_id: 'user2'}),
+            TestHelper.fakeFileInfo({id: '1', name: 'image1.png', user_id: 'user1'}),
+            TestHelper.fakeFileInfo({id: '2', name: 'image2.png', user_id: 'user2'}),
         ];
 
         jest.mocked(useImageAttachments).mockImplementation((fi) => {
@@ -408,18 +408,24 @@ describe('Files', () => {
 
         expect(getByTestId('1-inViewPort')).toHaveTextContent('false');
         expect(getByTestId('2-inViewPort')).toHaveTextContent('false');
-        DeviceEventEmitter.emit(Events.ITEM_IN_VIEWPORT, {'unrelated-event': true});
+        act(() => {
+            DeviceEventEmitter.emit(Events.ITEM_IN_VIEWPORT, {'unrelated-event': true});
+        });
         expect(getByTestId('1-inViewPort')).toHaveTextContent('false');
         expect(getByTestId('2-inViewPort')).toHaveTextContent('false');
-        DeviceEventEmitter.emit(Events.ITEM_IN_VIEWPORT, {'test-location-test-post-id': true});
+
+        act(() => {
+            DeviceEventEmitter.emit(Events.ITEM_IN_VIEWPORT, {'test-location-test-post-id': true});
+        });
+
         expect(getByTestId('1-inViewPort')).toHaveTextContent('true');
         expect(getByTestId('2-inViewPort')).toHaveTextContent('true');
     });
 
     it('should ignore ITEM_IN_VIEWPORT event if not for the current post or location', () => {
         const filesInfo = [
-            mockFileInfo({id: '1', name: 'image1.png', user_id: 'user1'}),
-            mockFileInfo({id: '2', name: 'image2.png', user_id: 'user2'}),
+            TestHelper.fakeFileInfo({id: '1', name: 'image1.png', user_id: 'user1'}),
+            TestHelper.fakeFileInfo({id: '2', name: 'image2.png', user_id: 'user2'}),
         ];
 
         jest.mocked(useImageAttachments).mockImplementation((fi) => {
@@ -444,7 +450,9 @@ describe('Files', () => {
         expect(getByTestId('1-inViewPort')).toHaveTextContent('false');
         expect(getByTestId('2-inViewPort')).toHaveTextContent('false');
 
-        DeviceEventEmitter.emit(Events.ITEM_IN_VIEWPORT, {'location1-post1': true});
+        act(() => {
+            DeviceEventEmitter.emit(Events.ITEM_IN_VIEWPORT, {'location1-post1': true});
+        });
         expect(getByTestId('1-inViewPort')).toHaveTextContent('false');
         expect(getByTestId('2-inViewPort')).toHaveTextContent('false');
 
@@ -453,20 +461,24 @@ describe('Files', () => {
         expect(getByTestId('1-inViewPort')).toHaveTextContent('false');
         expect(getByTestId('2-inViewPort')).toHaveTextContent('false');
 
-        DeviceEventEmitter.emit(Events.ITEM_IN_VIEWPORT, {'location2-post1': true});
+        act(() => {
+            DeviceEventEmitter.emit(Events.ITEM_IN_VIEWPORT, {'location2-post1': true});
+        });
         expect(getByTestId('1-inViewPort')).toHaveTextContent('false');
         expect(getByTestId('2-inViewPort')).toHaveTextContent('false');
 
-        DeviceEventEmitter.emit(Events.ITEM_IN_VIEWPORT, {'location2-post2': true});
+        act(() => {
+            DeviceEventEmitter.emit(Events.ITEM_IN_VIEWPORT, {'location2-post2': true});
+        });
         expect(getByTestId('1-inViewPort')).toHaveTextContent('true');
         expect(getByTestId('2-inViewPort')).toHaveTextContent('true');
     });
 
     it('should pass isSingleImage to the children', () => {
         let filesInfo = [
-            mockFileInfo({id: '1'}),
-            mockFileInfo({id: '3'}),
-            mockFileInfo({id: '4'}),
+            TestHelper.fakeFileInfo({id: '1'}),
+            TestHelper.fakeFileInfo({id: '3'}),
+            TestHelper.fakeFileInfo({id: '4'}),
         ];
 
         const selectImages = (f: FileInfo | FileModel | undefined) => f?.id === '1' || f?.id === '2';
@@ -506,10 +518,10 @@ describe('Files', () => {
         expect(getByTestId('4-isSingleImage')).toHaveTextContent('true');
 
         filesInfo = [
-            mockFileInfo({id: '1'}),
-            mockFileInfo({id: '2'}),
-            mockFileInfo({id: '3'}),
-            mockFileInfo({id: '4'}),
+            TestHelper.fakeFileInfo({id: '1'}),
+            TestHelper.fakeFileInfo({id: '2'}),
+            TestHelper.fakeFileInfo({id: '3'}),
+            TestHelper.fakeFileInfo({id: '4'}),
         ];
 
         jest.mocked(isImage).mockImplementation((f) => selectImages(f));
@@ -544,16 +556,16 @@ describe('Files', () => {
 
     it('should trim more than 4 images and properly add the non visible images count to the last image', () => {
         const filesInfo = [
-            mockFileInfo({id: '1'}),
-            mockFileInfo({id: '2'}),
-            mockFileInfo({id: '3'}),
-            mockFileInfo({id: '4'}),
-            mockFileInfo({id: '5'}),
-            mockFileInfo({id: '6'}),
-            mockFileInfo({id: '7'}),
-            mockFileInfo({id: '8'}),
-            mockFileInfo({id: '9'}),
-            mockFileInfo({id: '10'}),
+            TestHelper.fakeFileInfo({id: '1'}),
+            TestHelper.fakeFileInfo({id: '2'}),
+            TestHelper.fakeFileInfo({id: '3'}),
+            TestHelper.fakeFileInfo({id: '4'}),
+            TestHelper.fakeFileInfo({id: '5'}),
+            TestHelper.fakeFileInfo({id: '6'}),
+            TestHelper.fakeFileInfo({id: '7'}),
+            TestHelper.fakeFileInfo({id: '8'}),
+            TestHelper.fakeFileInfo({id: '9'}),
+            TestHelper.fakeFileInfo({id: '10'}),
         ];
 
         jest.mocked(useImageAttachments).mockImplementation((fi) => {
@@ -584,12 +596,12 @@ describe('Files', () => {
 
     it('should add gutter to the container of to all elements but the first only on image row', () => {
         const filesInfo = [
-            mockFileInfo({id: '1'}),
-            mockFileInfo({id: '2'}),
-            mockFileInfo({id: '3'}),
-            mockFileInfo({id: '4'}),
-            mockFileInfo({id: '5'}),
-            mockFileInfo({id: '6'}),
+            TestHelper.fakeFileInfo({id: '1'}),
+            TestHelper.fakeFileInfo({id: '2'}),
+            TestHelper.fakeFileInfo({id: '3'}),
+            TestHelper.fakeFileInfo({id: '4'}),
+            TestHelper.fakeFileInfo({id: '5'}),
+            TestHelper.fakeFileInfo({id: '6'}),
         ];
 
         jest.mocked(useImageAttachments).mockImplementation((fi) => {

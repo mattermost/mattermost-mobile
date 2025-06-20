@@ -3,10 +3,13 @@
 
 /* eslint-disable max-lines */
 
-import {Preferences, Screens} from '@constants';
+import {processReceivedThreads} from '@actions/local/thread';
+import {ActionType, Config, Preferences, Screens} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import TestHelper from '@test/test_helper';
 
+import {prepareAllMyChannels} from './channel';
 import {getTeamHistory} from './system';
 import {
     getCurrentTeam,
@@ -37,7 +40,9 @@ import {
     prepareMyTeams,
     queryTeamByName,
     getDefaultTeamId,
+    observeIsTeamUnread,
     observeSortedJoinedTeams,
+    observeTeamLastChannelId,
 } from './team';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -281,6 +286,16 @@ describe('Team Queries', () => {
 
             const history = await getTeamChannelHistory(database, teamId);
             expect(history).toEqual([Screens.GLOBAL_THREADS]);
+        });
+
+        it('should add GLOBAL_DRAFTS to team history but skip channel check', async () => {
+            const channelId = Screens.GLOBAL_DRAFTS;
+
+            const result = await addChannelToTeamHistory(operator, teamId, channelId);
+            expect(result.length).toBe(1);
+
+            const history = await getTeamChannelHistory(database, teamId);
+            expect(history).toEqual([Screens.GLOBAL_DRAFTS]);
         });
     });
 
@@ -1023,6 +1038,329 @@ describe('Team Queries', () => {
         }, 1500);
     });
 
+    describe('observeIsTeamUnread', () => {
+        const userId = 'user_id';
+        const waitTime = 50;
+
+        beforeEach(async () => {
+            await DatabaseManager.init([serverUrl]);
+            const serverDatabaseAndOperator = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+            database = serverDatabaseAndOperator.database;
+            operator = serverDatabaseAndOperator.operator;
+            await operator.handleSystem({
+                systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: userId}],
+                prepareRecordsOnly: false,
+            });
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'CollapsedThreads', value: Config.ALWAYS_ON},
+                    {id: 'Version', value: '7.6.0'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+        });
+
+        afterEach(async () => {
+            await DatabaseManager.destroyServerDatabase(serverUrl);
+        });
+
+        it('should return true when there are channel unreads', async () => {
+            const subscriptionNext = jest.fn();
+            const notify_props = {mark_unread: 'all' as const};
+            const result = observeIsTeamUnread(database, teamId);
+
+            result.subscribe({next: subscriptionNext});
+            await TestHelper.wait(waitTime);
+
+            // The subscription always return the first value
+            expect(subscriptionNext).toHaveBeenCalledWith(false);
+            subscriptionNext.mockClear();
+
+            // Setup initial state - channel with no unreads
+            let models = (await Promise.all((await prepareAllMyChannels(
+                operator,
+                [TestHelper.fakeChannel({id: 'channel1', team_id: teamId, total_msg_count: 20})],
+                [TestHelper.fakeMyChannel({
+                    channel_id: 'channel1',
+                    user_id: userId,
+                    notify_props,
+                    msg_count: 20,
+                })],
+                false,
+            )))).flat();
+            await operator.batchRecords(models, 'test');
+            await TestHelper.wait(waitTime);
+
+            // No change
+            expect(subscriptionNext).not.toHaveBeenCalled();
+
+            // Update channel with new messages
+            models = (await Promise.all((await prepareAllMyChannels(
+                operator,
+                [TestHelper.fakeChannel({id: 'channel1', team_id: teamId, total_msg_count: 30})],
+                [TestHelper.fakeMyChannel({
+                    channel_id: 'channel1',
+                    user_id: userId,
+                    notify_props,
+                    msg_count: 20,
+                })],
+                false,
+            )))).flat();
+            await operator.batchRecords(models, 'test');
+            await TestHelper.wait(waitTime);
+
+            expect(subscriptionNext).toHaveBeenCalledWith(true);
+        });
+
+        it('should return true when there are thread unreads', async () => {
+            const subscriptionNext = jest.fn();
+            const channelId = 'channel1';
+            const threadId = 'thread1';
+
+            const result = observeIsTeamUnread(database, teamId);
+
+            result.subscribe({next: subscriptionNext});
+            await TestHelper.wait(waitTime);
+
+            // The subscription always return the first value
+            expect(subscriptionNext).toHaveBeenCalledWith(false);
+            subscriptionNext.mockClear();
+
+            const channelModels = (await Promise.all((await prepareAllMyChannels(
+                operator,
+                [TestHelper.fakeChannel({id: channelId, team_id: teamId, total_msg_count: 20})],
+                [TestHelper.fakeMyChannel({
+                    channel_id: channelId,
+                    user_id: userId,
+                    msg_count: 20,
+                })],
+                false,
+            )))).flat();
+            const threadModels = await processReceivedThreads(serverUrl, [TestHelper.fakeThread({
+                id: threadId,
+                reply_count: 1,
+                unread_replies: 0,
+                post: TestHelper.fakePost({id: threadId, channel_id: channelId}),
+                is_following: true,
+            })], teamId, true);
+            await operator.batchRecords([...channelModels, ...threadModels.models!], 'test');
+
+            // No change
+            expect(subscriptionNext).not.toHaveBeenCalled();
+
+            await processReceivedThreads(serverUrl, [TestHelper.fakeThread({
+                id: threadId,
+                reply_count: 1,
+                unread_replies: 1,
+                post: TestHelper.fakePost({id: threadId, channel_id: channelId}),
+                is_following: true,
+            })], teamId, false);
+
+            expect(subscriptionNext).toHaveBeenCalledWith(true);
+        });
+
+        it('changes in other teams should not trigger the subscription', async () => {
+            const subscriptionNext = jest.fn();
+            const channelId = 'channel1';
+            const threadId = 'thread1';
+            const otherTeamId = 'other_team';
+
+            const result = observeIsTeamUnread(database, teamId);
+
+            result.subscribe({next: subscriptionNext});
+            await TestHelper.wait(waitTime);
+
+            // The subscription always return the first value
+            expect(subscriptionNext).toHaveBeenCalledWith(false);
+            subscriptionNext.mockClear();
+
+            let channelModels = (await Promise.all((await prepareAllMyChannels(
+                operator,
+                [TestHelper.fakeChannel({id: channelId, team_id: otherTeamId, total_msg_count: 20})],
+                [TestHelper.fakeMyChannel({
+                    channel_id: channelId,
+                    user_id: userId,
+                    msg_count: 20,
+                })],
+                false,
+            )))).flat();
+            let threadModels = await processReceivedThreads(serverUrl, [TestHelper.fakeThread({
+                id: threadId,
+                reply_count: 1,
+                unread_replies: 0,
+                post: TestHelper.fakePost({id: threadId, channel_id: channelId}),
+                is_following: true,
+            })], teamId, true);
+            await operator.batchRecords([...channelModels, ...threadModels.models!], 'test');
+
+            await TestHelper.wait(waitTime);
+            expect(subscriptionNext).not.toHaveBeenCalled();
+
+            channelModels = (await Promise.all((await prepareAllMyChannels(
+                operator,
+                [TestHelper.fakeChannel({id: channelId, team_id: otherTeamId, total_msg_count: 30})],
+                [TestHelper.fakeMyChannel({
+                    channel_id: channelId,
+                    user_id: userId,
+                    msg_count: 20,
+                })],
+                false,
+            )))).flat();
+            threadModels = await processReceivedThreads(serverUrl, [TestHelper.fakeThread({
+                id: threadId,
+                reply_count: 1,
+                unread_replies: 1,
+                post: TestHelper.fakePost({id: threadId, channel_id: channelId}),
+                is_following: true,
+            })], teamId, true);
+            await operator.batchRecords([...channelModels, ...threadModels.models!], 'test');
+
+            await TestHelper.wait(waitTime);
+            expect(subscriptionNext).not.toHaveBeenCalled();
+        });
+
+        it('should not consider the team unread when a gm or a dm are unread', async () => {
+            const subscriptionNext = jest.fn();
+            const notify_props = {mark_unread: 'all' as const};
+            const result = observeIsTeamUnread(database, teamId);
+
+            result.subscribe({next: subscriptionNext});
+            await TestHelper.wait(waitTime);
+
+            // The subscription always return the first value
+            expect(subscriptionNext).toHaveBeenCalledWith(false);
+            subscriptionNext.mockClear();
+
+            // Setup DM channel with unreads
+            let channelModels = (await Promise.all((await prepareAllMyChannels(
+                operator,
+                [TestHelper.fakeChannel({id: 'dm1', team_id: '', type: 'D', total_msg_count: 30})],
+                [TestHelper.fakeMyChannel({
+                    channel_id: 'dm1',
+                    user_id: userId,
+                    notify_props,
+                    msg_count: 20,
+                })],
+                false,
+            )))).flat();
+            await operator.batchRecords([...channelModels], 'test');
+
+            await TestHelper.wait(waitTime);
+            expect(subscriptionNext).not.toHaveBeenCalled();
+
+            // Setup GM channel with unreads
+            channelModels = (await Promise.all((await prepareAllMyChannels(
+                operator,
+                [TestHelper.fakeChannel({id: 'gm1', team_id: '', type: 'G', total_msg_count: 30})],
+                [TestHelper.fakeMyChannel({
+                    channel_id: 'gm1',
+                    user_id: userId,
+                    notify_props,
+                    msg_count: 20,
+                })],
+                false,
+            )))).flat();
+            await operator.batchRecords([...channelModels], 'test');
+
+            await TestHelper.wait(waitTime);
+            expect(subscriptionNext).not.toHaveBeenCalled();
+        });
+
+        it('should not consider the team unread if a thread in a dm or a gm has unread messages', async () => {
+            const subscriptionNext = jest.fn();
+            const notify_props = {mark_unread: 'all' as const};
+            const result = observeIsTeamUnread(database, teamId);
+
+            result.subscribe({next: subscriptionNext});
+            await TestHelper.wait(waitTime);
+
+            // The subscription always return the first value
+            expect(subscriptionNext).toHaveBeenCalledWith(false);
+            subscriptionNext.mockClear();
+
+            // Setup DM channel with thread
+            let channelModels = (await Promise.all((await prepareAllMyChannels(
+                operator,
+                [TestHelper.fakeChannel({id: 'dm1', team_id: '', type: 'D', total_msg_count: 20})],
+                [TestHelper.fakeMyChannel({
+                    channel_id: 'dm1',
+                    user_id: userId,
+                    notify_props,
+                    msg_count: 20,
+                })],
+                false,
+            )))).flat();
+
+            const dmPost = TestHelper.fakePost({id: 'dm_thread', channel_id: 'dm1'});
+
+            const dmThreads = [{
+                ...TestHelper.fakeThread({
+                    id: 'dm_thread',
+                    participants: undefined,
+                    reply_count: 2,
+                    last_reply_at: 123,
+                    is_following: true,
+                    unread_replies: 2,
+                    unread_mentions: 1,
+                }),
+                lastFetchedAt: 0,
+            }];
+
+            const dmModels = await operator.handleThreads({threads: dmThreads, prepareRecordsOnly: false});
+            let postModels = await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [],
+                posts: [dmPost],
+                prepareRecordsOnly: true,
+            });
+            await operator.batchRecords([...channelModels, ...dmModels, ...postModels], 'test');
+
+            await TestHelper.wait(waitTime);
+            expect(subscriptionNext).not.toHaveBeenCalled();
+
+            // Setup GM channel with thread
+            channelModels = (await Promise.all((await prepareAllMyChannels(
+                operator,
+                [TestHelper.fakeChannel({id: 'gm1', team_id: '', type: 'G', total_msg_count: 20})],
+                [TestHelper.fakeMyChannel({
+                    channel_id: 'gm1',
+                    user_id: userId,
+                    notify_props,
+                    msg_count: 20,
+                })],
+                false,
+            )))).flat();
+
+            const gmPost = TestHelper.fakePost({id: 'gm_thread', channel_id: 'gm1'});
+
+            const gmThreads = [{
+                ...TestHelper.fakeThread({
+                    id: 'gm_thread',
+                    participants: undefined,
+                    reply_count: 3,
+                    last_reply_at: 123,
+                    is_following: true,
+                    unread_replies: 3,
+                    unread_mentions: 2,
+                }),
+                lastFetchedAt: 123,
+            }];
+
+            const gmModels = await operator.handleThreads({threads: gmThreads, prepareRecordsOnly: false});
+            postModels = await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [],
+                posts: [gmPost],
+                prepareRecordsOnly: true,
+            });
+            await operator.batchRecords([...channelModels, ...gmModels, ...postModels], 'test');
+
+            await TestHelper.wait(waitTime);
+            expect(subscriptionNext).not.toHaveBeenCalled();
+        });
+    });
+
     describe('observeSortedJoinedTeams', () => {
         it('should return teams sorted by preference order', (done) => {
             const teamIds = ['team1', 'team2', 'team3'];
@@ -1123,6 +1461,58 @@ describe('Team Queries', () => {
                         });
                     });
                 });
+            });
+        });
+    });
+
+    describe('observeTeamLastChannelId', () => {
+        it('should return undefined if no team channel history exists', (done) => {
+            observeTeamLastChannelId(database, teamId).subscribe((channelId) => {
+                expect(channelId).toBeUndefined();
+                done();
+            });
+        });
+
+        it('should return the last channel id from team channel history', async () => {
+            const channelId = 'channel1';
+            await operator.handleTeamChannelHistory({
+                teamChannelHistories: [{
+                    id: teamId,
+                    channel_ids: [channelId],
+                }],
+                prepareRecordsOnly: false,
+            });
+
+            observeTeamLastChannelId(database, teamId).subscribe((lastChannelId) => {
+                expect(lastChannelId).toBe(channelId);
+            });
+        });
+
+        it('should update when team channel history changes', async () => {
+            const initialChannelId = 'channel1';
+            const newChannelId = 'channel2';
+
+            await operator.handleTeamChannelHistory({
+                teamChannelHistories: [{
+                    id: teamId,
+                    channel_ids: [initialChannelId],
+                }],
+                prepareRecordsOnly: false,
+            });
+
+            const subscription = observeTeamLastChannelId(database, teamId).subscribe((lastChannelId) => {
+                if (lastChannelId === initialChannelId) {
+                    operator.handleTeamChannelHistory({
+                        teamChannelHistories: [{
+                            id: teamId,
+                            channel_ids: [newChannelId],
+                        }],
+                        prepareRecordsOnly: false,
+                    });
+                } else if (lastChannelId === newChannelId) {
+                    expect(lastChannelId).toBe(newChannelId);
+                    subscription.unsubscribe();
+                }
             });
         });
     });

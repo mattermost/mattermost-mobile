@@ -18,6 +18,7 @@ import File from './file';
 
 type FilesProps = {
     canDownloadFiles: boolean;
+    enableSecureFilePreview: boolean;
     failed?: boolean;
     filesInfo: FileInfo[];
     layoutWidth?: number;
@@ -25,7 +26,6 @@ type FilesProps = {
     isReplyPost: boolean;
     postId?: string;
     postProps?: Record<string, unknown>;
-    publicLinkEnabled: boolean;
 }
 
 const MAX_VISIBLE_ROW_IMAGES = 4;
@@ -51,6 +51,7 @@ const styles = StyleSheet.create({
 
 const Files = ({
     canDownloadFiles,
+    enableSecureFilePreview,
     failed,
     filesInfo,
     isReplyPost,
@@ -58,7 +59,6 @@ const Files = ({
     location,
     postId,
     postProps,
-    publicLinkEnabled,
 }: FilesProps) => {
     const galleryIdentifier = `${postId}-fileAttachments-${location}`;
     const [inViewPort, setInViewPort] = useState(false);
@@ -108,12 +108,12 @@ const Files = ({
                         galleryIdentifier={galleryIdentifier}
                         key={file.id}
                         canDownloadFiles={canDownloadFiles}
+                        enableSecureFilePreview={enableSecureFilePreview}
                         file={file}
                         index={attachmentIndex(file.id!)}
                         onPress={handlePreviewPress}
                         isSingleImage={isSingleImage}
                         nonVisibleImagesCount={nonVisibleImagesCount}
-                        publicLinkEnabled={publicLinkEnabled}
                         updateFileForGallery={updateFileForGallery}
                         wrapperWidth={layoutWidth || wrapperWidth}
                         inViewPort={inViewPort}

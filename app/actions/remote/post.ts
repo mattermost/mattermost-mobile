@@ -4,8 +4,6 @@
 
 /* eslint-disable max-lines */
 
-import {chunk} from 'lodash';
-
 import {markChannelAsUnread, updateLastPostAt} from '@actions/local/channel';
 import {addPostAcknowledgement, removePost, removePostAcknowledgement, storePostsForChannel} from '@actions/local/post';
 import {addRecentReaction} from '@actions/local/reactions';
@@ -17,6 +15,7 @@ import {getNeededAtMentionedUsernames} from '@helpers/api/user';
 import NetworkManager from '@managers/network_manager';
 import {getMyChannel, prepareMissingChannelsForAllTeams, queryAllMyChannel} from '@queries/servers/channel';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
+import {getFilesByIds} from '@queries/servers/file';
 import {getPostById, getRecentPostsInChannel} from '@queries/servers/post';
 import {getCurrentUserId} from '@queries/servers/system';
 import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers/thread';
@@ -29,6 +28,7 @@ import {logDebug, logError} from '@utils/log';
 import {processPostsFetched} from '@utils/post';
 import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
 
+import {processChannelPostsByTeam} from './post.auxiliary';
 import {forceLogoutIfNecessary} from './session';
 
 import type {Client} from '@client/rest';
@@ -336,8 +336,8 @@ export async function fetchPostsForChannel(serverUrl: string, channelId: string,
 
 export const fetchPostsForUnreadChannels = async (
     serverUrl: string, teams: Team[], channels: Channel[], memberships: ChannelMembership[],
-    excludeChannelId?: string, isCRTEnabled?: boolean, fetchOnly = false, groupLabel?: RequestGroupLabel,
-): Promise<PostsForChannel[]> => {
+    excludeChannelId?: string, isCRTEnabled?: boolean, groupLabel?: RequestGroupLabel,
+): Promise<void> => {
     const teamIndexMap = new Map<string, number>();
     teams.forEach((team, index) => teamIndexMap.set(team.id, index));
 
@@ -346,7 +346,7 @@ export const fetchPostsForUnreadChannels = async (
         channelsMap.set(channel.id, channel);
     }
 
-    const sortedUnreadchannelIds = memberships.filter((member) => {
+    const sortedUnreadchannelIdsByTeam = memberships.filter((member) => {
         const channel = channelsMap.get(member.channel_id);
         if (channel && !channel.delete_at && channel.id !== excludeChannelId) {
             const unreads = isCRTEnabled ? (channel.total_msg_count_root ?? 0) - (member.msg_count_root ?? 0) : channel.total_msg_count - member.msg_count;
@@ -383,33 +383,21 @@ export const fetchPostsForUnreadChannels = async (
             // If team index is the same, sort by last_viewed_at in descending order
             return b.last_viewed_at - a.last_viewed_at;
         }).
-        map((member) => member.channel_id);
-
-    const postsForChannel: PostsForChannel[] = [];
-    const posts: Post[] = [];
-
-    // process 10 unread channels at a time
-    const chunks = chunk(sortedUnreadchannelIds, 10);
-    for await (const channelIds of chunks) {
-        const promises = [];
-        for (const channelId of channelIds) {
-            promises.push(fetchPostsForChannel(serverUrl, channelId, fetchOnly, true, groupLabel));
-        }
-
-        const results = await Promise.all(promises);
-        postsForChannel.push(...results);
-        for (const r of results) {
-            if (r.posts?.length) {
-                posts.push(...r.posts);
+        reduce((acc, member) => {
+            const channel = channelsMap.get(member.channel_id);
+            const teamId = channel!.team_id || '';
+            if (!acc[teamId]) {
+                acc[teamId] = [];
             }
-        }
-    }
+            acc[teamId].push(channel!.id);
 
-    if (posts.length) {
-        fetchPostAuthors(serverUrl, posts, false, groupLabel);
-    }
+            return acc;
+        }, {} as Record<string, string[]>);
 
-    return postsForChannel;
+    for (const channelIds of Object.values(sortedUnreadchannelIdsByTeam)) {
+        /* eslint-disable-next-line no-await-in-loop */
+        await processChannelPostsByTeam(serverUrl, channelIds, false, groupLabel, isCRTEnabled);
+    }
 };
 
 export async function fetchPosts(serverUrl: string, channelId: string, page = 0, perPage = General.POST_CHUNK_SIZE, fetchOnly = false, groupLabel?: RequestGroupLabel): Promise<PostsRequest> {
@@ -920,14 +908,14 @@ export const markPostAsUnread = async (serverUrl: string, postId: string) => {
     }
 };
 
-export const editPost = async (serverUrl: string, postId: string, postMessage: string) => {
+export const editPost = async (serverUrl: string, postId: string, postMessage: string, file_ids: string[], removed_file_ids: string[]) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         const post = await getPostById(database, postId);
         if (post) {
-            const {update_at, edit_at, message: updatedMessage, message_source} = await client.patchPost({message: postMessage, id: postId});
+            const {update_at, edit_at, message: updatedMessage, message_source} = await client.patchPost({message: postMessage, id: postId, file_ids});
             await database.write(async () => {
                 await post.update((p) => {
                     p.updateAt = update_at;
@@ -936,6 +924,17 @@ export const editPost = async (serverUrl: string, postId: string, postMessage: s
                     p.messageSource = message_source || '';
                 });
             });
+
+            if (removed_file_ids.length > 0) {
+                const filesToDelete = await getFilesByIds(database, removed_file_ids);
+                if (filesToDelete.length > 0) {
+                    const fileDeleteModels = filesToDelete.map((file) => {
+                        file.prepareDestroyPermanently();
+                        return file;
+                    });
+                    await operator.batchRecords(fileDeleteModels, 'delete files');
+                }
+            }
         }
         return {post};
     } catch (error) {

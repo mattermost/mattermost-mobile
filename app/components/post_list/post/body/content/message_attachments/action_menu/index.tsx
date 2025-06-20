@@ -8,6 +8,8 @@ import AutocompleteSelector from '@components/autocomplete_selector';
 import {useServerUrl} from '@context/server';
 import {filterOptions} from '@utils/message_attachment';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 type Props = {
     dataSource?: string;
     defaultOption?: string;
@@ -16,9 +18,19 @@ type Props = {
     name: string;
     options?: PostActionOption[];
     postId: string;
+    location: AvailableScreens;
 }
 
-const ActionMenu = ({dataSource, defaultOption, disabled, id, name, options, postId}: Props) => {
+const ActionMenu = ({
+    dataSource,
+    defaultOption,
+    disabled,
+    id,
+    name,
+    options,
+    postId,
+    location,
+}: Props) => {
     const serverUrl = useServerUrl();
 
     const filteredOptions = useMemo(() => {
@@ -53,6 +65,7 @@ const ActionMenu = ({dataSource, defaultOption, disabled, id, name, options, pos
             onSelected={handleSelect}
             disabled={disabled}
             testID={`message_attachment.${name}`}
+            location={location}
         />
     );
 };

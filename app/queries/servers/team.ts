@@ -11,10 +11,10 @@ import {selectDefaultTeam} from '@helpers/api/team';
 import {DEFAULT_LOCALE} from '@i18n';
 
 import {prepareDeleteCategory} from './categories';
-import {prepareDeleteChannel, getDefaultChannelForTeam, observeMyChannelMentionCount} from './channel';
+import {prepareDeleteChannel, getDefaultChannelForTeam, observeMyChannelMentionCount, observeMyChannelUnreads} from './channel';
 import {queryPreferencesByCategoryAndName} from './preference';
 import {patchTeamHistory, getConfig, getTeamHistory, observeCurrentTeamId, getCurrentTeamId} from './system';
-import {observeThreadMentionCount} from './thread';
+import {observeThreadMentionCount, observeUnreadsAndMentions} from './thread';
 import {getCurrentUser} from './user';
 
 import type {MyChannelModel} from '@database/models/server';
@@ -49,7 +49,7 @@ export const addChannelToTeamHistory = async (operator: ServerDataOperator, team
         const {database} = operator;
 
         // Exlude GLOBAL_THREADS from channel check
-        if (channelId !== Screens.GLOBAL_THREADS) {
+        if (channelId !== Screens.GLOBAL_THREADS && channelId !== Screens.GLOBAL_DRAFTS) {
             const myChannel = (await database.get<MyChannelModel>(MY_CHANNEL).find(channelId));
             if (!myChannel) {
                 return [];
@@ -84,6 +84,13 @@ export const getTeamChannelHistory = async (database: Database, teamId: string) 
     } catch {
         return [];
     }
+};
+
+export const observeTeamLastChannelId = (database: Database, teamId: string) => {
+    return database.get<TeamChannelHistoryModel>(TEAM_CHANNEL_HISTORY).query(Q.where('id', teamId), Q.take(1)).observe().pipe(
+        switchMap((result) => (result.length ? result[0].observe() : of$(undefined))),
+        map$((result) => result?.channelIds[0]),
+    );
 };
 
 export const getNthLastChannelFromTeam = async (database: Database, teamId: string, n = 0, ignoreIdForDefault?: string) => {
@@ -409,11 +416,24 @@ export const observeCurrentTeam = (database: Database) => {
 
 export function observeMentionCount(database: Database, teamId?: string, includeDmGm?: boolean): Observable<number> {
     const channelMentionCountObservable = observeMyChannelMentionCount(database, teamId);
-    const threadMentionCountObservable = observeThreadMentionCount(database, teamId, includeDmGm);
+    const threadMentionCountObservable = observeThreadMentionCount(database, {teamId, includeDmGm});
 
     return channelMentionCountObservable.pipe(
         combineLatestWith(threadMentionCountObservable),
         map$(([ccount, tcount]) => ccount + tcount),
+        distinctUntilChanged(),
+    );
+}
+
+export function observeIsTeamUnread(database: Database, teamId: string): Observable<boolean> {
+    const channelUnreads = observeMyChannelUnreads(database, teamId);
+    const threadsUnreadsAndMentions = observeUnreadsAndMentions(database, {teamId});
+
+    return channelUnreads.pipe(
+        combineLatestWith(threadsUnreadsAndMentions),
+        map$(([channels, threads]) => {
+            return channels || threads.unreads;
+        }),
         distinctUntilChanged(),
     );
 }

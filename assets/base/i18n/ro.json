@@ -546,7 +546,6 @@
   "mobile.managed.jailbreak": "Dispozitivele jailbroken nu au încredere în {vendor}, închideți aplicația.",
   "mobile.managed.not_secured.android": "Acest dispozitiv trebuie să fie asigurat cu un dispozitiv de blocare a ecranului pentru a utiliza Mattermost.",
   "mobile.managed.not_secured.ios": "Acest dispozitiv trebuie să fie securizat cu un cod de acces pentru a utiliza Mattermost.\n\nAccesați Setări > ID-ul feței și codul de acces.",
-  "mobile.managed.not_secured.ios.touchId": "Acest dispozitiv trebuie să fie securizat cu un cod de acces pentru a utiliza Mattermost.\n \nAccesați Setări > ID-ul feței și codul de acces.",
   "mobile.managed.secured_by": "Securizat de {vendor}",
   "mobile.managed.settings": "Mergi la Setări",
   "mobile.markdown.code.copy_code": "Copiați codul",

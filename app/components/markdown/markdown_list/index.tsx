@@ -3,14 +3,14 @@
 
 import React, {type ReactElement} from 'react';
 
-type MarkdownList = {
+type MarkdownListProps = {
    children: ReactElement[];
    ordered: boolean;
    start: number;
    tight: boolean;
 };
 
-const MarkdownList = ({start = 1, tight, ordered, children}: MarkdownList) => {
+const MarkdownList = ({start = 1, tight, ordered, children}: MarkdownListProps) => {
     let bulletWidth = 15;
     if (ordered) {
         const lastNumber = (start + children.length) - 1;

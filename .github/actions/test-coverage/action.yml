@@ -1,0 +1,146 @@
+# This action is used to test the coverage of the mobile repo
+# It will download the coverage result from the main branch and compare it with the current branch
+# If the coverage is lower than the main branch (1% or more), it will post a warning along with
+# the coverage report to the PR.
+# If this action is run on the main branch, it will upload the coverage result to the main branch
+# It will also generate a run id and cache it, so that the next time the action is run in the PR, 
+# it will use the cached run id to download the coverage result from the main branch
+
+name: test-coverage
+description: Test coverage tracking for mobile repo
+
+inputs:
+  run_id:
+    description: The run id to use to download the coverage result
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: ci/prepare-node-deps
+      uses: ./.github/actions/prepare-node-deps
+
+    - name: ci/get-last-run-id
+      if: github.event_name == 'pull_request'
+      id: get-last-run-id
+      uses: actions/cache/restore@5a3ec84eff668545956fd18022155c47e93e2684
+      continue-on-error: true
+      with:
+        path: run-id.txt
+        key: last-run-id-${{ inputs.run_id }}
+        restore-keys: |
+          last-run-id-
+
+    - name: ci/set-pr-condition
+      if: github.event_name == 'pull_request'
+      shell: bash
+      run: |
+        echo "::group::set-pr-condition"
+        if [ -f "run-id.txt" ]; then
+          echo "HAS_MAIN_RUN_ID=true" >> $GITHUB_ENV
+          echo "LAST_RUN_ID=$(cat run-id.txt)" >> $GITHUB_ENV
+        fi
+        echo "::endgroup::"
+
+    - name: ci/download-main-coverage
+      if: env.HAS_MAIN_RUN_ID == 'true'
+      continue-on-error: true
+      uses: actions/download-artifact@v4
+      with:
+        name: test-coverage-result-${{ env.LAST_RUN_ID }}
+        path: main-coverage/
+        github-token: ${{ github.token }}
+        run-id: ${{ env.LAST_RUN_ID }}
+
+    - name: ci/check-coverage-download
+      if: env.HAS_MAIN_RUN_ID == 'true'
+      shell: bash
+      run: |
+        echo "::group::check-coverage-download"
+        if [ -f "main-coverage/coverage-summary.json" ]; then
+          echo "HAS_COVERAGE_FROM_MAIN=true" >> $GITHUB_ENV
+        fi
+        echo "::endgroup::"
+
+    - name: ci/read-coverage
+      if: env.HAS_COVERAGE_FROM_MAIN == 'true'
+      shell: bash
+      run: |
+        echo "::group::read-coverage"
+        ./scripts/read-coverage.sh ./main-coverage/coverage-summary.json
+        echo "::endgroup::"
+
+    - name: ci/run-tests-with-coverage
+      shell: bash
+      run: |
+        echo "::group::run-tests"
+        npm run test:coverage
+        echo "::endgroup::"
+
+    - name: ci/compare-coverage
+      if: env.HAS_COVERAGE_FROM_MAIN == 'true'
+      id: compare-coverage
+      shell: bash
+      run: |
+        echo "::group::compare-coverage"
+        echo "IS_FORK=false" >> $GITHUB_ENV
+        output=$(./scripts/compare-coverage.sh \
+          ./main-coverage \
+          ./coverage \
+          ${{ github.event.pull_request.number }})
+        echo "report<<EOF" >> $GITHUB_ENV
+        echo "$output" >> $GITHUB_ENV
+        echo "EOF" >> $GITHUB_ENV
+        if [ "${{ github.event.pull_request.head.repo.fork }}" = "true" ]; then
+          echo "IS_FORK=true" >> $GITHUB_ENV
+          echo "::warning::PR is from a fork. Coverage report will be displayed in the workflow summary."
+          echo "### Coverage Report from Fork" >> $GITHUB_STEP_SUMMARY
+          echo "$output" >> $GITHUB_STEP_SUMMARY
+        fi
+        echo "::endgroup::"
+
+    - name: ci/post-coverage-report
+      if: env.HAS_COVERAGE_FROM_MAIN == 'true' && env.IS_FORK == 'false'
+      uses: thollander/actions-comment-pull-request@v3
+      with:
+        message: ${{ env.report }}
+        comment-tag: coverage-report
+        create-if-not-exists: true
+
+    - name: ci/exit-on-test-coverage-failure
+      if: env.HAS_COVERAGE_FROM_MAIN == 'true'
+      shell: bash
+      run: |
+        echo "::group::exit-on-test-coverage-failure"
+        exit ${{ steps.compare-coverage.outputs.status }}
+        echo "::endgroup::"
+
+    - name: ci/upload-coverage
+      if: github.ref_name == 'main'
+      id: upload-coverage
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-coverage-result-${{ inputs.run_id }}
+        path: coverage/coverage-summary.json
+        overwrite: true
+        github-token: ${{ github.token }}
+
+    - name: ci/set-upload-success
+      if: github.ref_name == 'main' && steps.upload-coverage.outcome == 'success'
+      shell: bash
+      run: echo "UPLOAD_SUCCESS=true" >> $GITHUB_ENV
+
+    - name: ci/generate-run-id-file
+      if: env.UPLOAD_SUCCESS == 'true'
+      shell: bash
+      run: |
+        echo "::group::generate-last-run-id"
+        echo "${{ inputs.run_id }}" > run-id.txt
+        echo "::endgroup::"
+
+    - name: ci/cache-run-id-file
+      if: env.UPLOAD_SUCCESS == 'true'
+      uses: actions/cache/save@5a3ec84eff668545956fd18022155c47e93e2684
+      with:
+        path: run-id.txt
+        key: last-run-id-${{ inputs.run_id }}

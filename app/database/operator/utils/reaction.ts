@@ -28,7 +28,7 @@ export const sanitizeReactions = async ({database, post_id, rawReactions, skipSy
     // similarObjects: Contains objects that are in both the RawReaction array and in the Reaction table
     const similarObjects = new Set<ReactionModel>();
 
-    const createReactions: RecordPair[] = [];
+    const createReactions: Array<RecordPair<ReactionModel, Reaction>> = [];
 
     const reactionsMap = reactions.reduce((result: Record<string, ReactionModel>, reaction) => {
         result[`${reaction.userId}-${reaction.emojiName}`] = reaction;

@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import {useIntl} from 'react-intl';
 import {Alert, Text, TouchableOpacity, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -10,6 +11,7 @@ import {getPosts} from '@actions/local/post';
 import {fetchChannelById, joinChannel, switchToChannelById} from '@actions/remote/channel';
 import {fetchPostById, fetchPostsAround, fetchPostThread} from '@actions/remote/post';
 import {addCurrentUserToTeam, fetchTeamByName, removeCurrentUserFromTeam} from '@actions/remote/team';
+import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
@@ -21,12 +23,11 @@ import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
+import {usePreventDoubleTap} from '@hooks/utils';
 import SecurityManager from '@managers/security_manager';
 import {getChannelById, getMyChannel} from '@queries/servers/channel';
 import {dismissModal} from '@screens/navigation';
-import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {closePermalink} from '@utils/permalink';
-import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {secureGetFromRecord} from '@utils/types';
 import {typography} from '@utils/typography';
@@ -105,11 +106,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         alignItems: 'center',
     },
     footer: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexDirection: 'row',
         padding: 20,
-        width: '100%',
         borderBottomLeftRadius: 12,
         borderBottomRightRadius: 12,
         borderTopWidth: 1,
@@ -139,6 +136,7 @@ function Permalink({
     isTeamMember,
     currentTeamId,
 }: Props) {
+    const intl = useIntl();
     const [posts, setPosts] = useState<PostModel[]>([]);
     const [loading, setLoading] = useState(true);
     const theme = useTheme();
@@ -273,17 +271,17 @@ function Permalink({
         }
         dismissModal({componentId: Screens.PERMALINK});
         closePermalink();
-    }, [error]);
+    }, [error?.joinedTeam, error?.teamId, serverUrl]);
 
     useAndroidHardwareBackHandler(Screens.PERMALINK, handleClose);
 
-    const handlePress = useCallback(preventDoubleTap(() => {
+    const handlePress = usePreventDoubleTap(useCallback(() => {
         if (channel) {
             switchToChannelById(serverUrl, channel.id, channel.teamId);
         }
-    }), [channel?.id, channel?.teamId]);
+    }, [channel, serverUrl]));
 
-    const handleJoin = useCallback(preventDoubleTap(async () => {
+    const handleJoin = usePreventDoubleTap(useCallback(async () => {
         setLoading(true);
         setError(undefined);
         if (error?.teamId && error.channelId) {
@@ -296,7 +294,7 @@ function Permalink({
             }
             setChannelId(error.channelId);
         }
-    }), [error, serverUrl]);
+    }, [error, serverUrl]));
 
     let content;
     if (loading) {
@@ -334,18 +332,13 @@ function Permalink({
                     />
                 </View>
                 <View style={style.footer}>
-                    <TouchableOpacity
-                        style={[buttonBackgroundStyle(theme, 'lg', 'primary'), {width: '100%'}]}
+                    <Button
+                        size='lg'
+                        text={intl.formatMessage({id: 'mobile.search.jump', defaultMessage: 'Jump to recent messages'})}
+                        theme={theme}
                         onPress={handlePress}
                         testID='permalink.jump_to_recent_messages.button'
-                    >
-                        <FormattedText
-                            testID='permalink.search.jump'
-                            id='mobile.search.jump'
-                            defaultMessage='Jump to recent messages'
-                            style={buttonTextStyle(theme, 'lg', 'primary')}
-                        />
-                    </TouchableOpacity>
+                    />
                 </View>
             </ExtraKeyboardProvider>
         );

@@ -1,18 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Text, View} from 'react-native';
+import {Text, View} from 'react-native';
 
 import Markdown from '@components/markdown';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
+import {onOpenLinkError} from '@utils/url/links';
+
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     channelId: string;
     link?: string;
-    location: string;
+    location: AvailableScreens;
     theme: Theme;
     value?: string;
 }
@@ -39,24 +42,15 @@ const AttachmentTitle = ({channelId, link, location, theme, value}: Props) => {
     const intl = useIntl();
     const style = getStyleSheet(theme);
 
-    const openLink = () => {
+    const openLink = useCallback(() => {
         if (link) {
             const onError = () => {
-                Alert.alert(
-                    intl.formatMessage({
-                        id: 'mobile.link.error.title',
-                        defaultMessage: 'Error',
-                    }),
-                    intl.formatMessage({
-                        id: 'mobile.link.error.text',
-                        defaultMessage: 'Unable to open the link.',
-                    }),
-                );
+                onOpenLinkError(intl);
             };
 
             tryOpenURL(link, onError);
         }
-    };
+    }, [intl, link]);
 
     let title;
     if (link) {

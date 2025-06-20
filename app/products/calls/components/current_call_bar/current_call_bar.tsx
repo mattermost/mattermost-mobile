@@ -193,7 +193,11 @@ const CurrentCallBar = ({
         </Text>);
     if (speaker) {
         talkingMessage = (
-            <Text style={style.speakingUser}>
+            <Text
+                style={style.speakingUser}
+                numberOfLines={1}
+                ellipsizeMode='middle'
+            >
                 {displayUsername(sessionsDict[speaker].userModel, intl.locale, teammateNameDisplay)}
                 {' '}
                 <Text style={style.speakingPostfix}>{
@@ -249,7 +253,11 @@ const CurrentCallBar = ({
                     </View>
                     <View style={style.text}>
                         {talkingMessage}
-                        <Text style={style.channelAndTime}>
+                        <Text
+                            style={style.channelAndTime}
+                            numberOfLines={1}
+                            ellipsizeMode='middle'
+                        >
                             {`~${displayName}`}
                             <Text style={style.separator}>{'  •  '}</Text>
                             <CallDuration

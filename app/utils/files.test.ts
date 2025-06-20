@@ -4,7 +4,7 @@
 import testHelper from '@test/test_helper';
 
 import {toMilliseconds} from './datetime';
-import {getNumberFileMenuOptions, getChannelNamesWithID, getOrderedFileInfos, getFileInfosIndexes, getOrderedGalleryItems, pathWithPrefix} from './files';
+import {getNumberFileMenuOptions, getChannelNamesWithID, getOrderedFileInfos, getFileInfosIndexes, getOrderedGalleryItems} from './files';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 
@@ -50,10 +50,14 @@ describe('Files utils', () => {
     };
 
     test('getNumberFileMenuOptions', () => {
-        expect(getNumberFileMenuOptions(false, false)).toBe(1);
-        expect(getNumberFileMenuOptions(true, false)).toBe(2);
-        expect(getNumberFileMenuOptions(false, true)).toBe(2);
-        expect(getNumberFileMenuOptions(true, true)).toBe(3);
+        expect(getNumberFileMenuOptions(false, false, false)).toBe(1);
+        expect(getNumberFileMenuOptions(true, false, false)).toBe(2);
+        expect(getNumberFileMenuOptions(false, false, true)).toBe(2);
+        expect(getNumberFileMenuOptions(true, false, true)).toBe(3);
+
+        expect(getNumberFileMenuOptions(true, true, true)).toBe(1);
+        expect(getNumberFileMenuOptions(false, true, true)).toBe(1);
+        expect(getNumberFileMenuOptions(false, true, false)).toBe(1);
     });
 
     test('getChannelNamesWithID', () => {
@@ -101,10 +105,5 @@ describe('Files utils', () => {
         const result = getOrderedGalleryItems(fileInfos);
         const types = result.map((f) => f.type);
         expect(types).toEqual(['file', 'image', 'video']);
-    });
-
-    test('pathWithPrefix', () => {
-        expect(pathWithPrefix('file://', 'file://something')).toEqual('file://something');
-        expect(pathWithPrefix('file://', 'something')).toEqual('file://something');
     });
 });

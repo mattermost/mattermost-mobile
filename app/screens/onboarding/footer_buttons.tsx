@@ -2,14 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Pressable, useWindowDimensions, View} from 'react-native';
+import {Pressable, StyleSheet, useWindowDimensions, View} from 'react-native';
 import Animated, {Extrapolate, interpolate, useAnimatedStyle} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {ONBOARDING_CONTENT_MAX_WIDTH} from '@screens/onboarding/slide';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
-import {makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
     theme: Theme;
@@ -19,26 +18,20 @@ type Props = {
     scrollX: Animated.SharedValue<number>;
 };
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+const styles = StyleSheet.create({
     button: {
         marginTop: 5,
+        flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-    },
-    rowIcon: {
-        color: theme.buttonColor,
-        fontSize: 12,
-        marginLeft: 5,
-        marginTop: 4.5,
     },
     nextButtonText: {
         flexDirection: 'row',
         position: 'absolute',
         justifyContent: 'center',
+        alignItems: 'center',
         width: 120,
-    },
-    signInButtonText: {
-        flexDirection: 'row',
+        gap: 5,
     },
     footerButtonsContainer: {
         flexDirection: 'column',
@@ -48,7 +41,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         width: '100%',
         alignItems: 'center',
     },
-}));
+});
 
 const AnimatedButton = Animated.createAnimatedComponent(Pressable);
 const BUTTON_SIZE = 120;
@@ -62,7 +55,6 @@ const FooterButtons = ({
 }: Props) => {
     const {width} = useWindowDimensions();
     const buttonWidth = Math.min(width * 0.8, ONBOARDING_CONTENT_MAX_WIDTH);
-    const styles = getStyleSheet(theme);
 
     // keep in mind penultimate and ultimate slides to run buttons text/opacity/size animations
     const penultimateSlide = lastSlideIndex - 1;
@@ -116,6 +108,8 @@ const FooterButtons = ({
         return {opacity: interpolatedScale};
     });
 
+    const textStyles = StyleSheet.flatten(buttonTextStyle(theme, 'lg', 'primary', 'default'));
+
     const nextButtonText = (
         <Animated.View style={[styles.nextButtonText, opacityNextTextStyle]}>
             <FormattedText
@@ -125,13 +119,14 @@ const FooterButtons = ({
             />
             <CompassIcon
                 name='arrow-forward-ios'
-                style={styles.rowIcon}
+                size={12}
+                color={textStyles.color}
             />
         </Animated.View>
     );
 
     const signInButtonText = (
-        <Animated.View style={[styles.signInButtonText, opacitySignInTextStyle]}>
+        <Animated.View style={opacitySignInTextStyle}>
             <FormattedText
                 id='mobile.onboarding.sign_in_to_get_started'
                 defaultMessage='Sign in to get started'

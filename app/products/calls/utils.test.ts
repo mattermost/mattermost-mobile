@@ -7,8 +7,9 @@ import {Alert} from 'react-native';
 import {SelectedTrackType} from 'react-native-video';
 
 import {type CallsConfigState, DefaultCallsConfig} from '@calls/types/calls';
-import {License, Post} from '@constants';
+import {License, Post, Preferences} from '@constants';
 import {NOTIFICATION_SUB_TYPE} from '@constants/push_notification';
+import TestHelper from '@test/test_helper';
 
 import {
     getICEServersConfigs,
@@ -28,7 +29,6 @@ import {
     getTranscriptionUri,
 } from './utils';
 
-import type UserModel from '@typings/database/models/servers/user';
 import type {IntlShape} from 'react-intl';
 
 describe('getICEServersConfigs', () => {
@@ -136,21 +136,21 @@ describe('sortSessions', () => {
                 userId: 'user1',
                 muted: true,
                 raisedHand: 0,
-                userModel: {username: 'charlie'} as UserModel,
+                userModel: TestHelper.fakeUserModel({username: 'charlie'}),
             },
             2: {
                 sessionId: '2',
                 userId: 'user2',
                 muted: true,
                 raisedHand: 0,
-                userModel: {username: 'alice'} as UserModel,
+                userModel: TestHelper.fakeUserModel({username: 'alice'}),
             },
             3: {
                 sessionId: '3',
                 userId: 'user3',
                 muted: true,
                 raisedHand: 0,
-                userModel: {username: 'bob'} as UserModel,
+                userModel: TestHelper.fakeUserModel({username: 'bob'}),
             },
         };
 
@@ -165,21 +165,21 @@ describe('sortSessions', () => {
                 userId: 'user1',
                 muted: true,
                 raisedHand: 0,
-                userModel: {username: 'a'} as UserModel,
+                userModel: TestHelper.fakeUserModel({username: 'a'}),
             },
             2: {
                 sessionId: '2',
                 userId: 'user2',
                 muted: false,
                 raisedHand: 0,
-                userModel: {username: 'b'} as UserModel,
+                userModel: TestHelper.fakeUserModel({username: 'b'}),
             },
             3: {
                 sessionId: '3',
                 userId: 'user3',
                 muted: true,
                 raisedHand: 1000,
-                userModel: {username: 'c'} as UserModel,
+                userModel: TestHelper.fakeUserModel({username: 'c'}),
             },
         };
 
@@ -194,14 +194,14 @@ describe('sortSessions', () => {
                 userId: 'user1',
                 muted: true,
                 raisedHand: 2000, // Raised hand second
-                userModel: {username: 'a'} as UserModel,
+                userModel: TestHelper.fakeUserModel({username: 'a'}),
             },
             2: {
                 sessionId: '2',
                 userId: 'user2',
                 muted: true,
                 raisedHand: 1000, // Raised hand first
-                userModel: {username: 'b'} as UserModel,
+                userModel: TestHelper.fakeUserModel({username: 'b'}),
             },
         };
 
@@ -252,14 +252,14 @@ describe('getHandsRaisedNames', () => {
                 sessionId: '1',
                 userId: 'user1',
                 raisedHand: 2000,
-                userModel: {username: 'alice'} as UserModel,
+                userModel: TestHelper.fakeUserModel({username: 'alice'}),
                 muted: false,
             },
             {
                 sessionId: '2',
                 userId: 'user2',
                 raisedHand: 1000,
-                userModel: {username: 'bob'} as UserModel,
+                userModel: TestHelper.fakeUserModel({username: 'bob'}),
                 muted: false,
             },
         ];
@@ -274,7 +274,7 @@ describe('getHandsRaisedNames', () => {
                 sessionId: '1',
                 userId: 'user1',
                 raisedHand: 1000,
-                userModel: {username: 'alice'} as UserModel,
+                userModel: TestHelper.fakeUserModel({username: 'alice'}),
                 muted: false,
             },
         ];
@@ -318,9 +318,8 @@ describe('isHostControlsAllowed and areGroupCallsAllowed', () => {
 
 describe('isCallsCustomMessage', () => {
     it('identifies calls messages', () => {
-        expect(isCallsCustomMessage({type: Post.POST_TYPES.CUSTOM_CALLS} as Post)).toBe(true);
-        expect(isCallsCustomMessage({type: 'regular_post' as unknown} as Post)).toBe(false);
-        expect(isCallsCustomMessage({} as Post)).toBe(false);
+        expect(isCallsCustomMessage(TestHelper.fakePost({type: Post.POST_TYPES.CUSTOM_CALLS}))).toBe(true);
+        expect(isCallsCustomMessage(TestHelper.fakePost({type: ''}))).toBe(false); // Regular post
     });
 });
 
@@ -358,8 +357,9 @@ describe('errorAlert', () => {
 describe('makeCallsTheme', () => {
     it('creates calls theme from base theme', () => {
         const theme = {
+            ...Preferences.THEMES.denim,
             sidebarBg: '#000000',
-        } as Theme;
+        };
 
         const callsTheme = makeCallsTheme(theme);
 
@@ -372,8 +372,6 @@ describe('makeCallsTheme', () => {
 describe('isCallsStartedMessage', () => {
     it('identifies calls notifications', () => {
         expect(isCallsStartedMessage({sub_type: NOTIFICATION_SUB_TYPE.CALLS} as NotificationData)).toBe(true);
-        expect(isCallsStartedMessage({message: "You've been invited to a call"} as NotificationData)).toBe(true);
-        expect(isCallsStartedMessage({message: '\u200bUser is inviting you to a call'} as NotificationData)).toBe(true);
         expect(isCallsStartedMessage({message: 'regular message'} as NotificationData)).toBe(false);
     });
 });
@@ -415,7 +413,7 @@ describe('getTranscriptionUri', () => {
 
 describe('getCallPropsFromPost', () => {
     test('undefined props', () => {
-        const post = {} as Post;
+        const post = TestHelper.fakePost({props: undefined});
 
         const props = getCallPropsFromPost(post);
 
@@ -423,15 +421,12 @@ describe('getCallPropsFromPost', () => {
         expect(props.start_at).toBe(0);
         expect(props.end_at).toBe(0);
         expect(props.recordings).toStrictEqual({});
-        expect(props.recording_files.length).toBe(0);
         expect(props.transcriptions).toStrictEqual({});
         expect(props.participants.length).toBe(0);
     });
 
     test('missing props', () => {
-        const post = {
-            props: {},
-        } as Post;
+        const post = TestHelper.fakePost({props: {}});
 
         const props = getCallPropsFromPost(post);
 
@@ -439,7 +434,6 @@ describe('getCallPropsFromPost', () => {
         expect(props.start_at).toBe(0);
         expect(props.end_at).toBe(0);
         expect(props.recordings).toStrictEqual({});
-        expect(props.recording_files.length).toBe(0);
         expect(props.transcriptions).toStrictEqual({});
         expect(props.participants.length).toBe(0);
     });
@@ -452,12 +446,11 @@ describe('getCallPropsFromPost', () => {
             recordings: null,
             transcriptions: 45,
             participants: 'invalid',
-            recording_files: 45,
         };
 
-        const post = {
-            props: callProps as unknown,
-        } as Post;
+        const post = TestHelper.fakePost({
+            props: callProps,
+        });
 
         const props = getCallPropsFromPost(post);
 
@@ -465,7 +458,6 @@ describe('getCallPropsFromPost', () => {
         expect(props.start_at).toBe(0);
         expect(props.end_at).toBe(0);
         expect(props.recordings).toStrictEqual({});
-        expect(props.recording_files.length).toBe(0);
         expect(props.transcriptions).toStrictEqual({});
         expect(props.participants.length).toBe(0);
     });
@@ -487,7 +479,6 @@ describe('getCallPropsFromPost', () => {
                     tr_id: 'trB',
                 },
             },
-            recording_files: ['recAFileID', 'recBFileID'],
             transcriptions: {
                 trA: {
                     file_id: 'trAFileID',
@@ -503,9 +494,9 @@ describe('getCallPropsFromPost', () => {
             participants: ['userA', 'userB'],
         };
 
-        const post = {
-            props: callProps as unknown,
-        } as Post;
+        const post = TestHelper.fakePost({
+            props: callProps,
+        });
 
         const props = getCallPropsFromPost(post);
 
@@ -513,7 +504,6 @@ describe('getCallPropsFromPost', () => {
         expect(props.start_at).toBe(post.props?.start_at);
         expect(props.end_at).toBe(post.props?.end_at);
         expect(props.recordings).toBe(post.props?.recordings);
-        expect(props.recording_files).toBe(post.props?.recording_files);
         expect(props.transcriptions).toBe(post.props?.transcriptions);
         expect(props.participants).toBe(post.props?.participants);
     });

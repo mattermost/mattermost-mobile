@@ -11,7 +11,6 @@ import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {Preferences} from '@constants';
-import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {calculateDimensions} from '@utils/images';
 import {typography} from '@utils/typography';
 
@@ -45,6 +44,8 @@ const styles = StyleSheet.create({
 });
 
 type Props = {
+    canDownloadFiles: boolean;
+    enableSecureFilePreview: boolean;
     filename: string;
     height: number;
     isDownloading: boolean;
@@ -55,7 +56,7 @@ type Props = {
     width: number;
 }
 
-const VideoError = ({filename, height, isDownloading, isRemote, onShouldHideControls, posterUri, setDownloading, width}: Props) => {
+const VideoError = ({canDownloadFiles, enableSecureFilePreview, filename, height, isDownloading, isRemote, onShouldHideControls, posterUri, setDownloading, width}: Props) => {
     const [hasPoster, setHasPoster] = useState(false);
     const [loadPosterError, setLoadPosterError] = useState(false);
     const dimensions = useWindowDimensions();
@@ -94,20 +95,22 @@ const VideoError = ({filename, height, isDownloading, isRemote, onShouldHideCont
         );
     }
 
-    return (
-        <TouchableWithoutFeedback
-            onPress={onShouldHideControls}
-            style={styles.container}
-        >
-            <Animated.View style={styles.container}>
-                {poster}
-                <Text
-                    numberOfLines={2}
-                    style={styles.filename}
-                >
-                    {filename}
-                </Text>
-                {isRemote &&
+    let remoteVideo;
+    if (isRemote) {
+        if (enableSecureFilePreview) {
+            remoteVideo = (
+                <View style={styles.marginTop}>
+                    <View style={styles.marginBottom}>
+                        <FormattedText
+                            defaultMessage='Only PDF files can be previewed. Downloads are not allowed on this server.'
+                            id='mobile.document_preview.only_pdf_description'
+                            style={styles.unsupported}
+                        />
+                    </View>
+                </View>
+            );
+        } else if (canDownloadFiles) {
+            remoteVideo = (
                 <View style={styles.marginTop}>
                     <View style={styles.marginBottom}>
                         <FormattedText
@@ -121,12 +124,39 @@ const VideoError = ({filename, height, isDownloading, isRemote, onShouldHideCont
                         onPress={handleDownload}
                         theme={Preferences.THEMES.onyx}
                         size={'lg'}
-                        textStyle={buttonTextStyle(Preferences.THEMES.onyx, 'lg', 'primary', isDownloading ? 'disabled' : 'default')}
                         text={intl.formatMessage({id: 'video.download', defaultMessage: 'Download video'})}
-                        backgroundStyle={buttonBackgroundStyle(Preferences.THEMES.onyx, 'lg', 'primary', isDownloading ? 'disabled' : 'default')}
                     />
                 </View>
-                }
+            );
+        } else {
+            remoteVideo = (
+                <View style={styles.marginTop}>
+                    <View style={styles.marginBottom}>
+                        <FormattedText
+                            defaultMessage='File downloads are disabled on this server. Please contact your System Admin for more details.'
+                            id='mobile.downloader.disabled_description'
+                            style={styles.unsupported}
+                        />
+                    </View>
+                </View>
+            );
+        }
+    }
+
+    return (
+        <TouchableWithoutFeedback
+            onPress={onShouldHideControls}
+            style={styles.container}
+        >
+            <Animated.View style={styles.container}>
+                {poster}
+                <Text
+                    numberOfLines={2}
+                    style={styles.filename}
+                >
+                    {filename}
+                </Text>
+                {isRemote && remoteVideo}
                 {!isRemote &&
                 <FormattedText
                     defaultMessage='An error occurred while trying to play the video.'
