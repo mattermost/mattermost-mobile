@@ -1,12 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, Platform, useWindowDimensions, View} from 'react-native';
+import {Keyboard, Platform, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-import {Navigation} from 'react-native-navigation';
-import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {login} from '@actions/remote/session';
@@ -15,6 +14,7 @@ import FloatingTextInput from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useAvoidKeyboard} from '@hooks/device';
+import {useScreenTransitionAnimation} from '@hooks/screen_transition_animation';
 import {usePreventDoubleTap} from '@hooks/utils';
 import SecurityManager from '@managers/security_manager';
 import Background from '@screens/background';
@@ -83,8 +83,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const AnimatedSafeArea = Animated.createAnimatedComponent(SafeAreaView);
 
 const MFA = ({componentId, config, goToHome, license, loginId, password, serverDisplayName, serverUrl, theme}: MFAProps) => {
-    const dimensions = useWindowDimensions();
-    const translateX = useSharedValue(dimensions.width);
     const keyboardAwareRef = useRef<KeyboardAwareScrollView>(null);
     const intl = useIntl();
     const [token, setToken] = useState<string>('');
@@ -120,32 +118,9 @@ const MFA = ({componentId, config, goToHome, license, loginId, password, serverD
         goToHome(result.error);
     }, [config, formatMessage, goToHome, intl, license, loginId, password, serverDisplayName, serverUrl, token]));
 
-    const transform = useAnimatedStyle(() => {
-        const duration = Platform.OS === 'android' ? 250 : 350;
-        return {
-            transform: [{translateX: withTiming(translateX.value, {duration})}],
-        };
-    }, []);
+    const animatedStyles = useScreenTransitionAnimation(componentId);
 
     useAvoidKeyboard(keyboardAwareRef, 2);
-
-    useEffect(() => {
-        const listener = {
-            componentDidAppear: () => {
-                translateX.value = 0;
-            },
-            componentDidDisappear: () => {
-                translateX.value = -dimensions.width;
-            },
-        };
-        const unsubscribe = Navigation.events().registerComponentListener(listener, componentId);
-
-        return () => unsubscribe.remove();
-    }, [componentId, dimensions, translateX]);
-
-    useEffect(() => {
-        translateX.value = 0;
-    }, []);
 
     const close = useCallback(() => {
         popTopScreen(componentId);
@@ -161,7 +136,7 @@ const MFA = ({componentId, config, goToHome, license, loginId, password, serverD
             <Background theme={theme}/>
             <AnimatedSafeArea
                 testID='mfa.screen'
-                style={[styles.container, transform]}
+                style={[styles.container, animatedStyles]}
             >
                 <KeyboardAwareScrollView
                     bounces={false}
