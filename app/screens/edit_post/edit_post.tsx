@@ -105,6 +105,26 @@ const EditPost = ({
     const shouldDeleteOnSave = !postMessage && canDelete && !hasFilesAttached;
     const {uploadError, newUploadError} = useFileUploadError();
 
+    const shouldEnableSaveButton = useCallback(() => {
+        const loadingFiles = postFiles.filter((v) => v.clientId && DraftEditPostUploadManager.isUploading(v.clientId));
+        const hasUploadingFiles = loadingFiles.length > 0;
+
+        const tooLong = postMessage.trim().length > maxPostSize;
+
+        const messageChanged = editingMessage !== postMessage;
+
+        const originalFiles = files || [];
+        const originalFileIds = originalFiles.map((f) => f.id).sort();
+        const currentFileIds = postFiles.map((f) => f.id).filter((id) => id).sort();
+        const filesChanged = JSON.stringify(originalFileIds) !== JSON.stringify(currentFileIds);
+
+        // Enable save button if:
+        // 1. No files are uploading AND
+        // 2. No message length error AND
+        // 3. (Message changed OR files changed)
+        return !hasUploadingFiles && !tooLong && (messageChanged || filesChanged);
+    }, [postMessage, postFiles, editingMessage, maxPostSize, files]);
+
     useEffect(() => {
         toggleSaveButton(false);
     }, []);
@@ -203,8 +223,7 @@ const EditPost = ({
         }
 
         newUploadError(null);
-        toggleSaveButton(true);
-    }, [canUploadFiles, postFiles?.length, maxFileCount, newUploadError, toggleSaveButton, intl, maxFileSize, serverUrl, post.channelId, post.rootId, updateFileInPostFiles]);
+    }, [canUploadFiles, postFiles?.length, maxFileCount, newUploadError, intl, maxFileSize, serverUrl, post.channelId, post.rootId, updateFileInPostFiles]);
 
     const handleFileRemoval = useCallback((id: string) => {
         const filterFileById = (file: FileInfo) => {
@@ -221,45 +240,53 @@ const EditPost = ({
                 }
             }
             setPostFiles((prevFiles) => prevFiles?.filter(filterFileById) || []);
-            toggleSaveButton(true);
         };
 
-        Alert.alert(
-            intl.formatMessage({
-                id: 'edit_post.delete_file.title',
-                defaultMessage: 'Delete attachment',
-            }),
-            intl.formatMessage({
-                id: 'edit_post.delete_file.confirmation',
-                defaultMessage: 'Are you sure you want to remove {filename}?',
-            }, {
-                filename: postFiles?.find((file) => file.id === id)?.name || '',
-            }),
-            [
-                {
-                    text: intl.formatMessage({
-                        id: 'edit_post.delete_file.cancel',
-                        defaultMessage: 'Cancel',
-                    }),
-                    style: 'cancel',
-                },
-                {
-                    text: intl.formatMessage({
-                        id: 'edit_post.delete_file.confirm',
-                        defaultMessage: 'Delete',
-                    }),
-                    style: 'destructive',
-                    onPress: removeFileAction,
-                },
-            ],
-        );
-    }, [intl, toggleSaveButton, postFiles]);
+        const originalFiles = files || [];
+        const isNewlyUploadedFile = !originalFiles.some((originalFile) => originalFile.id === id);
+
+        if (isNewlyUploadedFile) {
+            removeFileAction();
+        } else {
+            Alert.alert(
+                intl.formatMessage({
+                    id: 'edit_post.delete_file.title',
+                    defaultMessage: 'Delete attachment',
+                }),
+                intl.formatMessage({
+                    id: 'edit_post.delete_file.confirmation',
+                    defaultMessage: 'Are you sure you want to remove {filename}?',
+                }, {
+                    filename: postFiles?.find((file) => file.id === id)?.name || '',
+                }),
+                [
+                    {
+                        text: intl.formatMessage({
+                            id: 'edit_post.delete_file.cancel',
+                            defaultMessage: 'Cancel',
+                        }),
+                        style: 'cancel',
+                    },
+                    {
+                        text: intl.formatMessage({
+                            id: 'edit_post.delete_file.confirm',
+                            defaultMessage: 'Delete',
+                        }),
+                        style: 'destructive',
+                        onPress: removeFileAction,
+                    },
+                ],
+            );
+        }
+    }, [intl, postFiles, files]);
 
     useEffect(() => {
         let loadingFiles: FileInfo[] = [];
         if (postFiles) {
             loadingFiles = postFiles.filter((v) => v.clientId && DraftEditPostUploadManager.isUploading(v.clientId));
         }
+
+        toggleSaveButton(shouldEnableSaveButton());
 
         for (const key of Object.keys(uploadErrorHandlers.current)) {
             if (!loadingFiles.find((v) => v.clientId === key)) {
@@ -273,7 +300,7 @@ const EditPost = ({
                 uploadErrorHandlers.current[file.clientId] = DraftEditPostUploadManager.registerErrorHandler(file.clientId, newUploadError);
             }
         }
-    }, [postFiles, newUploadError]);
+    }, [postFiles, postMessage, newUploadError, shouldEnableSaveButton, toggleSaveButton]);
 
     const onChangeTextCommon = useCallback((message: string) => {
         const tooLong = message.trim().length > maxPostSize;
@@ -285,8 +312,7 @@ const EditPost = ({
             setErrorLine(line);
             setErrorExtra(extra);
         }
-        toggleSaveButton(editingMessage !== message && !tooLong);
-    }, [intl, maxPostSize, editingMessage, toggleSaveButton]);
+    }, [intl, maxPostSize]);
 
     const onAutocompleteChangeText = useCallback((message: string) => {
         setPostMessage(message);
