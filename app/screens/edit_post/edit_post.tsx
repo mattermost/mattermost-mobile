@@ -226,24 +226,48 @@ const EditPost = ({
     }, [canUploadFiles, postFiles?.length, maxFileCount, newUploadError, intl, maxFileSize, serverUrl, post.channelId, post.rootId, updateFileInPostFiles]);
 
     const handleFileRemoval = useCallback((id: string) => {
-        const filterFileById = (file: FileInfo) => {
-            return file.id !== id;
+
+        const fileToRemove = postFiles?.find((file) => {
+            if (file.id && id) {
+                return file.id === id;
+            }
+            if (file.clientId && id) {
+                return file.clientId === id;
+            }
+            return false;
+        });
+
+        if (!fileToRemove) {
+            return;
+        }
+
+        const shouldKeepFile = (file: FileInfo) => {
+            if (fileToRemove.id && file.id) {
+                return file.id !== fileToRemove.id;
+            }
+            if (fileToRemove.clientId && file.clientId) {
+                return file.clientId !== fileToRemove.clientId;
+            }
+            return file !== fileToRemove;
         };
 
         const removeFileAction = () => {
-            const fileToRemove = postFiles?.find((file) => file.id === id);
-            if (fileToRemove?.clientId && DraftEditPostUploadManager.isUploading(fileToRemove.clientId)) {
+            if (fileToRemove.clientId && DraftEditPostUploadManager.isUploading(fileToRemove.clientId)) {
                 DraftEditPostUploadManager.cancel(fileToRemove.clientId);
                 if (uploadErrorHandlers.current[fileToRemove.clientId]) {
                     uploadErrorHandlers.current[fileToRemove.clientId]?.();
                     delete uploadErrorHandlers.current[fileToRemove.clientId];
                 }
             }
-            setPostFiles((prevFiles) => prevFiles?.filter(filterFileById) || []);
+
+            // Remove the specific file by using a unique identifier combination
+            setPostFiles((prevFiles) => prevFiles?.filter(shouldKeepFile) || []);
         };
 
         const originalFiles = files || [];
-        const isNewlyUploadedFile = !originalFiles.some((originalFile) => originalFile.id === id);
+        const isNewlyUploadedFile = !originalFiles.some((originalFile) => {
+            return originalFile.id === fileToRemove.id;
+        });
 
         if (isNewlyUploadedFile) {
             removeFileAction();
@@ -257,7 +281,7 @@ const EditPost = ({
                     id: 'edit_post.delete_file.confirmation',
                     defaultMessage: 'Are you sure you want to remove {filename}?',
                 }, {
-                    filename: postFiles?.find((file) => file.id === id)?.name || '',
+                    filename: fileToRemove.name || '',
                 }),
                 [
                     {

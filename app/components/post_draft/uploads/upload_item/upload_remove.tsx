@@ -57,7 +57,7 @@ export default function UploadRemove({
 
     const onPress = useCallback(() => {
         if (isEditMode) {
-            onFileRemove?.(fileId);
+            onFileRemove?.(fileId || clientId);
             return;
         }
         DraftEditPostUploadManager.cancel(clientId);
