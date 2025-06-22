@@ -127,7 +127,7 @@ const ShareFileOption = ({ post }: Props) => {
 
             if (filePaths.length > 0) {
                 await Share.open({
-                    message: "",
+                    message: post.message || "",
                     title: "",
                     urls: filePaths,
                     showAppsToView: true,
