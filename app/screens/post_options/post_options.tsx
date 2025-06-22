@@ -25,7 +25,7 @@ import EditOption from './options/edit_option';
 import MarkAsUnreadOption from './options/mark_unread_option';
 import PinChannelOption from './options/pin_channel_option';
 import ReactionBar from './reaction_bar';
-import ShareFileOption from './options/share_file_option';
+import SharePostOption from './options/share_post_option';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type ThreadModel from '@typings/database/models/servers/thread';
@@ -87,7 +87,6 @@ const PostOptions = ({
         const optionsCount = [
             canCopyPermalink, canCopyText, canDelete, canEdit,
             canMarkAsUnread, canPin, canReply, !isSystemPost, shouldRenderFollow,
-            hasFiles,
         ].reduce((acc, v) => {
             return v ? acc + 1 : acc;
         }, 0) + (shouldShowBindings ? 0.5 : 0);
@@ -102,7 +101,7 @@ const PostOptions = ({
     }, [
         canAddReaction, canCopyPermalink, canCopyText,
         canDelete, canEdit, shouldRenderFollow, shouldShowBindings,
-        canMarkAsUnread, canPin, canReply, isSystemPost, hasFiles,
+        canMarkAsUnread, canPin, canReply, isSystemPost,
     ]);
 
     const renderContent = () => {
@@ -167,8 +166,8 @@ const PostOptions = ({
                     canDelete={canDelete}
                 />
                 }
-                {!isSystemPost && hasFiles &&
-                <ShareFileOption
+                {!isSystemPost &&
+                <SharePostOption
                     bottomSheetId={Screens.POST_OPTIONS}
                     post={post}
                     sourceScreen={sourceScreen}

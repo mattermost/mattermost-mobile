@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const ShareFileOption = ({ post }: Props) => {
+const SharePostOption = ({ post }: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const [showToast, setShowToast] = useState(false);
@@ -82,7 +82,6 @@ const ShareFileOption = ({ post }: Props) => {
             downloadPromise.current?.cancel?.();
             downloadPromise.current = undefined;
         } catch {
-            // do nothing
         } finally {
             if (mounted.current) {
                 setShowToast(false);
@@ -92,16 +91,20 @@ const ShareFileOption = ({ post }: Props) => {
 
     const handleShare = useCallback(async () => {
         try {
-            setShowToast(true);
             const files = await queryFilesForPost(
                 post.database,
                 post.id,
             ).fetch();
+            
             if (!files.length) {
-                setShowToast(false);
+                await Share.open({
+                    message: post.message || "",
+                    title: "",
+                });
                 return;
             }
 
+            setShowToast(true);
             const filePaths: string[] = [];
             for (const file of files) {
                 const fileInfo = file.toFileInfo(post.userId);
@@ -135,7 +138,7 @@ const ShareFileOption = ({ post }: Props) => {
             }
             setShowToast(false);
         } catch (error) {
-            logDebug("error on share file", getFullErrorMessage(error));
+            logDebug("error on share post", getFullErrorMessage(error));
             setShowToast(false);
         }
     }, [post, serverUrl]);
@@ -154,7 +157,7 @@ const ShareFileOption = ({ post }: Props) => {
                 defaultMessage="Share"
                 iconName="share-variant-outline"
                 onPress={handleShare}
-                testID="post_options.share_file.option"
+                testID="post_options.share_post.option"
             />
             {showToast && (
                 <Toast
@@ -189,4 +192,4 @@ const ShareFileOption = ({ post }: Props) => {
     );
 };
 
-export default ShareFileOption;
+export default SharePostOption; 
