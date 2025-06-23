@@ -12,7 +12,6 @@ import UserAvatarsStack from '@components/user_avatars_stack';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {getRunScheduledTimestamp, isRunFinished} from '@playbooks/utils/run';
-import {getSortOrder} from '@playbooks/utils/sort_order';
 import {openUserProfileModal, popTopScreen} from '@screens/navigation';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
@@ -132,23 +131,6 @@ export default function PlaybookRun({
         ];
     }, [insets.bottom, styles.container]);
 
-    const orderedChecklists = useMemo(() => {
-        if (!playbookRun) {
-            return [];
-        }
-
-        if ('table' in playbookRun) {
-            const sortOrder = getSortOrder(checklists); // TODO: get sort order from the playbook object
-            const sortOrderMap = sortOrder.reduce((acc, id, index) => {
-                acc[id] = index;
-                return acc;
-            }, {} as Record<string, number>);
-            return checklists.sort((a, b) => sortOrderMap[a.id] - sortOrderMap[b.id]);
-        }
-
-        return checklists;
-    }, [checklists, playbookRun]);
-
     const openOwnerProfile = useCallback(() => {
         if (!owner) {
             return;
@@ -221,7 +203,7 @@ export default function PlaybookRun({
                         {intl.formatMessage(messages.tasks)}
                     </Text>
                     <ChecklistList
-                        checklists={orderedChecklists}
+                        checklists={checklists}
                         channelId={channelId}
                         playbookRunId={playbookRun.id}
                         isFinished={isRunFinished(playbookRun)}

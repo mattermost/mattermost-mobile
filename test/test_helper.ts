@@ -1199,7 +1199,6 @@ class TestHelperSingleton {
             ...this.fakeModel(),
             checklistId: this.generateId(),
             title: 'title',
-            order: 0,
             state: '',
             stateModified: 0,
             assigneeId: null,

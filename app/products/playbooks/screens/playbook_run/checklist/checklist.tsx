@@ -8,7 +8,6 @@ import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-nati
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
 import ProgressBar from '@playbooks/components/progress_bar';
-import {getSortOrder} from '@playbooks/utils/sort_order';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -83,19 +82,6 @@ const Checklist = ({
     const height = useSharedValue(0);
     const windowDimensions = useWindowDimensions();
 
-    const sortedItems = useMemo(() => {
-        if ('table' in checklist) {
-            const sortOrder = getSortOrder(items);
-            const sortOrderMap = sortOrder.reduce((acc, id, index) => {
-                acc[id] = index;
-                return acc;
-            }, {} as Record<string, number>);
-            return items.sort((a, b) => sortOrderMap[a.id] - sortOrderMap[b.id]);
-        }
-
-        return items;
-    }, [items, checklist]);
-
     const toggleExpanded = useCallback(() => {
         setExpanded((prev) => !prev);
     }, []);
@@ -149,7 +135,7 @@ const Checklist = ({
             <Animated.View
                 style={[styles.checklistItemsContainer, animatedStyle]}
             >
-                {sortedItems.map((item, index) => (
+                {items.map((item, index) => (
                     <ChecklistItem
                         key={item.id}
                         item={item}
@@ -166,7 +152,7 @@ const Checklist = ({
                 style={calculatorStyle}
                 onLayout={calculatorOnLayout}
             >
-                {sortedItems.map((item, index) => (
+                {items.map((item, index) => (
                     <ChecklistItem
                         key={item.id}
                         item={item}
