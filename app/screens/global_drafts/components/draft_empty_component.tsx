@@ -1,16 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Image} from 'expo-image';
 import React from 'react';
 import {View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
+import DraftEmpty from '@components/illustrations/draft_empty';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
-
-const draft_message_image = require('@assets/images/Draft_Message.png');
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -27,6 +25,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         title: {
             ...typography('Heading', 400, 'SemiBold'),
             color: theme.centerChannelColor,
+            marginTop: 20,
         },
         subtitle: {
             ...typography('Body'),
@@ -45,10 +44,7 @@ const DraftEmptyComponent = () => {
             style={styles.container}
             testID='draft_empty_component'
         >
-            <Image
-                source={draft_message_image}
-                style={styles.image}
-            />
+            <DraftEmpty/>
             <FormattedText
                 id='drafts.empty.title'
                 defaultMessage={'No drafts at the moment'}

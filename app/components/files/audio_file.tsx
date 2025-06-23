@@ -15,7 +15,7 @@ import Video, {type OnLoadData, type OnProgressData, type OnVideoErrorData, type
 import {useTheme} from '@context/theme';
 import {useDownloadFileAndPreview} from '@hooks/files';
 import useThrottled from '@hooks/throttled';
-import {alertDownloadDocumentDisabled} from '@utils/document';
+import {alertDownloadDocumentDisabled, alertOnlyPDFSupported} from '@utils/document';
 import {logDebug} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -27,6 +27,7 @@ import ProgressBar from '../progress_bar';
 type Props = {
     file: FileInfo;
     canDownloadFiles: boolean;
+    enableSecureFilePreview: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -65,7 +66,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const AudioFile = ({file, canDownloadFiles}: Props) => {
+const AudioFile = ({file, canDownloadFiles, enableSecureFilePreview}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const style = getStyleSheet(theme);
@@ -93,20 +94,25 @@ const AudioFile = ({file, canDownloadFiles}: Props) => {
 
     const source = useMemo(() => ({uri: file.uri}), [file.uri]);
 
-    const {toggleDownloadAndPreview} = useDownloadFileAndPreview();
+    const {toggleDownloadAndPreview} = useDownloadFileAndPreview(enableSecureFilePreview);
 
     const onPlayPress = () => {
         setHasPaused(!hasPaused);
     };
 
     const onDownloadPress = useCallback(async () => {
+        if (enableSecureFilePreview) {
+            alertOnlyPDFSupported(intl);
+            return;
+        }
+
         if (!canDownloadFiles) {
             alertDownloadDocumentDisabled(intl);
             return;
         }
 
         toggleDownloadAndPreview(file);
-    }, [canDownloadFiles, intl, file, toggleDownloadAndPreview]);
+    }, [enableSecureFilePreview, canDownloadFiles, toggleDownloadAndPreview, file, intl]);
 
     const loadTimeInMinutes = useCallback((timeInSeconds: number) => {
         const minutes = Math.floor(timeInSeconds / 60);
@@ -209,6 +215,7 @@ const AudioFile = ({file, canDownloadFiles}: Props) => {
 
                 <Text style={style.timerText}>{timeInMinutes}</Text>
 
+                {!enableSecureFilePreview &&
                 <TouchableOpacity
                     onPress={onDownloadPress}
                 >
@@ -218,6 +225,7 @@ const AudioFile = ({file, canDownloadFiles}: Props) => {
                         style={style.downloadIcon}
                     />
                 </TouchableOpacity>
+                }
             </View>
         </TouchableWithoutFeedback>
     );

@@ -15,6 +15,7 @@ import {getNeededAtMentionedUsernames} from '@helpers/api/user';
 import NetworkManager from '@managers/network_manager';
 import {getMyChannel, prepareMissingChannelsForAllTeams, queryAllMyChannel} from '@queries/servers/channel';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
+import {getFilesByIds} from '@queries/servers/file';
 import {getPostById, getRecentPostsInChannel} from '@queries/servers/post';
 import {getCurrentUserId} from '@queries/servers/system';
 import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers/thread';
@@ -907,14 +908,14 @@ export const markPostAsUnread = async (serverUrl: string, postId: string) => {
     }
 };
 
-export const editPost = async (serverUrl: string, postId: string, postMessage: string) => {
+export const editPost = async (serverUrl: string, postId: string, postMessage: string, file_ids: string[], removed_file_ids: string[]) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         const post = await getPostById(database, postId);
         if (post) {
-            const {update_at, edit_at, message: updatedMessage, message_source} = await client.patchPost({message: postMessage, id: postId});
+            const {update_at, edit_at, message: updatedMessage, message_source} = await client.patchPost({message: postMessage, id: postId, file_ids});
             await database.write(async () => {
                 await post.update((p) => {
                     p.updateAt = update_at;
@@ -923,6 +924,17 @@ export const editPost = async (serverUrl: string, postId: string, postMessage: s
                     p.messageSource = message_source || '';
                 });
             });
+
+            if (removed_file_ids.length > 0) {
+                const filesToDelete = await getFilesByIds(database, removed_file_ids);
+                if (filesToDelete.length > 0) {
+                    const fileDeleteModels = filesToDelete.map((file) => {
+                        file.prepareDestroyPermanently();
+                        return file;
+                    });
+                    await operator.batchRecords(fileDeleteModels, 'delete files');
+                }
+            }
         }
         return {post};
     } catch (error) {

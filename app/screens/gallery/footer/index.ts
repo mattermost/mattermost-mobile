@@ -8,7 +8,8 @@ import {switchMap} from 'rxjs/operators';
 import {General} from '@constants';
 import {observeChannel} from '@queries/servers/channel';
 import {observePost} from '@queries/servers/post';
-import {observeCanDownloadFiles, observeConfigBooleanValue, observeCurrentChannelId, observeCurrentUserId} from '@queries/servers/system';
+import {observeCanDownloadFiles, observeEnableSecureFilePreview} from '@queries/servers/security';
+import {observeConfigBooleanValue, observeCurrentChannelId, observeCurrentUserId} from '@queries/servers/system';
 import {observeTeammateNameDisplay, observeUser} from '@queries/servers/user';
 
 import Footer from './footer';
@@ -58,6 +59,7 @@ const enhanced = withObservables(['item'], ({database, item}: FooterProps) => {
         enablePostIconOverride,
         enablePostUsernameOverride,
         enablePublicLink,
+        enableSecureFilePreview: observeEnableSecureFilePreview(database),
         isDirectChannel,
         post,
         teammateNameDisplay,
