@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useState} from 'react';
+import React, {useCallback, useState, useRef} from 'react';
 
 import {savePreference} from '@actions/remote/preference';
 import SettingContainer from '@components/settings/container';
@@ -26,14 +26,14 @@ type DisplayThemeProps = {
 const DisplayTheme = ({allowedThemeKeys, componentId, currentTeamId, currentUserId}: DisplayThemeProps) => {
     const serverUrl = useServerUrl();
     const theme = useTheme();
-    const initialTheme = useMemo(() => theme, [/* dependency array should remain empty */]);
+    const initialTheme = useRef(theme);
     const [newTheme, setNewTheme] = useState<string | undefined>(undefined);
 
     const close = () => popTopScreen(componentId);
 
     const setThemePreference = useCallback(() => {
         const allowedTheme = allowedThemeKeys.find((tk) => tk === newTheme);
-        const themeJson = Preferences.THEMES[allowedTheme as ThemeKey] || initialTheme;
+        const themeJson = Preferences.THEMES[allowedTheme as ThemeKey] || initialTheme.current;
 
         const pref: PreferenceType = {
             category: Preferences.CATEGORIES.THEME,
@@ -45,12 +45,9 @@ const DisplayTheme = ({allowedThemeKeys, componentId, currentTeamId, currentUser
     }, [allowedThemeKeys, initialTheme, currentTeamId, currentUserId, serverUrl, newTheme]);
 
     useDidUpdate(() => {
-        const differentTheme = theme.type?.toLowerCase() !== newTheme?.toLowerCase();
-
-        if (!differentTheme) {
-            return;
+        if (theme.type?.toLowerCase() !== newTheme?.toLowerCase()) {
+            setThemePreference();
         }
-        setThemePreference();
     }, [newTheme, setThemePreference, theme.type]);
 
     const onAndroidBack = () => {
@@ -67,10 +64,10 @@ const DisplayTheme = ({allowedThemeKeys, componentId, currentTeamId, currentUser
                 onThemeChange={setNewTheme}
                 selectedTheme={theme.type}
             />
-            {initialTheme.type === 'custom' && (
+            {initialTheme.current.type === 'custom' && (
                 <CustomTheme
                     setTheme={setNewTheme}
-                    displayTheme={initialTheme.type}
+                    displayTheme={initialTheme.current.type}
                 />
             )}
         </SettingContainer>
