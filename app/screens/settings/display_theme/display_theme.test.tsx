@@ -113,7 +113,7 @@ describe('DisplayTheme', () => {
         expect(screen.getByTestId('theme_display_settings.denim.option.selected')).toBeTruthy();
     });
 
-    it('should not call popTopScreen when changing theme', () => {
+    it('should not call popTopScreen (closes the screen) when changing theme', () => {
         renderWithIntl(
             <DisplayTheme
                 allowedThemeKeys={['denim', 'sapphire']}
