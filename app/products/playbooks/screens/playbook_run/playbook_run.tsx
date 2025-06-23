@@ -19,6 +19,7 @@ import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import ChecklistList from './checklist_list';
+import ErrorState from './error_state';
 import OutOfDateHeader from './out_of_date_header';
 import StatusUpdateIndicator from './status_update_indicator';
 
@@ -148,8 +149,7 @@ export default function PlaybookRun({
     }, [owner, intl, theme, channelId, componentId]);
 
     if (!playbookRun) {
-        // TODO: create a error state
-        return null;
+        return <ErrorState/>;
     }
 
     return (
