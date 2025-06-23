@@ -36,16 +36,18 @@ describe('DisplayTheme', () => {
         jest.mocked(useTheme).mockImplementation(() => ({...Preferences.THEMES.denim, type: 'Denim'}));
     });
 
-    it('should render with default theme', () => {
+    it('should render with a few themes, denim selected', () => {
         render(
             <DisplayTheme
                 allowedThemeKeys={['denim', 'sapphire']}
                 {...displayThemeOtherProps}
             />);
 
-        expect(screen.getByTestId('theme_display_settings.screen')).toBeTruthy();
         expect(screen.getByTestId('theme_display_settings.denim.option')).toBeTruthy();
         expect(screen.getByTestId('theme_display_settings.denim.option.selected')).toBeTruthy();
+
+        expect(screen.getByTestId('theme_display_settings.sapphire.option')).toBeTruthy();
+        expect(screen.queryByTestId('theme_display_settings.sapphire.option.selected')).toBeFalsy();
     });
 
     it('should render with custom theme', () => {
@@ -53,7 +55,7 @@ describe('DisplayTheme', () => {
 
         renderWithIntl(
             <DisplayTheme
-                allowedThemeKeys={['default', 'denim', 'custom']}
+                allowedThemeKeys={['denim', 'custom']}
                 {...displayThemeOtherProps}
             />);
 
@@ -61,7 +63,7 @@ describe('DisplayTheme', () => {
         expect(screen.getByTestId('theme_display_settings.custom.option.selected')).toBeTruthy();
     });
 
-    it('should render with custom theme and change to denim', async () => {
+    it('should render with custom theme and user change to denim (non-custom)', async () => {
         jest.mocked(useTheme).mockImplementation(() => ({...Preferences.THEMES.denim, type: 'custom'}));
 
         renderWithIntl(
@@ -73,10 +75,10 @@ describe('DisplayTheme', () => {
         expect(screen.getByTestId('theme_display_settings.custom.option')).toBeTruthy();
         expect(screen.getByTestId('theme_display_settings.custom.option.selected')).toBeTruthy();
 
-        const themeTile = screen.getByTestId('theme_display_settings.denim.option');
+        const denimTile = screen.getByTestId('theme_display_settings.denim.option');
 
         act(() => {
-            fireEvent.press(themeTile);
+            fireEvent.press(denimTile);
         });
 
         expect(savePreference).toHaveBeenCalledWith(
@@ -114,23 +116,34 @@ describe('DisplayTheme', () => {
     it('should not call popTopScreen when changing theme', () => {
         renderWithIntl(
             <DisplayTheme
-                allowedThemeKeys={['denim', 'custom']}
+                allowedThemeKeys={['denim', 'sapphire']}
                 {...displayThemeOtherProps}
             />,
         );
 
-        const themeTile = screen.getByTestId('theme_display_settings.denim.option');
+        const sapphireTile = screen.getByTestId('theme_display_settings.sapphire.option');
 
         act(() => {
-            fireEvent.press(themeTile);
+            fireEvent.press(sapphireTile);
+
+            // useDidUpdate => saveThemePreference => savePreference => useTheme => useDidUpdate again
+
+            jest.mocked(useTheme).mockImplementation(() => ({...Preferences.THEMES.sapphire, type: 'Sapphire'}));
         });
+
+        screen.rerender(
+            <DisplayTheme
+                allowedThemeKeys={['denim', 'sapphire']}
+                {...displayThemeOtherProps}
+            />,
+        );
 
         expect(popTopScreen).toHaveBeenCalledTimes(0);
     });
 
     it('should call popTopScreen when Android back button is pressed', () => {
         (NavigationStore.getVisibleScreen as jest.Mock).mockReturnValue('DisplayTheme');
-        const backHandlerAddEventListener = jest.spyOn(BackHandler, 'addEventListener');
+        const androidBackButtonHandler = jest.spyOn(BackHandler, 'addEventListener');
 
         renderWithIntl(
             <DisplayTheme
@@ -140,7 +153,7 @@ describe('DisplayTheme', () => {
         );
 
         // simulate Android back button press
-        backHandlerAddEventListener.mock.calls[0][1]();
+        androidBackButtonHandler.mock.calls[0][1]();
 
         expect(popTopScreen).toHaveBeenCalledTimes(1);
     });
