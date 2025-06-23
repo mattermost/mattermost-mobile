@@ -34,7 +34,8 @@ const emptyParticipantsList: UserModel[] = [];
 const enhanced = withObservables(['playbookRunId', 'run'], ({playbookRunId, run, database}: OwnProps) => {
     // We receive a API run instead of a model from the database
     if (run) {
-        const participants = queryUsersById(database, run.participant_ids).observe();
+        const filteredParticipantIds = run.participant_ids.filter((id) => id !== run.owner_user_id);
+        const participants = queryUsersById(database, filteredParticipantIds).observe();
         const owner = observeUser(database, run.owner_user_id);
         return {
             playbookRun: of$(run),

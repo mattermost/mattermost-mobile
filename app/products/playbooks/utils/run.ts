@@ -24,3 +24,13 @@ export function isRunFinished(run: PlaybookRunModel | PlaybookRun): boolean {
     const currentStatus = 'currentStatus' in run ? run.currentStatus : run.current_status;
     return currentStatus === 'Finished';
 }
+
+export function getMaxRunUpdateAt(runs: PlaybookRun[]): number {
+    let max = 0;
+    for (const run of runs) {
+        if (run.update_at > max) {
+            max = run.update_at;
+        }
+    }
+    return max;
+}

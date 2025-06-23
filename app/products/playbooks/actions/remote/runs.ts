@@ -7,6 +7,7 @@ import NetworkManager from '@managers/network_manager';
 import {updateLastPlaybookFetchAt} from '@playbooks/actions/local/channel';
 import {handlePlaybookRuns} from '@playbooks/actions/local/run';
 import {getLastPlaybookFetchAt} from '@playbooks/database/queries/run';
+import {getMaxRunUpdateAt} from '@playbooks/utils/run';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 
@@ -33,10 +34,8 @@ export const fetchPlaybookRunsForChannel = async (serverUrl: string, channelId: 
             const {items: runs, has_more} = await client.fetchPlaybookRuns({
                 page,
                 per_page: 100,
-
-                // TODO: This two parameters are only available in the new version of the API
                 channel_id: channelId,
-                since: lastFetchAt,
+                since: lastFetchAt + 1,
             });
             hasMore = has_more;
             allRuns.push(...runs);
@@ -47,9 +46,8 @@ export const fetchPlaybookRunsForChannel = async (serverUrl: string, channelId: 
             return {runs: []};
         }
 
-        // TODO: We should use run.updateAt instead of the current timestamp.
         // but we don't have that field yet.
-        updateLastPlaybookFetchAt(serverUrl, channelId, Date.now());
+        updateLastPlaybookFetchAt(serverUrl, channelId, getMaxRunUpdateAt(allRuns));
 
         if (!fetchOnly) {
             handlePlaybookRuns(serverUrl, allRuns, false, true);

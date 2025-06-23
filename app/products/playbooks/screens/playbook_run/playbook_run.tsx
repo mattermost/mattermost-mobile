@@ -9,6 +9,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import UserChip from '@components/chips/user_chip';
 import Markdown from '@components/markdown';
 import UserAvatarsStack from '@components/user_avatars_stack';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {getRunScheduledTimestamp, isRunFinished} from '@playbooks/utils/run';
@@ -18,6 +19,7 @@ import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import ChecklistList from './checklist_list';
+import OutOfDateHeader from './out_of_date_header';
 import StatusUpdateIndicator from './status_update_indicator';
 
 import type PlaybookChecklistModel from '@playbooks/types/database/models/playbook_checklist';
@@ -114,8 +116,10 @@ export default function PlaybookRun({
 }: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const serverUrl = useServerUrl();
     const intl = useIntl();
     const insets = useSafeAreaInsets();
+    const lastSyncAt = playbookRun && 'lastSyncAt' in playbookRun ? playbookRun.lastSyncAt : 0;
 
     const channelId = playbookRun && 'channelId' in playbookRun ? playbookRun.channelId : (playbookRun?.channel_id || '');
 
@@ -149,68 +153,74 @@ export default function PlaybookRun({
     }
 
     return (
-        <View style={containerStyle}>
-            <ScrollView>
-                <View style={styles.intro}>
-                    <View style={styles.titleAndDescription}>
-                        <Text style={styles.title}>{playbookRun.name}</Text>
-                        <Markdown
-                            value={playbookRun.description}
-                            theme={theme}
-                            location={componentId}
-                            baseTextStyle={styles.infoText}
-                            blockStyles={getMarkdownBlockStyles(theme)}
-                            textStyles={getMarkdownTextStyles(theme)}
-                        />
-                    </View>
-                    {(owner || participants.length > 0) && (
-                        <View style={styles.peopleRow}>
-                            {owner && (
-                                <View style={styles.peopleRowCol}>
-                                    <Text style={styles.peopleRowColHeader}>
-                                        {intl.formatMessage(messages.owner)}
-                                    </Text>
-                                    <View style={styles.ownerRow}>
-                                        <UserChip
-                                            user={owner}
-                                            onPress={openOwnerProfile}
-                                            teammateNameDisplay='username'
+        <>
+            <OutOfDateHeader
+                serverUrl={serverUrl}
+                lastSyncAt={lastSyncAt}
+            />
+            <View style={containerStyle}>
+                <ScrollView>
+                    <View style={styles.intro}>
+                        <View style={styles.titleAndDescription}>
+                            <Text style={styles.title}>{playbookRun.name}</Text>
+                            <Markdown
+                                value={playbookRun.summary}
+                                theme={theme}
+                                location={componentId}
+                                baseTextStyle={styles.infoText}
+                                blockStyles={getMarkdownBlockStyles(theme)}
+                                textStyles={getMarkdownTextStyles(theme)}
+                            />
+                        </View>
+                        {(owner || participants.length > 0) && (
+                            <View style={styles.peopleRow}>
+                                {owner && (
+                                    <View style={styles.peopleRowCol}>
+                                        <Text style={styles.peopleRowColHeader}>
+                                            {intl.formatMessage(messages.owner)}
+                                        </Text>
+                                        <View style={styles.ownerRow}>
+                                            <UserChip
+                                                user={owner}
+                                                onPress={openOwnerProfile}
+                                                teammateNameDisplay='username'
+                                            />
+                                        </View>
+                                    </View>
+                                )}
+                                {participants.length > 0 && (
+                                    <View style={styles.peopleRowCol}>
+                                        <Text style={styles.peopleRowColHeader}>
+                                            {intl.formatMessage(messages.participants)}
+                                        </Text>
+                                        <UserAvatarsStack
+                                            users={participants}
+                                            location={componentId}
+                                            bottomSheetTitle={messages.participantsTitle}
                                         />
                                     </View>
-                                </View>
-                            )}
-                            {participants.length > 0 && (
-                                <View style={styles.peopleRowCol}>
-                                    <Text style={styles.peopleRowColHeader}>
-                                        {intl.formatMessage(messages.participants)}
-                                    </Text>
-                                    <UserAvatarsStack
-                                        users={participants}
-                                        location={componentId}
-                                        bottomSheetTitle={messages.participantsTitle}
-                                    />
-                                </View>
-                            )}
-                        </View>
-                    )}
-                    <StatusUpdateIndicator
-                        isFinished={isRunFinished(playbookRun)}
-                        timestamp={getRunScheduledTimestamp(playbookRun)}
-                    />
-                </View>
-                <View style={styles.tasksContainer}>
-                    <Text style={styles.tasksHeader}>
-                        {intl.formatMessage(messages.tasks)}
-                    </Text>
-                    <ChecklistList
-                        checklists={checklists}
-                        channelId={channelId}
-                        playbookRunId={playbookRun.id}
-                        isFinished={isRunFinished(playbookRun)}
-                    />
-                </View>
-            </ScrollView>
-        </View>
+                                )}
+                            </View>
+                        )}
+                        <StatusUpdateIndicator
+                            isFinished={isRunFinished(playbookRun)}
+                            timestamp={getRunScheduledTimestamp(playbookRun)}
+                        />
+                    </View>
+                    <View style={styles.tasksContainer}>
+                        <Text style={styles.tasksHeader}>
+                            {intl.formatMessage(messages.tasks)}
+                        </Text>
+                        <ChecklistList
+                            checklists={checklists}
+                            channelId={channelId}
+                            playbookRunId={playbookRun.id}
+                            isFinished={isRunFinished(playbookRun)}
+                        />
+                    </View>
+                </ScrollView>
+            </View>
+        </>
     );
 }
 

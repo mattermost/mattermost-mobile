@@ -18,11 +18,31 @@ export const updateChecklistItem = async (
     try {
         const client = NetworkManager.getClient(serverUrl);
 
-        await client.setChecklistItemState(playbookRunId, checklistNumber, itemNumber, state);
+        const res = await client.setChecklistItemState(playbookRunId, checklistNumber, itemNumber, state);
+        if (res.error) {
+            return {error: res.error};
+        }
         await localUpdateChecklistItem(serverUrl, itemId, state);
         return {data: true};
     } catch (error) {
         logDebug('error on fetchPlaybookRunsForChannel', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
+export const runChecklistItem = async (
+    serverUrl: string,
+    playbookRunId: string,
+    checklistNumber: number,
+    itemNumber: number,
+) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        await client.runChecklistItemSlashCommand(playbookRunId, checklistNumber, itemNumber);
+        return {data: true};
+    } catch (error) {
+        logDebug('error on runChecklistItem', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }

@@ -140,7 +140,7 @@ const PlaybookCard = ({
                         >
                             {intl.formatMessage({
                                 id: 'playbook.last_updated',
-                                defaultMessage: 'Last updated {date}',
+                                defaultMessage: 'Last update {date}',
                             }, {
                                 date: (
                                     <FriendlyDate

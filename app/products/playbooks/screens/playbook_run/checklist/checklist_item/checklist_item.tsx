@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {View, Text} from 'react-native';
+import {View, Text, ActivityIndicator} from 'react-native';
 
 import BaseChip from '@components/chips/base_chip';
 import UserChip from '@components/chips/user_chip';
@@ -11,9 +11,10 @@ import CompassIcon from '@components/compass_icon';
 import {getFriendlyDate} from '@components/friendly_date';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {updateChecklistItem} from '@playbooks/actions/remote/checklist';
-import {openUserProfileModal} from '@screens/navigation';
+import {runChecklistItem, updateChecklistItem} from '@playbooks/actions/remote/checklist';
+import {openUserProfileModal, popTo} from '@screens/navigation';
 import {logDebug} from '@utils/log';
+import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -32,7 +33,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         flex: 1,
     },
     itemTitle: {
-        ...typography('Body', 200, 'SemiBold'),
+        ...typography('Body', 200, 'Regular'),
         color: theme.centerChannelColor,
     },
     itemDescription: {
@@ -45,9 +46,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         flexWrap: 'wrap',
     },
     chipIcon: {
-        fontSize: 12,
-        color: theme.centerChannelColor,
-        marginRight: 4,
+        color: changeOpacity(theme.centerChannelColor, 0.48),
+        marginLeft: 8,
     },
     itemDetailsTexts: {
         gap: 4,
@@ -84,6 +84,9 @@ const ChecklistItem = ({
     const intl = useIntl();
     const serverUrl = useServerUrl();
 
+    const [isChecking, setIsChecking] = useState(false);
+    const [isExecuting, setIsExecuting] = useState(false);
+
     const checked = item.state === 'closed';
 
     const onUserChipPress = useCallback((userId: string) => {
@@ -94,22 +97,64 @@ const ChecklistItem = ({
         });
     }, [channelId, intl, theme]);
 
-    const executeCommand = useCallback(() => {
-        logDebug('executeCommand', item.command);
-    }, [item.command]);
+    const executeCommand = useCallback(async () => {
+        if (isExecuting) {
+            return;
+        }
+        setIsExecuting(true);
+        const res = await runChecklistItem(serverUrl, playbookRunId, checklistNumber, itemNumber);
+        if (res.error) {
+            showPlaybookErrorSnackbar();
+        } else {
+            popTo('Channel');
+        }
+        setIsExecuting(false);
+    }, [checklistNumber, isExecuting, itemNumber, playbookRunId, serverUrl]);
 
-    const toggleChecked = useCallback(() => {
-        updateChecklistItem(serverUrl, playbookRunId, item.id, checklistNumber, itemNumber, checked ? '' : 'closed');
-    }, [serverUrl, playbookRunId, checklistNumber, itemNumber, checked, item.id]);
+    const toggleChecked = useCallback(async () => {
+        if (isChecking) {
+            return;
+        }
+        setIsChecking(true);
+        const res = await updateChecklistItem(serverUrl, playbookRunId, item.id, checklistNumber, itemNumber, checked ? '' : 'closed');
+        if (res.error) {
+            showPlaybookErrorSnackbar();
+            logDebug('updateChecklistItem error', res.error);
+        }
+        setIsChecking(false);
+    }, [isChecking, serverUrl, playbookRunId, item.id, checklistNumber, itemNumber, checked]);
+
+    const checkbox = isChecking ? (
+        <ActivityIndicator
+            size='small'
+            color={theme.centerChannelColor}
+        />
+    ) : (
+        <Checkbox
+            checked={checked}
+            onPress={toggleChecked}
+            disabled={isFinished}
+        />
+    );
+
+    let commandMessage = '';
+    if (item.command) {
+        const commandLastRun = 'commandLastRun' in item ? item.commandLastRun : item.command_last_run;
+        const commandName = item.command.substring(1);
+        if (commandLastRun) {
+            commandMessage = intl.formatMessage({
+                id: 'playbook_run.checklist.rerunCommand',
+                defaultMessage: '{command} (Rerun)',
+            }, {command: commandName});
+        } else {
+            commandMessage = commandName;
+        }
+    }
 
     return (
         <View style={styles.checklistItem}>
             <View style={styles.checkboxContainer}>
-                <Checkbox
-                    checked={checked}
-                    onPress={toggleChecked}
-                    disabled={isFinished}
-                />
+                {checkbox}
             </View>
             <View style={styles.itemDetails}>
                 <View style={styles.itemDetailsTexts}>
@@ -134,8 +179,9 @@ const ChecklistItem = ({
                                 label={intl.formatMessage({id: 'playbook_run.checklist.dueIn', defaultMessage: 'Due {dueDate}'}, {dueDate: getFriendlyDate(intl, dueDate)})}
                                 prefix={
                                     <CompassIcon
-                                        name='clock-outline'
+                                        name='calendar-outline'
                                         style={styles.chipIcon}
+                                        size={14}
                                     />
                                 }
                             />
@@ -143,13 +189,21 @@ const ChecklistItem = ({
 
                         {item.command && (
                             <BaseChip
-                                label={item.command.substring(1)}
+                                label={commandMessage}
                                 onPress={executeCommand}
+                                textType='link'
                                 prefix={
-                                    <CompassIcon
-                                        name='slash-forward'
-                                        style={styles.chipIcon}
-                                    />
+                                    isExecuting ? (
+                                        <ActivityIndicator
+                                            size='small'
+                                            color={theme.centerChannelColor}
+                                        />
+                                    ) : (
+                                        <CompassIcon
+                                            name='slash-forward'
+                                            style={styles.chipIcon}
+                                        />
+                                    )
                                 }
                             />
                         )}

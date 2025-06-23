@@ -983,7 +983,7 @@
   "persistent_notifications.error.special_mentions": "Cannot use @channel, @all or @here to mention recipients of persistent notifications.",
   "pinned_messages.empty.paragraph": "To pin important messages, long-press on a message and choose Pin To Channel. Pinned messages will be visible to everyone in this channel.",
   "pinned_messages.empty.title": "No pinned messages yet",
-  "playbook.last_updated": "Last updated {date}",
+  "playbook.last_updated": "Last update {date}",
   "playbook.participants": "Run Participants",
   "playbook.runs.finished": "Finished",
   "playbook.runs.in-progress": "In Progress",

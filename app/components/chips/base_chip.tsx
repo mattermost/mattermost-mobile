@@ -22,6 +22,7 @@ type SelectedChipProps = {
     label: string;
     prefix?: JSX.Element;
     maxWidth?: number;
+    textType?: 'normal' | 'link';
 }
 
 const FADE_DURATION = 100;
@@ -40,6 +41,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         text: {
             color: theme.centerChannelColor,
             ...typography('Body', 100),
+        },
+        linkText: {
+            color: theme.linkColor,
         },
         remove: {
             justifyContent: 'center',
@@ -61,6 +65,7 @@ export default function BaseChip({
     label,
     prefix,
     maxWidth,
+    textType = 'normal',
 }: SelectedChipProps) {
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
@@ -71,8 +76,12 @@ export default function BaseChip({
         const textMaxWidth = maxWidth || dimensions.width * 0.70;
         const marginRight = showRemoveOption ? undefined : 7;
         const marginLeft = prefix ? 5 : 7;
-        return [style.text, {maxWidth: textMaxWidth, marginRight, marginLeft}];
-    }, [maxWidth, dimensions.width, showRemoveOption, style.text, prefix]);
+        return [
+            style.text,
+            {maxWidth: textMaxWidth, marginRight, marginLeft},
+            textType === 'link' && style.linkText,
+        ];
+    }, [maxWidth, dimensions.width, showRemoveOption, prefix, style.text, style.linkText, textType]);
 
     const chipContent = (
         <>

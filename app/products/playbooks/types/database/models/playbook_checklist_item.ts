@@ -23,7 +23,7 @@ declare class PlaybookChecklistItemModel extends Model {
     // title of the checklist item
     title: string;
 
-    // state of the checklist item (todo, in_progress, done)
+    // state of the checklist item (in_progress, closed, skipped or open (empty string))
     state: ChecklistItemState;
 
     // timestamp when the checklist item was modified
