@@ -115,8 +115,8 @@ android {
         applicationId "com.mattermost.rnbeta"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 647
-        versionName "2.29.0"
+        versionCode 649
+        versionName "2.30.0"
         testBuildType System.getProperty('testBuildType', 'debug')
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
@@ -214,11 +214,11 @@ dependencies {
     androidTestImplementation 'com.wix:detox:20.26.2'
 
     // For animated GIF support
-  implementation 'com.facebook.fresco:animated-gif:3.6.0'
+    implementation 'com.facebook.fresco:animated-gif:3.6.0'
 
-  // For WebP support, including animated WebP
-  implementation 'com.facebook.fresco:animated-webp:3.6.0'
-  implementation 'com.facebook.fresco:webpsupport:3.6.0'
+    // For WebP support, including animated WebP
+    implementation 'com.facebook.fresco:animated-webp:3.6.0'
+    implementation 'com.facebook.fresco:webpsupport:3.6.0'
 
     implementation project(':reactnativenotifications')
     implementation project(':watermelondb-jsi')
