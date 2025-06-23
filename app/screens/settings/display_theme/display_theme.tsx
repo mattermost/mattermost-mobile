@@ -42,7 +42,7 @@ const DisplayTheme = ({allowedThemeKeys, componentId, currentTeamId, currentUser
             value: JSON.stringify(themeJson),
         };
         savePreference(serverUrl, [pref]);
-    }, [allowedThemeKeys, initialTheme, currentTeamId, currentUserId, serverUrl, newTheme]);
+    }, [allowedThemeKeys, currentTeamId, currentUserId, serverUrl, newTheme]);
 
     useDidUpdate(() => {
         if (theme.type?.toLowerCase() !== newTheme?.toLowerCase()) {
