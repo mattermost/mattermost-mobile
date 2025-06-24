@@ -25,8 +25,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         tappableContainer: {
             position: 'absolute',
             elevation: 11,
-            top: -7,
-            right: -8,
+            top: -12,
+            right: -10,
             width: 24,
             height: 24,
         },
