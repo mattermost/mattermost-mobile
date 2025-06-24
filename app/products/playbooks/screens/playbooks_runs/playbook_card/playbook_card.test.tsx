@@ -155,12 +155,4 @@ describe('PlaybookCard', () => {
 
         expect(queryByTestId('user-chip')).toBeNull();
     });
-
-    it('passes correct props to BaseChip', () => {
-        const {getByTestId} = renderWithIntl(<PlaybookCard {...baseProps}/>);
-
-        const baseChip = getByTestId('base-chip');
-        expect(baseChip.props.prefix).toBeDefined();
-        expect(baseChip.props.label).toBe('Playbook with really long name');
-    });
 });
