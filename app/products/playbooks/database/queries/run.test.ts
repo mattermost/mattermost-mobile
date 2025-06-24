@@ -441,6 +441,7 @@ describe('Playbook Run Queries', () => {
 
                             // Update the playbook run with new participants
                             mockRuns[0].participant_ids = updatedUsers.map((user) => user.id);
+                            mockRuns[0].update_at = mockRuns[0].update_at + 1;
                             operator.handlePlaybookRun({
                                 runs: mockRuns,
                                 prepareRecordsOnly: false,

@@ -50,7 +50,7 @@ describe('ProgressBar', () => {
         expect(progressBar).toBeTruthy();
         expect(progressBar).toHaveStyle({
             width: '75%',
-            backgroundColor: changeOpacity(Preferences.THEMES.denim.centerChannelBg, 0.4),
+            backgroundColor: changeOpacity(Preferences.THEMES.denim.centerChannelColor, 0.4),
         });
     });
 

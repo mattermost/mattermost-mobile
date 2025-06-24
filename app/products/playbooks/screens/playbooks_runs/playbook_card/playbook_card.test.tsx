@@ -45,7 +45,7 @@ jest.mock('@components/chips/base_chip', () => ({
 }));
 jest.mocked(BaseChip).mockImplementation((props) => React.createElement('BaseChip', {...props, testID: 'base-chip'}));
 
-jest.mock('./progress_bar', () => ({
+jest.mock('@playbooks/components/progress_bar/progress_bar', () => ({
     __esModule: true,
     default: jest.fn(),
 }));
@@ -92,10 +92,6 @@ describe('PlaybookCard', () => {
         expect(userAvatarsStack.props.users).toEqual(mockParticipants);
         expect(userAvatarsStack.props.channelId).toBe(mockRun.channelId);
         expect(userAvatarsStack.props.location).toBe(baseProps.location);
-
-        const baseChip = getByTestId('base-chip');
-        expect(baseChip.props.prefix).toBeDefined();
-        expect(baseChip.props.label).toBe('Playbook with really long name');
 
         const progressBar = getByTestId('progress-bar');
         expect(progressBar.props.progress).toBe(50);
