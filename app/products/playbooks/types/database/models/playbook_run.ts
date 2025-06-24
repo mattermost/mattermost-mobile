@@ -106,6 +106,9 @@ declare class PlaybookRunModel extends Model {
 
     /** checklists : The CHECKLISTS associated with this Playbook Run */
     checklists: Query<PlaybookChecklistModel>;
+
+    /** participants : The USERS that participate in this Playbook Run */
+    participants: () => Query<UserModel>;
 }
 
 export default PlaybookRunModel;

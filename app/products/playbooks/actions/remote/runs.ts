@@ -62,3 +62,22 @@ export const fetchPlaybookRunsForChannel = async (serverUrl: string, channelId: 
         return {error};
     }
 };
+
+export const fetchFinishedRunsForChannel = async (serverUrl: string, channelId: string, page = 0) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+
+        const {items: runs, has_more} = await client.fetchPlaybookRuns({
+            page,
+            per_page: 100,
+            channel_id: channelId,
+            statuses: ['Finished'],
+        });
+
+        return {runs, has_more};
+    } catch (error) {
+        logDebug('error on fetchFinishedRunsForChannel', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
