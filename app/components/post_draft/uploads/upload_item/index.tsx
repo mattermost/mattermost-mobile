@@ -31,6 +31,14 @@ type Props = {
     rootId: string;
 }
 
+// Constants for dimensions
+const DIMENSIONS = {
+    THUMBNAIL_SIZE: 64,
+    ICON_SIZE: 48,
+    FILE_CONTAINER_WIDTH: 294,
+    FILE_CONTAINER_HEIGHT: 64,
+} as const;
+
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         preview: {
@@ -45,13 +53,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             alignItems: 'center',
         },
         imageOnlyContainer: {
-            width: 64,
-            height: 64,
+            width: DIMENSIONS.THUMBNAIL_SIZE,
+            height: DIMENSIONS.THUMBNAIL_SIZE,
             padding: 0,
         },
         fileWithInfoContainer: {
-            width: 294,
-            height: 64,
+            width: DIMENSIONS.FILE_CONTAINER_WIDTH,
+            height: DIMENSIONS.FILE_CONTAINER_HEIGHT,
             flexDirection: 'row',
             alignItems: 'center',
             flexShrink: 0,
@@ -61,16 +69,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingRight: 16,
         },
         iconContainer: {
-            width: 48,
-            height: 48,
+            width: DIMENSIONS.ICON_SIZE,
+            height: DIMENSIONS.ICON_SIZE,
             borderRadius: 4,
             marginRight: 8,
             justifyContent: 'center',
             alignItems: 'center',
         },
         imageContainer: {
-            width: 64,
-            height: 64,
+            width: DIMENSIONS.THUMBNAIL_SIZE,
+            height: DIMENSIONS.THUMBNAIL_SIZE,
             borderRadius: 4,
             marginRight: 8,
             overflow: 'hidden',
@@ -86,8 +94,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             elevation: 1,
         },
         imageOnlyThumbnail: {
-            width: 64,
-            height: 64,
+            width: DIMENSIONS.THUMBNAIL_SIZE,
+            height: DIMENSIONS.THUMBNAIL_SIZE,
             borderRadius: 4,
             overflow: 'hidden',
             shadowColor: '#000000',
