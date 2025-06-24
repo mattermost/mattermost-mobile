@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import {act} from '@testing-library/react-hooks';
-import {fireEvent} from '@testing-library/react-native';
+import {fireEvent, screen, waitFor} from '@testing-library/react-native';
 import React from 'react';
 
 import AvailableScreens from '@constants/screens';
@@ -19,18 +19,21 @@ const serverAttributesSet: CustomAttributeSet = {
         name: 'Custom Attribute 1',
         value: 'server value 1',
         sort_order: 1,
+        type: 'text',
     },
     attr2: {
         id: 'attr2',
         name: 'Custom Attribute 2',
         value: 'server value 2',
         sort_order: 2,
+        type: 'text',
     },
     attr3: {
         id: 'attr3',
         name: 'Custom Attribute 3',
         value: 'server value 3',
         sort_order: 3,
+        type: 'text',
     },
 };
 
@@ -40,12 +43,14 @@ const dbAttributesSet: CustomAttributeSet = {
         name: 'Custom Attribute 1',
         value: 'db value 1',
         sort_order: 1,
+        type: 'text',
     },
     attr2: {
         id: 'attr2',
         name: 'Custom Attribute 2',
         value: 'db value 2',
         sort_order: 2,
+        type: 'text',
     },
 };
 
@@ -67,9 +72,19 @@ jest.mock('@context/server', () => ({
 // Mock for custom profile attributes API
 const mockFetchCustomProfileAttributes = jest.fn();
 
+// Add mock for updateCustomProfileAttributes to track calls
+const mockUpdateCustomProfileAttributes = jest.fn();
+
+// Mock logError function
+const mockLogError = jest.fn();
+
 jest.mock('@actions/remote/custom_profile', () => ({
     fetchCustomProfileAttributes: (...args: any[]) => mockFetchCustomProfileAttributes(...args),
-    updateCustomProfileAttributes: jest.fn().mockResolvedValue({success: true, error: undefined}),
+    updateCustomProfileAttributes: (...args: any[]) => mockUpdateCustomProfileAttributes(...args),
+}));
+
+jest.mock('@utils/log', () => ({
+    logError: (...args: any[]) => mockLogError(...args),
 }));
 
 jest.mock('@actions/remote/user', () => ({
@@ -155,6 +170,12 @@ describe('EditProfile', () => {
             attributes: serverAttributesSet,
             error: undefined,
         }));
+
+        // Reset updateCustomProfileAttributes mock
+        mockUpdateCustomProfileAttributes.mockResolvedValue({success: true, error: undefined});
+
+        // Reset logError mock
+        mockLogError.mockClear();
     });
 
     it('should update custom attribute value while preserving name and sort order', async () => {
@@ -170,7 +191,6 @@ describe('EditProfile', () => {
                 lockedPosition={false}
                 lockedPicture={false}
                 enableCustomAttributes={true}
-                userCustomAttributes={[]}
                 customFields={[]}
                 customAttributesSet={serverAttributesSet}
             />,
@@ -218,7 +238,6 @@ describe('EditProfile', () => {
                 lockedPosition={false}
                 lockedPicture={false}
                 enableCustomAttributes={true}
-                userCustomAttributes={[]}
                 customFields={[]}
                 customAttributesSet={dbAttributesSet}
             />,
@@ -261,7 +280,6 @@ describe('EditProfile', () => {
                     lockedPosition={false}
                     lockedPicture={false}
                     enableCustomAttributes={true}
-                    userCustomAttributes={[]}
                     customFields={[]}
                     customAttributesSet={serverAttributesSet}
                 />,
@@ -299,7 +317,6 @@ describe('EditProfile', () => {
                 lockedPosition={false}
                 lockedPicture={false}
                 enableCustomAttributes={true}
-                userCustomAttributes={[]}
                 customFields={[]}
                 customAttributesSet={{}}
             />,
@@ -323,7 +340,6 @@ describe('EditProfile', () => {
                     lockedPosition={false}
                     lockedPicture={false}
                     enableCustomAttributes={true}
-                    userCustomAttributes={[]}
                     customFields={[]}
                     customAttributesSet={dbAttributesSet}
                 />,
@@ -343,18 +359,21 @@ describe('EditProfile', () => {
                 name: 'Custom Attribute 1',
                 value: 'updated db value 1',
                 sort_order: 1,
+                type: 'text',
             },
             attr2: {
                 id: 'attr2',
                 name: 'Custom Attribute 2',
                 value: 'updated db value 2',
                 sort_order: 2,
+                type: 'text',
             },
             attr4: {
                 id: 'attr4',
                 name: 'New Attribute',
                 value: 'new db value',
                 sort_order: 4,
+                type: 'text',
             },
         };
 
@@ -371,7 +390,6 @@ describe('EditProfile', () => {
                     lockedPosition={false}
                     lockedPicture={false}
                     enableCustomAttributes={true}
-                    userCustomAttributes={[]}
                     customFields={[]}
                     customAttributesSet={updatedDbAttributesSet}
                 />,
@@ -387,5 +405,221 @@ describe('EditProfile', () => {
         // Check for the new attribute that was added
         const newAttributeItem = await findAllByTestId('edit_profile_form.customAttributes.attr4.input');
         expect(newAttributeItem[0].props.value).toBe('new db value');
+    });
+
+    describe('Submission Logic', () => {
+        it('should update custom attributes when enableCustomAttributes is true and customAttributes exist', async () => {
+            renderWithIntlAndTheme(
+                <EditProfile
+                    componentId={AvailableScreens.EDIT_PROFILE}
+                    currentUser={mockCurrentUser}
+                    isModal={false}
+                    isTablet={true}
+                    lockedFirstName={false}
+                    lockedLastName={false}
+                    lockedNickname={false}
+                    lockedPosition={false}
+                    lockedPicture={false}
+                    enableCustomAttributes={true}
+                    customFields={[]}
+                    customAttributesSet={serverAttributesSet}
+                />,
+            );
+
+            // Wait for component to load and custom attributes to be fetched
+            await waitFor(async() => {
+                const customAttributeItems = await screen.findAllByTestId(new RegExp('^edit_profile_form.customAttributes.attr[0-9]+.input$'));
+                expect(customAttributeItems.length).toBeGreaterThan(0);
+            });
+
+            // Modify a field to trigger the hasUpdateUserInfo flag
+            await act(async () => {
+                const customAttributeItems = await screen.findAllByTestId(new RegExp('^edit_profile_form.customAttributes.attr[0-9]+.input$'));
+                fireEvent.changeText(customAttributeItems[0], 'modified value');
+            });
+
+            // Trigger form submission
+            const saveButton = screen.getByTestId('edit_profile.save.button');
+            await act(async () => {
+                fireEvent.press(saveButton);
+            });
+
+            // Verify that updateCustomProfileAttributes was called
+            expect(mockUpdateCustomProfileAttributes).toHaveBeenCalledWith(
+                'http://localhost:8065',
+                'user1',
+                expect.objectContaining({
+                    attr1: expect.objectContaining({
+                        value: 'modified value',
+                    }),
+                }),
+            );
+        });
+
+        it('should not update custom attributes when enableCustomAttributes is false', async () => {
+            const {getByTestId} = renderWithIntlAndTheme(
+                <EditProfile
+                    componentId={AvailableScreens.EDIT_PROFILE}
+                    currentUser={mockCurrentUser}
+                    isModal={false}
+                    isTablet={true}
+                    lockedFirstName={false}
+                    lockedLastName={false}
+                    lockedNickname={false}
+                    lockedPosition={false}
+                    lockedPicture={false}
+                    enableCustomAttributes={false}
+                    customFields={[]}
+                    customAttributesSet={serverAttributesSet}
+                />,
+            );
+
+            // Wait for component to load
+            await act(async () => {
+                await new Promise((resolve) => setTimeout(resolve, 100));
+            });
+
+            // Modify a standard field to trigger the hasUpdateUserInfo flag
+            const firstNameField = getByTestId('edit_profile_form.firstName.input');
+            await act(async () => {
+                fireEvent.changeText(firstNameField, 'Modified John');
+            });
+
+            // Trigger form submission
+            const saveButton = getByTestId('edit_profile.save.button');
+            await act(async () => {
+                fireEvent.press(saveButton);
+            });
+
+            // Verify that updateCustomProfileAttributes was NOT called
+            expect(mockUpdateCustomProfileAttributes).not.toHaveBeenCalled();
+        });
+
+        it('should call updateCustomProfileAttributes with empty object when customAttributes is empty', async () => {
+            // Mock server fetch to return empty attributes for this test
+            mockFetchCustomProfileAttributes.mockResolvedValue({
+                attributes: {},
+                error: undefined,
+            });
+
+            const {getByTestId} = renderWithIntlAndTheme(
+                <EditProfile
+                    componentId={AvailableScreens.EDIT_PROFILE}
+                    currentUser={mockCurrentUser}
+                    isModal={false}
+                    isTablet={true}
+                    lockedFirstName={false}
+                    lockedLastName={false}
+                    lockedNickname={false}
+                    lockedPosition={false}
+                    lockedPicture={false}
+                    enableCustomAttributes={true}
+                    customFields={[]}
+                    customAttributesSet={{}}
+                />,
+            );
+
+            // Wait for component to load
+            await act(async () => {
+                await new Promise((resolve) => setTimeout(resolve, 100));
+            });
+
+            // Modify a standard field to trigger the hasUpdateUserInfo flag
+            const firstNameField = getByTestId('edit_profile_form.firstName.input');
+            await act(async () => {
+                fireEvent.changeText(firstNameField, 'Modified John');
+            });
+
+            // Trigger form submission
+            const saveButton = getByTestId('edit_profile.save.button');
+            await act(async () => {
+                fireEvent.press(saveButton);
+            });
+
+            // Verify that updateCustomProfileAttributes was called with empty object
+            expect(mockUpdateCustomProfileAttributes).toHaveBeenCalledWith(
+                'http://localhost:8065',
+                'user1',
+                {},
+            );
+        });
+
+        it('should handle custom attributes update error gracefully', async () => {
+            // Mock updateCustomProfileAttributes to return an error
+            mockUpdateCustomProfileAttributes.mockResolvedValue({
+                success: false,
+                error: new Error('Failed to update custom attributes'),
+            });
+
+            renderWithIntlAndTheme(
+                <EditProfile
+                    componentId={AvailableScreens.EDIT_PROFILE}
+                    currentUser={mockCurrentUser}
+                    isModal={false}
+                    isTablet={true}
+                    lockedFirstName={false}
+                    lockedLastName={false}
+                    lockedNickname={false}
+                    lockedPosition={false}
+                    lockedPicture={false}
+                    enableCustomAttributes={true}
+                    customFields={[]}
+                    customAttributesSet={serverAttributesSet}
+                />,
+            );
+
+            // Wait for component to load and custom attributes to be fetched
+            await act(async () => {
+                await new Promise((resolve) => setTimeout(resolve, 100));
+            });
+
+            // Modify a custom attribute to trigger the hasUpdateUserInfo flag
+            const customAttributeItems = await screen.findAllByTestId(new RegExp('^edit_profile_form.customAttributes.attr[0-9]+.input$'));
+            await act(async () => {
+                fireEvent.changeText(customAttributeItems[0], 'modified value that will error');
+            });
+
+            // Trigger form submission
+            const saveButton = screen.getByTestId('edit_profile.save.button');
+            await act(async () => {
+                fireEvent.press(saveButton);
+            });
+
+            // Verify that updateCustomProfileAttributes was called
+            expect(mockUpdateCustomProfileAttributes).toHaveBeenCalled();
+
+            // Verify error handling - check that error is logged
+            await waitFor(() => {
+                expect(mockLogError).toHaveBeenCalledWith(
+                    'Error updating custom attributes',
+                    expect.objectContaining({
+                        message: 'Failed to update custom attributes',
+                    }),
+                );
+            });
+        });
+    });
+
+    it('should pass customFields prop to ProfileForm component', async () => {
+        renderWithIntlAndTheme(
+            <EditProfile
+                componentId={AvailableScreens.EDIT_PROFILE}
+                currentUser={mockCurrentUser}
+                isModal={false}
+                isTablet={false}
+                lockedFirstName={false}
+                lockedLastName={false}
+                lockedNickname={false}
+                lockedPosition={false}
+                lockedPicture={false}
+                enableCustomAttributes={true}
+                customFields={[]}
+                customAttributesSet={{}}
+            />,
+        );
+
+        // Verify the ProfileForm component is rendered (which means customFields was passed)
+        const scrollView = screen.getByTestId('edit_profile.scroll_view');
+        expect(scrollView).toBeTruthy();
     });
 });

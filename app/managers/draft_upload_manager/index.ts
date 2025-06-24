@@ -127,16 +127,12 @@ class DraftEditPostUploadManagerSingleton {
 
         h.onProgress.forEach((c) => c(progress, bytes));
         if (AppState.currentState !== 'active' && h.lastTimeStored + PROGRESS_TIME_TO_STORE < Date.now()) {
-            if (h.isEditPost && h.updateFileCallback) {
-                h.updateFileCallback(this.handlers[clientId].fileInfo);
-            } else {
-                updateDraftFile(h.serverUrl, h.channelId, h.rootId, this.handlers[clientId].fileInfo);
-            }
+            this.handleUpdateDraftFile(h, this.handlers[clientId].fileInfo, h.isEditPost || false);
             h.lastTimeStored = Date.now();
         }
     };
 
-    private handleComplete = (response: ClientResponse, clientId: string) => {
+    private handleComplete = async (response: ClientResponse, clientId: string) => {
         const h = this.handlers[clientId];
         if (!h) {
             return;
@@ -161,14 +157,10 @@ class DraftEditPostUploadManagerSingleton {
         fileInfo.clientId = h.fileInfo.clientId;
         fileInfo.localPath = h.fileInfo.localPath;
 
-        if (h.isEditPost && h.updateFileCallback) {
-            h.updateFileCallback(fileInfo);
-        } else {
-            updateDraftFile(h.serverUrl, h.channelId, h.rootId, fileInfo);
-        }
+        await this.handleUpdateDraftFile(h, fileInfo, h.isEditPost || false);
     };
 
-    private handleError = (errorMessage: string, clientId: string) => {
+    private handleError = async (errorMessage: string, clientId: string) => {
         const h = this.handlers[clientId];
         if (!h) {
             return;
@@ -180,10 +172,14 @@ class DraftEditPostUploadManagerSingleton {
 
         const fileInfo = {...h.fileInfo};
         fileInfo.failed = true;
-        if (h.isEditPost && h.updateFileCallback) {
-            h.updateFileCallback(fileInfo);
+        await this.handleUpdateDraftFile(h, fileInfo, h.isEditPost || false);
+    };
+
+    private handleUpdateDraftFile = async (handler: FileHandler[string], fileInfo: FileInfo, isEditPost: boolean) => {
+        if (isEditPost && handler.updateFileCallback) {
+            handler.updateFileCallback(fileInfo);
         } else {
-            updateDraftFile(h.serverUrl, h.channelId, h.rootId, fileInfo);
+            await updateDraftFile(handler.serverUrl, handler.channelId, handler.rootId, fileInfo);
         }
     };
 
@@ -197,12 +193,8 @@ class DraftEditPostUploadManagerSingleton {
 
     private storeProgress = async () => {
         for (const h of Object.values(this.handlers)) {
-            if (h.isEditPost && h.updateFileCallback) {
-                h.updateFileCallback(h.fileInfo);
-            } else {
-                // eslint-disable-next-line no-await-in-loop
-                await updateDraftFile(h.serverUrl, h.channelId, h.rootId, h.fileInfo);
-            }
+            // eslint-disable-next-line no-await-in-loop
+            await this.handleUpdateDraftFile(h, h.fileInfo, h.isEditPost || false);
             h.lastTimeStored = Date.now();
         }
     };

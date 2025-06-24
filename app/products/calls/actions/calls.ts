@@ -21,6 +21,7 @@ import {
     getCurrentCall,
     myselfLeftCall,
     newCurrentCall,
+    setCurrentCallConnected,
     setCallForChannel,
     setCalls,
     setChannelEnabled,
@@ -249,7 +250,9 @@ export const joinCall = async (
     }
 
     try {
-        await connection.waitForPeerConnection();
+        const sessionId = await connection.waitForPeerConnection();
+
+        setCurrentCallConnected(channelId, sessionId);
 
         // Follow the thread.
         const database = DatabaseManager.serverDatabases[serverUrl]?.database;

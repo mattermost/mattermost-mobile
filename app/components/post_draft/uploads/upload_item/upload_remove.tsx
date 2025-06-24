@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useCallback} from 'react';
 import {View, Platform} from 'react-native';
 
 import {removeDraftFile} from '@actions/local/draft';
@@ -55,16 +55,14 @@ export default function UploadRemove({
     const serverUrl = useServerUrl();
     const {onFileRemove, isEditMode} = useEditPost();
 
-    const effectiveIsEditMode = isEditMode ?? false; // Use context value if available when wrapped by EditPostProvider, else fall back to prop for draft mode.
-
-    const onPress = () => {
-        if (effectiveIsEditMode) {
-            onFileRemove?.(fileId);
+    const onPress = useCallback(() => {
+        if (isEditMode) {
+            onFileRemove?.(fileId || clientId);
             return;
         }
         DraftEditPostUploadManager.cancel(clientId);
         removeDraftFile(serverUrl, channelId, rootId, clientId);
-    };
+    }, [onFileRemove, isEditMode, fileId, clientId, serverUrl, channelId, rootId]);
 
     return (
         <TouchableWithFeedback

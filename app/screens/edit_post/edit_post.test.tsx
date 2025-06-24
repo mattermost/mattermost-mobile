@@ -140,17 +140,6 @@ describe('Edit Post', () => {
         fireEvent.press(screen.getByTestId(`remove-button-${fileId}`));
     };
 
-    const confirmAlertAction = () => {
-        const alertMock = jest.mocked(Alert.alert);
-        const alertCall = alertMock.mock.calls[0];
-        const buttons = alertCall[2] ?? [];
-        const deleteButton = buttons[1] as {onPress?: () => void};
-
-        act(() => {
-            deleteButton.onPress?.();
-        });
-    };
-
     beforeAll(async () => {
         const server = await TestHelper.setupServerDatabase(TEST_CONFIG.serverUrl);
         database = server.database;
@@ -240,17 +229,22 @@ describe('Edit Post', () => {
             setupPickerMock(TEST_FILES.newFile);
         });
 
-        it('should show confirmation dialog and handle file removal', () => {
+        it('should remove newly uploaded files without confirmation', () => {
             const screen = renderEditPost();
             triggerFileUpload(screen);
             triggerFileRemoval(screen, TEST_FILES.newFile.id);
+            expect(Alert.alert).not.toHaveBeenCalled();
+            expect(DraftEditPostUploadManager.cancel).toHaveBeenCalledWith(TEST_FILES.newFile.clientId);
+        });
+
+        it('should show confirmation dialog for existing files', () => {
+            const screen = renderEditPost();
+            triggerFileRemoval(screen, TEST_FILES.existingFile1.id);
             expect(Alert.alert).toHaveBeenCalledWith(
                 ERROR_MESSAGES.confirmDelete,
-                ERROR_MESSAGES.confirmDeleteMessage,
+                'Are you sure you want to remove test-1?',
                 expect.any(Array),
             );
-            confirmAlertAction();
-            expect(DraftEditPostUploadManager.cancel).toHaveBeenCalledWith(TEST_FILES.newFile.clientId);
         });
     });
 });

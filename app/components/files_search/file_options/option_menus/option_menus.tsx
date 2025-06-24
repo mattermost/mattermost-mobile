@@ -14,12 +14,14 @@ import type {GalleryAction} from '@typings/screens/gallery';
 type Props = {
     canDownloadFiles?: boolean;
     enablePublicLink?: boolean;
+    enableSecureFilePreview: boolean;
     fileInfo: FileInfo;
     setAction: (action: GalleryAction) => void;
 }
 const OptionMenus = ({
     canDownloadFiles,
     enablePublicLink,
+    enableSecureFilePreview,
     fileInfo,
     setAction,
 }: Props) => {
@@ -53,7 +55,7 @@ const OptionMenus = ({
 
     return (
         <>
-            {canDownloadFiles &&
+            {(!enableSecureFilePreview && canDownloadFiles) &&
                 <OptionItem
                     key={'download'}
                     action={handleDownload}
@@ -69,7 +71,7 @@ const OptionMenus = ({
                 icon={'globe'}
                 type='default'
             />
-            {enablePublicLink &&
+            {(!enableSecureFilePreview && enablePublicLink) &&
                 <OptionItem
                     key={'copylink'}
                     action={handleCopyLink}

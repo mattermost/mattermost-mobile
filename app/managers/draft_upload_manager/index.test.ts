@@ -437,4 +437,23 @@ describe('draft upload manager', () => {
         expect(errorHandler).toHaveBeenCalledTimes(1);
         expect(nullErrorHandler).not.toHaveBeenCalled();
     });
+
+    it('should call updateFileCallback when isEditPost is true', async () => {
+        const manager = new DraftEditPostUploadManagerSingleton();
+        const uploadMocks = mockUpload();
+        const updateFileCallback = jest.fn();
+        const updateDraftFileSpy = jest.spyOn(require('@actions/local/draft'), 'updateDraftFile');
+        const clientId = 'clientId';
+
+        manager.prepareUpload(url, {clientId, localPath: 'path1'} as FileInfo, channelId, rootId, 0, true, updateFileCallback);
+        expect(manager.isUploading(clientId)).toBe(true);
+        uploadMocks.rejectPromise!('Upload failed');
+        await new Promise(process.nextTick);
+
+        expect(updateFileCallback).toHaveBeenCalledWith({clientId, localPath: 'path1', failed: true});
+        expect(updateDraftFileSpy).not.toHaveBeenCalled();
+        expect(manager.isUploading(clientId)).toBe(false);
+
+        updateDraftFileSpy.mockRestore();
+    });
 });

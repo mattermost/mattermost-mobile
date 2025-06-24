@@ -87,6 +87,23 @@ describe('EditPostInput', () => {
         expect(queryByTestId('uploads')).toBeNull();
     });
 
+    it('should not render quick actions if the server version is less than 10.5.0', () => {
+        const props = {...baseProps, version: '10.4.0'};
+        const {queryByTestId} = renderWithEverything(<EditPostInput {...props}/>, {database, serverUrl});
+        expect(queryByTestId('edit_post.quick_actions')).toBeNull();
+        expect(queryByTestId('edit_post.quick_actions.at_input_action')).toBeNull();
+        expect(queryByTestId('edit_post.quick_actions.file_action')).toBeNull();
+        expect(queryByTestId('edit_post.quick_actions.image_action')).toBeNull();
+        expect(queryByTestId('edit_post.quick_actions.camera_action')).toBeNull();
+    });
+
+    it('should not render both uploads and quick actions when server version is unsupported', () => {
+        const props = {...baseProps, version: '9.8.0'};
+        const {queryByTestId} = renderWithEverything(<EditPostInput {...props}/>, {database, serverUrl});
+        expect(queryByTestId('uploads')).toBeNull();
+        expect(queryByTestId('edit_post.quick_actions')).toBeNull();
+    });
+
     it('should render quick actions in edit mode', () => {
         const {getByTestId, queryByTestId} = renderWithEverything(<EditPostInput {...baseProps}/>, {database, serverUrl});
         expect(getByTestId('edit_post.quick_actions')).toBeVisible();

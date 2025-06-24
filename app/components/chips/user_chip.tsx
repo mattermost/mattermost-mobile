@@ -41,6 +41,7 @@ export default function UserChip({
             size={20}
             iconSize={20}
             testID={`${testID}.profile_picture`}
+            showStatus={false}
         />
     ), [testID, user]);
 

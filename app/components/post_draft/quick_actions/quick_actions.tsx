@@ -28,11 +28,13 @@ type Props = {
     focus: () => void;
 }
 
+export const QUICK_ACTIONS_HEIGHT = 44;
+
 const style = StyleSheet.create({
     quickActionsContainer: {
         display: 'flex',
         flexDirection: 'row',
-        height: 44,
+        height: QUICK_ACTIONS_HEIGHT,
     },
 });
 
