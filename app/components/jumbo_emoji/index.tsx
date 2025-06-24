@@ -4,14 +4,11 @@
 import {Node, Parser} from 'commonmark';
 import Renderer from 'commonmark-react-renderer';
 import React, {type ReactElement, useRef} from 'react';
-import {Platform, type StyleProp, Text, type TextStyle, View} from 'react-native';
+import {type StyleProp, StyleSheet, Text, type TextStyle, View} from 'react-native';
 
-import CompassIcon from '@components/compass_icon';
+import EditedIndicator from '@components/EditedIndicator';
 import Emoji from '@components/emoji';
-import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
-import {blendColors, makeStyleSheetFromTheme} from '@utils/theme';
-import {typography} from '@utils/typography';
 
 type JumboEmojiProps = {
     baseTextStyle: StyleProp<TextStyle>;
@@ -19,47 +16,23 @@ type JumboEmojiProps = {
     value: string;
 }
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
-    // Android has trouble giving text transparency depending on how it's nested,
-    // so we calculate the resulting colour manually
-    const editedOpacity = Platform.select({
-        ios: 0.56,
-        android: 1.0,
-    });
-    const editedColor = Platform.select({
-        ios: theme.centerChannelColor,
-        android: blendColors(theme.centerChannelBg, theme.centerChannelColor, 0.3),
-    });
-
-    return {
-        block: {
-            alignItems: 'flex-start',
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-        },
-        editedIndicatorText: {
-            color: editedColor,
-            opacity: editedOpacity,
-            fontStyle: 'italic',
-            ...typography('Body', 25, 'Regular'),
-        },
-        jumboEmoji: {
-            fontSize: 50,
-            lineHeight: 60,
-        },
-        newLine: {
-            lineHeight: 60,
-        },
-        editedText: {
-            marginLeft: 2,
-            ...typography('Body', 100, 'Regular'),
-        },
-    };
+const style = StyleSheet.create({
+    block: {
+        alignItems: 'flex-start',
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+    },
+    jumboEmoji: {
+        fontSize: 50,
+        lineHeight: 60,
+    },
+    newLine: {
+        lineHeight: 60,
+    },
 });
 
 const JumboEmoji = ({baseTextStyle, isEdited, value}: JumboEmojiProps) => {
     const theme = useTheme();
-    const style = getStyleSheet(theme);
 
     const renderEmoji = ({emojiName, literal}: {context: string[]; emojiName: string; literal: string}) => {
         return (
@@ -89,33 +62,15 @@ const JumboEmoji = ({baseTextStyle, isEdited, value}: JumboEmojiProps) => {
     };
 
     const renderEditedIndicator = ({context}: {context: string[]}) => {
-        let spacer = '';
-        if (context[0] === 'paragraph') {
-            spacer = '  ';
-        }
-
-        const styles = [
-            baseTextStyle,
-            style.editedIndicatorText,
-        ];
-
         return (
-            <Text
-                style={styles}
+            <EditedIndicator
+                baseTextStyle={baseTextStyle}
+                theme={theme}
+                context={context}
+                iconSize={14}
+                checkHeadings={false}
                 testID='edited_indicator'
-            >
-                {spacer}
-                <CompassIcon
-                    name='pencil-outline'
-                    size={16}
-                    color={theme.centerChannelColor}
-                />
-                <FormattedText
-                    id='post_message_view.edited'
-                    defaultMessage='Edited'
-                    style={style.editedText}
-                />
-            </Text>
+            />
         );
     };
 
