@@ -55,7 +55,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
             alignItems: 'center',
             flexShrink: 0,
-            gap: 16,
+            gap: 12,
             paddingVertical: 12,
             paddingLeft: 12,
             paddingRight: 16,
