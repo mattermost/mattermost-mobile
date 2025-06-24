@@ -1164,8 +1164,6 @@
   "settings.advanced_settings": "Розширені налаштування",
   "settings.advanced_settings.component_library": "Бібліотека компонентів",
   "settings.display": "Відображення",
-  "settings.link.error.text": "Не вдалося відкрити посилання.",
-  "settings.link.error.title": "Помилка",
   "settings.notice_mobile_link": "мобільних додатках",
   "settings.notice_platform_link": "сервері",
   "settings.notice_text": "Mattermost став можливим завдяки програмному забезпеченню з відкритим кодом, яке використовується на наших {platform} і {mobile}.",

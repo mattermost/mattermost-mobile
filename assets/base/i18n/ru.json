@@ -1088,8 +1088,6 @@
   "settings.advanced_settings": "Расширенные настройки",
   "settings.advanced_settings.component_library": "Библиотека компонентов",
   "settings.display": "Вид",
-  "settings.link.error.text": "Невозможно открыть ссылку.",
-  "settings.link.error.title": "Ошибка",
   "settings.notice_mobile_link": "мобильных приложениях",
   "settings.notice_platform_link": "сервере",
   "settings.notice_text": "Mattermost стал возможен благодаря использованию программ с открытым исходным кодом в нашем {platform} и {mobile}.",
