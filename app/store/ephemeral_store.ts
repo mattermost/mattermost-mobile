@@ -290,11 +290,14 @@ class EphemeralStoreSingleton {
     };
 
     setChannelPlaybooksSynced = (serverUrl: string, channelId: string) => {
+        if (!this.channelPlaybooksSynced[serverUrl]) {
+            this.channelPlaybooksSynced[serverUrl] = new Set();
+        }
         this.channelPlaybooksSynced[serverUrl]?.add(channelId);
     };
 
     clearChannelPlaybooksSynced = (serverUrl: string) => {
-        this.channelPlaybooksSynced[serverUrl] = new Set();
+        delete this.channelPlaybooksSynced[serverUrl];
     };
 }
 

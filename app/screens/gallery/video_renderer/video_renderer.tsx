@@ -27,7 +27,9 @@ import VideoError from './error';
 import type {ImageRendererProps} from '../image_renderer';
 import type {GalleryAction} from '@typings/screens/gallery';
 
-interface VideoRendererProps extends ImageRendererProps {
+export interface VideoRendererProps extends ImageRendererProps {
+    canDownloadFiles: boolean;
+    enableSecureFilePreview: boolean;
     index: number;
     initialIndex: number;
     onShouldHideControls: (hide: boolean) => void;
@@ -46,7 +48,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShouldHideControls, width}: VideoRendererProps) => {
+const VideoRenderer = ({canDownloadFiles, enableSecureFilePreview, height, index, initialIndex, item, isPageActive, onShouldHideControls, width}: VideoRendererProps) => {
     const fullscreen = useSharedValue(false);
     const {bottom} = useSafeAreaInsets();
     const serverUrl = useServerUrl();
@@ -176,6 +178,8 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
             />
             {hasError &&
             <VideoError
+                canDownloadFiles={canDownloadFiles}
+                enableSecureFilePreview={enableSecureFilePreview}
                 filename={item.name}
                 isDownloading={downloading}
                 isRemote={videoUri.startsWith('http')}
@@ -189,6 +193,7 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
             {downloading &&
             <DownloadWithAction
                 action='external'
+                enableSecureFilePreview={enableSecureFilePreview}
                 setAction={setGalleryAction}
                 onDownloadSuccess={onDownloadSuccess}
                 item={item}

@@ -27,6 +27,7 @@ type Props = {
     file: FileInfo;
     openGallery: (file: FileInfo) => void;
     rootId: string;
+    isEditMode: boolean;
 }
 
 const style = StyleSheet.create({
@@ -61,7 +62,7 @@ const style = StyleSheet.create({
 
 export default function UploadItem({
     channelId, galleryIdentifier, index, file,
-    rootId, openGallery,
+    rootId, openGallery, isEditMode,
 }: Props) {
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -124,6 +125,7 @@ export default function UploadItem({
                 backgroundColor={changeOpacity(theme.centerChannelColor, 0.08)}
                 iconSize={60}
                 file={file}
+                testID={file.id}
             />
         );
     }, [file, ref, theme.centerChannelColor]);
@@ -158,6 +160,8 @@ export default function UploadItem({
                 clientId={file.clientId!}
                 channelId={channelId}
                 rootId={rootId}
+                isEditMode={isEditMode}
+                fileId={file.id!}
             />
         </View>
     );
