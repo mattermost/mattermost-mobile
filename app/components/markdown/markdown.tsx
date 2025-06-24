@@ -121,6 +121,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         pencilIconStyle: {
             color: editedColor,
         },
+        editedText: {
+            marginLeft: 2,
+            ...typography('Body', 100, 'Regular'),
+        },
     };
 });
 
@@ -284,15 +288,14 @@ const Markdown = ({
                 {spacer}
                 <CompassIcon
                     name='pencil-outline'
-                    size={16}
+                    size={14}
                     color={theme.centerChannelColor}
                 />
-                <Text style={{marginLeft: 2}}>
-                    <FormattedText
-                        id='post_message_view.edited'
-                        defaultMessage='Edited'
-                    />
-                </Text>
+                <FormattedText
+                    id='post_message_view.edited'
+                    defaultMessage='Edited'
+                    style={style.editedText}
+                />
             </Text>
         );
     };

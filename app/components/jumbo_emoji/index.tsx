@@ -50,6 +50,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         newLine: {
             lineHeight: 60,
         },
+        editedText: {
+            marginLeft: 2,
+            ...typography('Body', 100, 'Regular'),
+        },
     };
 });
 
@@ -106,12 +110,11 @@ const JumboEmoji = ({baseTextStyle, isEdited, value}: JumboEmojiProps) => {
                     size={16}
                     color={theme.centerChannelColor}
                 />
-                <Text style={{marginLeft: 2}}>
-                    <FormattedText
-                        id='post_message_view.edited'
-                        defaultMessage='Edited'
-                    />
-                </Text>
+                <FormattedText
+                    id='post_message_view.edited'
+                    defaultMessage='Edited'
+                    style={style.editedText}
+                />
             </Text>
         );
     };
