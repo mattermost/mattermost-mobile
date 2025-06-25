@@ -429,8 +429,6 @@
   "settings.advanced.delete_data": "Izbriši lokalne datoteke",
   "settings.advanced_settings": "Napredne postavke",
   "settings.display": "Prikaz",
-  "settings.link.error.text": "Poveznica se ne može otvoriti.",
-  "settings.link.error.title": "Greška",
   "settings.notice_mobile_link": "mobilne aplikacije",
   "settings.notice_platform_link": "server",
   "settings.notifications": "Obavijesti",

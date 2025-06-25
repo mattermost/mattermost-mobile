@@ -1087,8 +1087,6 @@
   "settings.advanced_settings": "Gelişmiş ayarlar",
   "settings.advanced_settings.component_library": "Bileşen kitaplığı",
   "settings.display": "Görünüm",
-  "settings.link.error.text": "Bağlantı açılamadı.",
-  "settings.link.error.title": "Hata",
   "settings.notice_mobile_link": "mobil uygulamalar",
   "settings.notice_platform_link": "sunucu",
   "settings.notice_text": "Mattermost kullandığımız {platform} ve {mobile} üzerinde açık kaynaklı yazılım sayesinde var.",
