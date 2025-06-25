@@ -38,7 +38,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             ...typography('Body', 25, 'Regular'),
         },
         editedText: {
-            marginLeft: 2,
             ...typography('Body', 100, 'Regular'),
         },
     };
