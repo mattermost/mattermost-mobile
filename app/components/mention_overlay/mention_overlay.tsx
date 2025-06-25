@@ -16,11 +16,11 @@ type Props = {
 };
 
 /**
- * Web-style Mention Overlay - Improved positioning and text flow
+ * MentionOverlay - Improved positioning and text flow
  * Creates a display text where mentions are replaced with full names
  * while maintaining proper text positioning
  */
-const WebStyleMentionOverlay = ({
+const MentionOverlay = ({
     text,
     users = [],
     cursorPosition = 0,
@@ -187,18 +187,8 @@ const WebStyleMentionOverlay = ({
 
     const styles = getStyleSheet(theme);
 
-    // Debug logging
-    console.log('WebStyleMentionOverlay - Render');
-    console.log('  Text:', text);
-    console.log('  Cursor position:', cursorPosition);
-    console.log('  Display cursor position:', displayCursorPosition);
-    console.log('  Mention ranges:', mentionRanges);
-    console.log('  Display text segments:', displayTextSegments);
-    console.log('  Users count:', users.length);
-
     // Check if we have mentions to replace
     const hasMentions = displayTextSegments.some(segment => segment.isMention && segment.displayText);
-    console.log('  Has mentions:', hasMentions);
     
     // Always show cursor, only hide if no text at all
     if (!text) {
@@ -372,4 +362,4 @@ const getStyleSheet = (theme: {
     },
 });
 
-export default WebStyleMentionOverlay;
+export default MentionOverlay;

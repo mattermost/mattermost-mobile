@@ -6,7 +6,7 @@ import {useIntl} from 'react-intl';
 import {Keyboard, type LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
-import WebStyleMentionOverlay from '@components/mention_overlay/web_style_mention_overlay';
+import MentionOverlay from '@components/mention_overlay/mention_overlay';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -247,7 +247,7 @@ function DraftInput({
                             setIsFocused={setIsFocused}
                             channelUsers={channelUsers}
                         />
-                        <WebStyleMentionOverlay
+                        <MentionOverlay
                             text={value}
                             users={channelUsers || []}
                             cursorPosition={cursorPosition}

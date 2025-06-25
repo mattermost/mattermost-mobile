@@ -24,6 +24,7 @@ import NavigationStore from '@store/navigation_store';
 import {handleDraftUpdate} from '@utils/draft';
 import {extractFileInfo} from '@utils/file';
 import {changeOpacity, makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} from '@utils/theme';
+import {getSafeCursorPosition} from '@utils/mention_utils';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 import type UserModel from '@typings/database/models/servers/user';
@@ -195,24 +196,11 @@ export default function PostInput({
     const handlePostDraftSelectionChanged = useCallback((event: NativeSyntheticEvent<TextInputSelectionChangeEventData> | null, fromHandleTextChange = false) => {
         const cp = fromHandleTextChange ? cursorPosition : event!.nativeEvent.selection.end;
 
-        // Import mention utils for cursor position handling
-        const {getSafeCursorPosition, getMentionRanges} = require('@utils/mention_utils');
-        
-        // Debug logging
-        console.log('PostInput - handlePostDraftSelectionChanged');
-        console.log('  Original cursor position:', cp);
-        console.log('  Current text:', value);
-        console.log('  Mention ranges:', getMentionRanges(value));
-        
         // Adjust cursor position to avoid mention areas
         const safeCursorPosition = getSafeCursorPosition(value, cp);
         
-        console.log('  Safe cursor position:', safeCursorPosition);
-        console.log('  Position adjusted:', safeCursorPosition !== cp);
-        
         // If cursor position was adjusted, update the TextInput
         if (safeCursorPosition !== cp && inputRef.current) {
-            console.log('  Updating TextInput selection to:', safeCursorPosition);
             inputRef.current.setNativeProps({
                 selection: {start: safeCursorPosition, end: safeCursorPosition},
             });
@@ -220,7 +208,7 @@ export default function PostInput({
         } else {
             updateCursorPosition(cp);
         }
-    }, [updateCursorPosition, cursorPosition, value, inputRef, channelUsers]);
+    }, [updateCursorPosition, cursorPosition, value, inputRef]);
 
     const handleTextChange = useCallback((newValue: string) => {
         if (!shouldProcessEvent(newValue)) {
