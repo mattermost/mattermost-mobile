@@ -16,8 +16,6 @@ import EmojiSuggestion from './emoji_suggestion/';
 import SlashSuggestion from './slash_suggestion/';
 import AppSlashSuggestion from './slash_suggestion/app_slash_suggestion/';
 
-import type UserModel from '@typings/database/models/servers/user';
-
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         base: {
