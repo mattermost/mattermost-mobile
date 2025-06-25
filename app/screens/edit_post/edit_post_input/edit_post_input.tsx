@@ -7,6 +7,8 @@ import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {type NativeSyntheticEvent, Platform, type TextInputSelectionChangeEventData, View} from 'react-native';
 
+import QuickActions from '@components/post_draft/quick_actions/';
+import {INITIAL_PRIORITY} from '@components/post_draft/send_handler/send_handler';
 import Uploads from '@components/post_draft/uploads';
 import {ExtraKeyboard, useExtraKeyboardContext} from '@context/extra_keyboard';
 import {useTheme} from '@context/theme';
@@ -44,6 +46,8 @@ type PostInputProps = {
     onTextSelectionChange: (curPos: number) => void;
     onChangeText: (text: string) => void;
     inputRef: React.MutableRefObject<PasteInputRef | undefined>;
+    addFiles: (file: FileInfo[]) => void;
+    uploadFileError: React.ReactNode;
 }
 
 const EditPostInput = ({
@@ -55,12 +59,26 @@ const EditPostInput = ({
     postFiles,
     version,
     inputRef,
+    addFiles,
+    uploadFileError,
 }: PostInputProps) => {
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const managedConfig = useManagedConfig<ManagedConfig>();
     const disableCopyAndPaste = managedConfig.copyAndPasteProtection === 'true';
+    const focus = useCallback(() => {
+        inputRef.current?.focus();
+    }, []);
+
+    const updateValue = useCallback((valueOrUpdater: string | ((prevValue: string) => string)) => {
+        if (typeof valueOrUpdater === 'function') {
+            const newValue = valueOrUpdater(message);
+            onChangeText(newValue);
+        } else {
+            onChangeText(valueOrUpdater);
+        }
+    }, [message, onChangeText]);
 
     const keyboardContext = useExtraKeyboardContext();
 
@@ -110,14 +128,27 @@ const EditPostInput = ({
                 onBlur={onBlur}
             />
             {isMinimumServerVersion(version, MAJOR_VERSION_TO_SHOW_ATTACHMENTS, MINOR_VERSION_TO_SHOW_ATTACHMENTS) &&
-                <Uploads
-                    channelId={post.channelId}
-                    currentUserId={post.userId}
-                    files={postFiles}
-                    uploadFileError={undefined} // TODO: Add upload file error
-                    rootId={post.rootId}
-                    isEditMode={true}
-                />
+                <>
+                    <Uploads
+                        channelId={post.channelId}
+                        currentUserId={post.userId}
+                        files={postFiles}
+                        uploadFileError={uploadFileError}
+                        rootId={post.rootId}
+                    />
+                    <QuickActions
+                        testID='edit_post.quick_actions'
+                        fileCount={postFiles.length}
+                        addFiles={addFiles}
+                        updateValue={updateValue}
+                        value={message}
+                        updatePostPriority={emptyFunction}
+                        canShowPostPriority={false}
+                        postPriority={INITIAL_PRIORITY}
+                        canShowSlashCommands={false}
+                        focus={focus}
+                    />
+                </>
             }
             {Platform.select({ios: <ExtraKeyboard/>})}
         </View>

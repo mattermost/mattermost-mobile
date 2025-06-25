@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useCallback} from 'react';
 import {View, Platform} from 'react-native';
 
 import {removeDraftFile} from '@actions/local/draft';
@@ -10,14 +10,13 @@ import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useEditPost} from '@context/edit_post';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import DraftUploadManager from '@managers/draft_upload_manager';
+import DraftEditPostUploadManager from '@managers/draft_upload_manager';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
 type Props = {
     channelId: string;
     rootId: string;
     clientId: string;
-    isEditMode: boolean;
     fileId: string;
 }
 
@@ -49,28 +48,28 @@ export default function UploadRemove({
     channelId,
     rootId,
     clientId,
-    isEditMode,
     fileId,
 }: Props) {
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const serverUrl = useServerUrl();
-    const {onFileRemove} = useEditPost();
+    const {onFileRemove, isEditMode} = useEditPost();
 
-    const onPress = () => {
+    const onPress = useCallback(() => {
         if (isEditMode) {
-            onFileRemove?.(fileId);
+            onFileRemove?.(fileId || clientId);
             return;
         }
-        DraftUploadManager.cancel(clientId);
+        DraftEditPostUploadManager.cancel(clientId);
         removeDraftFile(serverUrl, channelId, rootId, clientId);
-    };
+    }, [onFileRemove, isEditMode, fileId, clientId, serverUrl, channelId, rootId]);
 
     return (
         <TouchableWithFeedback
             style={style.tappableContainer}
             onPress={onPress}
             type={'opacity'}
+            testID={`remove-button-${fileId}`}
         >
             <View style={style.removeButton}>
                 <CompassIcon
