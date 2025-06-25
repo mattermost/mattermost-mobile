@@ -6,6 +6,7 @@ import {useIntl} from 'react-intl';
 import {Keyboard, type LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
+import WebStyleMentionOverlay from '@components/mention_overlay/web_style_mention_overlay';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -15,9 +16,6 @@ import {openAsBottomSheet} from '@screens/navigation';
 import {persistentNotificationsConfirmation} from '@utils/post';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import MentionOverlay from '@components/mention_overlay/enhanced_mention_overlay';
-
-import type UserModel from '@typings/database/models/servers/user';
 import PostInput from '../post_input';
 import QuickActions from '../quick_actions';
 import SendAction from '../send_button';
@@ -27,6 +25,7 @@ import Uploads from '../uploads';
 import Header from './header';
 
 import type {PasteInputRef} from '@mattermost/react-native-paste-input';
+import type UserModel from '@typings/database/models/servers/user';
 
 export type Props = {
     testID?: string;
@@ -246,13 +245,12 @@ function DraftInput({
                             sendMessage={handleSendMessage}
                             inputRef={inputRef}
                             setIsFocused={setIsFocused}
+                            channelUsers={channelUsers}
                         />
-                        <MentionOverlay
+                        <WebStyleMentionOverlay
                             text={value}
-                            cursorPosition={cursorPosition}
                             users={channelUsers || []}
-                            channelId={channelId}
-                            currentUserId={currentUserId}
+                            cursorPosition={cursorPosition}
                         />
                     </View>
                     <Uploads

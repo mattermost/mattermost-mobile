@@ -107,6 +107,103 @@ export function getSafeCursorPosition(text: string, targetPosition: number): num
 }
 
 /**
+ * Calculates display cursor position based on mention replacements
+ * @param text - Original text with mentions
+ * @param cursorPosition - Cursor position in original text
+ * @param mentionReplacements - Array of mention replacements with display names
+ * @returns Adjusted cursor position for display
+ */
+export function getDisplayCursorPosition(
+    text: string,
+    cursorPosition: number,
+    mentionReplacements: Array<{
+        start: number;
+        end: number;
+        originalText: string;
+        displayText: string;
+    }>
+): number {
+    if (!text || mentionReplacements.length === 0) {
+        return cursorPosition;
+    }
+
+    let displayPosition = cursorPosition;
+    let offset = 0;
+
+    for (const replacement of mentionReplacements) {
+        // If cursor is before this mention, apply accumulated offset
+        if (cursorPosition <= replacement.start) {
+            break;
+        }
+
+        // If cursor is within mention, move to end of display text
+        if (cursorPosition >= replacement.start && cursorPosition <= replacement.end) {
+            const lengthDiff = replacement.displayText.length - replacement.originalText.length;
+            displayPosition = replacement.start + replacement.displayText.length + offset;
+            break;
+        }
+
+        // If cursor is after mention, accumulate offset
+        if (cursorPosition > replacement.end) {
+            const lengthDiff = replacement.displayText.length - replacement.originalText.length;
+            offset += lengthDiff;
+        }
+    }
+
+    return displayPosition + offset;
+}
+
+/**
+ * Calculates original cursor position from display cursor position
+ * @param text - Original text with mentions
+ * @param displayCursorPosition - Cursor position in display text
+ * @param mentionReplacements - Array of mention replacements with display names
+ * @returns Original cursor position
+ */
+export function getOriginalCursorPosition(
+    text: string,
+    displayCursorPosition: number,
+    mentionReplacements: Array<{
+        start: number;
+        end: number;
+        originalText: string;
+        displayText: string;
+    }>
+): number {
+    if (!text || mentionReplacements.length === 0) {
+        return displayCursorPosition;
+    }
+
+    let originalPosition = displayCursorPosition;
+    let displayOffset = 0;
+
+    for (const replacement of mentionReplacements) {
+        const displayStart = replacement.start + displayOffset;
+        const displayEnd = displayStart + replacement.displayText.length;
+
+        // If display cursor is before this mention
+        if (displayCursorPosition <= displayStart) {
+            break;
+        }
+
+        // If display cursor is within mention display text
+        if (displayCursorPosition >= displayStart && displayCursorPosition <= displayEnd) {
+            originalPosition = replacement.end;
+            break;
+        }
+
+        // If display cursor is after mention, subtract the length difference
+        if (displayCursorPosition > displayEnd) {
+            const lengthDiff = replacement.displayText.length - replacement.originalText.length;
+            originalPosition -= lengthDiff;
+            displayOffset += lengthDiff;
+        }
+    }
+
+    return Math.max(0, Math.min(originalPosition, text.length));
+}
+
+/**
  * Checks if key input will invade mention areas
  * @param text - Target text
  * @param currentPosition - Current cursor position
