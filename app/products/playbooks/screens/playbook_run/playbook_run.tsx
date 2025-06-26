@@ -59,7 +59,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     container: {
         flex: 1,
         backgroundColor: theme.centerChannelBg,
-        marginHorizontal: 20,
     },
     intro: {
         gap: 32,
@@ -97,6 +96,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     tasksHeader: {
         ...typography('Heading', 200, 'SemiBold'),
         color: theme.centerChannelColor,
+    },
+    scrollView: {
+        paddingHorizontal: 20,
     },
 }));
 
@@ -159,7 +161,7 @@ export default function PlaybookRun({
                 lastSyncAt={lastSyncAt}
             />
             <View style={containerStyle}>
-                <ScrollView>
+                <ScrollView contentContainerStyle={styles.scrollView}>
                     <View style={styles.intro}>
                         <View style={styles.titleAndDescription}>
                             <Text style={styles.title}>{playbookRun.name}</Text>

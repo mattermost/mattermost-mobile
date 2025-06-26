@@ -5,14 +5,14 @@ import type PlaybookChecklistModel from '@playbooks/types/database/models/playbo
 import type PlaybookChecklistItemModel from '@playbooks/types/database/models/playbook_checklist_item';
 import type PlaybookRunModel from '@playbooks/types/database/models/playbook_run';
 
-export const shouldUpdatePlaybookRunRecord = (existingRecord: PlaybookRunModel, raw: PlaybookRun): boolean => {
+export const shouldUpdatePlaybookRunRecord = (existingRecord: PlaybookRunModel, raw: Partial<PlaybookRun> & Pick<PlaybookRun, 'id'>): boolean => {
     return Boolean(existingRecord.updateAt !== raw.update_at);
 };
 
-export const shouldHandlePlaybookChecklistRecord = (existingRecord: PlaybookChecklistModel, raw: PlaybookChecklistWithRun): boolean => {
+export const shouldHandlePlaybookChecklistRecord = (existingRecord: PlaybookChecklistModel, raw: Partial<PlaybookChecklist> & Pick<PlaybookChecklist, 'id'>): boolean => {
     return Boolean(existingRecord.updateAt !== raw.update_at);
 };
 
-export const shouldHandlePlaybookChecklistItemRecord = (existingRecord: PlaybookChecklistItemModel, raw: PlaybookChecklistItemWithChecklist): boolean => {
+export const shouldHandlePlaybookChecklistItemRecord = (existingRecord: PlaybookChecklistItemModel, raw: Partial<PlaybookChecklistItemWithChecklist> & Pick<PlaybookChecklistItemWithChecklist, 'id' | 'checklist_id'>): boolean => {
     return Boolean(existingRecord.updateAt !== raw.update_at);
 };

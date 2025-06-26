@@ -4,7 +4,12 @@
 import {WebsocketEvents} from '@constants';
 import {WEBSOCKET_EVENTS} from '@playbooks/constants/websocket';
 
-import {handlePlaybookRunCreated, handlePlaybookRunUpdated} from './runs';
+import {
+    handlePlaybookChecklistItemUpdated,
+    handlePlaybookChecklistUpdated,
+    handlePlaybookRunCreated,
+    handlePlaybookRunUpdatedIncremental,
+} from './runs';
 import {handlePlaybookPluginDisabled, handlePlaybookPluginEnabled} from './version';
 
 export async function handlePlaybookEvents(serverUrl: string, msg: WebSocketMessage) {
@@ -16,10 +21,19 @@ export async function handlePlaybookEvents(serverUrl: string, msg: WebSocketMess
             handlePlaybookPluginDisabled(serverUrl, msg.data.manifest);
             break;
         case WEBSOCKET_EVENTS.WEBSOCKET_PLAYBOOK_RUN_UPDATED:
-            handlePlaybookRunUpdated(serverUrl, msg);
+            // handlePlaybookRunUpdated(serverUrl, msg);
             break;
         case WEBSOCKET_EVENTS.WEBSOCKET_PLAYBOOK_RUN_CREATED:
             handlePlaybookRunCreated(serverUrl, msg);
+            break;
+        case WEBSOCKET_EVENTS.WEBSOCKET_PLAYBOOK_RUN_UPDATED_INCREMENTAL:
+            handlePlaybookRunUpdatedIncremental(serverUrl, msg);
+            break;
+        case WEBSOCKET_EVENTS.WEBSOCKET_PLAYBOOK_CHECKLIST_UPDATED:
+            handlePlaybookChecklistUpdated(serverUrl, msg);
+            break;
+        case WEBSOCKET_EVENTS.WEBSOCKET_PLAYBOOK_CHECKLIST_ITEM_UPDATED:
+            handlePlaybookChecklistItemUpdated(serverUrl, msg);
             break;
         default:
             break;
