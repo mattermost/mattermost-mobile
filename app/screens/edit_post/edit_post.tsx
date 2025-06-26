@@ -326,26 +326,6 @@ const EditPost = ({
         }
     }, [postFiles, postMessage, newUploadError, shouldEnableSaveButton, toggleSaveButton]);
 
-    useEffect(() => {
-        let loadingFiles: FileInfo[] = [];
-        if (postFiles) {
-            loadingFiles = postFiles.filter((v) => v.clientId && DraftEditPostUploadManager.isUploading(v.clientId));
-        }
-
-        for (const key of Object.keys(uploadErrorHandlers.current)) {
-            if (!loadingFiles.find((v) => v.clientId === key)) {
-                uploadErrorHandlers.current[key]?.();
-                delete uploadErrorHandlers.current[key];
-            }
-        }
-
-        for (const file of loadingFiles) {
-            if (file.clientId && !uploadErrorHandlers.current[file.clientId]) {
-                uploadErrorHandlers.current[file.clientId] = DraftEditPostUploadManager.registerErrorHandler(file.clientId, newUploadError);
-            }
-        }
-    }, [postFiles, newUploadError]);
-
     const onChangeTextCommon = useCallback((message: string) => {
         const tooLong = message.trim().length > maxPostSize;
         setErrorLine(undefined);
