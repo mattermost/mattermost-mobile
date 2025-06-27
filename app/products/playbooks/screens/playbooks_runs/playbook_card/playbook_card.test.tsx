@@ -110,6 +110,7 @@ describe('PlaybookCard', () => {
         expect(goToPlaybookRun).toHaveBeenCalledWith(
             expect.anything(),
             mockRun.id,
+            undefined,
         );
     });
 

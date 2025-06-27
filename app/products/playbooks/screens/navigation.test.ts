@@ -1,14 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Screens} from '@constants';
+import {Preferences, Screens} from '@constants';
 import {goToScreen} from '@screens/navigation';
 import TestHelper from '@test/test_helper';
+import {changeOpacity} from '@utils/theme';
 
 import {goToPlaybookRuns, goToPlaybookRun} from './navigation';
 
 jest.mock('@screens/navigation', () => ({
     goToScreen: jest.fn(),
+    getThemeFromState: jest.fn(() => require('@constants').Preferences.THEMES.denim),
 }));
 
 describe('Playbooks Navigation', () => {
@@ -36,6 +38,7 @@ describe('Playbooks Navigation', () => {
                     topBar: expect.objectContaining({
                         subtitle: {
                             text: channelName,
+                            color: changeOpacity(Preferences.THEMES.denim.sidebarText, 0.72),
                         },
                     }),
                 }),
