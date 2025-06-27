@@ -138,6 +138,7 @@ export default class PlaybookRunModel extends Model implements PlaybookRunModelI
     @children(PLAYBOOK_CHECKLIST) checklists!: Query<PlaybookChecklistModel>;
 
     participants = (): Query<UserModel> => {
-        return this.database.get<UserModel>(USER).query(Q.where('id', Q.oneOf(this.participantIds)));
+        const filteredParticipantIds = this.participantIds.filter((id) => id !== this.ownerUserId);
+        return this.database.get<UserModel>(USER).query(Q.where('id', Q.oneOf(filteredParticipantIds)));
     };
 }

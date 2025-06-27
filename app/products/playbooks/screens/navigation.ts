@@ -2,16 +2,19 @@
 // See LICENSE.txt for license information.
 
 import {Screens} from '@constants';
-import {goToScreen} from '@screens/navigation';
+import {getThemeFromState, goToScreen} from '@screens/navigation';
+import {changeOpacity} from '@utils/theme';
 
 import type {IntlShape} from 'react-intl';
 
 export function goToPlaybookRuns(intl: IntlShape, channelId: string, channelName: string) {
+    const theme = getThemeFromState();
     const title = intl.formatMessage({id: 'playbooks.playbooks_runs.title', defaultMessage: 'Playbook runs'});
     goToScreen(Screens.PLAYBOOKS_RUNS, title, {channelId}, {
         topBar: {
             subtitle: {
                 text: channelName,
+                color: changeOpacity(theme.sidebarText, 0.72),
             },
         },
     });

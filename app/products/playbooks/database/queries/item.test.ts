@@ -5,7 +5,7 @@ import DatabaseManager from '@database/manager';
 import TestHelper from '@test/test_helper';
 
 import {
-    queryPlaybookChecklistItemsByChecklist,
+    queryPlaybookChecklistItemsByChecklists,
     getPlaybookChecklistItemById,
     observePlaybookChecklistItemById,
     observePlaybookChecklistItemssByChecklist,
@@ -41,7 +41,7 @@ describe('Checklist Item Queries', () => {
                 prepareRecordsOnly: false,
             });
 
-            const result = queryPlaybookChecklistItemsByChecklist(operator.database, checklistId);
+            const result = queryPlaybookChecklistItemsByChecklists(operator.database, [checklistId]);
             const fetchedItems = await result.fetch();
 
             expect(fetchedItems.length).toBe(2);

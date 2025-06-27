@@ -1055,6 +1055,7 @@ class TestHelperSingleton {
             id: `${prefix}-checklist_${index}`,
             title: `Checklist ${index + 1} of Playbook Run ${prefix}`,
             update_at: 0,
+            sort_order: items.map((item) => item.id),
             items,
         };
     };
@@ -1109,6 +1110,7 @@ class TestHelperSingleton {
                 metrics_data: [],
                 checklists,
                 update_at: Date.now() + i,
+                sort_order: checklists.map((checklist) => checklist.id),
             });
         }
         return playbookRuns;
@@ -1199,7 +1201,6 @@ class TestHelperSingleton {
             ...this.fakeModel(),
             checklistId: this.generateId(),
             title: 'title',
-            order: 0,
             state: '',
             stateModified: 0,
             assigneeId: null,
