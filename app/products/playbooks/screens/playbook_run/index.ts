@@ -6,7 +6,10 @@ import {combineLatest, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {queryPlaybookChecklistByRun} from '@playbooks/database/queries/checklist';
+import {queryPlaybookChecklistItemsByChecklists} from '@playbooks/database/queries/item';
 import {observePlaybookRunById} from '@playbooks/database/queries/run';
+import {isOverdue} from '@playbooks/utils/run';
+import {observeCurrentUserId} from '@queries/servers/system';
 import {observeUser, queryUsersById} from '@queries/servers/user';
 
 import PlaybookRun from './playbook_run';
@@ -18,7 +21,7 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 
 type OwnProps = {
     playbookRunId: string;
-    run?: PlaybookRun;
+    playbookRun?: PlaybookRun;
 } & WithDatabaseArgs;
 
 const orderChecklists = (run: PlaybookRunModel, checklists: PlaybookChecklistModel[]) => {
@@ -30,18 +33,26 @@ const orderChecklists = (run: PlaybookRunModel, checklists: PlaybookChecklistMod
     return checklists.sort((a, b) => sortOrderMap[a.id] - sortOrderMap[b.id]);
 };
 
+const getIds = (checklists: PlaybookChecklistModel[]) => {
+    return checklists.map((c) => c.id);
+};
+
 const emptyParticipantsList: UserModel[] = [];
-const enhanced = withObservables(['playbookRunId', 'run'], ({playbookRunId, run, database}: OwnProps) => {
+const enhanced = withObservables(['playbookRunId', 'playbookRun'], ({playbookRunId, playbookRun: providedRun, database}: OwnProps) => {
     // We receive a API run instead of a model from the database
-    if (run) {
-        const filteredParticipantIds = run.participant_ids.filter((id) => id !== run.owner_user_id);
+    if (providedRun) {
+        const filteredParticipantIds = providedRun.participant_ids.filter((id) => id !== providedRun.owner_user_id);
         const participants = queryUsersById(database, filteredParticipantIds).observe();
-        const owner = observeUser(database, run.owner_user_id);
+        const owner = observeUser(database, providedRun.owner_user_id);
+        const overdueCount = providedRun.checklists.reduce((acc, c) => {
+            return acc + c.items.filter(isOverdue).length;
+        }, 0);
         return {
-            playbookRun: of$(run),
+            playbookRun: of$(providedRun),
             participants,
             owner,
-            checklists: of$(run.checklists),
+            checklists: of$(providedRun.checklists),
+            overdueCount: of$(overdueCount),
         };
     }
 
@@ -65,11 +76,24 @@ const enhanced = withObservables(['playbookRunId', 'run'], ({playbookRunId, run,
         }),
     );
 
+    const overdueCount = checklists.pipe(
+        switchMap((cs) => {
+            const ids = getIds(cs);
+            return queryPlaybookChecklistItemsByChecklists(database, ids).observeWithColumns(['due_date', 'state']);
+        }),
+        switchMap((items) => {
+            const overdue = items.filter(isOverdue).length;
+            return of$(overdue);
+        }),
+    );
+
     return {
         playbookRun,
         owner,
         participants,
         checklists: orderedChecklists,
+        overdueCount,
+        currentUserId: observeCurrentUserId(database),
     };
 });
 

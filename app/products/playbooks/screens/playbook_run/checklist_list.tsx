@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 
 import Checklist from './checklist';
 
@@ -13,16 +13,24 @@ type Props = {
     channelId: string;
     playbookRunId: string;
     isFinished: boolean;
+    isParticipant: boolean;
 }
+
+const styles = StyleSheet.create({
+    container: {
+        opacity: 0.72,
+    },
+});
 
 const ChecklistList = ({
     checklists,
     channelId,
     playbookRunId,
     isFinished,
+    isParticipant,
 }: Props) => {
     return (
-        <View>
+        <View style={(isFinished || !isParticipant) ? styles.container : undefined}>
             {checklists.map((checklist, index) => (
                 <Checklist
                     key={checklist.id}
@@ -31,6 +39,7 @@ const ChecklistList = ({
                     playbookRunId={playbookRunId}
                     checklistNumber={index}
                     isFinished={isFinished}
+                    isParticipant={isParticipant}
                 />
             ))}
         </View>

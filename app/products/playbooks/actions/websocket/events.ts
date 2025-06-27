@@ -8,6 +8,7 @@ import {
     handlePlaybookChecklistItemUpdated,
     handlePlaybookChecklistUpdated,
     handlePlaybookRunCreated,
+    handlePlaybookRunUpdated,
     handlePlaybookRunUpdatedIncremental,
 } from './runs';
 import {handlePlaybookPluginDisabled, handlePlaybookPluginEnabled} from './version';
@@ -21,7 +22,7 @@ export async function handlePlaybookEvents(serverUrl: string, msg: WebSocketMess
             handlePlaybookPluginDisabled(serverUrl, msg.data.manifest);
             break;
         case WEBSOCKET_EVENTS.WEBSOCKET_PLAYBOOK_RUN_UPDATED:
-            // handlePlaybookRunUpdated(serverUrl, msg);
+            handlePlaybookRunUpdated(serverUrl, msg);
             break;
         case WEBSOCKET_EVENTS.WEBSOCKET_PLAYBOOK_RUN_CREATED:
             handlePlaybookRunCreated(serverUrl, msg);

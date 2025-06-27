@@ -57,6 +57,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         paddingVertical: 10,
         paddingHorizontal: 8,
     },
+    skippedText: {
+        textDecorationLine: 'line-through',
+    },
 }));
 
 type Props = {
@@ -66,6 +69,7 @@ type Props = {
     channelId: string;
     playbookRunId: string;
     isFinished: boolean;
+    isParticipant: boolean;
 }
 
 const Checklist = ({
@@ -75,6 +79,7 @@ const Checklist = ({
     channelId,
     playbookRunId,
     isFinished,
+    isParticipant,
 }: Props) => {
     const [expanded, setExpanded] = useState(true);
     const theme = useTheme();
@@ -82,19 +87,24 @@ const Checklist = ({
     const height = useSharedValue(0);
     const windowDimensions = useWindowDimensions();
 
+    const {skipped, completed, totalNumber} = useMemo(() => {
+        const skippedCount = items.filter((item) => item.state === 'skipped').length;
+        const completedCount = items.filter((item) => item.state === 'closed').length;
+        const totalCount = items.length - skippedCount;
+        return {
+            skipped: Boolean(skippedCount),
+            completed: completedCount,
+            totalNumber: totalCount,
+        };
+    }, [items]);
+
     const toggleExpanded = useCallback(() => {
         setExpanded((prev) => !prev);
     }, []);
 
-    const completed = useMemo(() => {
-        return items.filter((item) => item.state === 'closed').length;
-    }, [items]);
-
     const progressPercentage = useMemo(() => {
-        const total = items.length;
-
-        return total > 0 ? (completed / total) * 100 : 0;
-    }, [completed, items.length]);
+        return totalNumber > 0 ? (completed / totalNumber) * 100 : 0;
+    }, [completed, totalNumber]);
 
     const animatedStyle = useAnimatedStyle(() => {
         return {
@@ -113,6 +123,13 @@ const Checklist = ({
         height.value = event.nativeEvent.layout.height;
     }, [height]);
 
+    const titleTextStyle = useMemo(() => {
+        return [
+            styles.checklistTitle,
+            skipped && styles.skippedText,
+        ];
+    }, [styles.checklistTitle, styles.skippedText, skipped]);
+
     return (
         <View style={styles.checklistContainer}>
             <TouchableOpacity
@@ -124,8 +141,8 @@ const Checklist = ({
                         name={expanded ? 'chevron-down' : 'chevron-right'}
                         style={styles.chevron}
                     />
-                    <Text style={styles.checklistTitle}>{checklist.title}</Text>
-                    <Text style={styles.progressText}>{`${completed} / ${items.length} done`}</Text>
+                    <Text style={titleTextStyle}>{checklist.title}</Text>
+                    <Text style={styles.progressText}>{`${completed} / ${totalNumber} done`}</Text>
                 </View>
                 <ProgressBar
                     progress={progressPercentage}
@@ -143,7 +160,7 @@ const Checklist = ({
                         checklistNumber={checklistNumber}
                         itemNumber={index}
                         playbookRunId={playbookRunId}
-                        isFinished={isFinished}
+                        isDisabled={isFinished || !isParticipant}
                     />
                 ))}
             </Animated.View>
@@ -160,7 +177,7 @@ const Checklist = ({
                         checklistNumber={checklistNumber}
                         itemNumber={index}
                         playbookRunId={playbookRunId}
-                        isFinished={isFinished}
+                        isDisabled={isFinished || !isParticipant}
                     />
                 ))}
             </View>

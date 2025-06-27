@@ -11,12 +11,12 @@ export const handlePlaybookRunCreated = async (serverUrl: string, msg: WebSocket
     if (!msg.data.payload) {
         return;
     }
-    const data = safeParseJSON(msg.data.payload);
+    const data = safeParseJSON(msg.data.payload) as PlaybookRunCreatedPayload;
     if (!data) {
         return;
     }
 
-    const playbookRun = data as PlaybookRun;
+    const playbookRun = data.playbook_run;
 
     const isSynced = EphemeralStore.getChannelPlaybooksSynced(serverUrl, playbookRun.channel_id);
     if (!isSynced) {
@@ -28,6 +28,7 @@ export const handlePlaybookRunCreated = async (serverUrl: string, msg: WebSocket
 };
 
 export const handlePlaybookRunUpdated = async (serverUrl: string, msg: WebSocketMessage) => {
+    // Same as handlePlaybookRunCreated, but only used for non-incremental updates
     if (!msg.data.payload) {
         return;
     }
@@ -64,9 +65,16 @@ export const handlePlaybookRunUpdatedIncremental = async (serverUrl: string, msg
         return;
     }
 
+    const isSynced = EphemeralStore.getChannelPlaybooksSynced(serverUrl, run.channelId);
+    if (!isSynced) {
+        // We don't update the run because any information we currently have may be outdated
+        return;
+    }
+
     await operator.handlePlaybookRun({
         runs: [{
             ...data.changed_fields,
+            checklists: undefined, // Remove the checklists from the update
             id: data.id,
             update_at: data.updated_at,
         }],
@@ -79,7 +87,7 @@ export const handlePlaybookChecklistUpdated = async (serverUrl: string, msg: Web
     if (!msg.data.payload) {
         return;
     }
-    const data = safeParseJSON(msg.data.payload) as PlaybookChecklistUpdate;
+    const data = safeParseJSON(msg.data.payload) as PlaybookChecklistUpdatePayload;
     if (!data?.update?.fields) {
         return;
     }
@@ -92,9 +100,16 @@ export const handlePlaybookChecklistUpdated = async (serverUrl: string, msg: Web
         return;
     }
 
+    const isSynced = EphemeralStore.getChannelPlaybooksSynced(serverUrl, run.channelId);
+    if (!isSynced) {
+        // We don't update the run because any information we currently have may be outdated
+        return;
+    }
+
     await operator.handlePlaybookChecklist({
         checklists: [{
             ...data.update.fields,
+            items: undefined, // Remove the items from the update
             id: data.update.id,
             update_at: data.update.updated_at,
             run_id: data.playbook_run_id,
@@ -117,7 +132,7 @@ export const handlePlaybookChecklistItemUpdated = async (serverUrl: string, msg:
     if (!msg.data.payload) {
         return;
     }
-    const data = safeParseJSON(msg.data.payload) as PlaybookChecklistItemUpdate;
+    const data = safeParseJSON(msg.data.payload) as PlaybookChecklistItemUpdatePayload;
     if (!data) {
         return;
     }
@@ -127,6 +142,12 @@ export const handlePlaybookChecklistItemUpdated = async (serverUrl: string, msg:
     const run = await getPlaybookRunById(database, data.playbook_run_id);
     if (!run) {
         // Do not handle any data if the run is not in the database
+        return;
+    }
+
+    const isSynced = EphemeralStore.getChannelPlaybooksSynced(serverUrl, run.channelId);
+    if (!isSynced) {
+        // We don't update the run because any information we currently have may be outdated
         return;
     }
 

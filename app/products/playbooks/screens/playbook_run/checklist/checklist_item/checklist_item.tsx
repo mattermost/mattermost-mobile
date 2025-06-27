@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useState} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View, Text, ActivityIndicator} from 'react-native';
 
@@ -12,6 +12,7 @@ import {getFriendlyDate} from '@components/friendly_date';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {runChecklistItem, updateChecklistItem} from '@playbooks/actions/remote/checklist';
+import {isDueSoon, isOverdue} from '@playbooks/utils/run';
 import {openUserProfileModal, popTo} from '@screens/navigation';
 import {logDebug} from '@utils/log';
 import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
@@ -49,11 +50,20 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         color: changeOpacity(theme.centerChannelColor, 0.48),
         marginLeft: 8,
     },
+    overdueChipIcon: {
+        fontWeight: 600,
+    },
+    dueSoonChipIcon: {
+        color: theme.dndIndicator,
+    },
     itemDetailsTexts: {
         gap: 4,
     },
     checkboxContainer: {
         marginVertical: 2,
+    },
+    skippedText: {
+        textDecorationLine: 'line-through',
     },
 }));
 
@@ -65,7 +75,7 @@ type Props = {
     checklistNumber: number;
     itemNumber: number;
     playbookRunId: string;
-    isFinished: boolean;
+    isDisabled: boolean;
 }
 
 const ChecklistItem = ({
@@ -76,7 +86,7 @@ const ChecklistItem = ({
     checklistNumber,
     itemNumber,
     playbookRunId,
-    isFinished,
+    isDisabled,
 }: Props) => {
     const dueDate = 'dueDate' in item ? item.dueDate : item.due_date;
     const theme = useTheme();
@@ -88,6 +98,9 @@ const ChecklistItem = ({
     const [isExecuting, setIsExecuting] = useState(false);
 
     const checked = item.state === 'closed';
+    const skipped = item.state === 'skipped';
+    const overdue = isOverdue(item);
+    const dueSoon = isDueSoon(item);
 
     const onUserChipPress = useCallback((userId: string) => {
         openUserProfileModal(intl, theme, {
@@ -124,6 +137,13 @@ const ChecklistItem = ({
         setIsChecking(false);
     }, [isChecking, serverUrl, playbookRunId, item.id, checklistNumber, itemNumber, checked]);
 
+    const chipIconStyle = useMemo(() => {
+        return [
+            styles.chipIcon,
+            dueSoon && styles.dueSoonChipIcon,
+        ];
+    }, [dueSoon, styles.chipIcon, styles.dueSoonChipIcon]);
+
     const checkbox = isChecking ? (
         <ActivityIndicator
             size='small'
@@ -133,7 +153,7 @@ const ChecklistItem = ({
         <Checkbox
             checked={checked}
             onPress={toggleChecked}
-            disabled={isFinished}
+            disabled={isDisabled || skipped}
         />
     );
 
@@ -158,9 +178,9 @@ const ChecklistItem = ({
             </View>
             <View style={styles.itemDetails}>
                 <View style={styles.itemDetailsTexts}>
-                    <Text style={styles.itemTitle}>{item.title}</Text>
+                    <Text style={[styles.itemTitle, skipped && styles.skippedText]}>{item.title}</Text>
                     {item.description && (
-                        <Text style={styles.itemDescription}>{item.description}</Text>
+                        <Text style={[styles.itemDescription, skipped && styles.skippedText]}>{item.description}</Text>
                     )}
                 </View>
 
@@ -180,10 +200,12 @@ const ChecklistItem = ({
                                 prefix={
                                     <CompassIcon
                                         name='calendar-outline'
-                                        style={styles.chipIcon}
+                                        style={chipIconStyle}
                                         size={14}
                                     />
                                 }
+                                type={dueSoon ? 'danger' : 'normal'}
+                                boldText={overdue}
                             />
                         )}
 
@@ -191,7 +213,7 @@ const ChecklistItem = ({
                             <BaseChip
                                 label={commandMessage}
                                 onPress={executeCommand}
-                                textType='link'
+                                type='link'
                                 prefix={
                                     isExecuting ? (
                                         <ActivityIndicator

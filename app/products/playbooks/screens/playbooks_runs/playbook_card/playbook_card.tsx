@@ -86,7 +86,7 @@ const PlaybookCard = ({
 }: Props) => {
     const endAt = 'endAt' in run ? run.endAt : run.end_at;
     const channelId = 'channelId' in run ? run.channelId : run.channel_id;
-    const lastStatusUpdateAt = 'lastStatusUpdateAt' in run ? run.lastStatusUpdateAt : run.last_status_update_at;
+    const lastUpdateAt = 'updateAt' in run ? run.updateAt : run.update_at;
 
     const intl = useIntl();
     const theme = useTheme();
@@ -94,8 +94,8 @@ const PlaybookCard = ({
     const finished = Boolean(endAt);
 
     const onCardPress = useCallback(() => {
-        goToPlaybookRun(intl, run.id);
-    }, [run.id, intl]);
+        goToPlaybookRun(intl, run.id, 'observe' in run ? undefined : run);
+    }, [intl, run]);
 
     const onUserChipPress = useCallback((userId: string) => {
         openUserProfileModal(intl, theme, {
@@ -144,7 +144,7 @@ const PlaybookCard = ({
                             }, {
                                 date: (
                                     <FriendlyDate
-                                        value={lastStatusUpdateAt}
+                                        value={lastUpdateAt}
                                         style={styles.lastUpdatedText}
                                     />
                                 ),

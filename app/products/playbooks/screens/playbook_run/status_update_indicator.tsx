@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useMemo} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {View, Text} from 'react-native';
 
@@ -38,6 +38,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         ...typography('Body', 200, 'Regular'),
         color: changeOpacity(theme.centerChannelColor, 0.72),
     },
+    overdueText: {
+        color: theme.dndIndicator,
+    },
 }));
 
 const messages = defineMessages({
@@ -72,13 +75,27 @@ const StatusUpdateIndicator = ({
         message = messages.updateOverdue;
     }
 
+    const textStyle = useMemo(() => {
+        return [
+            styles.text,
+            !isFinished && timestamp < Date.now() && styles.overdueText,
+        ];
+    }, [styles.text, styles.overdueText, isFinished, timestamp]);
+    const iconStyle = useMemo(() => {
+        return [
+            styles.icon,
+            !isFinished && timestamp < Date.now() && styles.overdueText,
+        ];
+    }, [styles.icon, styles.overdueText, isFinished, timestamp]);
+
+    const icon = isFinished ? 'flag-checkered' : 'clock-outline';
     return (
         <View style={styles.container}>
             <CompassIcon
-                name='clock-outline'
-                style={styles.icon}
+                name={icon}
+                style={iconStyle}
             />
-            <Text style={styles.text}>
+            <Text style={textStyle}>
                 {intl.formatMessage(message, values)}
             </Text>
         </View>

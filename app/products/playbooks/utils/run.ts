@@ -1,6 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {toMilliseconds} from '@utils/datetime';
+
+import type PlaybookChecklistItemModel from '@playbooks/types/database/models/playbook_checklist_item';
 import type PlaybookRunModel from '@playbooks/types/database/models/playbook_run';
 
 export function getRunScheduledTimestamp(run: PlaybookRunModel | PlaybookRun): number {
@@ -33,4 +36,30 @@ export function getMaxRunUpdateAt(runs: PlaybookRun[]): number {
         }
     }
     return max;
+}
+
+export function isOverdue(item: PlaybookChecklistItemModel | PlaybookChecklistItem): boolean {
+    const dueDate = 'dueDate' in item ? item.dueDate : item.due_date;
+    if (dueDate <= 0) {
+        return false;
+    }
+
+    if (item.state !== '' && item.state !== 'in_progress') {
+        return false;
+    }
+
+    return dueDate < Date.now();
+}
+
+export function isDueSoon(item: PlaybookChecklistItemModel | PlaybookChecklistItem): boolean {
+    const dueDate = 'dueDate' in item ? item.dueDate : item.due_date;
+    if (dueDate <= 0) {
+        return false;
+    }
+
+    if (item.state !== '' && item.state !== 'in_progress') {
+        return false;
+    }
+
+    return dueDate < Date.now() + toMilliseconds({hours: 12});
 }

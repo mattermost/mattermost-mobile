@@ -8,6 +8,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import UserChip from '@components/chips/user_chip';
 import Markdown from '@components/markdown';
+import Tag from '@components/tag';
 import UserAvatarsStack from '@components/user_avatars_stack';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -53,6 +54,14 @@ const messages = defineMessages({
         id: 'playbooks.playbook_run.run_details',
         defaultMessage: 'Run details',
     },
+    overdue: {
+        id: 'playbooks.playbook_run.overdue',
+        defaultMessage: '{num} {num, plural, =1 {task} other {tasks}} overdue',
+    },
+    finished: {
+        id: 'playbooks.playbook_run.finished',
+        defaultMessage: 'Finished',
+    },
 });
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
@@ -66,6 +75,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     },
     titleAndDescription: {
         gap: 10,
+        alignItems: 'flex-start',
     },
     title: {
         ...typography('Heading', 400, 'SemiBold'),
@@ -93,6 +103,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     tasksContainer: {
         gap: 12,
     },
+    tasksHeaderContainer: {
+        flexDirection: 'row',
+        gap: 12,
+        alignItems: 'center',
+    },
     tasksHeader: {
         ...typography('Heading', 200, 'SemiBold'),
         color: theme.centerChannelColor,
@@ -108,6 +123,8 @@ type Props = {
     participants: UserModel[];
     componentId: AvailableScreens;
     checklists: Array<PlaybookChecklistModel | PlaybookChecklist>;
+    overdueCount: number;
+    currentUserId: string;
 }
 
 export default function PlaybookRun({
@@ -115,7 +132,9 @@ export default function PlaybookRun({
     owner,
     participants,
     checklists,
+    overdueCount,
     componentId,
+    currentUserId,
 }: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -130,6 +149,8 @@ export default function PlaybookRun({
         popTopScreen();
         return true;
     });
+
+    const isParticipant = participants.some((p) => p.id === currentUserId);
 
     const containerStyle = useMemo(() => {
         return [
@@ -154,6 +175,8 @@ export default function PlaybookRun({
         return <ErrorState/>;
     }
 
+    const isFinished = isRunFinished(playbookRun);
+
     return (
         <>
             <OutOfDateHeader
@@ -165,6 +188,13 @@ export default function PlaybookRun({
                     <View style={styles.intro}>
                         <View style={styles.titleAndDescription}>
                             <Text style={styles.title}>{playbookRun.name}</Text>
+                            {isFinished && (
+                                <Tag
+                                    message={messages.finished}
+                                    type='general'
+                                    size='m'
+                                />
+                            )}
                             <Markdown
                                 value={playbookRun.summary}
                                 theme={theme}
@@ -205,19 +235,28 @@ export default function PlaybookRun({
                             </View>
                         )}
                         <StatusUpdateIndicator
-                            isFinished={isRunFinished(playbookRun)}
+                            isFinished={isFinished}
                             timestamp={getRunScheduledTimestamp(playbookRun)}
                         />
                     </View>
                     <View style={styles.tasksContainer}>
-                        <Text style={styles.tasksHeader}>
-                            {intl.formatMessage(messages.tasks)}
-                        </Text>
+                        <View style={styles.tasksHeaderContainer}>
+                            <Text style={styles.tasksHeader}>
+                                {intl.formatMessage(messages.tasks)}
+                            </Text>
+                            {Boolean(overdueCount) && (
+                                <Tag
+                                    message={intl.formatMessage(messages.overdue, {num: overdueCount})}
+                                    type='danger'
+                                />
+                            )}
+                        </View>
                         <ChecklistList
                             checklists={checklists}
                             channelId={channelId}
                             playbookRunId={playbookRun.id}
                             isFinished={isRunFinished(playbookRun)}
+                            isParticipant={isParticipant}
                         />
                     </View>
                 </ScrollView>

@@ -46,7 +46,6 @@ export const fetchPlaybookRunsForChannel = async (serverUrl: string, channelId: 
             return {runs: []};
         }
 
-        // but we don't have that field yet.
         updateLastPlaybookFetchAt(serverUrl, channelId, getMaxRunUpdateAt(allRuns));
 
         if (!fetchOnly) {
