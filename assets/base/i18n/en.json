@@ -996,6 +996,8 @@
   "playbook.runs.in-progress": "In Progress",
   "playbooks.playbook_run.error.description": "Please check your network connection or try again later.",
   "playbooks.playbook_run.error.title": "Unable to fetch run details",
+  "playbooks.playbook_run.finished": "Finished",
+  "playbooks.playbook_run.overdue": "{num} {num, plural, =1 {task} other {tasks}} overdue",
   "playbooks.playbook_run.owner": "Owner",
   "playbooks.playbook_run.participants": "Participants",
   "playbooks.playbook_run.participants_title": "Run Participants",
