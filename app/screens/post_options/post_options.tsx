@@ -3,7 +3,7 @@
 
 import {BottomSheetScrollView} from '@gorhom/bottom-sheet';
 import {useManagedConfig} from '@mattermost/react-native-emm';
-import React, {useMemo} from 'react';
+import React, {useMemo, useState, useEffect} from 'react';
 import {ScrollView} from 'react-native';
 
 import {CopyPermalinkOption, FollowThreadOption, ReplyOption, SaveOption, ForwardOption} from '@components/common_post_options';
@@ -12,6 +12,7 @@ import {Screens} from '@constants';
 import {REACTION_PICKER_HEIGHT, REACTION_PICKER_MARGIN} from '@constants/reaction_picker';
 import {useIsTablet} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import {queryFilesForPost} from '@queries/servers/file';
 import BottomSheet from '@screens/bottom_sheet';
 import {dismissBottomSheet} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
@@ -24,6 +25,7 @@ import EditOption from './options/edit_option';
 import MarkAsUnreadOption from './options/mark_unread_option';
 import PinChannelOption from './options/pin_channel_option';
 import ReactionBar from './reaction_bar';
+import SharePostOption from './options/share_post_option';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type ThreadModel from '@typings/database/models/servers/thread';
@@ -56,6 +58,7 @@ const PostOptions = ({
     const managedConfig = useManagedConfig<ManagedConfig>();
     const isTablet = useIsTablet();
     const Scroll = useMemo(() => (isTablet ? ScrollView : BottomSheetScrollView), [isTablet]);
+    const [hasFiles, setHasFiles] = useState(false);
 
     const close = () => {
         return dismissBottomSheet(Screens.POST_OPTIONS);
@@ -70,6 +73,14 @@ const PostOptions = ({
 
     const shouldRenderFollow = !(sourceScreen !== Screens.CHANNEL || !thread);
     const shouldShowBindings = bindings.length > 0 && !isSystemPost;
+
+    useEffect(() => {
+        const checkFiles = async () => {
+            const files = await queryFilesForPost(post.database, post.id).fetch();
+            setHasFiles(files.length > 0);
+        };
+        checkFiles();
+    }, [post]);
 
     const snapPoints = useMemo(() => {
         const items: Array<string | number> = [1];
@@ -157,6 +168,13 @@ const PostOptions = ({
                     bottomSheetId={Screens.POST_OPTIONS}
                     post={post}
                     canDelete={canDelete}
+                />
+                }
+                {!isSystemPost &&
+                <SharePostOption
+                    bottomSheetId={Screens.POST_OPTIONS}
+                    post={post}
+                    sourceScreen={sourceScreen}
                 />
                 }
                 {canDelete &&
