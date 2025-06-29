@@ -155,7 +155,7 @@ const Body = ({
                 value={post.message}
             />
         );
-    } else if (post.message.length) {
+    } else if (post.message.length || isEdited) { // isEdited is added to handle the case where the post is edited and the message is empty
         message = (
             <Message
                 highlight={highlight}
