@@ -7,6 +7,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { useAnimatedStyle, withTiming } from "react-native-reanimated";
 import Share from "react-native-share";
+import moment from "moment-timezone";
 
 import { updateLocalFilePath } from "@actions/local/file";
 import { downloadFile } from "@actions/remote/file";
@@ -16,12 +17,14 @@ import ProgressBar from "@components/progress_bar";
 import Toast from "@components/toast";
 import { useServerUrl } from "@context/server";
 import { queryFilesForPost } from "@queries/servers/file";
+import { getUserById } from "@queries/servers/user";
 import { getLocalFilePathFromFile } from "@utils/file";
 import { pathWithPrefix } from "@utils/files";
 import { logDebug } from "@utils/log";
 import { getFullErrorMessage } from "@utils/errors";
 import { t } from "@i18n";
 import { typography } from "@utils/typography";
+import { displayUsername } from "@utils/user";
 
 import type PostModel from "@typings/database/models/servers/post";
 import type { AvailableScreens } from "@typings/screens/navigation";
@@ -96,9 +99,14 @@ const SharePostOption = ({ post }: Props) => {
                 post.id,
             ).fetch();
             
+            const author = await getUserById(post.database, post.userId);
+            const authorName = author ? displayUsername(author) : "Unknown";
+            const postDate = moment(post.createAt).format("DD.MM.YYYY, HH:mm");
+            const formattedMessage = `[${postDate}] ${authorName}: ${post.message || ""}`;
+            
             if (!files.length) {
                 await Share.open({
-                    message: post.message || "",
+                    message: formattedMessage,
                     title: "",
                 });
                 return;
@@ -130,7 +138,7 @@ const SharePostOption = ({ post }: Props) => {
 
             if (filePaths.length > 0) {
                 await Share.open({
-                    message: post.message || "",
+                    message: formattedMessage,
                     title: "",
                     urls: filePaths,
                     showAppsToView: true,
