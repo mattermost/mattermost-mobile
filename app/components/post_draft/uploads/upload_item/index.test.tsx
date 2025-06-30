@@ -4,6 +4,8 @@
 import React from 'react';
 
 import {updateDraftFile} from '@actions/local/draft';
+import FileIcon from '@components/files/file_icon';
+import ImageFile from '@components/files/image_file';
 import {EditPostProvider} from '@context/edit_post';
 import DraftEditPostUploadManager from '@managers/draft_upload_manager';
 import {fireEvent, renderWithEverything} from '@test/intl-test-helper';
@@ -34,30 +36,17 @@ jest.mock('@utils/file', () => ({
     getFormattedFileSize: jest.fn((size) => `${size} KB`),
 }));
 
-jest.mock('@components/files/image_file', () => {
-    const {View} = require('react-native');
-    const MockImageFile = (props: any, ref: any) => (
-        <View
-            testID='image-file'
-            ref={ref}
-            {...props}
-        />
-    );
-    MockImageFile.displayName = 'MockImageFile';
-    return require('react').forwardRef(MockImageFile);
-});
+jest.mock('@components/files/image_file', () => ({
+    __esModule: true,
+    default: jest.fn(),
+}));
+jest.mocked(ImageFile).mockImplementation((props) => React.createElement('ImageFile', {testID: 'image-file', ...props}));
 
-jest.mock('@components/files/file_icon', () => {
-    const {View} = require('react-native');
-    const MockFileIcon = (props: any) => (
-        <View
-            testID={props.testID}
-            {...props}
-        />
-    );
-    MockFileIcon.displayName = 'MockFileIcon';
-    return MockFileIcon;
-});
+jest.mock('@components/files/file_icon', () => ({
+    __esModule: true,
+    default: jest.fn(),
+}));
+jest.mocked(FileIcon).mockImplementation((props) => React.createElement('FileIcon', {...props}));
 
 const {isImage} = require('@utils/file');
 

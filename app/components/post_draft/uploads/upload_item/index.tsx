@@ -208,7 +208,7 @@ export default function UploadItem({
 
     const {styles, onGestureEvent, ref} = useGalleryItem(galleryIdentifier, index, handlePress);
 
-    const fileDisplayComponent = useMemo(() => {
+    const fileDisplayComponent = () => {
         if (isImage(file)) {
             return (
                 <View style={style.imageOnlyThumbnail}>
@@ -231,25 +231,17 @@ export default function UploadItem({
                 />
             </View>
         );
-    }, [file, ref, theme.centerChannelColor, style.imageOnlyThumbnail, style.iconContainer]);
+    };
 
-    const fileExtension = useMemo(() => {
-        return file.extension?.toUpperCase() || file.name?.split('.').pop()?.toUpperCase() || '';
-    }, [file.extension, file.name]);
+    const fileExtension = file.extension?.toUpperCase() || file.name?.split('.').pop()?.toUpperCase() || '';
 
-    const formattedSize = useMemo(() => {
-        return getFormattedFileSize(file.size || 0);
-    }, [file.size]);
-
-    const fileName = useMemo(() => {
-        return file.name || 'Unknown file';
-    }, [file.name]);
+    const formattedSize = getFormattedFileSize(file.size || 0);
 
     const isImageFile = isImage(file);
-    const containerStyle = [
+    const containerStyle = useMemo(() => [
         style.previewContainer,
         isImageFile ? style.imageOnlyContainer : style.fileWithInfoContainer,
-    ];
+    ], [isImageFile, style.fileWithInfoContainer, style.imageOnlyContainer, style.previewContainer]);
 
     return (
         <View
@@ -259,7 +251,7 @@ export default function UploadItem({
             <View style={containerStyle}>
                 <TouchableWithoutFeedback onPress={onGestureEvent}>
                     <Animated.View style={styles}>
-                        {fileDisplayComponent}
+                        {fileDisplayComponent()}
                     </Animated.View>
                 </TouchableWithoutFeedback>
 
@@ -270,7 +262,7 @@ export default function UploadItem({
                             numberOfLines={1}
                             ellipsizeMode='tail'
                         >
-                            {fileName}
+                            {file.name || 'Unknown file'}
                         </Text>
                         <Text style={style.fileSize}>
                             {fileExtension && `${fileExtension} `}{formattedSize}
