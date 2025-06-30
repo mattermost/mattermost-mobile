@@ -27,7 +27,6 @@ type PrepareModelsArgs = {
     prefData?: MyPreferencesRequest;
     meData?: MyUserRequest;
     isCRTEnabled?: boolean;
-    isDelete?: boolean;
 }
 
 type PrepareModelsForDeletionArgs = {
