@@ -38,13 +38,6 @@ describe('DraftsButton', () => {
 
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
         await operator.handleTeam({teams: [TestHelper.fakeTeam({id: teamId})], prepareRecordsOnly: false});
-        await operator.handleConfigs({
-            configs: [
-                {id: 'Version', value: '7.6.0'},
-            ],
-            configsToDelete: [],
-            prepareRecordsOnly: false,
-        });
     });
 
     afterEach(async () => {
