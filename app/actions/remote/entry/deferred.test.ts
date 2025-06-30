@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable max-lines */
+
 import {fetchMissingDirectChannelsInfo, type MyChannelsRequest} from '@actions/remote/channel';
 import {fetchGroupsForMember} from '@actions/remote/groups';
 import {fetchPostsForUnreadChannels} from '@actions/remote/post';
@@ -651,5 +653,261 @@ describe('actions/remote/entry/deferred', () => {
             expect(result).toEqual([]);
         });
     });
+
+    describe('combineChannelsData', () => {
+        const {combineChannelsData} = testExports;
+
+        it('should combine channels when both target and source have channels', () => {
+            const target: MyChannelsRequest = {
+                channels: [
+                    {id: 'channel1', name: 'Channel 1', type: 'O', team_id: 'team1'} as Channel,
+                    {id: 'channel2', name: 'Channel 2', type: 'O', team_id: 'team1'} as Channel,
+                ],
+                memberships: [
+                    {channel_id: 'channel1', user_id: 'user1'} as ChannelMembership,
+                    {channel_id: 'channel2', user_id: 'user1'} as ChannelMembership,
+                ],
+                categories: [
+                    {id: 'category1', display_name: 'Category 1', team_id: 'team1', sort_order: 0, sorting: 'alpha', type: 'custom', muted: false, collapsed: false, channel_ids: ['channel1', 'channel2']} as CategoryWithChannels,
+                ],
+            };
+
+            const source: MyChannelsRequest = {
+                channels: [
+                    {id: 'channel3', name: 'Channel 3', type: 'O', team_id: 'team2'} as Channel,
+                    {id: 'channel4', name: 'Channel 4', type: 'O', team_id: 'team2'} as Channel,
+                ],
+                memberships: [
+                    {channel_id: 'channel3', user_id: 'user1'} as ChannelMembership,
+                    {channel_id: 'channel4', user_id: 'user1'} as ChannelMembership,
+                ],
+                categories: [
+                    {id: 'category2', display_name: 'Category 2', team_id: 'team2', sort_order: 1, sorting: 'alpha', type: 'custom', muted: false, collapsed: false, channel_ids: ['channel3', 'channel4']} as CategoryWithChannels,
+                ],
+            };
+
+            combineChannelsData(target, source);
+
+            expect(target.channels).toHaveLength(4);
+            expect(target.channels).toEqual([
+                {id: 'channel1', name: 'Channel 1', type: 'O', team_id: 'team1'} as Channel,
+                {id: 'channel2', name: 'Channel 2', type: 'O', team_id: 'team1'} as Channel,
+                {id: 'channel3', name: 'Channel 3', type: 'O', team_id: 'team2'} as Channel,
+                {id: 'channel4', name: 'Channel 4', type: 'O', team_id: 'team2'} as Channel,
+            ]);
+
+            expect(target.memberships).toHaveLength(4);
+            expect(target.memberships).toEqual([
+                {channel_id: 'channel1', user_id: 'user1'} as ChannelMembership,
+                {channel_id: 'channel2', user_id: 'user1'} as ChannelMembership,
+                {channel_id: 'channel3', user_id: 'user1'} as ChannelMembership,
+                {channel_id: 'channel4', user_id: 'user1'} as ChannelMembership,
+            ]);
+
+            expect(target.categories).toHaveLength(2);
+            expect(target.categories).toEqual([
+                {id: 'category1', display_name: 'Category 1', team_id: 'team1', sort_order: 0, sorting: 'alpha', type: 'custom', muted: false, collapsed: false, channel_ids: ['channel1', 'channel2']} as CategoryWithChannels,
+                {id: 'category2', display_name: 'Category 2', team_id: 'team2', sort_order: 1, sorting: 'alpha', type: 'custom', muted: false, collapsed: false, channel_ids: ['channel3', 'channel4']} as CategoryWithChannels,
+            ]);
+        });
+
+        it('should combine channels when target has no channels but source does', () => {
+            const target: MyChannelsRequest = {
+                channels: undefined,
+                memberships: [],
+            };
+
+            const source: MyChannelsRequest = {
+                channels: [
+                    {id: 'channel1', name: 'Channel 1', type: 'O', team_id: 'team1'} as Channel,
+                ],
+                memberships: [
+                    {channel_id: 'channel1', user_id: 'user1'} as ChannelMembership,
+                ],
+            };
+
+            combineChannelsData(target, source);
+
+            // When target.channels is undefined, concat returns undefined
+            expect(target.channels).toBeUndefined();
+        });
+
+        it('should combine channels when target has channels but source has no channels', () => {
+            const target: MyChannelsRequest = {
+                channels: [
+                    {id: 'channel1', name: 'Channel 1', type: 'O', team_id: 'team1'} as Channel,
+                ],
+                memberships: [
+                    {channel_id: 'channel1', user_id: 'user1'} as ChannelMembership,
+                ],
+            };
+
+            const source: MyChannelsRequest = {
+                channels: undefined,
+                memberships: [],
+            };
+
+            combineChannelsData(target, source);
+
+            expect(target.channels).toHaveLength(1);
+            expect(target.channels).toEqual([
+                {id: 'channel1', name: 'Channel 1', type: 'O', team_id: 'team1'} as Channel,
+            ]);
+        });
+
+        it('should combine memberships when both target and source have memberships', () => {
+            const target: MyChannelsRequest = {
+                channels: [],
+                memberships: [
+                    {channel_id: 'channel1', user_id: 'user1'} as ChannelMembership,
+                    {channel_id: 'channel2', user_id: 'user1'} as ChannelMembership,
+                ],
+            };
+
+            const source: MyChannelsRequest = {
+                channels: [],
+                memberships: [
+                    {channel_id: 'channel3', user_id: 'user1'} as ChannelMembership,
+                    {channel_id: 'channel4', user_id: 'user1'} as ChannelMembership,
+                ],
+            };
+
+            combineChannelsData(target, source);
+
+            expect(target.memberships).toHaveLength(4);
+            expect(target.memberships).toEqual([
+                {channel_id: 'channel1', user_id: 'user1'} as ChannelMembership,
+                {channel_id: 'channel2', user_id: 'user1'} as ChannelMembership,
+                {channel_id: 'channel3', user_id: 'user1'} as ChannelMembership,
+                {channel_id: 'channel4', user_id: 'user1'} as ChannelMembership,
+            ]);
+        });
+
+        it('should combine memberships when target has no memberships but source does', () => {
+            const target: MyChannelsRequest = {
+                channels: [],
+                memberships: undefined,
+            };
+
+            const source: MyChannelsRequest = {
+                channels: [],
+                memberships: [
+                    {channel_id: 'channel1', user_id: 'user1'} as ChannelMembership,
+                ],
+            };
+
+            combineChannelsData(target, source);
+
+            // When target.memberships is undefined, concat returns undefined
+            expect(target.memberships).toBeUndefined();
+        });
+
+        it('should combine memberships when target has memberships but source has no memberships', () => {
+            const target: MyChannelsRequest = {
+                channels: [],
+                memberships: [
+                    {channel_id: 'channel1', user_id: 'user1'} as ChannelMembership,
+                ],
+            };
+
+            const source: MyChannelsRequest = {
+                channels: [],
+                memberships: undefined,
+            };
+
+            combineChannelsData(target, source);
+
+            expect(target.memberships).toHaveLength(1);
+            expect(target.memberships).toEqual([
+                {channel_id: 'channel1', user_id: 'user1'} as ChannelMembership,
+            ]);
+        });
+
+        it('should handle empty arrays in source', () => {
+            const target: MyChannelsRequest = {
+                channels: [
+                    {id: 'channel1', name: 'Channel 1', type: 'O', team_id: 'team1'} as Channel,
+                ],
+                memberships: [
+                    {channel_id: 'channel1', user_id: 'user1'} as ChannelMembership,
+                ],
+            };
+
+            const source: MyChannelsRequest = {
+                channels: [],
+                memberships: [],
+            };
+
+            combineChannelsData(target, source);
+
+            expect(target.channels).toHaveLength(1);
+            expect(target.memberships).toHaveLength(1);
+        });
+
+        it('should handle empty arrays in target', () => {
+            const target: MyChannelsRequest = {
+                channels: [],
+                memberships: [],
+            };
+
+            const source: MyChannelsRequest = {
+                channels: [
+                    {id: 'channel1', name: 'Channel 1', type: 'O', team_id: 'team1'} as Channel,
+                ],
+                memberships: [
+                    {channel_id: 'channel1', user_id: 'user1'} as ChannelMembership,
+                ],
+            };
+
+            combineChannelsData(target, source);
+
+            expect(target.channels).toHaveLength(1);
+            expect(target.memberships).toHaveLength(1);
+        });
+
+        it('should handle undefined values in both target and source', () => {
+            const target: MyChannelsRequest = {
+                channels: undefined,
+                memberships: undefined,
+                categories: undefined,
+            };
+
+            const source: MyChannelsRequest = {
+                channels: undefined,
+                memberships: undefined,
+                categories: undefined,
+            };
+
+            combineChannelsData(target, source);
+
+            expect(target.channels).toBeUndefined();
+            expect(target.memberships).toBeUndefined();
+            expect(target.categories).toBeUndefined();
+        });
+
+        it('should handle mixed undefined and defined values', () => {
+            const target: MyChannelsRequest = {
+                channels: [
+                    {id: 'channel1', name: 'Channel 1', type: 'O', team_id: 'team1'} as Channel,
+                ],
+                memberships: undefined,
+            };
+
+            const source: MyChannelsRequest = {
+                channels: undefined,
+                memberships: [
+                    {channel_id: 'channel1', user_id: 'user1'} as ChannelMembership,
+                ],
+            };
+
+            combineChannelsData(target, source);
+
+            expect(target.channels).toHaveLength(1);
+
+            // When target.memberships is undefined, concat returns undefined
+            expect(target.memberships).toBeUndefined();
+        });
+    });
 });
 
+/* eslint-enable max-lines */
