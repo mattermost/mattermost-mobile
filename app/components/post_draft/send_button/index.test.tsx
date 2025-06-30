@@ -8,7 +8,6 @@ import {Tutorial} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {renderWithEverything, waitFor} from '@test/intl-test-helper';
-import TestHelper from '@test/test_helper';
 
 import SendButton from './send_button';
 
@@ -23,8 +22,8 @@ jest.mock('./send_button', () => ({
 }));
 
 jest.mocked(SendButton).mockImplementation((props) => React.createElement('SendButton', {...props, testID: 'send-button'}));
-describe('SendButton', () => {
 
+describe('SendButton', () => {
     const serverUrl = 'server-1';
     const teamId = 'team1';
     let database: Database;
@@ -37,18 +36,11 @@ describe('SendButton', () => {
         operator = serverDatabaseAndOperator.operator;
 
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
-        await operator.handleTeam({teams: [TestHelper.fakeTeam({id: teamId})], prepareRecordsOnly: false});
-        await operator.handleConfigs({
-            configs: [
-                {id: 'Version', value: '7.6.0'},
-            ],
-            configsToDelete: [],
-            prepareRecordsOnly: false,
-        });
     });
 
     afterEach(async () => {
         await DatabaseManager.destroyServerDatabase(serverUrl);
+        await storeGlobal(Tutorial.SCHEDULED_POST, null, false);
     });
 
     const defaultProps: Parameters<typeof EnhancedSendButton>[0] = {
