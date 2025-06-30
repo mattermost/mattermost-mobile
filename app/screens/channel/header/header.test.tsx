@@ -113,6 +113,7 @@ describe('ChannelHeader', () => {
         props.activeRunId = undefined;
         props.playbooksActiveRuns = 3;
         props.hasPlaybookRuns = true;
+        props.displayName = 'Test Channel';
 
         const {getByTestId} = renderWithIntl(<ChannelHeader {...props}/>);
 
@@ -121,7 +122,7 @@ describe('ChannelHeader', () => {
         expect(playbookButton).toBeTruthy();
 
         playbookButton?.onPress();
-        expect(goToPlaybookRuns).toHaveBeenCalledWith(expect.anything(), 'channel-id');
+        expect(goToPlaybookRuns).toHaveBeenCalledWith(expect.anything(), 'channel-id', 'Test Channel');
         expect(goToPlaybookRun).not.toHaveBeenCalled();
     });
 });

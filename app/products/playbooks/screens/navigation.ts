@@ -6,12 +6,18 @@ import {goToScreen} from '@screens/navigation';
 
 import type {IntlShape} from 'react-intl';
 
-export function goToPlaybookRuns(intl: IntlShape, channelId: string) {
+export function goToPlaybookRuns(intl: IntlShape, channelId: string, channelName: string) {
     const title = intl.formatMessage({id: 'playbooks.playbooks_runs.title', defaultMessage: 'Playbook runs'});
-    goToScreen(Screens.PLAYBOOKS_RUNS, title, {channelId}, {});
+    goToScreen(Screens.PLAYBOOKS_RUNS, title, {channelId}, {
+        topBar: {
+            subtitle: {
+                text: channelName,
+            },
+        },
+    });
 }
 
-export async function goToPlaybookRun(intl: IntlShape, playbookRunId: string) {
+export async function goToPlaybookRun(intl: IntlShape, playbookRunId: string, playbookRun?: PlaybookRun) {
     const title = intl.formatMessage({id: 'playbooks.playbook_run.title', defaultMessage: 'Playbook run'});
-    goToScreen(Screens.PLAYBOOK_RUN, title, {playbookRunId}, {});
+    goToScreen(Screens.PLAYBOOK_RUN, title, {playbookRunId, playbookRun}, {});
 }
