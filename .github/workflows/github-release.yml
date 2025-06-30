@@ -4,6 +4,17 @@ on:
   push:
     tags:
       - v[0-9]+.[0-9]+.[0-9]+*
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag (e.g., v2.10.0)"
+        required: true
+        type: string
+
+env:
+  RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+  SNYK_VERSION: "1.1297.2"
+  CYCLONEDX_VERSION: "v0.27.2"
 
 jobs:
   test:
@@ -36,7 +47,7 @@ jobs:
 
       - name: ci/build-ios-unsigned
         env:
-          TAG: "${{ github.ref_name }}"
+          TAG: "${{ env.RELEASE_TAG }}"
           GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
         run: bundle exec fastlane ios unsigned
         working-directory: ./fastlane
@@ -48,14 +59,14 @@ jobs:
           name: Mattermost-unsigned.ipa
 
       - name: ci/install-snyk
-        run: npm install -g snyk@1.1296.1
+        run: npm install -g snyk@${{ env.SNYK_VERSION }}
 
       - name: ci/generate-ios-sbom
         env:
           SNYK_TOKEN: "${{ secrets.SNYK_TOKEN }}"
         run: |
-          cd ios/
           snyk sbom --format=cyclonedx1.6+json --json-file-output=../sbom-ios.json --all-projects
+        working-directory: ./ios
         shell: bash
 
       - name: ci/upload-ios-sbom
@@ -79,7 +90,7 @@ jobs:
 
       - name: ci/build-android-beta
         env:
-          TAG: "${{ github.ref_name }}"
+          TAG: "${{ env.RELEASE_TAG }}"
           GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
         run: bundle exec fastlane android unsigned
         working-directory: ./fastlane
@@ -91,14 +102,14 @@ jobs:
           name: Mattermost-unsigned.apk
 
       - name: ci/install-snyk
-        run: npm install -g snyk@1.1296.1
+        run: npm install -g snyk@${{ env.SNYK_VERSION }}
 
       - name: ci/generate-android-sbom
         env:
           SNYK_TOKEN: "${{ secrets.SNYK_TOKEN }}"
         run: |
-          cd android/
           snyk sbom --format=cyclonedx1.6+json --all-projects --json-file-output=../sbom-android.json
+        working-directory: ./android
         shell: bash
 
       - name: ci/upload-android-sbom
@@ -117,31 +128,59 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: ci/download-sboms
-        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47c8a # v4.2.1
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
+          pattern: sbom-*.json
           path: ${{ github.workspace }}
-          pattern: |
-            sbom-ios.json
-            sbom-android.json
           merge-multiple: true
 
       - name: ci/install-snyk
-        run: npm install -g snyk@1.1296.1
+        run: npm install -g snyk@${{ env.SNYK_VERSION }}
 
       - name: ci/setup-cyclonedx-cli
         run: |
-          curl -sSfL https://github.com/CycloneDX/cyclonedx-cli/releases/download/0.27.2/cyclonedx-linux-x64 -o cyclonedx
+          set -e
+          CYCLONEDX_BINARY="cyclonedx-linux-x64"
+          CYCLONEDX_URL="https://github.com/CycloneDX/cyclonedx-cli/releases/download/${{ env.CYCLONEDX_VERSION }}/${CYCLONEDX_BINARY}"
+
+          # Download with better error handling and retry
+          echo "Downloading CycloneDX CLI ${{ env.CYCLONEDX_VERSION }}..."
+          curl -sSfL --retry 3 --retry-delay 5 "${CYCLONEDX_URL}" -o cyclonedx
+
+          # Verify the binary is executable and not corrupted
+          if [ ! -s cyclonedx ]; then
+            echo "Error: Downloaded file is empty or corrupted"
+            exit 1
+          fi
+
+          # Make executable and move to PATH
           chmod +x cyclonedx
           sudo mv cyclonedx /usr/local/bin/
+
+          # Verify installation
+          cyclonedx --version
 
       - name: ci/generate-consolidated-sbom
         env:
           SNYK_TOKEN: "${{ secrets.SNYK_TOKEN }}"
-          SBOM_FILENAME: "sbom-${{ github.event.repository.name }}-${{ github.ref_name }}.json"
+          SBOM_FILENAME: "sbom-${{ github.event.repository.name }}-${{ env.RELEASE_TAG }}.json"
         run: |
+          # Check if required SBOM files are available
+          if [ ! -f "sbom-android.json" ]; then
+            echo "Error: sbom-android.json not found. Android SBOM generation may have failed."
+            exit 1
+          fi
+
+          if [ ! -f "sbom-ios.json" ]; then
+            echo "Error: sbom-ios.json not found. iOS SBOM generation may have failed."
+            exit 1
+          fi
+
+          echo "All required SBOM files are available. Proceeding with consolidation..."
+
           # Generate top-level SBOM
           snyk sbom --format=cyclonedx1.6+json --json-file-output=sbom-top-level.json
-          
+
           # Consolidate SBOMs
           cyclonedx merge \
             --input-files "sbom-top-level.json" "sbom-android.json" "sbom-ios.json" \
@@ -149,7 +188,7 @@ jobs:
             --output-file="$SBOM_FILENAME" \
             --output-format=json \
             --output-version=v1_6
-          
+
           # Validate the consolidated SBOM
           cyclonedx validate --input-file="$SBOM_FILENAME"
         shell: bash
@@ -157,8 +196,8 @@ jobs:
       - name: ci/upload-consolidated-sbom
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          path: sbom-${{ github.event.repository.name }}-${{ github.ref_name }}.json
-          name: sbom-${{ github.event.repository.name }}-${{ github.ref_name }}.json
+          path: sbom-${{ github.event.repository.name }}-${{ env.RELEASE_TAG }}.json
+          name: sbom-${{ github.event.repository.name }}-${{ env.RELEASE_TAG }}.json
 
   release:
     runs-on: ubuntu-22.04
@@ -177,7 +216,7 @@ jobs:
         working-directory: ./fastlane
 
       - name: ci/download-artifacts
-        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47c8a # v4.2.1
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           path: ${{ github.workspace }}
           merge-multiple: true
@@ -192,4 +231,4 @@ jobs:
         env:
           GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
         run: |
-          gh release upload "${{ github.ref_name }}" "sbom-${{ github.event.repository.name }}-${{ github.ref_name }}.json"
+          gh release upload "${{ env.RELEASE_TAG }}" "sbom-${{ github.event.repository.name }}-${{ env.RELEASE_TAG }}.json"

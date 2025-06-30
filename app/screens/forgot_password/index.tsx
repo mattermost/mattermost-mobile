@@ -1,24 +1,24 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Button} from '@rneui/base';
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, Platform, Text, useWindowDimensions, View} from 'react-native';
+import {Keyboard, Platform, Text, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {Navigation} from 'react-native-navigation';
-import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {sendPasswordResetEmail} from '@actions/remote/session';
+import Button from '@components/button';
 import FloatingTextInput from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useAvoidKeyboard} from '@hooks/device';
+import {useScreenTransitionAnimation} from '@hooks/screen_transition_animation';
 import SecurityManager from '@managers/security_manager';
 import Background from '@screens/background';
-import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {isEmail} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -65,7 +65,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         justifyContent: 'center',
         paddingHorizontal: 24,
     },
-    returnButton: {
+    returnButtonContainer: {
         marginTop: 32,
     },
     subheader: {
@@ -92,14 +92,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 const ForgotPassword = ({componentId, serverUrl, theme}: Props) => {
-    const dimensions = useWindowDimensions();
-    const translateX = useSharedValue(dimensions.width);
     const [email, setEmail] = useState<string>('');
     const [error, setError] = useState<string>('');
     const [isPasswordLinkSent, setIsPasswordLinkSent] = useState<boolean>(false);
     const {formatMessage} = useIntl();
     const keyboardAwareRef = useRef<KeyboardAwareScrollView>(null);
     const styles = getStyleSheet(theme);
+
+    const animatedStyles = useScreenTransitionAnimation(componentId);
 
     useAvoidKeyboard(keyboardAwareRef);
 
@@ -158,17 +158,15 @@ const ForgotPassword = ({componentId, serverUrl, theme}: Props) => {
                     <Text style={styles.successText}>
                         {email}
                     </Text>
-                    <Button
-                        testID='password_send.return'
-                        onPress={onReturn}
-                        buttonStyle={[styles.returnButton, buttonBackgroundStyle(theme, 'lg', 'primary', 'default')]}
-                    >
-                        <FormattedText
-                            id='password_send.return'
-                            defaultMessage='Return to Log In'
-                            style={buttonTextStyle(theme, 'lg', 'primary', 'default')}
+                    <View style={styles.returnButtonContainer}>
+                        <Button
+                            testID='password_send.return'
+                            onPress={onReturn}
+                            size='lg'
+                            theme={theme}
+                            text={formatMessage({id: 'password_send.return', defaultMessage: 'Return to Log In'})}
                         />
-                    </Button>
+                    </View>
                 </View>
             );
         }
@@ -221,49 +219,21 @@ const ForgotPassword = ({componentId, serverUrl, theme}: Props) => {
                             theme={theme}
                             value={email}
                         />
-                        <Button
-                            testID='forgot.password.button'
-                            buttonStyle={[styles.returnButton, buttonBackgroundStyle(theme, 'lg', 'primary', 'default'), error ? styles.error : undefined]}
-                            disabledStyle={[styles.returnButton, buttonBackgroundStyle(theme, 'lg', 'primary', 'disabled'), error ? styles.error : undefined]}
-                            disabled={!email}
-                            onPress={submitResetPassword}
-                        >
-                            <FormattedText
-                                id='password_send.reset'
-                                defaultMessage='Reset my password'
-                                style={buttonTextStyle(theme, 'lg', 'primary', email ? 'default' : 'disabled')}
+                        <View style={styles.returnButtonContainer}>
+                            <Button
+                                testID='forgot.password.button'
+                                disabled={!email}
+                                onPress={submitResetPassword}
+                                size='lg'
+                                text={formatMessage({id: 'password_send.reset', defaultMessage: 'Reset my password'})}
+                                theme={theme}
                             />
-                        </Button>
+                        </View>
                     </View>
                 </View>
             </KeyboardAwareScrollView>
         );
     };
-
-    const transform = useAnimatedStyle(() => {
-        const duration = Platform.OS === 'android' ? 250 : 350;
-        return {
-            transform: [{translateX: withTiming(translateX.value, {duration})}],
-        };
-    }, []);
-
-    useEffect(() => {
-        const listener = {
-            componentDidAppear: () => {
-                translateX.value = 0;
-            },
-            componentDidDisappear: () => {
-                translateX.value = -dimensions.width;
-            },
-        };
-        const unsubscribe = Navigation.events().registerComponentListener(listener, componentId);
-
-        return () => unsubscribe.remove();
-    }, [componentId, dimensions]);
-
-    useEffect(() => {
-        translateX.value = 0;
-    }, []);
 
     useAndroidHardwareBackHandler(componentId, onReturn);
 
@@ -272,7 +242,7 @@ const ForgotPassword = ({componentId, serverUrl, theme}: Props) => {
             <Background theme={theme}/>
             <AnimatedSafeArea
                 testID='forgot.password.screen'
-                style={[styles.container, transform]}
+                style={[styles.container, animatedStyles]}
             >
                 {getCenterContent()}
             </AnimatedSafeArea>

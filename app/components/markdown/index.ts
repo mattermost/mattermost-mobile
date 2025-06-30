@@ -14,11 +14,13 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const enableLatex = observeConfigBooleanValue(database, 'EnableLatex');
     const enableInlineLatex = observeConfigBooleanValue(database, 'EnableInlineLatex');
     const maxNodes = observeConfigIntValue(database, 'MaxMarkdownNodes');
+    const minimumHashtagLength = observeConfigIntValue(database, 'MinimumHashtagLength');
 
     return {
         enableLatex,
         enableInlineLatex,
         maxNodes,
+        minimumHashtagLength,
     };
 });
 

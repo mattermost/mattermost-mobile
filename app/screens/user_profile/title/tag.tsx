@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {StyleSheet} from 'react-native';
+import {defineMessages} from 'react-intl';
 
 import Tag, {BotTag, GuestTag} from '@components/tag';
 
@@ -14,37 +14,37 @@ type Props = {
     isTeamAdmin: boolean;
 }
 
-const styles = StyleSheet.create({
-    tag: {
-        alignSelf: 'flex-start',
-        paddingHorizontal: 6,
-        marginBottom: 4,
+const messages = defineMessages({
+    sysAdmin: {
+        id: 'user_profile.system_admin',
+        defaultMessage: 'System Admin',
+    },
+    teamAdmin: {
+        id: 'user_profile.team_admin',
+        defaultMessage: 'Team Admin',
+    },
+    channelAdmin: {
+        id: 'user_profile.channel_admin',
+        defaultMessage: 'Channel Admin',
     },
 });
 
 const UserProfileTag = ({isBot, isChannelAdmin, showGuestTag, isSystemAdmin, isTeamAdmin}: Props) => {
     if (isBot) {
         return (
-            <BotTag
-                style={styles.tag}
-                testID='user_profile.bot.tag'
-            />);
+            <BotTag testID='user_profile.bot.tag'/>);
     }
 
     if (showGuestTag) {
         return (
-            <GuestTag
-                style={styles.tag}
-                testID='user_profile.guest.tag'
-            />);
+            <GuestTag testID='user_profile.guest.tag'/>);
     }
 
     if (isSystemAdmin) {
         return (
             <Tag
-                id='user_profile.system_admin'
-                defaultMessage='System Admin'
-                style={styles.tag}
+                message={messages.sysAdmin}
+                uppercase={true}
                 testID='user_profile.system_admin.tag'
             />
         );
@@ -53,10 +53,9 @@ const UserProfileTag = ({isBot, isChannelAdmin, showGuestTag, isSystemAdmin, isT
     if (isTeamAdmin) {
         return (
             <Tag
-                id='user_profile.team_admin'
-                defaultMessage='Team Admin'
-                style={styles.tag}
+                message={messages.teamAdmin}
                 testID='user_profile.team_admin.tag'
+                uppercase={true}
             />
         );
     }
@@ -64,10 +63,9 @@ const UserProfileTag = ({isBot, isChannelAdmin, showGuestTag, isSystemAdmin, isT
     if (isChannelAdmin) {
         return (
             <Tag
-                id='user_profile.channel_admin'
-                defaultMessage='Channel Admin'
-                style={styles.tag}
+                message={messages.channelAdmin}
                 testID='user_profile.channel_admin.tag'
+                uppercase={true}
             />
         );
     }
