@@ -411,7 +411,7 @@ describe('create, update & delete posts', () => {
 
     it('editPost - handle error', async () => {
         mockClient.deletePost.mockImplementationOnce(jest.fn(throwFunc));
-        const result = await editPost('foo', '', '');
+        const result = await editPost('foo', '', '', [], []);
         expect(result).toBeDefined();
         expect(result.error).toBeTruthy();
     });
@@ -424,10 +424,82 @@ describe('create, update & delete posts', () => {
             prepareRecordsOnly: false,
         });
 
-        const result = await editPost(serverUrl, post1.id, 'new message');
+        const result = await editPost(serverUrl, post1.id, 'new message', [], []);
         expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
         expect(result.post).toBeDefined();
+    });
+
+    it('editPost - delete files', async () => {
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [post1.id],
+            posts: [post1],
+            prepareRecordsOnly: false,
+        });
+
+        const testFiles: FileInfo[] = [
+            TestHelper.fakeFileInfo({
+                id: 'file-1',
+                post_id: post1.id,
+                name: 'test-file-1.jpg',
+                extension: 'jpg',
+                size: 1024,
+                mime_type: 'image/jpeg',
+                user_id: user1.id,
+            }),
+            TestHelper.fakeFileInfo({
+                id: 'file-2',
+                post_id: post1.id,
+                name: 'test-file-2.png',
+                extension: 'png',
+                size: 2048,
+                mime_type: 'image/png',
+                user_id: user1.id,
+            }),
+            TestHelper.fakeFileInfo({
+                id: 'file-3',
+                post_id: post1.id,
+                name: 'test-file-3.pdf',
+                extension: 'pdf',
+                size: 4096,
+                mime_type: 'application/pdf',
+                user_id: user1.id,
+            }),
+        ];
+
+        await operator.handleFiles({
+            files: testFiles,
+            prepareRecordsOnly: false,
+        });
+
+        const {database} = operator;
+        const filesBefore = await database.get('File').query().fetch();
+        expect(filesBefore).toHaveLength(3);
+
+        const file1Before = filesBefore.find((f) => f.id === 'file-1');
+        const file2Before = filesBefore.find((f) => f.id === 'file-2');
+        const file3Before = filesBefore.find((f) => f.id === 'file-3');
+        expect(file1Before).toBeDefined();
+        expect(file2Before).toBeDefined();
+        expect(file3Before).toBeDefined();
+
+        const result = await editPost(serverUrl, post1.id, 'new message', [], ['file-1', 'file-2']);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.post).toBeDefined();
+
+        const filesAfter = await database.get('File').query().fetch();
+        expect(filesAfter).toHaveLength(1);
+
+        const remainingFile = filesAfter[0];
+        expect(remainingFile.id).toBe('file-3');
+
+        const deletedFiles = await database.get('File').query().fetch();
+        const file1After = deletedFiles.find((f) => f.id === 'file-1');
+        const file2After = deletedFiles.find((f) => f.id === 'file-2');
+        expect(file1After).toBeUndefined();
+        expect(file2After).toBeUndefined();
     });
 
     it('acknowledgePost - handle error', async () => {

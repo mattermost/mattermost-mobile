@@ -41,12 +41,16 @@ export default function InputQuickAction({
     const onPress = useCallback(() => {
         updateValue((v) => {
             if (inputType === 'at') {
+                // If there's existing text and it doesn't end with a space, add a space before @
+                if (v.length > 0 && !v.endsWith(' ')) {
+                    return `${v} @`;
+                }
                 return `${v}@`;
             }
             return '/';
         });
         focus();
-    }, [inputType]);
+    }, [inputType, updateValue, focus]);
 
     const actionTestID = disabled ?
         `${testID}.disabled` :

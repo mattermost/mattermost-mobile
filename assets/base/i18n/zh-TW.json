@@ -1049,8 +1049,6 @@
   "settings.advanced.delete_message.confirmation": "\n此動作將刪除從此伺服器上透過本應用程式下載的所有檔案。請確認是否繼續。\n",
   "settings.advanced_settings": "進階設定",
   "settings.display": "顯示",
-  "settings.link.error.text": "無法開啟連結。",
-  "settings.link.error.title": "錯誤",
   "settings.notice_mobile_link": "行動裝置應用程式",
   "settings.notice_platform_link": "伺服器",
   "settings.notice_text": "Mattermost 因我們的 {platform} 及 {mobile} 中所使用的開放源碼軟體才得以成真。",

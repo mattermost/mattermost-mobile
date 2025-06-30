@@ -21,11 +21,13 @@ import ProgressBar from '@components/progress_bar';
 import Toast from '@components/toast';
 import {GALLERY_FOOTER_HEIGHT} from '@constants/gallery';
 import {useServerUrl} from '@context/server';
-import {alertFailedToOpenDocument} from '@utils/document';
+import {useTheme} from '@context/theme';
+import {alertFailedToOpenDocument, alertOnlyPDFSupported} from '@utils/document';
 import {getFullErrorMessage} from '@utils/errors';
-import {fileExists, getLocalFilePathFromFile, hasWriteStoragePermission, pathWithPrefix} from '@utils/file';
+import {fileExists, getLocalFilePathFromFile, hasWriteStoragePermission, isPdf, pathWithPrefix} from '@utils/file';
 import {galleryItemToFileInfo} from '@utils/gallery';
 import {logDebug} from '@utils/log';
+import {previewPdf} from '@utils/navigation';
 import {typography} from '@utils/typography';
 
 import type {ClientResponse, ProgressPromise} from '@mattermost/react-native-network-client';
@@ -34,6 +36,7 @@ import type {GalleryAction, GalleryItemType} from '@typings/screens/gallery';
 type Props = {
     action: GalleryAction;
     galleryView?: boolean;
+    enableSecureFilePreview: boolean;
     item: GalleryItemType;
     setAction: (action: GalleryAction) => void;
     onDownloadSuccess?: (path: string) => void;
@@ -70,9 +73,10 @@ const styles = StyleSheet.create({
     },
 });
 
-const DownloadWithAction = ({action, item, onDownloadSuccess, setAction, galleryView = true}: Props) => {
+const DownloadWithAction = ({action, enableSecureFilePreview, item, onDownloadSuccess, setAction, galleryView = true}: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
+    const theme = useTheme();
     const insets = useSafeAreaInsets();
     const [showToast, setShowToast] = useState<boolean|undefined>();
     const [error, setError] = useState('');
@@ -153,14 +157,22 @@ const DownloadWithAction = ({action, item, onDownloadSuccess, setAction, gallery
             if (response.data?.path) {
                 const path = response.data.path as string;
                 onDownloadSuccess?.(path);
-                FileViewer.open(path, {
-                    displayName: item.name,
-                    showAppsSuggestions: true,
-                    showOpenWithDialog: true,
-                }).catch(() => {
-                    const file = galleryItemToFileInfo(item);
-                    alertFailedToOpenDocument(file, intl);
-                });
+                if (enableSecureFilePreview) {
+                    if (isPdf(galleryItemToFileInfo(item))) {
+                        previewPdf(item, path, theme);
+                    } else {
+                        alertOnlyPDFSupported(intl);
+                    }
+                } else {
+                    FileViewer.open(path, {
+                        displayName: item.name,
+                        showAppsSuggestions: true,
+                        showOpenWithDialog: true,
+                    }).catch(() => {
+                        const file = galleryItemToFileInfo(item);
+                        alertFailedToOpenDocument(file, intl);
+                    });
+                }
             }
             setShowToast(false);
         }
