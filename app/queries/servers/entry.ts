@@ -156,12 +156,24 @@ export async function processEntryModels({
 }: PrepareModelsArgs): Promise<Model[]> {
     const modelPromises = await prepareEntryModels({operator, teamData, chData, prefData, meData, isCRTEnabled});
 
-    let modelsToDelete: Model[][] = [];
-    const modelsToDeletePromises = await prepareEntryModelsForDeletion({operator, teamData, chData});
-    modelsToDelete = await Promise.all(modelsToDeletePromises);
-
     const models = await Promise.all(modelPromises);
+    const flattenModels = models.flat();
+    if (flattenModels.length) {
+        operator.batchRecords(flattenModels, 'processEntryModels');
+    }
 
-    models.push(...modelsToDelete);
     return models.flat();
+}
+
+export async function processEntryModelsForDeletion({
+    operator,
+    teamData,
+    chData,
+}: PrepareModelsArgs): Promise<void> {
+    const modelsToDeletePromises = await prepareEntryModelsForDeletion({operator, teamData, chData});
+
+    const modelsToDelete = await Promise.all(modelsToDeletePromises);
+    if (modelsToDelete.flat().length) {
+        operator.batchRecords(modelsToDelete.flat(), 'processEntryModelsForDeletion');
+    }
 }
