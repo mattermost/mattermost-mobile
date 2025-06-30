@@ -9,7 +9,7 @@ import {
     getValidRecordsForUpdate,
     retrieveRecords,
 } from '@database/operator/utils/general';
-import {logInfo, logWarning} from '@utils/log';
+import {logDebug, logWarning} from '@utils/log';
 
 import type {
     HandleRecordsArgs,
@@ -191,7 +191,7 @@ export default class BaseDataOperator {
                 const start = Date.now();
                 await this.database.write(async (writer) => {
                     await writer.batch(...models);
-                    logInfo(`batchRecords ${description} for ${models.length} models took ${Date.now() - start}ms`);
+                    logDebug(`batchRecords ${description} for ${models.length} models took ${Date.now() - start}ms`);
                 }, description);
             }
         } catch (e) {
