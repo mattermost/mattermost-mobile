@@ -188,11 +188,8 @@ export default class BaseDataOperator {
     async batchRecords(models: Model[], description: string): Promise<void> {
         try {
             if (models.length > 0) {
-                // const start = Date.now();
                 await this.database.write(async (writer) => {
                     await writer.batch(...models);
-
-                    // logDebug(`batchRecords ${description} for ${models.length} models took ${Date.now() - start}ms`);
                 }, description);
             }
         } catch (e) {
