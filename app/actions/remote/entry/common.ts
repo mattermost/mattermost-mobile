@@ -130,7 +130,7 @@ const entryRest = async (serverUrl: string, teamId?: string, channelId?: string,
 
                 const fetchResult = await fetchChannelById(serverUrl, channelId);
 
-                // Although yon can convert GM only to a pirvate channel, a private channel can furthur be converted to a public channel.
+                // Although you can convert GM only to a private channel, a private channel can further be converted to a public channel.
                 // So between the mobile app being on the GM and reconnecting,
                 // it may have become either a public or a private channel. So we need to check for both.
                 if (fetchResult.channel?.type === General.PRIVATE_CHANNEL || fetchResult.channel?.type === General.OPEN_CHANNEL) {
