@@ -101,15 +101,7 @@ export async function restDeferredAppEntryActions(
             try {
                 const data = await fetchMyChannelsForTeam(serverUrl, team.id, false, since, true, false, isCRTEnabled, requestLabel);
 
-                if (data.channels) {
-                    combinedChannelsData.channels = combinedChannelsData.channels?.concat(data.channels);
-                }
-                if (data.memberships) {
-                    combinedChannelsData.memberships = combinedChannelsData.memberships?.concat(data.memberships);
-                }
-                if (data.categories) {
-                    combinedChannelsData.categories = combinedChannelsData.categories?.concat(data.categories);
-                }
+                combineChannelsData(combinedChannelsData, data);
 
                 const currentTeamData: MyTeamsRequest = {
                     teams: [team],
@@ -197,7 +189,20 @@ function sortTeamsByPreferences(teamData: MyTeamsRequest, preferences: Preferenc
 
 }
 
+function combineChannelsData(target: MyChannelsRequest, source: MyChannelsRequest) {
+    if (source.channels) {
+        target.channels = target.channels?.concat(source.channels);
+    }
+    if (source.memberships) {
+        target.memberships = target.memberships?.concat(source.memberships);
+    }
+    if (source.categories) {
+        target.categories = target.categories?.concat(source.categories);
+    }
+}
+
 export const testExports = {
+    combineChannelsData,
     sortTeamsByPreferences,
 };
 
