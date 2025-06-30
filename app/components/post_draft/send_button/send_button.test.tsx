@@ -5,7 +5,7 @@ import {act} from '@testing-library/react-hooks';
 import React from 'react';
 import {InteractionManager} from 'react-native';
 
-import {SendButton} from '@components/post_draft/send_button/send_button';
+import SendButton from '@components/post_draft/send_button/send_button';
 import {fireEvent, renderWithIntl} from '@test/intl-test-helper';
 
 describe('components/post_draft/send_button', () => {
