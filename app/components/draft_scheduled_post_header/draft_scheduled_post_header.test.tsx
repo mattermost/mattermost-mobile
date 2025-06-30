@@ -7,11 +7,9 @@ import React from 'react';
 import {General} from '@constants';
 import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED} from '@constants/draft';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
+import TestHelper from '@test/test_helper';
 
-import DraftAndScheduledPostHeader from '../draft_scheduled_post_header';
-
-import type ChannelModel from '@typings/database/models/servers/channel';
-import type UserModel from '@typings/database/models/servers/user';
+import DraftAndScheduledPostHeader from './draft_scheduled_post_header';
 
 // Mock the datetime util to provide both getReadableTimestamp and toMilliseconds
 jest.mock('@utils/datetime', () => ({
@@ -38,20 +36,20 @@ jest.mock('@components/draft_scheduled_post_header/profile_avatar', () => {
 
 describe('DraftAndScheduledPostHeader', () => {
     const baseProps: Parameters<typeof DraftAndScheduledPostHeader>[0] = {
-        channel: {
+        channel: TestHelper.fakeChannelModel({
             id: 'channel-id',
             type: General.OPEN_CHANNEL,
             displayName: 'Test Channel',
-        } as ChannelModel,
+        }),
         updateAt: 1620000000000,
         draftType: DRAFT_TYPE_DRAFT,
         testID: 'draft_header',
         isMilitaryTime: false,
-        currentUser: {
+        currentUser: TestHelper.fakeUserModel({
             id: 'user-id',
             username: 'testuser',
             locale: 'en',
-        } as UserModel,
+        }),
     };
 
     it('renders draft header correctly', () => {
@@ -64,14 +62,15 @@ describe('DraftAndScheduledPostHeader', () => {
     it('renders DM draft header correctly', () => {
         const dmProps: Parameters<typeof DraftAndScheduledPostHeader>[0] = {
             ...baseProps,
-            channel: {
-                ...baseProps.channel,
+            channel: TestHelper.fakeChannelModel({
+                id: 'channel-id',
                 type: General.DM_CHANNEL,
-            } as ChannelModel,
-            postReceiverUser: {
+                displayName: 'Test Channel',
+            }),
+            postReceiverUser: TestHelper.fakeUserModel({
                 id: 'receiver-id',
                 username: 'receiver',
-            } as UserModel,
+            }),
         };
 
         renderWithIntlAndTheme(<DraftAndScheduledPostHeader {...dmProps}/>);
