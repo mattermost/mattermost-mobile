@@ -67,6 +67,7 @@ describe('PlaybookHandler', () => {
             // Mark the runs for deletion by setting `end_at` to a non-zero value
             mockRuns.forEach((run) => {
                 run.end_at = 1620000005000;
+                run.update_at = run.update_at + 1;
             });
 
             jest.clearAllMocks();

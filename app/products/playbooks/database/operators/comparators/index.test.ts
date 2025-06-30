@@ -6,54 +6,23 @@ import TestHelper from '@test/test_helper';
 import {shouldUpdatePlaybookRunRecord, shouldHandlePlaybookChecklistRecord, shouldHandlePlaybookChecklistItemRecord} from './';
 
 describe('shouldUpdatePlaybookRunRecord', () => {
-    it('should return false when all fields are identical', () => {
+    it('should return false when update_at is the same', () => {
         const existingRecord = TestHelper.fakePlaybookRunModel({
-            lastStatusUpdateAt: 123,
-            endAt: 456,
-            activeStage: 1,
-            isActive: true,
-            currentStatus: 'InProgress',
-            retrospectiveEnabled: true,
-            retrospectivePublishedAt: 789,
             updateAt: 112233,
         });
         const raw = TestHelper.fakePlaybookRun({
-            id: existingRecord.id,
-            last_status_update_at: 123,
-            end_at: 456,
-            active_stage: 1,
-            is_active: true,
-            current_status: 'InProgress',
-            retrospective_enabled: true,
-            retrospective_published_at: 789,
-            participant_ids: [] as string[],
             update_at: 112233,
         });
 
         expect(shouldUpdatePlaybookRunRecord(existingRecord, raw)).toBe(false);
     });
 
-    it('should return true when any field is different', () => {
+    it('should return true when update_at is different', () => {
         const existingRecord = TestHelper.fakePlaybookRunModel({
-            lastStatusUpdateAt: 123,
-            endAt: 456,
-            activeStage: 1,
-            isActive: true,
-            currentStatus: 'InProgress',
-            retrospectiveEnabled: true,
-            retrospectivePublishedAt: 789,
-            participantIds: [] as string[],
+            updateAt: 112233,
         });
         const raw = TestHelper.fakePlaybookRun({
-            id: existingRecord.id,
-            last_status_update_at: 124, // Different field
-            end_at: 456,
-            active_stage: 1,
-            is_active: true,
-            current_status: 'InProgress',
-            retrospective_enabled: true,
-            retrospective_published_at: 789,
-            participant_ids: [] as string[],
+            update_at: 112234,
         });
 
         expect(shouldUpdatePlaybookRunRecord(existingRecord, raw)).toBe(true);
@@ -61,55 +30,47 @@ describe('shouldUpdatePlaybookRunRecord', () => {
 });
 
 describe('shouldHandlePlaybookChecklistRecord', () => {
-    it('should return false when title is identical', () => {
-        const existingRecord = TestHelper.fakePlaybookChecklistModel({title: 'Checklist Title'});
-        const raw = TestHelper.fakePlaybookChecklist(existingRecord.runId, {title: 'Checklist Title'});
+    it('should return false when update_at is the same', () => {
+        const existingRecord = TestHelper.fakePlaybookChecklistModel({
+            updateAt: 112233,
+        });
+        const raw = TestHelper.fakePlaybookChecklist(existingRecord.runId, {
+            update_at: 112233,
+        });
 
         expect(shouldHandlePlaybookChecklistRecord(existingRecord, raw)).toBe(false);
     });
 
-    it('should return true when title is different', () => {
-        const existingRecord = TestHelper.fakePlaybookChecklistModel({title: 'Checklist Title'});
-        const raw = TestHelper.fakePlaybookChecklist(existingRecord.runId, {title: 'Different Title'});
+    it('should return true when update_at is different', () => {
+        const existingRecord = TestHelper.fakePlaybookChecklistModel({
+            updateAt: 112233,
+        });
+        const raw = TestHelper.fakePlaybookChecklist(existingRecord.runId, {
+            update_at: 112234,
+        });
 
         expect(shouldHandlePlaybookChecklistRecord(existingRecord, raw)).toBe(true);
     });
 });
 
 describe('shouldHandlePlaybookChecklistItemRecord', () => {
-    it('should return false when all fields are identical', () => {
+    it('should return false when update_at is the same', () => {
         const existingRecord = TestHelper.fakePlaybookChecklistItemModel({
-            title: 'Item Title',
-            description: 'Description',
-            assigneeId: 'user1',
-            command: '/command',
-            dueDate: 123456,
+            updateAt: 112233,
         });
         const raw = TestHelper.fakePlaybookChecklistItem(existingRecord.checklistId, {
-            title: 'Item Title',
-            description: 'Description',
-            assignee_id: 'user1',
-            command: '/command',
-            due_date: 123456,
+            update_at: 112233,
         });
 
         expect(shouldHandlePlaybookChecklistItemRecord(existingRecord, raw)).toBe(false);
     });
 
-    it('should return true when any field is different', () => {
+    it('should return true when update_at is different', () => {
         const existingRecord = TestHelper.fakePlaybookChecklistItemModel({
-            title: 'Item Title',
-            description: 'Description',
-            assigneeId: 'user1',
-            command: '/command',
-            dueDate: 123456,
+            updateAt: 112233,
         });
         const raw = TestHelper.fakePlaybookChecklistItem(existingRecord.checklistId, {
-            title: 'Different Title',
-            description: 'Description',
-            assignee_id: 'user1',
-            command: '/command',
-            due_date: 123456,
+            update_at: 112234,
         });
 
         expect(shouldHandlePlaybookChecklistItemRecord(existingRecord, raw)).toBe(true);

@@ -68,6 +68,7 @@ describe('*** PLAYBOOK_RUN Prepare Records Test ***', () => {
                     checklists: [],
                     metrics_data: [],
                     update_at: 1620000003000,
+                    sort_order: [],
                 },
             },
         });
@@ -156,6 +157,7 @@ describe('*** PLAYBOOK_RUN Prepare Records Test ***', () => {
                     checklists: [],
                     metrics_data: [],
                     update_at: 1620000004000,
+                    sort_order: [],
                 },
             },
         });
@@ -222,6 +224,7 @@ describe('*** PLAYBOOK_RUN Prepare Records Test ***', () => {
                         checklists: [],
                         metrics_data: [],
                         update_at: 1620000005000,
+                        sort_order: [],
                     },
                 },
             }),
@@ -245,6 +248,8 @@ describe('*** PLAYBOOK_CHECKLIST Prepare Records Test ***', () => {
                     run_id: 'playbook_run_1',
                     title: 'Checklist 1',
                     update_at: 0,
+                    sort_order: [],
+                    items: [],
                 },
             },
         });
@@ -266,6 +271,7 @@ describe('*** PLAYBOOK_CHECKLIST Prepare Records Test ***', () => {
                 record.runId = 'playbook_run_2';
                 record.title = 'Existing Checklist';
                 record.updateAt = 0;
+                record.sortOrder = [];
             });
         });
 
@@ -279,6 +285,8 @@ describe('*** PLAYBOOK_CHECKLIST Prepare Records Test ***', () => {
                     run_id: 'playbook_run_2',
                     title: 'Updated Checklist',
                     update_at: 0,
+                    sort_order: [],
+                    items: [],
                 },
             },
         });
@@ -309,6 +317,8 @@ describe('*** PLAYBOOK_CHECKLIST Prepare Records Test ***', () => {
                         run_id: 'playbook_run_3',
                         title: 'Invalid Checklist',
                         update_at: 0,
+                        sort_order: [],
+                        items: [],
                     },
                 },
             }),
@@ -341,7 +351,7 @@ describe('*** PLAYBOOK_CHECKLIST_ITEM Prepare Records Test ***', () => {
                     description: 'Test description',
                     due_date: 1620000003000,
                     completed_at: 0,
-                    task_actions: null,
+                    task_actions: [],
                     update_at: 0,
                 },
             },
@@ -395,7 +405,7 @@ describe('*** PLAYBOOK_CHECKLIST_ITEM Prepare Records Test ***', () => {
                     description: 'Updated description',
                     due_date: 1620000007000,
                     completed_at: 1620000008000,
-                    task_actions: null,
+                    task_actions: [],
                     update_at: 0,
                 },
             },
@@ -435,7 +445,7 @@ describe('*** PLAYBOOK_CHECKLIST_ITEM Prepare Records Test ***', () => {
                         description: 'Invalid description',
                         due_date: 1620000003000,
                         completed_at: 0,
-                        task_actions: null,
+                        task_actions: [],
                         update_at: 0,
                     },
                 },

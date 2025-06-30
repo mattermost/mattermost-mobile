@@ -3,13 +3,12 @@
 
 import {withObservables} from '@nozbe/watermelondb/react';
 
-import {withServerUrl} from '@context/server';
 import WebsocketManager from '@managers/websocket_manager';
 
-import ConnectionBanner from './connection_banner';
+import OutOfDateHeader from './out_of_date_header';
 
 const enhanced = withObservables(['serverUrl'], ({serverUrl}: {serverUrl: string}) => ({
     websocketState: WebsocketManager.observeWebsocketState(serverUrl),
 }));
 
-export default withServerUrl(enhanced(ConnectionBanner));
+export default enhanced(OutOfDateHeader);

@@ -17,7 +17,7 @@ const MinimumPatchVersion = 0;
 export function observeIsPlaybooksEnabled(database: Database) {
     return database.get<SystemModel>(MM_TABLES.SERVER.SYSTEM).query(
         Q.where('id', SYSTEM_IDENTIFIERS.PLAYBOOKS_VERSION),
-    ).observe().pipe(
+    ).observeWithColumns(['value']).pipe(
         switchMap((systems) => {
             const version = systems[0]?.value;
             if (!version) {

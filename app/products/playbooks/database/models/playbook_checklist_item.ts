@@ -40,9 +40,6 @@ export default class PlaybookChecklistItemModel extends Model implements Playboo
     /** title : Title of the checklist item */
     @field('title') title!: string;
 
-    /** order : Order of the checklist item */
-    @field('order') order!: number;
-
     /** state : The state of the checklist item */
     @field('state') state!: ChecklistItemState;
 

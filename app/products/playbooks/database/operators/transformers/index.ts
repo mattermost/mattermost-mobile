@@ -4,7 +4,7 @@
 import {OperationType} from '@constants/database';
 import {prepareBaseRecord} from '@database/operator/server_data_operator/transformers/index';
 import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
-import {areSortOrdersEqual, getSortOrder} from '@playbooks/utils/sort_order';
+import {areSortOrdersEqual} from '@playbooks/utils/sort_order';
 
 import type PlaybookChecklistModel from '@playbooks/types/database/models/playbook_checklist';
 import type PlaybookChecklistItemModel from '@playbooks/types/database/models/playbook_checklist_item';
@@ -37,7 +37,7 @@ export const transformPlaybookRunRecord = ({action, database, value}: Transforme
         run.teamId = raw.team_id || record?.teamId || '';
         run.channelId = raw.channel_id || record?.channelId || '';
         run.createAt = raw.create_at || record?.createAt || 0;
-        run.endAt = raw.end_at || record?.endAt || 0;
+        run.endAt = raw.end_at ?? (record?.endAt || 0);
         run.name = raw.name || record?.name || '';
         run.description = raw.description || record?.description || '';
         run.isActive = raw.is_active || record?.isActive || false;
@@ -52,9 +52,10 @@ export const transformPlaybookRunRecord = ({action, database, value}: Transforme
         run.retrospective = raw.retrospective || record?.retrospective || '';
         run.retrospectivePublishedAt = raw.retrospective_published_at || record?.retrospectivePublishedAt || 0;
         run.updateAt = raw.update_at || record?.updateAt || raw.create_at || record?.createAt || 0;
-
-        const sortOrder = getSortOrder(raw.checklists);
-        run.sortOrder = areSortOrdersEqual(sortOrder, record?.sortOrder) ? record!.sortOrder : sortOrder;
+        run.lastSyncAt = Date.now();
+        if (raw.sort_order) {
+            run.sortOrder = areSortOrdersEqual(raw.sort_order, record?.sortOrder) ? record!.sortOrder : raw.sort_order;
+        }
     };
 
     return prepareBaseRecord({
@@ -86,9 +87,10 @@ export const transformPlaybookChecklistRecord = ({action, database, value}: Tran
         checklist.runId = raw.run_id ?? record?.runId;
         checklist.title = raw.title ?? record?.title;
         checklist.updateAt = raw.update_at || record?.updateAt || 0;
-
-        const sortOrder = getSortOrder(raw.items ?? []);
-        checklist.sortOrder = areSortOrdersEqual(sortOrder, record?.sortOrder) ? record!.sortOrder : sortOrder;
+        checklist.lastSyncAt = Date.now();
+        if (raw.sort_order) {
+            checklist.sortOrder = areSortOrdersEqual(raw.sort_order, record?.sortOrder) ? record!.sortOrder : raw.sort_order;
+        }
     };
 
     return prepareBaseRecord({
@@ -120,16 +122,17 @@ export const transformPlaybookChecklistItemRecord = ({action, database, value}: 
         item.checklistId = raw.checklist_id ?? record?.checklistId;
         item.title = raw.title ?? record?.title;
         item.state = raw.state ?? record?.state;
-        item.stateModified = raw.state_modified ?? raw.state_modified ?? 0;
+        item.stateModified = raw.state_modified ?? record?.stateModified ?? 0;
         item.assigneeId = raw.assignee_id ?? record?.assigneeId ?? null;
         item.assigneeModified = raw.assignee_modified ?? record?.assigneeModified ?? 0;
-        item.command = raw.command ?? raw.command ?? null;
-        item.commandLastRun = raw.command_last_run ?? raw.command_last_run ?? 0;
+        item.command = raw.command ?? record?.command ?? null;
+        item.commandLastRun = raw.command_last_run ?? record?.commandLastRun ?? 0;
         item.description = raw.description ?? record?.description ?? '';
-        item.dueDate = raw.due_date ?? raw.due_date ?? 0;
-        item.completedAt = raw.completed_at ?? raw.completed_at ?? 0;
+        item.dueDate = raw.due_date ?? record?.dueDate ?? 0;
+        item.completedAt = raw.completed_at ?? record?.completedAt ?? 0;
         item.taskActions = raw.task_actions ?? record?.taskActions ?? null;
         item.updateAt = raw.update_at ?? record?.updateAt ?? 0;
+        item.lastSyncAt = Date.now();
     };
 
     return prepareBaseRecord({

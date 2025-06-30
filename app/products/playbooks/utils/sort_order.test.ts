@@ -1,49 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {getSortOrder, areSortOrdersEqual} from './sort_order';
-
-describe('getSortOrder', () => {
-    it('should return array of ids from items', () => {
-        const items = [
-            {id: 'item1'},
-            {id: 'item2'},
-            {id: 'item3'},
-        ];
-
-        const result = getSortOrder(items);
-
-        expect(result).toEqual(['item1', 'item2', 'item3']);
-    });
-
-    it('should return empty array for empty items array', () => {
-        const items: Array<{id: string}> = [];
-
-        const result = getSortOrder(items);
-
-        expect(result).toEqual([]);
-    });
-
-    it('should handle single item', () => {
-        const items = [{id: 'single-item'}];
-
-        const result = getSortOrder(items);
-
-        expect(result).toEqual(['single-item']);
-    });
-
-    it('should preserve order of items', () => {
-        const items = [
-            {id: 'third'},
-            {id: 'first'},
-            {id: 'second'},
-        ];
-
-        const result = getSortOrder(items);
-
-        expect(result).toEqual(['third', 'first', 'second']);
-    });
-});
+import {areSortOrdersEqual} from './sort_order';
 
 describe('areSortOrdersEqual', () => {
     it('should return true for identical arrays', () => {
