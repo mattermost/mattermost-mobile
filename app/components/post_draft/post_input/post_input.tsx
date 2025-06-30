@@ -24,8 +24,10 @@ import NavigationStore from '@store/navigation_store';
 import {handleDraftUpdate} from '@utils/draft';
 import {extractFileInfo} from '@utils/file';
 import {changeOpacity, makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} from '@utils/theme';
+import {getSafeCursorPosition} from '@utils/mention_utils';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
+import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
     testID?: string;
@@ -45,6 +47,7 @@ type Props = {
     sendMessage: () => void;
     inputRef: React.MutableRefObject<PasteInputRef | undefined>;
     setIsFocused: (isFocused: boolean) => void;
+    channelUsers?: UserModel[];
 }
 
 const showPasteFilesErrorDialog = (intl: IntlShape) => {
@@ -116,6 +119,7 @@ export default function PostInput({
     sendMessage,
     inputRef,
     setIsFocused,
+    channelUsers = [],
 }: Props) {
     const intl = useIntl();
     const isTablet = useIsTablet();
@@ -192,8 +196,19 @@ export default function PostInput({
     const handlePostDraftSelectionChanged = useCallback((event: NativeSyntheticEvent<TextInputSelectionChangeEventData> | null, fromHandleTextChange = false) => {
         const cp = fromHandleTextChange ? cursorPosition : event!.nativeEvent.selection.end;
 
-        updateCursorPosition(cp);
-    }, [updateCursorPosition, cursorPosition]);
+        // Adjust cursor position to avoid mention areas
+        const safeCursorPosition = getSafeCursorPosition(value, cp);
+        
+        // If cursor position was adjusted, update the TextInput
+        if (safeCursorPosition !== cp && inputRef.current) {
+            inputRef.current.setNativeProps({
+                selection: {start: safeCursorPosition, end: safeCursorPosition},
+            });
+            updateCursorPosition(safeCursorPosition);
+        } else {
+            updateCursorPosition(cp);
+        }
+    }, [updateCursorPosition, cursorPosition, value, inputRef]);
 
     const handleTextChange = useCallback((newValue: string) => {
         if (!shouldProcessEvent(newValue)) {
@@ -317,6 +332,37 @@ export default function PostInput({
         }
     }, [value]);
 
+    // Handle mention deletion on backspace/delete
+    const handleKeyPress = useCallback((event: any) => {
+        const {key} = event.nativeEvent;
+        
+        if (key === 'Backspace' || key === 'Delete') {
+            const {handleMentionDeletion} = require('@utils/mention_utils');
+            
+            const deletionResult = handleMentionDeletion(value, cursorPosition, key);
+            
+            if (deletionResult.shouldDelete && deletionResult.newText !== undefined) {
+                // Prevent default deletion and handle mention deletion
+                event.preventDefault();
+                updateValue(deletionResult.newText);
+                
+                if (deletionResult.newPosition !== undefined) {
+                    setTimeout(() => {
+                        if (inputRef.current) {
+                            inputRef.current.setNativeProps({
+                                selection: {
+                                    start: deletionResult.newPosition,
+                                    end: deletionResult.newPosition,
+                                },
+                            });
+                            updateCursorPosition(deletionResult.newPosition);
+                        }
+                    }, 0);
+                }
+            }
+        }
+    }, [value, cursorPosition, updateValue, updateCursorPosition, inputRef]);
+
     const events = useMemo(() => ({
         onEnterPressed: handleHardwareEnterPress,
         onShiftEnterPressed: handleHardwareShiftEnter,
@@ -333,6 +379,7 @@ export default function PostInput({
             onBlur={onBlur}
             onChangeText={handleTextChange}
             onFocus={onFocus}
+            onKeyPress={handleKeyPress}
             onPaste={onPaste}
             onSelectionChange={handlePostDraftSelectionChanged}
             placeholder={intl.formatMessage(getPlaceHolder(rootId), {channelDisplayName})}
@@ -341,6 +388,7 @@ export default function PostInput({
             smartPunctuation='disable'
             submitBehavior='newline'
             style={pasteInputStyle}
+            selectionColor="transparent"
             testID={testID}
             underlineColorAndroid='transparent'
             textContentType='none'

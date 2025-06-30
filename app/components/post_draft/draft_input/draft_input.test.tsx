@@ -55,6 +55,7 @@ describe('DraftInput', () => {
         updatePostInputTop: jest.fn(),
         setIsFocused: jest.fn(),
         scheduledPostsEnabled: true,
+        channelUsers: [],
     };
 
     beforeEach(() => {

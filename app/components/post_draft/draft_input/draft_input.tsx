@@ -6,6 +6,7 @@ import {useIntl} from 'react-intl';
 import {Keyboard, type LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
+import MentionOverlay from '@components/mention_overlay/mention_overlay';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -24,6 +25,7 @@ import Uploads from '../uploads';
 import Header from './header';
 
 import type {PasteInputRef} from '@mattermost/react-native-paste-input';
+import type UserModel from '@typings/database/models/servers/user';
 
 export type Props = {
     testID?: string;
@@ -58,6 +60,9 @@ export type Props = {
     updatePostInputTop: (top: number) => void;
     setIsFocused: (isFocused: boolean) => void;
     scheduledPostsEnabled: boolean;
+
+    // Channel users for mention overlay (optional)
+    channelUsers?: UserModel[];
 }
 
 const SAFE_AREA_VIEW_EDGES: Edge[] = ['left', 'right'];
@@ -106,6 +111,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
                 android: 10,
             }),
         },
+        postInputContainer: {
+            position: 'relative',
+        },
     };
 });
 
@@ -134,6 +142,7 @@ function DraftInput({
     persistentNotificationMaxRecipients,
     setIsFocused,
     scheduledPostsEnabled,
+    channelUsers = [], // Channel users from withObservables
 }: Props) {
     const intl = useIntl();
     const serverUrl = useServerUrl();
@@ -222,20 +231,28 @@ function DraftInput({
                         noMentionsError={noMentionsError}
                         postPriority={postPriority}
                     />
-                    <PostInput
-                        testID={postInputTestID}
-                        channelId={channelId}
-                        maxMessageLength={maxMessageLength}
-                        rootId={rootId}
-                        cursorPosition={cursorPosition}
-                        updateCursorPosition={updateCursorPosition}
-                        updateValue={updateValue}
-                        value={value}
-                        addFiles={addFiles}
-                        sendMessage={handleSendMessage}
-                        inputRef={inputRef}
-                        setIsFocused={setIsFocused}
-                    />
+                    <View style={style.postInputContainer}>
+                        <PostInput
+                            testID={postInputTestID}
+                            channelId={channelId}
+                            maxMessageLength={maxMessageLength}
+                            rootId={rootId}
+                            cursorPosition={cursorPosition}
+                            updateCursorPosition={updateCursorPosition}
+                            updateValue={updateValue}
+                            value={value}
+                            addFiles={addFiles}
+                            sendMessage={handleSendMessage}
+                            inputRef={inputRef}
+                            setIsFocused={setIsFocused}
+                            channelUsers={channelUsers}
+                        />
+                        <MentionOverlay
+                            text={value}
+                            users={channelUsers || []}
+                            cursorPosition={cursorPosition}
+                        />
+                    </View>
                     <Uploads
                         currentUserId={currentUserId}
                         files={files}
