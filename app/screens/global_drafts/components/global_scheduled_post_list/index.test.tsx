@@ -16,6 +16,7 @@ import EnhancedGlobalScheduledPostList from './index';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database} from '@nozbe/watermelondb';
+import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 
 jest.mock('./global_scheduled_post_list', () => ({
     __esModule: true,
@@ -102,7 +103,7 @@ describe('GlobalScheduledPostList', () => {
         });
     });
 
-    it('tutorial watched should be false if not watched', async () => {
+    it('should correctly handle tutorial watched state', async () => {
         const {getByTestId} = renderWithEverything(
             <EnhancedGlobalScheduledPostList
                 location={Screens.GLOBAL_DRAFTS}
@@ -112,9 +113,16 @@ describe('GlobalScheduledPostList', () => {
 
         const globalScheduledPostList = getByTestId('global-scheduled-post-list');
         expect(globalScheduledPostList.props.tutorialWatched).toBe(false);
+
+        await storeGlobal(Tutorial.SCHEDULED_POSTS_LIST, 'true', false);
+
+        await waitFor(() => {
+            const updatedGlobalScheduledPostList = getByTestId('global-scheduled-post-list');
+            expect(updatedGlobalScheduledPostList.props.tutorialWatched).toBe(true);
+        });
     });
 
-    it('tutorial watched should be true if watched', async () => {
+    it('should only show scheduled posts for current team', async () => {
         const {getByTestId} = renderWithEverything(
             <EnhancedGlobalScheduledPostList
                 location={Screens.GLOBAL_DRAFTS}
@@ -122,11 +130,105 @@ describe('GlobalScheduledPostList', () => {
             {database},
         );
 
-        await storeGlobal(Tutorial.SCHEDULED_POSTS_LIST, 'true', false);
+        const team1ChannelId = 'team1_channel';
+        const team2ChannelId = 'team2_channel';
+
+        await operator.handleChannel({
+            channels: [
+                TestHelper.fakeChannel({id: team1ChannelId, team_id: teamId, type: 'O'}),
+                TestHelper.fakeChannel({id: team2ChannelId, team_id: 'team2', type: 'O'}),
+            ],
+            prepareRecordsOnly: false,
+        });
+
+        const scheduledPosts = [
+            TestHelper.fakeScheduledPost({
+                id: 'post1',
+                message: 'Team1 message',
+                channel_id: team1ChannelId,
+            }),
+            TestHelper.fakeScheduledPost({
+                id: 'post2',
+                message: 'Team2 message',
+                channel_id: team2ChannelId,
+            }),
+        ];
+
+        await act(async () => {
+            await operator.handleScheduledPosts({
+                actionType: ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST,
+                scheduledPosts,
+                includeDirectChannelPosts: false,
+                prepareRecordsOnly: false,
+            });
+        });
 
         await waitFor(() => {
             const globalScheduledPostList = getByTestId('global-scheduled-post-list');
-            expect(globalScheduledPostList.props.tutorialWatched).toBe(true);
+
+            // Should only show the post from current team (team1)
+            expect(globalScheduledPostList.props.allScheduledPosts).toHaveLength(1);
+            expect(globalScheduledPostList.props.allScheduledPosts[0].id).toBe('post1');
+        });
+    });
+
+    it('should include DMs and GMs in scheduled posts', async () => {
+        const {getByTestId} = renderWithEverything(
+            <EnhancedGlobalScheduledPostList
+                location={Screens.GLOBAL_DRAFTS}
+            />,
+            {database},
+        );
+
+        const teamChannelId = 'team_channel';
+        const dmChannelId = 'dm_channel';
+        const gmChannelId = 'gm_channel';
+
+        await operator.handleChannel({
+            channels: [
+                TestHelper.fakeChannel({id: teamChannelId, team_id: teamId, type: 'O'}), // Team channel
+                TestHelper.fakeChannel({id: dmChannelId, team_id: '', type: 'D'}), // Direct message
+                TestHelper.fakeChannel({id: gmChannelId, team_id: '', type: 'G'}), // Group message
+            ],
+            prepareRecordsOnly: false,
+        });
+
+        const scheduledPosts = [
+            TestHelper.fakeScheduledPost({
+                id: 'team_post',
+                message: 'Team message',
+                channel_id: teamChannelId,
+            }),
+            TestHelper.fakeScheduledPost({
+                id: 'dm_post',
+                message: 'DM message',
+                channel_id: dmChannelId,
+            }),
+            TestHelper.fakeScheduledPost({
+                id: 'gm_post',
+                message: 'GM message',
+                channel_id: gmChannelId,
+            }),
+        ];
+
+        await act(async () => {
+            await operator.handleScheduledPosts({
+                actionType: ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST,
+                scheduledPosts,
+                includeDirectChannelPosts: true,
+                prepareRecordsOnly: false,
+            });
+        });
+
+        await waitFor(() => {
+            const globalScheduledPostList = getByTestId('global-scheduled-post-list');
+
+            expect(globalScheduledPostList.props.allScheduledPosts).toHaveLength(3);
+
+            const postIds = globalScheduledPostList.props.allScheduledPosts.map((post: ScheduledPostModel) => post.id);
+            expect(postIds).toContain('team_post');
+            expect(postIds).toContain('dm_post');
+            expect(postIds).toContain('gm_post');
         });
     });
 });
