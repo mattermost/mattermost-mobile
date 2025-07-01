@@ -1,162 +1,287 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q, type Database} from '@nozbe/watermelondb';
-import {of as of$} from 'rxjs';
+import {Database} from '@nozbe/watermelondb';
 
-import {MM_TABLES} from '@constants/database';
+import {ActionType} from '@constants';
+import DatabaseManager from '@database/manager';
+import ServerDataOperator from '@database/operator/server_data_operator';
+import TestHelper from '@test/test_helper';
 
-import {observeFirstScheduledPost, observeScheduledPostCount, observeScheduledPostCountForChannel, observeScheduledPostCountForThread, observeScheduledPostsForTeam, queryScheduledPost, queryScheduledPostsForTeam} from './scheduled_post';
-
-import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
+import {
+    observeFirstScheduledPost,
+    observeScheduledPostCount,
+    observeScheduledPostCountForChannel,
+    observeScheduledPostCountForThread,
+    observeScheduledPostsForTeam,
+    queryScheduledPost,
+    queryScheduledPostsForTeam,
+} from './scheduled_post';
 
 describe('Scheduled Post Queries', () => {
+    const serverUrl = 'scheduledpost.test.com';
     let database: Database;
-    let mockQuery: jest.Mock;
-    let mockCollection: {query: jest.Mock};
-    let mockObserveCount: jest.Mock;
+    let operator: ServerDataOperator;
 
-    beforeEach(() => {
-        mockObserveCount = jest.fn().mockReturnValue(of$(0));
-        const mockQueryResult = {
-            extend: jest.fn().mockReturnThis(),
-            observeWithColumns: jest.fn().mockReturnValue(of$([])),
-            observeCount: mockObserveCount,
-            query: jest.fn().mockReturnThis(),
-        };
-        mockQuery = jest.fn().mockReturnValue(mockQueryResult);
-        mockCollection = {query: jest.fn().mockReturnValue(mockQueryResult)};
-        database = {
-            get: jest.fn().mockReturnValue(mockCollection),
-        } as unknown as Database;
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        const serverDatabaseAndOperator = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        database = serverDatabaseAndOperator.database;
+        operator = serverDatabaseAndOperator.operator;
     });
 
-    it('should query scheduled posts for a team', () => {
-        const teamId = 'team_id';
-        queryScheduledPostsForTeam(database, teamId);
-        expect(database.get).toHaveBeenCalledWith(MM_TABLES.SERVER.SCHEDULED_POST);
-        expect(mockCollection.query).toHaveBeenCalled();
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
     });
 
-    it('should query scheduled posts for a team with direct channel posts', () => {
-        const teamId = 'team_id';
-        queryScheduledPostsForTeam(database, teamId, true);
-        expect(database.get).toHaveBeenCalledWith(MM_TABLES.SERVER.SCHEDULED_POST);
-        expect(mockCollection.query).toHaveBeenCalledWith(
-            Q.on('Channel', Q.or(
-                Q.where('team_id', teamId),
-                Q.where('team_id', ''),
-            )),
-            Q.sortBy('scheduled_at', Q.asc),
-        );
+    describe('queryScheduledPostsForTeam', () => {
+        it('should return posts for specific team', async () => {
+            const channel = TestHelper.fakeChannel({id: 'ch1', team_id: 'team1', type: 'O'});
+            const post = TestHelper.fakeScheduledPost({id: 'post1', channel_id: 'ch1', message: 'Test'});
+
+            const models = (await Promise.all([
+                operator.handleChannel({channels: [channel], prepareRecordsOnly: true}),
+                operator.handleScheduledPosts({
+                    actionType: ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST,
+                    scheduledPosts: [post],
+                    prepareRecordsOnly: true,
+                }),
+            ])).flat();
+            await operator.batchRecords(models, 'test');
+
+            const result = await queryScheduledPostsForTeam(database, 'team1').fetch();
+            expect(result).toHaveLength(1);
+            expect(result[0].id).toBe('post1');
+        });
+
+        it('should return empty for non-existent team', async () => {
+            const result = await queryScheduledPostsForTeam(database, 'nonexistent').fetch();
+            expect(result).toHaveLength(0);
+        });
+
+        it('should include direct channels when specified', async () => {
+            const dmChannel = TestHelper.fakeChannel({id: 'dm1', team_id: '', type: 'D'});
+            const post = TestHelper.fakeScheduledPost({id: 'post1', channel_id: 'dm1', message: 'DM'});
+
+            const models = (await Promise.all([
+                operator.handleChannel({channels: [dmChannel], prepareRecordsOnly: true}),
+                operator.handleScheduledPosts({
+                    actionType: ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST,
+                    scheduledPosts: [post],
+                    prepareRecordsOnly: true,
+                }),
+            ])).flat();
+            await operator.batchRecords(models, 'test');
+
+            const result = await queryScheduledPostsForTeam(database, 'team1', true).fetch();
+            expect(result).toHaveLength(1);
+            expect(result[0].id).toBe('post1');
+        });
     });
 
-    it('should query scheduled post', () => {
-        const channelId = 'channel_id';
-        const rootId = 'root_id';
-        queryScheduledPost(database, channelId, rootId);
-        expect(database.get).toHaveBeenCalledWith(MM_TABLES.SERVER.SCHEDULED_POST);
-        expect(mockCollection.query).toHaveBeenCalledWith(Q.and(
-            Q.where('channel_id', channelId),
-            Q.where('root_id', rootId),
-        ));
-    });
+    describe('queryScheduledPost', () => {
+        it('should return posts for specific channel and root', async () => {
+            const channel = TestHelper.fakeChannel({id: 'ch1', team_id: 'team1'});
+            const posts = [
+                TestHelper.fakeScheduledPost({id: 'post1', channel_id: 'ch1', root_id: 'root1', message: 'Reply1'}),
+                TestHelper.fakeScheduledPost({id: 'post2', channel_id: 'ch1', root_id: 'root1', message: 'Reply2'}),
+                TestHelper.fakeScheduledPost({id: 'post3', channel_id: 'ch1', root_id: 'root2', message: 'Other'}),
+            ];
 
-    describe('observeFirstScheduledPost', () => {
-        it('should observe the first scheduled post', (done) => {
-            const scheduledPosts = [
-                {
-                    id: 'scheduled_post_id',
-                    observe: jest.fn().mockReturnValue(of$({id: 'scheduled_post_id'})),
-                },
-            ] as unknown as ScheduledPostModel[];
-            observeFirstScheduledPost(scheduledPosts).subscribe((result) => {
-                expect(result).toEqual({id: 'scheduled_post_id'});
-                done();
-            });
+            const models = (await Promise.all([
+                operator.handleChannel({channels: [channel], prepareRecordsOnly: true}),
+                operator.handleScheduledPosts({
+                    actionType: ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST,
+                    scheduledPosts: posts,
+                    prepareRecordsOnly: true,
+                }),
+            ])).flat();
+            await operator.batchRecords(models, 'test');
+
+            const result = await queryScheduledPost(database, 'ch1', 'root1').fetch();
+            expect(result).toHaveLength(2);
+            expect(result.map((p) => p.id).sort()).toEqual(['post1', 'post2']);
         });
     });
 
     describe('observeScheduledPostsForTeam', () => {
-        it('should observe scheduled posts for a team', () => {
-            const teamId = 'team_id';
-            observeScheduledPostsForTeam(database, teamId);
-            expect(database.get).toHaveBeenCalledWith(MM_TABLES.SERVER.SCHEDULED_POST);
-            expect(mockCollection.query).toHaveBeenCalledWith(
-                Q.on('Channel', Q.or(Q.where('team_id', teamId))),
-                Q.sortBy('scheduled_at', Q.asc),
-            );
-            expect(mockQuery().observeWithColumns).toHaveBeenCalledWith(['update_at', 'error_code']);
-        });
+        it('should observe team posts', (done) => {
+            const channel = TestHelper.fakeChannel({id: 'ch1', team_id: 'team1', type: 'O'});
+            const post = TestHelper.fakeScheduledPost({id: 'post1', channel_id: 'ch1', message: 'Test'});
 
-        it('should observe scheduled posts for a team with direct channel posts', () => {
-            const teamId = 'team_id';
-            observeScheduledPostsForTeam(database, teamId, true);
-            expect(database.get).toHaveBeenCalledWith(MM_TABLES.SERVER.SCHEDULED_POST);
-            expect(mockCollection.query).toHaveBeenCalledWith(
-                Q.on('Channel', Q.or(Q.where('team_id', teamId), Q.where('team_id', ''))),
-                Q.sortBy('scheduled_at', Q.asc),
-            );
-            expect(mockQuery().observeWithColumns).toHaveBeenCalledWith(['update_at', 'error_code']);
-        });
+            Promise.all([
+                operator.handleChannel({channels: [channel], prepareRecordsOnly: false}),
+                operator.handleScheduledPosts({
+                    actionType: ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST,
+                    scheduledPosts: [post],
+                    prepareRecordsOnly: false,
+                }),
+            ]).then(() => {
+                observeScheduledPostsForTeam(database, 'team1').subscribe((posts) => {
+                    if (posts.length === 1 && posts[0].id === 'post1') {
+                        done();
+                    }
+                });
+            });
+        }, 1500);
     });
 
     describe('observeScheduledPostCount', () => {
-        it('should observe the number of scheduled posts for a team', () => {
-            const teamId = 'team_id';
-            observeScheduledPostCount(database, teamId);
-            expect(database.get).toHaveBeenCalledWith(MM_TABLES.SERVER.SCHEDULED_POST);
-            expect(mockCollection.query).toHaveBeenCalledWith(
-                Q.on('Channel', Q.or(Q.where('team_id', teamId))),
-                Q.sortBy('scheduled_at', Q.asc),
-            );
-            expect(mockObserveCount).toHaveBeenCalled();
-        });
+        it('should count team posts correctly', (done) => {
+            const channels = [
+                TestHelper.fakeChannel({id: 'ch1', team_id: 'team1', type: 'O'}),
+                TestHelper.fakeChannel({id: 'ch2', team_id: 'team1', type: 'P'}),
+            ];
+            const posts = [
+                TestHelper.fakeScheduledPost({id: 'post1', channel_id: 'ch1', message: 'Test1'}),
+                TestHelper.fakeScheduledPost({id: 'post2', channel_id: 'ch2', message: 'Test2'}),
+            ];
 
-        it('should observe the number of scheduled posts for a team with direct channel posts', () => {
-            const teamId = 'team_id';
-            observeScheduledPostCount(database, teamId, true);
-            expect(database.get).toHaveBeenCalledWith(MM_TABLES.SERVER.SCHEDULED_POST);
-            expect(mockCollection.query).toHaveBeenCalledWith(
-                Q.on('Channel', Q.or(Q.where('team_id', teamId), Q.where('team_id', ''))),
-                Q.sortBy('scheduled_at', Q.asc),
-            );
-            expect(mockObserveCount).toHaveBeenCalled();
-        });
+            Promise.all([
+                operator.handleChannel({channels, prepareRecordsOnly: false}),
+                operator.handleScheduledPosts({
+                    actionType: ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST,
+                    scheduledPosts: posts,
+                    prepareRecordsOnly: false,
+                }),
+            ]).then(() => {
+                observeScheduledPostCount(database, 'team1', false).subscribe((count) => {
+                    if (count === 2) {
+                        done();
+                    }
+                });
+            });
+        }, 1500);
+
+        it('should include direct channels when specified', (done) => {
+            const channels = [
+                TestHelper.fakeChannel({id: 'ch1', team_id: 'team1', type: 'O'}),
+                TestHelper.fakeChannel({id: 'dm1', team_id: '', type: 'D'}),
+            ];
+            const posts = [
+                TestHelper.fakeScheduledPost({id: 'post1', channel_id: 'ch1', message: 'Team'}),
+                TestHelper.fakeScheduledPost({id: 'post2', channel_id: 'dm1', message: 'DM'}),
+            ];
+
+            Promise.all([
+                operator.handleChannel({channels, prepareRecordsOnly: false}),
+                operator.handleScheduledPosts({
+                    actionType: ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST,
+                    scheduledPosts: posts,
+                    prepareRecordsOnly: false,
+                }),
+            ]).then(() => {
+                observeScheduledPostCount(database, 'team1', true).subscribe((count) => {
+                    if (count === 2) {
+                        done();
+                    }
+                });
+            });
+        }, 1500);
     });
 
     describe('observeScheduledPostCountForChannel', () => {
-        it('should observe the number of scheduled posts for a channel', () => {
-            const channelId = 'channel_id';
-            observeScheduledPostCountForChannel(database, channelId, false);
-            expect(database.get).toHaveBeenCalledWith(MM_TABLES.SERVER.SCHEDULED_POST);
-            expect(mockCollection.query).toHaveBeenCalledWith(Q.and(
-                Q.where('channel_id', channelId),
-                Q.where('error_code', ''),
-            ));
-            expect(mockObserveCount).toHaveBeenCalled();
-        });
+        it('should count channel posts without errors', (done) => {
+            const channel = TestHelper.fakeChannel({id: 'ch1', team_id: 'team1'});
+            const posts = [
+                TestHelper.fakeScheduledPost({id: 'post1', channel_id: 'ch1', error_code: '', message: 'Success1'}),
+                TestHelper.fakeScheduledPost({id: 'post2', channel_id: 'ch1', error_code: '', message: 'Success2'}),
+                TestHelper.fakeScheduledPost({id: 'post3', channel_id: 'ch1', error_code: 'failed', message: 'Error'}),
+            ];
 
-        it('should observe the number of scheduled posts for a channel with CRT', () => {
-            const channelId = 'channel_id';
-            observeScheduledPostCountForChannel(database, channelId, true);
-            expect(database.get).toHaveBeenCalledWith(MM_TABLES.SERVER.SCHEDULED_POST);
-            expect(mockCollection.query).toHaveBeenCalledWith(Q.and(
-                Q.where('channel_id', channelId),
-                Q.where('error_code', ''),
-            ));
-            expect(mockQuery().extend).toHaveBeenCalledWith(Q.where('root_id', ''));
-            expect(mockObserveCount).toHaveBeenCalled();
-        });
+            Promise.all([
+                operator.handleChannel({channels: [channel], prepareRecordsOnly: false}),
+                operator.handleScheduledPosts({
+                    actionType: ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST,
+                    scheduledPosts: posts,
+                    prepareRecordsOnly: false,
+                }),
+            ]).then(() => {
+                observeScheduledPostCountForChannel(database, 'ch1', false).subscribe((count) => {
+                    if (count === 2) { // Only posts without errors
+                        done();
+                    }
+                });
+            });
+        }, 1500);
+
+        it('should handle CRT filtering', (done) => {
+            const channel = TestHelper.fakeChannel({id: 'ch1', team_id: 'team1'});
+            const posts = [
+                TestHelper.fakeScheduledPost({id: 'post1', channel_id: 'ch1', root_id: '', error_code: '', message: 'Root1'}),
+                TestHelper.fakeScheduledPost({id: 'post2', channel_id: 'ch1', root_id: '', error_code: '', message: 'Root2'}),
+                TestHelper.fakeScheduledPost({id: 'post3', channel_id: 'ch1', root_id: 'thread1', error_code: '', message: 'Reply'}),
+            ];
+
+            Promise.all([
+                operator.handleChannel({channels: [channel], prepareRecordsOnly: false}),
+                operator.handleScheduledPosts({
+                    actionType: ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST,
+                    scheduledPosts: posts,
+                    prepareRecordsOnly: false,
+                }),
+            ]).then(() => {
+                observeScheduledPostCountForChannel(database, 'ch1', true).subscribe((count) => {
+                    if (count === 2) { // Only root posts when CRT enabled
+                        done();
+                    }
+                });
+            });
+        }, 1500);
     });
 
     describe('observeScheduledPostCountForThread', () => {
-        it('should observe the number of scheduled posts for a thread', () => {
-            const rootId = 'root_id';
-            observeScheduledPostCountForThread(database, rootId);
-            expect(database.get).toHaveBeenCalledWith(MM_TABLES.SERVER.SCHEDULED_POST);
-            expect(mockCollection.query).toHaveBeenCalledWith(Q.where('root_id', rootId));
-            expect(mockObserveCount).toHaveBeenCalled();
+        it('should count thread replies only', (done) => {
+            const channel = TestHelper.fakeChannel({id: 'ch1', team_id: 'team1'});
+            const posts = [
+                TestHelper.fakeScheduledPost({id: 'post1', channel_id: 'ch1', root_id: 'thread1', error_code: '', message: 'Reply1'}),
+                TestHelper.fakeScheduledPost({id: 'post2', channel_id: 'ch1', root_id: 'thread1', error_code: '', message: 'Reply2'}),
+                TestHelper.fakeScheduledPost({id: 'post3', channel_id: 'ch1', root_id: 'thread2', error_code: '', message: 'Other'}),
+                TestHelper.fakeScheduledPost({id: 'post4', channel_id: 'ch1', root_id: '', error_code: '', message: 'Root'}),
+            ];
+
+            Promise.all([
+                operator.handleChannel({channels: [channel], prepareRecordsOnly: false}),
+                operator.handleScheduledPosts({
+                    actionType: ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST,
+                    scheduledPosts: posts,
+                    prepareRecordsOnly: false,
+                }),
+            ]).then(() => {
+                observeScheduledPostCountForThread(database, 'thread1').subscribe((count) => {
+                    if (count === 2) { // Only replies to thread1
+                        done();
+                    }
+                });
+            });
+        }, 1500);
+    });
+
+    describe('observeFirstScheduledPost', () => {
+        it('should return undefined for empty array', (done) => {
+            observeFirstScheduledPost([]).subscribe((result) => {
+                if (result === undefined) {
+                    done();
+                }
+            });
+        });
+
+        it('should return first post when available', (done) => {
+            const mockPost = TestHelper.fakeScheduledPostModel({
+                id: 'first_post',
+                observe: jest.fn().mockReturnValue({
+                    subscribe: (callback: (result: any) => void) => {
+                        callback({id: 'first_post', message: 'First post'});
+                        return {unsubscribe: jest.fn()};
+                    },
+                }),
+            });
+
+            observeFirstScheduledPost([mockPost]).subscribe((result) => {
+                if (result?.id === 'first_post') {
+                    done();
+                }
+            });
         });
     });
 });
