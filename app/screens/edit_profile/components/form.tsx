@@ -10,7 +10,7 @@ import useFieldRefs from '@hooks/field_refs';
 import {t} from '@i18n';
 import {getErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
-import {sortCustomProfileAttributes, formatOptionsForSelector} from '@utils/user';
+import {sortCustomProfileAttributes, formatOptionsForSelector, isCustomFieldSamlLinked} from '@utils/user';
 
 import DisabledFields from './disabled_fields';
 import EmailField from './email_field';
@@ -167,8 +167,19 @@ const ProfileForm = ({
                     };
             }
         });
+
+        // Handle custom attributes - check if SAML linked
+        Object.keys(userInfo.customAttributes).forEach((key) => {
+            const customField = customFieldsMap.get(key);
+            if (customField && fields[key]) {
+                fields[`${CUSTOM_ATTRS_PREFIX}.${key}`] = {
+                    isDisabled: isCustomFieldSamlLinked(customField),
+                };
+            }
+        });
+
         return fields;
-    }, [lockedFirstName, lockedLastName, lockedNickname, lockedPosition, currentUser.authService, formKeys, errorMessage]);
+    }, [lockedFirstName, lockedLastName, lockedNickname, lockedPosition, currentUser.authService, formKeys, errorMessage, customFieldsMap, userInfo.customAttributes]);
 
     const onFocusNextField = useCallback(((fieldKey: string) => {
         const findNextField = () => {

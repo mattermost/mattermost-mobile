@@ -22,6 +22,7 @@ type CustomProfileField = {
     /** any extra properties of the field **/
     attrs?: {
         sort_order?: number;
+        saml?: string;
         [key: string]: unknown;
     };
 
