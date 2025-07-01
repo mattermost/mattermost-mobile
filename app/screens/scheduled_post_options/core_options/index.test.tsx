@@ -38,14 +38,6 @@ describe('EnhancedScheduledPostCoreOptions', () => {
 
         await operator.handleUsers({users: [TestHelper.fakeUser({id: 'user1', timezone: {useAutomaticTimezone: false, manualTimezone: 'America/New_York', automaticTimezone: 'America/New_York'}})], prepareRecordsOnly: false});
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}, {id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: 'user1'}], prepareRecordsOnly: false});
-        await operator.handleTeam({teams: [TestHelper.fakeTeam({id: teamId})], prepareRecordsOnly: false});
-        await operator.handleConfigs({
-            configs: [
-                {id: 'Version', value: '7.6.0'},
-            ],
-            configsToDelete: [],
-            prepareRecordsOnly: false,
-        });
     });
 
     afterEach(async () => {
