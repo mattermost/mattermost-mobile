@@ -35,7 +35,7 @@ type Props = {
 const DIMENSIONS = {
     THUMBNAIL_SIZE: 64,
     ICON_SIZE: 48,
-    FILE_CONTAINER_WIDTH: 294,
+    FILE_CONTAINER_WIDTH: 264,
     FILE_CONTAINER_HEIGHT: 64,
 } as const;
 
@@ -63,7 +63,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
             alignItems: 'center',
             flexShrink: 0,
-            gap: 12,
+            gap: 8,
             paddingVertical: 12,
             paddingLeft: 12,
             paddingRight: 16,
@@ -72,7 +72,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             width: DIMENSIONS.ICON_SIZE,
             height: DIMENSIONS.ICON_SIZE,
             borderRadius: 4,
-            marginRight: 8,
             justifyContent: 'center',
             alignItems: 'center',
         },
@@ -224,7 +223,6 @@ export default function UploadItem({
         return (
             <View style={style.iconContainer}>
                 <FileIcon
-                    backgroundColor={changeOpacity(theme.centerChannelColor, 0.08)}
                     iconSize={48}
                     file={file}
                     testID={file.id}
