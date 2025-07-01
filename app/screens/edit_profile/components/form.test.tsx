@@ -485,7 +485,7 @@ describe('ProfileForm', () => {
                 <ProfileForm {...props}/>,
             );
 
-            const samlField = getByTestId('edit_profile_form.customAttributes.saml-field.input');
+            const samlField = getByTestId('edit_profile_form.customAttributes.saml-field.input.disabled');
             const normalField = getByTestId('edit_profile_form.customAttributes.normal-field.input');
 
             // SAML field should be disabled
@@ -615,9 +615,9 @@ describe('ProfileForm', () => {
                 <ProfileForm {...props}/>,
             );
 
-            const firstNameField = getByTestId('edit_profile_form.firstName.input');
+            const firstNameField = getByTestId('edit_profile_form.firstName.input.disabled');
             const lastNameField = getByTestId('edit_profile_form.lastName.input');
-            const nicknameField = getByTestId('edit_profile_form.nickname.input');
+            const nicknameField = getByTestId('edit_profile_form.nickname.input.disabled');
             const positionField = getByTestId('edit_profile_form.position.input');
 
             // Locked fields should be disabled

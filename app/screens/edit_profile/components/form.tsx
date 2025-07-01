@@ -87,6 +87,8 @@ const POSITION_FIELD = 'position';
 
 const profileKeys = [FIRST_NAME_FIELD, LAST_NAME_FIELD, USERNAME_FIELD, EMAIL_FIELD, NICKNAME_FIELD, POSITION_FIELD];
 
+export const getFieldKey = (key: string) => `${CUSTOM_ATTRS_PREFIX}.${key}`;
+
 const ProfileForm = ({
     canSave, currentUser, isTablet,
     lockedFirstName, lockedLastName, lockedNickname, lockedPosition,
@@ -107,7 +109,7 @@ const ProfileForm = ({
         const newKeys = Object.keys(userInfo.customAttributes).sort(
             (a: string, b: string): number => {
                 return sortCustomProfileAttributes(userInfo.customAttributes[a], userInfo.customAttributes[b]);
-            }).map((k) => `${CUSTOM_ATTRS_PREFIX}.${k}`);
+            }).map((k) => getFieldKey(k));
 
         return totalCustomAttrs === 0 ? profileKeys : [...profileKeys, ...newKeys];
     }, [userInfo.customAttributes, totalCustomAttrs]);
@@ -171,10 +173,9 @@ const ProfileForm = ({
         // Handle custom attributes - check if SAML linked
         Object.keys(userInfo.customAttributes).forEach((key) => {
             const customField = customFieldsMap.get(key);
-            if (customField && fields[key]) {
-                fields[`${CUSTOM_ATTRS_PREFIX}.${key}`] = {
-                    isDisabled: isCustomFieldSamlLinked(customField),
-                };
+            const fieldKey = getFieldKey(key);
+            if (customField && fields[fieldKey]) {
+                fields[fieldKey].isDisabled = isCustomFieldSamlLinked(customField);
             }
         });
 
