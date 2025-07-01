@@ -37,6 +37,7 @@ import type PostModel from '@typings/database/models/servers/post';
 import type PostsInChannelModel from '@typings/database/models/servers/posts_in_channel';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 import type RoleModel from '@typings/database/models/servers/role';
+import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 import type TeamModel from '@typings/database/models/servers/team';
 import type ThreadModel from '@typings/database/models/servers/thread';
 import type UserModel from '@typings/database/models/servers/user';
@@ -165,7 +166,7 @@ class TestHelperSingleton {
             if (c === 'x') {
                 v = r;
             } else {
-                // eslint-disable-next-line no-mixed-operators
+
                 v = (r & 0x3) | 0x8;
             }
 
@@ -851,6 +852,43 @@ class TestHelperSingleton {
             ...this.fakeModel(),
             roles: '',
             team: this.fakeRelation(),
+            ...overwrite,
+        };
+    };
+
+    fakeScheduledPostModel = (overwrite?: Partial<ScheduledPostModel>): ScheduledPostModel => {
+        return {
+            ...this.fakeModel(),
+            id: this.generateId(),
+            createAt: 0,
+            updateAt: 0,
+            channelId: this.generateId(),
+            message: '',
+            rootId: '',
+            files: [],
+            metadata: {},
+            scheduledAt: 0,
+            processedAt: 0,
+            errorCode: '',
+            toApi: jest.fn(),
+            ...overwrite,
+        };
+    };
+
+    fakeScheduledPost = (overwrite?: Partial<ScheduledPost>): ScheduledPost => {
+        return {
+            id: this.generateId(),
+            channel_id: this.generateId(),
+            message: '',
+            root_id: '',
+            files: [],
+            metadata: {},
+            create_at: Date.now(),
+            update_at: Date.now(),
+            scheduled_at: Date.now(),
+            processed_at: 0,
+            error_code: '',
+            user_id: this.generateId(),
             ...overwrite,
         };
     };
