@@ -99,7 +99,7 @@ const ProfileForm = ({
     const {formatMessage} = intl;
     const errorMessage = error == null ? undefined : getErrorMessage(error, intl) as string;
 
-    const total_custom_attrs = useMemo(() => (
+    const totalCustomAttrs = useMemo(() => (
         enableCustomAttributes ? Object.keys(userInfo.customAttributes).length : 0
     ), [enableCustomAttributes, userInfo.customAttributes]);
 
@@ -109,8 +109,8 @@ const ProfileForm = ({
                 return sortCustomProfileAttributes(userInfo.customAttributes[a], userInfo.customAttributes[b]);
             }).map((k) => `${CUSTOM_ATTRS_PREFIX}.${k}`);
 
-        return total_custom_attrs === 0 ? profileKeys : [...profileKeys, ...newKeys];
-    }, [userInfo.customAttributes, total_custom_attrs]);
+        return totalCustomAttrs === 0 ? profileKeys : [...profileKeys, ...newKeys];
+    }, [userInfo.customAttributes, totalCustomAttrs]);
 
     // Create a map of field definitions for quick lookup
     const customFieldsMap = useMemo(() => {
