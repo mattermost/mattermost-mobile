@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withObservables} from '@nozbe/watermelondb/react';
+import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 
 import WebsocketManager from '@managers/websocket_manager';
 
@@ -11,4 +11,4 @@ const enhanced = withObservables(['serverUrl'], ({serverUrl}: {serverUrl: string
     websocketState: WebsocketManager.observeWebsocketState(serverUrl),
 }));
 
-export default enhanced(OutOfDateHeader);
+export default withDatabase(enhanced(OutOfDateHeader));

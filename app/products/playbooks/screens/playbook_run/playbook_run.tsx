@@ -125,6 +125,7 @@ type Props = {
     checklists: Array<PlaybookChecklistModel | PlaybookChecklist>;
     overdueCount: number;
     currentUserId: string;
+    teammateNameDisplay: string;
 }
 
 export default function PlaybookRun({
@@ -135,6 +136,7 @@ export default function PlaybookRun({
     overdueCount,
     componentId,
     currentUserId,
+    teammateNameDisplay,
 }: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -150,7 +152,7 @@ export default function PlaybookRun({
         return true;
     });
 
-    const isParticipant = participants.some((p) => p.id === currentUserId);
+    const isParticipant = participants.some((p) => p.id === currentUserId) || owner?.id === currentUserId;
 
     const containerStyle = useMemo(() => {
         return [
@@ -205,7 +207,10 @@ export default function PlaybookRun({
                             />
                         </View>
                         {(owner || participants.length > 0) && (
-                            <View style={styles.peopleRow}>
+                            <View
+                                style={styles.peopleRow}
+                                testID={'people-row'}
+                            >
                                 {owner && (
                                     <View style={styles.peopleRowCol}>
                                         <Text style={styles.peopleRowColHeader}>
@@ -215,7 +220,7 @@ export default function PlaybookRun({
                                             <UserChip
                                                 user={owner}
                                                 onPress={openOwnerProfile}
-                                                teammateNameDisplay='username'
+                                                teammateNameDisplay={teammateNameDisplay}
                                             />
                                         </View>
                                     </View>

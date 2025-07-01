@@ -2,7 +2,9 @@
 // See LICENSE.txt for license information.
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
-import {combineLatest, of as of$, switchMap} from 'rxjs';
+import {combineLatest, distinctUntilChanged, of as of$, switchMap} from 'rxjs';
+
+import {areSortOrdersEqual} from '@playbooks/utils/sort_order';
 
 import Checklist from './checklist';
 
@@ -23,6 +25,10 @@ const sortItems = (checklist: PlaybookChecklistModel, items: PlaybookChecklistIt
     return items.sort((a, b) => sortOrderMap[a.id] - sortOrderMap[b.id]);
 };
 
+const getIds = (items: PlaybookChecklistItemModel[]) => {
+    return items.map((i) => i.id);
+};
+
 const enhanced = withObservables(['checklist'], ({checklist}: OwnProps) => {
     if ('observe' in checklist) {
         const observedChecklist = checklist.observe();
@@ -31,6 +37,7 @@ const enhanced = withObservables(['checklist'], ({checklist}: OwnProps) => {
             switchMap(([cl, i]) => {
                 return of$(sortItems(cl, i));
             }),
+            distinctUntilChanged((a, b) => areSortOrdersEqual(getIds(a), getIds(b))),
         );
         return {
             checklist: observedChecklist,

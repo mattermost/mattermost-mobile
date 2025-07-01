@@ -10,6 +10,7 @@ export default function EmptyStateIcon() {
             height='121'
             viewBox='0 0 196 121'
             fill='none'
+            testID='empty-state-icon'
         >
             <G clipPath='url(#clip0_4534_41619)'>
                 <Rect

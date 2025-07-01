@@ -11,19 +11,11 @@ import {renderWithIntl, waitFor} from '@test/intl-test-helper';
 
 import PlaybookRunsOption from './playbook_runs_option';
 
-jest.mock('@components/option_item', () => ({
-    __esModule: true,
-    default: jest.fn(),
-}));
+jest.mock('@components/option_item');
 jest.mocked(OptionItem).mockImplementation((props) => React.createElement('OptionItem', {testID: 'option-item', ...props}));
 
-jest.mock('@screens/navigation', () => ({
-    dismissBottomSheet: jest.fn(),
-}));
-
-jest.mock('@playbooks/screens/navigation', () => ({
-    goToPlaybookRuns: jest.fn(),
-}));
+jest.mock('@screens/navigation');
+jest.mock('@playbooks/screens/navigation');
 
 describe('PlaybookRunsOption', () => {
     const baseProps = {
@@ -31,10 +23,6 @@ describe('PlaybookRunsOption', () => {
         playbooksActiveRuns: 3,
         channelName: 'channel-name',
     };
-
-    beforeEach(() => {
-        jest.clearAllMocks();
-    });
 
     it('renders correctly', () => {
         const {getByTestId} = renderWithIntl(<PlaybookRunsOption {...baseProps}/>);
