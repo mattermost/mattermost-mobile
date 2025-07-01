@@ -9,11 +9,12 @@ import {updateDraftFile} from '@actions/local/draft';
 import FileIcon from '@components/files/file_icon';
 import ImageFile from '@components/files/image_file';
 import ProgressBar from '@components/progress_bar';
+import {useEditPost} from '@context/edit_post';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useDidUpdate from '@hooks/did_update';
 import {useGalleryItem} from '@hooks/gallery';
-import DraftUploadManager from '@managers/draft_upload_manager';
+import DraftEditPostUploadManager from '@managers/draft_upload_manager';
 import {isImage} from '@utils/file';
 import {changeOpacity} from '@utils/theme';
 
@@ -65,10 +66,11 @@ export default function UploadItem({
 }: Props) {
     const theme = useTheme();
     const serverUrl = useServerUrl();
-    const removeCallback = useRef<(() => void)|null>(null);
+    const removeCallback = useRef<(() => void) | undefined>(undefined);
     const [progress, setProgress] = useState(0);
+    const {updateFileCallback, isEditMode} = useEditPost();
 
-    const loading = DraftUploadManager.isUploading(file.clientId!);
+    const loading = DraftEditPostUploadManager.isUploading(file.clientId!);
 
     const handlePress = useCallback(() => {
         openGallery(file);
@@ -76,21 +78,21 @@ export default function UploadItem({
 
     useEffect(() => {
         if (file.clientId) {
-            removeCallback.current = DraftUploadManager.registerProgressHandler(file.clientId, setProgress);
+            removeCallback.current = DraftEditPostUploadManager.registerProgressHandler(file.clientId, setProgress);
         }
         return () => {
             removeCallback.current?.();
-            removeCallback.current = null;
+            removeCallback.current = undefined;
         };
     }, []);
 
     useDidUpdate(() => {
         if (loading && file.clientId) {
-            removeCallback.current = DraftUploadManager.registerProgressHandler(file.clientId, setProgress);
+            removeCallback.current = DraftEditPostUploadManager.registerProgressHandler(file.clientId, setProgress);
         }
         return () => {
             removeCallback.current?.();
-            removeCallback.current = null;
+            removeCallback.current = undefined;
         };
     }, [file.failed, file.id]);
 
@@ -102,10 +104,26 @@ export default function UploadItem({
         const newFile = {...file};
         newFile.failed = false;
 
-        updateDraftFile(serverUrl, channelId, rootId, newFile);
-        DraftUploadManager.prepareUpload(serverUrl, newFile, channelId, rootId, newFile.bytesRead);
-        DraftUploadManager.registerProgressHandler(newFile.clientId!, setProgress);
-    }, [serverUrl, channelId, rootId, file]);
+        if (isEditMode && updateFileCallback) {
+            // In edit mode, use the context callback to update the file
+            updateFileCallback(newFile);
+            DraftEditPostUploadManager.prepareUpload(
+                serverUrl,
+                newFile,
+                channelId,
+                rootId,
+                newFile.bytesRead,
+                true, // isEditPost = true
+                updateFileCallback,
+            );
+        } else {
+            // In draft mode, use the draft file system
+            updateDraftFile(serverUrl, channelId, rootId, newFile);
+            DraftEditPostUploadManager.prepareUpload(serverUrl, newFile, channelId, rootId, newFile.bytesRead);
+        }
+
+        DraftEditPostUploadManager.registerProgressHandler(newFile.clientId!, setProgress);
+    }, [serverUrl, channelId, rootId, file, isEditMode, updateFileCallback]);
 
     const {styles, onGestureEvent, ref} = useGalleryItem(galleryIdentifier, index, handlePress);
 
@@ -124,6 +142,7 @@ export default function UploadItem({
                 backgroundColor={changeOpacity(theme.centerChannelColor, 0.08)}
                 iconSize={60}
                 file={file}
+                testID={file.id}
             />
         );
     }, [file, ref, theme.centerChannelColor]);
@@ -158,6 +177,7 @@ export default function UploadItem({
                 clientId={file.clientId!}
                 channelId={channelId}
                 rootId={rootId}
+                fileId={file.id!}
             />
         </View>
     );

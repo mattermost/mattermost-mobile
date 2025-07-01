@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, Platform, Text, useWindowDimensions, View} from 'react-native';
+import {Keyboard, Platform, Text, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {Navigation} from 'react-native-navigation';
-import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {sendPasswordResetEmail} from '@actions/remote/session';
@@ -16,6 +16,7 @@ import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useAvoidKeyboard} from '@hooks/device';
+import {useScreenTransitionAnimation} from '@hooks/screen_transition_animation';
 import SecurityManager from '@managers/security_manager';
 import Background from '@screens/background';
 import {isEmail} from '@utils/helpers';
@@ -91,14 +92,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 const ForgotPassword = ({componentId, serverUrl, theme}: Props) => {
-    const dimensions = useWindowDimensions();
-    const translateX = useSharedValue(dimensions.width);
     const [email, setEmail] = useState<string>('');
     const [error, setError] = useState<string>('');
     const [isPasswordLinkSent, setIsPasswordLinkSent] = useState<boolean>(false);
     const {formatMessage} = useIntl();
     const keyboardAwareRef = useRef<KeyboardAwareScrollView>(null);
     const styles = getStyleSheet(theme);
+
+    const animatedStyles = useScreenTransitionAnimation(componentId);
 
     useAvoidKeyboard(keyboardAwareRef);
 
@@ -234,31 +235,6 @@ const ForgotPassword = ({componentId, serverUrl, theme}: Props) => {
         );
     };
 
-    const transform = useAnimatedStyle(() => {
-        const duration = Platform.OS === 'android' ? 250 : 350;
-        return {
-            transform: [{translateX: withTiming(translateX.value, {duration})}],
-        };
-    }, []);
-
-    useEffect(() => {
-        const listener = {
-            componentDidAppear: () => {
-                translateX.value = 0;
-            },
-            componentDidDisappear: () => {
-                translateX.value = -dimensions.width;
-            },
-        };
-        const unsubscribe = Navigation.events().registerComponentListener(listener, componentId);
-
-        return () => unsubscribe.remove();
-    }, [componentId, dimensions]);
-
-    useEffect(() => {
-        translateX.value = 0;
-    }, []);
-
     useAndroidHardwareBackHandler(componentId, onReturn);
 
     return (
@@ -266,7 +242,7 @@ const ForgotPassword = ({componentId, serverUrl, theme}: Props) => {
             <Background theme={theme}/>
             <AnimatedSafeArea
                 testID='forgot.password.screen'
-                style={[styles.container, transform]}
+                style={[styles.container, animatedStyles]}
             >
                 {getCenterContent()}
             </AnimatedSafeArea>
