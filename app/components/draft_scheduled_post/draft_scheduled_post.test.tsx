@@ -31,13 +31,9 @@ jest.mock('@context/server', () => ({
     useServerUrl: jest.fn().mockReturnValue('https://server.com'),
 }));
 
-jest.mock('@components/draft_scheduled_post_header', () => (
-    () => null;
-));
+jest.mock('@components/draft_scheduled_post_header', () => () => null);
 
-jest.mock('./draft_scheduled_post_container', () => (
-    () => null,
-));
+jest.mock('./draft_scheduled_post_container', () => () => null);
 
 describe('DraftAndScheduledPost', () => {
     const baseProps: Parameters<typeof DraftAndScheduledPost>[0] = {
