@@ -216,35 +216,20 @@ const EditProfile = ({
 
                 // Only send custom attributes that have actually changed and are not SAML-linked
                 const changedCustomAttributes: CustomAttributeSet = {};
-                let hasCustomAttributeChanges = false;
 
-                if (customAttributesSet) {
-                    Object.keys(userInfo.customAttributes).forEach((key) => {
-                        const currentValue = customAttributesSet[key]?.value || '';
-                        const newValue = userInfo.customAttributes[key]?.value || '';
-                        const customAttribute = userInfo.customAttributes[key];
-                        const customField = customFieldsMap.get(customAttribute?.id);
+                Object.keys(userInfo.customAttributes).forEach((key) => {
+                    const currentValue = (customAttributesSet && customAttributesSet[key]?.value) || '';
+                    const newValue = userInfo.customAttributes[key]?.value || '';
+                    const customAttribute = userInfo.customAttributes[key];
+                    const customField = customFieldsMap.get(customAttribute?.id);
 
-                        // Only include if value changed and field is not SAML-linked
-                        if (currentValue !== newValue && !isCustomFieldSamlLinked(customField)) {
-                            changedCustomAttributes[key] = userInfo.customAttributes[key];
-                            hasCustomAttributeChanges = true;
-                        }
-                    });
-                } else {
-                    // If no original custom attributes, send all current non-SAML-linked ones
-                    Object.keys(userInfo.customAttributes).forEach((key) => {
-                        const customAttribute = userInfo.customAttributes[key];
-                        const customField = customFieldsMap.get(customAttribute?.id);
+                    // Only include if value changed and field is not SAML-linked
+                    if (currentValue !== newValue && !isCustomFieldSamlLinked(customField)) {
+                        changedCustomAttributes[key] = userInfo.customAttributes[key];
+                    }
+                });
 
-                        if (!isCustomFieldSamlLinked(customField)) {
-                            changedCustomAttributes[key] = userInfo.customAttributes[key];
-                            hasCustomAttributeChanges = true;
-                        }
-                    });
-                }
-
-                if (hasCustomAttributeChanges) {
+                if (Object.keys(changedCustomAttributes).length > 0) {
                     const {error: attrError} = await updateCustomProfileAttributes(serverUrl, currentUser.id, changedCustomAttributes);
                     if (attrError) {
                         logError('Error updating custom attributes', attrError);
