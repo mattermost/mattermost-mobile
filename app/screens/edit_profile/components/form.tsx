@@ -10,7 +10,7 @@ import useFieldRefs from '@hooks/field_refs';
 import {t} from '@i18n';
 import {getErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
-import {sortCustomProfileAttributes, formatOptionsForSelector} from '@utils/user';
+import {sortCustomProfileAttributes, formatOptionsForSelector, isCustomFieldSamlLinked} from '@utils/user';
 
 import DisabledFields from './disabled_fields';
 import EmailField from './email_field';
@@ -87,6 +87,8 @@ const POSITION_FIELD = 'position';
 
 const profileKeys = [FIRST_NAME_FIELD, LAST_NAME_FIELD, USERNAME_FIELD, EMAIL_FIELD, NICKNAME_FIELD, POSITION_FIELD];
 
+export const getFieldKey = (key: string) => `${CUSTOM_ATTRS_PREFIX}.${key}`;
+
 const ProfileForm = ({
     canSave, currentUser, isTablet,
     lockedFirstName, lockedLastName, lockedNickname, lockedPosition,
@@ -99,7 +101,7 @@ const ProfileForm = ({
     const {formatMessage} = intl;
     const errorMessage = error == null ? undefined : getErrorMessage(error, intl) as string;
 
-    const total_custom_attrs = useMemo(() => (
+    const totalCustomAttrs = useMemo(() => (
         enableCustomAttributes ? Object.keys(userInfo.customAttributes).length : 0
     ), [enableCustomAttributes, userInfo.customAttributes]);
 
@@ -107,10 +109,10 @@ const ProfileForm = ({
         const newKeys = Object.keys(userInfo.customAttributes).sort(
             (a: string, b: string): number => {
                 return sortCustomProfileAttributes(userInfo.customAttributes[a], userInfo.customAttributes[b]);
-            }).map((k) => `${CUSTOM_ATTRS_PREFIX}.${k}`);
+            }).map((k) => getFieldKey(k));
 
-        return total_custom_attrs === 0 ? profileKeys : [...profileKeys, ...newKeys];
-    }, [userInfo.customAttributes, total_custom_attrs]);
+        return totalCustomAttrs === 0 ? profileKeys : [...profileKeys, ...newKeys];
+    }, [userInfo.customAttributes, totalCustomAttrs]);
 
     // Create a map of field definitions for quick lookup
     const customFieldsMap = useMemo(() => {
@@ -167,8 +169,18 @@ const ProfileForm = ({
                     };
             }
         });
+
+        // Handle custom attributes - check if SAML linked
+        Object.keys(userInfo.customAttributes).forEach((key) => {
+            const customField = customFieldsMap.get(key);
+            const fieldKey = getFieldKey(key);
+            if (customField && fields[fieldKey]) {
+                fields[fieldKey].isDisabled = isCustomFieldSamlLinked(customField);
+            }
+        });
+
         return fields;
-    }, [lockedFirstName, lockedLastName, lockedNickname, lockedPosition, currentUser.authService, formKeys, errorMessage]);
+    }, [lockedFirstName, lockedLastName, lockedNickname, lockedPosition, currentUser.authService, formKeys, errorMessage, customFieldsMap, userInfo.customAttributes]);
 
     const onFocusNextField = useCallback(((fieldKey: string) => {
         const findNextField = () => {

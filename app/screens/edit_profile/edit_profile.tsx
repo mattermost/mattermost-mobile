@@ -21,12 +21,15 @@ import SecurityManager from '@managers/security_manager';
 import {dismissModal, popTopScreen, setButtons} from '@screens/navigation';
 import {logError} from '@utils/log';
 import {preventDoubleTap} from '@utils/tap';
+import {isCustomFieldSamlLinked} from '@utils/user';
 
 import ProfileForm, {CUSTOM_ATTRS_PREFIX} from './components/form';
 import ProfileError from './components/profile_error';
 import Updating from './components/updating';
 import UserProfilePicture from './components/user_profile_picture';
 
+import type {CustomProfileFieldModel} from '@database/models/server';
+import type {CustomAttributeSet} from '@typings/api/custom_profile_attributes';
 import type {EditProfileProps, NewProfileImage, UserInfo} from '@typings/screens/edit_profile';
 
 const edges: Edge[] = ['bottom', 'left', 'right'];
@@ -157,14 +160,29 @@ const EditProfile = ({
         setError(undefined);
         setUpdating(true);
         try {
-            const newUserInfo: Partial<UserProfile> = {
-                email: userInfo.email.trim(),
-                first_name: userInfo.firstName.trim(),
-                last_name: userInfo.lastName.trim(),
-                nickname: userInfo.nickname.trim(),
-                position: userInfo.position.trim(),
-                username: userInfo.username.trim(),
-            };
+            // Build update object with only changed and unlocked fields
+            const newUserInfo: Partial<UserProfile> = {};
+
+            // Only include fields that have changed and are not locked by SAML
+            if (userInfo.email.trim() !== currentUser.email && !currentUser.authService) {
+                newUserInfo.email = userInfo.email.trim();
+            }
+            if (userInfo.firstName.trim() !== currentUser.firstName && !lockedFirstName) {
+                newUserInfo.first_name = userInfo.firstName.trim();
+            }
+            if (userInfo.lastName.trim() !== currentUser.lastName && !lockedLastName) {
+                newUserInfo.last_name = userInfo.lastName.trim();
+            }
+            if (userInfo.nickname.trim() !== currentUser.nickname && !lockedNickname) {
+                newUserInfo.nickname = userInfo.nickname.trim();
+            }
+            if (userInfo.position.trim() !== currentUser.position && !lockedPosition) {
+                newUserInfo.position = userInfo.position.trim();
+            }
+            if (userInfo.username.trim() !== currentUser.username && !currentUser.authService) {
+                newUserInfo.username = userInfo.username.trim();
+            }
+
             const localPath = changedProfilePicture.current?.localPath;
             const profileImageRemoved = changedProfilePicture.current?.isRemoved;
             if (localPath) {
@@ -179,16 +197,40 @@ const EditProfile = ({
                 await setDefaultProfileImage(serverUrl, currentUser.id);
             }
 
-            if (hasUpdateUserInfo.current) {
+            // Only update user info if there are actually changes to unlocked fields
+            if (Object.keys(newUserInfo).length > 0) {
                 const {error: reqError} = await updateMe(serverUrl, newUserInfo);
                 if (reqError) {
                     resetScreenForProfileError(reqError);
                     return;
                 }
+            }
 
-                // Update custom attributes if changed
-                if (userInfo.customAttributes && enableCustomAttributes) {
-                    const {error: attrError} = await updateCustomProfileAttributes(serverUrl, currentUser.id, userInfo.customAttributes);
+            // Update custom attributes if changed and not SAML-linked
+            if (userInfo.customAttributes && enableCustomAttributes) {
+                // Create a map of custom fields for quick lookup
+                const customFieldsMap = new Map<string, CustomProfileFieldModel>();
+                customFields?.forEach((field) => {
+                    customFieldsMap.set(field.id, field);
+                });
+
+                // Only send custom attributes that have actually changed and are not SAML-linked
+                const changedCustomAttributes: CustomAttributeSet = {};
+
+                Object.keys(userInfo.customAttributes).forEach((key) => {
+                    const currentValue = (customAttributesSet && customAttributesSet[key]?.value) || '';
+                    const newValue = userInfo.customAttributes[key]?.value || '';
+                    const customAttribute = userInfo.customAttributes[key];
+                    const customField = customFieldsMap.get(customAttribute?.id);
+
+                    // Only include if value changed and field is not SAML-linked
+                    if (currentValue !== newValue && !isCustomFieldSamlLinked(customField)) {
+                        changedCustomAttributes[key] = userInfo.customAttributes[key];
+                    }
+                });
+
+                if (Object.keys(changedCustomAttributes).length > 0) {
+                    const {error: attrError} = await updateCustomProfileAttributes(serverUrl, currentUser.id, changedCustomAttributes);
                     if (attrError) {
                         logError('Error updating custom attributes', attrError);
                         resetScreenForProfileError(attrError);
@@ -201,7 +243,7 @@ const EditProfile = ({
         } catch (e) {
             resetScreen(e);
         }
-    }), [userInfo, enableSaveButton]);
+    }), [userInfo, enableSaveButton, currentUser, lockedFirstName, lockedLastName, lockedNickname, lockedPosition, customAttributesSet, enableCustomAttributes, customFields, serverUrl]);
 
     useAndroidHardwareBackHandler(componentId, close);
     useNavButtonPressed(UPDATE_BUTTON_ID, componentId, submitUser, [userInfo]);
