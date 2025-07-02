@@ -436,4 +436,197 @@ describe('ProfileForm', () => {
         // Should render as a text field since no field definition exists
         expect(getByTestId('edit_profile_form.customAttributes.unknownField')).toBeTruthy();
     });
+
+    describe('SAML Field Disabling', () => {
+        it('should disable custom fields when SAML-linked', () => {
+            const customFields = [
+                TestHelper.fakeCustomProfileFieldModel({
+                    id: 'saml-field',
+                    name: 'SAML Field',
+                    type: 'text',
+                    attrs: {
+                        saml: 'Department', // SAML-linked
+                    },
+                }),
+                TestHelper.fakeCustomProfileFieldModel({
+                    id: 'normal-field',
+                    name: 'Normal Field',
+                    type: 'text',
+                    attrs: {
+                        saml: '', // Not SAML-linked
+                    },
+                }),
+            ];
+
+            const props = {
+                ...baseProps,
+                enableCustomAttributes: true,
+                customFields,
+                userInfo: {
+                    ...baseProps.userInfo,
+                    customAttributes: {
+                        'saml-field': {
+                            id: 'saml-field',
+                            name: 'SAML Field',
+                            type: 'text',
+                            value: 'Engineering',
+                        },
+                        'normal-field': {
+                            id: 'normal-field',
+                            name: 'Normal Field',
+                            type: 'text',
+                            value: 'Mobile Team',
+                        },
+                    },
+                },
+            };
+
+            const {getByTestId} = renderWithIntl(
+                <ProfileForm {...props}/>,
+            );
+
+            const samlField = getByTestId('edit_profile_form.customAttributes.saml-field.input.disabled');
+            const normalField = getByTestId('edit_profile_form.customAttributes.normal-field.input');
+
+            // SAML field should be disabled
+            expect(samlField.props.editable).toBe(false);
+
+            // Normal field should be enabled
+            expect(normalField.props.editable).toBe(true);
+        });
+
+        it('should enable custom fields when SAML attribute is empty', () => {
+            const customFields = [
+                TestHelper.fakeCustomProfileFieldModel({
+                    id: 'normal-field',
+                    name: 'Normal Field',
+                    type: 'text',
+                    attrs: {
+                        saml: '', // Empty SAML attribute
+                    },
+                }),
+            ];
+
+            const props = {
+                ...baseProps,
+                enableCustomAttributes: true,
+                customFields,
+                userInfo: {
+                    ...baseProps.userInfo,
+                    customAttributes: {
+                        'normal-field': {
+                            id: 'normal-field',
+                            name: 'Normal Field',
+                            type: 'text',
+                            value: 'Some value',
+                        },
+                    },
+                },
+            };
+
+            const {getByTestId} = renderWithIntl(
+                <ProfileForm {...props}/>,
+            );
+
+            const normalField = getByTestId('edit_profile_form.customAttributes.normal-field.input');
+            expect(normalField.props.editable).toBe(true);
+        });
+
+        it('should enable custom fields when SAML attribute is missing', () => {
+            const customFields = [
+                TestHelper.fakeCustomProfileFieldModel({
+                    id: 'normal-field',
+                    name: 'Normal Field',
+                    type: 'text',
+                    attrs: {
+
+                        // No saml attribute at all
+                    },
+                }),
+            ];
+
+            const props = {
+                ...baseProps,
+                enableCustomAttributes: true,
+                customFields,
+                userInfo: {
+                    ...baseProps.userInfo,
+                    customAttributes: {
+                        'normal-field': {
+                            id: 'normal-field',
+                            name: 'Normal Field',
+                            type: 'text',
+                            value: 'Some value',
+                        },
+                    },
+                },
+            };
+
+            const {getByTestId} = renderWithIntl(
+                <ProfileForm {...props}/>,
+            );
+
+            const normalField = getByTestId('edit_profile_form.customAttributes.normal-field.input');
+            expect(normalField.props.editable).toBe(true);
+        });
+
+        it('should handle custom fields without field definitions (defaults to enabled)', () => {
+            const props = {
+                ...baseProps,
+                enableCustomAttributes: true,
+                customFields: [], // No field definitions
+                userInfo: {
+                    ...baseProps.userInfo,
+                    customAttributes: {
+                        'unknown-field': {
+                            id: 'unknown-field',
+                            name: 'Unknown Field',
+                            type: 'text',
+                            value: 'Some value',
+                        },
+                    },
+                },
+            };
+
+            const {getByTestId} = renderWithIntl(
+                <ProfileForm {...props}/>,
+            );
+
+            const unknownField = getByTestId('edit_profile_form.customAttributes.unknown-field.input');
+
+            // Should default to enabled when no field definition exists
+            expect(unknownField.props.editable).toBe(true);
+        });
+
+        it('should disable standard profile fields when SAML/LDAP locked', () => {
+            const props = {
+                ...baseProps,
+                currentUser: TestHelper.fakeUserModel({
+                    ...baseProps.currentUser,
+                    authService: 'saml',
+                }),
+                lockedFirstName: true,
+                lockedLastName: false,
+                lockedNickname: true,
+                lockedPosition: false,
+            };
+
+            const {getByTestId} = renderWithIntl(
+                <ProfileForm {...props}/>,
+            );
+
+            const firstNameField = getByTestId('edit_profile_form.firstName.input.disabled');
+            const lastNameField = getByTestId('edit_profile_form.lastName.input');
+            const nicknameField = getByTestId('edit_profile_form.nickname.input.disabled');
+            const positionField = getByTestId('edit_profile_form.position.input');
+
+            // Locked fields should be disabled
+            expect(firstNameField.props.editable).toBe(false);
+            expect(nicknameField.props.editable).toBe(false);
+
+            // Unlocked fields should be enabled
+            expect(lastNameField.props.editable).toBe(true);
+            expect(positionField.props.editable).toBe(true);
+        });
+    });
 });

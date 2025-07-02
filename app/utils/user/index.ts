@@ -706,3 +706,7 @@ export const convertValueFromServer = (value: string | string[], fieldType: stri
 
     return String(value);
 };
+
+export const isCustomFieldSamlLinked = (customField?: CustomProfileFieldModel): boolean => {
+    return Boolean(customField?.attrs?.saml);
+};
