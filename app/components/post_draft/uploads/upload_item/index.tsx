@@ -51,6 +51,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderColor: changeOpacity(theme.centerChannelColor, 0.16),
             backgroundColor: theme.centerChannelBg,
             alignItems: 'center',
+            position: 'relative',
         },
         imageOnlyContainer: {
             width: DIMENSIONS.THUMBNAIL_SIZE,
