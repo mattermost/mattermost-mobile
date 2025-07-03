@@ -30,6 +30,7 @@ import UserProfilePicture from './components/user_profile_picture';
 
 import type {CustomProfileFieldModel} from '@database/models/server';
 import type {CustomAttributeSet} from '@typings/api/custom_profile_attributes';
+import type UserModel from '@typings/database/models/servers/user';
 import type {EditProfileProps, NewProfileImage, UserInfo} from '@typings/screens/edit_profile';
 
 const edges: Edge[] = ['bottom', 'left', 'right'];
@@ -168,107 +169,128 @@ const EditProfile = ({
     }, [enableSaveButton]);
 
     const submitUser = usePreventDoubleTap(useCallback(async () => {
+    const fieldLockConfig = useMemo(() => ({
+        email: Boolean(currentUser?.authService),
+        firstName: lockedFirstName,
+        lastName: lockedLastName,
+        nickname: lockedNickname,
+        position: lockedPosition,
+        username: Boolean(currentUser?.authService),
+    }), [currentUser?.authService, lockedFirstName, lockedLastName, lockedNickname, lockedPosition]);
+
+    const updateUserInfo = useCallback((updates: Partial<UserInfo>, key: string, newValue: string, oldValue: string): Partial<UserInfo> => {
+        const val = newValue.trim();
+        const isLocked = fieldLockConfig[key as keyof typeof fieldLockConfig] || false;
+        if (!isLocked && val !== oldValue) {
+            updates[key as keyof UserInfo] = val as any;
+        }
+        return updates;
+    }, [fieldLockConfig]);
+
+    const buildUserInfoUpdates = useCallback((userInfoParam: UserInfo, currentUserParam: UserModel, fieldLockConfigParam: Record<string, boolean>): Partial<UserProfile> => {
+        let updates: Partial<UserInfo> = {};
+        Object.keys(fieldLockConfigParam).forEach((key) => {
+            updates = updateUserInfo(updates, key, userInfoParam[key as keyof UserInfo] as string, currentUserParam[key as keyof UserModel] as string);
+        });
+        return updates;
+    }, [updateUserInfo]);
+
+    const handleProfileImageUpdate = useCallback(async (serverUrlParam: string, currentUserParam: UserModel) => {
+        const localPath = changedProfilePicture.current?.localPath;
+        const profileImageRemoved = changedProfilePicture.current?.isRemoved;
+
+        if (localPath) {
+            const now = Date.now();
+            const {error: uploadError} = await uploadUserProfileImage(serverUrlParam, localPath);
+            if (uploadError) {
+                throw uploadError;
+            }
+            updateLocalUser(serverUrlParam, {last_picture_update: now});
+        } else if (profileImageRemoved) {
+            await setDefaultProfileImage(serverUrlParam, currentUserParam.id);
+        }
+    }, []);
+
+    const handleCustomAttributesUpdate = useCallback(async (
+        serverUrlParam: string,
+        currentUserParam: UserModel,
+        userInfoParam: UserInfo,
+        customAttributesSetParam: CustomAttributeSet | undefined,
+        customFieldsParam: CustomProfileFieldModel[] | undefined,
+    ) => {
+        if (!userInfoParam.customAttributes || !enableCustomAttributes) {
+            return;
+        }
+
+        const customFieldsMap = new Map<string, CustomProfileFieldModel>();
+        customFieldsParam?.forEach((field) => {
+            customFieldsMap.set(field.id, field);
+        });
+
+        const changedCustomAttributes: CustomAttributeSet = {};
+
+        Object.keys(userInfoParam.customAttributes).forEach((key) => {
+            const currentValue = (customAttributesSetParam && customAttributesSetParam[key]?.value) || '';
+            const newValue = userInfoParam.customAttributes[key]?.value || '';
+            const customAttribute = userInfoParam.customAttributes[key];
+            const customField = customFieldsMap.get(customAttribute?.id);
+
+            if (currentValue !== newValue && !isCustomFieldSamlLinked(customField)) {
+                changedCustomAttributes[key] = userInfoParam.customAttributes[key];
+            }
+        });
+
+        if (Object.keys(changedCustomAttributes).length > 0) {
+            const {error: attrError} = await updateCustomProfileAttributes(serverUrlParam, currentUserParam.id, changedCustomAttributes);
+            if (attrError) {
+                logError('Error updating custom attributes', attrError);
+                throw attrError;
+            }
+        }
+    }, [enableCustomAttributes]);
+
+    const submitUser = usePreventDoubleTap(useCallback(async () => {
         if (!currentUser) {
             return;
         }
+
         enableSaveButton(false);
         setError(undefined);
         setUpdating(true);
+
         try {
-            // Build update object with only changed and unlocked fields
-            const newUserInfo: Partial<UserProfile> = {};
+            // Build user info updates
+            const userInfoUpdates = buildUserInfoUpdates(userInfo, currentUser, fieldLockConfig);
 
-            // Only include fields that have changed and are not locked by SAML
-            if (userInfo.email.trim() !== currentUser.email && !currentUser.authService) {
-                newUserInfo.email = userInfo.email.trim();
-            }
-            if (userInfo.firstName.trim() !== currentUser.firstName && !lockedFirstName) {
-                newUserInfo.first_name = userInfo.firstName.trim();
-            }
-            if (userInfo.lastName.trim() !== currentUser.lastName && !lockedLastName) {
-                newUserInfo.last_name = userInfo.lastName.trim();
-            }
-            if (userInfo.nickname.trim() !== currentUser.nickname && !lockedNickname) {
-                newUserInfo.nickname = userInfo.nickname.trim();
-            }
-            if (userInfo.position.trim() !== currentUser.position && !lockedPosition) {
-                newUserInfo.position = userInfo.position.trim();
-            }
-            if (userInfo.username.trim() !== currentUser.username && !currentUser.authService) {
-                newUserInfo.username = userInfo.username.trim();
-            }
+            // Handle profile image
+            await handleProfileImageUpdate(serverUrl, currentUser);
 
-            const localPath = changedProfilePicture.current?.localPath;
-            const profileImageRemoved = changedProfilePicture.current?.isRemoved;
-            if (localPath) {
-                const now = Date.now();
-                const {error: uploadError} = await uploadUserProfileImage(serverUrl, localPath);
-                if (uploadError) {
-                    resetScreen(uploadError);
-                    return;
-                }
-                updateLocalUser(serverUrl, {last_picture_update: now});
-            } else if (profileImageRemoved) {
-                await setDefaultProfileImage(serverUrl, currentUser.id);
-            }
-
-            // Only update user info if there are actually changes to unlocked fields
-            if (Object.keys(newUserInfo).length > 0) {
-                const {error: reqError} = await updateMe(serverUrl, newUserInfo);
+            // Update user info if there are changes
+            if (Object.keys(userInfoUpdates).length > 0) {
+                const {error: reqError} = await updateMe(serverUrl, userInfoUpdates);
                 if (reqError) {
                     resetScreenForProfileError(reqError);
                     return;
                 }
             }
 
-            // Update custom attributes if changed and not SAML-linked
-            if (userInfo.customAttributes && enableCustomAttributes) {
-                // Create a map of custom fields for quick lookup
-                const customFieldsMap = new Map<string, CustomProfileFieldModel>();
-                customFields?.forEach((field) => {
-                    customFieldsMap.set(field.id, field);
-                });
-
-                // Only send custom attributes that have actually changed and are not SAML-linked
-                const changedCustomAttributes: CustomAttributeSet = {};
-
-                Object.keys(userInfo.customAttributes).forEach((key) => {
-                    const currentValue = (customAttributesSet && customAttributesSet[key]?.value) || '';
-                    const newValue = userInfo.customAttributes[key]?.value || '';
-                    const customAttribute = userInfo.customAttributes[key];
-                    const customField = customFieldsMap.get(customAttribute?.id);
-
-                    // Only include if value changed and field is not SAML-linked
-                    if (currentValue !== newValue && !isCustomFieldSamlLinked(customField)) {
-                        changedCustomAttributes[key] = userInfo.customAttributes[key];
-                    }
-                });
-
-                if (Object.keys(changedCustomAttributes).length > 0) {
-                    const {error: attrError} = await updateCustomProfileAttributes(serverUrl, currentUser.id, changedCustomAttributes);
-                    if (attrError) {
-                        logError('Error updating custom attributes', attrError);
-                        resetScreenForProfileError(attrError);
-                        return;
-                    }
-                }
-            }
+            // Handle custom attributes
+            await handleCustomAttributesUpdate(serverUrl, currentUser, userInfo, customAttributesSet, customFields);
 
             close();
-        } catch (e) {
-            resetScreen(e);
+        } catch (err) {
+            resetScreen(err);
         }
     }, [
         currentUser,
         enableSaveButton,
         userInfo,
-        lockedFirstName,
-        lockedLastName,
-        lockedNickname,
-        lockedPosition,
+        fieldLockConfig,
         enableCustomAttributes,
         close,
         serverUrl,
+        handleProfileImageUpdate,
+        close,
         resetScreen,
         resetScreenForProfileError,
         customFields,
