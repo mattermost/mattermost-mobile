@@ -153,14 +153,20 @@ const EditProfile = ({
         loadCustomAttributes();
     }, [currentUser, serverUrl, enableCustomAttributes, customAttributesSet]);
 
-    const fieldLockConfig = useMemo(() => ({
-        email: Boolean(currentUser?.authService),
-        firstName: lockedFirstName,
-        lastName: lockedLastName,
-        nickname: lockedNickname,
-        position: lockedPosition,
-        username: Boolean(currentUser?.authService),
-    }), [currentUser?.authService, lockedFirstName, lockedLastName, lockedNickname, lockedPosition]);
+    const fieldLockConfig = useMemo(() => {
+        const service = currentUser?.authService || '';
+        const includesSsoService = (sso: string) => ['gitlab', 'google', 'office365'].includes(sso);
+        const isSAMLOrLDAP = (protocol: string) => ['ldap', 'saml'].includes(protocol);
+
+        return {
+            email: true, // Always disabled in form
+            firstName: (isSAMLOrLDAP(service) && lockedFirstName) || includesSsoService(service),
+            lastName: (isSAMLOrLDAP(service) && lockedLastName) || includesSsoService(service),
+            nickname: isSAMLOrLDAP(service) && lockedNickname,
+            position: isSAMLOrLDAP(service) && lockedPosition,
+            username: service !== '',
+        };
+    }, [currentUser?.authService, lockedFirstName, lockedLastName, lockedNickname, lockedPosition]);
 
     const updateUserInfo = useCallback((updates: Partial<UserInfo>, key: string, newValue: string, oldValue: string): Partial<UserInfo> => {
         const val = newValue.trim();
