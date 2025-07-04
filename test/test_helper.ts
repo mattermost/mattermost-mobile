@@ -1126,12 +1126,12 @@ class TestHelperSingleton {
         };
     };
 
-    fakePlaybookChecklist = (runId: string, overwite: Partial<PlaybookChecklist>): PlaybookChecklist & WithRunId => {
+    fakePlaybookChecklist = (runId: string, overwrite: Partial<PlaybookChecklist>): PlaybookChecklist & WithRunId => {
         const checklist = this.createPlaybookChecklist(runId, 1, 0);
         return {
             run_id: runId,
             ...checklist,
-            ...overwite,
+            ...overwrite,
         };
     };
 
