@@ -107,6 +107,7 @@ jest.doMock('react-native', () => {
 
     const AppState = {
         ...RNAppState,
+        currentState: 'active',
         addEventListener: jest.fn(() => ({
             remove: jest.fn(),
         })),

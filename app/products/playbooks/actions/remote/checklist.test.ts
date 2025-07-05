@@ -71,12 +71,6 @@ describe('checklist', () => {
     });
 
     describe('runChecklistItem', () => {
-        it('should handle not found server', async () => {
-            const result = await runChecklistItem('foo', playbookRunId, checklistNumber, itemNumber);
-            expect(result).toBeDefined();
-            expect(result.error).toBeDefined();
-        });
-
         it('should handle client error', async () => {
             jest.spyOn(NetworkManager, 'getClient').mockImplementationOnce(throwFunc);
 

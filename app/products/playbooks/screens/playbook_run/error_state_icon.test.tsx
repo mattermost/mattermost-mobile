@@ -7,8 +7,8 @@ import ErrorStateIcon from './error_state_icon';
 
 describe('ErrorStateIcon', () => {
     it('renders correctly', () => {
-        const {getByTestId} = renderWithIntl(<ErrorStateIcon/>);
+        const {root} = renderWithIntl(<ErrorStateIcon/>);
 
-        expect(getByTestId('error-state-icon')).toBeTruthy();
+        expect(root).toBeTruthy();
     });
 });

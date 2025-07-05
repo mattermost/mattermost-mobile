@@ -67,38 +67,38 @@ describe('PlaybookRun', () => {
         await DatabaseManager.destroyServerDatabase(serverUrl);
     });
 
-    const mockParticipants = [
-        TestHelper.fakeUserModel({
-            id: 'participant-1',
-            username: 'participant1',
-        }),
-        TestHelper.fakeUserModel({
-            id: 'participant-2',
-            username: 'participant2',
-        }),
-    ];
-
-    const mockPlaybookRun = TestHelper.fakePlaybookRunModel({
-        id: 'run-1',
-        name: 'Test Playbook Run',
-        summary: 'Test summary',
-        endAt: 0, // Not finished
-        lastSyncAt: 12345,
-    });
-
-    const mockOwner = TestHelper.fakeUserModel({
-        id: 'owner-1',
-        username: 'owner',
-    });
-
-    const mockChecklists = [
-        TestHelper.fakePlaybookChecklistModel({
-            id: 'checklist-1',
-            title: 'Test Checklist',
-        }),
-    ];
-
     function getBaseProps(): ComponentProps<typeof PlaybookRun> {
+        const mockPlaybookRun = TestHelper.fakePlaybookRunModel({
+            id: 'run-1',
+            name: 'Test Playbook Run',
+            summary: 'Test summary',
+            endAt: 0, // Not finished
+            lastSyncAt: 12345,
+        });
+
+        const mockOwner = TestHelper.fakeUserModel({
+            id: 'owner-1',
+            username: 'owner',
+        });
+
+        const mockParticipants = [
+            TestHelper.fakeUserModel({
+                id: 'participant-1',
+                username: 'participant1',
+            }),
+            TestHelper.fakeUserModel({
+                id: 'participant-2',
+                username: 'participant2',
+            }),
+        ];
+
+        const mockChecklists = [
+            TestHelper.fakePlaybookChecklistModel({
+                id: 'checklist-1',
+                title: 'Test Checklist',
+            }),
+        ];
+
         return {
             playbookRun: mockPlaybookRun,
             owner: mockOwner,
@@ -117,7 +117,7 @@ describe('PlaybookRun', () => {
 
         const outOfDateHeader = getByTestId('out-of-date-header');
         expect(outOfDateHeader.props.serverUrl).toBe(serverUrl);
-        expect(outOfDateHeader.props.lastSyncAt).toBe(mockPlaybookRun.lastSyncAt);
+        expect(outOfDateHeader.props.lastSyncAt).toBe((props.playbookRun as PlaybookRunModel).lastSyncAt);
 
         (props.playbookRun as PlaybookRunModel).lastSyncAt = 54321;
 
@@ -130,13 +130,13 @@ describe('PlaybookRun', () => {
         const props = getBaseProps();
         const {getByText, getByTestId, queryByText, rerender} = renderWithEverything(<PlaybookRun {...props}/>, {database});
 
-        expect(getByText(mockPlaybookRun.name)).toBeTruthy();
-        expect(getByText(mockPlaybookRun.summary)).toBeTruthy();
+        expect(getByText(props.playbookRun!.name)).toBeTruthy();
+        expect(getByText(props.playbookRun!.summary)).toBeTruthy();
         expect(queryByText('Finished')).toBeNull();
 
         const statusUpdateIndicator = getByTestId('status-update-indicator');
         expect(statusUpdateIndicator.props.isFinished).toBe(false);
-        expect(statusUpdateIndicator.props.timestamp).toBe(mockPlaybookRun.lastStatusUpdateAt);
+        expect(statusUpdateIndicator.props.timestamp).toBe((props.playbookRun as PlaybookRunModel).lastStatusUpdateAt);
 
         (props.playbookRun as PlaybookRunModel).currentStatus = 'Finished';
         (props.playbookRun as PlaybookRunModel).lastStatusUpdateAt = 1234567890;
@@ -144,31 +144,32 @@ describe('PlaybookRun', () => {
 
         expect(getByText('Finished')).toBeVisible();
         expect(statusUpdateIndicator.props.isFinished).toBe(true);
-        expect(statusUpdateIndicator.props.timestamp).toBe(mockPlaybookRun.endAt);
+        expect(statusUpdateIndicator.props.timestamp).toBe((props.playbookRun as PlaybookRunModel).endAt);
     });
 
     it('renders the people row correctly', () => {
         const props = getBaseProps();
+        const owner = props.owner;
         const {getByTestId, getByText, queryByText, queryByTestId, rerender} = renderWithEverything(<PlaybookRun {...props}/>, {database});
         const peopleRow = getByTestId('people-row');
         expect(peopleRow).toBeTruthy();
 
         expect(getByText('Owner')).toBeTruthy();
         const ownerChip = getByTestId('user-chip');
-        expect(ownerChip.props.user).toBe(mockOwner);
+        expect(ownerChip.props.user).toBe(props.owner);
         expect(ownerChip.props.onPress).toBeDefined();
         expect(ownerChip.props.teammateNameDisplay).toBe(General.TEAMMATE_NAME_DISPLAY.SHOW_USERNAME);
 
         ownerChip.props.onPress();
         expect(openUserProfileModal).toHaveBeenCalledWith(expect.anything(), expect.anything(), {
-            userId: mockOwner.id,
-            channelId: mockPlaybookRun.channelId,
+            userId: props.owner!.id,
+            channelId: (props.playbookRun as PlaybookRunModel).channelId,
             location: 'PlabyookRun',
         });
 
         expect(getByText('Participants')).toBeTruthy();
         const userAvatarsStack = getByTestId('user-avatars-stack');
-        expect(userAvatarsStack.props.users).toBe(mockParticipants);
+        expect(userAvatarsStack.props.users).toBe(props.participants);
         expect(userAvatarsStack.props.location).toBe('PlabyookRun');
         expect(userAvatarsStack.props.bottomSheetTitle.defaultMessage).toBe('Run Participants');
 
@@ -183,7 +184,7 @@ describe('PlaybookRun', () => {
 
         expect(queryByTestId('people-row')).toBeNull();
 
-        props.owner = mockOwner;
+        props.owner = owner;
         rerender(<PlaybookRun {...props}/>);
 
         expect(queryByText('Owner')).toBeTruthy();
@@ -198,9 +199,9 @@ describe('PlaybookRun', () => {
         expect(getByText(/overdue/)).toBeTruthy();
 
         const checklistList = getByTestId('checklist-list');
-        expect(checklistList.props.checklists).toBe(mockChecklists);
-        expect(checklistList.props.channelId).toBe(mockPlaybookRun.channelId);
-        expect(checklistList.props.playbookRunId).toBe(mockPlaybookRun.id);
+        expect(checklistList.props.checklists).toBe(props.checklists);
+        expect(checklistList.props.channelId).toBe((props.playbookRun as PlaybookRunModel).channelId);
+        expect(checklistList.props.playbookRunId).toBe(props.playbookRun!.id);
         expect(checklistList.props.isFinished).toBe(false);
         expect(checklistList.props.isParticipant).toBe(false);
 
