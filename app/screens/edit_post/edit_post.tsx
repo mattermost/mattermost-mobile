@@ -220,8 +220,11 @@ const EditPost = ({
             uploadErrorHandlers.current[file.clientId!] = DraftEditPostUploadManager.registerErrorHandler(file.clientId!, setErrorLine);
         }
 
-        setErrorLine(undefined);
-    }, [canUploadFiles, postFiles?.length, maxFileCount, setErrorLine, intl, maxFileSize, serverUrl, post.channelId, post.rootId, updateFileInPostFiles]);
+        const currentMessageTooLong = postMessage.trim().length > maxPostSize;
+        if (!currentMessageTooLong) {
+            setErrorLine(undefined);
+        }
+    }, [canUploadFiles, postFiles?.length, maxFileCount, setErrorLine, intl, maxFileSize, serverUrl, post.channelId, post.rootId, updateFileInPostFiles, postMessage, maxPostSize]);
 
     const handleFileRemoval = useCallback((id: string) => {
 

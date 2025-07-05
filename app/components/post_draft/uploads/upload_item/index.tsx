@@ -66,7 +66,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexShrink: 0,
             gap: 8,
             paddingVertical: 12,
-            paddingLeft: 12,
+            paddingLeft: 8,
             paddingRight: 16,
         },
         iconContainer: {
@@ -130,7 +130,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             backgroundColor: 'rgba(0, 0, 0, 0.1)',
             borderRadius: 4,
             justifyContent: 'flex-end',
-            paddingLeft: 3,
         },
         progressContainer: {
             paddingVertical: undefined,
