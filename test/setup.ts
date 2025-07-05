@@ -425,6 +425,7 @@ jest.mock('@screens/navigation', () => ({
     dismissAllModalsAndPopToRoot: jest.fn(),
     dismissOverlay: jest.fn(() => Promise.resolve()),
     dismissAllOverlays: jest.fn(() => Promise.resolve()),
+    dismissBottomSheet: jest.fn(),
     openUserProfileModal: jest.fn(),
     popTo: jest.fn(),
 }));

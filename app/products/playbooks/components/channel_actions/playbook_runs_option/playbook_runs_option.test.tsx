@@ -14,7 +14,6 @@ import PlaybookRunsOption from './playbook_runs_option';
 jest.mock('@components/option_item');
 jest.mocked(OptionItem).mockImplementation((props) => React.createElement('OptionItem', {testID: 'option-item', ...props}));
 
-jest.mock('@screens/navigation');
 jest.mock('@playbooks/screens/navigation');
 
 describe('PlaybookRunsOption', () => {
@@ -45,13 +44,13 @@ describe('PlaybookRunsOption', () => {
         expect(optionItem.props.type).toBe('default');
     });
 
-    it('calls goToPlaybookRuns when pressed', () => {
+    it('calls goToPlaybookRuns when pressed', async () => {
         const {getByTestId} = renderWithIntl(<PlaybookRunsOption {...baseProps}/>);
 
         const optionItem = getByTestId('option-item');
         optionItem.props.action();
 
-        waitFor(() => {
+        await waitFor(() => {
             expect(dismissBottomSheet).toHaveBeenCalled();
             expect(goToPlaybookRuns).toHaveBeenCalledWith(expect.anything(), 'channel-id', 'channel-name');
         });
