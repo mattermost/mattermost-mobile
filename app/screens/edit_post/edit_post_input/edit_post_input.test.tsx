@@ -56,7 +56,6 @@ describe('EditPostInput', () => {
         onTextSelectionChange: jest.fn(),
         onChangeText: jest.fn(),
         addFiles: jest.fn(),
-        uploadFileError: undefined,
     };
 
     beforeAll(async () => {
