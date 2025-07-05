@@ -48,10 +48,11 @@ type Props = {
     channelId: ChannelModel['id'];
     channelName: ChannelModel['displayName'];
     teamName: TeamModel['displayName'];
+    skipTeam?: boolean;
     testID?: string;
 }
 
-function ChannelInfo({channelId, channelName, teamName, testID}: Props) {
+function ChannelInfo({channelId, channelName, teamName, skipTeam, testID}: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
@@ -98,7 +99,7 @@ function ChannelInfo({channelId, channelName, teamName, testID}: Props) {
                     </Text>
                 </TouchableWithFeedback>
             </View>
-            {Boolean(teamName) && (
+            {Boolean(teamName) && !skipTeam && (
                 <View style={teamContainerStyle}>
                     <Text
                         style={styles.team}
