@@ -52,24 +52,24 @@ const ClientPlaybooks = <TBase extends Constructor<ClientBase>>(superclass: TBas
         }
     };
 
-    fetchPlaybookRun = async (id: string, groupLabel?: RequestGroupLabel) => {
-        return this.doFetch(
-            `${this.getPlaybookRunRoute(id)}`,
-            {method: 'get', groupLabel},
-        );
-    };
+    // fetchPlaybookRun = async (id: string, groupLabel?: RequestGroupLabel) => {
+    //     return this.doFetch(
+    //         `${this.getPlaybookRunRoute(id)}`,
+    //         {method: 'get', groupLabel},
+    //     );
+    // };
 
     // Run Management
-    finishRun = async (playbookRunId: string) => {
-        try {
-            return await this.doFetch(
-                `${this.getPlaybookRunRoute(playbookRunId)}/finish`,
-                {method: 'put'},
-            );
-        } catch (error) {
-            return {error};
-        }
-    };
+    // finishRun = async (playbookRunId: string) => {
+    //     try {
+    //         return await this.doFetch(
+    //             `${this.getPlaybookRunRoute(playbookRunId)}/finish`,
+    //             {method: 'put'},
+    //         );
+    //     } catch (error) {
+    //         return {error};
+    //     }
+    // };
 
     // Checklist Management
     setChecklistItemState = async (playbookRunID: string, checklistNum: number, itemNum: number, newState: ChecklistItemState) => {
@@ -83,19 +83,19 @@ const ClientPlaybooks = <TBase extends Constructor<ClientBase>>(superclass: TBas
         }
     };
 
-    skipChecklistItem = async (playbookRunID: string, checklistNum: number, itemNum: number) => {
-        await this.doFetch(
-            `${this.getPlaybookRunRoute(playbookRunID)}/checklists/${checklistNum}/item/${itemNum}/skip`,
-            {method: 'put', body: ''},
-        );
-    };
+    // skipChecklistItem = async (playbookRunID: string, checklistNum: number, itemNum: number) => {
+    //     await this.doFetch(
+    //         `${this.getPlaybookRunRoute(playbookRunID)}/checklists/${checklistNum}/item/${itemNum}/skip`,
+    //         {method: 'put', body: ''},
+    //     );
+    // };
 
-    skipChecklist = async (playbookRunID: string, checklistNum: number) => {
-        await this.doFetch(
-            `${this.getPlaybookRunRoute(playbookRunID)}/checklists/${checklistNum}/skip`,
-            {method: 'put', body: ''},
-        );
-    };
+    // skipChecklist = async (playbookRunID: string, checklistNum: number) => {
+    //     await this.doFetch(
+    //         `${this.getPlaybookRunRoute(playbookRunID)}/checklists/${checklistNum}/skip`,
+    //         {method: 'put', body: ''},
+    //     );
+    // };
 
     // Slash Commands
     runChecklistItemSlashCommand = async (playbookRunId: string, checklistNumber: number, itemNumber: number) => {

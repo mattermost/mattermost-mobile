@@ -70,6 +70,7 @@ function Checkbox({checked, onPress, disabled}: Props) {
                 <CompassIcon
                     name='check'
                     style={iconStyle}
+                    testID='check-icon'
                 />
             )}
         </TouchableOpacity>

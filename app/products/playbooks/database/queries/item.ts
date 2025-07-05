@@ -2,8 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {Q, type Database} from '@nozbe/watermelondb';
-import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
 
 import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
 
@@ -24,19 +22,4 @@ export const getPlaybookChecklistItemById = async (database: Database, id: strin
     } catch {
         return undefined;
     }
-};
-
-export const observePlaybookChecklistItemById = (database: Database, id: string) => {
-    return database.get<PlaybookChecklistItemModel>(PLAYBOOK_CHECKLIST_ITEM).query(
-        Q.where('id', id),
-        Q.take(1),
-    ).observe().pipe(
-        switchMap((item) => {
-            return item.length ? item[0].observe() : of$(undefined);
-        }),
-    );
-};
-
-export const observePlaybookChecklistItemssByChecklist = (database: Database, checklistId: string) => {
-    return queryPlaybookChecklistItemsByChecklists(database, [checklistId]).observe();
 };

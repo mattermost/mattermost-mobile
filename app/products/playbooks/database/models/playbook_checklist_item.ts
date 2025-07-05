@@ -68,7 +68,7 @@ export default class PlaybookChecklistItemModel extends Model implements Playboo
     @field('completed_at') completedAt!: number;
 
     /** task_actions : The JSON string representing the task actions */
-    @json('task_actions', safeParseJSON) taskActions!: TaskAction[] | null;
+    @json('task_actions', safeParseJSON) taskActions!: TaskAction[];
 
     /** sync : The sync status of the checklist item */
     @field('sync') sync!: SyncStatus;

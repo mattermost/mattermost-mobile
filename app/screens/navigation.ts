@@ -803,7 +803,7 @@ type BottomSheetArgs = {
     closeButtonId: string;
     initialSnapIndex?: number;
     footerComponent?: React.FC<BottomSheetFooterProps>;
-    renderContent: () => Element;
+    renderContent: () => React.ReactNode;
     snapPoints: Array<number | string>;
     theme: Theme;
     title: string;

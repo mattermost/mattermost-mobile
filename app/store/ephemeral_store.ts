@@ -286,7 +286,7 @@ class EphemeralStoreSingleton {
     };
 
     getChannelPlaybooksSynced = (serverUrl: string, channelId: string) => {
-        return this.channelPlaybooksSynced[serverUrl]?.has(channelId);
+        return this.channelPlaybooksSynced[serverUrl]?.has(channelId) ?? false;
     };
 
     setChannelPlaybooksSynced = (serverUrl: string, channelId: string) => {

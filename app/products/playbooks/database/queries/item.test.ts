@@ -7,8 +7,6 @@ import TestHelper from '@test/test_helper';
 import {
     queryPlaybookChecklistItemsByChecklists,
     getPlaybookChecklistItemById,
-    observePlaybookChecklistItemById,
-    observePlaybookChecklistItemssByChecklist,
 } from './item';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -29,8 +27,8 @@ describe('Checklist Item Queries', () => {
         it('should query checklist items by checklistId', async () => {
             const checklistId = 'checklist123';
             const mockItems = [
-                TestHelper.createPlaybookItem(checklistId, 1), // Item with order 1
-                TestHelper.createPlaybookItem(checklistId, 0), // Item with order 0
+                TestHelper.createPlaybookItem(checklistId, 0),
+                TestHelper.createPlaybookItem(checklistId, 1),
             ].map((item) => ({
                 ...item,
                 checklist_id: checklistId,
@@ -73,65 +71,6 @@ describe('Checklist Item Queries', () => {
             const result = await getPlaybookChecklistItemById(operator.database, 'nonexistent');
 
             expect(result).toBeUndefined();
-        });
-    });
-
-    describe('observePlaybookChecklistItemById', () => {
-        it('should observe a checklist item by id', (done) => {
-            const mockItem = {
-                ...TestHelper.createPlaybookItem('checklist123', 0),
-                checklist_id: 'checklist123',
-            };
-
-            operator.handlePlaybookChecklistItem({
-                items: [mockItem],
-                prepareRecordsOnly: false,
-            }).then(() => {
-                const observable = observePlaybookChecklistItemById(operator.database, mockItem.id);
-
-                observable.subscribe((item) => {
-                    expect(item).toBeDefined();
-                    expect(item!.id).toBe(mockItem.id);
-                    done();
-                });
-            });
-        });
-
-        it('should return undefined if checklist item is not found', (done) => {
-            const observable = observePlaybookChecklistItemById(operator.database, 'nonexistent');
-
-            observable.subscribe((item) => {
-                expect(item).toBeUndefined();
-                done();
-            });
-        });
-    });
-
-    describe('observePlaybookChecklistItemssByChecklist', () => {
-        it('should observe checklist items by checklistId', (done) => {
-            const checklistId = 'checklist123';
-            const mockItems = [
-                TestHelper.createPlaybookItem(checklistId, 1), // Item with order 1
-                TestHelper.createPlaybookItem(checklistId, 0), // Item with order 0
-            ].map((item) => ({
-                ...item,
-                checklist_id: checklistId,
-            }));
-
-            operator.handlePlaybookChecklistItem({
-                items: mockItems,
-                prepareRecordsOnly: false,
-            }).then(() => {
-                const observable = observePlaybookChecklistItemssByChecklist(operator.database, checklistId);
-
-                observable.subscribe((items) => {
-                    expect(items.length).toBe(2);
-                    const fetchedIds = items.map((item) => item.id);
-                    expect(fetchedIds).toContain(mockItems[0].id);
-                    expect(fetchedIds).toContain(mockItems[1].id);
-                    done();
-                });
-            });
         });
     });
 });

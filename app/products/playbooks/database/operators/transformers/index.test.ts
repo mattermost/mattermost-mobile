@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable max-lines */
+
 import {OperationType} from '@constants/database';
 import {createTestConnection} from '@database/operator/utils/create_test_connection';
 import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
@@ -10,8 +12,6 @@ import {transformPlaybookChecklistItemRecord, transformPlaybookChecklistRecord, 
 
 import type PlaybookChecklistModel from '@playbooks/types/database/models/playbook_checklist';
 import type PlaybookChecklistItemModel from '@playbooks/types/database/models/playbook_checklist_item';
-
-// import type PlaybookRunModel from '@playbooks/types/database/models/playbook_run';
 
 const {PLAYBOOK_RUN} = PLAYBOOK_TABLES;
 
@@ -230,6 +230,85 @@ describe('*** PLAYBOOK_RUN Prepare Records Test ***', () => {
             }),
         ).rejects.toThrow('Record not found for non create action');
     });
+
+    it('=> transformPlaybookRunRecord: should keep most of the data if the partial run is empty', async () => {
+        const database = await createTestConnection({databaseName: 'playbook_run_prepare_records', setActive: true});
+        expect(database).toBeTruthy();
+
+        // Create an existing record to simulate the UPDATE action
+        let existingRecord: PlaybookRunModel | undefined;
+        await database!.write(async () => {
+            existingRecord = await database!.get<PlaybookRunModel>(PLAYBOOK_RUN).create((record) => {
+                record._raw.id = 'playbook_run_2';
+                record.playbookId = 'playbook_2';
+                record.postId = 'post_2';
+                record.ownerUserId = 'user_2';
+                record.teamId = 'team_2';
+                record.channelId = 'channel_2';
+                record.createAt = 1620000000000;
+                record.endAt = 0;
+                record.name = 'Existing Playbook Run';
+                record.description = 'This is an existing playbook run';
+                record.isActive = true;
+                record.activeStage = 1;
+                record.activeStageTitle = 'Stage 1';
+                record.participantIds = ['user_2', 'user_3'];
+                record.summary = 'Existing summary';
+                record.currentStatus = 'InProgress';
+                record.lastStatusUpdateAt = 1620000001000;
+                record.retrospectiveEnabled = true;
+                record.retrospective = 'Existing retrospective';
+                record.retrospectivePublishedAt = 1620000002000;
+                record.updateAt = 1620000003000;
+                record.lastSyncAt = 1620000003000;
+                record.sortOrder = ['checklist_1', 'checklist_2'];
+            });
+        });
+
+        const lastSyncAt = existingRecord!.lastSyncAt;
+
+        const preparedRecord = await transformPlaybookRunRecord({
+            action: OperationType.UPDATE,
+            database: database!,
+            value: {
+                record: existingRecord,
+                raw: {
+                    id: 'playbook_run_2',
+                    update_at: 1620000004000,
+                },
+            },
+        });
+
+        await database?.write(async () => {
+            await database?.batch(preparedRecord);
+        });
+
+        expect(preparedRecord).toBeTruthy();
+        expect(preparedRecord.playbookId).toBe('playbook_2');
+        expect(preparedRecord.postId).toBe('post_2');
+        expect(preparedRecord.ownerUserId).toBe('user_2');
+        expect(preparedRecord.teamId).toBe('team_2');
+        expect(preparedRecord.channelId).toBe('channel_2');
+        expect(preparedRecord.createAt).toBe(1620000000000);
+        expect(preparedRecord.endAt).toBe(0);
+        expect(preparedRecord.name).toBe('Existing Playbook Run');
+        expect(preparedRecord.description).toBe('This is an existing playbook run');
+        expect(preparedRecord.isActive).toBe(true);
+        expect(preparedRecord.activeStage).toBe(1);
+        expect(preparedRecord.activeStageTitle).toBe('Stage 1');
+        expect(preparedRecord.participantIds).toEqual(['user_2', 'user_3']);
+        expect(preparedRecord.summary).toBe('Existing summary');
+        expect(preparedRecord.currentStatus).toBe('InProgress');
+        expect(preparedRecord.lastStatusUpdateAt).toBe(1620000001000);
+        expect(preparedRecord.retrospectiveEnabled).toBe(true);
+        expect(preparedRecord.retrospective).toBe('Existing retrospective');
+        expect(preparedRecord.retrospectivePublishedAt).toBe(1620000002000);
+        expect(preparedRecord.sortOrder).toEqual(['checklist_1', 'checklist_2']);
+
+        // Changing values
+        expect(preparedRecord.updateAt).toBe(1620000004000);
+        expect(preparedRecord.lastSyncAt).toBeGreaterThan(lastSyncAt);
+    });
 });
 describe('*** PLAYBOOK_CHECKLIST Prepare Records Test ***', () => {
     it('=> transformPlaybookChecklistRecord: should return a record of type PlaybookChecklist for CREATE action', async () => {
@@ -271,7 +350,6 @@ describe('*** PLAYBOOK_CHECKLIST Prepare Records Test ***', () => {
                 record.runId = 'playbook_run_2';
                 record.title = 'Existing Checklist';
                 record.updateAt = 0;
-                record.sortOrder = [];
             });
         });
 
@@ -323,6 +401,52 @@ describe('*** PLAYBOOK_CHECKLIST Prepare Records Test ***', () => {
                 },
             }),
         ).rejects.toThrow('Record not found for non create action');
+    });
+
+    it('=> transformPlaybookChecklistRecord: should keep most of the data if the partial checklist is empty', async () => {
+        const database = await createTestConnection({databaseName: 'playbook_checklist_prepare_records', setActive: true});
+        expect(database).toBeTruthy();
+
+        // Create an existing record to simulate the UPDATE action
+        let existingRecord: PlaybookChecklistModel | undefined;
+        await database!.write(async () => {
+            existingRecord = await database!.get<PlaybookChecklistModel>(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST).create((record) => {
+                record._raw.id = 'checklist_2';
+                record.runId = 'playbook_run_2';
+                record.title = 'Existing Checklist';
+                record.updateAt = 1620000003000;
+                record.sortOrder = ['item_1', 'item_2'];
+                record.lastSyncAt = 1620000003000;
+            });
+        });
+
+        const lastSyncAt = existingRecord!.lastSyncAt;
+
+        const preparedRecord = await transformPlaybookChecklistRecord({
+            action: OperationType.UPDATE,
+            database: database!,
+            value: {
+                record: existingRecord,
+                raw: {
+                    id: 'checklist_2',
+                    run_id: 'playbook_run_2',
+                    update_at: 1620000004000,
+                },
+            },
+        });
+
+        await database?.write(async () => {
+            await database?.batch(preparedRecord);
+        });
+
+        expect(preparedRecord).toBeTruthy();
+        expect(preparedRecord!.title).toBe('Existing Checklist');
+        expect(preparedRecord!.runId).toBe('playbook_run_2');
+        expect(preparedRecord!.sortOrder).toEqual(['item_1', 'item_2']);
+
+        // Changing values
+        expect(preparedRecord!.updateAt).toBe(1620000004000);
+        expect(preparedRecord!.lastSyncAt).toBeGreaterThan(lastSyncAt);
     });
 });
 
@@ -382,7 +506,7 @@ describe('*** PLAYBOOK_CHECKLIST_ITEM Prepare Records Test ***', () => {
                 record.description = 'Existing description';
                 record.dueDate = 1620000003000;
                 record.completedAt = 0;
-                record.taskActions = null;
+                record.taskActions = [];
                 record.updateAt = 0;
             });
         });
@@ -451,5 +575,69 @@ describe('*** PLAYBOOK_CHECKLIST_ITEM Prepare Records Test ***', () => {
                 },
             }),
         ).rejects.toThrow('Record not found for non create action');
+    });
+
+    it('=> transformPlaybookChecklistItemRecord: should keep most of the data if the partial checklist item is empty', async () => {
+        const database = await createTestConnection({databaseName: 'playbook_checklist_item_prepare_records', setActive: true});
+        expect(database).toBeTruthy();
+
+        // Create an existing record to simulate the UPDATE action
+        let existingRecord: PlaybookChecklistItemModel | undefined;
+        await database!.write(async () => {
+            existingRecord = await database!.get<PlaybookChecklistItemModel>(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST_ITEM).create((record) => {
+                record._raw.id = 'checklist_item_2';
+                record.checklistId = 'checklist_2';
+                record.title = 'Existing Checklist Item';
+                record.state = '';
+                record.stateModified = 1620000000000;
+                record.assigneeId = 'user_2';
+                record.assigneeModified = 1620000001000;
+                record.command = '/existing-command';
+                record.commandLastRun = 1620000002000;
+                record.description = 'Existing description';
+                record.dueDate = 1620000003000;
+                record.completedAt = 0;
+                record.taskActions = [];
+                record.updateAt = 0;
+                record.lastSyncAt = 1620000003000;
+            });
+        });
+
+        const lastSyncAt = existingRecord!.lastSyncAt;
+
+        const preparedRecord = await transformPlaybookChecklistItemRecord({
+            action: OperationType.UPDATE,
+            database: database!,
+            value: {
+                record: existingRecord,
+                raw: {
+                    id: 'checklist_item_2',
+                    checklist_id: 'checklist_2',
+                    update_at: 1620000004000,
+                },
+            },
+        });
+
+        await database?.write(async () => {
+            await database?.batch(preparedRecord);
+        });
+
+        expect(preparedRecord).toBeTruthy();
+        expect(preparedRecord!.title).toBe('Existing Checklist Item');
+        expect(preparedRecord!.checklistId).toBe('checklist_2');
+        expect(preparedRecord!.state).toBe('');
+        expect(preparedRecord!.stateModified).toBe(1620000000000);
+        expect(preparedRecord!.assigneeId).toBe('user_2');
+        expect(preparedRecord!.assigneeModified).toBe(1620000001000);
+        expect(preparedRecord!.command).toBe('/existing-command');
+        expect(preparedRecord!.commandLastRun).toBe(1620000002000);
+        expect(preparedRecord!.description).toBe('Existing description');
+        expect(preparedRecord!.dueDate).toBe(1620000003000);
+        expect(preparedRecord!.completedAt).toBe(0);
+        expect(preparedRecord!.taskActions).toEqual([]);
+
+        // Changing values
+        expect(preparedRecord!.updateAt).toBe(1620000004000);
+        expect(preparedRecord!.lastSyncAt).toBeGreaterThan(lastSyncAt);
     });
 });

@@ -7,7 +7,7 @@ import DatabaseManager from '@database/manager';
 export const setPlaybooksVersion = async (serverUrl: string, version: string) => {
     try {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        operator.handleSystem({
+        await operator.handleSystem({
             systems: [{
                 id: SYSTEM_IDENTIFIERS.PLAYBOOKS_VERSION,
                 value: version,

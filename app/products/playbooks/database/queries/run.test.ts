@@ -4,8 +4,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {filter} from 'rxjs/operators';
-
+import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import TestHelper from '@test/test_helper';
 
@@ -13,13 +12,12 @@ import {
     queryPlaybookRunsPerChannel,
     getPlaybookRunById,
     observePlaybookRunById,
-    observePlaybookRunsPerChannel,
     observePlaybookRunProgress,
-    observePlaybookRunParticipants,
+    getLastPlaybookFetchAt,
+    queryParticipantsFromAPIRun,
 } from './run';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
-import type {Subscription} from 'rxjs';
 
 describe('Playbook Run Queries', () => {
     let operator: ServerDataOperator;
@@ -120,180 +118,90 @@ describe('Playbook Run Queries', () => {
     });
 
     describe('observePlaybookRunById', () => {
-        let sub: Subscription | null = null;
-        afterEach(() => {
-            if (!sub?.closed) {
-                sub?.unsubscribe();
-            }
-        });
-
-        it('should observe the playbook run if found', (done) => {
+        it('should observe the playbook run if found', async () => {
+            const subscriptionNext = jest.fn();
             const mockRuns = TestHelper.createPlaybookRuns(1, 0, 0);
-            operator.handlePlaybookRun({
+
+            await operator.handlePlaybookRun({
                 runs: mockRuns,
                 prepareRecordsOnly: false,
                 removeAssociatedRecords: false,
-            }).then(() => {
-                const observable = observePlaybookRunById(operator.database, mockRuns[0].id);
-
-                sub = observable.subscribe((run) => {
-                    expect(run).toBeDefined();
-                    expect(run!.id).toBe(mockRuns[0].id);
-                    sub?.unsubscribe();
-                    done();
-                });
             });
+
+            const result = observePlaybookRunById(operator.database, mockRuns[0].id);
+            result.subscribe({next: subscriptionNext});
+
+            expect(subscriptionNext).toHaveBeenCalledWith(expect.objectContaining({
+                id: mockRuns[0].id,
+            }));
         });
 
-        it('should return undefined if the playbook run is not found', (done) => {
-            const observable = observePlaybookRunById(operator.database, 'nonexistent_run');
+        it('should return undefined if the playbook run is not found', async () => {
+            const subscriptionNext = jest.fn();
+            const result = observePlaybookRunById(operator.database, 'nonexistent_run');
+            result.subscribe({next: subscriptionNext});
 
-            sub = observable.subscribe((run) => {
-                expect(run).toBeUndefined();
-                done();
-            });
-        });
-    });
-
-    describe('observePlaybookRunsPerChannel', () => {
-        let sub: Subscription | null = null;
-        afterEach(() => {
-            if (!sub?.closed) {
-                sub?.unsubscribe();
-            }
-        });
-
-        it('should observe playbook runs for a channel without finished status', (done) => {
-            const channelId = 'channel4';
-            const mockRuns = TestHelper.createPlaybookRuns(2, 0, 0).map((run, index) => ({
-                ...run,
-                channel_id: channelId,
-                end_at: index === 0 ? 0 : 1620000000000, // First run is not finished, second is finished
-            })).reverse(); // Reverse to ensure the order matches sort by create_at desc
-            operator.handlePlaybookRun({
-                runs: mockRuns,
-                prepareRecordsOnly: false,
-                removeAssociatedRecords: false,
-            }).then(() => {
-                const observable = observePlaybookRunsPerChannel(operator.database, channelId);
-
-                sub = observable.subscribe((runs) => {
-                    expect(runs.length).toBe(2);
-                    expect(runs[0].id).toBe(mockRuns[0].id);
-                    expect(runs[1].id).toBe(mockRuns[1].id);
-                    done();
-                });
-            });
-        });
-
-        it('should observe playbook runs for a channel with finished status', (done) => {
-            const channelId = 'channel5';
-            const mockRuns = TestHelper.createPlaybookRuns(2, 0, 0).map((run, index) => ({
-                ...run,
-                channel_id: channelId,
-                end_at: index === 0 ? 0 : 1620000000000, // First run is not finished, second is finished
-            })).reverse(); // Reverse to ensure the order matches sort by create_at desc
-            operator.handlePlaybookRun({
-                runs: mockRuns,
-                prepareRecordsOnly: false,
-                removeAssociatedRecords: false,
-            }).then(() => {
-                const observable = observePlaybookRunsPerChannel(operator.database, channelId, true);
-
-                sub = observable.subscribe((runs) => {
-                    expect(runs.length).toBe(1);
-                    expect(runs[0].id).toBe(mockRuns[0].id); // Only the finished run
-                    done();
-                });
-            });
-        });
-
-        it('should observe playbook runs for a channel with unfinished status', (done) => {
-            const channelId = 'channel6';
-            const mockRuns = TestHelper.createPlaybookRuns(2, 0, 0).map((run, index) => ({
-                ...run,
-                channel_id: channelId,
-                end_at: index === 0 ? 0 : 1620000000000, // First run is not finished, second is finished
-            })).reverse(); // Reverse to ensure the order matches sort by create_at desc
-            operator.handlePlaybookRun({
-                runs: mockRuns,
-                prepareRecordsOnly: false,
-                removeAssociatedRecords: false,
-            }).then(() => {
-                const observable = observePlaybookRunsPerChannel(operator.database, channelId, false);
-
-                sub = observable.subscribe((runs) => {
-                    expect(runs.length).toBe(1);
-                    expect(runs[0].id).toBe(mockRuns[1].id); // Only the unfinished run
-                    done();
-                });
-            });
+            expect(subscriptionNext).toHaveBeenCalledWith(undefined);
         });
     });
 
     describe('observePlaybookRunProgress', () => {
-        let sub: Subscription | null = null;
-        afterEach(() => {
-            if (!sub?.closed) {
-                sub?.unsubscribe();
-            }
-        });
-
-        it('should return 0 when there are no checklist', (done) => {
+        it('should return 0 when there are no checklist', async () => {
+            const subscriptionNext = jest.fn();
             const mockRuns = TestHelper.createPlaybookRuns(1, 0, 0);
-            operator.handlePlaybookRun({
+
+            await operator.handlePlaybookRun({
                 runs: mockRuns,
                 prepareRecordsOnly: false,
                 removeAssociatedRecords: false,
-            }).then(() => {
-                const observable = observePlaybookRunProgress(operator.database, mockRuns[0].id);
-
-                sub = observable.subscribe((progress) => {
-                    expect(progress).toBe(0);
-                    done();
-                });
             });
+
+            const result = observePlaybookRunProgress(operator.database, mockRuns[0].id);
+            result.subscribe({next: subscriptionNext});
+
+            expect(subscriptionNext).toHaveBeenCalledWith(0);
         });
 
-        it('should return 0 when there are no checklist items', (done) => {
+        it('should return 0 when there are no checklist items', async () => {
+            const subscriptionNext = jest.fn();
             const mockRuns = TestHelper.createPlaybookRuns(1, 1, 0);
-            operator.handlePlaybookRun({
+
+            await operator.handlePlaybookRun({
                 runs: mockRuns,
                 prepareRecordsOnly: false,
                 removeAssociatedRecords: false,
                 processChildren: true,
-            }).then(() => {
-                const observable = observePlaybookRunProgress(operator.database, mockRuns[0].id);
-
-                sub = observable.subscribe((progress) => {
-                    expect(progress).toBe(0);
-                    done();
-                });
             });
+
+            const result = observePlaybookRunProgress(operator.database, mockRuns[0].id);
+            result.subscribe({next: subscriptionNext});
+
+            expect(subscriptionNext).toHaveBeenCalledWith(0);
         });
 
-        it('should return 100 when all checklist items are completed', (done) => {
+        it('should return 100 when all checklist items are completed', async () => {
+            const subscriptionNext = jest.fn();
             const mockRuns = TestHelper.createPlaybookRuns(1, 1, 2);
             mockRuns[0].checklists[0].items.forEach((item) => {
                 item.state = 'closed';
                 item.completed_at = Date.now();
             });
-            operator.handlePlaybookRun({
+
+            await operator.handlePlaybookRun({
                 runs: mockRuns,
                 prepareRecordsOnly: false,
                 removeAssociatedRecords: false,
                 processChildren: true,
-            }).then(() => {
-                const observable = observePlaybookRunProgress(operator.database, mockRuns[0].id);
-
-                sub = observable.subscribe((progress) => {
-                    expect(progress).toBe(100.00);
-                    done();
-                });
             });
+
+            const result = observePlaybookRunProgress(operator.database, mockRuns[0].id);
+            result.subscribe({next: subscriptionNext});
+
+            expect(subscriptionNext).toHaveBeenCalledWith(100.00);
         });
 
-        it('should return correct progress when some checklist items are completed', (done) => {
+        it('should return correct progress when some checklist items are completed', async () => {
+            const subscriptionNext = jest.fn();
             const mockRuns = TestHelper.createPlaybookRuns(1, 1, 9);
             if (mockRuns[0].checklists[0].items.length < 3) {
                 const index = mockRuns[0].checklists[0].items.length - 1;
@@ -313,146 +221,204 @@ describe('Playbook Run Queries', () => {
                 }
             });
 
-            operator.handlePlaybookRun({
+            await operator.handlePlaybookRun({
                 runs: mockRuns,
                 prepareRecordsOnly: false,
                 removeAssociatedRecords: false,
                 processChildren: true,
-            }).then(() => {
-                const observable = observePlaybookRunProgress(operator.database, mockRuns[0].id);
-
-                sub = observable.subscribe((progress) => {
-                    expect(progress).toBeGreaterThan(0);
-                    expect(progress).toBeLessThan(100.00);
-                    done();
-                });
             });
+
+            const result = observePlaybookRunProgress(operator.database, mockRuns[0].id);
+            result.subscribe({next: subscriptionNext});
+
+            expect(subscriptionNext).toHaveBeenCalledWith(expect.any(Number));
+            const progress = subscriptionNext.mock.calls[0][0];
+            expect(progress).toBeGreaterThan(0);
+            expect(progress).toBeLessThan(100.00);
         });
 
-        it('should return 0 when all checklist items are open', (done) => {
+        it('should return 0 when all checklist items are open', async () => {
+            const subscriptionNext = jest.fn();
             const mockRuns = TestHelper.createPlaybookRuns(1, 1, 2);
 
-            operator.handlePlaybookRun({
+            await operator.handlePlaybookRun({
                 runs: mockRuns,
                 prepareRecordsOnly: false,
                 removeAssociatedRecords: false,
                 processChildren: true,
-            }).then(() => {
-                const observable = observePlaybookRunProgress(operator.database, mockRuns[0].id);
-
-                sub = observable.subscribe((progress) => {
-                    expect(progress).toBe(0);
-                    done();
-                });
             });
+
+            const result = observePlaybookRunProgress(operator.database, mockRuns[0].id);
+            result.subscribe({next: subscriptionNext});
+
+            expect(subscriptionNext).toHaveBeenCalledWith(0);
         });
     });
 
-    describe('observePlaybookRunParticipants', () => {
-        let sub: Subscription | null = null;
-        const initialUsers = [
-            TestHelper.fakeUser({id: 'user1', username: 'User One'}),
-        ];
-        const updatedUsers = [
-            TestHelper.fakeUser({id: 'user2', username: 'User Two'}),
-            TestHelper.fakeUser({id: 'user3', username: 'User Three'}),
-        ];
+    describe('getLastPlaybookFetchAt', () => {
+        it('should return the lastPlaybookFetchAt value when channel exists', async () => {
+            const channelId = 'channel1';
+            const lastPlaybookFetchAt = 1620000000000;
 
-        beforeEach(async () => {
-            await operator.handleUsers({
-                users: [...initialUsers, ...updatedUsers],
+            await operator.handleMyChannel({
+                channels: [TestHelper.fakeChannel({id: channelId})],
+                myChannels: [TestHelper.fakeMyChannel({channel_id: channelId})],
                 prepareRecordsOnly: false,
             });
-        });
 
-        afterEach(() => {
-            if (!sub?.closed) {
-                sub?.unsubscribe();
-            }
-        });
-
-        it('should return an empty array if the playbook run is not found', (done) => {
-            const runId = 'nonexistent_run';
-
-            const observable = observePlaybookRunParticipants(operator.database, runId);
-
-            sub = observable.subscribe((participants) => {
-                expect(participants).toEqual([]);
-                done();
-            });
-        });
-
-        it('should return an empty array if the playbook run has no participants', (done) => {
-            const mockRuns = TestHelper.createPlaybookRuns(1, 0, 0);
-            mockRuns[0].participant_ids = [];
-            operator.handlePlaybookRun({
-                runs: mockRuns,
-                prepareRecordsOnly: false,
-                removeAssociatedRecords: false,
-            }).then(() => {
-                const observable = observePlaybookRunParticipants(operator.database, mockRuns[0].id);
-
-                sub = observable.subscribe((participants) => {
-                    expect(participants).toEqual([]);
-                    done();
+            // Update the record with the lastPlaybookFetchAt value
+            const myChannelRecord = await operator.database.get(MM_TABLES.SERVER.MY_CHANNEL).find(channelId);
+            await operator.database.write(async () => {
+                await myChannelRecord.update((record: any) => {
+                    record.lastPlaybookFetchAt = lastPlaybookFetchAt;
                 });
             });
+
+            const result = await getLastPlaybookFetchAt(operator.database, channelId);
+
+            expect(result).toBe(lastPlaybookFetchAt);
         });
 
-        it('should return the participants of the playbook run', (done) => {
-            const mockRuns = TestHelper.createPlaybookRuns(1, 0, 0);
-            mockRuns[0].participant_ids = updatedUsers.map((user) => user.id);
+        it('should return 0 when channel does not exist', async () => {
+            const result = await getLastPlaybookFetchAt(operator.database, 'nonexistent_channel');
 
-            operator.handlePlaybookRun({
-                runs: mockRuns,
-                prepareRecordsOnly: false,
-                removeAssociatedRecords: false,
-            }).then(() => {
-                const observable = observePlaybookRunParticipants(operator.database, mockRuns[0].id);
-
-                sub = observable.
-                    pipe(filter((participants) => participants.length > 0)).
-                    subscribe((participants) => {
-                        expect(participants.length).toBe(2);
-                        expect(participants.map((user) => user.id)).toEqual(updatedUsers.map((user) => user.id));
-                        done();
-                    });
-            });
+            expect(result).toBe(0);
         });
 
-        it('should update participants when the playbook run is updated', (done) => {
-            const mockRuns = TestHelper.createPlaybookRuns(1, 0, 0);
-            mockRuns[0].participant_ids = initialUsers.map((user) => user.id);
-
-            operator.handlePlaybookRun({
-                runs: mockRuns,
+        it('should return 0 when channel exists but lastPlaybookFetchAt is not set', async () => {
+            const channelId = 'channel2';
+            await operator.handleMyChannel({
+                channels: [TestHelper.fakeChannel({id: channelId})],
+                myChannels: [TestHelper.fakeMyChannel({channel_id: channelId})],
                 prepareRecordsOnly: false,
-                removeAssociatedRecords: false,
-            }).then(() => {
-                const observable = observePlaybookRunParticipants(operator.database, mockRuns[0].id);
-
-                let callCount = 0;
-                sub = observable.
-                    pipe(filter((participants) => participants.length > 0)).
-                    subscribe((participants) => {
-                        callCount++;
-                        if (callCount === 1) {
-                            expect(participants.map((user) => user.id)).toEqual(initialUsers.map((user) => user.id));
-
-                            // Update the playbook run with new participants
-                            mockRuns[0].participant_ids = updatedUsers.map((user) => user.id);
-                            mockRuns[0].update_at = mockRuns[0].update_at + 1;
-                            operator.handlePlaybookRun({
-                                runs: mockRuns,
-                                prepareRecordsOnly: false,
-                                removeAssociatedRecords: false,
-                            });
-                        } else if (callCount === 2) {
-                            expect(participants.map((user) => user.id)).toEqual(updatedUsers.map((user) => user.id));
-                            done();
-                        }
-                    });
             });
+
+            const result = await getLastPlaybookFetchAt(operator.database, channelId);
+
+            expect(result).toBe(0);
+        });
+    });
+
+    describe('queryParticipantsFromAPIRun', () => {
+        it('should return participants excluding the owner', async () => {
+            const ownerId = 'owner-user-id';
+            const participant1Id = 'participant-1-id';
+            const participant2Id = 'participant-2-id';
+            const participant3Id = 'participant-3-id';
+
+            // Create mock users
+            const mockUsers = [
+                TestHelper.fakeUser({id: ownerId, username: 'owner'}),
+                TestHelper.fakeUser({id: participant1Id, username: 'participant1'}),
+                TestHelper.fakeUser({id: participant2Id, username: 'participant2'}),
+                TestHelper.fakeUser({id: participant3Id, username: 'participant3'}),
+            ];
+
+            await operator.handleUsers({
+                users: mockUsers,
+                prepareRecordsOnly: false,
+            });
+
+            // Create a mock playbook run with participants including the owner
+            const mockRun = TestHelper.fakePlaybookRun({
+                owner_user_id: ownerId,
+                participant_ids: [ownerId, participant1Id, participant2Id, participant3Id],
+            });
+
+            const result = queryParticipantsFromAPIRun(operator.database, mockRun);
+            const participants = await result.fetch();
+
+            // Should return 3 participants (excluding the owner)
+            expect(participants).toHaveLength(3);
+
+            // Should not include the owner
+            const participantIds = participants.map((p) => p.id);
+            expect(participantIds).toContain(participant1Id);
+            expect(participantIds).toContain(participant2Id);
+            expect(participantIds).toContain(participant3Id);
+            expect(participantIds).not.toContain(ownerId);
+        });
+
+        it('should return empty array when no participants exist', async () => {
+            const ownerId = 'owner-user-id';
+
+            // Create only the owner user
+            const mockUser = TestHelper.fakeUser({id: ownerId, username: 'owner'});
+            await operator.handleUsers({
+                users: [mockUser],
+                prepareRecordsOnly: false,
+            });
+
+            // Create a mock playbook run with only the owner as participant
+            const mockRun = TestHelper.fakePlaybookRun({
+                owner_user_id: ownerId,
+                participant_ids: [ownerId],
+            });
+
+            const result = queryParticipantsFromAPIRun(operator.database, mockRun);
+            const participants = await result.fetch();
+
+            // Should return empty array since owner is excluded
+            expect(participants).toHaveLength(0);
+        });
+
+        it('should return empty array when participants do not exist in database', async () => {
+            const ownerId = 'owner-user-id';
+            const nonExistentParticipantId = 'non-existent-participant-id';
+
+            // Create only the owner user
+            const mockUser = TestHelper.fakeUser({id: ownerId, username: 'owner'});
+            await operator.handleUsers({
+                users: [mockUser],
+                prepareRecordsOnly: false,
+            });
+
+            // Create a mock playbook run with non-existent participant
+            const mockRun = TestHelper.fakePlaybookRun({
+                owner_user_id: ownerId,
+                participant_ids: [ownerId, nonExistentParticipantId],
+            });
+
+            const result = queryParticipantsFromAPIRun(operator.database, mockRun);
+            const participants = await result.fetch();
+
+            // Should return empty array since owner is excluded and participant doesn't exist
+            expect(participants).toHaveLength(0);
+        });
+
+        it('should handle case where owner is not in participant_ids', async () => {
+            const ownerId = 'owner-user-id';
+            const participant1Id = 'participant-1-id';
+            const participant2Id = 'participant-2-id';
+
+            // Create mock users
+            const mockUsers = [
+                TestHelper.fakeUser({id: ownerId, username: 'owner'}),
+                TestHelper.fakeUser({id: participant1Id, username: 'participant1'}),
+                TestHelper.fakeUser({id: participant2Id, username: 'participant2'}),
+            ];
+
+            await operator.handleUsers({
+                users: mockUsers,
+                prepareRecordsOnly: false,
+            });
+
+            // Create a mock playbook run where owner is not in participant_ids
+            const mockRun = TestHelper.fakePlaybookRun({
+                owner_user_id: ownerId,
+                participant_ids: [participant1Id, participant2Id], // Owner not included
+            });
+
+            const result = queryParticipantsFromAPIRun(operator.database, mockRun);
+            const participants = await result.fetch();
+
+            // Should return all participants since owner is not in the list
+            expect(participants).toHaveLength(2);
+
+            const participantIds = participants.map((p) => p.id);
+            expect(participantIds).toContain(participant1Id);
+            expect(participantIds).toContain(participant2Id);
+            expect(participantIds).not.toContain(ownerId);
         });
     });
 });

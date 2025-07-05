@@ -26,8 +26,17 @@ describe('PlaybookHandler', () => {
         it('should return an empty array if runs is undefined or empty', async () => {
             const spyOnPrepareRecords = jest.spyOn(operator, 'prepareRecords');
 
-            const result = await operator.handlePlaybookRun({
+            let result = await operator.handlePlaybookRun({
                 runs: undefined,
+                prepareRecordsOnly: true,
+                removeAssociatedRecords: false,
+            });
+
+            expect(result).toEqual([]);
+            expect(spyOnPrepareRecords).not.toHaveBeenCalled();
+
+            result = await operator.handlePlaybookRun({
+                runs: [],
                 prepareRecordsOnly: true,
                 removeAssociatedRecords: false,
             });
@@ -494,7 +503,7 @@ describe('PlaybookHandler', () => {
             const mockItems = [
                 TestHelper.createPlaybookItem('checklist_1', 0),
                 TestHelper.createPlaybookItem('checklist_1', 1),
-            ].map<PlaybookChecklistItemWithChecklist>((item, index) => ({
+            ].map<PartialChecklistItem>((item, index) => ({
                 ...item,
                 checklist_id: 'checklist_1',
                 order: index,
@@ -518,7 +527,7 @@ describe('PlaybookHandler', () => {
             const mockItems = [
                 TestHelper.createPlaybookItem('checklist_1', 0),
                 TestHelper.createPlaybookItem('checklist_1', 1),
-            ].map<PlaybookChecklistItemWithChecklist>((item, index) => ({
+            ].map<PartialChecklistItem>((item, index) => ({
                 ...item,
                 checklist_id: 'checklist_1',
                 order: index,

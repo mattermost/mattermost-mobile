@@ -86,10 +86,24 @@ function getFriendlyDateAfter(intl: IntlShape, difference: number, date: Date, t
         }
     }
 
-    return intl.formatDate(date, {
-        month: 'short',
-        day: '2-digit',
-        year: 'numeric',
+    // Message: Months
+    if (difference < SECONDS.DAYS_366) {
+        const months = Math.floor(Math.round((10 * difference) / SECONDS.DAYS_30) / 10) || 1;
+        return intl.formatMessage({
+            id: 'friendly_date.months',
+            defaultMessage: 'in {count} {count, plural, one {month} other {months}}',
+        }, {
+            count: months,
+        });
+    }
+
+    // Message: Years
+    const years = Math.floor(Math.round((10 * difference) / SECONDS.DAYS_365) / 10) || 1;
+    return intl.formatMessage({
+        id: 'friendly_date.years',
+        defaultMessage: 'in {count} {count, plural, one {year} other {years}}',
+    }, {
+        count: years,
     });
 }
 

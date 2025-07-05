@@ -4,7 +4,6 @@
 import {OperationType} from '@constants/database';
 import {prepareBaseRecord} from '@database/operator/server_data_operator/transformers/index';
 import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
-import {areSortOrdersEqual} from '@playbooks/utils/sort_order';
 
 import type PlaybookChecklistModel from '@playbooks/types/database/models/playbook_checklist';
 import type PlaybookChecklistItemModel from '@playbooks/types/database/models/playbook_checklist_item';
@@ -20,42 +19,40 @@ const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM} = PLAYBOOK_TAB
  * @param {RecordPair} transoformerArgs.value
  * @returns {Promise<PlaybookRunModel>}
  */
-export const transformPlaybookRunRecord = ({action, database, value}: TransformerArgs<PlaybookRunModel, PlaybookRun>): Promise<PlaybookRunModel> => {
+export const transformPlaybookRunRecord = ({action, database, value}: TransformerArgs<PlaybookRunModel, PartialPlaybookRun>): Promise<PlaybookRunModel> => {
     const raw = value.raw;
     const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
-    if (!isCreateAction && !record) {
+    if (!isCreateAction && !value.record) {
         return Promise.reject(new Error('Record not found for non create action'));
     }
 
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
     const fieldsMapper = (run: PlaybookRunModel) => {
-        run._raw.id = isCreateAction ? (raw?.id ?? run.id) : record!.id;
-        run.playbookId = raw.playbook_id ?? record?.playbookId;
+        run._raw.id = isCreateAction ? (raw?.id ?? run.id) : run.id;
+        run.playbookId = raw.playbook_id ?? record?.playbookId ?? '';
         run.postId = raw.post_id ?? record?.postId ?? null;
-        run.ownerUserId = raw.owner_user_id || record?.ownerUserId || '';
-        run.teamId = raw.team_id || record?.teamId || '';
-        run.channelId = raw.channel_id || record?.channelId || '';
-        run.createAt = raw.create_at || record?.createAt || 0;
-        run.endAt = raw.end_at ?? (record?.endAt || 0);
-        run.name = raw.name || record?.name || '';
-        run.description = raw.description || record?.description || '';
-        run.isActive = raw.is_active || record?.isActive || false;
-        run.activeStage = raw.active_stage || record?.activeStage || 0;
-        run.activeStageTitle = raw.active_stage_title || record?.activeStageTitle || '';
-        run.participantIds = raw.participant_ids || record?.participantIds || [];
-        run.summary = raw.summary || record?.summary || '';
-        run.currentStatus = raw.current_status || record?.currentStatus || '';
-        run.lastStatusUpdateAt = raw.last_status_update_at || record?.lastStatusUpdateAt || 0;
-        run.previousReminder = raw.previous_reminder || record?.previousReminder || 0;
-        run.retrospectiveEnabled = raw.retrospective_enabled || record?.retrospectiveEnabled || false;
-        run.retrospective = raw.retrospective || record?.retrospective || '';
-        run.retrospectivePublishedAt = raw.retrospective_published_at || record?.retrospectivePublishedAt || 0;
-        run.updateAt = raw.update_at || record?.updateAt || raw.create_at || record?.createAt || 0;
+        run.ownerUserId = raw.owner_user_id ?? record?.ownerUserId ?? '';
+        run.teamId = raw.team_id ?? record?.teamId ?? '';
+        run.channelId = raw.channel_id ?? record?.channelId ?? '';
+        run.createAt = raw.create_at ?? record?.createAt ?? 0;
+        run.endAt = raw.end_at ?? (record?.endAt ?? 0);
+        run.name = raw.name ?? record?.name ?? '';
+        run.description = raw.description ?? record?.description ?? '';
+        run.isActive = raw.is_active ?? record?.isActive ?? false;
+        run.activeStage = raw.active_stage ?? record?.activeStage ?? 0;
+        run.activeStageTitle = raw.active_stage_title ?? record?.activeStageTitle ?? '';
+        run.participantIds = raw.participant_ids ?? record?.participantIds ?? [];
+        run.summary = raw.summary ?? record?.summary ?? '';
+        run.currentStatus = raw.current_status ?? record?.currentStatus ?? 'InProgress';
+        run.lastStatusUpdateAt = raw.last_status_update_at ?? record?.lastStatusUpdateAt ?? 0;
+        run.previousReminder = raw.previous_reminder ?? record?.previousReminder ?? 0;
+        run.retrospectiveEnabled = raw.retrospective_enabled ?? record?.retrospectiveEnabled ?? false;
+        run.retrospective = raw.retrospective ?? record?.retrospective ?? '';
+        run.retrospectivePublishedAt = raw.retrospective_published_at ?? record?.retrospectivePublishedAt ?? 0;
+        run.updateAt = raw.update_at ?? record?.updateAt ?? raw.create_at ?? record?.createAt ?? 0;
         run.lastSyncAt = Date.now();
-        if (raw.sort_order) {
-            run.sortOrder = areSortOrdersEqual(raw.sort_order, record?.sortOrder) ? record!.sortOrder : raw.sort_order;
-        }
+        run.sortOrder = raw.sort_order ?? record?.sortOrder ?? [];
     };
 
     return prepareBaseRecord({
@@ -74,7 +71,7 @@ export const transformPlaybookRunRecord = ({action, database, value}: Transforme
  * @param {RecordPair} transoformerArgs.value
  * @returns {Promise<PlaybookChecklistModel>}
  */
-export const transformPlaybookChecklistRecord = ({action, database, value}: TransformerArgs<PlaybookChecklistModel, PlaybookChecklistWithRun>): Promise<PlaybookChecklistModel> => {
+export const transformPlaybookChecklistRecord = ({action, database, value}: TransformerArgs<PlaybookChecklistModel, PartialChecklist>): Promise<PlaybookChecklistModel> => {
     const raw = value.raw;
     const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
@@ -85,12 +82,10 @@ export const transformPlaybookChecklistRecord = ({action, database, value}: Tran
     const fieldsMapper = (checklist: PlaybookChecklistModel) => {
         checklist._raw.id = isCreateAction ? (raw?.id ?? checklist.id) : record!.id;
         checklist.runId = raw.run_id ?? record?.runId;
-        checklist.title = raw.title ?? record?.title;
-        checklist.updateAt = raw.update_at || record?.updateAt || 0;
+        checklist.title = raw.title ?? record?.title ?? '';
+        checklist.updateAt = raw.update_at ?? record?.updateAt ?? 0;
         checklist.lastSyncAt = Date.now();
-        if (raw.sort_order) {
-            checklist.sortOrder = areSortOrdersEqual(raw.sort_order, record?.sortOrder) ? record!.sortOrder : raw.sort_order;
-        }
+        checklist.sortOrder = raw.sort_order ?? record?.sortOrder ?? [];
     };
 
     return prepareBaseRecord({
@@ -109,7 +104,7 @@ export const transformPlaybookChecklistRecord = ({action, database, value}: Tran
  * @param {RecordPair} transoformerArgs.value
  * @returns {Promise<PlaybookChecklistItemModel>}
  */
-export const transformPlaybookChecklistItemRecord = ({action, database, value}: TransformerArgs<PlaybookChecklistItemModel, PlaybookChecklistItemWithChecklist>): Promise<PlaybookChecklistItemModel> => {
+export const transformPlaybookChecklistItemRecord = ({action, database, value}: TransformerArgs<PlaybookChecklistItemModel, PartialChecklistItem>): Promise<PlaybookChecklistItemModel> => {
     const raw = value.raw;
     const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
@@ -120,8 +115,8 @@ export const transformPlaybookChecklistItemRecord = ({action, database, value}: 
     const fieldsMapper = (item: PlaybookChecklistItemModel) => {
         item._raw.id = isCreateAction ? (raw?.id ?? item.id) : record!.id;
         item.checklistId = raw.checklist_id ?? record?.checklistId;
-        item.title = raw.title ?? record?.title;
-        item.state = raw.state ?? record?.state;
+        item.title = raw.title ?? record?.title ?? '';
+        item.state = raw.state ?? record?.state ?? '';
         item.stateModified = raw.state_modified ?? record?.stateModified ?? 0;
         item.assigneeId = raw.assignee_id ?? record?.assigneeId ?? null;
         item.assigneeModified = raw.assignee_modified ?? record?.assigneeModified ?? 0;
@@ -130,7 +125,7 @@ export const transformPlaybookChecklistItemRecord = ({action, database, value}: 
         item.description = raw.description ?? record?.description ?? '';
         item.dueDate = raw.due_date ?? record?.dueDate ?? 0;
         item.completedAt = raw.completed_at ?? record?.completedAt ?? 0;
-        item.taskActions = raw.task_actions ?? record?.taskActions ?? null;
+        item.taskActions = raw.task_actions ?? record?.taskActions ?? [];
         item.updateAt = raw.update_at ?? record?.updateAt ?? 0;
         item.lastSyncAt = Date.now();
     };

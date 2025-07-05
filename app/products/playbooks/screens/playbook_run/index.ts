@@ -3,14 +3,15 @@
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {combineLatest, of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import {queryPlaybookChecklistByRun} from '@playbooks/database/queries/checklist';
 import {queryPlaybookChecklistItemsByChecklists} from '@playbooks/database/queries/item';
-import {observePlaybookRunById} from '@playbooks/database/queries/run';
+import {observePlaybookRunById, queryParticipantsFromAPIRun} from '@playbooks/database/queries/run';
 import {isOverdue} from '@playbooks/utils/run';
+import {areSortOrdersEqual} from '@playbooks/utils/sort_order';
 import {observeCurrentUserId} from '@queries/servers/system';
-import {observeUser, queryUsersById} from '@queries/servers/user';
+import {observeTeammateNameDisplay, observeUser} from '@queries/servers/user';
 
 import PlaybookRun from './playbook_run';
 
@@ -41,8 +42,7 @@ const emptyParticipantsList: UserModel[] = [];
 const enhanced = withObservables(['playbookRunId', 'playbookRun'], ({playbookRunId, playbookRun: providedRun, database}: OwnProps) => {
     // We receive a API run instead of a model from the database
     if (providedRun) {
-        const filteredParticipantIds = providedRun.participant_ids.filter((id) => id !== providedRun.owner_user_id);
-        const participants = queryUsersById(database, filteredParticipantIds).observe();
+        const participants = queryParticipantsFromAPIRun(database, providedRun).observe();
         const owner = observeUser(database, providedRun.owner_user_id);
         const overdueCount = providedRun.checklists.reduce((acc, c) => {
             return acc + c.items.filter(isOverdue).length;
@@ -53,6 +53,8 @@ const enhanced = withObservables(['playbookRunId', 'playbookRun'], ({playbookRun
             owner,
             checklists: of$(providedRun.checklists),
             overdueCount: of$(overdueCount),
+            currentUserId: observeCurrentUserId(database),
+            teammateNameDisplay: observeTeammateNameDisplay(database),
         };
     }
 
@@ -74,6 +76,7 @@ const enhanced = withObservables(['playbookRunId', 'playbookRun'], ({playbookRun
 
             return of$(cl);
         }),
+        distinctUntilChanged((a, b) => areSortOrdersEqual(getIds(a), getIds(b))),
     );
 
     const overdueCount = checklists.pipe(
@@ -94,6 +97,7 @@ const enhanced = withObservables(['playbookRunId', 'playbookRun'], ({playbookRun
         checklists: orderedChecklists,
         overdueCount,
         currentUserId: observeCurrentUserId(database),
+        teammateNameDisplay: observeTeammateNameDisplay(database),
     };
 });
 

@@ -6,13 +6,10 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {SYSTEM_IDENTIFIERS, MM_TABLES} from '@constants/database';
+import {MINIMUM_MAJOR_VERSION, MINIMUM_MINOR_VERSION, MINIMUM_PATCH_VERSION} from '@playbooks/constants/version';
 import {isMinimumServerVersion} from '@utils/helpers';
 
 import type SystemModel from '@typings/database/models/servers/system';
-
-const MinimumMajorVersion = 0;
-const MinimumMinorVersion = 0;
-const MinimumPatchVersion = 0;
 
 export function observeIsPlaybooksEnabled(database: Database) {
     return database.get<SystemModel>(MM_TABLES.SERVER.SYSTEM).query(
@@ -24,7 +21,7 @@ export function observeIsPlaybooksEnabled(database: Database) {
                 return of$(false);
             }
 
-            return of$(isMinimumServerVersion(version, MinimumMajorVersion, MinimumMinorVersion, MinimumPatchVersion));
+            return of$(isMinimumServerVersion(version, MINIMUM_MAJOR_VERSION, MINIMUM_MINOR_VERSION, MINIMUM_PATCH_VERSION));
         }),
     );
 }

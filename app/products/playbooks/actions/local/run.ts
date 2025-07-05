@@ -2,12 +2,19 @@
 // See LICENSE.txt for license information.
 
 import DatabaseManager from '@database/manager';
+import {logError} from '@utils/log';
 
 export async function handlePlaybookRuns(serverUrl: string, runs: PlaybookRun[], prepareRecordsOnly = false, processChildren = false) {
-    const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-    return operator.handlePlaybookRun({
-        runs,
-        prepareRecordsOnly,
-        processChildren,
-    });
+    try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const data = await operator.handlePlaybookRun({
+            runs,
+            prepareRecordsOnly,
+            processChildren,
+        });
+        return {data};
+    } catch (error) {
+        logError('failed to handle playbook runs', error);
+        return {error};
+    }
 }

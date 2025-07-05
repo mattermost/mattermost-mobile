@@ -148,6 +148,7 @@ const ChecklistItem = ({
         <ActivityIndicator
             size='small'
             color={theme.centerChannelColor}
+            testID='checklist-item-loading'
         />
     ) : (
         <Checkbox
