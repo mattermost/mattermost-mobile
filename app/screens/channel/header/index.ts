@@ -111,6 +111,7 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: OwnProps
         searchTerm,
         teamId,
         alias,
+        currentUserId,
     };
 });
 

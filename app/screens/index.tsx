@@ -292,6 +292,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.CALL_HOST_CONTROLS:
             screen = withServerDatabase(require('@calls/screens/host_controls').default);
             break;
+        case Screens.ALIAS_MODAL:
+            screen = withServerDatabase(require('@screens/channel/header/alias_modal').default);
+            break;
     }
 
     if (screen) {

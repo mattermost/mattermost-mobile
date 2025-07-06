@@ -3,6 +3,7 @@
 
 export const ABOUT = 'About';
 export const ACCOUNT = 'Account';
+export const ALIAS_MODAL = 'AliasModal';
 export const APPS_FORM = 'AppForm';
 export const BOTTOM_SHEET = 'BottomSheet';
 export const BROWSE_CHANNELS = 'BrowseChannels';
@@ -85,6 +86,7 @@ export const GENERIC_OVERLAY = 'GenericOverlay';
 export default {
     ABOUT,
     ACCOUNT,
+    ALIAS_MODAL,
     APPS_FORM,
     BOTTOM_SHEET,
     BROWSE_CHANNELS,

@@ -52,6 +52,7 @@ type ChannelProps = {
     isTabletView?: boolean;
     shouldRenderBookmarks: boolean;
     alias?: string;
+    currentUserId?: string;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -83,7 +84,7 @@ const ChannelHeader = ({
     canAddBookmarks, channelId, channelType, componentId, customStatus, displayName, hasBookmarks,
     isBookmarksEnabled, isCustomStatusEnabled, isCustomStatusExpired, isOwnDirectMessage, memberCount,
     searchTerm, teamId, callsEnabledInChannel, groupCallsAllowed, isTabletView, shouldRenderBookmarks,
-    alias,
+    alias, currentUserId,
 }: ChannelProps) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
@@ -118,6 +119,22 @@ const ChannelHeader = ({
         Keyboard.dismiss();
         popTopScreen(componentId);
     }, [componentId]);
+
+    const onSetAlias = useCallback(() => {
+        if (channelType !== General.DM_CHANNEL || !currentUserId) {
+            return;
+        }
+        showModal(Screens.ALIAS_MODAL, intl.formatMessage({id: 'channel_header.set_alias.title', defaultMessage: 'Set Alias'}), {
+            serverUrl,
+            channelId,
+            currentUserId,
+            searchTerm,
+        }, {
+            topBar: {
+                visible: false,
+            },
+        });
+    }, [channelType, currentUserId, serverUrl, channelId, searchTerm, intl]);
 
     const onTitlePress = useCallback(preventDoubleTap(() => {
         let title;
@@ -180,23 +197,26 @@ const ChannelHeader = ({
         });
     }, [channelId, isDMorGM, isTablet, onTitlePress, theme, callsAvailable]);
 
-    const rightButtons: HeaderRightButton[] = useMemo(() => ([
+    const rightButtons: HeaderRightButton[] = useMemo(() => {
+        const buttons: HeaderRightButton[] = [];
+        if (channelType === General.DM_CHANNEL && currentUserId) {
+            buttons.push({
+                iconName: 'pencil-outline',
+                onPress: onSetAlias,
+                buttonType: 'opacity',
+                testID: 'channel_header.set_alias.button',
+            });
+        }
 
-        // {
-        //     iconName: 'magnify',
-        //     onPress: () => {
-        //         DeviceEventEmitter.emit(Navigation.NAVIGATE_TO_TAB, {screen: 'Search', params: {searchTerm: `in: ${searchTerm}`}});
-        //         if (!isTablet) {
-        //             popTopScreen(componentId);
-        //         }
-        //     },
-        // },
-        {
+        buttons.push({
             iconName: Platform.select({android: 'dots-vertical', default: 'dots-horizontal'}),
             onPress: onChannelQuickAction,
             buttonType: 'opacity',
             testID: 'channel_header.channel_quick_actions.button',
-        }]), [isTablet, searchTerm, onChannelQuickAction]);
+        });
+
+        return buttons;
+    }, [channelType, currentUserId, onSetAlias, onChannelQuickAction]);
 
     let title = displayName;
     if (isOwnDirectMessage) {
