@@ -86,7 +86,7 @@ const PostOptions = ({
         const items: Array<string | number> = [1];
         const optionsCount = [
             canCopyPermalink, canCopyText, canDelete, canEdit,
-            canMarkAsUnread, canPin, canReply, !isSystemPost, shouldRenderFollow,
+            canMarkAsUnread, canPin, canReply, !isSystemPost, shouldRenderFollow, !isSystemPost
         ].reduce((acc, v) => {
             return v ? acc + 1 : acc;
         }, 0) + (shouldShowBindings ? 0.5 : 0);
