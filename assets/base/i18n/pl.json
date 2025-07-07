@@ -1164,8 +1164,6 @@
   "settings.advanced_settings": "Zaawansowane Ustawienia",
   "settings.advanced_settings.component_library": "Biblioteka komponentów",
   "settings.display": "Wygląd",
-  "settings.link.error.text": "Nie można otworzyć linku.",
-  "settings.link.error.title": "Błąd",
   "settings.notice_mobile_link": "aplikacje mobilne",
   "settings.notice_platform_link": "serwer",
   "settings.notice_text": "Mattermost został stworzony dzięki oprogramowaniu open source używanym w naszej {platform} i {mobile}.",

@@ -906,8 +906,6 @@
   "settings.advanced.delete_message.confirmation": "\nIn questo modo verranno eliminati tutti i file scaricati attraverso l'applicazione per questo server. Confermare per procedere.\n",
   "settings.advanced_settings": "Impostazioni avanzate",
   "settings.display": "Display",
-  "settings.link.error.text": "Impossibile aprire il link.",
-  "settings.link.error.title": "Errore",
   "settings.notice_mobile_link": "applicazioni mobili",
   "settings.notice_platform_link": "server",
   "settings.notice_text": "Mattermost è reso possibile dal software open source utilizzato nella nostra {platform} e {mobile}.",

@@ -118,7 +118,10 @@ const DraftAndScheduledPost: React.FC<Props> = ({
         >
             <View style={style.container}>
                 {draftType === DRAFT_TYPE_SCHEDULED && (post as ScheduledPostModel).errorCode !== '' &&
-                    <View style={style.errorLine}/>
+                    <View
+                        style={style.errorLine}
+                        testID='draft_post.error_line'
+                    />
                 }
                 <View
                     style={[style.postContainer, firstItem ? null : style.postContainerBorderTop]}
@@ -134,7 +137,10 @@ const DraftAndScheduledPost: React.FC<Props> = ({
                         scheduledPostErrorCode={'errorCode' in post ? post.errorCode : undefined}
                     />
                     {showPostPriority && post.metadata?.priority &&
-                    <View style={style.postPriority}>
+                    <View
+                        style={style.postPriority}
+                        testID='draft_post.priority'
+                    >
                         <Header
                             noMentionsError={false}
                             postPriority={post.metadata?.priority}
