@@ -106,8 +106,7 @@ const EditPost = ({
     const shouldEnableSaveButton = useCallback(() => {
         const loadingFiles = postFiles.filter((v) => v.clientId && DraftEditPostUploadManager.isUploading(v.clientId));
         const hasUploadingFiles = loadingFiles.length > 0;
-
-        const tooLong = postMessage.trim().length > maxPostSize;
+        const tooLong = postMessage.length > maxPostSize;
 
         const messageChanged = editingMessage !== postMessage;
 
@@ -220,7 +219,7 @@ const EditPost = ({
             uploadErrorHandlers.current[file.clientId!] = DraftEditPostUploadManager.registerErrorHandler(file.clientId!, setErrorLine);
         }
 
-        const currentMessageTooLong = postMessage.trim().length > maxPostSize;
+        const currentMessageTooLong = postMessage.length > maxPostSize;
         if (!currentMessageTooLong) {
             setErrorLine(undefined);
         }
@@ -328,12 +327,12 @@ const EditPost = ({
     }, [postFiles, postMessage, setErrorLine, shouldEnableSaveButton, toggleSaveButton]);
 
     const onChangeTextCommon = useCallback((message: string) => {
-        const tooLong = message.trim().length > maxPostSize;
+        const tooLong = message.length > maxPostSize;
         setErrorExtra(undefined);
 
         if (tooLong) {
             const line = intl.formatMessage({id: 'mobile.message_length.message_split_left', defaultMessage: 'Message exceeds the character limit'});
-            const extra = `${message.trim().length} / ${maxPostSize}`;
+            const extra = `${message.length} / ${maxPostSize}`;
             setErrorLine(line);
             setErrorExtra(extra);
         } else {
