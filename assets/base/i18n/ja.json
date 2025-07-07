@@ -451,7 +451,7 @@
   "last_users_message.added_to_channel.type": "が {actor} によって **チャンネルに追加されました**。",
   "last_users_message.added_to_team.type": "が {actor} によって **チームに追加されました**。",
   "last_users_message.first": "{firstUser} と ",
-  "last_users_message.joined_channel.type": "**チャンネルに参加しました**。",
+  "last_users_message.joined_channel.type": "が **チャンネルに参加しました**。",
   "last_users_message.joined_team.type": "**チームに参加しました**。",
   "last_users_message.left_channel.type": "**チャンネルを脱退しました**。",
   "last_users_message.left_team.type": "**チームを脱退しました**。",
