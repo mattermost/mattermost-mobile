@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessage, useIntl} from 'react-intl';
 import {Platform, Text, TouchableOpacity, View} from 'react-native';
 
 import {useCurrentCall} from '@calls/state';
@@ -65,9 +65,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     unmutedIcon: {
         color: changeOpacity(theme.centerChannelColor, 0.56),
     },
-    hostTag: {
-        paddingVertical: 4,
-    },
     raiseHandIcon: {
         color: theme.awayIndicator,
     },
@@ -75,6 +72,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: theme.dndIndicator,
     },
 }));
+
+const hostMessage = defineMessage({
+    id: 'mobile.calls_host',
+    defaultMessage: 'host',
+});
 
 export const Participant = ({sess, teammateNameDisplay, onPress}: Props) => {
     const intl = useIntl();
@@ -122,9 +124,8 @@ export const Participant = ({sess, teammateNameDisplay, onPress}: Props) => {
                 }
                 {sess.userId === currentCall.hostId &&
                     <Tag
-                        id={'mobile.calls_host'}
-                        defaultMessage={'host'}
-                        style={styles.hostTag}
+                        message={hostMessage}
+                        uppercase={true}
                     />
                 }
             </View>

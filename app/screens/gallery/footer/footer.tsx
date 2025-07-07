@@ -30,6 +30,7 @@ type Props = {
     enablePostIconOverride: boolean;
     enablePostUsernameOverride: boolean;
     enablePublicLink: boolean;
+    enableSecureFilePreview: boolean;
     hideActions: boolean;
     isDirectChannel: boolean;
     item: GalleryItemType;
@@ -57,7 +58,7 @@ const styles = StyleSheet.create({
 
 const Footer = ({
     author, canDownloadFiles, channelName, currentUserId,
-    enablePostIconOverride, enablePostUsernameOverride, enablePublicLink,
+    enablePostIconOverride, enablePostUsernameOverride, enablePublicLink, enableSecureFilePreview,
     hideActions, isDirectChannel, item, post, style, teammateNameDisplay,
 }: Props) => {
     const showActions = !hideActions && Boolean(item.id) && !item.id?.startsWith('uid');
@@ -106,14 +107,15 @@ const Footer = ({
             edges={edges}
             style={[style]}
         >
-            {['downloading', 'sharing'].includes(action) &&
+            {['downloading', 'sharing'].includes(action) && !enableSecureFilePreview && canDownloadFiles &&
                 <DownloadWithAction
                     action={action}
+                    enableSecureFilePreview={enableSecureFilePreview}
                     item={item}
                     setAction={setAction}
                 />
             }
-            {action === 'copying' &&
+            {action === 'copying' && !enableSecureFilePreview && enablePublicLink &&
             <CopyPublicLink
                 item={item}
                 setAction={setAction}
@@ -137,8 +139,8 @@ const Footer = ({
                 {showActions &&
                 <Actions
                     disabled={action !== 'none'}
-                    canDownloadFiles={canDownloadFiles}
-                    enablePublicLinks={enablePublicLink && item.type !== 'avatar'}
+                    canDownloadFiles={!enableSecureFilePreview && canDownloadFiles}
+                    enablePublicLinks={!enableSecureFilePreview && enablePublicLink && item.type !== 'avatar'}
                     fileId={item.id!}
                     onCopyPublicLink={handleCopyLink}
                     onDownload={handleDownload}

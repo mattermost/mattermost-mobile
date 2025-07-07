@@ -24,6 +24,7 @@ import type {DocumentRef} from '@components/document';
 
 type FileProps = {
     canDownloadFiles: boolean;
+    enableSecureFilePreview: boolean;
     file: FileInfo;
     galleryIdentifier: string;
     index: number;
@@ -74,6 +75,7 @@ const File = ({
     asCard = false,
     canDownloadFiles,
     channelName,
+    enableSecureFilePreview,
     file,
     galleryIdentifier,
     inViewPort = false,
@@ -205,6 +207,7 @@ const File = ({
                     ref={document}
                     canDownloadFiles={canDownloadFiles}
                     disabled={isPressDisabled}
+                    enableSecureFilePreview={enableSecureFilePreview}
                     file={file}
                 />
             </View>
@@ -238,6 +241,7 @@ const File = ({
                 <AudioFile
                     file={file}
                     canDownloadFiles={canDownloadFiles}
+                    enableSecureFilePreview={enableSecureFilePreview}
                 />
             </Animated.View>
         );

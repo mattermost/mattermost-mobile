@@ -33,9 +33,12 @@ buildscript {
 
 allprojects {
     repositories {
+        mavenLocal()
+        google()
         maven {
             url "$rootDir/../detox/node_modules/detox/Detox-android"
         }
+        maven { url 'https://jitpack.io' }
     }
 }
 

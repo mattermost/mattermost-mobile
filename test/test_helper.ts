@@ -25,6 +25,8 @@ import type ChannelModel from '@typings/database/models/servers/channel';
 import type ChannelBookmarkModel from '@typings/database/models/servers/channel_bookmark';
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
 import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
+import type CustomProfileAttributeModel from '@typings/database/models/servers/custom_profile_attribute';
+import type CustomProfileFieldModel from '@typings/database/models/servers/custom_profile_field';
 import type DraftModel from '@typings/database/models/servers/draft';
 import type FileModel from '@typings/database/models/servers/file';
 import type GroupModel from '@typings/database/models/servers/group';
@@ -35,6 +37,7 @@ import type PostModel from '@typings/database/models/servers/post';
 import type PostsInChannelModel from '@typings/database/models/servers/posts_in_channel';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 import type RoleModel from '@typings/database/models/servers/role';
+import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 import type TeamModel from '@typings/database/models/servers/team';
 import type ThreadModel from '@typings/database/models/servers/thread';
 import type UserModel from '@typings/database/models/servers/user';
@@ -163,7 +166,7 @@ class TestHelperSingleton {
             if (c === 'x') {
                 v = r;
             } else {
-                // eslint-disable-next-line no-mixed-operators
+
                 v = (r & 0x3) | 0x8;
             }
 
@@ -853,6 +856,43 @@ class TestHelperSingleton {
         };
     };
 
+    fakeScheduledPostModel = (overwrite?: Partial<ScheduledPostModel>): ScheduledPostModel => {
+        return {
+            ...this.fakeModel(),
+            id: this.generateId(),
+            createAt: 0,
+            updateAt: 0,
+            channelId: this.generateId(),
+            message: '',
+            rootId: '',
+            files: [],
+            metadata: {},
+            scheduledAt: 0,
+            processedAt: 0,
+            errorCode: '',
+            toApi: jest.fn(),
+            ...overwrite,
+        };
+    };
+
+    fakeScheduledPost = (overwrite?: Partial<ScheduledPost>): ScheduledPost => {
+        return {
+            id: this.generateId(),
+            channel_id: this.generateId(),
+            message: '',
+            root_id: '',
+            files: [],
+            metadata: {},
+            create_at: Date.now(),
+            update_at: Date.now(),
+            scheduled_at: Date.now(),
+            processed_at: 0,
+            error_code: '',
+            user_id: this.generateId(),
+            ...overwrite,
+        };
+    };
+
     fakePreferenceModel = (overwrite?: Partial<PreferenceModel>): PreferenceModel => {
         return {
             ...this.fakeModel(),
@@ -860,6 +900,35 @@ class TestHelperSingleton {
             category: '',
             name: '',
             userId: '',
+            user: this.fakeRelation(),
+            ...overwrite,
+        };
+    };
+
+    fakeCustomProfileFieldModel = (overwrite?: Partial<CustomProfileFieldModel>): CustomProfileFieldModel => {
+        return {
+            ...this.fakeModel(),
+            groupId: '',
+            name: `field_${this.generateId()}`,
+            type: 'text',
+            targetId: '',
+            targetType: 'user',
+            createAt: Date.now(),
+            updateAt: Date.now(),
+            deleteAt: 0,
+            attrs: {sort_order: 1},
+            customProfileAttributes: this.fakeQuery([]),
+            ...overwrite,
+        };
+    };
+
+    fakeCustomProfileAttributeModel = (overwrite?: Partial<CustomProfileAttributeModel>): CustomProfileAttributeModel => {
+        return {
+            ...this.fakeModel(),
+            fieldId: this.generateId(),
+            userId: this.generateId(),
+            value: '',
+            field: this.fakeRelation(),
             user: this.fakeRelation(),
             ...overwrite,
         };

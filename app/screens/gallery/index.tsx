@@ -2,9 +2,10 @@
 // See LICENSE.txt for license information.
 
 import RNUtils from '@mattermost/rnutils';
-import React, {useCallback, useMemo, useRef, useState} from 'react';
-import {Platform, StyleSheet, View} from 'react-native';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {DeviceEventEmitter, Platform, StyleSheet, View} from 'react-native';
 
+import {Events} from '@constants';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet, useWindowDimensions} from '@hooks/device';
 import {useGalleryControls} from '@hooks/gallery';
@@ -74,6 +75,16 @@ const GalleryScreen = ({componentId, galleryIdentifier, hideActions, initialInde
     const onIndexChange = useCallback((index: number) => {
         setLocalIndex(index);
     }, []);
+
+    useEffect(() => {
+        const listener = DeviceEventEmitter.addListener(Events.CLOSE_GALLERY, () => {
+            onClose();
+        });
+
+        return () => {
+            listener.remove();
+        };
+    }, [onClose]);
 
     useAndroidHardwareBackHandler(componentId, close);
 

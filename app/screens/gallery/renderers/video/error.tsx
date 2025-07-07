@@ -45,6 +45,8 @@ const styles = StyleSheet.create({
 });
 
 type Props = {
+    canDownloadFiles: boolean;
+    enableSecureFilePreview: boolean;
     filename: string;
     height: number;
     isDownloading: boolean;
@@ -55,10 +57,10 @@ type Props = {
     hideHeaderAndFooter: (hide?: boolean) => void;
 }
 
-const VideoError = ({filename, height, isDownloading, isRemote, posterUri, setDownloading, width, hideHeaderAndFooter}: Props) => {
-    const {headerAndFooterHidden} = useLightboxSharedValues();
+const VideoError = ({canDownloadFiles, enableSecureFilePreview, filename, height, isDownloading, isRemote, hideHeaderAndFooter, posterUri, setDownloading, width}: Props) => {
     const [hasPoster, setHasPoster] = useState(false);
     const [loadPosterError, setLoadPosterError] = useState(false);
+    const {headerAndFooterHidden} = useLightboxSharedValues();
     const dimensions = useWindowDimensions();
     const intl = useIntl();
 
@@ -102,20 +104,22 @@ const VideoError = ({filename, height, isDownloading, isRemote, posterUri, setDo
         );
     }
 
-    return (
-        <TouchableWithoutFeedback
-            onPress={onPress}
-            style={styles.container}
-        >
-            <Animated.View style={styles.container}>
-                {poster}
-                <Text
-                    numberOfLines={2}
-                    style={styles.filename}
-                >
-                    {filename}
-                </Text>
-                {isRemote &&
+    let remoteVideo;
+    if (isRemote) {
+        if (enableSecureFilePreview) {
+            remoteVideo = (
+                <View style={styles.marginTop}>
+                    <View style={styles.marginBottom}>
+                        <FormattedText
+                            defaultMessage='Only PDF files can be previewed. Downloads are not allowed on this server.'
+                            id='mobile.document_preview.only_pdf_description'
+                            style={styles.unsupported}
+                        />
+                    </View>
+                </View>
+            );
+        } else if (canDownloadFiles) {
+            remoteVideo = (
                 <View style={styles.marginTop}>
                     <View style={styles.marginBottom}>
                         <FormattedText
@@ -132,7 +136,36 @@ const VideoError = ({filename, height, isDownloading, isRemote, posterUri, setDo
                         text={intl.formatMessage({id: 'video.download', defaultMessage: 'Download video'})}
                     />
                 </View>
-                }
+            );
+        } else {
+            remoteVideo = (
+                <View style={styles.marginTop}>
+                    <View style={styles.marginBottom}>
+                        <FormattedText
+                            defaultMessage='File downloads are disabled on this server. Please contact your System Admin for more details.'
+                            id='mobile.downloader.disabled_description'
+                            style={styles.unsupported}
+                        />
+                    </View>
+                </View>
+            );
+        }
+    }
+
+    return (
+        <TouchableWithoutFeedback
+            onPress={onPress}
+            style={styles.container}
+        >
+            <Animated.View style={styles.container}>
+                {poster}
+                <Text
+                    numberOfLines={2}
+                    style={styles.filename}
+                >
+                    {filename}
+                </Text>
+                {isRemote && remoteVideo}
                 {!isRemote &&
                 <FormattedText
                     defaultMessage='An error occurred while trying to play the video.'
