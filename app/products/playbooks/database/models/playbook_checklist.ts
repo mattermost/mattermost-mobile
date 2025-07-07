@@ -37,9 +37,6 @@ export default class PlaybookChecklistModel extends Model implements PlaybookChe
     /** title : Title of the checklist */
     @field('title') title!: string;
 
-    /** order : Order of the checklist */
-    @field('order') order!: number;
-
     /** sync : The sync status of the checklist */
     @field('sync') sync!: SyncStatus;
 

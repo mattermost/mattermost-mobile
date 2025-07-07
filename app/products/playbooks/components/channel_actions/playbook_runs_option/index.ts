@@ -18,7 +18,7 @@ type OwnProps = {
 
 const enhanced = withObservables(['channelId'], ({channelId, database}: OwnProps) => {
     return {
-        playbooksActiveRuns: queryPlaybookRunsPerChannel(database, channelId, false).observeCount(),
+        playbooksActiveRuns: queryPlaybookRunsPerChannel(database, channelId, false).observeCount(false),
         channelName: observeChannel(database, channelId).pipe(
             switchMap((channel) => of$(channel?.displayName)),
         ),

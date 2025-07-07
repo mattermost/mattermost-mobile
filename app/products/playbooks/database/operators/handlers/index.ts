@@ -15,23 +15,26 @@ import type PlaybookChecklistModel from '@playbooks/types/database/models/playbo
 import type PlaybookChecklistItemModel from '@playbooks/types/database/models/playbook_checklist_item';
 import type PlaybookRunModel from '@playbooks/types/database/models/playbook_run';
 
+type PartialRun = Partial<PlaybookRun> & Pick<PlaybookRun, 'id'>;
 type HandlePlaybookRunArgs = {
     prepareRecordsOnly: boolean;
     removeAssociatedRecords?: boolean;
     processChildren?: boolean;
     keepFinishedRuns?: boolean;
-    runs?: PlaybookRun[];
+    runs?: PartialRun[];
 }
 
+type PartialChecklist = Partial<PlaybookChecklistWithRun> & Pick<PlaybookChecklistWithRun, 'id' | 'run_id'>;
 type HandlePlaybookChecklistArgs = {
     prepareRecordsOnly: boolean;
     processChildren?: boolean;
-    checklists?: PlaybookChecklistWithRun[];
+    checklists?: PartialChecklist[];
 }
 
+type PartialChecklistItem = Partial<PlaybookChecklistItemWithChecklist> & Pick<PlaybookChecklistItemWithChecklist, 'id' | 'checklist_id'>;
 type HandlePlaybookChecklistItemArgs = {
     prepareRecordsOnly: boolean;
-    items?: PlaybookChecklistItemWithChecklist[];
+    items?: PartialChecklistItem[];
 }
 
 const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM} = PLAYBOOK_TABLES;
@@ -69,7 +72,7 @@ const PlaybookHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supe
         const existingRecordsMap = new Map(existingRecords.map((record) => [record.id, record]));
 
         // get the raws to create or update, will handle deletion later
-        const createOrUpdateRaws = uniqueRaws.reduce<PlaybookRun[]>((res, raw) => {
+        const createOrUpdateRaws = uniqueRaws.reduce<PartialRun[]>((res, raw) => {
             const existingRecord = existingRecordsMap.get(raw.id);
             if (!existingRecord) {
                 res.push(raw);
@@ -177,7 +180,7 @@ const PlaybookHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supe
             Q.where('id', Q.oneOf(keys)),
         ).fetch();
         const existingRecordsMap = new Map(existingRecords.map((record) => [record.id, record]));
-        const createOrUpdateRaws = uniqueRaws.reduce<PlaybookChecklistWithRun[]>((res, raw) => {
+        const createOrUpdateRaws = uniqueRaws.reduce<PartialChecklist[]>((res, raw) => {
             const existingRecord = existingRecordsMap.get(raw.id);
             if (!existingRecord) {
                 res.push(raw);
@@ -245,7 +248,7 @@ const PlaybookHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supe
             Q.where('id', Q.oneOf(keys)),
         ).fetch();
         const existingRecordsMap = new Map(existingRecords.map((record) => [record.id, record]));
-        const createOrUpdateRaws = uniqueRaws.reduce<PlaybookChecklistItemWithChecklist[]>((res, raw) => {
+        const createOrUpdateRaws = uniqueRaws.reduce<PartialChecklistItem[]>((res, raw) => {
             const existingRecord = existingRecordsMap.get(raw.id);
             if (!existingRecord) {
                 res.push(raw);

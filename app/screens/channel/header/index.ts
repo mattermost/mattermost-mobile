@@ -126,7 +126,7 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: OwnProps
                 if (!enabled) {
                     return of$(false);
                 }
-                return queryPlaybookRunsPerChannel(database, channelId).observeCount().pipe(
+                return queryPlaybookRunsPerChannel(database, channelId).observeCount(false).pipe(
                     // eslint-disable-next-line max-nested-callbacks
                     switchMap((v) => of$(v > 0)),
                     distinctUntilChanged(),

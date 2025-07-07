@@ -11,9 +11,9 @@ import type PlaybookChecklistItemModel from '@playbooks/types/database/models/pl
 
 const {PLAYBOOK_CHECKLIST_ITEM} = PLAYBOOK_TABLES;
 
-export const queryPlaybookChecklistItemsByChecklist = (database: Database, checklistId: string) => {
+export const queryPlaybookChecklistItemsByChecklists = (database: Database, checklistId: string[]) => {
     return database.get<PlaybookChecklistItemModel>(PLAYBOOK_CHECKLIST_ITEM).query(
-        Q.where('checklist_id', checklistId),
+        Q.where('checklist_id', Q.oneOf(checklistId)),
     );
 };
 
@@ -38,5 +38,5 @@ export const observePlaybookChecklistItemById = (database: Database, id: string)
 };
 
 export const observePlaybookChecklistItemssByChecklist = (database: Database, checklistId: string) => {
-    return queryPlaybookChecklistItemsByChecklist(database, checklistId).observe();
+    return queryPlaybookChecklistItemsByChecklists(database, [checklistId]).observe();
 };

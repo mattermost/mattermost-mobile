@@ -9,12 +9,12 @@ import UserChip from '@components/chips/user_chip';
 import UserAvatarsStack from '@components/user_avatars_stack';
 import {Preferences} from '@constants';
 import {useTheme} from '@context/theme';
+import ProgressBar from '@playbooks/components/progress_bar/progress_bar';
 import {goToPlaybookRun} from '@playbooks/screens/navigation';
 import {renderWithIntl} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
 import PlaybookCard from './playbook_card';
-import ProgressBar from './progress_bar';
 
 jest.mock('@context/theme', () => ({
     useTheme: jest.fn(),
@@ -45,7 +45,7 @@ jest.mock('@components/chips/base_chip', () => ({
 }));
 jest.mocked(BaseChip).mockImplementation((props) => React.createElement('BaseChip', {...props, testID: 'base-chip'}));
 
-jest.mock('./progress_bar', () => ({
+jest.mock('@playbooks/components/progress_bar/progress_bar', () => ({
     __esModule: true,
     default: jest.fn(),
 }));
@@ -93,10 +93,6 @@ describe('PlaybookCard', () => {
         expect(userAvatarsStack.props.channelId).toBe(mockRun.channelId);
         expect(userAvatarsStack.props.location).toBe(baseProps.location);
 
-        const baseChip = getByTestId('base-chip');
-        expect(baseChip.props.prefix).toBeDefined();
-        expect(baseChip.props.label).toBe('Playbook with really long name');
-
         const progressBar = getByTestId('progress-bar');
         expect(progressBar.props.progress).toBe(50);
         expect(progressBar.props.isActive).toBe(true);
@@ -114,6 +110,7 @@ describe('PlaybookCard', () => {
         expect(goToPlaybookRun).toHaveBeenCalledWith(
             expect.anything(),
             mockRun.id,
+            undefined,
         );
     });
 
@@ -158,13 +155,5 @@ describe('PlaybookCard', () => {
         );
 
         expect(queryByTestId('user-chip')).toBeNull();
-    });
-
-    it('passes correct props to BaseChip', () => {
-        const {getByTestId} = renderWithIntl(<PlaybookCard {...baseProps}/>);
-
-        const baseChip = getByTestId('base-chip');
-        expect(baseChip.props.prefix).toBeDefined();
-        expect(baseChip.props.label).toBe('Playbook with really long name');
     });
 });

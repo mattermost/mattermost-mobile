@@ -15,7 +15,7 @@ type OwnProps = {
 
 const enhanced = withObservables(['channelId'], ({channelId, database}: OwnProps) => {
     return {
-        allRuns: queryPlaybookRunsPerChannel(database, channelId).observe(),
+        allRuns: queryPlaybookRunsPerChannel(database, channelId).observeWithColumns(['end_at']),
     };
 });
 
