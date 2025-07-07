@@ -18,7 +18,6 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
 import {useKeyboardOverlap} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
-import useFileUploadError from '@hooks/file_upload_error';
 import {useInputPropagation} from '@hooks/input';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import DraftEditPostUploadManager from '@managers/draft_upload_manager';
@@ -103,13 +102,11 @@ const EditPost = ({
     const serverUrl = useServerUrl();
 
     const shouldDeleteOnSave = !postMessage && canDelete && !hasFilesAttached;
-    const {uploadError, newUploadError} = useFileUploadError();
 
     const shouldEnableSaveButton = useCallback(() => {
         const loadingFiles = postFiles.filter((v) => v.clientId && DraftEditPostUploadManager.isUploading(v.clientId));
         const hasUploadingFiles = loadingFiles.length > 0;
-
-        const tooLong = postMessage.trim().length > maxPostSize;
+        const tooLong = postMessage.length > maxPostSize;
 
         const messageChanged = editingMessage !== postMessage;
 
@@ -189,20 +186,20 @@ const EditPost = ({
         }
 
         if (!canUploadFiles) {
-            newUploadError(uploadDisabledWarning(intl));
+            setErrorLine(uploadDisabledWarning(intl));
             return;
         }
 
         const currentFileCount = postFiles?.length || 0;
         const availableCount = maxFileCount - currentFileCount;
         if (newFiles.length > availableCount) {
-            newUploadError(fileMaxWarning(intl, maxFileCount));
+            setErrorLine(fileMaxWarning(intl, maxFileCount));
             return;
         }
 
         const largeFile = newFiles.find((file) => file.size > maxFileSize);
         if (largeFile) {
-            newUploadError(fileSizeWarning(intl, maxFileSize));
+            setErrorLine(fileSizeWarning(intl, maxFileSize));
             return;
         }
 
@@ -219,11 +216,14 @@ const EditPost = ({
                 true, // isEditPost = true
                 updateFileInPostFiles,
             );
-            uploadErrorHandlers.current[file.clientId!] = DraftEditPostUploadManager.registerErrorHandler(file.clientId!, newUploadError);
+            uploadErrorHandlers.current[file.clientId!] = DraftEditPostUploadManager.registerErrorHandler(file.clientId!, setErrorLine);
         }
 
-        newUploadError(null);
-    }, [canUploadFiles, postFiles?.length, maxFileCount, newUploadError, intl, maxFileSize, serverUrl, post.channelId, post.rootId, updateFileInPostFiles]);
+        const currentMessageTooLong = postMessage.length > maxPostSize;
+        if (!currentMessageTooLong) {
+            setErrorLine(undefined);
+        }
+    }, [canUploadFiles, postFiles?.length, maxFileCount, setErrorLine, intl, maxFileSize, serverUrl, post.channelId, post.rootId, updateFileInPostFiles, postMessage, maxPostSize]);
 
     const handleFileRemoval = useCallback((id: string) => {
 
@@ -321,20 +321,23 @@ const EditPost = ({
 
         for (const file of loadingFiles) {
             if (file.clientId && !uploadErrorHandlers.current[file.clientId]) {
-                uploadErrorHandlers.current[file.clientId] = DraftEditPostUploadManager.registerErrorHandler(file.clientId, newUploadError);
+                uploadErrorHandlers.current[file.clientId] = DraftEditPostUploadManager.registerErrorHandler(file.clientId, setErrorLine);
             }
         }
-    }, [postFiles, postMessage, newUploadError, shouldEnableSaveButton, toggleSaveButton]);
+    }, [postFiles, postMessage, setErrorLine, shouldEnableSaveButton, toggleSaveButton]);
 
     const onChangeTextCommon = useCallback((message: string) => {
-        const tooLong = message.trim().length > maxPostSize;
-        setErrorLine(undefined);
+        const tooLong = message.length > maxPostSize;
         setErrorExtra(undefined);
+
         if (tooLong) {
             const line = intl.formatMessage({id: 'mobile.message_length.message_split_left', defaultMessage: 'Message exceeds the character limit'});
-            const extra = `${message.trim().length} / ${maxPostSize}`;
+            const extra = `${message.length} / ${maxPostSize}`;
             setErrorLine(line);
             setErrorExtra(extra);
+        } else {
+            // Clear any error when message is valid
+            setErrorLine(undefined);
         }
     }, [intl, maxPostSize]);
 
@@ -461,7 +464,7 @@ const EditPost = ({
                         }
                         <View style={styles.inputContainer}>
                             <EditPostInput
-                                hasError={Boolean(errorLine)}
+                                hasError={Boolean(errorLine || errorExtra)}
                                 message={postMessage}
                                 onChangeText={onInputChangeText}
                                 onTextSelectionChange={onTextSelectionChange}
@@ -469,7 +472,6 @@ const EditPost = ({
                                 post={post}
                                 postFiles={postFiles}
                                 addFiles={addFiles}
-                                uploadFileError={uploadError}
                             />
                         </View>
                     </View>

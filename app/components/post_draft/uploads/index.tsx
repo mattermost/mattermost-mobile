@@ -18,7 +18,7 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import UploadItem from './upload_item';
 
-const CONTAINER_HEIGHT_MAX = 67;
+const CONTAINER_HEIGHT_MAX = 80;
 const CONTAINER_HEIGHT_MIN = 0;
 const ERROR_HEIGHT_MAX = 20;
 const ERROR_HEIGHT_MIN = 0;

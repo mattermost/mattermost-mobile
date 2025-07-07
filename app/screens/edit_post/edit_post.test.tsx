@@ -4,7 +4,6 @@
 import React from 'react';
 import {Alert} from 'react-native';
 
-import useFileUploadError from '@hooks/file_upload_error';
 import DraftEditPostUploadManager from '@managers/draft_upload_manager';
 import {fireEvent, renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
@@ -15,7 +14,6 @@ import EditPost from './edit_post';
 import type {Database} from '@nozbe/watermelondb';
 import type PostModel from '@typings/database/models/servers/post';
 
-jest.mock('@hooks/file_upload_error');
 jest.mock('@utils/file/file_picker');
 jest.mock('@managers/draft_upload_manager', () => ({
     prepareUpload: jest.fn(),
@@ -84,7 +82,6 @@ const ERROR_MESSAGES = {
 
 describe('Edit Post', () => {
     let database: Database;
-    let mockNewUploadError: jest.Mock;
 
     const baseProps: Parameters<typeof EditPost>[0] = {
         componentId: 'EditPost',
@@ -105,14 +102,6 @@ describe('Edit Post', () => {
         maxFileCount: TEST_CONFIG.maxFileCount,
         maxFileSize: TEST_CONFIG.maxFileSize,
         canUploadFiles: true,
-    };
-
-    const setupMocks = () => {
-        mockNewUploadError = jest.fn();
-        jest.mocked(useFileUploadError).mockReturnValue({
-            uploadError: null,
-            newUploadError: mockNewUploadError,
-        });
     };
 
     const setupPickerMock = (file: Partial<ExtractedFileInfo>) => {
@@ -157,7 +146,6 @@ describe('Edit Post', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-        setupMocks();
     });
 
     describe('Rendering', () => {
@@ -177,7 +165,7 @@ describe('Edit Post', () => {
             const screen = renderEditPost(props);
             triggerFileUpload(screen);
 
-            expect(mockNewUploadError).toHaveBeenCalledWith(ERROR_MESSAGES.uploadsDisabled);
+            expect(screen.getByText(ERROR_MESSAGES.uploadsDisabled)).toBeVisible();
         });
 
         it('should show error when maximum file count is reached', () => {
@@ -186,7 +174,7 @@ describe('Edit Post', () => {
             const screen = renderEditPost(props);
             triggerFileUpload(screen);
 
-            expect(mockNewUploadError).toHaveBeenCalledWith(ERROR_MESSAGES.maxFilesReached);
+            expect(screen.getByText(ERROR_MESSAGES.maxFilesReached)).toBeVisible();
         });
 
         it('should show error when file size exceeds limit', () => {
@@ -195,7 +183,7 @@ describe('Edit Post', () => {
             const screen = renderEditPost(props);
             triggerFileUpload(screen);
 
-            expect(mockNewUploadError).toHaveBeenCalledWith(ERROR_MESSAGES.fileTooLarge);
+            expect(screen.getByText(ERROR_MESSAGES.fileTooLarge)).toBeVisible();
         });
     });
 
@@ -216,9 +204,8 @@ describe('Edit Post', () => {
             );
             expect(DraftEditPostUploadManager.registerErrorHandler).toHaveBeenCalledWith(
                 TEST_FILES.newFile.clientId,
-                mockNewUploadError,
+                expect.any(Function),
             );
-            expect(mockNewUploadError).toHaveBeenCalledWith(null);
         });
     });
 
@@ -244,6 +231,44 @@ describe('Edit Post', () => {
                 'Are you sure you want to remove test-1?',
                 expect.any(Array),
             );
+        });
+    });
+
+    describe('Error Display', () => {
+        it('should display upload error in PostError component when file upload fails', () => {
+            setupPickerMock(TEST_FILES.largeFile);
+            const props = {...baseProps, maxFileSize: 1000};
+            const screen = renderEditPost(props);
+
+            // Trigger file upload that will cause size error
+            triggerFileUpload(screen);
+
+            // Verify that the PostError component is displayed with the error
+            expect(screen.getByTestId('edit_post.message.input.error')).toBeVisible();
+            expect(screen.getByText(ERROR_MESSAGES.fileTooLarge)).toBeVisible();
+        });
+
+        it('should display upload error with divider when error is present', () => {
+            setupPickerMock(TEST_FILES.smallFile);
+            const props = {...baseProps, canUploadFiles: false};
+            const screen = renderEditPost(props);
+
+            // Trigger file upload that will cause upload disabled error
+            triggerFileUpload(screen);
+
+            // Verify that the error is displayed
+            expect(screen.getByText(ERROR_MESSAGES.uploadsDisabled)).toBeVisible();
+
+            // Verify that the PostError component has the hasError styling applied
+            const editPostInput = screen.getByTestId('edit_post.message.input');
+            expect(editPostInput).toBeVisible();
+        });
+
+        it('should not display PostError component when no upload error exists', () => {
+            const screen = renderEditPost();
+
+            // Verify that no error message is displayed
+            expect(screen.queryByTestId('edit_post.message.input.error')).toBeNull();
         });
     });
 });

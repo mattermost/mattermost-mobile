@@ -5,6 +5,7 @@ import React from 'react';
 import {StyleSheet, View} from 'react-native';
 
 import ErrorText from '@components/error_text';
+import MenuDivider from '@components/menu_divider';
 
 type PostErrorProps = {
     errorLine?: string;
@@ -13,13 +14,13 @@ type PostErrorProps = {
 
 const styles = StyleSheet.create({
     errorContainerSplit: {
-        paddingHorizontal: 15,
+        paddingHorizontal: 16,
         flexDirection: 'row',
         justifyContent: 'space-between',
         width: '100%',
     },
     errorContainer: {
-        paddingHorizontal: 10,
+        paddingHorizontal: 16,
         width: '100%',
     },
     errorWrap: {
@@ -29,28 +30,45 @@ const styles = StyleSheet.create({
     errorWrapper: {
         alignItems: 'center',
     },
+    errorText: {
+        fontSize: 13,
+    },
 });
 
 const PostError = ({errorLine, errorExtra}: PostErrorProps) => {
+    const hasError = Boolean(errorLine || errorExtra);
+
+    if (!hasError) {
+        return null;
+    }
+
     return (
-        <View
-            style={errorExtra ? styles.errorContainerSplit : styles.errorContainer}
-        >
-            {Boolean(errorLine) && (
-                <ErrorText
-                    testID='edit_post.message.input.error'
-                    error={errorLine!}
-                    textStyle={styles.errorWrap}
-                />
-            )}
-            {Boolean(errorExtra) && (
-                <ErrorText
-                    testID='edit_post.message.input.error.extra'
-                    error={errorExtra!}
-                    textStyle={!errorLine && styles.errorWrapper}
-                />
-            )}
-        </View>
+        <>
+            <View
+                style={errorExtra ? styles.errorContainerSplit : styles.errorContainer}
+            >
+                {Boolean(errorLine) && (
+                    <ErrorText
+                        testID='edit_post.message.input.error'
+                        error={errorLine!}
+                        textStyle={[styles.errorWrap, styles.errorText]}
+                    />
+                )}
+                {Boolean(errorExtra) && (
+                    <ErrorText
+                        testID='edit_post.message.input.error.extra'
+                        error={errorExtra!}
+                        textStyle={[!errorLine && styles.errorWrapper, styles.errorText]}
+                    />
+                )}
+            </View>
+            <MenuDivider
+                marginTop={0}
+                marginBottom={0}
+                marginLeft={0}
+                marginRight={0}
+            />
+        </>
     );
 };
 
