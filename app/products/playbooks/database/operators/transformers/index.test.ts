@@ -350,6 +350,7 @@ describe('*** PLAYBOOK_CHECKLIST Prepare Records Test ***', () => {
                 record.runId = 'playbook_run_2';
                 record.title = 'Existing Checklist';
                 record.updateAt = 0;
+                record.sortOrder = [];
             });
         });
 
