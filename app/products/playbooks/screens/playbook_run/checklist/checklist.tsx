@@ -8,6 +8,7 @@ import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-nati
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
 import ProgressBar from '@playbooks/components/progress_bar';
+import {getChecklistProgress} from '@playbooks/utils/progress';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -87,24 +88,11 @@ const Checklist = ({
     const height = useSharedValue(0);
     const windowDimensions = useWindowDimensions();
 
-    const {skipped, completed, totalNumber} = useMemo(() => {
-        const skippedCount = items.filter((item) => item.state === 'skipped').length;
-        const completedCount = items.filter((item) => item.state === 'closed').length;
-        const totalCount = items.length - skippedCount;
-        return {
-            skipped: Boolean(skippedCount),
-            completed: completedCount,
-            totalNumber: totalCount,
-        };
-    }, [items]);
+    const {skipped, completed, totalNumber, progress} = useMemo(() => getChecklistProgress(items), [items]);
 
     const toggleExpanded = useCallback(() => {
         setExpanded((prev) => !prev);
     }, []);
-
-    const progressPercentage = useMemo(() => {
-        return totalNumber > 0 ? (completed / totalNumber) * 100 : 0;
-    }, [completed, totalNumber]);
 
     const animatedStyle = useAnimatedStyle(() => {
         return {
@@ -145,12 +133,13 @@ const Checklist = ({
                     <Text style={styles.progressText}>{`${completed} / ${totalNumber} done`}</Text>
                 </View>
                 <ProgressBar
-                    progress={progressPercentage}
+                    progress={progress}
                     isActive={!isFinished}
                 />
             </TouchableOpacity>
             <Animated.View
                 style={[styles.checklistItemsContainer, animatedStyle]}
+                testID='checklist-items-container'
             >
                 {items.map((item, index) => (
                     <ChecklistItem

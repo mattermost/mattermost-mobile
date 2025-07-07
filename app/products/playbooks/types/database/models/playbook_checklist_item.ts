@@ -57,7 +57,7 @@ declare class PlaybookChecklistItemModel extends Model {
     lastSyncAt: number;
 
     // JSON string representing the task actions
-    taskActions: TaskAction[] | null;
+    taskActions: TaskAction[];
 
     // The timestamp when the checklist item was updated
     updateAt: number;

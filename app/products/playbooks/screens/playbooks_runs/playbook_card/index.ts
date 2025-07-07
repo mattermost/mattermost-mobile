@@ -4,9 +4,9 @@
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of as of$} from 'rxjs';
 
-import {observePlaybookRunProgress} from '@playbooks/database/queries/run';
+import {observePlaybookRunProgress, queryParticipantsFromAPIRun} from '@playbooks/database/queries/run';
 import {getProgressFromRun} from '@playbooks/utils/progress';
-import {observeUser, queryUsersById} from '@queries/servers/user';
+import {observeUser} from '@queries/servers/user';
 
 import PlaybookCard, {ITEM_HEIGHT} from './playbook_card';
 
@@ -23,18 +23,15 @@ const enhanced = withObservables(['run'], ({run, database}: OwnProps) => {
             run: run.observe(),
             participants: run.participants().observe(),
             progress: observePlaybookRunProgress(database, run.id),
-            owner: run.owner.observe(),
+            owner: observeUser(database, run.ownerUserId),
         };
     }
 
-    const participants = queryUsersById(database, run.participant_ids).observe();
-    const owner = observeUser(database, run.owner_user_id);
-
     return {
         run: of$(run),
-        participants,
+        participants: queryParticipantsFromAPIRun(database, run).observe(),
         progress: of$(getProgressFromRun(run)),
-        owner,
+        owner: observeUser(database, run.owner_user_id),
     };
 });
 

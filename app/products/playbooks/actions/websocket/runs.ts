@@ -7,12 +7,19 @@ import {getPlaybookRunById} from '@playbooks/database/queries/run';
 import EphemeralStore from '@store/ephemeral_store';
 import {safeParseJSON} from '@utils/helpers';
 
+const isValidEvent = (data: unknown) => {
+    if (!data || typeof data !== 'object') {
+        return false;
+    }
+    return true;
+};
+
 export const handlePlaybookRunCreated = async (serverUrl: string, msg: WebSocketMessage) => {
     if (!msg.data.payload) {
         return;
     }
     const data = safeParseJSON(msg.data.payload) as PlaybookRunCreatedPayload;
-    if (!data) {
+    if (!isValidEvent(data)) {
         return;
     }
 
@@ -33,7 +40,7 @@ export const handlePlaybookRunUpdated = async (serverUrl: string, msg: WebSocket
         return;
     }
     const data = safeParseJSON(msg.data.payload);
-    if (!data) {
+    if (!isValidEvent(data)) {
         return;
     }
 
@@ -119,12 +126,14 @@ export const handlePlaybookChecklistUpdated = async (serverUrl: string, msg: Web
     });
 
     if (data.update.item_inserts) {
+        const promises = [];
         for (const item of data.update.item_inserts) {
-            operator.handlePlaybookChecklistItem({
+            promises.push(operator.handlePlaybookChecklistItem({
                 items: [{...item, checklist_id: data.update.id, update_at: data.update.updated_at}],
                 prepareRecordsOnly: false,
-            });
+            }));
         }
+        await Promise.all(promises);
     }
 };
 
@@ -133,7 +142,7 @@ export const handlePlaybookChecklistItemUpdated = async (serverUrl: string, msg:
         return;
     }
     const data = safeParseJSON(msg.data.payload) as PlaybookChecklistItemUpdatePayload;
-    if (!data) {
+    if (!isValidEvent(data)) {
         return;
     }
 

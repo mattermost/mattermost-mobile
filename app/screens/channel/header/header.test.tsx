@@ -4,8 +4,11 @@
 import React, {type ComponentProps} from 'react';
 
 import NavigationHeader from '@components/navigation_header';
+import {useServerUrl} from '@context/server';
+import {fetchPlaybookRunsForChannel} from '@playbooks/actions/remote/runs';
 import {goToPlaybookRun, goToPlaybookRuns} from '@playbooks/screens/navigation';
-import {renderWithIntl} from '@test/intl-test-helper';
+import EphemeralStore from '@store/ephemeral_store';
+import {renderWithIntl, waitFor} from '@test/intl-test-helper';
 
 import ChannelHeader from './header';
 
@@ -15,20 +18,19 @@ jest.mock('@components/navigation_header', () => ({
 }));
 jest.mocked(NavigationHeader).mockImplementation((props) => React.createElement('NavigationHeader', {testID: 'navigation-header', ...props}));
 
-jest.mock('@screens/navigation', () => ({
-    bottomSheet: jest.fn(),
-}));
-
-jest.mock('@playbooks/screens/navigation', () => ({
-    goToPlaybookRun: jest.fn(),
-    goToPlaybookRuns: jest.fn(),
-}));
+jest.mock('@screens/navigation');
+jest.mock('@playbooks/screens/navigation');
+jest.mock('@playbooks/actions/remote/runs');
 
 jest.mock('@calls/state', () => ({
     getCallsConfig: jest.fn().mockReturnValue({
         pluginEnabled: false,
     }),
 }));
+
+const serverUrl = 'some.server.url';
+jest.mock('@context/server');
+jest.mocked(useServerUrl).mockReturnValue(serverUrl);
 
 describe('ChannelHeader', () => {
     function getBaseProps(): ComponentProps<typeof ChannelHeader> {
@@ -124,5 +126,82 @@ describe('ChannelHeader', () => {
         playbookButton?.onPress();
         expect(goToPlaybookRuns).toHaveBeenCalledWith(expect.anything(), 'channel-id', 'Test Channel');
         expect(goToPlaybookRun).not.toHaveBeenCalled();
+    });
+
+    it('should set the ephemeral store when we fetch the playbook runs for the channel', async () => {
+        const ephemeralGetSpy = jest.spyOn(EphemeralStore, 'getChannelPlaybooksSynced');
+        const ephemeralSetSpy = jest.spyOn(EphemeralStore, 'setChannelPlaybooksSynced');
+
+        const props = getBaseProps();
+        props.isPlaybooksEnabled = true;
+
+        ephemeralGetSpy.mockReturnValue(false);
+
+        jest.mocked(fetchPlaybookRunsForChannel).mockResolvedValue({
+            runs: [],
+        });
+
+        renderWithIntl(<ChannelHeader {...props}/>);
+
+        await waitFor(() => {
+            expect(ephemeralGetSpy).toHaveBeenCalledWith(serverUrl, 'channel-id');
+            expect(fetchPlaybookRunsForChannel).toHaveBeenCalledWith(serverUrl, 'channel-id');
+            expect(ephemeralSetSpy).toHaveBeenCalledWith(serverUrl, 'channel-id');
+        });
+    });
+
+    it('should not fetch runs when playbooks are disabled', async () => {
+        const ephemeralGetSpy = jest.spyOn(EphemeralStore, 'getChannelPlaybooksSynced');
+        const ephemeralSetSpy = jest.spyOn(EphemeralStore, 'setChannelPlaybooksSynced');
+
+        const props = getBaseProps();
+        props.isPlaybooksEnabled = false;
+        ephemeralGetSpy.mockReturnValue(false);
+
+        renderWithIntl(<ChannelHeader {...props}/>);
+
+        await waitFor(() => {
+            expect(ephemeralGetSpy).not.toHaveBeenCalled();
+            expect(ephemeralSetSpy).not.toHaveBeenCalled();
+            expect(fetchPlaybookRunsForChannel).not.toHaveBeenCalled();
+        });
+    });
+
+    it('should not fetch runs when we already have the runs synced', async () => {
+        const ephemeralGetSpy = jest.spyOn(EphemeralStore, 'getChannelPlaybooksSynced');
+        const ephemeralSetSpy = jest.spyOn(EphemeralStore, 'setChannelPlaybooksSynced');
+
+        const props = getBaseProps();
+        props.isPlaybooksEnabled = true;
+
+        ephemeralGetSpy.mockReturnValue(true);
+
+        renderWithIntl(<ChannelHeader {...props}/>);
+
+        await waitFor(() => {
+            expect(ephemeralGetSpy).toHaveBeenCalledWith(serverUrl, 'channel-id');
+            expect(ephemeralSetSpy).not.toHaveBeenCalled();
+            expect(fetchPlaybookRunsForChannel).not.toHaveBeenCalled();
+        });
+    });
+
+    it('should not set the ephemeral store when there is an error fetching the runs', async () => {
+        const ephemeralGetSpy = jest.spyOn(EphemeralStore, 'getChannelPlaybooksSynced');
+        const ephemeralSetSpy = jest.spyOn(EphemeralStore, 'setChannelPlaybooksSynced');
+
+        const props = getBaseProps();
+        props.isPlaybooksEnabled = true;
+
+        ephemeralGetSpy.mockReturnValue(false);
+
+        jest.mocked(fetchPlaybookRunsForChannel).mockResolvedValue({error: new Error('Error fetching runs')});
+
+        renderWithIntl(<ChannelHeader {...props}/>);
+
+        await waitFor(() => {
+            expect(ephemeralGetSpy).toHaveBeenCalledWith(serverUrl, 'channel-id');
+            expect(ephemeralSetSpy).not.toHaveBeenCalled();
+            expect(fetchPlaybookRunsForChannel).toHaveBeenCalledWith(serverUrl, 'channel-id');
+        });
     });
 });

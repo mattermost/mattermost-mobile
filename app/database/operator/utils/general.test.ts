@@ -98,7 +98,7 @@ describe('prepareDestroyPermanentlyChildrenAssociatedRecords', () => {
 
     it('should handle records with no associations', async () => {
         // Create a playbook run without any checklists or items
-        const mockItem: PlaybookChecklistItemWithChecklist = {
+        const mockItem: PartialChecklistItem = {
             ...TestHelper.createPlaybookItem('playbook_run_1-checklist_1', 1),
             checklist_id: 'checklist_1',
         };

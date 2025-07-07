@@ -474,6 +474,7 @@ class TestHelperSingleton {
             fetch: jest.fn().mockImplementation(async () => returnValue),
             observe: jest.fn().mockImplementation(() => of$(returnValue)),
             observeCount: jest.fn().mockImplementation(() => of$(returnValue.length)),
+            fetchIds: jest.fn().mockImplementation(async () => returnValue.map((v) => v.id)),
         } as unknown as Query<T>;
     };
 
@@ -1125,16 +1126,16 @@ class TestHelperSingleton {
         };
     };
 
-    fakePlaybookChecklist = (runId: string, overwite: Partial<PlaybookChecklist>): PlaybookChecklistWithRun => {
+    fakePlaybookChecklist = (runId: string, overwrite: Partial<PlaybookChecklist>): PlaybookChecklist & WithRunId => {
         const checklist = this.createPlaybookChecklist(runId, 1, 0);
         return {
             run_id: runId,
             ...checklist,
-            ...overwite,
+            ...overwrite,
         };
     };
 
-    fakePlaybookChecklistItem = (checklistId: string, overwrite: Partial<PlaybookChecklistItem>): PlaybookChecklistItemWithChecklist => {
+    fakePlaybookChecklistItem = (checklistId: string, overwrite: Partial<PlaybookChecklistItem>): PlaybookChecklistItem & WithChecklistId => {
         const item = this.createPlaybookItem(checklistId, 0);
         return {
             checklist_id: checklistId,
@@ -1215,6 +1216,21 @@ class TestHelperSingleton {
             taskActions: [],
             checklist: this.fakeRelation(),
             updateAt: 0,
+            ...overwrite,
+        };
+    };
+
+    fakeWebsocketMessage = (overwrite: Partial<WebSocketMessage> = {}): WebSocketMessage => {
+        return {
+            event: 'test',
+            data: {},
+            broadcast: {
+                omit_users: {},
+                user_id: '',
+                channel_id: '',
+                team_id: '',
+            },
+            seq: 0,
             ...overwrite,
         };
     };
