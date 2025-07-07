@@ -9,7 +9,7 @@ import type PlaybookRunModel from '@playbooks/types/database/models/playbook_run
 export function getRunScheduledTimestamp(run: PlaybookRunModel | PlaybookRun): number {
     const endAt = 'endAt' in run ? run.endAt : run.end_at;
     const lastStatusUpdateAt = 'lastStatusUpdateAt' in run ? run.lastStatusUpdateAt : run.last_status_update_at;
-    const previousReminder = 'table' in run ? run.previousReminder : run.previous_reminder;
+    const previousReminder = 'previousReminder' in run ? run.previousReminder : run.previous_reminder;
 
     const isNextUpdateScheduled = previousReminder !== 0;
     const isFinished = isRunFinished(run);
