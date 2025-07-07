@@ -727,7 +727,7 @@
   "mobile.managed.exit": "Вихід",
   "mobile.managed.jailbreak": "{vendor} не довіряє зламаним або рутованим пристроям.",
   "mobile.managed.jailbreak.emm": "{vendor} не довіряє зламаним або рутованим пристроям.\n\nПрограма закриється.",
-  "mobile.managed.logout": "Вихід",
+  "mobile.managed.logout": "Вийти з системи",
   "mobile.managed.not_secured.android": "Щоб використовувати Mattermost, цей пристрій має бути захищено блокуванням екрана.",
   "mobile.managed.not_secured.android.vendor": "Щоб використовувати {vendor}, цей пристрій має бути захищено блокуванням екрана.",
   "mobile.managed.not_secured.ios": "Щоб використовувати Mattermost, цей пристрій має бути захищено біометричними даними або паролем.\n\nПерейдіть у Налаштування > Ідентифікатор обличчя та пароль.",
