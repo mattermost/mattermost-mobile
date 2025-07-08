@@ -3,9 +3,9 @@
 
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
-import {updateLastPlaybookFetchAt} from '@playbooks/actions/local/channel';
+import {updateLastPlaybookRunsFetchAt} from '@playbooks/actions/local/channel';
 import {handlePlaybookRuns} from '@playbooks/actions/local/run';
-import {getLastPlaybookFetchAt} from '@playbooks/database/queries/run';
+import {getLastPlaybookRunsFetchAt} from '@playbooks/database/queries/run';
 import TestHelper from '@test/test_helper';
 
 import {fetchPlaybookRunsForChannel, fetchFinishedRunsForChannel} from './runs';
@@ -42,7 +42,7 @@ afterEach(async () => {
 });
 
 describe('fetchPlaybookRunsForChannel', () => {
-    jest.mocked(getLastPlaybookFetchAt).mockResolvedValue(123);
+    jest.mocked(getLastPlaybookRunsFetchAt).mockResolvedValue(123);
 
     it('should handle client error', async () => {
         jest.spyOn(NetworkManager, 'getClient').mockImplementationOnce(throwFunc);
@@ -63,7 +63,7 @@ describe('fetchPlaybookRunsForChannel', () => {
         expect(result.error).toBeUndefined();
         expect(result.runs).toEqual([]);
 
-        expect(updateLastPlaybookFetchAt).not.toHaveBeenCalled();
+        expect(updateLastPlaybookRunsFetchAt).not.toHaveBeenCalled();
         expect(handlePlaybookRuns).not.toHaveBeenCalled();
     });
 
@@ -85,7 +85,7 @@ describe('fetchPlaybookRunsForChannel', () => {
             since: 124,
         });
 
-        expect(updateLastPlaybookFetchAt).toHaveBeenCalledWith(serverUrl, channelId, mockPlaybookRun.update_at);
+        expect(updateLastPlaybookRunsFetchAt).toHaveBeenCalledWith(serverUrl, channelId, mockPlaybookRun.update_at);
         expect(handlePlaybookRuns).toHaveBeenCalledWith(serverUrl, [mockPlaybookRun], false, true);
     });
 

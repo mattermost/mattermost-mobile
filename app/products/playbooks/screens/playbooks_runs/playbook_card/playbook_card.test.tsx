@@ -28,20 +28,20 @@ jest.mock('@playbooks/components/progress_bar');
 jest.mocked(ProgressBar).mockImplementation((props) => React.createElement('ProgressBar', {...props, testID: 'progress-bar'}));
 
 describe('PlaybookCard', () => {
-    const mockRun = TestHelper.fakePlaybookRunModel({
-        name: 'Test Playbook Run',
-        updateAt: Date.now() - 1000,
-        channelId: 'test-channel-id',
-    });
-    const mockOwner = TestHelper.fakeUserModel({
-        username: 'test-owner',
-    });
-    const mockParticipants = [
-        TestHelper.fakeUserModel({username: 'participant1'}),
-        TestHelper.fakeUserModel({username: 'participant2'}),
-    ];
-
     function getBaseProps(): ComponentProps<typeof PlaybookCard> {
+        const mockRun = TestHelper.fakePlaybookRunModel({
+            name: 'Test Playbook Run',
+            updateAt: Date.now() - 1000,
+            channelId: 'test-channel-id',
+        });
+        const mockOwner = TestHelper.fakeUserModel({
+            username: 'test-owner',
+        });
+        const mockParticipants = [
+            TestHelper.fakeUserModel({username: 'participant1'}),
+            TestHelper.fakeUserModel({username: 'participant2'}),
+        ];
+
         return {
             run: mockRun,
             location: 'PlaybookRuns',
@@ -60,12 +60,12 @@ describe('PlaybookCard', () => {
         expect(getByText(/Last update/)).toBeTruthy();
 
         const userChip = getByTestId('user-chip');
-        expect(userChip.props.user).toBe(mockOwner);
+        expect(userChip.props.user).toBe(props.owner);
         expect(userChip.props.teammateNameDisplay).toBe('username');
 
         const userAvatarsStack = getByTestId('user-avatars-stack');
-        expect(userAvatarsStack.props.users).toEqual(mockParticipants);
-        expect(userAvatarsStack.props.channelId).toBe(mockRun.channelId);
+        expect(userAvatarsStack.props.users).toEqual(props.participants);
+        expect(userAvatarsStack.props.channelId).toBe((props.run as PlaybookRunModel).channelId);
         expect(userAvatarsStack.props.location).toBe(props.location);
         expect(userAvatarsStack.props.bottomSheetTitle.defaultMessage).toBe('Run Participants');
 
@@ -79,12 +79,12 @@ describe('PlaybookCard', () => {
         const {getByTestId} = renderWithIntl(<PlaybookCard {...props}/>);
 
         const userChip = getByTestId('user-chip');
-        userChip.props.onPress(mockOwner.id);
+        userChip.props.onPress(props.owner?.id);
 
         expect(openUserProfileModal).toHaveBeenCalledWith(
             expect.anything(),
             expect.anything(),
-            expect.objectContaining({userId: mockOwner.id, channelId: mockRun.channelId, location: props.location}),
+            expect.objectContaining({userId: props.owner?.id, channelId: (props.run as PlaybookRunModel).channelId, location: props.location}),
         );
     });
 
@@ -98,14 +98,14 @@ describe('PlaybookCard', () => {
 
         expect(goToPlaybookRun).toHaveBeenCalledWith(
             expect.anything(),
-            mockRun.id,
+            props.run.id,
             undefined,
         );
     });
 
     it('shows finished state when run is complete', () => {
         const props = getBaseProps();
-        (props.run as PlaybookRunModel).endAt = Date.now();
+        (props.run as PlaybookRunModel).currentStatus = 'Finished';
 
         const {getByTestId} = renderWithIntl(<PlaybookCard {...props}/>);
 

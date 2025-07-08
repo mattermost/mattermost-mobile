@@ -179,6 +179,12 @@ class WebsocketManagerSingleton {
     private onReconnect = async (serverUrl: string) => {
         this.startPeriodicStatusUpdates(serverUrl);
         this.getConnectedSubject(serverUrl).next('connected');
+
+        // Clear playbooks synced state on reconnect.
+        // This is done to avoid clearing it on spotty connections
+        // with reliable websockets.
+        EphemeralStore.clearChannelPlaybooksSynced(serverUrl);
+
         const error = await handleReconnect(serverUrl);
         if (error) {
             this.getClient(serverUrl)?.close(false);
@@ -190,7 +196,6 @@ class WebsocketManagerSingleton {
     };
 
     private onWebsocketClose = async (serverUrl: string, connectFailCount: number) => {
-        EphemeralStore.clearChannelPlaybooksSynced(serverUrl);
         this.getConnectedSubject(serverUrl).next('not_connected');
         if (connectFailCount <= 1) { // First fail
             await setCurrentUserStatus(serverUrl, General.OFFLINE);

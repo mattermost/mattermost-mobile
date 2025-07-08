@@ -2,11 +2,12 @@
 // See LICENSE.txt for license information.
 
 import {forceLogoutIfNecessary} from '@actions/remote/session';
+import {PER_PAGE_DEFAULT} from '@client/rest/constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
-import {updateLastPlaybookFetchAt} from '@playbooks/actions/local/channel';
+import {updateLastPlaybookRunsFetchAt} from '@playbooks/actions/local/channel';
 import {handlePlaybookRuns} from '@playbooks/actions/local/run';
-import {getLastPlaybookFetchAt} from '@playbooks/database/queries/run';
+import {getLastPlaybookRunsFetchAt} from '@playbooks/database/queries/run';
 import {getMaxRunUpdateAt} from '@playbooks/utils/run';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
@@ -21,7 +22,7 @@ export const fetchPlaybookRunsForChannel = async (serverUrl: string, channelId: 
         const client = NetworkManager.getClient(serverUrl);
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-        const lastFetchAt = await getLastPlaybookFetchAt(database, channelId);
+        const lastFetchAt = await getLastPlaybookRunsFetchAt(database, channelId);
 
         let hasMore = true;
         let page = 0;
@@ -33,7 +34,7 @@ export const fetchPlaybookRunsForChannel = async (serverUrl: string, channelId: 
             // eslint-disable-next-line no-await-in-loop
             const {items: runs, has_more} = await client.fetchPlaybookRuns({
                 page,
-                per_page: 100,
+                per_page: PER_PAGE_DEFAULT,
                 channel_id: channelId,
                 since: lastFetchAt + 1,
             });
@@ -46,7 +47,7 @@ export const fetchPlaybookRunsForChannel = async (serverUrl: string, channelId: 
             return {runs: []};
         }
 
-        updateLastPlaybookFetchAt(serverUrl, channelId, getMaxRunUpdateAt(allRuns));
+        updateLastPlaybookRunsFetchAt(serverUrl, channelId, getMaxRunUpdateAt(allRuns));
 
         if (!fetchOnly) {
             handlePlaybookRuns(serverUrl, allRuns, false, true);
@@ -66,7 +67,7 @@ export const fetchFinishedRunsForChannel = async (serverUrl: string, channelId: 
 
         const {items: runs, has_more} = await client.fetchPlaybookRuns({
             page,
-            per_page: 100,
+            per_page: PER_PAGE_DEFAULT,
             channel_id: channelId,
             statuses: ['Finished'],
             sort: 'end_at',

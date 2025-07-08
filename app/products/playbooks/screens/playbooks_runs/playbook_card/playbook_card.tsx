@@ -12,6 +12,7 @@ import UserAvatarsStack from '@components/user_avatars_stack';
 import {useTheme} from '@context/theme';
 import ProgressBar from '@playbooks/components/progress_bar';
 import {goToPlaybookRun} from '@playbooks/screens/navigation';
+import {isRunFinished} from '@playbooks/utils/run';
 import {openUserProfileModal} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -84,14 +85,13 @@ const PlaybookCard = ({
     progress,
     owner,
 }: Props) => {
-    const endAt = 'endAt' in run ? run.endAt : run.end_at;
     const channelId = 'channelId' in run ? run.channelId : run.channel_id;
     const lastUpdateAt = 'updateAt' in run ? run.updateAt : run.update_at;
 
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
-    const finished = Boolean(endAt);
+    const finished = isRunFinished(run);
 
     const onCardPress = useCallback(() => {
         goToPlaybookRun(intl, run.id, 'observe' in run ? undefined : run);

@@ -20,12 +20,12 @@ jest.mocked(PlaybookCard).mockImplementation((props) => React.createElement('Pla
 describe('PlaybookRuns', () => {
     const inProgressRun = TestHelper.fakePlaybookRunModel({
         name: 'In Progress Run',
-        endAt: 0,
+        currentStatus: 'InProgress',
     });
 
     const finishedRun = TestHelper.fakePlaybookRunModel({
         name: 'Finished Run',
-        endAt: 1234567890,
+        currentStatus: 'Finished',
     });
 
     it('shows empty state when no runs in selected tab', () => {

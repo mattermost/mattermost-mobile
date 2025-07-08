@@ -7,7 +7,7 @@ import Model, {type Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
-import {safeParseJSON} from '@utils/helpers';
+import {safeParseJSONStringArray} from '@utils/helpers';
 
 import type PlaybookRunModelInterface from '@playbooks//types/database/models/playbook_run';
 import type PlaybookChecklistModel from '@playbooks/types/database/models/playbook_checklist';
@@ -88,7 +88,7 @@ export default class PlaybookRunModel extends Model implements PlaybookRunModelI
     @field('active_stage_title') activeStageTitle!: string;
 
     /** participant_ids : An array of user IDs that participate in the run */
-    @json('participant_ids', safeParseJSON) participantIds!: string[];
+    @json('participant_ids', safeParseJSONStringArray) participantIds!: string[];
 
     /** summary : Summary of the playbook run */
     @field('summary') summary!: string;
@@ -118,7 +118,7 @@ export default class PlaybookRunModel extends Model implements PlaybookRunModelI
     @field('previous_reminder') previousReminder!: number;
 
     /** sort_order : The sort order of the playbook run */
-    @json('sort_order', safeParseJSON) sortOrder!: string[];
+    @json('sort_order', safeParseJSONStringArray) sortOrder!: string[];
 
     /** update_at : The timestamp when the playbook run was updated */
     @field('update_at') updateAt!: number;

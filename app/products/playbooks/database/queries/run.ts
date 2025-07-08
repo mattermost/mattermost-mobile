@@ -61,11 +61,11 @@ export const observePlaybookRunProgress = (database: Database, runId: string) =>
     );
 };
 
-export const getLastPlaybookFetchAt = async (database: Database, channelId: string) => {
+export const getLastPlaybookRunsFetchAt = async (database: Database, channelId: string) => {
     const myChannel = await database.get<MyChannelModel>(MY_CHANNEL).query(
         Q.where('id', channelId),
     ).fetch();
-    return myChannel[0]?.lastPlaybookFetchAt || 0;
+    return myChannel[0]?.lastPlaybookRunsFetchAt || 0;
 };
 
 export const queryParticipantsFromAPIRun = (database: Database, run: PlaybookRun) => {

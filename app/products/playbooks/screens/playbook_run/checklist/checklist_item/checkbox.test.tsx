@@ -56,6 +56,53 @@ describe('Checkbox', () => {
         expect(mockOnPress).toHaveBeenCalledTimes(1);
     });
 
+    it('does not call onPress twice double tapped', () => {
+        jest.useFakeTimers();
+        const {root} = renderWithIntl(
+            <Checkbox
+                checked={false}
+                onPress={mockOnPress}
+            />,
+        );
+
+        // First tap
+        act(() => {
+            fireEvent.press(root);
+        });
+
+        expect(mockOnPress).toHaveBeenCalledTimes(1);
+        mockOnPress.mockClear();
+
+        // Advance timer a short time
+        act(() => {
+            jest.advanceTimersByTime(100);
+        });
+
+        // Second tap
+        act(() => {
+            fireEvent.press(root);
+        });
+
+        expect(mockOnPress).toHaveBeenCalledTimes(0);
+
+        // Advance timer 1 second
+        act(() => {
+            jest.advanceTimersByTime(1000);
+        });
+
+        // No calls generated
+        expect(mockOnPress).toHaveBeenCalledTimes(0);
+
+        // Last tap
+        act(() => {
+            fireEvent.press(root);
+        });
+
+        expect(mockOnPress).toHaveBeenCalledTimes(1);
+
+        jest.useRealTimers();
+    });
+
     it('does not call onPress when disabled', () => {
         const {root} = renderWithIntl(
             <Checkbox

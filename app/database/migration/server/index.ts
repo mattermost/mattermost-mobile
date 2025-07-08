@@ -85,7 +85,7 @@ export default schemaMigrations({migrations: [
             addColumns({
                 table: MY_CHANNEL,
                 columns: [
-                    {name: 'last_playbook_fetch_at', type: 'number'},
+                    {name: 'last_playbook_runs_fetch_at', type: 'number'},
                 ],
             }),
         ],

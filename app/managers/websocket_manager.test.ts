@@ -126,12 +126,12 @@ describe('WebsocketManager', () => {
     });
 
     describe('proper callbacks set', () => {
-        it('should remove playbooks when the close callback is called', () => {
+        it('should remove playbooks when the reconnect callback is called', () => {
             const client = manager.createClient(mockServerUrl, mockToken);
             expect(client).toBeDefined();
 
-            expect(client.setCloseCallback).toHaveBeenCalled();
-            jest.mocked(client.setCloseCallback).mock.calls[0][0](1);
+            expect(client.setReconnectCallback).toHaveBeenCalled();
+            jest.mocked(client.setReconnectCallback).mock.calls[0][0]();
             expect(EphemeralStore.clearChannelPlaybooksSynced).toHaveBeenCalled();
         });
     });

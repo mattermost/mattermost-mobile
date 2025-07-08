@@ -13,7 +13,7 @@ import {
     getPlaybookRunById,
     observePlaybookRunById,
     observePlaybookRunProgress,
-    getLastPlaybookFetchAt,
+    getLastPlaybookRunsFetchAt,
     queryParticipantsFromAPIRun,
 } from './run';
 
@@ -255,10 +255,10 @@ describe('Playbook Run Queries', () => {
         });
     });
 
-    describe('getLastPlaybookFetchAt', () => {
-        it('should return the lastPlaybookFetchAt value when channel exists', async () => {
+    describe('getLastPlaybookRunsFetchAt', () => {
+        it('should return the lastPlaybookRunsFetchAt value when channel exists', async () => {
             const channelId = 'channel1';
-            const lastPlaybookFetchAt = 1620000000000;
+            const lastPlaybookRunsFetchAt = 1620000000000;
 
             await operator.handleMyChannel({
                 channels: [TestHelper.fakeChannel({id: channelId})],
@@ -266,26 +266,26 @@ describe('Playbook Run Queries', () => {
                 prepareRecordsOnly: false,
             });
 
-            // Update the record with the lastPlaybookFetchAt value
+            // Update the record with the lastPlaybookRunsFetchAt value
             const myChannelRecord = await operator.database.get(MM_TABLES.SERVER.MY_CHANNEL).find(channelId);
             await operator.database.write(async () => {
                 await myChannelRecord.update((record: any) => {
-                    record.lastPlaybookFetchAt = lastPlaybookFetchAt;
+                    record.lastPlaybookRunsFetchAt = lastPlaybookRunsFetchAt;
                 });
             });
 
-            const result = await getLastPlaybookFetchAt(operator.database, channelId);
+            const result = await getLastPlaybookRunsFetchAt(operator.database, channelId);
 
-            expect(result).toBe(lastPlaybookFetchAt);
+            expect(result).toBe(lastPlaybookRunsFetchAt);
         });
 
         it('should return 0 when channel does not exist', async () => {
-            const result = await getLastPlaybookFetchAt(operator.database, 'nonexistent_channel');
+            const result = await getLastPlaybookRunsFetchAt(operator.database, 'nonexistent_channel');
 
             expect(result).toBe(0);
         });
 
-        it('should return 0 when channel exists but lastPlaybookFetchAt is not set', async () => {
+        it('should return 0 when channel exists but lastPlaybookRunsFetchAt is not set', async () => {
             const channelId = 'channel2';
             await operator.handleMyChannel({
                 channels: [TestHelper.fakeChannel({id: channelId})],
@@ -293,7 +293,7 @@ describe('Playbook Run Queries', () => {
                 prepareRecordsOnly: false,
             });
 
-            const result = await getLastPlaybookFetchAt(operator.database, channelId);
+            const result = await getLastPlaybookRunsFetchAt(operator.database, channelId);
 
             expect(result).toBe(0);
         });

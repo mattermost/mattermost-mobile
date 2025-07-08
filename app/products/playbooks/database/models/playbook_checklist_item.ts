@@ -6,7 +6,7 @@ import Model, {type Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
-import {safeParseJSON} from '@utils/helpers';
+import {safeParseJSONStringArray} from '@utils/helpers';
 
 import type {Relation} from '@nozbe/watermelondb';
 import type PlaybookChecklistItemModelInterface from '@playbooks//types/database/models/playbook_checklist_item';
@@ -68,7 +68,7 @@ export default class PlaybookChecklistItemModel extends Model implements Playboo
     @field('completed_at') completedAt!: number;
 
     /** task_actions : The JSON string representing the task actions */
-    @json('task_actions', safeParseJSON) taskActions!: TaskAction[];
+    @json('task_actions', safeParseJSONStringArray) taskActions!: TaskAction[];
 
     /** sync : The sync status of the checklist item */
     @field('sync') sync!: SyncStatus;

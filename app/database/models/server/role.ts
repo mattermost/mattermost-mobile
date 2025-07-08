@@ -5,7 +5,7 @@ import {Model} from '@nozbe/watermelondb';
 import {field, json} from '@nozbe/watermelondb/decorators';
 
 import {MM_TABLES} from '@constants/database';
-import {safeParseJSON} from '@utils/helpers';
+import {safeParseJSONStringArray} from '@utils/helpers';
 
 import type RoleModelInterface from '@typings/database/models/servers/role';
 
@@ -20,6 +20,6 @@ export default class RoleModel extends Model implements RoleModelInterface {
     @field('name') name!: string;
 
     /** permissions : The different permissions associated to that role */
-    @json('permissions', safeParseJSON) permissions!: string[];
+    @json('permissions', safeParseJSONStringArray) permissions!: string[];
 }
 

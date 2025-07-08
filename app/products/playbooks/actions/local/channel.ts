@@ -5,7 +5,7 @@ import DatabaseManager from '@database/manager';
 import {getMyChannel} from '@queries/servers/channel';
 import {logError} from '@utils/log';
 
-export async function updateLastPlaybookFetchAt(serverUrl: string, channelId: string, lastPlaybookFetchAt: number) {
+export async function updateLastPlaybookRunsFetchAt(serverUrl: string, channelId: string, lastPlaybookRunsFetchAt: number) {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const myChannel = await getMyChannel(database, channelId);
@@ -14,12 +14,12 @@ export async function updateLastPlaybookFetchAt(serverUrl: string, channelId: st
         }
         await database.write(async () => {
             await myChannel.update((c) => {
-                c.lastPlaybookFetchAt = lastPlaybookFetchAt;
+                c.lastPlaybookRunsFetchAt = lastPlaybookRunsFetchAt;
             });
         });
         return {data: true};
     } catch (error) {
-        logError('Failed updateLastPlaybookFetchAt', error);
+        logError('Failed updateLastPlaybookRunsFetchAt', error);
         return {error};
     }
 }

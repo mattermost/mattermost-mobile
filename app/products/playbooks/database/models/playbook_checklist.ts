@@ -5,7 +5,7 @@ import {children, field, immutableRelation, json} from '@nozbe/watermelondb/deco
 import Model, {type Associations} from '@nozbe/watermelondb/Model';
 
 import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
-import {safeParseJSON} from '@utils/helpers';
+import {safeParseJSONStringArray} from '@utils/helpers';
 
 import type {Query, Relation} from '@nozbe/watermelondb';
 import type PlaybookChecklistModelInterface from '@playbooks/types/database/models/playbook_checklist';
@@ -44,7 +44,7 @@ export default class PlaybookChecklistModel extends Model implements PlaybookChe
     @field('last_sync_at') lastSyncAt!: number;
 
     /** sort_order : The sort order of the checklist */
-    @json('sort_order', safeParseJSON) sortOrder!: string[];
+    @json('sort_order', safeParseJSONStringArray) sortOrder!: string[];
 
     /** update_at : The timestamp when the checklist was updated */
     @field('update_at') updateAt!: number;

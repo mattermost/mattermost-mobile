@@ -6,6 +6,7 @@ import {TouchableOpacity} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
@@ -49,6 +50,8 @@ function Checkbox({checked, onPress, disabled}: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
+    const onPressDoubleTapPrevented = usePreventDoubleTap(onPress);
+
     const buttonStyle = useMemo(() => [
         styles.checkbox,
         checked && (disabled ? styles.checkedBoxDisabled : styles.checkedBox),
@@ -62,7 +65,7 @@ function Checkbox({checked, onPress, disabled}: Props) {
 
     return (
         <TouchableOpacity
-            onPress={onPress}
+            onPress={onPressDoubleTapPrevented}
             style={buttonStyle}
             disabled={disabled}
         >

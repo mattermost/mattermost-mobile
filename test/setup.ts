@@ -76,8 +76,6 @@ jest.mock('@mattermost/react-native-turbo-log', () => ({
 }));
 
 jest.mock('@nozbe/watermelondb/utils/common/randomId/randomId', () => ({}));
-
-jest.mock('@nozbe/watermelondb/utils/common/randomId/randomId', () => ({}));
 jest.mock('@nozbe/watermelondb/react/withObservables/garbageCollector', () => {
     return {
         __esModule: true,

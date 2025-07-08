@@ -5,7 +5,7 @@ import DatabaseManager from '@database/manager';
 import {getMyChannel} from '@queries/servers/channel';
 import TestHelper from '@test/test_helper';
 
-import {updateLastPlaybookFetchAt} from './channel';
+import {updateLastPlaybookRunsFetchAt} from './channel';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 
@@ -35,26 +35,26 @@ afterEach(async () => {
     await DatabaseManager.destroyServerDatabase(serverUrl);
 });
 
-describe('updateLastPlaybookFetchAt', () => {
+describe('updateLastPlaybookRunsFetchAt', () => {
     it('should handle not found database', async () => {
-        const {data, error} = await updateLastPlaybookFetchAt('foo', channelId, Date.now());
+        const {data, error} = await updateLastPlaybookRunsFetchAt('foo', channelId, Date.now());
         expect(data).toBeFalsy();
         expect(error).toBeTruthy();
     });
 
     it('should handle channel not found', async () => {
-        const {data, error} = await updateLastPlaybookFetchAt(serverUrl, 'nonexistent', Date.now());
+        const {data, error} = await updateLastPlaybookRunsFetchAt(serverUrl, 'nonexistent', Date.now());
         expect(data).toBe(false);
         expect(error).toBeUndefined();
     });
 
-    it('should update lastPlaybookFetchAt successfully', async () => {
+    it('should update lastPlaybookRunsFetchAt successfully', async () => {
         // Setup channel and member
         await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
         await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
 
-        const lastPlaybookFetchAt = Date.now();
-        const {data, error} = await updateLastPlaybookFetchAt(serverUrl, channelId, lastPlaybookFetchAt);
+        const lastPlaybookRunsFetchAt = Date.now();
+        const {data, error} = await updateLastPlaybookRunsFetchAt(serverUrl, channelId, lastPlaybookRunsFetchAt);
 
         expect(error).toBeUndefined();
         expect(data).toBe(true);
@@ -62,7 +62,7 @@ describe('updateLastPlaybookFetchAt', () => {
         // Verify the update was persisted
         const myChannel = await getMyChannel(operator.database, channelId);
         expect(myChannel).toBeDefined();
-        expect(myChannel!.lastPlaybookFetchAt).toBe(lastPlaybookFetchAt);
+        expect(myChannel!.lastPlaybookRunsFetchAt).toBe(lastPlaybookRunsFetchAt);
     });
 
     it('should handle database write errors', async () => {
@@ -74,7 +74,7 @@ describe('updateLastPlaybookFetchAt', () => {
         const originalWrite = operator.database.write;
         operator.database.write = jest.fn().mockRejectedValue(new Error('Database write failed'));
 
-        const {data, error} = await updateLastPlaybookFetchAt(serverUrl, channelId, Date.now());
+        const {data, error} = await updateLastPlaybookRunsFetchAt(serverUrl, channelId, Date.now());
 
         expect(data).toBeUndefined();
         expect(error).toBeTruthy();

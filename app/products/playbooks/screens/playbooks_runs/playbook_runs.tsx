@@ -13,6 +13,7 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useTabs, {type TabDefinition} from '@hooks/use_tabs';
 import Tabs from '@hooks/use_tabs/tabs';
 import {fetchFinishedRunsForChannel} from '@playbooks/actions/remote/runs';
+import {isRunFinished} from '@playbooks/utils/run';
 import {popTopScreen} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -88,7 +89,7 @@ const PlaybookRuns = ({
         const finished: PlaybookRunModel[] = [];
 
         allRuns.forEach((run) => {
-            if (run.endAt) {
+            if (isRunFinished(run)) {
                 finished.push(run);
             } else {
                 inProgress.push(run);
