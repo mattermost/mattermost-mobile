@@ -63,20 +63,6 @@ describe('DisplayTheme', () => {
         expect(screen.getByTestId('theme_display_settings.custom.option.selected')).toBeTruthy();
     });
 
-    it('should render with custom theme, without other themes', () => {
-        jest.mocked(useTheme).mockImplementation(() => ({...Preferences.THEMES.denim, type: 'custom'}));
-
-        renderWithIntl(
-            <DisplayTheme
-                allowedThemeKeys={[]}
-                {...displayThemeOtherProps}
-            />);
-
-        const customTile = screen.getByTestId('theme_display_settings.custom.option');
-
-        fireEvent.press(customTile);
-    });
-
     it('should render with custom theme and user change to denim (non-custom)', async () => {
         jest.mocked(useTheme).mockImplementation(() => ({...Preferences.THEMES.denim, type: 'custom'}));
 
@@ -125,6 +111,40 @@ describe('DisplayTheme', () => {
         expect(screen.getByTestId('theme_display_settings.denim.option.selected')).toBeTruthy();
     });
 
+    it('should render only with custom theme, it gets de-selected, and then user re-selects it', async () => {
+        jest.mocked(useTheme).mockImplementation(() => ({...Preferences.THEMES.denim, type: 'custom'}));
+
+        renderWithIntl(
+            <DisplayTheme
+                allowedThemeKeys={[]}
+                {...displayThemeOtherProps}
+            />);
+
+        jest.mocked(useTheme).mockImplementation(() => ({...Preferences.THEMES.denim, type: 'Denim'}));
+
+        screen.rerender(
+            <DisplayTheme
+                allowedThemeKeys={[]}
+                {...displayThemeOtherProps}
+            />);
+
+        const customTile = screen.getByTestId('theme_display_settings.custom.option');
+
+        fireEvent.press(customTile);
+
+        await waitFor(() => {
+            expect(savePreference).toHaveBeenCalledWith(
+                expect.any(String),
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        category: 'theme',
+                        value: expect.stringContaining('"type":"custom"'),
+                    }),
+                ]),
+            );
+        });
+    });
+
     it('should not call popTopScreen (closes the screen) when changing theme', async () => {
         renderWithIntl(
             <DisplayTheme
@@ -168,5 +188,39 @@ describe('DisplayTheme', () => {
         androidBackButtonHandler.mock.calls[0][1]();
 
         expect(popTopScreen).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not allow user to select a theme rapidly', async () => {
+        const numOfSavePreferenceCalls = 1;
+        renderWithIntl(
+            <DisplayTheme
+                allowedThemeKeys={['denim', 'sapphire']}
+                {...displayThemeOtherProps}
+            />,
+        );
+
+        const sapphireTile = screen.getByTestId('theme_display_settings.sapphire.option');
+
+        fireEvent.press(sapphireTile);
+
+        await waitFor(() => {
+            expect(savePreference).toHaveBeenCalledWith(
+                expect.any(String),
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        category: 'theme',
+                        value: expect.stringContaining('"type":"Sapphire"'),
+                    }),
+                ]),
+            );
+            expect(savePreference).toHaveBeenCalledTimes(numOfSavePreferenceCalls);
+        });
+
+        const denimTile = screen.getByTestId('theme_display_settings.denim.option');
+
+        fireEvent.press(denimTile);
+
+        // firing denimTile will not cause the savePreference to be called again since we have the prevent double tap
+        expect(savePreference).toHaveBeenCalledTimes(numOfSavePreferenceCalls);
     });
 });
