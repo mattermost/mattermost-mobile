@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 /* eslint-disable no-await-in-loop, no-console */
 
+import {ClaudePromptHandler} from '@support/pilot/ClaudePromptHandler';
 import {Plugin, System, User} from '@support/server_api';
 import {siteOneUrl} from '@support/test_config';
 
@@ -83,6 +84,9 @@ export async function launchAppWithRetry(): Promise<void> {
 }
 
 beforeAll(async () => {
+    const promptHandler = new ClaudePromptHandler(process.env.ANTHROPIC_API_KEY!);
+    pilot.init(promptHandler);
+
     // Login as sysadmin and reset server configuration
     await System.apiCheckSystemHealth(siteOneUrl);
     await User.apiAdminLogin(siteOneUrl);
