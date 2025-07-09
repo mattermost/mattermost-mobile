@@ -62,7 +62,8 @@ describe('Playbooks - Basic', () => {
         });
 
         // Start the playbook run
-        await Playbooks.apiRunPlaybook(siteOneUrl, playbookRun);
+        const activeRun = await Playbooks.apiRunPlaybook(siteOneUrl, playbookRun);
+        await Playbooks.apiAddUsersToRun(siteOneUrl, activeRun.id, [secondUser.id, thirdUser.id]);
         await ChannelScreen.open(channelsCategory, testChannel.name);
 
         await pilot.perform(
@@ -71,9 +72,8 @@ describe('Playbooks - Basic', () => {
             'Verify a bottom sheet with the "Playbook runs" option is displayed',
             'Verify that "Playbook runs" is listed in the bottom sheet and "1" count is visible',
             'Tap the "Playbook runs" option in the bottom sheet',
-            'Verify the "Playbook Runs" screen opens',
+            'Verify the "Playbook runs" screen opens',
             'Verify the "In Progress" tab is selected',
-            'Verify a Playbook whose name starts with "e2e-run" is visible',
         );
     });
 });

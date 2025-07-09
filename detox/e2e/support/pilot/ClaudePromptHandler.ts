@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 /* eslint-disable no-console */
 
+import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -9,31 +10,30 @@ import {Anthropic} from '@anthropic-ai/sdk';
 
 export class ClaudePromptHandler {
     private anthropic: Anthropic;
-    private cacheDir: string;
+    private cachePath: string;
     private cacheEnabled: boolean;
 
-    constructor(apiKey: string, cacheDir?: string) {
+    constructor(apiKey: string, cachePath?: string) {
         this.anthropic = new Anthropic({
             apiKey,
         });
-        this.cacheDir = cacheDir || path.join(process.cwd(), 'detox/e2e/test/products/playbooks/__pilot_cache__');
-        this.cacheEnabled = true;
+        this.cachePath = cachePath || path.join(process.cwd(), 'detox/e2e/test/.pilot_cache.json');
+        this.cacheEnabled = !process.env.PILOT_CACHE_DISABLED;
 
         // Ensure cache directory exists
-        if (this.cacheEnabled && !fs.existsSync(this.cacheDir)) {
-            fs.mkdirSync(this.cacheDir, {recursive: true});
+        if (this.cacheEnabled && !fs.existsSync(path.dirname(this.cachePath))) {
+            fs.mkdirSync(path.dirname(this.cachePath), {recursive: true});
         }
     }
 
-    private getCacheFilePath(testName: string): string {
-        return path.join(this.cacheDir, `${testName}.json`);
+    private getCacheKey(prompt: string): string {
+        return crypto.createHash('sha256').update(prompt).digest('hex');
     }
 
-    private loadCache(testName: string): Record<string, any> {
+    private loadCache(): Record<string, any> {
         try {
-            const cacheFile = this.getCacheFilePath(testName);
-            if (fs.existsSync(cacheFile)) {
-                return JSON.parse(fs.readFileSync(cacheFile, 'utf-8'));
+            if (fs.existsSync(this.cachePath)) {
+                return JSON.parse(fs.readFileSync(this.cachePath, 'utf-8'));
             }
         } catch (error) {
             console.warn('Failed to load cache:', error);
@@ -41,27 +41,25 @@ export class ClaudePromptHandler {
         return {};
     }
 
-    private saveCache(testName: string, cache: Record<string, any>): void {
+    private saveCache(cache: Record<string, any>): void {
         try {
-            const cacheFile = this.getCacheFilePath(testName);
-            fs.writeFileSync(cacheFile, JSON.stringify(cache, null, 2));
+            fs.writeFileSync(this.cachePath, JSON.stringify(cache, null, 2));
         } catch (error) {
             console.warn('Failed to save cache:', error);
         }
     }
 
-    async runPrompt(prompt: string, testName?: string): Promise<string> {
-        // If caching is enabled and testName is provided
-        if (this.cacheEnabled && testName) {
-            const cache = this.loadCache(testName);
+    async runPrompt(prompt: string): Promise<string> {
+        const cacheKey = this.getCacheKey(prompt);
+
+        // If caching is enabled
+        if (this.cacheEnabled) {
+            const cache = this.loadCache();
 
             // Check if we have a cached response
-            if (cache[prompt] && Array.isArray(cache[prompt]) && cache[prompt].length > 0) {
-                const cachedEntry = cache[prompt][0];
-                if (cachedEntry.value && cachedEntry.value.code) {
-                    console.log('Using cached response for prompt');
-                    return cachedEntry.value.code;
-                }
+            if (cache[cacheKey]) {
+                console.log('Using cached response for prompt');
+                return cache[cacheKey].code;
             }
         }
 
@@ -85,13 +83,13 @@ export class ClaudePromptHandler {
             const result = firstContent.text;
 
             // Save to cache if enabled
-            if (this.cacheEnabled && testName) {
-                const cache = this.loadCache(testName);
-                cache[prompt] = [{
-                    value: {code: result},
+            if (this.cacheEnabled) {
+                const cache = this.loadCache();
+                cache[cacheKey] = {
+                    code: result,
                     creationTime: Date.now(),
-                }];
-                this.saveCache(testName, cache);
+                };
+                this.saveCache(cache);
             }
 
             return result;
