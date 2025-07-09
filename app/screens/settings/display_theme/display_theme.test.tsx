@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fireEvent, render, act, screen} from '@testing-library/react-native';
+import {fireEvent, render, screen, waitFor} from '@testing-library/react-native';
 import React from 'react';
 import {BackHandler} from 'react-native';
 
@@ -77,26 +77,24 @@ describe('DisplayTheme', () => {
 
         const denimTile = screen.getByTestId('theme_display_settings.denim.option');
 
-        act(() => {
-            fireEvent.press(denimTile);
-        });
+        fireEvent.press(denimTile);
 
-        expect(savePreference).toHaveBeenCalledWith(
-            expect.any(String),
-            expect.arrayContaining([
-                expect.objectContaining({
-                    category: 'theme',
-                    value: expect.stringContaining('"type":"Denim"'),
-                }),
-            ]),
-        );
-        expect(savePreference).toHaveBeenCalledTimes(1);
+        await waitFor(() => {
+            expect(savePreference).toHaveBeenCalledWith(
+                expect.any(String),
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        category: 'theme',
+                        value: expect.stringContaining('"type":"Denim"'),
+                    }),
+                ]),
+            );
+            expect(savePreference).toHaveBeenCalledTimes(1);
+        });
 
         // since we're mocking useTheme and savePreference, savePreference will post changes to the backend API, and upon success,
         // it will update the `theme` preference via useTheme hook.
-        act(() => {
-            jest.mocked(useTheme).mockImplementation(() => ({...Preferences.THEMES.denim, type: 'Denim'}));
-        });
+        jest.mocked(useTheme).mockImplementation(() => ({...Preferences.THEMES.denim, type: 'Denim'}));
 
         // clearing the savePreference mock to show that it will not be called again after re-rendering the component
         jest.mocked(savePreference).mockClear();
@@ -113,7 +111,41 @@ describe('DisplayTheme', () => {
         expect(screen.getByTestId('theme_display_settings.denim.option.selected')).toBeTruthy();
     });
 
-    it('should not call popTopScreen (closes the screen) when changing theme', () => {
+    it('should render only with custom theme, it gets de-selected, and then user re-selects it', async () => {
+        jest.mocked(useTheme).mockImplementation(() => ({...Preferences.THEMES.denim, type: 'custom'}));
+
+        renderWithIntl(
+            <DisplayTheme
+                allowedThemeKeys={[]}
+                {...displayThemeOtherProps}
+            />);
+
+        jest.mocked(useTheme).mockImplementation(() => ({...Preferences.THEMES.denim, type: 'Denim'}));
+
+        screen.rerender(
+            <DisplayTheme
+                allowedThemeKeys={[]}
+                {...displayThemeOtherProps}
+            />);
+
+        const customTile = screen.getByTestId('theme_display_settings.custom.option');
+
+        fireEvent.press(customTile);
+
+        await waitFor(() => {
+            expect(savePreference).toHaveBeenCalledWith(
+                expect.any(String),
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        category: 'theme',
+                        value: expect.stringContaining('"type":"custom"'),
+                    }),
+                ]),
+            );
+        });
+    });
+
+    it('should not call popTopScreen (closes the screen) when changing theme', async () => {
         renderWithIntl(
             <DisplayTheme
                 allowedThemeKeys={['denim', 'sapphire']}
@@ -123,13 +155,9 @@ describe('DisplayTheme', () => {
 
         const sapphireTile = screen.getByTestId('theme_display_settings.sapphire.option');
 
-        act(() => {
-            fireEvent.press(sapphireTile);
+        fireEvent.press(sapphireTile);
 
-            // useDidUpdate => saveThemePreference => savePreference => useTheme => useDidUpdate again
-
-            jest.mocked(useTheme).mockImplementation(() => ({...Preferences.THEMES.sapphire, type: 'Sapphire'}));
-        });
+        jest.mocked(useTheme).mockImplementation(() => ({...Preferences.THEMES.sapphire, type: 'Sapphire'}));
 
         screen.rerender(
             <DisplayTheme
@@ -137,6 +165,10 @@ describe('DisplayTheme', () => {
                 {...displayThemeOtherProps}
             />,
         );
+
+        await waitFor(() => {
+            expect(screen.getByTestId('theme_display_settings.sapphire.option.selected')).toBeTruthy();
+        });
 
         expect(popTopScreen).toHaveBeenCalledTimes(0);
     });
@@ -156,5 +188,39 @@ describe('DisplayTheme', () => {
         androidBackButtonHandler.mock.calls[0][1]();
 
         expect(popTopScreen).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not allow user to select a theme rapidly', async () => {
+        const numOfSavePreferenceCalls = 1;
+        renderWithIntl(
+            <DisplayTheme
+                allowedThemeKeys={['denim', 'sapphire']}
+                {...displayThemeOtherProps}
+            />,
+        );
+
+        const sapphireTile = screen.getByTestId('theme_display_settings.sapphire.option');
+
+        fireEvent.press(sapphireTile);
+
+        await waitFor(() => {
+            expect(savePreference).toHaveBeenCalledWith(
+                expect.any(String),
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        category: 'theme',
+                        value: expect.stringContaining('"type":"Sapphire"'),
+                    }),
+                ]),
+            );
+            expect(savePreference).toHaveBeenCalledTimes(numOfSavePreferenceCalls);
+        });
+
+        const denimTile = screen.getByTestId('theme_display_settings.denim.option');
+
+        fireEvent.press(denimTile);
+
+        // firing denimTile will not cause the savePreference to be called again since we have the prevent double tap
+        expect(savePreference).toHaveBeenCalledTimes(numOfSavePreferenceCalls);
     });
 });

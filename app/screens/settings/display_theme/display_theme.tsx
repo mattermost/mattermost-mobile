@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useState, useRef} from 'react';
+import React, {useCallback, useState} from 'react';
 
 import {savePreference} from '@actions/remote/preference';
 import SettingContainer from '@components/settings/container';
@@ -10,6 +10,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useDidUpdate from '@hooks/did_update';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {popTopScreen} from '@screens/navigation';
 
 import CustomTheme from './custom_theme';
@@ -26,14 +27,14 @@ type DisplayThemeProps = {
 const DisplayTheme = ({allowedThemeKeys, componentId, currentTeamId, currentUserId}: DisplayThemeProps) => {
     const serverUrl = useServerUrl();
     const theme = useTheme();
-    const initialTheme = useRef(theme);
-    const [newTheme, setNewTheme] = useState<string | undefined>(undefined);
+    const [currentTheme, setCurrentTheme] = useState(theme);
+    const [customTheme, setCustomTheme] = useState(theme.type?.toLowerCase() === 'custom' ? theme : undefined);
 
     const close = () => popTopScreen(componentId);
 
-    const setThemePreference = useCallback(() => {
-        const allowedTheme = allowedThemeKeys.find((tk) => tk === newTheme);
-        const themeJson = Preferences.THEMES[allowedTheme as ThemeKey] || initialTheme.current;
+    const setThemePreference = useCallback(async (theTheme: string) => {
+        const allowedTheme = allowedThemeKeys.find((tk) => tk === theTheme);
+        const themeJson = Preferences.THEMES[allowedTheme as ThemeKey] || customTheme;
 
         const pref: PreferenceType = {
             category: Preferences.CATEGORIES.THEME,
@@ -41,33 +42,39 @@ const DisplayTheme = ({allowedThemeKeys, componentId, currentTeamId, currentUser
             user_id: currentUserId,
             value: JSON.stringify(themeJson),
         };
-        savePreference(serverUrl, [pref]);
-    }, [allowedThemeKeys, currentTeamId, currentUserId, serverUrl, newTheme]);
+        await savePreference(serverUrl, [pref]);
+
+        setCurrentTheme(themeJson);
+
+    }, [allowedThemeKeys, currentTeamId, currentUserId, serverUrl, customTheme]);
+
+    const handleSelectTheme = usePreventDoubleTap(useCallback((themeSelected: string) => {
+        setThemePreference(themeSelected);
+    }, [setThemePreference]));
 
     useDidUpdate(() => {
-        if (theme.type?.toLowerCase() !== newTheme?.toLowerCase()) {
-            setThemePreference();
+        // if the theme changed on the server by another client, this will update to the latest theme
+        if (theme.type?.toLowerCase() !== currentTheme.type?.toLowerCase()) {
+            setCurrentTheme(theme);
         }
-    }, [newTheme, setThemePreference, theme.type]);
+        if (theme.type?.toLowerCase() === 'custom') {
+            setCustomTheme(theme);
+        }
+    }, [theme, currentTheme]);
 
-    const onAndroidBack = () => {
-        setThemePreference();
-        close();
-    };
-
-    useAndroidHardwareBackHandler(componentId, onAndroidBack);
+    useAndroidHardwareBackHandler(componentId, close);
 
     return (
         <SettingContainer testID='theme_display_settings'>
             <ThemeTiles
                 allowedThemeKeys={allowedThemeKeys}
-                onThemeChange={setNewTheme}
+                onThemeChange={handleSelectTheme}
                 selectedTheme={theme.type}
             />
-            {initialTheme.current.type === 'custom' && (
+            {customTheme && (
                 <CustomTheme
-                    setTheme={setNewTheme}
-                    displayTheme={initialTheme.current.type}
+                    setTheme={handleSelectTheme}
+                    displayTheme={'custom'}
                 />
             )}
         </SettingContainer>
