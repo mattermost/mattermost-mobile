@@ -103,7 +103,7 @@ describe('PlaybookRun', () => {
             playbookRun: mockPlaybookRun,
             owner: mockOwner,
             participants: mockParticipants,
-            componentId: 'PlabyookRun' as const,
+            componentId: 'PlaybookRun',
             checklists: mockChecklists,
             overdueCount: 2,
             currentUserId: 'current-user',

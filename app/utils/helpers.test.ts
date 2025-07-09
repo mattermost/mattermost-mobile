@@ -158,6 +158,30 @@ describe('Helpers', () => {
             const jsonString = '["string1", {"key": "value"}, "string2", [1, 2, 3], "string3"]';
             expect(safeParseJSONStringArray(jsonString)).toEqual(['string1', 'string2', 'string3']);
         });
+
+        test('should handle a string array', () => {
+            const jsonString = '["apple", "banana", "cherry"]';
+            expect(safeParseJSONStringArray(jsonString)).toEqual(['apple', 'banana', 'cherry']);
+        });
+
+        test('should handle an array with mixed types', () => {
+            const jsonString = '["apple", 123, "banana", true, "cherry", null]';
+            expect(safeParseJSONStringArray(jsonString)).toEqual(['apple', 'banana', 'cherry']);
+        });
+
+        test('should handle non string input', () => {
+            const input = {key: 'value'};
+            expect(safeParseJSONStringArray(input)).toEqual([]);
+            expect(safeParseJSONStringArray(null)).toEqual([]);
+            expect(safeParseJSONStringArray(undefined)).toEqual([]);
+            expect(safeParseJSONStringArray(123)).toEqual([]);
+            expect(safeParseJSONStringArray(true)).toEqual([]);
+            expect(safeParseJSONStringArray(false)).toEqual([]);
+        });
+
+        test('should handle empty string', () => {
+            expect(safeParseJSONStringArray('')).toEqual([]);
+        });
     });
 
     describe('getCurrentMomentForTimezone', () => {
