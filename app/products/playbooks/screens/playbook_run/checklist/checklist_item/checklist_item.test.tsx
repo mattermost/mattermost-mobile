@@ -198,7 +198,7 @@ describe('ChecklistItem', () => {
         expect(openUserProfileModal).toHaveBeenCalledWith(expect.anything(), expect.anything(), {
             userId: props.assignee.id,
             channelId: props.channelId,
-            location: 'PlabyookRun',
+            location: 'PlaybookRun',
         });
 
         const differentAssignee = TestHelper.fakeUserModel({
@@ -221,7 +221,7 @@ describe('ChecklistItem', () => {
         expect(openUserProfileModal).toHaveBeenCalledWith(expect.anything(), expect.anything(), {
             userId: props.assignee.id,
             channelId: props.channelId,
-            location: 'PlabyookRun',
+            location: 'PlaybookRun',
         });
     });
 

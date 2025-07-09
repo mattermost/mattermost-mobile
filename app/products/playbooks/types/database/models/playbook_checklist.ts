@@ -8,7 +8,7 @@ import type PlaybookChecklistItemModel from '@playbooks/database/models/playbook
 import type {SyncStatus} from '@typings/database/database';
 
 /**
- * The PlaybookChecklist model represents a playbook run in the Mattermost app.
+ * The PlaybookChecklist model represents a checklist in a playbook run in the Mattermost app.
  */
 declare class PlaybookChecklistModel extends Model {
     /** table (name) : PlaybookChecklist */

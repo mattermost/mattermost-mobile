@@ -164,13 +164,13 @@ describe('PlaybookRun', () => {
         expect(openUserProfileModal).toHaveBeenCalledWith(expect.anything(), expect.anything(), {
             userId: props.owner!.id,
             channelId: (props.playbookRun as PlaybookRunModel).channelId,
-            location: 'PlabyookRun',
+            location: 'PlaybookRun',
         });
 
         expect(getByText('Participants')).toBeTruthy();
         const userAvatarsStack = getByTestId('user-avatars-stack');
         expect(userAvatarsStack.props.users).toBe(props.participants);
-        expect(userAvatarsStack.props.location).toBe('PlabyookRun');
+        expect(userAvatarsStack.props.location).toBe('PlaybookRun');
         expect(userAvatarsStack.props.bottomSheetTitle.defaultMessage).toBe('Run Participants');
 
         props.owner = undefined;
