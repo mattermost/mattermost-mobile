@@ -14,9 +14,9 @@ const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM} = PLAYBOOK_TAB
 
 /**
  * transformPlaybookRunRecord: Prepares a record of the SERVER database 'PlaybookRun' table for update or create actions.
- * @param {TransformerArgs} transoformerArgs
- * @param {Database} transoformerArgs.database
- * @param {RecordPair} transoformerArgs.value
+ * @param {TransformerArgs} transformerArgs
+ * @param {Database} transformerArgs.database
+ * @param {RecordPair} transformerArgs.value
  * @returns {Promise<PlaybookRunModel>}
  */
 export const transformPlaybookRunRecord = ({action, database, value}: TransformerArgs<PlaybookRunModel, PartialPlaybookRun>): Promise<PlaybookRunModel> => {
@@ -66,9 +66,9 @@ export const transformPlaybookRunRecord = ({action, database, value}: Transforme
 
 /**
  * transformPlaybookChecklistRecord: Prepares a record of the SERVER database 'PlaybookChecklist' table for update or create actions.
- * @param {TransformerArgs} transoformerArgs
- * @param {Database} transoformerArgs.database
- * @param {RecordPair} transoformerArgs.value
+ * @param {TransformerArgs} transformerArgs
+ * @param {Database} transformerArgs.database
+ * @param {RecordPair} transformerArgs.value
  * @returns {Promise<PlaybookChecklistModel>}
  */
 export const transformPlaybookChecklistRecord = ({action, database, value}: TransformerArgs<PlaybookChecklistModel, PartialChecklist>): Promise<PlaybookChecklistModel> => {
@@ -99,9 +99,9 @@ export const transformPlaybookChecklistRecord = ({action, database, value}: Tran
 
 /**
  * transformPlaybookChecklistItemRecord: Prepares a record of the SERVER database 'PlaybookChecklistItem' table for update or create actions.
- * @param {TransformerArgs} transoformerArgs
- * @param {Database} transoformerArgs.database
- * @param {RecordPair} transoformerArgs.value
+ * @param {TransformerArgs} transformerArgs
+ * @param {Database} transformerArgs.database
+ * @param {RecordPair} transformerArgs.value
  * @returns {Promise<PlaybookChecklistItemModel>}
  */
 export const transformPlaybookChecklistItemRecord = ({action, database, value}: TransformerArgs<PlaybookChecklistItemModel, PartialChecklistItem>): Promise<PlaybookChecklistItemModel> => {

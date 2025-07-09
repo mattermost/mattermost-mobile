@@ -16,7 +16,7 @@ import type {SyncStatus} from '@typings/database/database';
 const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM} = PLAYBOOK_TABLES;
 
 /**
- * The PlaybookChecklist model represents a playbook run in the Mattermost app.
+ * The PlaybookChecklist model represents a checklist in a playbook run in the Mattermost app.
  */
 export default class PlaybookChecklistModel extends Model implements PlaybookChecklistModelInterface {
     /** table (name) : PlaybookChecklist */

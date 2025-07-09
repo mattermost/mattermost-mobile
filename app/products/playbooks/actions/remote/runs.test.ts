@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {PER_PAGE_DEFAULT} from '@client/rest/constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {updateLastPlaybookRunsFetchAt} from '@playbooks/actions/local/channel';
@@ -80,7 +81,7 @@ describe('fetchPlaybookRunsForChannel', () => {
         expect(mockClient.fetchPlaybookRuns).toHaveBeenCalledTimes(1);
         expect(mockClient.fetchPlaybookRuns).toHaveBeenCalledWith({
             page: 0,
-            per_page: 100,
+            per_page: PER_PAGE_DEFAULT,
             channel_id: channelId,
             since: 124,
         });
@@ -141,7 +142,7 @@ describe('fetchFinishedRunsForChannel', () => {
         expect(result.has_more).toBe(false);
         expect(mockClient.fetchPlaybookRuns).toHaveBeenCalledWith({
             page: 0,
-            per_page: 100,
+            per_page: PER_PAGE_DEFAULT,
             channel_id: channelId,
             statuses: ['Finished'],
             sort: 'end_at',
@@ -161,7 +162,7 @@ describe('fetchFinishedRunsForChannel', () => {
         expect(result.has_more).toBe(true);
         expect(mockClient.fetchPlaybookRuns).toHaveBeenCalledWith({
             page: 1,
-            per_page: 100,
+            per_page: PER_PAGE_DEFAULT,
             channel_id: channelId,
             statuses: ['Finished'],
             sort: 'end_at',

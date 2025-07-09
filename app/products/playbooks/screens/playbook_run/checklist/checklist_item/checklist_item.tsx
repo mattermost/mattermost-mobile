@@ -106,7 +106,7 @@ const ChecklistItem = ({
         openUserProfileModal(intl, theme, {
             userId,
             channelId,
-            location: 'PlabyookRun',
+            location: 'PlaybookRun',
         });
     }, [channelId, intl, theme]);
 

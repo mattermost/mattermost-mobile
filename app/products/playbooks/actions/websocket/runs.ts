@@ -39,12 +39,12 @@ export const handlePlaybookRunUpdated = async (serverUrl: string, msg: WebSocket
     if (!msg.data.payload) {
         return;
     }
-    const data = safeParseJSON(msg.data.payload);
+    const data = safeParseJSON(msg.data.payload) as PlaybookRun;
     if (!isValidEvent(data)) {
         return;
     }
 
-    const playbookRun = data as PlaybookRun;
+    const playbookRun = data;
 
     const isSynced = EphemeralStore.getChannelPlaybooksSynced(serverUrl, playbookRun.channel_id);
     if (!isSynced) {

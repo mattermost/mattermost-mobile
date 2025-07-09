@@ -9,8 +9,8 @@ import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
 import {safeParseJSONStringArray} from '@utils/helpers';
 
 import type {Relation} from '@nozbe/watermelondb';
-import type PlaybookChecklistItemModelInterface from '@playbooks//types/database/models/playbook_checklist_item';
 import type PlaybookChecklistModel from '@playbooks/types/database/models/playbook_checklist';
+import type PlaybookChecklistItemModelInterface from '@playbooks/types/database/models/playbook_checklist_item';
 import type {SyncStatus} from '@typings/database/database';
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -18,7 +18,7 @@ const {USER} = MM_TABLES.SERVER;
 const {PLAYBOOK_CHECKLIST_ITEM, PLAYBOOK_CHECKLIST} = PLAYBOOK_TABLES;
 
 /**
- * The PlaybookChecklistItem model represents a playbook run in the Mattermost app.
+ * The PlaybookChecklistItem model represents an item in a checklist in a playbook run.
  */
 export default class PlaybookChecklistItemModel extends Model implements PlaybookChecklistItemModelInterface {
     /** table (name) : PlaybookChecklistItem */
