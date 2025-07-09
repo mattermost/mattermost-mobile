@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fireEvent, render, act, screen} from '@testing-library/react-native';
+import {fireEvent, render, screen, waitFor} from '@testing-library/react-native';
 import React from 'react';
 import {BackHandler} from 'react-native';
 
@@ -63,6 +63,20 @@ describe('DisplayTheme', () => {
         expect(screen.getByTestId('theme_display_settings.custom.option.selected')).toBeTruthy();
     });
 
+    it('should render with custom theme, without other themes', () => {
+        jest.mocked(useTheme).mockImplementation(() => ({...Preferences.THEMES.denim, type: 'custom'}));
+
+        renderWithIntl(
+            <DisplayTheme
+                allowedThemeKeys={[]}
+                {...displayThemeOtherProps}
+            />);
+
+        const customTile = screen.getByTestId('theme_display_settings.custom.option');
+
+        fireEvent.press(customTile);
+    });
+
     it('should render with custom theme and user change to denim (non-custom)', async () => {
         jest.mocked(useTheme).mockImplementation(() => ({...Preferences.THEMES.denim, type: 'custom'}));
 
@@ -77,26 +91,24 @@ describe('DisplayTheme', () => {
 
         const denimTile = screen.getByTestId('theme_display_settings.denim.option');
 
-        act(() => {
-            fireEvent.press(denimTile);
-        });
+        fireEvent.press(denimTile);
 
-        expect(savePreference).toHaveBeenCalledWith(
-            expect.any(String),
-            expect.arrayContaining([
-                expect.objectContaining({
-                    category: 'theme',
-                    value: expect.stringContaining('"type":"Denim"'),
-                }),
-            ]),
-        );
-        expect(savePreference).toHaveBeenCalledTimes(1);
+        await waitFor(() => {
+            expect(savePreference).toHaveBeenCalledWith(
+                expect.any(String),
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        category: 'theme',
+                        value: expect.stringContaining('"type":"Denim"'),
+                    }),
+                ]),
+            );
+            expect(savePreference).toHaveBeenCalledTimes(1);
+        });
 
         // since we're mocking useTheme and savePreference, savePreference will post changes to the backend API, and upon success,
         // it will update the `theme` preference via useTheme hook.
-        act(() => {
-            jest.mocked(useTheme).mockImplementation(() => ({...Preferences.THEMES.denim, type: 'Denim'}));
-        });
+        jest.mocked(useTheme).mockImplementation(() => ({...Preferences.THEMES.denim, type: 'Denim'}));
 
         // clearing the savePreference mock to show that it will not be called again after re-rendering the component
         jest.mocked(savePreference).mockClear();
@@ -113,7 +125,7 @@ describe('DisplayTheme', () => {
         expect(screen.getByTestId('theme_display_settings.denim.option.selected')).toBeTruthy();
     });
 
-    it('should not call popTopScreen (closes the screen) when changing theme', () => {
+    it('should not call popTopScreen (closes the screen) when changing theme', async () => {
         renderWithIntl(
             <DisplayTheme
                 allowedThemeKeys={['denim', 'sapphire']}
@@ -123,13 +135,9 @@ describe('DisplayTheme', () => {
 
         const sapphireTile = screen.getByTestId('theme_display_settings.sapphire.option');
 
-        act(() => {
-            fireEvent.press(sapphireTile);
+        fireEvent.press(sapphireTile);
 
-            // useDidUpdate => saveThemePreference => savePreference => useTheme => useDidUpdate again
-
-            jest.mocked(useTheme).mockImplementation(() => ({...Preferences.THEMES.sapphire, type: 'Sapphire'}));
-        });
+        jest.mocked(useTheme).mockImplementation(() => ({...Preferences.THEMES.sapphire, type: 'Sapphire'}));
 
         screen.rerender(
             <DisplayTheme
@@ -137,6 +145,10 @@ describe('DisplayTheme', () => {
                 {...displayThemeOtherProps}
             />,
         );
+
+        await waitFor(() => {
+            expect(screen.getByTestId('theme_display_settings.sapphire.option.selected')).toBeTruthy();
+        });
 
         expect(popTopScreen).toHaveBeenCalledTimes(0);
     });
