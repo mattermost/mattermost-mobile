@@ -55,6 +55,7 @@ const EditProfile = ({
     lockedFirstName, lockedLastName, lockedNickname, lockedPosition, lockedPicture, enableCustomAttributes,
     customAttributesSet, customFields,
 }: EditProfileProps) => {
+
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const theme = useTheme();
@@ -182,7 +183,7 @@ const EditProfile = ({
         const includesSsoService = (sso: string) => ['gitlab', 'google', 'office365'].includes(sso);
         const isSAMLOrLDAP = (protocol: string) => ['ldap', 'saml'].includes(protocol);
 
-        return {
+        const config = {
             email: true, // Always disabled in form
             firstName: (isSAMLOrLDAP(service) && lockedFirstName) || includesSsoService(service),
             lastName: (isSAMLOrLDAP(service) && lockedLastName) || includesSsoService(service),
@@ -190,12 +191,16 @@ const EditProfile = ({
             position: isSAMLOrLDAP(service) && lockedPosition,
             username: service !== '',
         };
+
+        return config;
     }, [currentUser?.authService, lockedFirstName, lockedLastName, lockedNickname, lockedPosition]);
 
     const updateUserInfo = useCallback((updates: Partial<UserInfo>, key: string, newValue: string, oldValue: string): Partial<UserInfo> => {
         const val = newValue.trim();
         const isLocked = fieldLockConfig[key as keyof typeof fieldLockConfig] || false;
-        if (!isLocked && val !== oldValue) {
+        const hasChanged = val !== oldValue;
+
+        if (!isLocked && hasChanged) {
             updates[key as keyof UserInfo] = val as any;
         }
         return updates;
@@ -206,7 +211,36 @@ const EditProfile = ({
         Object.keys(fieldLockConfigParam).forEach((key) => {
             updates = updateUserInfo(updates, key, userInfoParam[key as keyof UserInfo] as string, currentUserParam[key as keyof UserModel] as string);
         });
-        return updates;
+
+        // Convert camelCase properties to snake_case for API compatibility
+        const apiUpdates: Partial<UserProfile> = {};
+        Object.keys(updates).forEach((key) => {
+            const value = updates[key as keyof UserInfo];
+            switch (key) {
+                case 'firstName':
+                    apiUpdates.first_name = value as string;
+                    break;
+                case 'lastName':
+                    apiUpdates.last_name = value as string;
+                    break;
+                case 'nickname':
+                    apiUpdates.nickname = value as string;
+                    break;
+                case 'position':
+                    apiUpdates.position = value as string;
+                    break;
+                case 'username':
+                    apiUpdates.username = value as string;
+                    break;
+                case 'email':
+                    apiUpdates.email = value as string;
+                    break;
+                default:
+                    break;
+            }
+        });
+
+        return apiUpdates;
     }, [updateUserInfo]);
 
     const handleProfileImageUpdate = useCallback(async (serverUrlParam: string, currentUserParam: UserModel) => {
