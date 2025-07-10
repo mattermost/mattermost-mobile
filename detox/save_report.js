@@ -121,8 +121,8 @@ const saveReport = async () => {
     }
 
     // "ios-results-*" or "android-results-*" is the path in CI where the parallel detox jobs save the artifacts
-    await mergeJestStareJsonFiles(jestStareCombinedFilePath, [`${ARTIFACTS_DIR}/${platform}-results*/jest-stare/${platform}-data*.json`]);
-    generateJestStareHtmlReport(jestStareOutputDir, `${platform}-report.html`, jestStareCombinedFilePath, platform);
+    await mergeJestStareJsonFiles(jestStareCombinedFilePath, [`${ARTIFACTS_DIR}/${platform}-results*/jest-stare/${platform}-data*.json`], platform);
+    await generateJestStareHtmlReport(jestStareOutputDir, `${platform}-report.html`, jestStareCombinedFilePath, platform);
 
     if (process.env.CI) {
         // Delete folders starting with "ios-results-" or "android-results-" only in CI environment
@@ -133,32 +133,32 @@ const saveReport = async () => {
             }
         }
     }
-    const result = await saveArtifacts(platform);
-    if (result && result.success) {
-        console.log('Successfully uploaded artifacts to S3:', result.reportLink);
-    }
+    // const result = await saveArtifacts(platform);
+    // if (result && result.success) {
+    //     console.log('Successfully uploaded artifacts to S3:', result.reportLink);
+    // }
 
-    // Create or use an existing test cycle
-    let testCycle = {};
-    if (ZEPHYR_ENABLE === 'true') {
-        const {start, end} = summary.stats;
-        testCycle = ZEPHYR_CYCLE_KEY ? {key: ZEPHYR_CYCLE_KEY} : await createTestCycle(start, end);
-        if (!testCycle?.key) {
-            console.log('Failed to create test cycle');
-        }
-    }
+    // // Create or use an existing test cycle
+    // let testCycle = {};
+    // if (ZEPHYR_ENABLE === 'true') {
+    //     const {start, end} = summary.stats;
+    //     testCycle = ZEPHYR_CYCLE_KEY ? {key: ZEPHYR_CYCLE_KEY} : await createTestCycle(start, end);
+    //     if (!testCycle?.key) {
+    //         console.log('Failed to create test cycle');
+    //     }
+    // }
 
-    // Send test report to "QA: Mobile Test Automation Report" channel via webhook
-    if (TYPE && TYPE !== 'NONE' && WEBHOOK_URL) {
-        const environment = readJsonFromFile(`${ARTIFACTS_DIR}/environment.json`);
-        const data = generateTestReport(summary, result && result.success, result && result.reportLink, environment, testCycle.key);
-        await sendReport('summary report to Community channel', WEBHOOK_URL, data);
-    }
+    // // Send test report to "QA: Mobile Test Automation Report" channel via webhook
+    // if (TYPE && TYPE !== 'NONE' && WEBHOOK_URL) {
+    //     const environment = readJsonFromFile(`${ARTIFACTS_DIR}/environment.json`);
+    //     const data = generateTestReport(summary, result && result.success, result && result.reportLink, environment, testCycle.key);
+    //     await sendReport('summary report to Community channel', WEBHOOK_URL, data);
+    // }
 
-    // Save test cases to Test Management
-    if (ZEPHYR_ENABLE === 'true') {
-        await createTestExecutions(allTests, testCycle);
-    }
+    // // Save test cases to Test Management
+    // if (ZEPHYR_ENABLE === 'true') {
+    //     await createTestExecutions(allTests, testCycle);
+    // }
 };
 
 saveReport();
