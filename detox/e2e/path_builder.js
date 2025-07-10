@@ -15,8 +15,9 @@ class CustomPathBuilder {
 
     buildPathForTestArtifact(artifactName, testSummary = null) {
         const fullName = (testSummary && testSummary.fullName) || '';
-        const segments = [this.rootDir, sanitize(fullName), sanitize(artifactName)];
-        return path.join(...segments.filter(Boolean));
+        const sanitizedTestName = sanitize(fullName);
+        const sanitizedArtifactName = sanitize(artifactName);
+        return path.join('artifacts', 'jest-stare', 'screenshots', sanitizedTestName, `${sanitizedArtifactName}.png`);
     }
 }
 

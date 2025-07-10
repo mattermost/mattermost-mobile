@@ -52,64 +52,53 @@ function collectScreenshots(platform, testName, result) {
         'afterAllFailure.png',
     ];
 
-    // The test name from jest results is used as a directory name for artifacts.
-    // We need to find the corresponding directory and then the screenshots inside it.
-    const searchPath = path.join(
-        ARTIFACTS_DIR,
-        `${platform}-results-*`,
-        `*${platform}.emu.debug*`,
-        testName
-    );
+    // Clean up the test name to match directory structure
+    // Remove special characters and replace spaces with underscores
+    const cleanTestName = testName
+        .replace(/[^\w\s-]/g, '') // Remove special characters except spaces and hyphens
+        .replace(/\s+/g, '_')     // Replace spaces with underscores
+        .replace(/-+/g, '_')      // Replace hyphens with underscores
+        .replace(/_+/g, '_')      // Replace multiple underscores with single
+        .toLowerCase();
 
-    const screenshotPaths = glob.sync(path.join(searchPath, `*(${failureTypes.join('|')})`));
-    const resolvedPaths = screenshotPaths.map(file => path.resolve(file));
-
-    console.log(`Searching for screenshots in: ${searchPath}`);
-    console.log(`Found screenshot paths: ${JSON.stringify(resolvedPaths)}`);
-
-    if (resolvedPaths.length > 0) {
-        console.log(`Found screenshots for "${testName}": ${JSON.stringify(resolvedPaths)}`);
-    } else {
-        console.warn(`No screenshots found for test "${testName}" on platform ${platform}. Searched in: ${searchPath}`);
-    }
-
-    return resolvedPaths;
-}
-
-function collectScreenshots(platform, testName, result) {
-    console.log(`Collecting screenshots for test "${testName}" on platform ${platform}`);
-    if (!testName || result.status !== 'failed') {
-        console.log(`Skipping screenshot collection for test "${testName}" on platform ${platform}`);
-        return [];
-    }
-
-    const failureTypes = [
-        'testFnFailure.png',
-        'beforeEachFailure.png',
-        'afterEachFailure.png',
-        'beforeAllFailure.png',
-        'afterAllFailure.png',
+    // Try multiple search patterns to find screenshots
+    const searchPatterns = [
+        // Pattern 1: Direct test name match
+        path.join(ARTIFACTS_DIR, `${platform}-results-*`, `*${platform}*`, `*${cleanTestName}*`, `*(${failureTypes.join('|')})`),
+        // Pattern 2: Test name as part of path
+        path.join(ARTIFACTS_DIR, `${platform}-results-*`, `*${platform}*`, `**`, `*${cleanTestName}*`, `*(${failureTypes.join('|')})`),
+        // Pattern 3: More flexible pattern
+        path.join(ARTIFACTS_DIR, `${platform}-results-*`, `**`, `*(${failureTypes.join('|')})`)
     ];
 
-    // The test name from jest results is used as a directory name for artifacts.
-    // We need to find the corresponding directory and then the screenshots inside it.
-    const searchPath = path.join(
-        ARTIFACTS_DIR,
-        `${platform}-results-*`,
-        `*${platform}.emu.debug*`,
-        testName
-    );
+    let allScreenshots = [];
+    
+    for (const pattern of searchPatterns) {
+        const screenshots = glob.sync(pattern);
+        if (screenshots.length > 0) {
+            // Filter screenshots to only include those that match the test name
+            const filtered = screenshots.filter(screenshot => {
+                const dir = path.dirname(screenshot);
+                const dirName = path.basename(dir).toLowerCase();
+                return dirName.includes(cleanTestName) || 
+                       testName.toLowerCase().includes(dirName) ||
+                       screenshot.toLowerCase().includes(cleanTestName);
+            });
+            allScreenshots = allScreenshots.concat(filtered);
+        }
+    }
 
-    const screenshotPaths = glob.sync(path.join(searchPath, `*(${failureTypes.join('|')})`));
-    const resolvedPaths = screenshotPaths.map(file => path.resolve(file));
+    // Remove duplicates
+    const uniqueScreenshots = [...new Set(allScreenshots)];
+    const resolvedPaths = uniqueScreenshots.map(file => path.resolve(file));
 
-    console.log(`Searching for screenshots in: ${searchPath}`);
-    console.log(`Found screenshot paths: ${JSON.stringify(resolvedPaths)}`);
+    console.log(`Searching for screenshots for test: "${testName}" (clean: "${cleanTestName}")`);
+    console.log(`Found ${resolvedPaths.length} screenshot(s)`);
 
     if (resolvedPaths.length > 0) {
         console.log(`Found screenshots for "${testName}": ${JSON.stringify(resolvedPaths)}`);
     } else {
-        console.warn(`No screenshots found for test "${testName}" on platform ${platform}. Searched in: ${searchPath}`);
+        console.warn(`No screenshots found for test "${testName}" on platform ${platform}`);
     }
 
     return resolvedPaths;
@@ -179,15 +168,14 @@ function collectReportSuites(reports, platform) {
         if (report.testResults) {
             console.log(`Processing test results for platform ${platform}`);
             report.testResults.forEach((suite) => {
-                console.log(`Processing suite: ${suite.displayName || suite.name}`);
+                console.log(`Processing suite: ${JSON.stringify(suite)}`);
                 if (suite.assertionResults) {
-                    console.log(`Processing assertion results for suite: ${suite.displayName || suite.name}`);
+                    // console.log(`Processing ${suite.assertionResults.length} assertion results for suite: ${JSON.stringify(suite)}}`);
                     suite.assertionResults.forEach((result) => {
-                        console.log(`Processing result: ${result.fullName || result.title}`);
-                        const testName = result.fullName || result.title;
-                        if (testName) {
-                            console.log(`Collecting screenshots for test "${testName}" on platform ${platform}`);
-                            // Collect screenshots for the test result
+                        const testName = result.fullName || result.title || 'Unknown Test';
+                        console.log(`Processing result: ${testName} (status: ${result.status}) \t ${JSON.stringify(result)}`);
+                        if (result.status === 'failed') {
+                            // Collect screenshots for failed tests
                             result.screenshots = collectScreenshots(platform, testName, result);
                         }
                     });
@@ -221,8 +209,37 @@ function collectReportSuites(reports, platform) {
 async function generateJestStareHtmlReport(outputDir, outputFile, inputFilePath, platform) {
     const suites = fse.readJsonSync(inputFilePath);
     const environment = fse.readJsonSync(path.join(ARTIFACTS_DIR, 'environment.json'));
-    const customTemplate = 
-`;
+    
+    // Copy screenshots to jest-stare directory for relative paths
+    const screenshotDir = path.join(outputDir, 'screenshots');
+    if (!fse.existsSync(screenshotDir)) {
+        fse.mkdirSync(screenshotDir, { recursive: true });
+    }
+    
+    // Process test results to copy screenshots
+    if (suites.testResults) {
+        suites.testResults.forEach((suite) => {
+            if (suite.assertionResults) {
+                suite.assertionResults.forEach((result) => {
+                    if (result.screenshots && result.screenshots.length > 0) {
+                        result.screenshots = result.screenshots.map((screenshotPath) => {
+                            const filename = `${Date.now()}_${path.basename(screenshotPath)}`;
+                            const destPath = path.join(screenshotDir, filename);
+                            try {
+                                fse.copySync(screenshotPath, destPath);
+                                return `screenshots/${filename}`;
+                            } catch (err) {
+                                console.error(`Failed to copy screenshot ${screenshotPath}:`, err);
+                                return null;
+                            }
+                        }).filter(Boolean);
+                    }
+                });
+            }
+        });
+    }
+    
+    const customTemplate = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -234,16 +251,72 @@ async function generateJestStareHtmlReport(outputDir, outputFile, inputFilePath,
         body { font-family: 'Inter', sans-serif; }
         .screenshot-container {
             display: none;
-            padding-left: 20px;
-            border-left: 2px solid #e5e7eb;
-            margin-left: 20px;
+            padding: 20px;
+            background-color: #f9fafb;
+            border-radius: 8px;
+            margin-top: 16px;
+            margin-bottom: 16px;
+        }
+        .screenshot-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+            margin-top: 12px;
+        }
+        .screenshot-item {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .screenshot-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .screenshot-label {
+            padding: 8px 12px;
+            background-color: #f3f4f6;
+            font-size: 14px;
+            font-weight: 500;
+            color: #4b5563;
+            border-bottom: 1px solid #e5e7eb;
         }
         .screenshot {
-            max-width: 100%;
+            width: 100%;
             height: auto;
-            margin-top: 10px;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
+            display: block;
+            cursor: pointer;
+        }
+        .screenshot-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            overflow: auto;
+        }
+        .screenshot-modal-content {
+            margin: auto;
+            display: block;
+            max-width: 90%;
+            max-height: 90%;
+            margin-top: 2%;
+        }
+        .screenshot-modal-close {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: #f1f1f1;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .screenshot-modal-close:hover {
+            color: #bbb;
         }
         .summary-card { background: linear-gradient(135deg, #f3f4f6, #ffffff); }
         .stat-box { transition: transform 0.2s; }
@@ -265,6 +338,10 @@ async function generateJestStareHtmlReport(outputDir, outputFile, inputFilePath,
     </style>
 </head>
 <body class="bg-gray-100">
+    <div id="screenshot-modal" class="screenshot-modal">
+        <span class="screenshot-modal-close">&times;</span>
+        <img class="screenshot-modal-content" id="modal-image">
+    </div>
     <div class="container mx-auto p-6">
         <h1 class="text-3xl font-bold text-gray-800 mb-6">${platform} Mobile App E2E with Detox and Jest</h1>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
@@ -304,16 +381,28 @@ async function generateJestStareHtmlReport(outputDir, outputFile, inputFilePath,
                                 if (suite.assertionResults) {
                                     suite.assertionResults.forEach(function(result) {
                                         if (result.status === 'failed' && result.screenshots && result.screenshots.length > 0) {
-                                            var screenshotHtml = result.screenshots.map(function(src) {
-                                                var relativeSrc = src.substring(src.indexOf('artifacts/') + 10);
-                                                return '<a href="' + relativeSrc + '" target="_blank"><img src="' + relativeSrc + '" class="screenshot" alt="Test screenshot"></a>';
-                                            }).join('');
+                                            var screenshotHtml = '<div class="screenshot-grid">';
+                                            result.screenshots.forEach(function(src, index) {
+                                                var label = 'Screenshot';
+                                                if (src.includes('testFnFailure')) label = 'Test Failure';
+                                                else if (src.includes('beforeEachFailure')) label = 'Before Each Failure';
+                                                else if (src.includes('afterEachFailure')) label = 'After Each Failure';
+                                                else if (src.includes('beforeAllFailure')) label = 'Before All Failure';
+                                                else if (src.includes('afterAllFailure')) label = 'After All Failure';
+                                                
+                                                screenshotHtml += '<div class="screenshot-item">'
+                                                    + '<div class="screenshot-label">' + label + '</div>'
+                                                    + '<img src="' + src + '" class="screenshot" alt="' + label + '" data-index="' + index + '">'
+                                                    + '</div>';
+                                            });
+                                            screenshotHtml += '</div>';
+                                            
                                             if (result.failureMessages && result.failureMessages.length > 0) {
                                                 result.failureMessages[0] += '\n'
                                                     + '<div class="mt-4">'
                                                     +   '<div class="collapsible">'
                                                     +     '<span class="arrow">▶</span>'
-                                                    +     '<span>View Screenshots</span>'
+                                                    +     '<span>View Screenshots (' + result.screenshots.length + ')</span>'
                                                     +   '</div>'
                                                     +   '<div class="screenshot-container">'
                                                     +     screenshotHtml
@@ -354,6 +443,28 @@ async function generateJestStareHtmlReport(outputDir, outputFile, inputFilePath,
                     }
                 });
                 observer.observe(jestStareEl, { childList: true, subtree: true });
+                
+                // Setup screenshot modal functionality
+                var modal = document.getElementById('screenshot-modal');
+                var modalImg = document.getElementById('modal-image');
+                var modalClose = document.getElementsByClassName('screenshot-modal-close')[0];
+                
+                document.addEventListener('click', function(e) {
+                    if (e.target.classList.contains('screenshot')) {
+                        modal.style.display = 'block';
+                        modalImg.src = e.target.src;
+                    }
+                });
+                
+                modalClose.onclick = function() {
+                    modal.style.display = 'none';
+                };
+                
+                window.onclick = function(event) {
+                    if (event.target == modal) {
+                        modal.style.display = 'none';
+                    }
+                };
             }
         });
     </script>
@@ -364,16 +475,11 @@ async function generateJestStareHtmlReport(outputDir, outputFile, inputFilePath,
 
     fse.writeFileSync(path.join(outputDir, outputFile), customTemplate);
 
-    // jest-stare will process the results and render the report
-    // The additionalResultsProcessors in the config will add the screenshots
-    processor(suites, {
-        log: false,
-        resultDir: outputDir,
-        resultHtml: outputFile,
-        reportHeadline: `${platform} Mobile App E2E with Detox and Jest`,
-    });
-
-    console.log(`Generated HTML report at ${path.join(outputDir, outputFile)}`);
+    // Write the custom template
+    const outputPath = path.join(outputDir, outputFile);
+    fse.writeFileSync(outputPath, customTemplate);
+    
+    console.log(`Generated HTML report at ${outputPath}`);
 }
 
 async function mergeJestStareJsonFiles(outputFilePath, inputFiles, platform) {
