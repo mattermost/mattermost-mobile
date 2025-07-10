@@ -189,30 +189,20 @@ const EditProfile = ({
         });
 
         // Convert camelCase properties to snake_case for API compatibility
+        const keyMapping: Record<string, keyof UserProfile> = {
+            firstName: 'first_name',
+            lastName: 'last_name',
+            nickname: 'nickname',
+            position: 'position',
+            username: 'username',
+            email: 'email',
+        };
+
         const apiUpdates: Partial<UserProfile> = {};
         Object.keys(updates).forEach((key) => {
-            const value = updates[key as keyof UserInfo];
-            switch (key) {
-                case 'firstName':
-                    apiUpdates.first_name = value as string;
-                    break;
-                case 'lastName':
-                    apiUpdates.last_name = value as string;
-                    break;
-                case 'nickname':
-                    apiUpdates.nickname = value as string;
-                    break;
-                case 'position':
-                    apiUpdates.position = value as string;
-                    break;
-                case 'username':
-                    apiUpdates.username = value as string;
-                    break;
-                case 'email':
-                    apiUpdates.email = value as string;
-                    break;
-                default:
-                    break;
+            const snakeCaseKey = keyMapping[key];
+            if (snakeCaseKey) {
+                (apiUpdates as any)[snakeCaseKey] = updates[key as keyof UserInfo];
             }
         });
 
