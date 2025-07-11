@@ -132,6 +132,16 @@ jest.mock('@actions/local/reactions', () => {
     };
 });
 
+let mockFetchChannelStats: jest.Mock;
+jest.mock('@actions/remote/channel', () => {
+    const original = jest.requireActual('@actions/remote/channel');
+    mockFetchChannelStats = jest.fn(() => Promise.resolve({}));
+    return {
+        ...original,
+        fetchChannelStats: mockFetchChannelStats,
+    };
+});
+
 beforeAll(() => {
     // @ts-ignore
     NetworkManager.getClient = () => mockClient;
@@ -140,6 +150,7 @@ beforeAll(() => {
 beforeEach(async () => {
     await DatabaseManager.init([serverUrl]);
     operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
+    mockFetchChannelStats.mockClear();
 });
 
 afterEach(async () => {
@@ -500,6 +511,119 @@ describe('create, update & delete posts', () => {
         const file2After = deletedFiles.find((f) => f.id === 'file-2');
         expect(file1After).toBeUndefined();
         expect(file2After).toBeUndefined();
+    });
+
+    it('editPost - should call fetchChannelStats when files are removed', async () => {
+        // Setup post with files
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [post1.id],
+            posts: [post1],
+            prepareRecordsOnly: false,
+        });
+
+        const testFiles: FileInfo[] = [
+            TestHelper.fakeFileInfo({
+                id: 'file-1',
+                post_id: post1.id,
+                name: 'test-file-1.jpg',
+                extension: 'jpg',
+                size: 1024,
+                mime_type: 'image/jpeg',
+                user_id: user1.id,
+            }),
+        ];
+
+        await operator.handleFiles({
+            files: testFiles,
+            prepareRecordsOnly: false,
+        });
+
+        mockFetchChannelStats.mockClear();
+
+        // Edit post to remove files
+        const result = await editPost(serverUrl, post1.id, 'new message', [], ['file-1']);
+
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(mockFetchChannelStats).toHaveBeenCalledWith(serverUrl, post1.channel_id);
+        expect(mockFetchChannelStats).toHaveBeenCalledTimes(1);
+    });
+
+    it('editPost - should call fetchChannelStats when files are added', async () => {
+        // Setup post without files
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [post1.id],
+            posts: [post1],
+            prepareRecordsOnly: false,
+        });
+
+        mockFetchChannelStats.mockClear();
+
+        // Edit post to add files
+        const result = await editPost(serverUrl, post1.id, 'new message', ['new-file-1'], []);
+
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(mockFetchChannelStats).toHaveBeenCalledWith(serverUrl, post1.channel_id);
+        expect(mockFetchChannelStats).toHaveBeenCalledTimes(1);
+    });
+
+    it('editPost - should NOT call fetchChannelStats when no files change', async () => {
+        // Setup post without files
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [post1.id],
+            posts: [post1],
+            prepareRecordsOnly: false,
+        });
+
+        mockFetchChannelStats.mockClear();
+
+        // Edit post without changing files
+        const result = await editPost(serverUrl, post1.id, 'new message', [], []);
+
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(mockFetchChannelStats).not.toHaveBeenCalled();
+    });
+
+    it('editPost - should call fetchChannelStats when file IDs change', async () => {
+        // Setup post with files
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [post1.id],
+            posts: [post1],
+            prepareRecordsOnly: false,
+        });
+
+        const testFiles: FileInfo[] = [
+            TestHelper.fakeFileInfo({
+                id: 'file-1',
+                post_id: post1.id,
+                name: 'test-file-1.jpg',
+                extension: 'jpg',
+                size: 1024,
+                mime_type: 'image/jpeg',
+                user_id: user1.id,
+            }),
+        ];
+
+        await operator.handleFiles({
+            files: testFiles,
+            prepareRecordsOnly: false,
+        });
+
+        mockFetchChannelStats.mockClear();
+
+        // Edit post to replace files (remove one, add another)
+        const result = await editPost(serverUrl, post1.id, 'new message', ['new-file-2'], ['file-1']);
+
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(mockFetchChannelStats).toHaveBeenCalledWith(serverUrl, post1.channel_id);
+        expect(mockFetchChannelStats).toHaveBeenCalledTimes(1);
     });
 
     it('acknowledgePost - handle error', async () => {

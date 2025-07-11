@@ -269,6 +269,12 @@ export async function handlePostDeleted(serverUrl: string, msg: WebSocketMessage
             models.push(deleteModel);
         }
 
+        // Check if the deleted post had files to refresh channel stats
+        const hadFiles = (oldPost.metadata?.files?.length || 0) > 0;
+        if (hadFiles) {
+            fetchChannelStats(serverUrl, post.channel_id);
+        }
+
         // update thread when a reply is deleted and CRT is enabled
         if (post.root_id) {
             const isCRTEnabled = await getIsCRTEnabled(database);
