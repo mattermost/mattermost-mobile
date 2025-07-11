@@ -31,7 +31,7 @@ const orderChecklists = (run: PlaybookRunModel, checklists: PlaybookChecklistMod
         acc[id] = index;
         return acc;
     }, {} as Record<string, number>);
-    return checklists.sort((a, b) => sortOrderMap[a.id] - sortOrderMap[b.id]);
+    return [...checklists].sort((a, b) => sortOrderMap[a.id] - sortOrderMap[b.id]); // We spread the array to avoid mutating the original checklists array
 };
 
 const getIds = (checklists: PlaybookChecklistModel[]) => {

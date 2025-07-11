@@ -80,8 +80,8 @@ describe('ThreadFooter', () => {
         expect(userAvatarsStack).toHaveProp('channelId', props.channelId);
         expect(userAvatarsStack).toHaveProp('location', props.location);
         expect(userAvatarsStack.props.users).toHaveLength(2);
-        expect(userAvatarsStack.props.users[0].id).toBe(props.participants[1].id);
         expect(userAvatarsStack.props.users[0].id).toBe(props.author?.id);
+        expect(userAvatarsStack.props.users[1].id).toBe(props.participants[0].id);
         expect(userAvatarsStack).toHaveProp('bottomSheetTitle', expect.objectContaining({defaultMessage: 'Thread Participants'}));
     });
 });

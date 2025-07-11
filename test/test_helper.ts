@@ -1129,7 +1129,7 @@ class TestHelperSingleton {
                 retrospective_enabled: true,
                 retrospective: 'Test retrospective',
                 retrospective_published_at: Date.now() + i,
-                sumary_modified_at: 0,
+                summary_modified_at: 0,
                 reported_user_id: '',
                 previous_reminder: 0,
                 status_update_enabled: false,

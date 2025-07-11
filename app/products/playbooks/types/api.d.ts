@@ -4,8 +4,8 @@
 type ChecklistItemState = '' | 'in_progress' | 'closed' | 'skipped';
 
 const PlaybookRunStatus = {
-    InProgres = 'InProgress',
-    Finished = 'Finished',
+    InProgress: 'InProgress',
+    Finished: 'Finished',
 } as const;
 
 type TriggerAction = {
@@ -75,7 +75,7 @@ type PlaybookRun = {
     active_stage: number;
     active_stage_title: string;
     summary: string;
-    sumary_modified_at: number;
+    summary_modified_at: number;
     owner_user_id: string;
     reported_user_id: string;
     team_id: string;
