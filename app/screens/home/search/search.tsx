@@ -374,6 +374,15 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
         }
     }, [isFocused]);
 
+    useDidUpdate(() => {
+        if (isFocused && lastSearchedValue && showResults) {
+            // Use requestAnimationFrame for smooth UI updates
+            requestAnimationFrame(() => {
+                handleSearch(searchTeamId, lastSearchedValue);
+            });
+        }
+    }, [isFocused, lastSearchedValue, showResults, handleSearch, searchTeamId]);
+
     const handleEnterPressed = useCallback(() => {
         const topScreen = NavigationStore.getVisibleScreen();
         if (topScreen === Screens.HOME && isFocused) {
