@@ -8,8 +8,12 @@ const path = require('path');
 
 const fse = require('fs-extra');
 const glob = require('glob');
+const sanitize = require('sanitize-filename');
 
 const {ARTIFACTS_DIR} = require('./constants');
+
+const SANITIZE_OPTIONS = {replacement: '_'};
+const sanitizeFn = (filename) => sanitize(filename, SANITIZE_OPTIONS);
 
 function flatten(items) {
     return items.reduce((acc, arr) => [...acc, ...arr], []);
@@ -39,31 +43,41 @@ function collectReportFiles(files) {
     ).then((results) => results.filter((r) => r !== null));
 }
 
-// Build a map of test fullNames to screenshots by scanning the artifacts directory
 function buildScreenshotMap(platform) {
     const screenshotMap = new Map();
     const pattern = path.join(ARTIFACTS_DIR, `${platform}-results-*`, 'jest-stare', 'screenshots', '**', '*.png');
     const screenshots = glob.sync(pattern);
 
     screenshots.forEach((screenshotPath) => {
-        const testName = screenshotPath.split('screenshots/')[1].split('/')[0];
-        if (!screenshotMap.has(testName)) {
-            screenshotMap.set(testName, []);
+        const relativePath = screenshotPath.split('screenshots/')[1];
+        if (relativePath) {
+            const parts = relativePath.split('/');
+            if (parts.length >= 3) {
+                const sanitizedTestFile = parts[0];
+                const sanitizedTestName = parts[1];
+                const key = `${sanitizedTestFile}_${sanitizedTestName}`;
+                if (!screenshotMap.has(key)) {
+                    screenshotMap.set(key, []);
+                }
+                screenshotMap.get(key).push(screenshotPath);
+            }
         }
-        screenshotMap.get(testName).push(screenshotPath);
     });
 
     return screenshotMap;
 }
 
-function collectScreenshots(platform, fullName, result, screenshotMap) {
-    if (!fullName || result.status !== 'failed') {
+function collectScreenshots(platform, fullName, result, screenshotMap, testFile) {
+    if (!fullName || result.status !== 'failed' || !testFile) {
         return [];
     }
 
-    const matchedScreenshots = screenshotMap.get(fullName) || [];
+    const sanitizedTestFile = sanitizeFn(path.basename(testFile, '.ts'));
+    const sanitizedFullName = sanitizeFn(fullName.trim());
+    const key = `${sanitizedTestFile}_${sanitizedFullName}`;
+    const matchedScreenshots = screenshotMap.get(key) || [];
     if (matchedScreenshots.length === 0) {
-        console.warn(`No screenshots found for test "${fullName}"`);
+        console.warn(`No screenshots found for test "${key}" (testFile: "${testFile}", fullName: "${fullName}")`);
     }
 
     return matchedScreenshots.map((file) => path.resolve(file));
@@ -136,9 +150,10 @@ function collectReportSuites(reports, platform) {
             report.testResults.forEach((suite) => {
                 if (suite.assertionResults) {
                     suite.assertionResults.forEach((result) => {
+                        result.testFile = suite.name;
                         const fullName = result.fullName || result.title || 'Unknown Test';
                         if (result.status === 'failed') {
-                            result.screenshots = collectScreenshots(platform, fullName, result, screenshotMap);
+                            result.screenshots = collectScreenshots(platform, fullName, result, screenshotMap, suite.name);
                         }
                     });
                 }
@@ -351,17 +366,14 @@ async function generateJestStareHtmlReport(outputDir, outputFile, inputFilePath,
                                                 else if (src.includes('afterEachFailure')) label = 'After Each Failure';
                                                 else if (src.includes('beforeAllFailure')) label = 'Before All Failure';
                                                 else if (src.includes('afterAllFailure')) label = 'After All Failure';
-                                                
                                                 screenshotHtml += '<div class="screenshot-item">'
                                                     + '<div class="screenshot-label">' + label + '</div>'
                                                     + '<img src="' + src + '" class="screenshot" alt="' + label + '" data-index="' + index + '">'
                                                     + '</div>';
                                             });
                                             screenshotHtml += '</div>';
-                                            
                                             if (result.failureMessages && result.failureMessages.length > 0) {
-                                                result.failureMessages[0] += '
-'
+                                                result.failureMessages[0] = result.failureMessages[0].replace(/<div class="mt-4">.*<\/div>/, '') + '\n'
                                                     + '<div class="mt-4">'
                                                     +   '<div class="collapsible">'
                                                     +     '<span class="arrow">▶</span>'
@@ -383,21 +395,16 @@ async function generateJestStareHtmlReport(outputDir, outputFile, inputFilePath,
             };
             var jestStareEl = document.getElementById('jest-stare');
             if (jestStareEl) {
-                var observer = new MutationObserver(function(mutationsList, observer) {
-                    for(var i=0; i<mutationsList.length; i++) {
-                        var mutation = mutationsList[i];
+                var observer = new MutationObserver(function(mutationsList) {
+                    for (var mutation of mutationsList) {
                         if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
-.                            var collapsibles = jestStareEl.querySelectorAll('.collapsible');
+                            var collapsibles = jestStareEl.querySelectorAll('.collapsible');
                             collapsibles.forEach(function(collapsible) {
                                 if (!collapsible.dataset.listenerAttached) {
                                     collapsible.addEventListener('click', function() {
                                         collapsible.classList.toggle('active');
                                         var content = collapsible.nextElementSibling;
-                                        if (content.style.display === "block") {
-                                            content.style.display = "none";
-                                        } else {
-                                            content.style.display = "block";
-                                        }
+                                        content.style.display = content.style.display === 'block' ? 'none' : 'block';
                                     });
                                     collapsible.dataset.listenerAttached = true;
                                 }
@@ -406,24 +413,20 @@ async function generateJestStareHtmlReport(outputDir, outputFile, inputFilePath,
                     }
                 });
                 observer.observe(jestStareEl, { childList: true, subtree: true });
-                
                 var modal = document.getElementById('screenshot-modal');
                 var modalImg = document.getElementById('modal-image');
                 var modalClose = document.getElementsByClassName('screenshot-modal-close')[0];
-                
                 document.addEventListener('click', function(e) {
                     if (e.target.classList.contains('screenshot')) {
                         modal.style.display = 'block';
                         modalImg.src = e.target.src;
                     }
                 });
-                
                 modalClose.onclick = function() {
                     modal.style.display = 'none';
                 };
-                
                 window.onclick = function(event) {
-                    if (event.target == modal) {
+                    if (event.target === modal) {
                         modal.style.display = 'none';
                     }
                 };
@@ -443,38 +446,6 @@ async function generateJestStareHtmlReport(outputDir, outputFile, inputFilePath,
             reportTitle: `${platform} Mobile App E2E Report`,
             hidePassing: false,
             coverageLink: '',
-            additionalResultsProcessors: [
-                (results) => {
-                    results.testResults.forEach((suite) => {
-                        if (suite.assertionResults) {
-                            suite.assertionResults.forEach((result) => {
-                                if (result.status === 'failed' && result.screenshots && result.screenshots.length > 0) {
-                                    const screenshotHtml = result.screenshots.map((src, index) => {
-                                        let label = 'Screenshot';
-                                        if (src.includes('testFnFailure')) {
-                                            label = 'Test Failure';
-                                        } else if (src.includes('beforeEachFailure')) {
-                                            label = 'Before Each Failure';
-                                        } else if (src.includes('afterEachFailure')) {
-                                            label = 'After Each Failure';
-                                        } else if (src.includes('beforeAllFailure')) {
-                                            label = 'Before All Failure';
-                                        } else if (src.includes('afterAllFailure')) {
-                                            label = 'After All Failure';
-                                        }
-                                        return `<div class="screenshot-item"><div class="screenshot-label">${label}</div><img src="${src}" class="screenshot" alt="${label}" data-index="${index}"></div>`;
-                                    }).join('');
-                                    if (result.failureMessages && result.failureMessages.length > 0) {
-                                        result.failureMessages[0] += `
-<div class="mt-4"><div class="collapsible"><span class="arrow">▶</span><span>View Screenshots (${result.screenshots.length})</span></div><div class="screenshot-container"><div class="screenshot-grid">${screenshotHtml}</div></div></div>`;
-                                    }
-                                }
-                            });
-                        }
-                    });
-                    return results;
-                },
-            ],
         },
         outputDir,
         outputFile,

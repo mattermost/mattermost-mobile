@@ -21,6 +21,7 @@ module.exports = {
             outputDirectory: './artifacts',
             outputName: `${platform}-junit${shard}.xml`,
             uniqueOutputName: false,
+            addFileAttribute: true,
         }],
         ['jest-html-reporters', {
             pageTitle: 'Mobile App E2E with Detox and Jest',
@@ -33,6 +34,9 @@ module.exports = {
             resultDir: `./artifacts/${platform}-results${shard}/jest-stare`,
             resultJson: `${platform}-data.json`,
             resultHtml: `${platform}-main.html`,
+            additionalResultsProcessors: ['./utils/jest_stare'],
+            testResultsProcessor: './utils/jest_stare',
+            pathBuilder: './utils/path_builder',
         }],
     ],
     globalSetup: 'detox/runners/jest/globalSetup',
