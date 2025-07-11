@@ -197,7 +197,7 @@ jobs:
         if: github.event_name == 'pull_request'
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.MM_MOBILE_GITHUB_TOKEN }}
           script: |
             const prNumber = '${{ github.event.pull_request.number }}';
             const runId = '${{ github.run_id }}';
