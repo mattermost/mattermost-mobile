@@ -1,4 +1,4 @@
-# Server Database - Schema Version 5
+# Server Database - Schema Version 10
 # Please bump the version by 1, any time the schema changes.
 # Also, include the migration plan under app/database/migration/server,
 # update all models, relationships and types.
@@ -174,7 +174,59 @@ MyTeam
 id PK string FK - Team.id # same as Team.id
 roles string
 
+PlaybookRun
+-
+id PK string # server-generated
+playbook_id string
+name string
+description string
+is_active boolean
+active_stage number
+active_stage_title string
+participant_ids string # stringified array of user IDs
+summary string
+current_status string # (valid values InProgres, Finished)
+owner_user_id string INDEX FK >- User.id
+team_id string INDEX FK >- Team.id
+channel_id string INDEX FK >- Channel.id
+post_id string INDEX FK >- Post.id
+create_at number
+end_at number
+delete_at number
+last_status_update_at number
+retrospective_enabled boolean
+retrospective string
+retrospective_published_at number
+synced string NULL INDEX # optional field for sync status
+last_sync_at number NULL # optional field for last sync timestamp
 
+PlaybookChecklist
+-
+id PK string # server-generated
+run_id string INDEX FK >- PlaybookRun.id
+title string
+sort_order number
+synced string NULL INDEX # optional field for sync status
+last_sync_at number NULL # optional field for last sync timestamp
+
+PlaybookChecklistItem
+-
+id PK string # server-generated
+checklist_id string INDEX FK >- PlaybookChecklist.id
+title string
+description string
+state string # e.g., 'open', 'closed'
+state_modified number
+assignee_id string INDEX FK >- User.id
+assignee_modified number
+command string
+command_last_run number
+due_date number
+task_actions string # stringified array of TaskAction
+order number
+completed_at number
+synced string NULL INDEX # optional field for sync status
+last_sync_at number NULL # optional field for last sync timestamp
 
 Post
 -
@@ -328,4 +380,4 @@ roles string
 status string
 timezone string
 update_at number
-username string 
+username string

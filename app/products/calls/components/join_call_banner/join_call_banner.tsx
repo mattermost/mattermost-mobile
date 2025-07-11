@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessage, useIntl} from 'react-intl';
 import {View, Pressable} from 'react-native';
 
 import {dismissIncomingCall} from '@calls/actions';
@@ -130,6 +130,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
+const callParticipantsMessage = defineMessage({
+    id: 'calls.join_call_avatars.bottom_sheet_title',
+    defaultMessage: 'Call participants',
+});
+
 const JoinCallBanner = ({
     channelId,
     callId,
@@ -200,6 +205,7 @@ const JoinCallBanner = ({
                     overflowContainerStyle={style.overflowContainer}
                     overflowItemStyle={style.overflowItem}
                     overflowTextStyle={style.overflowText}
+                    bottomSheetTitle={callParticipantsMessage}
                 />
                 <Pressable onPress={onDismissPress}>
                     <View style={style.dismissContainer}>

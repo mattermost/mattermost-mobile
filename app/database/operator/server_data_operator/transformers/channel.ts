@@ -155,6 +155,7 @@ export const transformMyChannelRecord = async ({action, database, value}: Transf
         myChannel.lastViewedAt = raw.last_viewed_at;
         myChannel.viewedAt = record?.viewedAt || 0;
         myChannel.lastFetchedAt = record?.lastFetchedAt || 0;
+        myChannel.lastPlaybookRunsFetchAt = record?.lastPlaybookRunsFetchAt || 0;
     };
 
     return prepareBaseRecord({

@@ -5,6 +5,7 @@ import React from 'react';
 
 import CopyChannelLinkOption from '@components/channel_actions/copy_channel_link_option';
 import {General} from '@constants';
+import PlaybookRunsOption from '@playbooks/components/channel_actions/playbook_runs_option';
 import {isTypeDMorGM} from '@utils/channel';
 
 import AddMembers from './add_members';
@@ -48,6 +49,7 @@ const Options = ({
             <NotificationPreference channelId={channelId}/>
             <PinnedMessages channelId={channelId}/>
             <ChannelFiles channelId={channelId}/>
+            <PlaybookRunsOption channelId={channelId}/>
             {type !== General.DM_CHANNEL &&
                 <Members channelId={channelId}/>
             }

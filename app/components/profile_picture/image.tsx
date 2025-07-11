@@ -47,7 +47,7 @@ const Image = ({author, forwardRef, iconSize, size, source, url}: Props) => {
         backgroundColor: theme.centerChannelBg,
         height: size,
         width: size,
-    }), [size]);
+    }), [size, theme.centerChannelBg]);
 
     const imgSource = useMemo(() => {
         if (!author || typeof source === 'string') {
@@ -56,6 +56,11 @@ const Image = ({author, forwardRef, iconSize, size, source, url}: Props) => {
 
         const pictureUrl = buildProfileImageUrlFromUser(serverUrl, author);
         return source ?? {uri: buildAbsoluteUrl(serverUrl, pictureUrl)};
+
+    // We need to pass the lastPictureUpdateAt, because changes in this
+    // value are used internally, and may not be followed by a change
+    // in the containing object (author).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [author, serverUrl, source, lastPictureUpdateAt]);
 
     if (typeof source === 'string') {
