@@ -770,6 +770,7 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
             <ViewManagerAdapter_ExpoImage
               backgroundColor={4294967295}
               borderRadius={12}
+              collapsable={false}
               containerViewRef={"[React.ref]"}
               contentFit="cover"
               contentPosition={
@@ -779,6 +780,24 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
                 }
               }
               height={24}
+              jestAnimatedProps={
+                {
+                  "value": {},
+                }
+              }
+              jestAnimatedStyle={
+                {
+                  "value": {},
+                }
+              }
+              jestInlineStyle={
+                {
+                  "backgroundColor": "#ffffff",
+                  "borderRadius": 12,
+                  "height": 24,
+                  "width": 24,
+                }
+              }
               nativeViewRef={"[React.ref]"}
               onError={[Function]}
               onLoad={[Function]}
@@ -1092,6 +1111,7 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
             <ViewManagerAdapter_ExpoImage
               backgroundColor={4294967295}
               borderRadius={12}
+              collapsable={false}
               containerViewRef={"[React.ref]"}
               contentFit="cover"
               contentPosition={
@@ -1101,6 +1121,24 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
                 }
               }
               height={24}
+              jestAnimatedProps={
+                {
+                  "value": {},
+                }
+              }
+              jestAnimatedStyle={
+                {
+                  "value": {},
+                }
+              }
+              jestInlineStyle={
+                {
+                  "backgroundColor": "#ffffff",
+                  "borderRadius": 12,
+                  "height": 24,
+                  "width": 24,
+                }
+              }
               nativeViewRef={"[React.ref]"}
               onError={[Function]}
               onLoad={[Function]}
@@ -1452,6 +1490,7 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
             <ViewManagerAdapter_ExpoImage
               backgroundColor={4294967295}
               borderRadius={12}
+              collapsable={false}
               containerViewRef={"[React.ref]"}
               contentFit="cover"
               contentPosition={
@@ -1461,6 +1500,24 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
                 }
               }
               height={24}
+              jestAnimatedProps={
+                {
+                  "value": {},
+                }
+              }
+              jestAnimatedStyle={
+                {
+                  "value": {},
+                }
+              }
+              jestInlineStyle={
+                {
+                  "backgroundColor": "#ffffff",
+                  "borderRadius": 12,
+                  "height": 24,
+                  "width": 24,
+                }
+              }
               nativeViewRef={"[React.ref]"}
               onError={[Function]}
               onLoad={[Function]}
@@ -1673,6 +1730,7 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
             <ViewManagerAdapter_ExpoImage
               backgroundColor={4294967295}
               borderRadius={12}
+              collapsable={false}
               containerViewRef={"[React.ref]"}
               contentFit="cover"
               contentPosition={
@@ -1682,6 +1740,24 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
                 }
               }
               height={24}
+              jestAnimatedProps={
+                {
+                  "value": {},
+                }
+              }
+              jestAnimatedStyle={
+                {
+                  "value": {},
+                }
+              }
+              jestInlineStyle={
+                {
+                  "backgroundColor": "#ffffff",
+                  "borderRadius": 12,
+                  "height": 24,
+                  "width": 24,
+                }
+              }
               nativeViewRef={"[React.ref]"}
               onError={[Function]}
               onLoad={[Function]}

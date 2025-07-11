@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-/* eslint-disable max-lines */
-
 import {createIntl} from 'react-intl';
 import {Alert, DeviceEventEmitter, Platform} from 'react-native';
 
@@ -10,6 +8,7 @@ import {Events} from '@constants';
 import {GLOBAL_IDENTIFIERS, SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
+import WebsocketManager from '@managers/websocket_manager';
 import {logWarning} from '@utils/log';
 
 import {
@@ -54,6 +53,10 @@ const mockClient = {
     sendPasswordResetEmail: jest.fn(() => ({status: 200})),
     getMe: jest.fn(() => user1),
     logout: jest.fn(),
+};
+
+const mockWebsocketClient = {
+    close: jest.fn(),
 };
 
 let mockGetPushProxyVerificationState: jest.Mock;
@@ -108,9 +111,11 @@ jest.mock('@utils/log', () => {
 });
 
 beforeAll(() => {
-    // eslint-disable-next-line
     // @ts-ignore
     NetworkManager.getClient = () => mockClient;
+
+    // @ts-ignore
+    WebsocketManager.getClient = () => mockWebsocketClient;
 });
 
 beforeEach(async () => {
@@ -436,6 +441,7 @@ describe('logout', () => {
         const shouldEmitBeforeAlert = shouldEmit && (!shouldShowAlert || options.logoutOnAlert);
         const shouldEmitAfterAlert = shouldEmit && !shouldEmitBeforeAlert;
         const expectedResult = !(shouldShowAlert && !options.logoutOnAlert);
+        const shouldCloseWebsocket = options.skipServerLogout || !clientReturnError || options.logoutOnAlert;
 
         const clientCalls = shouldCallClient ? 1 : 0;
         const alertButtons = options.logoutOnAlert ? 1 : 2;
@@ -453,6 +459,13 @@ describe('logout', () => {
         } else {
             expect(mockEmit).not.toHaveBeenCalled();
         }
+
+        if (shouldCloseWebsocket) {
+            expect(mockWebsocketClient.close).toHaveBeenCalledWith(true);
+        } else {
+            expect(mockWebsocketClient.close).not.toHaveBeenCalled();
+        }
+
         if (shouldShowAlert) {
             if (withIntl) {
                 expect(mockFormatMessage).toHaveBeenCalled();

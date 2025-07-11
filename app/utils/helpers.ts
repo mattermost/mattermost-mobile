@@ -107,6 +107,27 @@ export function safeParseJSON(rawJson: string | Record<string, unknown> | unknow
     return data;
 }
 
+export function safeParseJSONStringArray(rawJson: unknown) {
+    if (Array.isArray(rawJson)) {
+        return rawJson.filter((v) => typeof v === 'string');
+    }
+
+    if (typeof rawJson !== 'string') {
+        return [];
+    }
+
+    try {
+        const data = JSON.parse(rawJson);
+        if (Array.isArray(data)) {
+            return data.filter((v) => typeof v === 'string');
+        }
+    } catch {
+        // Do nothing
+    }
+
+    return [];
+}
+
 export function getCurrentMomentForTimezone(timezone: string | null) {
     return timezone ? moment.tz(timezone) : moment();
 }

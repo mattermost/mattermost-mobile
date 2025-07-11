@@ -18,6 +18,7 @@ import {isSupportedServerCalls} from '@calls/utils';
 import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import AppsManager from '@managers/apps_manager';
+import {updatePlaybooksVersion} from '@playbooks/actions/remote/version';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {getLastPostInThread} from '@queries/servers/post';
 import {
@@ -90,6 +91,9 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
     const {id: currentUserId, locale: currentUserLocale} = (await getCurrentUser(database))!;
     const license = await getLicense(database);
     const config = await getConfig(database);
+
+    // Set the version of the playbooks plugin to the systems table
+    updatePlaybooksVersion(serverUrl);
 
     if (isSupportedServerCalls(config?.Version)) {
         loadConfigAndCalls(serverUrl, currentUserId, groupLabel);

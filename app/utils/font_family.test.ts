@@ -40,16 +40,6 @@ const flattenStyles = (styles: StyleObject | Array<StyleObject | StyleObject[]>)
     }, {});
 };
 
-// Mock the necessary parts of react-native
-jest.mock('react-native', () => ({
-    Text: {
-        render: jest.fn(),
-    },
-    StyleSheet: {
-        create: jest.fn((styles) => styles),
-    },
-}));
-
 // Mock cloneElement
 jest.mock('react', () => ({
     ...jest.requireActual('react'),
@@ -69,6 +59,8 @@ jest.mock('react', () => ({
 }));
 
 describe('setFontFamily', () => {
+    // @ts-expect-error renderer is not exposed to TS definition
+    const renderTextSpy = jest.spyOn(Text, 'render');
     let originalTextRender: any;
 
     beforeEach(() => {
@@ -83,11 +75,13 @@ describe('setFontFamily', () => {
     });
 
     test('overrides Text.render and applies custom styles', () => {
+        const createSpy = jest.spyOn(StyleSheet, 'create');
+
         // Call the function to set the font family
         setFontFamily();
 
         // Check if the StyleSheet.create was called with the correct styles
-        expect(StyleSheet.create).toHaveBeenCalledWith({
+        expect(createSpy).toHaveBeenCalledWith({
             defaultText: {
                 fontFamily: 'OpenSans',
                 fontSize: 16,
@@ -106,7 +100,7 @@ describe('setFontFamily', () => {
         };
 
         // Set the old render function to return the mock output
-        (originalTextRender as jest.Mock).mockReturnValue(mockOriginRenderOutput);
+        renderTextSpy.mockReturnValue(mockOriginRenderOutput as any);
 
         // Call the new render function
         // @ts-expect-error renderer is not exposed to TS definition
