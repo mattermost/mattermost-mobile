@@ -12,7 +12,7 @@ module.exports = {
     rootDir: '.',
     testMatch: ['<rootDir>/test/**/*.e2e.ts'],
     transform: {
-        '\\.ts?$': 'ts-jest',
+        '\.ts?$': 'ts-jest',
     },
     reporters: [
         'detox/runners/jest/reporter',
@@ -30,9 +30,9 @@ module.exports = {
         }],
         ['jest-stare', {
             reportHeadline: 'Mobile App E2E with Detox and Jest',
-            resultDir: './artifacts/jest-stare',
-            resultJson: `${platform}-data${shard}.json`,
-            resultHtml: `${platform}-main${shard}.html`,
+            resultDir: `./artifacts/${platform}-results${shard}/jest-stare`,
+            resultJson: `${platform}-data.json`,
+            resultHtml: `${platform}-main.html`,
         }],
     ],
     globalSetup: 'detox/runners/jest/globalSetup',
