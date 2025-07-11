@@ -8,6 +8,7 @@ import {markChannelAsUnread, updateLastPostAt} from '@actions/local/channel';
 import {addPostAcknowledgement, removePost, removePostAcknowledgement, storePostsForChannel} from '@actions/local/post';
 import {addRecentReaction} from '@actions/local/reactions';
 import {createThreadFromNewPost} from '@actions/local/thread';
+import {fetchChannelStats} from '@actions/remote/channel';
 import {ActionType, General, Post, ServerErrors} from '@constants';
 import DatabaseManager from '@database/manager';
 import {filterPostsInOrderedArray} from '@helpers/api/post';
@@ -15,7 +16,7 @@ import {getNeededAtMentionedUsernames} from '@helpers/api/user';
 import NetworkManager from '@managers/network_manager';
 import {getMyChannel, prepareMissingChannelsForAllTeams, queryAllMyChannel} from '@queries/servers/channel';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
-import {getFilesByIds} from '@queries/servers/file';
+import {getFilesByIds, queryFilesForPost} from '@queries/servers/file';
 import {getPostById, getRecentPostsInChannel} from '@queries/servers/post';
 import {getCurrentUserId} from '@queries/servers/system';
 import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers/thread';
@@ -915,6 +916,9 @@ export const editPost = async (serverUrl: string, postId: string, postMessage: s
 
         const post = await getPostById(database, postId);
         if (post) {
+            const originalFiles = await queryFilesForPost(database, postId).fetch();
+            const originalFileIds = originalFiles.map((f) => f.id);
+
             const {update_at, edit_at, message: updatedMessage, message_source} = await client.patchPost({message: postMessage, id: postId, file_ids});
             await database.write(async () => {
                 await post.update((p) => {
@@ -934,6 +938,15 @@ export const editPost = async (serverUrl: string, postId: string, postMessage: s
                     });
                     await operator.batchRecords(fileDeleteModels, 'delete files');
                 }
+            }
+
+            const filesChanged = originalFileIds.length !== file_ids.length ||
+                                !originalFileIds.every((id) => file_ids.includes(id)) ||
+                                !file_ids.every((id) => originalFileIds.includes(id));
+
+            if (filesChanged && post.channelId) {
+                const channelId = post.channelId;
+                fetchChannelStats(serverUrl, channelId);
             }
         }
         return {post};
