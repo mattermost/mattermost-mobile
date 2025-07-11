@@ -101,7 +101,7 @@ const EditPost = ({
     const intl = useIntl();
     const serverUrl = useServerUrl();
 
-    const shouldDeleteOnSave = !postMessage && canDelete && !hasFilesAttached;
+    const shouldDeleteOnSave = !postMessage && canDelete && postFiles.length === 0;
 
     const shouldEnableSaveButton = useCallback(() => {
         const loadingFiles = postFiles.filter((v) => v.clientId && DraftEditPostUploadManager.isUploading(v.clientId));
