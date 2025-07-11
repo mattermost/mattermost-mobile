@@ -376,7 +376,7 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
 
     useDidUpdate(() => {
         if (isFocused && lastSearchedValue && showResults) {
-            // Use requestAnimationFrame for smooth UI updates
+            // requestAnimationFrame for smooth UI updates
             requestAnimationFrame(() => {
                 handleSearch(searchTeamId, lastSearchedValue);
             });
