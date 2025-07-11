@@ -182,6 +182,7 @@ jobs:
           GITHUB_PR_NUMBER: "${{ github.event.pull_request.number }}"
           GITHUB_EVENT_NAME: "${{ github.event_name }}"
           BRANCH_TO_BUILD: "${{ env.BRANCH_TO_BUILD }}"
+          BUILD_FOR_RELEASE: "false" # Always build debug for forks
         run: bundle exec fastlane android build --env android.pr
         working-directory: ./fastlane
 
