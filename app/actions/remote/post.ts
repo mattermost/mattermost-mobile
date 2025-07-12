@@ -27,6 +27,7 @@ import {getFullErrorMessage, isServerError} from '@utils/errors';
 import {logDebug, logError} from '@utils/log';
 import {processPostsFetched} from '@utils/post';
 import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
+import {showSnackBar} from '@utils/snack_bar';
 
 import {processChannelPostsByTeam} from './post.auxiliary';
 import {forceLogoutIfNecessary} from './session';
@@ -59,6 +60,16 @@ type PostsObjectsRequest = {
 type AuthorsRequest = {
     authors?: UserProfile[];
     error?: unknown;
+}
+
+function isErrorThatWarrantsNotPostingTheMessage(error: any): boolean {
+    // If the failure was because: the root post was deleted or
+    // TownSquareIsReadOnly=true
+    return isServerError(error) && (
+        error.server_error_id === ServerErrors.DELETED_ROOT_POST_ERROR ||
+        error.server_error_id === ServerErrors.TOWN_SQUARE_READ_ONLY_ERROR ||
+        error.server_error_id === ServerErrors.PLUGIN_DISMISSED_POST_ERROR
+    );
 }
 
 export async function createPost(serverUrl: string, post: Partial<Post>, files: FileInfo[] = []): Promise<{data?: boolean; error?: unknown}> {
@@ -138,10 +149,34 @@ export async function createPost(serverUrl: string, post: Partial<Post>, files: 
     const isCRTEnabled = await getIsCRTEnabled(database);
 
     let created;
-    try {
-        created = await client.createPost({...newPost, create_at: 0});
-    } catch (error) {
-        logDebug('Error sending a post', getFullErrorMessage(error));
+    let lastError;
+    const backoffTimes = [1000, 2000, 3000];
+    for (let attempt = 0; attempt < backoffTimes.length+1; attempt++) {
+        try {
+            // eslint-disable-next-line no-await-in-loop
+            created = await client.createPost({...newPost, create_at: 0});
+            lastError = undefined;
+            break;
+        } catch (error) {
+            lastError = error;
+            if (isErrorThatWarrantsNotPostingTheMessage(error)) {
+                break;
+            }
+            if (attempt < backoffTimes.length) {
+                if (__DEV__) {
+                    showSnackBar({
+                        barType: 'INFO_COPIED',
+                        customMessage: `Retrying to send message (attempt ${attempt + 2}/4)...`,
+                        type: 'default',
+                    });
+                }
+                // eslint-disable-next-line no-await-in-loop
+                await new Promise((resolve) => setTimeout(resolve, backoffTimes[attempt]));
+            }
+        }
+    }
+    if (!created) {
+        logDebug('Error sending a post', getFullErrorMessage(lastError));
         const errorPost = {
             ...newPost,
             id: pendingPostId,
@@ -152,13 +187,7 @@ export async function createPost(serverUrl: string, post: Partial<Post>, files: 
             update_at: Date.now(),
         };
 
-        // If the failure was because: the root post was deleted or
-        // TownSquareIsReadOnly=true then remove the post
-        if (isServerError(error) && (
-            error.server_error_id === ServerErrors.DELETED_ROOT_POST_ERROR ||
-            error.server_error_id === ServerErrors.TOWN_SQUARE_READ_ONLY_ERROR ||
-            error.server_error_id === ServerErrors.PLUGIN_DISMISSED_POST_ERROR
-        )) {
+        if (isErrorThatWarrantsNotPostingTheMessage(lastError)) {
             await removePost(serverUrl, databasePost);
         } else {
             const models = await operator.handlePosts({
@@ -262,11 +291,7 @@ export const retryFailedPost = async (serverUrl: string, post: PostModel) => {
         await operator.batchRecords(models, 'retryFailedPost - success update');
     } catch (error) {
         logDebug('error on retryFailedPost', getFullErrorMessage(error));
-        if (isServerError(error) && (
-            error.server_error_id === ServerErrors.DELETED_ROOT_POST_ERROR ||
-            error.server_error_id === ServerErrors.TOWN_SQUARE_READ_ONLY_ERROR ||
-            error.server_error_id === ServerErrors.PLUGIN_DISMISSED_POST_ERROR
-        )) {
+        if (isErrorThatWarrantsNotPostingTheMessage(error)) {
             await removePost(serverUrl, post);
         } else {
             post.prepareUpdate((p) => {
