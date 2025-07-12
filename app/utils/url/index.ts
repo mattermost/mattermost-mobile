@@ -18,6 +18,28 @@ export function isValidUrl(url = '') {
     return regex.test(url);
 }
 
+// Check if the URL has a valid app scheme format
+// This supports mattermost:// and other custom app schemes
+export function isValidAppSchemeUrl(url = '') {
+    // Check if URL has a scheme followed by ://
+    const match = /^[a-zA-Z][a-zA-Z0-9.+-]*:\/\//.test(url);
+    if (!match) {
+        return false;
+    }
+
+    // Parse URL to ensure it's valid
+    try {
+        const parsedUrl = new URL(url);
+        return Boolean(parsedUrl.protocol);
+    } catch {
+        return false;
+    }
+}
+
+export function isValidUrlOrAppScheme(url = '') {
+    return isValidUrl(url) || isValidAppSchemeUrl(url);
+}
+
 export function isParsableUrl(url: string): boolean {
     try {
         const parsedUrl = new URL(url);
