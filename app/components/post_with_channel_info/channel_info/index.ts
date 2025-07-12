@@ -12,9 +12,13 @@ import ChannelInfo from './channel_info';
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type PostModel from '@typings/database/models/servers/post';
 
-const enhance = withObservables(['post'], ({post, database}: {post: PostModel} & WithDatabaseArgs) => {
-    const channel = observeChannel(database, post.channelId);
+type EnhanceProps = {
+    post: PostModel;
+    skipTeam?: boolean;
+} & WithDatabaseArgs;
 
+const enhance = withObservables(['post'], ({post, database, skipTeam}: EnhanceProps) => {
+    const channel = observeChannel(database, post.channelId);
     return {
         channelId: channel.pipe(
             switchMap((chan) => (chan ? of$(chan.id) : '')),
@@ -26,6 +30,7 @@ const enhance = withObservables(['post'], ({post, database}: {post: PostModel} &
             switchMap((chan) => (chan && chan.teamId ? observeTeam(database, chan.teamId) : of$(null))),
             switchMap((team) => of$(team?.displayName || null)),
         ),
+        skipTeam,
     };
 });
 
