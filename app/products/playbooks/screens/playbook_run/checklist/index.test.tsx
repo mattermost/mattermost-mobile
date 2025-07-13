@@ -79,7 +79,7 @@ describe('Checklist', () => {
                 checklists: [{
                     run_id: 'run-id',
                     ...checklist,
-                    sort_order: [checklist.items[1].id, checklist.items[0].id],
+                    items_order: [checklist.items[1].id, checklist.items[0].id],
                 }],
                 processChildren: true,
             });
@@ -109,7 +109,7 @@ describe('Checklist', () => {
             database.write(async () => {
                 if ('update' in props.checklist) {
                     await props.checklist.update((c) => {
-                        c.sortOrder = [itemsIds[0], itemsIds[1]];
+                        c.itemsOrder = [itemsIds[0], itemsIds[1]];
                     });
                 }
             });

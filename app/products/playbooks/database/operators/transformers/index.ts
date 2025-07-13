@@ -52,7 +52,7 @@ export const transformPlaybookRunRecord = ({action, database, value}: Transforme
         run.retrospectivePublishedAt = raw.retrospective_published_at ?? record?.retrospectivePublishedAt ?? 0;
         run.updateAt = raw.update_at ?? record?.updateAt ?? raw.create_at ?? record?.createAt ?? 0;
         run.lastSyncAt = Date.now();
-        run.sortOrder = raw.sort_order ?? record?.sortOrder ?? [];
+        run.itemsOrder = raw.items_order ?? record?.itemsOrder ?? [];
     };
 
     return prepareBaseRecord({
@@ -85,7 +85,7 @@ export const transformPlaybookChecklistRecord = ({action, database, value}: Tran
         checklist.title = raw.title ?? record?.title ?? '';
         checklist.updateAt = raw.update_at ?? record?.updateAt ?? 0;
         checklist.lastSyncAt = Date.now();
-        checklist.sortOrder = raw.sort_order ?? record?.sortOrder ?? [];
+        checklist.itemsOrder = raw.items_order ?? record?.itemsOrder ?? [];
     };
 
     return prepareBaseRecord({

@@ -48,7 +48,7 @@ export default schemaMigrations({migrations: [
                     {name: 'current_status', type: 'string', isIndexed: true},
                     {name: 'last_status_update_at', type: 'number'},
                     {name: 'previous_reminder', type: 'number'},
-                    {name: 'sort_order', type: 'string'},
+                    {name: 'items_order', type: 'string'},
                     {name: 'retrospective_enabled', type: 'boolean'},
                     {name: 'retrospective', type: 'string'},
                     {name: 'retrospective_published_at', type: 'number'},
@@ -59,7 +59,7 @@ export default schemaMigrations({migrations: [
                 name: PLAYBOOK_CHECKLIST,
                 columns: [
                     {name: 'run_id', type: 'string', isIndexed: true},
-                    {name: 'sort_order', type: 'string'},
+                    {name: 'items_order', type: 'string'},
                     {name: 'title', type: 'string'},
                     {name: 'update_at', type: 'number'},
                 ],

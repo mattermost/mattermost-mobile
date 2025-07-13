@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-export function areSortOrdersEqual(fromRaw: string[], fromRecord: string[] | undefined) {
+export function areItemsOrdersEqual(fromRaw: string[], fromRecord: string[] | undefined) {
     if (!fromRecord) {
         return false;
     }

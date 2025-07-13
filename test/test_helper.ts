@@ -1094,7 +1094,7 @@ class TestHelperSingleton {
             id: `${prefix}-checklist_${index}`,
             title: `Checklist ${index + 1} of Playbook Run ${prefix}`,
             update_at: 0,
-            sort_order: items.map((item) => item.id),
+            items_order: items.map((item) => item.id),
             items,
         };
     };
@@ -1149,7 +1149,7 @@ class TestHelperSingleton {
                 metrics_data: [],
                 checklists,
                 update_at: Date.now() + i,
-                sort_order: checklists.map((checklist) => checklist.id),
+                items_order: checklists.map((checklist) => checklist.id),
             });
         }
         return playbookRuns;
@@ -1213,7 +1213,7 @@ class TestHelperSingleton {
             checklists: this.fakeQuery([]),
             participants: () => this.fakeQuery([]),
             previousReminder: 0,
-            sortOrder: [],
+            itemsOrder: [],
             updateAt: 0,
             ...overwrite,
         };
@@ -1229,7 +1229,7 @@ class TestHelperSingleton {
             sync: 'synced',
             lastSyncAt: 0,
             run: this.fakeRelation(),
-            sortOrder: [],
+            itemsOrder: [],
             updateAt: 0,
             ...overwrite,
         };

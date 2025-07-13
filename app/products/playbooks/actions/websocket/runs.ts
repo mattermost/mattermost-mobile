@@ -83,7 +83,7 @@ export const handlePlaybookRunUpdatedIncremental = async (serverUrl: string, msg
             ...data.changed_fields,
             checklists: undefined, // Remove the checklists from the update
             id: data.id,
-            update_at: data.updated_at,
+            update_at: data.playbook_run_updated_at,
         }],
         prepareRecordsOnly: false,
         processChildren: false,
@@ -95,7 +95,7 @@ export const handlePlaybookChecklistUpdated = async (serverUrl: string, msg: Web
         return;
     }
     const data = safeParseJSON(msg.data.payload) as PlaybookChecklistUpdatePayload;
-    if (!data?.update?.fields) {
+    if (!data?.update?.fields && !data?.update?.items_order) {
         return;
     }
 
@@ -115,10 +115,11 @@ export const handlePlaybookChecklistUpdated = async (serverUrl: string, msg: Web
 
     await operator.handlePlaybookChecklist({
         checklists: [{
-            ...data.update.fields,
+            ...(data.update?.fields || {}),
+            items_order: data.update?.items_order,
             items: undefined, // Remove the items from the update
             id: data.update.id,
-            update_at: data.update.updated_at,
+            update_at: data.update.checklist_updated_at,
             run_id: data.playbook_run_id,
         }],
         prepareRecordsOnly: false,
@@ -129,7 +130,7 @@ export const handlePlaybookChecklistUpdated = async (serverUrl: string, msg: Web
         const promises = [];
         for (const item of data.update.item_inserts) {
             promises.push(operator.handlePlaybookChecklistItem({
-                items: [{...item, checklist_id: data.update.id, update_at: data.update.updated_at}],
+                items: [{...item, checklist_id: data.update.id, update_at: data.update.checklist_updated_at}],
                 prepareRecordsOnly: false,
             }));
         }
@@ -161,7 +162,7 @@ export const handlePlaybookChecklistItemUpdated = async (serverUrl: string, msg:
     }
 
     await operator.handlePlaybookChecklistItem({
-        items: [{...data.update.fields, id: data.update.id, checklist_id: data.checklist_id, update_at: data.update.updated_at}],
+        items: [{...data.update.fields, id: data.update.id, checklist_id: data.checklist_id, update_at: data.update.checklist_item_updated_at}],
         prepareRecordsOnly: false,
     });
 };

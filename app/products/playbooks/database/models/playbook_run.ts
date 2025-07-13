@@ -117,8 +117,8 @@ export default class PlaybookRunModel extends Model implements PlaybookRunModelI
     /** previous_reminder : Timestamp of the previous reminder */
     @field('previous_reminder') previousReminder!: number;
 
-    /** sort_order : The sort order of the playbook run */
-    @json('sort_order', safeParseJSONStringArray) sortOrder!: string[];
+    /** items_order : The sort order of the playbook run */
+    @json('items_order', safeParseJSONStringArray) itemsOrder!: string[];
 
     /** update_at : The timestamp when the playbook run was updated */
     @field('update_at') updateAt!: number;

@@ -7,7 +7,7 @@ type PlaybookRunCreatedPayload = {
 
 type PlaybookRunUpdate = {
     id: string;
-    updated_at: number;
+    playbook_run_updated_at: number;
     changed_fields: Omit<Partial<PlaybookRun>, 'checklists'> & {
         checklists?: PlaybookChecklistUpdate[];
     };
@@ -20,7 +20,8 @@ type PlaybookChecklistUpdatePayload = {
 type PlaybookChecklistUpdate = {
     id: string;
     index: number;
-    updated_at: number;
+    checklist_updated_at: number;
+    items_order?: string[];
     fields?: Omit<Partial<PlaybookChecklist>, 'items'> & {
         items?: PlaybookChecklistItemUpdate[];
     };
@@ -38,6 +39,6 @@ type PlaybookChecklistItemUpdatePayload = {
 type PlaybookChecklistItemUpdate = {
     id: string;
     index: number;
-    updated_at: number;
+    checklist_item_updated_at: number;
     fields: Partial<PlaybookChecklistItem>;
 }

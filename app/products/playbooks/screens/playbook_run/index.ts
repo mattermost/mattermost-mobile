@@ -8,8 +8,8 @@ import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 import {queryPlaybookChecklistByRun} from '@playbooks/database/queries/checklist';
 import {queryPlaybookChecklistItemsByChecklists} from '@playbooks/database/queries/item';
 import {observePlaybookRunById, queryParticipantsFromAPIRun} from '@playbooks/database/queries/run';
+import {areItemsOrdersEqual} from '@playbooks/utils/items_order';
 import {isOverdue} from '@playbooks/utils/run';
-import {areSortOrdersEqual} from '@playbooks/utils/sort_order';
 import {observeCurrentUserId} from '@queries/servers/system';
 import {observeTeammateNameDisplay, observeUser} from '@queries/servers/user';
 
@@ -26,12 +26,12 @@ type OwnProps = {
 } & WithDatabaseArgs;
 
 const orderChecklists = (run: PlaybookRunModel, checklists: PlaybookChecklistModel[]) => {
-    const sortOrder = run.sortOrder;
-    const sortOrderMap = sortOrder.reduce((acc, id, index) => {
+    const itemsOrder = run.itemsOrder;
+    const itemsOrderMap = itemsOrder.reduce((acc, id, index) => {
         acc[id] = index;
         return acc;
     }, {} as Record<string, number>);
-    return [...checklists].sort((a, b) => sortOrderMap[a.id] - sortOrderMap[b.id]); // We spread the array to avoid mutating the original checklists array
+    return [...checklists].sort((a, b) => itemsOrderMap[a.id] - itemsOrderMap[b.id]); // We spread the array to avoid mutating the original checklists array
 };
 
 const getIds = (checklists: PlaybookChecklistModel[]) => {
@@ -76,7 +76,7 @@ const enhanced = withObservables(['playbookRunId', 'playbookRun'], ({playbookRun
 
             return of$(cl);
         }),
-        distinctUntilChanged((a, b) => areSortOrdersEqual(getIds(a), getIds(b))),
+        distinctUntilChanged((a, b) => areItemsOrdersEqual(getIds(a), getIds(b))),
     );
 
     const overdueCount = checklists.pipe(

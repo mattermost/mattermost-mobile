@@ -30,7 +30,7 @@ declare class PlaybookChecklistModel extends Model {
     lastSyncAt: number;
 
     // The sort order of the checklist
-    sortOrder: string[];
+    itemsOrder: string[];
 
     // The timestamp when the checklist was updated
     updateAt: number;

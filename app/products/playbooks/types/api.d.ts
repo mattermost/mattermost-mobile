@@ -39,7 +39,7 @@ type PlaybookChecklist = {
     title: string;
     items: PlaybookChecklistItem[];
     update_at: number;
-    sort_order: string[];
+    items_order: string[];
 }
 
 type RunMetricData = {
@@ -110,5 +110,5 @@ type PlaybookRun = {
     checklists: PlaybookChecklist[];
     metrics_data: RunMetricData[];
     update_at: number;
-    sort_order: string[];
+    items_order: string[];
 }

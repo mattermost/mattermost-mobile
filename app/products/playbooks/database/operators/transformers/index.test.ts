@@ -68,7 +68,7 @@ describe('*** PLAYBOOK_RUN Prepare Records Test ***', () => {
                     checklists: [],
                     metrics_data: [],
                     update_at: 1620000003000,
-                    sort_order: [],
+                    items_order: [],
                 },
             },
         });
@@ -157,7 +157,7 @@ describe('*** PLAYBOOK_RUN Prepare Records Test ***', () => {
                     checklists: [],
                     metrics_data: [],
                     update_at: 1620000004000,
-                    sort_order: [],
+                    items_order: [],
                 },
             },
         });
@@ -224,7 +224,7 @@ describe('*** PLAYBOOK_RUN Prepare Records Test ***', () => {
                         checklists: [],
                         metrics_data: [],
                         update_at: 1620000005000,
-                        sort_order: [],
+                        items_order: [],
                     },
                 },
             }),
@@ -261,7 +261,7 @@ describe('*** PLAYBOOK_RUN Prepare Records Test ***', () => {
                 record.retrospectivePublishedAt = 1620000002000;
                 record.updateAt = 1620000003000;
                 record.lastSyncAt = 1620000003000;
-                record.sortOrder = ['checklist_1', 'checklist_2'];
+                record.itemsOrder = ['checklist_1', 'checklist_2'];
             });
         });
 
@@ -303,7 +303,7 @@ describe('*** PLAYBOOK_RUN Prepare Records Test ***', () => {
         expect(preparedRecord.retrospectiveEnabled).toBe(true);
         expect(preparedRecord.retrospective).toBe('Existing retrospective');
         expect(preparedRecord.retrospectivePublishedAt).toBe(1620000002000);
-        expect(preparedRecord.sortOrder).toEqual(['checklist_1', 'checklist_2']);
+        expect(preparedRecord.itemsOrder).toEqual(['checklist_1', 'checklist_2']);
 
         // Changing values
         expect(preparedRecord.updateAt).toBe(1620000004000);
@@ -327,7 +327,7 @@ describe('*** PLAYBOOK_CHECKLIST Prepare Records Test ***', () => {
                     run_id: 'playbook_run_1',
                     title: 'Checklist 1',
                     update_at: 0,
-                    sort_order: [],
+                    items_order: [],
                     items: [],
                 },
             },
@@ -350,7 +350,7 @@ describe('*** PLAYBOOK_CHECKLIST Prepare Records Test ***', () => {
                 record.runId = 'playbook_run_2';
                 record.title = 'Existing Checklist';
                 record.updateAt = 0;
-                record.sortOrder = [];
+                record.itemsOrder = [];
             });
         });
 
@@ -364,7 +364,7 @@ describe('*** PLAYBOOK_CHECKLIST Prepare Records Test ***', () => {
                     run_id: 'playbook_run_2',
                     title: 'Updated Checklist',
                     update_at: 0,
-                    sort_order: [],
+                    items_order: [],
                     items: [],
                 },
             },
@@ -396,7 +396,7 @@ describe('*** PLAYBOOK_CHECKLIST Prepare Records Test ***', () => {
                         run_id: 'playbook_run_3',
                         title: 'Invalid Checklist',
                         update_at: 0,
-                        sort_order: [],
+                        items_order: [],
                         items: [],
                     },
                 },
@@ -416,7 +416,7 @@ describe('*** PLAYBOOK_CHECKLIST Prepare Records Test ***', () => {
                 record.runId = 'playbook_run_2';
                 record.title = 'Existing Checklist';
                 record.updateAt = 1620000003000;
-                record.sortOrder = ['item_1', 'item_2'];
+                record.itemsOrder = ['item_1', 'item_2'];
                 record.lastSyncAt = 1620000003000;
             });
         });
@@ -443,7 +443,7 @@ describe('*** PLAYBOOK_CHECKLIST Prepare Records Test ***', () => {
         expect(preparedRecord).toBeTruthy();
         expect(preparedRecord!.title).toBe('Existing Checklist');
         expect(preparedRecord!.runId).toBe('playbook_run_2');
-        expect(preparedRecord!.sortOrder).toEqual(['item_1', 'item_2']);
+        expect(preparedRecord!.itemsOrder).toEqual(['item_1', 'item_2']);
 
         // Changing values
         expect(preparedRecord!.updateAt).toBe(1620000004000);
