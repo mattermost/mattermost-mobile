@@ -86,7 +86,7 @@ describe('Smoke Test - Messaging', () => {
         // * Verify post message is updated and displays edited indicator '(edited)'
         const {postListPostItem: updatedPostListPostItem, postListPostItemEditedIndicator} = ChannelScreen.getPostListPostItem(post.id, updatedMessage);
         await expect(updatedPostListPostItem).toBeVisible();
-        await expect(postListPostItemEditedIndicator).toHaveText('(edited)');
+        await expect(postListPostItemEditedIndicator).toHaveText('Edited');
 
         // # Open post options for the updated message, tap delete option and confirm
         await ChannelScreen.openPostOptionsFor(post.id, updatedMessage);
