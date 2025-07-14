@@ -50,6 +50,45 @@ const CLOSE_BUTTON_ID = 'close-edit-profile';
 const UPDATE_BUTTON_ID = 'update-profile';
 const CUSTOM_ATTRS_PREFIX_NAME = `${CUSTOM_ATTRS_PREFIX}.`;
 
+// Utility functions for user profile updates
+function updateUserInfo(updates: Partial<UserInfo>, key: string, newValue: string, oldValue: string, fieldLockConfig: Record<string, boolean>): Partial<UserInfo> {
+    const val = newValue.trim();
+    const isLocked = fieldLockConfig[key as keyof typeof fieldLockConfig] || false;
+    const hasChanged = val !== oldValue;
+
+    if (!isLocked && hasChanged) {
+        updates[key as keyof UserInfo] = val as any;
+    }
+    return updates;
+}
+
+function buildUserInfoUpdates(userInfoParam: UserInfo, currentUserParam: UserModel, fieldLockConfigParam: Record<string, boolean>): Partial<UserProfile> {
+    let updates: Partial<UserInfo> = {};
+    Object.keys(fieldLockConfigParam).forEach((key) => {
+        updates = updateUserInfo(updates, key, userInfoParam[key as keyof UserInfo] as string, currentUserParam[key as keyof UserModel] as string, fieldLockConfigParam);
+    });
+
+    // Convert camelCase properties to snake_case for API compatibility
+    const keyMapping: Record<string, keyof UserProfile> = {
+        firstName: 'first_name',
+        lastName: 'last_name',
+        nickname: 'nickname',
+        position: 'position',
+        username: 'username',
+        email: 'email',
+    };
+
+    const apiUpdates: Partial<UserProfile> = {};
+    Object.keys(updates).forEach((key) => {
+        const snakeCaseKey = keyMapping[key];
+        if (snakeCaseKey) {
+            (apiUpdates as any)[snakeCaseKey] = updates[key as keyof UserInfo];
+        }
+    });
+
+    return apiUpdates;
+}
+
 const EditProfile = ({
     componentId, currentUser, isModal, isTablet,
     lockedFirstName, lockedLastName, lockedNickname, lockedPosition, lockedPicture, enableCustomAttributes,
@@ -171,44 +210,6 @@ const EditProfile = ({
         return config;
     }, [currentUser?.authService, lockedFirstName, lockedLastName, lockedNickname, lockedPosition]);
 
-    const updateUserInfo = useCallback((updates: Partial<UserInfo>, key: string, newValue: string, oldValue: string): Partial<UserInfo> => {
-        const val = newValue.trim();
-        const isLocked = fieldLockConfig[key as keyof typeof fieldLockConfig] || false;
-        const hasChanged = val !== oldValue;
-
-        if (!isLocked && hasChanged) {
-            updates[key as keyof UserInfo] = val as any;
-        }
-        return updates;
-    }, [fieldLockConfig]);
-
-    const buildUserInfoUpdates = useCallback((userInfoParam: UserInfo, currentUserParam: UserModel, fieldLockConfigParam: Record<string, boolean>): Partial<UserProfile> => {
-        let updates: Partial<UserInfo> = {};
-        Object.keys(fieldLockConfigParam).forEach((key) => {
-            updates = updateUserInfo(updates, key, userInfoParam[key as keyof UserInfo] as string, currentUserParam[key as keyof UserModel] as string);
-        });
-
-        // Convert camelCase properties to snake_case for API compatibility
-        const keyMapping: Record<string, keyof UserProfile> = {
-            firstName: 'first_name',
-            lastName: 'last_name',
-            nickname: 'nickname',
-            position: 'position',
-            username: 'username',
-            email: 'email',
-        };
-
-        const apiUpdates: Partial<UserProfile> = {};
-        Object.keys(updates).forEach((key) => {
-            const snakeCaseKey = keyMapping[key];
-            if (snakeCaseKey) {
-                (apiUpdates as any)[snakeCaseKey] = updates[key as keyof UserInfo];
-            }
-        });
-
-        return apiUpdates;
-    }, [updateUserInfo]);
-
     const handleProfileImageUpdate = useCallback(async (serverUrlParam: string, currentUserParam: UserModel) => {
         const localPath = changedProfilePicture.current?.localPath;
         const profileImageRemoved = changedProfilePicture.current?.isRemoved;
@@ -295,7 +296,7 @@ const EditProfile = ({
         } catch (err) {
             resetScreen(err);
         }
-    }), [userInfo, enableSaveButton, currentUser, fieldLockConfig, customAttributesSet, enableCustomAttributes, customFields, serverUrl, buildUserInfoUpdates, handleProfileImageUpdate, handleCustomAttributesUpdate, close]);
+    }), [userInfo, enableSaveButton, currentUser, fieldLockConfig, customAttributesSet, enableCustomAttributes, customFields, serverUrl, handleProfileImageUpdate, handleCustomAttributesUpdate, close]);
 
     useAndroidHardwareBackHandler(componentId, close);
     useNavButtonPressed(UPDATE_BUTTON_ID, componentId, submitUser, [userInfo]);
