@@ -25,6 +25,7 @@ import EphemeralStore from '@store/ephemeral_store';
 import {setFetchingThreadState} from '@store/fetching_thread_store';
 import {getValidEmojis, matchEmoticons} from '@utils/emoji/helpers';
 import {getFullErrorMessage, isServerError} from '@utils/errors';
+import {hasArrayChanged} from '@utils/helpers';
 import {logDebug, logError} from '@utils/log';
 import {processPostsFetched} from '@utils/post';
 import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
@@ -940,11 +941,7 @@ export const editPost = async (serverUrl: string, postId: string, postMessage: s
                 }
             }
 
-            const filesChanged = originalFileIds.length !== file_ids.length ||
-                                (() => {
-                                    const fileIdsSet = new Set(file_ids);
-                                    return !originalFileIds.every((id) => fileIdsSet.has(id));
-                                })();
+            const filesChanged = hasArrayChanged(originalFileIds, file_ids);
 
             if (filesChanged && post.channelId) {
                 const channelId = post.channelId;

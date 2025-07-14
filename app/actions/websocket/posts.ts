@@ -20,7 +20,7 @@ import {getCurrentChannelId, getCurrentTeamId, getCurrentUserId} from '@queries/
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
-import {isTablet} from '@utils/helpers';
+import {hasArrayChanged, isTablet} from '@utils/helpers';
 import {isFromWebhook, isSystemMessage, shouldIgnorePost} from '@utils/post';
 
 import type {Model} from '@nozbe/watermelondb';
@@ -223,13 +223,9 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
         post.create_at = oldPost.createAt;
     }
 
-    const oldFileIds = oldPost.metadata?.files?.map((f) => f.id) || [];
+    const oldFileIds = oldPost.metadata?.files?.map((f) => f.id).filter((id): id is string => Boolean(id)) || [];
     const newFileIds = post.file_ids || [];
-    const filesChanged = oldFileIds.length !== newFileIds.length ||
-                        (() => {
-                            const newFileIdsSet = new Set(newFileIds);
-                            return !oldFileIds.every((id) => newFileIdsSet.has(id));
-                        })();
+    const filesChanged = hasArrayChanged(oldFileIds, newFileIds);
 
     if (oldPost.isPinned !== post.is_pinned || filesChanged) {
         fetchChannelStats(serverUrl, post.channel_id);
