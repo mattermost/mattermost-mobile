@@ -265,7 +265,6 @@ const EditProfile = ({
         }
     }, []);
 
-
     const submitUser = useCallback(preventDoubleTap(async () => {
         if (!currentUser) {
             return;
