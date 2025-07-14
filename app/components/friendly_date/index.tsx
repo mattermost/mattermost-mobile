@@ -42,6 +42,82 @@ export function getFriendlyDate(intl: IntlShape, inputDate: number): string {
     const absoluteDifference = Math.abs(difference);
     const sign = Math.sign(difference);
 
+    return getFriendlyDateBefore(intl, difference, date, today);
+}
+
+function getFriendlyDateAfter(intl: IntlShape, difference: number, date: Date, today: Date): string {
+    // Message: Now
+    if (difference < SECONDS.MINUTE) {
+        return intl.formatMessage({
+            id: 'friendly_date.now',
+            defaultMessage: 'Now',
+        });
+    }
+
+    // Message: Minutes
+    if (difference < SECONDS.HOUR) {
+        const minutes = Math.floor(Math.round((10 * difference) / SECONDS.MINUTE) / 10);
+        return intl.formatMessage({
+            id: 'friendly_date.mins',
+            defaultMessage: 'in {count} {count, plural, one {min} other {mins}}',
+        }, {
+            count: minutes,
+        });
+    }
+
+    // Message: Hours
+    if (difference < SECONDS.DAY) {
+        const hours = Math.floor(Math.round((10 * difference) / SECONDS.HOUR) / 10);
+        return intl.formatMessage({
+            id: 'friendly_date.hours',
+            defaultMessage: 'in {count} {count, plural, one {hour} other {hours}}',
+        }, {
+            count: hours,
+        });
+    }
+
+    // Message: Days
+    if (difference < SECONDS.DAYS_31) {
+        if (today.getDate() + 1 === date.getDate() && today.getMonth() === date.getMonth()) {
+            return intl.formatMessage({
+                id: 'friendly_date.tomorrow',
+                defaultMessage: 'Tomorrow',
+            });
+        }
+        const completedAMonth = today.getMonth() !== date.getMonth() && today.getDate() <= date.getDate();
+        if (!completedAMonth) {
+            const days = Math.floor(Math.round((10 * difference) / SECONDS.DAY) / 10) || 1;
+            return intl.formatMessage({
+                id: 'friendly_date.days',
+                defaultMessage: 'in {count} {count, plural, one {day} other {days}}',
+            }, {
+                count: days,
+            });
+        }
+    }
+
+    // Message: Months
+    if (difference < SECONDS.DAYS_366) {
+        const months = Math.floor(Math.round((10 * difference) / SECONDS.DAYS_30) / 10) || 1;
+        return intl.formatMessage({
+            id: 'friendly_date.months',
+            defaultMessage: 'in {count} {count, plural, one {month} other {months}}',
+        }, {
+            count: months,
+        });
+    }
+
+    // Message: Years
+    const years = Math.floor(Math.round((10 * difference) / SECONDS.DAYS_365) / 10) || 1;
+    return intl.formatMessage({
+        id: 'friendly_date.years',
+        defaultMessage: 'in {count} {count, plural, one {year} other {years}}',
+    }, {
+        count: years,
+    });
+}
+
+function getFriendlyDateBefore(intl: IntlShape, difference: number, date: Date, today: Date): string {
     // Message: Now
     if (absoluteDifference < SECONDS.MINUTE) {
         return intl.formatMessage({
