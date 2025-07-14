@@ -16,15 +16,6 @@ jest.mock('expo-image', () => ({
     },
 }));
 
-jest.mock('react-native', () => ({
-    Platform: {
-        OS: 'ios',
-    },
-    Image: {
-        prefetch: jest.fn(),
-    },
-}));
-
 jest.mock('@utils/log');
 
 describe('prefetchCustomEmojiImages', () => {
@@ -51,12 +42,13 @@ describe('prefetchCustomEmojiImages', () => {
     });
 
     it('should prefetch custom emoji images on Android', () => {
+        const prefetchSpy = jest.spyOn(Image, 'prefetch');
         Platform.OS = 'android';
 
         prefetchCustomEmojiImages(mockClient, emojis);
 
         expect(logDebug).toHaveBeenCalledWith('Prefetching 2 custom emoji images');
-        expect(Image.prefetch).toHaveBeenCalledWith('url/emoji1');
-        expect(Image.prefetch).toHaveBeenCalledWith('url/emoji2');
+        expect(prefetchSpy).toHaveBeenCalledWith('url/emoji1');
+        expect(prefetchSpy).toHaveBeenCalledWith('url/emoji2');
     });
 });

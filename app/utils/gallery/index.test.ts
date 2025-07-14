@@ -13,46 +13,6 @@ jest.mock('@screens/navigation', () => ({
     showOverlay: jest.fn(),
 }));
 
-jest.mock('react-native', () => {
-    const ReactNative = jest.requireActual('react-native');
-    const {
-        NativeModules: RNNativeModules,
-    } = ReactNative;
-
-    const NativeModules = {
-        ...RNNativeModules,
-        RNUtils: {
-            getConstants: () => ({
-                appGroupIdentifier: 'group.mattermost.rnbeta',
-                appGroupSharedDirectory: {
-                    sharedDirectory: '',
-                    databasePath: '',
-                },
-            }),
-            addListener: jest.fn(),
-            removeListeners: jest.fn(),
-            isRunningInSplitView: jest.fn().mockReturnValue({isSplit: false, isTablet: false}),
-
-            getDeliveredNotifications: jest.fn().mockResolvedValue([]),
-            removeChannelNotifications: jest.fn().mockImplementation(),
-            removeThreadNotifications: jest.fn().mockImplementation(),
-            removeServerNotifications: jest.fn().mockImplementation(),
-
-            unlockOrientation: jest.fn(),
-        },
-    };
-
-    return Object.setPrototypeOf({
-        NativeModules,
-        DeviceEventEmitter: {
-            emit: jest.fn(),
-        },
-        Keyboard: {
-            dismiss: jest.fn(),
-        },
-    }, ReactNative);
-});
-
 // Mock react-native-reanimated measure function
 jest.mock('react-native-reanimated', () => ({
     measure: jest.fn(() => ({
@@ -145,8 +105,9 @@ describe('Gallery utils', () => {
 
     describe('freezeOtherScreens', () => {
         it('should emit freeze screen event', () => {
+            const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
             freezeOtherScreens(true);
-            expect(DeviceEventEmitter.emit).toHaveBeenCalledWith('FREEZE_SCREEN', true);
+            expect(emitSpy).toHaveBeenCalledWith('FREEZE_SCREEN', true);
         });
     });
 

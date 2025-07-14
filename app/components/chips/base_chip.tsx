@@ -22,6 +22,8 @@ type SelectedChipProps = {
     label: string;
     prefix?: JSX.Element;
     maxWidth?: number;
+    type?: 'normal' | 'link' | 'danger';
+    boldText?: boolean;
 }
 
 const FADE_DURATION = 100;
@@ -37,9 +39,18 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
             padding: 2,
         },
+        dangerContainer: {
+            backgroundColor: changeOpacity(theme.dndIndicator, 0.08),
+        },
         text: {
             color: theme.centerChannelColor,
             ...typography('Body', 100),
+        },
+        linkText: {
+            color: theme.linkColor,
+        },
+        dangerText: {
+            color: theme.dndIndicator,
         },
         remove: {
             justifyContent: 'center',
@@ -49,6 +60,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         chipContent: {
             flexDirection: 'row',
             alignItems: 'center',
+        },
+        boldText: {
+            ...typography('Body', 100, 'SemiBold'),
         },
     };
 });
@@ -61,6 +75,8 @@ export default function BaseChip({
     label,
     prefix,
     maxWidth,
+    type = 'normal',
+    boldText = false,
 }: SelectedChipProps) {
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
@@ -71,8 +87,20 @@ export default function BaseChip({
         const textMaxWidth = maxWidth || dimensions.width * 0.70;
         const marginRight = showRemoveOption ? undefined : 7;
         const marginLeft = prefix ? 5 : 7;
-        return [style.text, {maxWidth: textMaxWidth, marginRight, marginLeft}];
-    }, [maxWidth, dimensions.width, showRemoveOption, style.text, prefix]);
+        return [
+            style.text,
+            {maxWidth: textMaxWidth, marginRight, marginLeft},
+            type === 'link' && style.linkText,
+            type === 'danger' && style.dangerText,
+            boldText && style.boldText,
+        ];
+    }, [maxWidth, dimensions.width, showRemoveOption, prefix, style.text, style.linkText, style.dangerText, style.boldText, type, boldText]);
+    const containerStyle = useMemo(() => {
+        return [
+            style.container,
+            type === 'danger' && style.dangerContainer,
+        ];
+    }, [style.container, style.dangerContainer, type]);
 
     const chipContent = (
         <>
@@ -123,7 +151,7 @@ export default function BaseChip({
         <Animated.View
             entering={showAnimation ? FadeIn.duration(FADE_DURATION) : undefined}
             exiting={useFadeOut ? FadeOut.duration(FADE_DURATION) : undefined}
-            style={style.container}
+            style={containerStyle}
             testID={testID}
         >
             {content}

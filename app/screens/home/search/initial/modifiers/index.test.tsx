@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {useSharedValue} from 'react-native-reanimated';
 
 import {ALL_TEAMS_ID} from '@constants/team';
 import TeamPicker from '@screens/home/search/team_picker';
@@ -12,13 +11,13 @@ import Modifiers from './index';
 
 import type {SearchRef} from '@components/search';
 import type {TeamModel} from '@database/models/server';
+import type {SharedValue} from 'react-native-reanimated';
 
 jest.mock('@screens/home/search/team_picker', () => jest.fn(() => null));
 jest.mock('./show_more', () => jest.fn(() => null));
 jest.mock('@react-native-camera-roll/camera-roll', () => jest.fn());
 
 describe('Modifiers', () => {
-    const scrollEnabled = useSharedValue(true);
     const searchRef = React.createRef<SearchRef>();
     const setSearchValue = jest.fn();
     const setTeamId = jest.fn();
@@ -31,7 +30,7 @@ describe('Modifiers', () => {
                 setTeamId={setTeamId}
                 teamId={teamId}
                 teams={teamList || teams}
-                scrollEnabled={scrollEnabled}
+                scrollEnabled={{value: true} as SharedValue<boolean>}
                 searchRef={searchRef}
                 crossTeamSearchEnabled={true}
             />,

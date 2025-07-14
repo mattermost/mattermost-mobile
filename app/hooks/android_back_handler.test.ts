@@ -8,12 +8,6 @@ import NavigationStore from '@store/navigation_store';
 
 import useAndroidHardwareBackHandler from './android_back_handler';
 
-jest.mock('react-native', () => ({
-    BackHandler: {
-        addEventListener: jest.fn(),
-    },
-}));
-
 jest.mock('@store/navigation_store', () => ({
     getVisibleScreen: jest.fn(),
 }));
@@ -21,12 +15,13 @@ jest.mock('@store/navigation_store', () => ({
 test('useAndroidHardwareBackHandler - calls callback when visible screen matches componentId', () => {
     const componentId = 'About';
     const callback = jest.fn();
+    const addEventListenerSpy = jest.spyOn(BackHandler, 'addEventListener');
 
     (NavigationStore.getVisibleScreen as jest.Mock).mockReturnValue(componentId);
 
     renderHook(() => useAndroidHardwareBackHandler(componentId, callback));
 
-    const hardwareBackPressHandler = (BackHandler.addEventListener as jest.Mock).mock.calls[0][1];
+    const hardwareBackPressHandler = addEventListenerSpy.mock.calls[0][1];
     hardwareBackPressHandler();
 
     expect(callback).toHaveBeenCalled();
@@ -35,12 +30,12 @@ test('useAndroidHardwareBackHandler - calls callback when visible screen matches
 test('useAndroidHardwareBackHandler - does not call callback when visible screen does not match componentId', () => {
     const componentId = 'About';
     const callback = jest.fn();
-
+    const addEventListenerSpy = jest.spyOn(BackHandler, 'addEventListener');
     (NavigationStore.getVisibleScreen as jest.Mock).mockReturnValue('otherScreen');
 
     renderHook(() => useAndroidHardwareBackHandler(componentId, callback));
 
-    const hardwareBackPressHandler = (BackHandler.addEventListener as jest.Mock).mock.calls[0][1];
+    const hardwareBackPressHandler = addEventListenerSpy.mock.calls[0][1];
     hardwareBackPressHandler();
 
     expect(callback).not.toHaveBeenCalled();
@@ -50,7 +45,8 @@ test('useAndroidHardwareBackHandler - removes event listener on unmount', () => 
     const componentId = 'About';
     const callback = jest.fn();
     const remove = jest.fn();
-    (BackHandler.addEventListener as jest.Mock).mockReturnValue({remove});
+    const addEventListenerSpy = jest.spyOn(BackHandler, 'addEventListener');
+    addEventListenerSpy.mockReturnValue({remove});
 
     const {unmount} = renderHook(() => useAndroidHardwareBackHandler(componentId, callback));
 

@@ -9,6 +9,7 @@ import CopyChannelLinkOption from '@components/channel_actions/copy_channel_link
 import InfoBox from '@components/channel_actions/info_box';
 import LeaveChannelLabel from '@components/channel_actions/leave_channel_label';
 import {useTheme} from '@context/theme';
+import PlaybookRunsOption from '@playbooks/components/channel_actions/playbook_runs_option';
 import {dismissBottomSheet} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -16,6 +17,7 @@ type Props = {
     channelId: string;
     callsEnabled: boolean;
     isDMorGM: boolean;
+    hasPlaybookRuns: boolean;
 }
 
 export const SEPARATOR_HEIGHT = 17;
@@ -38,7 +40,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const ChannelQuickAction = ({channelId, callsEnabled, isDMorGM}: Props) => {
+const ChannelQuickAction = ({
+    channelId,
+    callsEnabled,
+    isDMorGM,
+    hasPlaybookRuns,
+}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -57,6 +64,9 @@ const ChannelQuickAction = ({channelId, callsEnabled, isDMorGM}: Props) => {
                 showAsLabel={true}
                 testID='channel.quick_actions.channel_info.action'
             />
+            {hasPlaybookRuns &&
+                <PlaybookRunsOption channelId={channelId}/>
+            }
             {callsEnabled && !isDMorGM && // if calls is not enabled, copy link will show in the channel actions
                 <CopyChannelLinkOption
                     channelId={channelId}
