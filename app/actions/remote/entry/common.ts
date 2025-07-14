@@ -189,7 +189,7 @@ const entryRest = async (serverUrl: string, teamId?: string, channelId?: string,
         initialChannelId = await entryInitialChannelId(database, initialChannelId, teamId, initialTeamId, meData?.user?.locale || '', chData?.channels, chData?.memberships);
 
         const dt = Date.now();
-        const modelsToDeletePromises = await prepareEntryModelsForDeletion({operator, teamData, chData});
+        const modelsToDeletePromises = await prepareEntryModelsForDeletion({serverUrl, operator, teamData, chData});
         const modelPromises = await prepareEntryModels({operator, teamData, chData, prefData, meData, isCRTEnabled});
         const modelsToDelete = await Promise.all(modelsToDeletePromises);
         const models = await Promise.all(modelPromises);

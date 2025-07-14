@@ -141,4 +141,18 @@ export default class PlaybookRunModel extends Model implements PlaybookRunModelI
         const filteredParticipantIds = this.participantIds.filter((id) => id !== this.ownerUserId);
         return this.database.get<UserModel>(USER).query(Q.where('id', Q.oneOf(filteredParticipantIds)));
     };
+
+    prepareDestroyWithRelations = async (): Promise<Model[]> => {
+        const preparedModels: Model[] = [this.prepareDestroyPermanently()];
+
+        const checklists = await this.checklists?.fetch();
+        if (checklists?.length) {
+            for await (const checklist of checklists) {
+                const preparedChecklist = await checklist.prepareDestroyWithRelations();
+                preparedModels.push(...preparedChecklist);
+            }
+        }
+
+        return preparedModels;
+    };
 }
