@@ -20,7 +20,7 @@ import {getCurrentChannelId, getCurrentTeamId, getCurrentUserId} from '@queries/
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
-import {isTablet} from '@utils/helpers';
+import {hasArrayChanged, isTablet} from '@utils/helpers';
 import {isFromWebhook, isSystemMessage, shouldIgnorePost} from '@utils/post';
 
 import type {Model} from '@nozbe/watermelondb';
@@ -223,7 +223,11 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
         post.create_at = oldPost.createAt;
     }
 
-    if (oldPost.isPinned !== post.is_pinned) {
+    const oldFileIds = oldPost.metadata?.files?.map((f) => f.id).filter((id): id is string => Boolean(id)) || [];
+    const newFileIds = post.file_ids || [];
+    const filesChanged = hasArrayChanged(oldFileIds, newFileIds);
+
+    if (oldPost.isPinned !== post.is_pinned || filesChanged) {
         fetchChannelStats(serverUrl, post.channel_id);
     }
 
@@ -267,6 +271,12 @@ export async function handlePostDeleted(serverUrl: string, msg: WebSocketMessage
         const {model: deleteModel} = await markPostAsDeleted(serverUrl, post, true);
         if (deleteModel) {
             models.push(deleteModel);
+        }
+
+        // Check if the deleted post had files to refresh channel stats
+        const hadFiles = (oldPost.metadata?.files?.length || 0) > 0;
+        if (hadFiles) {
+            fetchChannelStats(serverUrl, post.channel_id);
         }
 
         // update thread when a reply is deleted and CRT is enabled
