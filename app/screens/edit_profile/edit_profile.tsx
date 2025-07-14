@@ -248,14 +248,7 @@ const EditProfile = ({
     }, [enableSaveButton]);
 
     const submitUser = usePreventDoubleTap(useCallback(async () => {
-    const fieldLockConfig = useMemo(() => ({
-        email: Boolean(currentUser?.authService),
-        firstName: lockedFirstName,
-        lastName: lockedLastName,
-        nickname: lockedNickname,
-        position: lockedPosition,
-        username: Boolean(currentUser?.authService),
-    }), [currentUser?.authService, lockedFirstName, lockedLastName, lockedNickname, lockedPosition]);
+
     const fieldLockConfig = useMemo(() => {
         const service = currentUser?.authService || '';
         const includesSsoService = (sso: string) => ['gitlab', 'google', 'office365'].includes(sso);
@@ -288,7 +281,6 @@ const EditProfile = ({
             await setDefaultProfileImage(serverUrlParam, currentUserParam.id);
         }
     }, []);
-
 
     const submitUser = usePreventDoubleTap(useCallback(async () => {
         if (!currentUser) {
