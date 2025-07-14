@@ -223,7 +223,15 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
         post.create_at = oldPost.createAt;
     }
 
-    if (oldPost.isPinned !== post.is_pinned) {
+    const oldFileIds = oldPost.metadata?.files?.map((f) => f.id) || [];
+    const newFileIds = post.file_ids || [];
+    const filesChanged = oldFileIds.length !== newFileIds.length ||
+                        (() => {
+                            const newFileIdsSet = new Set(newFileIds);
+                            return !oldFileIds.every((id) => newFileIdsSet.has(id));
+                        })();
+
+    if (oldPost.isPinned !== post.is_pinned || filesChanged) {
         fetchChannelStats(serverUrl, post.channel_id);
     }
 

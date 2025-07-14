@@ -941,8 +941,10 @@ export const editPost = async (serverUrl: string, postId: string, postMessage: s
             }
 
             const filesChanged = originalFileIds.length !== file_ids.length ||
-                                !originalFileIds.every((id) => file_ids.includes(id)) ||
-                                !file_ids.every((id) => originalFileIds.includes(id));
+                                (() => {
+                                    const fileIdsSet = new Set(file_ids);
+                                    return !originalFileIds.every((id) => fileIdsSet.has(id));
+                                })();
 
             if (filesChanged && post.channelId) {
                 const channelId = post.channelId;
