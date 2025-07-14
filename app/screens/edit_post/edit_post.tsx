@@ -63,7 +63,6 @@ type EditPostProps = {
     closeButtonId: string;
     post: PostModel;
     maxPostSize: number;
-    hasFilesAttached: boolean;
     canDelete: boolean;
     files?: FileInfo[];
     maxFileCount: number;
@@ -76,7 +75,6 @@ const EditPost = ({
     maxPostSize,
     post,
     closeButtonId,
-    hasFilesAttached,
     canDelete,
     files,
     maxFileCount,
@@ -101,7 +99,8 @@ const EditPost = ({
     const intl = useIntl();
     const serverUrl = useServerUrl();
 
-    const shouldDeleteOnSave = !postMessage && canDelete && !hasFilesAttached;
+    const hasNoCurrentFiles = postFiles.length === 0;
+    const shouldDeleteOnSave = !postMessage && canDelete && hasNoCurrentFiles;
 
     const shouldEnableSaveButton = useCallback(() => {
         const loadingFiles = postFiles.filter((v) => v.clientId && DraftEditPostUploadManager.isUploading(v.clientId));
@@ -479,7 +478,7 @@ const EditPost = ({
             </SafeAreaView>
             <Autocomplete
                 channelId={post.channelId}
-                hasFilesAttached={hasFilesAttached}
+                shouldDirectlyReact={false}
                 nestedScrollEnabled={true}
                 rootId={post.rootId}
                 updateValue={onAutocompleteChangeText}
@@ -487,7 +486,6 @@ const EditPost = ({
                 cursorPosition={cursorPosition}
                 position={animatedAutocompletePosition}
                 availableSpace={animatedAutocompleteAvailableSpace}
-                inPost={false}
                 serverUrl={serverUrl}
             />
         </EditPostProvider>
