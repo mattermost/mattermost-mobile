@@ -11,6 +11,8 @@ import WebSocketClient from '@client/websocket';
 import DatabaseManager from '@database/manager';
 import {getCurrentUserId} from '@queries/servers/system';
 import {queryAllUsers} from '@queries/servers/user';
+import EphemeralStore from '@store/ephemeral_store';
+import TestHelper from '@test/test_helper';
 import {logError} from '@utils/log';
 
 import WebsocketManager from './websocket_manager';
@@ -29,6 +31,7 @@ jest.mock('@database/manager');
 jest.mock('@queries/servers/system');
 jest.mock('@queries/servers/user');
 jest.mock('@utils/log');
+jest.mock('@store/ephemeral_store');
 
 describe('WebsocketManager', () => {
     let manager: typeof WebsocketManager;
@@ -122,6 +125,17 @@ describe('WebsocketManager', () => {
         });
     });
 
+    describe('proper callbacks set', () => {
+        it('should remove playbooks when the reconnect callback is called', () => {
+            const client = manager.createClient(mockServerUrl, mockToken);
+            expect(client).toBeDefined();
+
+            expect(client.setReconnectCallback).toHaveBeenCalled();
+            jest.mocked(client.setReconnectCallback).mock.calls[0][0]();
+            expect(EphemeralStore.clearChannelPlaybooksSynced).toHaveBeenCalled();
+        });
+    });
+
     describe('connection handling', () => {
         beforeEach(async () => {
             await manager.init(mockCredentials);
@@ -178,8 +192,11 @@ describe('WebsocketManager', () => {
 
     describe('periodic updates', () => {
         beforeEach(async () => {
-            (getCurrentUserId as jest.Mock).mockResolvedValue('user1');
-            (queryAllUsers as jest.Mock).mockImplementation(() => ({fetchIds: async () => ['user1', 'user2']}));
+            jest.mocked(getCurrentUserId).mockResolvedValue('user1');
+            jest.mocked(queryAllUsers).mockImplementation(() => TestHelper.fakeQuery([
+                TestHelper.fakeUserModel({id: 'user1'}),
+                TestHelper.fakeUserModel({id: 'user2'}),
+            ]));
             await manager.init(mockCredentials);
         });
 

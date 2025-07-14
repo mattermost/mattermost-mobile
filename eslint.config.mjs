@@ -100,7 +100,7 @@ export default defineConfig([
           "newlines-between": "always",
           "pathGroups": [
             {
-              "pattern": "{@(@actions|@app|@assets|@calls|@client|@components|@constants|@context|@database|@helpers|@hooks|@init|@managers|@queries|@screens|@selectors|@share|@store|@telemetry|@typings|@test|@utils)/**,@(@constants|@i18n|@store|@websocket)}",
+              "pattern": "{@(@actions|@app|@assets|@calls|@client|@components|@constants|@context|@database|@helpers|@hooks|@init|@managers|@playbooks|@queries|@screens|@selectors|@share|@store|@telemetry|@typings|@test|@utils)/**,@(@constants|@i18n|@store|@websocket)}",
               "group": "external",
               "position": "after"
             },

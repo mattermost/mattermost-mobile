@@ -64,3 +64,9 @@ export const showScheduledPostCreationErrorSnackbar = (errorMessage: string) => 
         type: 'error',
     });
 };
+
+export const showPlaybookErrorSnackbar = () => {
+    return showSnackBar({
+        barType: SNACK_BAR_TYPE.PLAYBOOK_ERROR,
+    });
+};
