@@ -381,7 +381,7 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
                 handleSearch(searchTeamId, lastSearchedValue);
             });
         }
-    }, [isFocused, lastSearchedValue, showResults, handleSearch, searchTeamId]);
+    }, [isFocused]);
 
     const handleEnterPressed = useCallback(() => {
         const topScreen = NavigationStore.getVisibleScreen();
