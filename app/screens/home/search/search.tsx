@@ -381,6 +381,10 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
                 handleSearch(searchTeamId, lastSearchedValue);
             });
         }
+
+        // Only watch isFocused to re-run search when screen comes back into focus
+        // Removed lastSearchedValue, showResults, handleSearch, searchTeamId from dependencies
+        // to prevent duplicate search calls (these values are updated by handleSearch itself)
     }, [isFocused]);
 
     const handleEnterPressed = useCallback(() => {
