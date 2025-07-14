@@ -4,7 +4,7 @@
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {combineLatest, distinctUntilChanged, of as of$, switchMap} from 'rxjs';
 
-import {areSortOrdersEqual} from '@playbooks/utils/sort_order';
+import {areItemsOrdersEqual} from '@playbooks/utils/items_order';
 
 import Checklist from './checklist';
 
@@ -17,12 +17,12 @@ type OwnProps = {
 } & WithDatabaseArgs;
 
 const sortItems = (checklist: PlaybookChecklistModel, items: PlaybookChecklistItemModel[]) => {
-    const sortOrder = checklist.sortOrder;
-    const sortOrderMap = sortOrder.reduce((acc, id, index) => {
+    const itemsOrder = checklist.itemsOrder;
+    const itemsOrderMap = itemsOrder.reduce((acc, id, index) => {
         acc[id] = index;
         return acc;
     }, {} as Record<string, number>);
-    return items.sort((a, b) => sortOrderMap[a.id] - sortOrderMap[b.id]);
+    return [...items].sort((a, b) => itemsOrderMap[a.id] - itemsOrderMap[b.id]);
 };
 
 const getIds = (items: PlaybookChecklistItemModel[]) => {
@@ -37,7 +37,7 @@ const enhanced = withObservables(['checklist'], ({checklist}: OwnProps) => {
             switchMap(([cl, i]) => {
                 return of$(sortItems(cl, i));
             }),
-            distinctUntilChanged((a, b) => areSortOrdersEqual(getIds(a), getIds(b))),
+            distinctUntilChanged((a, b) => areItemsOrdersEqual(getIds(a), getIds(b))),
         );
         return {
             checklist: observedChecklist,

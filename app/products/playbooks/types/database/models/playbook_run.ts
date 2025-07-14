@@ -87,7 +87,7 @@ declare class PlaybookRunModel extends Model {
     previousReminder: number;
 
     // The sort order of the playbook run
-    sortOrder: string[];
+    itemsOrder: string[];
 
     // The timestamp when the playbook run was updated
     updateAt: number;

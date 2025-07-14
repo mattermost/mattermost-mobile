@@ -61,7 +61,7 @@ describe('PlaybookRun', () => {
                 ],
             }),
         ],
-        sort_order: ['checklist-1', 'checklist-2'],
+        items_order: ['checklist-1', 'checklist-2'],
     });
 
     let database: Database;
@@ -228,7 +228,7 @@ describe('PlaybookRun', () => {
             act(() => {
                 database.write(async () => {
                     await runModel.update((run) => {
-                        run.sortOrder = [baseRun.checklists[1].id, baseRun.checklists[0].id];
+                        run.itemsOrder = [baseRun.checklists[1].id, baseRun.checklists[0].id];
                     });
                 });
             });

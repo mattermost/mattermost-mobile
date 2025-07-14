@@ -43,8 +43,8 @@ export default class PlaybookChecklistModel extends Model implements PlaybookChe
     /** last_sync_at : The timestamp when the checklist was last synced */
     @field('last_sync_at') lastSyncAt!: number;
 
-    /** sort_order : The sort order of the checklist */
-    @json('sort_order', safeParseJSONStringArray) sortOrder!: string[];
+    /** items_order : The sort order of the checklist */
+    @json('items_order', safeParseJSONStringArray) itemsOrder!: string[];
 
     /** update_at : The timestamp when the checklist was updated */
     @field('update_at') updateAt!: number;

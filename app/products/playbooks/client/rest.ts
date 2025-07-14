@@ -9,15 +9,17 @@ export interface ClientPlaybooksMix {
 
     // Playbook Runs
     fetchPlaybookRuns: (params: FetchPlaybookRunsParams, groupLabel?: RequestGroupLabel) => Promise<FetchPlaybookRunsReturn>;
-    fetchPlaybookRun: (id: string, groupLabel?: RequestGroupLabel) => Promise<PlaybookRun>;
+
+    // fetchPlaybookRun: (id: string, groupLabel?: RequestGroupLabel) => Promise<PlaybookRun>;
 
     // Run Management
-    finishRun: (playbookRunId: string) => Promise<any>;
+    // finishRun: (playbookRunId: string) => Promise<any>;
 
     // Checklist Management
     setChecklistItemState: (playbookRunID: string, checklistNum: number, itemNum: number, newState: ChecklistItemState) => Promise<any>;
-    skipChecklistItem: (playbookRunID: string, checklistNum: number, itemNum: number) => Promise<void>;
-    skipChecklist: (playbookRunID: string, checklistNum: number) => Promise<void>;
+
+    // skipChecklistItem: (playbookRunID: string, checklistNum: number, itemNum: number) => Promise<void>;
+    // skipChecklist: (playbookRunID: string, checklistNum: number) => Promise<void>;
 
     // Slash Commands
     runChecklistItemSlashCommand: (playbookRunId: string, checklistNumber: number, itemNumber: number) => Promise<void>;

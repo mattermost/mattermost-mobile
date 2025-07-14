@@ -133,7 +133,7 @@ describe('handlePlaybookRunUpdatedIncremental', () => {
 
     const mockPlaybookRunUpdate: PlaybookRunUpdate = {
         id: playbookRunId,
-        updated_at: Date.now(),
+        playbook_run_updated_at: Date.now(),
         changed_fields: {
             name: 'Updated Run Name',
             description: 'Updated description',
@@ -217,7 +217,7 @@ describe('handlePlaybookRunUpdatedIncremental', () => {
         const storedRun = await getPlaybookRunById(operator.database, playbookRunId);
         expect(storedRun?.name).toEqual(mockPlaybookRunUpdate.changed_fields.name);
         expect(storedRun?.description).toEqual(mockPlaybookRunUpdate.changed_fields.description);
-        expect(storedRun?.updateAt).toEqual(mockPlaybookRunUpdate.updated_at);
+        expect(storedRun?.updateAt).toEqual(mockPlaybookRunUpdate.playbook_run_updated_at);
     });
 
     it('should not add checklists even if they are present in the payload', async () => {
@@ -260,7 +260,7 @@ describe('handlePlaybookChecklistUpdated', () => {
     const mockChecklistUpdate: PlaybookChecklistUpdate = {
         id: checklistId,
         index: 0,
-        updated_at: Date.now(),
+        checklist_updated_at: Date.now(),
         fields: {
             title: 'Updated Checklist',
         },
@@ -374,7 +374,7 @@ describe('handlePlaybookChecklistUpdated', () => {
                 ...mockChecklistUpdate.fields,
                 items: undefined,
                 id: checklistId,
-                update_at: mockChecklistUpdate.updated_at,
+                update_at: mockChecklistUpdate.checklist_updated_at,
                 run_id: playbookRunId,
             }],
             prepareRecordsOnly: false,
@@ -398,7 +398,7 @@ describe('handlePlaybookChecklistUpdated', () => {
                 ...mockChecklistUpdate.fields,
                 items: undefined,
                 id: checklistId,
-                update_at: mockChecklistUpdate.updated_at,
+                update_at: mockChecklistUpdate.checklist_updated_at,
                 run_id: playbookRunId,
             }],
             prepareRecordsOnly: false,
@@ -408,7 +408,7 @@ describe('handlePlaybookChecklistUpdated', () => {
             items: [{
                 ...mockChecklistUpdate.item_inserts![0],
                 checklist_id: checklistId,
-                update_at: mockChecklistUpdate.updated_at,
+                update_at: mockChecklistUpdate.checklist_updated_at,
             }],
             prepareRecordsOnly: false,
         });
@@ -421,7 +421,7 @@ describe('handlePlaybookChecklistItemUpdated', () => {
     const mockChecklistItemUpdate: PlaybookChecklistItemUpdate = {
         id: checklistItemId,
         index: 0,
-        updated_at: Date.now(),
+        checklist_item_updated_at: Date.now(),
         fields: {
             title: 'Updated Item',
             state: 'closed',
@@ -500,7 +500,7 @@ describe('handlePlaybookChecklistItemUpdated', () => {
                 ...mockChecklistItemUpdate.fields,
                 id: checklistItemId,
                 checklist_id: checklistId,
-                update_at: mockChecklistItemUpdate.updated_at,
+                update_at: mockChecklistItemUpdate.checklist_item_updated_at,
             }],
             prepareRecordsOnly: false,
         });
