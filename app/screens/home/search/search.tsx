@@ -471,7 +471,7 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
                 cursorPosition={cursorPosition}
                 value={searchValue}
                 isSearch={true}
-                hasFilesAttached={false}
+                shouldDirectlyReact={false}
                 availableSpace={autocompleteMaxHeight}
                 position={autocompletePosition}
                 growDown={true}
