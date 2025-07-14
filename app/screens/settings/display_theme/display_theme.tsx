@@ -27,13 +27,12 @@ type DisplayThemeProps = {
 const DisplayTheme = ({allowedThemeKeys, componentId, currentTeamId, currentUserId}: DisplayThemeProps) => {
     const serverUrl = useServerUrl();
     const theme = useTheme();
-    const [currentTheme, setCurrentTheme] = useState(theme);
     const [customTheme, setCustomTheme] = useState(theme.type?.toLowerCase() === 'custom' ? theme : undefined);
 
     const close = () => popTopScreen(componentId);
 
-    const setThemePreference = useCallback(async (theTheme: string) => {
-        const allowedTheme = allowedThemeKeys.find((tk) => tk === theTheme);
+    const handleThemeChange = usePreventDoubleTap(useCallback(async (themeSelected: string) => {
+        const allowedTheme = allowedThemeKeys.find((tk) => tk === themeSelected);
         const themeJson = Preferences.THEMES[allowedTheme as ThemeKey] || customTheme;
 
         const pref: PreferenceType = {
@@ -43,24 +42,13 @@ const DisplayTheme = ({allowedThemeKeys, componentId, currentTeamId, currentUser
             value: JSON.stringify(themeJson),
         };
         await savePreference(serverUrl, [pref]);
-
-        setCurrentTheme(themeJson);
-
-    }, [allowedThemeKeys, currentTeamId, currentUserId, serverUrl, customTheme]);
-
-    const handleSelectTheme = usePreventDoubleTap(useCallback((themeSelected: string) => {
-        setThemePreference(themeSelected);
-    }, [setThemePreference]));
+    }, [allowedThemeKeys, currentTeamId, currentUserId, customTheme, serverUrl]));
 
     useDidUpdate(() => {
-        // if the theme changed on the server by another client, this will update to the latest theme
-        if (theme.type?.toLowerCase() !== currentTheme.type?.toLowerCase()) {
-            setCurrentTheme(theme);
-        }
         if (theme.type?.toLowerCase() === 'custom') {
             setCustomTheme(theme);
         }
-    }, [theme, currentTheme]);
+    }, [theme.type]);
 
     useAndroidHardwareBackHandler(componentId, close);
 
@@ -68,12 +56,12 @@ const DisplayTheme = ({allowedThemeKeys, componentId, currentTeamId, currentUser
         <SettingContainer testID='theme_display_settings'>
             <ThemeTiles
                 allowedThemeKeys={allowedThemeKeys}
-                onThemeChange={handleSelectTheme}
+                onThemeChange={handleThemeChange}
                 selectedTheme={theme.type}
             />
             {customTheme && (
                 <CustomTheme
-                    setTheme={handleSelectTheme}
+                    setTheme={handleThemeChange}
                     displayTheme={'custom'}
                 />
             )}
