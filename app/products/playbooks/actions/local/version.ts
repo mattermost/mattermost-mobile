@@ -17,7 +17,10 @@ export const setPlaybooksVersion = async (serverUrl: string, version: string) =>
         });
 
         if (version === '') {
-            await purgePlaybooks(serverUrl);
+            const {error} = await purgePlaybooks(serverUrl);
+            if (error) {
+                return {error};
+            }
         }
 
         return {data: true};
