@@ -89,6 +89,45 @@ function buildUserInfoUpdates(userInfoParam: UserInfo, currentUserParam: UserMod
     return apiUpdates;
 }
 
+async function handleCustomAttributesUpdate(
+    serverUrlParam: string,
+    currentUserParam: UserModel,
+    userInfoParam: UserInfo,
+    customAttributesSetParam: CustomAttributeSet | undefined,
+    customFieldsParam: CustomProfileFieldModel[] | undefined,
+    enableCustomAttributes: boolean,
+) {
+    if (!userInfoParam.customAttributes || !enableCustomAttributes) {
+        return;
+    }
+
+    const customFieldsMap = new Map<string, CustomProfileFieldModel>();
+    customFieldsParam?.forEach((field) => {
+        customFieldsMap.set(field.id, field);
+    });
+
+    const changedCustomAttributes: CustomAttributeSet = {};
+
+    Object.keys(userInfoParam.customAttributes).forEach((key) => {
+        const currentValue = (customAttributesSetParam && customAttributesSetParam[key]?.value) || '';
+        const newValue = userInfoParam.customAttributes[key]?.value || '';
+        const customAttribute = userInfoParam.customAttributes[key];
+        const customField = customFieldsMap.get(customAttribute?.id);
+
+        if (currentValue !== newValue && !isCustomFieldSamlLinked(customField)) {
+            changedCustomAttributes[key] = userInfoParam.customAttributes[key];
+        }
+    });
+
+    if (Object.keys(changedCustomAttributes).length > 0) {
+        const {error: attrError} = await updateCustomProfileAttributes(serverUrlParam, currentUserParam.id, changedCustomAttributes);
+        if (attrError) {
+            logError('Error updating custom attributes', attrError);
+            throw attrError;
+        }
+    }
+}
+
 const EditProfile = ({
     componentId, currentUser, isModal, isTablet,
     lockedFirstName, lockedLastName, lockedNickname, lockedPosition, lockedPicture, enableCustomAttributes,
@@ -250,43 +289,6 @@ const EditProfile = ({
         }
     }, []);
 
-    const handleCustomAttributesUpdate = useCallback(async (
-        serverUrlParam: string,
-        currentUserParam: UserModel,
-        userInfoParam: UserInfo,
-        customAttributesSetParam: CustomAttributeSet | undefined,
-        customFieldsParam: CustomProfileFieldModel[] | undefined,
-    ) => {
-        if (!userInfoParam.customAttributes || !enableCustomAttributes) {
-            return;
-        }
-
-        const customFieldsMap = new Map<string, CustomProfileFieldModel>();
-        customFieldsParam?.forEach((field) => {
-            customFieldsMap.set(field.id, field);
-        });
-
-        const changedCustomAttributes: CustomAttributeSet = {};
-
-        Object.keys(userInfoParam.customAttributes).forEach((key) => {
-            const currentValue = (customAttributesSetParam && customAttributesSetParam[key]?.value) || '';
-            const newValue = userInfoParam.customAttributes[key]?.value || '';
-            const customAttribute = userInfoParam.customAttributes[key];
-            const customField = customFieldsMap.get(customAttribute?.id);
-
-            if (currentValue !== newValue && !isCustomFieldSamlLinked(customField)) {
-                changedCustomAttributes[key] = userInfoParam.customAttributes[key];
-            }
-        });
-
-        if (Object.keys(changedCustomAttributes).length > 0) {
-            const {error: attrError} = await updateCustomProfileAttributes(serverUrlParam, currentUserParam.id, changedCustomAttributes);
-            if (attrError) {
-                logError('Error updating custom attributes', attrError);
-                throw attrError;
-            }
-        }
-    }, [enableCustomAttributes]);
 
     const submitUser = usePreventDoubleTap(useCallback(async () => {
         if (!currentUser) {
@@ -314,7 +316,7 @@ const EditProfile = ({
             }
 
             // Handle custom attributes
-            await handleCustomAttributesUpdate(serverUrl, currentUser, userInfo, customAttributesSet, customFields);
+            await handleCustomAttributesUpdate(serverUrl, currentUser, userInfo, customAttributesSet, customFields, enableCustomAttributes);
 
             close();
         } catch (err) {
