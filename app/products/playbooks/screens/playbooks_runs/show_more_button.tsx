@@ -8,6 +8,7 @@ import {StyleSheet, View} from 'react-native';
 import Button from '@components/button';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {fetchFinishedRunsForChannel} from '@playbooks/actions/remote/runs';
 
 type Props = {
@@ -33,7 +34,7 @@ const ShowMoreButton = ({
     const [hasMore, setHasMore] = useState(true);
     const page = useRef(0);
 
-    const fetchFinishedRuns = useCallback(async () => {
+    const fetchFinishedRuns = usePreventDoubleTap(useCallback(async () => {
         if (fetching) {
             return;
         }
@@ -49,7 +50,7 @@ const ShowMoreButton = ({
         if (runs?.length) {
             addMoreRuns(runs);
         }
-    }, [channelId, fetching, serverUrl, addMoreRuns]);
+    }, [channelId, fetching, serverUrl, addMoreRuns]));
 
     if (!hasMore) {
         return null;
