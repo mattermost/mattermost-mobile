@@ -348,13 +348,15 @@ describe('SecurityManager', () => {
             const originalToMilliseconds = jest.requireActual('@utils/datetime').toMilliseconds;
             jest.mocked(require('@utils/datetime').toMilliseconds).mockImplementation(originalToMilliseconds);
 
-            // Use fake timers to control time and eliminate timing races
-            jest.useFakeTimers();
+            // Use a fixed timestamp instead of Date.now() to eliminate timing races
             const fixedTime = 1672574400000; // Fixed timestamp: Jan 1, 2023 12:00:00 GMT
-            jest.setSystemTime(fixedTime);
+            const oneMinuteAgo = fixedTime - (60 * 1000);
+
+            // Mock Date.now to return our fixed time
+            const originalDateNow = Date.now;
+            Date.now = jest.fn(() => fixedTime);
 
             try {
-                const oneMinuteAgo = fixedTime - (60 * 1000);
                 SecurityManager.addServer('server-12', {MobileEnableBiometrics: 'true'} as ClientConfig, true);
                 SecurityManager.serverConfig['server-12'].lastAccessed = oneMinuteAgo;
                 await expect(SecurityManager.authenticateWithBiometricsIfNeeded('server-12')).resolves.toBe(true);
@@ -362,8 +364,7 @@ describe('SecurityManager', () => {
                 expect(Emm.authenticate).not.toHaveBeenCalled();
             } finally {
                 // Restore original implementations
-                jest.runOnlyPendingTimers();
-                jest.useRealTimers();
+                Date.now = originalDateNow;
                 jest.mocked(require('@utils/datetime').toMilliseconds).mockReturnValue(25000);
             }
         });
