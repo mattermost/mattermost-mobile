@@ -41,21 +41,21 @@ const enhanced = withObservables(['checklist'], ({checklist}: OwnProps) => {
             distinctUntilChanged((a, b) => areItemsOrdersEqual(getIds(a), getIds(b))),
         );
 
-        const checkListProgress = items.pipe(
+        const checklistProgress = items.pipe(
             switchMap((i) => of$(getChecklistProgress(i))),
         );
 
         return {
             checklist: observedChecklist,
             items: sortedItems,
-            checkListProgress,
+            checklistProgress,
         };
     }
 
     return {
         checklist: of$(checklist),
         items: of$(checklist.items),
-        checkListProgress: of$(getChecklistProgress(checklist.items)),
+        checklistProgress: of$(getChecklistProgress(checklist.items)),
     };
 });
 

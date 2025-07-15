@@ -71,7 +71,7 @@ type Props = {
     playbookRunId: string;
     isFinished: boolean;
     isParticipant: boolean;
-    checkListProgress: ReturnType<typeof getChecklistProgress>;
+    checklistProgress: ReturnType<typeof getChecklistProgress>;
 }
 
 const Checklist = ({
@@ -82,7 +82,7 @@ const Checklist = ({
     playbookRunId,
     isFinished,
     isParticipant,
-    checkListProgress: {
+    checklistProgress: {
         skipped,
         completed,
         totalNumber,

@@ -49,7 +49,7 @@ describe('Checklist', () => {
             playbookRunId: 'run-id-1',
             isFinished: false,
             isParticipant: true,
-            checkListProgress: {
+            checklistProgress: {
                 skipped: false,
                 completed: 0,
                 totalNumber: 0,
@@ -60,8 +60,8 @@ describe('Checklist', () => {
 
     it('renders checklist header correctly', () => {
         const props = getBaseProps();
-        props.checkListProgress.completed = 1;
-        props.checkListProgress.totalNumber = 2;
+        props.checklistProgress.completed = 1;
+        props.checklistProgress.totalNumber = 2;
 
         const {getByText} = renderWithIntl(<Checklist {...props}/>);
 
@@ -102,15 +102,15 @@ describe('Checklist', () => {
 
     it('shows correct progress for completed and skippeditems', () => {
         const props = getBaseProps();
-        props.checkListProgress.completed = 2;
-        props.checkListProgress.totalNumber = 2;
+        props.checklistProgress.completed = 2;
+        props.checklistProgress.totalNumber = 2;
 
         const {getByText, rerender} = renderWithIntl(<Checklist {...props}/>);
 
         expect(getByText('2 / 2 done')).toBeTruthy();
 
-        props.checkListProgress.completed = 1;
-        props.checkListProgress.totalNumber = 2;
+        props.checklistProgress.completed = 1;
+        props.checklistProgress.totalNumber = 2;
 
         rerender(<Checklist {...props}/>);
 
@@ -205,7 +205,7 @@ describe('Checklist', () => {
     it('passes the correct props to the ProgressBar', () => {
         const props = getBaseProps();
         props.isFinished = false;
-        props.checkListProgress.progress = 0;
+        props.checklistProgress.progress = 0;
 
         const {getByTestId, rerender} = renderWithIntl(<Checklist {...props}/>);
 
@@ -214,14 +214,14 @@ describe('Checklist', () => {
         expect(progressBar.props.isActive).toBe(true);
 
         props.isFinished = true;
-        props.checkListProgress.progress = 50;
+        props.checklistProgress.progress = 50;
 
         rerender(<Checklist {...props}/>);
 
         expect(progressBar.props.progress).toBe(50);
         expect(progressBar.props.isActive).toBe(false);
 
-        props.checkListProgress.progress = 100;
+        props.checklistProgress.progress = 100;
         rerender(<Checklist {...props}/>);
 
         expect(progressBar.props.progress).toBe(100);

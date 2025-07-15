@@ -76,7 +76,7 @@ describe('Checklist', () => {
             expect(checklist).toBeTruthy();
             expect(checklist.props.checklist).toBe(props.checklist);
             expect(checklist.props.items).toBe(props.checklist.items);
-            expect(checklist.props.checkListProgress).toBe(mockProgressReturn);
+            expect(checklist.props.checklistProgress).toBe(mockProgressReturn);
             expect(getChecklistProgress).toHaveBeenCalledWith(props.checklist.items);
         });
     });
@@ -118,7 +118,7 @@ describe('Checklist', () => {
             expect(checklist.props.checklist.id).toBe(props.checklist.id);
             expect(checklist.props.items[0].id).toBe(itemsIds[1]);
             expect(checklist.props.items[1].id).toBe(itemsIds[0]);
-            expect(checklist.props.checkListProgress).toBe(mockProgressReturn);
+            expect(checklist.props.checklistProgress).toBe(mockProgressReturn);
             expect(getChecklistProgress).toHaveBeenCalledWith([
                 expect.objectContaining({id: itemsIds[1]}),
                 expect.objectContaining({id: itemsIds[0]}),
