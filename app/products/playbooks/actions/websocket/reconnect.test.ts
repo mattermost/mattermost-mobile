@@ -38,13 +38,15 @@ describe('handlePlaybookReconnect', () => {
     });
 
     it('should return early when database is not found', async () => {
+        const clearSpy = jest.spyOn(EphemeralStore, 'clearChannelPlaybooksSynced');
+        const getScreensSpy = jest.spyOn(NavigationStore, 'getScreensInStack');
         await DatabaseManager.deleteServerDatabase(serverUrl);
 
         await handlePlaybookReconnect(serverUrl);
 
-        expect(EphemeralStore.clearChannelPlaybooksSynced).not.toHaveBeenCalled();
+        expect(clearSpy).not.toHaveBeenCalled();
         expect(updatePlaybooksVersion).not.toHaveBeenCalled();
-        expect(NavigationStore.getScreensInStack).not.toHaveBeenCalled();
+        expect(getScreensSpy).not.toHaveBeenCalled();
     });
 
     it('should clear channel playbooks synced state', async () => {
