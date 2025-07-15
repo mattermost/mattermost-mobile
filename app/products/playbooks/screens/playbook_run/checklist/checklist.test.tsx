@@ -49,11 +49,20 @@ describe('Checklist', () => {
             playbookRunId: 'run-id-1',
             isFinished: false,
             isParticipant: true,
+            checkListProgress: {
+                skipped: false,
+                completed: 0,
+                totalNumber: 0,
+                progress: 0,
+            },
         };
     }
 
     it('renders checklist header correctly', () => {
         const props = getBaseProps();
+        props.checkListProgress.completed = 1;
+        props.checkListProgress.totalNumber = 2;
+
         const {getByText} = renderWithIntl(<Checklist {...props}/>);
 
         expect(getByText('Test Checklist')).toBeTruthy();
@@ -93,40 +102,16 @@ describe('Checklist', () => {
 
     it('shows correct progress for completed and skippeditems', () => {
         const props = getBaseProps();
-        props.items = [
-            TestHelper.fakePlaybookChecklistItemModel({
-                id: 'item-1',
-                title: 'Item 1',
-                state: 'closed',
-            }),
-            TestHelper.fakePlaybookChecklistItemModel({
-                id: 'item-2',
-                title: 'Item 2',
-                state: 'closed',
-            }),
-        ];
+        props.checkListProgress.completed = 2;
+        props.checkListProgress.totalNumber = 2;
 
         const {getByText, rerender} = renderWithIntl(<Checklist {...props}/>);
 
         expect(getByText('2 / 2 done')).toBeTruthy();
 
-        props.items = [
-            TestHelper.fakePlaybookChecklistItemModel({
-                id: 'item-1',
-                title: 'Item 1',
-                state: 'closed',
-            }),
-            TestHelper.fakePlaybookChecklistItemModel({
-                id: 'item-2',
-                title: 'Item 2',
-                state: '',
-            }),
-            TestHelper.fakePlaybookChecklistItemModel({
-                id: 'item-3',
-                title: 'Item 3',
-                state: 'skipped',
-            }),
-        ];
+        props.checkListProgress.completed = 1;
+        props.checkListProgress.totalNumber = 2;
+
         rerender(<Checklist {...props}/>);
 
         expect(getByText('1 / 2 done')).toBeTruthy();
@@ -220,23 +205,7 @@ describe('Checklist', () => {
     it('passes the correct props to the ProgressBar', () => {
         const props = getBaseProps();
         props.isFinished = false;
-        props.items = [
-            TestHelper.fakePlaybookChecklistItemModel({
-                id: 'item-1',
-                title: 'Item 1',
-                state: '',
-            }),
-            TestHelper.fakePlaybookChecklistItemModel({
-                id: 'item-2',
-                title: 'Item 2',
-                state: '',
-            }),
-            TestHelper.fakePlaybookChecklistItemModel({
-                id: 'item-3',
-                title: 'Item 3',
-                state: '',
-            }),
-        ];
+        props.checkListProgress.progress = 0;
 
         const {getByTestId, rerender} = renderWithIntl(<Checklist {...props}/>);
 
@@ -245,67 +214,14 @@ describe('Checklist', () => {
         expect(progressBar.props.isActive).toBe(true);
 
         props.isFinished = true;
-        props.items = [
-            TestHelper.fakePlaybookChecklistItemModel({
-                id: 'item-1',
-                title: 'Item 1',
-                state: 'closed',
-            }),
-            TestHelper.fakePlaybookChecklistItemModel({
-                id: 'item-2',
-                title: 'Item 2',
-                state: '',
-            }),
-            TestHelper.fakePlaybookChecklistItemModel({
-                id: 'item-3',
-                title: 'Item 3',
-                state: '',
-            }),
-        ];
-        rerender(<Checklist {...props}/>);
+        props.checkListProgress.progress = 50;
 
-        expect(progressBar.props.progress).toBe(33);
-        expect(progressBar.props.isActive).toBe(false);
-
-        props.items = [
-            TestHelper.fakePlaybookChecklistItemModel({
-                id: 'item-1',
-                title: 'Item 1',
-                state: 'closed',
-            }),
-            TestHelper.fakePlaybookChecklistItemModel({
-                id: 'item-2',
-                title: 'Item 2',
-                state: 'skipped',
-            }),
-            TestHelper.fakePlaybookChecklistItemModel({
-                id: 'item-3',
-                title: 'Item 3',
-                state: '',
-            }),
-        ];
         rerender(<Checklist {...props}/>);
 
         expect(progressBar.props.progress).toBe(50);
         expect(progressBar.props.isActive).toBe(false);
 
-        props.items = [
-            TestHelper.fakePlaybookChecklistItemModel({
-                id: 'item-1',
-                title: 'Item 1',
-                state: 'closed',
-            }),
-            TestHelper.fakePlaybookChecklistItemModel({
-                id: 'item-2',
-                title: 'Item 2',
-                state: 'skipped',
-            }),
-            TestHelper.fakePlaybookChecklistItemModel({
-                id: 'item-3',
-                title: 'Item 3',
-                state: 'closed',
-            }),
-        ];
+        props.checkListProgress.progress = 100;
         rerender(<Checklist {...props}/>);
 
         expect(progressBar.props.progress).toBe(100);
