@@ -22,6 +22,7 @@ import {
     hasTrailingSpaces,
     isMainActivity,
     areBothStringArraysEqual,
+    hasArrayChanged,
 } from './helpers';
 
 jest.mock('@mattermost/rnshare', () => ({
@@ -308,6 +309,41 @@ describe('Helpers', () => {
             Platform.OS = 'android';
             const result = isMainActivity();
             expect(result).toBe(false);
+        });
+    });
+
+    describe('hasArrayChanged', () => {
+        test('should return true for arrays with different lengths', () => {
+            expect(hasArrayChanged(['a', 'b'], ['a', 'b', 'c'])).toBe(true);
+            expect(hasArrayChanged(['a', 'b', 'c'], ['a', 'b'])).toBe(true);
+        });
+
+        test('should return true for arrays with same length but different elements', () => {
+            expect(hasArrayChanged(['a', 'b'], ['a', 'c'])).toBe(true);
+            expect(hasArrayChanged(['x', 'y'], ['a', 'b'])).toBe(true);
+        });
+
+        test('should return false for arrays with same elements (same order)', () => {
+            expect(hasArrayChanged(['a', 'b', 'c'], ['a', 'b', 'c'])).toBe(false);
+        });
+
+        test('should return false for arrays with same elements (different order)', () => {
+            expect(hasArrayChanged(['a', 'b', 'c'], ['c', 'b', 'a'])).toBe(false);
+            expect(hasArrayChanged(['x', 'y', 'z'], ['z', 'x', 'y'])).toBe(false);
+        });
+
+        test('should return false for empty arrays', () => {
+            expect(hasArrayChanged([], [])).toBe(false);
+        });
+
+        test('should return true when one array is empty', () => {
+            expect(hasArrayChanged([], ['a'])).toBe(true);
+            expect(hasArrayChanged(['a'], [])).toBe(true);
+        });
+
+        test('should handle duplicate elements correctly', () => {
+            expect(hasArrayChanged(['a', 'a', 'b'], ['a', 'b', 'a'])).toBe(false);
+            expect(hasArrayChanged(['a', 'a'], ['a', 'b'])).toBe(true);
         });
     });
 });

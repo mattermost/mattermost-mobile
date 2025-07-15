@@ -70,7 +70,6 @@ describe('EditPost', () => {
             expect(editPost.props.maxFileCount).toBe(10);
             expect(editPost.props.maxFileSize).toBe(1000);
             expect(editPost.props.canUploadFiles).toBe(true);
-            expect(editPost.props.hasFilesAttached).toBe(false);
         });
     });
 });

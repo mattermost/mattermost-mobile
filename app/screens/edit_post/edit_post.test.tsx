@@ -96,7 +96,7 @@ describe('Edit Post', () => {
             metadata: {},
         } as PostModel,
         maxPostSize: TEST_CONFIG.maxPostSize,
-        hasFilesAttached: true,
+
         canDelete: true,
         files: [TEST_FILES.existingFile1, TEST_FILES.existingFile2],
         maxFileCount: TEST_CONFIG.maxFileCount,
