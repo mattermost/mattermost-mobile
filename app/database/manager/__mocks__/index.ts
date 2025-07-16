@@ -80,7 +80,7 @@ class DatabaseManagerSingleton {
             const modelClasses = this.appModels;
             const schema = appSchema;
 
-            const adapter = new LokiJSAdapter({dbName: APP_DATABASE, migrations: AppDatabaseMigrations, schema, useWebWorker: false, useIncrementalIndexedDB: true});
+            const adapter = new LokiJSAdapter({dbName: APP_DATABASE, migrations: AppDatabaseMigrations, schema, useWebWorker: false, useIncrementalIndexedDB: true, extraLokiOptions: {autosave: false}});
 
             const database = new Database({adapter, modelClasses});
             const operator = new AppDataOperator(database);
@@ -107,7 +107,7 @@ class DatabaseManagerSingleton {
                 const modelClasses = this.serverModels;
                 const schema = serverSchema;
 
-                const adapter = new LokiJSAdapter({dbName, migrations, schema, useWebWorker: false, useIncrementalIndexedDB: true});
+                const adapter = new LokiJSAdapter({dbName, migrations, schema, useWebWorker: false, useIncrementalIndexedDB: true, extraLokiOptions: {autosave: false}});
 
                 // Registers the new server connection into the DEFAULT database
                 await this.addServerToAppDatabase({

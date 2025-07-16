@@ -36,7 +36,7 @@ jest.mock('@store/ephemeral_store');
 describe('WebsocketManager', () => {
     let manager: typeof WebsocketManager;
     let mockWebSocketClient: any;
-    let mockCallbacks: {[key: string]: () => void};
+    let mockCallbacks: {[key: string]: (...args: any[]) => void};
     const mockServerUrl = 'https://example.com';
     const mockToken = 'mock-token';
     const mockCredentials = [{serverUrl: mockServerUrl, token: mockToken} as ServerCredential];
@@ -63,7 +63,9 @@ describe('WebsocketManager', () => {
                 mockCallbacks.reconnect = cb;
             }),
             setReliableReconnectCallback: jest.fn(),
-            setCloseCallback: jest.fn(),
+            setCloseCallback: jest.fn((cb) => {
+                mockCallbacks.close = cb;
+            }),
             initialize: jest.fn(),
             isConnected: jest.fn().mockReturnValue(true),
             close: jest.fn(),
@@ -211,6 +213,9 @@ describe('WebsocketManager', () => {
             await new Promise((resolve) => setImmediate(resolve));
 
             expect(fetchStatusByIds).toHaveBeenCalledWith(mockServerUrl, ['user2']);
+
+            // Close the websocket to stop the periodic updates
+            mockCallbacks.close(0);
         });
     });
 });
