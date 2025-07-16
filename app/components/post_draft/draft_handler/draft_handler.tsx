@@ -29,6 +29,7 @@ type Props = {
     updateValue: React.Dispatch<React.SetStateAction<string>>;
     value: string;
     setIsFocused: (isFocused: boolean) => void;
+    enableMentionConversion?: boolean;
 }
 
 const emptyFileList: FileInfo[] = [];
@@ -49,6 +50,7 @@ export default function DraftHandler(props: Props) {
         updateValue,
         value,
         setIsFocused,
+        enableMentionConversion,
     } = props;
 
     const serverUrl = useServerUrl();
@@ -135,6 +137,7 @@ export default function DraftHandler(props: Props) {
             updatePostInputTop={updatePostInputTop}
             updateValue={updateValue}
             setIsFocused={setIsFocused}
+            enableMentionConversion={enableMentionConversion}
         />
     );
 }

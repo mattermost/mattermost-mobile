@@ -238,5 +238,6 @@ export function getCallPropsFromPost(post: PostModel | Post): CallPostProps {
         recordings: isRecordOf<CallJobMetadata>(post.props?.recordings, isCallJobMetadata) ? post.props.recordings : {},
         transcriptions: isRecordOf<CallJobMetadata>(post.props?.transcriptions, isCallJobMetadata) ? post.props.transcriptions : {},
         participants: isStringArray(post.props?.participants) ? post.props.participants : [],
+        recording_files: isStringArray(post.props?.recording_files) ? post.props.recording_files : [],
     };
 }

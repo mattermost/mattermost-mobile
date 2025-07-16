@@ -8,7 +8,7 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {type IntlShape, useIntl} from 'react-intl';
 import {
     Alert, AppState, type AppStateStatus, DeviceEventEmitter, type EmitterSubscription, Keyboard,
-    type NativeSyntheticEvent, Platform, type TextInputSelectionChangeEventData,
+    type NativeSyntheticEvent, Platform, type TextInputSelectionChangeEventData, View,
 } from 'react-native';
 
 import {updateDraftMessage} from '@actions/local/draft';
@@ -17,14 +17,19 @@ import {Events, Screens} from '@constants';
 import {useExtraKeyboardContext} from '@context/extra_keyboard';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import DatabaseManager from '@database/manager';
 import {useIsTablet} from '@hooks/device';
 import {useInputPropagation} from '@hooks/input';
 import {t} from '@i18n';
 import NavigationStore from '@store/navigation_store';
 import {handleDraftUpdate} from '@utils/draft';
 import {extractFileInfo} from '@utils/file';
+import {containsMentions, debounceConvertUsernamesToFullnames} from '@utils/mention_conversion';
 import {changeOpacity, makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} from '@utils/theme';
 
+import MentionHighlightOverlay from './mention_highlight_overlay';
+
+import type UserModel from '@typings/database/models/servers/user';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
@@ -45,6 +50,8 @@ type Props = {
     sendMessage: () => void;
     inputRef: React.MutableRefObject<PasteInputRef | undefined>;
     setIsFocused: (isFocused: boolean) => void;
+    enableMentionConversion?: boolean;
+    currentUserId?: string;
 }
 
 const showPasteFilesErrorDialog = (intl: IntlShape) => {
@@ -116,6 +123,8 @@ export default function PostInput({
     sendMessage,
     inputRef,
     setIsFocused,
+    enableMentionConversion,
+    currentUserId,
 }: Props) {
     const intl = useIntl();
     const isTablet = useIsTablet();
@@ -132,6 +141,7 @@ export default function PostInput({
     const previousAppState = useRef(AppState.currentState);
 
     const [longMessageAlertShown, setLongMessageAlertShown] = useState(false);
+    const [users, setUsers] = useState<UserModel[]>([]);
 
     const disableCopyAndPaste = managedConfig.copyAndPasteProtection === 'true';
     const maxHeight = isTablet ? 150 : 88;
@@ -199,10 +209,33 @@ export default function PostInput({
         if (!shouldProcessEvent(newValue)) {
             return;
         }
+
+        // 即座にUIを更新（レスポンシブ性確保）
         updateValue(newValue);
         lastNativeValue.current = newValue;
 
         checkMessageLength(newValue);
+
+        // メンション変換機能
+        if (enableMentionConversion && containsMentions(newValue)) {
+            const handleMentionConversion = async () => {
+                try {
+                    const convertedText = await debounceConvertUsernamesToFullnames(newValue, serverUrl, currentUserId);
+                    if (convertedText !== newValue) {
+                        updateValue((current) => {
+                            if (current === newValue) {
+                                return convertedText;
+                            }
+                            return current;
+                        });
+                    }
+                } catch (error) {
+                    // Handle mention conversion error silently
+                }
+            };
+
+            handleMentionConversion();
+        }
 
         if (
             newValue &&
@@ -220,6 +253,9 @@ export default function PostInput({
         channelId,
         rootId,
         (membersInChannel < maxNotificationsPerChannel) && enableUserTypingMessage,
+        enableMentionConversion,
+        serverUrl,
+        currentUserId,
     ]);
 
     const onPaste = useCallback(async (error: string | null | undefined, files: PastedFile[]) => {
@@ -317,6 +353,24 @@ export default function PostInput({
         }
     }, [value]);
 
+    // ユーザーデータを取得（ハイライト用）
+    useEffect(() => {
+        if (enableMentionConversion) {
+            const fetchUsers = async () => {
+                try {
+                    const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+                    if (database) {
+                        const allUsers = await database.collections.get('User').query().fetch();
+                        setUsers(allUsers as UserModel[]);
+                    }
+                } catch (error) {
+                    // Error fetching users for mention highlight
+                }
+            };
+            fetchUsers();
+        }
+    }, [enableMentionConversion, serverUrl]);
+
     const events = useMemo(() => ({
         onEnterPressed: handleHardwareEnterPress,
         onShiftEnterPressed: handleHardwareShiftEnter,
@@ -324,28 +378,35 @@ export default function PostInput({
     useHardwareKeyboardEvents(events);
 
     return (
-        <PasteableTextInput
-            allowFontScaling={true}
-            disableCopyPaste={disableCopyAndPaste}
-            disableFullscreenUI={true}
-            keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-            multiline={true}
-            onBlur={onBlur}
-            onChangeText={handleTextChange}
-            onFocus={onFocus}
-            onPaste={onPaste}
-            onSelectionChange={handlePostDraftSelectionChanged}
-            placeholder={intl.formatMessage(getPlaceHolder(rootId), {channelDisplayName})}
-            placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-            ref={inputRef}
-            smartPunctuation='disable'
-            submitBehavior='newline'
-            style={pasteInputStyle}
-            testID={testID}
-            underlineColorAndroid='transparent'
-            textContentType='none'
-            value={value}
-            autoCapitalize='sentences'
-        />
+        <View style={{position: 'relative'}}>
+            <PasteableTextInput
+                allowFontScaling={true}
+                disableCopyPaste={disableCopyAndPaste}
+                disableFullscreenUI={true}
+                keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                multiline={true}
+                onBlur={onBlur}
+                onChangeText={handleTextChange}
+                onFocus={onFocus}
+                onPaste={onPaste}
+                onSelectionChange={handlePostDraftSelectionChanged}
+                placeholder={intl.formatMessage(getPlaceHolder(rootId), {channelDisplayName})}
+                placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
+                ref={inputRef}
+                smartPunctuation='disable'
+                submitBehavior='newline'
+                style={pasteInputStyle}
+                testID={testID}
+                underlineColorAndroid='transparent'
+                textContentType='none'
+                value={value}
+                autoCapitalize='sentences'
+            />
+            <MentionHighlightOverlay
+                text={value}
+                textStyle={pasteInputStyle}
+                users={users}
+            />
+        </View>
     );
 }

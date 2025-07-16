@@ -154,6 +154,7 @@ const Channel = ({
                         isChannelScreen={true}
                         canShowPostPriority={true}
                         location={Screens.CHANNEL}
+                        enableMentionConversion={true}
                     />
                 </ExtraKeyboardProvider>
                 }

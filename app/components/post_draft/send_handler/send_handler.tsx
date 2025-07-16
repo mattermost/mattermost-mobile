@@ -9,6 +9,7 @@ import DraftInput from '@components/post_draft/draft_input/';
 import {PostPriorityType} from '@constants/post';
 import {useServerUrl} from '@context/server';
 import {useHandleSendMessage} from '@hooks/handle_send_message';
+import {containsMentions, convertFullnamesToUsernames} from '@utils/mention_conversion';
 
 import type {DraftType} from '@constants/draft';
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
@@ -52,6 +53,7 @@ type Props = {
     channelDisplayName?: string;
     isFromDraftView?: boolean;
     draftReceiverUserName?: string;
+    enableMentionConversion?: boolean;
 }
 
 export const INITIAL_PRIORITY = {
@@ -93,6 +95,7 @@ export default function SendHandler({
     isFromDraftView,
     draftType,
     postId,
+    enableMentionConversion,
 }: Props) {
     const serverUrl = useServerUrl();
 
@@ -100,7 +103,7 @@ export default function SendHandler({
         updateDraftPriority(serverUrl, channelId, rootId, priority);
     }, [serverUrl, channelId, rootId]);
 
-    const {handleSendMessage, canSend} = useHandleSendMessage({
+    const {handleSendMessage: originalHandleSendMessage, canSend} = useHandleSendMessage({
         value,
         channelId,
         rootId,
@@ -116,6 +119,33 @@ export default function SendHandler({
         postPriority,
         clearDraft,
     });
+
+    // メンション変換機能付きの送信ハンドラー
+    const handleSendMessage = useCallback(async (schedulingInfo?: SchedulingInfo) => {
+        if (enableMentionConversion && containsMentions(value)) {
+            try {
+                const convertedMessage = await convertFullnamesToUsernames(value, serverUrl);
+
+                // 一時的に変換されたメッセージでupdateValue
+                updateValue(convertedMessage);
+
+                // 送信処理を実行
+                const result = await originalHandleSendMessage(schedulingInfo);
+
+                // 送信後に元のメッセージに戻す（UIの一貫性のため）
+                setTimeout(() => updateValue(value), 100);
+
+                return result;
+            } catch (error) {
+                // Error converting mentions for sending
+
+                // エラー時は元のメッセージで送信
+                return originalHandleSendMessage(schedulingInfo);
+            }
+        }
+
+        return originalHandleSendMessage(schedulingInfo);
+    }, [enableMentionConversion, value, serverUrl, updateValue, originalHandleSendMessage]);
 
     if (isFromDraftView) {
         return (
@@ -170,6 +200,7 @@ export default function SendHandler({
             persistentNotificationInterval={persistentNotificationInterval}
             persistentNotificationMaxRecipients={persistentNotificationMaxRecipients}
             setIsFocused={setIsFocused}
+            enableMentionConversion={enableMentionConversion}
         />
     );
 }

@@ -58,6 +58,7 @@ export type Props = {
     updatePostInputTop: (top: number) => void;
     setIsFocused: (isFocused: boolean) => void;
     scheduledPostsEnabled: boolean;
+    enableMentionConversion?: boolean;
 }
 
 const SAFE_AREA_VIEW_EDGES: Edge[] = ['left', 'right'];
@@ -134,6 +135,7 @@ function DraftInput({
     persistentNotificationMaxRecipients,
     setIsFocused,
     scheduledPostsEnabled,
+    enableMentionConversion,
 }: Props) {
     const intl = useIntl();
     const serverUrl = useServerUrl();
@@ -235,6 +237,8 @@ function DraftInput({
                         sendMessage={handleSendMessage}
                         inputRef={inputRef}
                         setIsFocused={setIsFocused}
+                        enableMentionConversion={enableMentionConversion}
+                        currentUserId={currentUserId}
                     />
                     <Uploads
                         currentUserId={currentUserId}

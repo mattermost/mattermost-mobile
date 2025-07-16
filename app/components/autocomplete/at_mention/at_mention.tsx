@@ -34,6 +34,7 @@ type Props = {
     isChannelConstrained: boolean;
     isTeamConstrained: boolean;
     listStyle: StyleProp<ViewStyle>;
+    enableMentionConversion?: boolean;
 }
 
 const AtMention = ({
@@ -50,6 +51,7 @@ const AtMention = ({
     isChannelConstrained,
     isTeamConstrained,
     listStyle,
+    enableMentionConversion,
 }: Props) => {
     const serverUrl = useServerUrl();
 
@@ -177,9 +179,10 @@ const AtMention = ({
                 user={item}
                 onPress={completeMention}
                 testID='autocomplete.at_mention_item'
+                enableMentionConversion={enableMentionConversion}
             />
         );
-    }, [completeMention]);
+    }, [completeMention, enableMentionConversion]);
 
     const renderItem = useCallback(({item, section}: SectionListRenderItemInfo<SpecialMention | GroupModel | UserProfile>) => {
         switch (section.key) {

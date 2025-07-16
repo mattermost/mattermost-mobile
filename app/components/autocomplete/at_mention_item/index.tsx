@@ -11,16 +11,38 @@ type AtMentionItemProps = {
     user: UserProfile | UserModel;
     onPress?: (username: string) => void;
     testID?: string;
+    enableMentionConversion?: boolean;
 }
 
 const AtMentionItem = ({
     user,
     onPress,
     testID,
+    enableMentionConversion,
 }: AtMentionItemProps) => {
     const completeMention = useCallback((u: UserModel | UserProfile) => {
+        if (enableMentionConversion) {
+            // フルネームが利用可能な場合はフルネームを使用
+            let fullName: string;
+            if ('firstName' in u && 'lastName' in u) {
+                if (u.firstName && u.lastName) {
+                    fullName = `${u.firstName} ${u.lastName}`;
+                } else {
+                    fullName = u.firstName || u.lastName || u.username;
+                }
+            } else if (u.first_name && u.last_name) {
+                fullName = `${u.first_name} ${u.last_name}`;
+            } else {
+                fullName = u.first_name || u.last_name || u.username;
+            }
+
+            if (fullName && fullName.trim() && fullName !== u.username) {
+                onPress?.(fullName);
+                return;
+            }
+        }
         onPress?.(u.username);
-    }, []);
+    }, [onPress, enableMentionConversion]);
 
     return (
         <UserItem

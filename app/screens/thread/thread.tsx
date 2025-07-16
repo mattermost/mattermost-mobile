@@ -144,6 +144,7 @@ const Thread = ({
                         containerHeight={containerHeight}
                         isChannelScreen={false}
                         location={Screens.THREAD}
+                        enableMentionConversion={true}
                     />
                 </ExtraKeyboardProvider>
                 }
