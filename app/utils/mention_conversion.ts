@@ -16,7 +16,11 @@ const FULLNAME_MENTION_REGEX = /@([^@\n]+?)(?=\s*@|$)/gi;
  * テキストにメンションが含まれているかチェック
  */
 export function containsMentions(text: string): boolean {
-    return MENTION_REGEX.test(text) || FULLNAME_MENTION_REGEX.test(text);
+    // 正規表現を新しく作成（グローバルフラグのリセットのため）
+    const mentionRegex = /@([a-z0-9.\-_\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]+)/gi;
+    const fullnameRegex = /@([^@\n]+?)(?=\s*@|$)/gi;
+
+    return mentionRegex.test(text) || fullnameRegex.test(text);
 }
 
 /**
@@ -112,18 +116,62 @@ export async function convertUsernamesToFullnames(
         // 結果を適用
         results.forEach((result) => {
             if (result) {
-                // より確実な正規表現を使用（日本語文字にも対応）
-                const escapedUsername = result.username.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                const regex = new RegExp(`@${escapedUsername}(?=\\s|$|[^a-z0-9.\-_])`, 'gi');
-                convertedText = convertedText.replace(regex, `@${result.fullName} `);
+                // より確実なアプローチ: 文字列を直接検索して置換
+                const searchPattern = `@${result.username}`;
+                let searchIndex = 0;
+
+                while (true) {
+                    const index = convertedText.indexOf(searchPattern, searchIndex);
+                    if (index === -1) {
+                        break; // パターンが見つからない
+                    }
+
+                    // メンションの後の文字をチェック
+                    const afterIndex = index + searchPattern.length;
+                    const charAfter = afterIndex < convertedText.length ? convertedText[afterIndex] : '';
+
+                    // メンションの前の文字をチェック（@マークの前）
+                    const beforeChar = index > 0 ? convertedText[index - 1] : '';
+
+                    // 有効なメンションかチェック（前の文字が英数字でない）
+                    const isValidMention = index === 0 || !/[a-z0-9.\-_]/i.test(beforeChar);
+
+                    if (isValidMention) {
+                        // 置換文字列を作成
+                        let replacement = `@${result.fullName}`;
+
+                        // 後続文字に基づいてスペースを追加（より確実に）
+                        const needsSpace = charAfter &&
+                                         charAfter !== ' ' &&
+                                         charAfter !== '\n' &&
+                                         charAfter !== '\t' &&
+                                         charAfter !== '\r';
+
+                        if (needsSpace) {
+                            replacement += ' ';
+                        }
+
+                        // 文字列を置換
+                        const before = convertedText.substring(0, index);
+                        const after = convertedText.substring(afterIndex);
+                        const newText = before + replacement + after;
+
+                        convertedText = newText;
+
+                        // 次の検索位置を更新
+                        searchIndex = index + replacement.length;
+                    } else {
+                        searchIndex = index + 1;
+                    }
+                }
             }
         });
 
-        // 末尾の余分なスペースを削除
+        // 末尾の余分なスペースを削除（文字列の最後のみ）
         convertedText = convertedText.replace(/\s+$/, '');
 
-        // 連続するスペースを単一のスペースに変換
-        convertedText = convertedText.replace(/\s{2,}/g, ' ');
+        // 連続するスペースを単一のスペースに変換（ただし必要なスペースは保持）
+        convertedText = convertedText.replace(/[ \t]{2,}/g, ' ');
 
         return convertedText;
     } catch (error) {
@@ -186,10 +234,9 @@ export async function convertFullnamesToUsernames(
 export function debounceConvertUsernamesToFullnames(
     text: string,
     serverUrl: string,
-    currentUserId?: string,
     debounceMs = 300,
 ): Promise<string> {
-    const cacheKey = `${serverUrl}:${text}:${currentUserId}`;
+    const cacheKey = `${serverUrl}:${text}`;
 
     // 既存のタイムアウトをクリア
     const existingTimeout = debounceTimeouts.get(cacheKey);

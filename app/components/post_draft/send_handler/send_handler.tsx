@@ -126,19 +126,15 @@ export default function SendHandler({
             try {
                 const convertedMessage = await convertFullnamesToUsernames(value, serverUrl);
 
-                // 一時的に変換されたメッセージでupdateValue
+                // 一時的に変換されたメッセージでupdateValue（送信処理で使用される）
                 updateValue(convertedMessage);
 
-                // 送信処理を実行
+                // 送信処理を実行（成功時はclearDraftが呼ばれて入力エリアがクリアされる）
                 const result = await originalHandleSendMessage(schedulingInfo);
-
-                // 送信後に元のメッセージに戻す（UIの一貫性のため）
-                setTimeout(() => updateValue(value), 100);
 
                 return result;
             } catch (error) {
                 // Error converting mentions for sending
-
                 // エラー時は元のメッセージで送信
                 return originalHandleSendMessage(schedulingInfo);
             }

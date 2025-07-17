@@ -17,7 +17,6 @@ import {Events, Screens} from '@constants';
 import {useExtraKeyboardContext} from '@context/extra_keyboard';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import DatabaseManager from '@database/manager';
 import {useIsTablet} from '@hooks/device';
 import {useInputPropagation} from '@hooks/input';
 import {t} from '@i18n';
@@ -27,9 +26,6 @@ import {extractFileInfo} from '@utils/file';
 import {containsMentions, debounceConvertUsernamesToFullnames} from '@utils/mention_conversion';
 import {changeOpacity, makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} from '@utils/theme';
 
-import MentionHighlightOverlay from './mention_highlight_overlay';
-
-import type UserModel from '@typings/database/models/servers/user';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
@@ -141,7 +137,6 @@ export default function PostInput({
     const previousAppState = useRef(AppState.currentState);
 
     const [longMessageAlertShown, setLongMessageAlertShown] = useState(false);
-    const [users, setUsers] = useState<UserModel[]>([]);
 
     const disableCopyAndPaste = managedConfig.copyAndPasteProtection === 'true';
     const maxHeight = isTablet ? 150 : 88;
@@ -220,7 +215,7 @@ export default function PostInput({
         if (enableMentionConversion && containsMentions(newValue)) {
             const handleMentionConversion = async () => {
                 try {
-                    const convertedText = await debounceConvertUsernamesToFullnames(newValue, serverUrl, currentUserId);
+                    const convertedText = await debounceConvertUsernamesToFullnames(newValue, serverUrl);
                     if (convertedText !== newValue) {
                         updateValue((current) => {
                             if (current === newValue) {
@@ -353,24 +348,6 @@ export default function PostInput({
         }
     }, [value]);
 
-    // ユーザーデータを取得（ハイライト用）
-    useEffect(() => {
-        if (enableMentionConversion) {
-            const fetchUsers = async () => {
-                try {
-                    const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-                    if (database) {
-                        const allUsers = await database.collections.get('User').query().fetch();
-                        setUsers(allUsers as UserModel[]);
-                    }
-                } catch (error) {
-                    // Error fetching users for mention highlight
-                }
-            };
-            fetchUsers();
-        }
-    }, [enableMentionConversion, serverUrl]);
-
     const events = useMemo(() => ({
         onEnterPressed: handleHardwareEnterPress,
         onShiftEnterPressed: handleHardwareShiftEnter,
@@ -402,11 +379,7 @@ export default function PostInput({
                 value={value}
                 autoCapitalize='sentences'
             />
-            <MentionHighlightOverlay
-                text={value}
-                textStyle={pasteInputStyle}
-                users={users}
-            />
+
         </View>
     );
 }
