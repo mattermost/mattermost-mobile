@@ -1099,13 +1099,13 @@ class TestHelperSingleton {
         };
     };
 
-    createPlaybookRuns = (runsCount = 1, maxChecklistCount = 1, maxItemsPerChecklist = 1): PlaybookRun[] => {
+    createPlaybookRuns = (runsCount = 1, maxChecklistCount = 1, maxItemsPerChecklist = 1, omitRandom = false): PlaybookRun[] => {
         const playbookRuns: PlaybookRun[] = [];
         for (let i = 0; i < runsCount; i++) {
             const checklists: PlaybookChecklist[] = [];
-            const checklistCount = Math.floor(Math.random() * maxChecklistCount) + 1;
+            const checklistCount = omitRandom ? maxChecklistCount : Math.floor(Math.random() * maxChecklistCount) + 1;
             for (let j = 0; j < checklistCount; j++) {
-                const itemsCount = Math.floor(Math.random() * maxItemsPerChecklist) + 1;
+                const itemsCount = omitRandom ? maxItemsPerChecklist : Math.floor(Math.random() * maxItemsPerChecklist) + 1;
                 checklists.push(this.createPlaybookChecklist(`playbook_run_${i}`, itemsCount, j));
             }
             playbookRuns.push({
@@ -1212,6 +1212,7 @@ class TestHelperSingleton {
             owner: this.fakeRelation(),
             checklists: this.fakeQuery([]),
             participants: () => this.fakeQuery([]),
+            prepareDestroyWithRelations: jest.fn().mockResolvedValue([]),
             previousReminder: 0,
             itemsOrder: [],
             updateAt: 0,
@@ -1231,6 +1232,7 @@ class TestHelperSingleton {
             run: this.fakeRelation(),
             itemsOrder: [],
             updateAt: 0,
+            prepareDestroyWithRelations: jest.fn().mockResolvedValue([]),
             ...overwrite,
         };
     };
