@@ -157,6 +157,7 @@ describe('Entry Queries', () => {
             };
 
             const promises = await prepareEntryModelsForDeletion({
+                serverUrl,
                 operator,
                 teamData,
             });
@@ -190,6 +191,7 @@ describe('Entry Queries', () => {
             };
 
             const promises = await prepareEntryModelsForDeletion({
+                serverUrl,
                 operator,
                 chData,
             });

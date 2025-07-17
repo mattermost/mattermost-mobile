@@ -296,6 +296,10 @@ class EphemeralStoreSingleton {
         this.channelPlaybooksSynced[serverUrl]?.add(channelId);
     };
 
+    unsetChannelPlaybooksSynced = (serverUrl: string, channelId: string) => {
+        this.channelPlaybooksSynced[serverUrl]?.delete(channelId);
+    };
+
     clearChannelPlaybooksSynced = (serverUrl: string) => {
         delete this.channelPlaybooksSynced[serverUrl];
     };
