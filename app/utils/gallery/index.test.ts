@@ -5,6 +5,8 @@ import {DeviceEventEmitter, Image, Keyboard} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import {measure, type AnimatedRef} from 'react-native-reanimated';
 
+import {waitFor} from '@test/intl-test-helper';
+
 import {clamp, clampVelocity, fileToGalleryItem, freezeOtherScreens, friction, galleryItemToFileInfo, getImageSize, getShouldRender, measureItem, openGalleryAtIndex, typedMemo, workletNoop, workletNoopTrue} from '.';
 
 import type {GalleryItemType, GalleryManagerSharedValues} from '@typings/screens/gallery';
@@ -189,7 +191,8 @@ describe('Gallery utils', () => {
     });
 
     describe('openGalleryAtIndex', () => {
-        it('should open gallery and freeze other screens', () => {
+        it('should open gallery and freeze other screens', async () => {
+            const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
             const galleryIdentifier = 'gallery1';
             const initialIndex = 0;
             const items = [{id: '1', name: 'item1'}, {id: '2', name: 'item2'}] as GalleryItemType[];
@@ -197,6 +200,10 @@ describe('Gallery utils', () => {
             openGalleryAtIndex(galleryIdentifier, initialIndex, items);
             expect(Keyboard.dismiss).toHaveBeenCalled();
             expect(Navigation.setDefaultOptions).toHaveBeenCalled();
+
+            await waitFor(() => {
+                expect(emitSpy).toHaveBeenCalledWith('FREEZE_SCREEN', true);
+            });
         });
     });
 
