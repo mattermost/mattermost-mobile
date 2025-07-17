@@ -45,6 +45,8 @@ const DisplayTheme = ({allowedThemeKeys, componentId, currentTeamId, currentUser
     }, [allowedThemeKeys, currentTeamId, currentUserId, customTheme, serverUrl]));
 
     useDidUpdate(() => {
+        // when the user selects any of the predefined theme when the current theme is custom, the custom theme will disappear.
+        // by storing the current theme in the state, the custom theme will remain, and the user can switch back to it
         if (theme.type?.toLowerCase() === 'custom') {
             setCustomTheme(theme);
         }
