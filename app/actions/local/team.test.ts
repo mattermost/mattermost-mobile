@@ -129,7 +129,7 @@ describe('removeUserFromTeam', () => {
 
         expect(getMyTeamById).toHaveBeenCalledWith(database, team.id);
         expect(getTeamById).toHaveBeenCalledWith(database, myTeam.id);
-        expect(prepareDeleteTeam).toHaveBeenCalledWith(team);
+        expect(prepareDeleteTeam).toHaveBeenCalledWith(serverUrl, team);
         expect(removeTeamFromTeamHistory).toHaveBeenCalledWith(operator, team.id, true);
         expect(operator.batchRecords).toHaveBeenCalledWith(preparedModels, 'removeUserFromTeam');
 
@@ -166,7 +166,7 @@ describe('removeUserFromTeam', () => {
 
         expect(getMyTeamById).toHaveBeenCalledWith(database, teamId);
         expect(getTeamById).toHaveBeenCalledWith(database, myTeam.id);
-        expect(prepareDeleteTeam).toHaveBeenCalledWith(team);
+        expect(prepareDeleteTeam).toHaveBeenCalledWith(serverUrl, team);
         expect(removeTeamFromTeamHistory).toHaveBeenCalledWith(operator, team.id, true);
         expect(operator.batchRecords).toHaveBeenCalledWith(preparedModels, 'removeUserFromTeam');
         expect(logError).toHaveBeenCalledWith('Failed removeUserFromTeam', writeError);
@@ -189,7 +189,7 @@ describe('removeUserFromTeam', () => {
 
         expect(getMyTeamById).toHaveBeenCalledWith(database, teamId);
         expect(getTeamById).not.toHaveBeenCalled();
-        expect(prepareDeleteTeam).not.toHaveBeenCalled();
+        expect(prepareDeleteTeam).not.toHaveBeenCalledWith(serverUrl, null as any);
         expect(removeTeamFromTeamHistory).not.toHaveBeenCalled();
         expect(operator.batchRecords).not.toHaveBeenCalled();
         expect(result).toEqual({error: undefined});
@@ -238,7 +238,7 @@ describe('removeUserFromTeam', () => {
 
         expect(getMyTeamById).toHaveBeenCalledWith(database, teamId);
         expect(getTeamById).toHaveBeenCalledWith(database, myTeam.id);
-        expect(prepareDeleteTeam).toHaveBeenCalledWith(team);
+        expect(prepareDeleteTeam).toHaveBeenCalledWith(serverUrl, team);
         expect(removeTeamFromTeamHistory).toHaveBeenCalledWith(operator, team.id, true);
         expect(operator.batchRecords).toHaveBeenCalledWith(preparedModels, 'removeUserFromTeam');
         expect(result).toEqual({error: undefined});
@@ -258,7 +258,7 @@ describe('removeUserFromTeam', () => {
 
         expect(getMyTeamById).toHaveBeenCalledWith(database, teamId);
         expect(getTeamById).toHaveBeenCalledWith(database, myTeam.id);
-        expect(prepareDeleteTeam).toHaveBeenCalledWith(team);
+        expect(prepareDeleteTeam).toHaveBeenCalledWith(serverUrl, team);
         expect(removeTeamFromTeamHistory).toHaveBeenCalledWith(operator, team.id, true);
         expect(operator.batchRecords).not.toHaveBeenCalled();
         expect(result).toEqual({error: undefined});

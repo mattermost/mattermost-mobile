@@ -109,6 +109,9 @@ declare class PlaybookRunModel extends Model {
 
     /** participants : The USERS that participate in this Playbook Run */
     participants: () => Query<UserModel>;
+
+    /** prepareDestroyWithRelations : Prepare the model for deletion with its relations */
+    prepareDestroyWithRelations: () => Promise<Model[]>;
 }
 
 export default PlaybookRunModel;

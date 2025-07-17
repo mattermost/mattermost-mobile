@@ -40,6 +40,9 @@ declare class PlaybookChecklistModel extends Model {
 
     /** items : All the items associated with this checklist */
     items: Query<PlaybookChecklistItemModel>;
+
+    /** prepareDestroyWithRelations : Prepare the model for deletion with its relations */
+    prepareDestroyWithRelations: () => Promise<Model[]>;
 }
 
 export default PlaybookChecklistModel;

@@ -54,4 +54,18 @@ export default class PlaybookChecklistModel extends Model implements PlaybookChe
 
     /** run : The playbook run to which this checklist belongs */
     @immutableRelation(PLAYBOOK_RUN, 'run_id') run!: Relation<PlaybookRunModel>;
+
+    prepareDestroyWithRelations = async (): Promise<Model[]> => {
+        const preparedModels: Model[] = [this.prepareDestroyPermanently()];
+
+        const items = await this.items?.fetch();
+        if (items?.length) {
+            for await (const item of items) {
+                const preparedItem = item.prepareDestroyPermanently();
+                preparedModels.push(preparedItem);
+            }
+        }
+
+        return preparedModels;
+    };
 }
