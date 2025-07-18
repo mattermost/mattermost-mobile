@@ -219,9 +219,45 @@ export async function convertFullnamesToUsernames(
         // 結果を適用
         results.forEach((result) => {
             if (result) {
-                const escapedFullName = result.fullName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                const regex = new RegExp(`@${escapedFullName}\\b`, 'gi');
-                convertedText = convertedText.replace(regex, `@${result.username}`);
+                // より確実なアプローチ: 文字列を直接検索して置換
+                const searchPattern = `@${result.fullName}`;
+                let searchIndex = 0;
+
+                while (true) {
+                    const index = convertedText.indexOf(searchPattern, searchIndex);
+                    if (index === -1) {
+                        break; // パターンが見つからない
+                    }
+
+                    // メンションの後の文字をチェック
+                    const afterIndex = index + searchPattern.length;
+                    const charAfter = afterIndex < convertedText.length ? convertedText[afterIndex] : '';
+
+                    // メンションの前の文字をチェック（@マークの前）
+                    const beforeChar = index > 0 ? convertedText[index - 1] : '';
+
+                    // 有効なメンションかチェック（前の文字が英数字でない）
+                    const isValidMention = index === 0 || !/[a-z0-9.\-_]/i.test(beforeChar);
+
+                    // 後続文字が境界文字かチェック（スペース、句読点、改行、文字列の終端）
+                    const isValidBoundary = !charAfter ||
+                                          /[\s.,!?;:(){}[\]"'`\-\n\t\r@]/.test(charAfter);
+
+                    if (isValidMention && isValidBoundary) {
+                        // 文字列を置換
+                        const before = convertedText.substring(0, index);
+                        const after = convertedText.substring(afterIndex);
+                        const replacement = `@${result.username}`;
+                        const newText = before + replacement + after;
+
+                        convertedText = newText;
+
+                        // 次の検索位置を更新
+                        searchIndex = index + replacement.length;
+                    } else {
+                        searchIndex = index + 1;
+                    }
+                }
             }
         });
 
