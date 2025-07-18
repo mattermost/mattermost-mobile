@@ -27,6 +27,7 @@ import ProfileForm, {CUSTOM_ATTRS_PREFIX} from './components/form';
 import ProfileError from './components/profile_error';
 import Updating from './components/updating';
 import UserProfilePicture from './components/user_profile_picture';
+import {buildUserInfoUpdates} from './edit_profile.helpers';
 
 import type {CustomProfileFieldModel} from '@database/models/server';
 import type {CustomAttributeSet} from '@typings/api/custom_profile_attributes';
@@ -49,45 +50,6 @@ const styles = StyleSheet.create({
 const CLOSE_BUTTON_ID = 'close-edit-profile';
 const UPDATE_BUTTON_ID = 'update-profile';
 const CUSTOM_ATTRS_PREFIX_NAME = `${CUSTOM_ATTRS_PREFIX}.`;
-
-// Utility functions for user profile updates
-function updateUserInfo(updates: Partial<UserInfo>, key: string, newValue: string, oldValue: string, fieldLockConfig: Record<string, boolean>): Partial<UserInfo> {
-    const val = newValue.trim();
-    const isLocked = fieldLockConfig[key as keyof typeof fieldLockConfig] || false;
-    const hasChanged = val !== oldValue;
-
-    if (!isLocked && hasChanged) {
-        updates[key as keyof UserInfo] = val as any;
-    }
-    return updates;
-}
-
-function buildUserInfoUpdates(userInfoParam: UserInfo, currentUserParam: UserModel, fieldLockConfigParam: Record<string, boolean>): Partial<UserProfile> {
-    let updates: Partial<UserInfo> = {};
-    Object.keys(fieldLockConfigParam).forEach((key) => {
-        updates = updateUserInfo(updates, key, userInfoParam[key as keyof UserInfo] as string, currentUserParam[key as keyof UserModel] as string, fieldLockConfigParam);
-    });
-
-    // Convert camelCase properties to snake_case for API compatibility
-    const keyMapping: Record<string, keyof UserProfile> = {
-        firstName: 'first_name',
-        lastName: 'last_name',
-        nickname: 'nickname',
-        position: 'position',
-        username: 'username',
-        email: 'email',
-    };
-
-    const apiUpdates: Partial<UserProfile> = {};
-    Object.keys(updates).forEach((key) => {
-        const snakeCaseKey = keyMapping[key];
-        if (snakeCaseKey) {
-            (apiUpdates as any)[snakeCaseKey] = updates[key as keyof UserInfo];
-        }
-    });
-
-    return apiUpdates;
-}
 
 async function handleCustomAttributesUpdate(
     serverUrlParam: string,
