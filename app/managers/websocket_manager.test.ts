@@ -11,7 +11,6 @@ import WebSocketClient from '@client/websocket';
 import DatabaseManager from '@database/manager';
 import {getCurrentUserId} from '@queries/servers/system';
 import {queryAllUsers} from '@queries/servers/user';
-import EphemeralStore from '@store/ephemeral_store';
 import TestHelper from '@test/test_helper';
 import {logError} from '@utils/log';
 
@@ -31,7 +30,6 @@ jest.mock('@database/manager');
 jest.mock('@queries/servers/system');
 jest.mock('@queries/servers/user');
 jest.mock('@utils/log');
-jest.mock('@store/ephemeral_store');
 
 describe('WebsocketManager', () => {
     let manager: typeof WebsocketManager;
@@ -122,17 +120,6 @@ describe('WebsocketManager', () => {
         it('should handle websocket state observations', () => {
             const observable = manager.observeWebsocketState(mockServerUrl);
             expect(observable).toBeDefined();
-        });
-    });
-
-    describe('proper callbacks set', () => {
-        it('should remove playbooks when the reconnect callback is called', () => {
-            const client = manager.createClient(mockServerUrl, mockToken);
-            expect(client).toBeDefined();
-
-            expect(client.setReconnectCallback).toHaveBeenCalled();
-            jest.mocked(client.setReconnectCallback).mock.calls[0][0]();
-            expect(EphemeralStore.clearChannelPlaybooksSynced).toHaveBeenCalled();
         });
     });
 

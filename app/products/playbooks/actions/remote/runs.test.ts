@@ -7,6 +7,7 @@ import NetworkManager from '@managers/network_manager';
 import {updateLastPlaybookRunsFetchAt} from '@playbooks/actions/local/channel';
 import {handlePlaybookRuns} from '@playbooks/actions/local/run';
 import {getLastPlaybookRunsFetchAt} from '@playbooks/database/queries/run';
+import EphemeralStore from '@store/ephemeral_store';
 import TestHelper from '@test/test_helper';
 
 import {fetchPlaybookRunsForChannel, fetchFinishedRunsForChannel} from './runs';
@@ -117,6 +118,32 @@ describe('fetchPlaybookRunsForChannel', () => {
         expect(result.error).toBeUndefined();
         expect(result.runs).toEqual([mockPlaybookRun]);
         expect(handlePlaybookRuns).not.toHaveBeenCalled();
+    });
+
+    it('should update the channel in the ephemeral store', async () => {
+        mockClient.fetchPlaybookRuns.mockResolvedValueOnce({
+            items: [mockPlaybookRun],
+            has_more: false,
+        });
+
+        EphemeralStore.clearChannelPlaybooksSynced(serverUrl);
+
+        expect(EphemeralStore.getChannelPlaybooksSynced(serverUrl, channelId)).toBe(false);
+        await fetchPlaybookRunsForChannel(serverUrl, channelId);
+        expect(EphemeralStore.getChannelPlaybooksSynced(serverUrl, channelId)).toBe(true);
+    });
+
+    it('should not update the channel in the ephemeral store if fetchOnly is true', async () => {
+        mockClient.fetchPlaybookRuns.mockResolvedValueOnce({
+            items: [mockPlaybookRun],
+            has_more: false,
+        });
+
+        EphemeralStore.clearChannelPlaybooksSynced(serverUrl);
+
+        expect(EphemeralStore.getChannelPlaybooksSynced(serverUrl, channelId)).toBe(false);
+        await fetchPlaybookRunsForChannel(serverUrl, channelId, true);
+        expect(EphemeralStore.getChannelPlaybooksSynced(serverUrl, channelId)).toBe(false);
     });
 });
 
