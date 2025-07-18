@@ -80,6 +80,8 @@ class DatabaseManagerSingleton {
             const modelClasses = this.appModels;
             const schema = appSchema;
 
+            // autosave uses a timeout that doesn't get cleared when we close the database in tests
+            // disabling it makes it so the tests don't leak memory
             const adapter = new LokiJSAdapter({dbName: APP_DATABASE, migrations: AppDatabaseMigrations, schema, useWebWorker: false, useIncrementalIndexedDB: true, extraLokiOptions: {autosave: false}});
 
             const database = new Database({adapter, modelClasses});
@@ -107,6 +109,8 @@ class DatabaseManagerSingleton {
                 const modelClasses = this.serverModels;
                 const schema = serverSchema;
 
+                // autosave uses a timeout that doesn't get cleared when we close the database in tests
+                // disabling it makes it so the tests don't leak memory
                 const adapter = new LokiJSAdapter({dbName, migrations, schema, useWebWorker: false, useIncrementalIndexedDB: true, extraLokiOptions: {autosave: false}});
 
                 // Registers the new server connection into the DEFAULT database
