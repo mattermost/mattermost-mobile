@@ -5,8 +5,6 @@ import {WebsocketEvents} from '@constants';
 import {WEBSOCKET_EVENTS} from '@playbooks/constants/websocket';
 
 import {
-    handlePlaybookChecklistItemUpdated,
-    handlePlaybookChecklistUpdated,
     handlePlaybookRunCreated,
     handlePlaybookRunUpdated,
     handlePlaybookRunUpdatedIncremental,
@@ -29,12 +27,6 @@ export async function handlePlaybookEvents(serverUrl: string, msg: WebSocketMess
             break;
         case WEBSOCKET_EVENTS.WEBSOCKET_PLAYBOOK_RUN_UPDATED_INCREMENTAL:
             handlePlaybookRunUpdatedIncremental(serverUrl, msg);
-            break;
-        case WEBSOCKET_EVENTS.WEBSOCKET_PLAYBOOK_CHECKLIST_UPDATED:
-            handlePlaybookChecklistUpdated(serverUrl, msg);
-            break;
-        case WEBSOCKET_EVENTS.WEBSOCKET_PLAYBOOK_CHECKLIST_ITEM_UPDATED:
-            handlePlaybookChecklistItemUpdated(serverUrl, msg);
             break;
         default:
             break;
