@@ -22,6 +22,7 @@ describe('ShowMoreButton', () => {
         return {
             channelId: 'test-channel-id',
             addMoreRuns: jest.fn(),
+            visible: true,
         };
     }
 
@@ -186,5 +187,13 @@ describe('ShowMoreButton', () => {
 
         expect(props.addMoreRuns).toHaveBeenCalledWith(mockRuns);
         expect(getByText('Show More')).toBeTruthy(); // Button should still be visible
+    });
+
+    it('does not render when visible is false', () => {
+        const props = getBaseProps();
+        props.visible = false;
+
+        const {queryByText} = renderWithIntl(<ShowMoreButton {...props}/>);
+        expect(queryByText('Show More')).toBeNull();
     });
 });

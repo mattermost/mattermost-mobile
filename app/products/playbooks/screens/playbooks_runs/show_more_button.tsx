@@ -14,6 +14,7 @@ import {fetchFinishedRunsForChannel} from '@playbooks/actions/remote/runs';
 type Props = {
     channelId: string;
     addMoreRuns: (runs: PlaybookRun[]) => void;
+    visible: boolean;
 };
 
 const styles = StyleSheet.create({
@@ -25,6 +26,7 @@ const styles = StyleSheet.create({
 const ShowMoreButton = ({
     channelId,
     addMoreRuns,
+    visible,
 }: Props) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -52,7 +54,7 @@ const ShowMoreButton = ({
         }
     }, [channelId, fetching, serverUrl, addMoreRuns]));
 
-    if (!hasMore) {
+    if (!hasMore || !visible) {
         return null;
     }
 

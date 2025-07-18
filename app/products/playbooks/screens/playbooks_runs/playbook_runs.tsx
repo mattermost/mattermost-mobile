@@ -115,17 +115,13 @@ const PlaybookRuns = ({
 
     const isEmpty = data.length === 0;
 
-    const footerComponent = useMemo(() => {
-        if (activeTab === 'finished') {
-            return (
-                <ShowMoreButton
-                    channelId={channelId}
-                    addMoreRuns={pushNewFinishedRuns}
-                />
-            );
-        }
-        return null;
-    }, [activeTab, channelId, pushNewFinishedRuns]);
+    const footerComponent = useMemo(() => (
+        <ShowMoreButton
+            channelId={channelId}
+            addMoreRuns={pushNewFinishedRuns}
+            visible={activeTab === 'finished'}
+        />
+    ), [channelId, pushNewFinishedRuns, activeTab]);
 
     const renderItem: ListRenderItem<PlaybookRunModel> = useCallback(({item}) => {
         return (
