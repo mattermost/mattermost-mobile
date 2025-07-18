@@ -5,6 +5,7 @@ import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {combineLatest, distinctUntilChanged, of as of$, switchMap} from 'rxjs';
 
 import {areItemsOrdersEqual} from '@playbooks/utils/items_order';
+import {getChecklistProgress} from '@playbooks/utils/progress';
 
 import Checklist from './checklist';
 
@@ -39,15 +40,22 @@ const enhanced = withObservables(['checklist'], ({checklist}: OwnProps) => {
             }),
             distinctUntilChanged((a, b) => areItemsOrdersEqual(getIds(a), getIds(b))),
         );
+
+        const checklistProgress = items.pipe(
+            switchMap((i) => of$(getChecklistProgress(i))),
+        );
+
         return {
             checklist: observedChecklist,
             items: sortedItems,
+            checklistProgress,
         };
     }
 
     return {
         checklist: of$(checklist),
         items: of$(checklist.items),
+        checklistProgress: of$(getChecklistProgress(checklist.items)),
     };
 });
 
