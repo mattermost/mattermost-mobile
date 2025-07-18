@@ -3,10 +3,13 @@
 
 import {Q} from '@nozbe/watermelondb';
 
+import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getFullName} from '@utils/user';
 
 import type UserModel from '@typings/database/models/servers/user';
+
+const {USER} = MM_TABLES.SERVER;
 
 // メンションの正規表現パターン
 const MENTION_REGEX = /@([a-z0-9.\-_\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]+)/gi;
@@ -39,7 +42,7 @@ async function getUserByUsername(serverUrl: string, username: string): Promise<U
             return null;
         }
 
-        const users = await database.collections.get('User').query(Q.where('username', username)).fetch();
+        const users = await database.collections.get(USER).query(Q.where('username', username)).fetch();
         return users.length > 0 ? users[0] as UserModel : null;
     } catch (error) {
         // Error fetching user by username
@@ -57,7 +60,7 @@ async function getUserByFullName(serverUrl: string, fullName: string): Promise<U
             return null;
         }
 
-        const users = await database.collections.get('User').query().fetch();
+        const users = await database.collections.get(USER).query().fetch();
 
         // フルネームでマッチするユーザーを検索
         for (const user of users) {
