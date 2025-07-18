@@ -6,7 +6,7 @@ process.env.TZ = 'UTC';
 
 module.exports = {
     preset: 'jest-expo',
-    verbose: true,
+    verbose: false,
     globals: {
         'ts-jest': {
             tsConfigFile: 'tsconfig.test.json',
