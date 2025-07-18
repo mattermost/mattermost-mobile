@@ -17,7 +17,7 @@ function queryPlaybooksVersion(database: Database) {
     );
 }
 
-function isEnabledFromSystemModel(systems: SystemModel[]) {
+function isPlaybooksEnabledFromSystemModel(systems: SystemModel[]) {
     const version = systems[0]?.value;
     if (!version) {
         return false;
@@ -28,7 +28,7 @@ function isEnabledFromSystemModel(systems: SystemModel[]) {
 
 export async function fetchIsPlaybooksEnabled(database: Database) {
     const systems = await queryPlaybooksVersion(database).fetch();
-    return isEnabledFromSystemModel(systems);
+    return isPlaybooksEnabledFromSystemModel(systems);
 }
 
 export function observeIsPlaybooksEnabled(database: Database) {
@@ -36,7 +36,7 @@ export function observeIsPlaybooksEnabled(database: Database) {
         Q.where('id', SYSTEM_IDENTIFIERS.PLAYBOOKS_VERSION),
     ).observeWithColumns(['value']).pipe(
         switchMap((systems) => {
-            return of$(isEnabledFromSystemModel(systems));
+            return of$(isPlaybooksEnabledFromSystemModel(systems));
         }),
     );
 }
