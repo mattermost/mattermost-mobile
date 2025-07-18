@@ -172,7 +172,8 @@ describe('fetchFinishedRunsForChannel', () => {
             per_page: PER_PAGE_DEFAULT,
             channel_id: channelId,
             statuses: ['Finished'],
-            sort: 'end_at',
+            sort: 'create_at',
+            direction: 'desc',
         });
     });
 
@@ -192,7 +193,8 @@ describe('fetchFinishedRunsForChannel', () => {
             per_page: PER_PAGE_DEFAULT,
             channel_id: channelId,
             statuses: ['Finished'],
-            sort: 'end_at',
+            sort: 'create_at',
+            direction: 'desc',
         });
     });
 });

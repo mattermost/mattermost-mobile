@@ -98,7 +98,7 @@ const PlaybookHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supe
 
             const clauses: Q.Clause[] = [
                 Q.where('end_at', Q.notEq(0)),
-                Q.sortBy('end_at', 'desc'),
+                Q.sortBy('create_at', 'desc'),
             ];
 
             if (numNewFinished < 5) {

@@ -72,7 +72,8 @@ export const fetchFinishedRunsForChannel = async (serverUrl: string, channelId: 
             per_page: PER_PAGE_DEFAULT,
             channel_id: channelId,
             statuses: ['Finished'],
-            sort: 'end_at',
+            sort: 'create_at',
+            direction: 'desc',
         });
 
         return {runs, has_more};

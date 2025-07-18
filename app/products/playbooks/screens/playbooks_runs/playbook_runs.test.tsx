@@ -85,4 +85,22 @@ describe('PlaybookRuns', () => {
         expect(queryByTestId('playbook-card')).toBeNull();
         expect(getByTestId('empty-state')).toBeTruthy();
     });
+
+    it('shows the show more button only on finished tabs', () => {
+        const {getByText, queryByText} = renderWithIntl(
+            <PlaybookRuns
+                allRuns={[inProgressRun, finishedRun]}
+                componentId={'PlaybookRuns'}
+                channelId={'channel-id-1'}
+            />,
+        );
+
+        expect(queryByText('Show More')).toBeNull();
+
+        act(() => {
+            fireEvent.press(getByText('Finished'));
+        });
+
+        expect(getByText('Show More')).toBeTruthy();
+    });
 });
