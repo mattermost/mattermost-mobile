@@ -21,16 +21,13 @@ import SecurityManager from '@managers/security_manager';
 import {dismissModal, popTopScreen, setButtons} from '@screens/navigation';
 import {logError} from '@utils/log';
 import {preventDoubleTap} from '@utils/tap';
-import {isCustomFieldSamlLinked} from '@utils/user';
 
 import ProfileForm, {CUSTOM_ATTRS_PREFIX} from './components/form';
 import ProfileError from './components/profile_error';
 import Updating from './components/updating';
 import UserProfilePicture from './components/user_profile_picture';
-import {buildUserInfoUpdates} from './edit_profile.helpers';
+import {buildUserInfoUpdates, getChangedCustomAttributes} from './edit_profile.helpers';
 
-import type {CustomProfileFieldModel} from '@database/models/server';
-import type {CustomAttributeSet} from '@typings/api/custom_profile_attributes';
 import type UserModel from '@typings/database/models/servers/user';
 import type {EditProfileProps, NewProfileImage, UserInfo} from '@typings/screens/edit_profile';
 
@@ -50,45 +47,6 @@ const styles = StyleSheet.create({
 const CLOSE_BUTTON_ID = 'close-edit-profile';
 const UPDATE_BUTTON_ID = 'update-profile';
 const CUSTOM_ATTRS_PREFIX_NAME = `${CUSTOM_ATTRS_PREFIX}.`;
-
-async function handleCustomAttributesUpdate(
-    serverUrlParam: string,
-    currentUserParam: UserModel,
-    userInfoParam: UserInfo,
-    customAttributesSetParam: CustomAttributeSet | undefined,
-    customFieldsParam: CustomProfileFieldModel[] | undefined,
-    enableCustomAttributes: boolean,
-) {
-    if (!userInfoParam.customAttributes || !enableCustomAttributes) {
-        return;
-    }
-
-    const customFieldsMap = new Map<string, CustomProfileFieldModel>();
-    customFieldsParam?.forEach((field) => {
-        customFieldsMap.set(field.id, field);
-    });
-
-    const changedCustomAttributes: CustomAttributeSet = {};
-
-    Object.keys(userInfoParam.customAttributes).forEach((key) => {
-        const currentValue = (customAttributesSetParam && customAttributesSetParam[key]?.value) || '';
-        const newValue = userInfoParam.customAttributes[key]?.value || '';
-        const customAttribute = userInfoParam.customAttributes[key];
-        const customField = customFieldsMap.get(customAttribute?.id);
-
-        if (currentValue !== newValue && !isCustomFieldSamlLinked(customField)) {
-            changedCustomAttributes[key] = userInfoParam.customAttributes[key];
-        }
-    });
-
-    if (Object.keys(changedCustomAttributes).length > 0) {
-        const {error: attrError} = await updateCustomProfileAttributes(serverUrlParam, currentUserParam.id, changedCustomAttributes);
-        if (attrError) {
-            logError('Error updating custom attributes', attrError);
-            throw attrError;
-        }
-    }
-}
 
 const EditProfile = ({
     componentId, currentUser, isModal, isTablet,
@@ -253,7 +211,14 @@ const EditProfile = ({
             }
 
             // Handle custom attributes
-            await handleCustomAttributesUpdate(serverUrl, currentUser, userInfo, customAttributesSet, customFields, enableCustomAttributes);
+            const changedCustomAttributes = getChangedCustomAttributes(userInfo, customAttributesSet, customFields, enableCustomAttributes);
+            if (Object.keys(changedCustomAttributes).length > 0) {
+                const {error: attrError} = await updateCustomProfileAttributes(serverUrl, currentUser.id, changedCustomAttributes);
+                if (attrError) {
+                    logError('Error updating custom attributes', attrError);
+                    throw attrError;
+                }
+            }
 
             close();
         } catch (err) {

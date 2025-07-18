@@ -1,6 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {isCustomFieldSamlLinked} from '@utils/user';
+
+import type {CustomProfileFieldModel} from '@database/models/server';
+import type {CustomAttributeSet} from '@typings/api/custom_profile_attributes';
 import type UserModel from '@typings/database/models/servers/user';
 import type {UserInfo} from '@typings/screens/edit_profile';
 
@@ -32,4 +36,33 @@ export function buildUserInfoUpdates(
 
         return acc;
     }, {} as Partial<UserProfile>);
+}
+
+export function getChangedCustomAttributes(
+    userInfoParam: UserInfo,
+    customAttributesSetParam: CustomAttributeSet | undefined,
+    customFieldsParam: CustomProfileFieldModel[] | undefined,
+    enableCustomAttributes: boolean,
+): CustomAttributeSet {
+    if (!userInfoParam.customAttributes || !enableCustomAttributes) {
+        return {};
+    }
+
+    const customFieldsMap = new Map<string, CustomProfileFieldModel>();
+    customFieldsParam?.forEach((field) => {
+        customFieldsMap.set(field.id, field);
+    });
+
+    return Object.keys(userInfoParam.customAttributes).reduce<CustomAttributeSet>((changedCustomAttributes, key) => {
+        const currentValue = customAttributesSetParam?.[key]?.value ?? '';
+        const newValue = userInfoParam.customAttributes[key]?.value ?? '';
+        const customAttribute = userInfoParam.customAttributes[key];
+        const customField = customFieldsMap.get(customAttribute?.id);
+
+        if (currentValue !== newValue && !isCustomFieldSamlLinked(customField)) {
+            changedCustomAttributes[key] = userInfoParam.customAttributes[key];
+        }
+
+        return changedCustomAttributes;
+    }, {});
 }
