@@ -143,12 +143,13 @@ export async function convertUsernamesToFullnames(
                         // 置換文字列を作成
                         let replacement = `@${result.fullName}`;
 
-                        // 後続文字に基づいてスペースを追加（より確実に）
+                        // 後続文字に基づいてスペースを追加（句読点の前にはスペースを追加しない）
                         const needsSpace = charAfter &&
                                          charAfter !== ' ' &&
                                          charAfter !== '\n' &&
                                          charAfter !== '\t' &&
-                                         charAfter !== '\r';
+                                         charAfter !== '\r' &&
+                                         !/[.,!?;:(){}[\]"'`\-]/.test(charAfter);
 
                         if (needsSpace) {
                             replacement += ' ';
