@@ -303,10 +303,7 @@ const ChannelHeader = ({
     useEffect(() => {
         const asyncEffect = async () => {
             if (isPlaybooksEnabled && !EphemeralStore.getChannelPlaybooksSynced(serverUrl, channelId)) {
-                const res = await fetchPlaybookRunsForChannel(serverUrl, channelId);
-                if (!('error' in res)) {
-                    EphemeralStore.setChannelPlaybooksSynced(serverUrl, channelId);
-                }
+                await fetchPlaybookRunsForChannel(serverUrl, channelId);
             }
         };
         asyncEffect();
