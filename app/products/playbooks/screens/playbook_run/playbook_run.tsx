@@ -115,6 +115,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     scrollView: {
         paddingHorizontal: 20,
     },
+    markdownContainer: {
+        width: '100%',
+    },
 }));
 
 type Props = {
@@ -197,14 +200,16 @@ export default function PlaybookRun({
                                     size='m'
                                 />
                             )}
-                            <Markdown
-                                value={playbookRun.summary}
-                                theme={theme}
-                                location={componentId}
-                                baseTextStyle={styles.infoText}
-                                blockStyles={getMarkdownBlockStyles(theme)}
-                                textStyles={getMarkdownTextStyles(theme)}
-                            />
+                            <View style={styles.markdownContainer}>
+                                <Markdown
+                                    value={playbookRun.summary}
+                                    theme={theme}
+                                    location={componentId}
+                                    baseTextStyle={styles.infoText}
+                                    blockStyles={getMarkdownBlockStyles(theme)}
+                                    textStyles={getMarkdownTextStyles(theme)}
+                                />
+                            </View>
                         </View>
                         {(owner || participants.length > 0) && (
                             <View
