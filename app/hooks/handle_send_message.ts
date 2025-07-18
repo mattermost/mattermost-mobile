@@ -106,13 +106,13 @@ export const useHandleSendMessage = ({
         setSendingMessage(false);
     }, [serverUrl, rootId, clearDraft]);
 
-    const doSubmitMessage = useCallback(async (schedulingInfo?: SchedulingInfo) => {
+    const doSubmitMessage = useCallback(async (schedulingInfo?: SchedulingInfo, messageOverride?: string) => {
         const postFiles = files.filter((f) => !f.failed);
         const post = {
             user_id: currentUserId,
             channel_id: channelId,
             root_id: rootId,
-            message: value,
+            message: messageOverride ?? value,
         } as Post;
 
         if (!rootId && (
@@ -167,7 +167,7 @@ export const useHandleSendMessage = ({
         DeviceEventEmitter.emit(Events.POST_LIST_SCROLL_TO_BOTTOM, rootId ? Screens.THREAD : Screens.CHANNEL);
     }, [files, currentUserId, channelId, rootId, value, postPriority, isFromDraftView, serverUrl, intl, canPost, channelIsArchived, channelIsReadOnly, deactivatedChannel, clearDraft]);
 
-    const showSendToAllOrChannelOrHereAlert = useCallback((calculatedMembersCount: number, atHere: boolean, schedulingInfo?: SchedulingInfo) => {
+    const showSendToAllOrChannelOrHereAlert = useCallback((calculatedMembersCount: number, atHere: boolean, schedulingInfo?: SchedulingInfo, messageOverride?: string) => {
         const notifyAllMessage = DraftUtils.buildChannelWideMentionMessage(intl, calculatedMembersCount, channelTimezoneCount, atHere);
         const cancel = () => {
             setSendingMessage(false);
@@ -176,7 +176,7 @@ export const useHandleSendMessage = ({
         // Creating a wrapper function to pass the schedulingInfo to the doSubmitMessage function as the accepted
         // function signature causes conflict.
         // TODO for later - change alert message if this is a scheduled post
-        const doSubmitMessageScheduledPostWrapper = () => doSubmitMessage(schedulingInfo);
+        const doSubmitMessageScheduledPostWrapper = () => doSubmitMessage(schedulingInfo, messageOverride);
         DraftUtils.alertChannelWideMention(intl, notifyAllMessage, doSubmitMessageScheduledPostWrapper, cancel);
     }, [intl, channelTimezoneCount, doSubmitMessage]);
 
@@ -226,31 +226,33 @@ export const useHandleSendMessage = ({
         }
     }, [value, userIsOutOfOffice, serverUrl, intl, channelId, rootId, clearDraft, channelType, currentUserId]);
 
-    const sendMessage = useCallback(async (schedulingInfo?: SchedulingInfo) => {
+    const sendMessage = useCallback(async (schedulingInfo?: SchedulingInfo, messageOverride?: string) => {
+        const messageToUse = messageOverride ?? value;
         const notificationsToChannel = enableConfirmNotificationsToChannel && useChannelMentions;
-        const toAllOrChannel = DraftUtils.textContainsAtAllAtChannel(value);
-        const toHere = DraftUtils.textContainsAtHere(value);
+        const toAllOrChannel = DraftUtils.textContainsAtAllAtChannel(messageToUse);
+        const toHere = DraftUtils.textContainsAtHere(messageToUse);
 
-        if (value.indexOf('/') === 0 && !schedulingInfo) {
+        if (messageToUse.indexOf('/') === 0 && !schedulingInfo) {
             // Don't execute slash command when scheduling message
             sendCommand();
         } else if (notificationsToChannel && membersCount > NOTIFY_ALL_MEMBERS && (toAllOrChannel || toHere)) {
-            showSendToAllOrChannelOrHereAlert(membersCount, toHere && !toAllOrChannel, schedulingInfo);
+            showSendToAllOrChannelOrHereAlert(membersCount, toHere && !toAllOrChannel, schedulingInfo, messageOverride);
         } else {
-            return doSubmitMessage(schedulingInfo);
+            return doSubmitMessage(schedulingInfo, messageOverride);
         }
 
         return Promise.resolve();
     }, [enableConfirmNotificationsToChannel, useChannelMentions, value, membersCount, sendCommand, showSendToAllOrChannelOrHereAlert, doSubmitMessage]);
 
-    const handleSendMessage = useCallback(async (schedulingInfo?: SchedulingInfo) => {
+    const handleSendMessage = useCallback(async (schedulingInfo?: SchedulingInfo, messageOverride?: string) => {
         if (!canSend) {
             return Promise.resolve();
         }
 
         setSendingMessage(true);
 
-        const match = isReactionMatch(value, customEmojis);
+        const messageToUse = messageOverride ?? value;
+        const match = isReactionMatch(messageToUse, customEmojis);
         if (match && !files.length) {
             handleReaction(match.emoji, match.add);
             return Promise.resolve();
@@ -263,12 +265,12 @@ export const useHandleSendMessage = ({
             };
             const accept = () => {
                 // Files are filtered on doSubmitMessage
-                sendMessage(schedulingInfo);
+                sendMessage(schedulingInfo, messageOverride);
             };
 
             DraftUtils.alertAttachmentFail(intl, accept, cancel);
         } else {
-            return sendMessage(schedulingInfo);
+            return sendMessage(schedulingInfo, messageOverride);
         }
 
         return Promise.resolve();

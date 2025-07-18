@@ -10,6 +10,7 @@ import {PostPriorityType} from '@constants/post';
 import {useServerUrl} from '@context/server';
 import {useHandleSendMessage} from '@hooks/handle_send_message';
 import {containsMentions, convertFullnamesToUsernames} from '@utils/mention_conversion';
+import {logWarning} from '@utils/log';
 
 import type {DraftType} from '@constants/draft';
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
@@ -122,26 +123,20 @@ export default function SendHandler({
 
     // メンション変換機能付きの送信ハンドラー
     const handleSendMessage = useCallback(async (schedulingInfo?: SchedulingInfo) => {
+        let messageToSend = value;
+
         if (enableMentionConversion && containsMentions(value)) {
             try {
-                const convertedMessage = await convertFullnamesToUsernames(value, serverUrl);
-
-                // 一時的に変換されたメッセージでupdateValue（送信処理で使用される）
-                updateValue(convertedMessage);
-
-                // 送信処理を実行（成功時はclearDraftが呼ばれて入力エリアがクリアされる）
-                const result = await originalHandleSendMessage(schedulingInfo);
-
-                return result;
+                messageToSend = await convertFullnamesToUsernames(value, serverUrl);
             } catch (error) {
-                // Error converting mentions for sending
-                // エラー時は元のメッセージで送信
-                return originalHandleSendMessage(schedulingInfo);
+                // メンション変換エラー時は元のメッセージを使用
+                logWarning('Failed to convert mentions for sending:', error);
             }
         }
 
-        return originalHandleSendMessage(schedulingInfo);
-    }, [enableMentionConversion, value, serverUrl, updateValue, originalHandleSendMessage]);
+        // 修正されたuseHandleSendMessageフックを使用して、変換されたメッセージを直接渡す
+        return originalHandleSendMessage(schedulingInfo, messageToSend);
+    }, [enableMentionConversion, value, serverUrl, originalHandleSendMessage]);
 
     if (isFromDraftView) {
         return (
