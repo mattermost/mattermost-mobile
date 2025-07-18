@@ -11,17 +11,32 @@ import {isMinimumServerVersion} from '@utils/helpers';
 
 import type SystemModel from '@typings/database/models/servers/system';
 
+function queryPlaybooksVersion(database: Database) {
+    return database.get<SystemModel>(MM_TABLES.SERVER.SYSTEM).query(
+        Q.where('id', SYSTEM_IDENTIFIERS.PLAYBOOKS_VERSION),
+    );
+}
+
+function isPlaybooksEnabledFromSystemModel(systems: SystemModel[]) {
+    const version = systems[0]?.value;
+    if (!version) {
+        return false;
+    }
+
+    return isMinimumServerVersion(version, MINIMUM_MAJOR_VERSION, MINIMUM_MINOR_VERSION, MINIMUM_PATCH_VERSION);
+}
+
+export async function fetchIsPlaybooksEnabled(database: Database) {
+    const systems = await queryPlaybooksVersion(database).fetch();
+    return isPlaybooksEnabledFromSystemModel(systems);
+}
+
 export function observeIsPlaybooksEnabled(database: Database) {
     return database.get<SystemModel>(MM_TABLES.SERVER.SYSTEM).query(
         Q.where('id', SYSTEM_IDENTIFIERS.PLAYBOOKS_VERSION),
     ).observeWithColumns(['value']).pipe(
         switchMap((systems) => {
-            const version = systems[0]?.value;
-            if (!version) {
-                return of$(false);
-            }
-
-            return of$(isMinimumServerVersion(version, MINIMUM_MAJOR_VERSION, MINIMUM_MINOR_VERSION, MINIMUM_PATCH_VERSION));
+            return of$(isPlaybooksEnabledFromSystemModel(systems));
         }),
     );
 }
