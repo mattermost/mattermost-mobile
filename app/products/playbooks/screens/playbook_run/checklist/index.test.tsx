@@ -4,6 +4,7 @@
 import React, {type ComponentProps} from 'react';
 
 import DatabaseManager from '@database/manager';
+import {getChecklistProgress} from '@playbooks/utils/progress';
 import {renderWithEverything, waitFor} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -20,10 +21,20 @@ jest.mocked(ChecklistComponent).mockImplementation(
     (props) => React.createElement('Checklist', {testID: 'checklist', ...props}),
 );
 
+jest.mock('@playbooks/utils/progress');
+
 const serverUrl = 'server-url';
 
 describe('Checklist', () => {
     const checklistId = 'checklist-id';
+    const mockProgressReturn = {
+        skipped: false,
+        completed: 0,
+        totalNumber: 0,
+        progress: 0,
+    };
+
+    jest.mocked(getChecklistProgress).mockReturnValue(mockProgressReturn);
 
     let database: Database;
     let operator: ServerDataOperator;
@@ -65,6 +76,8 @@ describe('Checklist', () => {
             expect(checklist).toBeTruthy();
             expect(checklist.props.checklist).toBe(props.checklist);
             expect(checklist.props.items).toBe(props.checklist.items);
+            expect(checklist.props.checklistProgress).toBe(mockProgressReturn);
+            expect(getChecklistProgress).toHaveBeenCalledWith(props.checklist.items);
         });
     });
 
@@ -105,6 +118,11 @@ describe('Checklist', () => {
             expect(checklist.props.checklist.id).toBe(props.checklist.id);
             expect(checklist.props.items[0].id).toBe(itemsIds[1]);
             expect(checklist.props.items[1].id).toBe(itemsIds[0]);
+            expect(checklist.props.checklistProgress).toBe(mockProgressReturn);
+            expect(getChecklistProgress).toHaveBeenCalledWith([
+                expect.objectContaining({id: itemsIds[1]}),
+                expect.objectContaining({id: itemsIds[0]}),
+            ]);
 
             database.write(async () => {
                 if ('update' in props.checklist) {

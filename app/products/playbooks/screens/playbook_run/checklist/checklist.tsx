@@ -71,6 +71,7 @@ type Props = {
     playbookRunId: string;
     isFinished: boolean;
     isParticipant: boolean;
+    checklistProgress: ReturnType<typeof getChecklistProgress>;
 }
 
 const Checklist = ({
@@ -81,14 +82,18 @@ const Checklist = ({
     playbookRunId,
     isFinished,
     isParticipant,
+    checklistProgress: {
+        skipped,
+        completed,
+        totalNumber,
+        progress,
+    },
 }: Props) => {
     const [expanded, setExpanded] = useState(true);
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const height = useSharedValue(0);
     const windowDimensions = useWindowDimensions();
-
-    const {skipped, completed, totalNumber, progress} = useMemo(() => getChecklistProgress(items), [items]);
 
     const toggleExpanded = useCallback(() => {
         setExpanded((prev) => !prev);
