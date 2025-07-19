@@ -61,16 +61,16 @@ export async function restDeferredAppEntryActions(
     const channelsToFetchProfiles = new Set<Channel>(directChannels);
     const requestLabel: RequestGroupLabel|undefined = groupLabel ? `${groupLabel} Deferred` : undefined;
 
-    // sidebar DM & GM profiles
-    if (channelsToFetchProfiles.size) {
-        const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], config.LockTeammateNameDisplay, config.TeammateNameDisplay, license);
-        fetchMissingDirectChannelsInfo(serverUrl, Array.from(channelsToFetchProfiles), currentUserLocale, teammateDisplayNameSetting, currentUserId, false, requestLabel);
-    }
-
-    updateAllUsersSince(serverUrl, since, false, requestLabel);
-    updateCanJoinTeams(serverUrl);
-
     setTimeout(async () => {
+        // sidebar DM & GM profiles
+        if (channelsToFetchProfiles.size) {
+            const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], config.LockTeammateNameDisplay, config.TeammateNameDisplay, license);
+            fetchMissingDirectChannelsInfo(serverUrl, Array.from(channelsToFetchProfiles), currentUserLocale, teammateDisplayNameSetting, currentUserId, false, requestLabel);
+        }
+
+        updateAllUsersSince(serverUrl, since, false, requestLabel);
+        updateCanJoinTeams(serverUrl);
+
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const teamMap = new Map(teamData.teams?.map((t) => [t.id, t]) || []);
         let mySortedTeams: Team[] = [];
