@@ -15,8 +15,10 @@ const style = StyleSheet.create({
     failed: {
         backgroundColor: 'rgba(0, 0, 0, 0.8)',
         position: 'absolute',
-        height: '100%',
-        width: '100%',
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
         alignItems: 'center',
         justifyContent: 'center',
         borderRadius: 4,

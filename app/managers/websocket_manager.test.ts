@@ -11,6 +11,7 @@ import WebSocketClient from '@client/websocket';
 import DatabaseManager from '@database/manager';
 import {getCurrentUserId} from '@queries/servers/system';
 import {queryAllUsers} from '@queries/servers/user';
+import TestHelper from '@test/test_helper';
 import {logError} from '@utils/log';
 
 import WebsocketManager from './websocket_manager';
@@ -178,8 +179,11 @@ describe('WebsocketManager', () => {
 
     describe('periodic updates', () => {
         beforeEach(async () => {
-            (getCurrentUserId as jest.Mock).mockResolvedValue('user1');
-            (queryAllUsers as jest.Mock).mockImplementation(() => ({fetchIds: async () => ['user1', 'user2']}));
+            jest.mocked(getCurrentUserId).mockResolvedValue('user1');
+            jest.mocked(queryAllUsers).mockImplementation(() => TestHelper.fakeQuery([
+                TestHelper.fakeUserModel({id: 'user1'}),
+                TestHelper.fakeUserModel({id: 'user2'}),
+            ]));
             await manager.init(mockCredentials);
         });
 

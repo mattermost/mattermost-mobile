@@ -10,6 +10,7 @@ import {map as map$, switchMap, distinctUntilChanged, combineLatestWith} from 'r
 import {General, Permissions} from '@constants';
 import {MM_TABLES} from '@constants/database';
 import {sanitizeLikeString} from '@helpers/database';
+import EphemeralStore from '@store/ephemeral_store';
 import {isDefaultChannel} from '@utils/channel';
 import {hasPermission} from '@utils/role';
 import {isSystemAdmin} from '@utils/user';
@@ -151,7 +152,7 @@ export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, tea
     return prepareChannels(operator, channels, channelInfos, channelMembers, memberships, isCRTEnabled);
 };
 
-export const prepareDeleteChannel = async (channel: ChannelModel): Promise<Model[]> => {
+export const prepareDeleteChannel = async (serverUrl: string, channel: ChannelModel): Promise<Model[]> => {
     const preparedModels: Model[] = [channel.prepareDestroyPermanently()];
 
     const relations: Array<Relation<Model|MyChannelModel> | undefined> = [channel.membership, channel.info, channel.categoryChannel];
@@ -197,6 +198,16 @@ export const prepareDeleteChannel = async (channel: ChannelModel): Promise<Model
             preparedModels.push(...prepareBookmarks);
         }
     }
+
+    const playbookRuns = await channel.playbookRuns?.fetch();
+    if (playbookRuns?.length) {
+        for await (const run of playbookRuns) {
+            const preparedRun = await run.prepareDestroyWithRelations();
+            preparedModels.push(...preparedRun);
+        }
+    }
+
+    EphemeralStore.unsetChannelPlaybooksSynced(serverUrl, channel.id);
 
     return preparedModels;
 };
@@ -706,7 +717,7 @@ export const queryChannelsForAutocomplete = (database: Database, matchTerm: stri
                 Q.where('type', Q.oneOf([General.DM_CHANNEL, General.GM_CHANNEL])),
                 Q.on(CHANNEL_MEMBERSHIP, Q.on(USER,
                     Q.or(
-                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
                         // @ts-ignore: condition type error
                         Q.unsafeSqlExpr(`first_name || ' ' || last_name LIKE '${likeTerm}'`),
                         Q.where('nickname', Q.like(likeTerm)),

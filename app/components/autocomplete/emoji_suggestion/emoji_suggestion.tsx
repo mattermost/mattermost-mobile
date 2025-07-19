@@ -70,8 +70,7 @@ type Props = {
     value: string;
     nestedScrollEnabled: boolean;
     skinTone: string;
-    hasFilesAttached?: boolean;
-    inPost: boolean;
+    shouldDirectlyReact?: boolean;
     listStyle: StyleProp<ViewStyle>;
 }
 const EmojiSuggestion = ({
@@ -83,8 +82,7 @@ const EmojiSuggestion = ({
     value,
     nestedScrollEnabled,
     skinTone,
-    hasFilesAttached = false,
-    inPost,
+    shouldDirectlyReact = false,
     listStyle,
 }: Props) => {
     const insets = useSafeAreaInsets();
@@ -118,7 +116,7 @@ const EmojiSuggestion = ({
     const showingElements = Boolean(data.length);
 
     const completeSuggestion = useCallback((emoji: string) => {
-        if (!hasFilesAttached && inPost) {
+        if (shouldDirectlyReact) {
             const match = value.match(REACTION_REGEX);
             if (match) {
                 handleReactionToLatestPost(serverUrl, emoji, match[1] === '+', rootId);
@@ -160,7 +158,7 @@ const EmojiSuggestion = ({
                 updateValue(completedDraft.replace(`::${emoji}: `, `:${emoji}: `));
             });
         }
-    }, [value, updateValue, rootId, cursorPosition, hasFilesAttached]);
+    }, [value, updateValue, rootId, cursorPosition, shouldDirectlyReact]);
 
     const renderItem = useCallback(({item}: {item: string}) => {
         const completeItemSuggestion = () => completeSuggestion(item);

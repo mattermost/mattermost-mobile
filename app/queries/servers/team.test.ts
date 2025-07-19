@@ -921,7 +921,7 @@ describe('Team Queries', () => {
             });
 
             const team = await getTeamById(database, teamId);
-            const records = await prepareDeleteTeam(team!);
+            const records = await prepareDeleteTeam(serverUrl, team!);
             expect(records.length).toBeGreaterThan(0);
         });
 
@@ -932,7 +932,7 @@ describe('Team Queries', () => {
             });
 
             const team = await getTeamById(database, teamId);
-            const records = await prepareDeleteTeam(team!);
+            const records = await prepareDeleteTeam(serverUrl, team!);
             expect(records.length).toBe(1); // Just the team record
         });
 
@@ -957,12 +957,12 @@ describe('Team Queries', () => {
             });
 
             const team = await getTeamById(database, teamId);
-            const records = await prepareDeleteTeam(team!);
+            const records = await prepareDeleteTeam(serverUrl, team!);
             expect(records.length).toBe(1); // Just the team record
         });
 
         it('should return empty array on error', async () => {
-            const records = await prepareDeleteTeam(null as any);
+            const records = await prepareDeleteTeam(serverUrl, null as any);
             expect(records).toEqual([]);
         });
     });

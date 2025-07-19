@@ -69,12 +69,13 @@ jest.mock('expo-web-browser', () => ({
     })),
 }));
 
+jest.mock('@react-native-camera-roll/camera-roll', () => ({}));
+
 jest.mock('@mattermost/react-native-turbo-log', () => ({
     getLogPaths: jest.fn(),
 }));
 
 jest.mock('@nozbe/watermelondb/utils/common/randomId/randomId', () => ({}));
-
 jest.mock('@nozbe/watermelondb/react/withObservables/garbageCollector', () => {
     return {
         __esModule: true,
@@ -104,6 +105,7 @@ jest.doMock('react-native', () => {
 
     const AppState = {
         ...RNAppState,
+        currentState: 'active',
         addEventListener: jest.fn(() => ({
             remove: jest.fn(),
         })),
@@ -421,6 +423,9 @@ jest.mock('@screens/navigation', () => ({
     dismissAllModalsAndPopToRoot: jest.fn(),
     dismissOverlay: jest.fn(() => Promise.resolve()),
     dismissAllOverlays: jest.fn(() => Promise.resolve()),
+    dismissBottomSheet: jest.fn(),
+    openUserProfileModal: jest.fn(),
+    popTo: jest.fn(),
 }));
 
 jest.mock('@mattermost/react-native-emm', () => ({
@@ -457,12 +462,9 @@ jest.mock('@mattermost/react-native-network-client', () => ({
 
 jest.mock('react-native-safe-area-context', () => mockSafeAreaContext);
 
-jest.mock('react-native-reanimated', () => {
-    const Reanimated = require('react-native-reanimated/mock');
-    Reanimated.default.call = () => undefined;
-    Reanimated.useReducedMotion = jest.fn(() => false);
-    return Reanimated;
-});
+require('@shopify/flash-list/jestSetup');
+
+require('react-native-reanimated').setUpTests();
 jest.mock('react-native-permissions', () => require('react-native-permissions/mock'));
 
 jest.mock('react-native-haptic-feedback', () => {
