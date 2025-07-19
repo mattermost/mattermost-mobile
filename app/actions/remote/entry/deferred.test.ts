@@ -144,7 +144,7 @@ describe('actions/remote/entry/deferred', () => {
             expect(fetchMissingDirectChannelsInfo).toHaveBeenCalled();
             expect(updateAllUsersSince).toHaveBeenCalledWith(serverUrl, since, false, undefined);
             expect(updateCanJoinTeams).toHaveBeenCalledWith(serverUrl);
-            expect(processEntryModelsForDeletion).toHaveBeenCalledWith({operator: mockOperator, teamData, chData});
+            expect(processEntryModelsForDeletion).toHaveBeenCalledWith({serverUrl, operator: mockOperator, teamData, chData});
             expect(fetchPostsForUnreadChannels).toHaveBeenCalled();
             expect(fetchGroupsForMember).toHaveBeenCalledWith(serverUrl, currentUserId, false, undefined);
             expect(fetchScheduledPosts).toHaveBeenCalledWith(serverUrl, initialTeamId, true, undefined);

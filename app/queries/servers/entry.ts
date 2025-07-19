@@ -166,11 +166,12 @@ export async function processEntryModels({
 }
 
 export async function processEntryModelsForDeletion({
+    serverUrl,
     operator,
     teamData,
     chData,
-}: PrepareModelsArgs): Promise<void> {
-    const modelsToDeletePromises = await prepareEntryModelsForDeletion({operator, teamData, chData});
+}: PrepareModelsForDeletionArgs): Promise<void> {
+    const modelsToDeletePromises = await prepareEntryModelsForDeletion({serverUrl, operator, teamData, chData});
 
     const modelsToDelete = await Promise.all(modelsToDeletePromises);
     if (modelsToDelete.flat().length) {

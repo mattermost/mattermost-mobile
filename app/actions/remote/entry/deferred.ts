@@ -132,7 +132,7 @@ export async function restDeferredAppEntryActions(
 
                 // previously we were deleting the models via processEntryModels, but we don't want to delete any
                 // teams or channels until we have fetched all the data for the team, which now is later in the code
-                processEntryModelsForDeletion({operator, teamData, chData: uniqueChannelsData});
+                processEntryModelsForDeletion({serverUrl, operator, teamData, chData: uniqueChannelsData});
 
                 if (uniqueChannelsData?.channels?.length && uniqueChannelsData.memberships?.length && initialTeamId) {
                     if (isCRTEnabled && initialTeamId) {
