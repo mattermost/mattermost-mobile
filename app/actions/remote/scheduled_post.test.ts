@@ -13,7 +13,9 @@ import {createScheduledPost, deleteScheduledPost, fetchScheduledPosts, updateSch
 import type ServerDataOperator from '@database/operator/server_data_operator';
 
 jest.mock('@utils/log', () => ({
+    logDebug: jest.fn(),
     logError: jest.fn(),
+    logWarning: jest.fn(),
 }));
 
 jest.mock('@actions/remote/session', () => ({
@@ -105,7 +107,7 @@ const mockedGetConfigValue = jest.mocked(getConfigValue);
 const mockedGetLicense = jest.mocked(getLicense);
 
 beforeAll(() => {
-    // eslint-disable-next-line
+
     // @ts-ignore
     NetworkManager.getClient = () => mockClient;
 });
