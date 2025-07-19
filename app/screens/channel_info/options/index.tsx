@@ -49,7 +49,10 @@ const Options = ({
             <NotificationPreference channelId={channelId}/>
             <PinnedMessages channelId={channelId}/>
             <ChannelFiles channelId={channelId}/>
-            <PlaybookRunsOption channelId={channelId}/>
+            <PlaybookRunsOption
+                channelId={channelId}
+                location='channel_actions'
+            />
             {type !== General.DM_CHANNEL &&
                 <Members channelId={channelId}/>
             }

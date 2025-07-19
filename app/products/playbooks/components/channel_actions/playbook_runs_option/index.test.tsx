@@ -27,6 +27,7 @@ describe('PlaybookRunsOption', () => {
     function getBaseProps(): ComponentProps<typeof PlaybookRunsOption> {
         return {
             channelId,
+            location: 'channel_actions',
         };
     }
 

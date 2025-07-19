@@ -52,5 +52,6 @@ describe('ChannelQuickAction', () => {
         const playbookRunsOption = getByTestId('playbook-runs-option');
         expect(playbookRunsOption).toBeTruthy();
         expect(playbookRunsOption.props.channelId).toBe('channel-id');
+        expect(playbookRunsOption.props.location).toBe('quick_actions');
     });
 });

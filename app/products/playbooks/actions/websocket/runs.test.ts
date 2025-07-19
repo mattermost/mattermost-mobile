@@ -22,6 +22,7 @@ const serverUrl = 'baseHandler.test.com';
 
 const mockPlaybookList = TestHelper.createPlaybookRuns(1, 1, 1);
 const mockPlaybookRun = mockPlaybookList[0];
+mockPlaybookRun.update_at = 1; // Set the update_at to a value that is before the current time to avoid flakiness
 
 const channelId = mockPlaybookRun.channel_id;
 const playbookRunId = mockPlaybookRun.id;

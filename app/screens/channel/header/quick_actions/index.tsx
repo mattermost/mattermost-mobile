@@ -65,7 +65,10 @@ const ChannelQuickAction = ({
                 testID='channel.quick_actions.channel_info.action'
             />
             {hasPlaybookRuns &&
-                <PlaybookRunsOption channelId={channelId}/>
+                <PlaybookRunsOption
+                    channelId={channelId}
+                    location='quick_actions'
+                />
             }
             {callsEnabled && !isDMorGM && // if calls is not enabled, copy link will show in the channel actions
                 <CopyChannelLinkOption
