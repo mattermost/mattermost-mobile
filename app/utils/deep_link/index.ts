@@ -211,6 +211,34 @@ function isValidPostId(id: string): boolean {
 
 export function parseDeepLink(deepLinkUrl: string, asServer = false): DeepLinkWithData {
     try {
+        // Handle mattermost:// scheme URLs directly
+        if (deepLinkUrl.startsWith('mattermost://')) {
+            const url = deepLinkUrl.replace('mattermost://', '');
+            
+            const channelMatch = matchChannelDeeplink(url);
+            if (channelMatch && isValidTeamName(channelMatch.params.teamName) && isValidIdentifierPathPattern(channelMatch.params.identifier)) {
+                const {params: {serverUrl, teamName, path, identifier}} = channelMatch;
+
+                if (path === 'channels') {
+                    return {type: DeepLink.Channel, url: deepLinkUrl, data: {serverUrl: serverUrl.join('/'), teamName, channelName: identifier}};
+                }
+
+                if (path === 'messages') {
+                    if (identifier.startsWith('@')) {
+                        return {type: DeepLink.DirectMessage, url: deepLinkUrl, data: {serverUrl: serverUrl.join('/'), teamName, userName: identifier.substring(1)}};
+                    }
+
+                    return {type: DeepLink.GroupMessage, url: deepLinkUrl, data: {serverUrl: serverUrl.join('/'), teamName, channelName: identifier}};
+                }
+            }
+
+            const permalinkMatch = matchPermalinkDeeplink(url);
+            if (permalinkMatch && isValidTeamName(permalinkMatch.params.teamName) && isValidPostId(permalinkMatch.params.postId)) {
+                const {params: {serverUrl, teamName, postId}} = permalinkMatch;
+                return {type: DeepLink.Permalink, url: deepLinkUrl, data: {serverUrl: serverUrl.join('/'), teamName, postId}};
+            }
+        }
+        
         const url = removeProtocol(deepLinkUrl);
 
         const channelMatch = matchChannelDeeplink(url);
