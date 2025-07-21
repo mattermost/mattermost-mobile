@@ -198,8 +198,10 @@
     "prepare": "husky",
     "preinstall": "./scripts/preinstall.sh && npx solidarity",
     "start": "react-native start",
-    "test": "jest --forceExit --runInBand",
-    "test:coverage": "jest --coverage",
+    "test": "jest --runInBand",
+    "test:ci": "jest --verbose=false --forceExit",
+    "test:ci:coverage": "npm run test:ci -- --coverage",
+    "test:coverage": "npm test -- --coverage",
     "test:watch": "npm test -- --watch",
     "tsc": "NODE_OPTIONS=--max_old_space_size=12000 tsc --noEmit",
     "updatesnapshot": "jest --updateSnapshot"
