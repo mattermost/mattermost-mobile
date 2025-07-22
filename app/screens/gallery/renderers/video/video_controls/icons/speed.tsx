@@ -8,6 +8,19 @@ interface IconProps {
     color?: string;
 }
 
+const hourMarkers = [
+    {cx: '12', cy: '4'}, // 12 o'clock
+    {cx: '15.5', cy: '5.5'}, // 1 o'clock
+    {cx: '18.5', cy: '8.5'}, // 2 o'clock
+    {cx: '20', cy: '12'}, // 3 o'clock
+    {cx: '18.5', cy: '15.5'}, // 4 o'clock
+    {cx: '15.5', cy: '18.5'}, // 5 o'clock
+    {cx: '5.5', cy: '15.5'}, // 8 o'clock
+    {cx: '4', cy: '12'}, // 9 o'clock
+    {cx: '5.5', cy: '8.5'}, // 10 o'clock
+    {cx: '8.5', cy: '5.5'}, // 11 o'clock
+];
+
 const PlaybackSpeedIcon: React.FC<IconProps> = ({size = 24, color = 'white'}) => {
     return (
         <Svg
@@ -26,78 +39,15 @@ const PlaybackSpeedIcon: React.FC<IconProps> = ({size = 24, color = 'white'}) =>
                 fill='none'
             />
 
-            {/* Hour markers (dots) - positioned at 12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 o'clock */}
-            {/* 12 o'clock */}
-            <Circle
-                cx='12'
-                cy='4'
-                r='1'
-                fill={color}
-            />
-
-            {/* 1 o'clock */}
-            <Circle
-                cx='15.5'
-                cy='5.5'
-                r='1'
-                fill={color}
-            />
-
-            {/* 2 o'clock */}
-            <Circle
-                cx='18.5'
-                cy='8.5'
-                r='1'
-                fill={color}
-            />
-
-            {/* 3 o'clock */}
-            <Circle
-                cx='20'
-                cy='12'
-                r='1'
-                fill={color}
-            />
-
-            {/* 4 o'clock */}
-            <Circle
-                cx='18.5'
-                cy='15.5'
-                r='1'
-                fill={color}
-            />
-
-            {/* 8 o'clock */}
-            <Circle
-                cx='5.5'
-                cy='15.5'
-                r='1'
-                fill={color}
-            />
-
-            {/* 9 o'clock */}
-            <Circle
-                cx='4'
-                cy='12'
-                r='1'
-                fill={color}
-            />
-
-            {/* 10 o'clock */}
-            <Circle
-                cx='5.5'
-                cy='8.5'
-                r='1'
-                fill={color}
-            />
-
-            {/* 11 o'clock */}
-            <Circle
-                cx='8.5'
-                cy='5.5'
-                r='1'
-                fill={color}
-            />
+            {hourMarkers.map((marker) => (
+                <Circle
+                    key={`${marker.cx}-${marker.cy}`}
+                    cx={marker.cx}
+                    cy={marker.cy}
+                    r='1'
+                    fill={color}
+                />
+            ))}
 
             {/* Clock hand pointing to about 2 o'clock (indicating speed/fast) */}
             <Path
