@@ -12,7 +12,7 @@ import type UserModel from '@typings/database/models/servers/user';
 const {USER} = MM_TABLES.SERVER;
 
 const MENTION_REGEX = /@([a-z0-9.\-_\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]+)/gi;
-const FULLNAME_MENTION_REGEX = /@([^@\n]+?)(?=\s|[.,!?;:(){}[\]"'`]|@|$)/gi;
+const FULLNAME_MENTION_REGEX = /@([^@\n]+?)(?=\s|[.,!?;:(){}[\]]|@|$)/gi;
 
 export function containsMentions(text: string): boolean {
     MENTION_REGEX.lastIndex = 0;
