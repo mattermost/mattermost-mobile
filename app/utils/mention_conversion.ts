@@ -128,7 +128,7 @@ export async function convertUsernamesToFullnames(
 
                 const afterIndex = index + searchPattern.length;
                 const beforeChar = index > 0 ? convertedText[index - 1] : '';
-                const isValidMention = index === 0 || !/[a-z0-9.\-_]/i.test(beforeChar);
+                const isValidMention = index === 0 || !/[a-z0-9.\-_@]/i.test(beforeChar);
 
                 if (isValidMention) {
                     const replacement = `@${result.fullName}`;
@@ -190,7 +190,7 @@ export async function convertFullnamesToUsernames(
                 const afterIndex = index + searchPattern.length;
                 const charAfter = afterIndex < convertedText.length ? convertedText[afterIndex] : '';
                 const beforeChar = index > 0 ? convertedText[index - 1] : '';
-                const isValidMention = index === 0 || !/[a-z0-9.\-_]/i.test(beforeChar);
+                const isValidMention = index === 0 || !/[a-z0-9.\-_@]/i.test(beforeChar);
                 const isValidBoundary = !charAfter ||
                                       /[\s.,!?;:(){}[\]"'`\-\n\t\r@]/.test(charAfter);
 
