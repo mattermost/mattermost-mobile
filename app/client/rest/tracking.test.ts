@@ -365,6 +365,7 @@ describe('ClientTracking', () => {
     });
 
     it('should handle server version changes without cache control', async () => {
+        const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
         apiClientMock.get.mockResolvedValue({
             ok: true,
             data: {success: true},
@@ -379,7 +380,7 @@ describe('ClientTracking', () => {
         });
 
         expect(client.serverVersion).toBe('5.30.0');
-        expect(DeviceEventEmitter.emit).toHaveBeenCalledWith(
+        expect(emitSpy).toHaveBeenCalledWith(
             Events.SERVER_VERSION_CHANGED,
             {serverUrl: 'https://example.com', serverVersion: '5.30.0'},
         );

@@ -35,32 +35,6 @@ const mockEmitter = {
     }),
 } as any;
 
-jest.mock('react-native', () => {
-    const ReactNative = jest.requireActual('react-native');
-    return {
-        AppState: {
-            currentState: 'active',
-            addEventListener: jest.fn(() => ({
-                remove: jest.fn(),
-            })),
-        },
-        Keyboard: {
-            addListener: jest.fn((event, callback) => {
-                if (callback) {
-                    callback({endCoordinates: {height: 300}, duration: 250});
-                }
-                return {remove: jest.fn()};
-            }),
-        },
-        NativeEventEmitter: jest.fn(() => mockEmitter),
-        Platform: {
-            OS: 'ios',
-            select: jest.fn((obj) => obj.ios),
-        },
-        View: ReactNative.View,
-    };
-});
-
 jest.mock('@mattermost/rnutils', () => ({
     getWindowDimensions: jest.fn(() => ({height: 800, width: 600})),
     isRunningInSplitView: jest.fn(() => false),

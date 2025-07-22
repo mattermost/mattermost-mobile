@@ -5,6 +5,7 @@ import * as bookmark from '@actions/local/channel_bookmark';
 import * as scheduledPost from '@actions/websocket/scheduled_post';
 import * as calls from '@calls/connection/websocket_event_handlers';
 import {WebsocketEvents} from '@constants';
+import {handlePlaybookEvents} from '@playbooks/actions/websocket/events';
 
 import * as category from './category';
 import * as channel from './channel';
@@ -35,6 +36,7 @@ jest.mock('@calls/connection/websocket_event_handlers');
 jest.mock('./group');
 jest.mock('@actions/local/channel_bookmark');
 jest.mock('@actions/websocket/scheduled_post');
+jest.mock('@playbooks/actions/websocket/events');
 
 describe('handleWebSocketEvent', () => {
     const serverUrl = 'https://example.com';
@@ -522,5 +524,15 @@ describe('handleWebSocketEvent', () => {
         msg.event = WebsocketEvents.SCHEDULED_POST_DELETED;
         await handleWebSocketEvent(serverUrl, msg);
         expect(scheduledPost.handleDeleteScheduledPost).toHaveBeenCalledWith(serverUrl, msg);
+    });
+
+    it('all messages should go through the playbooks handler', async () => {
+        msg.event = WebsocketEvents.POST_DELETED; // any handled event should be enough
+        await handleWebSocketEvent(serverUrl, msg);
+        expect(handlePlaybookEvents).toHaveBeenCalledWith(serverUrl, msg);
+
+        msg.event = 'foo'; // any event, even if not handled, should go through the playbooks handler
+        await handleWebSocketEvent(serverUrl, msg);
+        expect(handlePlaybookEvents).toHaveBeenCalledWith(serverUrl, msg);
     });
 });

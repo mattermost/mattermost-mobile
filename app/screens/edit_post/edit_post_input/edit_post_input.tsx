@@ -47,7 +47,6 @@ type PostInputProps = {
     onChangeText: (text: string) => void;
     inputRef: React.MutableRefObject<PasteInputRef | undefined>;
     addFiles: (file: FileInfo[]) => void;
-    uploadFileError: React.ReactNode;
 }
 
 const EditPostInput = ({
@@ -60,7 +59,6 @@ const EditPostInput = ({
     version,
     inputRef,
     addFiles,
-    uploadFileError,
 }: PostInputProps) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -133,7 +131,7 @@ const EditPostInput = ({
                         channelId={post.channelId}
                         currentUserId={post.userId}
                         files={postFiles}
-                        uploadFileError={uploadFileError}
+                        uploadFileError={null}
                         rootId={post.rootId}
                     />
                     <QuickActions

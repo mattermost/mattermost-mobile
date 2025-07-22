@@ -107,6 +107,27 @@ export function safeParseJSON(rawJson: string | Record<string, unknown> | unknow
     return data;
 }
 
+export function safeParseJSONStringArray(rawJson: unknown) {
+    if (Array.isArray(rawJson)) {
+        return rawJson.filter((v) => typeof v === 'string');
+    }
+
+    if (typeof rawJson !== 'string') {
+        return [];
+    }
+
+    try {
+        const data = JSON.parse(rawJson);
+        if (Array.isArray(data)) {
+            return data.filter((v) => typeof v === 'string');
+        }
+    } catch {
+        // Do nothing
+    }
+
+    return [];
+}
+
 export function getCurrentMomentForTimezone(timezone: string | null) {
     return timezone ? moment.tz(timezone) : moment();
 }
@@ -184,4 +205,41 @@ export function areBothStringArraysEqual(a: string[], b: string[]) {
     const areBothEqual = aSorted.every((value, index) => value === bSorted[index]);
 
     return areBothEqual;
+}
+
+/**
+ * Efficiently compares two arrays to check if they have different elements.
+ * Uses O(n) complexity by comparing sets directly.
+ * @param oldArray - The original array
+ * @param newArray - The new array to compare against
+ * @returns true if arrays have different elements, false if they're the same
+ */
+export function hasArrayChanged(oldArray: string[], newArray: string[]): boolean {
+    if (oldArray.length !== newArray.length) {
+        return true;
+    }
+
+    const oldSet = new Set(oldArray);
+    const newSet = new Set(newArray);
+
+    // If sets have different sizes, arrays have different unique elements
+    if (oldSet.size !== newSet.size) {
+        return true;
+    }
+
+    // Check both directions: all elements in oldSet exist in newSet
+    // AND all elements in newSet exist in oldSet
+    for (const item of oldSet) {
+        if (!newSet.has(item)) {
+            return true;
+        }
+    }
+
+    for (const item of newSet) {
+        if (!oldSet.has(item)) {
+            return true;
+        }
+    }
+
+    return false;
 }

@@ -234,7 +234,7 @@ export async function deleteMyTeams(operator: ServerDataOperator, myTeams: MyTea
     }
 }
 
-export const prepareDeleteTeam = async (team: TeamModel): Promise<Model[]> => {
+export const prepareDeleteTeam = async (serverUrl: string, team: TeamModel): Promise<Model[]> => {
     try {
         const preparedModels: Model[] = [team.prepareDestroyPermanently()];
 
@@ -279,7 +279,7 @@ export const prepareDeleteTeam = async (team: TeamModel): Promise<Model[]> => {
         if (channels.length) {
             for await (const channel of channels) {
                 try {
-                    const preparedChannel = await prepareDeleteChannel(channel);
+                    const preparedChannel = await prepareDeleteChannel(serverUrl, channel);
                     preparedModels.push(...preparedChannel);
                 } catch {
                     // Record not found, do nothing
