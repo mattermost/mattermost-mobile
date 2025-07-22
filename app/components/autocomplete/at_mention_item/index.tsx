@@ -22,14 +22,14 @@ const AtMentionItem = ({
     enableMentionConversion,
 }: AtMentionItemProps) => {
     const completeMention = useCallback((u: UserModel | UserProfile) => {
+        let mention = u.username;
         if (enableMentionConversion) {
-            const displayName = getFullName(u) || u.username;
-            if (displayName !== u.username) {
-                onPress?.(displayName);
-                return;
+            const fullName = getFullName(u);
+            if (fullName && fullName !== u.username) {
+                mention = fullName;
             }
         }
-        onPress?.(u.username);
+        onPress?.(mention);
     }, [onPress, enableMentionConversion]);
 
     return (
