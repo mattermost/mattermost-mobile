@@ -23,6 +23,7 @@ import {t} from '@i18n';
 import NavigationStore from '@store/navigation_store';
 import {handleDraftUpdate} from '@utils/draft';
 import {extractFileInfo} from '@utils/file';
+import {logWarning} from '@utils/log';
 import {containsMentions, debounceConvertUsernamesToFullnames} from '@utils/mention_conversion';
 import {changeOpacity, makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} from '@utils/theme';
 
@@ -220,7 +221,7 @@ export default function PostInput({
             if (shouldConvert) {
                 const handleMentionConversion = async () => {
                     try {
-                        const convertedText = await debounceConvertUsernamesToFullnames(newValue, serverUrl, 150);
+                        const convertedText = await debounceConvertUsernamesToFullnames(newValue, serverUrl, 300);
                         if (convertedText !== newValue) {
                             updateValue((current) => {
                             // Conflict check: confirm that the text has not been changed, or has only been appended to.
@@ -239,6 +240,7 @@ export default function PostInput({
                         }
                     } catch (error) {
                         // Handle mention conversion error silently
+                        logWarning('Failed to convert mention on text change:', error);
                     }
                 };
 
