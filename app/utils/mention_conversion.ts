@@ -59,11 +59,11 @@ async function getUsersByFullNames(serverUrl: string, fullNames: string[]): Prom
         return new Map();
     }
 
-    // Query users that contain any of these words in first_name or last_name
+    // Use prefix search for index-friendly queries that cover most practical use cases
     const wordConditions = Array.from(allWords).map((word) =>
         Q.or(
-            Q.where('first_name', Q.like(`%${word}%`)),
-            Q.where('last_name', Q.like(`%${word}%`)),
+            Q.where('first_name', Q.like(`${word}%`)),
+            Q.where('last_name', Q.like(`${word}%`)),
         ),
     );
 
