@@ -1350,8 +1350,11 @@
   "user.settings.general.username": "Username",
   "user.settings.notifications.email_threads.description": "Notify me about all replies to threads I'm following",
   "user.tutorial.long_press": "Long-press on an item to view a user's profile",
+  "video.done": "Done",
   "video.download": "Download video",
   "video.download_description": "This video must be downloaded to play it.",
   "video.failed_description": "An error occurred while trying to play the video.",
+  "video.normal": "Normal",
+  "video.playback_speed": "Playback Speed",
   "your.servers": "Your servers"
 }

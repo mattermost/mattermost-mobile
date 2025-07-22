@@ -5,7 +5,7 @@ import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 
 import {observeCanDownloadFiles, observeEnableSecureFilePreview} from '@queries/servers/security';
 
-import DocumentRenderer from './document_renderer';
+import DocumentRenderer from './document';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
