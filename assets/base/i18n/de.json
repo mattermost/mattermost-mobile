@@ -1350,8 +1350,11 @@
   "user_status.offline": "Offline",
   "user_status.online": "Online",
   "user_status.title": "Status",
+  "video.done": "Erledigt",
   "video.download": "Video herunterladen",
   "video.download_description": "Dieses Video muss heruntergeladen werden, um es abzuspielen.",
   "video.failed_description": "Beim Abspielen des Videos ist ein Fehler aufgetreten.",
+  "video.normal": "Normal",
+  "video.playback_speed": "Wiedergabegeschwindigkeit",
   "your.servers": "Deine Server"
 }
