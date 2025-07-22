@@ -211,25 +211,32 @@ export default function PostInput({
 
         checkMessageLength(newValue);
 
-        // メンション変換機能
+        // メンション変換機能 - ユーザーが入力を完了してから実行
         if (enableMentionConversion && containsMentions(newValue)) {
-            const handleMentionConversion = async () => {
-                try {
-                    const convertedText = await debounceConvertUsernamesToFullnames(newValue, serverUrl);
-                    if (convertedText !== newValue) {
-                        updateValue((current) => {
-                            if (current === newValue) {
-                                return convertedText;
-                            }
-                            return current;
-                        });
+            // スペースまたは改行で区切られた完全なメンションのみ変換
+            const lastChar = newValue[newValue.length - 1];
+            const shouldConvert = lastChar === ' ' || lastChar === '\n' || lastChar === '\t';
+            
+            if (shouldConvert) {
+                const handleMentionConversion = async () => {
+                    try {
+                        const convertedText = await debounceConvertUsernamesToFullnames(newValue, serverUrl, 150);
+                        if (convertedText !== newValue) {
+                            updateValue((current) => {
+                                // より厳密な競合チェック
+                                if (current === newValue || current.endsWith(newValue.trim())) {
+                                    return convertedText;
+                                }
+                                return current;
+                            });
+                        }
+                    } catch (error) {
+                        // Handle mention conversion error silently
                     }
-                } catch (error) {
-                    // Handle mention conversion error silently
-                }
-            };
+                };
 
-            handleMentionConversion();
+                handleMentionConversion();
+            }
         }
 
         if (

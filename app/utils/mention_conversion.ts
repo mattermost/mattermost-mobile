@@ -49,25 +49,27 @@ async function getUsersByFullNames(serverUrl: string, fullNames: string[]): Prom
         return new Map();
     }
 
+    // Collect all unique words from all full names
     const allWords = new Set<string>();
     for (const name of fullNames) {
         const words = name.toLowerCase().split(' ').filter((w) => w.length > 0);
-        for (const word of words) {
-            allWords.add(word);
-        }
+        words.forEach((word) => allWords.add(word));
     }
 
     if (allWords.size === 0) {
         return new Map();
     }
 
+    // Query users that contain any of these words in first_name or last_name
+    const wordConditions = Array.from(allWords).map((word) =>
+        Q.or(
+            Q.where('first_name', Q.like(`%${word}%`)),
+            Q.where('last_name', Q.like(`%${word}%`)),
+        ),
+    );
+
     const users = await database.collections.get(USER).
-        query(
-            Q.or(
-                Q.where('first_name', Q.like(`%${Array.from(allWords).join('%')}%`)),
-                Q.where('last_name', Q.like(`%${Array.from(allWords).join('%')}%`)),
-            ),
-        ).
+        query(Q.or(...wordConditions)).
         fetch();
 
     const userMap = new Map<string, UserModel>();
@@ -126,23 +128,11 @@ export async function convertUsernamesToFullnames(
                 }
 
                 const afterIndex = index + searchPattern.length;
-                const charAfter = afterIndex < convertedText.length ? convertedText[afterIndex] : '';
                 const beforeChar = index > 0 ? convertedText[index - 1] : '';
                 const isValidMention = index === 0 || !/[a-z0-9.\-_]/i.test(beforeChar);
 
                 if (isValidMention) {
-                    let replacement = `@${result.fullName}`;
-                    const needsSpace = charAfter &&
-                                     charAfter !== ' ' &&
-                                     charAfter !== '\n' &&
-                                     charAfter !== '\t' &&
-                                     charAfter !== '\r' &&
-                                     !/[.,!?;:(){}[\]"'`\-]/.test(charAfter);
-
-                    if (needsSpace) {
-                        replacement += ' ';
-                    }
-
+                    const replacement = `@${result.fullName}`;
                     const before = convertedText.substring(0, index);
                     const after = convertedText.substring(afterIndex);
                     convertedText = before + replacement + after;
@@ -153,7 +143,7 @@ export async function convertUsernamesToFullnames(
             }
         });
 
-        convertedText = convertedText.replace(/\s+$/, '');
+        // 連続するスペースのみを単一のスペースに変換（末尾スペースは保持）
         convertedText = convertedText.replace(/[ \t]{2,}/g, ' ');
 
         return convertedText;
