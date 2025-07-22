@@ -4,7 +4,7 @@
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {DeviceEventEmitter, type StyleProp, StyleSheet, View, type ViewStyle} from 'react-native';
 import Animated from 'react-native-reanimated';
-import {SafeAreaView, type Edge, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {Events} from '@constants';
 import {GALLERY_FOOTER_HEIGHT} from '@constants/gallery';
@@ -39,8 +39,6 @@ type Props = {
     teammateNameDisplay: string;
 }
 
-const AnimatedSafeAreaView = Animated.createAnimatedComponent(SafeAreaView);
-const edges: Edge[] = [];
 const styles = StyleSheet.create({
     container: {
         alignItems: 'center',
@@ -102,9 +100,7 @@ const Footer = ({
     }, []);
 
     return (
-        <AnimatedSafeAreaView
-            mode='padding'
-            edges={edges}
+        <Animated.View
             style={[style]}
         >
             {['downloading', 'sharing'].includes(action) && !enableSecureFilePreview && canDownloadFiles &&
@@ -149,7 +145,7 @@ const Footer = ({
                 }
             </View>
             <View style={bottomStyle}/>
-        </AnimatedSafeAreaView>
+        </Animated.View>
     );
 };
 
