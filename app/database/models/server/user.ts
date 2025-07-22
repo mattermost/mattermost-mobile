@@ -194,7 +194,7 @@ export default class UserModel extends Model implements UserModelInterface {
             keys.push({key: usernameKey});
         }
 
-        // フルネーム形式のメンションキーを追加（メンション変換機能対応）
+        // Add full name mention key (for mention conversion feature)
         const fullName = [this.firstName, this.lastName].filter(Boolean).join(' ').trim();
         if (fullName) {
             const fullNameKey = `@${fullName}`;

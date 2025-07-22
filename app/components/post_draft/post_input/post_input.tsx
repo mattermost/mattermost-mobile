@@ -205,15 +205,15 @@ export default function PostInput({
             return;
         }
 
-        // 即座にUIを更新（レスポンシブ性確保）
+        // Update UI immediately for responsiveness
         updateValue(newValue);
         lastNativeValue.current = newValue;
 
         checkMessageLength(newValue);
 
-        // メンション変換機能 - ユーザーが入力を完了してから実行
+        // Mention conversion feature - executes after the user finishes typing
         if (enableMentionConversion && containsMentions(newValue)) {
-            // スペースまたは改行で区切られた完全なメンションのみ変換
+            // Convert only complete mentions separated by a space or newline
             const lastChar = newValue[newValue.length - 1];
             const shouldConvert = lastChar === ' ' || lastChar === '\n' || lastChar === '\t';
 
@@ -222,19 +222,20 @@ export default function PostInput({
                     try {
                         const convertedText = await debounceConvertUsernamesToFullnames(newValue, serverUrl, 150);
                         if (convertedText !== newValue) {
-                                                    updateValue((current) => {
-                            // 競合チェック: テキストが変更されていないか、末尾に追加されただけかを確認
-                            if (current === newValue) {
-                                // テキストが変更されていない場合は安全に変換
-                                return convertedText;
-                            } else if (current.startsWith(newValue)) {
-                                // ユーザーが変換トリガー後に追加のテキストを入力した場合
-                                const additionalText = current.substring(newValue.length);
-                                return convertedText + additionalText;
-                            }
-                            // その他の変更がある場合は変換を適用しない（データ損失を防ぐ）
-                            return current;
-                        });
+                            updateValue((current) => {
+                            // Conflict check: confirm that the text has not been changed, or has only been appended to.
+                                if (current === newValue) {
+                                // If the text has not changed, it's safe to convert.
+                                    return convertedText;
+                                } else if (current.startsWith(newValue)) {
+                                // If the user typed additional text after the conversion was triggered, append it.
+                                    const additionalText = current.substring(newValue.length);
+                                    return convertedText + additionalText;
+                                }
+
+                                // Do not apply conversion if there are other changes (to prevent data loss).
+                                return current;
+                            });
                         }
                     } catch (error) {
                         // Handle mention conversion error silently

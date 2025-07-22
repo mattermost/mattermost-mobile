@@ -15,10 +15,9 @@ const MENTION_REGEX = /@([a-z0-9.\-_\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]+)/g
 const FULLNAME_MENTION_REGEX = /@([^@\n]+?)(?=\s|[.,!?;:(){}[\]"'`]|@|$)/gi;
 
 export function containsMentions(text: string): boolean {
-    const mentionRegex = /@([a-z0-9.\-_\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]+)/gi;
-    const fullnameRegex = /@([^@\n]+?)(?=\s|[.,!?;:(){}[\]"'`]|@|$)/gi;
-
-    return mentionRegex.test(text) || fullnameRegex.test(text);
+    MENTION_REGEX.lastIndex = 0;
+    FULLNAME_MENTION_REGEX.lastIndex = 0;
+    return MENTION_REGEX.test(text) || FULLNAME_MENTION_REGEX.test(text);
 }
 
 const debounceCache = new Map<string, Promise<string>>();
@@ -143,7 +142,7 @@ export async function convertUsernamesToFullnames(
             }
         });
 
-        // 連続するスペースのみを単一のスペースに変換（末尾スペースは保持）
+        // Normalize multiple spaces to a single space (preserves trailing space)
         convertedText = convertedText.replace(/[ \t]{2,}/g, ' ');
 
         return convertedText;

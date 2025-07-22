@@ -121,7 +121,7 @@ export default function SendHandler({
         clearDraft,
     });
 
-    // メンション変換機能付きの送信ハンドラー
+    // Send handler with mention conversion feature
     const handleSendMessage = useCallback(async (schedulingInfo?: SchedulingInfo) => {
         let messageToSend = value;
 
@@ -129,12 +129,12 @@ export default function SendHandler({
             try {
                 messageToSend = await convertFullnamesToUsernames(value, serverUrl);
             } catch (error) {
-                // メンション変換エラー時は元のメッセージを使用
+                // Use original message on mention conversion error
                 logWarning('Failed to convert mentions for sending:', error);
             }
         }
 
-        // 修正されたuseHandleSendMessageフックを使用して、変換されたメッセージを直接渡す
+        // Use the modified useHandleSendMessage hook to pass the converted message directly
         return originalHandleSendMessage(schedulingInfo, messageToSend);
     }, [enableMentionConversion, value, serverUrl, originalHandleSendMessage]);
 

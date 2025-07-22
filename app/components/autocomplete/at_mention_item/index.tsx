@@ -4,6 +4,7 @@
 import React, {useCallback} from 'react';
 
 import UserItem from '@components/user_item';
+import {getFullName} from '@utils/user';
 
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -22,22 +23,9 @@ const AtMentionItem = ({
 }: AtMentionItemProps) => {
     const completeMention = useCallback((u: UserModel | UserProfile) => {
         if (enableMentionConversion) {
-            // フルネームが利用可能な場合はフルネームを使用
-            let fullName: string;
-            if ('firstName' in u && 'lastName' in u) {
-                if (u.firstName && u.lastName) {
-                    fullName = `${u.firstName} ${u.lastName}`;
-                } else {
-                    fullName = u.firstName || u.lastName || u.username;
-                }
-            } else if (u.first_name && u.last_name) {
-                fullName = `${u.first_name} ${u.last_name}`;
-            } else {
-                fullName = u.first_name || u.last_name || u.username;
-            }
-
-            if (fullName && fullName.trim() && fullName !== u.username) {
-                onPress?.(fullName);
+            const displayName = getFullName(u) || u.username;
+            if (displayName !== u.username) {
+                onPress?.(displayName);
                 return;
             }
         }
