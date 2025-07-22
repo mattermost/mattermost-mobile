@@ -52,26 +52,10 @@ export function displayGroupMessageName(users: Array<UserProfile | UserModel>, l
 }
 
 export function getFullName(user: UserProfile | UserModel): string {
-    let firstName: string;
-    let lastName: string;
+    const firstName = 'firstName' in user ? user.firstName : user.first_name;
+    const lastName = 'lastName' in user ? user.lastName : user.last_name;
 
-    if ('lastName' in user) {
-        firstName = user.firstName;
-        lastName = user.lastName;
-    } else {
-        firstName = user.first_name;
-        lastName = user.last_name;
-    }
-
-    if (firstName && lastName) {
-        return `${firstName} ${lastName}`;
-    } else if (firstName) {
-        return firstName;
-    } else if (lastName) {
-        return lastName;
-    }
-
-    return '';
+    return [firstName, lastName].filter(Boolean).join(' ').trim();
 }
 
 export function getUserIdFromChannelName(knownUserId: string, channelName: string): string {
@@ -380,7 +364,7 @@ export function getEmailInterval(enableEmailNotification: boolean, enableEmailBa
 }
 
 export const getEmailIntervalTexts = (interval: string) => {
-    const intervalTexts: Record<string, any> = {
+    const intervalTexts: Record<string, {id: string; defaultMessage: string}> = {
         [Preferences.INTERVAL_FIFTEEN_MINUTES]: {id: 'notification_settings.email.fifteenMinutes', defaultMessage: 'Every 15 minutes'},
         [Preferences.INTERVAL_HOUR]: {id: 'notification_settings.email.everyHour', defaultMessage: 'Every hour'},
         [Preferences.INTERVAL_IMMEDIATE]: {id: 'notification_settings.email.immediately', defaultMessage: 'Immediately'},

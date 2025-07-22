@@ -8,7 +8,7 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {type IntlShape, useIntl} from 'react-intl';
 import {
     Alert, AppState, type AppStateStatus, DeviceEventEmitter, type EmitterSubscription, Keyboard,
-    type NativeSyntheticEvent, Platform, type TextInputSelectionChangeEventData, View,
+    type NativeSyntheticEvent, Platform, type TextInputSelectionChangeEventData,
 } from 'react-native';
 
 import {updateDraftMessage} from '@actions/local/draft';
@@ -355,31 +355,28 @@ export default function PostInput({
     useHardwareKeyboardEvents(events);
 
     return (
-        <View style={{position: 'relative'}}>
-            <PasteableTextInput
-                allowFontScaling={true}
-                disableCopyPaste={disableCopyAndPaste}
-                disableFullscreenUI={true}
-                keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                multiline={true}
-                onBlur={onBlur}
-                onChangeText={handleTextChange}
-                onFocus={onFocus}
-                onPaste={onPaste}
-                onSelectionChange={handlePostDraftSelectionChanged}
-                placeholder={intl.formatMessage(getPlaceHolder(rootId), {channelDisplayName})}
-                placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                ref={inputRef}
-                smartPunctuation='disable'
-                submitBehavior='newline'
-                style={pasteInputStyle}
-                testID={testID}
-                underlineColorAndroid='transparent'
-                textContentType='none'
-                value={value}
-                autoCapitalize='sentences'
-            />
-
-        </View>
+        <PasteableTextInput
+            allowFontScaling={true}
+            disableCopyPaste={disableCopyAndPaste}
+            disableFullscreenUI={true}
+            keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+            multiline={true}
+            onBlur={onBlur}
+            onChangeText={handleTextChange}
+            onFocus={onFocus}
+            onPaste={onPaste}
+            onSelectionChange={handlePostDraftSelectionChanged}
+            placeholder={intl.formatMessage(getPlaceHolder(rootId), {channelDisplayName})}
+            placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
+            ref={inputRef}
+            smartPunctuation='disable'
+            submitBehavior='newline'
+            style={pasteInputStyle}
+            testID={testID}
+            underlineColorAndroid='transparent'
+            textContentType='none'
+            value={value}
+            autoCapitalize='sentences'
+        />
     );
 }
