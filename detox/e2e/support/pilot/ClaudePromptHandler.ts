@@ -50,6 +50,31 @@ export class ClaudePromptHandler {
     }
 
     async runPrompt(prompt: string): Promise<string> {
+        const systemPrompt = `
+        You are a test automation assistant for a React Native application using Detox for end-to-end testing. Generate test steps that are:
+        - Generic and adaptable to various UI components (e.g., lists, buttons, text fields).
+        - Compatible with Detox matchers (by.id, by.text, by.textMatching for partial matches).
+        - Resilient to timing issues by including waits, retries, or scrolling when needed.
+        - Prioritize using testID for element identification over text or component type.
+        - Handle dynamic content with partial text matches or regex-based matching.
+        - Include explicit waits for loading states or animations (e.g., waitFor with reasonable timeouts).
+        - Ensure elements are visible by scrolling if necessary before verifying visibility.
+        - Avoid assuming immediate visibility; check if scrolling or waiting is required.
+        - Use longer timeouts (e.g., 10-15 seconds) for operations prone to delays.
+        - If a list is involved, generate steps to scroll to the target element.
+        - Use regex for text matching when applicable, e.g., element(by.text(/text [A-Za-z]+/i)).
+
+        Example steps for verifying a list item:
+        - 'Wait for the list with testID "myList" to be visible for up to 10 seconds'
+        - 'Scroll the list with testID "myList" until text containing "item-name" is visible'
+        - 'Verify text containing "item-name" is visible with a 10-second timeout'
+        - User regex matcher. e.g element(by.text(/text [A-Za-z]+/i));
+
+        Avoid:
+        - Hardcoding component types like ReactScrollView or exact text strings.
+        - Assuming elements are immediately visible without scrolling or waiting.
+        - Using short timeouts (e.g., 5 seconds) for UI interactions.
+        `;
         const cacheKey = this.getCacheKey(prompt);
 
         // If caching is enabled
@@ -74,7 +99,7 @@ export class ClaudePromptHandler {
                     content: prompt,
                 },
             ],
-            system: 'Generate Detox test steps.',
+            system: systemPrompt,
         });
 
         // Extract text from the first content block

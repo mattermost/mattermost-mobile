@@ -76,4 +76,117 @@ describe('Playbooks - Basic', () => {
             'Verify the "In Progress" tab is selected',
         );
     });
+
+    it('should verify finished playbooks are listed in the Finished tab', async () => {
+        // Create and finish a playbook run
+        const playbook = PlaybooksHelpers.generateRandomPlaybook({
+            teamId: testTeam.id,
+            userId: secondUser.id,
+            prefix: 'finished-test',
+            channel_id: testChannel.id,
+        });
+        const {id: playbookId} = await Playbooks.apiCreatePlaybook(siteOneUrl, playbook);
+        const playbookRun = PlaybooksHelpers.generateRandomPlaybookRun({
+            teamId: testTeam.id,
+            playbookId,
+            channelId: testChannel.id,
+            ownerId: secondUser.id,
+            prefix: 'finished-run',
+        });
+        const activeRun = await Playbooks.apiRunPlaybook(siteOneUrl, playbookRun);
+        await Playbooks.apiFinishRun(siteOneUrl, activeRun.id);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await pilot.perform(
+            'Tap the "Quick Actions" icon in the Channel Header',
+            'Tap the "Playbook runs" option in the bottom sheet',
+            'Switch to the "Finished" tab',
+            'Verify the finished playbook run is listed',
+        );
+    });
+
+    it('should verify scrolling of playbooks in the In Progress tab', async () => {
+        // Create multiple in-progress playbook runs
+        const playbook = PlaybooksHelpers.generateRandomPlaybook({
+            teamId: testTeam.id,
+            userId: secondUser.id,
+            prefix: 'scroll-inprogress',
+            channel_id: testChannel.id,
+        });
+        const {id: playbookId} = await Playbooks.apiCreatePlaybook(siteOneUrl, playbook);
+        for (let i = 0; i < 10; i++) {
+            const playbookRun = PlaybooksHelpers.generateRandomPlaybookRun({
+                teamId: testTeam.id,
+                playbookId,
+                channelId: testChannel.id,
+                ownerId: secondUser.id,
+                prefix: `scroll-inprogress-${i}`,
+            });
+            Playbooks.apiRunPlaybook(siteOneUrl, playbookRun);
+        }
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await pilot.perform(
+            'Tap the button with testID "quickActions"',
+            'Tap the option with text containing "Playbook runs"',
+            'Verify multiple "In Progress" playbook runs are listed',
+            'Scroll down to load more playbook runs',
+            'Verify additional "In Progress" playbook runs are loaded',
+        );
+    });
+
+    it('should verify details of a checklist in a particular playbook', async () => {
+        // Create a playbook with a checklist
+        const playbook = PlaybooksHelpers.generateRandomPlaybook({
+            teamId: testTeam.id,
+            userId: secondUser.id,
+            prefix: 'checklist-details',
+            numChecklists: 2,
+            numItems: 2,
+            channel_id: testChannel.id,
+        });
+        const {id: playbookId} = await Playbooks.apiCreatePlaybook(siteOneUrl, playbook);
+        const playbookRun = PlaybooksHelpers.generateRandomPlaybookRun({
+            teamId: testTeam.id,
+            playbookId,
+            channelId: testChannel.id,
+            ownerId: secondUser.id,
+            prefix: 'checklist-details-run',
+        });
+        const activeRun = await Playbooks.apiRunPlaybook(siteOneUrl, playbookRun);
+        await Playbooks.apiAddUsersToRun(siteOneUrl, activeRun.id, [secondUser.id, thirdUser.id]);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await pilot.perform(
+            'Tap on the Playbooks icon in the Channel Header',
+            'Verify the playbook name is displayed',
+            'Verify the checklist and its items are displayed',
+        );
+    });
+
+    it('should verify ticking a checklist item and seeing progress', async () => {
+        // Create a playbook with a checklist
+        const playbook = PlaybooksHelpers.generateRandomPlaybook({
+            teamId: testTeam.id,
+            userId: secondUser.id,
+            prefix: 'checklist-progress',
+            numChecklists: 1,
+            numItems: 2,
+            channel_id: testChannel.id,
+        });
+        const {id: playbookId} = await Playbooks.apiCreatePlaybook(siteOneUrl, playbook);
+        const playbookRun = PlaybooksHelpers.generateRandomPlaybookRun({
+            teamId: testTeam.id,
+            playbookId,
+            channelId: testChannel.id,
+            ownerId: secondUser.id,
+            prefix: 'checklist-progress-run',
+        });
+        await Playbooks.apiRunPlaybook(siteOneUrl, playbookRun);
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await pilot.perform(
+            'Tap the "Quick Actions" icon in the Channel Header',
+            'Tap the "Playbook runs" option in the bottom sheet',
+            'Open a playbook run',
+            'Tick a checklist item',
+            'Verify the progress indicator updates accordingly',
+        );
+    });
 });
