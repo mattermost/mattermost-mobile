@@ -1350,8 +1350,11 @@
   "user_status.offline": "Offline",
   "user_status.online": "Online",
   "user_status.title": "Status",
+  "video.done": "Hotovo",
   "video.download": "Stáhnout video",
   "video.download_description": "Video musí být staženo, aby mohlo být přehráno.",
   "video.failed_description": "Při pokusu o přehrání videa došlo k chybě.",
+  "video.normal": "Normální",
+  "video.playback_speed": "Rychlost přehrávání",
   "your.servers": "Vaše servery"
 }
