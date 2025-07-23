@@ -4,18 +4,17 @@
 import React, {useCallback, useMemo, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {DeviceEventEmitter, StyleSheet, Text, View} from 'react-native';
-import {RectButton, TouchableWithoutFeedback} from 'react-native-gesture-handler';
+import {RectButton, Pressable} from 'react-native-gesture-handler';
 import Animated from 'react-native-reanimated';
 
 import FileIcon from '@components/files/file_icon';
 import {Events, Preferences} from '@constants';
+import DownloadWithAction from '@screens/gallery/footer/download_with_action';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {isDocument, isPdf} from '@utils/file';
 import {galleryItemToFileInfo} from '@utils/gallery';
 import {changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
-
-import DownloadWithAction from '../footer/download_with_action';
 
 import type {GalleryAction, GalleryItemType} from '@typings/screens/gallery';
 
@@ -23,7 +22,7 @@ type Props = {
     canDownloadFiles: boolean;
     enableSecureFilePreview: boolean;
     item: GalleryItemType;
-    onShouldHideControls: (hide: boolean) => void;
+    hideHeaderAndFooter: (hide?: boolean) => void;
 }
 
 const styles = StyleSheet.create({
@@ -65,10 +64,9 @@ const messages = defineMessages({
     },
 });
 
-const DocumentRenderer = ({canDownloadFiles, enableSecureFilePreview, item, onShouldHideControls}: Props) => {
+const DocumentRenderer = ({canDownloadFiles, enableSecureFilePreview, item, hideHeaderAndFooter}: Props) => {
     const {formatMessage} = useIntl();
     const file = useMemo(() => galleryItemToFileInfo(item), [item]);
-    const [controls, setControls] = useState(true);
     const [enabled, setEnabled] = useState(true);
     const isSupported = useMemo(() => isDocument(file), [file]);
     const canOpenFile = useMemo(() => {
@@ -91,11 +89,6 @@ const DocumentRenderer = ({canDownloadFiles, enableSecureFilePreview, item, onSh
         return formatMessage(messages.openFile);
     }, [enableSecureFilePreview, file, formatMessage, isSupported]);
 
-    const handleHideControls = useCallback(() => {
-        onShouldHideControls(controls);
-        setControls(!controls);
-    }, [controls, onShouldHideControls]);
-
     const setGalleryAction = useCallback((action: GalleryAction) => {
         DeviceEventEmitter.emit(Events.GALLERY_ACTIONS, action);
         if (action === 'none') {
@@ -110,12 +103,15 @@ const DocumentRenderer = ({canDownloadFiles, enableSecureFilePreview, item, onSh
     const handlePdfPreview = useCallback(() => {
         if (enableSecureFilePreview && isPdf(file)) {
             DeviceEventEmitter.emit(Events.CLOSE_GALLERY);
+            return;
         }
-    }, [file, enableSecureFilePreview]);
+
+        hideHeaderAndFooter();
+    }, [file, enableSecureFilePreview, hideHeaderAndFooter]);
 
     return (
         <>
-            <TouchableWithoutFeedback onPress={handleHideControls}>
+            <Pressable onPress={handlePdfPreview}>
                 <Animated.View style={styles.container}>
                     <FileIcon
                         backgroundColor='transparent'
@@ -146,7 +142,7 @@ const DocumentRenderer = ({canDownloadFiles, enableSecureFilePreview, item, onSh
                     </View>
                     }
                 </Animated.View>
-            </TouchableWithoutFeedback>
+            </Pressable>
             {!enabled &&
             <DownloadWithAction
                 action='opening'

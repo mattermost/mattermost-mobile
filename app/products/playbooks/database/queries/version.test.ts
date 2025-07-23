@@ -5,7 +5,7 @@ import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {MINIMUM_MAJOR_VERSION, MINIMUM_MINOR_VERSION, MINIMUM_PATCH_VERSION} from '@playbooks/constants/version';
 
-import {observeIsPlaybooksEnabled} from './version';
+import {fetchIsPlaybooksEnabled, observeIsPlaybooksEnabled} from './version';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 
@@ -149,6 +149,77 @@ describe('Playbook Version Queries', () => {
             });
 
             expect(subscriptionNext).toHaveBeenCalledWith(false);
+        });
+    });
+
+    describe('fetchIsPlaybooksEnabled', () => {
+        it('should return false when no playbooks version is set', async () => {
+            const result = await fetchIsPlaybooksEnabled(operator.database);
+            expect(result).toBe(false);
+        });
+
+        it(`should return true when playbooks version meets minimum requirements (${MINIMUM_VERSION})`, async () => {
+            await operator.handleSystem({
+                systems: [{id: SYSTEM_IDENTIFIERS.PLAYBOOKS_VERSION, value: MINIMUM_VERSION}],
+                prepareRecordsOnly: false,
+            });
+
+            const result = await fetchIsPlaybooksEnabled(operator.database);
+            expect(result).toBe(true);
+        });
+
+        it('should return true when playbooks version has higher major version', async () => {
+            const higherVersion = `${MINIMUM_MAJOR_VERSION + 1}.0.0`;
+            await operator.handleSystem({
+                systems: [{id: SYSTEM_IDENTIFIERS.PLAYBOOKS_VERSION, value: higherVersion}],
+                prepareRecordsOnly: false,
+            });
+
+            const result = await fetchIsPlaybooksEnabled(operator.database);
+            expect(result).toBe(true);
+        });
+
+        it('should return true when playbooks version has higher minor version', async () => {
+            const higherVersion = `${MINIMUM_MAJOR_VERSION}.${MINIMUM_MINOR_VERSION + 1}.${MINIMUM_PATCH_VERSION}`;
+            await operator.handleSystem({
+                systems: [{id: SYSTEM_IDENTIFIERS.PLAYBOOKS_VERSION, value: higherVersion}],
+                prepareRecordsOnly: false,
+            });
+
+            const result = await fetchIsPlaybooksEnabled(operator.database);
+            expect(result).toBe(true);
+        });
+
+        it('should return true when playbooks version has higher patch version', async () => {
+            const higherVersion = `${MINIMUM_MAJOR_VERSION}.${MINIMUM_MINOR_VERSION}.${MINIMUM_PATCH_VERSION + 1}`;
+            await operator.handleSystem({
+                systems: [{id: SYSTEM_IDENTIFIERS.PLAYBOOKS_VERSION, value: higherVersion}],
+                prepareRecordsOnly: false,
+            });
+
+            const result = await fetchIsPlaybooksEnabled(operator.database);
+            expect(result).toBe(true);
+        });
+
+        it('should handle empty version string', async () => {
+            await operator.handleSystem({
+                systems: [{id: SYSTEM_IDENTIFIERS.PLAYBOOKS_VERSION, value: ''}],
+                prepareRecordsOnly: false,
+            });
+
+            const result = await fetchIsPlaybooksEnabled(operator.database);
+            expect(result).toBe(false);
+        });
+
+        it('should return false when playbooks version is below minimum', async () => {
+            const belowVersion = `${MINIMUM_MAJOR_VERSION - 1}.${MINIMUM_MINOR_VERSION}.${MINIMUM_PATCH_VERSION}`;
+            await operator.handleSystem({
+                systems: [{id: SYSTEM_IDENTIFIERS.PLAYBOOKS_VERSION, value: belowVersion}],
+                prepareRecordsOnly: false,
+            });
+
+            const result = await fetchIsPlaybooksEnabled(operator.database);
+            expect(result).toBe(false);
         });
     });
 });

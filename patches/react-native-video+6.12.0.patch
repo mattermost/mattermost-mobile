@@ -1,0 +1,22 @@
+diff --git a/node_modules/react-native-video/android/src/main/java/com/brentvatne/exoplayer/ExoPlayerView.kt b/node_modules/react-native-video/android/src/main/java/com/brentvatne/exoplayer/ExoPlayerView.kt
+index ee24982..8f952db 100644
+--- a/node_modules/react-native-video/android/src/main/java/com/brentvatne/exoplayer/ExoPlayerView.kt
++++ b/node_modules/react-native-video/android/src/main/java/com/brentvatne/exoplayer/ExoPlayerView.kt
+@@ -217,6 +217,17 @@ class ExoPlayerView(private val context: Context) :
+         }
+     }
+ 
++    override fun onDetachedFromWindow() {
++        super.onDetachedFromWindow()
++        player?.let {
++            it.playWhenReady = false
++            it.stop()
++            it.clearVideoSurface()
++            it.release()
++        }
++        player = null
++    }
++
+     override fun requestLayout() {
+         super.requestLayout()
+         post(measureAndLayout)
