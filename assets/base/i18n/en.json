@@ -1014,6 +1014,7 @@
   "playbooks.runs.finished.title": "No finished runs",
   "playbooks.runs.in_progress.description": "When a run starts in this channel, you’ll see it here.",
   "playbooks.runs.in_progress.title": "No in progress runs",
+  "playbooks.runs.show_more": "Show More",
   "plus_menu.browse_channels.title": "Browse Channels",
   "plus_menu.create_new_channel.title": "Create New Channel",
   "plus_menu.invite_people_to_team.title": "Invite people to the team",
