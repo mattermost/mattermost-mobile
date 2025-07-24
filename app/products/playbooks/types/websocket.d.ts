@@ -13,13 +13,8 @@ type PlaybookRunUpdate = {
     };
 }
 
-type PlaybookChecklistUpdatePayload = {
-    playbook_run_id: string;
-    update: PlaybookChecklistUpdate;
-}
 type PlaybookChecklistUpdate = {
     id: string;
-    index: number;
     checklist_updated_at: number;
     items_order?: string[];
     fields?: Omit<Partial<PlaybookChecklist>, 'items'> & {
@@ -30,15 +25,8 @@ type PlaybookChecklistUpdate = {
     item_inserts?: PlaybookChecklistItem[];
 }
 
-type PlaybookChecklistItemUpdatePayload = {
-    playbook_run_id: string;
-    checklist_id: string;
-    update: PlaybookChecklistItemUpdate;
-}
-
 type PlaybookChecklistItemUpdate = {
     id: string;
-    index: number;
     checklist_item_updated_at: number;
     fields: Partial<PlaybookChecklistItem>;
 }

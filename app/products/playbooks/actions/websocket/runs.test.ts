@@ -3,7 +3,6 @@
 
 import DatabaseManager from '@database/manager';
 import {handlePlaybookRuns} from '@playbooks/actions/local/run';
-import {getPlaybookChecklistById} from '@playbooks/database/queries/checklist';
 import {getPlaybookRunById} from '@playbooks/database/queries/run';
 import EphemeralStore from '@store/ephemeral_store';
 import TestHelper from '@test/test_helper';
@@ -12,8 +11,6 @@ import {
     handlePlaybookRunCreated,
     handlePlaybookRunUpdated,
     handlePlaybookRunUpdatedIncremental,
-    handlePlaybookChecklistUpdated,
-    handlePlaybookChecklistItemUpdated,
 } from './runs';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -26,7 +23,6 @@ mockPlaybookRun.update_at = 1; // Set the update_at to a value that is before th
 
 const channelId = mockPlaybookRun.channel_id;
 const playbookRunId = mockPlaybookRun.id;
-const checklistId = mockPlaybookRun.checklists[0].id;
 const checklistItemId = mockPlaybookRun.checklists[0].items[0].id;
 
 jest.mock('@playbooks/actions/local/run');
@@ -131,379 +127,221 @@ describe('handlePlaybookRunUpdated', () => {
 
 describe('handlePlaybookRunUpdatedIncremental', () => {
     let spyHandlePlaybookRun: jest.SpyInstance;
+    let spyHandlePlaybookChecklist: jest.SpyInstance;
+    let spyHandlePlaybookChecklistItem: jest.SpyInstance;
+    let spyBatchRecords: jest.SpyInstance;
 
-    const mockPlaybookRunUpdate: PlaybookRunUpdate = {
-        id: playbookRunId,
-        playbook_run_updated_at: Date.now(),
-        changed_fields: {
-            name: 'Updated Run Name',
-            description: 'Updated description',
-        },
-    };
+    function createFakeUpdateFromRun(run: PlaybookRun) {
+        const {checklists, ...restRun} = run;
+        const fakeUpdate: PlaybookRunUpdate = {
+            id: run.id,
+            playbook_run_updated_at: Date.now(),
+            changed_fields: {
+                ...restRun,
+                checklists: checklists.map((checklist) => {
+                    const {items, ...restChecklist} = checklist;
+                    return {
+                        id: checklist.id,
+                        checklist_updated_at: Date.now(),
+                        fields: restChecklist,
+                        item_inserts: items,
+                    };
+                }),
+            },
+        };
 
-    const mockWebSocketMessage = TestHelper.fakeWebsocketMessage({
-        data: {
-            payload: JSON.stringify(mockPlaybookRunUpdate),
-        },
-    });
+        return fakeUpdate;
+    }
+
+    function clearSpies() {
+        spyHandlePlaybookRun.mockClear();
+        spyHandlePlaybookChecklist.mockClear();
+        spyHandlePlaybookChecklistItem.mockClear();
+        spyBatchRecords.mockClear();
+    }
+
+    function expectSpiesNotCalled() {
+        expect(spyHandlePlaybookRun).not.toHaveBeenCalled();
+        expect(spyHandlePlaybookChecklist).not.toHaveBeenCalled();
+        expect(spyHandlePlaybookChecklistItem).not.toHaveBeenCalled();
+        expect(spyBatchRecords).not.toHaveBeenCalled();
+    }
 
     beforeEach(() => {
         spyHandlePlaybookRun = jest.spyOn(operator, 'handlePlaybookRun');
+        spyHandlePlaybookChecklist = jest.spyOn(operator, 'handlePlaybookChecklist');
+        spyHandlePlaybookChecklistItem = jest.spyOn(operator, 'handlePlaybookChecklistItem');
+        spyBatchRecords = jest.spyOn(operator, 'batchRecords');
     });
 
     it('should return early when no payload', async () => {
-        const msg = {...mockWebSocketMessage, data: {payload: undefined}};
+        const msg = TestHelper.fakeWebsocketMessage({
+            data: {payload: undefined},
+        });
 
         await handlePlaybookRunUpdatedIncremental(serverUrl, msg);
 
-        expect(spyHandlePlaybookRun).not.toHaveBeenCalled();
+        expectSpiesNotCalled();
     });
 
     it('should return early when payload cannot be parsed', async () => {
-        const msg = {...mockWebSocketMessage, data: {payload: '{{'}};
-
-        await handlePlaybookRunUpdatedIncremental(serverUrl, msg);
-
-        expect(spyHandlePlaybookRun).not.toHaveBeenCalled();
-    });
-
-    it('should return early when changed_fields is missing', async () => {
         const msg = TestHelper.fakeWebsocketMessage({
-            data: {
-                payload: JSON.stringify({
-                    id: playbookRunId,
-                    updated_at: Date.now(),
-                }),
-            },
+            data: {payload: '{{'},
         });
+
         await handlePlaybookRunUpdatedIncremental(serverUrl, msg);
 
-        expect(spyHandlePlaybookRun).not.toHaveBeenCalled();
+        expectSpiesNotCalled();
     });
 
     it('should return early when run is not in database', async () => {
-        await handlePlaybookRunUpdatedIncremental(serverUrl, mockWebSocketMessage);
+        const update = createFakeUpdateFromRun(mockPlaybookRun);
+        const msg = TestHelper.fakeWebsocketMessage({
+            data: {payload: JSON.stringify(update)},
+        });
 
-        expect(spyHandlePlaybookRun).not.toHaveBeenCalled();
+        await handlePlaybookRunUpdatedIncremental(serverUrl, msg);
+
+        expectSpiesNotCalled();
     });
 
     it('should return early when channel is not synced', async () => {
+        const update = createFakeUpdateFromRun(mockPlaybookRun);
+        const msg = TestHelper.fakeWebsocketMessage({
+            data: {payload: JSON.stringify(update)},
+        });
+
         await operator.handlePlaybookRun({
             prepareRecordsOnly: false,
             runs: mockPlaybookList,
         });
-        spyHandlePlaybookRun.mockClear();
+        clearSpies();
 
         jest.mocked(EphemeralStore.getChannelPlaybooksSynced).mockReturnValue(false);
 
-        await handlePlaybookRunUpdatedIncremental(serverUrl, mockWebSocketMessage);
+        await handlePlaybookRunUpdatedIncremental(serverUrl, msg);
 
         expect(EphemeralStore.getChannelPlaybooksSynced).toHaveBeenCalledWith(serverUrl, channelId);
-        expect(spyHandlePlaybookRun).not.toHaveBeenCalled();
+        expectSpiesNotCalled();
     });
 
-    it('should handle playbook run incremental update successfully', async () => {
+    it('should handle incremental update successfully', async () => {
         await operator.handlePlaybookRun({
             prepareRecordsOnly: false,
             runs: mockPlaybookList,
+            processChildren: true,
         });
-        spyHandlePlaybookRun.mockClear();
+        clearSpies();
+
+        const update = createFakeUpdateFromRun(mockPlaybookRun);
+        update.changed_fields.name = 'Updated Run Name';
+        update.changed_fields.description = 'Updated description';
+        update.changed_fields.checklists![0].fields!.title = 'Updated Checklist';
+        update.changed_fields.checklists![0].item_inserts = [];
+        update.changed_fields.checklists![0].item_updates = [{id: checklistItemId, checklist_item_updated_at: Date.now(), fields: {title: 'Updated Item'}}];
+
+        const msg = TestHelper.fakeWebsocketMessage({
+            data: {payload: JSON.stringify(update)},
+        });
 
         jest.mocked(EphemeralStore.getChannelPlaybooksSynced).mockReturnValue(true);
 
-        await handlePlaybookRunUpdatedIncremental(serverUrl, mockWebSocketMessage);
+        await handlePlaybookRunUpdatedIncremental(serverUrl, msg);
 
         expect(EphemeralStore.getChannelPlaybooksSynced).toHaveBeenCalledWith(serverUrl, channelId);
         expect(spyHandlePlaybookRun).toHaveBeenCalled();
         const storedRun = await getPlaybookRunById(operator.database, playbookRunId);
-        expect(storedRun?.name).toEqual(mockPlaybookRunUpdate.changed_fields.name);
-        expect(storedRun?.description).toEqual(mockPlaybookRunUpdate.changed_fields.description);
-        expect(storedRun?.updateAt).toEqual(mockPlaybookRunUpdate.playbook_run_updated_at);
+        expect(storedRun?.name).toEqual(update.changed_fields.name);
+        expect(storedRun?.description).toEqual(update.changed_fields.description);
+        expect(storedRun?.updateAt).toEqual(update.playbook_run_updated_at);
+
+        const checklists = await storedRun!.checklists.fetch();
+        expect(checklists).toHaveLength(1);
+        expect(checklists[0].title).toEqual(update.changed_fields.checklists![0].fields!.title);
+
+        const items = await checklists[0].items.fetch();
+        expect(items).toHaveLength(1);
+        expect(items[0].title).toEqual(update.changed_fields.checklists![0].item_updates![0].fields!.title);
     });
 
-    it('should not add checklists even if they are present in the payload', async () => {
+    it('should handle incremental update without changes in the run', async () => {
         await operator.handlePlaybookRun({
             prepareRecordsOnly: false,
             runs: mockPlaybookList,
-            processChildren: false,
+            processChildren: true,
         });
-        spyHandlePlaybookRun.mockClear();
+        clearSpies();
 
-        jest.mocked(EphemeralStore.getChannelPlaybooksSynced).mockReturnValue(true);
-
-        const msg = TestHelper.fakeWebsocketMessage({
-            data: {
-                payload: JSON.stringify({
-                    id: playbookRunId,
-                    updated_at: Date.now(),
-                    changed_fields: {
-                        checklists: {
-                            ...mockPlaybookRun.checklists[0],
-                            name: 'Updated Checklist',
-                        },
-                    },
-                }),
-            },
-        });
-
-        await handlePlaybookRunUpdatedIncremental(serverUrl, msg);
-
-        expect(spyHandlePlaybookRun).toHaveBeenCalled();
-        const checklist = await getPlaybookChecklistById(operator.database, mockPlaybookRun.checklists[0].id);
-        expect(checklist).toBeUndefined();
-    });
-});
-
-describe('handlePlaybookChecklistUpdated', () => {
-    let spyHandlePlaybookChecklist: jest.SpyInstance;
-    let spyHandlePlaybookChecklistItem: jest.SpyInstance;
-
-    const mockChecklistUpdate: PlaybookChecklistUpdate = {
-        id: checklistId,
-        index: 0,
-        checklist_updated_at: Date.now(),
-        fields: {
-            title: 'Updated Checklist',
-        },
-        item_inserts: [
-            TestHelper.fakePlaybookChecklistItem(checklistId, {id: checklistItemId}),
-        ],
-    };
-
-    const mockPlaybookChecklistUpdatePayload: PlaybookChecklistUpdatePayload = {
-        playbook_run_id: playbookRunId,
-        update: mockChecklistUpdate,
-    };
-
-    const mockWebSocketMessage = TestHelper.fakeWebsocketMessage({
-        data: {
-            payload: JSON.stringify(mockPlaybookChecklistUpdatePayload),
-        },
-    });
-
-    beforeEach(() => {
-        spyHandlePlaybookChecklist = jest.spyOn(operator, 'handlePlaybookChecklist');
-        spyHandlePlaybookChecklistItem = jest.spyOn(operator, 'handlePlaybookChecklistItem');
-    });
-
-    it('should return early when no payload', async () => {
-        const msg = {...mockWebSocketMessage, data: {payload: undefined}};
-
-        await handlePlaybookChecklistUpdated(serverUrl, msg);
-
-        expect(spyHandlePlaybookChecklist).not.toHaveBeenCalled();
-        expect(spyHandlePlaybookChecklistItem).not.toHaveBeenCalled();
-    });
-
-    it('should return early when payload cannot be parsed', async () => {
-        const msg = TestHelper.fakeWebsocketMessage({
-            data: {
-                payload: '{{',
-            },
-        });
-
-        await handlePlaybookChecklistUpdated(serverUrl, msg);
-
-        expect(spyHandlePlaybookChecklist).not.toHaveBeenCalled();
-        expect(spyHandlePlaybookChecklistItem).not.toHaveBeenCalled();
-    });
-
-    it('should return early when update.fields is missing', async () => {
-        const msg = TestHelper.fakeWebsocketMessage({
-            data: {
-                payload: JSON.stringify({
-                    playbook_run_id: playbookRunId,
-                    update: {id: checklistId, index: 0, updated_at: Date.now()},
-                }),
-            },
-        });
-        await handlePlaybookChecklistUpdated(serverUrl, msg);
-
-        expect(spyHandlePlaybookChecklist).not.toHaveBeenCalled();
-        expect(spyHandlePlaybookChecklistItem).not.toHaveBeenCalled();
-    });
-
-    it('should return early when run is not in database', async () => {
-        await handlePlaybookChecklistUpdated(serverUrl, mockWebSocketMessage);
-
-        expect(spyHandlePlaybookChecklist).not.toHaveBeenCalled();
-        expect(spyHandlePlaybookChecklistItem).not.toHaveBeenCalled();
-    });
-
-    it('should return early when channel is not synced', async () => {
-        await operator.handlePlaybookRun({
-            prepareRecordsOnly: false,
-            runs: mockPlaybookList,
-        });
-
-        jest.mocked(EphemeralStore.getChannelPlaybooksSynced).mockReturnValue(false);
-
-        await handlePlaybookChecklistUpdated(serverUrl, mockWebSocketMessage);
-
-        expect(EphemeralStore.getChannelPlaybooksSynced).toHaveBeenCalledWith(serverUrl, channelId);
-        expect(spyHandlePlaybookChecklist).not.toHaveBeenCalled();
-        expect(spyHandlePlaybookChecklistItem).not.toHaveBeenCalled();
-    });
-
-    it('should handle checklist update successfully without item inserts', async () => {
-        await operator.handlePlaybookRun({
-            prepareRecordsOnly: false,
-            runs: mockPlaybookList,
-        });
-
-        const payloadWithoutInserts = {
-            ...mockPlaybookChecklistUpdatePayload,
-            update: {
-                ...mockChecklistUpdate,
-                item_inserts: undefined,
-            },
+        const update = createFakeUpdateFromRun(mockPlaybookRun);
+        update.changed_fields = {
+            checklists: update.changed_fields.checklists,
         };
 
         const msg = TestHelper.fakeWebsocketMessage({
-            data: {
-                payload: JSON.stringify(payloadWithoutInserts),
-            },
+            data: {payload: JSON.stringify(update)},
         });
 
         jest.mocked(EphemeralStore.getChannelPlaybooksSynced).mockReturnValue(true);
 
-        await handlePlaybookChecklistUpdated(serverUrl, msg);
+        await handlePlaybookRunUpdatedIncremental(serverUrl, msg);
 
-        expect(EphemeralStore.getChannelPlaybooksSynced).toHaveBeenCalledWith(serverUrl, channelId);
-        expect(spyHandlePlaybookChecklist).toHaveBeenCalledWith({
-            checklists: [{
-                ...mockChecklistUpdate.fields,
-                items: undefined,
-                id: checklistId,
-                update_at: mockChecklistUpdate.checklist_updated_at,
-                run_id: playbookRunId,
-            }],
-            prepareRecordsOnly: false,
-            processChildren: false,
-        });
-        expect(spyHandlePlaybookChecklistItem).not.toHaveBeenCalled();
+        expect(spyHandlePlaybookRun).not.toHaveBeenCalled();
+
+        expect(spyHandlePlaybookChecklist).toHaveBeenCalled();
+        expect(spyHandlePlaybookChecklistItem).toHaveBeenCalled();
+        expect(spyBatchRecords).toHaveBeenCalled();
     });
 
-    it('should handle checklist update successfully with item inserts', async () => {
+    it('should handle incremental update without changes in the checklist', async () => {
         await operator.handlePlaybookRun({
             prepareRecordsOnly: false,
             runs: mockPlaybookList,
+            processChildren: true,
         });
+        clearSpies();
 
-        jest.mocked(EphemeralStore.getChannelPlaybooksSynced).mockReturnValue(true);
+        const update = createFakeUpdateFromRun(mockPlaybookRun);
+        update.changed_fields.checklists![0].fields = undefined;
 
-        await handlePlaybookChecklistUpdated(serverUrl, mockWebSocketMessage);
-
-        expect(spyHandlePlaybookChecklist).toHaveBeenCalledWith({
-            checklists: [{
-                ...mockChecklistUpdate.fields,
-                items: undefined,
-                id: checklistId,
-                update_at: mockChecklistUpdate.checklist_updated_at,
-                run_id: playbookRunId,
-            }],
-            prepareRecordsOnly: false,
-            processChildren: false,
-        });
-        expect(spyHandlePlaybookChecklistItem).toHaveBeenCalledWith({
-            items: [{
-                ...mockChecklistUpdate.item_inserts![0],
-                checklist_id: checklistId,
-                update_at: mockChecklistUpdate.checklist_updated_at,
-            }],
-            prepareRecordsOnly: false,
-        });
-    });
-});
-
-describe('handlePlaybookChecklistItemUpdated', () => {
-    let spyHandlePlaybookChecklistItem: jest.SpyInstance;
-
-    const mockChecklistItemUpdate: PlaybookChecklistItemUpdate = {
-        id: checklistItemId,
-        index: 0,
-        checklist_item_updated_at: Date.now(),
-        fields: {
-            title: 'Updated Item',
-            state: 'closed',
-        },
-    };
-
-    const mockPlaybookChecklistItemUpdatePayload: PlaybookChecklistItemUpdatePayload = {
-        playbook_run_id: playbookRunId,
-        checklist_id: checklistId,
-        update: mockChecklistItemUpdate,
-    };
-
-    const mockWebSocketMessage = TestHelper.fakeWebsocketMessage({
-        data: {
-            payload: JSON.stringify(mockPlaybookChecklistItemUpdatePayload),
-        },
-    });
-
-    beforeEach(() => {
-        spyHandlePlaybookChecklistItem = jest.spyOn(operator, 'handlePlaybookChecklistItem');
-    });
-
-    it('should return early when no payload', async () => {
-        const msg = {...mockWebSocketMessage, data: {payload: undefined}};
-
-        await handlePlaybookChecklistItemUpdated(serverUrl, msg);
-
-        expect(spyHandlePlaybookChecklistItem).not.toHaveBeenCalled();
-    });
-
-    it('should return early when payload cannot be parsed', async () => {
         const msg = TestHelper.fakeWebsocketMessage({
-            data: {
-                payload: '{{',
-            },
-        });
-
-        await handlePlaybookChecklistItemUpdated(serverUrl, msg);
-
-        expect(spyHandlePlaybookChecklistItem).not.toHaveBeenCalled();
-    });
-
-    it('should return early when run is not in database', async () => {
-        await handlePlaybookChecklistItemUpdated(serverUrl, mockWebSocketMessage);
-
-        expect(spyHandlePlaybookChecklistItem).not.toHaveBeenCalled();
-    });
-
-    it('should return early when channel is not synced', async () => {
-        await operator.handlePlaybookRun({
-            prepareRecordsOnly: false,
-            runs: mockPlaybookList,
-        });
-
-        jest.mocked(EphemeralStore.getChannelPlaybooksSynced).mockReturnValue(false);
-
-        await handlePlaybookChecklistItemUpdated(serverUrl, mockWebSocketMessage);
-
-        expect(EphemeralStore.getChannelPlaybooksSynced).toHaveBeenCalledWith(serverUrl, channelId);
-        expect(spyHandlePlaybookChecklistItem).not.toHaveBeenCalled();
-    });
-
-    it('should handle checklist item update successfully', async () => {
-        await operator.handlePlaybookRun({
-            prepareRecordsOnly: false,
-            runs: mockPlaybookList,
+            data: {payload: JSON.stringify(update)},
         });
 
         jest.mocked(EphemeralStore.getChannelPlaybooksSynced).mockReturnValue(true);
 
-        await handlePlaybookChecklistItemUpdated(serverUrl, mockWebSocketMessage);
+        await handlePlaybookRunUpdatedIncremental(serverUrl, msg);
 
-        expect(EphemeralStore.getChannelPlaybooksSynced).toHaveBeenCalledWith(serverUrl, channelId);
-        expect(spyHandlePlaybookChecklistItem).toHaveBeenCalledWith({
-            items: [{
-                ...mockChecklistItemUpdate.fields,
-                id: checklistItemId,
-                checklist_id: checklistId,
-                update_at: mockChecklistItemUpdate.checklist_item_updated_at,
-            }],
+        expect(spyHandlePlaybookChecklist).not.toHaveBeenCalled();
+
+        expect(spyHandlePlaybookRun).toHaveBeenCalled();
+        expect(spyHandlePlaybookChecklistItem).toHaveBeenCalled();
+        expect(spyBatchRecords).toHaveBeenCalled();
+    });
+
+    it('should handle incremental update without changes in the checklist item', async () => {
+        await operator.handlePlaybookRun({
             prepareRecordsOnly: false,
+            runs: mockPlaybookList,
+            processChildren: true,
         });
+        clearSpies();
+
+        const update = createFakeUpdateFromRun(mockPlaybookRun);
+        update.changed_fields.checklists![0].item_inserts = undefined;
+        update.changed_fields.checklists![0].item_updates = undefined;
+
+        const msg = TestHelper.fakeWebsocketMessage({
+            data: {payload: JSON.stringify(update)},
+        });
+
+        jest.mocked(EphemeralStore.getChannelPlaybooksSynced).mockReturnValue(true);
+
+        await handlePlaybookRunUpdatedIncremental(serverUrl, msg);
+
+        expect(spyHandlePlaybookChecklistItem).not.toHaveBeenCalled();
+
+        expect(spyHandlePlaybookRun).toHaveBeenCalled();
+        expect(spyHandlePlaybookChecklist).toHaveBeenCalled();
+        expect(spyBatchRecords).toHaveBeenCalled();
     });
 });
