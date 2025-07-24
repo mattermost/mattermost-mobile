@@ -1014,6 +1014,7 @@
   "playbooks.runs.finished.title": "Žádné ukončené běhy",
   "playbooks.runs.in_progress.description": "Když se běh v tomto kanálu začne, uvidíte ho zde.",
   "playbooks.runs.in_progress.title": "Žádná probíhající běhy",
+  "playbooks.runs.show_more": "Zobrazit Více",
   "plus_menu.browse_channels.title": "Procházet Kanály",
   "plus_menu.create_new_channel.title": "Vytvořit Nový kanál",
   "plus_menu.invite_people_to_team.title": "Pozvěte lidi do týmu",
