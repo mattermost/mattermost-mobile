@@ -211,9 +211,7 @@ const SnackBar = ({
         }
     };
 
-    const gesture = Gesture.
-        // eslint-disable-next-line new-cap
-        Pan().
+    const gesture = Gesture.Pan().
         activeOffsetY(20).
         onStart(() => {
             isPanned.value = true;
