@@ -9,7 +9,6 @@ import React, {useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform, StyleSheet, Text, View} from 'react-native';
 import FileViewer from 'react-native-file-viewer';
-import {TouchableOpacity} from 'react-native-gesture-handler';
 import {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Share from 'react-native-share';
@@ -17,6 +16,7 @@ import Share from 'react-native-share';
 import {updateLocalFilePath} from '@actions/local/file';
 import {downloadFile, downloadProfileImage} from '@actions/remote/file';
 import CompassIcon from '@components/compass_icon';
+import PressableOpacity from '@components/pressable_opacity';
 import ProgressBar from '@components/progress_bar';
 import Toast from '@components/toast';
 import {GALLERY_FOOTER_HEIGHT} from '@constants/gallery';
@@ -356,13 +356,13 @@ const DownloadWithAction = ({action, enableSecureFilePreview, item, onDownloadSu
                         />
                     </View>
                     <View style={styles.option}>
-                        <TouchableOpacity onPress={cancel}>
+                        <PressableOpacity onPress={cancel}>
                             <CompassIcon
                                 color='#FFF'
                                 name='close'
                                 size={24}
                             />
-                        </TouchableOpacity>
+                        </PressableOpacity>
                     </View>
                 </View>
             }

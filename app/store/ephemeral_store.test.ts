@@ -27,5 +27,21 @@ describe('EphemeralStore', () => {
         EphemeralStore.clearChannelPlaybooksSynced('server-url');
         expect(EphemeralStore.getChannelPlaybooksSynced('server-url', 'channel-id')).toBe(false);
         expect(EphemeralStore.getChannelPlaybooksSynced('server-url-2', 'channel-id')).toBe(true); // The other server is not cleared
+
+        // Expect false if unset
+        EphemeralStore.setChannelPlaybooksSynced('server-url', 'channel-id');
+        EphemeralStore.setChannelPlaybooksSynced('server-url', 'channel-id-2');
+        EphemeralStore.setChannelPlaybooksSynced('server-url', 'channel-id-3');
+
+        EphemeralStore.unsetChannelPlaybooksSynced('server-url', 'channel-id');
+        expect(EphemeralStore.getChannelPlaybooksSynced('server-url', 'channel-id')).toBe(false);
+        expect(EphemeralStore.getChannelPlaybooksSynced('server-url', 'channel-id-2')).toBe(true);
+        expect(EphemeralStore.getChannelPlaybooksSynced('server-url', 'channel-id-3')).toBe(true);
+
+        // Expect false if cleared
+        EphemeralStore.clearChannelPlaybooksSynced('server-url');
+        expect(EphemeralStore.getChannelPlaybooksSynced('server-url', 'channel-id')).toBe(false);
+        expect(EphemeralStore.getChannelPlaybooksSynced('server-url', 'channel-id-2')).toBe(false);
+        expect(EphemeralStore.getChannelPlaybooksSynced('server-url', 'channel-id-3')).toBe(false);
     });
 });

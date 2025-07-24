@@ -74,7 +74,7 @@ runs:
       shell: bash
       run: |
         echo "::group::run-tests"
-        npm run test:coverage
+        npm run test:ci:coverage
         echo "::endgroup::"
 
     - name: ci/compare-coverage

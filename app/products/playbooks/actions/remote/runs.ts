@@ -9,6 +9,7 @@ import {updateLastPlaybookRunsFetchAt} from '@playbooks/actions/local/channel';
 import {handlePlaybookRuns} from '@playbooks/actions/local/run';
 import {getLastPlaybookRunsFetchAt} from '@playbooks/database/queries/run';
 import {getMaxRunUpdateAt} from '@playbooks/utils/run';
+import EphemeralStore from '@store/ephemeral_store';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 
@@ -50,6 +51,7 @@ export const fetchPlaybookRunsForChannel = async (serverUrl: string, channelId: 
         updateLastPlaybookRunsFetchAt(serverUrl, channelId, getMaxRunUpdateAt(allRuns));
 
         if (!fetchOnly) {
+            EphemeralStore.setChannelPlaybooksSynced(serverUrl, channelId);
             handlePlaybookRuns(serverUrl, allRuns, false, true);
         }
 
