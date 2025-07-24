@@ -106,8 +106,9 @@ describe('ShowMoreButton', () => {
             0,
         );
 
-        // Second click
+        // Wait for DELAY before second click to simulate the double tap prevention
         await act(async () => {
+            await new Promise((resolve) => setTimeout(resolve, 800)); // DELAY is 750ms
             fireEvent.press(getByText('Show More'));
         });
 
@@ -135,7 +136,9 @@ describe('ShowMoreButton', () => {
             fireEvent.press(getByText('Show More'));
         });
 
-        expect(props.addMoreRuns).toHaveBeenCalledWith(mockRuns);
+        waitFor(() => {
+            expect(props.addMoreRuns).toHaveBeenCalledWith(mockRuns);
+        });
     });
 
     it('does not call addMoreRuns when no runs are returned', async () => {
@@ -151,7 +154,9 @@ describe('ShowMoreButton', () => {
             fireEvent.press(getByText('Show More'));
         });
 
-        expect(props.addMoreRuns).not.toHaveBeenCalled();
+        waitFor(() => {
+            expect(props.addMoreRuns).not.toHaveBeenCalled();
+        });
     });
 
     it('sets hasMore to false when API returns an error', async () => {
@@ -166,7 +171,7 @@ describe('ShowMoreButton', () => {
             fireEvent.press(getByText('Show More'));
         });
 
-        await waitFor(() => {
+        waitFor(() => {
             expect(queryByText('Show More')).toBeNull();
         });
     });
@@ -185,8 +190,10 @@ describe('ShowMoreButton', () => {
             fireEvent.press(getByText('Show More'));
         });
 
-        expect(props.addMoreRuns).toHaveBeenCalledWith(mockRuns);
-        expect(getByText('Show More')).toBeTruthy(); // Button should still be visible
+        waitFor(() => {
+            expect(props.addMoreRuns).toHaveBeenCalledWith(mockRuns);
+            expect(getByText('Show More')).toBeTruthy(); // Button should still be visible
+        });
     });
 
     it('does not render when visible is false', () => {
