@@ -62,6 +62,9 @@ export const handlePlaybookRunUpdatedIncremental = async (serverUrl: string, msg
         return;
     }
     const data = safeParseJSON(msg.data.payload) as PlaybookRunUpdate;
+    if (!data || !data.changed_fields || typeof data.changed_fields !== 'object') {
+        return;
+    }
 
     const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
