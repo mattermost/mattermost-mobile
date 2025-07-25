@@ -15,7 +15,7 @@ import useDidUpdate from '@hooks/did_update';
 import {fetchOpenGraph} from '@utils/opengraph';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
-import {getUrlAfterRedirect} from '@utils/url';
+import {getUrlAfterRedirect, isValidAppSchemeUrl} from '@utils/url';
 
 type Props = {
     disabled: boolean;
@@ -56,6 +56,14 @@ const BookmarkLink = ({disabled, initialUrl = '', resetBookmark, setBookmark}: P
 
     const validateAndFetchOG = useCallback(debounce(async (text: string) => {
         setLoading(true);
+        
+        // Check if it's a custom app scheme URL (like mattermost://)
+        if (isValidAppSchemeUrl(text)) {
+            setLoading(false);
+            setBookmark(text, text, '');
+            return;
+        }
+        
         let link = await getUrlAfterRedirect(text, false);
 
         if (link.error) {
@@ -121,7 +129,7 @@ const BookmarkLink = ({disabled, initialUrl = '', resetBookmark, setBookmark}: P
             <View style={descContainer}>
                 <FormattedText
                     id='channel_bookmark_add.link.input.description'
-                    defaultMessage='Add a link to any post, file, or any external link'
+                    defaultMessage='Add a link to any post, file, or any external link. You can also use app links like mattermost://'
                     style={styles.descriptionText}
                     testID='channel_bookmark_add.link.input.description'
                 />
