@@ -1014,6 +1014,7 @@
   "playbooks.runs.finished.title": "Keine beendeten Durchläufe",
   "playbooks.runs.in_progress.description": "Wenn ein Durchlauf in diesem Kanal beginnt, siehst du ihn hier.",
   "playbooks.runs.in_progress.title": "Keine gestarteten Durchläufe",
+  "playbooks.runs.show_more": "Mehr anzeigen",
   "plus_menu.browse_channels.title": "Kanäle durchsuchen",
   "plus_menu.create_new_channel.title": "Neuen Kanal erstellen",
   "plus_menu.invite_people_to_team.title": "Lade Benutzer zum Team ein",
