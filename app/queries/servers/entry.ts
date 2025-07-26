@@ -120,7 +120,6 @@ export async function truncateCrtRelatedTables(serverUrl: string): Promise<{erro
 
     try {
         await database.write(() => {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             return database.adapter.unsafeExecute({
                 sqls: [
@@ -145,4 +144,37 @@ export async function truncateCrtRelatedTables(serverUrl: string): Promise<{erro
     }
 
     return {error: false};
+}
+
+export async function processEntryModels({
+    operator,
+    teamData,
+    chData,
+    prefData,
+    meData,
+    isCRTEnabled,
+}: PrepareModelsArgs): Promise<Model[]> {
+    const modelPromises = await prepareEntryModels({operator, teamData, chData, prefData, meData, isCRTEnabled});
+
+    const models = await Promise.all(modelPromises);
+    const flattenModels = models.flat();
+    if (flattenModels.length) {
+        operator.batchRecords(flattenModels, 'processEntryModels');
+    }
+
+    return models.flat();
+}
+
+export async function processEntryModelsForDeletion({
+    serverUrl,
+    operator,
+    teamData,
+    chData,
+}: PrepareModelsForDeletionArgs): Promise<void> {
+    const modelsToDeletePromises = await prepareEntryModelsForDeletion({serverUrl, operator, teamData, chData});
+
+    const modelsToDelete = await Promise.all(modelsToDeletePromises);
+    if (modelsToDelete.flat().length) {
+        operator.batchRecords(modelsToDelete.flat(), 'processEntryModelsForDeletion');
+    }
 }
