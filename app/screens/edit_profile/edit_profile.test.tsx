@@ -4,6 +4,7 @@
 /* eslint-disable max-lines */
 import {act, fireEvent, screen, waitFor} from '@testing-library/react-native';
 import React from 'react';
+import {TouchableOpacity} from 'react-native';
 
 import AvailableScreens from '@constants/screens';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
@@ -64,6 +65,18 @@ jest.mock('@components/compass_icon', () => {
     return {
         __esModule: true,
         default: CompassIcon,
+    };
+});
+
+// Mock TouchableWithFeedback to prevent animated state updates that cause act warnings
+jest.mock('@components/touchable_with_feedback', () => {
+
+    return function TouchableWithFeedback({testID, children, onPress, ...props}: {testID: string; children: React.ReactNode; onPress: any; props: any}) {
+        return React.createElement(TouchableOpacity, {
+            testID,
+            onPress,
+            ...props,
+        }, children);
     };
 });
 
@@ -201,7 +214,9 @@ describe('EditProfile', () => {
 
         // Wait for component to mount and useEffect to run
         await act(async () => {
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await waitFor(() => {
+                // Wait for the async loadCustomAttributes to complete
+            }, {timeout: 100});
         });
 
         const customAttributeItems = await findAllByTestId(new RegExp('^edit_profile_form.customAttributes.attr[0-9]+.input$'));
@@ -253,7 +268,9 @@ describe('EditProfile', () => {
 
         // Wait for component to mount and useEffect to run
         await act(async () => {
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await waitFor(() => {
+                // Wait for the async loadCustomAttributes to complete
+            }, {timeout: 100});
         });
 
         // Verify database values are shown
@@ -273,7 +290,7 @@ describe('EditProfile', () => {
         }));
 
         await act(async () => {
-            await new Promise((resolve) => setTimeout(resolve, 50));
+            await waitFor(() => {}, {timeout: 50});
 
             // Rerender with server values
             rerender(
@@ -332,7 +349,9 @@ describe('EditProfile', () => {
 
         // Wait for component to mount and useEffect to run
         await act(async () => {
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await waitFor(() => {
+                // Wait for the async loadCustomAttributes to complete
+            }, {timeout: 100});
         });
 
         // Initially there should be no custom attributes (using queryAllByTestId which doesn't throw)
@@ -499,7 +518,7 @@ describe('EditProfile', () => {
 
             // Wait for component to load
             await act(async () => {
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await waitFor(() => {}, {timeout: 100});
             });
 
             // Modify a standard field to trigger the hasUpdateUserInfo flag
@@ -549,7 +568,7 @@ describe('EditProfile', () => {
 
             // Wait for component to load
             await act(async () => {
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await waitFor(() => {}, {timeout: 100});
             });
 
             // Modify a standard field to trigger the hasUpdateUserInfo flag
@@ -599,7 +618,7 @@ describe('EditProfile', () => {
 
             // Wait for component to load and custom attributes to be fetched
             await act(async () => {
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await waitFor(() => {}, {timeout: 100});
             });
 
             // Modify a custom attribute to trigger the hasUpdateUserInfo flag
@@ -649,7 +668,9 @@ describe('EditProfile', () => {
 
         // Wait for component to mount and useEffect to run
         await act(async () => {
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await waitFor(() => {
+                // Wait for the async loadCustomAttributes to complete
+            }, {timeout: 100});
         });
 
         // Verify the ProfileForm component is rendered (which means customFields was passed)
@@ -724,7 +745,7 @@ describe('EditProfile', () => {
 
             // Wait for component to load
             await act(async () => {
-                await new Promise((resolve) => setTimeout(resolve, 100));
+                await waitFor(() => {}, {timeout: 100});
             });
 
             // Modify the non-SAML field
