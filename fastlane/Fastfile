@@ -9,6 +9,16 @@ skip_docs
 configured = false
 is_build_pr = false
 
+ENV["FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT"] = "120"
+ENV["FASTLANE_XCODEBUILD_SETTINGS_RETRIES"] = "6"
+
+default_platform(:ios)
+
+platform :ios do
+  lane :your_lane do
+    # Your existing lane code
+  end
+
 # Executes before anything else use to setup the script
 before_all do
   ENV['SPACESHIP_SKIP_2FA_UPGRADE'] = '1'
