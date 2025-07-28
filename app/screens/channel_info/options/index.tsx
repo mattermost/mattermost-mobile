@@ -23,6 +23,7 @@ type Props = {
     callsEnabled: boolean;
     canManageMembers: boolean;
     isCRTEnabled: boolean;
+    isPlaybooksEnabled: boolean;
     canManageSettings: boolean;
 }
 
@@ -32,6 +33,7 @@ const Options = ({
     callsEnabled,
     canManageMembers,
     isCRTEnabled,
+    isPlaybooksEnabled,
     canManageSettings,
 }: Props) => {
     const isDMorGM = isTypeDMorGM(type);
@@ -49,10 +51,12 @@ const Options = ({
             <NotificationPreference channelId={channelId}/>
             <PinnedMessages channelId={channelId}/>
             <ChannelFiles channelId={channelId}/>
+            {isPlaybooksEnabled &&
             <PlaybookRunsOption
                 channelId={channelId}
                 location='channel_actions'
             />
+            }
             {type !== General.DM_CHANNEL &&
                 <Members channelId={channelId}/>
             }

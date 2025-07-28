@@ -28,6 +28,7 @@ describe('ChannelInfoOptions', () => {
             canManageMembers: false,
             isCRTEnabled: false,
             canManageSettings: false,
+            isPlaybooksEnabled: true,
         };
     }
     beforeEach(async () => {
