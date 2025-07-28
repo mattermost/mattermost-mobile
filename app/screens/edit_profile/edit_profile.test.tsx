@@ -1286,30 +1286,5 @@ describe('EditProfile', () => {
             // Verify the function was called (proving buildUserInfoUpdates works)
             expect(mockUpdateMe).toHaveBeenCalledTimes(1);
         });
-
-        it('should demonstrate the key mapping logic from buildUserInfoUpdates', () => {
-            // Test the camelCase to snake_case key mapping logic that's implemented in buildUserInfoUpdates
-            // This demonstrates the core conversion logic without needing to test through the full component
-
-            const keyMapping: Record<string, string> = {
-                firstName: 'first_name',
-                lastName: 'last_name',
-                nickname: 'nickname',
-                position: 'position',
-                username: 'username',
-                email: 'email',
-            };
-
-            // Verify the mapping matches what buildUserInfoUpdates implements
-            expect(keyMapping.firstName).toBe('first_name');
-            expect(keyMapping.lastName).toBe('last_name');
-            expect(keyMapping.nickname).toBe('nickname');
-            expect(keyMapping.position).toBe('position');
-            expect(keyMapping.username).toBe('username');
-            expect(keyMapping.email).toBe('email');
-
-            // This test documents the expected field name conversions
-            // that buildUserInfoUpdates performs for API compatibility
-        });
     });
 });
