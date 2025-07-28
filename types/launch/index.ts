@@ -33,12 +33,20 @@ export interface DeepLinkPlugin extends DeepLink {
     route?: string;
 }
 
+export interface DeepLinkPlaybooks extends DeepLink {
+    playbookId: string;
+}
+
+export interface DeepLinkPlaybookRuns extends DeepLink {
+    playbookRunId: string;
+}
+
 export type DeepLinkType = typeof DeepLinkConstant[keyof typeof DeepLinkConstant];
 
 export interface DeepLinkWithData {
     type: DeepLinkType;
     url: string;
-    data?: DeepLinkChannel | DeepLinkDM | DeepLinkGM | DeepLinkPermalink | DeepLinkPlugin | DeepLinkServer;
+    data?: DeepLinkChannel | DeepLinkDM | DeepLinkGM | DeepLinkPermalink | DeepLinkPlugin | DeepLinkServer | DeepLinkPlaybooks | DeepLinkPlaybookRuns;
 }
 
 export type LaunchType = typeof Launch[keyof typeof Launch];
