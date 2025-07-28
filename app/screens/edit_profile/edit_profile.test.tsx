@@ -4,7 +4,6 @@
 /* eslint-disable max-lines */
 import {act, fireEvent, screen, waitFor} from '@testing-library/react-native';
 import React from 'react';
-import {TouchableOpacity} from 'react-native';
 
 import AvailableScreens from '@constants/screens';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
@@ -70,9 +69,11 @@ jest.mock('@components/compass_icon', () => {
 
 // Mock TouchableWithFeedback to prevent animated state updates that cause act warnings
 jest.mock('@components/touchable_with_feedback', () => {
+    const mockReact = require('react');
+    const {TouchableOpacity} = require('react-native');
 
-    return function TouchableWithFeedback({testID, children, onPress, ...props}: {testID: string; children: React.ReactNode; onPress: any; props: any}) {
-        return React.createElement(TouchableOpacity, {
+    return function TouchableWithFeedback({testID, children, onPress, ...props}: {testID: string; children: any; onPress: any; props: any}) {
+        return mockReact.createElement(TouchableOpacity, {
             testID,
             onPress,
             ...props,
