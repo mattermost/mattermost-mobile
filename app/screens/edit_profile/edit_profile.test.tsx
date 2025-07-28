@@ -2,8 +2,7 @@
 // See LICENSE.txt for license information.
 
 /* eslint-disable max-lines */
-import {act} from '@testing-library/react-hooks';
-import {fireEvent, screen, waitFor} from '@testing-library/react-native';
+import {act, fireEvent, screen, waitFor} from '@testing-library/react-native';
 import React from 'react';
 
 import AvailableScreens from '@constants/screens';
@@ -200,6 +199,11 @@ describe('EditProfile', () => {
             />,
         );
 
+        // Wait for component to mount and useEffect to run
+        await act(async () => {
+            await new Promise((resolve) => setTimeout(resolve, 100));
+        });
+
         const customAttributeItems = await findAllByTestId(new RegExp('^edit_profile_form.customAttributes.attr[0-9]+.input$'));
         expect(customAttributeItems.length).toBe(3);
 
@@ -326,6 +330,11 @@ describe('EditProfile', () => {
             />,
         );
 
+        // Wait for component to mount and useEffect to run
+        await act(async () => {
+            await new Promise((resolve) => setTimeout(resolve, 100));
+        });
+
         // Initially there should be no custom attributes (using queryAllByTestId which doesn't throw)
         const initialItems = queryAllByTestId(new RegExp('^edit_profile_form.customAttributes.attr[0-9]+.input$'));
         expect(initialItems.length).toBe(0);
@@ -430,6 +439,11 @@ describe('EditProfile', () => {
                 />,
             );
 
+            // Wait for component to mount and useEffect to run
+            await act(async () => {
+                await new Promise((resolve) => setTimeout(resolve, 100));
+            });
+
             // Wait for component to load and custom attributes to be fetched
             await waitFor(async() => {
                 const customAttributeItems = await screen.findAllByTestId(new RegExp('^edit_profile_form.customAttributes.attr[0-9]+.input$'));
@@ -478,6 +492,11 @@ describe('EditProfile', () => {
                 />,
             );
 
+            // Wait for component to mount and useEffect to run
+            await act(async () => {
+                await new Promise((resolve) => setTimeout(resolve, 100));
+            });
+
             // Wait for component to load
             await act(async () => {
                 await new Promise((resolve) => setTimeout(resolve, 100));
@@ -523,6 +542,11 @@ describe('EditProfile', () => {
                 />,
             );
 
+            // Wait for component to mount and useEffect to run
+            await act(async () => {
+                await new Promise((resolve) => setTimeout(resolve, 100));
+            });
+
             // Wait for component to load
             await act(async () => {
                 await new Promise((resolve) => setTimeout(resolve, 100));
@@ -567,6 +591,11 @@ describe('EditProfile', () => {
                     customAttributesSet={serverAttributesSet}
                 />,
             );
+
+            // Wait for component to mount and useEffect to run
+            await act(async () => {
+                await new Promise((resolve) => setTimeout(resolve, 100));
+            });
 
             // Wait for component to load and custom attributes to be fetched
             await act(async () => {
@@ -617,6 +646,11 @@ describe('EditProfile', () => {
                 customAttributesSet={{}}
             />,
         );
+
+        // Wait for component to mount and useEffect to run
+        await act(async () => {
+            await new Promise((resolve) => setTimeout(resolve, 100));
+        });
 
         // Verify the ProfileForm component is rendered (which means customFields was passed)
         const scrollView = screen.getByTestId('edit_profile.scroll_view');
@@ -683,6 +717,11 @@ describe('EditProfile', () => {
                 />,
             );
 
+            // Wait for component to mount and useEffect to run
+            await act(async () => {
+                await new Promise((resolve) => setTimeout(resolve, 100));
+            });
+
             // Wait for component to load
             await act(async () => {
                 await new Promise((resolve) => setTimeout(resolve, 100));
@@ -746,6 +785,11 @@ describe('EditProfile', () => {
                 />,
             );
 
+            // Wait for component to mount and useEffect to run
+            await act(async () => {
+                await new Promise((resolve) => setTimeout(resolve, 100));
+            });
+
             // Modify unlocked fields
             const lastNameField = getByTestId('edit_profile_form.lastName.input');
             const positionField = getByTestId('edit_profile_form.position.input');
@@ -801,6 +845,11 @@ describe('EditProfile', () => {
                 />,
             );
 
+            // Wait for component to mount and useEffect to run
+            await act(async () => {
+                await new Promise((resolve) => setTimeout(resolve, 100));
+            });
+
             // Only modify the position field (leave others unchanged)
             const positionField = getByTestId('edit_profile_form.position.input');
             await act(async () => {
@@ -854,6 +903,11 @@ describe('EditProfile', () => {
                 />,
             );
 
+            // Wait for component to mount and useEffect to run
+            await act(async () => {
+                await new Promise((resolve) => setTimeout(resolve, 100));
+            });
+
             // Try to modify locked fields (should not trigger submission)
             const saveButton = getByTestId('edit_profile.save.button');
             await act(async () => {
@@ -904,6 +958,11 @@ describe('EditProfile', () => {
                     customAttributesSet={{}}
                 />,
             );
+
+            // Wait for component to mount and useEffect to run
+            await act(async () => {
+                await new Promise((resolve) => setTimeout(resolve, 100));
+            });
 
             // Test that buildUserInfoUpdates processes position field correctly
             const positionField = getByTestId('edit_profile_form.position.input');
@@ -957,6 +1016,11 @@ describe('EditProfile', () => {
                     customAttributesSet={{}}
                 />,
             );
+
+            // Wait for component to mount and useEffect to run
+            await act(async () => {
+                await new Promise((resolve) => setTimeout(resolve, 100));
+            });
 
             // Modify firstName with spaces (should be trimmed) to same value
             // And lastName to a genuinely new value
@@ -1015,6 +1079,11 @@ describe('EditProfile', () => {
                 />,
             );
 
+            // Wait for component to mount and useEffect to run
+            await act(async () => {
+                await new Promise((resolve) => setTimeout(resolve, 100));
+            });
+
             // Don't change any fields, just submit
             const saveButton = screen.getByTestId('edit_profile.save.button');
             await act(async () => {
@@ -1047,6 +1116,11 @@ describe('EditProfile', () => {
                     customAttributesSet={{}}
                 />,
             );
+
+            // Wait for component to mount and useEffect to run
+            await act(async () => {
+                await new Promise((resolve) => setTimeout(resolve, 100));
+            });
 
             // Modify position field for a valid update
             const positionField = getByTestId('edit_profile_form.position.input');
@@ -1105,6 +1179,11 @@ describe('EditProfile', () => {
                 />,
             );
 
+            // Wait for component to mount and useEffect to run
+            await act(async () => {
+                await new Promise((resolve) => setTimeout(resolve, 100));
+            });
+
             // Modify position field for a valid update
             const positionField = getByTestId('edit_profile_form.position.input');
             await act(async () => {
@@ -1155,6 +1234,11 @@ describe('EditProfile', () => {
                     customAttributesSet={{}}
                 />,
             );
+
+            // Wait for component to mount and useEffect to run
+            await act(async () => {
+                await new Promise((resolve) => setTimeout(resolve, 100));
+            });
 
             // Modify position field to test the conversion logic
             const positionField = getByTestId('edit_profile_form.position.input');
