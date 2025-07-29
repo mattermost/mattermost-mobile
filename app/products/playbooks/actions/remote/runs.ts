@@ -48,12 +48,16 @@ export const fetchPlaybookRunsForChannel = async (serverUrl: string, channelId: 
             return {runs: []};
         }
 
-        updateLastPlaybookRunsFetchAt(serverUrl, channelId, getMaxRunUpdateAt(allRuns));
-
         if (!fetchOnly) {
+            const {error} = await handlePlaybookRuns(serverUrl, allRuns, false, true);
+            if (error) {
+                throw error;
+            }
+
             EphemeralStore.setChannelPlaybooksSynced(serverUrl, channelId);
-            handlePlaybookRuns(serverUrl, allRuns, false, true);
         }
+
+        updateLastPlaybookRunsFetchAt(serverUrl, channelId, getMaxRunUpdateAt(allRuns));
 
         return {runs: allRuns};
     } catch (error) {
