@@ -49,9 +49,9 @@ export const fetchPlaybookRunsForChannel = async (serverUrl: string, channelId: 
         }
 
         if (!fetchOnly) {
-            const {error} = await handlePlaybookRuns(serverUrl, allRuns, false, true);
-            if (error) {
-                throw error;
+            const result = await handlePlaybookRuns(serverUrl, allRuns, false, true);
+            if (result && result.error) {
+                throw result.error;
             }
 
             EphemeralStore.setChannelPlaybooksSynced(serverUrl, channelId);

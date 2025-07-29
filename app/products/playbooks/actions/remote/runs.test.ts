@@ -77,6 +77,7 @@ describe('fetchPlaybookRunsForChannel', () => {
 
         const result = await fetchPlaybookRunsForChannel(serverUrl, channelId);
         expect(result).toBeDefined();
+        console.log('RESULT', Object.keys(result));
         expect(result.error).toBeUndefined();
         expect(result.runs).toEqual([mockPlaybookRun]);
         expect(mockClient.fetchPlaybookRuns).toHaveBeenCalledTimes(1);
