@@ -23,6 +23,13 @@ jest.mock('./global_scheduled_post_list', () => ({
     default: jest.fn(),
 }));
 
+jest.mock('react-native', () => ({
+    ...jest.requireActual('react-native'),
+    DeviceEventEmitter: {
+        emit: jest.fn(),
+    },
+}));
+
 jest.mocked(GlobalScheduledPostList).mockImplementation((props) => React.createElement('GlobalScheduledPostList', {...props, testID: 'global-scheduled-post-list'}));
 
 describe('GlobalScheduledPostList', () => {
@@ -114,7 +121,9 @@ describe('GlobalScheduledPostList', () => {
         const globalScheduledPostList = getByTestId('global-scheduled-post-list');
         expect(globalScheduledPostList.props.tutorialWatched).toBe(false);
 
-        await storeGlobal(Tutorial.SCHEDULED_POSTS_LIST, 'true', false);
+        await act(async () => {
+            await storeGlobal(Tutorial.SCHEDULED_POSTS_LIST, 'true', false);
+        });
 
         await waitFor(() => {
             const updatedGlobalScheduledPostList = getByTestId('global-scheduled-post-list');
