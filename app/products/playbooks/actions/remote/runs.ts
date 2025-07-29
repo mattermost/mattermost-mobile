@@ -48,12 +48,16 @@ export const fetchPlaybookRunsForChannel = async (serverUrl: string, channelId: 
             return {runs: []};
         }
 
-        updateLastPlaybookRunsFetchAt(serverUrl, channelId, getMaxRunUpdateAt(allRuns));
-
         if (!fetchOnly) {
+            const result = await handlePlaybookRuns(serverUrl, allRuns, false, true);
+            if (result && result.error) {
+                throw result.error;
+            }
+
             EphemeralStore.setChannelPlaybooksSynced(serverUrl, channelId);
-            handlePlaybookRuns(serverUrl, allRuns, false, true);
         }
+
+        updateLastPlaybookRunsFetchAt(serverUrl, channelId, getMaxRunUpdateAt(allRuns));
 
         return {runs: allRuns};
     } catch (error) {
@@ -79,6 +83,27 @@ export const fetchFinishedRunsForChannel = async (serverUrl: string, channelId: 
         return {runs, has_more};
     } catch (error) {
         logDebug('error on fetchFinishedRunsForChannel', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
+export const fetchPlaybookRun = async (serverUrl: string, runId: string, fetchOnly = false): Promise<PlaybookRunsRequest> => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const run = await client.fetchPlaybookRun(runId);
+
+        if (!fetchOnly) {
+            const result = await handlePlaybookRuns(serverUrl, [run], false, true);
+            if (result.error) {
+                logDebug('error on handlePlaybookRuns', getFullErrorMessage(result.error));
+                return {error: result.error};
+            }
+        }
+
+        return {runs: [run]};
+    } catch (error) {
+        logDebug('error on fetchPlaybookRun', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }

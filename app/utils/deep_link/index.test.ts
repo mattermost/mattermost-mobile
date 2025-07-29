@@ -20,7 +20,7 @@ import {addNewServer} from '@utils/server';
 
 import {alertErrorWithFallback, errorBadChannel, errorUnkownUser} from '../draft';
 
-import {alertInvalidDeepLink, extractServerUrl, getLaunchPropsFromDeepLink, handleDeepLink} from '.';
+import {alertInvalidDeepLink, extractServerUrl, getLaunchPropsFromDeepLink, parseAndHandleDeepLink} from '.';
 
 jest.mock('@actions/remote/user', () => ({
     fetchUsersByUsernames: jest.fn(),
@@ -94,7 +94,7 @@ describe('extractServerUrl', () => {
     });
 });
 
-describe('handleDeepLink', () => {
+describe('parseAndHandleDeepLink', () => {
     const intl = createIntl({locale: 'en', messages: {}});
 
     beforeEach(() => {
@@ -102,14 +102,14 @@ describe('handleDeepLink', () => {
     });
 
     it('should return error for invalid deep link', async () => {
-        const result = await handleDeepLink('invalid-url');
+        const result = await parseAndHandleDeepLink('invalid-url');
         expect(result).toEqual({error: true});
     });
 
     it('should add new server if not existing', async () => {
         (getActiveServerUrl as jest.Mock).mockResolvedValueOnce('https://currentserver.com');
         (DatabaseManager.searchUrl as jest.Mock).mockReturnValueOnce('');
-        const result = await handleDeepLink('https://newserver.com/team/channels/town-square');
+        const result = await parseAndHandleDeepLink('https://newserver.com/team/channels/town-square');
         expect(addNewServer).toHaveBeenCalledWith(Preferences.THEMES.denim, 'newserver.com', undefined, {type: DeepLink.Channel,
             data: {
                 serverUrl: 'newserver.com',
@@ -124,7 +124,7 @@ describe('handleDeepLink', () => {
     it('should handle existing server and switch to home screen', async () => {
         (getActiveServerUrl as jest.Mock).mockResolvedValueOnce('https://currentserver.com');
         (DatabaseManager.searchUrl as jest.Mock).mockReturnValueOnce('https://existingserver.com');
-        const result = await handleDeepLink('https://existingserver.com/team/channels/town-square');
+        const result = await parseAndHandleDeepLink('https://existingserver.com/team/channels/town-square');
         expect(dismissAllModalsAndPopToRoot).toHaveBeenCalled();
         expect(DatabaseManager.setActiveServerDatabase).toHaveBeenCalledWith('https://existingserver.com');
         expect(WebsocketManager.initializeClient).toHaveBeenCalledWith('https://existingserver.com', 'DeepLink');
@@ -136,7 +136,8 @@ describe('handleDeepLink', () => {
         (DatabaseManager.searchUrl as jest.Mock).mockReturnValueOnce(null);
 
         (NavigationStore.getVisibleScreen as jest.Mock).mockReturnValueOnce(Screens.SERVER);
-        const result = await handleDeepLink('https://currentserver.com/team/channels/town-square', undefined, undefined, true);
+        const result = await parseAndHandleDeepLink('https://currentserver.com/team/channels/town-square', undefined, undefined, true);
+        console.log('result', JSON.stringify(result, null, 2));
         const spyOnUpdateProps = jest.spyOn(Navigation, 'updateProps');
         expect(spyOnUpdateProps).toHaveBeenCalledWith(Screens.SERVER, {serverUrl: 'currentserver.com'});
         expect(result).toEqual({error: false});
@@ -148,7 +149,7 @@ describe('handleDeepLink', () => {
 
         (NavigationStore.getVisibleScreen as jest.Mock).mockReturnValueOnce(Screens.LOGIN);
         (NavigationStore.getScreensInStack as jest.Mock).mockReturnValueOnce([Screens.SERVER, Screens.LOGIN]);
-        const result = await handleDeepLink('https://currentserver.com/team/channels/town-square', undefined, undefined, true);
+        const result = await parseAndHandleDeepLink('https://currentserver.com/team/channels/town-square', undefined, undefined, true);
         expect(addNewServer).not.toHaveBeenCalled();
         expect(result).toEqual({error: false});
     });
@@ -156,7 +157,7 @@ describe('handleDeepLink', () => {
     it('should switch to channel by name for Channel deep link', async () => {
         (DatabaseManager.searchUrl as jest.Mock).mockReturnValueOnce('https://existingserver.com');
         (getActiveServerUrl as jest.Mock).mockResolvedValueOnce('https://existingserver.com');
-        const result = await handleDeepLink('https://existingserver.com/team/channels/town-square', intl);
+        const result = await parseAndHandleDeepLink('https://existingserver.com/team/channels/town-square', intl);
         expect(switchToChannelByName).toHaveBeenCalledWith('https://existingserver.com', 'town-square', 'team', errorBadChannel, intl);
         expect(result).toEqual({error: false});
     });
@@ -165,7 +166,7 @@ describe('handleDeepLink', () => {
         (DatabaseManager.searchUrl as jest.Mock).mockReturnValueOnce('https://existingserver.com');
         (getActiveServerUrl as jest.Mock).mockResolvedValueOnce('https://existingserver.com');
         (queryUsersByUsername as jest.Mock).mockReturnValueOnce({fetchIds: jest.fn(() => ['user-id'])});
-        const result = await handleDeepLink('https://existingserver.com/team/messages/@user-id', intl);
+        const result = await parseAndHandleDeepLink('https://existingserver.com/team/messages/@user-id', intl);
         expect(makeDirectChannel).toHaveBeenCalledWith('https://existingserver.com', 'user-id', '', true);
         expect(result).toEqual({error: false});
     });
@@ -175,7 +176,7 @@ describe('handleDeepLink', () => {
         (getActiveServerUrl as jest.Mock).mockResolvedValueOnce('https://existingserver.com');
         (queryUsersByUsername as jest.Mock).mockReturnValueOnce({fetchIds: jest.fn(() => [])});
         (fetchUsersByUsernames as jest.Mock).mockResolvedValueOnce({users: [{id: 'user-id'}]});
-        const result = await handleDeepLink('https://existingserver.com/team/messages/@user-id', intl);
+        const result = await parseAndHandleDeepLink('https://existingserver.com/team/messages/@user-id', intl);
         expect(makeDirectChannel).toHaveBeenCalledWith('https://existingserver.com', 'user-id', '', true);
         expect(result).toEqual({error: false});
     });
@@ -185,7 +186,7 @@ describe('handleDeepLink', () => {
         (getActiveServerUrl as jest.Mock).mockResolvedValueOnce('https://existingserver.com');
         (queryUsersByUsername as jest.Mock).mockReturnValueOnce({fetchIds: jest.fn(() => [])});
         (fetchUsersByUsernames as jest.Mock).mockResolvedValueOnce({users: []});
-        const result = await handleDeepLink('https://existingserver.com/team/messages/@user-id', intl);
+        const result = await parseAndHandleDeepLink('https://existingserver.com/team/messages/@user-id', intl);
         expect(errorUnkownUser).toHaveBeenCalledWith(intl);
         expect(result).toEqual({error: false});
     });
@@ -193,7 +194,7 @@ describe('handleDeepLink', () => {
     it('should switch to group message channel for GroupMessage deep link', async () => {
         (DatabaseManager.searchUrl as jest.Mock).mockReturnValueOnce('https://existingserver.com');
         (getActiveServerUrl as jest.Mock).mockResolvedValueOnce('https://existingserver.com');
-        const result = await handleDeepLink('https://existingserver.com/team/messages/7b35c77a645e1906e03a2c330f89203385db102f', intl);
+        const result = await parseAndHandleDeepLink('https://existingserver.com/team/messages/7b35c77a645e1906e03a2c330f89203385db102f', intl);
         expect(switchToChannelByName).toHaveBeenCalledWith('https://existingserver.com', '7b35c77a645e1906e03a2c330f89203385db102f', 'team', errorBadChannel, intl);
         expect(result).toEqual({error: false});
     });
@@ -202,7 +203,7 @@ describe('handleDeepLink', () => {
         (DatabaseManager.searchUrl as jest.Mock).mockReturnValueOnce('https://existingserver.com');
         (getActiveServerUrl as jest.Mock).mockResolvedValueOnce('https://existingserver.com');
         const postid = '7b35c77a645e1906e03a2c330f';
-        const result = await handleDeepLink(`https://existingserver.com/team/pl/${postid}`, intl);
+        const result = await parseAndHandleDeepLink(`https://existingserver.com/team/pl/${postid}`, intl);
         expect(showPermalink).toHaveBeenCalledWith('https://existingserver.com', 'team', postid);
         expect(result).toEqual({error: false});
     });
@@ -211,7 +212,7 @@ describe('handleDeepLink', () => {
         (getActiveServerUrl as jest.Mock).mockImplementationOnce(() => {
             throw new Error('DB does not exist error');
         });
-        const result = await handleDeepLink('https://existingserver.com/team/messages/7b35c77a645e1906e03a2c330f89203385db102f');
+        const result = await parseAndHandleDeepLink('https://existingserver.com/team/messages/7b35c77a645e1906e03a2c330f89203385db102f');
         expect(logError).toHaveBeenCalledWith('Failed to open channel from deeplink', expect.any(Error), undefined);
         expect(result).toEqual({error: true});
     });
