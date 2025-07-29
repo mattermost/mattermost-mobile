@@ -1,15 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
+import {fetchUsersByIds} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
 import Markdown from '@components/markdown';
+import {useServerUrl} from '@context/server';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+
+import Participants from './participants';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -78,10 +82,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const StatusUpdatePost = ({location, post, theme}: Props) => {
     const {authorUsername, numTasks, numTasksChecked, participantIds, playbookRunId, runName} = post.props as StatusUpdatePostProps;
+    const serverUrl = useServerUrl();
     const style = getStyleSheet(theme);
     const blockStyles = getMarkdownBlockStyles(theme);
     const textStyles = getMarkdownTextStyles(theme);
     const intl = useIntl();
+
+    useEffect(() => {
+        fetchUsersByIds(serverUrl, participantIds);
+
+        // Only do this on mount
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const updatePosted = intl.formatMessage({
         id: 'playbooks.status_update_post.update',
@@ -91,10 +103,6 @@ const StatusUpdatePost = ({location, post, theme}: Props) => {
         id: 'playbooks.status_update_post.num_tasks',
         defaultMessage: '**{numTasksChecked, number}** of **{numTasks, number}** {numTasks, plural, =1 {task} other {tasks}} checked',
     }, {numTasksChecked, numTasks});
-    const participants = intl.formatMessage({
-        id: 'playbooks.status_update_post.participants',
-        defaultMessage: '{numParticipants, number} {numParticipants, plural, =1 {participant} other {participants}}',
-    }, {numParticipants: participantIds.length});
 
     return (
         <View style={style.messageContainer}>
@@ -142,21 +150,12 @@ const StatusUpdatePost = ({location, post, theme}: Props) => {
                         {'•'}
                     </Text>
 
-                    <View style={{flexDirection: 'row'}}>
-                        <CompassIcon
-                            name='account-multiple-outline'
-                            size={14}
-                            color={changeOpacity(theme.centerChannelColor, 0.64)}
-                            style={{marginRight: 5}}
-                        />
-                        <Markdown
-                            baseTextStyle={style.detailsText}
-                            value={participants}
-                            textStyles={textStyles}
-                            theme={theme}
-                            location={location}
-                        />
-                    </View>
+                    <Participants
+                        participantIds={participantIds}
+                        location={location}
+                        baseTextStyle={style.detailsText}
+                        textStyles={textStyles}
+                    />
                 </View>
             </View>
         </View>
