@@ -53,6 +53,8 @@ export default schemaMigrations({migrations: [
                     {name: 'retrospective', type: 'string'},
                     {name: 'retrospective_published_at', type: 'number'},
                     {name: 'update_at', type: 'number'},
+                    {name: 'sync', type: 'string', isIndexed: true, isOptional: true},
+                    {name: 'last_sync_at', type: 'number', isOptional: true},
                 ],
             }),
             createTable({
@@ -62,6 +64,8 @@ export default schemaMigrations({migrations: [
                     {name: 'items_order', type: 'string'},
                     {name: 'title', type: 'string'},
                     {name: 'update_at', type: 'number'},
+                    {name: 'sync', type: 'string', isIndexed: true, isOptional: true},
+                    {name: 'last_sync_at', type: 'number', isOptional: true},
                 ],
             }),
             createTable({
@@ -80,6 +84,8 @@ export default schemaMigrations({migrations: [
                     {name: 'completed_at', type: 'number'},
                     {name: 'task_actions', type: 'string', isOptional: true}, // JSON string
                     {name: 'update_at', type: 'number'},
+                    {name: 'sync', type: 'string', isIndexed: true, isOptional: true},
+                    {name: 'last_sync_at', type: 'number', isOptional: true},
                 ],
             }),
             addColumns({

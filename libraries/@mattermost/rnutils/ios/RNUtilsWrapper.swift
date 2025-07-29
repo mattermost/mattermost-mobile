@@ -4,11 +4,13 @@ import React
 @objc public class RNUtilsWrapper: NSObject {
     @objc public weak var delegate: RNUtilsDelegate? = nil
     @objc private var hasRegisteredLoad = false
+    private var debounceWorkItem: DispatchWorkItem?
     
     deinit {
         DispatchQueue.main.sync {
             guard let w = UIApplication.shared.delegate?.window, let window = w else { return }
             window.removeObserver(self, forKeyPath: "frame")
+            NotificationCenter.default.removeObserver(self, name: UIDevice.orientationDidChangeNotification, object: nil)
         }
     }
     
@@ -42,23 +44,56 @@ import React
         return windowWidth >= screenWidth * (2.0 / 3.0)
     }
     
+    private func sendDimensionsChangedDebounced() {
+        debounceWorkItem?.cancel()
+        let workItem = DispatchWorkItem { [weak self] in
+            guard let self = self else { return }
+            let (screen, bounds) = getWindowSize()
+            guard let screen = screen, let bounds = bounds else {return}
+
+            // Determine which dimensions to use
+            var width: CGFloat = 0
+            var height: CGFloat = 0
+
+            if UIDevice.current.userInterfaceIdiom == .pad {
+                // On iPad, use window bounds for Split View/Stage Manager
+                width = bounds.width
+                height = bounds.height
+            } else {
+                // On iPhone, use screen bounds for reliability
+                width = screen.width
+                height = screen.height
+            }
+
+            isSplitView(screen: screen, bounds: bounds)
+            
+            if width == 0 || height == 0 {
+                return
+            }
+            delegate?.sendEvent(name: "DimensionsChanged", result: [
+                "width": width,
+                "height": height
+            ])
+        }
+        debounceWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: workItem)
+    }
+    
     @objc public func captureEvents() {
         DispatchQueue.main.async {
             guard let w = UIApplication.shared.delegate?.window, let window = w else { return }
             window.addObserver(self, forKeyPath: "frame", options: .new, context: nil)
+            NotificationCenter.default.addObserver(self, selector: #selector(self.orientationChanged), name: UIDevice.orientationDidChangeNotification, object: nil)
         }
+    }
+    
+    @objc private func orientationChanged() {
+        sendDimensionsChangedDebounced()
     }
     
     override public func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         if keyPath == "frame" {
-            let (screen, bounds) = getWindowSize()
-            guard let screen = screen, let bounds = bounds else {return}
-            isSplitView(screen: screen, bounds: bounds)
-            
-            delegate?.sendEvent(name: "DimensionsChanged", result: [
-                "width": bounds.width,
-                "height": bounds.height
-            ])
+            sendDimensionsChangedDebounced()
         }
     }
     
@@ -265,6 +300,7 @@ import React
             UIDevice.current.setValue(UIInterfaceOrientation.unknown.rawValue, forKey: "orientation")
             UINavigationController.attemptRotationToDeviceOrientation()
         }
+        self.sendDimensionsChangedDebounced()
     }
     
     @objc public func lockOrientation() {
