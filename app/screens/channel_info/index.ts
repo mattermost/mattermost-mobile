@@ -8,6 +8,7 @@ import {distinctUntilChanged, switchMap, combineLatestWith} from 'rxjs/operators
 import {observeIsCallsEnabledInChannel} from '@calls/observers';
 import {observeCallsConfig} from '@calls/state';
 import {withServerUrl} from '@context/server';
+import {observeIsPlaybooksEnabled} from '@playbooks/database/queries/version';
 import {observeCurrentChannel} from '@queries/servers/channel';
 import {observeCanAddBookmarks} from '@queries/servers/channel_bookmark';
 import {observeCanManageChannelMembers, observeCanManageChannelSettings} from '@queries/servers/role';
@@ -146,6 +147,8 @@ const enhanced = withObservables([], ({serverUrl, database}: Props) => {
         }),
     );
 
+    const isPlaybooksEnabled = observeIsPlaybooksEnabled(database);
+
     return {
         type,
         canEnableDisableCalls,
@@ -158,6 +161,7 @@ const enhanced = withObservables([], ({serverUrl, database}: Props) => {
         isCRTEnabled: observeIsCRTEnabled(database),
         isGuestUser,
         isConvertGMFeatureAvailable,
+        isPlaybooksEnabled,
     };
 });
 
