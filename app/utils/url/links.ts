@@ -32,13 +32,17 @@ export const openLink = async (link: string, serverUrl: string, siteURL: string,
     if (isValidAppSchemeUrl(url)) {
         const match = matchDeepLink(url, serverUrl, siteURL);
         if (match) {
-            const {error} = await handleDeepLink(match.url, intl);
+            const {error} = await handleDeepLink(match, intl);
             if (error) {
-                tryOpenURL(match.url, () => onOpenLinkError(intl));
+                tryOpenURL(match.url, () => {
+                    onOpenLinkError(intl);
+                });
             }
         } else {
             // For non-mattermost app schemes, try to open externally
-            tryOpenURL(url, () => onOpenLinkError(intl));
+            tryOpenURL(url, () => {
+                onOpenLinkError(intl);
+            });
         }
         return;
     }
