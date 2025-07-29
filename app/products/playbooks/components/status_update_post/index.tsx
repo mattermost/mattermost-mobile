@@ -67,6 +67,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         detailsContainer: {
             flexDirection: 'row',
+            flexWrap: 'wrap',
             gap: 8,
         },
         row: {
