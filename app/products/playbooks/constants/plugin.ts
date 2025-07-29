@@ -2,3 +2,4 @@
 // See LICENSE.txt for license information.
 
 export const PLAYBOOKS_PLUGIN_ID = 'playbooks';
+export const PLAYBOOKS_UPDATE_STATUS_POST_TYPE = 'custom_run_update';

@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import RNUtils from '@mattermost/rnutils';
-import React from 'react';
-import {DeviceEventEmitter, Image, Keyboard, Platform} from 'react-native';
+import React, {type RefObject} from 'react';
+import {DeviceEventEmitter, Image, Keyboard, Platform, View} from 'react-native';
 import {Navigation, type Options, type OptionsLayout} from 'react-native-navigation';
 import {measure, type AnimatedRef} from 'react-native-reanimated';
 
@@ -120,6 +120,28 @@ export function measureItem(ref: AnimatedRef<any>, sharedValues: GalleryManagerS
     }
 }
 
+export function measureViewInWindow(ref: RefObject<View>): Promise<{x: number; y: number; width: number; height: number}> {
+    return new Promise((resolve) => {
+        if (ref.current) {
+            ref.current.measure((x, y, width, height, pageX, pageY) => {
+                resolve({
+                    x: pageX,
+                    y: pageY,
+                    width,
+                    height,
+                });
+            });
+        } else {
+            resolve({
+                x: 0,
+                y: 0,
+                width: 0,
+                height: 0,
+            });
+        }
+    });
+}
+
 export function openGalleryAtIndex(galleryIdentifier: string, initialIndex: number, items: GalleryItemType[], hideActions = false) {
     Keyboard.dismiss();
     const props = {
@@ -167,16 +189,6 @@ export function openGalleryAtIndex(galleryIdentifier: string, initialIndex: numb
 }
 
 export const typedMemo: <T>(c: T) => T = React.memo;
-
-export const workletNoop = () => {
-    'worklet';
-};
-
-export const workletNoopTrue = () => {
-    'worklet';
-
-    return true;
-};
 
 export const getImageSize = (uri: string) => {
     return new Promise<{width: number; height: number}>((resolve, reject) => {

@@ -11,6 +11,7 @@ import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {Preferences} from '@constants';
+import {useLightboxSharedValues} from '@screens/gallery/lightbox_swipeout/context';
 import {calculateDimensions} from '@utils/images';
 import {typography} from '@utils/typography';
 
@@ -50,15 +51,16 @@ type Props = {
     height: number;
     isDownloading: boolean;
     isRemote: boolean;
-    onShouldHideControls: () => void;
     posterUri?: string;
     setDownloading: Dispatch<SetStateAction<boolean>>;
     width: number;
+    hideHeaderAndFooter: (hide?: boolean) => void;
 }
 
-const VideoError = ({canDownloadFiles, enableSecureFilePreview, filename, height, isDownloading, isRemote, onShouldHideControls, posterUri, setDownloading, width}: Props) => {
+const VideoError = ({canDownloadFiles, enableSecureFilePreview, filename, height, isDownloading, isRemote, hideHeaderAndFooter, posterUri, setDownloading, width}: Props) => {
     const [hasPoster, setHasPoster] = useState(false);
     const [loadPosterError, setLoadPosterError] = useState(false);
+    const {headerAndFooterHidden} = useLightboxSharedValues();
     const dimensions = useWindowDimensions();
     const intl = useIntl();
 
@@ -73,6 +75,13 @@ const VideoError = ({canDownloadFiles, enableSecureFilePreview, filename, height
     const handlePosterError = useCallback(() => {
         setLoadPosterError(true);
     }, []);
+
+    const onPress = useCallback(() => {
+        hideHeaderAndFooter(!headerAndFooterHidden.value);
+
+    // No need to add shared values to the dependency array here,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [hideHeaderAndFooter]);
 
     let poster;
     if (posterUri && !loadPosterError) {
@@ -145,7 +154,7 @@ const VideoError = ({canDownloadFiles, enableSecureFilePreview, filename, height
 
     return (
         <TouchableWithoutFeedback
-            onPress={onShouldHideControls}
+            onPress={onPress}
             style={styles.container}
         >
             <Animated.View style={styles.container}>
