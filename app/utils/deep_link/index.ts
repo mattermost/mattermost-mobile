@@ -16,6 +16,8 @@ import {getDefaultThemeByAppearance} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, t} from '@i18n';
 import WebsocketManager from '@managers/websocket_manager';
+import {fetchPlaybookRun} from '@playbooks/actions/remote/runs';
+import {getPlaybookRunById} from '@playbooks/database/queries/run';
 import {fetchIsPlaybooksEnabled} from '@playbooks/database/queries/version';
 import {goToPlaybookRun} from '@playbooks/screens/navigation';
 import {getActiveServerUrl} from '@queries/app/servers';
@@ -128,6 +130,20 @@ export async function handleDeepLink(deepLink: DeepLinkWithData, intlShape?: Int
                 const playbookEnabled = await fetchIsPlaybooksEnabled(database);
                 if (playbookEnabled) {
                     // Go to playbook Run
+                    const playbook = await getPlaybookRunById(database, deepLinkData.playbookRunId);
+                    if (!playbook) {
+                        const {error} = await fetchPlaybookRun(existingServerUrl, deepLinkData.playbookRunId);
+                        if (error) {
+                            Alert.alert(
+                                intl.formatMessage({id: 'playbooks.fetch_error.title', defaultMessage: 'Unable to open Run'}),
+                                intl.formatMessage({id: 'playbooks.fetch_error.description', defaultMessage: "You don't have permission to view this run, or it may no longer exist."}),
+                                [{
+                                    text: intl.formatMessage({id: 'playbooks.fetch_error.OK', defaultMessage: 'Okay'}),
+                                }],
+                            );
+                            break;
+                        }
+                    }
                     goToPlaybookRun(intl, deepLinkData.playbookRunId);
                 } else {
                     // Alert playbooks not enabled or version not supported
@@ -139,6 +155,7 @@ export async function handleDeepLink(deepLink: DeepLinkWithData, intlShape?: Int
                         }],
                     );
                 }
+                break;
             }
         }
         return {error: false};
