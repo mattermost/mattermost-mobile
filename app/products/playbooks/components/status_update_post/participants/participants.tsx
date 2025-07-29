@@ -31,6 +31,8 @@ type Props = {
 }
 
 const USER_ROW_HEIGHT = 40;
+const MAX_USERS_DISPLAYED = 5;
+const BOTTOM_SHEET_MAX_HEIGHT = '80%';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     participantsContainer: {
@@ -81,14 +83,14 @@ const Participants = ({baseTextStyle, participantIds, users, location, textStyle
             </>
         );
 
-        let height = bottomSheetSnapPoint(Math.min(users.length, 5), USER_ROW_HEIGHT) + TITLE_HEIGHT;
+        let height = bottomSheetSnapPoint(Math.min(users.length, MAX_USERS_DISPLAYED), USER_ROW_HEIGHT) + TITLE_HEIGHT;
         if (Platform.OS === 'android') {
             height += BOTTOM_SHEET_ANDROID_OFFSET;
         }
 
         const snapPoints: Array<string | number> = [1, height];
-        if (users.length > 5) {
-            snapPoints.push('80%');
+        if (users.length > MAX_USERS_DISPLAYED) {
+            snapPoints.push(BOTTOM_SHEET_MAX_HEIGHT);
         }
 
         bottomSheet({

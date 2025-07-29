@@ -38,6 +38,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         messageContainer: {
             width: '100%',
         },
+        icon: {
+            marginRight: 5,
+        },
         reply: {
             paddingRight: 10,
         },
@@ -135,7 +138,7 @@ const StatusUpdatePost = ({location, post, theme}: Props) => {
                             name='check-all'
                             size={14}
                             color={changeOpacity(theme.centerChannelColor, 0.64)}
-                            style={{marginRight: 5}}
+                            style={style.icon}
                         />
                         <Markdown
                             baseTextStyle={style.detailsText}
