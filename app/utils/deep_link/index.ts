@@ -3,6 +3,7 @@
 
 import {match} from 'path-to-regexp';
 import {type IntlShape} from 'react-intl';
+import {Alert} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import urlParse from 'url-parse';
 
@@ -15,6 +16,10 @@ import {getDefaultThemeByAppearance} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, t} from '@i18n';
 import WebsocketManager from '@managers/websocket_manager';
+import {fetchPlaybookRun} from '@playbooks/actions/remote/runs';
+import {getPlaybookRunById} from '@playbooks/database/queries/run';
+import {fetchIsPlaybooksEnabled} from '@playbooks/database/queries/version';
+import {goToPlaybookRun} from '@playbooks/screens/navigation';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {getCurrentUser, queryUsersByUsername} from '@queries/servers/user';
 import {dismissAllModalsAndPopToRoot} from '@screens/navigation';
@@ -32,28 +37,27 @@ import {
     ID_PATH_PATTERN,
 } from '@utils/url/path';
 
-import type {DeepLinkChannel, DeepLinkDM, DeepLinkGM, DeepLinkPermalink, DeepLinkWithData, LaunchProps} from '@typings/launch';
+import type {DeepLinkChannel, DeepLinkDM, DeepLinkGM, DeepLinkPermalink, DeepLinkPlaybookRuns, DeepLinkWithData, LaunchProps} from '@typings/launch';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 const deepLinkScreens: AvailableScreens[] = [Screens.HOME, Screens.CHANNEL, Screens.GLOBAL_THREADS, Screens.THREAD];
 
-export async function handleDeepLink(deepLinkUrl: string, intlShape?: IntlShape, location?: string, asServer = false) {
+export async function handleDeepLink(deepLink: DeepLinkWithData, intlShape?: IntlShape, location?: string) {
     try {
-        const parsed = parseDeepLink(deepLinkUrl, asServer);
-        if (parsed.type === DeepLink.Invalid || !parsed.data || !parsed.data.serverUrl) {
+        if (deepLink.type === DeepLink.Invalid || !deepLink.data || !deepLink.data.serverUrl) {
             return {error: true};
         }
 
         const currentServerUrl = await getActiveServerUrl();
-        const existingServerUrl = DatabaseManager.searchUrl(parsed.data.serverUrl);
+        const existingServerUrl = DatabaseManager.searchUrl(deepLink.data.serverUrl);
 
         // After checking the server for http & https then we add it
         if (!existingServerUrl) {
             const theme = EphemeralStore.theme || getDefaultThemeByAppearance();
             if (NavigationStore.getVisibleScreen() === Screens.SERVER) {
-                Navigation.updateProps(Screens.SERVER, {serverUrl: parsed.data.serverUrl});
+                Navigation.updateProps(Screens.SERVER, {serverUrl: deepLink.data.serverUrl});
             } else if (!NavigationStore.getScreensInStack().includes(Screens.SERVER)) {
-                addNewServer(theme, parsed.data.serverUrl, undefined, parsed);
+                addNewServer(theme, deepLink.data.serverUrl, undefined, deepLink);
             }
             return {error: false};
         }
@@ -70,14 +74,14 @@ export async function handleDeepLink(deepLinkUrl: string, intlShape?: IntlShape,
         const locale = currentUser?.locale || DEFAULT_LOCALE;
         const intl = intlShape || getIntlShape(locale);
 
-        switch (parsed.type) {
+        switch (deepLink.type) {
             case DeepLink.Channel: {
-                const deepLinkData = parsed.data as DeepLinkChannel;
+                const deepLinkData = deepLink.data as DeepLinkChannel;
                 switchToChannelByName(existingServerUrl, deepLinkData.channelName, deepLinkData.teamName, errorBadChannel, intl);
                 break;
             }
             case DeepLink.DirectMessage: {
-                const deepLinkData = parsed.data as DeepLinkDM;
+                const deepLinkData = deepLink.data as DeepLinkDM;
                 const userIds = await queryUsersByUsername(database, [deepLinkData.userName]).fetchIds();
                 let userId = userIds.length ? userIds[0] : undefined;
                 if (!userId) {
@@ -95,12 +99,12 @@ export async function handleDeepLink(deepLinkUrl: string, intlShape?: IntlShape,
                 break;
             }
             case DeepLink.GroupMessage: {
-                const deepLinkData = parsed.data as DeepLinkGM;
+                const deepLinkData = deepLink.data as DeepLinkGM;
                 switchToChannelByName(existingServerUrl, deepLinkData.channelName, deepLinkData.teamName, errorBadChannel, intl);
                 break;
             }
             case DeepLink.Permalink: {
-                const deepLinkData = parsed.data as DeepLinkPermalink;
+                const deepLinkData = deepLink.data as DeepLinkPermalink;
                 if (
                     NavigationStore.hasModalsOpened() ||
                     !deepLinkScreens.includes(NavigationStore.getVisibleScreen())
@@ -110,12 +114,60 @@ export async function handleDeepLink(deepLinkUrl: string, intlShape?: IntlShape,
                 showPermalink(existingServerUrl, deepLinkData.teamName, deepLinkData.postId);
                 break;
             }
+            case DeepLink.Playbooks: {
+                // Alert that playbooks should be access from the webapp or desktop app
+                Alert.alert(
+                    intl.formatMessage({id: 'playbooks.only_runs_available.title', defaultMessage: 'Playbooks not available'}),
+                    intl.formatMessage({id: 'playbooks.only_runs_available.description', defaultMessage: 'Only Playbook Runs are available on mobile. To access the Playbook, please use the desktop or web app.'}),
+                    [{
+                        text: intl.formatMessage({id: 'playbooks.only_runs_available.ok', defaultMessage: 'OK'}),
+                    }],
+                );
+                break;
+            }
+            case DeepLink.PlaybookRuns: {
+                const deepLinkData = deepLink.data as DeepLinkPlaybookRuns;
+                const playbookEnabled = await fetchIsPlaybooksEnabled(database);
+                if (playbookEnabled) {
+                    // Go to playbook Run
+                    const playbook = await getPlaybookRunById(database, deepLinkData.playbookRunId);
+                    if (!playbook) {
+                        const {error} = await fetchPlaybookRun(existingServerUrl, deepLinkData.playbookRunId);
+                        if (error) {
+                            Alert.alert(
+                                intl.formatMessage({id: 'playbooks.fetch_error.title', defaultMessage: 'Unable to open Run'}),
+                                intl.formatMessage({id: 'playbooks.fetch_error.description', defaultMessage: "You don't have permission to view this run, or it may no longer exist."}),
+                                [{
+                                    text: intl.formatMessage({id: 'playbooks.fetch_error.OK', defaultMessage: 'Okay'}),
+                                }],
+                            );
+                            break;
+                        }
+                    }
+                    goToPlaybookRun(intl, deepLinkData.playbookRunId);
+                } else {
+                    // Alert playbooks not enabled or version not supported
+                    Alert.alert(
+                        intl.formatMessage({id: 'playbooks.not_enabled_or_unsupported.title', defaultMessage: 'Playbooks not available'}),
+                        intl.formatMessage({id: 'playbooks.not_enabled_or_unsupported.description', defaultMessage: 'Playbooks are either not enabled on this server or the Playbooks version is not supported. Please contact your system administrator.'}),
+                        [{
+                            text: intl.formatMessage({id: 'playbooks.not_enabled_or_unsupported.OK', defaultMessage: 'OK'}),
+                        }],
+                    );
+                }
+                break;
+            }
         }
         return {error: false};
     } catch (error) {
         logError('Failed to open channel from deeplink', error, location);
         return {error: true};
     }
+}
+
+export async function parseAndHandleDeepLink(deepLinkUrl: string, intlShape?: IntlShape, location?: string, asServer = false) {
+    const parsed = parseDeepLink(deepLinkUrl, asServer);
+    return handleDeepLink(parsed, intlShape, location);
 }
 
 type ChannelPathParams = {
@@ -128,6 +180,22 @@ type ChannelPathParams = {
 
 const CHANNEL_PATH = '*serverUrl/:teamName/:path/:identifier';
 export const matchChannelDeeplink = match<ChannelPathParams>(CHANNEL_PATH);
+
+type PlaybooksPathParams = {
+    serverUrl: string[];
+    playbookId: string;
+};
+
+const PLAYBOOKS_PATH = '*serverUrl/playbooks/playbooks/:playbookId';
+export const matchPlaybooksDeeplink = match<PlaybooksPathParams>(PLAYBOOKS_PATH);
+
+type PlaybookRunsPathParams = {
+    serverUrl: string[];
+    playbookRunId: string;
+};
+
+const PLAYBOOK_RUNS_PATH = '*serverUrl/playbooks/runs/:playbookRunId';
+export const matchPlaybookRunsDeeplink = match<PlaybookRunsPathParams>(PLAYBOOK_RUNS_PATH);
 
 type PermalinkPathParams = {
     serverUrl: string[];
@@ -204,14 +272,16 @@ function isValidIdentifierPathPattern(id: string): boolean {
     return regex.test(id);
 }
 
-function isValidPostId(id: string): boolean {
+function isValidId(id: string): boolean {
     const regex = new RegExp(`^${ID_PATH_PATTERN}$`);
     return regex.test(id);
 }
 
 export function parseDeepLink(deepLinkUrl: string, asServer = false): DeepLinkWithData {
     try {
-        const url = removeProtocol(deepLinkUrl);
+        const parsedUrl = urlParse(deepLinkUrl);
+        const urlWithoutQuery = stripTrailingSlashes(parsedUrl.protocol + '//' + parsedUrl.host + parsedUrl.pathname);
+        const url = removeProtocol(urlWithoutQuery);
 
         const channelMatch = matchChannelDeeplink(url);
         if (channelMatch && isValidTeamName(channelMatch.params.teamName) && isValidIdentifierPathPattern(channelMatch.params.identifier)) {
@@ -231,9 +301,21 @@ export function parseDeepLink(deepLinkUrl: string, asServer = false): DeepLinkWi
         }
 
         const permalinkMatch = matchPermalinkDeeplink(url);
-        if (permalinkMatch && isValidTeamName(permalinkMatch.params.teamName) && isValidPostId(permalinkMatch.params.postId)) {
+        if (permalinkMatch && isValidTeamName(permalinkMatch.params.teamName) && isValidId(permalinkMatch.params.postId)) {
             const {params: {serverUrl, teamName, postId}} = permalinkMatch;
             return {type: DeepLink.Permalink, url: deepLinkUrl, data: {serverUrl: serverUrl.join('/'), teamName, postId}};
+        }
+
+        const playbooksMatch = matchPlaybooksDeeplink(url);
+        if (playbooksMatch && isValidId(playbooksMatch.params.playbookId)) {
+            const {params: {serverUrl, playbookId}} = playbooksMatch;
+            return {type: DeepLink.Playbooks, url: deepLinkUrl, data: {serverUrl: serverUrl.join('/'), playbookId}};
+        }
+
+        const playbooksRunsMatch = matchPlaybookRunsDeeplink(url);
+        if (playbooksRunsMatch && isValidId(playbooksRunsMatch.params.playbookRunId)) {
+            const {params: {serverUrl, playbookRunId}} = playbooksRunsMatch;
+            return {type: DeepLink.PlaybookRuns, url: deepLinkUrl, data: {serverUrl: serverUrl.join('/'), playbookRunId}};
         }
 
         if (asServer) {

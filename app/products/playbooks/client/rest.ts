@@ -10,7 +10,7 @@ export interface ClientPlaybooksMix {
     // Playbook Runs
     fetchPlaybookRuns: (params: FetchPlaybookRunsParams, groupLabel?: RequestGroupLabel) => Promise<FetchPlaybookRunsReturn>;
 
-    // fetchPlaybookRun: (id: string, groupLabel?: RequestGroupLabel) => Promise<PlaybookRun>;
+    fetchPlaybookRun: (id: string, groupLabel?: RequestGroupLabel) => Promise<PlaybookRun>;
 
     // Run Management
     // finishRun: (playbookRunId: string) => Promise<any>;
@@ -54,12 +54,12 @@ const ClientPlaybooks = <TBase extends Constructor<ClientBase>>(superclass: TBas
         }
     };
 
-    // fetchPlaybookRun = async (id: string, groupLabel?: RequestGroupLabel) => {
-    //     return this.doFetch(
-    //         `${this.getPlaybookRunRoute(id)}`,
-    //         {method: 'get', groupLabel},
-    //     );
-    // };
+    fetchPlaybookRun = async (id: string, groupLabel?: RequestGroupLabel) => {
+        return this.doFetch(
+            `${this.getPlaybookRunRoute(id)}`,
+            {method: 'get', groupLabel},
+        );
+    };
 
     // Run Management
     // finishRun = async (playbookRunId: string) => {
