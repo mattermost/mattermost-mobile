@@ -280,8 +280,9 @@ function isValidId(id: string): boolean {
 export function parseDeepLink(deepLinkUrl: string, asServer = false): DeepLinkWithData {
     try {
         const url = removeProtocol(deepLinkUrl);
+        const parsedUrl = urlParse(url);
 
-        const channelMatch = matchChannelDeeplink(url);
+        const channelMatch = matchChannelDeeplink(parsedUrl.pathname);
         if (channelMatch && isValidTeamName(channelMatch.params.teamName) && isValidIdentifierPathPattern(channelMatch.params.identifier)) {
             const {params: {serverUrl, teamName, path, identifier}} = channelMatch;
 
@@ -298,20 +299,19 @@ export function parseDeepLink(deepLinkUrl: string, asServer = false): DeepLinkWi
             }
         }
 
-        const permalinkMatch = matchPermalinkDeeplink(url);
+        const permalinkMatch = matchPermalinkDeeplink(parsedUrl.pathname);
         if (permalinkMatch && isValidTeamName(permalinkMatch.params.teamName) && isValidId(permalinkMatch.params.postId)) {
             const {params: {serverUrl, teamName, postId}} = permalinkMatch;
             return {type: DeepLink.Permalink, url: deepLinkUrl, data: {serverUrl: serverUrl.join('/'), teamName, postId}};
         }
 
-        const playbookUrl = urlParse(url);
-        const playbooksMatch = matchPlaybooksDeeplink(playbookUrl.pathname);
+        const playbooksMatch = matchPlaybooksDeeplink(parsedUrl.pathname);
         if (playbooksMatch && isValidId(playbooksMatch.params.playbookId)) {
             const {params: {serverUrl, playbookId}} = playbooksMatch;
             return {type: DeepLink.Playbooks, url: deepLinkUrl, data: {serverUrl: serverUrl.join('/'), playbookId}};
         }
 
-        const playbooksRunsMatch = matchPlaybookRunsDeeplink(playbookUrl.pathname);
+        const playbooksRunsMatch = matchPlaybookRunsDeeplink(parsedUrl.pathname);
         if (playbooksRunsMatch && isValidId(playbooksRunsMatch.params.playbookRunId)) {
             const {params: {serverUrl, playbookRunId}} = playbooksRunsMatch;
             return {type: DeepLink.PlaybookRuns, url: deepLinkUrl, data: {serverUrl: serverUrl.join('/'), playbookRunId}};
