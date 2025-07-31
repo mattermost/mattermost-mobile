@@ -125,6 +125,16 @@ export async function handleDeepLink(deepLink: DeepLinkWithData, intlShape?: Int
                 );
                 break;
             }
+            case DeepLink.PlaybookRunsRetrospective: {
+                Alert.alert(
+                    intl.formatMessage({id: 'playbooks.retrospective_not_available.title', defaultMessage: 'Playbooks Run Retrospective not available'}),
+                    intl.formatMessage({id: 'playbooks.retrospective_not_available.description', defaultMessage: 'Only Playbook Runs are available on mobile. To fill the Run Retrospective, please use the desktop or web app.'}),
+                    [{
+                        text: intl.formatMessage({id: 'playbooks.retrospective_not_available.ok', defaultMessage: 'OK'}),
+                    }],
+                );
+                break;
+            }
             case DeepLink.PlaybookRuns: {
                 const deepLinkData = deepLink.data as DeepLinkPlaybookRuns;
                 const playbookEnabled = await fetchIsPlaybooksEnabled(database);
@@ -196,6 +206,9 @@ type PlaybookRunsPathParams = {
 
 const PLAYBOOK_RUNS_PATH = '*serverUrl/playbooks/runs/:playbookRunId';
 export const matchPlaybookRunsDeeplink = match<PlaybookRunsPathParams>(PLAYBOOK_RUNS_PATH);
+
+const PLAYBOOK_RUNS_RETROSPECTIVE = '*serverUrl/playbooks/runs/:playbookRunId/retrospective';
+export const matchPlaybookRunsRetrospectiveDeeplink = match<PlaybookRunsPathParams>(PLAYBOOK_RUNS_RETROSPECTIVE);
 
 type PermalinkPathParams = {
     serverUrl: string[];
@@ -310,6 +323,12 @@ export function parseDeepLink(deepLinkUrl: string, asServer = false): DeepLinkWi
         if (playbooksMatch && isValidId(playbooksMatch.params.playbookId)) {
             const {params: {serverUrl, playbookId}} = playbooksMatch;
             return {type: DeepLink.Playbooks, url: deepLinkUrl, data: {serverUrl: serverUrl.join('/'), playbookId}};
+        }
+
+        const playbooksRunsRetrospectiveMatch = matchPlaybookRunsRetrospectiveDeeplink(url);
+        if (playbooksRunsRetrospectiveMatch && isValidId(playbooksRunsRetrospectiveMatch.params.playbookRunId)) {
+            const {params: {serverUrl, playbookRunId}} = playbooksRunsRetrospectiveMatch;
+            return {type: DeepLink.PlaybookRunsRetrospective, url: deepLinkUrl, data: {serverUrl: serverUrl.join('/'), playbookRunId}};
         }
 
         const playbooksRunsMatch = matchPlaybookRunsDeeplink(url);
