@@ -23,6 +23,7 @@ type Props = {
 const styles = StyleSheet.create({
     container: {
         alignItems: 'center',
+        marginTop: 12,
     },
     margin: {
         marginHorizontal: 20,
@@ -95,7 +96,6 @@ const Attachments = ({canUploadFiles, maxFileCount, maxFileSize, theme}: Props) 
             <Single
                 file={files[0]}
                 maxFileSize={maxFileSize}
-                theme={theme}
             />
         );
     } else {
