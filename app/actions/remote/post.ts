@@ -72,6 +72,37 @@ function isErrorThatWarrantsNotPostingTheMessage(error: any): boolean {
     );
 }
 
+async function createPostWithRetries(client: Client, newPost: Post): Promise<{created?: Post; lastError?: unknown}> {
+    let created;
+    let lastError;
+    const backoffTimes = [1000, 2000, 4000];
+    for (let attempt = 0; attempt < backoffTimes.length+1; attempt++) {
+        try {
+            // eslint-disable-next-line no-await-in-loop
+            created = await client.createPost({...newPost, create_at: 0});
+            lastError = undefined;
+            break;
+        } catch (error) {
+            lastError = error;
+            if (isErrorThatWarrantsNotPostingTheMessage(error)) {
+                break;
+            }
+            if (attempt < backoffTimes.length) {
+                if (__DEV__) {
+                    showSnackBar({
+                        barType: 'INFO_COPIED',
+                        customMessage: `Retrying to send message (attempt ${attempt + 2}/4)...`,
+                        type: 'default',
+                    });
+                }
+                // eslint-disable-next-line no-await-in-loop
+                await new Promise((resolve) => setTimeout(resolve, backoffTimes[attempt]));
+            }
+        }
+    }
+    return {created, lastError};
+}
+
 export async function createPost(serverUrl: string, post: Partial<Post>, files: FileInfo[] = []): Promise<{data?: boolean; error?: unknown}> {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
@@ -148,33 +179,7 @@ export async function createPost(serverUrl: string, post: Partial<Post>, files: 
 
     const isCRTEnabled = await getIsCRTEnabled(database);
 
-    let created;
-    let lastError;
-    const backoffTimes = [1000, 2000, 3000];
-    for (let attempt = 0; attempt < backoffTimes.length+1; attempt++) {
-        try {
-            // eslint-disable-next-line no-await-in-loop
-            created = await client.createPost({...newPost, create_at: 0});
-            lastError = undefined;
-            break;
-        } catch (error) {
-            lastError = error;
-            if (isErrorThatWarrantsNotPostingTheMessage(error)) {
-                break;
-            }
-            if (attempt < backoffTimes.length) {
-                if (__DEV__) {
-                    showSnackBar({
-                        barType: 'INFO_COPIED',
-                        customMessage: `Retrying to send message (attempt ${attempt + 2}/4)...`,
-                        type: 'default',
-                    });
-                }
-                // eslint-disable-next-line no-await-in-loop
-                await new Promise((resolve) => setTimeout(resolve, backoffTimes[attempt]));
-            }
-        }
-    }
+    const {created, lastError} = await createPostWithRetries(client, newPost);
     if (!created) {
         logDebug('Error sending a post', getFullErrorMessage(lastError));
         const errorPost = {
