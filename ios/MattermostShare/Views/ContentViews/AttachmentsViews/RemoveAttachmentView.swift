@@ -17,20 +17,20 @@ struct RemoveAttachmentView: View {
   }
   
   var body: some View {
-    if attachments.count > 1 {
-      FontIcon.button(
-        .compassIcons(code: .closeCircle),
-        action: {
-          withAnimation {
-            removeAtIndex(index)
-          }
-        },
-        fontsize: 24,
-        color: Color.theme.centerChannelColor.opacity(0.56)
-      )
-      .background(.background)
-      .cornerRadius(12)
-      .offset(x: 5, y: -7)
-    }
+    // X button styled like Android RemoveButton
+    FontIcon.button(
+      .compassIcons(code: .closeCircle),
+      action: {
+        withAnimation {
+          removeAtIndex(index)
+        }
+      },
+      fontsize: 24,
+      color: Color.theme.centerChannelColor.opacity(0.64)
+    )
+    .frame(width: 24, height: 24)
+    .background(Color.theme.centerChannelBg)
+    .cornerRadius(12)
+    .shadow(color: Color(red: 0, green: 0, blue: 0, opacity: 0.08), radius: 2, x: 0, y: 1)
   }
 }
