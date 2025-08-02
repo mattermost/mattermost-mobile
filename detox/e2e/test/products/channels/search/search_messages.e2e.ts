@@ -393,7 +393,7 @@ describe('Search - Search Messages', () => {
         // * Verify post message is updated and displays edited indicator '(edited)'
         const {postListPostItem: updatedPostListPostItem, postListPostItemEditedIndicator} = SearchMessagesScreen.getPostListPostItem(searchedPost.id, updatedMessage);
         await expect(updatedPostListPostItem).toBeVisible();
-        await expect(postListPostItemEditedIndicator).toHaveText('(edited)');
+        await expect(postListPostItemEditedIndicator).toHaveText('Edited');
 
         // # Open post options for searched message and tap on reply option
         await SearchMessagesScreen.openPostOptionsFor(searchedPost.id, updatedMessage);

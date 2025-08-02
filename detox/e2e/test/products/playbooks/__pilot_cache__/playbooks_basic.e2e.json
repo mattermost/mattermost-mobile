@@ -1,0 +1,58 @@
+{
+  "{\"currentStep\":\"Verify the Playbook icon and count \\\"1\\\" are visible in the Channel Header\",\"previousSteps\":[]}": [
+    {
+      "value": {
+        "code": "// Verify the Playbook icon and count \"1\" are visible in the Channel Header\nawait expect(element(by.id('detox_temp_0_1_0_1_0_0_0_0_0_0_0_0_0_2_0_0'))).toBeVisible();\nawait expect(element(by.id('detox_temp_0_1_0_1_0_0_0_0_0_0_0_0_0_2_0_1'))).toBeVisible();"
+      },
+      "creationTime": 1752084953767
+    }
+  ],
+  "{\"currentStep\":\"Tap the \\\"Quick Actions\\\" icon in the Channel Header\",\"previousSteps\":[{\"step\":\"Verify the Playbook icon and count \\\"1\\\" are visible in the Channel Header\",\"code\":\"// Verify the Playbook icon and count \\\"1\\\" are visible in the Channel Header\\nawait expect(element(by.id('detox_temp_0_1_0_1_0_0_0_0_0_0_0_0_0_2_0_0'))).toBeVisible();\\nawait expect(element(by.id('detox_temp_0_1_0_1_0_0_0_0_0_0_0_0_0_2_0_1'))).toBeVisible();\"}]}": [
+    {
+      "value": {
+        "code": "await element(by.id('channel_header.channel_quick_actions.button')).tap();"
+      },
+      "creationTime": 1752084962298
+    }
+  ],
+  "{\"currentStep\":\"Verify a bottom sheet with the \\\"Playbook runs\\\" option is displayed\",\"previousSteps\":[{\"step\":\"Verify the Playbook icon and count \\\"1\\\" are visible in the Channel Header\",\"code\":\"// Verify the Playbook icon and count \\\"1\\\" are visible in the Channel Header\\nawait expect(element(by.id('detox_temp_0_1_0_1_0_0_0_0_0_0_0_0_0_2_0_0'))).toBeVisible();\\nawait expect(element(by.id('detox_temp_0_1_0_1_0_0_0_0_0_0_0_0_0_2_0_1'))).toBeVisible();\"},{\"step\":\"Tap the \\\"Quick Actions\\\" icon in the Channel Header\",\"code\":\"await element(by.id('channel_header.channel_quick_actions.button')).tap();\"}]}": [
+    {
+      "value": {
+        "code": "// Verify a bottom sheet with the \"Playbook runs\" option is displayed\nawait expect(element(by.id('optionItem'))).toBeVisible();\nawait expect(element(by.id('optionItem.label'))).toHaveText('Playbook runs');"
+      },
+      "creationTime": 1752084970527
+    }
+  ],
+  "{\"currentStep\":\"Verify that \\\"Playbook runs\\\" is listed in the bottom sheet and \\\"1\\\" count is visible\",\"previousSteps\":[{\"step\":\"Verify the Playbook icon and count \\\"1\\\" are visible in the Channel Header\",\"code\":\"// Verify the Playbook icon and count \\\"1\\\" are visible in the Channel Header\\nawait expect(element(by.id('detox_temp_0_1_0_1_0_0_0_0_0_0_0_0_0_2_0_0'))).toBeVisible();\\nawait expect(element(by.id('detox_temp_0_1_0_1_0_0_0_0_0_0_0_0_0_2_0_1'))).toBeVisible();\"},{\"step\":\"Tap the \\\"Quick Actions\\\" icon in the Channel Header\",\"code\":\"await element(by.id('channel_header.channel_quick_actions.button')).tap();\"},{\"step\":\"Verify a bottom sheet with the \\\"Playbook runs\\\" option is displayed\",\"code\":\"// Verify a bottom sheet with the \\\"Playbook runs\\\" option is displayed\\nawait expect(element(by.id('optionItem'))).toBeVisible();\\nawait expect(element(by.id('optionItem.label'))).toHaveText('Playbook runs');\"}]}": [
+    {
+      "value": {
+        "code": "// Verify that \"Playbook runs\" is listed in the bottom sheet and \"1\" count is visible\nawait expect(element(by.id('optionItem.label'))).toBeVisible();\nawait expect(element(by.id('optionItem.label'))).toHaveText('Playbook runs');\nawait expect(element(by.id('optionItem.info'))).toBeVisible();\nawait expect(element(by.id('optionItem.info'))).toHaveText('1');"
+      },
+      "creationTime": 1752084977141
+    }
+  ],
+  "{\"currentStep\":\"Tap the \\\"Playbook runs\\\" option in the bottom sheet\",\"previousSteps\":[{\"step\":\"Verify the Playbook icon and count \\\"1\\\" are visible in the Channel Header\",\"code\":\"// Verify the Playbook icon and count \\\"1\\\" are visible in the Channel Header\\nawait expect(element(by.id('detox_temp_0_1_0_1_0_0_0_0_0_0_0_0_0_2_0_0'))).toBeVisible();\\nawait expect(element(by.id('detox_temp_0_1_0_1_0_0_0_0_0_0_0_0_0_2_0_1'))).toBeVisible();\"},{\"step\":\"Tap the \\\"Quick Actions\\\" icon in the Channel Header\",\"code\":\"await element(by.id('channel_header.channel_quick_actions.button')).tap();\"},{\"step\":\"Verify a bottom sheet with the \\\"Playbook runs\\\" option is displayed\",\"code\":\"// Verify a bottom sheet with the \\\"Playbook runs\\\" option is displayed\\nawait expect(element(by.id('optionItem'))).toBeVisible();\\nawait expect(element(by.id('optionItem.label'))).toHaveText('Playbook runs');\"},{\"step\":\"Verify that \\\"Playbook runs\\\" is listed in the bottom sheet and \\\"1\\\" count is visible\",\"code\":\"// Verify that \\\"Playbook runs\\\" is listed in the bottom sheet and \\\"1\\\" count is visible\\nawait expect(element(by.id('optionItem.label'))).toBeVisible();\\nawait expect(element(by.id('optionItem.label'))).toHaveText('Playbook runs');\\nawait expect(element(by.id('optionItem.info'))).toBeVisible();\\nawait expect(element(by.id('optionItem.info'))).toHaveText('1');\"}]}": [
+    {
+      "value": {
+        "code": "await element(by.id('optionItem')).tap();"
+      },
+      "creationTime": 1752084983633
+    }
+  ],
+  "{\"currentStep\":\"Verify the \\\"Playbook runs\\\" screen opens\",\"previousSteps\":[{\"step\":\"Verify the Playbook icon and count \\\"1\\\" are visible in the Channel Header\",\"code\":\"// Verify the Playbook icon and count \\\"1\\\" are visible in the Channel Header\\nawait expect(element(by.id('detox_temp_0_1_0_1_0_0_0_0_0_0_0_0_0_2_0_0'))).toBeVisible();\\nawait expect(element(by.id('detox_temp_0_1_0_1_0_0_0_0_0_0_0_0_0_2_0_1'))).toBeVisible();\"},{\"step\":\"Tap the \\\"Quick Actions\\\" icon in the Channel Header\",\"code\":\"await element(by.id('channel_header.channel_quick_actions.button')).tap();\"},{\"step\":\"Verify a bottom sheet with the \\\"Playbook runs\\\" option is displayed\",\"code\":\"// Verify a bottom sheet with the \\\"Playbook runs\\\" option is displayed\\nawait expect(element(by.id('optionItem'))).toBeVisible();\\nawait expect(element(by.id('optionItem.label'))).toHaveText('Playbook runs');\"},{\"step\":\"Verify that \\\"Playbook runs\\\" is listed in the bottom sheet and \\\"1\\\" count is visible\",\"code\":\"// Verify that \\\"Playbook runs\\\" is listed in the bottom sheet and \\\"1\\\" count is visible\\nawait expect(element(by.id('optionItem.label'))).toBeVisible();\\nawait expect(element(by.id('optionItem.label'))).toHaveText('Playbook runs');\\nawait expect(element(by.id('optionItem.info'))).toBeVisible();\\nawait expect(element(by.id('optionItem.info'))).toHaveText('1');\"},{\"step\":\"Tap the \\\"Playbook runs\\\" option in the bottom sheet\",\"code\":\"await element(by.id('optionItem')).tap();\"}]}": [
+    {
+      "value": {
+        "code": "// Verify the \"Playbook runs\" screen opens\nawait expect(element(by.id('detox_temp_0_1_0_1_0_0_1_0_0_0_1_0'))).toBeVisible();\nawait expect(element(by.id('detox_temp_0_1_0_1_0_0_1_0_0_0_1_0'))).toHaveText('Playbook runs');\nawait expect(element(by.id('detox_temp_0_1_0_1_0_0_1_0_0_0_1_1'))).toBeVisible();\nawait expect(element(by.id('detox_temp_0_1_0_1_0_0_1_0_0_0_1_1'))).toHaveText('Channel c86143');"
+      },
+      "creationTime": 1752084992267
+    }
+  ],
+  "{\"currentStep\":\"Verify the \\\"In Progress\\\" tab is selected\",\"previousSteps\":[{\"step\":\"Verify the Playbook icon and count \\\"1\\\" are visible in the Channel Header\",\"code\":\"// Verify the Playbook icon and count \\\"1\\\" are visible in the Channel Header\\nawait expect(element(by.id('detox_temp_0_1_0_1_0_0_0_0_0_0_0_0_0_2_0_0'))).toBeVisible();\\nawait expect(element(by.id('detox_temp_0_1_0_1_0_0_0_0_0_0_0_0_0_2_0_1'))).toBeVisible();\"},{\"step\":\"Tap the \\\"Quick Actions\\\" icon in the Channel Header\",\"code\":\"await element(by.id('channel_header.channel_quick_actions.button')).tap();\"},{\"step\":\"Verify a bottom sheet with the \\\"Playbook runs\\\" option is displayed\",\"code\":\"// Verify a bottom sheet with the \\\"Playbook runs\\\" option is displayed\\nawait expect(element(by.id('optionItem'))).toBeVisible();\\nawait expect(element(by.id('optionItem.label'))).toHaveText('Playbook runs');\"},{\"step\":\"Verify that \\\"Playbook runs\\\" is listed in the bottom sheet and \\\"1\\\" count is visible\",\"code\":\"// Verify that \\\"Playbook runs\\\" is listed in the bottom sheet and \\\"1\\\" count is visible\\nawait expect(element(by.id('optionItem.label'))).toBeVisible();\\nawait expect(element(by.id('optionItem.label'))).toHaveText('Playbook runs');\\nawait expect(element(by.id('optionItem.info'))).toBeVisible();\\nawait expect(element(by.id('optionItem.info'))).toHaveText('1');\"},{\"step\":\"Tap the \\\"Playbook runs\\\" option in the bottom sheet\",\"code\":\"await element(by.id('optionItem')).tap();\"},{\"step\":\"Verify the \\\"Playbook runs\\\" screen opens\",\"code\":\"// Verify the \\\"Playbook runs\\\" screen opens\\nawait expect(element(by.id('detox_temp_0_1_0_1_0_0_1_0_0_0_1_0'))).toBeVisible();\\nawait expect(element(by.id('detox_temp_0_1_0_1_0_0_1_0_0_0_1_0'))).toHaveText('Playbook runs');\\nawait expect(element(by.id('detox_temp_0_1_0_1_0_0_1_0_0_0_1_1'))).toBeVisible();\\nawait expect(element(by.id('detox_temp_0_1_0_1_0_0_1_0_0_0_1_1'))).toHaveText('Channel c86143');\"}]}": [
+    {
+      "value": {
+        "code": "// Verify the \"In Progress\" tab is selected\nawait expect(element(by.id('tabs.in-progress.button'))).toBeVisible();"
+      },
+      "creationTime": 1752084999942
+    }
+  ]
+}
