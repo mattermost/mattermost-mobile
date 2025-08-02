@@ -31,6 +31,8 @@ import {
     fetchPostById,
     fetchSavedPosts,
     fetchPinnedPosts,
+    isErrorThatWarrantsNotPostingTheMessage,
+    createPostWithRetries,
 } from './post';
 import * as PostAuxilaryFunctions from './post.auxiliary';
 
@@ -986,5 +988,118 @@ describe('get posts', () => {
         expect(result.error).toBeUndefined();
         expect(result.posts).toBeTruthy();
         expect(result.posts?.length).toBe(2);
+    });
+});
+
+describe('wrapper for automatically retrying createPost when an unexpected error occurs', () => {
+    const testBackoffTimes = [10, 20, 40]
+
+    it('createPostWithRetries - should succeed on first attempt', async () => {
+        const mockPostClient = {
+            createPost: jest.fn().mockResolvedValue({...post1, id: 'newid'}),
+        };
+
+        const result = await createPostWithRetries(mockPostClient as any, post1, testBackoffTimes);
+
+        expect(result.created).toBeDefined();
+        expect(result.created?.id).toBe('newid');
+        expect(result.lastError).toBeUndefined();
+        expect(mockPostClient.createPost).toHaveBeenCalledTimes(1);
+        expect(mockPostClient.createPost).toHaveBeenCalledWith({...post1, create_at: 0});
+    });
+
+    it('createPostWithRetries - should attempt 2 times, finally succeeding', async () => {
+        const mockPostClient = {
+            createPost: jest.fn().
+                mockRejectedValueOnce(new Error('Network error')).
+                mockResolvedValueOnce({...post1, id: 'newid'}),
+        };
+
+        const result = await createPostWithRetries(mockPostClient as any, post1, testBackoffTimes);
+
+        expect(result.created).toBeDefined();
+        expect(result.created?.id).toBe('newid');
+        expect(result.lastError).toBeUndefined();
+        expect(mockPostClient.createPost).toHaveBeenCalledTimes(2);
+    });
+    it('createPostWithRetries - should attempt 4 times (initial + 3 retries), finally succeeding', async () => {
+        const mockPostClient = {
+            createPost: jest.fn().
+                mockRejectedValueOnce(new Error('Network error')).
+                mockRejectedValueOnce(new Error('Network error')).
+                mockRejectedValueOnce(new Error('Network error')).
+                mockResolvedValueOnce({...post1, id: 'newid'}),
+        };
+
+        const result = await createPostWithRetries(mockPostClient as any, post1, testBackoffTimes);
+
+        expect(result.created).toBeDefined();
+        expect(result.created?.id).toBe('newid');
+        expect(result.lastError).toBeUndefined();
+        expect(mockPostClient.createPost).toHaveBeenCalledTimes(4);
+    });
+
+    it('createPostWithRetries - should attempt 4 times (initial + 3 retries), ultimately failing', async () => {
+        const networkError = new Error('Network error');
+        const mockPostClient = {
+            createPost: jest.fn().mockRejectedValue(networkError),
+        };
+
+        const result = await createPostWithRetries(mockPostClient as any, post1, testBackoffTimes);
+
+        expect(result.created).toBeUndefined();
+        expect(result.lastError).toBe(networkError);
+        expect(mockPostClient.createPost).toHaveBeenCalledTimes(4);
+    });
+
+    it('createPostWithRetries - should not retry on known server-error', async () => {
+        const pluginError = {server_error_id: ServerErrors.PLUGIN_DISMISSED_POST_ERROR};
+        const mockPostClient = {
+            createPost: jest.fn().mockRejectedValue(pluginError),
+        };
+
+        const result = await createPostWithRetries(mockPostClient as any, post1, testBackoffTimes);
+
+        expect(result.created).toBeUndefined();
+        expect(result.lastError).toBe(pluginError);
+        expect(mockPostClient.createPost).toHaveBeenCalledTimes(1);
+    });
+});
+
+describe('isErrorThatWarrantsNotPostingTheMessage', () => {
+    it('should return true for deleted root post error', () => {
+        const error = {server_error_id: ServerErrors.DELETED_ROOT_POST_ERROR};
+        const result = isErrorThatWarrantsNotPostingTheMessage(error);
+        expect(result).toBe(true);
+    });
+
+    it('should return true for town square read only error', () => {
+        const error = {server_error_id: ServerErrors.TOWN_SQUARE_READ_ONLY_ERROR};
+        const result = isErrorThatWarrantsNotPostingTheMessage(error);
+        expect(result).toBe(true);
+    });
+
+    it('should return true for plugin dismissed post error', () => {
+        const error = {server_error_id: ServerErrors.PLUGIN_DISMISSED_POST_ERROR};
+        const result = isErrorThatWarrantsNotPostingTheMessage(error);
+        expect(result).toBe(true);
+    });
+
+    it('should return false for non-server error', () => {
+        const error = 'some random error';
+        const result = isErrorThatWarrantsNotPostingTheMessage(error);
+        expect(result).toBe(false);
+    });
+
+    it('should return false for server error without matching error id', () => {
+        const error = {server_error_id: 'SOME_OTHER_ERROR'};
+        const result = isErrorThatWarrantsNotPostingTheMessage(error);
+        expect(result).toBe(false);
+    });
+
+    it('should return false for server error without server_error_id', () => {
+        const error = {message: 'some error message'};
+        const result = isErrorThatWarrantsNotPostingTheMessage(error);
+        expect(result).toBe(false);
     });
 });

@@ -62,7 +62,7 @@ type AuthorsRequest = {
     error?: unknown;
 }
 
-function isErrorThatWarrantsNotPostingTheMessage(error: any): boolean {
+export function isErrorThatWarrantsNotPostingTheMessage(error: any): boolean {
     // If the failure was because: the root post was deleted or
     // TownSquareIsReadOnly=true
     return isServerError(error) && (
@@ -72,10 +72,10 @@ function isErrorThatWarrantsNotPostingTheMessage(error: any): boolean {
     );
 }
 
-async function createPostWithRetries(client: Client, newPost: Post): Promise<{created?: Post; lastError?: unknown}> {
+export async function createPostWithRetries(client: Client, newPost: Post, backoffTimes = [1000, 2000, 4000]): Promise<{created?: Post; lastError?: unknown}> {
     let created;
     let lastError;
-    const backoffTimes = [1000, 2000, 4000];
+
     for (let attempt = 0; attempt < backoffTimes.length+1; attempt++) {
         try {
             // eslint-disable-next-line no-await-in-loop
