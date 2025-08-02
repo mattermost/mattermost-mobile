@@ -331,7 +331,7 @@ end
 
 desc 'Create GitHub release'
 lane :github do
-  tag = ENV['GITHUB_REF_NAME'] || ENV['TAG']
+  tag = ENV['TAG'] || ENV['GITHUB_REF_NAME']
 
   if tag
     version = android_get_version_name(gradle_file: './android/app/build.gradle')
