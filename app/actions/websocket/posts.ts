@@ -21,6 +21,8 @@ import {getIsCRTEnabled} from '@queries/servers/thread';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 import {hasArrayChanged, isTablet} from '@utils/helpers';
+import {logWarning} from '@utils/log';
+import {syncPermalinkPreviewsForEditedPost} from '@utils/permalink_sync';
 import {isFromWebhook, isSystemMessage, shouldIgnorePost} from '@utils/post';
 
 import type {Model} from '@nozbe/watermelondb';
@@ -250,6 +252,17 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
         prepareRecordsOnly: true,
     });
     models.push(...postModels);
+
+    // Sync permalink previews that reference this edited post
+    try {
+        const updatedPermalinkPosts = await syncPermalinkPreviewsForEditedPost(database, post);
+        if (updatedPermalinkPosts.length > 0) {
+            models.push(...updatedPermalinkPosts);
+        }
+    } catch (error) {
+        // Don't fail the entire operation if permalink sync fails
+        logWarning('Failed to sync permalink previews for edited post:', error);
+    }
 
     operator.batchRecords(models, 'handlePostEdited');
 }
