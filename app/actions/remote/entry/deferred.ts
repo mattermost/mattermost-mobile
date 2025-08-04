@@ -83,40 +83,35 @@ export async function restDeferredAppEntryActions(
             ...chData,
         };
 
-        const processNextTeam = async () => {
-            if (teamQueue.length === 0) {
-                // let's remove duplicates from combinedChannelsData for all channels, memberships, and categories
-                const uniqueChannelsData: MyChannelsRequest = {
-                    channels: Array.from(new Map(combinedChannelsData.channels?.map((c) => [c.id, c])).values()),
-                    memberships: Array.from(new Map(combinedChannelsData.memberships?.map((m) => [m.channel_id, m])).values()),
+        const processTeams = async () => {
+            for (const team of teamQueue) {
+                try {
+                    /* eslint-disable-next-line no-await-in-loop */
+                    const data = await fetchMyChannelsForTeam(serverUrl, team.id, false, since, true, false, isCRTEnabled, requestLabel);
 
-                    // categories: Array.from(new Map(combinedChannelsData.categories?.map((c) => [c.id, c])).values()),
-                };
-                processFinalInitializationTasks(uniqueChannelsData);
+                    combineChannelsData(combinedChannelsData, data);
 
-                return;
+                    const currentTeamData: MyTeamsRequest = {
+                        teams: [team],
+                        memberships: teamData?.memberships?.filter((m) => m.team_id === team.id),
+                    };
+
+                    /* eslint-disable-next-line no-await-in-loop */
+                    await processEntryModels({operator, teamData: currentTeamData, chData: data, isCRTEnabled});
+
+                } catch (error) {
+                    logError('Error fetching channels for team', groupLabel, error);
+                }
             }
 
-            const team = teamQueue.shift()!;
-            try {
-                const data = await fetchMyChannelsForTeam(serverUrl, team.id, false, since, true, false, isCRTEnabled, requestLabel);
+            const uniqueChannelsData: MyChannelsRequest = {
+                channels: Array.from(new Map(combinedChannelsData.channels?.map((c) => [c.id, c])).values()),
+                memberships: Array.from(new Map(combinedChannelsData.memberships?.map((m) => [m.channel_id, m])).values()),
 
-                combineChannelsData(combinedChannelsData, data);
+                // categories: Array.from(new Map(combinedChannelsData.categories?.map((c) => [c.id, c])).values()),
+            };
 
-                const currentTeamData: MyTeamsRequest = {
-                    teams: [team],
-                    memberships: teamData?.memberships?.filter((m) => m.team_id === team.id),
-                };
-
-                await processEntryModels({operator, teamData: currentTeamData, chData: data, isCRTEnabled});
-
-            } catch (error) {
-                logError('Error fetching channels for team', groupLabel, error);
-            } finally {
-                requestAnimationFrame(async () => {
-                    processNextTeam();
-                });
-            }
+            await processFinalInitializationTasks(uniqueChannelsData);
         };
 
         const processFinalInitializationTasks = async (uniqueChannelsData: MyChannelsRequest) => {
@@ -165,7 +160,7 @@ export async function restDeferredAppEntryActions(
             teamQueue = [...myOtherSortedTeams];
         }
 
-        processNextTeam();
+        processTeams();
     });
 }
 
