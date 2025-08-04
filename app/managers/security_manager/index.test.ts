@@ -344,11 +344,29 @@ describe('SecurityManager', () => {
         });
 
         test('should not attempt biometric authentication if server was previously authenticated within 5 mins', async () => {
-            SecurityManager.addServer('server-12', {MobileEnableBiometrics: 'true'} as ClientConfig, true);
-            SecurityManager.serverConfig['server-12'].lastAccessed = Date.now() - toMilliseconds({minutes: 1});
-            await expect(SecurityManager.authenticateWithBiometricsIfNeeded('server-12')).resolves.toBe(true);
-            expect(Emm.isDeviceSecured).not.toHaveBeenCalled();
-            expect(Emm.authenticate).not.toHaveBeenCalled();
+            // Mock toMilliseconds locally to return correct value for this test
+            const originalToMilliseconds = jest.requireActual('@utils/datetime').toMilliseconds;
+            jest.mocked(require('@utils/datetime').toMilliseconds).mockImplementation(originalToMilliseconds);
+
+            // Use a fixed timestamp instead of Date.now() to eliminate timing races
+            const fixedTime = 1672574400000; // Fixed timestamp: Jan 1, 2023 12:00:00 GMT
+            const oneMinuteAgo = fixedTime - (60 * 1000);
+
+            // Mock Date.now to return our fixed time
+            const originalDateNow = Date.now;
+            Date.now = jest.fn(() => fixedTime);
+
+            try {
+                SecurityManager.addServer('server-12', {MobileEnableBiometrics: 'true'} as ClientConfig, true);
+                SecurityManager.serverConfig['server-12'].lastAccessed = oneMinuteAgo;
+                await expect(SecurityManager.authenticateWithBiometricsIfNeeded('server-12')).resolves.toBe(true);
+                expect(Emm.isDeviceSecured).not.toHaveBeenCalled();
+                expect(Emm.authenticate).not.toHaveBeenCalled();
+            } finally {
+                // Restore original implementations
+                Date.now = originalDateNow;
+                jest.mocked(require('@utils/datetime').toMilliseconds).mockReturnValue(25000);
+            }
         });
 
         test('should not attempt biometric authentication if server was previously failed authentication even though lastAccess is less than 5 mins', async () => {
