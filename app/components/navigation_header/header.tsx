@@ -180,7 +180,7 @@ const Header = ({
         return {
             marginLeft: Platform.select({android: showBackButton && !leftComponent ? 20 : 0}),
             paddingHorizontal: Platform.select({
-                ios: rightButtons?.length === 2 ? 90: 60,
+                ios: rightButtons?.length === 2 ? 90 : 60,
             }),
         };
     }, [leftComponent, showBackButton, rightButtons]);
