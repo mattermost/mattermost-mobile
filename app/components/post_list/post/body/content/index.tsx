@@ -10,6 +10,7 @@ import EmbeddedBindings from './embedded_bindings';
 import ImagePreview from './image_preview';
 import MessageAttachments from './message_attachments';
 import Opengraph from './opengraph';
+import PermalinkPreview from './permalink_preview';
 import YouTube from './youtube';
 
 import type PostModel from '@typings/database/models/servers/post';
@@ -28,6 +29,7 @@ const contentType: Record<string, string> = {
     image: 'image',
     message_attachment: 'message_attachment',
     opengraph: 'opengraph',
+    permalink: 'permalink',
     youtube: 'youtube',
 };
 
@@ -105,6 +107,12 @@ const Content = ({isReplyPost, layoutWidth, location, post, theme}: ContentProps
                 );
             }
             break;
+        case contentType.permalink:
+            return (
+                <PermalinkPreview
+                    embedData={post.metadata!.embeds![0].data as PermalinkEmbedData}
+                />
+            );
     }
 
     return null;
