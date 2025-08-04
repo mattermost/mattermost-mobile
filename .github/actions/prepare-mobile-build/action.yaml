@@ -5,7 +5,7 @@ runs:
   using: composite
   steps:
     # The required ruby version is mentioned in '.ruby-version'
-    - uses: ruby/setup-ruby@cb0fda56a307b8c78d38320cd40d9eb22a3bf04e # v1.242.0
+    - uses: ruby/setup-ruby@2a7b30092b0caf9c046252510f9273b4875f3db9 # v1.254.0
 
     - name: ci/setup-fastlane-dependencies
       shell: bash
