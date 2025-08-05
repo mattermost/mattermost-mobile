@@ -5,7 +5,7 @@
   "main": "src/index.ts",
   "author": "Mattermost, Inc.",
   "license": "MIT",
-  "private": true,
+  "private": false,
   "homepage": "#readme",
   "codegenConfig": {
     "name": "SecurePdfViewer",
