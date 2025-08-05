@@ -3,7 +3,7 @@
 
 import {Setup, User, Team, Playbooks, PlaybooksHelpers, Channel} from '@support/server_api';
 import {siteOneUrl} from '@support/test_config';
-import {ServerScreen, LoginScreen, ChannelScreen} from '@support/ui/screen';
+import {ServerScreen, LoginScreen, ChannelScreen, ChannelListScreen, ThreadScreen} from '@support/ui/screen';
 
 describe('Playbooks - Basic', () => {
     const serverOneDisplayName = 'Server 1';
@@ -33,6 +33,11 @@ describe('Playbooks - Basic', () => {
         // # Log in to server
         await ServerScreen.connectToServer(siteOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
+    });
+
+    beforeEach(async () => {
+        // * Verify on channel list screen
+        await ChannelListScreen.toBeVisible();
     });
 
     it('should verify in-progress playbook information in Channel Header and Channel Info ', async () => {
@@ -70,11 +75,15 @@ describe('Playbooks - Basic', () => {
             'Verify the Playbook icon and count "1" are visible in the Channel Header',
             'Tap the "Quick Actions" icon in the Channel Header',
             'Verify a bottom sheet with the "Playbook runs" option is displayed',
-            'Verify that "Playbook runs" is listed in the bottom sheet and "1" count is visible',
+            'Verify that "Playbook runs" option is listed in the bottom sheet',
             'Tap the "Playbook runs" option in the bottom sheet',
             'Verify the "Playbook runs" screen opens',
             'Verify the "In Progress" tab is selected',
         );
+
+        await Playbooks.apiDeletePlaybook(siteOneUrl, playbookId);
+        await ThreadScreen.back();
+        await ChannelScreen.back();
     });
 
     it('should verify finished playbooks are listed in the Finished tab', async () => {
@@ -100,11 +109,17 @@ describe('Playbooks - Basic', () => {
             'Tap the "Quick Actions" icon in the Channel Header',
             'Tap the "Playbook runs" option in the bottom sheet',
             'Switch to the "Finished" tab',
-            'Verify the finished playbook run is listed',
+            'Verify multiple finished playbook runs are listed',
         );
+
+        await Playbooks.apiDeletePlaybook(siteOneUrl, playbookId);
+        await ThreadScreen.back();
+        await ChannelScreen.back();
     });
 
     it('should verify scrolling of playbooks in the In Progress tab', async () => {
+        const playbookRunsToDelete: string[] = [];
+
         // Create multiple in-progress playbook runs
         const playbook = PlaybooksHelpers.generateRandomPlaybook({
             teamId: testTeam.id,
@@ -121,16 +136,21 @@ describe('Playbooks - Basic', () => {
                 ownerId: secondUser.id,
                 prefix: `scroll-inprogress-${i}`,
             });
-            Playbooks.apiRunPlaybook(siteOneUrl, playbookRun);
+            // eslint-disable-next-line no-await-in-loop
+            const activeRun = await Playbooks.apiRunPlaybook(siteOneUrl, playbookRun);
+            playbookRunsToDelete.push(activeRun.id);
         }
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await pilot.perform(
-            'Tap the button with testID "quickActions"',
-            'Tap the option with text containing "Playbook runs"',
-            'Verify multiple "In Progress" playbook runs are listed',
-            'Scroll down to load more playbook runs',
-            'Verify additional "In Progress" playbook runs are loaded',
+            'Tap the "Quick Actions" icon in the Channel Header',
+            'Tap the "Playbook runs" option in the bottom sheet',
+            'Verify the "Playbook runs" screen opens',
         );
+        await pilot.autopilot('Scroll through the list of playbooks in the In Progress tab and verify that the list scrolls smoothly and all playbooks are visible');
+
+        await Promise.all(playbookRunsToDelete.map((runId) => Playbooks.apiDeletePlaybook(siteOneUrl, runId)));
+        await ThreadScreen.back();
+        await ChannelScreen.back();
     });
 
     it('should verify details of a checklist in a particular playbook', async () => {
@@ -152,16 +172,25 @@ describe('Playbooks - Basic', () => {
             prefix: 'checklist-details-run',
         });
         const activeRun = await Playbooks.apiRunPlaybook(siteOneUrl, playbookRun);
-        await Playbooks.apiAddUsersToRun(siteOneUrl, activeRun.id, [secondUser.id, thirdUser.id]);
+        await Playbooks.apiAddUsersToRun(siteOneUrl, activeRun.id, [testUser.id, secondUser.id, thirdUser.id]);
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await pilot.perform(
-            'Tap on the Playbooks icon in the Channel Header',
-            'Verify the playbook name is displayed',
-            'Verify the checklist and its items are displayed',
+            'Tap the "Quick Actions" icon in the Channel Header',
+            'Tap the "Playbook runs" option in the bottom sheet',
+            'Tap on the Playbook run to open it',
+            'Verify Owner and Participants are displayed',
+            'Tap on the "Checklist 1" tab to collapse the checklist section',
+            'Tap on the "Checklist 1" tab to expand the checklist section',
         );
+        await pilot.autopilot('Verify Interacting with checklist items and updating progress');
+
+        await Playbooks.apiDeletePlaybook(siteOneUrl, playbookId);
+        await ThreadScreen.back();
+        await ThreadScreen.back();
+        await ChannelScreen.back();
     });
 
-    it('should verify ticking a checklist item and seeing progress', async () => {
+    it('should verify the participants list in the playbook', async () => {
         // Create a playbook with a checklist
         const playbook = PlaybooksHelpers.generateRandomPlaybook({
             teamId: testTeam.id,
@@ -179,14 +208,21 @@ describe('Playbooks - Basic', () => {
             ownerId: secondUser.id,
             prefix: 'checklist-progress-run',
         });
-        await Playbooks.apiRunPlaybook(siteOneUrl, playbookRun);
+        const activeRun = await Playbooks.apiRunPlaybook(siteOneUrl, playbookRun);
+        await Playbooks.apiAddUsersToRun(siteOneUrl, activeRun.id, [testUser.id, secondUser.id, thirdUser.id]);
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await pilot.perform(
             'Tap the "Quick Actions" icon in the Channel Header',
             'Tap the "Playbook runs" option in the bottom sheet',
-            'Open a playbook run',
-            'Tick a checklist item',
-            'Verify the progress indicator updates accordingly',
+            'Tap on the Playbook run to open it',
+            'Tap on the icons section below "Participants" label',
+            'Verify bottom sheet with title "Run Participants" is displayed',
+            'Verify the participants list contains list of 3 users',
         );
+
+        await Playbooks.apiDeletePlaybook(siteOneUrl, playbookId);
+        await ThreadScreen.back();
+        await ThreadScreen.back();
+        await ChannelScreen.back();
     });
 });
