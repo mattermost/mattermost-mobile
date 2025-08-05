@@ -17,7 +17,7 @@ type PermalinkPreviewInputProps = WithDatabaseArgs & {
 };
 
 const enhance = withObservables(['embedData'], ({database, embedData}: PermalinkPreviewInputProps) => {
-    const showPermalinkPreviews = observeConfigBooleanValue(database, 'EnableLinkPreviews', false);
+    const showPermalinkPreviews = observeConfigBooleanValue(database, 'EnablePermalinkPreviews', false);
     const teammateNameDisplay = observeTeammateNameDisplay(database);
 
     const author = embedData?.post?.user_id ? observeUser(database, embedData.post.user_id) : of$(undefined);
