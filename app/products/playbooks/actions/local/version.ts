@@ -47,6 +47,8 @@ const purgePlaybooks = async (serverUrl: string) => {
                 ],
             });
 
+            // Process each model sequentially to prevent overwhelming the event loop with excessive promises
+            // and to avoid overloading the database with concurrent write operations, especially when handling a large number of channels.
             for await (const model of models) {
                 await model.update((channel) => {
                     channel.lastPlaybookRunsFetchAt = 0;
