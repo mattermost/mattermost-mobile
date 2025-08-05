@@ -210,13 +210,28 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
         return;
     }
 
-    const models: Model[] = [];
+    const permalinkModels: Model[] = [];
+    try {
+        const updatedPermalinkPosts = await syncPermalinkPreviewsForEditedPost(database, post);
+        if (updatedPermalinkPosts.length > 0) {
+            permalinkModels.push(...updatedPermalinkPosts);
+        }
+    } catch (error) {
+        logWarning('Failed to sync permalink previews for edited post:', error);
+    }
 
     const oldPost = await getPostById(database, post.id);
     if (!oldPost) {
         EphemeralStore.addEditingPost(serverUrl, post);
+
+        // If we have permalink updates but no post to process, batch just the permalinks
+        if (permalinkModels.length > 0) {
+            operator.batchRecords(permalinkModels, 'handlePostEdited - permalink sync only');
+        }
         return;
     }
+
+    const models: Model[] = [...permalinkModels];
 
     if (post.type === PostTypes.EPHEMERAL && post.create_at === 0) {
         // Updated ephemeral messages don't have a create_at value
@@ -252,17 +267,6 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
         prepareRecordsOnly: true,
     });
     models.push(...postModels);
-
-    // Sync permalink previews that reference this edited post
-    try {
-        const updatedPermalinkPosts = await syncPermalinkPreviewsForEditedPost(database, post);
-        if (updatedPermalinkPosts.length > 0) {
-            models.push(...updatedPermalinkPosts);
-        }
-    } catch (error) {
-        // Don't fail the entire operation if permalink sync fails
-        logWarning('Failed to sync permalink previews for edited post:', error);
-    }
 
     operator.batchRecords(models, 'handlePostEdited');
 }
