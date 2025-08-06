@@ -290,14 +290,13 @@ describe('WebSocket Post Actions', () => {
         const permalinkPostModel = TestHelper.fakePostModel({id: 'permalink_post', channelId: 'channel2'});
 
         beforeEach(() => {
-            // Reset mocks for each test
             mockedSyncPermalinkPreviewsForEditedPost.mockResolvedValue([]);
             mockedFetchPostAuthors.mockResolvedValue({authors: []});
             mockedGetIsCRTEnabled.mockResolvedValue(false);
         });
 
         it('should handle post edited event - post exists locally', async () => {
-            const batchRecordsSpy = jest.spyOn(operator, 'batchRecords').mockImplementation(jest.fn());
+            const batchRecordsSpy = jest.spyOn(operator, 'batchRecords');
 
             mockedGetPostById.mockResolvedValue(postModels[0]);
             mockedSyncPermalinkPreviewsForEditedPost.mockResolvedValue([]);
@@ -311,7 +310,7 @@ describe('WebSocket Post Actions', () => {
         });
 
         it('should handle post edited event - post exists with permalink updates', async () => {
-            const batchRecordsSpy = jest.spyOn(operator, 'batchRecords').mockImplementation(jest.fn());
+            const batchRecordsSpy = jest.spyOn(operator, 'batchRecords');
 
             mockedGetPostById.mockResolvedValue(postModels[0]);
             mockedSyncPermalinkPreviewsForEditedPost.mockResolvedValue([permalinkPostModel]);
@@ -329,8 +328,8 @@ describe('WebSocket Post Actions', () => {
         });
 
         it('should handle post edited event - post missing but has permalink updates (key fix)', async () => {
-            const batchRecordsSpy = jest.spyOn(operator, 'batchRecords').mockImplementation(jest.fn());
-            const addEditingPostSpy = jest.spyOn(EphemeralStore, 'addEditingPost').mockImplementation(jest.fn());
+            const batchRecordsSpy = jest.spyOn(operator, 'batchRecords');
+            const addEditingPostSpy = jest.spyOn(EphemeralStore, 'addEditingPost');
 
             mockedGetPostById.mockResolvedValue(undefined);
             mockedSyncPermalinkPreviewsForEditedPost.mockResolvedValue([permalinkPostModel]);
@@ -344,8 +343,8 @@ describe('WebSocket Post Actions', () => {
         });
 
         it('should handle post edited event - post missing and no permalink updates', async () => {
-            const batchRecordsSpy = jest.spyOn(operator, 'batchRecords').mockImplementation(jest.fn());
-            const addEditingPostSpy = jest.spyOn(EphemeralStore, 'addEditingPost').mockImplementation(jest.fn());
+            const batchRecordsSpy = jest.spyOn(operator, 'batchRecords');
+            const addEditingPostSpy = jest.spyOn(EphemeralStore, 'addEditingPost');
 
             mockedGetPostById.mockResolvedValue(undefined);
             mockedSyncPermalinkPreviewsForEditedPost.mockResolvedValue([]);
@@ -359,8 +358,8 @@ describe('WebSocket Post Actions', () => {
         });
 
         it('should handle permalink sync errors gracefully', async () => {
-            const batchRecordsSpy = jest.spyOn(operator, 'batchRecords').mockImplementation(jest.fn());
-            const logWarningSpy = jest.spyOn(require('@utils/log'), 'logWarning').mockImplementation(jest.fn());
+            const batchRecordsSpy = jest.spyOn(operator, 'batchRecords');
+            const logWarningSpy = jest.spyOn(require('@utils/log'), 'logWarning');
 
             mockedGetPostById.mockResolvedValue(postModels[0]);
             mockedSyncPermalinkPreviewsForEditedPost.mockRejectedValue(new Error('Permalink sync failed'));

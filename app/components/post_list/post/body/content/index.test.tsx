@@ -13,7 +13,6 @@ import Content from './index';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
-// Mock all content components to avoid database dependencies
 jest.mock('./permalink_preview', () => ({
     __esModule: true,
     default: jest.fn(),

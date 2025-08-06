@@ -71,15 +71,15 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
         expect(queryByText('testuser')).toBeNull();
     });
 
-    it('should handle press event', () => {
-        const {getByText} = renderWithIntlAndTheme(
+    it('should handle press event without crashing', () => {
+        const {getByTestId} = renderWithIntlAndTheme(
             <PermalinkPreview {...baseProps}/>,
         );
-
-        const container = getByText('testuser').parent?.parent?.parent;
-        fireEvent.press(container);
-
-        // Note: handlePress is currently a no-op but the test ensures it doesn't crash
+        const permalinkContainer = getByTestId('permalink-preview-container');
+        expect(() => {
+            fireEvent.press(permalinkContainer);
+        }).not.toThrow();
+        expect(getByTestId('permalink-preview-container')).toBeTruthy();
     });
 
     it('should display author name from user model', () => {

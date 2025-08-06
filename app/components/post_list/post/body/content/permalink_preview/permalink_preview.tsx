@@ -139,6 +139,7 @@ const PermalinkPreview = ({embedData, showPermalinkPreviews, author, locale, tea
             style={styles.container}
             onPress={handlePress}
             activeOpacity={0.8}
+            testID='permalink-preview-container'
         >
             <View style={styles.header}>
                 <ProfilePicture

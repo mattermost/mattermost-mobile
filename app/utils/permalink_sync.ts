@@ -128,7 +128,7 @@ export async function syncPermalinkPreviewsForEditedPost(
             undefined,
         );
 
-        if (referencingPosts.length === 0) {
+        if (!referencingPosts.length) {
             return [];
         }
 

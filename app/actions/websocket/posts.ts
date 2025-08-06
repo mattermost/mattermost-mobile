@@ -213,7 +213,7 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
     const permalinkModels: Model[] = [];
     try {
         const updatedPermalinkPosts = await syncPermalinkPreviewsForEditedPost(database, post);
-        if (updatedPermalinkPosts.length > 0) {
+        if (updatedPermalinkPosts.length) {
             permalinkModels.push(...updatedPermalinkPosts);
         }
     } catch (error) {
@@ -225,7 +225,7 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
         EphemeralStore.addEditingPost(serverUrl, post);
 
         // If we have permalink updates but no post to process, batch just the permalinks
-        if (permalinkModels.length > 0) {
+        if (permalinkModels.length) {
             operator.batchRecords(permalinkModels, 'handlePostEdited - permalink sync only');
         }
         return;
