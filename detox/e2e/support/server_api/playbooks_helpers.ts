@@ -71,7 +71,7 @@ export const generateRandomPlaybook = ({
     const title = `${prefix}-${randomId}`;
 
     return {
-        channel_id: channel_id,
+        channel_id,
         team_id: teamId,
         title,
         description: `Description for ${title}`,

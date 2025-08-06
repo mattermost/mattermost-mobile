@@ -101,14 +101,13 @@ export const apiGetConfig = async (baseUrl: string, old: boolean = false): Promi
         );
 
         if (response.status === StatusOK) {
-            return { config: response.data };
+            return {config: response.data};
         }
         throw new Error(`Unexpected status code: ${response.status}`);
     } catch (err) {
         return getResponseFromError(err);
     }
 };
-
 
 /**
  * Update the server configuration
@@ -127,18 +126,16 @@ export const apiUpdateConfig = async (baseUrl: string, newConfig: any = {}): Pro
         const currentConfig = currentConfigResponse.config;
 
         // Merge configurations (basic merge; replace with your merge utility if available)
-        const config = { ...currentConfig, ...newConfig };
+        const config = {...currentConfig, ...newConfig};
 
         // Update the config
         const response = await client.put(
             `${baseUrl}${configEndpoint}/patch`,
             config,
             {
-                headers: { 'X-Requested-With': 'XMLHttpRequest' },
-            }
+                headers: {'X-Requested-With': 'XMLHttpRequest'},
+            },
         );
-
-        console.log('Update status:', response.status);
 
         if (response.status === StatusOK) {
             // Fetch the updated config
@@ -160,7 +157,6 @@ export const apiEnablePlaybooksPlugin = async (baseUrl: string): Promise<any> =>
         // Get current config
         const currentConfigResponse = await apiGetConfig(baseUrl);
 
-        console.log('Current config response:', currentConfigResponse.config.PluginSettings.PluginStates);
         if ('error' in currentConfigResponse) {
             throw new Error(`Failed to get current config: ${currentConfigResponse.error}`);
         }
@@ -181,7 +177,6 @@ export const apiEnablePlaybooksPlugin = async (baseUrl: string): Promise<any> =>
 
         // Update the configuration
         const update = await apiUpdateConfig(baseUrl, updatedConfig);
-        console.log('Update response:', update.config.PluginSettings.PluginStates);
 
         return update;
     } catch (err) {
@@ -202,7 +197,7 @@ export const apiEnablePlugin = async (baseUrl: string, pluginId: string): Promis
         );
 
         if (response.status === StatusOK) {
-            return { status: response.data.status };
+            return {status: response.data.status};
         }
         throw new Error(`Unexpected status code: ${response.status}`);
     } catch (err) {
@@ -467,12 +462,12 @@ export const apiSetChecklistItemState = async (
  * @return {Object} returns the created playbook on success or {error, status} on error
  */
 export const apiCreatePlaybook = async (baseUrl: String, playbook: Playbook): Promise<any> => {
-  try {
-    const response = await client.post(`${baseUrl}${playbooksEndpoint}`, playbook);
-    return response.data;
-  } catch (err) {
-    throw new Error(`Failed to create playbook: ${err}`);
-  }
+    try {
+        const response = await client.post(`${baseUrl}${playbooksEndpoint}`, playbook);
+        return response.data;
+    } catch (err) {
+        throw new Error(`Failed to create playbook: ${err}`);
+    }
 };
 
 /**
@@ -538,7 +533,7 @@ export const apiCreateTestPlaybook = async (
             invite_users_enabled: inviteUsersEnabled,
             channel_name_template: channelNameTemplate,
             create_channel_member_on_new_participant: true,
-        }
+        },
     );
 };
 
