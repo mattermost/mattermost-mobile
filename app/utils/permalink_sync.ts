@@ -1,14 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database, Q} from '@nozbe/watermelondb';
+import {Database} from '@nozbe/watermelondb';
 
-import {MM_TABLES} from '@constants/database';
+import {queryPostsWithPermalinkReferences} from '@queries/servers/post';
 import {logDebug, logWarning} from '@utils/log';
 
 import type PostModel from '@typings/database/models/servers/post';
-
-const {SERVER: {POST}} = MM_TABLES;
 
 /**
  * Find posts that contain permalink previews referencing the given post ID
@@ -19,33 +17,7 @@ export async function findPostsWithPermalinkReferences(
     channelId?: string,
 ): Promise<PostModel[]> {
     try {
-        const clauses: Q.Clause[] = [
-            Q.where('metadata', Q.notEq(null)),
-            Q.where('delete_at', Q.eq(0)),
-        ];
-
-        if (channelId) {
-            clauses.push(Q.where('channel_id', channelId));
-        }
-
-        const postsWithMetadata = await database.get<PostModel>(POST).
-            query(...clauses).
-            fetch();
-
-        const referencingPosts: PostModel[] = [];
-
-        for (const post of postsWithMetadata) {
-            const metadata = post.metadata;
-            if (metadata?.embeds?.length) {
-                for (const embed of metadata.embeds) {
-                    if (embed.type === 'permalink' && embed.data?.post_id === referencedPostId) {
-                        referencingPosts.push(post);
-                        break;
-                    }
-                }
-            }
-        }
-
+        const referencingPosts = await queryPostsWithPermalinkReferences(database, referencedPostId, channelId);
         logDebug(`Found ${referencingPosts.length} posts with permalink references to ${referencedPostId}`);
         return referencingPosts;
     } catch (error) {
