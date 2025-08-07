@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {Text, View, TouchableOpacity} from 'react-native';
+import {Text, View, Pressable} from 'react-native';
 
 import EditedIndicator from '@components/EditedIndicator';
 import FormattedTime from '@components/formatted_time';
@@ -135,10 +135,12 @@ const PermalinkPreview = ({embedData, showPermalinkPreviews, author, locale, tea
     }
 
     return (
-        <TouchableOpacity
-            style={styles.container}
+        <Pressable
+            style={({pressed}) => [
+                styles.container,
+                {opacity: pressed ? 0.8 : 1},
+            ]}
             onPress={handlePress}
-            activeOpacity={0.8}
             testID='permalink-preview-container'
         >
             <View style={styles.header}>
@@ -188,7 +190,7 @@ const PermalinkPreview = ({embedData, showPermalinkPreviews, author, locale, tea
                     {channelContextText}
                 </Text>
             </Text>
-        </TouchableOpacity>
+        </Pressable>
     );
 };
 
