@@ -81,7 +81,6 @@ describe('PermalinkPreview Enhanced Component', () => {
 
         await waitFor(() => {
             const permalinkPreview = getByTestId('permalink-preview');
-            expect(permalinkPreview).toBeDefined();
             expect(permalinkPreview.props.showPermalinkPreviews).toBe(true);
             expect(permalinkPreview.props.teammateNameDisplay).toBe('username');
             expect(permalinkPreview.props.author).toBeDefined();
@@ -110,7 +109,6 @@ describe('PermalinkPreview Enhanced Component', () => {
 
         await waitFor(() => {
             const permalinkPreview = getByTestId('permalink-preview');
-            expect(permalinkPreview).toBeDefined();
             expect(permalinkPreview.props.showPermalinkPreviews).toBe(true);
             expect(permalinkPreview.props.teammateNameDisplay).toBe('username');
             expect(permalinkPreview.props.author).toBeUndefined();
@@ -147,7 +145,6 @@ describe('PermalinkPreview Enhanced Component', () => {
 
         await waitFor(() => {
             const permalinkPreview = getByTestId('permalink-preview');
-            expect(permalinkPreview).toBeDefined();
             expect(permalinkPreview.props.showPermalinkPreviews).toBe(false);
             expect(permalinkPreview.props.teammateNameDisplay).toBe('username');
             expect(permalinkPreview.props.locale).toBe('en');
@@ -182,7 +179,6 @@ describe('PermalinkPreview Enhanced Component', () => {
 
         await waitFor(() => {
             const permalinkPreview = getByTestId('permalink-preview');
-            expect(permalinkPreview).toBeDefined();
             expect(permalinkPreview.props.locale).toBe('fr');
         });
     });
@@ -207,7 +203,6 @@ describe('PermalinkPreview Enhanced Component', () => {
 
         await waitFor(() => {
             const permalinkPreview = getByTestId('permalink-preview');
-            expect(permalinkPreview).toBeDefined();
             expect(permalinkPreview.props.showPermalinkPreviews).toBe(true);
             expect(permalinkPreview.props.teammateNameDisplay).toBe('username');
             expect(permalinkPreview.props.author).toBeUndefined();
@@ -244,7 +239,6 @@ describe('PermalinkPreview Enhanced Component', () => {
 
         await waitFor(() => {
             const permalinkPreview = getByTestId('permalink-preview');
-            expect(permalinkPreview).toBeDefined();
             expect(permalinkPreview.props.teammateNameDisplay).toBe('full_name');
         });
     });
