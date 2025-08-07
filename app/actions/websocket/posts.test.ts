@@ -404,6 +404,50 @@ describe('WebSocket Post Actions', () => {
 
             expect(batchRecordsSpy).toHaveBeenCalledWith(expect.arrayContaining([expect.objectContaining({createAt: 12345})]), 'handlePostEdited');
         });
+
+        it('should not double batch permalink models in handlePostEdited', async () => {
+            const batchRecordsSpy = jest.spyOn(operator, 'batchRecords');
+
+            mockedGetPostById.mockResolvedValue(postModels[0]);
+            mockedSyncPermalinkPreviewsForEditedPost.mockResolvedValue([permalinkPostModel]);
+
+            await handlePostEdited(serverUrl, msg);
+
+            expect(batchRecordsSpy).toHaveBeenCalledTimes(1);
+
+            expect(batchRecordsSpy).toHaveBeenCalledWith(
+                expect.arrayContaining([
+                    permalinkPostModel,
+                    expect.any(PostsInChannelModel),
+                ]),
+                'handlePostEdited',
+            );
+
+            expect(batchRecordsSpy).not.toHaveBeenCalledWith(
+                [permalinkPostModel],
+                'handlePostEdited - permalink sync only',
+            );
+        });
+
+        it('should batch only permalink models when post does not exist locally', async () => {
+            const batchRecordsSpy = jest.spyOn(operator, 'batchRecords');
+
+            mockedGetPostById.mockResolvedValue(undefined);
+            mockedSyncPermalinkPreviewsForEditedPost.mockResolvedValue([permalinkPostModel]);
+
+            await handlePostEdited(serverUrl, msg);
+
+            expect(batchRecordsSpy).toHaveBeenCalledTimes(1);
+            expect(batchRecordsSpy).toHaveBeenCalledWith(
+                [permalinkPostModel],
+                'handlePostEdited - permalink sync only',
+            );
+
+            expect(batchRecordsSpy).not.toHaveBeenCalledWith(
+                expect.anything(),
+                'handlePostEdited',
+            );
+        });
     });
 
     describe('handlePostDeleted', () => {
