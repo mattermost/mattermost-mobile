@@ -73,7 +73,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         justifyContent: 'center',
         flex: 3,
         height: '100%',
-        paddingHorizontal: 8,
         ...Platform.select({
             ios: {
                 flex: undefined,
@@ -181,6 +180,7 @@ const Header = ({
             marginLeft: Platform.select({android: showBackButton && !leftComponent ? 20 : 0}),
             paddingHorizontal: Platform.select({
                 ios: rightButtons?.length === 2 ? 90 : 60,
+                android: 8,
             }),
         };
     }, [leftComponent, showBackButton, rightButtons]);
