@@ -40,6 +40,7 @@ import {
     isSystemAdmin,
     removeUserFromList,
     getDisplayType,
+    sortCustomProfileAttributes,
 } from './index';
 
 import type {CustomProfileFieldModel} from '@database/models/server';
@@ -1516,5 +1517,224 @@ describe('getDisplayType', () => {
         (field as any).attrs = undefined;
 
         expect(getDisplayType(field)).toBe('text');
+    });
+});
+
+describe('sortCustomProfileAttributes', () => {
+    it('should sort attributes by sort_order', () => {
+        const attr1: CustomAttribute = {
+            id: 'attr1',
+            name: 'Attribute 1',
+            type: 'text',
+            value: 'value1',
+            sort_order: 2,
+        };
+        const attr2: CustomAttribute = {
+            id: 'attr2',
+            name: 'Attribute 2',
+            type: 'text',
+            value: 'value2',
+            sort_order: 1,
+        };
+
+        const result = [attr1, attr2].sort(sortCustomProfileAttributes);
+        expect(result).toEqual([attr2, attr1]);
+    });
+
+    it('should NOT convert sort_order of 0 to MAX_SAFE_INTEGER', () => {
+        const attr1: CustomAttribute = {
+            id: 'attr1',
+            name: 'Z Attribute',
+            type: 'text',
+            value: 'value1',
+            sort_order: 0,
+        };
+        const attr2: CustomAttribute = {
+            id: 'attr2',
+            name: 'A Attribute',
+            type: 'text',
+            value: 'value2',
+            sort_order: 1,
+        };
+
+        const result = [attr2, attr1].sort(sortCustomProfileAttributes);
+
+        // attr1 with sort_order 0 should come first, not last
+        expect(result).toEqual([attr1, attr2]);
+    });
+
+    it('should handle sort_order of 0 correctly when mixed with undefined', () => {
+        const attr1: CustomAttribute = {
+            id: 'attr1',
+            name: 'B Attribute',
+            type: 'text',
+            value: 'value1',
+            sort_order: 0,
+        };
+        const attr2: CustomAttribute = {
+            id: 'attr2',
+            name: 'A Attribute',
+            type: 'text',
+            value: 'value2',
+
+            // undefined sort_order should go to end
+        };
+        const attr3: CustomAttribute = {
+            id: 'attr3',
+            name: 'C Attribute',
+            type: 'text',
+            value: 'value3',
+            sort_order: 1,
+        };
+
+        const result = [attr2, attr3, attr1].sort(sortCustomProfileAttributes);
+
+        // Order should be: attr1 (0), attr3 (1), attr2 (undefined -> MAX_SAFE_INTEGER)
+        expect(result).toEqual([attr1, attr3, attr2]);
+    });
+
+    it('should sort by name when sort_order values are equal', () => {
+        const attr1: CustomAttribute = {
+            id: 'attr1',
+            name: 'Z Attribute',
+            type: 'text',
+            value: 'value1',
+            sort_order: 1,
+        };
+        const attr2: CustomAttribute = {
+            id: 'attr2',
+            name: 'A Attribute',
+            type: 'text',
+            value: 'value2',
+            sort_order: 1,
+        };
+
+        const result = [attr1, attr2].sort(sortCustomProfileAttributes);
+        expect(result).toEqual([attr2, attr1]);
+    });
+
+    it('should handle multiple attributes with sort_order 0', () => {
+        const attr1: CustomAttribute = {
+            id: 'attr1',
+            name: 'Z Attribute',
+            type: 'text',
+            value: 'value1',
+            sort_order: 0,
+        };
+        const attr2: CustomAttribute = {
+            id: 'attr2',
+            name: 'A Attribute',
+            type: 'text',
+            value: 'value2',
+            sort_order: 0,
+        };
+        const attr3: CustomAttribute = {
+            id: 'attr3',
+            name: 'M Attribute',
+            type: 'text',
+            value: 'value3',
+            sort_order: 1,
+        };
+
+        const result = [attr1, attr3, attr2].sort(sortCustomProfileAttributes);
+
+        // Both attr1 and attr2 have sort_order 0, so they should be sorted by name
+        // attr3 has sort_order 1, so it comes after
+        expect(result).toEqual([attr2, attr1, attr3]);
+    });
+
+    it('should handle negative sort_order values correctly', () => {
+        const attr1: CustomAttribute = {
+            id: 'attr1',
+            name: 'Attribute 1',
+            type: 'text',
+            value: 'value1',
+            sort_order: -1,
+        };
+        const attr2: CustomAttribute = {
+            id: 'attr2',
+            name: 'Attribute 2',
+            type: 'text',
+            value: 'value2',
+            sort_order: 0,
+        };
+        const attr3: CustomAttribute = {
+            id: 'attr3',
+            name: 'Attribute 3',
+            type: 'text',
+            value: 'value3',
+            sort_order: 1,
+        };
+
+        const result = [attr3, attr2, attr1].sort(sortCustomProfileAttributes);
+        expect(result).toEqual([attr1, attr2, attr3]);
+    });
+
+    it('should handle fields with sort_order 0 in convertProfileAttributesToCustomAttributes', () => {
+        const mockFields = [
+            TestHelper.fakeCustomProfileFieldModel({
+                id: 'field1',
+                name: 'First Field',
+                type: 'text',
+                attrs: {sort_order: 0}, // This should NOT become MAX_SAFE_INTEGER
+            }),
+            TestHelper.fakeCustomProfileFieldModel({
+                id: 'field2',
+                name: 'Second Field',
+                type: 'text',
+                attrs: {sort_order: 1},
+            }),
+            TestHelper.fakeCustomProfileFieldModel({
+                id: 'field3',
+                name: 'Third Field',
+                type: 'text',
+                attrs: {}, // No sort_order, should become MAX_SAFE_INTEGER
+            }),
+        ];
+
+        const mockAttributes = [
+            TestHelper.fakeCustomProfileAttributeModel({
+                fieldId: 'field1',
+                value: 'value1',
+            }),
+            TestHelper.fakeCustomProfileAttributeModel({
+                fieldId: 'field2',
+                value: 'value2',
+            }),
+            TestHelper.fakeCustomProfileAttributeModel({
+                fieldId: 'field3',
+                value: 'value3',
+            }),
+        ];
+
+        const result = convertProfileAttributesToCustomAttributes(
+            mockAttributes,
+            mockFields,
+            sortCustomProfileAttributes,
+        );
+
+        expect(result).toEqual([
+            {
+                id: 'field1',
+                name: 'First Field',
+                type: 'text',
+                value: 'value1',
+                sort_order: 0, // Should remain 0, not MAX_SAFE_INTEGER
+            },
+            {
+                id: 'field2',
+                name: 'Second Field',
+                type: 'text',
+                value: 'value2',
+                sort_order: 1,
+            },
+            {
+                id: 'field3',
+                name: 'Third Field',
+                type: 'text',
+                value: 'value3',
+                sort_order: Number.MAX_SAFE_INTEGER,
+            },
+        ]);
     });
 });

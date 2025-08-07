@@ -71,7 +71,6 @@ const AttachmentTitle = ({channelId, link, location, theme, value}: Props) => {
                 isReplyPost={false}
                 disableHashtags={true}
                 disableAtMentions={true}
-                disableChannelLink={true}
                 disableGallery={true}
                 autolinkedUrlSchemes={[]}
                 mentionKeys={[]}
