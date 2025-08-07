@@ -2,13 +2,15 @@
 // See LICENSE.txt for license information.
 
 import {Database, Q} from '@nozbe/watermelondb';
-import {combineLatest, of as of$} from 'rxjs';
-import {distinctUntilChanged, switchMap} from 'rxjs/operators';
+import {combineLatest, of as of$, from} from 'rxjs';
+import {distinctUntilChanged, switchMap, startWith, catchError} from 'rxjs/operators';
 
+import {fetchUsersByIds} from '@actions/remote/user';
 import {General} from '@constants';
 import {MM_TABLES} from '@constants/database';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {sanitizeLikeString} from '@helpers/database';
+import {logWarning} from '@utils/log';
 
 import {queryDisplayNamePreferences} from './preference';
 import {observeCurrentUserId, observeLicense, getCurrentUserId, getConfig, getLicense, observeConfigValue} from './system';
@@ -31,6 +33,26 @@ export const getUserById = async (database: Database, userId: string) => {
 export const observeUser = (database: Database, userId: string) => {
     return database.get<UserModel>(USER).query(Q.where('id', userId), Q.take(1)).observe().pipe(
         switchMap((result) => (result.length ? result[0].observe() : of$(undefined))),
+    );
+};
+
+export const observeUserOrFetch = (database: Database, serverUrl: string, userId: string) => {
+    return observeUser(database, userId).pipe(
+        switchMap((user) => {
+            if (!user) {
+                // User not found locally, fetch from server
+                return from(fetchUsersByIds(serverUrl, [userId], false)).pipe(
+                    switchMap(() => observeUser(database, userId)),
+                    catchError((error) => {
+                        logWarning('Failed to fetch user data:', error);
+                        return of$(undefined);
+                    }),
+                    startWith(undefined),
+                );
+            }
+            return of$(user);
+        }),
+        distinctUntilChanged(),
     );
 };
 

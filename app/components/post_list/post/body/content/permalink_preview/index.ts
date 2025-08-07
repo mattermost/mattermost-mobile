@@ -5,22 +5,20 @@ import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of as of$} from 'rxjs';
 import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
+import {withServerUrl} from '@context/server';
 import {observeConfigBooleanValue} from '@queries/servers/system';
-import {observeUser, observeTeammateNameDisplay, observeCurrentUser} from '@queries/servers/user';
+import {observeUserOrFetch, observeTeammateNameDisplay, observeCurrentUser} from '@queries/servers/user';
 
 import PermalinkPreview from './permalink_preview';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-type PermalinkPreviewInputProps = WithDatabaseArgs & {
-    embedData: PermalinkEmbedData;
-};
-
-const enhance = withObservables(['embedData'], ({database, embedData}: PermalinkPreviewInputProps) => {
+const enhance = withObservables(['embedData', 'serverUrl'], ({database, embedData, serverUrl}: WithDatabaseArgs & {embedData: PermalinkEmbedData; serverUrl?: string}) => {
     const showPermalinkPreviews = observeConfigBooleanValue(database, 'EnablePermalinkPreviews', false);
     const teammateNameDisplay = observeTeammateNameDisplay(database);
 
-    const author = embedData?.post?.user_id ? observeUser(database, embedData.post.user_id) : of$(undefined);
+    const userId = embedData?.post?.user_id;
+    const author = userId ? observeUserOrFetch(database, serverUrl || '', userId) : of$(undefined);
 
     const currentUser = observeCurrentUser(database);
     const locale = currentUser.pipe(
@@ -36,4 +34,4 @@ const enhance = withObservables(['embedData'], ({database, embedData}: Permalink
     };
 });
 
-export default withDatabase(enhance(PermalinkPreview));
+export default withDatabase(withServerUrl(enhance(PermalinkPreview)));

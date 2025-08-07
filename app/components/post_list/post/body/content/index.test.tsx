@@ -44,7 +44,7 @@ jest.mock('./embedded_bindings', () => ({
 }));
 
 jest.mocked(PermalinkPreview).mockImplementation((props) =>
-    React.createElement('PermalinkPreview', {...props, testID: 'permalink-preview'}),
+    React.createElement('div', {testID: 'permalink-preview', ...props}),
 );
 
 describe('components/post_list/post/body/content/Content - PermalinkPreview', () => {
