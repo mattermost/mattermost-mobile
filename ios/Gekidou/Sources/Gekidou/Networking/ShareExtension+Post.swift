@@ -9,14 +9,19 @@ import Foundation
 import os.log
 
 extension ShareExtension {
+   
     public func uploadFiles(serverUrl: String, channelId: String, message: String,
                             files: [String], completionHandler: @escaping () -> Void) -> String? {
         let id = "mattermost-share-upload-\(UUID().uuidString)"
+
+        let uuidString = self.scheduleFailNotification(timeout: SHARE_TIMEOUT)
         
         createUploadSessionData(
             id: id, serverUrl: serverUrl,
             channelId: channelId, message: message,
-            files: files
+            files: files,
+            failNotificationID: uuidString,
+            failTimeout: Date().addingTimeInterval(SHARE_TIMEOUT)
         )
         
         guard let token = try? Keychain.default.getToken(for: serverUrl) else {return "Could not retrieve the session token from the KeyChain"}
@@ -56,6 +61,8 @@ extension ShareExtension {
                                 filename,
                                 id
                             )
+                            notifyFailureNow(description: FILE_ERROR_I18N_ID, failID: uuidString)
+                            return "There was an error when trying to upload. Please try again"
                         }
                     } else {
                         os_log(
@@ -64,6 +71,7 @@ extension ShareExtension {
                             filename,
                             id
                         )
+                        notifyFailureNow(description: FILE_ERROR_I18N_ID, failID: uuidString)
                         return "The file \(filename) could not be processed for upload"
                     }
                 } else {
@@ -73,6 +81,7 @@ extension ShareExtension {
                         file,
                         id
                     )
+                    notifyFailureNow(description: FILE_ERROR_I18N_ID, failID: uuidString)
                     return "File not found \(file)"
                 }
             }
@@ -83,13 +92,14 @@ extension ShareExtension {
                 "Mattermost BackgroundSession: posting message for identifier=%{public}@ without files",
                 id
             )
-            self.postMessageForSession(withId: id, completionHandler: completionHandler)
+            let cancelAndComplete = createCancelHandler(completionHandler: completionHandler, failNotificationID: uuidString)
+            self.postMessageForSession(withId: id, completionHandler: cancelAndComplete)
         }
         
         return nil
     }
     
-    func postMessageForSession(withId id: String, completionHandler: (() -> Void)? = nil) {
+    func postMessageForSession(withId id: String, completionHandler: ((Bool) -> Void)? = nil) {
         guard let data = getUploadSessionData(id: id)
         else {
             os_log(
@@ -127,7 +137,7 @@ extension ShareExtension {
                             "Mattermost BackgroundSession: postMessageForSession without files call completionHandler for identifier=%{public}@",
                             id
                         )
-                        handler()
+                        handler(error == nil)
                     }
                 })
         }

@@ -1,0 +1,10 @@
+/* 
+   Localizable.strings
+   Mattermost
+
+   English localization strings for iOS
+*/
+
+"share_extension.notification.title" = "Share content failed";
+"share_extension.notification.file_error" = "The shared file couldn't be processed for sharing";
+"share_extension.notification.network_error" = "Mattermost App couldn't acknowledge the message was posted due to network conditions, please review and try again";
