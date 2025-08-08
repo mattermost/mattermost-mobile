@@ -4,6 +4,7 @@
 import React, {useCallback, useMemo} from 'react';
 import {type LayoutChangeEvent, Platform, type StyleProp, Switch, Text, type TextStyle, TouchableOpacity, View, type ViewStyle} from 'react-native';
 
+import UserChip from '@components/chips/user_chip';
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useTheme} from '@context/theme';
@@ -13,13 +14,16 @@ import {typography} from '@utils/typography';
 import OptionIcon from './option_icon';
 import RadioItem, {type RadioItemProps} from './radio_item';
 
+import type UserModel from '@typings/database/models/servers/user';
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 const TouchableOptionTypes = {
     ARROW: 'arrow',
     DEFAULT: 'default',
     RADIO: 'radio',
     REMOVE: 'remove',
     SELECT: 'select',
-};
+} as const;
 
 const OptionTypeConst = {
     NONE: 'none',
@@ -43,18 +47,15 @@ const hitSlop = {top: 11, bottom: 11, left: 11, right: 11};
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         actionContainer: {
-            flex: 1,
+            flex: 0,
             flexDirection: 'row',
             alignItems: 'center',
-            marginLeft: 16,
-        },
-        actionSubContainer: {
-            marginLeft: 'auto',
         },
         container: {
             flexDirection: 'row',
             alignItems: 'center',
             minHeight: ITEM_HEIGHT,
+            gap: 12,
         },
         destructive: {
             color: theme.dndIndicator,
@@ -66,7 +67,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         iconContainer: {marginRight: 16},
         info: {
-            flex: 1,
             textAlign: 'right',
             color: changeOpacity(theme.centerChannelColor, 0.56),
             ...typography('Body', 100),
@@ -96,19 +96,19 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: theme.centerChannelColor,
             ...typography('Body', 200),
         },
-        removeContainer: {
-            flex: 1,
-            alignItems: 'flex-end',
-            color: theme.centerChannelColor,
-            marginRight: 20,
-            ...typography('Body', 200),
-        },
         row: {
-            flex: 3,
+            flex: 1,
             flexDirection: 'row',
         },
     };
 });
+
+type UserChipData = {
+    user: UserModel;
+    onPress: (id: string) => void;
+    teammateNameDisplay: string;
+    location: AvailableScreens;
+}
 
 export type OptionItemProps = {
     action?: (React.Dispatch<React.SetStateAction<string | boolean>>)|((value: string | boolean) => void);
@@ -118,7 +118,7 @@ export type OptionItemProps = {
     destructive?: boolean;
     icon?: string;
     iconColor?: string;
-    info?: string;
+    info?: string | UserChipData;
     inline?: boolean;
     label: string;
     labelContainerStyle?: StyleProp<ViewStyle>;
@@ -248,6 +248,29 @@ const OptionItem = ({
         action?.(value || '');
     }, [value, action]);
 
+    let infoComponent;
+    if (typeof info === 'object') {
+        infoComponent = (
+            <View style={actionComponent ? undefined : styles.iconContainer}>
+                <UserChip
+                    user={info.user}
+                    onPress={info.onPress}
+                    teammateNameDisplay={info.teammateNameDisplay}
+                />
+            </View>
+        );
+    } else if (info) {
+        infoComponent = (
+            <Text
+                style={[styles.info, !actionComponent && styles.iconContainer, destructive && {color: theme.dndIndicator}]}
+                testID={`${testID}.info`}
+                numberOfLines={1}
+            >
+                {info}
+            </Text>
+        );
+    }
+
     const component = (
         <View
             testID={testID}
@@ -286,26 +309,15 @@ const OptionItem = ({
                     </View>
                 </View>
             </View>
-            {Boolean(actionComponent || info) &&
+            {Boolean(actionComponent || infoComponent) &&
             <View style={styles.actionContainer}>
-                {
-                    Boolean(info) &&
-                    <Text
-                        style={[styles.info, !actionComponent && styles.iconContainer, destructive && {color: theme.dndIndicator}]}
-                        testID={`${testID}.info`}
-                        numberOfLines={1}
-                    >
-                        {info}
-                    </Text>
-                }
-                <View style={styles.actionSubContainer}>
-                    {actionComponent}
-                </View>
+                {infoComponent}
+                {actionComponent}
             </View>
             }
         </View>
     );
-    if (Object.values(TouchableOptionTypes).includes(type)) {
+    if ((Object.values(TouchableOptionTypes) as string[]).includes(type)) {
         return (
             <TouchableOpacity onPress={onPress}>
                 {component}
