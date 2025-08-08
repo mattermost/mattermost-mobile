@@ -3,6 +3,7 @@
 
 import React from 'react';
 
+import DatabaseManager from '@database/manager';
 import {fireEvent, renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -29,6 +30,10 @@ describe('UploadItemShared', () => {
         jest.clearAllMocks();
         database = (await TestHelper.setupServerDatabase(serverUrl)).database;
         getFormattedFileSize.mockReturnValue('1024 KB');
+    });
+
+    afterAll(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
     });
 
     const createMockFile = (overrides: Partial<UploadItemFile> = {}): UploadItemFile => ({

@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import type {UploadItemFile} from './index';
+export {SHARED_UPLOAD_STYLES} from './constants';
 import type {SharedItem} from '@mattermost/rnshare';
 
 /**
@@ -26,7 +27,7 @@ export function fileInfoToUploadItemFile(file: FileInfo): UploadItemFile {
  * Convert SharedItem to UploadItemFile for the shared component
  */
 export function sharedItemToUploadItemFile(item: SharedItem): UploadItemFile {
-    const converted = {
+    return {
         id: undefined,
         clientId: undefined,
         name: item.filename,
@@ -38,21 +39,4 @@ export function sharedItemToUploadItemFile(item: SharedItem): UploadItemFile {
         height: item.height,
         mime_type: item.type,
     };
-
-    return converted;
 }
-
-/**
- * Shared styling constants that match the main app's upload item dimensions
- */
-export const SHARED_UPLOAD_STYLES = {
-    THUMBNAIL_SIZE: 64,
-    ICON_SIZE: 48,
-    FILE_CONTAINER_WIDTH: 264,
-    FILE_CONTAINER_HEIGHT: 64,
-    BORDER_RADIUS: 4,
-    SHADOW_OFFSET: {width: 0, height: 2},
-    SHADOW_OPACITY: 0.08,
-    SHADOW_RADIUS: 3,
-    ELEVATION: 1,
-} as const;

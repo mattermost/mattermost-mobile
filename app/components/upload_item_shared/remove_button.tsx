@@ -1,13 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
-import {Platform, View} from 'react-native';
+import React, {useCallback} from 'react';
+import {Platform, View, Pressable} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useTheme} from '@context/theme';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
+const hitSlop = {top: 10, bottom: 10, left: 10, right: 10};
 
 type Props = {
     onPress: () => void;
@@ -21,6 +23,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             elevation: 11,
             width: 24,
             height: 24,
+            top: -12,
+            right: -10,
         },
         removeButton: {
             borderRadius: 12,
@@ -42,18 +46,16 @@ export default function RemoveButton({
 }: Props) {
     const theme = useTheme();
     const style = getStyleSheet(theme);
-
-    const containerStyle = [
-        style.tappableContainer,
-        {top: -12, right: -10},
-    ];
+    const handlePress = usePreventDoubleTap(useCallback(() => {
+        onPress();
+    }, [onPress]));
 
     return (
-        <TouchableWithFeedback
-            style={containerStyle}
-            onPress={onPress}
-            type={'opacity'}
+        <Pressable
+            style={({pressed}) => [style.tappableContainer, pressed && {opacity: 0.72}]}
+            onPress={handlePress}
             testID={testID}
+            hitSlop={hitSlop}
         >
             <View style={style.removeButton}>
                 <CompassIcon
@@ -62,6 +64,6 @@ export default function RemoveButton({
                     size={24}
                 />
             </View>
-        </TouchableWithFeedback>
+        </Pressable>
     );
 }

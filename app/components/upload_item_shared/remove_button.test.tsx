@@ -4,14 +4,13 @@
 import {fireEvent} from '@testing-library/react-native';
 import React from 'react';
 
+import DatabaseManager from '@database/manager';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
 import RemoveButton from './remove_button';
 
 import type {Database} from '@nozbe/watermelondb';
-
-// No mocking needed - using real CompassIcon and TouchableWithFeedback!
 
 describe('RemoveButton', () => {
     const serverUrl = 'serverUrl';
@@ -20,6 +19,10 @@ describe('RemoveButton', () => {
     beforeEach(async () => {
         jest.clearAllMocks();
         database = (await TestHelper.setupServerDatabase(serverUrl)).database;
+    });
+
+    afterAll(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
     });
 
     describe('User Interaction', () => {
@@ -45,18 +48,16 @@ describe('RemoveButton', () => {
                 {database},
             );
 
-            // Test with real components - should have the actual structure
             const button = getByTestId('remove-button');
             expect(button).toBeTruthy();
 
-            // Real TouchableWithFeedback should respond to press
             fireEvent.press(button);
             expect(onPress).toHaveBeenCalledTimes(1);
 
-            // Test multiple presses work
+            // Rapid presses are prevented (double-tap protection)
             fireEvent.press(button);
             fireEvent.press(button);
-            expect(onPress).toHaveBeenCalledTimes(3);
+            expect(onPress).toHaveBeenCalledTimes(1);
         });
 
         it('should work with custom testID for user identification', () => {
@@ -82,13 +83,13 @@ describe('RemoveButton', () => {
             // This should not crash even without onPress
             expect(() => {
                 renderWithEverything(
-                    <RemoveButton onPress={undefined as any}/>,
+                    <RemoveButton onPress={undefined as unknown as () => void}/>,
                     {database},
                 );
             }).not.toThrow();
         });
 
-        it('should handle rapid successive taps without issues', () => {
+        it('should prevent rapid successive taps (double-tap protection)', () => {
             const onPress = jest.fn();
 
             const {getByTestId} = renderWithEverything(
@@ -98,13 +99,13 @@ describe('RemoveButton', () => {
 
             const button = getByTestId('remove-button');
 
-            // Rapid fire presses
+            // Rapid fire presses should be coalesced into a single call
             fireEvent.press(button);
             fireEvent.press(button);
             fireEvent.press(button);
             fireEvent.press(button);
 
-            expect(onPress).toHaveBeenCalledTimes(4);
+            expect(onPress).toHaveBeenCalledTimes(1);
         });
     });
 });

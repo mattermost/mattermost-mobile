@@ -3,6 +3,7 @@
 
 import {Image} from 'expo-image';
 import React, {useMemo} from 'react';
+import {useIntl} from 'react-intl';
 import {TouchableWithoutFeedback, View, Text, type ViewStyle} from 'react-native';
 import Animated from 'react-native-reanimated';
 
@@ -15,12 +16,7 @@ import {isImage, getFormattedFileSize} from '@utils/file';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-export const UPLOAD_ITEM_DIMENSIONS = {
-    THUMBNAIL_SIZE: 64,
-    ICON_SIZE: 48,
-    FILE_CONTAINER_WIDTH: 264,
-    FILE_CONTAINER_HEIGHT: 64,
-} as const;
+import {SHARED_UPLOAD_STYLES} from './constants';
 
 export interface UploadItemFile {
     id?: string;
@@ -62,13 +58,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             position: 'relative',
         },
         imageOnlyContainer: {
-            width: UPLOAD_ITEM_DIMENSIONS.THUMBNAIL_SIZE,
-            height: UPLOAD_ITEM_DIMENSIONS.THUMBNAIL_SIZE,
+            width: SHARED_UPLOAD_STYLES.THUMBNAIL_SIZE,
+            height: SHARED_UPLOAD_STYLES.THUMBNAIL_SIZE,
             padding: 0,
         },
         fileWithInfoContainer: {
-            width: UPLOAD_ITEM_DIMENSIONS.FILE_CONTAINER_WIDTH,
-            height: UPLOAD_ITEM_DIMENSIONS.FILE_CONTAINER_HEIGHT,
+            width: SHARED_UPLOAD_STYLES.FILE_CONTAINER_WIDTH,
+            height: SHARED_UPLOAD_STYLES.FILE_CONTAINER_HEIGHT,
             flexDirection: 'row',
             alignItems: 'center',
             flexShrink: 0,
@@ -79,7 +75,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         fullWidthContainer: {
             width: '100%',
-            height: UPLOAD_ITEM_DIMENSIONS.FILE_CONTAINER_HEIGHT,
+            height: SHARED_UPLOAD_STYLES.FILE_CONTAINER_HEIGHT,
             flexDirection: 'row',
             alignItems: 'center',
             flexShrink: 0,
@@ -89,15 +85,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             paddingRight: 20,
         },
         iconContainer: {
-            width: UPLOAD_ITEM_DIMENSIONS.ICON_SIZE,
-            height: UPLOAD_ITEM_DIMENSIONS.ICON_SIZE,
+            width: SHARED_UPLOAD_STYLES.ICON_SIZE,
+            height: SHARED_UPLOAD_STYLES.ICON_SIZE,
             borderRadius: 4,
             justifyContent: 'center',
             alignItems: 'center',
         },
         imageContainer: {
-            width: UPLOAD_ITEM_DIMENSIONS.THUMBNAIL_SIZE,
-            height: UPLOAD_ITEM_DIMENSIONS.THUMBNAIL_SIZE,
+            width: SHARED_UPLOAD_STYLES.THUMBNAIL_SIZE,
+            height: SHARED_UPLOAD_STYLES.THUMBNAIL_SIZE,
             borderRadius: 4,
             marginRight: 8,
             overflow: 'hidden',
@@ -113,8 +109,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             elevation: 1,
         },
         imageOnlyThumbnail: {
-            width: UPLOAD_ITEM_DIMENSIONS.THUMBNAIL_SIZE,
-            height: UPLOAD_ITEM_DIMENSIONS.THUMBNAIL_SIZE,
+            width: SHARED_UPLOAD_STYLES.THUMBNAIL_SIZE,
+            height: SHARED_UPLOAD_STYLES.THUMBNAIL_SIZE,
             borderRadius: 4,
             overflow: 'hidden',
             shadowColor: '#000000',
@@ -125,6 +121,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             shadowOpacity: 0.08,
             shadowRadius: 3,
             elevation: 1,
+        },
+        imageOnlyImage: {
+            width: SHARED_UPLOAD_STYLES.THUMBNAIL_SIZE,
+            height: SHARED_UPLOAD_STYLES.THUMBNAIL_SIZE,
+            borderRadius: 4,
         },
         fileInfo: {
             flex: 1,
@@ -181,46 +182,42 @@ export default function UploadItemShared({
     hasError = false,
 }: UploadItemProps) {
     const theme = useTheme();
+    const intl = useIntl();
     const style = getStyleSheet(theme);
 
-    const fileForCheck = {
+    const fileForCheck = useMemo(() => ({
         name: file.name,
         extension: file.extension,
         mime_type: file.mime_type,
-    } as FileInfo;
+    } as FileInfo), [file.name, file.extension, file.mime_type]);
 
-    const isImageFile = isImage(fileForCheck);
+    const isImageFile = useMemo(() => isImage(fileForCheck), [fileForCheck]);
 
-    const fileDisplayComponent = () => {
+    const imageFileData = useMemo(() => ({
+        ...fileForCheck,
+        id: file.id,
+        clientId: file.clientId,
+        size: file.size,
+        uri: file.uri,
+        localPath: file.uri,
+        width: file.width,
+        height: file.height,
+        failed: file.failed,
+    } as FileInfo), [fileForCheck, file.id, file.clientId, file.size, file.uri, file.width, file.height, file.failed]);
+
+    const fileDisplay = useMemo(() => {
         if (isImageFile) {
             if (isShareExtension) {
                 return (
                     <View style={style.imageOnlyThumbnail}>
                         <Image
                             source={{uri: file.uri}}
-                            style={{
-                                width: UPLOAD_ITEM_DIMENSIONS.THUMBNAIL_SIZE,
-                                height: UPLOAD_ITEM_DIMENSIONS.THUMBNAIL_SIZE,
-                                borderRadius: 4,
-                            }}
+                            style={style.imageOnlyImage}
                             contentFit='cover'
                         />
                     </View>
                 );
             }
-
-            const imageFileData = {
-                ...fileForCheck,
-                id: file.id,
-                clientId: file.clientId,
-                size: file.size,
-                uri: file.uri,
-                localPath: file.uri,
-                width: file.width,
-                height: file.height,
-                failed: file.failed,
-            } as FileInfo;
-
             return (
                 <View style={style.imageOnlyThumbnail}>
                     <ImageFile
@@ -240,10 +237,11 @@ export default function UploadItemShared({
                 />
             </View>
         );
-    };
+    }, [file.uri, imageFileData, forwardRef, inViewPort, isImageFile, isShareExtension, style.imageOnlyThumbnail, style.imageOnlyImage, style.iconContainer, fileForCheck]);
 
     const fileExtension = file.extension?.toUpperCase() || file.name?.split('.').pop()?.toUpperCase() || '';
     const formattedSize = getFormattedFileSize(file.size || 0);
+    const unknownFileLabel = intl.formatMessage({id: 'upload_item.unknown_file', defaultMessage: 'Unknown file'});
 
     const containerStyle = useMemo(() => {
         let containerStyleType;
@@ -274,7 +272,7 @@ export default function UploadItemShared({
         >
             <TouchableWithoutFeedback onPress={onPress}>
                 <Animated.View style={galleryStyles}>
-                    {fileDisplayComponent()}
+                    {fileDisplay}
                 </Animated.View>
             </TouchableWithoutFeedback>
 
@@ -285,7 +283,7 @@ export default function UploadItemShared({
                         numberOfLines={1}
                         ellipsizeMode='tail'
                     >
-                        {file.name || 'Unknown file'}
+                        {file.name || unknownFileLabel}
                     </Text>
                     <Text style={style.fileSize}>
                         {fileExtension && `${fileExtension} `}{formattedSize}
