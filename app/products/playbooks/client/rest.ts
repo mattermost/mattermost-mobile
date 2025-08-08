@@ -9,16 +9,16 @@ export interface ClientPlaybooksMix {
 
     // Playbook Runs
     fetchPlaybookRuns: (params: FetchPlaybookRunsParams, groupLabel?: RequestGroupLabel) => Promise<FetchPlaybookRunsReturn>;
-
     fetchPlaybookRun: (id: string, groupLabel?: RequestGroupLabel) => Promise<PlaybookRun>;
 
     // Run Management
     // finishRun: (playbookRunId: string) => Promise<any>;
 
     // Checklist Management
-    setChecklistItemState: (playbookRunID: string, checklistNum: number, itemNum: number, newState: ChecklistItemState) => Promise<any>;
+    setChecklistItemState: (playbookRunID: string, checklistNum: number, itemNum: number, newState: ChecklistItemState) => Promise<void>;
+    skipChecklistItem: (playbookRunID: string, checklistNum: number, itemNum: number) => Promise<void>;
+    restoreChecklistItem: (playbookRunID: string, checklistNum: number, itemNum: number) => Promise<void>;
 
-    // skipChecklistItem: (playbookRunID: string, checklistNum: number, itemNum: number) => Promise<void>;
     // skipChecklist: (playbookRunID: string, checklistNum: number) => Promise<void>;
 
     // Slash Commands
@@ -85,12 +85,19 @@ const ClientPlaybooks = <TBase extends Constructor<ClientBase>>(superclass: TBas
         }
     };
 
-    // skipChecklistItem = async (playbookRunID: string, checklistNum: number, itemNum: number) => {
-    //     await this.doFetch(
-    //         `${this.getPlaybookRunRoute(playbookRunID)}/checklists/${checklistNum}/item/${itemNum}/skip`,
-    //         {method: 'put', body: ''},
-    //     );
-    // };
+    skipChecklistItem = async (playbookRunID: string, checklistNum: number, itemNum: number) => {
+        await this.doFetch(
+            `${this.getPlaybookRunRoute(playbookRunID)}/checklists/${checklistNum}/item/${itemNum}/skip`,
+            {method: 'put', body: ''},
+        );
+    };
+
+    restoreChecklistItem = async (playbookRunID: string, checklistNum: number, itemNum: number) => {
+        await this.doFetch(
+            `${this.getPlaybookRunRoute(playbookRunID)}/checklists/${checklistNum}/item/${itemNum}/restore`,
+            {method: 'put', body: ''},
+        );
+    };
 
     // skipChecklist = async (playbookRunID: string, checklistNum: number) => {
     //     await this.doFetch(

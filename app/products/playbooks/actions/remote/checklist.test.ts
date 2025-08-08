@@ -49,15 +49,6 @@ describe('checklist', () => {
             expect(localUpdateChecklistItem).not.toHaveBeenCalled();
         });
 
-        it('should handle API error response', async () => {
-            mockClient.setChecklistItemState.mockResolvedValueOnce({error: 'API error'});
-
-            const result = await updateChecklistItem(serverUrl, playbookRunId, itemId, checklistNumber, itemNumber, 'closed');
-            expect(result).toBeDefined();
-            expect(result.error).toBe('API error');
-            expect(localUpdateChecklistItem).not.toHaveBeenCalled();
-        });
-
         it('should update checklist item successfully', async () => {
             mockClient.setChecklistItemState.mockResolvedValueOnce({});
 

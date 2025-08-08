@@ -48,7 +48,7 @@ const AutoFollowThreads = ({channelId, displayName, followedStatus}: Props) => {
     return (
         <OptionItem
             action={toggleFollow}
-            label={intl.formatMessage({id: 'channel_info.channel_auto_follow_threads', defaultMessage: 'Follow all threads in this channel'})}
+            label={intl.formatMessage({id: 'channel_info.channel_auto_follow_threads', defaultMessage: 'Follow all threads in this channel'}) + 'lorem ipsum'}
             icon='message-plus-outline'
             type='toggle'
             selected={autoFollow}
