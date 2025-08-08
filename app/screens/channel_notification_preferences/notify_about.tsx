@@ -65,7 +65,7 @@ const NotifyAbout = ({
         const {y} = e.nativeEvent.layout;
 
         notifyTitleTop.value = y > 0 ? y + 10 : BLOCK_TITLE_HEIGHT;
-    }, []);
+    }, [notifyTitleTop]);
 
     let notifyLevelToUse = notifyLevel;
     if (notifyLevel === NotificationLevel.DEFAULT) {
