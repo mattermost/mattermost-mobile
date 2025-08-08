@@ -6,6 +6,7 @@ import {Q} from '@nozbe/watermelondb';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
+import EphemeralStore from '@store/ephemeral_store';
 
 import type {MyChannelModel} from '@database/models/server';
 
@@ -25,6 +26,8 @@ export const setPlaybooksVersion = async (serverUrl: string, version: string) =>
             if (error) {
                 return {error};
             }
+
+            EphemeralStore.clearChannelPlaybooksSynced(serverUrl);
         }
 
         return {data: true};
