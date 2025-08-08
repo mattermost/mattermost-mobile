@@ -5,6 +5,7 @@ import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of as of$} from 'rxjs';
 import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
+import {fetchUsersByIds} from '@actions/remote/user';
 import {withServerUrl} from '@context/server';
 import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeUserOrFetch, observeTeammateNameDisplay, observeCurrentUser} from '@queries/servers/user';
@@ -18,7 +19,7 @@ const enhance = withObservables(['embedData', 'serverUrl'], ({database, embedDat
     const teammateNameDisplay = observeTeammateNameDisplay(database);
 
     const userId = embedData?.post?.user_id;
-    const author = userId ? observeUserOrFetch(database, serverUrl || '', userId) : of$(undefined);
+    const author = userId ? observeUserOrFetch(database, serverUrl || '', userId, fetchUsersByIds) : of$(undefined);
 
     const currentUser = observeCurrentUser(database);
     const locale = currentUser.pipe(
