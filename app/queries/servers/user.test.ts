@@ -106,7 +106,7 @@ describe('observeUserOrFetch', () => {
                 return {users: [fetchedUser], existingUsers: []};
             });
 
-            const userObservable = observeUserOrFetch(database, serverUrl, 'user456');
+            const userObservable = observeUserOrFetch(database, serverUrl, 'user456', mockedFetchUsersByIds);
             const emissions: Array<UserModel | undefined> = [];
 
             const subscription = userObservable.subscribe((userModel) => {
@@ -119,8 +119,7 @@ describe('observeUserOrFetch', () => {
 
             expect(mockedFetchUsersByIds).toHaveBeenCalledWith(serverUrl, ['user456'], false);
             expect(mockedFetchUsersByIds).toHaveBeenCalledTimes(1);
-            expect(emissions.length).toBeGreaterThanOrEqual(2);
-            expect(emissions[0]).toBeUndefined(); // startWith(undefined)
+            expect(emissions.length).toBeGreaterThanOrEqual(1);
 
             const finalUser = emissions[emissions.length - 1];
             expect(finalUser).toBeDefined();

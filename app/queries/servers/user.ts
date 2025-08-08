@@ -2,10 +2,9 @@
 // See LICENSE.txt for license information.
 
 import {Database, Q} from '@nozbe/watermelondb';
-import {combineLatest, of as of$, from} from 'rxjs';
-import {distinctUntilChanged, switchMap, startWith, catchError} from 'rxjs/operators';
+import {combineLatest, of as of$} from 'rxjs';
+import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
-import {fetchUsersByIds} from '@actions/remote/user';
 import {General} from '@constants';
 import {MM_TABLES} from '@constants/database';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
@@ -15,6 +14,7 @@ import {logWarning} from '@utils/log';
 import {queryDisplayNamePreferences} from './preference';
 import {observeCurrentUserId, observeLicense, getCurrentUserId, getConfig, getLicense, observeConfigValue} from './system';
 
+import type {fetchUsersByIds} from '@actions/remote/user';
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
 import type TeamMembershipModel from '@typings/database/models/servers/team_membership';
@@ -36,19 +36,15 @@ export const observeUser = (database: Database, userId: string) => {
     );
 };
 
-export const observeUserOrFetch = (database: Database, serverUrl: string, userId: string) => {
+export const observeUserOrFetch = (database: Database, serverUrl: string, userId: string, fetchFunction?: typeof fetchUsersByIds) => {
     return observeUser(database, userId).pipe(
         switchMap((user) => {
-            if (!user) {
-                // User not found locally, fetch from server
-                return from(fetchUsersByIds(serverUrl, [userId], false)).pipe(
-                    switchMap(() => observeUser(database, userId)),
-                    catchError((error) => {
-                        logWarning('Failed to fetch user data:', error);
-                        return of$(undefined);
-                    }),
-                    startWith(undefined),
-                );
+            if (!user && fetchFunction) {
+                // User not found locally, fetch from server using provided function
+                fetchFunction(serverUrl, [userId], false).catch((error) => {
+                    logWarning('Failed to fetch user data:', error);
+                });
+                return observeUser(database, userId);
             }
             return of$(user);
         }),
