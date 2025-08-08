@@ -61,6 +61,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     skippedText: {
         textDecorationLine: 'line-through',
     },
+    titleContainer: {
+        flexShrink: 1,
+    },
 }));
 
 type Props = {
@@ -134,7 +137,14 @@ const Checklist = ({
                         name={expanded ? 'chevron-down' : 'chevron-right'}
                         style={styles.chevron}
                     />
-                    <Text style={titleTextStyle}>{checklist.title}</Text>
+                    <View style={styles.titleContainer}>
+                        <Text
+                            style={titleTextStyle}
+                            numberOfLines={1}
+                        >
+                            {checklist.title}
+                        </Text>
+                    </View>
                     <Text style={styles.progressText}>{`${completed} / ${totalNumber} done`}</Text>
                 </View>
                 <ProgressBar
