@@ -4,14 +4,28 @@
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
+import {getMyChannel} from '@queries/servers/channel';
 import {querySystemValue} from '@queries/servers/system';
+import TestHelper from '@test/test_helper';
 
+import {updateLastPlaybookRunsFetchAt} from './channel';
 import {setPlaybooksVersion} from './version';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 
 const serverUrl = 'baseHandler.test.com';
+const channelId = 'channelid';
 let operator: ServerDataOperator;
+
+const channel: Channel = TestHelper.fakeChannel({
+    id: channelId,
+    team_id: 'teamid1',
+});
+
+const channelMember: ChannelMembership = TestHelper.fakeChannelMember({
+    id: 'id',
+    channel_id: channelId,
+});
 
 beforeEach(async () => {
     await DatabaseManager.init([serverUrl]);
@@ -50,6 +64,11 @@ describe('setPlaybooksVersion', () => {
 
     it('should purge playbooks when version is empty', async () => {
         const database = operator.database;
+
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+        await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
+        await updateLastPlaybookRunsFetchAt(serverUrl, channelId, 1234);
+
         jest.spyOn(database.adapter, 'unsafeExecute').mockImplementation(() => {
             return Promise.resolve();
         });
@@ -65,10 +84,18 @@ describe('setPlaybooksVersion', () => {
                 [`DELETE FROM ${PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST_ITEM}`, []],
             ],
         });
+
+        const myChannel = await getMyChannel(operator.database, channelId);
+        expect(myChannel?.lastPlaybookRunsFetchAt).toBe(0);
     });
 
     it('should not purge playbooks when version is not empty', async () => {
         const database = operator.database;
+
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+        await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
+        await updateLastPlaybookRunsFetchAt(serverUrl, channelId, 1234);
+
         jest.spyOn(database.adapter, 'unsafeExecute').mockImplementation(() => {
             return Promise.resolve();
         });
@@ -78,6 +105,8 @@ describe('setPlaybooksVersion', () => {
         expect(data).toBe(true);
 
         expect(database.adapter.unsafeExecute).not.toHaveBeenCalled();
+        const myChannel = await getMyChannel(operator.database, channelId);
+        expect(myChannel?.lastPlaybookRunsFetchAt).toBe(1234);
     });
 
     it('should handle purge playbooks errors', async () => {
