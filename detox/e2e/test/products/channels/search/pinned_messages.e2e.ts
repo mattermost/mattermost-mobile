@@ -138,7 +138,7 @@ describe('Search - Pinned Messages', () => {
         // * Verify post message is updated and displays edited indicator '(edited)'
         const {postListPostItem: updatedPostListPostItem, postListPostItemEditedIndicator} = PinnedMessagesScreen.getPostListPostItem(pinnedPost.id, updatedMessage);
         await expect(updatedPostListPostItem).toBeVisible();
-        await expect(postListPostItemEditedIndicator).toHaveText('(edited)');
+        await expect(postListPostItemEditedIndicator).toHaveText('Edited');
 
         // # Open post options for updated pinned message and tap on reply option
         await PinnedMessagesScreen.openPostOptionsFor(pinnedPost.id, updatedMessage);
