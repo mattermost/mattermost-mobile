@@ -24,6 +24,7 @@ function loadTranslation(locale?: string): {[x: string]: string} {
                 require('@formatjs/intl-numberformat/locale-data/bg');
                 require('@formatjs/intl-datetimeformat/locale-data/bg');
                 require('@formatjs/intl-listformat/locale-data/bg');
+                require('@formatjs/intl-relativetimeformat/locale-data/bg');
 
                 translations = require('@assets/i18n/bg.json');
                 break;
@@ -32,6 +33,7 @@ function loadTranslation(locale?: string): {[x: string]: string} {
                 require('@formatjs/intl-numberformat/locale-data/de');
                 require('@formatjs/intl-datetimeformat/locale-data/de');
                 require('@formatjs/intl-listformat/locale-data/de');
+                require('@formatjs/intl-relativetimeformat/locale-data/de');
 
                 translations = require('@assets/i18n/de.json');
                 break;
@@ -40,6 +42,7 @@ function loadTranslation(locale?: string): {[x: string]: string} {
                 require('@formatjs/intl-numberformat/locale-data/en');
                 require('@formatjs/intl-datetimeformat/locale-data/en');
                 require('@formatjs/intl-listformat/locale-data/en');
+                require('@formatjs/intl-relativetimeformat/locale-data/en');
 
                 translations = require('@assets/i18n/en_AU.json');
                 break;
@@ -48,6 +51,7 @@ function loadTranslation(locale?: string): {[x: string]: string} {
                 require('@formatjs/intl-numberformat/locale-data/es');
                 require('@formatjs/intl-datetimeformat/locale-data/es');
                 require('@formatjs/intl-listformat/locale-data/es');
+                require('@formatjs/intl-relativetimeformat/locale-data/es');
 
                 translations = require('@assets/i18n/es.json');
                 break;
@@ -56,6 +60,7 @@ function loadTranslation(locale?: string): {[x: string]: string} {
                 require('@formatjs/intl-numberformat/locale-data/fa');
                 require('@formatjs/intl-datetimeformat/locale-data/fa');
                 require('@formatjs/intl-listformat/locale-data/fa');
+                require('@formatjs/intl-relativetimeformat/locale-data/fa');
 
                 translations = require('@assets/i18n/fa.json');
                 break;
@@ -64,6 +69,7 @@ function loadTranslation(locale?: string): {[x: string]: string} {
                 require('@formatjs/intl-numberformat/locale-data/fr');
                 require('@formatjs/intl-datetimeformat/locale-data/fr');
                 require('@formatjs/intl-listformat/locale-data/fr');
+                require('@formatjs/intl-relativetimeformat/locale-data/fr');
 
                 translations = require('@assets/i18n/fr.json');
                 break;
@@ -72,6 +78,7 @@ function loadTranslation(locale?: string): {[x: string]: string} {
                 require('@formatjs/intl-numberformat/locale-data/hu');
                 require('@formatjs/intl-datetimeformat/locale-data/hu');
                 require('@formatjs/intl-listformat/locale-data/hu');
+                require('@formatjs/intl-relativetimeformat/locale-data/hu');
 
                 translations = require('@assets/i18n/hu.json');
                 break;
@@ -80,6 +87,7 @@ function loadTranslation(locale?: string): {[x: string]: string} {
                 require('@formatjs/intl-numberformat/locale-data/it');
                 require('@formatjs/intl-datetimeformat/locale-data/it');
                 require('@formatjs/intl-listformat/locale-data/it');
+                require('@formatjs/intl-relativetimeformat/locale-data/it');
 
                 translations = require('@assets/i18n/it.json');
                 break;
@@ -88,6 +96,7 @@ function loadTranslation(locale?: string): {[x: string]: string} {
                 require('@formatjs/intl-numberformat/locale-data/ja');
                 require('@formatjs/intl-datetimeformat/locale-data/ja');
                 require('@formatjs/intl-listformat/locale-data/ja');
+                require('@formatjs/intl-relativetimeformat/locale-data/ja');
 
                 translations = require('@assets/i18n/ja.json');
                 break;
@@ -96,6 +105,7 @@ function loadTranslation(locale?: string): {[x: string]: string} {
                 require('@formatjs/intl-numberformat/locale-data/ko');
                 require('@formatjs/intl-datetimeformat/locale-data/ko');
                 require('@formatjs/intl-listformat/locale-data/ko');
+                require('@formatjs/intl-relativetimeformat/locale-data/ko');
 
                 translations = require('@assets/i18n/ko.json');
                 break;
@@ -104,6 +114,7 @@ function loadTranslation(locale?: string): {[x: string]: string} {
                 require('@formatjs/intl-numberformat/locale-data/nl');
                 require('@formatjs/intl-datetimeformat/locale-data/nl');
                 require('@formatjs/intl-listformat/locale-data/nl');
+                require('@formatjs/intl-relativetimeformat/locale-data/nl');
 
                 translations = require('@assets/i18n/nl.json');
                 break;
@@ -112,6 +123,7 @@ function loadTranslation(locale?: string): {[x: string]: string} {
                 require('@formatjs/intl-numberformat/locale-data/pl');
                 require('@formatjs/intl-datetimeformat/locale-data/pl');
                 require('@formatjs/intl-listformat/locale-data/pl');
+                require('@formatjs/intl-relativetimeformat/locale-data/pl');
 
                 translations = require('@assets/i18n/pl.json');
                 break;
@@ -120,6 +132,7 @@ function loadTranslation(locale?: string): {[x: string]: string} {
                 require('@formatjs/intl-numberformat/locale-data/pt');
                 require('@formatjs/intl-datetimeformat/locale-data/pt');
                 require('@formatjs/intl-listformat/locale-data/pt');
+                require('@formatjs/intl-relativetimeformat/locale-data/pt');
 
                 translations = require('@assets/i18n/pt-BR.json');
                 break;
@@ -128,6 +141,7 @@ function loadTranslation(locale?: string): {[x: string]: string} {
                 require('@formatjs/intl-numberformat/locale-data/ro');
                 require('@formatjs/intl-datetimeformat/locale-data/ro');
                 require('@formatjs/intl-listformat/locale-data/ro');
+                require('@formatjs/intl-relativetimeformat/locale-data/ro');
 
                 translations = require('@assets/i18n/ro.json');
                 break;
@@ -136,6 +150,7 @@ function loadTranslation(locale?: string): {[x: string]: string} {
                 require('@formatjs/intl-numberformat/locale-data/ru');
                 require('@formatjs/intl-datetimeformat/locale-data/ru');
                 require('@formatjs/intl-listformat/locale-data/ru');
+                require('@formatjs/intl-relativetimeformat/locale-data/ru');
 
                 translations = require('@assets/i18n/ru.json');
                 break;
@@ -144,6 +159,7 @@ function loadTranslation(locale?: string): {[x: string]: string} {
                 require('@formatjs/intl-numberformat/locale-data/sv');
                 require('@formatjs/intl-datetimeformat/locale-data/sv');
                 require('@formatjs/intl-listformat/locale-data/sv');
+                require('@formatjs/intl-relativetimeformat/locale-data/sv');
 
                 translations = require('@assets/i18n/sv.json');
                 break;
@@ -152,6 +168,7 @@ function loadTranslation(locale?: string): {[x: string]: string} {
                 require('@formatjs/intl-numberformat/locale-data/tr');
                 require('@formatjs/intl-datetimeformat/locale-data/tr');
                 require('@formatjs/intl-listformat/locale-data/tr');
+                require('@formatjs/intl-relativetimeformat/locale-data/tr');
 
                 translations = require('@assets/i18n/tr.json');
                 break;
@@ -160,6 +177,7 @@ function loadTranslation(locale?: string): {[x: string]: string} {
                 require('@formatjs/intl-numberformat/locale-data/uk');
                 require('@formatjs/intl-datetimeformat/locale-data/uk');
                 require('@formatjs/intl-listformat/locale-data/uk');
+                require('@formatjs/intl-relativetimeformat/locale-data/uk');
 
                 translations = require('@assets/i18n/uk.json');
                 break;
@@ -168,6 +186,7 @@ function loadTranslation(locale?: string): {[x: string]: string} {
                 require('@formatjs/intl-numberformat/locale-data/vi');
                 require('@formatjs/intl-datetimeformat/locale-data/vi');
                 require('@formatjs/intl-listformat/locale-data/vi');
+                require('@formatjs/intl-relativetimeformat/locale-data/vi');
 
                 translations = require('@assets/i18n/vi.json');
                 break;
@@ -184,6 +203,7 @@ function loadTranslation(locale?: string): {[x: string]: string} {
                 require('@formatjs/intl-numberformat/locale-data/en');
                 require('@formatjs/intl-datetimeformat/locale-data/en');
                 require('@formatjs/intl-listformat/locale-data/en');
+                require('@formatjs/intl-relativetimeformat/locale-data/en');
 
                 translations = en;
                 break;
@@ -201,6 +221,7 @@ function loadChinesePolyfills() {
     require('@formatjs/intl-numberformat/locale-data/zh');
     require('@formatjs/intl-datetimeformat/locale-data/zh');
     require('@formatjs/intl-listformat/locale-data/zh');
+    require('@formatjs/intl-relativetimeformat/locale-data/zh');
 }
 
 export function getLocaleFromLanguage(lang: string) {

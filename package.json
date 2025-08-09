@@ -17,6 +17,7 @@
     "@formatjs/intl-locale": "4.2.11",
     "@formatjs/intl-numberformat": "8.15.4",
     "@formatjs/intl-pluralrules": "5.4.4",
+    "@formatjs/intl-relativetimeformat": "11.4.11",
     "@gorhom/bottom-sheet": "5.1.2",
     "@mattermost/calls": "github:mattermost/calls-common#ab53c24053b89e4d3d853bbe1244892899517f45",
     "@mattermost/compass-icons": "0.1.48",

@@ -239,7 +239,7 @@ describe('ChecklistItem', () => {
         const {getByTestId, rerender, queryByTestId} = renderWithIntl(<ChecklistItem {...props}/>);
         let chip = getByTestId('base-chip-component');
         expect(chip).toBeVisible();
-        expect(chip.props.label).toBe('Due Tomorrow');
+        expect(chip.props.label).toBe('Due tomorrow');
         expect(chip.props.type).toBe('normal');
         expect(chip.props.boldText).toBe(false);
         expect(chip.props.prefix).toBeDefined();
@@ -263,7 +263,7 @@ describe('ChecklistItem', () => {
         rerender(<ChecklistItem {...props}/>);
         chip = getByTestId('base-chip-component');
         expect(chip).toBeVisible();
-        expect(chip.props.label).toBe('Due 1 year ago');
+        expect(chip.props.label).toBe('Due last year');
         expect(chip.props.type).toBe('danger');
         expect(chip.props.boldText).toBe(true);
         expect(chip.props.prefix).toBeDefined();
