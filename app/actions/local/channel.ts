@@ -116,7 +116,7 @@ export async function removeCurrentUserFromChannel(serverUrl: string, channelId:
             if (!channel) {
                 throw new Error('myChannel present but no channel on the database');
             }
-            models.push(...await prepareDeleteChannel(channel));
+            models.push(...await prepareDeleteChannel(serverUrl, channel));
             let teamId = channel.teamId;
             if (teamId) {
                 teamId = await getCurrentTeamId(database);

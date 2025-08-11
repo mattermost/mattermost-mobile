@@ -4,7 +4,7 @@
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {DeviceEventEmitter, type StyleProp, StyleSheet, View, type ViewStyle} from 'react-native';
 import Animated from 'react-native-reanimated';
-import {SafeAreaView, type Edge, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {Events} from '@constants';
 import {GALLERY_FOOTER_HEIGHT} from '@constants/gallery';
@@ -37,13 +37,8 @@ type Props = {
     post?: PostModel;
     style: StyleProp<ViewStyle>;
     teammateNameDisplay: string;
-    hasCaptions: boolean;
-    captionEnabled: boolean;
-    onCaptionsPress: () => void;
 }
 
-const AnimatedSafeAreaView = Animated.createAnimatedComponent(SafeAreaView);
-const edges: Edge[] = ['left', 'right'];
 const styles = StyleSheet.create({
     container: {
         alignItems: 'center',
@@ -63,7 +58,6 @@ const Footer = ({
     author, canDownloadFiles, channelName, currentUserId,
     enablePostIconOverride, enablePostUsernameOverride, enablePublicLink, enableSecureFilePreview,
     hideActions, isDirectChannel, item, post, style, teammateNameDisplay,
-    hasCaptions, captionEnabled, onCaptionsPress,
 }: Props) => {
     const showActions = !hideActions && Boolean(item.id) && !item.id?.startsWith('uid');
     const [action, setAction] = useState<GalleryAction>('none');
@@ -106,9 +100,7 @@ const Footer = ({
     }, []);
 
     return (
-        <AnimatedSafeAreaView
-            mode='padding'
-            edges={edges}
+        <Animated.View
             style={[style]}
         >
             {['downloading', 'sharing'].includes(action) && !enableSecureFilePreview && canDownloadFiles &&
@@ -149,14 +141,11 @@ const Footer = ({
                     onCopyPublicLink={handleCopyLink}
                     onDownload={handleDownload}
                     onShare={handleShare}
-                    hasCaptions={hasCaptions}
-                    captionEnabled={captionEnabled}
-                    onCaptionsPress={onCaptionsPress}
                 />
                 }
             </View>
             <View style={bottomStyle}/>
-        </AnimatedSafeAreaView>
+        </Animated.View>
     );
 };
 

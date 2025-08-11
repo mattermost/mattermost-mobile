@@ -9,39 +9,15 @@ import {typedMemo} from '@utils/gallery';
 
 import Gutter from './gutter';
 
-import type {GalleryItemType} from '@typings/screens/gallery';
-import type {PanGestureHandler, TapGestureHandler} from 'react-native-gesture-handler';
+import type {GalleryPagerItem} from '@typings/screens/gallery';
 
-export type PageRefs = [
-    React.Ref<TapGestureHandler>,
-    React.Ref<PanGestureHandler>,
-];
-
-export interface RenderPageProps {
-    index: number;
-    pagerRefs: PageRefs;
-    onPageStateChange: (value: boolean) => void;
-    item: GalleryItemType;
-    width: number;
-    height: number;
-    isPageActive: SharedValue<boolean>;
-    isPagerInProgress: SharedValue<boolean>;
-}
-
-interface PageProps {
-    item: GalleryItemType;
-    pagerRefs: PageRefs;
-    onPageStateChange: (value: boolean) => void;
+interface PageProps extends GalleryPagerItem {
     gutterWidth: number;
-    index: number;
     length: number;
-    renderPage: (props: RenderPageProps, index: number) => JSX.Element | null;
+    renderPage: (props: GalleryPagerItem, index: number) => JSX.Element | null;
     shouldRenderGutter: boolean;
     getPageTranslate: (index: number, width?: number) => number;
-    width: number;
-    height: number;
     currentIndex: SharedValue<number>;
-    isPagerInProgress: SharedValue<boolean>;
 }
 
 const styles = StyleSheet.create({
@@ -61,10 +37,9 @@ const styles = StyleSheet.create({
 const Page = typedMemo(
     ({
         currentIndex, getPageTranslate, gutterWidth, index, isPagerInProgress, item, length,
-        onPageStateChange, pagerRefs, renderPage, shouldRenderGutter, width, height,
+        onPageStateChange, renderPage, shouldRenderGutter, width, height, pagerPanGesture, pagerTapGesture, lightboxPanGesture,
     }: PageProps) => {
         const isPageActive = useDerivedValue(() => (currentIndex.value === index), []);
-
         return (
             <View style={[styles.container, {left: -getPageTranslate(index, width)}]}>
                 <View style={[styles.center, {width}]}>
@@ -76,8 +51,10 @@ const Page = typedMemo(
                             width,
                             isPageActive,
                             isPagerInProgress,
-                            pagerRefs,
                             height,
+                            pagerPanGesture,
+                            pagerTapGesture,
+                            lightboxPanGesture,
                         },
                         index,
                     )}

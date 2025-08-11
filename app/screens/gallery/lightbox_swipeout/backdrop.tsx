@@ -3,10 +3,10 @@
 
 import React from 'react';
 import {StyleSheet, type ViewStyle} from 'react-native';
-import Animated, {type AnimatedStyleProp, Extrapolate, interpolate, type SharedValue, useAnimatedStyle} from 'react-native-reanimated';
+import Animated, {type AnimatedStyle, interpolate, type SharedValue, useAnimatedStyle} from 'react-native-reanimated';
 
 export type BackdropProps = {
-    animatedStyles: AnimatedStyleProp<ViewStyle>;
+    animatedStyles: AnimatedStyle<ViewStyle>;
     translateY: SharedValue<number>;
 }
 
@@ -20,10 +20,10 @@ const Backdrop = ({animatedStyles, translateY}: BackdropProps) => {
     const customBackdropStyles = useAnimatedStyle(() => {
         return {
             opacity: interpolate(
-                Math.abs(translateY.value),
+                Math.abs(translateY.value / 3),
                 [0, 100],
                 [1, 0],
-                Extrapolate.CLAMP,
+                'clamp',
             ),
         };
     }, []);

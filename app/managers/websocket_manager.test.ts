@@ -11,6 +11,7 @@ import WebSocketClient from '@client/websocket';
 import DatabaseManager from '@database/manager';
 import {getCurrentUserId} from '@queries/servers/system';
 import {queryAllUsers} from '@queries/servers/user';
+import TestHelper from '@test/test_helper';
 import {logError} from '@utils/log';
 
 import WebsocketManager from './websocket_manager';
@@ -33,7 +34,7 @@ jest.mock('@utils/log');
 describe('WebsocketManager', () => {
     let manager: typeof WebsocketManager;
     let mockWebSocketClient: any;
-    let mockCallbacks: {[key: string]: () => void};
+    let mockCallbacks: {[key: string]: (...args: any[]) => void};
     const mockServerUrl = 'https://example.com';
     const mockToken = 'mock-token';
     const mockCredentials = [{serverUrl: mockServerUrl, token: mockToken} as ServerCredential];
@@ -60,7 +61,9 @@ describe('WebsocketManager', () => {
                 mockCallbacks.reconnect = cb;
             }),
             setReliableReconnectCallback: jest.fn(),
-            setCloseCallback: jest.fn(),
+            setCloseCallback: jest.fn((cb) => {
+                mockCallbacks.close = cb;
+            }),
             initialize: jest.fn(),
             isConnected: jest.fn().mockReturnValue(true),
             close: jest.fn(),
@@ -178,8 +181,11 @@ describe('WebsocketManager', () => {
 
     describe('periodic updates', () => {
         beforeEach(async () => {
-            (getCurrentUserId as jest.Mock).mockResolvedValue('user1');
-            (queryAllUsers as jest.Mock).mockImplementation(() => ({fetchIds: async () => ['user1', 'user2']}));
+            jest.mocked(getCurrentUserId).mockResolvedValue('user1');
+            jest.mocked(queryAllUsers).mockImplementation(() => TestHelper.fakeQuery([
+                TestHelper.fakeUserModel({id: 'user1'}),
+                TestHelper.fakeUserModel({id: 'user2'}),
+            ]));
             await manager.init(mockCredentials);
         });
 
@@ -194,6 +200,9 @@ describe('WebsocketManager', () => {
             await new Promise((resolve) => setImmediate(resolve));
 
             expect(fetchStatusByIds).toHaveBeenCalledWith(mockServerUrl, ['user2']);
+
+            // Close the websocket to stop the periodic updates
+            mockCallbacks.close(0);
         });
     });
 });

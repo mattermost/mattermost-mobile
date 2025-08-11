@@ -374,6 +374,19 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
         }
     }, [isFocused]);
 
+    useDidUpdate(() => {
+        if (isFocused && lastSearchedValue && showResults) {
+            // requestAnimationFrame for smooth UI updates
+            requestAnimationFrame(() => {
+                handleSearch(searchTeamId, lastSearchedValue);
+            });
+        }
+
+        // Only watch isFocused to re-run search when screen comes back into focus
+        // Removed lastSearchedValue, showResults, handleSearch, searchTeamId from dependencies
+        // to prevent duplicate search calls (these values are updated by handleSearch itself)
+    }, [isFocused]);
+
     const handleEnterPressed = useCallback(() => {
         const topScreen = NavigationStore.getVisibleScreen();
         if (topScreen === Screens.HOME && isFocused) {
@@ -471,7 +484,7 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
                 cursorPosition={cursorPosition}
                 value={searchValue}
                 isSearch={true}
-                hasFilesAttached={false}
+                shouldDirectlyReact={false}
                 availableSpace={autocompleteMaxHeight}
                 position={autocompletePosition}
                 growDown={true}

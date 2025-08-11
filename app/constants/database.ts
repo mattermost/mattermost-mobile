@@ -76,6 +76,7 @@ export const SYSTEM_IDENTIFIERS = {
     SESSION_EXPIRATION: 'sessionExpiration',
     TEAM_HISTORY: 'teamHistory',
     WEBSOCKET: 'WebSocket',
+    PLAYBOOKS_VERSION: 'playbooks_version',
 };
 
 export const GLOBAL_IDENTIFIERS = {

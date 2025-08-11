@@ -20,7 +20,7 @@ runs:
       shell: bash
       run: |
         echo "::group::run-tests"
-        npm test
+        npm run test:ci
         echo "::endgroup::"
 
     - name: ci/check-i18n

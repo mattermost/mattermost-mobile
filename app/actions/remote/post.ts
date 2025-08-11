@@ -8,6 +8,7 @@ import {markChannelAsUnread, updateLastPostAt} from '@actions/local/channel';
 import {addPostAcknowledgement, removePost, removePostAcknowledgement, storePostsForChannel} from '@actions/local/post';
 import {addRecentReaction} from '@actions/local/reactions';
 import {createThreadFromNewPost} from '@actions/local/thread';
+import {fetchChannelStats} from '@actions/remote/channel';
 import {ActionType, General, Post, ServerErrors} from '@constants';
 import DatabaseManager from '@database/manager';
 import {filterPostsInOrderedArray} from '@helpers/api/post';
@@ -15,7 +16,7 @@ import {getNeededAtMentionedUsernames} from '@helpers/api/user';
 import NetworkManager from '@managers/network_manager';
 import {getMyChannel, prepareMissingChannelsForAllTeams, queryAllMyChannel} from '@queries/servers/channel';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
-import {getFilesByIds} from '@queries/servers/file';
+import {getFilesByIds, queryFilesForPost} from '@queries/servers/file';
 import {getPostById, getRecentPostsInChannel} from '@queries/servers/post';
 import {getCurrentUserId} from '@queries/servers/system';
 import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers/thread';
@@ -24,6 +25,7 @@ import EphemeralStore from '@store/ephemeral_store';
 import {setFetchingThreadState} from '@store/fetching_thread_store';
 import {getValidEmojis, matchEmoticons} from '@utils/emoji/helpers';
 import {getFullErrorMessage, isServerError} from '@utils/errors';
+import {hasArrayChanged} from '@utils/helpers';
 import {logDebug, logError} from '@utils/log';
 import {processPostsFetched} from '@utils/post';
 import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
@@ -915,6 +917,9 @@ export const editPost = async (serverUrl: string, postId: string, postMessage: s
 
         const post = await getPostById(database, postId);
         if (post) {
+            const originalFiles = await queryFilesForPost(database, postId).fetch();
+            const originalFileIds = originalFiles.map((f) => f.id);
+
             const {update_at, edit_at, message: updatedMessage, message_source} = await client.patchPost({message: postMessage, id: postId, file_ids});
             await database.write(async () => {
                 await post.update((p) => {
@@ -934,6 +939,13 @@ export const editPost = async (serverUrl: string, postId: string, postMessage: s
                     });
                     await operator.batchRecords(fileDeleteModels, 'delete files');
                 }
+            }
+
+            const filesChanged = hasArrayChanged(originalFileIds, file_ids);
+
+            if (filesChanged && post.channelId) {
+                const channelId = post.channelId;
+                fetchChannelStats(serverUrl, channelId);
             }
         }
         return {post};

@@ -178,6 +178,7 @@ class WebsocketManagerSingleton {
     private onReconnect = async (serverUrl: string) => {
         this.startPeriodicStatusUpdates(serverUrl);
         this.getConnectedSubject(serverUrl).next('connected');
+
         const error = await handleReconnect(serverUrl);
         if (error) {
             this.getClient(serverUrl)?.close(false);

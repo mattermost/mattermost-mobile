@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import moment, {type Moment} from 'moment-timezone';
 import React, {useCallback, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, SafeAreaView, StyleSheet, View} from 'react-native';
@@ -22,7 +23,6 @@ import {getTimezone} from '@utils/user';
 
 import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 import type {AvailableScreens} from '@typings/screens/navigation';
-import type {Moment} from 'moment-timezone';
 
 type Props = {
     currentUserTimezone?: UserTimezone | null;
@@ -139,6 +139,7 @@ const RescheduledDraft: React.FC<Props> = ({
                     theme={theme}
                     timezone={userTimezone}
                     showInitially='date'
+                    initialDate={moment(draft.scheduledAt)}
                 />
             </View>
         </SafeAreaView>

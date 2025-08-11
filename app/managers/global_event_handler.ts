@@ -16,7 +16,7 @@ import {queryTeamDefaultChannel} from '@queries/servers/channel';
 import {getCommonSystemValues} from '@queries/servers/system';
 import {getTeamChannelHistory} from '@queries/servers/team';
 import {setScreensOrientation} from '@screens/navigation';
-import {alertInvalidDeepLink, handleDeepLink} from '@utils/deep_link';
+import {alertInvalidDeepLink, parseAndHandleDeepLink} from '@utils/deep_link';
 import {getIntlShape} from '@utils/general';
 
 type LinkingCallbackArg = {url: string};
@@ -43,7 +43,7 @@ class GlobalEventHandlerSingleton {
         }
 
         if (event.url) {
-            const {error} = await handleDeepLink(event.url, undefined, undefined, true);
+            const {error} = await parseAndHandleDeepLink(event.url, undefined, undefined, true);
             if (error) {
                 alertInvalidDeepLink(getIntlShape(DEFAULT_LOCALE));
             }

@@ -30,6 +30,7 @@ type PrepareModelsArgs = {
 }
 
 type PrepareModelsForDeletionArgs = {
+    serverUrl: string;
     operator: ServerDataOperator;
     initialTeamId?: string;
     teamData?: MyTeamsRequest;
@@ -48,7 +49,7 @@ const {
     MY_CHANNEL,
 } = MM_TABLES.SERVER;
 
-export async function prepareEntryModelsForDeletion({operator, teamData, chData}: PrepareModelsForDeletionArgs): Promise<Array<Promise<Model[]>>> {
+export async function prepareEntryModelsForDeletion({serverUrl, operator, teamData, chData}: PrepareModelsForDeletionArgs): Promise<Array<Promise<Model[]>>> {
     const modelPromises: Array<Promise<Model[]>> = [];
     const {database} = operator;
     let teamIdsToDelete: Set<string>|undefined;
@@ -61,7 +62,7 @@ export async function prepareEntryModelsForDeletion({operator, teamData, chData}
         const removeTeams = await queryTeamsById(database, Array.from(teamIdsToDelete)).fetch();
 
         removeTeams.forEach((team) => {
-            modelPromises.push(prepareDeleteTeam(team));
+            modelPromises.push(prepareDeleteTeam(serverUrl, team));
         });
     }
 
@@ -79,7 +80,7 @@ export async function prepareEntryModelsForDeletion({operator, teamData, chData}
         if (removeChannelIds?.length) {
             removeChannels = await queryChannelsById(database, removeChannelIds).fetch();
             removeChannels.forEach((c) => {
-                modelPromises.push(prepareDeleteChannel(c));
+                modelPromises.push(prepareDeleteChannel(serverUrl, c));
             });
         }
     }

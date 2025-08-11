@@ -10,6 +10,7 @@ import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import PushNotifications from '@init/push_notifications';
 import NetworkManager from '@managers/network_manager';
+import WebsocketManager from '@managers/websocket_manager';
 import {getDeviceToken} from '@queries/app/global';
 import {getServerDisplayName} from '@queries/app/servers';
 import {getCurrentUserId, getExpiredSession} from '@queries/servers/system';
@@ -220,6 +221,7 @@ export const logout = async (
         }
     }
 
+    WebsocketManager.getClient(serverUrl)?.close(true);
     if (!skipEvents) {
         DeviceEventEmitter.emit(Events.SERVER_LOGOUT, {serverUrl, removeServer});
     }

@@ -14,7 +14,7 @@ let package = Package(
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
-        .package(url: "https://github.com/stephencelis/SQLite.swift.git", from: "0.14.1"),
+        .package(url: "https://github.com/stephencelis/SQLite.swift.git", from: "0.15.4"),
         .package(url: "https://github.com/Kitura/Swift-JWT.git", from:"3.6.1")
     ],
     targets: [

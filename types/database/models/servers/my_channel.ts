@@ -39,6 +39,9 @@ declare class MyChannelModel extends Model {
     /** viewed_at : The timestamp showing when the user's last opened this channel (this is used for the new line message indicator) */
     viewedAt: number;
 
+    /** last_playbook_runs_fetch_at : The timestamp of the last successful fetch of playbook runs for this channel, used as the "since" parameter for incremental updates */
+    lastPlaybookRunsFetchAt: number;
+
     /** channel : The relation pointing to the CHANNEL table */
     channel: Relation<ChannelModel>;
 

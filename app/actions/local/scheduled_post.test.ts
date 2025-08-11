@@ -114,6 +114,7 @@ describe('handleScheduledPosts', () => {
             scheduledPosts,
             prepareRecordsOnly: false,
         });
+        spyBatchRecords.mockClear();
 
         const {models} = await scheduledPostsAction(
             serverUrl,
@@ -122,7 +123,7 @@ describe('handleScheduledPosts', () => {
             false,
         );
 
-        expect(spyBatchRecords).toHaveBeenCalledWith(models, '_deleteScheduledPostByIds');
+        expect(spyBatchRecords).toHaveBeenCalledWith(models, 'handleScheduledPosts');
         expect(models![0].id).toEqual(scheduledPosts[0].id);
     });
 

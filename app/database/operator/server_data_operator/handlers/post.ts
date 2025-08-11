@@ -129,14 +129,14 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
             case ActionType.SCHEDULED_POSTS.DELETE_SCHEDULED_POST: {
                 const toDeleteIds = scheduledPosts?.map((post) => post.id) || [];
                 if (toDeleteIds.length > 0) {
-                    scheduledPostsToDelete.push(...await this._deleteScheduledPostByIds(toDeleteIds, prepareRecordsOnly));
+                    scheduledPostsToDelete.push(...await this._deleteScheduledPostByIds(toDeleteIds, true));
                 }
                 break;
             }
 
             case ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST: {
                 const createOrUpdateRawValues = getUniqueRawsBy({raws: scheduledPosts ?? [], key: 'id'}) as ScheduledPost[];
-                scheduledPostsToCreateAndUpdate.push(...await this._createOrUpdateScheduledPost(createOrUpdateRawValues, prepareRecordsOnly));
+                scheduledPostsToCreateAndUpdate.push(...await this._createOrUpdateScheduledPost(createOrUpdateRawValues, true));
                 break;
             }
 
@@ -148,12 +148,12 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
                     map((post) => post.id);
 
                 if (deletedScheduledPostIds.length > 0) {
-                    scheduledPostsToDelete.push(...await this._deleteScheduledPostByIds(deletedScheduledPostIds, prepareRecordsOnly));
+                    scheduledPostsToDelete.push(...await this._deleteScheduledPostByIds(deletedScheduledPostIds, true));
                 }
 
                 if (scheduledPosts?.length) {
                     const createOrUpdateRawValues = getUniqueRawsBy({raws: scheduledPosts ?? [], key: 'id'}) as ScheduledPost[];
-                    scheduledPostsToCreateAndUpdate.push(...await this._createOrUpdateScheduledPost(createOrUpdateRawValues, prepareRecordsOnly));
+                    scheduledPostsToCreateAndUpdate.push(...await this._createOrUpdateScheduledPost(createOrUpdateRawValues, true));
                 }
                 break;
             }

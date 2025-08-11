@@ -27,7 +27,8 @@ type PostType =
     | 'add_bot_teams_channels'
     | 'system_auto_responder'
     | 'custom_calls'
-    | 'custom_calls_recording';
+    | 'custom_calls_recording'
+    | 'custom_run_update';
 
 type PostEmbedType = 'image' | 'message_attachment' | 'opengraph';
 

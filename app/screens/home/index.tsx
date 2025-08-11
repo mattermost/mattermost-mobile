@@ -19,7 +19,7 @@ import SecurityManager from '@managers/security_manager';
 import {getAllServers} from '@queries/app/servers';
 import {findChannels, popToRoot} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
-import {alertInvalidDeepLink, handleDeepLink} from '@utils/deep_link';
+import {alertInvalidDeepLink, parseAndHandleDeepLink} from '@utils/deep_link';
 import {logError} from '@utils/log';
 import {alertChannelArchived, alertChannelRemove, alertTeamRemove} from '@utils/navigation';
 import {notificationError} from '@utils/notification';
@@ -136,7 +136,7 @@ export function HomeScreen(props: HomeProps) {
 
             const deepLink = props.extra as DeepLinkWithData;
             if (deepLink?.url) {
-                handleDeepLink(deepLink.url, intl, props.componentId, true).then((result) => {
+                parseAndHandleDeepLink(deepLink.url, intl, props.componentId, true).then((result) => {
                     if (result.error) {
                         alertInvalidDeepLink(intl);
                     }

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessage, useIntl} from 'react-intl';
 import {
     DeviceEventEmitter,
     Text,
@@ -88,6 +88,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
+const defaultMessage = defineMessage({
+    id: 'snack.bar.default',
+    defaultMessage: 'Error',
+});
+
 const SnackBar = ({
     barType,
     messageValues,
@@ -113,6 +118,7 @@ const SnackBar = ({
         config = SNACK_BAR_CONFIG[barType];
     } else {
         config = {
+            message: defaultMessage,
             iconName: DEFAULT_ICON,
             canUndo: false,
             type,
@@ -205,9 +211,7 @@ const SnackBar = ({
         }
     };
 
-    const gesture = Gesture.
-        // eslint-disable-next-line new-cap
-        Pan().
+    const gesture = Gesture.Pan().
         activeOffsetY(20).
         onStart(() => {
             isPanned.value = true;
@@ -275,10 +279,7 @@ const SnackBar = ({
         };
     }, [animateHiding, componentId, sourceScreen]);
 
-    const message = customMessage || intl.formatMessage(
-        {id: config.id, defaultMessage: config.defaultMessage},
-        messageValues,
-    );
+    const message = customMessage || intl.formatMessage(config.message, messageValues);
 
     return (
         <GestureHandlerRootView

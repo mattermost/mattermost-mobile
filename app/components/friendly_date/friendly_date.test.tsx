@@ -79,4 +79,48 @@ describe('Friendly Date', () => {
         );
         expect(yearsAgoText.getByText('2 years ago')).toBeTruthy();
     });
+
+    it('should render correctly with times in the future', () => {
+        const justNow = new Date();
+        justNow.setSeconds(justNow.getSeconds() + 10);
+        const justNowText = renderWithIntl(
+            <FriendlyDate value={justNow}/>,
+        );
+        expect(justNowText.getByText('Now')).toBeTruthy();
+
+        const inMinutes = new Date();
+        inMinutes.setMinutes(inMinutes.getMinutes() + 2);
+        const inMinutesText = renderWithIntl(
+            <FriendlyDate value={inMinutes}/>,
+        );
+        expect(inMinutesText.getByText('in 2 mins')).toBeTruthy();
+
+        const inHours = new Date();
+        inHours.setHours(inHours.getHours() + 2);
+        const inHoursText = renderWithIntl(
+            <FriendlyDate value={inHours}/>,
+        );
+        expect(inHoursText.getByText('in 2 hours')).toBeTruthy();
+
+        const inDays = new Date();
+        inDays.setDate(inDays.getDate() + 2);
+        const inDaysText = renderWithIntl(
+            <FriendlyDate value={inDays}/>,
+        );
+        expect(inDaysText.getByText('in 2 days')).toBeTruthy();
+
+        const inMonths = new Date();
+        inMonths.setMonth(inMonths.getMonth() + 2);
+        const inMonthsText = renderWithIntl(
+            <FriendlyDate value={inMonths}/>,
+        );
+        expect(inMonthsText.getByText('in 2 months')).toBeTruthy();
+
+        const inYears = new Date();
+        inYears.setFullYear(inYears.getFullYear() + 2);
+        const inYearsText = renderWithIntl(
+            <FriendlyDate value={inYears}/>,
+        );
+        expect(inYearsText.getByText('in 2 years')).toBeTruthy();
+    });
 });

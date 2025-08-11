@@ -5,6 +5,7 @@ import * as bookmark from '@actions/local/channel_bookmark';
 import * as scheduledPost from '@actions/websocket/scheduled_post';
 import * as calls from '@calls/connection/websocket_event_handlers';
 import {WebsocketEvents} from '@constants';
+import {handlePlaybookEvents} from '@playbooks/actions/websocket/events';
 
 import * as category from './category';
 import * as channel from './channel';
@@ -301,4 +302,5 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
             handleCustomProfileAttributesFieldDeletedEvent(serverUrl, msg);
             break;
     }
+    handlePlaybookEvents(serverUrl, msg);
 }

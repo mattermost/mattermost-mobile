@@ -13,6 +13,7 @@ import type TeamModel from './team';
 import type UserModel from './user';
 import type {Query, Relation, Model} from '@nozbe/watermelondb';
 import type {Associations} from '@nozbe/watermelondb/Model';
+import type PlaybookRunModel from '@playbooks/types/database/models/playbook_run';
 
 /**
  * The Channel model represents a channel in the Mattermost app.
@@ -73,6 +74,9 @@ declare class ChannelModel extends Model {
 
     /** postsInChannel : a section of the posts for that channel bounded by a range */
     postsInChannel: Query<PostsInChannelModel>;
+
+    /** playbookRuns : All playbook runs for this channel */
+    playbookRuns: Query<PlaybookRunModel>;
 
     /** team : The TEAM to which this CHANNEL belongs */
     team: Relation<TeamModel>;

@@ -59,9 +59,8 @@ type Props = {
     isAppsEnabled: boolean;
     nestedScrollEnabled?: boolean;
     updateValue: (v: string) => void;
-    hasFilesAttached?: boolean;
+    shouldDirectlyReact?: boolean;
     availableSpace: SharedValue<number>;
-    inPost?: boolean;
     growDown?: boolean;
     teamId?: string;
     containerStyle?: StyleProp<ViewStyle>;
@@ -80,8 +79,7 @@ const Autocomplete = ({
     isAppsEnabled,
     nestedScrollEnabled = false,
     updateValue,
-    hasFilesAttached,
-    inPost = false,
+    shouldDirectlyReact = false,
     growDown = false,
     containerStyle,
     teamId,
@@ -178,8 +176,7 @@ const Autocomplete = ({
                         value={value || ''}
                         nestedScrollEnabled={nestedScrollEnabled}
                         rootId={rootId}
-                        hasFilesAttached={hasFilesAttached}
-                        inPost={inPost}
+                        shouldDirectlyReact={shouldDirectlyReact}
                     />
                 }
                 {showCommands && channelId &&

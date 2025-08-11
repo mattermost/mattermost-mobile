@@ -400,7 +400,7 @@ export default function ChannelInfoForm({
                 value={header}
                 nestedScrollEnabled={true}
                 availableSpace={animatedAutocompleteAvailableSpace}
-                inPost={false}
+                shouldDirectlyReact={false}
                 growDown={growDown}
             />
         </SafeAreaView>

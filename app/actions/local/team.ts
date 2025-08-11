@@ -18,7 +18,7 @@ export async function removeUserFromTeam(serverUrl: string, teamId: string) {
             if (!team) {
                 throw new Error('Team not found');
             }
-            const models = await prepareDeleteTeam(team);
+            const models = await prepareDeleteTeam(serverUrl, team);
             const system = await removeTeamFromTeamHistory(operator, team.id, true);
             if (system) {
                 models.push(...system);

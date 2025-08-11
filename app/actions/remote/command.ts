@@ -143,7 +143,7 @@ export const handleGotoLocation = async (serverUrl: string, intl: IntlShape, loc
     const match = matchDeepLink(location, serverUrl, config?.SiteURL);
 
     if (match) {
-        handleDeepLink(match.url, intl, location);
+        handleDeepLink(match, intl, location);
     } else {
         const {formatMessage} = intl;
         const onError = () => Alert.alert(
