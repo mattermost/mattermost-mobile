@@ -98,10 +98,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: theme.centerChannelColor,
             ...typography('Body', 200),
         },
-        row: {
-            flex: 1,
-            flexDirection: 'row',
-        },
     };
 });
 
