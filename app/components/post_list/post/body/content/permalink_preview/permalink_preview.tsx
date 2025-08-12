@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo, useCallback} from 'react';
-import {Text, View, Pressable} from 'react-native';
+import {LinearGradient} from 'expo-linear-gradient';
+import React, {useMemo, useCallback, useState} from 'react';
+import {Text, View, Pressable, type LayoutChangeEvent} from 'react-native';
 
 import EditedIndicator from '@components/EditedIndicator';
 import FormattedTime from '@components/formatted_time';
@@ -15,10 +16,13 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
 
+import PermalinkFiles from './permalink_files';
+
 import type UserModel from '@typings/database/models/servers/user';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 const MAX_PERMALINK_PREVIEW_LINES = 4;
+const MAX_PERMALINK_HEIGHT = 506;
 
 type PermalinkPreviewProps = {
     embedData: PermalinkEmbedData;
@@ -28,6 +32,11 @@ type PermalinkPreviewProps = {
     teammateNameDisplay: string;
     isOriginPostDeleted?: boolean;
     location: AvailableScreens;
+    canDownloadFiles?: boolean;
+    enableSecureFilePreview?: boolean;
+    filesInfo?: FileInfo[];
+    parentLocation?: string;
+    parentPostId?: string;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -44,9 +53,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
                 width: 0,
                 height: 2,
             },
-            shadowOpacity: 0.08,
+            shadowOpacity: 0.12,
             shadowRadius: 3,
             elevation: 2,
+            overflow: 'hidden',
         },
         header: {
             flexDirection: 'row',
@@ -70,8 +80,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         messageContainer: {
             marginBottom: 8,
-            maxHeight: 20 * MAX_PERMALINK_PREVIEW_LINES,
-            overflow: 'hidden',
         },
         messageText: {
             color: theme.centerChannelColor,
@@ -80,6 +88,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
 
         channelContext: {
+            marginTop: 4,
             color: changeOpacity(theme.centerChannelColor, 0.64),
             ...typography('Body', 75),
         },
@@ -87,12 +96,25 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: theme.linkColor,
             ...typography('Body', 75, 'SemiBold'),
         },
+        contentContainer: {
+            maxHeight: MAX_PERMALINK_HEIGHT,
+            overflow: 'hidden',
+            position: 'relative',
+        },
+        gradientOverlay: {
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: 60,
+        },
     };
 });
 
-const PermalinkPreview = ({embedData, showPermalinkPreviews, author, locale, teammateNameDisplay, isOriginPostDeleted, location}: PermalinkPreviewProps) => {
+const PermalinkPreview = ({embedData, showPermalinkPreviews, author, locale, teammateNameDisplay, isOriginPostDeleted, location, canDownloadFiles = true, enableSecureFilePreview = false, filesInfo = [], parentLocation, parentPostId}: PermalinkPreviewProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const [showGradient, setShowGradient] = useState(false);
 
     const textStyles = getMarkdownTextStyles(theme);
     const blockStyles = getMarkdownBlockStyles(theme);
@@ -137,9 +159,18 @@ const PermalinkPreview = ({embedData, showPermalinkPreviews, author, locale, tea
         return `~${displayName}`;
     }, [channel_display_name, channel_type, authorDisplayName]);
 
+    const hasFiles = useMemo(() => {
+        return filesInfo && filesInfo.length > 0;
+    }, [filesInfo]);
+
     const handlePress = usePreventDoubleTap(useCallback(() => {
         // Navigation will be implemented in Task 5
     }, []));
+
+    const handleContentLayout = useCallback((event: LayoutChangeEvent) => {
+        const {height} = event.nativeEvent.layout;
+        setShowGradient(height >= MAX_PERMALINK_HEIGHT);
+    }, []);
 
     if (!post) {
         return null;
@@ -154,51 +185,77 @@ const PermalinkPreview = ({embedData, showPermalinkPreviews, author, locale, tea
             onPress={handlePress}
             testID='permalink-preview-container'
         >
-            <View style={styles.header}>
-                <ProfilePicture
-                    author={author || {id: post.user_id} as UserModel}
-                    size={32}
-                    showStatus={false}
-                />
-                <View style={styles.authorInfo}>
-                    <Text
-                        style={styles.authorName}
-                        numberOfLines={1}
-                    >
-                        {authorDisplayName}
-                    </Text>
-                    <FormattedTime
-                        timezone=''
-                        isMilitaryTime={false}
-                        value={post.create_at}
-                        style={styles.timestamp}
-                    />
-                </View>
-            </View>
+            <View style={styles.contentContainer}>
+                <View onLayout={handleContentLayout}>
+                    <View style={styles.header}>
+                        <ProfilePicture
+                            author={author || {id: post.user_id} as UserModel}
+                            size={32}
+                            showStatus={false}
+                        />
+                        <View style={styles.authorInfo}>
+                            <Text
+                                style={styles.authorName}
+                                numberOfLines={1}
+                            >
+                                {authorDisplayName}
+                            </Text>
+                            <FormattedTime
+                                timezone=''
+                                isMilitaryTime={false}
+                                value={post.create_at}
+                                style={styles.timestamp}
+                            />
+                        </View>
+                    </View>
 
-            <View style={styles.messageContainer}>
-                <Markdown
-                    baseTextStyle={styles.messageText}
-                    blockStyles={blockStyles}
-                    channelId={embedData.channel_id}
-                    disableGallery={true}
-                    disableHashtags={true}
-                    disableAtMentions={true}
-                    disableChannelLink={true}
-                    location={location}
-                    theme={theme}
-                    textStyles={textStyles}
-                    value={truncatedMessage}
-                />
-                {isEdited ? (
-                    <EditedIndicator
-                        baseTextStyle={styles.messageText}
-                        theme={theme}
-                        context={['paragraph']}
-                        iconSize={12}
-                        testID='permalink_preview.edited_indicator_separate'
+                    <View style={styles.messageContainer}>
+                        <Markdown
+                            baseTextStyle={styles.messageText}
+                            blockStyles={blockStyles}
+                            channelId={embedData.channel_id}
+                            disableGallery={true}
+                            disableHashtags={true}
+                            disableAtMentions={true}
+                            disableChannelLink={true}
+                            location={location}
+                            theme={theme}
+                            textStyles={textStyles}
+                            value={truncatedMessage}
+                        />
+                        {isEdited ? (
+                            <EditedIndicator
+                                baseTextStyle={styles.messageText}
+                                theme={theme}
+                                context={['paragraph']}
+                                iconSize={12}
+                                testID='permalink_preview.edited_indicator_separate'
+                            />
+                        ) : null}
+                    </View>
+
+                    {hasFiles && (
+                        <PermalinkFiles
+                            canDownloadFiles={canDownloadFiles}
+                            enableSecureFilePreview={enableSecureFilePreview}
+                            filesInfo={filesInfo}
+                            location='permalink_preview'
+                            isReplyPost={false}
+                            postId={post.id}
+                            postProps={post.props}
+                            parentLocation={parentLocation}
+                            parentPostId={parentPostId}
+                        />
+                    )}
+                </View>
+
+                {showGradient && (
+                    <LinearGradient
+                        colors={[changeOpacity(theme.centerChannelBg, 0), theme.centerChannelBg]}
+                        style={styles.gradientOverlay}
+                        pointerEvents='none'
                     />
-                ) : null}
+                )}
             </View>
 
             <Text style={styles.channelContext}>
