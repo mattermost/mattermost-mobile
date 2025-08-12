@@ -172,3 +172,84 @@ describe('runChecklistItemSlashCommand', () => {
         await expect(client.runChecklistItemSlashCommand(playbookRunId, checklistNumber, itemNumber)).rejects.toThrow('Network error');
     });
 });
+
+describe('skipChecklistItem', () => {
+    test('should skip checklist item successfully', async () => {
+        const playbookRunID = 'run123';
+        const checklistNum = 1;
+        const itemNum = 2;
+        const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunID}/checklists/${checklistNum}/item/${itemNum}/skip`;
+        const expectedOptions = {method: 'put', body: ''};
+
+        jest.mocked(client.doFetch).mockResolvedValue(undefined);
+
+        await client.skipChecklistItem(playbookRunID, checklistNum, itemNum);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+    });
+
+    test('should skip checklist item with zero indices', async () => {
+        const playbookRunID = 'run123';
+        const checklistNum = 0;
+        const itemNum = 0;
+        const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunID}/checklists/${checklistNum}/item/${itemNum}/skip`;
+        const expectedOptions = {method: 'put', body: ''};
+
+        jest.mocked(client.doFetch).mockResolvedValue(undefined);
+
+        await client.skipChecklistItem(playbookRunID, checklistNum, itemNum);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+    });
+
+    test('should handle error when skipping checklist item', async () => {
+        const playbookRunID = 'run123';
+        const checklistNum = 1;
+        const itemNum = 2;
+
+        jest.mocked(client.doFetch).mockRejectedValue(new Error('Network error'));
+
+        await expect(client.skipChecklistItem(playbookRunID, checklistNum, itemNum)).rejects.toThrow('Network error');
+    });
+});
+
+describe('restoreChecklistItem', () => {
+    test('should restore checklist item successfully', async () => {
+        const playbookRunID = 'run123';
+        const checklistNum = 1;
+        const itemNum = 2;
+        const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunID}/checklists/${checklistNum}/item/${itemNum}/restore`;
+        const expectedOptions = {method: 'put', body: ''};
+
+        jest.mocked(client.doFetch).mockResolvedValue(undefined);
+
+        await client.restoreChecklistItem(playbookRunID, checklistNum, itemNum);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+    });
+
+    test('should restore checklist item with zero indices', async () => {
+        const playbookRunID = 'run123';
+        const checklistNum = 0;
+        const itemNum = 0;
+        const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunID}/checklists/${checklistNum}/item/${itemNum}/restore`;
+        const expectedOptions = {method: 'put', body: ''};
+
+        jest.mocked(client.doFetch).mockResolvedValue(undefined);
+
+        await client.restoreChecklistItem(playbookRunID, checklistNum, itemNum);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+    });
+
+    test('should handle error when restoring checklist item', async () => {
+        const playbookRunID = 'run123';
+        const checklistNum = 1;
+        const itemNum = 2;
+
+        jest.mocked(client.doFetch).mockRejectedValue(new Error('Network error'));
+
+        await expect(client.restoreChecklistItem(playbookRunID, checklistNum, itemNum)).rejects.toThrow('Network error');
+    });
+});
+

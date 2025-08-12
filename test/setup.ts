@@ -426,6 +426,7 @@ jest.mock('@screens/navigation', () => ({
     dismissBottomSheet: jest.fn(),
     openUserProfileModal: jest.fn(),
     popTo: jest.fn(),
+    bottomSheet: jest.fn(),
 }));
 
 jest.mock('@mattermost/react-native-emm', () => ({

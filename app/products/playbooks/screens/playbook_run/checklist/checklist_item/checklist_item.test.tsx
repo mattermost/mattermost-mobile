@@ -1,21 +1,22 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {act, waitFor} from '@testing-library/react-native';
+import {act, fireEvent, waitFor} from '@testing-library/react-native';
 import React, {type ComponentProps} from 'react';
 
 import BaseChip from '@components/chips/base_chip';
 import UserChip from '@components/chips/user_chip';
 import {Preferences} from '@constants';
 import {useServerUrl} from '@context/server';
-import {runChecklistItem, updateChecklistItem} from '@playbooks/actions/remote/checklist';
-import {openUserProfileModal, popTo} from '@screens/navigation';
+import {runChecklistItem, skipChecklistItem, updateChecklistItem} from '@playbooks/actions/remote/checklist';
+import {bottomSheet, openUserProfileModal, popTo} from '@screens/navigation';
 import {renderWithIntl} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 
 import Checkbox from './checkbox';
 import ChecklistItem from './checklist_item';
+import ChecklistItemBottomSheet from './checklist_item_bottom_sheet';
 
 const serverUrl = 'some.server.url';
 jest.mock('@context/server');
@@ -29,6 +30,9 @@ jest.mocked(UserChip).mockImplementation((props) => React.createElement('UserChi
 
 jest.mock('@components/chips/base_chip');
 jest.mocked(BaseChip).mockImplementation((props) => React.createElement('BaseChip', {...props, testID: 'base-chip-component'}));
+
+jest.mock('./checklist_item_bottom_sheet');
+jest.mocked(ChecklistItemBottomSheet).mockImplementation((props) => React.createElement('ChecklistItemBottomSheet', {...props, testID: 'checklist-item-bottom-sheet-component'}));
 
 jest.mock('@playbooks/actions/remote/checklist');
 jest.mock('@utils/snack_bar');
@@ -343,6 +347,49 @@ describe('ChecklistItem', () => {
         await waitFor(() => {
             expect(showPlaybookErrorSnackbar).toHaveBeenCalled();
             expect(popTo).not.toHaveBeenCalled();
+        });
+    });
+
+    it('opens the bottom sheet when the item is pressed', async () => {
+        const props = getBaseProps();
+
+        const {getByText} = renderWithIntl(<ChecklistItem {...props}/>);
+
+        const item = getByText('Test Item');
+        act(() => {
+            fireEvent.press(item);
+        });
+
+        expect(bottomSheet).toHaveBeenCalled();
+        const args = jest.mocked(bottomSheet).mock.calls[0][0] as Parameters<typeof bottomSheet>[0];
+        expect(args.title).toBe('Task Details');
+        expect(args.snapPoints).toEqual([1, '60%', '80%']);
+        expect(args.theme).toBe(Preferences.THEMES.denim);
+        expect(args.closeButtonId).toBe('close-checklist-item');
+
+        const BottomSheetComponent = args.renderContent;
+        const {getByTestId} = renderWithIntl(<BottomSheetComponent/>);
+        const bottomSheetRenderedComponent = getByTestId('checklist-item-bottom-sheet-component');
+        expect(bottomSheetRenderedComponent.props.item).toBe(props.item);
+        expect(bottomSheetRenderedComponent.props.assignee).toBe(props.assignee);
+        expect(bottomSheetRenderedComponent.props.teammateNameDisplay).toBe(props.teammateNameDisplay);
+
+        bottomSheetRenderedComponent.props.onCheck();
+
+        await waitFor(() => {
+            expect(updateChecklistItem).toHaveBeenCalledWith(serverUrl, props.playbookRunId, props.item.id, props.checklistNumber, props.itemNumber, 'closed');
+        });
+
+        bottomSheetRenderedComponent.props.onSkip();
+
+        await waitFor(() => {
+            expect(skipChecklistItem).toHaveBeenCalledWith(serverUrl, props.playbookRunId, props.item.id, props.checklistNumber, props.itemNumber);
+        });
+
+        bottomSheetRenderedComponent.props.onRunCommand();
+
+        await waitFor(() => {
+            expect(runChecklistItem).toHaveBeenCalledWith(serverUrl, props.playbookRunId, props.checklistNumber, props.itemNumber);
         });
     });
 });
