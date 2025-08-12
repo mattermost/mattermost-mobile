@@ -118,9 +118,8 @@ const PermalinkPreview = ({embedData, showPermalinkPreviews, author, locale, tea
         if (author) {
             return displayUsername(author, locale, teammateNameDisplay);
         }
-
-        return post?.user_id ? `User ${post.user_id.slice(-4)}` : 'Unknown User';
-    }, [author, locale, teammateNameDisplay, post?.user_id]);
+        return displayUsername(undefined, locale, teammateNameDisplay);
+    }, [author, locale, teammateNameDisplay]);
 
     const handlePress = usePreventDoubleTap(useCallback(() => {
         // Navigation will be implemented in Task 5

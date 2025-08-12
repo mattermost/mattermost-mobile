@@ -90,7 +90,7 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
         expect(getByText('testuser')).toBeTruthy();
     });
 
-    it('should display "Unknown User" when no user_id in post', () => {
+    it('should display "Someone" when no author is provided', () => {
         const props = {
             ...baseProps,
             author: undefined,
@@ -107,7 +107,7 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
             <PermalinkPreview {...props}/>,
         );
 
-        expect(getByText('Unknown User')).toBeTruthy();
+        expect(getByText('Someone')).toBeTruthy();
     });
 
     it('should display channel name with ~ prefix for public channels', () => {
