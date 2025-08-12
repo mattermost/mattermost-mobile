@@ -42,12 +42,23 @@ export function getFriendlyDate(intl: IntlShape, inputDate: number): string {
     const absoluteDifference = Math.abs(difference);
     const sign = Math.sign(difference);
 
-    return getFriendlyDateBefore(intl, difference, date, today);
+    const momentA = moment.utc(input.getTime());
+    const momentB = moment.utc(today.getTime());
+
+    const diff = momentA.startOf(unit).diff(momentB.startOf(unit), unit);
+
+    return diff;
 }
 
-function getFriendlyDateAfter(intl: IntlShape, difference: number, date: Date, today: Date): string {
+export function getFriendlyDate(intl: IntlShape, inputDate: number): string {
+    const today = new Date();
+    const date = new Date(inputDate);
+    const difference = (date.getTime() - today.getTime()) / 1000;
+    const absoluteDifference = Math.abs(difference);
+    const sign = Math.sign(difference);
+
     // Message: Now
-    if (difference < SECONDS.MINUTE) {
+    if (absoluteDifference < SECONDS.MINUTE) {
         return intl.formatMessage({
             id: 'friendly_date.now',
             defaultMessage: 'Now',
@@ -55,56 +66,27 @@ function getFriendlyDateAfter(intl: IntlShape, difference: number, date: Date, t
     }
 
     // Message: Minutes
-    if (difference < SECONDS.HOUR) {
-        const minutes = Math.floor(Math.round((10 * difference) / SECONDS.MINUTE) / 10);
-        return intl.formatMessage({
-            id: 'friendly_date.mins',
-            defaultMessage: 'in {count} {count, plural, one {min} other {mins}}',
-        }, {
-            count: minutes,
-        });
+    if (absoluteDifference < SECONDS.HOUR) {
+        return intl.formatRelativeTime(getDiff(inputDate, 'minute'), 'minute', {numeric: 'auto', style: 'short'});
     }
 
     // Message: Hours
-    if (difference < SECONDS.DAY) {
-        const hours = Math.floor(Math.round((10 * difference) / SECONDS.HOUR) / 10);
-        return intl.formatMessage({
-            id: 'friendly_date.hours',
-            defaultMessage: 'in {count} {count, plural, one {hour} other {hours}}',
-        }, {
-            count: hours,
-        });
+    if (absoluteDifference < SECONDS.DAY) {
+        return intl.formatRelativeTime(getDiff(inputDate, 'hour'), 'hour', {numeric: 'auto'});
     }
 
     // Message: Days
-    if (difference < SECONDS.DAYS_31) {
-        if (today.getDate() + 1 === date.getDate() && today.getMonth() === date.getMonth()) {
-            return intl.formatMessage({
-                id: 'friendly_date.tomorrow',
-                defaultMessage: 'Tomorrow',
-            });
-        }
-        const completedAMonth = today.getMonth() !== date.getMonth() && today.getDate() <= date.getDate();
+    if (absoluteDifference < SECONDS.DAYS_31) {
+        const passedDate = sign === 1 ? today.getDate() <= date.getDate() : today.getDate() >= date.getDate();
+        const completedAMonth = today.getMonth() !== date.getMonth() && passedDate;
         if (!completedAMonth) {
-            const days = Math.floor(Math.round((10 * difference) / SECONDS.DAY) / 10) || 1;
-            return intl.formatMessage({
-                id: 'friendly_date.days',
-                defaultMessage: 'in {count} {count, plural, one {day} other {days}}',
-            }, {
-                count: days,
-            });
+            return intl.formatRelativeTime(getDiff(inputDate, 'day'), 'day', {numeric: 'auto'});
         }
     }
 
     // Message: Months
-    if (difference < SECONDS.DAYS_366) {
-        const months = Math.floor(Math.round((10 * difference) / SECONDS.DAYS_30) / 10) || 1;
-        return intl.formatMessage({
-            id: 'friendly_date.months',
-            defaultMessage: 'in {count} {count, plural, one {month} other {months}}',
-        }, {
-            count: months,
-        });
+    if (absoluteDifference < SECONDS.DAYS_366) {
+        return intl.formatRelativeTime(getDiff(inputDate, 'month'), 'month', {numeric: 'auto'});
     }
 
     // Message: Years
