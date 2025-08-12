@@ -1,19 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo} from 'react';
+import React, {useMemo, useCallback} from 'react';
 import {Text, View, Pressable} from 'react-native';
 
 import EditedIndicator from '@components/EditedIndicator';
 import FormattedTime from '@components/formatted_time';
 import ProfilePicture from '@components/profile_picture';
 import {useTheme} from '@context/theme';
-import {preventDoubleTap} from '@utils/tap';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
 
 import type UserModel from '@typings/database/models/servers/user';
+
+const MAX_PERMALINK_PREVIEW_LINES = 4;
 
 type PermalinkPreviewProps = {
     embedData: PermalinkEmbedData;
@@ -88,30 +90,24 @@ const PermalinkPreview = ({embedData, showPermalinkPreviews, author, locale, tea
         channel_type,
     } = embedData;
 
-    const {formattedMessage} = useMemo(() => {
+    const formattedMessage = useMemo(() => {
         const message = post?.message;
 
         if (!message || typeof message !== 'string') {
-            return {formattedMessage: ''};
+            return '';
         }
 
         const cleanMessage = message.trim();
 
         const lines = cleanMessage.split('\n');
-        if (lines.length > 4) {
-            return {
-                formattedMessage: lines.slice(0, 4).join('\n') + '...',
-            };
+        if (lines.length > MAX_PERMALINK_PREVIEW_LINES) {
+            return lines.slice(0, MAX_PERMALINK_PREVIEW_LINES).join('\n') + '...';
         }
 
-        return {
-            formattedMessage: cleanMessage,
-        };
+        return cleanMessage;
     }, [post?.message]);
 
-    const isEdited = useMemo(() => {
-        return post && post.edit_at && post.edit_at > 0;
-    }, [post]);
+    const isEdited = useMemo(() => post && post.edit_at, [post]);
 
     const channelContextText = useMemo(() => {
         const channelPrefix = channel_type === 'D' ? '@' : '~';
@@ -126,9 +122,9 @@ const PermalinkPreview = ({embedData, showPermalinkPreviews, author, locale, tea
         return post?.user_id ? `User ${post.user_id.slice(-4)}` : 'Unknown User';
     }, [author, locale, teammateNameDisplay, post?.user_id]);
 
-    const handlePress = preventDoubleTap(() => {
+    const handlePress = usePreventDoubleTap(useCallback(() => {
         // Navigation will be implemented in Task 5
-    });
+    }, []));
 
     if (!post) {
         return null;
@@ -168,7 +164,7 @@ const PermalinkPreview = ({embedData, showPermalinkPreviews, author, locale, tea
             <View style={styles.messageContainer}>
                 <Text
                     style={styles.messageText}
-                    numberOfLines={4}
+                    numberOfLines={MAX_PERMALINK_PREVIEW_LINES}
                     ellipsizeMode='tail'
                 >
                     {formattedMessage}

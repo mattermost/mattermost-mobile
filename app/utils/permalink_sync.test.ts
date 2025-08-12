@@ -6,7 +6,9 @@ import {Database} from '@nozbe/watermelondb';
 import {ActionType} from '@constants';
 import DatabaseManager from '@database/manager';
 import ServerDataOperator from '@database/operator/server_data_operator';
+import * as queryPostsModule from '@queries/servers/post';
 import TestHelper from '@test/test_helper';
+import * as logModule from '@utils/log';
 
 import {
     findPostsWithPermalinkReferences,
@@ -151,6 +153,19 @@ describe('Permalink Sync Utils', () => {
             const result = await findPostsWithPermalinkReferences(database, nonExistentPostId);
 
             expect(result).toHaveLength(0);
+        });
+
+        it('should handle errors from queryPostsWithPermalinkReferences gracefully', async () => {
+            const referencedPostId = 'referenced_post_123';
+            const testError = new Error('Database query failed');
+
+            jest.spyOn(queryPostsModule, 'queryPostsWithPermalinkReferences').mockRejectedValueOnce(testError);
+            const logWarningSpy = jest.spyOn(logModule, 'logWarning').mockImplementationOnce(() => {});
+
+            const result = await findPostsWithPermalinkReferences(database, referencedPostId);
+
+            expect(result).toEqual([]);
+            expect(logWarningSpy).toHaveBeenCalledWith('Error finding posts with permalink references:', testError);
         });
     });
 
@@ -311,6 +326,65 @@ describe('Permalink Sync Utils', () => {
 
             expect(result).toBeNull();
         });
+
+        it('should handle errors during post update gracefully', async () => {
+            const referencedPostId = 'referenced_post_456';
+
+            const referencingPost = TestHelper.fakePost({
+                id: 'referencing_post_123',
+                channel_id: 'channel1',
+                metadata: {
+                    embeds: [
+                        {
+                            type: 'permalink',
+                            url: '',
+                            data: {
+                                post_id: referencedPostId,
+                                post: {
+                                    id: referencedPostId,
+                                    message: 'Old message',
+                                    edit_at: 1000,
+                                    update_at: 1000,
+                                    user_id: 'user_123',
+                                    create_at: 500,
+                                },
+                            },
+                        },
+                    ],
+                },
+            });
+
+            const models = await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_NEW,
+                order: [referencingPost.id],
+                posts: [referencingPost],
+                prepareRecordsOnly: true,
+            });
+            await operator.batchRecords(models, 'test');
+
+            const postModel = await database.get('Post').find(referencingPost.id) as PostModel;
+
+            const testError = new Error('Database update failed');
+            jest.spyOn(postModel, 'prepareUpdate').mockImplementationOnce(() => {
+                throw testError;
+            });
+
+            const logWarningSpy = jest.spyOn(logModule, 'logWarning').mockImplementationOnce(() => {});
+
+            const freshPostData = TestHelper.fakePost({
+                id: referencedPostId,
+                message: 'Updated message',
+                edit_at: 2000,
+                update_at: 2000,
+                user_id: 'user_123',
+                create_at: 500,
+            });
+
+            const result = updatePermalinkMetadata(postModel, referencedPostId, freshPostData);
+
+            expect(result).toBeNull();
+            expect(logWarningSpy).toHaveBeenCalledWith('Error updating permalink metadata:', testError);
+        });
     });
 
     describe('syncPermalinkPreviewsForEditedPost', () => {
@@ -428,6 +502,24 @@ describe('Permalink Sync Utils', () => {
             const result = await syncPermalinkPreviewsForEditedPost(database, editedPost);
 
             expect(result).toEqual([]);
+        });
+
+        it('should handle errors during permalink sync gracefully', async () => {
+            const editedPost = TestHelper.fakePost({
+                id: 'edited_post_123',
+                message: 'Updated message',
+                edit_at: 2000,
+            });
+
+            const testError = new Error('Failed to find referencing posts');
+
+            jest.spyOn(queryPostsModule, 'queryPostsWithPermalinkReferences').mockRejectedValueOnce(testError);
+            const logWarningSpy = jest.spyOn(logModule, 'logWarning').mockImplementationOnce(() => {});
+
+            const result = await syncPermalinkPreviewsForEditedPost(database, editedPost);
+
+            expect(result).toEqual([]);
+            expect(logWarningSpy).toHaveBeenCalledWith('Error finding posts with permalink references:', testError);
         });
     });
 });

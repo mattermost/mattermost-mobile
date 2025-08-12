@@ -95,7 +95,6 @@ describe('components/post_list/post/body/content/Content - PermalinkPreview', ()
         );
 
         const permalinkPreview = getByTestId('permalink-preview');
-        expect(permalinkPreview).toBeTruthy();
         expect(permalinkPreview.props.embedData).toEqual(permalinkEmbedData);
     });
 
@@ -235,7 +234,6 @@ describe('components/post_list/post/body/content/Content - PermalinkPreview', ()
         );
 
         const permalinkPreview = getByTestId('permalink-preview');
-        expect(permalinkPreview).toBeTruthy();
         expect(permalinkPreview.props.embedData).toEqual(permalinkEmbedData);
     });
 
