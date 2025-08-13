@@ -148,9 +148,9 @@ class LocalFileManager {
                         var attachment = self?.saveAttachmentImage(data) {
                 attachment.imagePixels = self?.getImagePixels(image: uiImage)
                 models.append(attachment)
-              } else if let imageData = image as? Data,
-                        var attachment = self?.saveAttachmentImage(imageData),
-                        let uiImage = UIImage(data: imageData)
+              } else if let data = image as? Data,
+                        var attachment = self?.saveAttachmentImage(data),
+                        let uiImage = UIImage(data: data)
               {
                 attachment.imagePixels = self?.getImagePixels(image: uiImage)
                 models.append(attachment)
