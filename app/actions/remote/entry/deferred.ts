@@ -85,23 +85,24 @@ export async function restDeferredAppEntryActions(
 
         const processTeams = async () => {
             for (const team of teamQueue) {
+                let data: MyChannelsRequest = {};
                 try {
                     /* eslint-disable-next-line no-await-in-loop */
-                    const data = await fetchMyChannelsForTeam(serverUrl, team.id, false, since, true, false, isCRTEnabled, requestLabel);
+                    data = await fetchMyChannelsForTeam(serverUrl, team.id, false, since, true, false, isCRTEnabled, requestLabel);
 
                     combineChannelsData(combinedChannelsData, data);
-
-                    const currentTeamData: MyTeamsRequest = {
-                        teams: [team],
-                        memberships: teamData?.memberships?.filter((m) => m.team_id === team.id),
-                    };
-
-                    /* eslint-disable-next-line no-await-in-loop */
-                    await processEntryModels({operator, teamData: currentTeamData, chData: data, isCRTEnabled});
 
                 } catch (error) {
                     logError('Error fetching channels for team', groupLabel, error);
                 }
+
+                const currentTeamData: MyTeamsRequest = {
+                    teams: [team],
+                    memberships: teamData?.memberships?.filter((m) => m.team_id === team.id),
+                };
+
+                /* eslint-disable-next-line no-await-in-loop */
+                await processEntryModels({operator, teamData: currentTeamData, chData: data, isCRTEnabled});
             }
 
             const uniqueChannelsData: MyChannelsRequest = {

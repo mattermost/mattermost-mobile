@@ -3,6 +3,8 @@
 
 /* eslint-disable max-lines */
 
+import {act} from '@testing-library/react-native';
+
 import {fetchMissingDirectChannelsInfo, type MyChannelsRequest} from '@actions/remote/channel';
 import {fetchGroupsForMember} from '@actions/remote/groups';
 import {fetchPostsForUnreadChannels} from '@actions/remote/post';
@@ -228,20 +230,22 @@ describe('actions/remote/entry/deferred', () => {
                 user: {id: 'user1', roles: '', username: 'user1'},
             } as MyUserRequest;
 
-            await restDeferredAppEntryActions(
-                serverUrl,
-                since,
-                currentUserId,
-                currentUserLocale,
-                preferences,
-                config,
-                license,
-                teamData,
-                chData,
-                meData,
-                'team1',
-                'channel1',
-            );
+            await act(async () => {
+                await restDeferredAppEntryActions(
+                    serverUrl,
+                    since,
+                    currentUserId,
+                    currentUserLocale,
+                    preferences,
+                    config,
+                    license,
+                    teamData,
+                    chData,
+                    meData,
+                    'team1',
+                    'channel1',
+                );
+            });
 
             expect(fetchTeamsThreads).toHaveBeenCalled();
             expect(fetchPostsForUnreadChannels).toHaveBeenCalled();
