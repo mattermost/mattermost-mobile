@@ -28,6 +28,7 @@ describe('ChannelInfoOptions', () => {
             canManageMembers: false,
             isCRTEnabled: false,
             canManageSettings: false,
+            isPlaybooksEnabled: true,
         };
     }
     beforeEach(async () => {
@@ -39,6 +40,7 @@ describe('ChannelInfoOptions', () => {
         const props = getBaseProps();
         const {getByTestId, rerender} = renderWithEverything(<ChannelInfoOptions {...props}/>, {database});
         expect(getByTestId('playbook-runs-option')).toHaveProp('channelId', 'channel-id');
+        expect(getByTestId('playbook-runs-option')).toHaveProp('location', 'channel_actions');
 
         props.channelId = 'channel-id-2';
         rerender(<ChannelInfoOptions {...props}/>);
