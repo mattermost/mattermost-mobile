@@ -164,8 +164,7 @@ const entryRest = async (serverUrl: string, teamId?: string, channelId?: string,
         let chData: MyChannelsRequest = {
             channels: [],
             memberships: [],
-
-            // categories: [],
+            categories: [],
         };
         if (initialTeamId) {
             chData = await fetchMyChannelsForTeam(serverUrl, initialTeamId, false, lastDisconnectedAt, true, false, isCRTEnabled, groupLabel);

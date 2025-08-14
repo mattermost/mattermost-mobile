@@ -108,8 +108,7 @@ export async function restDeferredAppEntryActions(
             const uniqueChannelsData: MyChannelsRequest = {
                 channels: Array.from(new Map(combinedChannelsData.channels?.map((c) => [c.id, c])).values()),
                 memberships: Array.from(new Map(combinedChannelsData.memberships?.map((m) => [m.channel_id, m])).values()),
-
-                // categories: Array.from(new Map(combinedChannelsData.categories?.map((c) => [c.id, c])).values()),
+                categories: Array.from(new Map(combinedChannelsData.categories?.map((c) => [c.id, c])).values()),
             };
 
             await processFinalInitializationTasks(uniqueChannelsData);
