@@ -108,13 +108,14 @@ describe('actions/remote/entry/deferred', () => {
         } as MyTeamsRequest;
         const defaultChData = {
             channels: [
-                {id: 'dm1', type: 'D', name: 'dm-channel'},
-                {id: 'channel1', type: 'O', name: 'channel1', team_id: 'team1'},
+                {id: 'dm1', type: 'D', name: 'dm-channel'} as Channel,
+                {id: 'channel1', type: 'O', name: 'channel1', team_id: 'team1'} as Channel,
             ],
             memberships: [
-                {channel_id: 'dm1', user_id: 'user1'},
-                {channel_id: 'channel1', user_id: 'user1'},
+                {channel_id: 'dm1', user_id: 'user1'} as ChannelMembership,
+                {channel_id: 'channel1', user_id: 'user1'} as ChannelMembership,
             ],
+            categories: [],
         } as MyChannelsRequest;
         const defaultMeData = {
             user: {id: 'user1', roles: '', username: 'user1'},
