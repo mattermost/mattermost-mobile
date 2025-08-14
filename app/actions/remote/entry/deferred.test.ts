@@ -5,7 +5,7 @@
 
 import {act} from '@testing-library/react-native';
 
-import {fetchMissingDirectChannelsInfo, type MyChannelsRequest} from '@actions/remote/channel';
+import {fetchMyChannelsForTeam, fetchMissingDirectChannelsInfo, type MyChannelsRequest} from '@actions/remote/channel';
 import {fetchGroupsForMember} from '@actions/remote/groups';
 import {fetchPostsForUnreadChannels} from '@actions/remote/post';
 import {fetchScheduledPosts} from '@actions/remote/scheduled_post';
@@ -13,7 +13,7 @@ import {fetchTeamsThreads, updateCanJoinTeams, type MyTeamsRequest} from '@actio
 import {autoUpdateTimezone, updateAllUsersSince, type MyUserRequest} from '@actions/remote/user';
 import {Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
-import {processEntryModelsForDeletion} from '@queries/servers/entry';
+import {processEntryModels, processEntryModelsForDeletion} from '@queries/servers/entry';
 
 import {deferredAppEntryActions, restDeferredAppEntryActions, testExports} from './deferred';
 
@@ -88,45 +88,47 @@ describe('actions/remote/entry/deferred', () => {
     });
 
     describe('restDeferredAppEntryActions', () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         global.setTimeout = jest.fn((cb) => cb()) as any;
 
+        const since = 123456789;
+        const currentUserId = 'user1';
+        const currentUserLocale = 'en';
+        const defaultConfig = {
+            Version: '7.8.0',
+            CollapsedThreads: 'false',
+            FeatureFlagCollapsedThreads: 'true',
+            LockTeammateNameDisplay: 'false',
+            TeammateNameDisplay: 'username',
+        } as ClientConfig;
+        const license = {} as ClientLicense;
+        const defaultTeamData = {
+            teams: [{id: 'team1', display_name: 'Team 1'}],
+            memberships: [{team_id: 'team1', user_id: 'user1'}],
+        } as MyTeamsRequest;
+        const defaultChData = {
+            channels: [
+                {id: 'dm1', type: 'D', name: 'dm-channel'},
+                {id: 'channel1', type: 'O', name: 'channel1', team_id: 'team1'},
+            ],
+            memberships: [
+                {channel_id: 'dm1', user_id: 'user1'},
+                {channel_id: 'channel1', user_id: 'user1'},
+            ],
+        } as MyChannelsRequest;
+        const defaultMeData = {
+            user: {id: 'user1', roles: '', username: 'user1'},
+        } as MyUserRequest;
+        const initialTeamId = 'team1';
+        const initialChannelId = 'channel1';
+
         it('should execute deferred actions correctly', async () => {
-            const since = 123456789;
-            const currentUserId = 'user1';
-            const currentUserLocale = 'en';
             const preferences = [{
                 category: 'advanced_settings',
                 name: 'feature_enabled',
                 value: 'true',
                 user_id: 'user1',
             }];
-            const config = {
-                Version: '7.8.0',
-                CollapsedThreads: 'false',
-                FeatureFlagCollapsedThreads: 'true',
-                LockTeammateNameDisplay: 'false',
-                TeammateNameDisplay: 'username',
-            } as ClientConfig;
-            const license = {} as ClientLicense;
-            const teamData = {
-                teams: [{id: 'team1', display_name: 'Team 1'}],
-                memberships: [{team_id: 'team1', user_id: 'user1'}],
-            } as MyTeamsRequest;
-            const chData = {
-                channels: [
-                    {id: 'dm1', type: 'D', name: 'dm-channel'},
-                    {id: 'channel1', type: 'O', name: 'channel1', team_id: 'team1'},
-                ],
-                memberships: [
-                    {channel_id: 'dm1', user_id: 'user1'},
-                    {channel_id: 'channel1', user_id: 'user1'},
-                ],
-            } as MyChannelsRequest;
-            const meData = {
-                user: {id: 'user1', roles: '', username: 'user1'},
-            } as MyUserRequest;
-            const initialTeamId = 'team1';
-            const initialChannelId = 'channel1';
 
             await restDeferredAppEntryActions(
                 serverUrl,
@@ -134,11 +136,11 @@ describe('actions/remote/entry/deferred', () => {
                 currentUserId,
                 currentUserLocale,
                 preferences,
-                config,
+                defaultConfig,
                 license,
-                teamData,
-                chData,
-                meData,
+                defaultTeamData,
+                defaultChData,
+                defaultMeData,
                 initialTeamId,
                 initialChannelId,
             );
@@ -146,22 +148,18 @@ describe('actions/remote/entry/deferred', () => {
             expect(fetchMissingDirectChannelsInfo).toHaveBeenCalled();
             expect(updateAllUsersSince).toHaveBeenCalledWith(serverUrl, since, false, undefined);
             expect(updateCanJoinTeams).toHaveBeenCalledWith(serverUrl);
-            expect(processEntryModelsForDeletion).toHaveBeenCalledWith({serverUrl, operator: mockOperator, teamData, chData});
+            expect(processEntryModelsForDeletion).toHaveBeenCalledWith({serverUrl, operator: mockOperator, teamData: defaultTeamData, chData: defaultChData});
             expect(fetchPostsForUnreadChannels).toHaveBeenCalled();
             expect(fetchGroupsForMember).toHaveBeenCalledWith(serverUrl, currentUserId, false, undefined);
             expect(fetchScheduledPosts).toHaveBeenCalledWith(serverUrl, initialTeamId, true, undefined);
         });
 
         it('should handle missing data gracefully', async () => {
-            const since = 123456789;
-            const currentUserId = 'user1';
-            const currentUserLocale = 'en';
             const preferences = undefined;
             const config = {
                 Version: '7.8.0',
                 CollapsedThreads: 'false',
             } as ClientConfig;
-            const license = {} as ClientLicense;
             const teamData = {
                 teams: [],
                 memberships: [],
@@ -191,9 +189,6 @@ describe('actions/remote/entry/deferred', () => {
         });
 
         it('should handle teams order preference correctly', async () => {
-            const since = 123456789;
-            const currentUserId = 'user1';
-            const currentUserLocale = 'en';
             const preferences = [{
                 category: Preferences.CATEGORIES.TEAMS_ORDER,
                 name: '',
@@ -201,11 +196,9 @@ describe('actions/remote/entry/deferred', () => {
                 user_id: 'user1',
             }];
             const config = {
-                Version: '7.8.0',
+                ...defaultConfig,
                 CollapsedThreads: 'true',
-                FeatureFlagCollapsedThreads: 'true',
             } as ClientConfig;
-            const license = {} as ClientLicense;
             const teamData = {
                 teams: [
                     {id: 'team1', display_name: 'Team 1'},
@@ -226,9 +219,6 @@ describe('actions/remote/entry/deferred', () => {
                     {channel_id: 'channel2', user_id: 'user1'},
                 ],
             } as MyChannelsRequest;
-            const meData = {
-                user: {id: 'user1', roles: '', username: 'user1'},
-            } as MyUserRequest;
 
             await act(async () => {
                 await restDeferredAppEntryActions(
@@ -241,7 +231,7 @@ describe('actions/remote/entry/deferred', () => {
                     license,
                     teamData,
                     chData,
-                    meData,
+                    defaultMeData,
                     'team1',
                     'channel1',
                 );
@@ -252,17 +242,7 @@ describe('actions/remote/entry/deferred', () => {
         });
 
         it('should handle direct channels info correctly', async () => {
-            const since = 123456789;
-            const currentUserId = 'user1';
-            const currentUserLocale = 'en';
             const preferences = [] as PreferenceType[];
-            const config = {
-                Version: '7.8.0',
-                CollapsedThreads: 'false',
-                LockTeammateNameDisplay: 'false',
-                TeammateNameDisplay: 'username',
-            } as ClientConfig;
-            const license = {} as ClientLicense;
             const teamData = {teams: [], memberships: []};
             const chData = {
                 channels: [
@@ -274,9 +254,6 @@ describe('actions/remote/entry/deferred', () => {
                     {channel_id: 'gm1', user_id: 'user1'},
                 ],
             } as MyChannelsRequest;
-            const meData = {
-                user: {id: 'user1', roles: '', username: 'user1'},
-            } as MyUserRequest;
 
             await restDeferredAppEntryActions(
                 serverUrl,
@@ -284,11 +261,11 @@ describe('actions/remote/entry/deferred', () => {
                 currentUserId,
                 currentUserLocale,
                 preferences,
-                config,
+                defaultConfig,
                 license,
                 teamData,
                 chData,
-                meData,
+                defaultMeData,
             );
 
             expect(fetchMissingDirectChannelsInfo).toHaveBeenCalledWith(
@@ -302,6 +279,79 @@ describe('actions/remote/entry/deferred', () => {
                 currentUserId,
                 false,
                 undefined,
+            );
+        });
+
+        it('should show all teams in order even when fetchMyChannelsForTeam throws an error', async () => {
+            jest.mocked(fetchMyChannelsForTeam).mockRejectedValueOnce(new Error('test')).mockResolvedValueOnce({
+                channels: [],
+                memberships: [],
+            } as MyChannelsRequest);
+
+            const preferences = [{
+                category: Preferences.CATEGORIES.TEAMS_ORDER,
+                name: '',
+                value: 'team1,team2',
+                user_id: 'user1',
+            }];
+            const config = {
+                ...defaultConfig,
+                CollapsedThreads: 'true',
+            } as ClientConfig;
+            const teamData = {
+                teams: [
+                    {id: 'team1', display_name: 'Team 1'},
+                    {id: 'team2', display_name: 'Team 2'},
+                ],
+                memberships: [
+                    {team_id: 'team1', user_id: 'user1'},
+                    {team_id: 'team2', user_id: 'user1'},
+                ],
+            } as MyTeamsRequest;
+            const chData = {
+                channels: [
+                    {id: 'channel1', team_id: 'team1', type: 'O'},
+                    {id: 'channel2', team_id: 'team2', type: 'O'},
+                ],
+                memberships: [
+                    {channel_id: 'channel1', user_id: 'user1'},
+                    {channel_id: 'channel2', user_id: 'user1'},
+                ],
+            } as MyChannelsRequest;
+
+            await act(async () => {
+                await restDeferredAppEntryActions(
+                    serverUrl,
+                    since,
+                    currentUserId,
+                    currentUserLocale,
+                    preferences,
+                    config,
+                    license,
+                    teamData,
+                    chData,
+                    defaultMeData,
+                );
+            });
+
+            expect(processEntryModels).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    teamData: expect.objectContaining({
+                        teams: expect.arrayContaining([
+                            expect.objectContaining({id: 'team1'}),
+                        ]),
+                    }),
+                }),
+            );
+
+            expect(processEntryModels).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    teamData: expect.objectContaining({
+                        teams: expect.arrayContaining([
+                            expect.objectContaining({id: 'team2'}),
+                        ]),
+                    }),
+                }),
             );
         });
     });
