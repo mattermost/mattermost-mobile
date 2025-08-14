@@ -20,18 +20,24 @@ export function isValidUrl(url = '') {
 }
 
 // Check if the URL has a valid app scheme format
-// This supports mattermost:// and other custom app schemes
+// This supports mattermost:// and other custom app schemes, and explicitly excludes http/https
 export function isValidAppSchemeUrl(url = '') {
-    // Check if URL has a scheme followed by ://
-    const match = /^[a-zA-Z][a-zA-Z0-9.+-]*:\/\//.test(url);
-    if (!match) {
+    // Must look like <scheme>://...
+    if (!/^[a-zA-Z][a-zA-Z0-9.+-]*:\/\//.test(url)) {
         return false;
     }
 
-    // Parse URL to ensure it's valid
     try {
         const parsedUrl = new URL(url);
-        return Boolean(parsedUrl.protocol);
+        const protocol = (parsedUrl.protocol || '').toLowerCase(); // includes trailing ':'
+
+        // Exclude common web/file schemes; this function is only for custom app schemes
+        if (protocol === 'http:' || protocol === 'https:' || protocol === 'ftp:' || protocol === 'file:') {
+            return false;
+        }
+
+        // Validate scheme itself
+        return /^[a-z][a-z0-9.+-]*:$/.test(protocol);
     } catch {
         return false;
     }
