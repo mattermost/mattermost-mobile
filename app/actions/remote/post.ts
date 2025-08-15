@@ -345,12 +345,14 @@ export const fetchPostsForUnreadChannels = async (
 
     const channelsMap = new Map<string, Channel>();
     for (const channel of channels) {
-        channelsMap.set(channel.id, channel);
+        if (channel.id !== excludeChannelId && !channel.delete_at) {
+            channelsMap.set(channel.id, channel);
+        }
     }
 
     const sortedUnreadchannelIdsByTeam = memberships.filter((member) => {
         const channel = channelsMap.get(member.channel_id);
-        if (channel && !channel.delete_at && channel.id !== excludeChannelId) {
+        if (channel) {
             const unreads = isCRTEnabled ? (channel.total_msg_count_root ?? 0) - (member.msg_count_root ?? 0) : channel.total_msg_count - member.msg_count;
             return unreads > 0; // Keep only channels with unreads
         }
