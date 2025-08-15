@@ -27,7 +27,7 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
         flex: 1,
     },
     content: {
-        paddingTop: 20,
+        paddingTop: 0,
     },
     divider: {
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
