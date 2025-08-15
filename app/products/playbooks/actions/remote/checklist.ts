@@ -18,14 +18,11 @@ export const updateChecklistItem = async (
     try {
         const client = NetworkManager.getClient(serverUrl);
 
-        const res = await client.setChecklistItemState(playbookRunId, checklistNumber, itemNumber, state);
-        if (res.error) {
-            return {error: res.error};
-        }
+        await client.setChecklistItemState(playbookRunId, checklistNumber, itemNumber, state);
         await localUpdateChecklistItem(serverUrl, itemId, state);
         return {data: true};
     } catch (error) {
-        logDebug('error on fetchPlaybookRunsForChannel', getFullErrorMessage(error));
+        logDebug('error on updateChecklistItem', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
@@ -43,6 +40,46 @@ export const runChecklistItem = async (
         return {data: true};
     } catch (error) {
         logDebug('error on runChecklistItem', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
+export const skipChecklistItem = async (
+    serverUrl: string,
+    playbookRunId: string,
+    itemId: string,
+    checklistNumber: number,
+    itemNumber: number,
+) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        await client.skipChecklistItem(playbookRunId, checklistNumber, itemNumber);
+
+        await localUpdateChecklistItem(serverUrl, itemId, 'skipped');
+        return {data: true};
+    } catch (error) {
+        logDebug('error on skipChecklistItem', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
+export const restoreChecklistItem = async (
+    serverUrl: string,
+    playbookRunId: string,
+    itemId: string,
+    checklistNumber: number,
+    itemNumber: number,
+) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        await client.restoreChecklistItem(playbookRunId, checklistNumber, itemNumber);
+
+        await localUpdateChecklistItem(serverUrl, itemId, '');
+        return {data: true};
+    } catch (error) {
+        logDebug('error on restoreChecklistItem', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
