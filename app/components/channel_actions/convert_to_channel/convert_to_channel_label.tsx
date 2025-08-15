@@ -6,8 +6,8 @@ import {useIntl} from 'react-intl';
 
 import OptionItem from '@components/option_item';
 import {Screens} from '@constants';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {dismissBottomSheet, goToScreen} from '@screens/navigation';
-import {preventDoubleTap} from '@utils/tap';
 
 type Props = {
     channelId: string;
@@ -16,11 +16,11 @@ type Props = {
 const ConvertToChannelLabel = ({channelId}: Props) => {
     const {formatMessage} = useIntl();
 
-    const goToConvertToPrivateChannel = useCallback(preventDoubleTap(async () => {
+    const goToConvertToPrivateChannel = usePreventDoubleTap(useCallback(async () => {
         await dismissBottomSheet();
         const title = formatMessage({id: 'channel_info.convert_gm_to_channel.screen_title', defaultMessage: 'Convert to Private Channel'});
         goToScreen(Screens.CONVERT_GM_TO_CHANNEL, title, {channelId});
-    }), [channelId]);
+    }, [channelId, formatMessage]));
 
     return (
         <OptionItem

@@ -18,6 +18,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         container: {
             flex: 1,
             backgroundColor: theme.centerChannelBg,
+            paddingHorizontal: 20,
         },
         contentContainerStyle: {
             marginTop: 8,

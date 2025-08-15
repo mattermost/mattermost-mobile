@@ -6,7 +6,6 @@ import {defineMessages, useIntl} from 'react-intl';
 
 import SettingItem from '@components/settings/item';
 import {Screens} from '@constants';
-import {useTheme} from '@context/theme';
 import {goToScreen} from '@screens/navigation';
 import {emailLogs} from '@utils/share_logs';
 
@@ -32,7 +31,6 @@ const ReportProblem = ({
     siteName,
     metadata,
 }: ReportProblemProps) => {
-    const theme = useTheme();
     const intl = useIntl();
     const onlyAllowLogs = allowDownloadLogs && reportAProblemType === 'hidden';
     const skipReportAProblemScreen = reportAProblemType === 'email' && !allowDownloadLogs;
@@ -50,12 +48,11 @@ const ReportProblem = ({
     if (onlyAllowLogs) {
         return (
             <SettingItem
-                optionLabelTextStyle={{color: theme.linkColor}}
                 onPress={onPress}
                 optionName='download_logs'
                 separator={false}
                 testID='settings.download_logs.option'
-                type='default'
+                type='link'
             />
         );
     }
@@ -66,12 +63,11 @@ const ReportProblem = ({
 
     return (
         <SettingItem
-            optionLabelTextStyle={{color: theme.linkColor}}
             onPress={onPress}
             optionName='report_problem'
             separator={false}
             testID='settings.report_problem.option'
-            type='default'
+            type='link'
         />
     );
 };

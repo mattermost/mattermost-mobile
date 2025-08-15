@@ -99,7 +99,7 @@ const File_filter = ({initialFilter, setFilter, title}: FilterProps) => {
             setFilter(fileType);
         }
         dismissBottomSheet();
-    }, [initialFilter]);
+    }, [initialFilter, setFilter]);
 
     const separator = useCallback(() => <View style={style.divider}/>, [style]);
 
@@ -112,7 +112,7 @@ const File_filter = ({initialFilter, setFilter, title}: FilterProps) => {
                 selected={initialFilter === item.filterType}
             />
         );
-    }, [handleOnPress, initialFilter, theme]);
+    }, [handleOnPress, initialFilter, intl]);
 
     return (
         <BottomSheetContent

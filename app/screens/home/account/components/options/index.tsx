@@ -64,10 +64,7 @@ const AccountOptions = ({user, enableCustomUserStatuses, isTablet, theme}: Accou
             </View>
             <View style={styles.divider}/>
             <View style={styles.group}>
-                <YourProfile
-                    isTablet={isTablet}
-                    theme={theme}
-                />
+                <YourProfile isTablet={isTablet}/>
                 <Settings/>
             </View>
             <View style={styles.divider}/>

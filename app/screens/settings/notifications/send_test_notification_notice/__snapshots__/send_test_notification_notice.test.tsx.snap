@@ -6,7 +6,7 @@ exports[`SendTestNotificationNotice should match snapshot 1`] = `
     {
       "flex": 1,
       "justifyContent": "flex-end",
-      "margin": 16,
+      "marginVertical": 16,
     }
   }
 >

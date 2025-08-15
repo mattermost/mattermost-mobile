@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo, useState} from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessages, useIntl} from 'react-intl';
 import {Text} from 'react-native';
 
 import {savePreference} from '@actions/remote/preference';
@@ -16,7 +16,6 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useBackNavigation from '@hooks/navigate_back';
-import {t} from '@i18n';
 import {popTopScreen} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -35,23 +34,24 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const emailHeaderText = {
-    id: t('notification_settings.email.send'),
-    defaultMessage: 'Send email notifications',
-};
-const emailFooterText = {
-    id: t('notification_settings.email.emailInfo'),
-    defaultMessage: 'Email notifications are sent for mentions and direct messages when you are offline or away for more than 5 minutes.',
-};
-
-const emailHeaderCRTText = {
-    id: t('notification_settings.email.crt.send'),
-    defaultMessage: 'Thread reply notifications',
-};
-const emailFooterCRTText = {
-    id: t('notification_settings.email.crt.emailInfo'),
-    defaultMessage: "When enabled, any reply to a thread you're following will send an email notification",
-};
+const messages = defineMessages({
+    emailHeaderText: {
+        id: 'notification_settings.email.send',
+        defaultMessage: 'Send email notifications',
+    },
+    emailFooterText: {
+        id: 'notification_settings.email.emailInfo',
+        defaultMessage: 'Email notifications are sent for mentions and direct messages when you are offline or away for more than 5 minutes.',
+    },
+    emailHeaderCRTText: {
+        id: 'notification_settings.email.crt.send',
+        defaultMessage: 'Thread reply notifications',
+    },
+    emailFooterCRTText: {
+        id: 'notification_settings.email.crt.emailInfo',
+        defaultMessage: "When enabled, any reply to a thread you're following will send an email notification",
+    },
+});
 
 type NotificationEmailProps = {
     componentId: AvailableScreens;
@@ -78,10 +78,8 @@ const NotificationEmail = ({componentId, currentUser, emailInterval, enableEmail
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
-    const close = () => popTopScreen(componentId);
-
     const saveEmail = useCallback(() => {
-        if (!currentUser) {
+        if (!currentUser?.id) {
             return;
         }
 
@@ -109,8 +107,19 @@ const NotificationEmail = ({componentId, currentUser, emailInterval, enableEmail
             }
             Promise.all(promises);
         }
-        close();
-    }, [notifyProps, notifyInterval, emailThreads, serverUrl, currentUser?.id, sendEmailNotifications]);
+        popTopScreen(componentId);
+    }, [
+        componentId,
+        currentUser?.id,
+        notifyInterval,
+        initialInterval,
+        emailThreads,
+        initialEmailThreads,
+        serverUrl,
+        notifyProps,
+        sendEmailNotifications,
+        isCRTEnabled,
+    ]);
 
     useAndroidHardwareBackHandler(componentId, saveEmail);
 
@@ -120,8 +129,8 @@ const NotificationEmail = ({componentId, currentUser, emailInterval, enableEmail
         <SettingContainer testID='email_notification_settings'>
             <SettingBlock
                 disableFooter={!sendEmailNotifications}
-                footerText={emailFooterText}
-                headerText={emailHeaderText}
+                footerText={messages.emailFooterText}
+                headerText={messages.emailHeaderText}
             >
                 {sendEmailNotifications &&
                 <>
@@ -179,8 +188,8 @@ const NotificationEmail = ({componentId, currentUser, emailInterval, enableEmail
             </SettingBlock>
             {isCRTEnabled && notifyInterval !== Preferences.INTERVAL_NEVER.toString() && (
                 <SettingBlock
-                    footerText={emailFooterCRTText}
-                    headerText={emailHeaderCRTText}
+                    footerText={messages.emailFooterCRTText}
+                    headerText={messages.emailHeaderCRTText}
                 >
                     <SettingOption
                         action={setEmailThreads}

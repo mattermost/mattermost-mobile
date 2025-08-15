@@ -40,13 +40,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             color: theme.centerChannelColor,
             ...typography('Heading', 300, 'SemiBold'),
             marginBottom: 8,
-            marginLeft: 20,
             marginTop: 12,
-            marginRight: 15,
         },
         footer: {
             marginTop: 10,
-            marginHorizontal: 15,
             fontSize: 12,
             color: changeOpacity(theme.centerChannelColor, 0.5),
         },

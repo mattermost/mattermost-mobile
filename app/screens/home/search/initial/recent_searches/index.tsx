@@ -3,9 +3,10 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {FlatList, type ListRenderItemInfo, Text, View} from 'react-native';
+import {FlatList, type ListRenderItemInfo, Text} from 'react-native';
 import Animated from 'react-native-reanimated';
 
+import MenuDivider from '@components/menu_divider';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -25,7 +26,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             marginHorizontal: 20,
         },
         title: {
-            paddingHorizontal: 20,
             paddingVertical: 12,
             color: theme.centerChannelColor,
             ...typography('Heading', 300, 'SemiBold'),
@@ -62,7 +62,7 @@ const RecentSearches = ({setRecentValue, recentSearches, teamName}: Props) => {
 
     const header = (
         <>
-            <View style={styles.divider}/>
+            <MenuDivider/>
             <Text
                 style={styles.title}
                 numberOfLines={2}

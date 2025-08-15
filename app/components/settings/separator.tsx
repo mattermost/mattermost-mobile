@@ -2,45 +2,24 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Platform, type StyleProp, View, type ViewStyle} from 'react-native';
+import {Platform} from 'react-native';
 
-import {useTheme} from '@context/theme';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import MenuDivider from '@components/menu_divider';
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    const groupSeparator: ViewStyle = {
-        backgroundColor: changeOpacity(theme.centerChannelColor, 0.12),
-        width: '91%',
-        alignSelf: 'center',
-        height: 1,
-    };
-    return {
-        separator: {
-            ...Platform.select({
-                ios: {
-                    ...groupSeparator,
-                },
-                default: {
-                    display: 'none',
-                },
-            }),
-        },
-        groupSeparator: {
-            ...groupSeparator,
-            marginBottom: 16,
-        },
-    };
-});
 type SettingSeparatorProps = {
-    lineStyles?: StyleProp<ViewStyle>;
     isGroupSeparator?: boolean;
 }
 
-const SettingSeparator = ({lineStyles, isGroupSeparator = false}: SettingSeparatorProps) => {
-    const theme = useTheme();
-    const styles = getStyleSheet(theme);
-
-    return (<View style={[styles.separator, isGroupSeparator && styles.groupSeparator, lineStyles]}/>);
+const SettingSeparator = ({isGroupSeparator = false}: SettingSeparatorProps) => {
+    if (Platform.OS === 'android') {
+        return null;
+    }
+    return (
+        <MenuDivider
+            marginBottom={isGroupSeparator ? 16 : 0}
+            marginTop={0}
+        />
+    );
 };
 
 export default SettingSeparator;
