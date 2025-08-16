@@ -70,6 +70,7 @@ interface ClientConfig {
     EnableLatex: string;
     EnableLdap: string;
     EnableLinkPreviews: string;
+    EnablePermalinkPreviews: string;
     EnableMarketplace: string;
     EnableMetrics: string;
     EnableMobileFileDownload: string;
