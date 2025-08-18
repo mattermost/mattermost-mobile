@@ -56,14 +56,14 @@ const BookmarkLink = ({disabled, initialUrl = '', resetBookmark, setBookmark}: P
 
     const validateAndFetchOG = useDebounce(useCallback((async (text: string) => {
         setLoading(true);
-        
+
         // Check if it's a custom app scheme URL (like mattermost://)
         if (isValidAppSchemeUrl(text)) {
             setLoading(false);
             setBookmark(text, text, '');
             return;
         }
-        
+
         let link = await getUrlAfterRedirect(text, false);
 
         if (link.error) {

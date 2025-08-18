@@ -145,13 +145,8 @@ describe('parseAndHandleDeepLink', () => {
         jest.mocked(getActiveServerUrl).mockResolvedValueOnce('https://currentserver.com');
         jest.mocked(DatabaseManager.searchUrl).mockReturnValueOnce(undefined);
 
-<<<<<<< HEAD
         jest.mocked(NavigationStore.getVisibleScreen).mockReturnValueOnce(Screens.SERVER);
         const result = await parseAndHandleDeepLink('https://currentserver.com/team/channels/town-square', undefined, undefined, true);
-=======
-        jest.mocked(NavigationStore.getVisibleScreen).mockReturnValueOnce(Screens.SERVER);
-        const result = await parseAndHandleDeepLink('https://currentserver.com/team/channels/town-square', undefined, undefined, true);
-        const spyOnUpdateProps = jest.spyOn(Navigation, 'updateProps');
         const spyOnUpdateProps = jest.spyOn(Navigation, 'updateProps');
         expect(spyOnUpdateProps).toHaveBeenCalledWith(Screens.SERVER, {serverUrl: 'currentserver.com'});
         expect(result).toEqual({error: false});
