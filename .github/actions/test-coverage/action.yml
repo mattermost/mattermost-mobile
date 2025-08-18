@@ -23,7 +23,7 @@ runs:
     - name: ci/get-last-run-id
       if: github.event_name == 'pull_request'
       id: get-last-run-id
-      uses: actions/cache/restore@5a3ec84eff668545956fd18022155c47e93e2684
+      uses: actions/cache/restore@0400d5f644dc74513175e3cd8d07132dd4860809
       continue-on-error: true
       with:
         path: run-id.txt
@@ -45,7 +45,7 @@ runs:
     - name: ci/download-main-coverage
       if: env.HAS_MAIN_RUN_ID == 'true'
       continue-on-error: true
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v5
       with:
         name: test-coverage-result-${{ env.LAST_RUN_ID }}
         path: main-coverage/
@@ -140,7 +140,7 @@ runs:
 
     - name: ci/cache-run-id-file
       if: env.UPLOAD_SUCCESS == 'true'
-      uses: actions/cache/save@5a3ec84eff668545956fd18022155c47e93e2684
+      uses: actions/cache/save@0400d5f644dc74513175e3cd8d07132dd4860809
       with:
         path: run-id.txt
         key: last-run-id-${{ inputs.run_id }}
