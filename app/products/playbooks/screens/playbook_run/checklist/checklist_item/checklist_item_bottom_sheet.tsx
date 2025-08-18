@@ -126,19 +126,19 @@ const ChecklistItemBottomSheet = ({
     const isSkipped = item.state === 'skipped';
     const isCommandRun = Boolean('commandLastRun' in item ? item.commandLastRun : item.command_last_run);
 
-    const handleCheck = useCallback(() => {
+    const handleCheck = useCallback(async () => {
+        await dismissBottomSheet();
         onCheck?.();
-        dismissBottomSheet();
     }, [onCheck]);
 
-    const handleSkip = useCallback(() => {
+    const handleSkip = useCallback(async () => {
+        await dismissBottomSheet();
         onSkip?.();
-        dismissBottomSheet();
     }, [onSkip]);
 
-    const handleRunCommand = useCallback(() => {
+    const handleRunCommand = useCallback(async () => {
+        await dismissBottomSheet();
         onRunCommand?.();
-        dismissBottomSheet();
     }, [onRunCommand]);
 
     const renderActionButtons = () => (
@@ -233,7 +233,7 @@ const ChecklistItemBottomSheet = ({
                         <Text style={styles.taskTitle}>
                             {item.title}
                         </Text>
-                        {item.description && (
+                        {Boolean(item.description) && (
                             <Text style={styles.taskDescription}>
                                 {item.description}
                             </Text>

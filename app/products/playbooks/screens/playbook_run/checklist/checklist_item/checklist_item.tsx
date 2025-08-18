@@ -3,12 +3,13 @@
 
 import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {View, Text, ActivityIndicator, TouchableOpacity} from 'react-native';
+import {View, Text, ActivityIndicator} from 'react-native';
 
 import BaseChip from '@components/chips/base_chip';
 import UserChip from '@components/chips/user_chip';
 import CompassIcon from '@components/compass_icon';
 import {getFriendlyDate} from '@components/friendly_date';
+import PressableOpacity from '@components/pressable_opacity';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {restoreChecklistItem, runChecklistItem, skipChecklistItem, updateChecklistItem} from '@playbooks/actions/remote/checklist';
@@ -151,7 +152,6 @@ const ChecklistItem = ({
         }
         if (res.error) {
             showPlaybookErrorSnackbar();
-            logDebug('skipChecklistItem error', res.error);
         }
         setIsChecking(false);
     }, [isChecking, serverUrl, playbookRunId, item.id, checklistNumber, itemNumber, skipped]);
@@ -218,14 +218,14 @@ const ChecklistItem = ({
                 {checkbox}
             </View>
             <View style={styles.itemDetails}>
-                <TouchableOpacity onPress={onPress}>
+                <PressableOpacity onPress={onPress}>
                     <View style={styles.itemDetailsTexts}>
                         <Text style={[styles.itemTitle, skipped && styles.skippedText]}>{item.title}</Text>
-                        {item.description && (
+                        {Boolean(item.description) && (
                             <Text style={[styles.itemDescription, skipped && styles.skippedText]}>{item.description}</Text>
                         )}
                     </View>
-                </TouchableOpacity>
+                </PressableOpacity>
 
                 {(assignee || dueDate || (item.command)) && (
                     <View style={styles.chipsRow}>
@@ -252,7 +252,7 @@ const ChecklistItem = ({
                             />
                         )}
 
-                        {item.command && (
+                        {Boolean(item.command) && (
                             <BaseChip
                                 label={commandMessage}
                                 onPress={executeCommand}
