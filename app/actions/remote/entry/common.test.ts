@@ -114,7 +114,7 @@ describe('actions/remote/entry/common', () => {
             const mockUser = {user: {id: 'user1', roles: '', username: 'user1'}};
             (fetchMe as jest.Mock).mockResolvedValueOnce(mockUser);
 
-            const mockChannels = {channels: [], memberships: []};
+            const mockChannels = {channels: [], memberships: [], categories: []};
             (fetchMyChannelsForTeam as jest.Mock).mockResolvedValue(mockChannels);
 
             (prepareEntryModels as jest.Mock).mockResolvedValue([]);
