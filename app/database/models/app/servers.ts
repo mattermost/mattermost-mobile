@@ -32,4 +32,7 @@ export default class ServersModel extends Model implements ServersModelInterface
 
     /** identifier: Determines the installation identifier of a server */
     @field('identifier') identifier!: string;
+
+    /** shared_password_key: The keychain identifier for the shared password */
+    @field('shared_password_key') sharedPasswordKey!: string;
 }

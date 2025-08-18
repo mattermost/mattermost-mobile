@@ -44,7 +44,7 @@ export const getActiveServerUrl = async () => {
     return serverUrl || undefined;
 };
 
-export const setServerCredentials = (serverUrl: string, token: string) => {
+export const setServerCredentials = (serverUrl: string, token: string, sharedPassword?: string) => {
     if (!(serverUrl && token)) {
         return;
     }
@@ -60,7 +60,14 @@ export const setServerCredentials = (serverUrl: string, token: string) => {
             accessGroup,
             securityLevel: KeyChain.SECURITY_LEVEL.SECURE_SOFTWARE,
         };
-        KeyChain.setInternetCredentials(serverUrl, token, token, options);
+
+        // Always store as JSON object for consistency
+        const credentialData = {
+            token,
+            sharedPassword,
+        };
+
+        KeyChain.setInternetCredentials(serverUrl, token, JSON.stringify(credentialData), options);
     } catch (e) {
         logWarning('could not set credentials', e);
     }
@@ -82,16 +89,29 @@ export const getServerCredentials = async (serverUrl: string): Promise<ServerCre
         const credentials = await KeyChain.getInternetCredentials(serverUrl);
 
         if (credentials) {
-            // TODO: Pre-Gekidou we were concatenating the deviceToken and the userId in
-            // credentials.username so we need to check the length of credentials.username.split(',').
-            // This check should be removed at some point. https://mattermost.atlassian.net/browse/MM-43483
-            const parts = credentials.username.split(',');
-            const userId = parts[parts.length - 1];
+            // Try to parse password as JSON first (new format)
+            try {
+                const credentialData: ServerCredential = JSON.parse(credentials.password);
+                return {
+                    serverUrl,
+                    userId: credentialData.userId,
+                    token: credentialData.token,
+                    sharedPassword: credentialData.sharedPassword,
+                };
+            } catch (parseError) {
+                // Fall back to old format
+                logWarning('WebSocket: Failed to parse credential data. Falling back to old format', parseError);
 
-            const token = credentials.password;
+                // TODO: Pre-Gekidou we were concatenating the deviceToken and the userId in
+                // credentials.username so we need to check the length of credentials.username.split(',').
+                // This check should be removed at some point. https://mattermost.atlassian.net/browse/MM-43483
+                const parts = credentials.username.split(',');
+                const userId = parts[parts.length - 1];
+                const token = credentials.password;
 
-            if (token && token !== 'undefined') {
-                return {serverUrl, userId, token};
+                if (token && token !== 'undefined') {
+                    return {serverUrl, userId, token};
+                }
             }
         }
 

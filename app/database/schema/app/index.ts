@@ -8,7 +8,7 @@ import {MM_TABLES} from '@constants/database';
 const {INFO, GLOBAL, SERVERS} = MM_TABLES.APP;
 
 export const schema: AppSchema = appSchema({
-    version: 1,
+    version: 2,
     tables: [
         tableSchema({
             name: INFO,
@@ -31,6 +31,7 @@ export const schema: AppSchema = appSchema({
                 {name: 'display_name', type: 'string'},
                 {name: 'identifier', type: 'string', isIndexed: true},
                 {name: 'last_active_at', type: 'number', isIndexed: true},
+                {name: 'shared_password_key', type: 'string'},
                 {name: 'url', type: 'string', isIndexed: true},
             ],
         }),

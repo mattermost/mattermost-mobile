@@ -1,11 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {type RefObject, useCallback, useRef} from 'react';
+import React, {type RefObject, useCallback, useRef, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
-import {Keyboard, View} from 'react-native';
+import {Keyboard, Pressable, View} from 'react-native';
 
 import Button from '@components/button';
+import CompassIcon from '@components/compass_icon';
 import FloatingTextInput, {type FloatingTextInputRef} from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import {useAvoidKeyboard} from '@hooks/device';
@@ -23,8 +24,10 @@ type Props = {
     disableServerUrl: boolean;
     handleConnect: () => void;
     handleDisplayNameTextChanged: (text: string) => void;
+    handleSharedPasswordTextChanged: (text: string) => void;
     handleUrlTextChanged: (text: string) => void;
     keyboardAwareRef: RefObject<KeyboardAwareScrollView>;
+    sharedPassword?: string;
     theme: Theme;
     url?: string;
     urlError?: string;
@@ -49,6 +52,24 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginTop: 8,
         ...typography('Body', 75, 'Regular'),
     },
+    advancedOptionsContainer: {
+        width: '100%',
+        marginTop: 16,
+    },
+    advancedOptionsHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingVertical: 12,
+        paddingHorizontal: 4,
+    },
+    advancedOptionsTitle: {
+        color: theme.centerChannelColor,
+        ...typography('Body', 200, 'SemiBold'),
+    },
+    advancedOptionsContent: {
+        width: '100%',
+    },
     connectButtonContainer: {
         width: '100%',
         marginTop: 32,
@@ -66,6 +87,14 @@ const messages = defineMessages({
         id: 'mobile.components.select_server_view.connecting',
         defaultMessage: 'Connecting',
     },
+    advancedOptions: {
+        id: 'mobile.components.select_server_view.advancedOptions',
+        defaultMessage: 'Advanced Options',
+    },
+    sharedPassword: {
+        id: 'mobile.components.select_server_view.sharedPassword',
+        defaultMessage: 'Shared Password',
+    },
 });
 
 const ServerForm = ({
@@ -77,16 +106,21 @@ const ServerForm = ({
     disableServerUrl,
     handleConnect,
     handleDisplayNameTextChanged,
+    handleSharedPasswordTextChanged,
     handleUrlTextChanged,
     keyboardAwareRef,
+    sharedPassword = '',
     theme,
     url = '',
     urlError,
 }: Props) => {
     const {formatMessage} = useIntl();
     const displayNameRef = useRef<FloatingTextInputRef>(null);
+    const sharedPasswordRef = useRef<FloatingTextInputRef>(null);
     const urlRef = useRef<FloatingTextInputRef>(null);
     const styles = getStyleSheet(theme);
+
+    const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
 
     useAvoidKeyboard(keyboardAwareRef);
 
@@ -99,6 +133,18 @@ const ServerForm = ({
         displayNameRef.current?.focus();
     }, []);
 
+    const onDisplayNameSubmit = useCallback(() => {
+        if (showAdvancedOptions) {
+            sharedPasswordRef.current?.focus();
+        } else {
+            onConnect();
+        }
+    }, [showAdvancedOptions, onConnect]);
+
+    const toggleAdvancedOptions = useCallback(() => {
+        setShowAdvancedOptions(!showAdvancedOptions);
+    }, [showAdvancedOptions]);
+
     const connectButtonTestId = buttonDisabled ? 'server_form.connect.button.disabled' : 'server_form.connect.button';
 
     return (
@@ -108,7 +154,6 @@ const ServerForm = ({
                     autoCorrect={false}
                     autoCapitalize={'none'}
                     autoFocus={autoFocus}
-                    blurOnSubmit={false}
                     containerStyle={styles.enterServer}
                     enablesReturnKeyAutomatically={true}
                     editable={!disableServerUrl}
@@ -139,15 +184,16 @@ const ServerForm = ({
                         defaultMessage: 'Display Name',
                     })}
                     onChangeText={handleDisplayNameTextChanged}
-                    onSubmitEditing={onConnect}
+                    onSubmitEditing={onDisplayNameSubmit}
                     ref={displayNameRef}
-                    returnKeyType='done'
+                    returnKeyType={showAdvancedOptions ? 'next' : 'done'}
                     spellCheck={false}
                     testID='server_form.server_display_name.input'
                     theme={theme}
                     value={displayName}
                 />
             </View>
+
             {!displayNameError &&
             <FormattedText
                 defaultMessage={'Choose a display name for your server'}
@@ -156,6 +202,49 @@ const ServerForm = ({
                 testID={'server_form.display_help'}
             />
             }
+
+            <View style={styles.advancedOptionsContainer}>
+                <Pressable
+                    onPress={toggleAdvancedOptions}
+                    style={styles.advancedOptionsHeader}
+                    testID='server_form.advanced_options.toggle'
+                >
+                    <FormattedText
+                        defaultMessage='Advanced Options'
+                        id='mobile.components.select_server_view.advancedOptions'
+                        style={styles.advancedOptionsTitle}
+                    />
+                    <CompassIcon
+                        name={showAdvancedOptions ? 'chevron-up' : 'chevron-down'}
+                        size={20}
+                        color={theme.centerChannelColor}
+                    />
+                </Pressable>
+
+                {showAdvancedOptions && (
+                    <View style={styles.advancedOptionsContent}>
+                        <FloatingTextInput
+                            autoCorrect={false}
+                            autoCapitalize={'none'}
+                            enablesReturnKeyAutomatically={true}
+                            label={formatMessage({
+                                id: 'mobile.components.select_server_view.sharedPassword',
+                                defaultMessage: 'Shared Password',
+                            })}
+                            onChangeText={handleSharedPasswordTextChanged}
+                            onSubmitEditing={onConnect}
+                            ref={sharedPasswordRef}
+                            returnKeyType='done'
+                            secureTextEntry={true}
+                            spellCheck={false}
+                            testID='server_form.shared_password.input'
+                            theme={theme}
+                            value={sharedPassword}
+                        />
+                    </View>
+                )}
+            </View>
+
             <View style={styles.connectButtonContainer}>
                 <Button
                     disabled={buttonDisabled}

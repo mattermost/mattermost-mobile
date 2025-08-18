@@ -73,8 +73,17 @@ export default class ClientTracking {
     }
 
     setBearerToken(bearerToken: string) {
+        this.setClientCredentials(bearerToken);
+    }
+
+    setClientCredentials(bearerToken: string, sharedPassword?: string) {
         this.requestHeaders[ClientConstants.HEADER_AUTH] = `${ClientConstants.HEADER_BEARER} ${bearerToken}`;
-        setServerCredentials(this.apiClient.baseUrl, bearerToken);
+
+        if (sharedPassword) {
+            this.requestHeaders[ClientConstants.HEADER_X_MATTERMOST_SHARED_PASSWORD] = sharedPassword;
+        }
+
+        setServerCredentials(this.apiClient.baseUrl, bearerToken, sharedPassword);
     }
 
     setCSRFToken(csrfToken: string) {
@@ -412,7 +421,8 @@ export default class ClientTracking {
 
         const bearerToken = headers[ClientConstants.HEADER_TOKEN] || headers[ClientConstants.HEADER_TOKEN.toLowerCase()];
         if (bearerToken) {
-            this.setBearerToken(bearerToken);
+            const existingSharedPassword = this.requestHeaders[ClientConstants.HEADER_X_MATTERMOST_SHARED_PASSWORD];
+            this.setClientCredentials(bearerToken, existingSharedPassword);
         }
 
         if (response.ok) {
