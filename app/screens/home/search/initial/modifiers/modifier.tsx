@@ -27,6 +27,9 @@ const Modifier = ({item, searchRef, searchValue, setSearchValue}: Props) => {
         setTimeout(() => {
             searchRef.current?.setCaretPosition({start: position, end: position});
         }, 50);
+
+        // searchRef is a ref object, so its reference should not change between renders.
+        // We add it to the dependencies to satisfy the linter.
     }, [searchRef]);
 
     const addModifierTerm = usePreventDoubleTap(useCallback((modifierTerm: string) => {

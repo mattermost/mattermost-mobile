@@ -47,7 +47,6 @@ const hitSlop = {top: 11, bottom: 11, left: 11, right: 11};
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         actionContainer: {
-            flex: 0,
             flexDirection: 'row',
             alignItems: 'center',
         },
@@ -155,7 +154,7 @@ const OptionItem = ({
     const shouldDescriptionShowDestructive = destructive && !nonDestructiveDescription;
 
     const labelContainerStyle = useMemo(() => {
-        const extraStyle = longInfo ? {flex: 0} : {};
+        const extraStyle = longInfo ? {flex: undefined} : {};
         return [styles.labelContainer, extraStyle];
     }, [longInfo, styles.labelContainer]);
 
