@@ -89,6 +89,21 @@ A spec-compliant polyfill for Intl.PluralRules fully tested by the official ECMA
 
 ---
 
+## @formatjs/intl-relativetimeformat
+
+This product contains '@formatjs/intl-relativetimeformat' by Long Ho.
+
+Formats JavaScript dates to relative time strings.
+
+* HOMEPAGE:
+  * https://github.com/formatjs/formatjs
+
+* LICENSE: MIT
+
+
+
+---
+
 ## @gorhom/bottom-sheet
 
 This product contains '@gorhom/bottom-sheet' by Mo Gorhom.
