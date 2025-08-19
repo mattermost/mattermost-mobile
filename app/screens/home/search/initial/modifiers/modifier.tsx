@@ -2,18 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React, {type Dispatch, type RefObject, type SetStateAction, useCallback} from 'react';
-import {StyleSheet} from 'react-native';
 
 import OptionItem from '@components/option_item';
 import {usePreventDoubleTap} from '@hooks/utils';
 
 import type {SearchRef} from '@components/search';
-
-const styles = StyleSheet.create({
-    container: {
-        marginLeft: 20,
-    },
-});
 
 export type ModifierItem = {
     cursorPosition?: number;
@@ -34,6 +27,9 @@ const Modifier = ({item, searchRef, searchValue, setSearchValue}: Props) => {
         setTimeout(() => {
             searchRef.current?.setCaretPosition({start: position, end: position});
         }, 50);
+
+        // searchRef is a ref object, so its reference should not change between renders.
+        // We add it to the dependencies to satisfy the linter.
     }, [searchRef]);
 
     const addModifierTerm = usePreventDoubleTap(useCallback((modifierTerm: string) => {
@@ -66,7 +62,6 @@ const Modifier = ({item, searchRef, searchValue, setSearchValue}: Props) => {
             testID={item.testID}
             description={' ' + item.description}
             type='default'
-            containerStyle={styles.container}
         />
     );
 };

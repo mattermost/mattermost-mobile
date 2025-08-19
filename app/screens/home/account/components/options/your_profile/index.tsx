@@ -13,7 +13,6 @@ import {showModal} from '@screens/navigation';
 
 type Props = {
     isTablet: boolean;
-    theme: Theme;
 }
 
 const YourProfile = ({isTablet}: Props) => {

@@ -39,15 +39,15 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
         }));
     };
 
-    const updateManualTimezone = (mtz: string) => {
-        setUserTimezone({
-            useAutomaticTimezone: false,
-            automaticTimezone: '',
-            manualTimezone: mtz,
-        });
-    };
-
     const goToSelectTimezone = usePreventDoubleTap(useCallback(() => {
+        const updateManualTimezone = (mtz: string) => {
+            setUserTimezone({
+                useAutomaticTimezone: false,
+                automaticTimezone: '',
+                manualTimezone: mtz,
+            });
+        };
+
         const screen = Screens.SETTINGS_DISPLAY_TIMEZONE_SELECT;
         const title = intl.formatMessage({id: 'settings_display.timezone.select', defaultMessage: 'Select Timezone'});
 
@@ -57,9 +57,7 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
         };
 
         goToScreen(screen, title, passProps);
-    }, [initialTimezone.automaticTimezone, initialTimezone.manualTimezone, intl, userTimezone.manualTimezone]));
-
-    const close = useCallback(() => popTopScreen(componentId), [componentId]);
+    }, [initialTimezone.manualTimezone, initialTimezone.automaticTimezone, intl, userTimezone.manualTimezone]));
 
     const saveTimezone = useCallback(() => {
         const canSave =
@@ -77,11 +75,13 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
             updateMe(serverUrl, {timezone: timeZone});
         }
 
-        close();
+        popTopScreen(componentId);
     }, [
+        componentId,
         initialTimezone,
-        userTimezone,
-        close,
+        userTimezone.useAutomaticTimezone,
+        userTimezone.automaticTimezone,
+        userTimezone.manualTimezone,
         serverUrl,
     ]);
 

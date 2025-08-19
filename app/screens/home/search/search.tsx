@@ -278,6 +278,7 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
             paddingTop: scrollPaddingTop,
             flexGrow: 1,
             justifyContent: (resultsLoading || loading) ? 'center' : 'flex-start',
+            paddingHorizontal: 18,
         };
     }, [loading, resultsLoading, scrollPaddingTop]);
 
@@ -301,9 +302,16 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
             />
         );
     }, [
-        handleModifierTextChange, handleRecentSearch,
-        loading, scrollEnabled, scrollPaddingTop, searchTeamId,
-        searchValue, styles.loading, teams, theme.buttonBg,
+        handleModifierTextChange,
+        handleRecentSearch,
+        loading,
+        scrollEnabled,
+        scrollPaddingTop,
+        searchTeamId,
+        searchValue,
+        teams,
+        theme.buttonBg,
+        updateSearchTeamId,
     ]);
 
     const animated = useAnimatedStyle(() => {

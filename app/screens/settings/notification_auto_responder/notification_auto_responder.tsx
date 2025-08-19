@@ -73,8 +73,6 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
 
     const styles = getStyleSheet(theme);
 
-    const close = useCallback(() => popTopScreen(componentId), [componentId]);
-
     const saveAutoResponder = useCallback(() => {
         const canSaveSetting = initialAutoResponderActive !== autoResponderActive || initialOOOMsg !== autoResponderMessage;
 
@@ -90,17 +88,8 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
                 fetchStatusInBatch(serverUrl, currentUser.id);
             }
         }
-        close();
-    }, [
-        initialAutoResponderActive,
-        autoResponderActive,
-        initialOOOMsg,
-        autoResponderMessage,
-        close,
-        serverUrl,
-        notifyProps,
-        currentUser,
-    ]);
+        popTopScreen(componentId);
+    }, [componentId, initialAutoResponderActive, autoResponderActive, initialOOOMsg, autoResponderMessage, serverUrl, notifyProps, currentUser]);
 
     useBackNavigation(saveAutoResponder);
 

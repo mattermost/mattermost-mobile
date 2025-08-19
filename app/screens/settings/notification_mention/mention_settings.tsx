@@ -131,8 +131,6 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: Props) => {
     const styles = getStyleSheet(theme);
     const intl = useIntl();
 
-    const close = useCallback(() => popTopScreen(componentId), [componentId]);
-
     const saveMention = useCallback(() => {
         if (!currentUser) {
             return;
@@ -165,10 +163,10 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: Props) => {
             updateMe(serverUrl, {notify_props});
         }
 
-        close();
+        popTopScreen(componentId);
     }, [
-        currentUser, channelMentionOn, replyNotificationType, firstNameMentionOn,
-        usernameMentionOn, mentionKeywords, mentionProps, close, notifyProps, serverUrl,
+        componentId, currentUser, channelMentionOn, replyNotificationType, firstNameMentionOn,
+        usernameMentionOn, mentionKeywords, mentionProps, notifyProps, serverUrl,
     ]);
 
     const handleFirstNameToggle = useCallback(() => {

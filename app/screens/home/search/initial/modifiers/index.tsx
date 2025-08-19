@@ -28,7 +28,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             alignItems: 'center',
             flexDirection: 'row',
             marginTop: 20,
-            marginHorizontal: 18,
         },
         titleContainer: {
             flex: 1,
@@ -110,7 +109,7 @@ const Modifiers = ({scrollEnabled, searchValue, setSearchValue, searchRef, setTe
         if (timeoutRef.current) {
             clearTimeout(timeoutRef.current);
         }
-        setTimeout(() => {
+        timeoutRef.current = setTimeout(() => {
             scrollEnabled.value = true;
         }, 350);
     }, [data.length, height, scrollEnabled, showMore]);

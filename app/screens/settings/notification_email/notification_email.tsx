@@ -78,10 +78,8 @@ const NotificationEmail = ({componentId, currentUser, emailInterval, enableEmail
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
-    const close = useCallback(() => popTopScreen(componentId), [componentId]);
-
     const saveEmail = useCallback(() => {
-        if (!currentUser) {
+        if (!currentUser?.id) {
             return;
         }
 
@@ -109,14 +107,14 @@ const NotificationEmail = ({componentId, currentUser, emailInterval, enableEmail
             }
             Promise.all(promises);
         }
-        close();
+        popTopScreen(componentId);
     }, [
-        currentUser,
+        componentId,
+        currentUser?.id,
         notifyInterval,
         initialInterval,
         emailThreads,
         initialEmailThreads,
-        close,
         serverUrl,
         notifyProps,
         sendEmailNotifications,

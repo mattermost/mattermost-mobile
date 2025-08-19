@@ -37,6 +37,39 @@ export const useStringProp = (
     return [preparedProp, selector];
 };
 
+export const useNumberProp = (
+    propName: string,
+    defaultValue: number,
+): HookResult<number | undefined> => {
+    const [value, setValue] = useState<number | undefined>(defaultValue);
+    const stringToValue = useCallback((v: string) => {
+        const numberValue = parseInt(v);
+        if (isNaN(numberValue)) {
+            setValue(undefined);
+            return;
+        }
+        setValue(numberValue);
+    }, []);
+
+    const selector = useMemo(() => (
+        <TextSetting
+            label={propName}
+            disabled={false}
+            multiline={false}
+            secureTextEntry={false}
+            keyboardType='numeric'
+            onChange={stringToValue}
+            optional={false}
+            testID={`${propName}.input`}
+            value={value?.toString()}
+            location={Screens.COMPONENT_LIBRARY}
+        />
+    ), [propName, stringToValue, value]);
+    const preparedProp = useMemo(() => ({[propName]: value}), [propName, value]);
+
+    return [preparedProp, selector];
+};
+
 export const useBooleanProp = (
     propName: string,
     defaultValue: boolean,

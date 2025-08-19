@@ -60,16 +60,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         alignItems: 'center',
         justifyContent: 'center',
     },
-    makePrivateContainer: {
-        marginBottom: MAKE_PRIVATE_MARGIN_BOTTOM,
-    },
-    fieldContainer: {
-        marginBottom: FIELD_MARGIN_BOTTOM,
-    },
     helpText: {
         ...typography('Body', 75, 'Regular'),
         color: changeOpacity(theme.centerChannelColor, 0.5),
         marginTop: 8,
+    },
+    mainView: {
+        gap: 24,
     },
 }));
 
@@ -230,9 +227,9 @@ export default function ChannelInfoForm({
     const spaceOnTop = otherElementsSize - scrollPosition - AUTOCOMPLETE_ADJUST;
     const spaceOnBottom = (workingSpace + scrollPosition) - (otherElementsSize + headerFieldHeight + BOTTOM_AUTOCOMPLETE_SEPARATION);
 
-    const autocompletePosition = spaceOnBottom > spaceOnTop ?
-        (otherElementsSize + headerFieldHeight) - scrollPosition :
-        (workingSpace + scrollPosition + AUTOCOMPLETE_ADJUST + keyboardOverlap) - otherElementsSize;
+    const bottomPosition = (otherElementsSize + headerFieldHeight) - scrollPosition;
+    const topPosition = (workingSpace + scrollPosition + AUTOCOMPLETE_ADJUST + keyboardOverlap) - otherElementsSize;
+    const autocompletePosition = spaceOnBottom > spaceOnTop ? bottomPosition : topPosition;
     const autocompleteAvailableSpace = spaceOnBottom > spaceOnTop ? spaceOnBottom : spaceOnTop;
     const growDown = spaceOnBottom > spaceOnTop;
 
@@ -289,7 +286,7 @@ export default function ChannelInfoForm({
                 <TouchableWithoutFeedback
                     onPress={blur}
                 >
-                    <View>
+                    <View style={styles.mainView}>
                         {showSelector && (
                             <OptionItem
                                 testID='channel_info_form.make_private'
@@ -299,7 +296,6 @@ export default function ChannelInfoForm({
                                 type={'toggle'}
                                 selected={isPrivate}
                                 icon={'lock-outline'}
-                                containerStyle={styles.makePrivateContainer}
                                 onLayout={onLayoutMakePrivate}
                             />
                         )}
@@ -322,12 +318,10 @@ export default function ChannelInfoForm({
                                     testID='channel_info_form.display_name.input'
                                     value={displayName}
                                     ref={nameInput}
-                                    containerStyle={styles.fieldContainer}
                                     theme={theme}
                                     onLayout={onLayoutDisplayName}
                                 />
                                 <View
-                                    style={styles.fieldContainer}
                                     onLayout={onLayoutPurpose}
                                 >
                                     <FloatingTextInput
@@ -357,9 +351,7 @@ export default function ChannelInfoForm({
                                 </View>
                             </>
                         )}
-                        <View
-                            style={styles.fieldContainer}
-                        >
+                        <View>
                             <FloatingTextInput
                                 autoCorrect={false}
                                 autoCapitalize={'none'}

@@ -36,7 +36,7 @@ const BookmarkType = ({channelId, type, ownerId}: Props) => {
             },
         };
         showModal(Screens.CHANNEL_BOOKMARK, title, {channelId, closeButtonId, type, ownerId}, options);
-    }, [channelId, theme, type, ownerId]);
+    }, [formatMessage, theme.sidebarHeaderTextColor, channelId, type, ownerId]);
 
     let icon;
     let label;

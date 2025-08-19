@@ -34,10 +34,8 @@ const DisplayCRT = ({componentId, currentUserId, isCRTEnabled}: Props) => {
     const serverUrl = useServerUrl();
     const intl = useIntl();
 
-    const close = useCallback(() => popTopScreen(componentId), [componentId]);
-
     const saveCRTPreference = useCallback(async () => {
-        close();
+        popTopScreen(componentId);
         if (isCRTEnabled !== isEnabled) {
             const crtPreference: PreferenceType = {
                 category: Preferences.CATEGORIES.DISPLAY_SETTINGS,
@@ -52,7 +50,7 @@ const DisplayCRT = ({componentId, currentUserId, isCRTEnabled}: Props) => {
                 handleCRTToggled(serverUrl);
             }
         }
-    }, [close, isCRTEnabled, isEnabled, currentUserId, serverUrl]);
+    }, [componentId, isCRTEnabled, isEnabled, currentUserId, serverUrl]);
 
     useBackNavigation(saveCRTPreference);
     useAndroidHardwareBackHandler(componentId, saveCRTPreference);
