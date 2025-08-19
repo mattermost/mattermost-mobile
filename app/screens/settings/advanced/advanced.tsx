@@ -12,9 +12,9 @@ import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {goToScreen, popTopScreen} from '@screens/navigation';
 import {deleteFileCache, getAllFilesInCachesDirectory, getFormattedFileSize} from '@utils/file';
-import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -46,13 +46,13 @@ const AdvancedSettings = ({
     const [files, setFiles] = useState<FileInfo[]>(EMPTY_FILES);
     const styles = getStyleSheet(theme);
 
-    const getAllCachedFiles = async () => {
+    const getAllCachedFiles = useCallback(async () => {
         const {totalSize = 0, files: cachedFiles} = await getAllFilesInCachesDirectory(serverUrl);
         setDataSize(totalSize);
         setFiles(cachedFiles || EMPTY_FILES);
-    };
+    }, [serverUrl]);
 
-    const onPressDeleteData = preventDoubleTap(async () => {
+    const onPressDeleteData = usePreventDoubleTap(useCallback(async () => {
         try {
             if (files.length > 0) {
                 const {formatMessage} = intl;
@@ -80,14 +80,14 @@ const AdvancedSettings = ({
         } catch (e) {
             //do nothing
         }
-    });
+    }, [files.length, getAllCachedFiles, intl, serverUrl]));
 
-    const onPressComponentLibrary = () => {
+    const onPressComponentLibrary = useCallback(() => {
         const screen = Screens.COMPONENT_LIBRARY;
         const title = intl.formatMessage({id: 'settings.advanced_settings.component_library', defaultMessage: 'Component library'});
 
         goToScreen(screen, title);
-    };
+    }, [intl]);
 
     useEffect(() => {
         getAllCachedFiles();

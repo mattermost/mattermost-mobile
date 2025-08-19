@@ -8,8 +8,8 @@ import {Platform} from 'react-native';
 import OptionItem from '@components/option_item';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {dismissBottomSheet, goToScreen} from '@screens/navigation';
-import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
@@ -46,13 +46,13 @@ export const TeamSelector = ({commonTeams, onSelectTeam, selectedTeamId}: Props)
         if (team) {
             onSelectTeam(team);
         }
-    }, []);
+    }, [commonTeams, onSelectTeam]);
 
-    const goToTeamSelectorList = useCallback(preventDoubleTap(async () => {
+    const goToTeamSelectorList = usePreventDoubleTap(useCallback(async () => {
         await dismissBottomSheet();
         const title = formatMessage({id: 'channel_info.convert_gm_to_channel.team_selector_list.title', defaultMessage: 'Select Team'});
         goToScreen(Screens.TEAM_SELECTOR_LIST, title, {teams: commonTeams, selectTeam, selectedTeamId});
-    }), [commonTeams, selectTeam, selectedTeamId]);
+    }, [commonTeams, formatMessage, selectTeam, selectedTeamId]));
 
     return (
         <OptionItem

@@ -10,8 +10,8 @@ import OptionItem from '@components/option_item';
 import {Screens} from '@constants';
 import {useServerDisplayName, useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {alertServerLogout} from '@utils/server';
-import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -31,15 +31,15 @@ const LogOut = () => {
     const serverUrl = useServerUrl();
     const serverDisplayName = useServerDisplayName();
 
-    const onLogout = useCallback(preventDoubleTap(() => {
+    const onLogout = usePreventDoubleTap(useCallback(() => {
         Navigation.updateProps(Screens.HOME, {extra: undefined});
         alertServerLogout(serverDisplayName, () => logout(serverUrl, intl), intl);
-    }), [serverDisplayName, serverUrl, intl]);
+    }, [serverDisplayName, serverUrl, intl]));
 
     return (
         <OptionItem
             action={onLogout}
-            description={intl.formatMessage({id: 'account.logout_from', defaultMessage: 'Log out from'}, {serverName: serverDisplayName})}
+            description={intl.formatMessage({id: 'account.logout_from', defaultMessage: 'Log out of {serverName}'}, {serverName: serverDisplayName})}
             destructive={true}
             icon='exit-to-app'
             label={intl.formatMessage({id: 'account.logout', defaultMessage: 'Log out'})}

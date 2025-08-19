@@ -156,7 +156,7 @@ const ChannelHeader = ({
                 title = intl.formatMessage({id: 'screens.channel_info.gm', defaultMessage: 'Group message info'});
                 break;
             default:
-                title = intl.formatMessage({id: 'screens.channel_info', defaultMessage: 'Channel info'});
+                title = intl.formatMessage({id: 'screens.channel_info', defaultMessage: 'Channel Info'});
                 break;
         }
 

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {match} from 'path-to-regexp';
-import {type IntlShape} from 'react-intl';
+import {defineMessage, type IntlShape} from 'react-intl';
 import {Alert} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import urlParse from 'url-parse';
@@ -14,7 +14,7 @@ import {DeepLink, Launch, Screens} from '@constants';
 import DeepLinkType from '@constants/deep_linking';
 import {getDefaultThemeByAppearance} from '@context/theme';
 import DatabaseManager from '@database/manager';
-import {DEFAULT_LOCALE, t} from '@i18n';
+import {DEFAULT_LOCALE} from '@i18n';
 import WebsocketManager from '@managers/websocket_manager';
 import {fetchPlaybookRun} from '@playbooks/actions/remote/runs';
 import {getPlaybookRunById} from '@playbooks/database/queries/run';
@@ -399,10 +399,10 @@ export const getLaunchPropsFromDeepLink = (deepLinkUrl: string, coldStart = fals
 };
 
 export function alertInvalidDeepLink(intl: IntlShape) {
-    const message = {
-        id: t('mobile.deep_link.invalid'),
+    const message = defineMessage({
+        id: 'mobile.deep_link.invalid',
         defaultMessage: 'This link you are trying to open is invalid.',
-    };
+    });
 
     return alertErrorWithFallback(intl, {}, message);
 }

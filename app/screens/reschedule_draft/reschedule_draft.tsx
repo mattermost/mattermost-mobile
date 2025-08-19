@@ -80,7 +80,7 @@ const RescheduledDraft: React.FC<Props> = ({
     const handleUIUpdates = useCallback((res: {error?: unknown}) => {
         if (res.error) {
             setIsUpdating(false);
-            const errorMessage = intl.formatMessage({id: 'mobile.scheduled_post.update.error', defaultMessage: 'There was a problem updating this post message. Please try again.'});
+            const errorMessage = intl.formatMessage({id: 'mobile.scheduled_post.update.error', defaultMessage: 'There was a problem editing this message. Please try again.'});
             showSnackBar({
                 barType: SNACK_BAR_TYPE.RESCHEDULED_POST,
                 customMessage: errorMessage,

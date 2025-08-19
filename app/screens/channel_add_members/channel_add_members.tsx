@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessage, useIntl} from 'react-intl';
 import {Keyboard, type LayoutChangeEvent, Platform, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
@@ -21,7 +21,6 @@ import {useAccessControlAttributes} from '@hooks/access_control_attributes';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useKeyboardOverlap} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
-import {t} from '@i18n';
 import SecurityManager from '@managers/security_manager';
 import {dismissModal} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
@@ -174,7 +173,7 @@ export default function ChannelAddMembers({
         const result = await addMembersToChannel(serverUrl, channel.id, idsToUse);
 
         if (result.error) {
-            alertErrorWithFallback(intl, result.error, {id: t('mobile.channel_add_members.error'), defaultMessage: 'There has been an error and we could not add those users to the channel.'});
+            alertErrorWithFallback(intl, result.error, defineMessage({id: 'mobile.channel_add_members.error', defaultMessage: 'There has been an error and we could not add those users to the channel.'}));
             setAddingMembers(false);
         } else {
             close();
@@ -194,7 +193,7 @@ export default function ChannelAddMembers({
 
             return newSelectedIds;
         });
-    }, [currentUserId, clearSearch]);
+    }, [clearSearch]);
 
     const onTextChange = useCallback((searchTerm: string) => {
         setTerm(searchTerm);

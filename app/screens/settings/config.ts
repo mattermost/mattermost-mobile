@@ -43,7 +43,7 @@ const messages = defineMessages({
         id: 'general_settings.download_logs',
     },
     report_problem: {
-        defaultMessage: 'Report a Problem',
+        defaultMessage: 'Report a problem',
         id: 'general_settings.report_problem',
     },
     notifications: {

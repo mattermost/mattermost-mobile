@@ -2,13 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessages, useIntl} from 'react-intl';
 import {Alert} from 'react-native';
 
 import {deletePost} from '@actions/remote/post';
 import {BaseOption} from '@components/common_post_options';
 import {useServerUrl} from '@context/server';
-import {t} from '@i18n';
 import {dismissBottomSheet} from '@screens/navigation';
 
 import type PostModel from '@typings/database/models/servers/post';
@@ -19,6 +18,14 @@ type Props = {
     combinedPost?: Post | PostModel;
     post: PostModel;
 }
+
+const messages = defineMessages({
+    delete: {
+        id: 'post_info.del',
+        defaultMessage: 'Delete',
+    },
+});
+
 const DeletePostOption = ({bottomSheetId, combinedPost, post}: Props) => {
     const serverUrl = useServerUrl();
     const {formatMessage} = useIntl();
@@ -42,12 +49,11 @@ const DeletePostOption = ({bottomSheetId, combinedPost, post}: Props) => {
                 },
             }],
         );
-    }, [bottomSheetId, post, combinedPost, serverUrl]);
+    }, [formatMessage, bottomSheetId, serverUrl, combinedPost, post]);
 
     return (
         <BaseOption
-            i18nId={t('post_info.del')}
-            defaultMessage='Delete'
+            message={messages.delete}
             iconName='trash-can-outline'
             onPress={onPress}
             testID='post_options.delete_post.option'

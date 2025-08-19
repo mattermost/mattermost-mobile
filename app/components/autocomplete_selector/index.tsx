@@ -14,10 +14,10 @@ import {Screens, View as ViewConstants} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {getChannelById} from '@queries/servers/channel';
 import {getUserById, observeTeammateNameDisplay} from '@queries/servers/user';
 import {goToScreen} from '@screens/navigation';
-import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {secureGetFromRecord} from '@utils/types';
 import {displayUsername} from '@utils/user';
@@ -157,11 +157,6 @@ function AutoCompleteSelector({
     const title = placeholder || intl.formatMessage({id: 'mobile.action_menu.select', defaultMessage: 'Select an option'});
     const serverUrl = useServerUrl();
 
-    const goToSelectorScreen = useCallback(preventDoubleTap(() => {
-        const screen = Screens.INTEGRATION_SELECTOR;
-        goToScreen(screen, title, {dataSource, handleSelect, options, getDynamicOptions, selected, isMultiselect});
-    }), [dataSource, options, getDynamicOptions]);
-
     const handleSelect = useCallback((newSelection?: Selection) => {
         if (!newSelection) {
             return;
@@ -183,6 +178,11 @@ function AutoCompleteSelector({
             onSelected(selectedOptions);
         }
     }, [teammateNameDisplay, intl, dataSource, onSelected]);
+
+    const goToSelectorScreen = usePreventDoubleTap(useCallback((() => {
+        const screen = Screens.INTEGRATION_SELECTOR;
+        goToScreen(screen, title, {dataSource, handleSelect, options, getDynamicOptions, selected, isMultiselect});
+    }), [title, dataSource, handleSelect, options, getDynamicOptions, selected, isMultiselect]));
 
     // Handle the text for the default value.
     useEffect(() => {

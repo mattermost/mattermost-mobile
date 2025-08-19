@@ -7,9 +7,9 @@ import {type StyleProp, View, type ViewStyle} from 'react-native';
 import Emoji from '@components/emoji';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useEmojiSkinTone} from '@hooks/emoji_category_bar';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {skinCodes} from '@utils/emoji';
 import {isValidNamedEmoji} from '@utils/emoji/helpers';
-import {preventDoubleTap} from '@utils/tap';
 
 type Props = {
     name: string;
@@ -30,9 +30,9 @@ const SkinnedEmoji = ({name, onEmojiPress, size = 30, style}: Props) => {
         return skinnedEmoji;
     }, [name, skinTone]);
 
-    const onPress = useCallback(preventDoubleTap(() => {
+    const onPress = usePreventDoubleTap(useCallback(() => {
         onEmojiPress(emojiName);
-    }), [emojiName]);
+    }, [emojiName, onEmojiPress]));
 
     return (
         <View

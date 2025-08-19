@@ -2,21 +2,20 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessage, useIntl} from 'react-intl';
 
 import FormattedText from '@components/formatted_text';
 import SettingBlock from '@components/settings/block';
 import SettingOption from '@components/settings/option';
 import SettingSeparator from '@components/settings/separator';
 import {useTheme} from '@context/theme';
-import {t} from '@i18n';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-const headerText = {
-    id: t('notification_settings.send_notification.about'),
+const headerText = defineMessage({
+    id: 'notification_settings.send_notification.about',
     defaultMessage: 'Notify me about...',
-};
+});
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         disabled: {

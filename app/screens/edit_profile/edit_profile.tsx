@@ -17,10 +17,10 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import {usePreventDoubleTap} from '@hooks/utils';
 import SecurityManager from '@managers/security_manager';
 import {dismissModal, popTopScreen, setButtons} from '@screens/navigation';
 import {logError} from '@utils/log';
-import {preventDoubleTap} from '@utils/tap';
 import {isCustomFieldSamlLinked} from '@utils/user';
 
 import ProfileForm, {CUSTOM_ATTRS_PREFIX} from './components/form';
@@ -152,7 +152,22 @@ const EditProfile = ({
         loadCustomAttributes();
     }, [currentUser, serverUrl, enableCustomAttributes, customAttributesSet]);
 
-    const submitUser = useCallback(preventDoubleTap(async () => {
+    const resetScreenForProfileError = useCallback((resetError: unknown) => {
+        setUsernameError(resetError);
+        Keyboard.dismiss();
+        setUpdating(false);
+        enableSaveButton(true);
+    }, [enableSaveButton]);
+
+    const resetScreen = useCallback((resetError: unknown) => {
+        setError(resetError);
+        Keyboard.dismiss();
+        setUpdating(false);
+        enableSaveButton(true);
+        scrollViewRef.current?.scrollToPosition(0, 0, true);
+    }, [enableSaveButton]);
+
+    const submitUser = usePreventDoubleTap(useCallback(async () => {
         if (!currentUser) {
             return;
         }
@@ -243,7 +258,22 @@ const EditProfile = ({
         } catch (e) {
             resetScreen(e);
         }
-    }), [userInfo, enableSaveButton, currentUser, lockedFirstName, lockedLastName, lockedNickname, lockedPosition, customAttributesSet, enableCustomAttributes, customFields, serverUrl]);
+    }, [
+        currentUser,
+        enableSaveButton,
+        userInfo,
+        lockedFirstName,
+        lockedLastName,
+        lockedNickname,
+        lockedPosition,
+        enableCustomAttributes,
+        close,
+        serverUrl,
+        resetScreen,
+        resetScreenForProfileError,
+        customFields,
+        customAttributesSet,
+    ]));
 
     useAndroidHardwareBackHandler(componentId, close);
     useNavButtonPressed(UPDATE_BUTTON_ID, componentId, submitUser, [userInfo]);
@@ -297,21 +327,6 @@ const EditProfile = ({
         hasUpdateUserInfo.current = didChange;
         enableSaveButton(didChange);
     }, [userInfo, currentUser, enableSaveButton]);
-
-    const resetScreenForProfileError = useCallback((resetError: unknown) => {
-        setUsernameError(resetError);
-        Keyboard.dismiss();
-        setUpdating(false);
-        enableSaveButton(true);
-    }, [enableSaveButton]);
-
-    const resetScreen = useCallback((resetError: unknown) => {
-        setError(resetError);
-        Keyboard.dismiss();
-        setUpdating(false);
-        enableSaveButton(true);
-        scrollViewRef.current?.scrollToPosition(0, 0, true);
-    }, [enableSaveButton]);
 
     const content = currentUser ? (
         <KeyboardAwareScrollView

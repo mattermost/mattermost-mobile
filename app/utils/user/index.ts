@@ -2,22 +2,29 @@
 // See LICENSE.txt for license information.
 
 import moment from 'moment-timezone';
+import {defineMessages, type IntlShape} from 'react-intl';
 import {Alert} from 'react-native';
 
 import {General, Permissions, Preferences} from '@constants';
 import {Ringtone} from '@constants/calls';
 import {CustomStatusDurationEnum} from '@constants/custom_status';
-import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
+import {DEFAULT_LOCALE, getLocalizedMessage} from '@i18n';
 import {safeParseJSON, toTitleCase} from '@utils/helpers';
 import {logError} from '@utils/log';
 
 import type {CustomProfileFieldModel, CustomProfileAttributeModel} from '@database/models/server';
 import type {CustomAttribute, CustomAttributeSet} from '@typings/api/custom_profile_attributes';
 import type UserModel from '@typings/database/models/servers/user';
-import type {IntlShape} from 'react-intl';
+
+const displayUsernameMessages = defineMessages({
+    someone: {
+        id: 'channel_loader.someone',
+        defaultMessage: 'Someone',
+    },
+});
 
 export function displayUsername(user?: UserProfile | UserModel | null, locale?: string, teammateDisplayNameSetting?: string, useFallbackUsername = true) {
-    let name = useFallbackUsername ? getLocalizedMessage(locale || DEFAULT_LOCALE, t('channel_loader.someone'), 'Someone') : '';
+    let name = useFallbackUsername ? getLocalizedMessage(locale || DEFAULT_LOCALE, displayUsernameMessages.someone.id, displayUsernameMessages.someone.defaultMessage) : '';
 
     if (user) {
         if (teammateDisplayNameSetting === Preferences.DISPLAY_PREFER_NICKNAME) {
@@ -191,24 +198,35 @@ export function isCustomStatusExpired(user?: UserModel | UserProfile) {
 }
 
 export function confirmOutOfOfficeDisabled(intl: IntlShape, status: string, updateStatus: (status: string) => void) {
-    const userStatusId = 'modal.manual_status.auto_responder.message_' + status;
-    t('modal.manual_status.auto_responder.message_');
-    t('modal.manual_status.auto_responder.message_away');
-    t('modal.manual_status.auto_responder.message_dnd');
-    t('modal.manual_status.auto_responder.message_offline');
-    t('modal.manual_status.auto_responder.message_online');
-
     let translatedStatus;
-    if (status === 'dnd') {
-        translatedStatus = intl.formatMessage({
-            id: 'mobile.set_status.dnd',
-            defaultMessage: 'Do Not Disturb',
-        });
-    } else {
-        translatedStatus = intl.formatMessage({
-            id: `mobile.set_status.${status}`,
-            defaultMessage: toTitleCase(status),
-        });
+    switch (status) {
+        case General.DND:
+            translatedStatus = intl.formatMessage({
+                id: 'mobile.set_status.dnd',
+                defaultMessage: 'Do Not Disturb',
+            });
+            break;
+        case General.AWAY:
+            translatedStatus = intl.formatMessage({
+                id: 'mobile.set_status.away',
+                defaultMessage: 'Away',
+            });
+            break;
+        case General.OFFLINE:
+            translatedStatus = intl.formatMessage({
+                id: 'mobile.set_status.offline',
+                defaultMessage: 'Offline',
+            });
+            break;
+        case General.ONLINE:
+            translatedStatus = intl.formatMessage({
+                id: 'mobile.set_status.online',
+                defaultMessage: 'Online',
+            });
+            break;
+        default:
+            translatedStatus = toTitleCase(status);
+            break;
     }
 
     Alert.alert(
@@ -217,7 +235,7 @@ export function confirmOutOfOfficeDisabled(intl: IntlShape, status: string, upda
             defaultMessage: 'Disable "Out Of Office"?',
         }),
         intl.formatMessage({
-            id: userStatusId,
+            id: 'modal.manual_status.auto_responder.message_',
             defaultMessage: 'Would you like to switch your status to "{status}" and disable Automatic Replies?',
         }, {status: translatedStatus}),
         [{

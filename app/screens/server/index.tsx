@@ -3,7 +3,7 @@
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessage, useIntl} from 'react-intl';
 import {Alert, BackHandler, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {Navigation} from 'react-native-navigation';
@@ -17,7 +17,6 @@ import AppVersion from '@components/app_version';
 import {Screens, Launch, DeepLink} from '@constants';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {useScreenTransitionAnimation} from '@hooks/screen_transition_animation';
-import {t} from '@i18n';
 import {getServerCredentials} from '@init/credentials';
 import PushNotifications from '@init/push_notifications';
 import NetworkManager from '@managers/network_manager';
@@ -47,10 +46,10 @@ interface ServerProps extends LaunchProps {
 
 let cancelPing: undefined | (() => void);
 
-const defaultServerUrlMessage = {
-    id: t('mobile.server_url.empty'),
+const defaultServerUrlMessage = defineMessage({
+    id: 'mobile.server_url.empty',
     defaultMessage: 'Please enter a valid server URL',
-};
+});
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     appInfo: {

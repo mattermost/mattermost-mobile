@@ -12,8 +12,8 @@ import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useBackNavigation from '@hooks/navigate_back';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {goToScreen, popTopScreen} from '@screens/navigation';
-import {preventDoubleTap} from '@utils/tap';
 import {getDeviceTimezone} from '@utils/timezone';
 import {getTimezoneRegion, getUserTimezoneProps} from '@utils/user';
 
@@ -47,7 +47,7 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
         });
     };
 
-    const goToSelectTimezone = preventDoubleTap(() => {
+    const goToSelectTimezone = usePreventDoubleTap(useCallback(() => {
         const screen = Screens.SETTINGS_DISPLAY_TIMEZONE_SELECT;
         const title = intl.formatMessage({id: 'settings_display.timezone.select', defaultMessage: 'Select Timezone'});
 
@@ -57,9 +57,9 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
         };
 
         goToScreen(screen, title, passProps);
-    });
+    }, [initialTimezone.automaticTimezone, initialTimezone.manualTimezone, intl, userTimezone.manualTimezone]));
 
-    const close = () => popTopScreen(componentId);
+    const close = useCallback(() => popTopScreen(componentId), [componentId]);
 
     const saveTimezone = useCallback(() => {
         const canSave =
@@ -78,7 +78,12 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
         }
 
         close();
-    }, [userTimezone, serverUrl]);
+    }, [
+        initialTimezone,
+        userTimezone,
+        close,
+        serverUrl,
+    ]);
 
     useBackNavigation(saveTimezone);
 
@@ -89,7 +94,7 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
             return getTimezoneRegion(userTimezone.automaticTimezone);
         }
         return intl.formatMessage({id: 'settings_display.timezone.off', defaultMessage: 'Off'});
-    }, [userTimezone.useAutomaticTimezone]);
+    }, [intl, userTimezone.automaticTimezone, userTimezone.useAutomaticTimezone]);
 
     return (
         <SettingContainer testID='timezone_display_settings'>

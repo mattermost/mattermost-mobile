@@ -14,7 +14,7 @@ export function privateChannelJoinPrompt(displayName: string, intl: IntlShape): 
             }),
             intl.formatMessage({
                 id: 'permalink.show_dialog_warn.description',
-                defaultMessage: 'You are about to join {channel} without explicitly being added by the Channel Admin. Are you sure you wish to join this private channel?',
+                defaultMessage: 'You are about to join {channel} without explicitly being added by the channel admin. Are you sure you wish to join this private channel?',
             }, {
                 channel: displayName,
             }),

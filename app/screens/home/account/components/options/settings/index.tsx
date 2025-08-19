@@ -6,18 +6,18 @@ import {useIntl} from 'react-intl';
 
 import OptionItem from '@components/option_item';
 import Screens from '@constants/screens';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {showModal} from '@screens/navigation';
-import {preventDoubleTap} from '@utils/tap';
 
 const Settings = () => {
     const intl = useIntl();
 
-    const openSettings = useCallback(preventDoubleTap(() => {
+    const openSettings = usePreventDoubleTap(useCallback(() => {
         showModal(
             Screens.SETTINGS,
             intl.formatMessage({id: 'mobile.screen.settings', defaultMessage: 'Settings'}),
         );
-    }), []);
+    }, [intl]));
 
     return (
         <OptionItem

@@ -6,8 +6,8 @@ import React, {useCallback, useRef} from 'react';
 
 import {postActionWithCookie} from '@actions/remote/integrations';
 import {useServerUrl} from '@context/server';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {getStatusColors} from '@utils/message_attachment';
-import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {secureGetFromRecord} from '@utils/types';
 
@@ -56,13 +56,13 @@ const ActionButton = ({buttonColor, cookie, disabled, id, name, postId, theme}: 
     let customButtonStyle;
     let customButtonTextStyle;
 
-    const onPress = useCallback(preventDoubleTap(async () => {
+    const onPress = usePreventDoubleTap(useCallback(async () => {
         if (!presssed.current) {
             presssed.current = true;
             await postActionWithCookie(serverUrl, postId, id, cookie || '');
             presssed.current = false;
         }
-    }), [id, postId, cookie]);
+    }, [serverUrl, postId, id, cookie]));
 
     if (buttonColor) {
         const STATUS_COLORS = getStatusColors(theme);

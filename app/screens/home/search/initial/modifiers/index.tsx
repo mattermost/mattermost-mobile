@@ -53,22 +53,22 @@ const getModifiersSectionsData = (intl: IntlShape, teamId: string): ModifierItem
         sectionsData.push({
             term: 'From:',
             testID: 'search.modifier.from',
-            description: formatMessage({id: 'mobile.search.modifier.from', defaultMessage: ' a specific user'}),
+            description: formatMessage({id: 'mobile.search.modifier.from', defaultMessage: 'a specific user'}),
         }, {
             term: 'In:',
             testID: 'search.modifier.in',
-            description: formatMessage({id: 'mobile.search.modifier.in', defaultMessage: ' a specific channel'}),
+            description: formatMessage({id: 'mobile.search.modifier.in', defaultMessage: 'a specific channel'}),
         });
     }
 
     sectionsData.push({
         term: '-',
         testID: 'search.modifier.exclude',
-        description: formatMessage({id: 'mobile.search.modifier.exclude', defaultMessage: ' exclude search terms'}),
+        description: formatMessage({id: 'mobile.search.modifier.exclude', defaultMessage: 'exclude search terms'}),
     }, {
         term: '""',
         testID: 'search.modifier.phrases',
-        description: formatMessage({id: 'mobile.search.modifier.phrases', defaultMessage: ' messages with phrases'}),
+        description: formatMessage({id: 'mobile.search.modifier.phrases', defaultMessage: 'messages with phrases'}),
         cursorPosition: -1,
     });
 
@@ -113,7 +113,7 @@ const Modifiers = ({scrollEnabled, searchValue, setSearchValue, searchRef, setTe
         setTimeout(() => {
             scrollEnabled.value = true;
         }, 350);
-    }, [showMore]);
+    }, [data.length, height, scrollEnabled, showMore]);
 
     useEffect(() => {
         return () => {

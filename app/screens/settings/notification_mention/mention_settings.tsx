@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo, useState} from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessage, useIntl} from 'react-intl';
 import {Text} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
@@ -15,7 +15,6 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useBackNavigation from '@hooks/navigate_back';
-import {t} from '@i18n';
 import {popTopScreen} from '@screens/navigation';
 import ReplySettings from '@screens/settings/notification_mention/reply_settings';
 import {areBothStringArraysEqual} from '@utils/helpers';
@@ -26,10 +25,10 @@ import {getNotificationProps} from '@utils/user';
 import type UserModel from '@typings/database/models/servers/user';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
-const mentionHeaderText = {
-    id: t('notification_settings.mentions.keywords_mention'),
+const mentionHeaderText = defineMessage({
+    id: 'notification_settings.mentions.keywords_mention',
     defaultMessage: 'Keywords that trigger mentions',
-};
+});
 
 const COMMA_KEY = ',';
 
@@ -132,7 +131,7 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: Props) => {
     const styles = getStyleSheet(theme);
     const intl = useIntl();
 
-    const close = () => popTopScreen(componentId);
+    const close = useCallback(() => popTopScreen(componentId), [componentId]);
 
     const saveMention = useCallback(() => {
         if (!currentUser) {

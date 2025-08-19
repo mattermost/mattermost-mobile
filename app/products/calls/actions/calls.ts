@@ -399,8 +399,8 @@ export const getEndCallMessage = async (serverUrl: string, channelId: string, cu
 
     msg = intl.formatMessage({
         id: 'mobile.calls_end_msg_channel',
-        defaultMessage: 'Are you sure you want to end a call with {numSessions} participants in {displayName}?',
-    }, {numSessions, displayName: channel.displayName});
+        defaultMessage: 'Are you sure you want to end a call with {numParticipants} participants in {displayName}?',
+    }, {numParticipants: numSessions, displayName: channel.displayName});
 
     if (channel.type === General.DM_CHANNEL) {
         const otherID = getUserIdFromChannelName(currentUserId, channel.name);
@@ -411,7 +411,7 @@ export const getEndCallMessage = async (serverUrl: string, channelId: string, cu
         const displaySetting = getTeammateNameDisplaySetting(preferences, config.LockTeammateNameDisplay, config.TeammateNameDisplay, license);
         msg = intl.formatMessage({
             id: 'mobile.calls_end_msg_dm',
-            defaultMessage: 'Are you sure you want to end the call with {displayName}?',
+            defaultMessage: 'Are you sure you want to end a call with {displayName}?',
         }, {displayName: displayUsername(otherUser, intl.locale, displaySetting)});
     }
 
@@ -615,7 +615,7 @@ const handleEndCall = async (serverUrl: string, channelId: string, currentUserId
             }),
             intl.formatMessage({
                 id: 'mobile.calls_end_permission_msg',
-                defaultMessage: 'You don\'t have permission to end the call. Please ask the call owner to end the call.',
+                defaultMessage: 'You don\'t have permission to end the call. Please ask the call creator to end the call.',
             }));
         return;
     }

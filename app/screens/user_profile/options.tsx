@@ -72,7 +72,7 @@ const UserProfileOptions = ({location, type, userId, username}: Props) => {
                     iconName='send'
                     onPress={openChannel}
                     testID='user_profile_options.send_message.option'
-                    text={intl.formatMessage({id: 'channel_info.send_a_mesasge', defaultMessage: 'Send message'})}
+                    text={intl.formatMessage({id: 'channel_info.send_a_mesasge', defaultMessage: 'Send a message'})}
                 />
                 <View style={styles.divider}/>
                 <OptionBox

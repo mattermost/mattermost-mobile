@@ -15,11 +15,11 @@ import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {useScreenTransitionAnimation} from '@hooks/screen_transition_animation';
+import {usePreventDoubleTap} from '@hooks/utils';
 import NetworkManager from '@managers/network_manager';
 import SecurityManager from '@managers/security_manager';
 import Background from '@screens/background';
 import {dismissModal, goToScreen, loginAnimationOptions, popTopScreen} from '@screens/navigation';
-import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -122,9 +122,9 @@ const LoginOptions = ({
         );
     }, [hasLoginForm, numberSSOs, styles.subheader]);
 
-    const goToSso = preventDoubleTap((ssoType: string) => {
+    const goToSso = usePreventDoubleTap(useCallback((ssoType: string) => {
         goToScreen(Screens.SSO, '', {config, extra, launchError, launchType, license, theme, ssoType, serverDisplayName, serverUrl}, loginAnimationOptions());
-    });
+    }, [config, extra, launchError, launchType, license, serverDisplayName, serverUrl, theme]));
 
     const optionsSeparator = hasLoginForm && Boolean(numberSSOs) && (
         <LoginOptionsSeparator

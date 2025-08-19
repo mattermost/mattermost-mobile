@@ -3,11 +3,11 @@
 
 import {nativeApplicationVersion, nativeBuildVersion} from 'expo-application';
 import React, {useEffect} from 'react';
+import {defineMessages} from 'react-intl';
 import {Keyboard, StyleSheet, type TextStyle, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import FormattedText from '@components/formatted_text';
-import {t} from '@i18n';
 
 const style = StyleSheet.create({
     info: {
@@ -25,6 +25,13 @@ type AppVersionProps = {
     isWrapped?: boolean;
     textStyle?: TextStyle;
 }
+
+const messages = defineMessages({
+    appVersion: {
+        id: 'mobile.about.appVersion',
+        defaultMessage: 'App Version: {version} (Build {number})',
+    },
+});
 
 const AppVersion = ({isWrapped = true, textStyle = {}}: AppVersionProps) => {
     const opacity = useSharedValue(1);
@@ -50,8 +57,7 @@ const AppVersion = ({isWrapped = true, textStyle = {}}: AppVersionProps) => {
 
     const appVersion = (
         <FormattedText
-            id={t('mobile.about.appVersion')}
-            defaultMessage='App Version: {version} (Build {number})'
+            {...messages.appVersion}
             style={StyleSheet.flatten([style.version, textStyle])}
             values={{
                 version: nativeApplicationVersion,
