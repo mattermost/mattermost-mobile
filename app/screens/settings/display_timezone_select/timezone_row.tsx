@@ -32,9 +32,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         body: {
             flexDirection: 'row',
         },
-        lineStyles: {
-            width: '100%',
-        },
     };
 });
 type TimezoneRowProps = {
@@ -75,9 +72,7 @@ const TimezoneRow = ({onPressTimezone, isSelected, timezone}: TimezoneRowProps) 
                     />
                 )}
             </View>
-            <SettingSeparator
-                lineStyles={styles.lineStyles}
-            />
+            <SettingSeparator/>
         </TouchableOpacity>
     );
 };
