@@ -10,10 +10,14 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import DatabaseManager from '@database/manager';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import {getServerCredentials, setServerCredentials} from '@init/credentials';
+import NetworkManager from '@managers/network_manager';
 import SecurityManager from '@managers/security_manager';
+import WebSocketManager from '@managers/websocket_manager';
 import {getServerByDisplayName} from '@queries/app/servers';
 import Background from '@screens/background';
 import {dismissModal} from '@screens/navigation';
+import {logWarning} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Form from './form';
@@ -48,6 +52,8 @@ const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) =>
     const keyboardAwareRef = useRef<KeyboardAwareScrollView>(null);
     const [saving, setSaving] = useState(false);
     const [displayName, setDisplayName] = useState<string>(server.displayName);
+    const [sharedPassword, setSharedPassword] = useState<string>('');
+    const [sharedPasswordModified, setSharedPasswordModified] = useState(false);
     const [buttonDisabled, setButtonDisabled] = useState(true);
     const [displayNameError, setDisplayNameError] = useState<string | undefined>();
     const styles = getStyleSheet(theme);
@@ -57,7 +63,20 @@ const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) =>
     }, [componentId]);
 
     useEffect(() => {
-        setButtonDisabled(Boolean(!displayName || displayName === server.displayName));
+        const loadCredentials = async () => {
+            const credentials = await getServerCredentials(server.url);
+            const hasPassword = Boolean(credentials?.sharedPassword);
+
+            // If there's an existing password, show dummy value "keep"
+            const initialValue = hasPassword ? 'keep' : '';
+            setSharedPassword(initialValue);
+        };
+        loadCredentials();
+    }, [server.url]);
+
+    useEffect(() => {
+        // Allow saving if display name is valid, regardless of changes
+        setButtonDisabled(!displayName);
     }, [displayName]);
 
     const handleUpdate = useCallback(async () => {
@@ -82,13 +101,52 @@ const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) =>
         }
 
         await DatabaseManager.updateServerDisplayName(server.url, displayName);
+
+        // Update shared password only if it was modified
+        if (sharedPasswordModified) {
+            const credentials = await getServerCredentials(server.url);
+            if (credentials) {
+                // Empty field = remove password, otherwise use the new value
+                const newSharedPassword = sharedPassword.trim() || undefined;
+                setServerCredentials(server.url, credentials.token, newSharedPassword);
+
+                // Update active REST client
+                try {
+                    const activeClient = NetworkManager.getClient(server.url);
+                    activeClient.setClientCredentials(credentials.token, newSharedPassword);
+                } catch (error) {
+                    logWarning('Failed to update REST client shared password:', error);
+                }
+
+                // Update active WebSocket client
+                try {
+                    WebSocketManager.createClient(server.url, credentials.token, newSharedPassword);
+                } catch (error) {
+                    logWarning('Failed to update WebSocket client shared password:', error);
+                }
+            }
+        }
+
         dismissModal({componentId});
-    }, [!buttonDisabled && displayName, !buttonDisabled && displayNameError]);
+    }, [!buttonDisabled && displayName, !buttonDisabled && displayNameError, !buttonDisabled && sharedPasswordModified, sharedPassword]);
 
     const handleDisplayNameTextChanged = useCallback((text: string) => {
         setDisplayName(text);
         setDisplayNameError(undefined);
     }, []);
+
+    const handleSharedPasswordTextChanged = useCallback((text: string) => {
+        setSharedPassword(text);
+        setSharedPasswordModified(true);
+    }, []);
+
+    const handleSharedPasswordFocus = useCallback(() => {
+        // Clear field when focused if it hasn't been modified yet
+        if (!sharedPasswordModified) {
+            setSharedPassword('');
+            setSharedPasswordModified(true); // Mark as modified when clearing dummy value
+        }
+    }, [sharedPasswordModified]);
 
     useNavButtonPressed(closeButtonId || '', componentId, close, []);
     useAndroidHardwareBackHandler(componentId, close);
@@ -125,8 +183,11 @@ const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) =>
                         displayNameError={displayNameError}
                         handleUpdate={handleUpdate}
                         handleDisplayNameTextChanged={handleDisplayNameTextChanged}
+                        handleSharedPasswordTextChanged={handleSharedPasswordTextChanged}
+                        handleSharedPasswordFocus={handleSharedPasswordFocus}
                         keyboardAwareRef={keyboardAwareRef}
                         serverUrl={server.url}
+                        sharedPassword={sharedPassword}
                         theme={theme}
                     />
                 </KeyboardAwareScrollView>

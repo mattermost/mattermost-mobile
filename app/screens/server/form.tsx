@@ -95,6 +95,10 @@ const messages = defineMessages({
         id: 'mobile.components.select_server_view.sharedPassword',
         defaultMessage: 'Shared Password',
     },
+    sharedPasswordHelp: {
+        id: 'mobile.components.select_server_view.sharedPasswordHelp',
+        defaultMessage: 'Optional password sent with all requests to your server',
+    },
 });
 
 const ServerForm = ({
@@ -227,10 +231,7 @@ const ServerForm = ({
                             autoCorrect={false}
                             autoCapitalize={'none'}
                             enablesReturnKeyAutomatically={true}
-                            label={formatMessage({
-                                id: 'mobile.components.select_server_view.sharedPassword',
-                                defaultMessage: 'Shared Password',
-                            })}
+                            label={formatMessage(messages.sharedPassword)}
                             onChangeText={handleSharedPasswordTextChanged}
                             onSubmitEditing={onConnect}
                             ref={sharedPasswordRef}
@@ -240,6 +241,11 @@ const ServerForm = ({
                             testID='server_form.shared_password.input'
                             theme={theme}
                             value={sharedPassword}
+                        />
+                        <FormattedText
+                            {...messages.sharedPasswordHelp}
+                            style={styles.chooseText}
+                            testID='server_form.shared_password_help'
                         />
                     </View>
                 )}

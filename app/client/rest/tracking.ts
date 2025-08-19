@@ -81,6 +81,9 @@ export default class ClientTracking {
 
         if (sharedPassword) {
             this.requestHeaders[ClientConstants.HEADER_X_MATTERMOST_SHARED_PASSWORD] = sharedPassword;
+        } else {
+            // Remove shared password header when undefined
+            delete this.requestHeaders[ClientConstants.HEADER_X_MATTERMOST_SHARED_PASSWORD];
         }
 
         setServerCredentials(this.apiClient.baseUrl, bearerToken, sharedPassword);
