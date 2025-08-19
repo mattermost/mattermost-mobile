@@ -811,7 +811,7 @@ describe('Actions.Calls', () => {
 
                     expect(Alert.alert).toHaveBeenCalledWith(
                         'Error',
-                        'You don\'t have permission to end the call. Please ask the call owner to end the call.',
+                        'You don\'t have permission to end the call. Please ask the call creator to end the call.',
                     );
                     expect(mockClient.endCall).not.toHaveBeenCalled();
                 });
@@ -1201,7 +1201,7 @@ describe('Actions.Calls', () => {
         });
 
         const result3 = await CallsActions.getEndCallMessage('server1', 'channel-2', 'user1', intl);
-        expect(result3).toBe('Are you sure you want to end the call with user2?');
+        expect(result3).toBe('Are you sure you want to end a call with user2?');
     });
 
     it('endCall', async () => {
