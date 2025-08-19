@@ -170,7 +170,14 @@ const ChecklistItemBottomSheet = ({
         </View>
     );
 
-    const getAssigneeInfo: () => ComponentProps<typeof OptionItem>['info'] = () => {
+    const onUserChipPress = useCallback((userId: string) => {
+        openUserProfileModal(intl, theme, {
+            userId,
+            location: 'PlaybookRun',
+        });
+    }, [intl, theme]);
+
+    const assigneeInfo: ComponentProps<typeof OptionItem>['info'] = useMemo(() => {
         if (!assignee) {
             return intl.formatMessage(messages.none);
         }
@@ -180,14 +187,7 @@ const ChecklistItemBottomSheet = ({
             teammateNameDisplay,
             location: 'PlaybookRun',
         };
-    };
-
-    const onUserChipPress = useCallback((userId: string) => {
-        openUserProfileModal(intl, theme, {
-            userId,
-            location: 'PlaybookRun',
-        });
-    }, [intl, theme]);
+    }, [assignee, intl, onUserChipPress, teammateNameDisplay]);
 
     const renderTaskDetails = () => (
         <View style={styles.taskDetailsContainer}>
@@ -195,7 +195,7 @@ const ChecklistItemBottomSheet = ({
                 type='none'
                 icon='account-multiple-plus-outline'
                 label={intl.formatMessage(messages.assignee)}
-                info={getAssigneeInfo()}
+                info={assigneeInfo}
                 testID='checklist_item.assignee'
             />
             <OptionItem
@@ -215,7 +215,7 @@ const ChecklistItemBottomSheet = ({
         </View>
     );
 
-    const Scroll = useMemo(() => (isTablet ? ScrollView : BottomSheetScrollView), [isTablet]);
+    const Scroll = isTablet ? ScrollView : BottomSheetScrollView;
 
     return (
         <View style={styles.container}>
