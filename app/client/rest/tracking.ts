@@ -76,17 +76,17 @@ export default class ClientTracking {
         this.setClientCredentials(bearerToken);
     }
 
-    setClientCredentials(bearerToken: string, sharedPassword?: string) {
+    setClientCredentials(bearerToken: string, preauthSecret?: string) {
         this.requestHeaders[ClientConstants.HEADER_AUTH] = `${ClientConstants.HEADER_BEARER} ${bearerToken}`;
 
-        if (sharedPassword) {
-            this.requestHeaders[ClientConstants.HEADER_X_MATTERMOST_SHARED_PASSWORD] = sharedPassword;
+        if (preauthSecret) {
+            this.requestHeaders[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET] = preauthSecret;
         } else {
             // Remove shared password header when undefined
-            delete this.requestHeaders[ClientConstants.HEADER_X_MATTERMOST_SHARED_PASSWORD];
+            delete this.requestHeaders[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET];
         }
 
-        setServerCredentials(this.apiClient.baseUrl, bearerToken, sharedPassword);
+        setServerCredentials(this.apiClient.baseUrl, bearerToken, preauthSecret);
     }
 
     setCSRFToken(csrfToken: string) {
@@ -424,7 +424,7 @@ export default class ClientTracking {
 
         const bearerToken = headers[ClientConstants.HEADER_TOKEN] || headers[ClientConstants.HEADER_TOKEN.toLowerCase()];
         if (bearerToken) {
-            const existingSharedPassword = this.requestHeaders[ClientConstants.HEADER_X_MATTERMOST_SHARED_PASSWORD];
+            const existingSharedPassword = this.requestHeaders[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET];
             this.setClientCredentials(bearerToken, existingSharedPassword);
         }
 

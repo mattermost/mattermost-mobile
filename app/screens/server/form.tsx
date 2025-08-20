@@ -24,10 +24,10 @@ type Props = {
     disableServerUrl: boolean;
     handleConnect: () => void;
     handleDisplayNameTextChanged: (text: string) => void;
-    handleSharedPasswordTextChanged: (text: string) => void;
+    handlePreauthSecretTextChanged: (text: string) => void;
     handleUrlTextChanged: (text: string) => void;
     keyboardAwareRef: RefObject<KeyboardAwareScrollView>;
-    sharedPassword?: string;
+    preauthSecret?: string;
     theme: Theme;
     url?: string;
     urlError?: string;
@@ -59,12 +59,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     advancedOptionsHeader: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
+        justifyContent: 'flex-start',
         paddingVertical: 12,
         paddingHorizontal: 4,
     },
     advancedOptionsTitle: {
-        color: theme.centerChannelColor,
+        color: theme.linkColor,
         ...typography('Body', 200, 'SemiBold'),
     },
     advancedOptionsContent: {
@@ -91,13 +91,13 @@ const messages = defineMessages({
         id: 'mobile.components.select_server_view.advancedOptions',
         defaultMessage: 'Advanced Options',
     },
-    sharedPassword: {
+    preauthSecret: {
         id: 'mobile.components.select_server_view.sharedPassword',
-        defaultMessage: 'Shared Password',
+        defaultMessage: 'Pre-authentication secret',
     },
-    sharedPasswordHelp: {
+    preauthSecretHelp: {
         id: 'mobile.components.select_server_view.sharedPasswordHelp',
-        defaultMessage: 'Optional password sent with all requests to your server',
+        defaultMessage: 'The pre-authentication secret shared by the administrator',
     },
 });
 
@@ -110,17 +110,17 @@ const ServerForm = ({
     disableServerUrl,
     handleConnect,
     handleDisplayNameTextChanged,
-    handleSharedPasswordTextChanged,
+    handlePreauthSecretTextChanged,
     handleUrlTextChanged,
     keyboardAwareRef,
-    sharedPassword = '',
+    preauthSecret = '',
     theme,
     url = '',
     urlError,
 }: Props) => {
     const {formatMessage} = useIntl();
     const displayNameRef = useRef<FloatingTextInputRef>(null);
-    const sharedPasswordRef = useRef<FloatingTextInputRef>(null);
+    const preauthSecretRef = useRef<FloatingTextInputRef>(null);
     const urlRef = useRef<FloatingTextInputRef>(null);
     const styles = getStyleSheet(theme);
 
@@ -139,7 +139,7 @@ const ServerForm = ({
 
     const onDisplayNameSubmit = useCallback(() => {
         if (showAdvancedOptions) {
-            sharedPasswordRef.current?.focus();
+            preauthSecretRef.current?.focus();
         } else {
             onConnect();
         }
@@ -213,15 +213,15 @@ const ServerForm = ({
                     style={styles.advancedOptionsHeader}
                     testID='server_form.advanced_options.toggle'
                 >
+                    <CompassIcon
+                        name={showAdvancedOptions ? 'chevron-up' : 'chevron-down'}
+                        size={20}
+                        style={styles.advancedOptionsTitle}
+                    />
                     <FormattedText
                         defaultMessage='Advanced Options'
                         id='mobile.components.select_server_view.advancedOptions'
                         style={styles.advancedOptionsTitle}
-                    />
-                    <CompassIcon
-                        name={showAdvancedOptions ? 'chevron-up' : 'chevron-down'}
-                        size={20}
-                        color={theme.centerChannelColor}
                     />
                 </Pressable>
 
@@ -231,21 +231,21 @@ const ServerForm = ({
                             autoCorrect={false}
                             autoCapitalize={'none'}
                             enablesReturnKeyAutomatically={true}
-                            label={formatMessage(messages.sharedPassword)}
-                            onChangeText={handleSharedPasswordTextChanged}
+                            label={formatMessage(messages.preauthSecret)}
+                            onChangeText={handlePreauthSecretTextChanged}
                             onSubmitEditing={onConnect}
-                            ref={sharedPasswordRef}
+                            ref={preauthSecretRef}
                             returnKeyType='done'
                             secureTextEntry={true}
                             spellCheck={false}
-                            testID='server_form.shared_password.input'
+                            testID='server_form.preauth_secret.input'
                             theme={theme}
-                            value={sharedPassword}
+                            value={preauthSecret}
                         />
                         <FormattedText
-                            {...messages.sharedPasswordHelp}
+                            {...messages.preauthSecretHelp}
                             style={styles.chooseText}
-                            testID='server_form.shared_password_help'
+                            testID='server_form.preauth_secret_help'
                         />
                     </View>
                 )}

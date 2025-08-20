@@ -27,7 +27,7 @@ declare class ServersModel extends Model {
     identifier: string;
 
     /** shared_password_key: The keychain identifier for the shared password */
-    sharedPasswordKey: string;
+    preauthSecretKey: string;
 }
 
 export default ServersModel;

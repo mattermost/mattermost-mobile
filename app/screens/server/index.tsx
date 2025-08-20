@@ -86,7 +86,7 @@ const Server = ({
     const [connecting, setConnecting] = useState(false);
     const [displayName, setDisplayName] = useState<string>('');
     const [buttonDisabled, setButtonDisabled] = useState(true);
-    const [sharedPassword, setSharedPassword] = useState<string>('');
+    const [preauthSecret, setPreauthSecret] = useState<string>('');
     const [url, setUrl] = useState<string>('');
     const [displayNameError, setDisplayNameError] = useState<string | undefined>();
     const [urlError, setUrlError] = useState<string | undefined>();
@@ -193,7 +193,7 @@ const Server = ({
             launchType,
             license,
             serverDisplayName: displayName,
-            serverSharedPassword: sharedPassword.trim() || undefined,
+            serverPreauthSecret: preauthSecret.trim() || undefined,
             serverUrl,
             ssoOptions,
             theme,
@@ -271,8 +271,8 @@ const Server = ({
         setUrl(text);
     }, []);
 
-    const handleSharedPasswordTextChanged = useCallback((text: string) => {
-        setSharedPassword(text);
+    const handlePreauthSecretTextChanged = useCallback((text: string) => {
+        setPreauthSecret(text);
     }, []);
 
     const isServerUrlValid = (serverUrl?: string) => {
@@ -296,7 +296,7 @@ const Server = ({
             cancelPing = undefined;
         };
 
-        const ping = await getServerUrlAfterRedirect(pingUrl, !retryWithHttp, sharedPassword.trim() || undefined);
+        const ping = await getServerUrlAfterRedirect(pingUrl, !retryWithHttp, preauthSecret.trim() || undefined);
         if (!ping.url) {
             cancelPing();
             if (retryWithHttp) {
@@ -309,7 +309,7 @@ const Server = ({
             }
             return;
         }
-        const result = await doPing(ping.url, true, managedConfig?.timeout ? parseInt(managedConfig?.timeout, 10) : undefined, sharedPassword.trim() || undefined);
+        const result = await doPing(ping.url, true, managedConfig?.timeout ? parseInt(managedConfig?.timeout, 10) : undefined, preauthSecret.trim() || undefined);
 
         if (canceled) {
             return;
@@ -409,10 +409,10 @@ const Server = ({
                         disableServerUrl={disableServerUrl}
                         handleConnect={handleConnect}
                         handleDisplayNameTextChanged={handleDisplayNameTextChanged}
-                        handleSharedPasswordTextChanged={handleSharedPasswordTextChanged}
+                        handlePreauthSecretTextChanged={handlePreauthSecretTextChanged}
                         handleUrlTextChanged={handleUrlTextChanged}
                         keyboardAwareRef={keyboardAwareRef}
-                        sharedPassword={sharedPassword}
+                        preauthSecret={preauthSecret}
                         theme={theme}
                         url={url}
                         urlError={urlError}

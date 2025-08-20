@@ -23,11 +23,11 @@ type Props = {
     displayNameError?: string;
     handleUpdate: () => void;
     handleDisplayNameTextChanged: (text: string) => void;
-    handleSharedPasswordTextChanged: (text: string) => void;
-    handleSharedPasswordFocus: () => void;
+    handlePreauthSecretTextChanged: (text: string) => void;
+    handlePreauthSecretFocus: () => void;
     keyboardAwareRef: MutableRefObject<KeyboardAwareScrollView | null>;
     serverUrl: string;
-    sharedPassword?: string;
+    preauthSecret?: string;
     theme: Theme;
 };
 
@@ -61,12 +61,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     advancedOptionsHeader: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
+        justifyContent: 'flex-start',
         paddingVertical: 12,
         paddingHorizontal: 4,
     },
     advancedOptionsTitle: {
-        color: theme.centerChannelColor,
+        color: theme.linkColor,
         ...typography('Body', 200, 'SemiBold'),
     },
     advancedOptionsContent: {
@@ -87,11 +87,11 @@ const messages = defineMessages({
         id: 'mobile.components.select_server_view.advancedOptions',
         defaultMessage: 'Advanced Options',
     },
-    sharedPassword: {
+    preauthSecret: {
         id: 'mobile.components.select_server_view.sharedPassword',
-        defaultMessage: 'Shared Password',
+        defaultMessage: 'Pre-authentication secret',
     },
-    sharedPasswordHelp: {
+    preauthSecretHelp: {
         id: 'edit_server.sharedPasswordHelp',
         defaultMessage: 'Type to replace current password, clear field to remove password',
     },
@@ -104,24 +104,24 @@ const EditServerForm = ({
     displayNameError,
     handleUpdate,
     handleDisplayNameTextChanged,
-    handleSharedPasswordTextChanged,
-    handleSharedPasswordFocus,
+    handlePreauthSecretTextChanged,
+    handlePreauthSecretFocus,
     keyboardAwareRef,
     serverUrl,
-    sharedPassword = '',
+    preauthSecret = '',
     theme,
 }: Props) => {
     const {formatMessage} = useIntl();
     const isTablet = useIsTablet();
     const dimensions = useWindowDimensions();
     const displayNameRef = useRef<FloatingTextInputRef>(null);
-    const sharedPasswordRef = useRef<FloatingTextInputRef>(null);
+    const preauthSecretRef = useRef<FloatingTextInputRef>(null);
     const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
     const styles = getStyleSheet(theme);
 
     const onBlur = useCallback(() => {
         if (Platform.OS === 'ios') {
-            const reset = !displayNameRef.current?.isFocused() && !sharedPasswordRef.current?.isFocused();
+            const reset = !displayNameRef.current?.isFocused() && !preauthSecretRef.current?.isFocused();
             if (reset) {
                 keyboardAwareRef.current?.scrollToPosition(0, 0);
             }
@@ -140,7 +140,7 @@ const EditServerForm = ({
     const onDisplayNameSubmit = useCallback(() => {
         if (showAdvancedOptions) {
             // Move to the next field if advanced options are shown
-            sharedPasswordRef.current?.focus();
+            preauthSecretRef.current?.focus();
         } else {
             onUpdate();
         }
@@ -164,10 +164,10 @@ const EditServerForm = ({
         }
     }, [dimensions, isTablet, keyboardAwareRef]);
 
-    const onSharedPasswordFocus = useCallback(() => {
-        handleSharedPasswordFocus();
+    const onPreauthSecretFocus = useCallback(() => {
+        handlePreauthSecretFocus();
         onFocus();
-    }, [handleSharedPasswordFocus, onFocus]);
+    }, [handlePreauthSecretFocus, onFocus]);
 
     useEffect(() => {
         if (Platform.OS === 'ios' && isTablet) {
@@ -221,14 +221,14 @@ const EditServerForm = ({
                     style={styles.advancedOptionsHeader}
                     testID='edit_server_form.advanced_options.toggle'
                 >
-                    <FormattedText
-                        {...messages.advancedOptions}
-                        style={styles.advancedOptionsTitle}
-                    />
                     <CompassIcon
                         name={showAdvancedOptions ? 'chevron-up' : 'chevron-down'}
                         size={20}
                         color={theme.centerChannelColor}
+                    />
+                    <FormattedText
+                        {...messages.advancedOptions}
+                        style={styles.advancedOptionsTitle}
                     />
                 </Pressable>
 
@@ -238,23 +238,23 @@ const EditServerForm = ({
                             autoCorrect={false}
                             autoCapitalize={'none'}
                             enablesReturnKeyAutomatically={true}
-                            label={formatMessage(messages.sharedPassword)}
+                            label={formatMessage(messages.preauthSecret)}
                             onBlur={onBlur}
-                            onChangeText={handleSharedPasswordTextChanged}
-                            onFocus={onSharedPasswordFocus}
+                            onChangeText={handlePreauthSecretTextChanged}
+                            onFocus={onPreauthSecretFocus}
                             onSubmitEditing={onUpdate}
-                            ref={sharedPasswordRef}
+                            ref={preauthSecretRef}
                             returnKeyType='done'
                             secureTextEntry={true}
                             spellCheck={false}
-                            testID='edit_server_form.shared_password.input'
+                            testID='edit_server_form.preauth_secret.input'
                             theme={theme}
-                            value={sharedPassword}
+                            value={preauthSecret}
                         />
                         <FormattedText
-                            {...messages.sharedPasswordHelp}
+                            {...messages.preauthSecretHelp}
                             style={styles.chooseText}
-                            testID='edit_server_form.shared_password_help'
+                            testID='edit_server_form.preauth_secret_help'
                         />
                     </View>
                 )}

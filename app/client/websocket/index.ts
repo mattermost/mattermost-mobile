@@ -27,7 +27,7 @@ export default class WebSocketClient {
     private connectionTimeout: NodeJS.Timeout | undefined;
     private connectionId = '';
     private token: string;
-    private sharedPassword?: string;
+    private preauthSecret?: string;
     private stop = false;
     private url = '';
     private serverUrl: string;
@@ -60,10 +60,10 @@ export default class WebSocketClient {
     private closeCallback?: (connectFailCount: number) => void;
     private connectingCallback?: () => void;
 
-    constructor(serverUrl: string, token: string, sharedPassword?: string) {
+    constructor(serverUrl: string, token: string, preauthSecret?: string) {
         this.token = token;
         this.serverUrl = serverUrl;
-        this.sharedPassword = sharedPassword;
+        this.preauthSecret = preauthSecret;
     }
 
     public async initialize(opts = {}, shouldSkipSync = false) {
@@ -139,8 +139,8 @@ export default class WebSocketClient {
             }
 
             // Add shared password header if available
-            if (this.sharedPassword) {
-                headers[ClientConstants.HEADER_X_MATTERMOST_SHARED_PASSWORD] = this.sharedPassword;
+            if (this.preauthSecret) {
+                headers[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET] = this.preauthSecret;
                 logDebug('WebSocket: Added shared password header for', this.serverUrl);
             }
 

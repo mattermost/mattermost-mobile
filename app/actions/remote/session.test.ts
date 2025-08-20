@@ -47,6 +47,7 @@ const mockClient = {
     login: jest.fn(() => user1),
     setCSRFToken: jest.fn(),
     setBearerToken: jest.fn(),
+    setClientCredentials: jest.fn(),
     getClientConfigOld: jest.fn(() => ({})),
     getClientLicenseOld: jest.fn(() => ({})),
     getSessions: jest.fn(() => [session1]),

@@ -44,7 +44,7 @@ export const getActiveServerUrl = async () => {
     return serverUrl || undefined;
 };
 
-export const setServerCredentials = (serverUrl: string, token: string, sharedPassword?: string) => {
+export const setServerCredentials = (serverUrl: string, token: string, preauthSecret?: string) => {
     if (!(serverUrl && token)) {
         return;
     }
@@ -64,7 +64,7 @@ export const setServerCredentials = (serverUrl: string, token: string, sharedPas
         // Always store as JSON object for consistency
         const credentialData = {
             token,
-            sharedPassword,
+            preauthSecret,
         };
 
         KeyChain.setInternetCredentials(serverUrl, token, JSON.stringify(credentialData), options);
@@ -96,7 +96,7 @@ export const getServerCredentials = async (serverUrl: string): Promise<ServerCre
                     serverUrl,
                     userId: credentialData.userId,
                     token: credentialData.token,
-                    sharedPassword: credentialData.sharedPassword,
+                    preauthSecret: credentialData.preauthSecret,
                 };
             } catch (parseError) {
                 // Fall back to old format

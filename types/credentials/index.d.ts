@@ -5,5 +5,5 @@ type ServerCredential = {
     serverUrl: string;
     userId: string;
     token: string;
-    sharedPassword?: string;
+    preauthSecret?: string;
 };

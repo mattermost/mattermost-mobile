@@ -52,8 +52,8 @@ const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) =>
     const keyboardAwareRef = useRef<KeyboardAwareScrollView>(null);
     const [saving, setSaving] = useState(false);
     const [displayName, setDisplayName] = useState<string>(server.displayName);
-    const [sharedPassword, setSharedPassword] = useState<string>('');
-    const [sharedPasswordModified, setSharedPasswordModified] = useState(false);
+    const [preauthSecret, setPreauthSecret] = useState<string>('');
+    const [preauthSecretModified, setPreauthSecretModified] = useState(false);
     const [buttonDisabled, setButtonDisabled] = useState(true);
     const [displayNameError, setDisplayNameError] = useState<string | undefined>();
     const styles = getStyleSheet(theme);
@@ -65,11 +65,11 @@ const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) =>
     useEffect(() => {
         const loadCredentials = async () => {
             const credentials = await getServerCredentials(server.url);
-            const hasPassword = Boolean(credentials?.sharedPassword);
+            const hasPassword = Boolean(credentials?.preauthSecret);
 
             // If there's an existing password, show dummy value "keep"
             const initialValue = hasPassword ? 'keep' : '';
-            setSharedPassword(initialValue);
+            setPreauthSecret(initialValue);
         };
         loadCredentials();
     }, [server.url]);
@@ -103,24 +103,24 @@ const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) =>
         await DatabaseManager.updateServerDisplayName(server.url, displayName);
 
         // Update shared password only if it was modified
-        if (sharedPasswordModified) {
+        if (preauthSecretModified) {
             const credentials = await getServerCredentials(server.url);
             if (credentials) {
                 // Empty field = remove password, otherwise use the new value
-                const newSharedPassword = sharedPassword.trim() || undefined;
-                setServerCredentials(server.url, credentials.token, newSharedPassword);
+                const newPreauthSecret = preauthSecret.trim() || undefined;
+                setServerCredentials(server.url, credentials.token, newPreauthSecret);
 
                 // Update active REST client
                 try {
                     const activeClient = NetworkManager.getClient(server.url);
-                    activeClient.setClientCredentials(credentials.token, newSharedPassword);
+                    activeClient.setClientCredentials(credentials.token, newPreauthSecret);
                 } catch (error) {
                     logWarning('Failed to update REST client shared password:', error);
                 }
 
                 // Update active WebSocket client
                 try {
-                    WebSocketManager.createClient(server.url, credentials.token, newSharedPassword);
+                    WebSocketManager.createClient(server.url, credentials.token, newPreauthSecret);
                 } catch (error) {
                     logWarning('Failed to update WebSocket client shared password:', error);
                 }
@@ -128,25 +128,25 @@ const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) =>
         }
 
         dismissModal({componentId});
-    }, [!buttonDisabled && displayName, !buttonDisabled && displayNameError, !buttonDisabled && sharedPasswordModified, sharedPassword]);
+    }, [!buttonDisabled && displayName, !buttonDisabled && displayNameError, !buttonDisabled && preauthSecretModified, preauthSecret]);
 
     const handleDisplayNameTextChanged = useCallback((text: string) => {
         setDisplayName(text);
         setDisplayNameError(undefined);
     }, []);
 
-    const handleSharedPasswordTextChanged = useCallback((text: string) => {
-        setSharedPassword(text);
-        setSharedPasswordModified(true);
+    const handlePreauthSecretTextChanged = useCallback((text: string) => {
+        setPreauthSecret(text);
+        setPreauthSecretModified(true);
     }, []);
 
-    const handleSharedPasswordFocus = useCallback(() => {
+    const handlePreauthSecretFocus = useCallback(() => {
         // Clear field when focused if it hasn't been modified yet
-        if (!sharedPasswordModified) {
-            setSharedPassword('');
-            setSharedPasswordModified(true); // Mark as modified when clearing dummy value
+        if (!preauthSecretModified) {
+            setPreauthSecret('');
+            setPreauthSecretModified(true); // Mark as modified when clearing dummy value
         }
-    }, [sharedPasswordModified]);
+    }, [preauthSecretModified]);
 
     useNavButtonPressed(closeButtonId || '', componentId, close, []);
     useAndroidHardwareBackHandler(componentId, close);
@@ -183,11 +183,11 @@ const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) =>
                         displayNameError={displayNameError}
                         handleUpdate={handleUpdate}
                         handleDisplayNameTextChanged={handleDisplayNameTextChanged}
-                        handleSharedPasswordTextChanged={handleSharedPasswordTextChanged}
-                        handleSharedPasswordFocus={handleSharedPasswordFocus}
+                        handlePreauthSecretTextChanged={handlePreauthSecretTextChanged}
+                        handlePreauthSecretFocus={handlePreauthSecretFocus}
                         keyboardAwareRef={keyboardAwareRef}
                         serverUrl={server.url}
-                        sharedPassword={sharedPassword}
+                        preauthSecret={preauthSecret}
                         theme={theme}
                     />
                 </KeyboardAwareScrollView>

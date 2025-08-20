@@ -76,9 +76,9 @@ class NetworkManagerSingleton {
     };
 
     public init = async (serverCredentials: ServerCredential[]) => {
-        for await (const {serverUrl, token, sharedPassword} of serverCredentials) {
+        for await (const {serverUrl, token, preauthSecret} of serverCredentials) {
             try {
-                await this.createClient(serverUrl, token, sharedPassword);
+                await this.createClient(serverUrl, token, preauthSecret);
             } catch (error) {
                 logError('NetworkManager init error', error);
             }
@@ -99,13 +99,13 @@ class NetworkManagerSingleton {
         return client;
     };
 
-    public createClient = async (serverUrl: string, bearerToken?: string, sharedPassword?: string) => {
-        const config = await this.buildConfig(sharedPassword);
+    public createClient = async (serverUrl: string, bearerToken?: string, preauthSecret?: string) => {
+        const config = await this.buildConfig(preauthSecret);
 
         try {
             const {client} = await getOrCreateAPIClient(serverUrl, config, this.clientErrorEventHandler);
             const csrfToken = await getCSRFFromCookie(serverUrl);
-            this.clients[serverUrl] = new Client(client, serverUrl, bearerToken, csrfToken, sharedPassword);
+            this.clients[serverUrl] = new Client(client, serverUrl, bearerToken, csrfToken, preauthSecret);
         } catch (error) {
             throw new ClientError(serverUrl, {
                 message: 'Can’t find this server. Check spelling and URL format.',
@@ -121,12 +121,12 @@ class NetworkManagerSingleton {
         return this.clients[serverUrl];
     };
 
-    private buildConfig = async (sharedPassword?: string) => {
+    private buildConfig = async (preauthSecret?: string) => {
         const userAgent = `Mattermost Mobile/${nativeApplicationVersion}+${nativeBuildVersion} (${osName}; ${osVersion}; ${modelName})`;
         const managedConfig = ManagedApp.enabled ? Emm.getManagedConfig<ManagedConfig>() : undefined;
         const headers: Record<string, string> = {
             [ClientConstants.HEADER_USER_AGENT]: userAgent,
-            ...(sharedPassword ? {[ClientConstants.HEADER_X_MATTERMOST_SHARED_PASSWORD]: sharedPassword} : {}),
+            ...(preauthSecret ? {[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET]: preauthSecret} : {}),
             ...this.DEFAULT_CONFIG.headers,
         };
 

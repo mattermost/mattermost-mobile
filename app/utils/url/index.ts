@@ -59,11 +59,11 @@ export async function getUrlAfterRedirect(url: string, useHttp = false) {
     }
 }
 
-export async function getServerUrlAfterRedirect(serverUrl: string, useHttp = false, sharedPassword?: string) {
+export async function getServerUrlAfterRedirect(serverUrl: string, useHttp = false, preauthSecret?: string) {
     let url = sanitizeUrl(serverUrl, useHttp);
 
     const headers = {
-        ...(sharedPassword) ? {[ClientConstants.HEADER_X_MATTERMOST_SHARED_PASSWORD]: sharedPassword} : {},
+        ...(preauthSecret) ? {[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET]: preauthSecret} : {},
     };
 
     try {
