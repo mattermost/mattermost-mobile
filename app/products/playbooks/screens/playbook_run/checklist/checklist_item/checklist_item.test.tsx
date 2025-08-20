@@ -363,7 +363,7 @@ describe('ChecklistItem', () => {
         expect(bottomSheet).toHaveBeenCalled();
         const args = jest.mocked(bottomSheet).mock.calls[0][0] as Parameters<typeof bottomSheet>[0];
         expect(args.title).toBe('Task Details');
-        expect(args.snapPoints).toEqual([1, '60%', '80%']);
+        expect(args.snapPoints).toEqual([1, 354, '80%']);
         expect(args.theme).toBe(Preferences.THEMES.denim);
         expect(args.closeButtonId).toBe('close-checklist-item');
 

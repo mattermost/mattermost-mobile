@@ -71,6 +71,7 @@ describe('ChecklistItemBottomSheet', () => {
             onSkip: mockOnSkip,
             onRunCommand: mockOnRunCommand,
             teammateNameDisplay: mockTeammateNameDisplay,
+            isDisabled: false,
         };
     }
 
@@ -255,7 +256,23 @@ describe('ChecklistItemBottomSheet', () => {
         const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
 
         const dueDateItem = getByTestId('checklist_item.due_date');
-        expect(dueDateItem.props.info).toBe('1/1/2022');
+        expect(dueDateItem.props.info).toBe('Saturday, January 1');
+    });
+
+    it('displays correct due date when within a day', () => {
+        jest.useFakeTimers();
+        jest.setSystemTime(new Date('2022-01-01').getTime());
+        const props = getBaseProps();
+        props.item = TestHelper.fakePlaybookChecklistItemModel({
+            ...props.item,
+            dueDate: 1640995200000, // 2022-01-01
+        });
+        const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
+
+        const dueDateItem = getByTestId('checklist_item.due_date');
+        expect(dueDateItem.props.info).toBe('Saturday, January 1 at 12:00 AM');
+
+        jest.useRealTimers();
     });
 
     it('displays "None" for due date when no due date is set', () => {
@@ -353,5 +370,26 @@ describe('ChecklistItemBottomSheet', () => {
         expect(checkButton.props.iconName).toBe('check');
         expect(skipButton.props.iconName).toBe('close');
         expect(runCommandButton.props.iconName).toBe('slash-forward');
+    });
+
+    it('does not render action buttons when isDisabled is true', () => {
+        const props = getBaseProps();
+        props.isDisabled = true;
+        const {queryByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
+
+        expect(queryByTestId('checklist_item.check_button')).toBeNull();
+        expect(queryByTestId('checklist_item.skip_button')).toBeNull();
+        expect(queryByTestId('checklist_item.run_command_button')).toBeNull();
+    });
+
+    it('does not render command when command is undefined', () => {
+        const props = getBaseProps();
+        props.item = TestHelper.fakePlaybookChecklistItemModel({
+            ...props.item,
+            command: undefined,
+        });
+        const {queryByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
+
+        expect(queryByTestId('checklist_item.run_command_button')).toBeNull();
     });
 });

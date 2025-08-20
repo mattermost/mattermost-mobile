@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import BottomSheetM, {BottomSheetBackdrop, BottomSheetView, type BottomSheetBackdropProps} from '@gorhom/bottom-sheet';
+import BottomSheetM, {BottomSheetBackdrop, BottomSheetScrollView, BottomSheetView, type BottomSheetBackdropProps} from '@gorhom/bottom-sheet';
 import React, {type ReactNode, useCallback, useEffect, useMemo, useRef} from 'react';
-import {DeviceEventEmitter, type Handle, InteractionManager, Keyboard, type StyleProp, View, type ViewStyle} from 'react-native';
+import {DeviceEventEmitter, type Handle, InteractionManager, Keyboard, ScrollView, type StyleProp, View, type ViewStyle} from 'react-native';
 import {ReduceMotion, useReducedMotion, type WithSpringConfig} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -36,6 +36,7 @@ type Props = {
     snapPoints?: Array<string | number>;
     enableDynamicSizing?: boolean;
     testID?: string;
+    scrollable?: boolean;
 }
 
 const PADDING_TOP_MOBILE = 20;
@@ -98,6 +99,7 @@ const BottomSheet = ({
     snapPoints = [1, '50%', '80%'],
     testID,
     enableDynamicSizing = false,
+    scrollable = false,
 }: Props) => {
     const reducedMotion = useReducedMotion();
     const sheetRef = useRef<BottomSheetM>(null);
@@ -150,7 +152,7 @@ const BottomSheet = ({
         } else {
             close();
         }
-    }, []);
+    }, [close]);
 
     const handleChange = useCallback((index: number) => {
         timeoutRef.current = setTimeout(() => {
@@ -163,7 +165,7 @@ const BottomSheet = ({
         if (index <= 0) {
             close();
         }
-    }, []);
+    }, [close]);
 
     useAndroidHardwareBackHandler(componentId, handleClose);
     useNavButtonPressed(closeButtonId || '', componentId, close, [close]);
@@ -217,6 +219,25 @@ const BottomSheet = ({
         );
     }
 
+    let content;
+    if (scrollable) {
+        const Scroll = isTablet ? ScrollView : BottomSheetScrollView;
+        content = (
+            <Scroll
+                style={styles.view}
+                showsVerticalScrollIndicator={false}
+            >
+                {renderContainerContent()}
+            </Scroll>
+        );
+    } else {
+        content = (
+            <BottomSheetView style={styles.view}>
+                {renderContainerContent()}
+            </BottomSheetView>
+        );
+    }
+
     return (
         <BottomSheetM
             ref={sheetRef}
@@ -237,9 +258,7 @@ const BottomSheet = ({
             bottomInset={insets.bottom}
             enableDynamicSizing={enableDynamicSizing}
         >
-            <BottomSheetView style={styles.view}>
-                {renderContainerContent()}
-            </BottomSheetView>
+            {content}
         </BottomSheetM>
     );
 };

@@ -21,7 +21,7 @@ import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import Checkbox from './checkbox';
-import ChecklistItemBottomSheet from './checklist_item_bottom_sheet';
+import ChecklistItemBottomSheet, {BOTTOM_SHEET_HEIGHT} from './checklist_item_bottom_sheet';
 
 import type PlaybookChecklistItemModel from '@playbooks/types/database/models/playbook_checklist_item';
 import type UserModel from '@typings/database/models/servers/user';
@@ -199,18 +199,21 @@ const ChecklistItem = ({
             onSkip={toggleSkipped}
             onRunCommand={executeCommand}
             teammateNameDisplay={teammateNameDisplay}
+            isDisabled={isDisabled}
         />
-    ), [assignee, executeCommand, item, teammateNameDisplay, toggleChecked, toggleSkipped]);
+    ), [assignee, executeCommand, item, teammateNameDisplay, toggleChecked, toggleSkipped, isDisabled]);
 
     const onPress = useCallback(() => {
+        const initialHeight = BOTTOM_SHEET_HEIGHT.base + (isDisabled ? 0 : BOTTOM_SHEET_HEIGHT.actionButtons);
         bottomSheet({
             title: intl.formatMessage({id: 'playbook_run.checklist.taskDetails', defaultMessage: 'Task Details'}),
             renderContent: renderBottomSheet,
-            snapPoints: [1, '60%', '80%'],
+            snapPoints: [1, initialHeight, '80%'],
             theme,
             closeButtonId: 'close-checklist-item',
+            scrollable: true,
         });
-    }, [intl, renderBottomSheet, theme]);
+    }, [intl, isDisabled, renderBottomSheet, theme]);
 
     return (
         <View style={styles.checklistItem}>
