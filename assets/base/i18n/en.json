@@ -989,6 +989,7 @@
   "playbooks.checklist_item.check": "Check",
   "playbooks.checklist_item.checked": "Checked",
   "playbooks.checklist_item.command": "Command",
+  "playbooks.checklist_item.date_at_time": "{date} at {time}",
   "playbooks.checklist_item.due_date": "Due date",
   "playbooks.checklist_item.none": "None",
   "playbooks.checklist_item.rerun_command": "Rerun command",
