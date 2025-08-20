@@ -1,3 +1,4 @@
+<!-- Dummy commit -->
 # How to Run Detox Tests
 
 This guide will help you set up and run Detox tests for your project.
