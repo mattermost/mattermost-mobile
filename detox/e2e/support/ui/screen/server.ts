@@ -99,13 +99,13 @@ class ServerScreen {
         await this.toBeVisible();
         await this.serverUrlInput.replaceText(serverUrl);
         await this.serverDisplayNameInput.replaceText(serverDisplayName);
-        
+
         // Toggle advanced options to show preauth secret field
         await this.toggleAdvancedOptions();
-        
+
         // Enter preauth secret
         await this.enterPreauthSecret(preauthSecret);
-        
+
         // Connect
         if (isAndroid()) {
             await this.tapConnectButton();

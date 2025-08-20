@@ -34,6 +34,7 @@ describe('Server Login - Preauth Secret Connection', () => {
         // # FORCE advanced options to be CLOSED (clean state)
         try {
             await waitFor(preauthSecretInput).toBeVisible().withTimeout(500);
+
             // If we reach here, preauth field is visible (advanced options open)
             await ServerScreen.toggleAdvancedOptions(); // Close them
         } catch (error) {

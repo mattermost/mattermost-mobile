@@ -65,7 +65,6 @@ describe('Server Login - Edit Server Preauth Secret', () => {
         await EditServerScreen.toBeVisible();
     });
 
-
     afterAll(async () => {
         // # Log out
         await HomeScreen.logout();
@@ -304,7 +303,7 @@ describe('Server Login - Edit Server Preauth Secret', () => {
         // * Wait for help text to become visible after toggle
         const helpText = element(by.text('Type to replace current password, clear field to remove password'));
         await waitFor(helpText).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        
+
         // * Verify help text includes instruction for existing secrets
         await expect(helpText).toBeVisible();
     });
