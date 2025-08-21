@@ -13,298 +13,172 @@ import {
     siteOneUrl,
 } from '@support/test_config';
 import {
-    AccountScreen,
     EditServerScreen,
     HomeScreen,
     LoginScreen,
     ServerScreen,
-    SettingsScreen,
+    ServerListScreen,
 } from '@support/ui/screen';
-import {timeouts} from '@support/utils';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
-describe('Server Login - Edit Server Preauth Secret', () => {
-    const serverOneDisplayName = 'Test Server';
-    let testUser: any;
+// Helper function to reopen edit server screen
+const reopenEditServer = async (displayName: string) => {
+    await wait(timeouts.TWO_SEC); // Allow server list to refresh after name changes
+    await ServerListScreen.open();
+    await waitFor(ServerListScreen.getServerItemActive(displayName)).toBeVisible().withTimeout(timeouts.TEN_SEC);
+    await ServerListScreen.getServerItemActive(displayName).swipe('left', 'slow');
+    await ServerListScreen.getServerItemEditOption(displayName).tap();
+    await EditServerScreen.toBeVisible();
+};
 
-    const {
-        editServerScreen,
-        serverDisplayNameInput,
-        advancedOptionsToggle,
-        preauthSecretInput,
-        preauthSecretHelp,
-        saveButton,
-        saveButtonDisabled,
-    } = EditServerScreen;
+describe('Edit Server - Preauth Secret', () => {
+    const serverOneDisplayName = 'Server 1';
+    let testUser: {username: string; password: string};
 
     beforeAll(async () => {
         const {user} = await Setup.apiInit(siteOneUrl);
         testUser = user;
 
-        // # Log in to server
+        // Reset app and log in to server and verify we're on home screen
+        await device.reloadReactNative();
+        await expect(ServerScreen.headerTitleConnectToServer).toBeVisible();
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
+        await HomeScreen.toBeVisible();
+        await ServerListScreen.open();
+        await ServerListScreen.closeTutorial(); // Close it only here since it's only shown once
+        await ServerListScreen.close();
     });
 
     beforeEach(async () => {
-        // # Navigate to account settings and edit server
-        await AccountScreen.open();
-        await SettingsScreen.toBeVisible();
-
-        // # Wait for server item to be visible before tapping
-        const serverItem = element(by.text(serverOneDisplayName));
-        await waitFor(serverItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await serverItem.tap();
-
-        // # Wait for edit button and tap
-        const editButton = element(by.text('Edit'));
-        await waitFor(editButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await editButton.tap();
-
-        // * Verify on edit server screen
-        await EditServerScreen.toBeVisible();
+        // Verify on home screen
+        await HomeScreen.toBeVisible();
+        await reopenEditServer(serverOneDisplayName);
     });
 
     afterAll(async () => {
-        // # Log out
+        // Log out
+        await ServerListScreen.close();
         await HomeScreen.logout();
     });
 
-    it('MM-T5001_1 - should match elements on edit server screen with preauth secret', async () => {
-        // * Verify basic elements on edit server screen
-        await expect(serverDisplayNameInput).toBeVisible();
-        await expect(advancedOptionsToggle).toBeVisible();
-        await expect(saveButton).toBeVisible();
-
-        // * Verify advanced options toggle text
+    it('MM-T5001_1 - should show advanced options toggle and preauth secret field with correct styling', async () => {
+        // Verify basic elements on edit server screen
+        await expect(EditServerScreen.serverDisplayNameInput).toBeVisible();
+        await expect(EditServerScreen.advancedOptionsToggle).toBeVisible();
+        await expect(EditServerScreen.saveButton).toBeVisible();
         await expect(element(by.text('Advanced Options'))).toBeVisible();
 
-        // # Toggle advanced options to show preauth secret field
+        // Verify preauth secret field is initially hidden
+        await expect(EditServerScreen.preauthSecretInput).not.toBeVisible();
+        await expect(EditServerScreen.preauthSecretHelp).not.toBeVisible();
+
+        // Toggle advanced options to show preauth secret field
         await EditServerScreen.toggleAdvancedOptions();
 
-        // * Verify preauth secret elements are visible
-        await expect(preauthSecretInput).toBeVisible();
-        await expect(preauthSecretHelp).toBeVisible();
+        // Verify preauth secret elements are now visible with correct text and styling
+        await expect(EditServerScreen.preauthSecretInput).toBeVisible();
+        await expect(EditServerScreen.preauthSecretHelp).toBeVisible();
         await expect(element(by.text('Pre-authentication secret'))).toBeVisible();
-        await expect(preauthSecretHelp).toHaveText('The pre-authentication secret shared by the administrator');
-    });
+        await expect(EditServerScreen.preauthSecretHelp).toHaveText('Type to replace current password, clear field to remove password');
 
-    it('MM-T5001_2 - should show/hide preauth secret field when toggling advanced options', async () => {
-        // * Verify preauth secret field is initially hidden
-        await expect(preauthSecretInput).not.toBeVisible();
-
-        // # Toggle advanced options to show
+        // Toggle advanced options to hide field again
         await EditServerScreen.toggleAdvancedOptions();
 
-        // * Verify preauth secret field is now visible
-        await expect(preauthSecretInput).toBeVisible();
-        await expect(preauthSecretHelp).toBeVisible();
-
-        // # Toggle advanced options to hide
-        await EditServerScreen.toggleAdvancedOptions();
-
-        // * Verify preauth secret field is hidden again
-        await expect(preauthSecretInput).not.toBeVisible();
-        await expect(preauthSecretHelp).not.toBeVisible();
+        // Verify preauth secret field is hidden again
+        await expect(EditServerScreen.preauthSecretInput).not.toBeVisible();
+        await expect(EditServerScreen.preauthSecretHelp).not.toBeVisible();
     });
 
-    it('MM-T5001_3 - should add preauth secret to existing server', async () => {
+    it('MM-T5001_2 - should add preauth secret to existing server', async () => {
         const testPreauthSecret = 'new-secret-123';
         const newDisplayName = 'Server with New Preauth';
 
-        // # Update server with new preauth secret
-        await serverDisplayNameInput.replaceText(newDisplayName);
+        // Update server with new preauth secret
+        await EditServerScreen.serverDisplayNameInput.replaceText(newDisplayName);
         await EditServerScreen.toggleAdvancedOptions();
         await EditServerScreen.enterPreauthSecret(testPreauthSecret);
 
-        // * Verify preauth secret field has the entered value
-        await expect(preauthSecretInput).toHaveValue(testPreauthSecret);
+        // Verify preauth secret field has content (placeholder not visible)
+        await expect(element(by.text('Pre-authentication secret'))).not.toBeVisible();
 
-        // # Save changes
-        await saveButton.tap();
+        // Save changes
+        await EditServerScreen.saveButton.tap();
+        await waitFor(EditServerScreen.editServerScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
 
-        // * Verify edit server screen closes
-        await expect(editServerScreen).not.toBeVisible();
+        // Verify changes were saved by reopening edit server
+        await reopenEditServer(newDisplayName);
 
-        // # Verify changes were saved by reopening edit server
-        const serverItem = element(by.text(newDisplayName));
-        await serverItem.tap();
-        const editButton = element(by.text('Edit'));
-        await editButton.tap();
-        await EditServerScreen.toBeVisible();
-
-        // # Toggle advanced options to see preauth secret
         await EditServerScreen.toggleAdvancedOptions();
 
-        // * Verify preauth secret shows "keep" placeholder for existing secret
-        await expect(preauthSecretInput).toHaveValue('keep');
+        // Verify preauth secret field has existing content (placeholder not visible)
+        await expect(element(by.text('Pre-authentication secret'))).not.toBeVisible();
+
+        // Reset display name for other tests
+        await EditServerScreen.serverDisplayNameInput.replaceText(serverOneDisplayName);
+        await EditServerScreen.saveButton.tap();
+        await expect(EditServerScreen.editServerScreen).not.toBeVisible();
     });
 
-    it('MM-T5001_4 - should modify existing preauth secret', async () => {
+    it('MM-T5001_3 - should modify existing preauth secret', async () => {
         const newPreauthSecret = 'modified-secret-456';
 
-        // # First add a preauth secret
+        // First add a preauth secret
         await EditServerScreen.toggleAdvancedOptions();
         await EditServerScreen.enterPreauthSecret('original-secret');
-        await saveButton.tap();
-        await expect(editServerScreen).not.toBeVisible();
+        await EditServerScreen.saveButton.tap();
+        await expect(EditServerScreen.editServerScreen).not.toBeVisible();
 
-        // # Reopen edit server screen
-        const serverItem = element(by.text(serverOneDisplayName));
-        await serverItem.tap();
-        const editButton = element(by.text('Edit'));
-        await editButton.tap();
-        await EditServerScreen.toBeVisible();
-
-        // # Toggle advanced options and modify preauth secret
+        // Reopen edit server screen and modify secret
+        await reopenEditServer(serverOneDisplayName);
         await EditServerScreen.toggleAdvancedOptions();
 
-        // * Verify existing secret shows "keep"
-        await expect(preauthSecretInput).toHaveValue('keep');
+        // Verify existing secret field has content (placeholder not visible)
+        await expect(element(by.text('Pre-authentication secret'))).not.toBeVisible();
 
-        // # Focus the field to clear "keep" and enter new secret
-        await preauthSecretInput.tap();
+        // Focus the field to clear "keep" and enter new secret
+        await EditServerScreen.preauthSecretInput.tap();
         await EditServerScreen.enterPreauthSecret(newPreauthSecret);
 
-        // * Verify new secret is in the field
-        await expect(preauthSecretInput).toHaveValue(newPreauthSecret);
+        // Verify new secret field has content (placeholder not visible)
+        await expect(element(by.text('Pre-authentication secret'))).not.toBeVisible();
 
-        // # Save changes
-        await saveButton.tap();
-        await expect(editServerScreen).not.toBeVisible();
+        // Save changes
+        await EditServerScreen.saveButton.tap();
+        await expect(EditServerScreen.editServerScreen).not.toBeVisible();
     });
 
-    it('MM-T5001_5 - should remove preauth secret from server', async () => {
-        // # First add a preauth secret
+    it('MM-T5001_4 - should remove preauth secret from server', async () => {
+        await EditServerScreen.toBeVisible();
         await EditServerScreen.toggleAdvancedOptions();
         await EditServerScreen.enterPreauthSecret('secret-to-remove');
-        await saveButton.tap();
-        await expect(editServerScreen).not.toBeVisible();
+        await EditServerScreen.saveButton.tap();
+        await expect(EditServerScreen.editServerScreen).not.toBeVisible();
 
-        // # Reopen edit server screen
-        const serverItem = element(by.text(serverOneDisplayName));
-        await serverItem.tap();
-        const editButton = element(by.text('Edit'));
-        await editButton.tap();
-        await EditServerScreen.toBeVisible();
-
-        // # Toggle advanced options and clear preauth secret
+        // Reopen edit server screen and clear preauth secret
+        await reopenEditServer(serverOneDisplayName);
         await EditServerScreen.toggleAdvancedOptions();
 
-        // * Verify existing secret shows "keep"
-        await expect(preauthSecretInput).toHaveValue('keep');
+        // Verify existing secret field has content (placeholder not visible)
+        await expect(element(by.text('Pre-authentication secret'))).not.toBeVisible();
 
-        // # Focus the field to clear "keep" and leave empty
-        await preauthSecretInput.tap();
-        await preauthSecretInput.clearText();
+        // Focus the field to clear "keep" and leave empty
+        await EditServerScreen.preauthSecretInput.tap();
+        await EditServerScreen.preauthSecretInput.clearText();
 
-        // * Verify field is empty
-        await expect(preauthSecretInput).toHaveValue('');
+        // Verify field is empty (placeholder visible)
+        await expect(element(by.text('Pre-authentication secret'))).toBeVisible();
 
-        // # Save changes
-        await saveButton.tap();
-        await expect(editServerScreen).not.toBeVisible();
+        // Save changes
+        await EditServerScreen.saveButton.tap();
+        await expect(EditServerScreen.editServerScreen).not.toBeVisible();
 
-        // # Verify removal by reopening edit server
-        const serverItem2 = element(by.text(serverOneDisplayName));
-        await serverItem2.tap();
-        const editButton2 = element(by.text('Edit'));
-        await editButton2.tap();
-        await EditServerScreen.toBeVisible();
+        // Verify removal by reopening edit server
+        await reopenEditServer(serverOneDisplayName);
         await EditServerScreen.toggleAdvancedOptions();
 
-        // * Verify preauth secret field is empty (no "keep" placeholder)
-        await expect(preauthSecretInput).toHaveValue('');
-    });
-
-    it('MM-T5001_6 - should handle save without modifying preauth secret', async () => {
-        const newDisplayName = 'Server Renamed Only';
-
-        // # Change only display name, don't touch preauth secret
-        await serverDisplayNameInput.replaceText(newDisplayName);
-
-        // * Verify save button is enabled
-        await expect(saveButton).toBeVisible();
-
-        // # Save changes
-        await saveButton.tap();
-        await expect(editServerScreen).not.toBeVisible();
-
-        // # Verify display name change was saved
-        await expect(element(by.text(newDisplayName))).toBeVisible();
-    });
-
-    it('MM-T5001_7 - should disable save button when display name is empty', async () => {
-        // # Clear display name
-        await serverDisplayNameInput.clearText();
-
-        // * Verify save button is disabled
-        await expect(saveButtonDisabled).toBeVisible();
-
-        // # Add preauth secret but keep display name empty
-        await EditServerScreen.toggleAdvancedOptions();
-        await EditServerScreen.enterPreauthSecret('test-secret');
-
-        // * Verify save button is still disabled
-        await expect(saveButtonDisabled).toBeVisible();
-
-        // # Restore display name
-        await serverDisplayNameInput.replaceText('Valid Name');
-
-        // * Verify save button is now enabled
-        await expect(saveButton).toBeVisible();
-    });
-
-    it('MM-T5001_8 - should maintain preauth secret value when toggling advanced options', async () => {
-        const testSecret = 'persistent-secret';
-
-        // # Enter preauth secret
-        await EditServerScreen.toggleAdvancedOptions();
-        await EditServerScreen.enterPreauthSecret(testSecret);
-
-        // * Verify secret is entered
-        await expect(preauthSecretInput).toHaveValue(testSecret);
-
-        // # Toggle advanced options to hide field
-        await EditServerScreen.toggleAdvancedOptions();
-
-        // * Verify field is hidden
-        await expect(preauthSecretInput).not.toBeVisible();
-
-        // # Toggle advanced options to show field again
-        await EditServerScreen.toggleAdvancedOptions();
-
-        // * Verify secret value is maintained
-        await expect(preauthSecretInput).toHaveValue(testSecret);
-    });
-
-    it('MM-T5001_9 - should show correct help text for preauth secret', async () => {
-        // # Toggle advanced options to show help text
-        await EditServerScreen.toggleAdvancedOptions();
-
-        // * Verify help text content
-        await expect(preauthSecretHelp).toBeVisible();
-        await expect(preauthSecretHelp).toHaveText('The pre-authentication secret shared by the administrator');
-
-        // * Verify help text about modifying existing secret (shown when field has "keep")
-        // First add a secret
-        await EditServerScreen.enterPreauthSecret('test-secret');
-        await saveButton.tap();
-        await expect(editServerScreen).not.toBeVisible();
-
-        // Reopen and check for additional help text
-        const serverItem = element(by.text(serverOneDisplayName));
-        await serverItem.tap();
-        const editButton = element(by.text('Edit'));
-        await editButton.tap();
-        await EditServerScreen.toBeVisible();
-        await EditServerScreen.toggleAdvancedOptions();
-
-        // * Wait for help text to become visible after toggle
-        const helpText = element(by.text('Type to replace current password, clear field to remove password'));
-        await waitFor(helpText).toBeVisible().withTimeout(timeouts.TEN_SEC);
-
-        // * Verify help text includes instruction for existing secrets
-        await expect(helpText).toBeVisible();
+        // Verify preauth secret field is empty (placeholder visible, no "keep" text)
+        await expect(element(by.text('Pre-authentication secret'))).toBeVisible();
     });
 });

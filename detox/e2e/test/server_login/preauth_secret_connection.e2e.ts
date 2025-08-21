@@ -14,7 +14,7 @@ import {
 } from '@support/ui/screen';
 import {expect} from 'detox';
 
-describe('Server Login - Preauth Secret Features', () => {
+describe('Server Login - Preauth Secret Connection', () => {
     const {
         serverUrlInput,
         serverDisplayNameInput,
@@ -40,6 +40,17 @@ describe('Server Login - Preauth Secret Features', () => {
         await expect(serverDisplayNameInput).toBeVisible();
         await serverUrlInput.clearText();
         await serverDisplayNameInput.clearText();
+    });
+
+    afterEach(async () => {
+        // # Navigate back to server screen if we ended up on login screen
+        try {
+            await LoginScreen.toBeVisible();
+            await LoginScreen.back();
+            await ServerScreen.toBeVisible();
+        } catch (error) {
+            // Not on login screen, no need to navigate back
+        }
     });
 
     it('MM-T5000_1 - should toggle advanced options and verify preauth secret field styling', async () => {
@@ -82,25 +93,6 @@ describe('Server Login - Preauth Secret Features', () => {
         // This would require keychain testing utilities or verification through subsequent network requests
     });
 
-});
-
-describe('Server Login - Connection Without Preauth Secret', () => {
-    const {
-        serverUrlInput,
-        serverDisplayNameInput,
-    } = ServerScreen;
-
-    beforeEach(async () => {
-        // * Verify on server screen
-        await ServerScreen.toBeVisible();
-
-        // # Clear all fields
-        await expect(serverUrlInput).toBeVisible();
-        await expect(serverDisplayNameInput).toBeVisible();
-        await serverUrlInput.clearText();
-        await serverDisplayNameInput.clearText();
-    });
-
     it('MM-T5000_3 - should connect to server without preauth secret', async () => {
         const serverDisplayName = 'Server without Preauth';
 
@@ -111,4 +103,3 @@ describe('Server Login - Connection Without Preauth Secret', () => {
         await LoginScreen.toBeVisible();
     });
 });
-
