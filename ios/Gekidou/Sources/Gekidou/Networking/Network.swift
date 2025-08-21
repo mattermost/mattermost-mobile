@@ -98,6 +98,10 @@ public class Network: NSObject {
             request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
         
+        if let preauthSecret = try? Keychain.default.getPreauthSecret(for: serverUrl) {
+            request.addValue(preauthSecret, forHTTPHeaderField: GekidouConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET)
+        }
+        
         return request as URLRequest
     }
     

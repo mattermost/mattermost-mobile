@@ -27,7 +27,7 @@ extension KeychainError: LocalizedError {
         case .FailedSecItemCopyMatching(status: let status): return status
         }
     }
-    
+
     var errorDescription: String? {
         switch self {
         case .CertificateForIdentityNotFound:
@@ -48,7 +48,7 @@ extension KeychainError: LocalizedError {
 
 public class Keychain: NSObject {
     @objc public static let `default` = Keychain()
-    
+
     public func getClientIdentityAndCertificate(for host: String) throws -> (SecIdentity, SecCertificate)? {
         let query = try buildIdentityQuery(for: host)
 
@@ -61,7 +61,7 @@ public class Keychain: NSObject {
 
             throw KeychainError.FailedSecItemCopyMatching(identityStatus)
         }
-        
+
         let identity = result as! SecIdentity
         var certificate: SecCertificate?
         let certificateStatus = SecIdentityCopyCertificate(identity, &certificate)
@@ -71,35 +71,86 @@ public class Keychain: NSObject {
         guard certificate != nil else {
             throw KeychainError.CertificateForIdentityNotFound
         }
-        
+
         return (identity, certificate!)
     }
-    
+
     @objc public func getTokenObjc(for serverUrl: String) -> String? {
         return try? getToken(for: serverUrl)
     }
-    
+
     public func getToken(for serverUrl: String) throws -> String? {
         var attributes = try buildTokenAttributes(for: serverUrl)
         attributes[kSecMatchLimit] = kSecMatchLimitOne
         attributes[kSecReturnData] = kCFBooleanTrue
-        
+
         var result: AnyObject?
         let status = SecItemCopyMatching(attributes as CFDictionary, &result)
         let data = result as? Data
         if status == errSecSuccess && data != nil {
-            let token = String(data: data!, encoding: .utf8)
-            return token
+            let credentialsString = String(data: data!, encoding: .utf8)
+
+            // Try to parse as JSON first (new format)
+            if let credentialsString = credentialsString,
+                let credentialsData = credentialsString.data(using: .utf8) {
+                do {
+                    let json = try JSONSerialization.jsonObject(with: credentialsData, options: [])
+                    if let jsonDict = json as? [String: Any],
+                        let token = jsonDict["token"] as? String {
+                        return token  // Extract token from JSON
+                    }
+                } catch {
+                    // JSON parsing failed, fall back to old format
+                    return credentialsString  // Return as plain string
+                }
+            }
+
+            return credentialsString  // Fallback to plain string
         }
-        
+
         return nil
     }
-    
+
+    @objc public func getPreauthSecretObjc(for serverUrl: String) -> String? {
+        return try? getPreauthSecret(for: serverUrl)
+    }
+
+    public func getPreauthSecret(for serverUrl: String) throws -> String? {
+        var attributes = try buildTokenAttributes(for: serverUrl)
+        attributes[kSecMatchLimit] = kSecMatchLimitOne
+        attributes[kSecReturnData] = kCFBooleanTrue
+
+        var result: AnyObject?
+        let status = SecItemCopyMatching(attributes as CFDictionary, &result)
+        let data = result as? Data
+        if status == errSecSuccess && data != nil {
+            let credentialsString = String(data: data!, encoding: .utf8)
+
+            // Try to parse as JSON to get preauthSecret
+            if let credentialsString = credentialsString,
+                let credentialsData = credentialsString.data(using: .utf8) {
+                do {
+                    let json = try JSONSerialization.jsonObject(with: credentialsData, options: [])
+                    if let jsonDict = json as? [String: Any],
+                        let preauthSecret = jsonDict["preauthSecret"] as? String {
+                        return preauthSecret
+                    }
+                } catch {
+                    // If JSON parsing fails, it might be old format with just token
+                    // In that case, there's no preauth secret
+                    return nil
+                }
+            }
+        }
+
+        return nil
+    }
+
     private func buildIdentityQuery(for host: String) throws -> [CFString: Any] {
         guard let hostData = host.data(using: .utf8) else {
             throw KeychainError.InvalidHost(host)
         }
-        
+
         let query: [CFString:Any] = [
             kSecClass: kSecClassIdentity,
             kSecAttrLabel: hostData,
@@ -108,12 +159,12 @@ public class Keychain: NSObject {
 
         return query
     }
-    
+
     private func buildTokenAttributes(for serverUrl: String) throws -> [CFString: Any] {
         guard let serverUrlData = serverUrl.data(using: .utf8) else {
             throw KeychainError.InvalidServerUrl(serverUrl)
         }
-        
+
         var attributes: [CFString: Any] = [
             kSecClass: kSecClassInternetPassword,
             kSecAttrServer: serverUrlData
@@ -122,7 +173,7 @@ public class Keychain: NSObject {
         if let accessGroup = Bundle.main.object(forInfoDictionaryKey: "AppGroupIdentifier") as! String? {
             attributes[kSecAttrAccessGroup] = accessGroup
         }
-        
+
         return attributes
     }
 }
