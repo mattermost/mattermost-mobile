@@ -25,9 +25,6 @@ declare class ServersModel extends Model {
 
     /** diagnostic_id: Determines the installation identifier of a server */
     identifier: string;
-
-    /** shared_password_key: The keychain identifier for the shared password */
-    preauthSecretKey: string;
 }
 
 export default ServersModel;

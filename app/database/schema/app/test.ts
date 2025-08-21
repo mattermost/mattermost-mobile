@@ -10,7 +10,7 @@ const {INFO, GLOBAL, SERVERS} = MM_TABLES.APP;
 describe('*** Test schema for APP database ***', () => {
     it('=> The APP SCHEMA should strictly match', () => {
         expect(schema).toEqual({
-            version: 2,
+            version: 1,
             unsafeSql: undefined,
             tables: {
                 [INFO]: {
@@ -45,7 +45,6 @@ describe('*** Test schema for APP database ***', () => {
                         display_name: {name: 'display_name', type: 'string'},
                         identifier: {name: 'identifier', type: 'string', isIndexed: true},
                         last_active_at: {name: 'last_active_at', type: 'number', isIndexed: true},
-                        shared_password_key: {name: 'shared_password_key', type: 'string'},
                         url: {name: 'url', type: 'string', isIndexed: true},
                     },
                     columnArray: [
@@ -53,7 +52,6 @@ describe('*** Test schema for APP database ***', () => {
                         {name: 'display_name', type: 'string'},
                         {name: 'identifier', type: 'string', isIndexed: true},
                         {name: 'last_active_at', type: 'number', isIndexed: true},
-                        {name: 'shared_password_key', type: 'string'},
                         {name: 'url', type: 'string', isIndexed: true},
                     ],
                 },
