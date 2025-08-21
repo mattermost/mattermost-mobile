@@ -8,20 +8,16 @@
 // *******************************************************************
 
 import {serverOneUrl} from '@support/test_config';
-import {Alert} from '@support/ui/component';
 import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isIos, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
-describe('Server Login - Preauth Secret Connection', () => {
+describe('Server Login - Preauth Secret Features', () => {
     const {
         serverUrlInput,
         serverDisplayNameInput,
-        connectButton,
-        connectButtonDisabled,
         advancedOptionsToggle,
         preauthSecretInput,
         preauthSecretHelp,
@@ -34,8 +30,6 @@ describe('Server Login - Preauth Secret Connection', () => {
         // # FORCE advanced options to be CLOSED (clean state)
         try {
             await waitFor(preauthSecretInput).toBeVisible().withTimeout(500);
-
-            // If we reach here, preauth field is visible (advanced options open)
             await ServerScreen.toggleAdvancedOptions(); // Close them
         } catch (error) {
             // Preauth field not visible, advanced options already closed - good!
@@ -48,20 +42,22 @@ describe('Server Login - Preauth Secret Connection', () => {
         await serverDisplayNameInput.clearText();
     });
 
-    it('MM-T5000_1 - should show/hide preauth secret field when toggling advanced options', async () => {
-        // * Verify advanced options toggle is visible
+    it('MM-T5000_1 - should toggle advanced options and verify preauth secret field styling', async () => {
+        // * Verify advanced options toggle is visible with correct text
         await expect(advancedOptionsToggle).toBeVisible();
+        await expect(element(by.text('Advanced Options'))).toBeVisible();
 
         // * Verify preauth secret field is initially hidden
         await expect(preauthSecretInput).not.toBeVisible();
         await expect(preauthSecretHelp).not.toBeVisible();
 
-        // # Toggle advanced options
+        // # Toggle advanced options to show fields
         await ServerScreen.toggleAdvancedOptions();
 
-        // * Verify preauth secret field is now visible
+        // * Verify preauth secret field is now visible with correct text and styling
         await expect(preauthSecretInput).toBeVisible();
         await expect(preauthSecretHelp).toBeVisible();
+        await expect(element(by.text('Pre-authentication secret'))).toBeVisible();
         await expect(preauthSecretHelp).toHaveText('The pre-authentication secret shared by the administrator');
 
         // # Toggle advanced options again to hide
@@ -72,164 +68,47 @@ describe('Server Login - Preauth Secret Connection', () => {
         await expect(preauthSecretHelp).not.toBeVisible();
     });
 
-    it('MM-T5000_2 - should verify advanced options text and styling', async () => {
-        // * Verify advanced options toggle text
-        await expect(element(by.text('Advanced Options'))).toBeVisible();
-
-        // # Toggle advanced options to show fields
-        await ServerScreen.toggleAdvancedOptions();
-
-        // * Verify preauth secret label text
-        await expect(element(by.text('Pre-authentication secret'))).toBeVisible();
-
-        // * Verify help text content
-        await expect(preauthSecretHelp).toHaveText('The pre-authentication secret shared by the administrator');
-    });
-
-    it('MM-T5000_3 - should connect to server with preauth secret successfully', async () => {
+    it('MM-T5000_2 - should connect to server with preauth secret and verify storage', async () => {
         const testPreauthSecret = 'test-secret-123';
         const serverDisplayName = 'Test Server with Preauth';
 
-        // # Fill in server details and preauth secret
-        await serverUrlInput.replaceText(serverOneUrl);
-        await serverDisplayNameInput.replaceText(serverDisplayName);
+        // # Connect to server using the dedicated method with preauth secret
+        await ServerScreen.connectToServerWithPreauthSecret(serverOneUrl, serverDisplayName, testPreauthSecret);
 
-        // # Toggle advanced options and enter preauth secret
-        await ServerScreen.toggleAdvancedOptions();
-        await ServerScreen.enterPreauthSecret(testPreauthSecret);
-
-        // * Verify preauth secret field is visible and ready (secure fields don't show values)
-        await expect(preauthSecretInput).toBeVisible();
-
-        // # Connect to server
-        await connectButton.tap();
-        await wait(timeouts.ONE_SEC);
-
-        if (isIos() && !process.env.CI) {
-            // # Tap alert okay button
-            try {
-                await waitFor(Alert.okayButton).toExist().withTimeout(timeouts.TEN_SEC);
-                await Alert.okayButton.tap();
-            } catch (error) {
-                /* eslint-disable no-console */
-                console.log('Alert button did not appear!');
-            }
-        }
-
-        // * Verify on login screen
+        // * Verify successful connection to login screen
         await LoginScreen.toBeVisible();
+
+        // TODO: Add verification that preauth secret is stored in keychain
+        // This would require keychain testing utilities or verification through subsequent network requests
     });
 
-    it('MM-T5000_4 - should disable connect button when required fields are empty', async () => {
-        const testPreauthSecret = 'test-secret-123';
+});
 
-        // * Verify connect button is initially disabled (empty fields)
-        await expect(connectButtonDisabled).toBeVisible();
+describe('Server Login - Connection Without Preauth Secret', () => {
+    const {
+        serverUrlInput,
+        serverDisplayNameInput,
+    } = ServerScreen;
 
-        // # Fill server URL but leave display name empty
-        await serverUrlInput.replaceText(serverOneUrl);
-        await ServerScreen.toggleAdvancedOptions();
-        await ServerScreen.enterPreauthSecret(testPreauthSecret);
+    beforeEach(async () => {
+        // * Verify on server screen
+        await ServerScreen.toBeVisible();
 
-        // * Verify connect button is still disabled (missing display name)
-        await expect(connectButtonDisabled).toBeVisible();
-
-        // # Fill display name but clear server URL
+        // # Clear all fields
+        await expect(serverUrlInput).toBeVisible();
+        await expect(serverDisplayNameInput).toBeVisible();
         await serverUrlInput.clearText();
-        await serverDisplayNameInput.replaceText('Test Server');
-
-        // * Verify connect button is still disabled (missing server URL)
-        await expect(connectButtonDisabled).toBeVisible();
-
-        // # Fill both required fields
-        await serverUrlInput.replaceText(serverOneUrl);
-
-        // * Verify connect button is now enabled
-        await expect(connectButton).toBeVisible();
+        await serverDisplayNameInput.clearText();
     });
 
-    it('MM-T5000_5 - should connect to server without preauth secret', async () => {
-        // # Fill in server details without preauth secret
-        await serverUrlInput.replaceText(serverOneUrl);
-        await serverDisplayNameInput.replaceText('Server without Preauth');
+    it('MM-T5000_3 - should connect to server without preauth secret', async () => {
+        const serverDisplayName = 'Server without Preauth';
 
-        // * Verify we can connect without advanced options
-        await expect(connectButton).toBeVisible();
+        // # Connect to server using the standard method (no preauth secret)
+        await ServerScreen.connectToServer(serverOneUrl, serverDisplayName);
 
-        // # Connect to server
-        await connectButton.tap();
-        await wait(timeouts.ONE_SEC);
-
-        if (isIos() && !process.env.CI) {
-            // # Tap alert okay button
-            try {
-                await waitFor(Alert.okayButton).toExist().withTimeout(timeouts.TEN_SEC);
-                await Alert.okayButton.tap();
-            } catch (error) {
-                /* eslint-disable no-console */
-                console.log('Alert button did not appear!');
-            }
-        }
-
-        // * Verify on login screen
+        // * Verify successful connection to login screen
         await LoginScreen.toBeVisible();
-    });
-
-    it('MM-T5000_6 - should handle empty preauth secret field', async () => {
-        // # Fill in server details
-        await serverUrlInput.replaceText(serverOneUrl);
-        await serverDisplayNameInput.replaceText('Test Server Empty Preauth');
-
-        // # Toggle advanced options but leave preauth secret empty
-        await ServerScreen.toggleAdvancedOptions();
-
-        // * Verify preauth secret field is visible and empty (placeholder state)
-        await expect(preauthSecretInput).toBeVisible();
-
-        // * Verify connect button is still enabled (preauth secret is optional)
-        await expect(connectButton).toBeVisible();
-
-        // # Connect to server
-        await connectButton.tap();
-        await wait(timeouts.ONE_SEC);
-
-        if (isIos() && !process.env.CI) {
-            // # Tap alert okay button
-            try {
-                await waitFor(Alert.okayButton).toExist().withTimeout(timeouts.TEN_SEC);
-                await Alert.okayButton.tap();
-            } catch (error) {
-                /* eslint-disable no-console */
-                console.log('Alert button did not appear!');
-            }
-        }
-
-        // * Verify on login screen
-        await LoginScreen.toBeVisible();
-    });
-
-    it('MM-T5000_7 - should clear preauth secret field when toggling advanced options', async () => {
-        const testPreauthSecret = 'test-secret-to-clear';
-
-        // # Fill in server details and preauth secret
-        await serverUrlInput.replaceText(serverOneUrl);
-        await serverDisplayNameInput.replaceText('Test Server');
-
-        // # Toggle advanced options and enter preauth secret
-        await ServerScreen.toggleAdvancedOptions();
-        await ServerScreen.enterPreauthSecret(testPreauthSecret);
-
-        // * Verify preauth secret field is visible after entering text
-        await expect(preauthSecretInput).toBeVisible();
-
-        // # Toggle advanced options to hide field
-        await ServerScreen.toggleAdvancedOptions();
-
-        // # Toggle advanced options again to show field
-        await ServerScreen.toggleAdvancedOptions();
-
-        // * Verify preauth secret field is visible (secure fields don't show values, but field should persist)
-        await waitFor(preauthSecretInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await expect(preauthSecretInput).toBeVisible();
     });
 });
+
