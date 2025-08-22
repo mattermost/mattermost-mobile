@@ -11,11 +11,9 @@ describe('*** Test schema for APP database ***', () => {
     it('=> The APP SCHEMA should strictly match', () => {
         expect(schema).toEqual({
             version: 1,
-            unsafeSql: undefined,
             tables: {
                 [INFO]: {
                     name: INFO,
-                    unsafeSql: undefined,
                     columns: {
                         build_number: {name: 'build_number', type: 'string'},
                         created_at: {name: 'created_at', type: 'number'},
@@ -29,7 +27,6 @@ describe('*** Test schema for APP database ***', () => {
                 },
                 [GLOBAL]: {
                     name: GLOBAL,
-                    unsafeSql: undefined,
                     columns: {
                         value: {name: 'value', type: 'string'},
                     },
@@ -39,7 +36,6 @@ describe('*** Test schema for APP database ***', () => {
                 },
                 [SERVERS]: {
                     name: SERVERS,
-                    unsafeSql: undefined,
                     columns: {
                         db_path: {name: 'db_path', type: 'string'},
                         display_name: {name: 'display_name', type: 'string'},
