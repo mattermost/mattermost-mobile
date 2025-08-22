@@ -129,8 +129,8 @@ const EditServerForm = ({
     }, [keyboardAwareRef]);
 
     const toggleAdvancedOptions = useCallback(() => {
-        setShowAdvancedOptions(!showAdvancedOptions);
-    }, [showAdvancedOptions]);
+        setShowAdvancedOptions((prev) => !prev);
+    }, [setShowAdvancedOptions]);
 
     const onUpdate = useCallback(() => {
         Keyboard.dismiss();
