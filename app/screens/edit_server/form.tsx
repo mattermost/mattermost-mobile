@@ -88,12 +88,12 @@ const messages = defineMessages({
         defaultMessage: 'Advanced Options',
     },
     preauthSecret: {
-        id: 'mobile.components.select_server_view.sharedPassword',
+        id: 'mobile.components.select_server_view.sharedSecret',
         defaultMessage: 'Pre-authentication secret',
     },
     preauthSecretHelp: {
-        id: 'edit_server.sharedPasswordHelp',
-        defaultMessage: 'Type to replace current password, clear field to remove password',
+        id: 'edit_server.sharedSecretHelp',
+        defaultMessage: 'Type to replace current secret, clear field to remove secret',
     },
 });
 
@@ -224,7 +224,7 @@ const EditServerForm = ({
                     <CompassIcon
                         name={showAdvancedOptions ? 'chevron-up' : 'chevron-down'}
                         size={20}
-                        color={theme.centerChannelColor}
+                        color={theme.linkColor}
                     />
                     <FormattedText
                         {...messages.advancedOptions}
