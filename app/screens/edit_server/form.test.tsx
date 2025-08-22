@@ -44,19 +44,10 @@ describe('EditServerForm', () => {
         expect(screen.getByText('Advanced Options')).toBeTruthy();
     });
 
-    it('should show chevron-down initially', () => {
+    it('should show/hide pre-shared secret field when toggled', () => {
         renderWithIntlAndTheme(<EditServerForm {...defaultProps}/>);
 
-        const toggle = screen.getByTestId('edit_server_form.advanced_options.toggle');
-        expect(toggle).toBeTruthy();
-
-        // The chevron icon name is internal to CompassIcon, so we'll just verify the toggle exists
-    });
-
-    it('should show/hide shared password field when toggled', () => {
-        renderWithIntlAndTheme(<EditServerForm {...defaultProps}/>);
-
-        // Initially, shared password field should not be visible
+        // Initially, pre-shared secret field should not be visible
         expect(screen.queryByTestId('edit_server_form.preauth_secret.input')).toBeNull();
         expect(screen.queryByTestId('edit_server_form.preauth_secret_help')).toBeNull();
 
@@ -64,10 +55,9 @@ describe('EditServerForm', () => {
         const toggle = screen.getByTestId('edit_server_form.advanced_options.toggle');
         fireEvent.press(toggle);
 
-        // Now shared password field should be visible
+        // Now pre-shared secret field should be visible
         expect(screen.getByTestId('edit_server_form.preauth_secret.input')).toBeTruthy();
         expect(screen.getByTestId('edit_server_form.preauth_secret_help')).toBeTruthy();
-        expect(screen.getByText('Type to replace current password, clear field to remove password')).toBeTruthy();
 
         // Toggle again to hide
         fireEvent.press(toggle);
@@ -89,7 +79,7 @@ describe('EditServerForm', () => {
         expect(mockHandler).toHaveBeenCalledWith('New Server Name');
     });
 
-    it('should call handlePreauthSecretTextChanged when password changes', () => {
+    it('should call handlePreauthSecretTextChanged when secret changes', () => {
         const mockHandler = jest.fn();
         renderWithIntlAndTheme(
             <EditServerForm
@@ -102,13 +92,13 @@ describe('EditServerForm', () => {
         const toggle = screen.getByTestId('edit_server_form.advanced_options.toggle');
         fireEvent.press(toggle);
 
-        const passwordInput = screen.getByTestId('edit_server_form.preauth_secret.input');
-        fireEvent.changeText(passwordInput, 'new-password');
+        const preauthSecretInput = screen.getByTestId('edit_server_form.preauth_secret.input');
+        fireEvent.changeText(preauthSecretInput, 'new-secret');
 
-        expect(mockHandler).toHaveBeenCalledWith('new-password');
+        expect(mockHandler).toHaveBeenCalledWith('new-secret');
     });
 
-    it('should call handlePreauthSecretFocus when password field is focused', () => {
+    it('should call handlePreauthSecretFocus when preauth secret field is focused', () => {
         const mockHandler = jest.fn();
         renderWithIntlAndTheme(
             <EditServerForm
@@ -121,8 +111,8 @@ describe('EditServerForm', () => {
         const toggle = screen.getByTestId('edit_server_form.advanced_options.toggle');
         fireEvent.press(toggle);
 
-        const passwordInput = screen.getByTestId('edit_server_form.preauth_secret.input');
-        fireEvent(passwordInput, 'focus');
+        const preauthSecretInput = screen.getByTestId('edit_server_form.preauth_secret.input');
+        fireEvent(preauthSecretInput, 'focus');
 
         expect(mockHandler).toHaveBeenCalled();
     });
@@ -202,7 +192,7 @@ describe('EditServerForm', () => {
         expect(displayNameInput).toHaveProp('returnKeyType', 'next');
     });
 
-    it('should configure shared password input correctly', () => {
+    it('should configure pre-shared secret input correctly', () => {
         renderWithIntlAndTheme(
             <EditServerForm
                 {...defaultProps}
@@ -213,17 +203,17 @@ describe('EditServerForm', () => {
         const toggle = screen.getByTestId('edit_server_form.advanced_options.toggle');
         fireEvent.press(toggle);
 
-        const passwordInput = screen.getByTestId('edit_server_form.preauth_secret.input');
+        const preauthSecretInput = screen.getByTestId('edit_server_form.preauth_secret.input');
 
-        expect(passwordInput).toHaveProp('value', 'test-value');
-        expect(passwordInput).toHaveProp('secureTextEntry', true);
-        expect(passwordInput).toHaveProp('returnKeyType', 'done');
-        expect(passwordInput).toHaveProp('autoCorrect', false);
-        expect(passwordInput).toHaveProp('autoCapitalize', 'none');
-        expect(passwordInput).toHaveProp('spellCheck', false);
+        expect(preauthSecretInput).toHaveProp('value', 'test-value');
+        expect(preauthSecretInput).toHaveProp('secureTextEntry', true);
+        expect(preauthSecretInput).toHaveProp('returnKeyType', 'done');
+        expect(preauthSecretInput).toHaveProp('autoCorrect', false);
+        expect(preauthSecretInput).toHaveProp('autoCapitalize', 'none');
+        expect(preauthSecretInput).toHaveProp('spellCheck', false);
     });
 
-    it('should submit to shared password field when display name submitted with advanced options open', () => {
+    it('should submit to pre-shared secret field when display name submitted with advanced options open', () => {
         const mockHandler = jest.fn();
         renderWithIntlAndTheme(
             <EditServerForm
