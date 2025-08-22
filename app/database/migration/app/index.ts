@@ -6,6 +6,4 @@ import {schemaMigrations} from '@nozbe/watermelondb/Schema/migrations';
 // NOTE : To implement migration, please follow this document
 // https://nozbe.github.io/WatermelonDB/Advanced/Migrations.html
 
-export default schemaMigrations({
-    migrations: [],
-});
+export default schemaMigrations({migrations: []});
