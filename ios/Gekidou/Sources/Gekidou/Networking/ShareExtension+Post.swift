@@ -19,7 +19,8 @@ extension ShareExtension {
             files: files
         )
 
-        guard let token = try? Keychain.default.getToken(for: serverUrl) else {return "Could not retrieve the session token from the KeyChain"}
+        guard let credentials = try? Keychain.default.getCredentials(for: serverUrl),
+              let token = credentials.token else {return "Could not retrieve the session token from the KeyChain"}
 
         if !files.isEmpty {
             createBackroundSession(id: id)
@@ -40,7 +41,7 @@ extension ShareExtension {
                         uploadRequest.httpMethod = "POST"
                         uploadRequest.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
 
-                        if let preauthSecret = try? Keychain.default.getPreauthSecret(for: serverUrl) {
+                        if let preauthSecret = credentials.preauthSecret {
                             uploadRequest.addValue(preauthSecret, forHTTPHeaderField: GekidouConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET)
                         }
 

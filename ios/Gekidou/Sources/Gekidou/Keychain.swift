@@ -7,6 +7,11 @@
 
 import Foundation
 
+public struct ServerCredentials {
+    public let token: String?
+    public let preauthSecret: String?
+}
+
 enum KeychainError: Error {
     case CertificateForIdentityNotFound
     case IdentityNotFound
@@ -75,11 +80,15 @@ public class Keychain: NSObject {
         return (identity, certificate!)
     }
 
-    @objc public func getTokenObjc(for serverUrl: String) -> String? {
-        return try? getToken(for: serverUrl)
+    @objc public func getCredentialsObjc(for serverUrl: String) -> NSDictionary? {
+        guard let credentials = try? getCredentials(for: serverUrl) else { return nil }
+        return [
+            "token": credentials.token as Any,
+            "preauthSecret": credentials.preauthSecret as Any
+        ]
     }
 
-    public func getToken(for serverUrl: String) throws -> String? {
+    public func getCredentials(for serverUrl: String) throws -> ServerCredentials? {
         var attributes = try buildTokenAttributes(for: serverUrl)
         attributes[kSecMatchLimit] = kSecMatchLimitOne
         attributes[kSecReturnData] = kCFBooleanTrue
@@ -95,56 +104,25 @@ public class Keychain: NSObject {
                 let credentialsData = credentialsString.data(using: .utf8) {
                 do {
                     let json = try JSONSerialization.jsonObject(with: credentialsData, options: [])
-                    if let jsonDict = json as? [String: Any],
-                        let token = jsonDict["token"] as? String {
-                        return token  // Extract token from JSON
+                    if let jsonDict = json as? [String: Any] {
+                        let token = jsonDict["token"] as? String
+                        let preauthSecret = jsonDict["preauthSecret"] as? String
+                        return ServerCredentials(token: token, preauthSecret: preauthSecret)
                     }
                 } catch {
-                    // JSON parsing failed, fall back to old format
-                    return credentialsString  // Return as plain string
+                    // JSON parsing failed, fall back to old format (just token as plain string)
+                    return ServerCredentials(token: credentialsString, preauthSecret: nil)
                 }
             }
 
-            return credentialsString  // Fallback to plain string
+            // Fallback to plain string as token only
+            return ServerCredentials(token: credentialsString, preauthSecret: nil)
         }
 
         return nil
     }
 
-    @objc public func getPreauthSecretObjc(for serverUrl: String) -> String? {
-        return try? getPreauthSecret(for: serverUrl)
-    }
 
-    public func getPreauthSecret(for serverUrl: String) throws -> String? {
-        var attributes = try buildTokenAttributes(for: serverUrl)
-        attributes[kSecMatchLimit] = kSecMatchLimitOne
-        attributes[kSecReturnData] = kCFBooleanTrue
-
-        var result: AnyObject?
-        let status = SecItemCopyMatching(attributes as CFDictionary, &result)
-        let data = result as? Data
-        if status == errSecSuccess && data != nil {
-            let credentialsString = String(data: data!, encoding: .utf8)
-
-            // Try to parse as JSON to get preauthSecret
-            if let credentialsString = credentialsString,
-                let credentialsData = credentialsString.data(using: .utf8) {
-                do {
-                    let json = try JSONSerialization.jsonObject(with: credentialsData, options: [])
-                    if let jsonDict = json as? [String: Any],
-                        let preauthSecret = jsonDict["preauthSecret"] as? String {
-                        return preauthSecret
-                    }
-                } catch {
-                    // If JSON parsing fails, it might be old format with just token
-                    // In that case, there's no preauth secret
-                    return nil
-                }
-            }
-        }
-
-        return nil
-    }
 
     private func buildIdentityQuery(for host: String) throws -> [CFString: Any] {
         guard let hostData = host.data(using: .utf8) else {
