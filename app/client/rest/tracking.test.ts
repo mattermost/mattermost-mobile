@@ -92,7 +92,7 @@ describe('ClientTracking', () => {
 
     it('should set bearer token', () => {
         const token = 'testToken';
-        client.setBearerToken(token);
+        client.setClientCredentials(token);
 
         expect(client.requestHeaders[ClientConstants.HEADER_AUTH]).toBe(`${ClientConstants.HEADER_BEARER} ${token}`);
         expect(require('@init/credentials').setServerCredentials).toHaveBeenCalledWith(apiClientMock.baseUrl, token, undefined);
@@ -107,7 +107,7 @@ describe('ClientTracking', () => {
 
     it('should get request headers', () => {
         client.setCSRFToken('csrfToken');
-        client.setBearerToken('testToken');
+        client.setClientCredentials('testToken');
 
         const headers = client.getRequestHeaders('POST');
         expect(headers[ClientConstants.HEADER_AUTH]).toBe(`${ClientConstants.HEADER_BEARER} testToken`);

@@ -72,10 +72,6 @@ export default class ClientTracking {
         this.apiClient = apiClient;
     }
 
-    setBearerToken(bearerToken: string) {
-        this.setClientCredentials(bearerToken);
-    }
-
     setClientCredentials(bearerToken: string, preauthSecret?: string) {
         this.requestHeaders[ClientConstants.HEADER_AUTH] = `${ClientConstants.HEADER_BEARER} ${bearerToken}`;
 
