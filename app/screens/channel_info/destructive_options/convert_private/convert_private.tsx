@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useCallback} from 'react';
 import {defineMessages, useIntl, type IntlShape} from 'react-intl';
 import {Alert} from 'react-native';
 
@@ -80,7 +80,7 @@ const ConvertPrivate = ({canConvert, channelId, displayName}: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
 
-    const onConfirmConvertToPrivate = () => {
+    const onConfirmConvertToPrivate = useCallback(() => {
         const {formatMessage} = intl;
         const title = messages.convertPrivateTitle;
         const message = messages.convertPrivateDescription;
@@ -95,7 +95,7 @@ const ConvertPrivate = ({canConvert, channelId, displayName}: Props) => {
                 onPress: () => convertToPrivate(serverUrl, channelId, displayName, intl),
             }],
         );
-    };
+    }, [channelId, displayName, intl, serverUrl]);
 
     if (!canConvert) {
         return null;

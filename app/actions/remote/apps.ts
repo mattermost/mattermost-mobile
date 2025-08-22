@@ -81,7 +81,7 @@ export async function doAppSubmit<Res=unknown>(serverUrl: string, inCall: AppCal
                 if (!res.form?.submit) {
                     const errMsg = intl.formatMessage({
                         id: 'apps.error.responses.form.no_form',
-                        defaultMessage: 'Response type is `form`, but no valid form was included in response.',
+                        defaultMessage: 'Response type is `form`, but no valid form was included in the response.',
                     });
                     return {error: makeCallErrorResponse<Res>(errMsg)};
                 }
@@ -133,7 +133,7 @@ export async function doAppFetchForm<Res=unknown>(serverUrl: string, call: AppCa
                 if (!res.form?.submit) {
                     const errMsg = intl.formatMessage({
                         id: 'apps.error.responses.form.no_form',
-                        defaultMessage: 'Response type is `form`, but no valid form was included in response.',
+                        defaultMessage: 'Response type is `form`, but no valid form was included in the response.',
                     });
                     return {error: makeCallErrorResponse<Res>(errMsg)};
                 }

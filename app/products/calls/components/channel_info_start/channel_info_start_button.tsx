@@ -104,7 +104,7 @@ const ChannelInfoStartButton = ({
     const onPress = usePreventDoubleTap(tryJoin);
 
     const joinText = intl.formatMessage({id: 'mobile.calls_join_call', defaultMessage: 'Join call'});
-    const startText = intl.formatMessage({id: 'mobile.calls_start_call', defaultMessage: 'Start Call'});
+    const startText = intl.formatMessage({id: 'mobile.calls_start_call', defaultMessage: 'Start call'});
     const leaveText = intl.formatMessage({id: 'mobile.calls_leave_call', defaultMessage: 'Leave call'});
     const text = isACallInCurrentChannel ? joinText + msgPostfix : startText + msgPostfix;
     const icon = isACallInCurrentChannel ? 'phone-in-talk' : 'phone';
