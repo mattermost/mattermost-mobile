@@ -339,7 +339,6 @@
   "edit_server.display_help": "Server: {url}",
   "edit_server.save": "Save",
   "edit_server.saving": "Saving",
-  "edit_server.sharedSecretHelp": "Type to replace current secret, clear field to remove secret",
   "edit_server.title": "Edit server name",
   "emoji_picker.activities": "Activities",
   "emoji_picker.animals-nature": "Animals & Nature",

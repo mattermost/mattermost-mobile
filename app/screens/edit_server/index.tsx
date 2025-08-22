@@ -10,14 +10,10 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import DatabaseManager from '@database/manager';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
-import {getServerCredentials, setServerCredentials} from '@init/credentials';
-import NetworkManager from '@managers/network_manager';
 import SecurityManager from '@managers/security_manager';
-import WebSocketManager from '@managers/websocket_manager';
 import {getServerByDisplayName} from '@queries/app/servers';
 import Background from '@screens/background';
 import {dismissModal} from '@screens/navigation';
-import {logWarning} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Form from './form';
@@ -52,8 +48,6 @@ const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) =>
     const keyboardAwareRef = useRef<KeyboardAwareScrollView>(null);
     const [saving, setSaving] = useState(false);
     const [displayName, setDisplayName] = useState<string>(server.displayName);
-    const [preauthSecret, setPreauthSecret] = useState<string>('');
-    const [preauthSecretModified, setPreauthSecretModified] = useState(false);
     const [buttonDisabled, setButtonDisabled] = useState(true);
     const [displayNameError, setDisplayNameError] = useState<string | undefined>();
     const styles = getStyleSheet(theme);
@@ -63,20 +57,7 @@ const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) =>
     }, [componentId]);
 
     useEffect(() => {
-        const loadCredentials = async () => {
-            const credentials = await getServerCredentials(server.url);
-            const hasPassword = Boolean(credentials?.preauthSecret);
-
-            // If there's an existing password, show dummy value "keep"
-            const initialValue = hasPassword ? 'keep' : '';
-            setPreauthSecret(initialValue);
-        };
-        loadCredentials();
-    }, [server.url]);
-
-    useEffect(() => {
-        // Allow saving if display name is valid, regardless of changes
-        setButtonDisabled(!displayName);
+        setButtonDisabled(Boolean(!displayName || displayName === server.displayName));
     }, [displayName]);
 
     const handleUpdate = useCallback(async () => {
@@ -101,52 +82,13 @@ const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) =>
         }
 
         await DatabaseManager.updateServerDisplayName(server.url, displayName);
-
-        // Update shared password only if it was modified
-        if (preauthSecretModified) {
-            const credentials = await getServerCredentials(server.url);
-            if (credentials) {
-                // Empty field = remove password, otherwise use the new value
-                const newPreauthSecret = preauthSecret.trim() || undefined;
-                setServerCredentials(server.url, credentials.token, newPreauthSecret);
-
-                // Update active REST client
-                try {
-                    const activeClient = NetworkManager.getClient(server.url);
-                    activeClient.setClientCredentials(credentials.token, newPreauthSecret);
-                } catch (error) {
-                    logWarning('Failed to update REST client shared password:', error);
-                }
-
-                // Update active WebSocket client
-                try {
-                    WebSocketManager.createClient(server.url, credentials.token, newPreauthSecret);
-                } catch (error) {
-                    logWarning('Failed to update WebSocket client shared password:', error);
-                }
-            }
-        }
-
         dismissModal({componentId});
-    }, [!buttonDisabled && displayName, !buttonDisabled && displayNameError, !buttonDisabled && preauthSecretModified, preauthSecret]);
+    }, [!buttonDisabled && displayName, !buttonDisabled && displayNameError]);
 
     const handleDisplayNameTextChanged = useCallback((text: string) => {
         setDisplayName(text);
         setDisplayNameError(undefined);
     }, []);
-
-    const handlePreauthSecretTextChanged = useCallback((text: string) => {
-        setPreauthSecret(text);
-        setPreauthSecretModified(true);
-    }, []);
-
-    const handlePreauthSecretFocus = useCallback(() => {
-        // Clear field when focused if it hasn't been modified yet
-        if (!preauthSecretModified) {
-            setPreauthSecret('');
-            setPreauthSecretModified(true); // Mark as modified when clearing dummy value
-        }
-    }, [preauthSecretModified]);
 
     useNavButtonPressed(closeButtonId || '', componentId, close, []);
     useAndroidHardwareBackHandler(componentId, close);
@@ -183,11 +125,8 @@ const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) =>
                         displayNameError={displayNameError}
                         handleUpdate={handleUpdate}
                         handleDisplayNameTextChanged={handleDisplayNameTextChanged}
-                        handlePreauthSecretTextChanged={handlePreauthSecretTextChanged}
-                        handlePreauthSecretFocus={handlePreauthSecretFocus}
                         keyboardAwareRef={keyboardAwareRef}
                         serverUrl={server.url}
-                        preauthSecret={preauthSecret}
                         theme={theme}
                     />
                 </KeyboardAwareScrollView>

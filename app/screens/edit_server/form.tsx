@@ -1,12 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {type MutableRefObject, useCallback, useEffect, useRef, useState} from 'react';
+import React, {type MutableRefObject, useCallback, useEffect, useRef} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
-import {Keyboard, Platform, Pressable, useWindowDimensions, View} from 'react-native';
+import {Keyboard, Platform, useWindowDimensions, View} from 'react-native';
 
 import Button from '@components/button';
-import CompassIcon from '@components/compass_icon';
 import FloatingTextInput, {type FloatingTextInputRef} from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import {useIsTablet} from '@hooks/device';
@@ -23,11 +22,8 @@ type Props = {
     displayNameError?: string;
     handleUpdate: () => void;
     handleDisplayNameTextChanged: (text: string) => void;
-    handlePreauthSecretTextChanged: (text: string) => void;
-    handlePreauthSecretFocus: () => void;
     keyboardAwareRef: MutableRefObject<KeyboardAwareScrollView | null>;
     serverUrl: string;
-    preauthSecret?: string;
     theme: Theme;
 };
 
@@ -54,24 +50,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         width: '100%',
         marginTop: 32,
     },
-    advancedOptionsContainer: {
-        width: '100%',
-        marginTop: 16,
-    },
-    advancedOptionsHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'flex-start',
-        paddingVertical: 12,
-        paddingHorizontal: 4,
-    },
-    advancedOptionsTitle: {
-        color: theme.linkColor,
-        ...typography('Body', 200, 'SemiBold'),
-    },
-    advancedOptionsContent: {
-        width: '100%',
-    },
 }));
 
 const messages = defineMessages({
@@ -83,18 +61,6 @@ const messages = defineMessages({
         id: 'edit_server.saving',
         defaultMessage: 'Saving',
     },
-    advancedOptions: {
-        id: 'mobile.components.select_server_view.advancedOptions',
-        defaultMessage: 'Advanced Options',
-    },
-    preauthSecret: {
-        id: 'mobile.components.select_server_view.sharedSecret',
-        defaultMessage: 'Pre-authentication secret',
-    },
-    preauthSecretHelp: {
-        id: 'edit_server.sharedSecretHelp',
-        defaultMessage: 'Type to replace current secret, clear field to remove secret',
-    },
 });
 
 const EditServerForm = ({
@@ -104,47 +70,29 @@ const EditServerForm = ({
     displayNameError,
     handleUpdate,
     handleDisplayNameTextChanged,
-    handlePreauthSecretTextChanged,
-    handlePreauthSecretFocus,
     keyboardAwareRef,
     serverUrl,
-    preauthSecret = '',
     theme,
 }: Props) => {
     const {formatMessage} = useIntl();
     const isTablet = useIsTablet();
     const dimensions = useWindowDimensions();
     const displayNameRef = useRef<FloatingTextInputRef>(null);
-    const preauthSecretRef = useRef<FloatingTextInputRef>(null);
-    const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
     const styles = getStyleSheet(theme);
 
     const onBlur = useCallback(() => {
         if (Platform.OS === 'ios') {
-            const reset = !displayNameRef.current?.isFocused() && !preauthSecretRef.current?.isFocused();
+            const reset = !displayNameRef.current?.isFocused();
             if (reset) {
                 keyboardAwareRef.current?.scrollToPosition(0, 0);
             }
         }
     }, [keyboardAwareRef]);
 
-    const toggleAdvancedOptions = useCallback(() => {
-        setShowAdvancedOptions((prev) => !prev);
-    }, [setShowAdvancedOptions]);
-
     const onUpdate = useCallback(() => {
         Keyboard.dismiss();
         handleUpdate();
     }, [handleUpdate]);
-
-    const onDisplayNameSubmit = useCallback(() => {
-        if (showAdvancedOptions) {
-            // Move to the next field if advanced options are shown
-            preauthSecretRef.current?.focus();
-        } else {
-            onUpdate();
-        }
-    }, [showAdvancedOptions, onUpdate]);
 
     const onFocus = useCallback(() => {
         // For iOS we set the position of the input instead of
@@ -163,11 +111,6 @@ const EditServerForm = ({
             });
         }
     }, [dimensions, isTablet, keyboardAwareRef]);
-
-    const onPreauthSecretFocus = useCallback(() => {
-        handlePreauthSecretFocus();
-        onFocus();
-    }, [handlePreauthSecretFocus, onFocus]);
 
     useEffect(() => {
         if (Platform.OS === 'ios' && isTablet) {
@@ -196,9 +139,9 @@ const EditServerForm = ({
                     onBlur={onBlur}
                     onChangeText={handleDisplayNameTextChanged}
                     onFocus={onFocus}
-                    onSubmitEditing={onDisplayNameSubmit}
+                    onSubmitEditing={onUpdate}
                     ref={displayNameRef}
-                    returnKeyType={showAdvancedOptions ? 'next' : 'done'}
+                    returnKeyType='done'
                     spellCheck={false}
                     testID='edit_server_form.server_display_name.input'
                     theme={theme}
@@ -214,51 +157,6 @@ const EditServerForm = ({
                 values={{url: removeProtocol(stripTrailingSlashes(serverUrl))}}
             />
             }
-
-            <View style={styles.advancedOptionsContainer}>
-                <Pressable
-                    onPress={toggleAdvancedOptions}
-                    style={styles.advancedOptionsHeader}
-                    testID='edit_server_form.advanced_options.toggle'
-                >
-                    <CompassIcon
-                        name={showAdvancedOptions ? 'chevron-up' : 'chevron-down'}
-                        size={20}
-                        color={theme.linkColor}
-                    />
-                    <FormattedText
-                        {...messages.advancedOptions}
-                        style={styles.advancedOptionsTitle}
-                    />
-                </Pressable>
-
-                {showAdvancedOptions && (
-                    <View style={styles.advancedOptionsContent}>
-                        <FloatingTextInput
-                            autoCorrect={false}
-                            autoCapitalize={'none'}
-                            enablesReturnKeyAutomatically={true}
-                            label={formatMessage(messages.preauthSecret)}
-                            onBlur={onBlur}
-                            onChangeText={handlePreauthSecretTextChanged}
-                            onFocus={onPreauthSecretFocus}
-                            onSubmitEditing={onUpdate}
-                            ref={preauthSecretRef}
-                            returnKeyType='done'
-                            secureTextEntry={true}
-                            spellCheck={false}
-                            testID='edit_server_form.preauth_secret.input'
-                            theme={theme}
-                            value={preauthSecret}
-                        />
-                        <FormattedText
-                            {...messages.preauthSecretHelp}
-                            style={styles.chooseText}
-                            testID='edit_server_form.preauth_secret_help'
-                        />
-                    </View>
-                )}
-            </View>
             <View style={styles.buttonContainer}>
                 <Button
                     disabled={buttonDisabled || connecting}
