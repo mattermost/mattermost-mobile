@@ -46,7 +46,7 @@ const PostButton = ({theme}: Props) => {
         const credentials = await getServerCredentials(serverUrl);
 
         if (credentials?.token) {
-            const shareData = {
+            closeExtension({
                 serverUrl,
                 token: credentials.token,
                 channelId,
@@ -54,9 +54,7 @@ const PostButton = ({theme}: Props) => {
                 message: text,
                 userId,
                 preauthSecret: credentials.preauthSecret,
-            };
-
-            closeExtension(shareData);
+            });
         }
     }, [serverUrl, channelId, message, files, linkPreviewUrl, userId]);
 
