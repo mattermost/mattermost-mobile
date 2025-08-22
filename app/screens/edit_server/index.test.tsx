@@ -99,9 +99,7 @@ describe('EditServer Screen', () => {
         // Wait a bit more for the async state update
         await waitFor(() => {
             const passwordInput = screen.queryByTestId('edit_server_form.preauth_secret.input');
-            if (passwordInput) {
-                expect(passwordInput).toHaveProp('value', 'keep');
-            }
+            expect(passwordInput).toHaveProp('value', 'keep');
         });
     });
 
@@ -119,9 +117,7 @@ describe('EditServer Screen', () => {
 
         await waitFor(() => {
             const passwordInput = screen.queryByTestId('edit_server_form.preauth_secret.input');
-            if (passwordInput) {
-                expect(passwordInput).toHaveProp('value', '');
-            }
+            expect(passwordInput).toHaveProp('value', '');
         });
     });
 
