@@ -42,18 +42,21 @@ struct ImageThumbnail: View {
   }
   
   var body: some View {
-    Image(uiImage: downsample(imageAt: attachment.fileUrl, to: CGSize(width: small ? 104 : 0, height: small ? 104 : 156))!)
+    let imageSize: CGFloat = small ? 64 : 156
+    
+    Image(uiImage: downsample(imageAt: attachment.fileUrl, to: CGSize(width: imageSize, height: imageSize))!)
       .resizable()
       .aspectRatio(contentMode: small ? .fill : .fit)
-      .frame(width: small ? 104 : nil, height: small ? 104 : 156)
+      .frame(width: small ? 64 : nil, height: small ? 64 : imageSize)
+      .clipped()
       .cornerRadius(4)
-      .background(
+      .background(Color.theme.centerChannelBg)
+      .overlay(
         RoundedRectangle(cornerRadius: 4)
           .stroke(
             hasError ? Color.theme.errorTextColor : Color.theme.centerChannelColor.opacity(0.16),
             lineWidth: 1
           )
-          .shadow(color: Color(red: 0, green: 0, blue: 0, opacity: 0.08), radius: 3, x: 0, y: 2)
       )
   }
 }

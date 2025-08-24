@@ -65,7 +65,10 @@ const NotifyAbout = ({
         const {y} = e.nativeEvent.layout;
 
         notifyTitleTop.value = y > 0 ? y + 10 : BLOCK_TITLE_HEIGHT;
-    }, []);
+
+        // NotifyTitleTop is a shared value, so its reference should not change between renders.
+        // we add it to the dependencies to satisfy the linter.
+    }, [notifyTitleTop]);
 
     let notifyLevelToUse = notifyLevel;
     if (notifyLevel === NotificationLevel.DEFAULT) {

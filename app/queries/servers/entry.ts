@@ -120,7 +120,6 @@ export async function truncateCrtRelatedTables(serverUrl: string): Promise<{erro
 
     try {
         await database.write(() => {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             return database.adapter.unsafeExecute({
                 sqls: [
@@ -145,4 +144,60 @@ export async function truncateCrtRelatedTables(serverUrl: string): Promise<{erro
     }
 
     return {error: false};
+}
+
+/**
+ * Processes entry models for teams, channels, preferences, and user data.
+ * Prepares all the models and batches them to the database in a single operation.
+ *
+ * @param {PrepareModelsArgs} args - The arguments object
+ * @param {ServerDataOperator} args.operator - Database operator for the server
+ * @param {MyTeamsRequest} [args.teamData] - Team data including teams and memberships
+ * @param {MyChannelsRequest} [args.chData] - Channel data including channels and memberships
+ * @param {MyPreferencesRequest} [args.prefData] - User preferences data
+ * @param {MyUserRequest} [args.meData] - Current user data
+ * @param {boolean} [args.isCRTEnabled] - Whether Collapsed Reply Threads are enabled
+ * @returns {Promise<Model[]>} Promise that resolves to an array of processed database models
+ */
+export async function processEntryModels({
+    operator,
+    teamData,
+    chData,
+    prefData,
+    meData,
+    isCRTEnabled,
+}: PrepareModelsArgs): Promise<Model[]> {
+    const modelPromises = await prepareEntryModels({operator, teamData, chData, prefData, meData, isCRTEnabled});
+
+    const flattenModels = (await Promise.all(modelPromises)).flat();
+    if (flattenModels.length) {
+        operator.batchRecords(flattenModels, 'processEntryModels');
+    }
+
+    return flattenModels;
+}
+
+/**
+ * Processes entry models for deletion operations.
+ * Prepares models that need to be deleted (teams, channels) and batches the deletion operations.
+ *
+ * @param {PrepareModelsForDeletionArgs} args - The arguments object
+ * @param {string} args.serverUrl - The server URL for the database operation
+ * @param {ServerDataOperator} args.operator - Database operator for the server
+ * @param {MyTeamsRequest} [args.teamData] - Team data to determine what teams to keep/delete
+ * @param {MyChannelsRequest} [args.chData] - Channel data to determine what channels to keep/delete
+ * @returns {Promise<void>} Promise that resolves when deletion operations are complete
+ */
+export async function processEntryModelsForDeletion({
+    serverUrl,
+    operator,
+    teamData,
+    chData,
+}: PrepareModelsForDeletionArgs): Promise<void> {
+    const modelsToDeletePromises = await prepareEntryModelsForDeletion({serverUrl, operator, teamData, chData});
+
+    const modelsToDelete = (await Promise.all(modelsToDeletePromises)).flat();
+    if (modelsToDelete.length) {
+        operator.batchRecords(modelsToDelete, 'processEntryModelsForDeletion');
+    }
 }
