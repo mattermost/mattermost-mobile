@@ -9,17 +9,19 @@ import BaseChip from '@components/chips/base_chip';
 import UserChip from '@components/chips/user_chip';
 import CompassIcon from '@components/compass_icon';
 import {getFriendlyDate} from '@components/friendly_date';
+import PressableOpacity from '@components/pressable_opacity';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {runChecklistItem, updateChecklistItem} from '@playbooks/actions/remote/checklist';
+import {restoreChecklistItem, runChecklistItem, skipChecklistItem, updateChecklistItem} from '@playbooks/actions/remote/checklist';
 import {isDueSoon, isOverdue} from '@playbooks/utils/run';
-import {openUserProfileModal, popTo} from '@screens/navigation';
+import {bottomSheet, openUserProfileModal, popTo} from '@screens/navigation';
 import {logDebug} from '@utils/log';
 import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import Checkbox from './checkbox';
+import ChecklistItemBottomSheet, {BOTTOM_SHEET_HEIGHT} from './checklist_item_bottom_sheet';
 
 import type PlaybookChecklistItemModel from '@playbooks/types/database/models/playbook_checklist_item';
 import type UserModel from '@typings/database/models/servers/user';
@@ -137,6 +139,23 @@ const ChecklistItem = ({
         setIsChecking(false);
     }, [isChecking, serverUrl, playbookRunId, item.id, checklistNumber, itemNumber, checked]);
 
+    const toggleSkipped = useCallback(async () => {
+        if (isChecking) {
+            return;
+        }
+        setIsChecking(true);
+        let res;
+        if (skipped) {
+            res = await restoreChecklistItem(serverUrl, playbookRunId, item.id, checklistNumber, itemNumber);
+        } else {
+            res = await skipChecklistItem(serverUrl, playbookRunId, item.id, checklistNumber, itemNumber);
+        }
+        if (res.error) {
+            showPlaybookErrorSnackbar();
+        }
+        setIsChecking(false);
+    }, [isChecking, serverUrl, playbookRunId, item.id, checklistNumber, itemNumber, skipped]);
+
     const chipIconStyle = useMemo(() => {
         return [
             styles.chipIcon,
@@ -172,18 +191,44 @@ const ChecklistItem = ({
         }
     }
 
+    const renderBottomSheet = useCallback(() => (
+        <ChecklistItemBottomSheet
+            item={item}
+            assignee={assignee}
+            onCheck={toggleChecked}
+            onSkip={toggleSkipped}
+            onRunCommand={executeCommand}
+            teammateNameDisplay={teammateNameDisplay}
+            isDisabled={isDisabled}
+        />
+    ), [assignee, executeCommand, item, teammateNameDisplay, toggleChecked, toggleSkipped, isDisabled]);
+
+    const onPress = useCallback(() => {
+        const initialHeight = BOTTOM_SHEET_HEIGHT.base + (isDisabled ? 0 : BOTTOM_SHEET_HEIGHT.actionButtons);
+        bottomSheet({
+            title: intl.formatMessage({id: 'playbook_run.checklist.taskDetails', defaultMessage: 'Task Details'}),
+            renderContent: renderBottomSheet,
+            snapPoints: [1, initialHeight, '80%'],
+            theme,
+            closeButtonId: 'close-checklist-item',
+            scrollable: true,
+        });
+    }, [intl, isDisabled, renderBottomSheet, theme]);
+
     return (
         <View style={styles.checklistItem}>
             <View style={styles.checkboxContainer}>
                 {checkbox}
             </View>
             <View style={styles.itemDetails}>
-                <View style={styles.itemDetailsTexts}>
-                    <Text style={[styles.itemTitle, skipped && styles.skippedText]}>{item.title}</Text>
-                    {item.description && (
-                        <Text style={[styles.itemDescription, skipped && styles.skippedText]}>{item.description}</Text>
-                    )}
-                </View>
+                <PressableOpacity onPress={onPress}>
+                    <View style={styles.itemDetailsTexts}>
+                        <Text style={[styles.itemTitle, skipped && styles.skippedText]}>{item.title}</Text>
+                        {Boolean(item.description) && (
+                            <Text style={[styles.itemDescription, skipped && styles.skippedText]}>{item.description}</Text>
+                        )}
+                    </View>
+                </PressableOpacity>
 
                 {(assignee || dueDate || (item.command)) && (
                     <View style={styles.chipsRow}>
@@ -210,7 +255,7 @@ const ChecklistItem = ({
                             />
                         )}
 
-                        {item.command && (
+                        {Boolean(item.command) && (
                             <BaseChip
                                 label={commandMessage}
                                 onPress={executeCommand}
