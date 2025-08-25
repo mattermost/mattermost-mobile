@@ -120,6 +120,20 @@ describe('fetchPlaybookRunsForChannel', () => {
         expect(handlePlaybookRuns).not.toHaveBeenCalled();
     });
 
+    it('should update the channel in the ephemeral store when there are no runs', async () => {
+        mockClient.fetchPlaybookRuns.mockResolvedValueOnce({
+            items: [],
+            has_more: false,
+        });
+
+        const result = await fetchPlaybookRunsForChannel(serverUrl, channelId);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.runs).toEqual([]);
+        expect(handlePlaybookRuns).not.toHaveBeenCalled();
+        expect(EphemeralStore.getChannelPlaybooksSynced(serverUrl, channelId)).toBe(true);
+    });
+
     it('should update the channel in the ephemeral store', async () => {
         mockClient.fetchPlaybookRuns.mockResolvedValueOnce({
             items: [mockPlaybookRun],
