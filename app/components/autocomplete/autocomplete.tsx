@@ -64,7 +64,22 @@ type Props = {
     growDown?: boolean;
     teamId?: string;
     containerStyle?: StyleProp<ViewStyle>;
+    autocompleteProviders?: AutocompleteProviders;
 }
+
+type AutocompleteProviders = {
+    user: boolean;
+    channel: boolean;
+    emoji: boolean;
+    slash: boolean;
+}
+
+const defaultAutocompleteProviders: AutocompleteProviders = {
+    user: true,
+    channel: true,
+    emoji: true,
+    slash: true,
+};
 
 const Autocomplete = ({
     cursorPosition,
@@ -83,6 +98,7 @@ const Autocomplete = ({
     growDown = false,
     containerStyle,
     teamId,
+    autocompleteProviders = defaultAutocompleteProviders,
 }: Props) => {
     const theme = useTheme();
     const isTablet = useIsTablet();
@@ -133,7 +149,7 @@ const Autocomplete = ({
             testID='autocomplete'
             style={containerStyles}
         >
-            {isAppsEnabled && channelId && (
+            {isAppsEnabled && channelId && autocompleteProviders.slash && (
                 <AppSlashSuggestion
                     listStyle={style.listStyle}
                     updateValue={updateValue}
@@ -145,29 +161,33 @@ const Autocomplete = ({
                 />
             )}
             {(!appsTakeOver || !isAppsEnabled) && (<>
-                <AtMention
-                    cursorPosition={cursorPosition}
-                    listStyle={style.listStyle}
-                    updateValue={updateValue}
-                    onShowingChange={setShowingAtMention}
-                    value={value || ''}
-                    nestedScrollEnabled={nestedScrollEnabled}
-                    isSearch={isSearch}
-                    channelId={channelId}
-                    teamId={teamId}
-                />
-                <ChannelMention
-                    cursorPosition={cursorPosition}
-                    listStyle={style.listStyle}
-                    updateValue={updateValue}
-                    onShowingChange={setShowingChannelMention}
-                    value={value || ''}
-                    nestedScrollEnabled={nestedScrollEnabled}
-                    isSearch={isSearch}
-                    channelId={channelId}
-                    teamId={teamId}
-                />
-                {!isSearch &&
+                {autocompleteProviders.user && (
+                    <AtMention
+                        cursorPosition={cursorPosition}
+                        listStyle={style.listStyle}
+                        updateValue={updateValue}
+                        onShowingChange={setShowingAtMention}
+                        value={value || ''}
+                        nestedScrollEnabled={nestedScrollEnabled}
+                        isSearch={isSearch}
+                        channelId={channelId}
+                        teamId={teamId}
+                    />
+                )}
+                {autocompleteProviders.channel && (
+                    <ChannelMention
+                        cursorPosition={cursorPosition}
+                        listStyle={style.listStyle}
+                        updateValue={updateValue}
+                        onShowingChange={setShowingChannelMention}
+                        value={value || ''}
+                        nestedScrollEnabled={nestedScrollEnabled}
+                        isSearch={isSearch}
+                        channelId={channelId}
+                        teamId={teamId}
+                    />
+                )}
+                {!isSearch && autocompleteProviders.emoji && (
                     <EmojiSuggestion
                         cursorPosition={cursorPosition}
                         listStyle={style.listStyle}
@@ -178,8 +198,8 @@ const Autocomplete = ({
                         rootId={rootId}
                         shouldDirectlyReact={shouldDirectlyReact}
                     />
-                }
-                {showCommands && channelId &&
+                )}
+                {showCommands && channelId && autocompleteProviders.slash && (
                     <SlashSuggestion
                         listStyle={style.listStyle}
                         updateValue={updateValue}
@@ -190,7 +210,7 @@ const Autocomplete = ({
                         rootId={rootId}
                         isAppsEnabled={isAppsEnabled}
                     />
-                }
+                )}
                 {/* {(isSearch && enableDateSuggestion) &&
                     <DateSuggestion
                         cursorPosition={cursorPosition}

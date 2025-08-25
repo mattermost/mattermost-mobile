@@ -23,6 +23,7 @@ export interface ClientPlaybooksMix {
 
     // Slash Commands
     runChecklistItemSlashCommand: (playbookRunId: string, checklistNumber: number, itemNumber: number) => Promise<void>;
+    setChecklistItemCommand: (playbookRunID: string, checklistNum: number, itemNum: number, command: string) => Promise<void>;
 }
 
 const ClientPlaybooks = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
@@ -112,6 +113,15 @@ const ClientPlaybooks = <TBase extends Constructor<ClientBase>>(superclass: TBas
             `${this.getPlaybookRunRoute(playbookRunId)}/checklists/${checklistNumber}/item/${itemNumber}/run`,
             {method: 'post'},
         );
+    };
+
+    setChecklistItemCommand = async (playbookRunID: string, checklistNum: number, itemNum: number, command: string) => {
+        const data = await this.doFetch(
+            `${this.getPlaybookRunRoute(playbookRunID)}/checklists/${checklistNum}/item/${itemNum}/command`,
+            {method: 'put', body: {command}},
+        );
+
+        return data;
     };
 };
 
