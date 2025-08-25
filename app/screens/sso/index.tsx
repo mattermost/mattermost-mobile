@@ -31,6 +31,7 @@ interface SSOProps extends LaunchProps {
     license: Partial<ClientLicense>;
     ssoType: string;
     serverDisplayName: string;
+    serverPreauthSecret?: string;
     theme: Theme;
 }
 
@@ -45,7 +46,7 @@ const styles = StyleSheet.create({
 const SSO = ({
     closeButtonId, componentId, config, extra,
     launchError, launchType, serverDisplayName,
-    serverUrl, ssoType, theme,
+    serverPreauthSecret, serverUrl, ssoType, theme,
 }: SSOProps) => {
     const [loginError, setLoginError] = useState<string>('');
     let loginUrl = '';
@@ -89,7 +90,7 @@ const SSO = ({
     };
 
     const doSSOLogin = async (bearerToken: string, csrfToken: string) => {
-        const result: LoginActionResponse = await ssoLogin(serverUrl!, serverDisplayName, config.DiagnosticId!, bearerToken, csrfToken);
+        const result: LoginActionResponse = await ssoLogin(serverUrl!, serverDisplayName, config.DiagnosticId!, bearerToken, csrfToken, serverPreauthSecret);
         if (result?.error && result.failed) {
             onLoadEndError(result.error);
             return;

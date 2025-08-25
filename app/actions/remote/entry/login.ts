@@ -35,7 +35,7 @@ export async function loginEntry({serverUrl}: AfterLoginArgs): Promise<{error?: 
         const credentials = await getServerCredentials(serverUrl);
         if (credentials?.token) {
             SecurityManager.addServer(serverUrl, clData.config, true);
-            WebsocketManager.createClient(serverUrl, credentials.token);
+            WebsocketManager.createClient(serverUrl, credentials.token, credentials.preauthSecret);
             await WebsocketManager.initializeClient(serverUrl, 'Login');
             SecurityManager.setActiveServer(serverUrl);
         }

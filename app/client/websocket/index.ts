@@ -4,6 +4,7 @@
 import {type ClientHeaders, getOrCreateWebSocketClient, type WebSocketClientInterface, WebSocketReadyState} from '@mattermost/react-native-network-client';
 import {Platform} from 'react-native';
 
+import * as ClientConstants from '@client/rest/constants';
 import {WebsocketEvents} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getConfigValue} from '@queries/servers/system';
@@ -26,6 +27,7 @@ export default class WebSocketClient {
     private connectionTimeout: NodeJS.Timeout | undefined;
     private connectionId = '';
     private token: string;
+    private preauthSecret?: string;
     private stop = false;
     private url = '';
     private serverUrl: string;
@@ -58,9 +60,10 @@ export default class WebSocketClient {
     private closeCallback?: (connectFailCount: number) => void;
     private connectingCallback?: () => void;
 
-    constructor(serverUrl: string, token: string) {
+    constructor(serverUrl: string, token: string, preauthSecret?: string) {
         this.token = token;
         this.serverUrl = serverUrl;
+        this.preauthSecret = preauthSecret;
     }
 
     public async initialize(opts = {}, shouldSkipSync = false) {
@@ -134,6 +137,13 @@ export default class WebSocketClient {
                 // iOS is using he underlying cookieJar
                 headers.Authorization = `Bearer ${this.token}`;
             }
+
+            // Add shared password header if available
+            if (this.preauthSecret) {
+                headers[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET] = this.preauthSecret;
+                logDebug('WebSocket: Added shared password header for', this.serverUrl);
+            }
+
             const {client} = await getOrCreateWebSocketClient(this.url, {headers, timeoutInterval: WEBSOCKET_TIMEOUT});
 
             // Check again if the client is the same, to avoid race conditions

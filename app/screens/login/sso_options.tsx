@@ -69,7 +69,10 @@ const SsoOptions = ({goToSso, ssoOnly, ssoOptions, theme}: Props) => {
         };
 
         componentArray.push(
-            <View style={styleButtonWrapper}>
+            <View
+                style={styleButtonWrapper}
+                key={ssoType}
+            >
                 <Button
                     key={ssoType}
                     onPress={handlePress}

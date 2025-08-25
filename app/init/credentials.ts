@@ -44,7 +44,7 @@ export const getActiveServerUrl = async () => {
     return serverUrl || undefined;
 };
 
-export const setServerCredentials = (serverUrl: string, token: string) => {
+export const setServerCredentials = (serverUrl: string, token: string, preauthSecret?: string) => {
     if (!(serverUrl && token)) {
         return;
     }
@@ -60,14 +60,29 @@ export const setServerCredentials = (serverUrl: string, token: string) => {
             accessGroup,
             securityLevel: KeyChain.SECURITY_LEVEL.SECURE_SOFTWARE,
         };
+
+        // Store main token credentials (clean format)
         KeyChain.setInternetCredentials(serverUrl, token, token, options);
+
+        // Store preauth secret separately if provided
+        if (preauthSecret) {
+            KeyChain.setGenericPassword('preshared_secret', preauthSecret, {
+                server: serverUrl,
+                ...options,
+            });
+        }
     } catch (e) {
         logWarning('could not set credentials', e);
     }
 };
 
 export const removeServerCredentials = async (serverUrl: string) => {
-    return KeyChain.resetInternetCredentials({server: serverUrl});
+    await KeyChain.resetInternetCredentials({server: serverUrl});
+    try {
+        await KeyChain.resetGenericPassword({server: serverUrl});
+    } catch (e) {
+        // Preauth secret might not exist, ignore errors
+    }
 };
 
 export const removeActiveServerCredentials = async () => {
@@ -79,23 +94,42 @@ export const removeActiveServerCredentials = async () => {
 
 export const getServerCredentials = async (serverUrl: string): Promise<ServerCredential|null> => {
     try {
+        // Get main credentials
         const credentials = await KeyChain.getInternetCredentials(serverUrl);
 
-        if (credentials) {
-            // TODO: Pre-Gekidou we were concatenating the deviceToken and the userId in
-            // credentials.username so we need to check the length of credentials.username.split(',').
-            // This check should be removed at some point. https://mattermost.atlassian.net/browse/MM-43483
-            const parts = credentials.username.split(',');
-            const userId = parts[parts.length - 1];
-
-            const token = credentials.password;
-
-            if (token && token !== 'undefined') {
-                return {serverUrl, userId, token};
-            }
+        if (!credentials) {
+            return null;
         }
 
-        return null;
+        // TODO: Pre-Gekidou we were concatenating the deviceToken and the userId in
+        // credentials.username so we need to check the length of credentials.username.split(',').
+        // This check should be removed at some point. https://mattermost.atlassian.net/browse/MM-43483
+        const parts = credentials.username.split(',');
+        const userId = parts[parts.length - 1];
+        const token = credentials.password;
+
+        if (!token || token === 'undefined') {
+            return null;
+        }
+
+        // Get preauth secret separately
+        let preauthSecret: string | undefined;
+        try {
+            const preauthCredentials = await KeyChain.getGenericPassword({
+                server: serverUrl,
+            });
+            preauthSecret = preauthCredentials ? preauthCredentials.password : undefined;
+        } catch (e) {
+            // Preauth secret is optional, so ignore errors
+            preauthSecret = undefined;
+        }
+
+        return {
+            serverUrl,
+            userId,
+            token,
+            preauthSecret,
+        };
     } catch (e) {
         return null;
     }
