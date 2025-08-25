@@ -78,7 +78,7 @@ describe('GlobalThreads', () => {
             expect.any(String),
             expect.arrayContaining([
                 expect.objectContaining({id: 'unreads', name: expect.objectContaining({defaultMessage: 'Unreads'})}),
-                expect.objectContaining({id: 'all', name: expect.objectContaining({defaultMessage: 'All your threads'})}),
+                expect.objectContaining({id: 'all', name: expect.objectContaining({defaultMessage: 'All Your Threads'})}),
             ]),
             expect.any(Function),
             expect.any(String),

@@ -27,7 +27,6 @@ import {useTheme} from '@context/theme';
 import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
 import {useKeyboardHeight, useKeyboardOverlap} from '@hooks/device';
 import {useInputPropagation} from '@hooks/input';
-import {t} from '@i18n';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
@@ -133,17 +132,17 @@ export default function ChannelInfoForm({
     const [headerFieldHeight, setHeaderFieldHeight] = useState(0);
     const [headerPosition, setHeaderPosition] = useState(0);
 
-    const optionalText = formatMessage({id: t('channel_modal.optional'), defaultMessage: '(optional)'});
-    const labelDisplayName = formatMessage({id: t('channel_modal.name'), defaultMessage: 'Name'});
-    const labelPurpose = formatMessage({id: t('channel_modal.purpose'), defaultMessage: 'Purpose'}) + ' ' + optionalText;
-    const labelHeader = formatMessage({id: t('channel_modal.header'), defaultMessage: 'Header'}) + ' ' + optionalText;
+    const optionalText = formatMessage({id: 'channel_modal.optional', defaultMessage: '(optional)'});
+    const labelDisplayName = formatMessage({id: 'channel_modal.name', defaultMessage: 'Name'});
+    const labelPurpose = formatMessage({id: 'channel_modal.purpose', defaultMessage: 'Purpose'}) + ' ' + optionalText;
+    const labelHeader = formatMessage({id: 'channel_modal.header', defaultMessage: 'Header'}) + ' ' + optionalText;
 
-    const placeholderDisplayName = formatMessage({id: t('channel_modal.nameEx'), defaultMessage: 'Bugs, Marketing'});
-    const placeholderPurpose = formatMessage({id: t('channel_modal.purposeEx'), defaultMessage: 'A channel to file bugs and improvements'});
-    const placeholderHeader = formatMessage({id: t('channel_modal.headerEx'), defaultMessage: 'Use Markdown to format header text'});
+    const placeholderDisplayName = formatMessage({id: 'channel_modal.nameEx', defaultMessage: 'Bugs, Marketing'});
+    const placeholderPurpose = formatMessage({id: 'channel_modal.purposeEx', defaultMessage: 'A channel to file bugs and improvements'});
+    const placeholderHeader = formatMessage({id: 'channel_modal.headerEx', defaultMessage: 'Use Markdown to format header text'});
 
-    const makePrivateLabel = formatMessage({id: t('channel_modal.makePrivate.label'), defaultMessage: 'Make Private'});
-    const makePrivateDescription = formatMessage({id: t('channel_modal.makePrivate.description'), defaultMessage: 'When a channel is set to private, only invited team members can access and participate in that channel.'});
+    const makePrivateLabel = formatMessage({id: 'channel_modal.makePrivate.label', defaultMessage: 'Make Private'});
+    const makePrivateDescription = formatMessage({id: 'channel_modal.makePrivate.description', defaultMessage: 'When a channel is set to private, only invited team members can access and participate in that channel'});
 
     const displayHeaderOnly = headerOnly || channelType === General.DM_CHANNEL || channelType === General.GM_CHANNEL;
     const showSelector = !displayHeaderOnly && !editing;

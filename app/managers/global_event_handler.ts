@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import RNUtils, {type SplitViewResult} from '@mattermost/rnutils';
+import {defineMessages} from 'react-intl';
 import {Alert, DeviceEventEmitter, Linking, NativeEventEmitter} from 'react-native';
 import semver from 'semver';
 
@@ -9,7 +10,7 @@ import {switchToChannelById} from '@actions/remote/channel';
 import {Device, Events, Sso} from '@constants';
 import {MIN_REQUIRED_VERSION} from '@constants/supported_server';
 import DatabaseManager from '@database/manager';
-import {DEFAULT_LOCALE, getTranslations, t} from '@i18n';
+import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 import {getServerCredentials} from '@init/credentials';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {queryTeamDefaultChannel} from '@queries/servers/channel';
@@ -22,6 +23,21 @@ import {getIntlShape} from '@utils/general';
 type LinkingCallbackArg = {url: string};
 
 const splitViewEmitter = new NativeEventEmitter(RNUtils);
+
+const messages = defineMessages({
+    serverUpgradeTitle: {
+        id: 'mobile.server_upgrade.title',
+        defaultMessage: 'Server upgrade required',
+    },
+    serverUpgradeDescription: {
+        id: 'mobile.server_upgrade.description',
+        defaultMessage: '\nA server upgrade is required to use the Mattermost app. Please ask your System Administrator for details.\n',
+    },
+    serverUpgradeButton: {
+        id: 'mobile.server_upgrade.button',
+        defaultMessage: 'OK',
+    },
+});
 
 class GlobalEventHandlerSingleton {
     JavascriptAndNativeErrorHandler: jsAndNativeErrorHandler | undefined;
@@ -59,10 +75,10 @@ class GlobalEventHandlerSingleton {
         if (version) {
             if (semver.valid(version) && semver.lt(version, MIN_REQUIRED_VERSION)) {
                 Alert.alert(
-                    translations[t('mobile.server_upgrade.title')],
-                    translations[t('mobile.server_upgrade.description')],
+                    translations[messages.serverUpgradeTitle.id],
+                    translations[messages.serverUpgradeDescription.id],
                     [{
-                        text: translations[t('mobile.server_upgrade.button')],
+                        text: translations[messages.serverUpgradeButton.id],
                         onPress: () => this.serverUpgradeNeeded(serverUrl),
                     }],
                     {cancelable: false},

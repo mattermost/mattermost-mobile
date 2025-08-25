@@ -2,14 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessages, useIntl} from 'react-intl';
 import {Platform, SectionList, type SectionListRenderItemInfo, StyleSheet} from 'react-native';
 import Animated, {FadeInDown, FadeOutUp} from 'react-native-reanimated';
 
 import {switchToChannelById} from '@actions/remote/channel';
 import ChannelItem from '@components/channel_item';
 import {useServerUrl} from '@context/server';
-import {t} from '@i18n';
 
 import FindChannelsHeader from './header';
 
@@ -23,12 +22,12 @@ type Props = {
     testID?: string;
 }
 
-const sectionNames = {
+const sectionNames = defineMessages({
     recent: {
-        id: t('mobile.channel_list.recent'),
+        id: 'mobile.channel_list.recent',
         defaultMessage: 'Recent',
     },
-};
+});
 
 const style = StyleSheet.create({
     flex: {flex: 1},
@@ -59,7 +58,7 @@ const UnfilteredList = ({close, keyboardOverlap, recentChannels, showTeamName, t
 
     const renderSectionHeader = useCallback(({section}: SectionListRenderItemInfo<ChannelModel>) => (
         <FindChannelsHeader sectionName={intl.formatMessage({id: section.id, defaultMessage: section.defaultMessage})}/>
-    ), [intl.locale]);
+    ), [intl]);
 
     const renderSectionItem = useCallback(({item}: SectionListRenderItemInfo<ChannelModel>) => {
         return (
@@ -72,7 +71,7 @@ const UnfilteredList = ({close, keyboardOverlap, recentChannels, showTeamName, t
                 testID={`${testID}.channel_item`}
             />
         );
-    }, [onPress, showTeamName]);
+    }, [onPress, showTeamName, testID]);
 
     useEffect(() => {
         setSections(buildSections(recentChannels));

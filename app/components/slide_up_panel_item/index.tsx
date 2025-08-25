@@ -2,12 +2,12 @@
 // See LICENSE.txt for license information.
 
 import {Image, type ImageSource, type ImageStyle} from 'expo-image';
-import React, {useCallback} from 'react';
+import React from 'react';
 import {type StyleProp, Text, type TextStyle, TouchableHighlight, View, type ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
-import {preventDoubleTap} from '@utils/tap';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {isValidUrl} from '@utils/url';
@@ -86,7 +86,7 @@ const SlideUpPanelItem = ({
     const {image: leftImage, iconStyle: leftIconStyle} = useImageAndStyle(leftIcon, leftImageStyles, leftIconStyles, destructive);
     const {image: rightImage, iconStyle: rightIconStyle} = useImageAndStyle(rightIcon, rightImageStyles, rightIconStyles, destructive);
 
-    const handleOnPress = useCallback(preventDoubleTap(onPress, 500), []);
+    const handleOnPress = usePreventDoubleTap(onPress);
 
     return (
         <TouchableHighlight

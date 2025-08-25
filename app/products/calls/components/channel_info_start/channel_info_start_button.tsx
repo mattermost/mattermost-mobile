@@ -10,7 +10,7 @@ import {useTryCallsFunction} from '@calls/hooks';
 import Loading from '@components/loading';
 import OptionBox, {OPTIONS_HEIGHT} from '@components/option_box';
 import {useTheme} from '@context/theme';
-import {preventDoubleTap} from '@utils/tap';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -84,9 +84,24 @@ const ChannelInfoStartButton = ({
             setConnecting(false);
             dismissChannelInfo();
         }
-    }, [isLimitRestricted, alreadyInCall, dismissChannelInfo, intl, serverUrl, channelId, isACallInCurrentChannel, otherParticipants]);
+    }, [
+        alreadyInCall,
+        isLimitRestricted,
+        intl,
+        otherParticipants,
+        isAdmin,
+        isHost,
+        serverUrl,
+        channelId,
+        dismissChannelInfo,
+        limitRestrictedInfo,
+        isACallInCurrentChannel,
+        joining,
+        starting,
+    ]);
 
     const [tryJoin, msgPostfix] = useTryCallsFunction(toggleJoinLeave);
+    const onPress = usePreventDoubleTap(tryJoin);
 
     const joinText = intl.formatMessage({id: 'mobile.calls_join_call', defaultMessage: 'Join call'});
     const startText = intl.formatMessage({id: 'mobile.calls_start_call', defaultMessage: 'Start call'});
@@ -108,7 +123,7 @@ const ChannelInfoStartButton = ({
 
     return (
         <OptionBox
-            onPress={preventDoubleTap(tryJoin)}
+            onPress={onPress}
             text={text}
             iconName={icon}
             activeText={text}

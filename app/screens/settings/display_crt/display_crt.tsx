@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useState} from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessage, useIntl} from 'react-intl';
 
 import {handleCRTToggled, savePreference} from '@actions/remote/preference';
 import SettingBlock from '@components/settings/block';
@@ -13,16 +13,15 @@ import {Preferences} from '@constants';
 import {useServerUrl} from '@context/server';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useBackNavigation from '@hooks/navigate_back';
-import {t} from '@i18n';
 import {popTopScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
-const crtDescription = {
-    id: t('settings_display.crt.desc'),
+const crtDescription = defineMessage({
+    id: 'settings_display.crt.desc',
     defaultMessage: 'When enabled, reply messages are not shown in the channel and you\'ll be notified about threads you\'re following in the "Threads" view.',
-};
+});
 
 type Props = {
     componentId: AvailableScreens;

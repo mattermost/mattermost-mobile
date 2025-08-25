@@ -513,3 +513,7 @@ class SecurityManagerSingleton {
 
 const SecurityManager = new SecurityManagerSingleton();
 export default SecurityManager;
+
+export const exportsForTesting = {
+    messages,
+};

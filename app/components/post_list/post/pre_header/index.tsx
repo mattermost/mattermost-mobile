@@ -2,12 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {defineMessages} from 'react-intl';
 import {View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
-import {t} from '@i18n';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 type PreHeaderProps = {
@@ -56,6 +56,21 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
+const messages = defineMessages({
+    pinnedSaved: {
+        id: 'mobile.post_pre_header.pinned_saved',
+        defaultMessage: 'Pinned and Saved',
+    },
+    pinned: {
+        id: 'mobile.post_pre_header.pinned',
+        defaultMessage: 'Pinned',
+    },
+    saved: {
+        id: 'mobile.post_pre_header.saved',
+        defaultMessage: 'Saved',
+    },
+});
+
 const PreHeader = ({isConsecutivePost, isSaved, isPinned, skipSavedHeader, skipPinnedHeader}: PreHeaderProps) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
@@ -63,20 +78,11 @@ const PreHeader = ({isConsecutivePost, isSaved, isPinned, skipSavedHeader, skipP
 
     let text;
     if (isPinnedAndSaved) {
-        text = {
-            id: t('mobile.post_pre_header.pinned_saved'),
-            defaultMessage: 'Pinned and Saved',
-        };
+        text = messages.pinnedSaved;
     } else if (isPinned && !skipPinnedHeader) {
-        text = {
-            id: t('mobile.post_pre_header.pinned'),
-            defaultMessage: 'Pinned',
-        };
+        text = messages.pinned;
     } else if (isSaved && !skipSavedHeader) {
-        text = {
-            id: t('mobile.post_pre_header.saved'),
-            defaultMessage: 'Saved',
-        };
+        text = messages.saved;
     }
 
     if (!text) {

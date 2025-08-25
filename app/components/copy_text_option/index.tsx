@@ -3,11 +3,11 @@
 
 import Clipboard from '@react-native-clipboard/clipboard';
 import React, {useCallback} from 'react';
+import {defineMessages} from 'react-intl';
 import {Platform} from 'react-native';
 
 import {BaseOption} from '@components/common_post_options';
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
-import {t} from '@i18n';
 import {dismissBottomSheet} from '@screens/navigation';
 import {showSnackBar} from '@utils/snack_bar';
 
@@ -18,6 +18,14 @@ type Props = {
     sourceScreen: AvailableScreens;
     postMessage: string;
 }
+
+const messages = defineMessages({
+    copyText: {
+        id: 'mobile.post_info.copy_text',
+        defaultMessage: 'Copy Text',
+    },
+});
+
 const CopyTextOption = ({bottomSheetId, postMessage, sourceScreen}: Props) => {
     const handleCopyText = useCallback(async () => {
         Clipboard.setString(postMessage);
@@ -25,12 +33,11 @@ const CopyTextOption = ({bottomSheetId, postMessage, sourceScreen}: Props) => {
         if ((Platform.OS === 'android' && Platform.Version < 33) || Platform.OS === 'ios') {
             showSnackBar({barType: SNACK_BAR_TYPE.MESSAGE_COPIED, sourceScreen});
         }
-    }, [postMessage]);
+    }, [bottomSheetId, postMessage, sourceScreen]);
 
     return (
         <BaseOption
-            i18nId={t('mobile.post_info.copy_text')}
-            defaultMessage='Copy Text'
+            message={messages.copyText}
             iconName='content-copy'
             onPress={handleCopyText}
             testID='post_options.copy_text.option'
