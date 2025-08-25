@@ -279,3 +279,42 @@ export const countUsersFromMentions = async (database: Database, mentions: strin
     const [groups, usersCount] = await Promise.all([groupsQuery, usersQuery]);
     return groups.reduce((acc, v) => acc + v.memberCount, usersCount);
 };
+
+export const queryPostsWithPermalinkReferences = async (
+    database: Database,
+    referencedPostId: string,
+    channelId?: string,
+): Promise<PostModel[]> => {
+    try {
+        const clauses: Q.Clause[] = [
+            Q.where('metadata', Q.notEq(null)),
+            Q.where('delete_at', Q.eq(0)),
+        ];
+
+        if (channelId) {
+            clauses.push(Q.where('channel_id', channelId));
+        }
+
+        const postsWithMetadata = await database.get<PostModel>(POST).
+            query(...clauses).
+            fetch();
+
+        const referencingPosts: PostModel[] = [];
+
+        for (const post of postsWithMetadata) {
+            const metadata = post.metadata;
+            if (metadata?.embeds?.length) {
+                for (const embed of metadata.embeds) {
+                    if (embed.type === 'permalink' && embed.data?.post_id === referencedPostId) {
+                        referencingPosts.push(post);
+                        break;
+                    }
+                }
+            }
+        }
+
+        return referencingPosts;
+    } catch (error) {
+        return [];
+    }
+};
