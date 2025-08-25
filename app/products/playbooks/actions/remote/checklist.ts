@@ -84,3 +84,22 @@ export const restoreChecklistItem = async (
         return {error};
     }
 };
+
+export const setChecklistItemCommand = async (
+    serverUrl: string,
+    playbookRunId: string,
+    itemId: string,
+    checklistNumber: number,
+    itemNumber: number,
+    command: string,
+) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        await client.setChecklistItemCommand(playbookRunId, checklistNumber, itemNumber, command);
+        return {data: true};
+    } catch (error) {
+        logDebug('error on setChecklistItemCommand', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};

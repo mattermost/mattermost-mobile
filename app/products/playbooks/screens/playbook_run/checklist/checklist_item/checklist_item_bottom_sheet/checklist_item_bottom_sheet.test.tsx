@@ -65,6 +65,10 @@ describe('ChecklistItemBottomSheet', () => {
 
     function getBaseProps(): ComponentProps<typeof ChecklistItemBottomSheet> {
         return {
+            runId: 'run-1',
+            checklistNumber: 1,
+            itemNumber: 1,
+            channelId: 'channel-1',
             item: mockItem,
             assignee: mockAssignee,
             onCheck: mockOnCheck,
