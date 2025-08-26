@@ -35,6 +35,7 @@ type Props = {
     componentId: AvailableScreens;
     isBookmarksEnabled: boolean;
     isCallsEnabledInChannel: boolean;
+    isPlaybooksEnabled: boolean;
     groupCallsAllowed: boolean;
     canManageMembers: boolean;
     isConvertGMFeatureAvailable: boolean;
@@ -70,6 +71,7 @@ const ChannelInfo = ({
     componentId,
     isBookmarksEnabled,
     isCallsEnabledInChannel,
+    isPlaybooksEnabled,
     groupCallsAllowed,
     isConvertGMFeatureAvailable,
     isCRTEnabled,
@@ -139,6 +141,7 @@ const ChannelInfo = ({
                         canManageMembers={canManageMembers}
                         isCRTEnabled={isCRTEnabled}
                         canManageSettings={canManageSettings}
+                        isPlaybooksEnabled={isPlaybooksEnabled}
                     />
                     <View style={styles.separator}/>
                     {convertGMOptionAvailable &&

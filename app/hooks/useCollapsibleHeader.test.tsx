@@ -15,14 +15,14 @@ const HEADER_OFFSET = LARGE_HEADER_TITLE_HEIGHT - ViewConstants.DEFAULT_HEADER_H
 describe('useCollapsibleHeader', () => {
     const commonHookResponse = {
         largeHeight: LARGE_HEADER_TITLE_HEIGHT,
-        scrollRef: {current: null},
-        scrollValue: {value: 0},
-        onScroll: expect.any(Function),
+        scrollRef: expect.any(Function),
+        scrollValue: expect.objectContaining({value: 0}),
+        onScroll: expect.any(Object),
         hideHeader: expect.any(Function),
         lockValue: 0,
         unlock: expect.any(Function),
         headerOffset: HEADER_OFFSET,
-        scrollEnabled: {value: true},
+        scrollEnabled: expect.objectContaining({value: true}),
         setAutoScroll: expect.any(Function),
     };
 
@@ -32,7 +32,9 @@ describe('useCollapsibleHeader', () => {
         expect(result.current).toEqual({
             defaultHeight: ViewConstants.DEFAULT_HEADER_HEIGHT,
             scrollPaddingTop: LARGE_HEADER_TITLE_HEIGHT,
-            headerHeight: {value: LARGE_HEADER_TITLE_HEIGHT},
+            headerHeight: expect.objectContaining({
+                value: LARGE_HEADER_TITLE_HEIGHT,
+            }),
             ...commonHookResponse,
         });
     });
@@ -43,7 +45,9 @@ describe('useCollapsibleHeader', () => {
         expect(result.current).toEqual({
             defaultHeight: ViewConstants.DEFAULT_HEADER_HEIGHT,
             scrollPaddingTop: ViewConstants.DEFAULT_HEADER_HEIGHT,
-            headerHeight: {value: ViewConstants.DEFAULT_HEADER_HEIGHT},
+            headerHeight: expect.objectContaining({
+                value: ViewConstants.DEFAULT_HEADER_HEIGHT,
+            }),
             ...commonHookResponse,
         });
     });
@@ -56,7 +60,9 @@ describe('useCollapsibleHeader', () => {
         expect(result.current).toEqual({
             defaultHeight: ViewConstants.TABLET_HEADER_HEIGHT,
             scrollPaddingTop: LARGE_HEADER_TITLE_HEIGHT,
-            headerHeight: {value: LARGE_HEADER_TITLE_HEIGHT},
+            headerHeight: expect.objectContaining({
+                value: LARGE_HEADER_TITLE_HEIGHT,
+            }),
             ...commonHookResponse,
         });
     });

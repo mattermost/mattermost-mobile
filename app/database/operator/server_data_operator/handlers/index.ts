@@ -12,6 +12,7 @@ import {
     transformSystemRecord,
 } from '@database/operator/server_data_operator/transformers/general';
 import {getUniqueRawsBy} from '@database/operator/utils/general';
+import {queryCustomEmojisByName} from '@queries/servers/custom_emoji';
 import {logWarning} from '@utils/log';
 
 import {sanitizeReactions} from '../../utils/reaction';
@@ -53,11 +54,22 @@ export default class ServerDataOperatorBase extends BaseDataOperator {
             return [];
         }
 
+        const uniqueNamesToSearch = [...new Set(emojis.map((e) => e.name))];
+
+        const customEmojisFound = await queryCustomEmojisByName(this.database, uniqueNamesToSearch).fetch();
+
+        const emojiIds = new Set(emojis.map((e) => e.id));
+
+        const deleteRawValues = customEmojisFound.
+            filter((local) => !emojiIds.has(local.id)).
+            map((local) => ({name: local.name}));
+
         return this.handleRecords({
             fieldName: 'name',
             transformer: transformCustomEmojiRecord,
             prepareRecordsOnly,
             createOrUpdateRawValues: getUniqueRawsBy({raws: emojis, key: 'name'}),
+            deleteRawValues,
             tableName: CUSTOM_EMOJI,
         }, 'handleCustomEmojis') as Promise<CustomEmojiModel[]>;
     };
@@ -179,7 +191,7 @@ export default class ServerDataOperatorBase extends BaseDataOperator {
             return res;
         }, {createOrUpdateFiles: [], deleteFiles: []});
 
-        const processedFiles = (await this.processRecords<FileModel>({
+        const processedFiles = (await this.processRecords<FileModel, FileInfo>({
             createOrUpdateRawValues: raws.createOrUpdateFiles,
             tableName: FILE,
             fieldName: 'id',
@@ -187,7 +199,7 @@ export default class ServerDataOperatorBase extends BaseDataOperator {
             shouldUpdate: shouldUpdateFileRecord,
         }));
 
-        const preparedFiles = await this.prepareRecords<FileModel>({
+        const preparedFiles = await this.prepareRecords<FileModel, FileInfo>({
             createRaws: processedFiles.createRaws,
             updateRaws: processedFiles.updateRaws,
             deleteRaws: processedFiles.deleteRaws,
@@ -215,7 +227,7 @@ export default class ServerDataOperatorBase extends BaseDataOperator {
      * @param {(TransformerArgs) => Promise<Model>} execute.recordOperator
      * @returns {Promise<void>}
      */
-    async execute<T extends Model>({createRaws, transformer, tableName, updateRaws}: OperationArgs<T>, description: string): Promise<T[]> {
+    async execute<T extends Model, R extends RawValue>({createRaws, transformer, tableName, updateRaws}: OperationArgs<T, R>, description: string): Promise<T[]> {
         const models = await this.prepareRecords({
             tableName,
             createRaws,

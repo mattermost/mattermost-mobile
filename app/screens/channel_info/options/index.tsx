@@ -5,6 +5,7 @@ import React from 'react';
 
 import CopyChannelLinkOption from '@components/channel_actions/copy_channel_link_option';
 import {General} from '@constants';
+import PlaybookRunsOption from '@playbooks/components/channel_actions/playbook_runs_option';
 import {isTypeDMorGM} from '@utils/channel';
 
 import AddMembers from './add_members';
@@ -22,6 +23,7 @@ type Props = {
     callsEnabled: boolean;
     canManageMembers: boolean;
     isCRTEnabled: boolean;
+    isPlaybooksEnabled: boolean;
     canManageSettings: boolean;
 }
 
@@ -31,6 +33,7 @@ const Options = ({
     callsEnabled,
     canManageMembers,
     isCRTEnabled,
+    isPlaybooksEnabled,
     canManageSettings,
 }: Props) => {
     const isDMorGM = isTypeDMorGM(type);
@@ -48,6 +51,12 @@ const Options = ({
             <NotificationPreference channelId={channelId}/>
             <PinnedMessages channelId={channelId}/>
             <ChannelFiles channelId={channelId}/>
+            {isPlaybooksEnabled &&
+            <PlaybookRunsOption
+                channelId={channelId}
+                location='channel_actions'
+            />
+            }
             {type !== General.DM_CHANNEL &&
                 <Members channelId={channelId}/>
             }

@@ -9,12 +9,14 @@ import type DraftModel from '@typings/database/models/servers/draft';
 import type PostModel from '@typings/database/models/servers/post';
 import type PostsInChannelModel from '@typings/database/models/servers/posts_in_channel';
 import type PostsInThreadModel from '@typings/database/models/servers/posts_in_thread';
+import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 
 const {
     DRAFT,
     POST,
     POSTS_IN_CHANNEL,
     POSTS_IN_THREAD,
+    SCHEDULED_POST,
 } = MM_TABLES.SERVER;
 
 /**
@@ -24,14 +26,17 @@ const {
  * @param {RecordPair} operator.value
  * @returns {Promise<PostModel>}
  */
-export const transformPostRecord = ({action, database, value}: TransformerArgs): Promise<PostModel> => {
-    const raw = value.raw as Post;
-    const record = value.record as PostModel;
+export const transformPostRecord = ({action, database, value}: TransformerArgs<PostModel, Post>): Promise<PostModel> => {
+    const raw = value.raw;
+    const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
+    if (!isCreateAction && !record) {
+        throw new Error('Record not found for non create action');
+    }
 
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
     const fieldsMapper = (post: PostModel) => {
-        post._raw.id = isCreateAction ? (raw?.id ?? post.id) : record.id;
+        post._raw.id = isCreateAction ? (raw?.id ?? post.id) : record!.id;
         post.channelId = raw.channel_id;
         post.createAt = raw.create_at;
         post.deleteAt = raw.delete_at || raw.delete_at === 0 ? raw?.delete_at : 0;
@@ -61,7 +66,7 @@ export const transformPostRecord = ({action, database, value}: TransformerArgs):
         tableName: POST,
         value,
         fieldsMapper,
-    }) as Promise<PostModel>;
+    });
 };
 
 /**
@@ -71,13 +76,16 @@ export const transformPostRecord = ({action, database, value}: TransformerArgs):
  * @param {RecordPair} operator.value
  * @returns {Promise<PostsInThreadModel>}
  */
-export const transformPostInThreadRecord = ({action, database, value}: TransformerArgs): Promise<PostsInThreadModel> => {
-    const raw = value.raw as PostsInThread;
-    const record = value.record as PostsInThreadModel;
+export const transformPostInThreadRecord = ({action, database, value}: TransformerArgs<PostsInThreadModel, PostsInThread>) => {
+    const raw = value.raw;
+    const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
+    if (!isCreateAction && !record) {
+        throw new Error('Record not found for non create action');
+    }
 
     const fieldsMapper = (postsInThread: PostsInThreadModel) => {
-        postsInThread._raw.id = isCreateAction ? (raw.id || postsInThread.id) : record.id;
+        postsInThread._raw.id = isCreateAction ? (raw.id || postsInThread.id) : record!.id;
         postsInThread.rootId = raw.root_id;
         postsInThread.earliest = raw.earliest;
         postsInThread.latest = raw.latest!;
@@ -89,7 +97,7 @@ export const transformPostInThreadRecord = ({action, database, value}: Transform
         tableName: POSTS_IN_THREAD,
         value,
         fieldsMapper,
-    }) as Promise<PostsInThreadModel>;
+    });
 };
 
 /**
@@ -99,10 +107,10 @@ export const transformPostInThreadRecord = ({action, database, value}: Transform
  * @param {RecordPair} operator.value
  * @returns {Promise<DraftModel>}
  */
-export const transformDraftRecord = ({action, database, value}: TransformerArgs): Promise<DraftModel> => {
+export const transformDraftRecord = ({action, database, value}: TransformerArgs<DraftModel, Draft>): Promise<DraftModel> => {
     const emptyFileInfo: FileInfo[] = [];
     const emptyPostMetadata: PostMetadata = {};
-    const raw = value.raw as Draft;
+    const raw = value.raw;
 
     // We use the raw id as  Draft is client side only and  we would only be creating/deleting drafts
     const fieldsMapper = (draft: DraftModel) => {
@@ -121,7 +129,7 @@ export const transformDraftRecord = ({action, database, value}: TransformerArgs)
         tableName: DRAFT,
         value,
         fieldsMapper,
-    }) as Promise<DraftModel>;
+    });
 };
 
 /**
@@ -131,13 +139,16 @@ export const transformDraftRecord = ({action, database, value}: TransformerArgs)
  * @param {RecordPair} operator.value
  * @returns {Promise<PostsInChannelModel>}
  */
-export const transformPostsInChannelRecord = ({action, database, value}: TransformerArgs): Promise<PostsInChannelModel> => {
-    const raw = value.raw as PostsInChannel;
-    const record = value.record as PostsInChannelModel;
+export const transformPostsInChannelRecord = ({action, database, value}: TransformerArgs<PostsInChannelModel, PostsInChannel>): Promise<PostsInChannelModel> => {
+    const raw = value.raw;
+    const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
+    if (!isCreateAction && !record) {
+        throw new Error('Record not found for non create action');
+    }
 
     const fieldsMapper = (postsInChannel: PostsInChannelModel) => {
-        postsInChannel._raw.id = isCreateAction ? (raw.id || postsInChannel.id) : record.id;
+        postsInChannel._raw.id = isCreateAction ? (raw.id || postsInChannel.id) : record!.id;
         postsInChannel.channelId = raw.channel_id;
         postsInChannel.earliest = raw.earliest;
         postsInChannel.latest = raw.latest;
@@ -149,5 +160,45 @@ export const transformPostsInChannelRecord = ({action, database, value}: Transfo
         tableName: POSTS_IN_CHANNEL,
         value,
         fieldsMapper,
-    }) as Promise<PostsInChannelModel>;
+    });
+};
+
+/**
+ * transformPostRecords: Prepares records of the SERVER database 'ScheduledPosts' table for update or create actions.
+ */
+export const transformSchedulePostsRecord = ({action, database, value}: TransformerArgs<ScheduledPostModel, ScheduledPost>): Promise<ScheduledPostModel> => {
+    const emptyFileInfo: FileInfo[] = [];
+    const raw = value.raw;
+
+    if (!raw.message && !raw.metadata?.files?.length) {
+        throw new Error('Scheduled post message and files are empty');
+    }
+
+    const fieldsMapper = (scheduledPost: ScheduledPostModel) => {
+        scheduledPost._raw.id = raw.id;
+        scheduledPost.rootId = raw?.root_id ?? '';
+        scheduledPost.message = raw?.message ?? '';
+        scheduledPost.channelId = raw?.channel_id ?? '';
+        scheduledPost.files = raw?.metadata?.files ?? emptyFileInfo;
+        scheduledPost.metadata = raw?.metadata ?? null;
+        if (raw.priority) {
+            scheduledPost.metadata = {
+                ...scheduledPost.metadata,
+                priority: raw.priority,
+            };
+        }
+        scheduledPost.updateAt = raw.update_at ?? Date.now();
+        scheduledPost.createAt = raw.create_at;
+        scheduledPost.scheduledAt = raw.scheduled_at;
+        scheduledPost.processedAt = raw.processed_at ?? 0;
+        scheduledPost.errorCode = raw.error_code || scheduledPost.errorCode;
+    };
+
+    return prepareBaseRecord({
+        action,
+        database,
+        tableName: SCHEDULED_POST,
+        value,
+        fieldsMapper,
+    }) as Promise<ScheduledPostModel>;
 };

@@ -79,6 +79,10 @@ class InviteScreen {
         return element(by.id(`${this.testID.selectedItemPrefix}.${id}`));
     };
 
+    getSelectedChip = () => {
+        return element(by.id('invite.selected_item.display_name'));
+    };
+
     getSummaryReportSent = () => {
         return element(by.id(`${this.testID.summaryReportPrefix}.sent`));
     };

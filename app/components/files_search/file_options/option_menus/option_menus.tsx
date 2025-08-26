@@ -14,12 +14,14 @@ import type {GalleryAction} from '@typings/screens/gallery';
 type Props = {
     canDownloadFiles?: boolean;
     enablePublicLink?: boolean;
+    enableSecureFilePreview: boolean;
     fileInfo: FileInfo;
     setAction: (action: GalleryAction) => void;
 }
 const OptionMenus = ({
     canDownloadFiles,
     enablePublicLink,
+    enableSecureFilePreview,
     fileInfo,
     setAction,
 }: Props) => {
@@ -32,14 +34,14 @@ const OptionMenus = ({
             await dismissBottomSheet();
         }
         setAction('downloading');
-    }, [setAction]);
+    }, [isTablet, setAction]);
 
     const handleCopyLink = useCallback(async () => {
         if (!isTablet) {
             await dismissBottomSheet();
         }
         setAction('copying');
-    }, [setAction]);
+    }, [isTablet, setAction]);
 
     const handlePermalink = useCallback(async () => {
         if (fileInfo.post_id) {
@@ -49,11 +51,11 @@ const OptionMenus = ({
             showPermalink(serverUrl, '', fileInfo.post_id);
             setAction('opening');
         }
-    }, [intl, serverUrl, fileInfo.post_id, setAction]);
+    }, [fileInfo.post_id, isTablet, serverUrl, setAction]);
 
     return (
         <>
-            {canDownloadFiles &&
+            {(!enableSecureFilePreview && canDownloadFiles) &&
                 <OptionItem
                     key={'download'}
                     action={handleDownload}
@@ -69,7 +71,7 @@ const OptionMenus = ({
                 icon={'globe'}
                 type='default'
             />
-            {enablePublicLink &&
+            {(!enableSecureFilePreview && enablePublicLink) &&
                 <OptionItem
                     key={'copylink'}
                     action={handleCopyLink}

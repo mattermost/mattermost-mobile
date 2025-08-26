@@ -12,6 +12,7 @@ import {openChannelIfNeeded} from '@actions/remote/preference';
 import {fetchThread} from '@actions/remote/thread';
 import {fetchMissingProfilesByIds} from '@actions/remote/user';
 import {ActionType, Events, Screens} from '@constants';
+import {PostTypes} from '@constants/post';
 import DatabaseManager from '@database/manager';
 import {getChannelById, getMyChannel} from '@queries/servers/channel';
 import {getPostById} from '@queries/servers/post';
@@ -19,7 +20,7 @@ import {getCurrentChannelId, getCurrentTeamId, getCurrentUserId} from '@queries/
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
-import {isTablet} from '@utils/helpers';
+import {hasArrayChanged, isTablet} from '@utils/helpers';
 import {isFromWebhook, isSystemMessage, shouldIgnorePost} from '@utils/post';
 
 import type {Model} from '@nozbe/watermelondb';
@@ -215,7 +216,18 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
         return;
     }
 
-    if (oldPost.isPinned !== post.is_pinned) {
+    if (post.type === PostTypes.EPHEMERAL && post.create_at === 0) {
+        // Updated ephemeral messages don't have a create_at value
+        // since the server has no persistence for ephemeral messages,
+        // so we need to use the old post's create_at value
+        post.create_at = oldPost.createAt;
+    }
+
+    const oldFileIds = oldPost.metadata?.files?.map((f) => f.id).filter((id): id is string => Boolean(id)) || [];
+    const newFileIds = post.file_ids || [];
+    const filesChanged = hasArrayChanged(oldFileIds, newFileIds);
+
+    if (oldPost.isPinned !== post.is_pinned || filesChanged) {
         fetchChannelStats(serverUrl, post.channel_id);
     }
 
@@ -259,6 +271,12 @@ export async function handlePostDeleted(serverUrl: string, msg: WebSocketMessage
         const {model: deleteModel} = await markPostAsDeleted(serverUrl, post, true);
         if (deleteModel) {
             models.push(deleteModel);
+        }
+
+        // Check if the deleted post had files to refresh channel stats
+        const hadFiles = (oldPost.metadata?.files?.length || 0) > 0;
+        if (hadFiles) {
+            fetchChannelStats(serverUrl, post.channel_id);
         }
 
         // update thread when a reply is deleted and CRT is enabled

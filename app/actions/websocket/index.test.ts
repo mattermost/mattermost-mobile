@@ -6,13 +6,15 @@ import {DeviceEventEmitter} from 'react-native';
 import {markChannelAsViewed} from '@actions/local/channel';
 import {dataRetentionCleanup} from '@actions/local/systems';
 import {markChannelAsRead} from '@actions/remote/channel';
-import {deferredAppEntryActions, entry, handleEntryAfterLoadNavigation} from '@actions/remote/entry/common';
+import {entry, handleEntryAfterLoadNavigation} from '@actions/remote/entry/common';
+import {deferredAppEntryActions} from '@actions/remote/entry/deferred';
 import {fetchPostsForChannel, fetchPostThread} from '@actions/remote/post';
 import {openAllUnreadChannels} from '@actions/remote/preference';
 import {loadConfigAndCalls} from '@calls/actions/calls';
 import {isSupportedServerCalls} from '@calls/utils';
 import DatabaseManager from '@database/manager';
 import AppsManager from '@managers/apps_manager';
+import {handlePlaybookReconnect} from '@playbooks/actions/websocket/reconnect';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {getLastPostInThread} from '@queries/servers/post';
 import {getConfig, getCurrentChannelId, getCurrentTeamId, setLastFullSync} from '@queries/servers/system';
@@ -20,17 +22,17 @@ import {getIsCRTEnabled} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
+import TestHelper from '@test/test_helper';
 
 import {handleFirstConnect, handleReconnect} from './index';
-
-import type PostModel from '@typings/database/models/servers/post';
-import type UserModel from '@typings/database/models/servers/user';
 
 jest.mock('@actions/local/channel');
 jest.mock('@actions/local/systems');
 jest.mock('@actions/remote/channel');
 jest.mock('@actions/remote/entry/common');
+jest.mock('@actions/remote/entry/deferred');
 jest.mock('@actions/remote/post');
+jest.mock('@actions/remote/scheduled_post');
 jest.mock('@actions/remote/preference');
 jest.mock('@actions/remote/user');
 jest.mock('@calls/actions/calls');
@@ -48,6 +50,8 @@ jest.mock('@store/team_load_store');
 jest.mock('@utils/helpers', () => ({
     isTablet: jest.fn().mockReturnValue(false),
 }));
+
+jest.mock('@playbooks/actions/websocket/reconnect');
 
 describe('WebSocket Index Actions', () => {
     const serverUrl = 'baseHandler.test.com';
@@ -87,10 +91,10 @@ describe('WebSocket Index Actions', () => {
             };
 
             jest.mocked(entry).mockResolvedValue(mockEntryData);
-            jest.mocked(getCurrentUser).mockResolvedValue({
+            jest.mocked(getCurrentUser).mockResolvedValue(TestHelper.fakeUserModel({
                 id: currentUserId,
                 locale: 'en',
-            } as UserModel);
+            }));
             jest.mocked(getConfig).mockResolvedValue({Version: '9.0.0'} as ClientConfig);
             jest.mocked(isSupportedServerCalls).mockReturnValue(true);
 
@@ -102,15 +106,16 @@ describe('WebSocket Index Actions', () => {
             expect(setLastFullSync).toHaveBeenCalled();
             expect(loadConfigAndCalls).toHaveBeenCalled();
             expect(deferredAppEntryActions).toHaveBeenCalled();
+            expect(handlePlaybookReconnect).toHaveBeenCalledWith(serverUrl);
         });
 
         it('should handle error when server database not found', async () => {
             DatabaseManager.serverDatabases = {};
 
-            const error = await handleFirstConnect(serverUrl) as any;
+            const error = await handleFirstConnect(serverUrl);
 
             expect(error).toBeInstanceOf(Error);
-            expect(error.message).toBe('cannot find server database');
+            expect((error as Error).message).toBe('cannot find server database');
         });
     });
 
@@ -137,10 +142,10 @@ describe('WebSocket Index Actions', () => {
             };
 
             jest.mocked(entry).mockResolvedValue(mockEntryData);
-            jest.mocked(getCurrentUser).mockResolvedValue({
+            jest.mocked(getCurrentUser).mockResolvedValue(TestHelper.fakeUserModel({
                 id: currentUserId,
                 locale: 'en',
-            } as UserModel);
+            }));
             jest.mocked(getConfig).mockResolvedValue({Version: '9.0.0'} as ClientConfig);
             jest.mocked(isSupportedServerCalls).mockReturnValue(true);
             jest.mocked(getActiveServerUrl).mockResolvedValue(serverUrl);
@@ -156,6 +161,7 @@ describe('WebSocket Index Actions', () => {
             expect(openAllUnreadChannels).toHaveBeenCalled();
             expect(dataRetentionCleanup).toHaveBeenCalled();
             expect(AppsManager.refreshAppBindings).toHaveBeenCalled();
+            expect(handlePlaybookReconnect).toHaveBeenCalledWith(serverUrl);
         });
 
         it('should fetch posts for channel screen', async () => {
@@ -169,7 +175,7 @@ describe('WebSocket Index Actions', () => {
 
         it('should fetch thread posts when CRT enabled', async () => {
             const threadId = 'thread-id';
-            const lastPost = {id: 'post-id', createAt: 123} as PostModel;
+            const lastPost = TestHelper.fakePostModel({id: 'post-id', createAt: 123});
 
             jest.mocked(NavigationStore.getScreensInStack).mockReturnValue(['Thread']);
 
@@ -193,7 +199,7 @@ describe('WebSocket Index Actions', () => {
         });
 
         it('should handle notification tapped state', async () => {
-            (NavigationStore.getScreensInStack as jest.Mock).mockReturnValue(['Channel']);
+            jest.mocked(NavigationStore.getScreensInStack).mockReturnValue(['Channel']);
 
             jest.mocked(EphemeralStore.wasNotificationTapped).mockReturnValue(true);
 
@@ -206,10 +212,10 @@ describe('WebSocket Index Actions', () => {
         it('should handle error in entry data', async () => {
             jest.mocked(entry).mockResolvedValue({error: new Error('entry error')});
 
-            const result = await handleReconnect(serverUrl) as any;
+            const result = await handleReconnect(serverUrl);
 
             expect(result).toBeInstanceOf(Error);
-            expect(result.message).toBe('entry error');
+            expect((result as Error).message).toBe('entry error');
         });
     });
 });

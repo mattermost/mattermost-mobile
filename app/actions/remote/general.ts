@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {defineMessage} from 'react-intl';
+
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_RESPONSE_VERIFIED, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import DatabaseManager from '@database/manager';
-import {t} from '@i18n';
 import NetworkManager from '@managers/network_manager';
 import {getDeviceToken} from '@queries/app/global';
 import {getExpandedLinks, getPushVerificationStatus} from '@queries/servers/system';
@@ -41,15 +42,15 @@ export const doPing = async (serverUrl: string, verifyPushProxy: boolean, timeou
         return {error};
     }
 
-    const certificateError = {
-        id: t('mobile.server_requires_client_certificate'),
+    const certificateError = defineMessage({
+        id: 'mobile.server_requires_client_certificate',
         defaultMessage: 'Server requires client certificate for authentication.',
-    };
+    });
 
-    const pingError = {
-        id: t('mobile.server_ping_failed'),
+    const pingError = defineMessage({
+        id: 'mobile.server_ping_failed',
         defaultMessage: 'Cannot connect to the server.',
-    };
+    });
 
     const deviceId = await getDeviceIdForPing(serverUrl, verifyPushProxy);
 

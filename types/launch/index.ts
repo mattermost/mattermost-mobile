@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import type {DeepLink, Launch} from '@constants';
+import type {DeepLink as DeepLinkConstant, Launch} from '@constants';
 
 export interface DeepLink {
     serverUrl: string;
@@ -33,12 +33,20 @@ export interface DeepLinkPlugin extends DeepLink {
     route?: string;
 }
 
-export type DeepLinkType = typeof DeepLink[keyof typeof DeepLink];
+export interface DeepLinkPlaybooks extends DeepLink {
+    playbookId: string;
+}
+
+export interface DeepLinkPlaybookRuns extends DeepLink {
+    playbookRunId: string;
+}
+
+export type DeepLinkType = typeof DeepLinkConstant[keyof typeof DeepLinkConstant];
 
 export interface DeepLinkWithData {
     type: DeepLinkType;
     url: string;
-    data?: DeepLinkChannel | DeepLinkDM | DeepLinkGM | DeepLinkPermalink | DeepLinkPlugin | DeepLinkServer;
+    data?: DeepLinkChannel | DeepLinkDM | DeepLinkGM | DeepLinkPermalink | DeepLinkPlugin | DeepLinkServer | DeepLinkPlaybooks | DeepLinkPlaybookRuns;
 }
 
 export type LaunchType = typeof Launch[keyof typeof Launch];

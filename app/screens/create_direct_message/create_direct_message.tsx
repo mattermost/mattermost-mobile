@@ -13,7 +13,7 @@ import Loading from '@components/loading';
 import Search from '@components/search';
 import SelectedUsers from '@components/selected_users';
 import ServerUserList from '@components/server_user_list';
-import {General} from '@constants';
+import {General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
@@ -233,9 +233,9 @@ export default function CreateDirectMessage({
     const userFetchFunction = useCallback(async (page: number) => {
         let results;
         if (restrictDirectMessage) {
-            results = await fetchProfilesInTeam(serverUrl, currentTeamId, page, General.PROFILE_CHUNK_SIZE);
+            results = await fetchProfilesInTeam(serverUrl, currentTeamId, page, General.PROFILE_CHUNK_SIZE, '', {active: true});
         } else {
-            results = await fetchProfiles(serverUrl, page, General.PROFILE_CHUNK_SIZE);
+            results = await fetchProfiles(serverUrl, page, General.PROFILE_CHUNK_SIZE, {active: true});
         }
 
         if (results.users?.length) {
@@ -249,9 +249,9 @@ export default function CreateDirectMessage({
         const lowerCasedTerm = searchTerm.toLowerCase();
         let results;
         if (restrictDirectMessage) {
-            results = await searchProfiles(serverUrl, lowerCasedTerm, {team_id: currentTeamId, allow_inactive: true});
+            results = await searchProfiles(serverUrl, lowerCasedTerm, {team_id: currentTeamId, allow_inactive: false});
         } else {
-            results = await searchProfiles(serverUrl, lowerCasedTerm, {allow_inactive: true});
+            results = await searchProfiles(serverUrl, lowerCasedTerm, {allow_inactive: false});
         }
 
         if (results.data) {
@@ -326,6 +326,7 @@ export default function CreateDirectMessage({
                 fetchFunction={userFetchFunction}
                 searchFunction={userSearchFunction}
                 createFilter={createUserFilter}
+                location={Screens.CREATE_DIRECT_MESSAGE}
             />
             <SelectedUsers
                 keyboardOverlap={keyboardOverlap}

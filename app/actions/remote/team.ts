@@ -5,6 +5,7 @@ import {chunk} from 'lodash';
 import {DeviceEventEmitter} from 'react-native';
 
 import {removeUserFromTeam as localRemoveUserFromTeam} from '@actions/local/team';
+import {fetchScheduledPosts} from '@actions/remote/scheduled_post';
 import {PER_PAGE_DEFAULT} from '@client/rest/constants';
 import {Events} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -182,7 +183,7 @@ export async function fetchMyTeams(serverUrl: string, fetchOnly = false, groupLa
                     // Immediately delete myTeams so that the UI renders only teams the user is a member of.
                     const removeTeams = await queryTeamsById(database, Array.from(removeTeamIds)).fetch();
                     removeTeams.forEach((team) => {
-                        modelPromises.push(prepareDeleteTeam(team));
+                        modelPromises.push(prepareDeleteTeam(serverUrl, team));
                     });
                 }
 
@@ -436,6 +437,7 @@ export async function handleTeamChange(serverUrl: string, teamId: string) {
 
     // Fetch Groups + GroupTeams
     fetchGroupsForTeamIfConstrained(serverUrl, teamId);
+    fetchScheduledPosts(serverUrl, teamId, false);
     return {};
 }
 

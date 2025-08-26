@@ -8,7 +8,7 @@ import AutocompleteSelector from '@components/autocomplete_selector';
 import Markdown from '@components/markdown';
 import BoolSetting from '@components/settings/bool_setting';
 import TextSetting from '@components/settings/text_setting';
-import {View as ViewConstants} from '@constants';
+import {Screens, View as ViewConstants} from '@constants';
 import {AppFieldTypes, SelectableAppFieldTypes} from '@constants/apps';
 import {useTheme} from '@context/theme';
 import {selectKeyboardType} from '@utils/integrations';
@@ -161,6 +161,7 @@ function AppsFormField({
                     secureTextEntry={field.subtype === 'password'}
                     disabled={Boolean(field.readonly)}
                     testID={testID}
+                    location={Screens.APPS_FORM}
                 />
             );
         }
@@ -185,6 +186,7 @@ function AppsFormField({
                     disabled={field.readonly}
                     isMultiselect={field.multiselect}
                     testID={testID}
+                    location={Screens.APPS_FORM}
                 />
             );
         }
@@ -200,6 +202,7 @@ function AppsFormField({
                     onChange={handleChange}
                     disabled={field.readonly}
                     testID={testID}
+                    location={Screens.APPS_FORM}
                 />
             );
         }
@@ -216,7 +219,7 @@ function AppsFormField({
                         value={field.description}
                         mentionKeys={[]}
                         disableAtMentions={true}
-                        location=''
+                        location={Screens.APPS_FORM}
                         blockStyles={getMarkdownBlockStyles(theme)}
                         textStyles={getMarkdownTextStyles(theme)}
                         baseTextStyle={style.markdownFieldText}

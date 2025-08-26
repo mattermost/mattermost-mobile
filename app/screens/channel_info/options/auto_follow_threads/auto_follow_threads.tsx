@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useState} from 'react';
+import React, {useCallback, useState} from 'react';
 import {defineMessage, useIntl} from 'react-intl';
 
 import {updateChannelNotifyProps} from '@actions/remote/channel';
@@ -11,8 +11,8 @@ import {
     CHANNEL_AUTO_FOLLOW_THREADS_TRUE,
 } from '@constants/channel';
 import {useServerUrl} from '@context/server';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {alertErrorWithFallback} from '@utils/draft';
-import {preventDoubleTap} from '@utils/tap';
 
 type Props = {
     channelId: string;
@@ -25,7 +25,7 @@ const AutoFollowThreads = ({channelId, displayName, followedStatus}: Props) => {
     const serverUrl = useServerUrl();
     const intl = useIntl();
 
-    const toggleFollow = preventDoubleTap(async () => {
+    const toggleFollow = usePreventDoubleTap(useCallback(async () => {
         const props: Partial<ChannelNotifyProps> = {
             channel_auto_follow_threads: followedStatus ? CHANNEL_AUTO_FOLLOW_THREADS_FALSE : CHANNEL_AUTO_FOLLOW_THREADS_TRUE,
         };
@@ -43,7 +43,7 @@ const AutoFollowThreads = ({channelId, displayName, followedStatus}: Props) => {
             );
             setAutoFollow((v) => !v);
         }
-    });
+    }, [channelId, displayName, followedStatus, intl, serverUrl]));
 
     return (
         <OptionItem

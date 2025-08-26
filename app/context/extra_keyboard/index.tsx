@@ -8,8 +8,8 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {Screens} from '@constants';
 import {useIsTablet} from '@hooks/device';
+import {usePreventDoubleTap} from '@hooks/utils';
 import NavigationStore from '@store/navigation_store';
-import {preventDoubleTap} from '@utils/tap';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
@@ -144,7 +144,7 @@ export const useExtraKeyboardContext = (): ExtraKeyboardContextProps|undefined =
 export const useHideExtraKeyboardIfNeeded = (callback: (...args: any) => void, dependencies: React.DependencyList = []) => {
     const keyboardContext = useExtraKeyboardContext();
 
-    return useCallback(preventDoubleTap((...args: any) => {
+    return usePreventDoubleTap(useCallback((...args: any) => {
         if (keyboardContext?.isExtraKeyboardVisible) {
             keyboardContext.hideExtraKeyboard();
 
@@ -162,7 +162,7 @@ export const useHideExtraKeyboardIfNeeded = (callback: (...args: any) => void, d
         }
 
         callback(...args);
-    }), [keyboardContext, ...dependencies]);
+    }, [keyboardContext, ...dependencies]));
 };
 
 const ExtraKeyboardComponent = () => {
@@ -183,9 +183,6 @@ const ExtraKeyboardComponent = () => {
 
     const animatedStyle = useAnimatedStyle(() => {
         let height = keyb.height.value + offset;
-        if (keyb.height.value < 70) {
-            height = 0; // When using a hw keyboard
-        }
         if (context?.isExtraKeyboardVisible) {
             height = withTiming(maxKeyboardHeight.value, {duration: 250});
         } else if (keyb.state.value === KeyboardState.CLOSED || keyb.state.value === KeyboardState.UNKNOWN) {

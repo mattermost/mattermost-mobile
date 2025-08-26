@@ -5,6 +5,8 @@ import {type StyleProp, StyleSheet, type TextStyle, type ViewStyle} from 'react-
 
 import {blendColors, changeOpacity} from '@utils/theme';
 
+import {typography} from './typography';
+
 export const getBackgroundStyles = (theme: Theme): BackgroundStyles => {
     return {
         primary: {
@@ -196,7 +198,7 @@ export const getBackgroundStyles = (theme: Theme): BackgroundStyles => {
             },
             inverted: {
                 default: {
-                    backgroundColor: changeOpacity(theme.sidebarText, 0.12),
+                    backgroundColor: changeOpacity(theme.buttonColor, 0.12),
                 },
                 hover: {
                     backgroundColor: changeOpacity(theme.sidebarText, 0.16),
@@ -288,32 +290,25 @@ export const getBackgroundStyles = (theme: Theme): BackgroundStyles => {
 
 export const buttonSizeStyles: ButtonSizes = StyleSheet.create({
     xs: {
-        height: 24,
-        paddingVertical: 6,
+        paddingVertical: 4,
         paddingHorizontal: 10,
     },
     s: {
-        height: 32,
-        paddingVertical: 10,
+        paddingVertical: 8,
         paddingHorizontal: 16,
     },
     m: {
-        height: 40,
-        paddingVertical: 12,
+        paddingVertical: 10,
         paddingHorizontal: 20,
     },
     lg: {
-        height: 48,
-        paddingVertical: 14,
+        paddingVertical: 12,
         paddingHorizontal: 24,
     },
 });
 
 export const buttonStyles = StyleSheet.create({
     main: {
-        flex: 0,
-        alignItems: 'center',
-        justifyContent: 'center',
         borderRadius: 4,
     },
     fullWidth: {
@@ -321,41 +316,18 @@ export const buttonStyles = StyleSheet.create({
     },
 });
 
-export const buttonTextStyles = StyleSheet.create({
-    main: {
-        fontFamily: 'OpenSans-SemiBold',
-        fontWeight: '600',
-        textAlignVertical: 'center',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 1,
-    },
-    underline: {
-        textDecorationLine: 'underline',
-    },
-});
-
 export const buttonTextSizeStyles = StyleSheet.create({
     xs: {
-        fontSize: 11,
-        lineHeight: 10,
-        letterSpacing: 0.02,
-        marginTop: 2,
+        ...typography('Body', 50, 'SemiBold'),
     },
     s: {
-        fontSize: 12,
-        lineHeight: 12,
-        marginTop: 1,
+        ...typography('Body', 75, 'SemiBold'),
     },
     m: {
-        fontSize: 14,
-        lineHeight: 14,
-        marginTop: 3,
+        ...typography('Body', 100, 'SemiBold'),
     },
     lg: {
-        fontSize: 16,
-        lineHeight: 18,
-        marginTop: 1,
+        ...typography('Body', 200, 'SemiBold'),
     },
 });
 
@@ -398,25 +370,31 @@ export const buttonTextStyle = (
     emphasis: ButtonEmphasis = 'primary',
     type: ButtonType = 'default',
 ): StyleProp<TextStyle> => {
-    // Color
-    let color: string = theme.buttonColor;
+    return [buttonTextSizeStyles[size], {color: getColorByType(theme, type, emphasis)}];
+};
 
+const getColorByType = (theme: Theme, type: ButtonType, emphasis: ButtonEmphasis) => {
     if (type === 'disabled') {
-        color = changeOpacity(theme.centerChannelColor, 0.32);
+        return changeOpacity(theme.centerChannelColor, 0.32);
     }
 
-    if ((type === 'destructive' && emphasis !== 'primary')) {
-        color = theme.errorTextColor;
+    if (type === 'destructive') {
+        if (emphasis === 'primary') {
+            return theme.buttonColor;
+        }
+        return theme.errorTextColor;
     }
 
-    if ((type === 'inverted' && emphasis === 'primary') ||
-        (type !== 'inverted' && emphasis !== 'primary')) {
-        color = theme.buttonBg;
+    if (type === 'inverted') {
+        if (emphasis === 'primary') {
+            return theme.buttonBg;
+        }
+        return theme.buttonColor;
     }
 
-    if (type === 'inverted' && emphasis === 'tertiary') {
-        color = theme.sidebarText;
+    if (emphasis === 'primary') {
+        return theme.buttonColor;
     }
 
-    return [buttonTextStyles.main, buttonTextSizeStyles[size], {color}];
+    return theme.buttonBg;
 };

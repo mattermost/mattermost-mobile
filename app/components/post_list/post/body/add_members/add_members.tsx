@@ -17,11 +17,12 @@ import {isStringArray} from '@utils/types';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type AddMembersProps = {
     channelType: string | null;
     currentUser?: UserModel;
-    location: string;
+    location: AvailableScreens;
     post: PostModel;
     theme: Theme;
 }
@@ -80,11 +81,11 @@ const definedMessages = defineMessages({
     },
     messageOne: {
         id: 'post_body.check_for_out_of_channel_mentions.message.one',
-        defaultMessage: '{username} was mentioned but is not in the channel. Would you like to ',
+        defaultMessage: 'was mentioned but is not in the channel. Would you like to ',
     },
     messageMultiple: {
         id: 'post_body.check_for_out_of_channel_mentions.message.multiple',
-        defaultMessage: '{usernames} were mentioned but they are not in the channel. Would you like to ',
+        defaultMessage: 'were mentioned but they are not in the channel. Would you like to ',
     },
     outOfGroupsMessage: {
         id: 'post_body.check_for_out_of_channel_groups_mentions.message',

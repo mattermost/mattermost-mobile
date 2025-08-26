@@ -3,10 +3,11 @@
 
 import Clipboard from '@react-native-clipboard/clipboard';
 import {applicationId, nativeApplicationVersion, nativeBuildVersion} from 'expo-application';
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Text, View} from 'react-native';
+import {Text, View} from 'react-native';
 
+import {getLicenseLoadMetric} from '@actions/remote/license';
 import Config from '@assets/config.json';
 import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
@@ -14,16 +15,16 @@ import FormattedText from '@components/formatted_text';
 import SettingContainer from '@components/settings/container';
 import AboutLinks from '@constants/about_links';
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import {t} from '@i18n';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {popTopScreen} from '@screens/navigation';
-import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {showSnackBar} from '@utils/snack_bar';
-import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {tryOpenURL} from '@utils/url';
+import {onOpenLinkError} from '@utils/url/links';
 
 import LearnMore from './learn_more';
 import Subtitle from './subtitle';
@@ -113,49 +114,56 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 type AboutProps = {
     componentId: AvailableScreens;
     config: ClientConfig;
-    license: ClientLicense;
+    license?: ClientLicense;
 }
 const About = ({componentId, config, license}: AboutProps) => {
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const serverUrl = useServerUrl();
+    const [loadMetric, setLoadMetric] = useState<number | null>(null);
+
+    useEffect(() => {
+        const fetchLoadMetric = async () => {
+            const isLicensed = license?.IsLicensed === 'true';
+            const result = await getLicenseLoadMetric(serverUrl, config.Version, isLicensed);
+
+            // Only set the metric if we got a number back
+            if (result !== null && typeof result === 'number') {
+                setLoadMetric(result);
+            }
+        };
+
+        fetchLoadMetric();
+    }, [config.Version, license?.IsLicensed, serverUrl]);
 
     const openURL = useCallback((url: string) => {
         const onError = () => {
-            Alert.alert(
-                intl.formatMessage({
-                    id: 'settings.link.error.title',
-                    defaultMessage: 'Error',
-                }),
-                intl.formatMessage({
-                    id: 'settings.link.error.text',
-                    defaultMessage: 'Unable to open the link.',
-                }),
-            );
+            onOpenLinkError(intl);
         };
 
         tryOpenURL(url, onError);
-    }, []);
+    }, [intl]);
 
-    const handleAboutTeam = useCallback(preventDoubleTap(() => {
+    const handleAboutTeam = usePreventDoubleTap(useCallback(() => {
         return openURL(Config.WebsiteURL);
-    }), []);
+    }, [openURL]));
 
-    const handlePlatformNotice = useCallback(preventDoubleTap(() => {
+    const handlePlatformNotice = usePreventDoubleTap(useCallback(() => {
         return openURL(Config.ServerNoticeURL);
-    }), []);
+    }, [openURL]));
 
-    const handleMobileNotice = useCallback(preventDoubleTap(() => {
+    const handleMobileNotice = usePreventDoubleTap(useCallback(() => {
         return openURL(Config.MobileNoticeURL);
-    }), []);
+    }, [openURL]));
 
-    const handleTermsOfService = useCallback(preventDoubleTap(() => {
+    const handleTermsOfService = usePreventDoubleTap(useCallback(() => {
         return openURL(AboutLinks.TERMS_OF_SERVICE);
-    }), []);
+    }, [openURL]));
 
-    const handlePrivacyPolicy = useCallback(preventDoubleTap(() => {
+    const handlePrivacyPolicy = usePreventDoubleTap(useCallback(() => {
         return openURL(AboutLinks.PRIVACY_POLICY);
-    }), []);
+    }, [openURL]));
 
     const serverVersion = useMemo(() => {
         const buildNumber = config.BuildNumber;
@@ -182,11 +190,17 @@ const About = ({componentId, config, license}: AboutProps) => {
             const server = buildNumber === version ? intl.formatMessage({id: 'settings.about.server.version.noBuild', defaultMessage: 'Server Version: {version}'}, {version}) : intl.formatMessage({id: 'settings.about.server.version', defaultMessage: 'Server Version: {version} (Build {buildNumber})'}, {version, buildNumber});
             const database = intl.formatMessage({id: 'settings.about.database', defaultMessage: 'Database: {driverName}'}, {driverName: config.SQLDriverName});
             const databaseSchemaVersion = intl.formatMessage({id: 'settings.about.database.schema', defaultMessage: 'Database Schema Version: {version}'}, {version: config.SchemaVersion});
-            const copiedString = `${appVersion}\n${server}\n${database}\n${databaseSchemaVersion}`;
+            let copiedString = `${appVersion}\n${server}\n${database}\n${databaseSchemaVersion}`;
+
+            if (loadMetric !== null) {
+                const loadMetricStr = intl.formatMessage({id: 'settings.about.license.load_metric', defaultMessage: 'Load Metric: {load}'}, {load: loadMetric});
+                copiedString += `\n${loadMetricStr}`;
+            }
+
             Clipboard.setString(copiedString);
             showSnackBar({barType: SNACK_BAR_TYPE.INFO_COPIED, sourceScreen: componentId});
         },
-        [intl, config],
+        [intl, config.BuildNumber, config.Version, config.SQLDriverName, config.SchemaVersion, loadMetric, componentId],
     );
 
     return (
@@ -238,6 +252,22 @@ const About = ({componentId, config, license}: AboutProps) => {
                         {serverVersion}
                     </Text>
                 </View>
+                {loadMetric !== null && (
+                    <View style={styles.group}>
+                        <Text
+                            style={styles.leftHeading}
+                            testID='about.license_load_metric.title'
+                        >
+                            {intl.formatMessage({id: 'settings.about.license.load_metric.title', defaultMessage: 'Load Metric:'})}
+                        </Text>
+                        <Text
+                            style={styles.rightHeading}
+                            testID='about.license_load_metric.value'
+                        >
+                            {loadMetric}
+                        </Text>
+                    </View>
+                )}
                 <View style={styles.group}>
                     <Text
                         style={styles.leftHeading}
@@ -266,22 +296,22 @@ const About = ({componentId, config, license}: AboutProps) => {
                         {config.SchemaVersion}
                     </Text>
                 </View>
-                <Button
-                    theme={theme}
-                    backgroundStyle={[buttonBackgroundStyle(theme, 'm', 'tertiary'), styles.copyInfoButtonContainer]}
-                    onPress={copyToClipboard}
-                    textStyle={buttonTextStyle(theme, 'm', 'tertiary', 'default')}
-                    text={intl.formatMessage({id: 'settings.about.button.copyInfo', defaultMessage: 'Copy info'})}
-                    testID={'about.copy_info'}
-                    iconName='content-copy'
-                    iconSize={15}
-                    buttonType={'default'}
-                />
-                {license.IsLicensed === 'true' && (
+                <View style={styles.copyInfoButtonContainer}>
+                    <Button
+                        theme={theme}
+                        onPress={copyToClipboard}
+                        text={intl.formatMessage({id: 'settings.about.button.copyInfo', defaultMessage: 'Copy info'})}
+                        testID={'about.copy_info'}
+                        iconName='content-copy'
+                        emphasis='tertiary'
+                        size='m'
+                    />
+                </View>
+                {license?.IsLicensed === 'true' && (
                     <View style={styles.licenseContainer}>
                         <FormattedText
                             defaultMessage='Licensed to: {company}'
-                            id={t('settings.about.licensed')}
+                            id={'settings.about.licensed'}
                             style={styles.info}
                             testID='about.licensee'
                             values={{company: license.Company}}
@@ -295,7 +325,7 @@ const About = ({componentId, config, license}: AboutProps) => {
                 {!MATTERMOST_BUNDLE_IDS.includes(applicationId || '') &&
                     <FormattedText
                         defaultMessage='{site} is powered by Mattermost'
-                        id={t('settings.about.powered_by')}
+                        id={'settings.about.powered_by'}
                         style={styles.footerText}
                         testID='about.powered_by'
                         values={{site: config.SiteName}}
@@ -306,7 +336,7 @@ const About = ({componentId, config, license}: AboutProps) => {
                 />
                 <FormattedText
                     defaultMessage='Copyright 2015-{currentYear} Mattermost, Inc. All rights reserved'
-                    id={t('settings.about.copyright')}
+                    id={'settings.about.copyright'}
                     style={[styles.footerText, styles.copyrightText]}
                     testID='about.copyright'
                     values={{currentYear: new Date().getFullYear()}}
@@ -320,14 +350,14 @@ const About = ({componentId, config, license}: AboutProps) => {
                 </View>
                 <View style={styles.noticeContainer}>
                     <FormattedText
-                        id={t('settings.notice_text')}
+                        id={'settings.notice_text'}
                         defaultMessage='Mattermost is made possible by the open source software used in our {platform} and {mobile}.'
                         style={styles.footerText}
                         values={{
                             platform: (
                                 <FormattedText
                                     defaultMessage='server'
-                                    id={t('settings.notice_platform_link')}
+                                    id={'settings.notice_platform_link'}
                                     onPress={handlePlatformNotice}
                                     style={styles.noticeLink}
                                 />
@@ -335,7 +365,7 @@ const About = ({componentId, config, license}: AboutProps) => {
                             mobile: (
                                 <FormattedText
                                     defaultMessage='mobile apps'
-                                    id={t('settings.notice_mobile_link')}
+                                    id={'settings.notice_mobile_link'}
                                     onPress={handleMobileNotice}
                                     style={[styles.noticeLink, {marginLeft: 5}]}
                                 />
@@ -348,7 +378,7 @@ const About = ({componentId, config, license}: AboutProps) => {
                     <View>
                         <FormattedText
                             defaultMessage='Build Hash:'
-                            id={t('about.hash')}
+                            id={'about.hash'}
                             style={styles.footerTitleText}
                             testID='about.build_hash.title'
                         />
@@ -362,7 +392,7 @@ const About = ({componentId, config, license}: AboutProps) => {
                     <View>
                         <FormattedText
                             defaultMessage='EE Build Hash:'
-                            id={t('about.hashee')}
+                            id={'about.hashee'}
                             style={styles.footerTitleText}
                             testID='about.build_hash_enterprise.title'
                         />
@@ -377,7 +407,7 @@ const About = ({componentId, config, license}: AboutProps) => {
                 <View style={{marginBottom: 20}}>
                     <FormattedText
                         defaultMessage='Build Date:'
-                        id={t('about.date')}
+                        id={'about.date'}
                         style={styles.footerTitleText}
                         testID='about.build_date.title'
                     />

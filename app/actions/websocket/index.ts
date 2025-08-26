@@ -5,11 +5,11 @@ import {markChannelAsViewed} from '@actions/local/channel';
 import {dataRetentionCleanup} from '@actions/local/systems';
 import {markChannelAsRead} from '@actions/remote/channel';
 import {
-    deferredAppEntryActions,
     entry,
     handleEntryAfterLoadNavigation,
     setExtraSessionProps,
 } from '@actions/remote/entry/common';
+import {deferredAppEntryActions} from '@actions/remote/entry/deferred';
 import {fetchPostsForChannel, fetchPostThread} from '@actions/remote/post';
 import {openAllUnreadChannels} from '@actions/remote/preference';
 import {autoUpdateTimezone} from '@actions/remote/user';
@@ -18,6 +18,7 @@ import {isSupportedServerCalls} from '@calls/utils';
 import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import AppsManager from '@managers/apps_manager';
+import {handlePlaybookReconnect} from '@playbooks/actions/websocket/reconnect';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {getLastPostInThread} from '@queries/servers/post';
 import {
@@ -71,7 +72,7 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
         setTeamLoading(serverUrl, false);
         return entryData.error;
     }
-    const {models, initialTeamId, initialChannelId, prefData, teamData, chData, gmConverted} = entryData;
+    const {models, initialTeamId, initialChannelId, prefData, teamData, chData, meData, gmConverted} = entryData;
 
     await handleEntryAfterLoadNavigation(serverUrl, teamData.memberships || [], chData?.memberships || [], currentTeamId || '', currentChannelId || '', initialTeamId, initialChannelId, gmConverted);
 
@@ -80,10 +81,7 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
         await operator.batchRecords(models, 'doReconnect');
     }
 
-    await setLastFullSync(operator, now);
-
     logInfo('WEBSOCKET RECONNECT MODELS BATCHING TOOK', `${Date.now() - dt}ms`);
-    setTeamLoading(serverUrl, false);
 
     await fetchPostDataIfNeeded(serverUrl, groupLabel);
 
@@ -91,11 +89,16 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
     const license = await getLicense(database);
     const config = await getConfig(database);
 
+    handlePlaybookReconnect(serverUrl);
+
     if (isSupportedServerCalls(config?.Version)) {
         loadConfigAndCalls(serverUrl, currentUserId, groupLabel);
     }
 
-    await deferredAppEntryActions(serverUrl, lastFullSync, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId, undefined, groupLabel);
+    await deferredAppEntryActions(serverUrl, lastFullSync, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, meData, initialTeamId, undefined, groupLabel);
+
+    await setLastFullSync(operator, now);
+    setTeamLoading(serverUrl, false);
 
     openAllUnreadChannels(serverUrl, groupLabel);
 

@@ -15,15 +15,23 @@ import {logDebug} from '@utils/log';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type PostModel from '@typings/database/models/servers/post';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     binding: AppBinding;
     currentTeamId: string;
     post: PostModel;
     teamID?: string;
+    location: AvailableScreens;
 }
 
-const MenuBinding = ({binding, currentTeamId, post, teamID}: Props) => {
+const MenuBinding = ({
+    binding,
+    currentTeamId,
+    post,
+    teamID,
+    location,
+}: Props) => {
     const [selected, setSelected] = useState<string>();
     const serverUrl = useServerUrl();
 
@@ -73,6 +81,7 @@ const MenuBinding = ({binding, currentTeamId, post, teamID}: Props) => {
             selected={selected}
             onSelected={onSelect}
             testID={`embedded_binding.${binding.location}`}
+            location={location}
         />
     );
 };

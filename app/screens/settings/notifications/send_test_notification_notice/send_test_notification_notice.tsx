@@ -3,10 +3,11 @@
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 
 import {sendTestNotification} from '@actions/remote/notifications';
 import SectionNotice from '@components/section_notice';
+import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useExternalLink} from '@hooks/use_external_link';
 import {isMinimumServerVersion} from '@utils/helpers';
@@ -18,19 +19,19 @@ const TIME_TO_IDLE = 3000;
 type Props = {
     serverVersion: string;
     userId: string;
-isCloud: boolean;
-telemetryId: string;
+    isCloud: boolean;
+    telemetryId: string;
 }
 
 type ButtonState = 'idle'|'sending'|'sent'|'error';
 
-const styles = {
+const styles = StyleSheet.create({
     wrapper: {
         flex: 1,
-        justifyContent: 'flex-end' as const,
-        margin: 16,
+        justifyContent: 'flex-end',
+        marginVertical: 16,
     },
-};
+});
 
 const SendTestNotificationNotice = ({
     serverVersion,
@@ -131,6 +132,7 @@ const SendTestNotificationNotice = ({
                 primaryButton={primaryButton}
                 secondaryButton={secondaryButton}
                 type='hint'
+                location={Screens.SETTINGS_NOTIFICATION_PUSH}
             />
         </View>
     );

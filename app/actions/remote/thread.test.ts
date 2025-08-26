@@ -37,7 +37,7 @@ const team: Team = {
 
 const user1 = {id: 'userid1', username: 'user1', email: 'user1@mattermost.com', roles: ''} as UserProfile;
 
-const post1 = {...TestHelper.fakePost(channelId), id: 'postid1'};
+const post1 = TestHelper.fakePost({channel_id: channelId, id: 'postid1'});
 
 const thread1: Thread = {id: 'postid1',
     reply_count: 1,

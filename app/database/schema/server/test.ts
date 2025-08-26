@@ -4,6 +4,7 @@
 /* eslint-disable max-lines */
 
 import {MM_TABLES} from '@constants/database';
+import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
 
 import {serverSchema} from './index';
 
@@ -16,6 +17,8 @@ const {
     CHANNEL_MEMBERSHIP,
     CONFIG,
     CUSTOM_EMOJI,
+    CUSTOM_PROFILE_FIELD,
+    CUSTOM_PROFILE_ATTRIBUTE,
     DRAFT,
     FILE,
     GROUP,
@@ -31,6 +34,7 @@ const {
     PREFERENCE,
     REACTION,
     ROLE,
+    SCHEDULED_POST,
     SYSTEM,
     TEAM,
     TEAM_CHANNEL_HISTORY,
@@ -43,10 +47,12 @@ const {
     USER,
 } = MM_TABLES.SERVER;
 
+const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM} = PLAYBOOK_TABLES;
+
 describe('*** Test schema for SERVER database ***', () => {
     it('=> The SERVER SCHEMA should strictly match', () => {
         expect(serverSchema).toEqual({
-            version: 6,
+            version: 12,
             unsafeSql: undefined,
             tables: {
                 [CATEGORY]: {
@@ -122,7 +128,8 @@ describe('*** Test schema for SERVER database ***', () => {
                         team_id: {name: 'team_id', type: 'string', isIndexed: true},
                         type: {name: 'type', type: 'string'},
                         update_at: {name: 'update_at', type: 'number'},
-
+                        banner_info: {name: 'banner_info', type: 'string', isOptional: true},
+                        abac_policy_enforced: {name: 'abac_policy_enforced', type: 'boolean', isOptional: true},
                     },
                     columnArray: [
                         {name: 'create_at', type: 'number'},
@@ -135,6 +142,8 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'team_id', type: 'string', isIndexed: true},
                         {name: 'type', type: 'string'},
                         {name: 'update_at', type: 'number'},
+                        {name: 'banner_info', type: 'string', isOptional: true},
+                        {name: 'abac_policy_enforced', type: 'boolean', isOptional: true},
                     ],
                 },
                 [CHANNEL_BOOKMARK]: {
@@ -206,6 +215,46 @@ describe('*** Test schema for SERVER database ***', () => {
                     },
                     columnArray: [{name: 'name', type: 'string', isIndexed: true}],
                 },
+                [CUSTOM_PROFILE_FIELD]: {
+                    name: CUSTOM_PROFILE_FIELD,
+                    unsafeSql: undefined,
+                    columns: {
+                        group_id: {name: 'group_id', type: 'string'},
+                        name: {name: 'name', type: 'string'},
+                        type: {name: 'type', type: 'string'},
+                        target_id: {name: 'target_id', type: 'string'},
+                        target_type: {name: 'target_type', type: 'string'},
+                        create_at: {name: 'create_at', type: 'number'},
+                        update_at: {name: 'update_at', type: 'number'},
+                        delete_at: {name: 'delete_at', type: 'number'},
+                        attrs: {name: 'attrs', type: 'string', isOptional: true},
+                    },
+                    columnArray: [
+                        {name: 'group_id', type: 'string'},
+                        {name: 'name', type: 'string'},
+                        {name: 'type', type: 'string'},
+                        {name: 'target_id', type: 'string'},
+                        {name: 'target_type', type: 'string'},
+                        {name: 'create_at', type: 'number'},
+                        {name: 'update_at', type: 'number'},
+                        {name: 'delete_at', type: 'number'},
+                        {name: 'attrs', type: 'string', isOptional: true},
+                    ],
+                },
+                [CUSTOM_PROFILE_ATTRIBUTE]: {
+                    name: CUSTOM_PROFILE_ATTRIBUTE,
+                    unsafeSql: undefined,
+                    columns: {
+                        field_id: {name: 'field_id', type: 'string', isIndexed: true},
+                        user_id: {name: 'user_id', type: 'string', isIndexed: true},
+                        value: {name: 'value', type: 'string'},
+                    },
+                    columnArray: [
+                        {name: 'field_id', type: 'string', isIndexed: true},
+                        {name: 'user_id', type: 'string', isIndexed: true},
+                        {name: 'value', type: 'string'},
+                    ],
+                },
                 [MY_CHANNEL]: {
                     name: MY_CHANNEL,
                     unsafeSql: undefined,
@@ -219,6 +268,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         roles: {name: 'roles', type: 'string'},
                         viewed_at: {name: 'viewed_at', type: 'number'},
                         last_fetched_at: {name: 'last_fetched_at', type: 'number', isIndexed: true},
+                        last_playbook_runs_fetch_at: {name: 'last_playbook_runs_fetch_at', type: 'number'},
                     },
                     columnArray: [
                         {name: 'is_unread', type: 'boolean'},
@@ -230,6 +280,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'roles', type: 'string'},
                         {name: 'viewed_at', type: 'number'},
                         {name: 'last_fetched_at', type: 'number', isIndexed: true},
+                        {name: 'last_playbook_runs_fetch_at', type: 'number'},
                     ],
                 },
                 [MY_CHANNEL_SETTINGS]: {
@@ -289,6 +340,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         post_id: {name: 'post_id', type: 'string', isIndexed: true},
                         size: {name: 'size', type: 'number'},
                         width: {name: 'width', type: 'number'},
+                        is_blocked: {name: 'is_blocked', type: 'boolean'},
                     },
                     columnArray: [
                         {name: 'extension', type: 'string'},
@@ -300,6 +352,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'post_id', type: 'string', isIndexed: true},
                         {name: 'size', type: 'number'},
                         {name: 'width', type: 'number'},
+                        {name: 'is_blocked', type: 'boolean'},
                     ],
                 },
                 [GROUP]: {
@@ -380,6 +433,120 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'created_at', type: 'number'},
                         {name: 'updated_at', type: 'number'},
                         {name: 'deleted_at', type: 'number'},
+                    ],
+                },
+                [PLAYBOOK_RUN]: {
+                    name: PLAYBOOK_RUN,
+                    unsafeSql: undefined,
+                    columns: {
+                        playbook_id: {name: 'playbook_id', type: 'string'},
+                        name: {name: 'name', type: 'string'},
+                        description: {name: 'description', type: 'string'},
+                        is_active: {name: 'is_active', type: 'boolean', isIndexed: true},
+                        owner_user_id: {name: 'owner_user_id', type: 'string'},
+                        team_id: {name: 'team_id', type: 'string'},
+                        channel_id: {name: 'channel_id', type: 'string', isIndexed: true},
+                        post_id: {name: 'post_id', type: 'string', isOptional: true},
+                        create_at: {name: 'create_at', type: 'number'},
+                        end_at: {name: 'end_at', type: 'number'},
+                        active_stage: {name: 'active_stage', type: 'number'},
+                        active_stage_title: {name: 'active_stage_title', type: 'string'},
+                        participant_ids: {name: 'participant_ids', type: 'string'}, // JSON string
+                        summary: {name: 'summary', type: 'string'},
+                        current_status: {name: 'current_status', type: 'string', isIndexed: true},
+                        last_status_update_at: {name: 'last_status_update_at', type: 'number'},
+                        retrospective_enabled: {name: 'retrospective_enabled', type: 'boolean'},
+                        retrospective: {name: 'retrospective', type: 'string'},
+                        retrospective_published_at: {name: 'retrospective_published_at', type: 'number'},
+                        sync: {name: 'sync', type: 'string', isIndexed: true, isOptional: true},
+                        last_sync_at: {name: 'last_sync_at', type: 'number', isOptional: true},
+                        items_order: {name: 'items_order', type: 'string'},
+                        previous_reminder: {name: 'previous_reminder', type: 'number', isOptional: true},
+                        update_at: {name: 'update_at', type: 'number'},
+                    },
+                    columnArray: [
+                        {name: 'playbook_id', type: 'string'},
+                        {name: 'name', type: 'string'},
+                        {name: 'description', type: 'string'},
+                        {name: 'is_active', type: 'boolean', isIndexed: true},
+                        {name: 'owner_user_id', type: 'string'},
+                        {name: 'team_id', type: 'string'},
+                        {name: 'channel_id', type: 'string', isIndexed: true},
+                        {name: 'post_id', type: 'string', isOptional: true},
+                        {name: 'create_at', type: 'number'},
+                        {name: 'end_at', type: 'number'},
+                        {name: 'active_stage', type: 'number'},
+                        {name: 'active_stage_title', type: 'string'},
+                        {name: 'participant_ids', type: 'string'}, // JSON string
+                        {name: 'summary', type: 'string'},
+                        {name: 'current_status', type: 'string', isIndexed: true},
+                        {name: 'last_status_update_at', type: 'number'},
+                        {name: 'retrospective_enabled', type: 'boolean'},
+                        {name: 'retrospective', type: 'string'},
+                        {name: 'retrospective_published_at', type: 'number'},
+                        {name: 'sync', type: 'string', isIndexed: true, isOptional: true},
+                        {name: 'last_sync_at', type: 'number', isOptional: true},
+                        {name: 'previous_reminder', type: 'number', isOptional: true},
+                        {name: 'items_order', type: 'string'},
+                        {name: 'update_at', type: 'number'},
+                    ],
+                },
+                [PLAYBOOK_CHECKLIST]: {
+                    name: PLAYBOOK_CHECKLIST,
+                    unsafeSql: undefined,
+                    columns: {
+                        run_id: {name: 'run_id', type: 'string', isIndexed: true},
+                        title: {name: 'title', type: 'string'},
+                        sync: {name: 'sync', type: 'string', isIndexed: true, isOptional: true},
+                        last_sync_at: {name: 'last_sync_at', type: 'number', isOptional: true},
+                        items_order: {name: 'items_order', type: 'string'},
+                        update_at: {name: 'update_at', type: 'number'},
+                    },
+                    columnArray: [
+                        {name: 'run_id', type: 'string', isIndexed: true},
+                        {name: 'title', type: 'string'},
+                        {name: 'sync', type: 'string', isIndexed: true, isOptional: true},
+                        {name: 'last_sync_at', type: 'number', isOptional: true},
+                        {name: 'items_order', type: 'string'},
+                        {name: 'update_at', type: 'number'},
+                    ],
+                },
+                [PLAYBOOK_CHECKLIST_ITEM]: {
+                    name: PLAYBOOK_CHECKLIST_ITEM,
+                    unsafeSql: undefined,
+                    columns: {
+                        checklist_id: {name: 'checklist_id', type: 'string', isIndexed: true},
+                        title: {name: 'title', type: 'string'},
+                        state: {name: 'state', type: 'string', isIndexed: true},
+                        state_modified: {name: 'state_modified', type: 'number'},
+                        assignee_id: {name: 'assignee_id', type: 'string', isOptional: true},
+                        assignee_modified: {name: 'assignee_modified', type: 'number'},
+                        command: {name: 'command', type: 'string', isOptional: true},
+                        command_last_run: {name: 'command_last_run', type: 'number'},
+                        description: {name: 'description', type: 'string'},
+                        due_date: {name: 'due_date', type: 'number'},
+                        completed_at: {name: 'completed_at', type: 'number'},
+                        task_actions: {name: 'task_actions', type: 'string', isOptional: true}, // JSON string
+                        sync: {name: 'sync', type: 'string', isIndexed: true, isOptional: true},
+                        last_sync_at: {name: 'last_sync_at', type: 'number', isOptional: true},
+                        update_at: {name: 'update_at', type: 'number'},
+                    },
+                    columnArray: [
+                        {name: 'checklist_id', type: 'string', isIndexed: true},
+                        {name: 'title', type: 'string'},
+                        {name: 'state', type: 'string', isIndexed: true},
+                        {name: 'state_modified', type: 'number'},
+                        {name: 'assignee_id', type: 'string', isOptional: true},
+                        {name: 'assignee_modified', type: 'number'},
+                        {name: 'command', type: 'string', isOptional: true},
+                        {name: 'command_last_run', type: 'number'},
+                        {name: 'description', type: 'string'},
+                        {name: 'due_date', type: 'number'},
+                        {name: 'completed_at', type: 'number'},
+                        {name: 'task_actions', type: 'string', isOptional: true}, // JSON string
+                        {name: 'sync', type: 'string', isIndexed: true, isOptional: true},
+                        {name: 'last_sync_at', type: 'number', isOptional: true},
+                        {name: 'update_at', type: 'number'},
                     ],
                 },
                 [POSTS_IN_THREAD]: {
@@ -488,6 +655,34 @@ describe('*** Test schema for SERVER database ***', () => {
                     columnArray: [
                         {name: 'name', type: 'string', isIndexed: true},
                         {name: 'permissions', type: 'string'},
+                    ],
+                },
+                [SCHEDULED_POST]: {
+                    name: SCHEDULED_POST,
+                    unsafeSql: undefined,
+                    columns: {
+                        channel_id: {name: 'channel_id', type: 'string', isIndexed: true},
+                        message: {name: 'message', type: 'string'},
+                        files: {name: 'files', type: 'string'},
+                        root_id: {name: 'root_id', type: 'string', isIndexed: true},
+                        metadata: {name: 'metadata', type: 'string', isOptional: true},
+                        create_at: {name: 'create_at', type: 'number'},
+                        update_at: {name: 'update_at', type: 'number'},
+                        scheduled_at: {name: 'scheduled_at', type: 'number'},
+                        processed_at: {name: 'processed_at', type: 'number'},
+                        error_code: {name: 'error_code', type: 'string'},
+                    },
+                    columnArray: [
+                        {name: 'channel_id', type: 'string', isIndexed: true},
+                        {name: 'files', type: 'string'},
+                        {name: 'message', type: 'string'},
+                        {name: 'root_id', type: 'string', isIndexed: true},
+                        {name: 'metadata', type: 'string', isOptional: true},
+                        {name: 'create_at', type: 'number'},
+                        {name: 'update_at', type: 'number'},
+                        {name: 'scheduled_at', type: 'number'},
+                        {name: 'processed_at', type: 'number'},
+                        {name: 'error_code', type: 'string'},
                     ],
                 },
                 [SYSTEM]: {

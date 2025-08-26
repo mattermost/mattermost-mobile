@@ -2,17 +2,17 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {useIntl} from 'react-intl';
+import {useIntl, type MessageDescriptor} from 'react-intl';
 import {Platform, type StyleProp, Text, type TextStyle, TouchableOpacity, View, type ViewStyle} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {BOTTOM_SHEET_ANDROID_OFFSET} from '@screens/bottom_sheet';
 import {TITLE_HEIGHT} from '@screens/bottom_sheet/content';
 import {bottomSheet} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
-import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -20,13 +20,14 @@ import UserAvatar from './user_avatar';
 import UsersList from './users_list';
 
 import type UserModel from '@typings/database/models/servers/user';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 const OVERFLOW_DISPLAY_LIMIT = 99;
 const USER_ROW_HEIGHT = 40;
 
 type Props = {
-    channelId: string;
-    location: string;
+    channelId?: string;
+    location: AvailableScreens;
     users: UserModel[];
     breakAt?: number;
     style?: StyleProp<ViewStyle>;
@@ -35,6 +36,7 @@ type Props = {
     overflowContainerStyle?: StyleProp<ViewStyle>;
     overflowItemStyle?: StyleProp<ViewStyle>;
     overflowTextStyle?: StyleProp<TextStyle>;
+    bottomSheetTitle: MessageDescriptor;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -98,19 +100,20 @@ const UserAvatarsStack = ({
     overflowContainerStyle,
     overflowItemStyle,
     overflowTextStyle,
+    bottomSheetTitle,
 }: Props) => {
     const theme = useTheme();
+    const style = getStyleSheet(theme);
     const intl = useIntl();
     const isTablet = useIsTablet();
 
-    const showParticipantsList = useCallback(preventDoubleTap(() => {
+    const showParticipantsList = usePreventDoubleTap(useCallback(() => {
         const renderContent = () => (
             <>
                 {!isTablet && (
                     <View style={style.listHeader}>
                         <FormattedText
-                            id='mobile.participants.header'
-                            defaultMessage={'Thread Participants'}
+                            {...bottomSheetTitle}
                             style={style.listHeaderText}
                         />
                     </View>
@@ -138,15 +141,13 @@ const UserAvatarsStack = ({
             renderContent,
             initialSnapIndex: 1,
             snapPoints,
-            title: intl.formatMessage({id: 'mobile.participants.header', defaultMessage: 'Thread Participants'}),
+            title: intl.formatMessage(bottomSheetTitle),
             theme,
         });
-    }), [isTablet, theme, users, channelId, location]);
+    }, [users, intl, bottomSheetTitle, theme, isTablet, style.listHeader, style.listHeaderText, channelId, location]));
 
     const displayUsers = users.slice(0, breakAt);
     const overflowUsersCount = Math.min(users.length - displayUsers.length, OVERFLOW_DISPLAY_LIMIT);
-
-    const style = getStyleSheet(theme);
 
     return (
         <TouchableOpacity

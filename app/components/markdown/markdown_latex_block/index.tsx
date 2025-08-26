@@ -13,11 +13,11 @@ import MathView from '@components/math_view';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Screens} from '@constants';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {bottomSheet, dismissBottomSheet, goToScreen} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {getHighlightLanguageName} from '@utils/markdown';
 import {splitLatexCodeInLines} from '@utils/markdown/latex';
-import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -110,7 +110,7 @@ const LatexCodeBlock = ({content, theme}: Props) => {
         };
     }, [content]);
 
-    const handlePress = useCallback(preventDoubleTap(() => {
+    const handlePress = usePreventDoubleTap(useCallback(() => {
         const screen = Screens.LATEX;
         const passProps = {
             content,
@@ -126,7 +126,7 @@ const LatexCodeBlock = ({content, theme}: Props) => {
         requestAnimationFrame(() => {
             goToScreen(screen, title, passProps);
         });
-    }), [content, languageDisplayName, intl.locale]);
+    }, [content, intl, languageDisplayName]));
 
     const handleLongPress = useCallback(() => {
         if (managedConfig?.copyAndPasteProtection !== 'true') {
@@ -168,7 +168,7 @@ const LatexCodeBlock = ({content, theme}: Props) => {
 
     const onRenderErrorMessage = useCallback(({error}: {error: Error}) => {
         return <Text style={styles.errorText}>{'Render error: ' + error.message}</Text>;
-    }, []);
+    }, [styles.errorText]);
 
     let plusMoreLines = null;
     if (split.numberOfLines > MAX_LINES) {

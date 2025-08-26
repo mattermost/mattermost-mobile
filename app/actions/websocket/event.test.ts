@@ -2,8 +2,10 @@
 // See LICENSE.txt for license information.
 
 import * as bookmark from '@actions/local/channel_bookmark';
+import * as scheduledPost from '@actions/websocket/scheduled_post';
 import * as calls from '@calls/connection/websocket_event_handlers';
 import {WebsocketEvents} from '@constants';
+import {handlePlaybookEvents} from '@playbooks/actions/websocket/events';
 
 import * as category from './category';
 import * as channel from './channel';
@@ -33,6 +35,8 @@ jest.mock('./threads');
 jest.mock('@calls/connection/websocket_event_handlers');
 jest.mock('./group');
 jest.mock('@actions/local/channel_bookmark');
+jest.mock('@actions/websocket/scheduled_post');
+jest.mock('@playbooks/actions/websocket/events');
 
 describe('handleWebSocketEvent', () => {
     const serverUrl = 'https://example.com';
@@ -324,18 +328,6 @@ describe('handleWebSocketEvent', () => {
         expect(calls.handleCallChannelDisabled).toHaveBeenCalledWith(serverUrl, msg);
     });
 
-    it('should handle CALLS_USER_CONNECTED event', async () => {
-        msg.event = WebsocketEvents.CALLS_USER_CONNECTED;
-        await handleWebSocketEvent(serverUrl, msg);
-        expect(calls.handleCallUserConnected).toHaveBeenCalledWith(serverUrl, msg);
-    });
-
-    it('should handle CALLS_USER_DISCONNECTED event', async () => {
-        msg.event = WebsocketEvents.CALLS_USER_DISCONNECTED;
-        await handleWebSocketEvent(serverUrl, msg);
-        expect(calls.handleCallUserDisconnected).toHaveBeenCalledWith(serverUrl, msg);
-    });
-
     it('should handle CALLS_USER_JOINED event', async () => {
         msg.event = WebsocketEvents.CALLS_USER_JOINED;
         await handleWebSocketEvent(serverUrl, msg);
@@ -412,12 +404,6 @@ describe('handleWebSocketEvent', () => {
         msg.event = WebsocketEvents.CALLS_USER_REACTED;
         await handleWebSocketEvent(serverUrl, msg);
         expect(calls.handleCallUserReacted).toHaveBeenCalledWith(serverUrl, msg);
-    });
-
-    it('should handle CALLS_RECORDING_STATE event', async () => {
-        msg.event = WebsocketEvents.CALLS_RECORDING_STATE;
-        await handleWebSocketEvent(serverUrl, msg);
-        expect(calls.handleCallRecordingState).toHaveBeenCalledWith(serverUrl, msg);
     });
 
     it('should handle CALLS_JOB_STATE event', async () => {
@@ -520,5 +506,33 @@ describe('handleWebSocketEvent', () => {
         msg.event = WebsocketEvents.CHANNEL_BOOKMARK_SORTED;
         await handleWebSocketEvent(serverUrl, msg);
         expect(bookmark.handleBookmarkSorted).toHaveBeenCalledWith(serverUrl, msg);
+    });
+
+    it('should handle SCHEDULED_POST_CREATED event', async () => {
+        msg.event = WebsocketEvents.SCHEDULED_POST_CREATED;
+        await handleWebSocketEvent(serverUrl, msg);
+        expect(scheduledPost.handleCreateOrUpdateScheduledPost).toHaveBeenCalledWith(serverUrl, msg);
+    });
+
+    it('should handle SCHEDULED_POST_UPDATED event', async () => {
+        msg.event = WebsocketEvents.SCHEDULED_POST_UPDATED;
+        await handleWebSocketEvent(serverUrl, msg);
+        expect(scheduledPost.handleCreateOrUpdateScheduledPost).toHaveBeenCalledWith(serverUrl, msg);
+    });
+
+    it('should handle SCHEDULED_POST_DELETED event', async () => {
+        msg.event = WebsocketEvents.SCHEDULED_POST_DELETED;
+        await handleWebSocketEvent(serverUrl, msg);
+        expect(scheduledPost.handleDeleteScheduledPost).toHaveBeenCalledWith(serverUrl, msg);
+    });
+
+    it('all messages should go through the playbooks handler', async () => {
+        msg.event = WebsocketEvents.POST_DELETED; // any handled event should be enough
+        await handleWebSocketEvent(serverUrl, msg);
+        expect(handlePlaybookEvents).toHaveBeenCalledWith(serverUrl, msg);
+
+        msg.event = 'foo'; // any event, even if not handled, should go through the playbooks handler
+        await handleWebSocketEvent(serverUrl, msg);
+        expect(handlePlaybookEvents).toHaveBeenCalledWith(serverUrl, msg);
     });
 });

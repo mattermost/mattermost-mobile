@@ -11,6 +11,7 @@ import {changeOpacity} from '@utils/theme';
 
 type ProgressBarProps = {
     color: string;
+    containerStyle?: StyleProp<ViewStyle>;
     progress: number;
     withCursor?: boolean;
     style?: StyleProp<ViewStyle>;
@@ -43,13 +44,12 @@ const styles = StyleSheet.create({
 const START_CURSOR_VALUE = 0;
 const END_CURSOR_VALUE = 1;
 
-const ProgressBar = ({color, progress, withCursor, style, onSeek}: ProgressBarProps) => {
+const ProgressBar = ({color, containerStyle, progress, withCursor, style, onSeek}: ProgressBarProps) => {
     const theme = useTheme();
     const widthValue = useSharedValue(0);
     const progressValue = useSharedValue(progress);
     const isGestureActive = useSharedValue(false);
 
-    // eslint-disable-next-line new-cap
     const panGesture = Gesture.Pan().
         onStart(() => {
             isGestureActive.value = true;
@@ -67,7 +67,6 @@ const ProgressBar = ({color, progress, withCursor, style, onSeek}: ProgressBarPr
             isGestureActive.value = false;
         });
 
-    // eslint-disable-next-line new-cap
     const tapGesture = Gesture.Tap().
         onStart(() => {
             isGestureActive.value = true;
@@ -83,7 +82,6 @@ const ProgressBar = ({color, progress, withCursor, style, onSeek}: ProgressBarPr
             isGestureActive.value = false;
         });
 
-    // eslint-disable-next-line new-cap
     const composedGestures = Gesture.Race(tapGesture, panGesture);
 
     const progressAnimatedStyle = useAnimatedStyle(() => {
@@ -120,7 +118,7 @@ const ProgressBar = ({color, progress, withCursor, style, onSeek}: ProgressBarPr
         <GestureDetector gesture={composedGestures}>
             <View
                 onTouchStart={(e) => e.stopPropagation()}
-                style={styles.container}
+                style={[styles.container, containerStyle]}
             >
                 <View
                     onLayout={onLayout}

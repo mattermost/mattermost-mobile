@@ -2,20 +2,21 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {type MessageDescriptor, useIntl} from 'react-intl';
+import {defineMessages, type MessageDescriptor, useIntl} from 'react-intl';
 import {Keyboard, StyleSheet, View} from 'react-native';
 
 import {useTheme} from '@context/theme';
 import useFieldRefs from '@hooks/field_refs';
-import {t} from '@i18n';
 import {getErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
-import {sortCustomProfileAttributes} from '@utils/user';
+import {sortCustomProfileAttributes, formatOptionsForSelector, isCustomFieldSamlLinked} from '@utils/user';
 
 import DisabledFields from './disabled_fields';
 import EmailField from './email_field';
 import Field from './field';
+import SelectField from './select_field';
 
+import type {CustomProfileFieldModel} from '@database/models/server';
 import type UserModel from '@typings/database/models/servers/user';
 import type {FieldConfig, FieldSequence, UserInfo} from '@typings/screens/edit_profile';
 
@@ -32,37 +33,38 @@ type Props = {
     userInfo: UserInfo;
     submitUser: () => void;
     enableCustomAttributes?: boolean;
+    customFields?: CustomProfileFieldModel[];
 }
 
 const includesSsoService = (sso: string) => ['gitlab', 'google', 'office365'].includes(sso);
 const isSAMLOrLDAP = (protocol: string) => ['ldap', 'saml'].includes(protocol);
 
-const FIELDS: { [id: string]: MessageDescriptor } = {
+const FIELDS: {[id: string]: MessageDescriptor} = defineMessages({
     firstName: {
-        id: t('user.settings.general.firstName'),
+        id: 'user.settings.general.firstName',
         defaultMessage: 'First Name',
     },
     lastName: {
-        id: t('user.settings.general.lastName'),
+        id: 'user.settings.general.lastName',
         defaultMessage: 'Last Name',
     },
     username: {
-        id: t('user.settings.general.username'),
+        id: 'user.settings.general.username',
         defaultMessage: 'Username',
     },
     nickname: {
-        id: t('user.settings.general.nickname'),
+        id: 'user.settings.general.nickname',
         defaultMessage: 'Nickname',
     },
     position: {
-        id: t('user.settings.general.position'),
+        id: 'user.settings.general.position',
         defaultMessage: 'Position',
     },
     email: {
-        id: t('user.settings.general.email'),
+        id: 'user.settings.general.email',
         defaultMessage: 'Email',
     },
-};
+});
 
 const styles = StyleSheet.create({
     footer: {
@@ -84,10 +86,12 @@ const POSITION_FIELD = 'position';
 
 const profileKeys = [FIRST_NAME_FIELD, LAST_NAME_FIELD, USERNAME_FIELD, EMAIL_FIELD, NICKNAME_FIELD, POSITION_FIELD];
 
+export const getFieldKey = (key: string) => `${CUSTOM_ATTRS_PREFIX}.${key}`;
+
 const ProfileForm = ({
     canSave, currentUser, isTablet,
     lockedFirstName, lockedLastName, lockedNickname, lockedPosition,
-    onUpdateField, userInfo, submitUser, error, enableCustomAttributes,
+    onUpdateField, userInfo, submitUser, error, enableCustomAttributes, customFields,
 }: Props) => {
     const theme = useTheme();
     const intl = useIntl();
@@ -96,7 +100,7 @@ const ProfileForm = ({
     const {formatMessage} = intl;
     const errorMessage = error == null ? undefined : getErrorMessage(error, intl) as string;
 
-    const total_custom_attrs = useMemo(() => (
+    const totalCustomAttrs = useMemo(() => (
         enableCustomAttributes ? Object.keys(userInfo.customAttributes).length : 0
     ), [enableCustomAttributes, userInfo.customAttributes]);
 
@@ -104,10 +108,19 @@ const ProfileForm = ({
         const newKeys = Object.keys(userInfo.customAttributes).sort(
             (a: string, b: string): number => {
                 return sortCustomProfileAttributes(userInfo.customAttributes[a], userInfo.customAttributes[b]);
-            }).map((k) => `${CUSTOM_ATTRS_PREFIX}.${k}`);
+            }).map((k) => getFieldKey(k));
 
-        return total_custom_attrs === 0 ? profileKeys : [...profileKeys, ...newKeys];
-    }, [userInfo.customAttributes, total_custom_attrs]);
+        return totalCustomAttrs === 0 ? profileKeys : [...profileKeys, ...newKeys];
+    }, [userInfo.customAttributes, totalCustomAttrs]);
+
+    // Create a map of field definitions for quick lookup
+    const customFieldsMap = useMemo(() => {
+        const map = new Map<string, CustomProfileFieldModel>();
+        customFields?.forEach((field) => {
+            map.set(field.id, field);
+        });
+        return map;
+    }, [customFields]);
 
     const userProfileFields: FieldSequence = useMemo(() => {
         const service = currentUser.authService;
@@ -155,8 +168,18 @@ const ProfileForm = ({
                     };
             }
         });
+
+        // Handle custom attributes - check if SAML linked
+        Object.keys(userInfo.customAttributes).forEach((key) => {
+            const customField = customFieldsMap.get(key);
+            const fieldKey = getFieldKey(key);
+            if (customField && fields[fieldKey]) {
+                fields[fieldKey].isDisabled = isCustomFieldSamlLinked(customField);
+            }
+        });
+
         return fields;
-    }, [lockedFirstName, lockedLastName, lockedNickname, lockedPosition, currentUser.authService, formKeys, errorMessage]);
+    }, [lockedFirstName, lockedLastName, lockedNickname, lockedPosition, currentUser.authService, formKeys, errorMessage, customFieldsMap, userInfo.customAttributes]);
 
     const onFocusNextField = useCallback(((fieldKey: string) => {
         const findNextField = () => {
@@ -250,13 +273,35 @@ const ProfileForm = ({
 
     const renderCustomAttribute = (key: string, notLast: boolean) => {
         const fieldID = getFieldID(key);
+        const customAttribute = userInfo.customAttributes[fieldID];
+        const fieldDefinition = customFieldsMap.get(fieldID);
 
+        // Check if this is a select or multiselect field
+        if (fieldDefinition && (fieldDefinition.type === 'select' || fieldDefinition.type === 'multiselect')) {
+            const options = formatOptionsForSelector(fieldDefinition);
+
+            return (
+                <SelectField
+                    fieldKey={key}
+                    label={customAttribute.name}
+                    value={getValue(key)}
+                    options={options}
+                    isDisabled={userProfileFields[key].isDisabled}
+                    onValueChange={onUpdateField}
+                    onFocusNextField={onFocusNextField}
+                    testID={`edit_profile_form.${key}`}
+                    isMultiselect={fieldDefinition.type === 'multiselect'}
+                />
+            );
+        }
+
+        // Default to text field for other types
         return (
             <Field
                 fieldKey={key}
                 isDisabled={userProfileFields[key].isDisabled}
                 fieldRef={setRef(key)}
-                label={userInfo.customAttributes[fieldID].name}
+                label={customAttribute.name}
                 maxLength={128}
                 testID={`edit_profile_form.${key}`}
                 {...fieldConfig}
@@ -264,6 +309,7 @@ const ProfileForm = ({
                 value={getValue(key)}
             />);
     };
+
     const renderAttribute = (key: string, notLast: boolean) => {
         if (key.startsWith(CUSTOM_ATTRS_PREFIX)) {
             return renderCustomAttribute(key, notLast);

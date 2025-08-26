@@ -2,11 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {defineMessages} from 'react-intl';
 
 import FormattedText from '@components/formatted_text';
 import {General} from '@constants';
 import {useTheme} from '@context/theme';
-import {t} from '@i18n';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -28,37 +28,53 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
+const messages = defineMessages({
+    setAway: {
+        id: 'status_dropdown.set_away',
+        defaultMessage: 'Away',
+    },
+    setDnd: {
+        id: 'status_dropdown.set_dnd',
+        defaultMessage: 'Do Not Disturb',
+    },
+    setOnline: {
+        id: 'status_dropdown.set_online',
+        defaultMessage: 'Online',
+    },
+    setOffline: {
+        id: 'status_dropdown.set_offline',
+        defaultMessage: 'Offline',
+    },
+    setOoo: {
+        id: 'status_dropdown.set_ooo',
+        defaultMessage: 'Out Of Office',
+    },
+});
 const StatusLabel = ({status = General.OFFLINE, labelStyle}: StatusLabelProps) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
-    let i18nId = t('status_dropdown.set_offline');
-    let defaultMessage = 'Offline';
+    let message = messages.setOffline;
 
     switch (status) {
         case General.AWAY:
-            i18nId = t('status_dropdown.set_away');
-            defaultMessage = 'Away';
+            message = messages.setAway;
             break;
         case General.DND:
-            i18nId = t('status_dropdown.set_dnd');
-            defaultMessage = 'Do Not Disturb';
+            message = messages.setDnd;
             break;
         case General.ONLINE:
-            i18nId = t('status_dropdown.set_online');
-            defaultMessage = 'Online';
+            message = messages.setOnline;
             break;
     }
 
     if (status === General.OUT_OF_OFFICE) {
-        i18nId = t('status_dropdown.set_ooo');
-        defaultMessage = 'Out Of Office';
+        message = messages.setOoo;
     }
 
     return (
         <FormattedText
-            id={i18nId}
-            defaultMessage={defaultMessage}
+            {...message}
             style={[style.label, labelStyle]}
             testID={`user_status.label.${status}`}
         />

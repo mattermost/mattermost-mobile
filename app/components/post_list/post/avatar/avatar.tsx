@@ -2,28 +2,29 @@
 // See LICENSE.txt for license information.
 
 import {Image} from 'expo-image';
-import React, {type ReactNode} from 'react';
+import React, {useCallback, type ReactNode} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, Platform, StyleSheet, TouchableOpacity, View} from 'react-native';
+import {Platform, StyleSheet, TouchableOpacity, View} from 'react-native';
 
 import {buildAbsoluteUrl} from '@actions/remote/file';
 import CompassIcon from '@components/compass_icon';
 import ProfilePicture from '@components/profile_picture';
-import {Screens, View as ViewConstant} from '@constants';
+import {View as ViewConstant} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {openAsBottomSheet} from '@screens/navigation';
-import {preventDoubleTap} from '@utils/tap';
+import {usePreventDoubleTap} from '@hooks/utils';
+import {openUserProfileModal} from '@screens/navigation';
 import {ensureString} from '@utils/types';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type AvatarProps = {
     author?: UserModel;
     enablePostIconOverride?: boolean;
     isAutoReponse: boolean;
-    location: string;
+    location: AvailableScreens;
     post: PostModel;
 }
 
@@ -87,25 +88,18 @@ const Avatar = ({author, enablePostIconOverride, isAutoReponse, location, post}:
         );
     }
 
-    const openUserProfile = preventDoubleTap(() => {
+    const openUserProfile = usePreventDoubleTap(useCallback(() => {
         if (!author) {
             return;
         }
-        const screen = Screens.USER_PROFILE;
-        const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
-        const closeButtonId = 'close-user-profile';
-        const props = {
-            closeButtonId,
+        openUserProfileModal(intl, theme, {
+            location,
             userId: author.id,
             channelId: post.channelId,
-            location,
             userIconOverride: propsIconUrl,
             usernameOverride: propsUsername,
-        };
-
-        Keyboard.dismiss();
-        openAsBottomSheet({screen, title, theme, closeButtonId, props});
-    });
+        });
+    }, [author, intl, location, post.channelId, propsIconUrl, propsUsername, theme]));
 
     let component = (
         <ProfilePicture

@@ -17,7 +17,7 @@ import FormattedText from '@components/formatted_text';
 import TeamIcon from '@components/team_sidebar/team_list/team_item/team_icon';
 import {useServerDisplayName} from '@context/server';
 import {useTheme} from '@context/theme';
-import {preventDoubleTap} from '@utils/tap';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -102,7 +102,7 @@ export default function SelectionTeamBar({
         onLayoutContainer(e);
     }, [onLayoutContainer]);
 
-    const handleOnShareLink = async () => {
+    const handleShareLink = usePreventDoubleTap(useCallback(async () => {
         const url = `${serverUrl}/signup_user_complete/?id=${teamInviteId}`;
         const title = formatMessage({id: 'invite_people_to_team.title', defaultMessage: 'Join the {team} team'}, {team: teamDisplayName});
         const message = formatMessage({id: 'invite_people_to_team.message', defaultMessage: 'Here’s a link to collaborate and communicate with us on Mattermost.'});
@@ -153,9 +153,7 @@ export default function SelectionTeamBar({
         ).catch(() => {
             // do nothing
         });
-    };
-
-    const handleShareLink = useCallback(preventDoubleTap(() => handleOnShareLink()), []);
+    }, [formatMessage, onClose, serverUrl, teamDisplayName, teamInviteId]));
 
     return (
         <View

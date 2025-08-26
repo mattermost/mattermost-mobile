@@ -44,6 +44,9 @@ describe('newConnection', () => {
             AllowEnableCalls: true,
             EnableAV1: true,
         })),
+        getVersion: jest.fn(() => ({
+            version: '1.7.0',
+        })),
         genTURNCredentials: jest.fn(() => Promise.resolve([{
             urls: ['turn:turn.example.com'],
             username: 'user',
@@ -582,6 +585,7 @@ describe('newConnection', () => {
                 }
             },
             send: jest.fn(),
+            sessionID: 'sessionID',
         }));
 
         connection = await newConnection(
@@ -597,7 +601,7 @@ describe('newConnection', () => {
 
         res = connection.waitForPeerConnection();
         jest.runAllTimers();
-        await expect(res).resolves.not.toThrow();
+        await expect(res).resolves.toBe('sessionID');
         jest.useRealTimers();
     });
 });

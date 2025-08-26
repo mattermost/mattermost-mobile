@@ -15,6 +15,8 @@ import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
+import {messages} from './messages';
+
 type Props = {
     pressableStyle: StyleProp<ViewStyle>;
     iconStyle: StyleProp<TextStyle>;
@@ -36,7 +38,7 @@ export const AudioDeviceButton = ({pressableStyle, iconStyle, buttonTextStyle, c
     const audioDeviceInfo = currentCall.audioDeviceInfo;
     const phoneLabel = intl.formatMessage({id: 'mobile.calls_phone', defaultMessage: 'Phone'});
     const tabletLabel = intl.formatMessage({id: 'mobile.calls_tablet', defaultMessage: 'Tablet'});
-    const speakerLabel = intl.formatMessage({id: 'mobile.calls_speaker', defaultMessage: 'SpeakerPhone'});
+    const speakerLabel = intl.formatMessage(messages.speaker);
     const bluetoothLabel = intl.formatMessage({id: 'mobile.calls_bluetooth', defaultMessage: 'Bluetooth'});
     const headsetLabel = intl.formatMessage({id: 'mobile.calls_headset', defaultMessage: 'Headset'});
 

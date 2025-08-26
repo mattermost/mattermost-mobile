@@ -4,7 +4,8 @@
 import {forwardRef, useImperativeHandle, type ReactNode, useCallback} from 'react';
 import {useIntl} from 'react-intl';
 
-import {alertDownloadDocumentDisabled} from '@utils/document';
+import {alertDownloadDocumentDisabled, alertOnlyPDFSupported} from '@utils/document';
+import {isPdf} from '@utils/file';
 
 export type DocumentRef = {
     handlePreviewPress: () => void;
@@ -12,12 +13,13 @@ export type DocumentRef = {
 
 type DocumentProps = {
     canDownloadFiles: boolean;
+    enableSecureFilePreview: boolean;
     file: FileInfo;
     children: ReactNode;
     downloadAndPreviewFile: (file: FileInfo) => void;
 }
 
-const Document = forwardRef<DocumentRef, DocumentProps>(({canDownloadFiles, children, downloadAndPreviewFile, file}: DocumentProps, ref) => {
+const Document = forwardRef<DocumentRef, DocumentProps>(({canDownloadFiles, children, downloadAndPreviewFile, enableSecureFilePreview, file}: DocumentProps, ref) => {
     const intl = useIntl();
 
     const handlePreviewPress = useCallback(async () => {
@@ -26,8 +28,13 @@ const Document = forwardRef<DocumentRef, DocumentProps>(({canDownloadFiles, chil
             return;
         }
 
+        if (enableSecureFilePreview && !isPdf(file)) {
+            alertOnlyPDFSupported(intl);
+            return;
+        }
+
         downloadAndPreviewFile(file);
-    }, [canDownloadFiles, downloadAndPreviewFile, intl, file]);
+    }, [canDownloadFiles, enableSecureFilePreview, downloadAndPreviewFile, file, intl]);
 
     useImperativeHandle(ref, () => ({
         handlePreviewPress,

@@ -5,7 +5,6 @@ PR_COVERAGE_THRESHOLD=80.0
 MAIN_COVERAGE_FILE="$1/coverage-summary.json"
 RECENT_COVERAGE_FILE="$2/coverage-summary.json"
 PR_NUMBER="$3"
-GITHUB_TOKEN="$4"
 
 if [ ! -f "$MAIN_COVERAGE_FILE" ] || [ ! -f "$RECENT_COVERAGE_FILE" ]; then
     echo "One or both coverage files not found"

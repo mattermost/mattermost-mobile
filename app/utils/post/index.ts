@@ -11,7 +11,7 @@ import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE} from '@i18n';
 import {getUserById} from '@queries/servers/user';
 import {toMilliseconds} from '@utils/datetime';
-import {ensureString} from '@utils/types';
+import {ensureString, includes} from '@utils/types';
 import {displayUsername, getUserIdFromChannelName} from '@utils/user';
 
 import type PostModel from '@typings/database/models/servers/post';
@@ -78,7 +78,7 @@ export function postUserDisplayName(post: PostModel, author?: UserModel, teammat
 }
 
 export function shouldIgnorePost(post: Post): boolean {
-    return Post.IGNORE_POST_TYPES.includes(post.type);
+    return includes(Post.IGNORE_POST_TYPES, post.type);
 }
 
 export const processPostsFetched = (data: PostResponse) => {
@@ -134,7 +134,7 @@ export async function persistentNotificationsConfirmation(serverUrl: string, val
         });
         description = intl.formatMessage({
             id: 'persistent_notifications.dm_channel.description',
-            defaultMessage: '@{username} will be notified every {interval, plural, one {minute} other {{interval} minutes}} until they’ve acknowledged or replied to the message.',
+            defaultMessage: '{username} will be notified every {interval, plural, one {minute} other {{interval} minutes}} until they’ve acknowledged or replied to the message.',
         }, {
             interval: persistentNotificationInterval,
             username: user?.username,
@@ -251,4 +251,25 @@ export async function sendMessageWithAlert({title, channelName, intl, sendMessag
         description,
         buttons,
     );
+}
+
+export function scheduledPostFromPost(post: Post, schedulingInfo: SchedulingInfo, postPriority?: PostPriority, postFiles?: FileInfo[]): ScheduledPost {
+    const fileIDs: string[] = [];
+    if (postFiles) {
+        postFiles.forEach((file) => {
+            if (file.id) {
+                fileIDs.push(file.id);
+            }
+        });
+    }
+
+    return {
+        ...post,
+        scheduled_at: schedulingInfo.scheduled_at,
+        priority: post.root_id ? undefined : postPriority,
+        metadata: {
+            files: postFiles,
+        },
+        file_ids: fileIDs,
+    };
 }

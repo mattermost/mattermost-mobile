@@ -24,6 +24,7 @@ import type {DocumentRef} from '@components/document';
 
 type FileProps = {
     canDownloadFiles: boolean;
+    enableSecureFilePreview: boolean;
     file: FileInfo;
     galleryIdentifier: string;
     index: number;
@@ -31,7 +32,6 @@ type FileProps = {
     isSingleImage?: boolean;
     nonVisibleImagesCount: number;
     onPress: (index: number) => void;
-    publicLinkEnabled: boolean;
     channelName?: string;
     onOptionsPress?: (fileInfo: FileInfo) => void;
     optionSelected?: boolean;
@@ -75,6 +75,7 @@ const File = ({
     asCard = false,
     canDownloadFiles,
     channelName,
+    enableSecureFilePreview,
     file,
     galleryIdentifier,
     inViewPort = false,
@@ -84,7 +85,6 @@ const File = ({
     onOptionsPress,
     onPress,
     optionSelected,
-    publicLinkEnabled,
     showDate = false,
     updateFileForGallery,
     wrapperWidth = 300,
@@ -148,7 +148,7 @@ const File = ({
     );
 
     let fileComponent;
-    if (isVideo(file) && publicLinkEnabled) {
+    if (isVideo(file)) {
         const renderVideoFile = (
             <TouchableWithoutFeedback
                 disabled={isPressDisabled}
@@ -207,6 +207,7 @@ const File = ({
                     ref={document}
                     canDownloadFiles={canDownloadFiles}
                     disabled={isPressDisabled}
+                    enableSecureFilePreview={enableSecureFilePreview}
                     file={file}
                 />
             </View>
@@ -240,6 +241,7 @@ const File = ({
                 <AudioFile
                     file={file}
                     canDownloadFiles={canDownloadFiles}
+                    enableSecureFilePreview={enableSecureFilePreview}
                 />
             </Animated.View>
         );

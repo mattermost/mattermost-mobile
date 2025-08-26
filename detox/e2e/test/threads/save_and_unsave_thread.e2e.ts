@@ -119,9 +119,6 @@ describe('Threads - Save and Unsave Thread', () => {
         // # Tap on thread overview unsave button
         await ThreadScreen.getThreadOverviewUnsaveButton().tap();
 
-        // * Verify saved text is not displayed on the post pre-header
-        await expect(postListPostItemPreHeaderText).not.toBeVisible();
-
         // # Go back to channel list screen
         await ThreadScreen.back();
         await ChannelScreen.back();

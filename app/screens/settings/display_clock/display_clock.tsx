@@ -36,8 +36,6 @@ const DisplayClock = ({componentId, currentUserId, hasMilitaryTimeFormat}: Displ
         setIsMilitaryTimeFormat(clockType === CLOCK_TYPE.MILITARY);
     }, []);
 
-    const close = () => popTopScreen(componentId);
-
     const saveClockDisplayPreference = useCallback(() => {
         if (hasMilitaryTimeFormat !== isMilitaryTimeFormat) {
             const timePreference: PreferenceType = {
@@ -50,8 +48,8 @@ const DisplayClock = ({componentId, currentUserId, hasMilitaryTimeFormat}: Displ
             savePreference(serverUrl, [timePreference]);
         }
 
-        close();
-    }, [hasMilitaryTimeFormat, isMilitaryTimeFormat, serverUrl]);
+        popTopScreen(componentId);
+    }, [componentId, currentUserId, hasMilitaryTimeFormat, isMilitaryTimeFormat, serverUrl]);
 
     useBackNavigation(saveClockDisplayPreference);
 

@@ -1,15 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo} from 'react';
+import React from 'react';
+import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
-import CompassIcon from '@components/compass_icon';
+import Button from '@components/button';
+import LoadingErrorSvg from '@components/illustrations/loading_error';
 import Loading from '@components/loading';
-import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useTheme} from '@context/theme';
-import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 type Props = {
@@ -26,19 +26,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         justifyContent: 'center',
         padding: 20,
     },
-    iconWrapper: {
-        height: 120,
-        width: 120,
-        backgroundColor: changeOpacity(theme.sidebarText, 0.08),
-        borderRadius: 60,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    icon: {
-        fontSize: 72,
-        lineHeight: 72,
-        color: changeOpacity(theme.sidebarText, 0.48),
-    },
     header: {
         color: theme.sidebarHeaderTextColor,
         marginTop: 20,
@@ -49,14 +36,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         textAlign: 'center',
         marginTop: 4,
     },
+    buttonContainer: {
+        marginTop: 24,
+    },
 }));
 
 const LoadingError = ({loading, message, onRetry, title}: Props) => {
     const theme = useTheme();
+    const intl = useIntl();
     const styles = getStyleSheet(theme);
-    const buttonStyle = useMemo(() => {
-        return [{marginTop: 24}, buttonBackgroundStyle(theme, 'lg', 'primary', 'inverted')];
-    }, [theme]);
 
     if (loading) {
         return (
@@ -69,25 +57,21 @@ const LoadingError = ({loading, message, onRetry, title}: Props) => {
 
     return (
         <View style={styles.container}>
-            <View style={styles.iconWrapper}>
-                <CompassIcon
-                    name='alert-circle-outline'
-                    style={styles.icon}
-                />
-            </View>
+            <LoadingErrorSvg/>
             <Text style={[typography('Heading', 400), styles.header]}>
                 {title}
             </Text>
             <Text style={[typography('Body', 200), styles.body]}>
                 {message}
             </Text>
-            <TouchableWithFeedback
-                style={buttonStyle}
-                onPress={onRetry}
-                type={'opacity'}
-            >
-                <Text style={buttonTextStyle(theme, 'lg', 'primary', 'inverted')}>{'Retry'}</Text>
-            </TouchableWithFeedback>
+            <View style={styles.buttonContainer}>
+                <Button
+                    text={intl.formatMessage({id: 'loading_error.retry', defaultMessage: 'Retry'})}
+                    onPress={onRetry}
+                    size='lg'
+                    theme={theme}
+                />
+            </View>
         </View>
     );
 };

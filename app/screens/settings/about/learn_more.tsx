@@ -2,12 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {defineMessages} from 'react-intl';
 import {Text, TouchableOpacity, View} from 'react-native';
 
 import Config from '@assets/config.json';
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
-import {t} from '@i18n';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -34,24 +34,32 @@ type LearnMoreProps = {
     onPress: () => void;
 };
 
+const messages = defineMessages({
+    teamEditionLearn: {
+        id: 'about.teamEditionLearn',
+        defaultMessage: 'Join the Mattermost community at',
+    },
+    enterpriseEditionLearn: {
+        id: 'about.enterpriseEditionLearn',
+        defaultMessage: 'Learn more about Enterprise Edition at ',
+    },
+});
+
 const LearnMore = ({config, onPress}: LearnMoreProps) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
-    let id = t('about.teamEditionLearn');
-    let defaultMessage = 'Join the Mattermost community at ';
+    let message = messages.teamEditionLearn;
     const url = Config.WebsiteURL;
 
     if (config.BuildEnterpriseReady === 'true') {
-        id = t('about.enterpriseEditionLearn');
-        defaultMessage = 'Learn more about Enterprise Edition at ';
+        message = messages.enterpriseEditionLearn;
     }
 
     return (
         <View style={style.learnContainer}>
             <FormattedText
-                id={id}
-                defaultMessage={defaultMessage}
+                {...message}
                 style={style.learn}
                 testID='about.learn_more.text'
             />

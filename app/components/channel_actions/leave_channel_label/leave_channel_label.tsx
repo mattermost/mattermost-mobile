@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessages, useIntl} from 'react-intl';
 import {Alert} from 'react-native';
 
 import {leaveChannel} from '@actions/remote/channel';
@@ -23,6 +23,49 @@ type Props = {
     testID?: string;
 }
 
+const messages = defineMessages({
+    closeDirectMessage: {
+        id: 'channel_info.close_dm',
+        defaultMessage: 'Close direct message',
+    },
+    closeGroupMessage: {
+        id: 'channel_info.close_gm',
+        defaultMessage: 'Close group message',
+    },
+    closeDirectMessageChannel: {
+        id: 'channel_info.close_dm_channel',
+        defaultMessage: 'Are you sure you want to close this direct message? This will remove it from your home screen, but you can always open it again.',
+    },
+    closeGroupMessageChannel: {
+        id: 'channel_info.close_gm_channel',
+        defaultMessage: 'Are you sure you want to close this group message? This will remove it from your home screen, but you can always open it again.',
+    },
+    leaveChannel: {
+        id: 'channel_info.leave_channel',
+        defaultMessage: 'Leave channel',
+    },
+    leavePrivateChannel: {
+        id: 'channel_info.leave_private_channel',
+        defaultMessage: "Are you sure you want to leave the private channel {displayName}? You cannot rejoin the channel unless you're invited again.",
+    },
+    leavePublicChannel: {
+        id: 'channel_info.leave_public_channel',
+        defaultMessage: 'Are you sure you want to leave the public channel {displayName}? You can always rejoin.',
+    },
+    cancel: {
+        id: 'mobile.post.cancel',
+        defaultMessage: 'Cancel',
+    },
+    close: {
+        id: 'channel_info.close',
+        defaultMessage: 'Close',
+    },
+    leave: {
+        id: 'channel_info.leave',
+        defaultMessage: 'Leave',
+    },
+});
+
 const LeaveChannelLabel = ({canLeave, channelId, displayName, isOptionItem, type, testID}: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
@@ -37,16 +80,13 @@ const LeaveChannelLabel = ({canLeave, channelId, displayName, isOptionItem, type
 
     const closeDirectMessage = () => {
         Alert.alert(
-            intl.formatMessage({id: 'channel_info.close_dm', defaultMessage: 'Close direct message'}),
-            intl.formatMessage({
-                id: 'channel_info.close_dm_channel',
-                defaultMessage: 'Are you sure you want to close this direct message? This will remove it from your home screen, but you can always open it again.',
-            }),
+            intl.formatMessage(messages.closeDirectMessage),
+            intl.formatMessage(messages.closeDirectMessageChannel),
             [{
-                text: intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'}),
+                text: intl.formatMessage(messages.cancel),
                 style: 'cancel',
             }, {
-                text: intl.formatMessage({id: 'channel_info.close', defaultMessage: 'Close'}),
+                text: intl.formatMessage(messages.close),
                 style: 'destructive',
                 onPress: () => {
                     setDirectChannelVisible(serverUrl, channelId, false);
@@ -58,16 +98,13 @@ const LeaveChannelLabel = ({canLeave, channelId, displayName, isOptionItem, type
 
     const closeGroupMessage = () => {
         Alert.alert(
-            intl.formatMessage({id: 'channel_info.close_gm', defaultMessage: 'Close group message'}),
-            intl.formatMessage({
-                id: 'channel_info.close_gm_channel',
-                defaultMessage: 'Are you sure you want to close this group message? This will remove it from your home screen, but you can always open it again.',
-            }),
+            intl.formatMessage(messages.closeGroupMessage),
+            intl.formatMessage(messages.closeGroupMessageChannel),
             [{
-                text: intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'}),
+                text: intl.formatMessage(messages.cancel),
                 style: 'cancel',
             }, {
-                text: intl.formatMessage({id: 'channel_info.close', defaultMessage: 'Close'}),
+                text: intl.formatMessage(messages.close),
                 style: 'destructive',
                 onPress: () => {
                     setDirectChannelVisible(serverUrl, channelId, false);
@@ -79,16 +116,13 @@ const LeaveChannelLabel = ({canLeave, channelId, displayName, isOptionItem, type
 
     const leavePublicChannel = () => {
         Alert.alert(
-            intl.formatMessage({id: 'channel_info.leave_channel', defaultMessage: 'Leave Channel'}),
-            intl.formatMessage({
-                id: 'channel_info.leave_public_channel',
-                defaultMessage: 'Are you sure you want to leave the public channel {displayName}? You can always rejoin.',
-            }, {displayName}),
+            intl.formatMessage(messages.leaveChannel),
+            intl.formatMessage(messages.leavePublicChannel, {displayName}),
             [{
-                text: intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'}),
+                text: intl.formatMessage(messages.cancel),
                 style: 'cancel',
             }, {
-                text: intl.formatMessage({id: 'channel_info.leave', defaultMessage: 'Leave'}),
+                text: intl.formatMessage(messages.leave),
                 style: 'destructive',
                 onPress: () => {
                     leaveChannel(serverUrl, channelId);
@@ -100,16 +134,13 @@ const LeaveChannelLabel = ({canLeave, channelId, displayName, isOptionItem, type
 
     const leavePrivateChannel = () => {
         Alert.alert(
-            intl.formatMessage({id: 'channel_info.leave_channel', defaultMessage: 'Leave Channel'}),
-            intl.formatMessage({
-                id: 'channel_info.leave_private_channel',
-                defaultMessage: "Are you sure you want to leave the private channel {displayName}? You cannot rejoin the channel unless you're invited again.",
-            }, {displayName}),
+            intl.formatMessage(messages.leaveChannel),
+            intl.formatMessage(messages.leavePrivateChannel, {displayName}),
             [{
-                text: intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'}),
+                text: intl.formatMessage(messages.cancel),
                 style: 'cancel',
             }, {
-                text: intl.formatMessage({id: 'channel_info.leave', defaultMessage: 'Leave'}),
+                text: intl.formatMessage(messages.leave),
                 style: 'destructive',
                 onPress: () => {
                     leaveChannel(serverUrl, channelId);
@@ -144,15 +175,15 @@ const LeaveChannelLabel = ({canLeave, channelId, displayName, isOptionItem, type
     let icon;
     switch (type) {
         case General.DM_CHANNEL:
-            leaveText = intl.formatMessage({id: 'channel_info.close_dm', defaultMessage: 'Close direct message'});
+            leaveText = intl.formatMessage(messages.closeDirectMessage);
             icon = 'close';
             break;
         case General.GM_CHANNEL:
-            leaveText = intl.formatMessage({id: 'channel_info.close_gm', defaultMessage: 'Close group message'});
+            leaveText = intl.formatMessage(messages.closeGroupMessage);
             icon = 'close';
             break;
         default:
-            leaveText = intl.formatMessage({id: 'channel_info.leave_channel', defaultMessage: 'Leave channel'});
+            leaveText = intl.formatMessage(messages.leaveChannel);
             icon = 'exit-to-app';
             break;
     }

@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import BottomSheetM, {BottomSheetBackdrop, BottomSheetView, type BottomSheetBackdropProps} from '@gorhom/bottom-sheet';
+import BottomSheetM, {BottomSheetBackdrop, BottomSheetScrollView, BottomSheetView, type BottomSheetBackdropProps} from '@gorhom/bottom-sheet';
 import React, {type ReactNode, useCallback, useEffect, useMemo, useRef} from 'react';
-import {DeviceEventEmitter, type Handle, InteractionManager, Keyboard, type StyleProp, View, type ViewStyle} from 'react-native';
-import {ReduceMotion, type WithSpringConfig} from 'react-native-reanimated';
+import {DeviceEventEmitter, type Handle, InteractionManager, Keyboard, ScrollView, type StyleProp, View, type ViewStyle} from 'react-native';
+import {ReduceMotion, useReducedMotion, type WithSpringConfig} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {Events} from '@constants';
@@ -34,7 +34,9 @@ type Props = {
     footerComponent?: React.FC<unknown>;
     renderContent: () => ReactNode;
     snapPoints?: Array<string | number>;
+    enableDynamicSizing?: boolean;
     testID?: string;
+    scrollable?: boolean;
 }
 
 const PADDING_TOP_MOBILE = 20;
@@ -85,7 +87,6 @@ export const animatedConfig: Omit<WithSpringConfig, 'velocity'> = {
     overshootClamping: true,
     restSpeedThreshold: 0.3,
     restDisplacementThreshold: 0.3,
-    reduceMotion: ReduceMotion.Never,
 };
 
 const BottomSheet = ({
@@ -97,7 +98,10 @@ const BottomSheet = ({
     renderContent,
     snapPoints = [1, '50%', '80%'],
     testID,
+    enableDynamicSizing = false,
+    scrollable = false,
 }: Props) => {
+    const reducedMotion = useReducedMotion();
     const sheetRef = useRef<BottomSheetM>(null);
     const isTablet = useIsTablet();
     const insets = useSafeAreaInsets();
@@ -105,6 +109,11 @@ const BottomSheet = ({
     const styles = getStyleSheet(theme);
     const interaction = useRef<Handle>();
     const timeoutRef = useRef<NodeJS.Timeout>();
+
+    const animationConfigs = useMemo(() => ({
+        ...animatedConfig,
+        reduceMotion: reducedMotion ? ReduceMotion.Always : ReduceMotion.Never,
+    }), [reducedMotion]);
 
     useEffect(() => {
         interaction.current = InteractionManager.createInteractionHandle();
@@ -143,7 +152,7 @@ const BottomSheet = ({
         } else {
             close();
         }
-    }, []);
+    }, [close]);
 
     const handleChange = useCallback((index: number) => {
         timeoutRef.current = setTimeout(() => {
@@ -156,7 +165,7 @@ const BottomSheet = ({
         if (index <= 0) {
             close();
         }
-    }, []);
+    }, [close]);
 
     useAndroidHardwareBackHandler(componentId, handleClose);
     useNavButtonPressed(closeButtonId || '', componentId, close, [close]);
@@ -210,6 +219,25 @@ const BottomSheet = ({
         );
     }
 
+    let content;
+    if (scrollable) {
+        const Scroll = isTablet ? ScrollView : BottomSheetScrollView;
+        content = (
+            <Scroll
+                style={styles.view}
+                showsVerticalScrollIndicator={false}
+            >
+                {renderContainerContent()}
+            </Scroll>
+        );
+    } else {
+        content = (
+            <BottomSheetView style={styles.view}>
+                {renderContainerContent()}
+            </BottomSheetView>
+        );
+    }
+
     return (
         <BottomSheetM
             ref={sheetRef}
@@ -219,7 +247,7 @@ const BottomSheet = ({
             backdropComponent={renderBackdrop}
             onAnimate={handleAnimationStart}
             onChange={handleChange}
-            animationConfigs={animatedConfig}
+            animationConfigs={animationConfigs}
             handleComponent={Indicator}
             style={styles.bottomSheet}
             backgroundStyle={bottomSheetBackgroundStyle}
@@ -228,11 +256,9 @@ const BottomSheet = ({
             keyboardBlurBehavior='restore'
             onClose={close}
             bottomInset={insets.bottom}
-            enableDynamicSizing={false}
+            enableDynamicSizing={enableDynamicSizing}
         >
-            <BottomSheetView style={styles.view}>
-                {renderContainerContent()}
-            </BottomSheetView>
+            {content}
         </BottomSheetM>
     );
 };

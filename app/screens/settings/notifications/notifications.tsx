@@ -10,7 +10,6 @@ import SettingItem from '@components/settings/item';
 import {General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import {t} from '@i18n';
 import {popTopScreen} from '@screens/navigation';
 import {gotoSettingsScreen} from '@screens/settings/config';
 import {getEmailInterval, getEmailIntervalTexts, getNotificationProps} from '@utils/user';
@@ -75,9 +74,8 @@ const Notifications = ({
     const goToNotificationSettingsMentions = useCallback(() => {
         const screen = Screens.SETTINGS_NOTIFICATION_MENTION;
 
-        const id = isCRTEnabled ? t('notification_settings.mentions') : t('notification_settings.mentions_replies');
-        const defaultMessage = isCRTEnabled ? 'Mentions' : 'Mentions and Replies';
-        const title = intl.formatMessage({id, defaultMessage});
+        const message = isCRTEnabled ? mentionTexts.crtOn : mentionTexts.crtOff;
+        const title = intl.formatMessage(message);
         gotoSettingsScreen(screen, title);
     }, [intl, isCRTEnabled]);
 

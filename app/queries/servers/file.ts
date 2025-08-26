@@ -35,3 +35,18 @@ export const queryFilesForPost = (database: Database, postId: string) => {
 export const observeFilesForPost = (database: Database, postId: string) => {
     return queryFilesForPost(database, postId).observe();
 };
+
+export const getFilesByIds = async (database: Database, fileIds: string[]) => {
+    if (!fileIds.length) {
+        return [];
+    }
+
+    try {
+        const records = await database.get<FileModel>(FILE).query(
+            Q.where('id', Q.oneOf(fileIds)),
+        ).fetch();
+        return records;
+    } catch {
+        return [];
+    }
+};

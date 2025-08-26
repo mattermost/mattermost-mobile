@@ -25,7 +25,7 @@ import {
     ServerListScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, timeouts} from '@support/utils';
+import {isAndroid, isIos, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Smoke Test - Server Login', () => {
@@ -69,7 +69,7 @@ describe('Smoke Test - Server Login', () => {
         await User.apiAdminLogin(siteTwoUrl);
         const {user} = await Setup.apiInit(siteTwoUrl);
         await ServerListScreen.addServerButton.tap();
-        await expect(ServerScreen.headerTitleAddServer).toBeVisible();
+        await expect(ServerScreen.headerTitleAddServer).toBeVisible(35);
         await ServerScreen.connectToServer(serverTwoUrl, serverTwoDisplayName);
         await LoginScreen.login(user);
 
@@ -102,6 +102,7 @@ describe('Smoke Test - Server Login', () => {
 
         // # Tap on logout button
         await Alert.logoutButton.tap();
+        await wait(timeouts.FOUR_SEC);
 
         // * Verify second server is logged out
         await ServerListScreen.getServerItemInactive(serverTwoDisplayName).swipe('left');

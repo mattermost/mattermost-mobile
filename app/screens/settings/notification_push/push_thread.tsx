@@ -2,17 +2,16 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessage, useIntl} from 'react-intl';
 
 import SettingBlock from '@components/settings/block';
 import SettingOption from '@components/settings/option';
 import SettingSeparator from '@components/settings/separator';
-import {t} from '@i18n';
 
-const headerText = {
-    id: t('notification_settings.push_threads.replies'),
+const headerText = defineMessage({
+    id: 'notification_settings.push_threads.replies',
     defaultMessage: 'Thread replies',
-};
+});
 
 type MobilePushThreadProps = {
     onMobilePushThreadChanged: (status: string) => void;

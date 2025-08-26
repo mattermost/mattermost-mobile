@@ -2,18 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React, {type Dispatch, type RefObject, type SetStateAction, useCallback} from 'react';
-import {StyleSheet} from 'react-native';
 
 import OptionItem from '@components/option_item';
-import {preventDoubleTap} from '@utils/tap';
+import {usePreventDoubleTap} from '@hooks/utils';
 
 import type {SearchRef} from '@components/search';
-
-const styles = StyleSheet.create({
-    container: {
-        marginLeft: 20,
-    },
-});
 
 export type ModifierItem = {
     cursorPosition?: number;
@@ -30,17 +23,16 @@ type Props = {
 }
 
 const Modifier = ({item, searchRef, searchValue, setSearchValue}: Props) => {
-    const handlePress = useCallback(() => {
-        addModifierTerm(item.term);
-    }, [item.term, searchValue]);
-
-    const setNativeCursorPositionProp = (position: number) => {
+    const setNativeCursorPositionProp = useCallback((position: number) => {
         setTimeout(() => {
             searchRef.current?.setCaretPosition({start: position, end: position});
         }, 50);
-    };
 
-    const addModifierTerm = preventDoubleTap((modifierTerm) => {
+        // searchRef is a ref object, so its reference should not change between renders.
+        // We add it to the dependencies to satisfy the linter.
+    }, [searchRef]);
+
+    const addModifierTerm = usePreventDoubleTap(useCallback((modifierTerm: string) => {
         let newValue = '';
         if (!searchValue) {
             newValue = modifierTerm;
@@ -55,7 +47,11 @@ const Modifier = ({item, searchRef, searchValue, setSearchValue}: Props) => {
             const position = newValue.length + item.cursorPosition;
             setNativeCursorPositionProp(position);
         }
-    });
+    }, [item.cursorPosition, searchValue, setNativeCursorPositionProp, setSearchValue]));
+
+    const handlePress = useCallback(() => {
+        addModifierTerm(item.term);
+    }, [addModifierTerm, item.term]);
 
     return (
         <OptionItem
@@ -66,7 +62,6 @@ const Modifier = ({item, searchRef, searchValue, setSearchValue}: Props) => {
             testID={item.testID}
             description={' ' + item.description}
             type='default'
-            containerStyle={styles.container}
         />
     );
 };

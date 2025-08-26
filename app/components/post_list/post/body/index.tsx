@@ -9,6 +9,8 @@ import FormattedText from '@components/formatted_text';
 import JumboEmoji from '@components/jumbo_emoji';
 import {Screens} from '@constants';
 import {THREAD} from '@constants/screens';
+import StatusUpdatePost from '@playbooks/components/status_update_post';
+import {PLAYBOOKS_UPDATE_STATUS_POST_TYPE} from '@playbooks/constants/plugin';
 import {isEdited as postEdited, isPostFailed} from '@utils/post';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -21,6 +23,7 @@ import Reactions from './reactions';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type {SearchPattern} from '@typings/global/markdown';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type BodyProps = {
     appsEnabled: boolean;
@@ -36,7 +39,7 @@ type BodyProps = {
     isPendingOrFailed: boolean;
     isPostAcknowledgementEnabled?: boolean;
     isPostAddChannelMember: boolean;
-    location: string;
+    location: AvailableScreens;
     post: PostModel;
     searchPatterns?: SearchPattern[];
     showAddReaction?: boolean;
@@ -138,6 +141,14 @@ const Body = ({
                 defaultMessage='(message deleted)'
             />
         );
+    } else if (post.type === PLAYBOOKS_UPDATE_STATUS_POST_TYPE && post.props != null) {
+        message = (
+            <StatusUpdatePost
+                location={location}
+                post={post}
+                theme={theme}
+            />
+        );
     } else if (isPostAddChannelMember) {
         message = (
             <AddMembers
@@ -154,7 +165,7 @@ const Body = ({
                 value={post.message}
             />
         );
-    } else if (post.message.length) {
+    } else if (post.message.length || isEdited) { // isEdited is added to handle the case where the post is edited and the message is empty
         message = (
             <Message
                 highlight={highlight}

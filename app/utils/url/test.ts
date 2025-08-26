@@ -135,7 +135,7 @@ describe('UrlUtils', () => {
         const SERVER_WITH_SUBPATH = `http://${URL_PATH_NO_PROTOCOL}`;
         const DEEPLINK_URL_ROOT = `mattermost://${URL_NO_PROTOCOL}`;
 
-        const DM_USER = TestHelper.fakeUserWithId();
+        const DM_USER = TestHelper.fakeUser();
         const GM_CHANNEL_NAME = '4862db64e76a321d167fe6677f16e96e9275dabe';
 
         const tests = [

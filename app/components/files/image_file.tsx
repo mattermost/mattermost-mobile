@@ -90,7 +90,7 @@ const ImageFile = ({
         setFailed(true);
     }, []);
 
-    const imageProps = () => {
+    const imageProps = useMemo(() => {
         const props: ProgressiveImageProps = {};
 
         if (file.localPath) {
@@ -111,7 +111,7 @@ const ImageFile = ({
         }
 
         return props;
-    };
+    }, [file, inViewPort, serverUrl]);
 
     let imageDimensions = getImageDimensions();
     if (isSingleImage && (!imageDimensions || (imageDimensions?.height === 0 && imageDimensions?.width === 0))) {
@@ -126,7 +126,7 @@ const ImageFile = ({
             tintDefaultSource={!file.localPath && !failed}
             onError={handleError}
             contentFit={contentFit}
-            {...imageProps()}
+            {...imageProps}
         />
     );
 
