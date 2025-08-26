@@ -13,11 +13,14 @@ import UserAvatarsStack from '@components/user_avatars_stack';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {setOwner} from '@playbooks/actions/remote/runs';
 import {getRunScheduledTimestamp, isRunFinished} from '@playbooks/utils/run';
 import {openUserProfileModal, popTopScreen} from '@screens/navigation';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
+
+import {goToSelectUser} from '../navigation';
 
 import ChecklistList from './checklist_list';
 import ErrorState from './error_state';
@@ -157,6 +160,9 @@ export default function PlaybookRun({
 
     const isParticipant = participants.some((p) => p.id === currentUserId) || owner?.id === currentUserId;
 
+    const isFinished = isRunFinished(playbookRun);
+    const readOnly = isFinished || !isParticipant;
+
     const containerStyle = useMemo(() => {
         return [
             styles.container,
@@ -176,11 +182,30 @@ export default function PlaybookRun({
         });
     }, [owner, intl, theme, channelId, componentId]);
 
+    const handleSelectOwner = useCallback((selected: UserProfile) => {
+        if (!playbookRun) {
+            return;
+        }
+
+        setOwner(serverUrl, playbookRun.id, selected.id);
+    }, [playbookRun, serverUrl]);
+
+    const openChangeOwnerModal = useCallback(() => {
+        if (!owner) {
+            return;
+        }
+
+        goToSelectUser(
+            intl.formatMessage(messages.owner),
+            [...participants.map((p) => p.id), owner?.id || ''],
+            owner?.id,
+            handleSelectOwner,
+        );
+    }, [handleSelectOwner, intl, owner, participants]);
+
     if (!playbookRun) {
         return <ErrorState/>;
     }
-
-    const isFinished = isRunFinished(playbookRun);
 
     return (
         <>
@@ -224,8 +249,9 @@ export default function PlaybookRun({
                                         <View style={styles.ownerRow}>
                                             <UserChip
                                                 user={owner}
-                                                onPress={openOwnerProfile}
+                                                onPress={readOnly ? openOwnerProfile : openChangeOwnerModal}
                                                 teammateNameDisplay={teammateNameDisplay}
+                                                actionIcon='downArrow'
                                             />
                                         </View>
                                     </View>

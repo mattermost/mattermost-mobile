@@ -65,6 +65,9 @@ describe('ChecklistItemBottomSheet', () => {
 
     function getBaseProps(): ComponentProps<typeof ChecklistItemBottomSheet> {
         return {
+            runId: 'run-id-1',
+            checklistNumber: 0,
+            itemNumber: 0,
             item: mockItem,
             assignee: mockAssignee,
             onCheck: mockOnCheck,
@@ -72,6 +75,7 @@ describe('ChecklistItemBottomSheet', () => {
             onRunCommand: mockOnRunCommand,
             teammateNameDisplay: mockTeammateNameDisplay,
             isDisabled: false,
+            participantIds: ['user-1', 'user-2'],
         };
     }
 

@@ -54,6 +54,7 @@ export const PERMALINK = 'Permalink';
 export const PINNED_MESSAGES = 'PinnedMessages';
 export const PLAYBOOKS_RUNS = 'PlaybookRuns';
 export const PLAYBOOK_RUN = 'PlaybookRun';
+export const PLAYBOOK_SELECT_USER = 'PlaybookSelectUser';
 export const POST_OPTIONS = 'PostOptions';
 export const POST_PRIORITY_PICKER = 'PostPriorityPicker';
 export const REACTIONS = 'Reactions';
@@ -143,6 +144,7 @@ export default {
     PINNED_MESSAGES,
     PLAYBOOKS_RUNS,
     PLAYBOOK_RUN,
+    PLAYBOOK_SELECT_USER,
     POST_OPTIONS,
     POST_PRIORITY_PICKER,
     REACTIONS,

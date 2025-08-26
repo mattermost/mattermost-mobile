@@ -8,13 +8,16 @@ import {View, Text} from 'react-native';
 import MenuDivider from '@components/menu_divider';
 import OptionBox from '@components/option_box';
 import OptionItem, {ITEM_HEIGHT} from '@components/option_item';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {setAssignee} from '@playbooks/actions/remote/checklist';
+import {goToSelectUser} from '@playbooks/screens/navigation';
 import {dismissBottomSheet, openUserProfileModal} from '@screens/navigation';
 import {toMilliseconds} from '@utils/datetime';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import Checkbox from './checkbox';
+import Checkbox from '../checkbox';
 
 import type PlaybookChecklistItemModel from '@playbooks/types/database/models/playbook_checklist_item';
 import type UserModel from '@typings/database/models/servers/user';
@@ -112,6 +115,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
 }));
 
 type Props = {
+    runId: string;
+    checklistNumber: number;
+    itemNumber: number;
     item: PlaybookChecklistItemModel | PlaybookChecklistItem;
     assignee?: UserModel;
     onCheck: () => void;
@@ -119,6 +125,7 @@ type Props = {
     onRunCommand: () => void;
     teammateNameDisplay: string;
     isDisabled: boolean;
+    participantIds: string[];
 };
 
 function getDueDateInfo(intl: IntlShape, dueDate: number | undefined) {
@@ -135,6 +142,9 @@ function getDueDateInfo(intl: IntlShape, dueDate: number | undefined) {
 }
 
 const ChecklistItemBottomSheet = ({
+    runId,
+    checklistNumber,
+    itemNumber,
     item,
     assignee,
     onCheck,
@@ -142,10 +152,12 @@ const ChecklistItemBottomSheet = ({
     onRunCommand,
     teammateNameDisplay,
     isDisabled,
+    participantIds,
 }: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const intl = useIntl();
+    const serverUrl = useServerUrl();
 
     const dueDate = 'dueDate' in item ? item.dueDate : item.due_date;
     const isChecked = item.state === 'closed';
@@ -217,14 +229,33 @@ const ChecklistItemBottomSheet = ({
         };
     }, [assignee, intl, onUserChipPress, teammateNameDisplay]);
 
+    const handleSelect = useCallback((selected: UserProfile) => {
+        setAssignee(serverUrl, runId, item.id, checklistNumber, itemNumber, selected.id);
+    }, [checklistNumber, item.id, itemNumber, runId, serverUrl]);
+
+    const handleRemove = useCallback(() => {
+        setAssignee(serverUrl, runId, item.id, checklistNumber, itemNumber, '');
+    }, [checklistNumber, item.id, itemNumber, runId, serverUrl]);
+
+    const openUserSelector = useCallback(() => {
+        goToSelectUser(
+            intl.formatMessage(messages.assignee),
+            participantIds,
+            assignee?.id,
+            handleSelect,
+            handleRemove,
+        );
+    }, [assignee?.id, handleSelect, intl, participantIds]);
+
     const renderTaskDetails = () => (
         <View style={styles.taskDetailsContainer}>
             <OptionItem
-                type='none'
+                type={isDisabled ? 'none' : 'arrow'}
                 icon='account-multiple-plus-outline'
                 label={intl.formatMessage(messages.assignee)}
                 info={assigneeInfo}
                 testID='checklist_item.assignee'
+                action={isDisabled ? undefined : openUserSelector}
             />
             <OptionItem
                 type='none'

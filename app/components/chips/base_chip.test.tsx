@@ -34,11 +34,24 @@ describe('BaseChip', () => {
                 onPress={onPressMock}
                 label='Test Label'
                 testID='base_chip'
-                showRemoveOption={true}
+                actionIcon='remove'
             />,
         );
 
         expect(getByTestId('base_chip.remove.button')).toBeTruthy();
+    });
+
+    it('should render with the chevron down button when showRemoveOption is true', () => {
+        const {getByTestId} = renderWithIntlAndTheme(
+            <BaseChip
+                onPress={onPressMock}
+                label='Test Label'
+                testID='base_chip'
+                actionIcon='downArrow'
+            />,
+        );
+
+        expect(getByTestId('base_chip.downArrow.button')).toBeTruthy();
     });
 
     it('should not render the X button when showRemoveOption is false', () => {
@@ -47,7 +60,7 @@ describe('BaseChip', () => {
                 onPress={onPressMock}
                 label='Test Label'
                 testID='base_chip'
-                showRemoveOption={false}
+                actionIcon={undefined}
             />,
         );
 
@@ -60,7 +73,7 @@ describe('BaseChip', () => {
                 onPress={onPressMock}
                 label='Test Label'
                 testID='base_chip'
-                showRemoveOption={true}
+                actionIcon='remove'
             />,
         );
 
@@ -74,7 +87,7 @@ describe('BaseChip', () => {
                 onPress={onPressMock}
                 label='Test Label'
                 testID='base_chip'
-                showRemoveOption={false}
+                actionIcon={undefined}
             />,
         );
 

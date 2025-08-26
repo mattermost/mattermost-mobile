@@ -3,29 +3,31 @@
 
 import React from 'react';
 
-import UserChip from './user_chip';
+import SelectedUserChip from '@components/chips/selected_user_chip';
 
 import type UserModel from '@typings/database/models/servers/user';
 
 type SelectedChipProps = {
-    user: UserModel | UserProfile;
+    user?: UserModel | UserProfile;
     onPress: (id: string) => void;
     testID?: string;
     teammateNameDisplay: string;
 }
 
-export default function SelectedUserChip({
+export default function SelectedUserChipById({
     testID,
     user,
     teammateNameDisplay,
     onPress,
 }: SelectedChipProps) {
+    if (!user) {
+        return null;
+    }
+
     return (
-        <UserChip
+        <SelectedUserChip
             testID={testID}
             onPress={onPress}
-            actionIcon='remove'
-            showAnimation={true}
             teammateNameDisplay={teammateNameDisplay}
             user={user}
         />

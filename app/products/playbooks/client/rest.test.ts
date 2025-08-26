@@ -78,10 +78,9 @@ describe('setChecklistItemState', () => {
 
         jest.mocked(client.doFetch).mockResolvedValue(mockResponse);
 
-        const result = await client.setChecklistItemState(playbookRunID, checklistNum, itemNum, newState);
+        await client.setChecklistItemState(playbookRunID, checklistNum, itemNum, newState);
 
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
-        expect(result).toEqual(mockResponse);
     });
 
     test('should handle error when setting checklist item state', async () => {
@@ -89,13 +88,10 @@ describe('setChecklistItemState', () => {
         const checklistNum = 1;
         const itemNum = 2;
         const newState = 'in_progress' as ChecklistItemState;
-        const expectedError = {error: new Error('Network error')};
 
         jest.mocked(client.doFetch).mockRejectedValue(new Error('Network error'));
 
-        const result = await client.setChecklistItemState(playbookRunID, checklistNum, itemNum, newState);
-
-        expect(result).toEqual(expectedError);
+        await expect(client.setChecklistItemState(playbookRunID, checklistNum, itemNum, newState)).rejects.toThrow('Network error');
     });
 
     test('should set checklist item state with empty state', async () => {
@@ -109,10 +105,9 @@ describe('setChecklistItemState', () => {
 
         jest.mocked(client.doFetch).mockResolvedValue(mockResponse);
 
-        const result = await client.setChecklistItemState(playbookRunID, checklistNum, itemNum, newState);
+        await client.setChecklistItemState(playbookRunID, checklistNum, itemNum, newState);
 
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
-        expect(result).toEqual(mockResponse);
     });
 
     test('should set checklist item state with skipped state', async () => {
@@ -126,10 +121,9 @@ describe('setChecklistItemState', () => {
 
         jest.mocked(client.doFetch).mockResolvedValue(mockResponse);
 
-        const result = await client.setChecklistItemState(playbookRunID, checklistNum, itemNum, newState);
+        await client.setChecklistItemState(playbookRunID, checklistNum, itemNum, newState);
 
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
-        expect(result).toEqual(mockResponse);
     });
 });
 
