@@ -58,8 +58,18 @@ class ChannelScreen {
         clickOnScheduledMessageButton: 'scheduled_post_create_button',
         scheduledDraftInfoInChannel: 'scheduled_post_header.scheduled_post_indicator',
         scheduledDraftTooltipText: 'scheduled_post.tooltip.description',
+        permalinkPreviewContainer: 'permalink-preview-container',
+        permalinkPreviewAuthorName: 'permalink_preview.author_name',
+        permalinkPreviewChannelName: 'permalink_preview.channel_name',
+        permalinkPreviewMessageText: 'permalink_preview.message_text',
+        permalinkPreviewEditedIndicatorText: 'permalink_preview.edited_indicator.text',
     };
 
+    permalinkPreviewEditedIndicatorText = element(by.id(this.testID.permalinkPreviewEditedIndicatorText));
+    permalinkPreviewContainer = element(by.id(this.testID.permalinkPreviewContainer));
+    permalinkPreviewAuthorName = element(by.id(this.testID.permalinkPreviewContainer).withDescendant(by.id(this.testID.permalinkPreviewAuthorName)));
+    permalinkPreviewChannelName = element(by.id(this.testID.permalinkPreviewContainer).withDescendant(by.id(this.testID.permalinkPreviewChannelName)));
+    permalinkPreviewMessageText = element(by.id(this.testID.permalinkPreviewContainer).withDescendant(by.id(this.testID.permalinkPreviewMessageText)));
     scheduleDraftInforMessage = element(by.text('Type a message and long press the send button to schedule it for a later time.'));
     scheduledDraftTooltipText = element(by.id(this.testID.scheduledDraftTooltipText));
     scheduledDraftInfoInChannel = element(by.id(this.testID.scheduledDraftInfoInChannel));
@@ -310,6 +320,13 @@ class ChannelScreen {
             await wait(timeouts.TEN_SEC);
             await this.scheduleDraftInforMessage.tap();
         }
+    };
+
+    verifyPermalinkPreview = async () => {
+        await waitFor(this.permalinkPreviewContainer).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+        await expect(this.permalinkPreviewAuthorName).toBeVisible();
+        await expect(this.permalinkPreviewMessageText).toBeVisible();
+        await expect(this.permalinkPreviewChannelName).toBeVisible();
     };
 }
 
