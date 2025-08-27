@@ -6,14 +6,17 @@ import {Text, View, Pressable} from 'react-native';
 
 import EditedIndicator from '@components/EditedIndicator';
 import FormattedTime from '@components/formatted_time';
+import Markdown from '@components/markdown';
 import ProfilePicture from '@components/profile_picture';
 import {useTheme} from '@context/theme';
 import {usePreventDoubleTap} from '@hooks/utils';
+import {getMarkdownTextStyles, getMarkdownBlockStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
 
 import type UserModel from '@typings/database/models/servers/user';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 const MAX_PERMALINK_PREVIEW_LINES = 4;
 
@@ -24,18 +27,26 @@ type PermalinkPreviewProps = {
     locale: string;
     teammateNameDisplay: string;
     isOriginPostDeleted?: boolean;
+    location: AvailableScreens;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
             backgroundColor: theme.centerChannelBg,
-            borderColor: changeOpacity(theme.centerChannelColor, 0.2),
+            borderColor: changeOpacity(theme.centerChannelColor, 0.16),
             borderWidth: 1,
-            borderRadius: 8,
+            borderRadius: 4,
             marginTop: 8,
             marginBottom: 8,
             padding: 12,
+            shadowOffset: {
+                width: 0,
+                height: 2,
+            },
+            shadowOpacity: 0.08,
+            shadowRadius: 3,
+            elevation: 2,
         },
         header: {
             flexDirection: 'row',
@@ -59,6 +70,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         messageContainer: {
             marginBottom: 8,
+            maxHeight: 20 * MAX_PERMALINK_PREVIEW_LINES,
+            overflow: 'hidden',
         },
         messageText: {
             color: theme.centerChannelColor,
@@ -77,9 +90,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const PermalinkPreview = ({embedData, showPermalinkPreviews, author, locale, teammateNameDisplay, isOriginPostDeleted}: PermalinkPreviewProps) => {
+const PermalinkPreview = ({embedData, showPermalinkPreviews, author, locale, teammateNameDisplay, isOriginPostDeleted, location}: PermalinkPreviewProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+
+    const textStyles = getMarkdownTextStyles(theme);
+    const blockStyles = getMarkdownBlockStyles(theme);
 
     if (!showPermalinkPreviews || isOriginPostDeleted) {
         return null;
@@ -91,7 +107,7 @@ const PermalinkPreview = ({embedData, showPermalinkPreviews, author, locale, tea
         channel_type,
     } = embedData;
 
-    const formattedMessage = useMemo(() => {
+    const truncatedMessage = useMemo(() => {
         const message = post?.message;
 
         if (!message || typeof message !== 'string') {
@@ -99,7 +115,6 @@ const PermalinkPreview = ({embedData, showPermalinkPreviews, author, locale, tea
         }
 
         const cleanMessage = message.trim();
-
         const lines = cleanMessage.split('\n');
         if (lines.length > MAX_PERMALINK_PREVIEW_LINES) {
             return lines.slice(0, MAX_PERMALINK_PREVIEW_LINES).join('\n') + '...';
@@ -110,17 +125,17 @@ const PermalinkPreview = ({embedData, showPermalinkPreviews, author, locale, tea
 
     const isEdited = useMemo(() => post && post.edit_at, [post]);
 
-    const channelContextText = useMemo(() => {
-        const channelPrefix = channel_type === 'D' ? '@' : '~';
-        return `${channelPrefix}${channel_display_name}`;
-    }, [channel_display_name, channel_type]);
-
     const authorDisplayName = useMemo(() => {
         if (author) {
             return displayUsername(author, locale, teammateNameDisplay);
         }
         return displayUsername(undefined, locale, teammateNameDisplay);
     }, [author, locale, teammateNameDisplay]);
+
+    const channelContextText = useMemo(() => {
+        const displayName = channel_type === 'D' ? authorDisplayName : channel_display_name;
+        return `~${displayName}`;
+    }, [channel_display_name, channel_type, authorDisplayName]);
 
     const handlePress = usePreventDoubleTap(useCallback(() => {
         // Navigation will be implemented in Task 5
@@ -162,22 +177,28 @@ const PermalinkPreview = ({embedData, showPermalinkPreviews, author, locale, tea
             </View>
 
             <View style={styles.messageContainer}>
-                <Text
-                    style={styles.messageText}
-                    numberOfLines={MAX_PERMALINK_PREVIEW_LINES}
-                    ellipsizeMode='tail'
-                >
-                    {formattedMessage}
-                    {isEdited ? (
-                        <EditedIndicator
-                            baseTextStyle={styles.messageText}
-                            theme={theme}
-                            context={['paragraph']}
-                            iconSize={12}
-                            testID='permalink_preview.edited_indicator_separate'
-                        />
-                    ) : null}
-                </Text>
+                <Markdown
+                    baseTextStyle={styles.messageText}
+                    blockStyles={blockStyles}
+                    channelId={embedData.channel_id}
+                    disableGallery={true}
+                    disableHashtags={true}
+                    disableAtMentions={true}
+                    disableChannelLink={true}
+                    location={location}
+                    theme={theme}
+                    textStyles={textStyles}
+                    value={truncatedMessage}
+                />
+                {isEdited ? (
+                    <EditedIndicator
+                        baseTextStyle={styles.messageText}
+                        theme={theme}
+                        context={['paragraph']}
+                        iconSize={12}
+                        testID='permalink_preview.edited_indicator_separate'
+                    />
+                ) : null}
             </View>
 
             <Text style={styles.channelContext}>
