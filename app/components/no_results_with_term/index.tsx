@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useState, useEffect} from 'react';
+import React from 'react';
+import {defineMessages} from 'react-intl';
 import {View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
-import {t} from '@i18n';
 import {TabTypes, type TabType} from '@utils/search';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -42,24 +42,28 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
+const messages = defineMessages({
+    files: {
+        id: 'mobile.no_results_with_term.files',
+        defaultMessage: 'No files matching “{term}”',
+    },
+    messages: {
+        id: 'mobile.no_results_with_term.messages',
+        defaultMessage: 'No matches found for “{term}”',
+    },
+});
+
 const NoResultsWithTerm = ({term, type}: Props) => {
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
 
-    const [titleId, setTitleId] = useState(t('mobile.no_results_with_term'));
-    const [defaultMessage, setDefaultMessage] = useState('No results for “{term}”');
-
-    useEffect(() => {
-        setTitleId(type === TabTypes.FILES ? t('mobile.no_results_with_term.files') : t('mobile.no_results_with_term.messages'));
-        setDefaultMessage(type === TabTypes.FILES ? 'No files matching “{term}”' : 'No matches found for “{term}”');
-    }, [type]);
+    const titleMessage = type === TabTypes.FILES ? messages.files : messages.messages;
 
     return (
         <View style={style.container}>
             {type === TabTypes.FILES ? <SearchFilesIllustration/> : <SearchIllustration/>}
             <FormattedText
-                id={titleId}
-                defaultMessage={defaultMessage}
+                {...titleMessage}
                 style={style.result}
                 values={{term}}
             />

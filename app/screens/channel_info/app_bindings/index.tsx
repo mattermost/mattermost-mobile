@@ -8,9 +8,9 @@ import {postEphemeralCallResponseForChannel} from '@actions/remote/apps';
 import OptionItem from '@components/option_item';
 import {AppBindingLocations} from '@constants/apps';
 import {useAppBinding} from '@hooks/apps';
+import {usePreventDoubleTap} from '@hooks/utils';
 import AppsManager from '@managers/apps_manager';
 import {observeCurrentTeamId} from '@queries/servers/system';
-import {preventDoubleTap} from '@utils/tap';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
@@ -39,13 +39,13 @@ const ChannelInfoAppBindings = ({channelId, teamId, dismissChannelInfo, serverUr
 
     const handleBindingSubmit = useAppBinding(context, config);
 
-    const onPress = useCallback(preventDoubleTap(async (binding: AppBinding) => {
+    const onPress = usePreventDoubleTap(useCallback(async (binding: AppBinding) => {
         const submitPromise = handleBindingSubmit(binding);
         await dismissChannelInfo();
 
         const finish = await submitPromise;
         await finish();
-    }), [handleBindingSubmit]);
+    }, [dismissChannelInfo, handleBindingSubmit]));
 
     const options = bindings.map((binding) => (
         <BindingOptionItem
@@ -59,9 +59,9 @@ const ChannelInfoAppBindings = ({channelId, teamId, dismissChannelInfo, serverUr
 };
 
 const BindingOptionItem = ({binding, onPress}: {binding: AppBinding; onPress: (binding: AppBinding) => void}) => {
-    const handlePress = useCallback(preventDoubleTap(() => {
+    const handlePress = usePreventDoubleTap(useCallback(() => {
         onPress(binding);
-    }), [binding, onPress]);
+    }, [binding, onPress]));
 
     return (
         <OptionItem

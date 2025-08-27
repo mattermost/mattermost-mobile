@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo, useState} from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessage, useIntl} from 'react-intl';
 
 import {fetchStatusInBatch, updateMe} from '@actions/remote/user';
 import FloatingTextInput from '@components/floating_text_input_label';
@@ -15,7 +15,6 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useBackNavigation from '@hooks/navigate_back';
-import {t} from '@i18n';
 import {popTopScreen} from '@screens/navigation';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -24,15 +23,15 @@ import {getNotificationProps} from '@utils/user';
 import type UserModel from '@typings/database/models/servers/user';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
-const label = {
-    id: t('notification_settings.auto_responder.message'),
+const label = defineMessage({
+    id: 'notification_settings.auto_responder.message',
     defaultMessage: 'Message',
-};
+});
 
-const OOO = {
-    id: t('notification_settings.auto_responder.default_message'),
+const OOO = defineMessage({
+    id: 'notification_settings.auto_responder.default_message',
     defaultMessage: 'Hello, I am out of office and unable to respond to messages.',
-};
+});
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -74,8 +73,6 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
 
     const styles = getStyleSheet(theme);
 
-    const close = () => popTopScreen(componentId);
-
     const saveAutoResponder = useCallback(() => {
         const canSaveSetting = initialAutoResponderActive !== autoResponderActive || initialOOOMsg !== autoResponderMessage;
 
@@ -91,8 +88,8 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
                 fetchStatusInBatch(serverUrl, currentUser.id);
             }
         }
-        close();
-    }, [serverUrl, autoResponderActive, autoResponderMessage, notifyProps, currentUser?.id]);
+        popTopScreen(componentId);
+    }, [componentId, initialAutoResponderActive, autoResponderActive, initialOOOMsg, autoResponderMessage, serverUrl, notifyProps, currentUser]);
 
     useBackNavigation(saveAutoResponder);
 

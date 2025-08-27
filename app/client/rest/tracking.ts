@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {defineMessage} from 'react-intl';
 import {DeviceEventEmitter, Platform} from 'react-native';
 
 import {CollectNetworkMetrics} from '@assets/config.json';
 import {Events} from '@constants';
-import {t} from '@i18n';
 import {setServerCredentials} from '@init/credentials';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {NetworkRequestMetrics} from '@managers/performance_metrics_manager/constant';
@@ -363,10 +363,10 @@ export default class ClientTracking {
             default:
                 return {error: new ClientError(this.apiClient.baseUrl, {
                     message: 'Invalid request method',
-                    intl: {
-                        id: t('mobile.request.invalid_request_method'),
+                    intl: defineMessage({
+                        id: 'mobile.request.invalid_request_method',
                         defaultMessage: 'Invalid request method',
-                    },
+                    }),
                     url,
                 })};
         }
@@ -382,10 +382,10 @@ export default class ClientTracking {
             const status_code = isErrorWithStatusCode(error) ? error.status_code : undefined;
             throw new ClientError(this.apiClient.baseUrl, {
                 message: 'Received invalid response from the server.',
-                intl: {
-                    id: t('mobile.request.invalid_response'),
+                intl: defineMessage({
+                    id: 'mobile.request.invalid_response',
                     defaultMessage: 'Received invalid response from the server.',
-                },
+                }),
                 url,
                 details: error,
                 status_code,

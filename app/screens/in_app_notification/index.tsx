@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {DeviceEventEmitter, Platform, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {GestureDetector, Gesture, GestureHandlerRootView} from 'react-native-gesture-handler';
 import {Navigation} from 'react-native-navigation';
@@ -12,9 +12,9 @@ import {openNotification} from '@actions/remote/notifications';
 import {Navigation as NavigationTypes} from '@constants';
 import DatabaseManager from '@database/manager';
 import {useIsTablet} from '@hooks/device';
+import {usePreventDoubleTap} from '@hooks/utils';
 import SecurityManager from '@managers/security_manager';
 import {dismissOverlay} from '@screens/navigation';
-import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity} from '@utils/theme';
 import {secureGetFromRecord} from '@utils/types';
 
@@ -95,15 +95,15 @@ const InAppNotification = ({componentId, serverName, serverUrl, notification}: I
         }
     };
 
-    const dismiss = () => {
+    const dismiss = useCallback(() => {
         cancelDismissTimer();
         dismissOverlay(componentId);
-    };
+    }, [componentId]);
 
-    const notificationTapped = preventDoubleTap(() => {
+    const notificationTapped = usePreventDoubleTap(useCallback(() => {
         tapped.current = true;
         dismiss();
-    });
+    }, [dismiss]));
 
     useEffect(() => {
         initial.value = 0;

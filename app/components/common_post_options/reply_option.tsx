@@ -2,11 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
+import {defineMessages} from 'react-intl';
 
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import {BaseOption} from '@components/common_post_options';
 import {useServerUrl} from '@context/server';
-import {t} from '@i18n';
 import {dismissBottomSheet} from '@screens/navigation';
 
 import type PostModel from '@typings/database/models/servers/post';
@@ -16,6 +16,13 @@ type Props = {
     post: PostModel;
     bottomSheetId: AvailableScreens;
 }
+
+const messages = defineMessages({
+    reply: {
+        id: 'mobile.post_info.reply',
+        defaultMessage: 'Reply',
+    },
+});
 const ReplyOption = ({post, bottomSheetId}: Props) => {
     const serverUrl = useServerUrl();
 
@@ -27,8 +34,7 @@ const ReplyOption = ({post, bottomSheetId}: Props) => {
 
     return (
         <BaseOption
-            i18nId={t('mobile.post_info.reply')}
-            defaultMessage='Reply'
+            message={messages.reply}
             iconName='reply-outline'
             onPress={handleReply}
             testID='post_options.reply_post.option'

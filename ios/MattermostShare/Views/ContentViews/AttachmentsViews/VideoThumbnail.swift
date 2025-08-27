@@ -38,9 +38,8 @@ struct VideoThumbnail: View {
         Image(uiImage: thumb!)
           .resizable()
           .aspectRatio(contentMode: small ? .fill : .fit)
-          .frame(
-            maxWidth: small ? 104 : nil)
-          .frame(height: small ? 104 : 180)
+          .frame(width: small ? 64 : nil, height: small ? 64 : 180)
+          .clipped()
           .cornerRadius(4)
           .overlay(
             RoundedRectangle(cornerRadius: 4)
@@ -53,11 +52,11 @@ struct VideoThumbnail: View {
                 startPoint: .topTrailing, endPoint: .bottomLeading))
           )
       }
+      .background(Color.theme.centerChannelBg)
       .overlay(
         ZStack {
           RoundedRectangle(cornerRadius: 4)
             .stroke(hasError ? Color.theme.errorTextColor : borderColor, lineWidth: 1)
-            .shadow(color: borderColor, radius: 3, x: 0, y: 2)
           FontIcon.text(
             FontCode.compassIcons(code: .play),
             fontsize: 24,
@@ -66,7 +65,7 @@ struct VideoThumbnail: View {
           .padding(.trailing, 6)
           .padding(.bottom, 6)
           .frame(
-            height: small ? 104 : 180,
+            height: small ? 64 : 180,
             alignment: .bottomTrailing)
         }
       )

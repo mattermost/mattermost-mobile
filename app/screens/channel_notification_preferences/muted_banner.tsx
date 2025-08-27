@@ -27,7 +27,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         backgroundColor: changeOpacity(theme.sidebarTextActiveBorder, 0.16),
         borderRadius: 4,
-        marginHorizontal: 20,
         marginVertical: 12,
         paddingHorizontal: 16,
         height: MUTED_BANNER_HEIGHT,

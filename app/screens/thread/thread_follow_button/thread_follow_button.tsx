@@ -1,15 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useCallback} from 'react';
+import {defineMessages} from 'react-intl';
 import {Platform, type StyleProp, StyleSheet, TouchableOpacity, View, type ViewStyle} from 'react-native';
 
 import {updateThreadFollowing} from '@actions/remote/thread';
 import FormattedText from '@components/formatted_text';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {t} from '@i18n';
-import {preventDoubleTap} from '@utils/tap';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -49,31 +49,36 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
+const messages = defineMessages({
+    follow: {
+        id: 'threads.follow',
+        defaultMessage: 'Follow',
+    },
+    following: {
+        id: 'threads.following',
+        defaultMessage: 'Following',
+    },
+});
+
 function ThreadFollow({isFollowing, teamId, threadId}: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
     const serverUrl = useServerUrl();
 
-    const onPress = preventDoubleTap(() => {
+    const onPress = usePreventDoubleTap(useCallback(() => {
         updateThreadFollowing(serverUrl, teamId, threadId, !isFollowing, false);
-    });
+    }, [isFollowing, serverUrl, teamId, threadId]));
 
     if (!threadId) {
         return null;
     }
 
     const containerStyle: StyleProp<ViewStyle> = [styles.container];
-    let followTextProps = {
-        id: t('threads.follow'),
-        defaultMessage: 'Follow',
-    };
+    let followTextProps = messages.follow;
     if (isFollowing) {
         containerStyle.push(styles.containerActive);
-        followTextProps = {
-            id: t('threads.following'),
-            defaultMessage: 'Following',
-        };
+        followTextProps = messages.following;
     }
 
     const followThreadButtonTestId = isFollowing ? 'thread.following_thread.button' : 'thread.follow_thread.button';

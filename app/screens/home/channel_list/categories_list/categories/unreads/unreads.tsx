@@ -82,7 +82,7 @@ const UnreadCategories = ({onChannelSwitch, onlyUnreads, unreadChannels, unreadT
             <Text
                 style={styles.heading}
             >
-                {intl.formatMessage({id: 'mobile.channel_list.unreads', defaultMessage: 'UNREADS'})}
+                {intl.formatMessage({id: 'mobile.channel_list.unreads', defaultMessage: 'Unreads'})}
             </Text>
             }
             <FlatList

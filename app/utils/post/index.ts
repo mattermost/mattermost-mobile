@@ -134,7 +134,7 @@ export async function persistentNotificationsConfirmation(serverUrl: string, val
         });
         description = intl.formatMessage({
             id: 'persistent_notifications.dm_channel.description',
-            defaultMessage: '@{username} will be notified every {interval, plural, one {minute} other {{interval} minutes}} until they’ve acknowledged or replied to the message.',
+            defaultMessage: '{username} will be notified every {interval, plural, one {minute} other {{interval} minutes}} until they’ve acknowledged or replied to the message.',
         }, {
             interval: persistentNotificationInterval,
             username: user?.username,

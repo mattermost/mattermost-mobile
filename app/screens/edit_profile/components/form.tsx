@@ -2,12 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {type MessageDescriptor, useIntl} from 'react-intl';
+import {defineMessages, type MessageDescriptor, useIntl} from 'react-intl';
 import {Keyboard, StyleSheet, View} from 'react-native';
 
 import {useTheme} from '@context/theme';
 import useFieldRefs from '@hooks/field_refs';
-import {t} from '@i18n';
 import {getErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
 import {sortCustomProfileAttributes, formatOptionsForSelector, isCustomFieldSamlLinked} from '@utils/user';
@@ -40,32 +39,32 @@ type Props = {
 const includesSsoService = (sso: string) => ['gitlab', 'google', 'office365'].includes(sso);
 const isSAMLOrLDAP = (protocol: string) => ['ldap', 'saml'].includes(protocol);
 
-const FIELDS: { [id: string]: MessageDescriptor } = {
+const FIELDS: {[id: string]: MessageDescriptor} = defineMessages({
     firstName: {
-        id: t('user.settings.general.firstName'),
+        id: 'user.settings.general.firstName',
         defaultMessage: 'First Name',
     },
     lastName: {
-        id: t('user.settings.general.lastName'),
+        id: 'user.settings.general.lastName',
         defaultMessage: 'Last Name',
     },
     username: {
-        id: t('user.settings.general.username'),
+        id: 'user.settings.general.username',
         defaultMessage: 'Username',
     },
     nickname: {
-        id: t('user.settings.general.nickname'),
+        id: 'user.settings.general.nickname',
         defaultMessage: 'Nickname',
     },
     position: {
-        id: t('user.settings.general.position'),
+        id: 'user.settings.general.position',
         defaultMessage: 'Position',
     },
     email: {
-        id: t('user.settings.general.email'),
+        id: 'user.settings.general.email',
         defaultMessage: 'Email',
     },
-};
+});
 
 const styles = StyleSheet.create({
     footer: {

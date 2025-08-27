@@ -151,7 +151,7 @@ function AppsFormContainer({
             case AppCallResponseTypes.NAVIGATE:
                 return {error: makeCallErrorResponse(makeErrorMsg(intl.formatMessage({
                     id: 'apps.error.responses.unexpected_type',
-                    defaultMessage: 'App response type was not expected. Response type: {type}.',
+                    defaultMessage: 'App response type was not expected. Response type: {type}',
                 }, {
                     type: callResp.type,
                 },

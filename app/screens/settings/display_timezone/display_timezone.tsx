@@ -12,8 +12,8 @@ import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useBackNavigation from '@hooks/navigate_back';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {goToScreen, popTopScreen} from '@screens/navigation';
-import {preventDoubleTap} from '@utils/tap';
 import {getDeviceTimezone} from '@utils/timezone';
 import {getTimezoneRegion, getUserTimezoneProps} from '@utils/user';
 
@@ -39,15 +39,15 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
         }));
     };
 
-    const updateManualTimezone = (mtz: string) => {
-        setUserTimezone({
-            useAutomaticTimezone: false,
-            automaticTimezone: '',
-            manualTimezone: mtz,
-        });
-    };
+    const goToSelectTimezone = usePreventDoubleTap(useCallback(() => {
+        const updateManualTimezone = (mtz: string) => {
+            setUserTimezone({
+                useAutomaticTimezone: false,
+                automaticTimezone: '',
+                manualTimezone: mtz,
+            });
+        };
 
-    const goToSelectTimezone = preventDoubleTap(() => {
         const screen = Screens.SETTINGS_DISPLAY_TIMEZONE_SELECT;
         const title = intl.formatMessage({id: 'settings_display.timezone.select', defaultMessage: 'Select Timezone'});
 
@@ -57,9 +57,7 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
         };
 
         goToScreen(screen, title, passProps);
-    });
-
-    const close = () => popTopScreen(componentId);
+    }, [initialTimezone.manualTimezone, initialTimezone.automaticTimezone, intl, userTimezone.manualTimezone]));
 
     const saveTimezone = useCallback(() => {
         const canSave =
@@ -77,8 +75,15 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
             updateMe(serverUrl, {timezone: timeZone});
         }
 
-        close();
-    }, [userTimezone, serverUrl]);
+        popTopScreen(componentId);
+    }, [
+        componentId,
+        initialTimezone,
+        userTimezone.useAutomaticTimezone,
+        userTimezone.automaticTimezone,
+        userTimezone.manualTimezone,
+        serverUrl,
+    ]);
 
     useBackNavigation(saveTimezone);
 
@@ -89,7 +94,7 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
             return getTimezoneRegion(userTimezone.automaticTimezone);
         }
         return intl.formatMessage({id: 'settings_display.timezone.off', defaultMessage: 'Off'});
-    }, [userTimezone.useAutomaticTimezone]);
+    }, [intl, userTimezone.automaticTimezone, userTimezone.useAutomaticTimezone]);
 
     return (
         <SettingContainer testID='timezone_display_settings'>
