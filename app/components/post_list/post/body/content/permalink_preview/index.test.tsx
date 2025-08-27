@@ -3,6 +3,7 @@
 
 import React from 'react';
 
+import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {renderWithEverything, waitFor} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
@@ -75,7 +76,10 @@ describe('PermalinkPreview Enhanced Component', () => {
         };
 
         const {getByTestId} = renderWithEverything(
-            <EnhancedPermalinkPreview embedData={embedData}/>,
+            <EnhancedPermalinkPreview
+                embedData={embedData}
+                location={Screens.CHANNEL}
+            />,
             {database, serverUrl},
         );
 
@@ -103,7 +107,10 @@ describe('PermalinkPreview Enhanced Component', () => {
         };
 
         const {getByTestId} = renderWithEverything(
-            <EnhancedPermalinkPreview embedData={embedData}/>,
+            <EnhancedPermalinkPreview
+                embedData={embedData}
+                location={Screens.CHANNEL}
+            />,
             {database, serverUrl},
         );
 
@@ -139,7 +146,10 @@ describe('PermalinkPreview Enhanced Component', () => {
         };
 
         const {getByTestId} = renderWithEverything(
-            <EnhancedPermalinkPreview embedData={embedData}/>,
+            <EnhancedPermalinkPreview
+                embedData={embedData}
+                location={Screens.CHANNEL}
+            />,
             {database, serverUrl},
         );
 
@@ -173,7 +183,10 @@ describe('PermalinkPreview Enhanced Component', () => {
         };
 
         const {getByTestId} = renderWithEverything(
-            <EnhancedPermalinkPreview embedData={embedData}/>,
+            <EnhancedPermalinkPreview
+                embedData={embedData}
+                location={Screens.CHANNEL}
+            />,
             {database, serverUrl},
         );
 
@@ -197,7 +210,10 @@ describe('PermalinkPreview Enhanced Component', () => {
         };
 
         const {getByTestId} = renderWithEverything(
-            <EnhancedPermalinkPreview embedData={embedData}/>,
+            <EnhancedPermalinkPreview
+                embedData={embedData}
+                location={Screens.CHANNEL}
+            />,
             {database, serverUrl},
         );
 
@@ -233,7 +249,10 @@ describe('PermalinkPreview Enhanced Component', () => {
         };
 
         const {getByTestId} = renderWithEverything(
-            <EnhancedPermalinkPreview embedData={embedData}/>,
+            <EnhancedPermalinkPreview
+                embedData={embedData}
+                location={Screens.CHANNEL}
+            />,
             {database, serverUrl},
         );
 

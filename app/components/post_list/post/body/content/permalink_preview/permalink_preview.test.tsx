@@ -4,6 +4,7 @@
 import {fireEvent} from '@testing-library/react-native';
 import React from 'react';
 
+import {Screens} from '@constants';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -34,6 +35,7 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
         }),
         locale: 'en',
         teammateNameDisplay: 'username',
+        location: Screens.CHANNEL,
     };
 
     it('should render permalink preview correctly', () => {
