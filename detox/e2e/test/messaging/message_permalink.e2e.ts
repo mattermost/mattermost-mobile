@@ -94,7 +94,6 @@ describe('Messaging - Permalink', () => {
 
         await ChannelScreen.verifyPermalinkPreviewTextIsUpdated(updatedMessage);
 
-
         // # Go back to channel list screen
         await ChannelScreen.back();
     });
