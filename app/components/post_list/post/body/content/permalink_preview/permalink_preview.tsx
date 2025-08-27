@@ -148,6 +148,7 @@ const PermalinkPreview = ({embedData, showPermalinkPreviews, author, locale, tea
                     <Text
                         style={styles.authorName}
                         numberOfLines={1}
+                        testID='permalink_preview.author_name'
                     >
                         {authorDisplayName}
                     </Text>
@@ -165,6 +166,7 @@ const PermalinkPreview = ({embedData, showPermalinkPreviews, author, locale, tea
                     style={styles.messageText}
                     numberOfLines={MAX_PERMALINK_PREVIEW_LINES}
                     ellipsizeMode='tail'
+                    testID='permalink_preview.message_text'
                 >
                     {formattedMessage}
                     {isEdited ? (
@@ -173,13 +175,16 @@ const PermalinkPreview = ({embedData, showPermalinkPreviews, author, locale, tea
                             theme={theme}
                             context={['paragraph']}
                             iconSize={12}
-                            testID='permalink_preview.edited_indicator_separate'
+                            testID='permalink_preview.edited_indicator'
                         />
                     ) : null}
                 </Text>
             </View>
 
-            <Text style={styles.channelContext}>
+            <Text
+                style={styles.channelContext}
+                testID='permalink_preview.channel_name'
+            >
                 {'Originally posted in '}
                 <Text style={styles.channelName}>
                     {channelContextText}
