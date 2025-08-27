@@ -4,11 +4,20 @@
 import {fireEvent} from '@testing-library/react-native';
 import React from 'react';
 
+import Markdown from '@components/markdown';
 import {Screens} from '@constants';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
 import PermalinkPreview from './permalink_preview';
+
+jest.mock('@components/markdown', () => ({
+    __esModule: true,
+    default: jest.fn(),
+}));
+jest.mocked(Markdown).mockImplementation((props) =>
+    React.createElement('Text', {testID: 'markdown'}, props.value),
+);
 
 describe('components/post_list/post/body/content/permalink_preview/PermalinkPreview', () => {
     const baseProps: Parameters<typeof PermalinkPreview>[0] = {
@@ -36,6 +45,7 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
         locale: 'en',
         teammateNameDisplay: 'username',
         location: Screens.CHANNEL,
+        isOriginPostDeleted: false,
     };
 
     it('should render permalink preview correctly', () => {
@@ -50,6 +60,16 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
 
     it('should not render when showPermalinkPreviews is false', () => {
         const props = {...baseProps, showPermalinkPreviews: false};
+        const {queryByText} = renderWithIntlAndTheme(
+            <PermalinkPreview {...props}/>,
+        );
+
+        expect(queryByText('testuser')).toBeNull();
+        expect(queryByText('This is a test message')).toBeNull();
+    });
+
+    it('should not render when origin post is deleted', () => {
+        const props = {...baseProps, isOriginPostDeleted: true};
         const {queryByText} = renderWithIntlAndTheme(
             <PermalinkPreview {...props}/>,
         );
@@ -120,7 +140,7 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
         expect(getByText('Originally posted in ~Test Channel')).toBeTruthy();
     });
 
-    it('should display channel name with @ prefix for direct messages', () => {
+    it('should display channel name with ~ prefix for direct messages', () => {
         const props = {
             ...baseProps,
             embedData: {
@@ -133,7 +153,7 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
             <PermalinkPreview {...props}/>,
         );
 
-        expect(getByText('Originally posted in @testuser')).toBeTruthy();
+        expect(getByText('Originally posted in ~testuser')).toBeTruthy();
     });
 
     it('should truncate long messages', () => {
