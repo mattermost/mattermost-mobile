@@ -328,6 +328,34 @@ class ChannelScreen {
         await expect(this.permalinkPreviewMessageText).toBeVisible();
         await expect(this.permalinkPreviewChannelName).toBeVisible();
     };
+
+    verifyPermalinkPreviewTextIsUpdated = async (updatedMessage: string) => {
+        const messageElement = this.permalinkPreviewMessageText;
+        const attributes = await messageElement.getAttributes();
+
+        let fulltext = '';
+
+        if (attributes && 'text' in attributes) {
+            fulltext = (attributes as { text: string }).text;
+        } else if (
+            attributes &&
+            'elements' in attributes &&
+            Array.isArray(attributes.elements) &&
+            attributes.elements.length > 0 &&
+            attributes.elements[0] !== undefined &&
+            'text' in attributes.elements[0]
+        ) {
+            fulltext = (attributes.elements[0] as { text: string }).text;
+        }
+
+        if (!fulltext.includes(updatedMessage)) {
+            throw new Error(`Post text: "${fulltext}" does not match the expected text: "${updatedMessage}"`);
+        }
+
+        if (!fulltext.includes('Edited')) {
+            throw new Error('Edited indicator is not found in the post text');
+        }
+    };
 }
 
 const channelScreen = new ChannelScreen();
