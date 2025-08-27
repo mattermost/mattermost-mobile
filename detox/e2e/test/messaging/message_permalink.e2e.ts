@@ -55,7 +55,7 @@ describe('Messaging - Permalink', () => {
         await HomeScreen.logout();
     });
 
-    it('the permalink preview should be updated if original message is edited', async () => {
+    it('MM-T5848 should update the permalink preview if original message is edited', async () => {
         // # Post a target message in a target public channel
         const initialMessage = 'This is the original message';
         await ChannelScreen.open(channelsCategory, testChannel.name);
@@ -97,4 +97,13 @@ describe('Messaging - Permalink', () => {
         // # Go back to channel list screen
         await ChannelScreen.back();
     });
+
+    it('MM-T5852 should show preview with Urgent Priority Tag', async () => {  });
+    it('MM-T5853 should show preview with Important Priority Tag', async () => {  });
+    it('MM-T5854 should not show the preview of the a message from DM chat that user have no access to', async () => {  });
+    it('MM-T5855 should not show the preview of the a message from Private Channel where user is not a member', async () => {  });
+    it('MM-T5857 should not show the preview of the a message if the original post is deleted', async () => {  });
+    it('MM-T5863 should show the preview of the a message from a Public channel where user is not a member', async () => {  });
+    it('MM-T5864 should show the preview of the a message from Private Channel where user is a member', async () => {  });
+
 });
