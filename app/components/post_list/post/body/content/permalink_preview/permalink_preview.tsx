@@ -23,6 +23,7 @@ type PermalinkPreviewProps = {
     author?: UserModel;
     locale: string;
     teammateNameDisplay: string;
+    isOriginPostDeleted?: boolean;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -76,11 +77,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const PermalinkPreview = ({embedData, showPermalinkPreviews, author, locale, teammateNameDisplay}: PermalinkPreviewProps) => {
+const PermalinkPreview = ({embedData, showPermalinkPreviews, author, locale, teammateNameDisplay, isOriginPostDeleted}: PermalinkPreviewProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
-    if (!showPermalinkPreviews) {
+    if (!showPermalinkPreviews || isOriginPostDeleted) {
         return null;
     }
 

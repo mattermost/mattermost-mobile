@@ -7,6 +7,7 @@ import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {fetchUsersByIds} from '@actions/remote/user';
 import {withServerUrl} from '@context/server';
+import {observePost} from '@queries/servers/post';
 import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeUserOrFetch, observeTeammateNameDisplay, observeCurrentUser} from '@queries/servers/user';
 
@@ -27,11 +28,20 @@ const enhance = withObservables(['embedData', 'serverUrl'], ({database, embedDat
         distinctUntilChanged(),
     );
 
+    const isOriginPostDeleted = embedData?.post_id ? observePost(database, embedData.post_id).pipe(
+        switchMap((p) => {
+            const initialDeleted = Boolean(embedData?.post?.delete_at > 0 || embedData?.post?.state === 'DELETED');
+            return of$(p ? p.deleteAt > 0 : initialDeleted);
+        }),
+        distinctUntilChanged(),
+    ) : of$(false);
+
     return {
         showPermalinkPreviews,
         teammateNameDisplay,
         author,
         locale,
+        isOriginPostDeleted,
     };
 });
 
