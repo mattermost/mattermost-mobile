@@ -1,14 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect} from 'react';
-import {DeviceEventEmitter} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {DeviceEventEmitter, View, type LayoutChangeEvent} from 'react-native';
 
 import Files from '@components/files/files';
 import {Events} from '@constants';
 
 const PermalinkFiles = (props: React.ComponentProps<typeof Files> & {parentLocation?: string; parentPostId?: string}) => {
     const {parentLocation, parentPostId, ...filesProps} = props;
+    const [layoutWidth, setLayoutWidth] = useState(0);
 
     useEffect(() => {
         if (!parentLocation || !parentPostId) {
@@ -27,7 +28,18 @@ const PermalinkFiles = (props: React.ComponentProps<typeof Files> & {parentLocat
         return () => DeviceEventEmitter.removeAllListeners(Events.ITEM_IN_VIEWPORT);
     }, [parentLocation, parentPostId, props.location, props.postId]);
 
-    return <Files {...filesProps}/>;
+    const onLayout = (event: LayoutChangeEvent) => {
+        setLayoutWidth(event.nativeEvent.layout.width);
+    };
+
+    return (
+        <View onLayout={onLayout}>
+            <Files
+                {...filesProps}
+                layoutWidth={layoutWidth}
+            />
+        </View>
+    );
 };
 
 export default PermalinkFiles;
