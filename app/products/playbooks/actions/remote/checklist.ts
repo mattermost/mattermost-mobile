@@ -3,7 +3,7 @@
 
 import {forceLogoutIfNecessary} from '@actions/remote/session';
 import NetworkManager from '@managers/network_manager';
-import {updateChecklistItem as localUpdateChecklistItem} from '@playbooks/actions/local/checklist';
+import {setDueDate as localSetDueDate, updateChecklistItem as localUpdateChecklistItem} from '@playbooks/actions/local/checklist';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 
@@ -80,6 +80,27 @@ export const restoreChecklistItem = async (
         return {data: true};
     } catch (error) {
         logDebug('error on restoreChecklistItem', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
+export const setDueDate = async (
+    serverUrl: string,
+    playbookRunId: string,
+    itemId: string,
+    checklistNumber: number,
+    itemNumber: number,
+    date?: number,
+) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        await client.setDueDate(playbookRunId, checklistNumber, itemNumber, date);
+
+        await localSetDueDate(serverUrl, itemId, date);
+        return {data: true};
+    } catch (error) {
+        logDebug('error on setDueDate', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }

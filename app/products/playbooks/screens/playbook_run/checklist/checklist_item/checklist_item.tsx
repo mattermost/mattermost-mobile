@@ -193,15 +193,27 @@ const ChecklistItem = ({
 
     const renderBottomSheet = useCallback(() => (
         <ChecklistItemBottomSheet
+            runId={playbookRunId}
+            checklistNumber={checklistNumber}
+            itemNumber={itemNumber}
             item={item}
-            assignee={assignee}
             onCheck={toggleChecked}
             onSkip={toggleSkipped}
             onRunCommand={executeCommand}
             teammateNameDisplay={teammateNameDisplay}
             isDisabled={isDisabled}
         />
-    ), [assignee, executeCommand, item, teammateNameDisplay, toggleChecked, toggleSkipped, isDisabled]);
+    ), [
+        playbookRunId,
+        checklistNumber,
+        itemNumber,
+        item,
+        toggleChecked,
+        toggleSkipped,
+        executeCommand,
+        teammateNameDisplay,
+        isDisabled,
+    ]);
 
     const onPress = useCallback(() => {
         const initialHeight = BOTTOM_SHEET_HEIGHT.base + (isDisabled ? 0 : BOTTOM_SHEET_HEIGHT.actionButtons);

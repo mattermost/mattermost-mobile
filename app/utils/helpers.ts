@@ -143,8 +143,7 @@ export function toTitleCase(str: string) {
     return str.replace(/\w\S*/g, doTitleCase);
 }
 
-export function getRoundedTime(value: Moment) {
-    const roundedTo = CUSTOM_STATUS_TIME_PICKER_INTERVALS_IN_MINUTES;
+export function getRoundedTime(value: Moment, roundedTo: number = CUSTOM_STATUS_TIME_PICKER_INTERVALS_IN_MINUTES) {
     const start = moment(value);
     const diff = start.minute() % roundedTo;
     if (diff === 0) {
