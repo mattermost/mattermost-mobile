@@ -61,8 +61,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     scrollContainer: {
         alignItems: 'center',
-        height: '90%',
+        flexGrow: 1,
         justifyContent: 'center',
+        paddingBottom: 120,
+        minHeight: '85%',
     },
 }));
 
@@ -418,7 +420,12 @@ const Server = ({
                         urlError={urlError}
                     />
                 </KeyboardAwareScrollView>
-                <AppVersion textStyle={styles.appInfo}/>
+                <View style={{height: 60, justifyContent: 'center', alignItems: 'flex-start', paddingLeft: 20}}>
+                    <AppVersion
+                        textStyle={styles.appInfo}
+                        isWrapped={false}
+                    />
+                </View>
             </AnimatedSafeArea>
         </View>
     );
