@@ -56,6 +56,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     appInfo: {
         color: changeOpacity(theme.centerChannelColor, 0.56),
     },
+    appVersionContainer: {
+        height: 60,
+        justifyContent: 'center',
+        alignItems: 'flex-start',
+        paddingLeft: 20,
+    },
     flex: {
         flex: 1,
     },
@@ -420,7 +426,7 @@ const Server = ({
                         urlError={urlError}
                     />
                 </KeyboardAwareScrollView>
-                <View style={{height: 60, justifyContent: 'center', alignItems: 'flex-start', paddingLeft: 20}}>
+                <View style={styles.appVersionContainer}>
                     <AppVersion
                         textStyle={styles.appInfo}
                         isWrapped={false}
