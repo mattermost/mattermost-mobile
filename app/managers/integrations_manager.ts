@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {fetchCommands} from '@actions/remote/command';
-import {INTERACTIVE_DIALOG} from '@constants/screens';
+import {DIALOG_ROUTER} from '@constants/screens';
 import {showModal} from '@screens/navigation';
 
 const TIME_TO_REFETCH_COMMANDS = 60000; // 1 minute
@@ -57,7 +57,7 @@ class ServerIntegrationsManager {
         if (!config) {
             return;
         }
-        showModal(INTERACTIVE_DIALOG, config.dialog.title, {config});
+        showModal(DIALOG_ROUTER, config.dialog.title, {config});
     }
 }
 

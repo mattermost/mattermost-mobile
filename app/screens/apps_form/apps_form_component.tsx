@@ -18,7 +18,9 @@ import useDidUpdate from '@hooks/did_update';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import SecurityManager from '@managers/security_manager';
 import {filterEmptyOptions} from '@utils/apps';
+import {mapAppFieldTypeToDialogType, getDataSourceForAppFieldType} from '@utils/dialog_utils';
 import {checkDialogElementForError, checkIfErrorsMatchElements} from '@utils/integrations';
+import {logWarning} from '@utils/log';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {secureGetFromRecord} from '@utils/types';
@@ -57,16 +59,28 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             paddingLeft: 50,
             paddingRight: 50,
         },
+        buttonsWrapper: {
+            marginHorizontal: 5,
+        },
     };
 });
 
 function fieldsAsElements(fields?: AppField[]): DialogElement[] {
-    return fields?.map((f) => ({
-        name: f.name,
-        type: f.type,
-        subtype: f.subtype,
-        optional: !f.is_required,
-    } as DialogElement)) || [];
+    return fields?.filter((f) => Boolean(f.name)).map((f) => {
+        return {
+            name: f.name,
+            type: mapAppFieldTypeToDialogType(f.type || 'text'),
+            subtype: f.subtype,
+            optional: !f.is_required,
+            min_length: f.min_length,
+            max_length: f.max_length,
+            data_source: getDataSourceForAppFieldType(f.type || 'text'),
+            options: f.options?.map((option) => ({
+                text: option.label || '',
+                value: option.value || '',
+            })),
+        } as DialogElement;
+    }) || [];
 }
 
 const close = () => {
@@ -103,14 +117,20 @@ function valuesReducer(state: AppFormValues, action: ValuesAction) {
 
 function initValues(fields?: AppField[]) {
     const values: AppFormValues = {};
-    fields?.forEach((e) => {
-        if (!e.name) {
+    fields?.forEach((field) => {
+        if (!field.name) {
             return;
         }
-        if (e.type === 'bool') {
-            values[e.name] = (e.value === true || String(e.value).toLowerCase() === 'true');
-        } else if (e.value) {
-            values[e.name] = e.value;
+
+        if (field.type === 'bool') {
+            // For boolean fields, use explicit value or default to false
+            values[field.name] = field.value === true || String(field.value).toLowerCase() === 'true';
+        } else if (field.value !== undefined && field.value !== null) {
+            // Use provided value for non-boolean fields
+            values[field.name] = field.value;
+        } else {
+            // Initialize empty fields with empty string
+            values[field.name] = '';
         }
     });
     return values;
@@ -127,6 +147,7 @@ function AppsFormComponent({
     performLookupCall,
 }: Props) {
     const scrollView = useRef<ScrollView>(null);
+    const isMountedRef = useRef(true);
     const [submitting, setSubmitting] = useState(false);
     const intl = useIntl();
     const serverUrl = useServerUrl();
@@ -148,30 +169,39 @@ function AppsFormComponent({
         if (submitButtons) {
             return undefined;
         }
-        const base = buildNavigationButton(
-            SUBMIT_BUTTON_ID,
-            'interactive_dialog.submit.button',
-            undefined,
-            intl.formatMessage({id: 'interactive_dialog.submit', defaultMessage: 'Submit'}),
-        );
-        base.enabled = !submitting;
-        base.showAsAction = 'always';
-        base.color = theme.sidebarHeaderTextColor;
-        return base;
-    }, [theme.sidebarHeaderTextColor, Boolean(submitButtons), submitting, intl]);
+        return {
+            ...buildNavigationButton(
+                SUBMIT_BUTTON_ID,
+                'interactive_dialog.submit.button',
+                undefined,
+                intl.formatMessage({id: 'interactive_dialog.submit', defaultMessage: 'Submit'}),
+            ),
+            enabled: !submitting,
+            showAsAction: 'always' as const,
+            color: theme.sidebarHeaderTextColor,
+        };
+    }, [theme.sidebarHeaderTextColor, submitButtons, submitting, intl]);
 
-    useEffect(() => {
-        setButtons(componentId, {
-            rightButtons: rightButton ? [rightButton] : [],
-        });
-    }, [componentId, rightButton]);
+    const rightButtons = useMemo(() => (rightButton ? [rightButton] : []), [rightButton]);
 
-    useEffect(() => {
+    const leftButton = useMemo(() => {
         const icon = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
+        return makeCloseButton(icon);
+    }, [theme.sidebarHeaderTextColor]);
+
+    const leftButtons = useMemo(() => [leftButton], [leftButton]);
+
+    useEffect(() => {
         setButtons(componentId, {
-            leftButtons: [makeCloseButton(icon)],
+            rightButtons,
         });
-    }, [componentId, theme]);
+    }, [componentId, rightButtons]);
+
+    useEffect(() => {
+        setButtons(componentId, {
+            leftButtons,
+        });
+    }, [componentId, leftButtons]);
 
     const updateErrors = useCallback((elements: DialogElement[], fieldErrors?: {[x: string]: string}, formError?: string): boolean => {
         let hasErrors = false;
@@ -190,14 +220,30 @@ function AppsFormComponent({
                 setErrors(fieldErrors);
             } else if (!hasHeaderError) {
                 hasHeaderError = true;
-                const field = Object.keys(fieldErrors)[0];
-                setError(intl.formatMessage({
-                    id: 'apps.error.responses.unknown_field_error',
-                    defaultMessage: 'Received an error for an unknown field. Field name: `{field}`. Error: `{error}`.',
-                }, {
-                    field,
-                    error: fieldErrors[field],
-                }));
+                const errorFields = Object.keys(fieldErrors);
+                const availableFields = elements.map((e) => e.name).filter(Boolean);
+
+                // Provide detailed context about field mismatch
+                if (errorFields.length === 1) {
+                    const field = errorFields[0];
+                    setError(intl.formatMessage({
+                        id: 'apps.error.responses.unknown_field_error',
+                        defaultMessage: 'Server returned an error for field "{field}" which is not found in this form. Available fields: {availableFields}. Error: {error}',
+                    }, {
+                        field,
+                        availableFields: availableFields.join(', '),
+                        error: fieldErrors[field],
+                    }));
+                } else {
+                    setError(intl.formatMessage({
+                        id: 'apps.error.responses.multiple_unknown_fields_error',
+                        defaultMessage: 'Server returned errors for {errorCount} fields not found in this form. Error fields: {errorFields}. Available fields: {availableFields}',
+                    }, {
+                        errorCount: errorFields.length,
+                        errorFields: errorFields.join(', '),
+                        availableFields: availableFields.join(', '),
+                    }));
+                }
             }
         }
 
@@ -219,6 +265,11 @@ function AppsFormComponent({
 
         if (field.refresh) {
             refreshOnSelect(field, newValues, value).then((res) => {
+                // Check if component is still mounted before updating state
+                if (!isMountedRef.current) {
+                    return;
+                }
+
                 if (res.error) {
                     const errorResponse = res.error;
                     const errorMsg = errorResponse.text;
@@ -249,21 +300,32 @@ function AppsFormComponent({
                             type: callResponse.type,
                         }));
                 }
+            }).catch((err) => {
+                // Handle promise rejection gracefully
+                if (isMountedRef.current) {
+                    logWarning('RefreshOnSelect failed:', err);
+                }
             });
         }
 
         dispatchValues({name, value});
     }, [form, values, refreshOnSelect, updateErrors, intl]);
 
+    // Memoize elements conversion for performance
+    const elements = useMemo(() => fieldsAsElements(form.fields), [form.fields]);
+
+    // Memoize filtered fields to avoid recalculation on every render
+    const visibleFields = useMemo(() =>
+        form.fields?.filter((f) => f.name !== form.submit_buttons) || [],
+    [form.fields, form.submit_buttons],
+    );
+
     const handleSubmit = useCallback(async (button?: string) => {
         if (submitting) {
             return;
         }
 
-        const {fields} = form;
         const fieldErrors: {[name: string]: string} = {};
-
-        const elements = fieldsAsElements(fields);
         let hasErrors = false;
         elements?.forEach((element) => {
             const newError = checkDialogElementForError(
@@ -290,6 +352,11 @@ function AppsFormComponent({
         setSubmitting(true);
 
         const res = await submit(submission);
+
+        // Check if component is still mounted before updating state
+        if (!isMountedRef.current) {
+            return;
+        }
 
         if (res.error) {
             const errorResponse = res.error;
@@ -327,7 +394,7 @@ function AppsFormComponent({
                 }));
                 setSubmitting(false);
         }
-    }, [form, values, submit, submitting, updateErrors, serverUrl, intl]);
+    }, [elements, form, values, submit, submitting, updateErrors, serverUrl, intl]);
 
     const performLookup = useCallback(async (name: string, userInput: string): Promise<AppSelectOption[]> => {
         const field = form.fields?.find((f) => f.name === name);
@@ -336,6 +403,12 @@ function AppsFormComponent({
         }
 
         const res = await performLookupCall(field, values, userInput);
+
+        // Check if component is still mounted before updating state
+        if (!isMountedRef.current) {
+            return [];
+        }
+
         if (res.error) {
             const errorResponse = res.error;
             const errMsg = errorResponse.text || intl.formatMessage({
@@ -382,6 +455,13 @@ function AppsFormComponent({
     useNavButtonPressed(CLOSE_BUTTON_ID, componentId, close, [close]);
     useNavButtonPressed(SUBMIT_BUTTON_ID, componentId, handleSubmit, [handleSubmit]);
 
+    // Cleanup on unmount to prevent memory leaks
+    useEffect(() => {
+        return () => {
+            isMountedRef.current = false;
+        };
+    }, []);
+
     return (
         <SafeAreaView
             testID='interactive_dialog.screen'
@@ -410,28 +490,25 @@ function AppsFormComponent({
                         value={form.header}
                     />
                 }
-                {form.fields && form.fields.filter((f) => f.name !== form.submit_buttons).map((field) => {
+                {visibleFields.map((field) => {
                     if (!field.name) {
                         return null;
                     }
                     const value = secureGetFromRecord(values, field.name);
-                    if (!value) {
-                        return null;
-                    }
                     return (
                         <AppsFormField
                             field={field}
                             key={field.name}
                             name={field.name}
                             errorText={secureGetFromRecord(errors, field.name)}
-                            value={value}
+                            value={value || ''}
                             performLookup={performLookup}
                             onChange={onChange}
                         />
                     );
                 })}
                 <View
-                    style={{marginHorizontal: 5}}
+                    style={style.buttonsWrapper}
                 >
                     {submitButtons?.options?.map((o) => (
                         <View
