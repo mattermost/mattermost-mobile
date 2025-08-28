@@ -105,8 +105,8 @@ public class Keychain: NSObject {
         let status = SecItemCopyMatching(attributes as CFDictionary, &result)
         let data = result as? Data
         if status == errSecSuccess && data != nil {
-            let credentialsString = String(data: data!, encoding: .utf8)
-            return credentialsString
+            let token = String(data: data!, encoding: .utf8)
+            return token
         }
 
         return nil
@@ -121,8 +121,8 @@ public class Keychain: NSObject {
         let status = SecItemCopyMatching(attributes as CFDictionary, &result)
         let data = result as? Data
         if status == errSecSuccess && data != nil {
-            let credentialsString = String(data: data!, encoding: .utf8)
-            return credentialsString
+            let preauthSecret = String(data: data!, encoding: .utf8)
+            return preauthSecret
         }
 
         return nil
@@ -163,7 +163,7 @@ public class Keychain: NSObject {
         guard let serviceData = service.data(using: .utf8) else {
             throw KeychainError.InvalidServerUrl(service)
         }
-        
+
         guard let accountData = account.data(using: .utf8) else {
             throw KeychainError.InvalidServerUrl(account)
         }
