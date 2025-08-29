@@ -54,10 +54,18 @@ export function convertAppFormValuesToDialogSubmission(
 
             case DialogElementTypes.RADIO:
             case DialogElementTypes.SELECT:
-                // Handle AppSelectOption objects
-                if (isAppSelectOption(value)) {
+                // Handle multiselect arrays for SELECT fields only
+                if (element.type === DialogElementTypes.SELECT && element.multiselect && Array.isArray(value)) {
+                    // For multiselect, extract values from AppSelectOption array and join with commas
+                    const extractedValues = value.map((option) => (
+                        isAppSelectOption(option) ? (option.value || '') : String(option || '')
+                    )).filter((v) => v !== '');
+                    submission[fieldName] = extractedValues.join(',');
+                } else if (isAppSelectOption(value)) {
+                    // Single AppSelectOption object
                     submission[fieldName] = String(value.value || '');
                 } else {
+                    // Single string value
                     submission[fieldName] = String(value || '');
                 }
                 break;
@@ -102,6 +110,11 @@ export function convertDialogElementToAppField(element: DialogElement): AppField
             label: option.text,
             value: option.value,
         }));
+
+        // Add multiselect support for select fields
+        if (element.type === DialogElementTypes.SELECT && element.multiselect) {
+            appField.multiselect = element.multiselect;
+        }
     }
 
     if (element.default) {

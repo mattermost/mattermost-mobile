@@ -79,20 +79,41 @@ export function checkDialogElementForError(elem: DialogElement, value: any): Dia
             }
         }
     } else if (type === DialogElementTypes.SELECT) {
-        if ((typeof value === 'undefined' || value === '') && !elem.optional) {
-            return fieldRequiredError;
+        // Handle empty values for both single and multiselect
+        if (!elem.optional) {
+            if (typeof value === 'undefined' || value === '') {
+                return fieldRequiredError;
+            }
+
+            // For multiselect, also check if array is empty
+            if (elem.multiselect && Array.isArray(value) && value.length === 0) {
+                return fieldRequiredError;
+            }
         }
 
         const options = elem.options;
         if (typeof value !== 'undefined' && value !== '' && Array.isArray(options)) {
-            // Extract value from AppSelectOption object if needed
-            const valueToCheck = isAppSelectOption(value) ? value.value : value;
-
-            if (!options.some((e) => e.value === valueToCheck)) {
-                return {
-                    id: DialogErrorMessages.INVALID_OPTION,
-                    defaultMessage: 'Must be a valid option',
-                };
+            // Handle multiselect arrays
+            if (elem.multiselect && Array.isArray(value)) {
+                // For multiselect, check each value in the array
+                for (const singleValue of value) {
+                    const valueToCheck = isAppSelectOption(singleValue) ? singleValue.value : singleValue;
+                    if (!options.some((e) => e.value === valueToCheck)) {
+                        return {
+                            id: DialogErrorMessages.INVALID_OPTION,
+                            defaultMessage: 'Must be a valid option',
+                        };
+                    }
+                }
+            } else {
+                // Single select validation
+                const valueToCheck = isAppSelectOption(value) ? value.value : value;
+                if (!options.some((e) => e.value === valueToCheck)) {
+                    return {
+                        id: DialogErrorMessages.INVALID_OPTION,
+                        defaultMessage: 'Must be a valid option',
+                    };
+                }
             }
         }
     } else if (type === DialogElementTypes.BOOL) {

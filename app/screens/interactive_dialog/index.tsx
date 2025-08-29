@@ -64,8 +64,8 @@ const SUBMIT_BUTTON_ID = 'submit-interactive-dialog';
 type Errors = {[name: string]: string}
 const emptyErrorsState: Errors = {};
 
-type Values = {[name: string]: string|number|boolean}
-type ValuesAction = {name: string; value: string|number|boolean}
+type Values = {[name: string]: string|number|boolean|string[]}
+type ValuesAction = {name: string; value: string|number|boolean|string[]}
 function valuesReducer(state: Values, action: ValuesAction) {
     if (state[action.name] === action.value) {
         return state;
@@ -77,6 +77,13 @@ function initValues(elements?: DialogElement[]) {
     elements?.forEach((e) => {
         if (e.type === 'bool') {
             values[e.name] = (e.default === true || String(e.default).toLowerCase() === 'true');
+        } else if (e.type === 'select' && e.multiselect && e.default) {
+            // For multiselect, default might be comma-separated string - convert to array
+            if (typeof e.default === 'string') {
+                values[e.name] = e.default.split(',').map((v) => v.trim()).filter((v) => v !== '');
+            } else {
+                values[e.name] = e.default;
+            }
         } else if (e.default) {
             values[e.name] = e.default;
         }
@@ -110,7 +117,7 @@ function InteractiveDialog({
 
     const scrollView = useRef<KeyboardAwareScrollView>(null);
 
-    const onChange = useCallback((name: string, value: string | number | boolean) => {
+    const onChange = useCallback((name: string, value: string | number | boolean | string[]) => {
         dispatchValues({name, value});
     }, []);
 
@@ -151,10 +158,17 @@ function InteractiveDialog({
                     delete submission[elem.name];
                 }
 
-                const newError = checkDialogElementForError(elem, secureGetFromRecord(submission, elem.name));
+                // Validate field BEFORE converting multiselect arrays
+                const fieldValue = secureGetFromRecord(submission, elem.name);
+                const newError = checkDialogElementForError(elem, fieldValue);
                 if (newError) {
                     newErrors[elem.name] = intl.formatMessage({id: newError.id, defaultMessage: newError.defaultMessage}, newError.values);
                     hasErrors = true;
+                }
+
+                // Convert multiselect arrays to comma-separated strings for server AFTER validation
+                if (elem.type === 'select' && elem.multiselect && Array.isArray(submission[elem.name])) {
+                    submission[elem.name] = (submission[elem.name] as string[]).join(',');
                 }
             });
         }
@@ -279,6 +293,7 @@ function InteractiveDialog({
                             dataSource={e.data_source}
                             optional={e.optional}
                             options={e.options}
+                            multiselect={e.multiselect}
                             value={value}
                             onChange={onChange}
                         />
