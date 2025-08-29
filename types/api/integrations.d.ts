@@ -73,6 +73,7 @@ type DialogElement = {
     max_length: number;
     data_source: string;
     options: DialogOption[];
+    multiselect?: boolean;
 };
 
 type InteractiveDialogConfig = {
