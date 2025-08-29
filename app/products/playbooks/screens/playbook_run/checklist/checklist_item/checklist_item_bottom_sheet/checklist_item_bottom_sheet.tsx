@@ -261,13 +261,13 @@ const ChecklistItemBottomSheet = ({
                 testID='checklist_item.due_date'
             />
             <OptionItem
-                type='arrow'
+                type={isDisabled ? 'none' : 'arrow'}
                 icon='slash-forward'
                 label={intl.formatMessage(messages.command)}
                 info={item.command || intl.formatMessage(messages.none)}
                 testID='checklist_item.command'
                 longInfo={true}
-                action={openEditCommandModal}
+                action={isDisabled ? undefined : openEditCommandModal}
             />
         </View>
     );

@@ -300,6 +300,27 @@ describe('ChecklistItemBottomSheet', () => {
         expect(dueDateItem.props.info).toBe('None');
     });
 
+    it('command is disabled when isDisabled is true', () => {
+        const props = getBaseProps();
+        props.isDisabled = true;
+        props.item = TestHelper.fakePlaybookChecklistItemModel({
+            ...props.item,
+            command: 'test command',
+        });
+        const {getByTestId, rerender} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
+
+        let commandItem = getByTestId('checklist_item.command');
+        expect(commandItem).toHaveProp('type', 'none');
+        expect(commandItem).toHaveProp('action', undefined);
+
+        props.isDisabled = false;
+        rerender(<ChecklistItemBottomSheet {...props}/>);
+
+        commandItem = getByTestId('checklist_item.command');
+        expect(commandItem).toHaveProp('type', 'arrow');
+        expect(commandItem).toHaveProp('action', expect.any(Function));
+    });
+
     it('displays correct command information', () => {
         const props = getBaseProps();
         props.item = TestHelper.fakePlaybookChecklistItemModel({
