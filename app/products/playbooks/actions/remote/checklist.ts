@@ -3,7 +3,7 @@
 
 import {forceLogoutIfNecessary} from '@actions/remote/session';
 import NetworkManager from '@managers/network_manager';
-import {updateChecklistItem as localUpdateChecklistItem} from '@playbooks/actions/local/checklist';
+import {setChecklistItemCommand as localSetChecklistItemCommand, updateChecklistItem as localUpdateChecklistItem} from '@playbooks/actions/local/checklist';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 
@@ -96,6 +96,8 @@ export const setChecklistItemCommand = async (
     try {
         const client = NetworkManager.getClient(serverUrl);
         await client.setChecklistItemCommand(playbookRunId, checklistNumber, itemNumber, command);
+
+        await localSetChecklistItemCommand(serverUrl, itemId, command);
         return {data: true};
     } catch (error) {
         logDebug('error on setChecklistItemCommand', getFullErrorMessage(error));

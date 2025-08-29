@@ -9,11 +9,14 @@ import {ScrollView} from 'react-native';
 import OptionBox from '@components/option_box';
 import OptionItem from '@components/option_item';
 import {useIsTablet} from '@hooks/device';
-import {dismissBottomSheet, openUserProfileModal} from '@screens/navigation';
+import {setChecklistItemCommand} from '@playbooks/actions/remote/checklist';
+import {dismissBottomSheet, goToScreen, openUserProfileModal} from '@screens/navigation';
 import {renderWithIntl} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
 import ChecklistItemBottomSheet from './checklist_item_bottom_sheet';
+
+import type EditCommand from '@playbooks/screens/edit_command';
 
 jest.mock('@hooks/device', () => ({
     useIsTablet: jest.fn(),
@@ -29,6 +32,12 @@ jest.mocked(OptionBox).mockImplementation((props) => React.createElement('Option
 
 jest.mock('@components/option_item');
 jest.mocked(OptionItem).mockImplementation((props) => React.createElement('OptionItem', props));
+
+jest.mock('@playbooks/actions/remote/checklist');
+
+jest.mock('@context/server', () => ({
+    useServerUrl: jest.fn().mockReturnValue('server-url'),
+}));
 
 describe('ChecklistItemBottomSheet', () => {
     const mockOnCheck = jest.fn();
@@ -313,6 +322,42 @@ describe('ChecklistItemBottomSheet', () => {
 
         const commandItem = getByTestId('checklist_item.command');
         expect(commandItem.props.info).toBe('None');
+    });
+
+    it('opens the command modal when the command is clicked', () => {
+        const props = getBaseProps();
+        props.checklistNumber = 2;
+        props.itemNumber = 4;
+        const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
+        const commandItem = getByTestId('checklist_item.command');
+
+        act(() => {
+            commandItem.props.action();
+        });
+
+        expect(goToScreen).toHaveBeenCalledWith(
+            'PlaybookEditCommand',
+            'Slash command',
+            {
+                savedCommand: 'test command',
+                updateCommand: expect.any(Function),
+                channelId: 'channel-1',
+            },
+        );
+
+        const updateCommand = (jest.mocked(goToScreen).mock.calls[0][2] as ComponentProps<typeof EditCommand>).updateCommand;
+        act(async () => {
+            updateCommand('new command');
+        });
+
+        expect(setChecklistItemCommand).toHaveBeenCalledWith(
+            'server-url',
+            'run-1',
+            'item-1',
+            2,
+            4,
+            'new command',
+        );
     });
 
     it('handles user profile modal opening correctly', async () => {

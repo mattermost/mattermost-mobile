@@ -352,6 +352,8 @@ describe('ChecklistItem', () => {
 
     it('opens the bottom sheet when the item is pressed', async () => {
         const props = getBaseProps();
+        props.itemNumber = 2;
+        props.checklistNumber = 4;
 
         const {getByText} = renderWithIntl(<ChecklistItem {...props}/>);
 
@@ -372,6 +374,10 @@ describe('ChecklistItem', () => {
         const bottomSheetRenderedComponent = getByTestId('checklist-item-bottom-sheet-component');
         expect(bottomSheetRenderedComponent.props.item).toBe(props.item);
         expect(bottomSheetRenderedComponent.props.teammateNameDisplay).toBe(props.teammateNameDisplay);
+        expect(bottomSheetRenderedComponent.props.runId).toBe(props.playbookRunId);
+        expect(bottomSheetRenderedComponent.props.checklistNumber).toBe(props.checklistNumber);
+        expect(bottomSheetRenderedComponent.props.itemNumber).toBe(props.itemNumber);
+        expect(bottomSheetRenderedComponent.props.channelId).toBe(props.channelId);
 
         bottomSheetRenderedComponent.props.onCheck();
 

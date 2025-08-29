@@ -11,6 +11,7 @@ import {SafeAreaProvider} from 'react-native-safe-area-context';
 
 import {Screens} from '@constants';
 import {withServerDatabase} from '@database/components';
+import EditCommand from '@playbooks/screens/edit_command';
 import PlaybookRun from '@playbooks/screens/playbook_run';
 import PlaybooksRuns from '@playbooks/screens/playbooks_runs';
 
@@ -106,6 +107,12 @@ jest.mock('@playbooks/screens/playbook_run', () => ({
 }));
 jest.mocked(PlaybookRun).mockImplementation((props) => <Text {...props}>{Screens.PLAYBOOK_RUN}</Text>);
 
+jest.mock('@playbooks/screens/edit_command', () => ({
+    __esModule: true,
+    default: jest.fn(),
+}));
+jest.mocked(EditCommand).mockImplementation((props) => <Text {...props}>{Screens.PLAYBOOK_EDIT_COMMAND}</Text>);
+
 describe('Screen Registration', () => {
     let registrator: (screenName: string) => void;
 
@@ -183,6 +190,17 @@ describe('Screen Registration', () => {
         ],
         [
             Screens.PLAYBOOK_RUN,
+            {
+                withServerDatabase: false,
+                withGestures: true,
+                withSafeAreaInsets: true,
+                withManagedConfig: true,
+                withIntl: true,
+                platform: undefined,
+            },
+        ],
+        [
+            Screens.PLAYBOOK_EDIT_COMMAND,
             {
                 withServerDatabase: false,
                 withGestures: true,

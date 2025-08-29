@@ -253,3 +253,33 @@ describe('restoreChecklistItem', () => {
     });
 });
 
+describe('setChecklistItemCommand', () => {
+    test('should set checklist item command successfully', async () => {
+        const playbookRunID = 'run123';
+        const checklistNum = 1;
+        const itemNum = 2;
+        const command = '/test command';
+        const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunID}/checklists/${checklistNum}/item/${itemNum}/command`;
+        const expectedOptions = {method: 'put', body: {command}};
+        const mockResponse = {success: true};
+
+        jest.mocked(client.doFetch).mockResolvedValue(mockResponse);
+
+        const result = await client.setChecklistItemCommand(playbookRunID, checklistNum, itemNum, command);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+        expect(result).toEqual(mockResponse);
+    });
+
+    test('should handle error when setting checklist item command', async () => {
+        const playbookRunID = 'run123';
+        const checklistNum = 1;
+        const itemNum = 2;
+        const command = '/test command';
+
+        jest.mocked(client.doFetch).mockRejectedValue(new Error('Network error'));
+
+        await expect(client.setChecklistItemCommand(playbookRunID, checklistNum, itemNum, command)).rejects.toThrow('Network error');
+    });
+});
+

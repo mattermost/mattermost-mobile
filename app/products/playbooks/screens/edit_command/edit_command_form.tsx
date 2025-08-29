@@ -1,11 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useState, useRef, useCallback} from 'react';
+import React, {useState, useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {
     type LayoutChangeEvent,
-    TextInput,
     View,
     Platform,
     StyleSheet,
@@ -57,9 +56,6 @@ export default function EditCommandForm({
     const {formatMessage} = intl;
     const theme = useTheme();
 
-    const commandInput = useRef<TextInput>(null);
-
-    const mainView = useRef<View>(null);
     const [wrapperHeight, setWrapperHeight] = useState(0);
 
     const [commandFieldHeight, setCommandFieldHeight] = useState(0);
@@ -92,9 +88,8 @@ export default function EditCommandForm({
         <SafeAreaView
             edges={edges}
             style={styles.container}
-            testID='create_or_edit_channel.screen'
+            testID='playbooks.edit_command.form'
             onLayout={onLayoutWrapper}
-            ref={mainView}
         >
             <View style={styles.mainView}>
                 <FloatingTextInput
@@ -107,9 +102,8 @@ export default function EditCommandForm({
                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                     showErrorIcon={false}
                     spellCheck={false}
-                    testID='channel_info_form.header.input'
+                    testID='playbooks.edit_command.input'
                     value={command}
-                    ref={commandInput}
                     theme={theme}
                     onLayout={onLayoutCommand}
                 />

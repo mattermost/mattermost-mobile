@@ -56,7 +56,6 @@ const CreateOrEditChannel = ({
             formatMessage({id: 'playbooks.edit_command.save.button', defaultMessage: 'Save'}),
         );
         base.enabled = canSave;
-        base.showAsAction = 'always';
         base.color = theme.sidebarHeaderTextColor;
         return base;
     }, [formatMessage, canSave, theme.sidebarHeaderTextColor]);
