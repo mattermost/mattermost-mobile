@@ -51,6 +51,7 @@ type Props = {
     dataSource?: string;
     optional?: boolean;
     options?: PostActionOption[];
+    multiselect?: boolean;
     value?: string|number|boolean|string[];
     onChange: (name: string, value: string|number|boolean|string[]) => void;
 }
@@ -66,6 +67,7 @@ function DialogElement({
     dataSource,
     optional = false,
     options,
+    multiselect = false,
     value,
     onChange,
 }: Props) {
@@ -79,14 +81,20 @@ function DialogElement({
         onChange(name, newValue);
     }, [type, subtype, onChange, name]);
 
-    const handleSelect = useCallback((newValue: DialogOption | undefined) => {
+    const handleSelect = useCallback((newValue: SelectedDialogOption) => {
         if (!newValue) {
-            onChange(name, '');
+            onChange(name, multiselect ? [] : '');
             return;
         }
 
-        onChange(name, newValue.value);
-    }, [name, onChange]);
+        if (Array.isArray(newValue)) {
+            // Multiselect: return array of values
+            onChange(name, newValue.map((option) => option.value));
+        } else {
+            // Single select: return single value
+            onChange(name, newValue.value);
+        }
+    }, [name, onChange, multiselect]);
 
     const filteredOptions = useMemo(() => {
         return filterOptions(options);
@@ -125,7 +133,8 @@ function DialogElement({
                     errorText={errorText}
                     placeholder={placeholder}
                     showRequiredAsterisk={true}
-                    selected={getStringValue(value)}
+                    selected={multiselect && Array.isArray(value) ? value : getStringValue(value)}
+                    isMultiselect={multiselect}
                     roundedBorders={false}
                     testID={testID}
                     location={Screens.INTERACTIVE_DIALOG}
