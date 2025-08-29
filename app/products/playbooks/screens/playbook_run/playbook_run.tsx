@@ -251,7 +251,7 @@ export default function PlaybookRun({
                                                 user={owner}
                                                 onPress={readOnly ? openOwnerProfile : openChangeOwnerModal}
                                                 teammateNameDisplay={teammateNameDisplay}
-                                                actionIcon='downArrow'
+                                                actionIcon={readOnly ? undefined : 'downArrow'}
                                             />
                                         </View>
                                     </View>

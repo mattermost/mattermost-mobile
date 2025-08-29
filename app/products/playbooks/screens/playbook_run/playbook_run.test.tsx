@@ -8,9 +8,12 @@ import UserAvatarsStack from '@components/user_avatars_stack';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import DatabaseManager from '@database/manager';
+import {setOwner} from '@playbooks/actions/remote/runs';
 import {openUserProfileModal} from '@screens/navigation';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
+
+import {goToSelectUser} from '../navigation';
 
 import ChecklistList from './checklist_list';
 import ErrorState from './error_state';
@@ -54,6 +57,14 @@ jest.mock('./status_update_indicator');
 jest.mocked(StatusUpdateIndicator).mockImplementation(
     (props) => React.createElement('StatusUpdateIndicator', {testID: 'status-update-indicator', ...props}),
 );
+
+jest.mock('../navigation', () => ({
+    goToSelectUser: jest.fn(),
+}));
+
+jest.mock('@playbooks/actions/remote/runs', () => ({
+    setOwner: jest.fn(),
+}));
 
 describe('PlaybookRun', () => {
     let database: Database;
@@ -159,6 +170,7 @@ describe('PlaybookRun', () => {
         expect(ownerChip.props.user).toBe(props.owner);
         expect(ownerChip.props.onPress).toBeDefined();
         expect(ownerChip.props.teammateNameDisplay).toBe(General.TEAMMATE_NAME_DISPLAY.SHOW_USERNAME);
+        expect(ownerChip.props.actionIcon).toBe(undefined);
 
         ownerChip.props.onPress();
         expect(openUserProfileModal).toHaveBeenCalledWith(expect.anything(), expect.anything(), {
@@ -189,6 +201,33 @@ describe('PlaybookRun', () => {
 
         expect(queryByText('Owner')).toBeTruthy();
         expect(queryByText('Participants')).toBeNull();
+    });
+
+    it('handles owner chip action when not read only', () => {
+        const props = getBaseProps();
+        props.participants.push(TestHelper.fakeUserModel({id: props.currentUserId}));
+        const {getByTestId} = renderWithEverything(<PlaybookRun {...props}/>, {database});
+
+        const ownerChip = getByTestId('user-chip');
+        expect(ownerChip).toHaveProp('actionIcon', 'downArrow');
+        ownerChip.props.onPress();
+
+        expect(goToSelectUser).toHaveBeenCalledWith(
+            'Owner',
+            [...props.participants.map((p) => p.id), props.owner!.id],
+            props.owner!.id,
+            expect.any(Function),
+        );
+        expect(openUserProfileModal).not.toHaveBeenCalled();
+
+        const handleSelect = jest.mocked(goToSelectUser).mock.calls[0][3];
+        handleSelect(TestHelper.fakeUser({id: 'user-2'}));
+
+        expect(setOwner).toHaveBeenCalledWith(
+            serverUrl,
+            props.playbookRun!.id,
+            'user-2',
+        );
     });
 
     it('renders checklist list correctly', () => {

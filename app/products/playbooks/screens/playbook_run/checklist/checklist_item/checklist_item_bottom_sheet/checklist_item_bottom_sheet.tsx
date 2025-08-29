@@ -245,7 +245,7 @@ const ChecklistItemBottomSheet = ({
             handleSelect,
             handleRemove,
         );
-    }, [assignee?.id, handleSelect, intl, participantIds]);
+    }, [assignee?.id, handleRemove, handleSelect, intl, participantIds]);
 
     const renderTaskDetails = () => (
         <View style={styles.taskDetailsContainer}>

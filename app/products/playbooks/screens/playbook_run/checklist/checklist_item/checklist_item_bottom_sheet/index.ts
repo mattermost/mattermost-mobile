@@ -4,7 +4,7 @@
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of as of$, switchMap} from 'rxjs';
 
-import {observePlaybookRunById} from '@playbooks/database/queries/run';
+import {observeParticipantsIdsFromPlaybookModel, observePlaybookRunById} from '@playbooks/database/queries/run';
 import {observeUser} from '@queries/servers/user';
 
 import ChecklistItemBottomSheet, {BOTTOM_SHEET_HEIGHT} from './checklist_item_bottom_sheet';
@@ -35,7 +35,9 @@ const enhanced = withObservables(['item', 'runId'], ({item, runId, database}: Ow
         return {
             item: observedItem,
             assignee,
-            participantIds: observePlaybookRunById(database, runId).pipe(switchMap((run) => of$(run?.participantIds || []))),
+            participantIds: observePlaybookRunById(database, runId).pipe(
+                switchMap((run) => observeParticipantsIdsFromPlaybookModel(run, true)),
+            ),
         };
     }
 

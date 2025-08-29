@@ -189,6 +189,8 @@ function SelectUser({
         }
 
         const sections = new Map<string, UserProfile[]>();
+        const participantsKey = intl.formatMessage(messages.participants);
+        const notParticipantsKey = intl.formatMessage(messages.notParticipants);
 
         const participantsMap = new Set<string>();
         participantIds.forEach((id) => {
@@ -196,7 +198,7 @@ function SelectUser({
         });
 
         profiles.forEach((p) => {
-            const sectionKey = participantsMap.has(p.id) ? intl.formatMessage(messages.participants) : intl.formatMessage(messages.notParticipants);
+            const sectionKey = participantsMap.has(p.id) ? participantsKey : notParticipantsKey;
             const sectionValue = sections.get(sectionKey) || [];
             const section = [...sectionValue, p];
             sections.set(sectionKey, section);
@@ -204,7 +206,8 @@ function SelectUser({
 
         const results = [];
         let index = 0;
-        for (const [k, v] of sections) {
+        for (const k of [participantsKey, notParticipantsKey]) { // This is to ensure order of sections
+            const v = sections.get(k) || [];
             if (v.length) {
                 results.push({
                     first: index === 0,
@@ -255,7 +258,7 @@ function SelectUser({
                 searchFunction={userSearchFunction}
                 createFilter={createUserFilter}
                 testID={'integration_selector.user_list'}
-                location={Screens.INTEGRATION_SELECTOR}
+                location={Screens.PLAYBOOK_SELECT_USER}
                 customSection={customSection}
             />
         </SafeAreaView>

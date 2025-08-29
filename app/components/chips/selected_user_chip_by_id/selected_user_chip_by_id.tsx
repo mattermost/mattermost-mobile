@@ -8,7 +8,7 @@ import SelectedUserChip from '@components/chips/selected_user_chip';
 import type UserModel from '@typings/database/models/servers/user';
 
 type SelectedChipProps = {
-    user?: UserModel | UserProfile;
+    user?: UserModel;
     onPress: (id: string) => void;
     testID?: string;
     teammateNameDisplay: string;
