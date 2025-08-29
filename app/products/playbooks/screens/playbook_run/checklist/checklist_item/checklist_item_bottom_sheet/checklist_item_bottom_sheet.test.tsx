@@ -345,7 +345,7 @@ describe('ChecklistItemBottomSheet', () => {
         expect(commandItem.props.info).toBe('None');
     });
 
-    it('opens the command modal when the command is clicked', () => {
+    it('opens the command modal when the command is clicked', async () => {
         const props = getBaseProps();
         props.checklistNumber = 2;
         props.itemNumber = 4;
@@ -367,7 +367,7 @@ describe('ChecklistItemBottomSheet', () => {
         );
 
         const updateCommand = (jest.mocked(goToScreen).mock.calls[0][2] as ComponentProps<typeof EditCommand>).updateCommand;
-        act(async () => {
+        await act(async () => {
             updateCommand('new command');
         });
 
