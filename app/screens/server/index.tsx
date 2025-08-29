@@ -57,10 +57,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: changeOpacity(theme.centerChannelColor, 0.56),
     },
     appVersionContainer: {
-        height: 60,
-        justifyContent: 'center',
-        alignItems: 'flex-start',
-        paddingLeft: 20,
+        alignItems: 'center',
+        paddingHorizontal: 20,
+        marginTop: 24,
     },
     flex: {
         flex: 1,
@@ -69,8 +68,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         alignItems: 'center',
         flexGrow: 1,
         justifyContent: 'center',
-        paddingBottom: 120,
-        minHeight: '85%',
     },
 }));
 
@@ -425,13 +422,13 @@ const Server = ({
                         url={url}
                         urlError={urlError}
                     />
+                    <View style={styles.appVersionContainer}>
+                        <AppVersion
+                            textStyle={styles.appInfo}
+                            isWrapped={false}
+                        />
+                    </View>
                 </KeyboardAwareScrollView>
-                <View style={styles.appVersionContainer}>
-                    <AppVersion
-                        textStyle={styles.appInfo}
-                        isWrapped={false}
-                    />
-                </View>
             </AnimatedSafeArea>
         </View>
     );
