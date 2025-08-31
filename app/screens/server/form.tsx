@@ -65,7 +65,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     advancedOptionsTitle: {
         color: theme.linkColor,
-        ...typography('Body', 200, 'SemiBold'),
+        ...typography('Body', 75, 'SemiBold'),
     },
     advancedOptionsContent: {
         width: '100%',
