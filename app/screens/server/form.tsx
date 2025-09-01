@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {type RefObject, useCallback, useEffect, useRef, useState} from 'react';
+import React, {type RefObject, useCallback, useRef, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {Keyboard, Pressable, View} from 'react-native';
 
@@ -28,7 +28,6 @@ type Props = {
     handleUrlTextChanged: (text: string) => void;
     keyboardAwareRef: RefObject<KeyboardAwareScrollView>;
     preauthSecret?: string;
-    preauthSecretError?: boolean;
     theme: Theme;
     url?: string;
     urlError?: string;
@@ -100,10 +99,6 @@ const messages = defineMessages({
         id: 'mobile.components.select_server_view.sharedSecretHelp',
         defaultMessage: 'The pre-authentication secret shared by the administrator',
     },
-    preauthSecretInvalid: {
-        id: 'mobile.server_url.preauth_secret.invalid',
-        defaultMessage: 'Invalid pre-authentication secret',
-    },
 });
 
 const ServerForm = ({
@@ -119,7 +114,6 @@ const ServerForm = ({
     handleUrlTextChanged,
     keyboardAwareRef,
     preauthSecret = '',
-    preauthSecretError = false,
     theme,
     url = '',
     urlError,
@@ -131,12 +125,6 @@ const ServerForm = ({
     const styles = getStyleSheet(theme);
 
     const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
-
-    useEffect(() => {
-        if (preauthSecretError && !showAdvancedOptions) {
-            setShowAdvancedOptions(true);
-        }
-    }, [preauthSecretError, showAdvancedOptions]);
 
     useAvoidKeyboard(keyboardAwareRef);
 
@@ -243,7 +231,6 @@ const ServerForm = ({
                             autoCorrect={false}
                             autoCapitalize={'none'}
                             enablesReturnKeyAutomatically={true}
-                            error={preauthSecretError ? formatMessage(messages.preauthSecretInvalid) : undefined}
                             label={formatMessage(messages.preauthSecret)}
                             onChangeText={handlePreauthSecretTextChanged}
                             onSubmitEditing={onConnect}

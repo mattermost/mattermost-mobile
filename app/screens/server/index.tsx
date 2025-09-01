@@ -25,7 +25,7 @@ import SecurityManager from '@managers/security_manager';
 import {getServerByDisplayName, getServerByIdentifier} from '@queries/app/servers';
 import Background from '@screens/background';
 import {dismissModal, goToScreen, loginAnimationOptions, popTopScreen} from '@screens/navigation';
-import {getErrorMessage, isErrorWithStatusCode} from '@utils/errors';
+import {getErrorMessage} from '@utils/errors';
 import {canReceiveNotifications} from '@utils/push_proxy';
 import {loginOptions} from '@utils/server';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -95,7 +95,6 @@ const Server = ({
     const [url, setUrl] = useState<string>('');
     const [displayNameError, setDisplayNameError] = useState<string | undefined>();
     const [urlError, setUrlError] = useState<string | undefined>();
-    const [preauthSecretError, setPreauthSecretError] = useState<boolean>(false);
     const styles = getStyleSheet(theme);
     const {formatMessage} = intl;
     const disableServerUrl = Boolean(managedConfig?.allowOtherServers === 'false' && managedConfig?.serverUrl);
@@ -148,12 +147,12 @@ const Server = ({
     }, [managedConfig?.allowOtherServers, managedConfig?.serverUrl, managedConfig?.serverName, defaultServerUrl]);
 
     useEffect(() => {
-        if (url && displayName && !preauthSecretError) {
+        if (url && displayName) {
             setButtonDisabled(false);
         } else {
             setButtonDisabled(true);
         }
-    }, [url, displayName, preauthSecretError]);
+    }, [url, displayName]);
 
     useEffect(() => {
         const listener = {
@@ -252,10 +251,6 @@ const Server = ({
             setUrlError(undefined);
         }
 
-        if (preauthSecretError) {
-            setPreauthSecretError(false);
-        }
-
         const server = await getServerByDisplayName(displayName);
         const credentials = await getServerCredentials(serverUrl);
         if (server && server.lastActiveAt > 0 && credentials?.token) {
@@ -283,7 +278,6 @@ const Server = ({
 
     const handlePreauthSecretTextChanged = useCallback((text: string) => {
         setPreauthSecret(text);
-        setPreauthSecretError(false);
     }, []);
 
     const isServerUrlValid = (serverUrl?: string) => {
@@ -327,11 +321,7 @@ const Server = ({
         }
 
         if (result.error) {
-            if (isErrorWithStatusCode(result.error) && result.error.status_code === 403) {
-                setPreauthSecretError(true);
-            } else {
-                setUrlError(getErrorMessage(result.error, intl));
-            }
+            setUrlError(getErrorMessage(result.error, intl));
             setButtonDisabled(true);
             setConnecting(false);
             return;
@@ -341,11 +331,7 @@ const Server = ({
         const data = await fetchConfigAndLicense(ping.url, true);
         if (data.error) {
             setButtonDisabled(true);
-            if (isErrorWithStatusCode(data.error) && data.error.status_code === 403) {
-                setPreauthSecretError(true);
-            } else {
-                setUrlError(getErrorMessage(data.error, intl));
-            }
+            setUrlError(getErrorMessage(data.error, intl));
             setConnecting(false);
             return;
         }
@@ -432,7 +418,6 @@ const Server = ({
                         handleUrlTextChanged={handleUrlTextChanged}
                         keyboardAwareRef={keyboardAwareRef}
                         preauthSecret={preauthSecret}
-                        preauthSecretError={preauthSecretError}
                         theme={theme}
                         url={url}
                         urlError={urlError}
