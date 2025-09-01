@@ -5,6 +5,7 @@ import GenericClient from '@mattermost/react-native-network-client';
 import {Linking} from 'react-native';
 import urlParse from 'url-parse';
 
+import * as ClientConstants from '@client/rest/constants';
 import {Files} from '@constants';
 import {emptyFunction} from '@utils/general';
 import {logDebug} from '@utils/log';
@@ -58,11 +59,17 @@ export async function getUrlAfterRedirect(url: string, useHttp = false) {
     }
 }
 
-export async function getServerUrlAfterRedirect(serverUrl: string, useHttp = false) {
+export async function getServerUrlAfterRedirect(serverUrl: string, useHttp = false, preauthSecret?: string) {
     let url = sanitizeUrl(serverUrl, useHttp);
 
+    const headers = {
+        ...(preauthSecret) ? {[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET]: preauthSecret} : {},
+    };
+
     try {
-        const resp = await GenericClient.head(url);
+        const resp = await GenericClient.head(url, {
+            headers,
+        });
         if (resp.redirectUrls?.length) {
             url = resp.redirectUrls[resp.redirectUrls.length - 1];
         }
