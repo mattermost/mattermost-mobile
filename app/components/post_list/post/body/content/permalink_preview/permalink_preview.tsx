@@ -24,6 +24,8 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 const MAX_PERMALINK_PREVIEW_LINES = 4;
 const MAX_PERMALINK_HEIGHT = 506;
 
+const MAX_PERMALINK_HEIGHT = 506;
+
 type PermalinkPreviewProps = {
     embedData: PermalinkEmbedData;
     showPermalinkPreviews: boolean;
@@ -166,6 +168,11 @@ const PermalinkPreview = ({embedData, showPermalinkPreviews, author, locale, tea
     const handlePress = usePreventDoubleTap(useCallback(() => {
         // Navigation will be implemented in Task 5
     }, []));
+
+    const handleContentLayout = useCallback((event: LayoutChangeEvent) => {
+        const {height} = event.nativeEvent.layout;
+        setShowGradient(height >= MAX_PERMALINK_HEIGHT);
+    }, []);
 
     const handleContentLayout = useCallback((event: LayoutChangeEvent) => {
         const {height} = event.nativeEvent.layout;

@@ -31,11 +31,11 @@ type FilesProps = {
 const MAX_VISIBLE_ROW_IMAGES = 4;
 const styles = StyleSheet.create({
     row: {
-        flex: 1,
         flexDirection: 'row',
         marginTop: 5,
+        flexShrink: 0,
     },
-    container: {
+    rowItemContainer: {
         flex: 1,
     },
     gutter: {
@@ -86,7 +86,8 @@ const Files = ({
 
     const renderItems = (items: FileInfo[], moreImagesCount = 0, includeGutter = false) => {
         let nonVisibleImagesCount: number;
-        let container: StyleProp<ViewStyle> = items.length > 1 ? styles.container : undefined;
+
+        let container: StyleProp<ViewStyle> = (includeGutter && items.length > 1) ? styles.rowItemContainer : undefined;
         const containerWithGutter = [container, styles.gutter];
         const wrapperWidth = getViewPortWidth(isReplyPost, isTablet) - 6;
 
