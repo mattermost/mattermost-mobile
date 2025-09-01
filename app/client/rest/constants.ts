@@ -10,6 +10,7 @@ export const HEADER_REQUESTED_WITH = 'X-Requested-With';
 export const HEADER_TOKEN = 'Token';
 export const HEADER_USER_AGENT = 'User-Agent';
 export const HEADER_X_CSRF_TOKEN = 'X-CSRF-Token';
+export const HEADER_X_MATTERMOST_PREAUTH_SECRET = 'X-Mattermost-Preauth-Secret';
 export const HEADER_X_VERSION_ID = 'X-Version-Id';
 export const DEFAULT_LIMIT_BEFORE = 30;
 export const DEFAULT_LIMIT_AFTER = 30;
