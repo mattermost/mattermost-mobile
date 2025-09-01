@@ -24,6 +24,7 @@ export type ShareExtensionDataToSend = {
   serverUrl: string;
   token: string;
   userId: string;
+  preauthSecret?: string;
 }
 
 export interface Spec extends TurboModule {

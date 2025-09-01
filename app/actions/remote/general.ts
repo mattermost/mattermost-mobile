@@ -33,10 +33,10 @@ async function getDeviceIdForPing(serverUrl: string, checkDeviceId: boolean) {
 }
 
 // Default timeout interval for ping is 5 seconds
-export const doPing = async (serverUrl: string, verifyPushProxy: boolean, timeoutInterval = 5000) => {
+export const doPing = async (serverUrl: string, verifyPushProxy: boolean, timeoutInterval = 5000, preauthSecret?: string) => {
     let client: Client;
     try {
-        client = await NetworkManager.createClient(serverUrl);
+        client = await NetworkManager.createClient(serverUrl, undefined, preauthSecret);
     } catch (error) {
         return {error};
     }

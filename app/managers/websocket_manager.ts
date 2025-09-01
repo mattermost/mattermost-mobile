@@ -48,10 +48,10 @@ class WebsocketManagerSingleton {
         this.netConnected = Boolean(netInfo.isConnected);
         this.netType = netInfo.type;
         serverCredentials.forEach(
-            ({serverUrl, token}) => {
+            ({serverUrl, token, preauthSecret}) => {
                 try {
                     DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-                    this.createClient(serverUrl, token);
+                    this.createClient(serverUrl, token, preauthSecret);
                 } catch (error) {
                     logError('WebsocketManager init error', error);
                 }
@@ -80,12 +80,12 @@ class WebsocketManagerSingleton {
         this.getConnectedSubject(serverUrl).next('not_connected');
     };
 
-    public createClient = (serverUrl: string, bearerToken: string) => {
+    public createClient = (serverUrl: string, bearerToken: string, preauthSecret?: string) => {
         if (this.clients[serverUrl]) {
             this.invalidateClient(serverUrl);
         }
 
-        const client = new WebSocketClient(serverUrl, bearerToken);
+        const client = new WebSocketClient(serverUrl, bearerToken, preauthSecret);
 
         client.setFirstConnectCallback(() => this.onFirstConnect(serverUrl));
         client.setEventCallback((evt: WebSocketMessage) => handleWebSocketEvent(serverUrl, evt));
