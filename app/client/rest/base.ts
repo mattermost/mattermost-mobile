@@ -9,11 +9,11 @@ import ClientTracking from './tracking';
 import type {APIClientInterface} from '@mattermost/react-native-network-client';
 
 export default class ClientBase extends ClientTracking {
-    constructor(apiClient: APIClientInterface, serverUrl: string, bearerToken?: string, csrfToken?: string) {
+    constructor(apiClient: APIClientInterface, serverUrl: string, bearerToken?: string, csrfToken?: string, preauthSecret?: string) {
         super(apiClient);
 
-        if (bearerToken) {
-            this.setBearerToken(bearerToken);
+        if (bearerToken || preauthSecret) {
+            this.setClientCredentials(bearerToken || '', preauthSecret || '');
         }
         if (csrfToken) {
             this.setCSRFToken(csrfToken);

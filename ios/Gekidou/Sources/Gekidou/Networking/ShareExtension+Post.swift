@@ -1,6 +1,6 @@
 //
 //  File.swift
-//  
+//
 //
 //  Created by Elias Nahum on 26-06-22.
 //
@@ -12,14 +12,15 @@ extension ShareExtension {
     public func uploadFiles(serverUrl: String, channelId: String, message: String,
                             files: [String], completionHandler: @escaping () -> Void) -> String? {
         let id = "mattermost-share-upload-\(UUID().uuidString)"
-        
+
         createUploadSessionData(
             id: id, serverUrl: serverUrl,
             channelId: channelId, message: message,
             files: files
         )
-        
-        guard let token = try? Keychain.default.getToken(for: serverUrl) else {return "Could not retrieve the session token from the KeyChain"}
+
+        guard let credentials = try? Keychain.default.getCredentials(for: serverUrl),
+              let token = credentials.token else {return "Could not retrieve the session token from the KeyChain"}
 
         if !files.isEmpty {
             createBackroundSession(id: id)
@@ -31,14 +32,18 @@ extension ShareExtension {
             )
             for file in files {
                 if let fileUrl = URL(string: file),
-                   fileUrl.isFileURL {
+                    fileUrl.isFileURL {
                     let filename = fileUrl.lastPathComponent
                     let safeFilename = filename.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
                     if let safeFilename = safeFilename,
-                       let url = URL(string: "\(serverUrl)/api/v4/files?channel_id=\(channelId)&filename=\(safeFilename)") {
+                        let url = URL(string: "\(serverUrl)/api/v4/files?channel_id=\(channelId)&filename=\(safeFilename)") {
                         var uploadRequest = URLRequest(url: url)
                         uploadRequest.httpMethod = "POST"
                         uploadRequest.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+
+                        if let preauthSecret = credentials.preauthSecret {
+                            uploadRequest.addValue(preauthSecret, forHTTPHeaderField: GekidouConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET)
+                        }
 
                         if let task = backgroundSession?.uploadTask(with: uploadRequest, fromFile: fileUrl) {
                             os_log(
@@ -85,10 +90,10 @@ extension ShareExtension {
             )
             self.postMessageForSession(withId: id, completionHandler: completionHandler)
         }
-        
+
         return nil
     }
-    
+
     func postMessageForSession(withId id: String, completionHandler: (() -> Void)? = nil) {
         guard let data = getUploadSessionData(id: id)
         else {
@@ -99,12 +104,12 @@ extension ShareExtension {
             )
             return
         }
-        
+
         self.removeUploadSessionData(id: id)
         self.deleteUploadedFiles(files: data.files)
-        
+
         if let serverUrl = data.serverUrl,
-           let channelId = data.channelId {
+            let channelId = data.channelId {
             Network.default.createPost(
                 serverUrl: serverUrl,
                 channelId: channelId,
@@ -120,7 +125,7 @@ extension ShareExtension {
                             err.localizedDescription
                         )
                     }
-                    
+
                     if let handler = completionHandler {
                         os_log(
                             OSLogType.default,

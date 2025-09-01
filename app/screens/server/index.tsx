@@ -56,12 +56,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     appInfo: {
         color: changeOpacity(theme.centerChannelColor, 0.56),
     },
+    appVersionContainer: {
+        alignItems: 'center',
+        paddingHorizontal: 20,
+        marginTop: 24,
+    },
     flex: {
         flex: 1,
     },
     scrollContainer: {
         alignItems: 'center',
-        height: '90%',
+        flexGrow: 1,
         justifyContent: 'center',
     },
 }));
@@ -86,6 +91,7 @@ const Server = ({
     const [connecting, setConnecting] = useState(false);
     const [displayName, setDisplayName] = useState<string>('');
     const [buttonDisabled, setButtonDisabled] = useState(true);
+    const [preauthSecret, setPreauthSecret] = useState<string>('');
     const [url, setUrl] = useState<string>('');
     const [displayNameError, setDisplayNameError] = useState<string | undefined>();
     const [urlError, setUrlError] = useState<string | undefined>();
@@ -192,6 +198,7 @@ const Server = ({
             launchType,
             license,
             serverDisplayName: displayName,
+            serverPreauthSecret: preauthSecret.trim() || undefined,
             serverUrl,
             ssoOptions,
             theme,
@@ -269,6 +276,10 @@ const Server = ({
         setUrl(text);
     }, []);
 
+    const handlePreauthSecretTextChanged = useCallback((text: string) => {
+        setPreauthSecret(text);
+    }, []);
+
     const isServerUrlValid = (serverUrl?: string) => {
         const testUrl = sanitizeUrl(serverUrl ?? url);
         if (!isValidUrl(testUrl)) {
@@ -290,7 +301,7 @@ const Server = ({
             cancelPing = undefined;
         };
 
-        const ping = await getServerUrlAfterRedirect(pingUrl, !retryWithHttp);
+        const ping = await getServerUrlAfterRedirect(pingUrl, !retryWithHttp, preauthSecret.trim() || undefined);
         if (!ping.url) {
             cancelPing();
             if (retryWithHttp) {
@@ -303,7 +314,7 @@ const Server = ({
             }
             return;
         }
-        const result = await doPing(ping.url, true, managedConfig?.timeout ? parseInt(managedConfig?.timeout, 10) : undefined);
+        const result = await doPing(ping.url, true, managedConfig?.timeout ? parseInt(managedConfig?.timeout, 10) : undefined, preauthSecret.trim() || undefined);
 
         if (canceled) {
             return;
@@ -403,14 +414,21 @@ const Server = ({
                         disableServerUrl={disableServerUrl}
                         handleConnect={handleConnect}
                         handleDisplayNameTextChanged={handleDisplayNameTextChanged}
+                        handlePreauthSecretTextChanged={handlePreauthSecretTextChanged}
                         handleUrlTextChanged={handleUrlTextChanged}
                         keyboardAwareRef={keyboardAwareRef}
+                        preauthSecret={preauthSecret}
                         theme={theme}
                         url={url}
                         urlError={urlError}
                     />
+                    <View style={styles.appVersionContainer}>
+                        <AppVersion
+                            textStyle={styles.appInfo}
+                            isWrapped={false}
+                        />
+                    </View>
                 </KeyboardAwareScrollView>
-                <AppVersion textStyle={styles.appInfo}/>
             </AnimatedSafeArea>
         </View>
     );
