@@ -24,8 +24,6 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 const MAX_PERMALINK_PREVIEW_LINES = 4;
 const MAX_PERMALINK_HEIGHT = 506;
 
-const MAX_PERMALINK_HEIGHT = 506;
-
 type PermalinkPreviewProps = {
     embedData: PermalinkEmbedData;
     showPermalinkPreviews: boolean;
@@ -82,6 +80,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         messageContainer: {
             marginBottom: 8,
+            maxHeight: 20 * MAX_PERMALINK_PREVIEW_LINES,
+            overflow: 'hidden',
         },
         messageText: {
             color: theme.centerChannelColor,
@@ -114,16 +114,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const PermalinkPreview = ({embedData, showPermalinkPreviews, author, locale, teammateNameDisplay, isOriginPostDeleted, location, canDownloadFiles = true, enableSecureFilePreview = false, filesInfo = [], parentLocation, parentPostId}: PermalinkPreviewProps) => {
+    if (!showPermalinkPreviews || isOriginPostDeleted) {
+        return null;
+    }
+
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const [showGradient, setShowGradient] = useState(false);
 
     const textStyles = getMarkdownTextStyles(theme);
     const blockStyles = getMarkdownBlockStyles(theme);
-
-    if (!showPermalinkPreviews || isOriginPostDeleted) {
-        return null;
-    }
 
     const {
         post,
@@ -168,11 +168,6 @@ const PermalinkPreview = ({embedData, showPermalinkPreviews, author, locale, tea
     const handlePress = usePreventDoubleTap(useCallback(() => {
         // Navigation will be implemented in Task 5
     }, []));
-
-    const handleContentLayout = useCallback((event: LayoutChangeEvent) => {
-        const {height} = event.nativeEvent.layout;
-        setShowGradient(height >= MAX_PERMALINK_HEIGHT);
-    }, []);
 
     const handleContentLayout = useCallback((event: LayoutChangeEvent) => {
         const {height} = event.nativeEvent.layout;
