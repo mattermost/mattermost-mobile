@@ -83,6 +83,32 @@ describe('dialog_conversion', () => {
                 data_source: '',
                 options: [],
             },
+            {
+                name: 'date_field',
+                type: DialogElementTypes.DATE,
+                display_name: 'Date Field',
+                optional: false,
+                default: '',
+                placeholder: '',
+                help_text: '',
+                min_length: 0,
+                max_length: 0,
+                data_source: '',
+                options: [],
+            },
+            {
+                name: 'datetime_field',
+                type: DialogElementTypes.DATETIME,
+                display_name: 'DateTime Field',
+                optional: true,
+                default: '',
+                placeholder: '',
+                help_text: '',
+                min_length: 0,
+                max_length: 0,
+                data_source: '',
+                options: [],
+            },
         ];
 
         it('should convert text field values correctly', () => {
@@ -387,6 +413,36 @@ describe('dialog_conversion', () => {
             });
             expect(result.errors).toEqual([]);
         });
+
+        it('should convert date and datetime field values correctly', () => {
+            const values: AppFormValues = {
+                date_field: '2024-01-15',
+                datetime_field: '2024-01-15T14:30:00.000Z',
+            };
+
+            const result = convertAppFormValuesToDialogSubmission(values, mockElements);
+
+            expect(result.submission).toEqual({
+                date_field: '2024-01-15',
+                datetime_field: '2024-01-15T14:30:00.000Z',
+            });
+            expect(result.errors).toEqual([]);
+        });
+
+        it('should handle empty date and datetime field values', () => {
+            const values: AppFormValues = {
+                date_field: '',
+                datetime_field: '',
+            };
+
+            const result = convertAppFormValuesToDialogSubmission(values, mockElements);
+
+            expect(result.submission).toEqual({
+                date_field: '',
+                datetime_field: '',
+            });
+            expect(result.errors).toEqual([]);
+        });
     });
 
     describe('convertDialogElementToAppField', () => {
@@ -521,6 +577,66 @@ describe('dialog_conversion', () => {
                     {label: 'Option 2', value: 'opt2'},
                     {label: 'Option 3', value: 'opt3'},
                 ],
+            });
+        });
+
+        it('should convert dynamic select element correctly', () => {
+            const element: DialogElement = {
+                name: 'dynamic_field',
+                type: DialogElementTypes.SELECT,
+                display_name: 'Dynamic Select Field',
+                help_text: 'Choose from dynamic options',
+                optional: false,
+                data_source: 'dynamic',
+                data_source_url: 'https://example.com/lookup',
+                options: [],
+                default: '',
+                placeholder: '',
+                min_length: 0,
+                max_length: 0,
+            };
+
+            const result = convertDialogElementToAppField(element);
+
+            expect(result).toEqual({
+                name: 'dynamic_field',
+                type: 'dynamic_select',
+                is_required: true,
+                label: 'Dynamic Select Field',
+                description: 'Choose from dynamic options',
+                position: 0,
+                options: [],
+            });
+        });
+
+        it('should convert multiselect dynamic select element correctly', () => {
+            const element: DialogElement = {
+                name: 'multi_dynamic_field',
+                type: DialogElementTypes.SELECT,
+                display_name: 'Multi Dynamic Select',
+                help_text: 'Choose multiple from dynamic options',
+                optional: true,
+                multiselect: true,
+                data_source: 'dynamic',
+                data_source_url: 'https://example.com/lookup',
+                options: [],
+                default: '',
+                placeholder: '',
+                min_length: 0,
+                max_length: 0,
+            };
+
+            const result = convertDialogElementToAppField(element);
+
+            expect(result).toEqual({
+                name: 'multi_dynamic_field',
+                type: 'dynamic_select',
+                is_required: false,
+                label: 'Multi Dynamic Select',
+                description: 'Choose multiple from dynamic options',
+                position: 0,
+                multiselect: true,
+                options: [],
             });
         });
 
@@ -666,6 +782,62 @@ describe('dialog_conversion', () => {
             const result = convertDialogElementToAppField(element);
 
             expect(result.value).toBeUndefined();
+        });
+
+        it('should convert date element correctly', () => {
+            const element: DialogElement = {
+                name: 'date_field',
+                type: DialogElementTypes.DATE,
+                display_name: 'Date Field',
+                help_text: 'Select a date',
+                optional: false,
+                default: '2024-01-15',
+                placeholder: '',
+                min_length: 0,
+                max_length: 0,
+                data_source: '',
+                options: [],
+            };
+
+            const result = convertDialogElementToAppField(element);
+
+            expect(result).toEqual({
+                name: 'date_field',
+                type: 'date',
+                is_required: true,
+                label: 'Date Field',
+                description: 'Select a date',
+                position: 0,
+                value: '2024-01-15',
+            });
+        });
+
+        it('should convert datetime element correctly', () => {
+            const element: DialogElement = {
+                name: 'datetime_field',
+                type: DialogElementTypes.DATETIME,
+                display_name: 'DateTime Field',
+                help_text: 'Select a date and time',
+                optional: true,
+                default: '2024-01-15T14:30:00.000Z',
+                placeholder: '',
+                min_length: 0,
+                max_length: 0,
+                data_source: '',
+                options: [],
+            };
+
+            const result = convertDialogElementToAppField(element);
+
+            expect(result).toEqual({
+                name: 'datetime_field',
+                type: 'datetime',
+                is_required: false,
+                label: 'DateTime Field',
+                description: 'Select a date and time',
+                position: 0,
+                value: '2024-01-15T14:30:00.000Z',
+            });
         });
     });
 

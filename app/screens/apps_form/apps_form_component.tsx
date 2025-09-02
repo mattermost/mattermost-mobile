@@ -129,6 +129,12 @@ function initValues(fields?: AppField[]) {
         if (field.type === 'bool') {
             // For boolean fields, use explicit value or default to false
             values[field.name] = field.value === true || String(field.value).toLowerCase() === 'true';
+        } else if (field.type === 'date') {
+            // Set default to current date in YYYY-MM-DD format if no value provided
+            values[field.name] = field.value || new Date().toISOString().split('T')[0];
+        } else if (field.type === 'datetime') {
+            // Set default to current datetime in ISO format if no value provided
+            values[field.name] = field.value || new Date().toISOString();
         } else if (field.value !== undefined && field.value !== null) {
             // Use provided value for non-boolean fields
             values[field.name] = field.value;

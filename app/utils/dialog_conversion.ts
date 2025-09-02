@@ -74,6 +74,12 @@ export function convertAppFormValuesToDialogSubmission(
                 submission[fieldName] = Boolean(value);
                 break;
 
+            case DialogElementTypes.DATE:
+            case DialogElementTypes.DATETIME:
+                // Date/datetime values should already be in proper ISO format from the picker
+                submission[fieldName] = String(value || '');
+                break;
+
             default:
                 submission[fieldName] = String(value || '');
         }

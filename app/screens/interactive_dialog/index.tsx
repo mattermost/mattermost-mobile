@@ -85,6 +85,12 @@ function initValues(elements?: DialogElement[]) {
             } else {
                 values[e.name] = e.default;
             }
+        } else if (e.type === 'date') {
+            // Set default to current date in YYYY-MM-DD format
+            values[e.name] = e.default || new Date().toISOString().split('T')[0];
+        } else if (e.type === 'datetime') {
+            // Set default to current datetime in ISO format
+            values[e.name] = e.default || new Date().toISOString();
         } else if (e.default) {
             values[e.name] = e.default;
         }
@@ -330,6 +336,7 @@ function InteractiveDialog({
                             value={value}
                             onChange={onChange}
                             getDynamicOptions={elementGetDynamicOptions}
+                            theme={theme}
                         />
                     );
                 })}

@@ -1,10 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import moment, {type Moment} from 'moment-timezone';
 import React, {useCallback, useMemo} from 'react';
-import {View} from 'react-native';
+import {View, Text} from 'react-native';
 
 import AutocompleteSelector from '@components/autocomplete_selector';
+import DateTimePicker from '@components/data_time_selector';
+import FormattedDate from '@components/formatted_date';
+import FormattedTime from '@components/formatted_time';
 import Markdown from '@components/markdown';
 import BoolSetting from '@components/settings/bool_setting';
 import RadioSetting from '@components/settings/radio_setting';
@@ -39,6 +43,14 @@ const appSelectOptionToDialogOption = (option: AppSelectOption): DialogOption =>
 });
 
 const extractOptionValue = (v: AppSelectOption) => v.value || '';
+
+const getDateValue = (value: AppFormValue): Moment | undefined => {
+    if (typeof value === 'string' && value) {
+        const parsed = moment(value);
+        return parsed.isValid() ? parsed : undefined;
+    }
+    return undefined;
+};
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -101,6 +113,16 @@ const AppsFormField = React.memo<Props>(({
 
         onChange(name, dialogOptionToAppSelectOption(newValue));
     }, [onChange, field, name]);
+
+    const handleDateChange = useCallback((selectedDate: Moment) => {
+        if (field.type === AppFieldTypes.DATE) {
+            // For date-only fields, return YYYY-MM-DD format
+            onChange(name, selectedDate.format('YYYY-MM-DD'));
+        } else if (field.type === AppFieldTypes.DATETIME) {
+            // For datetime fields, return full ISO string
+            onChange(name, selectedDate.toISOString());
+        }
+    }, [name, onChange, field.type]);
 
     const getDynamicOptions = useCallback(async (userInput = ''): Promise<DialogOption[]> => {
         if (!field.name) {
@@ -244,6 +266,109 @@ const AppsFormField = React.memo<Props>(({
                         baseTextStyle={style.markdownFieldText}
                         theme={theme}
                     />
+                </View>
+            );
+        }
+        case AppFieldTypes.DATE:
+        case AppFieldTypes.DATETIME: {
+            const selectedDate = getDateValue(value) || moment();
+            const hasValue = Boolean(value);
+
+            const dateTimeStyles = {
+                container: {
+                    marginBottom: 24,
+                },
+                labelContainer: {
+                    flexDirection: 'row' as const,
+                    marginTop: 15,
+                    marginBottom: 10,
+                    marginLeft: 15,
+                    position: 'relative' as const,
+                    flex: 1,
+                },
+                label: {
+                    fontSize: 14,
+                    color: theme.centerChannelColor,
+                },
+                asterisk: {
+                    color: theme.errorTextColor,
+                    fontSize: 14,
+                },
+                rightPosition: {
+                    position: 'absolute' as const,
+                    right: 14,
+                },
+                dateTimeText: {
+                    color: theme.linkColor,
+                    fontSize: 14,
+                },
+                helpText: {
+                    fontSize: 12,
+                    color: theme.centerChannelColor,
+                    marginLeft: 15,
+                    marginTop: 4,
+                    opacity: 0.64,
+                },
+                errorText: {
+                    fontSize: 12,
+                    color: theme.errorTextColor,
+                    marginLeft: 15,
+                    marginTop: 4,
+                },
+            };
+
+            return (
+                <View style={dateTimeStyles.container}>
+                    <View style={dateTimeStyles.labelContainer}>
+                        <Text style={dateTimeStyles.label}>
+                            {displayName}
+                            {field.is_required && <Text style={dateTimeStyles.asterisk}>{' *'}</Text>}
+                        </Text>
+
+                        {hasValue && (
+                            <View style={dateTimeStyles.rightPosition}>
+                                {field.type === AppFieldTypes.DATE ? (
+                                    <FormattedDate
+                                        value={selectedDate.toDate()}
+                                        format={{dateStyle: 'medium'}}
+                                        style={dateTimeStyles.dateTimeText}
+                                    />
+                                ) : (
+                                    <Text style={dateTimeStyles.dateTimeText}>
+                                        <FormattedDate
+                                            value={selectedDate.toDate()}
+                                            format={{dateStyle: 'medium'}}
+                                        />
+                                        {' at '}
+                                        <FormattedTime
+                                            isMilitaryTime={false}
+                                            timezone={''}
+                                            value={selectedDate.toDate()}
+                                        />
+                                    </Text>
+                                )}
+                            </View>
+                        )}
+                    </View>
+
+                    <DateTimePicker
+                        timezone={null}
+                        theme={theme}
+                        handleChange={handleDateChange}
+                        initialDate={selectedDate}
+                        dateOnly={field.type === AppFieldTypes.DATE}
+                    />
+
+                    {field.description && (
+                        <Text style={dateTimeStyles.helpText}>
+                            {field.description}
+                        </Text>
+                    )}
+                    {errorText && (
+                        <Text style={dateTimeStyles.errorText}>
+                            {errorText}
+                        </Text>
+                    )}
                 </View>
             );
         }

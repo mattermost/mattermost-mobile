@@ -121,5 +121,5 @@ type PostActionResponse = {
     trigger_id: string;
 };
 
-type InteractiveDialogElementType = 'text' | 'textarea' | 'select' | 'radio' | 'bool'
+type InteractiveDialogElementType = 'text' | 'textarea' | 'select' | 'radio' | 'bool' | 'date' | 'datetime'
 type InteractiveDialogTextSubtype = 'email' | 'number' | 'tel' | 'url' | 'password'

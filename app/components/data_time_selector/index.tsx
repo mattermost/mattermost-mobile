@@ -12,7 +12,7 @@ import {switchMap} from 'rxjs/operators';
 import {Preferences} from '@constants';
 import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
-import {getCurrentMomentForTimezone, getRoundedTime} from '@utils/helpers';
+import {getCurrentMomentForTimezone, getRoundedTime, getUtcOffsetForTimeZone} from '@utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
@@ -25,6 +25,7 @@ type Props = {
     showInitially?: AndroidMode;
     initialDate?: Moment;
     minuteInterval?: 5 | 30;
+    dateOnly?: boolean;
 }
 
 type AndroidMode = 'date' | 'time';
@@ -50,7 +51,7 @@ const DateTimeSelector = ({
     isMilitaryTime,
     theme,
     showInitially,
-    initialDate,
+    initialDate, dateOnly = false,
     minuteInterval = 30,
 }: Props) => {
     const styles = getStyleSheet(theme);
@@ -77,13 +78,23 @@ const DateTimeSelector = ({
     };
 
     const showDatepicker = () => {
-        showMode('date');
-        handleChange(moment(date));
+        if (show && mode === 'date') {
+            // Toggle off if already showing date picker
+            setShow(false);
+        } else {
+            // Show date picker
+            showMode('date');
+        }
     };
 
     const showTimepicker = () => {
-        showMode('time');
-        handleChange(moment(date));
+        if (show && mode === 'time') {
+            // Toggle off if already showing time picker
+            setShow(false);
+        } else {
+            // Show time picker
+            showMode('time');
+        }
     };
 
     return (
@@ -98,12 +109,14 @@ const DateTimeSelector = ({
                     title='Select Date'
                     color={theme.buttonBg}
                 />
-                <Button
-                    testID={'custom_status_clear_after.menu_item.date_and_time.button.time'}
-                    onPress={showTimepicker}
-                    title='Select Time'
-                    color={theme.buttonBg}
-                />
+                {!dateOnly && (
+                    <Button
+                        testID={'custom_status_clear_after.menu_item.date_and_time.button.time'}
+                        onPress={showTimepicker}
+                        title='Select Time'
+                        color={theme.buttonBg}
+                    />
+                )}
             </View>
             {show && (
                 <DateTimePicker
