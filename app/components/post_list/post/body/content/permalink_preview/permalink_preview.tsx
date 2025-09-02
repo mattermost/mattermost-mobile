@@ -34,7 +34,7 @@ type PermalinkPreviewProps = {
     location: AvailableScreens;
     canDownloadFiles?: boolean;
     enableSecureFilePreview?: boolean;
-    filesInfo?: FileInfo[];
+    filesInfo: FileInfo[];
     parentLocation?: string;
     parentPostId?: string;
 };
