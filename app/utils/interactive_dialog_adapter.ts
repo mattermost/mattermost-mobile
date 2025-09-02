@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {submitInteractiveDialog} from '@actions/remote/integrations';
+import {submitInteractiveDialog, lookupInteractiveDialog} from '@actions/remote/integrations';
 import {AppCallResponseTypes} from '@constants/apps';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
@@ -206,5 +206,59 @@ export class InteractiveDialogAdapter {
                 text: '',
             },
         };
+    }
+
+    /**
+     * Perform dynamic lookup for select fields
+     * Uses lookupInteractiveDialog action following webapp pattern
+     */
+    static async performDynamicLookup(
+        element: DialogElement,
+        userInput: string,
+        serverUrl: string,
+        config?: InteractiveDialogConfig,
+    ): Promise<AppSelectOption[]> {
+        if (!element.data_source_url) {
+            return [];
+        }
+
+        try {
+            // Create DialogSubmission following webapp pattern
+            const submission: DialogSubmission = {
+                url: element.data_source_url,
+                callback_id: config?.dialog.callback_id || '',
+                state: config?.dialog.state || '',
+                user_id: '', // Will be populated by action
+                channel_id: '', // Will be populated by action
+                team_id: '', // Will be populated by action
+                cancelled: false,
+                submission: {
+                    selected_field: element.name,
+                },
+            };
+
+            // Use lookupInteractiveDialog action like webapp
+            const result = await lookupInteractiveDialog(serverUrl, submission);
+
+            if (result?.data && typeof result.data === 'object' && 'items' in result.data) {
+                const responseData = result.data as {items: DialogOption[]};
+                if (Array.isArray(responseData.items)) {
+                    // API returns {items: DialogOption[]} format
+                    const mappedOptions = responseData.items.map((option: DialogOption) => ({
+                        label: option.text || '',
+                        value: option.value || '',
+                    }));
+                    return mappedOptions;
+                }
+            }
+
+            if (result?.error) {
+                logDebug('Dynamic lookup failed', getFullErrorMessage(result.error));
+            }
+        } catch (error) {
+            logDebug('Dynamic lookup error', getFullErrorMessage(error));
+        }
+
+        return [];
     }
 }
