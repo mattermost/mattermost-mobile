@@ -9,7 +9,7 @@ import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getDeviceToken} from '@queries/app/global';
 import {getExpandedLinks, getPushVerificationStatus} from '@queries/servers/system';
-import {getFullErrorMessage} from '@utils/errors';
+import {getFullErrorMessage, isErrorWithStatusCode} from '@utils/errors';
 import {logDebug} from '@utils/log';
 
 import {forceLogoutIfNecessary} from './session';
@@ -52,6 +52,11 @@ export const doPing = async (serverUrl: string, verifyPushProxy: boolean, timeou
         defaultMessage: 'Cannot connect to the server.',
     });
 
+    const preauthSecretError = defineMessage({
+        id: 'mobile.server_ping_failed_preauth',
+        defaultMessage: 'Cannot connect to the server. Does the server require a pre-authentication secret?',
+    });
+
     const deviceId = await getDeviceIdForPing(serverUrl, verifyPushProxy);
 
     let response: ClientResponse;
@@ -73,6 +78,9 @@ export const doPing = async (serverUrl: string, verifyPushProxy: boolean, timeou
     } catch (error) {
         logDebug('Server ping threw an exception', getFullErrorMessage(error));
         NetworkManager.invalidateClient(serverUrl);
+        if (isErrorWithStatusCode(error) && error.status_code === 403) {
+            return {error: {intl: preauthSecretError, status_code: 403}};
+        }
         return {error: {intl: pingError}};
     }
 

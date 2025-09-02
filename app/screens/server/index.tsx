@@ -146,12 +146,12 @@ const Server = ({
     }, [managedConfig?.allowOtherServers, managedConfig?.serverUrl, managedConfig?.serverName, defaultServerUrl]);
 
     useEffect(() => {
-        if (url && displayName) {
+        if (url && displayName && !urlError) {
             setButtonDisabled(false);
         } else {
             setButtonDisabled(true);
         }
-    }, [url, displayName]);
+    }, [url, displayName, urlError]);
 
     useEffect(() => {
         const listener = {
@@ -277,7 +277,12 @@ const Server = ({
 
     const handlePreauthSecretTextChanged = useCallback((text: string) => {
         setPreauthSecret(text);
-    }, []);
+
+        // Clear any connection errors when preauth secret is modified
+        if (urlError) {
+            setUrlError(undefined);
+        }
+    }, [urlError]);
 
     const isServerUrlValid = (serverUrl?: string) => {
         const testUrl = sanitizeUrl(serverUrl ?? url);
@@ -300,20 +305,20 @@ const Server = ({
             cancelPing = undefined;
         };
 
-        const ping = await getServerUrlAfterRedirect(pingUrl, !retryWithHttp, preauthSecret.trim() || undefined);
-        if (!ping.url) {
+        const headRequest = await getServerUrlAfterRedirect(pingUrl, !retryWithHttp, preauthSecret.trim() || undefined);
+        if (!headRequest.url) {
             cancelPing();
             if (retryWithHttp) {
                 const nurl = pingUrl.replace('https:', 'http:');
                 pingServer(nurl, false);
             } else {
-                setUrlError(getErrorMessage(ping.error, intl));
+                setUrlError(getErrorMessage(headRequest.error, intl));
                 setButtonDisabled(true);
                 setConnecting(false);
             }
             return;
         }
-        const result = await doPing(ping.url, true, managedConfig?.timeout ? parseInt(managedConfig?.timeout, 10) : undefined, preauthSecret.trim() || undefined);
+        const result = await doPing(headRequest.url, true, managedConfig?.timeout ? parseInt(managedConfig?.timeout, 10) : undefined, preauthSecret.trim() || undefined);
 
         if (canceled) {
             return;
@@ -326,8 +331,8 @@ const Server = ({
             return;
         }
 
-        canReceiveNotifications(ping.url, result.canReceiveNotifications as string, intl);
-        const data = await fetchConfigAndLicense(ping.url, true);
+        canReceiveNotifications(headRequest.url, result.canReceiveNotifications as string, intl);
+        const data = await fetchConfigAndLicense(headRequest.url, true);
         if (data.error) {
             setButtonDisabled(true);
             setUrlError(getErrorMessage(data.error, intl));
@@ -345,7 +350,7 @@ const Server = ({
         }
 
         if (data.config.MobileJailbreakProtection === 'true') {
-            const isJailbroken = await SecurityManager.isDeviceJailbroken(ping.url, data.config.SiteName);
+            const isJailbroken = await SecurityManager.isDeviceJailbroken(headRequest.url, data.config.SiteName);
             if (isJailbroken) {
                 setConnecting(false);
                 return;
@@ -353,7 +358,7 @@ const Server = ({
         }
 
         if (data.config.MobileEnableBiometrics === 'true') {
-            const biometricsResult = await SecurityManager.authenticateWithBiometrics(ping.url, data.config.SiteName);
+            const biometricsResult = await SecurityManager.authenticateWithBiometrics(headRequest.url, data.config.SiteName);
             if (!biometricsResult) {
                 setConnecting(false);
                 return;
@@ -361,7 +366,7 @@ const Server = ({
         }
 
         const server = await getServerByIdentifier(data.config.DiagnosticId);
-        const credentials = await getServerCredentials(ping.url);
+        const credentials = await getServerCredentials(headRequest.url);
         setConnecting(false);
 
         if (server && server.lastActiveAt > 0 && credentials?.token) {
@@ -373,7 +378,7 @@ const Server = ({
             return;
         }
 
-        displayLogin(ping.url, data.config!, data.license!);
+        displayLogin(headRequest.url, data.config!, data.license!);
     };
 
     return (

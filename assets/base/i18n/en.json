@@ -840,6 +840,7 @@
   "mobile.server_link.unreachable_user.error": "We can't redirect you to the DM. The user specified is unknown.",
   "mobile.server_name.exists": "You are using this name for another server.",
   "mobile.server_ping_failed": "Cannot connect to the server.",
+  "mobile.server_ping_failed_preauth": "Cannot connect to the server. Does the server require a pre-authentication secret?",
   "mobile.server_requires_client_certificate": "Server requires client certificate for authentication.",
   "mobile.server_upgrade.button": "OK",
   "mobile.server_upgrade.description": "\nA server upgrade is required to use the Mattermost app. Please ask your System Administrator for details.\n",

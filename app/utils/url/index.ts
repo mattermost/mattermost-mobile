@@ -7,6 +7,7 @@ import urlParse from 'url-parse';
 
 import * as ClientConstants from '@client/rest/constants';
 import {Files} from '@constants';
+import {isErrorWithStatusCode} from '@utils/errors';
 import {emptyFunction} from '@utils/general';
 import {logDebug} from '@utils/log';
 
@@ -75,6 +76,9 @@ export async function getServerUrlAfterRedirect(serverUrl: string, useHttp = fal
         }
     } catch (error) {
         logDebug('getServerUrlAfterRedirect error', url, error);
+        if (isErrorWithStatusCode(error) && error.status_code === 403) {
+            return {error: {...error, status_code: 403}};
+        }
         return {error};
     }
 
