@@ -4,10 +4,15 @@
 import React, {useEffect, useState, useCallback} from 'react';
 import {DeviceEventEmitter, View, type LayoutChangeEvent} from 'react-native';
 
-import Files from '@components/files/files';
+import Files, {type FilesProps} from '@components/files/files';
 import {Events} from '@constants';
 
-const PermalinkFiles = (props: React.ComponentProps<typeof Files> & {parentLocation?: string; parentPostId?: string}) => {
+type PermalinkFilesProps = FilesProps & {
+    parentLocation?: string;
+    parentPostId?: string;
+};
+
+const PermalinkFiles = (props: PermalinkFilesProps) => {
     const {parentLocation, parentPostId, ...filesProps} = props;
     const [layoutWidth, setLayoutWidth] = useState(0);
 

@@ -16,7 +16,7 @@ import {getViewPortWidth} from '@utils/images';
 
 import File from './file';
 
-type FilesProps = {
+export type FilesProps = {
     canDownloadFiles: boolean;
     enableSecureFilePreview: boolean;
     failed?: boolean;
