@@ -53,10 +53,29 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
         }
     }, [config, isAppsFormEnabled]);
 
-    // Create performLookupCall - not used for basic dialogs but required by AppsFormComponent
-    const performLookupCall = useCallback(async (): Promise<DoAppCallResult<AppLookupResponse>> => {
-        return {data: {type: 'ok', data: {items: []}}};
-    }, []);
+    // Helper function to find dialog element
+    const findDialogElement = (fieldName: string) => {
+        const elements = config.dialog.elements || [];
+        return elements.find((e) => e.name === fieldName);
+    };
+
+    // Create performLookupCall for dynamic select fields
+    const performLookupCall = useCallback(async (field: AppField, values: AppFormValues, userInput: AppFormValue): Promise<DoAppCallResult<AppLookupResponse>> => {
+        try {
+            // Find the field in the dialog configuration
+            const element = findDialogElement(field.name || '');
+
+            if (!element || element.data_source !== 'dynamic' || !element.data_source_url) {
+                return {data: {type: 'ok', data: {items: []}}};
+            }
+
+            // Make the dynamic lookup request using InteractiveDialogAdapter
+            const result = await InteractiveDialogAdapter.performDynamicLookup(element, String(userInput || ''), serverUrl);
+            return {data: {type: 'ok', data: {items: result}}};
+        } catch (error) {
+            return {data: {type: 'ok', data: {items: []}}};
+        }
+    }, [config, serverUrl]);
 
     // Create refreshOnSelect - not used for basic dialogs but required by AppsFormComponent
     const refreshOnSelect = useCallback(async (): Promise<DoAppCallResult<FormResponseData>> => {

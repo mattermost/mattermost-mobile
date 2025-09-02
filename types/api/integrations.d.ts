@@ -72,6 +72,7 @@ type DialogElement = {
     min_length: number;
     max_length: number;
     data_source: string;
+    data_source_url?: string;
     options: DialogOption[];
     multiselect?: boolean;
 };

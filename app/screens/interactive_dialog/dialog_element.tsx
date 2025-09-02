@@ -54,6 +54,7 @@ type Props = {
     multiselect?: boolean;
     value?: string|number|boolean|string[];
     onChange: (name: string, value: string|number|boolean|string[]) => void;
+    getDynamicOptions?: (userInput?: string) => Promise<DialogOption[]>;
 }
 function DialogElement({
     displayName,
@@ -70,6 +71,7 @@ function DialogElement({
     multiselect = false,
     value,
     onChange,
+    getDynamicOptions,
 }: Props) {
     const testID = `InteractiveDialogElement.${name}`;
     const handleChange = useCallback((newValue: string | boolean | string[]) => {
@@ -129,6 +131,7 @@ function DialogElement({
                     options={filteredOptions}
                     optional={optional}
                     onSelected={handleSelect}
+                    getDynamicOptions={getDynamicOptions}
                     helpText={helpText}
                     errorText={errorText}
                     placeholder={placeholder}
