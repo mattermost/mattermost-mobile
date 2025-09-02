@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useCallback} from 'react';
 import {DeviceEventEmitter, View, type LayoutChangeEvent} from 'react-native';
 
 import Files from '@components/files/files';
@@ -11,22 +11,26 @@ const PermalinkFiles = (props: React.ComponentProps<typeof Files> & {parentLocat
     const {parentLocation, parentPostId, ...filesProps} = props;
     const [layoutWidth, setLayoutWidth] = useState(0);
 
+    const listener = useCallback((viewableItemsMap: Record<string, boolean>) => {
+        if (!parentLocation || !parentPostId) {
+            return;
+        }
+
+        const parentKey = `${parentLocation}-${parentPostId}`;
+        if (viewableItemsMap[parentKey]) {
+            const viewableItems = {[`${filesProps.location}-${filesProps.postId}`]: true};
+            DeviceEventEmitter.emit(Events.ITEM_IN_VIEWPORT, viewableItems);
+        }
+    }, [parentLocation, parentPostId, filesProps.location, filesProps.postId]);
+
     useEffect(() => {
         if (!parentLocation || !parentPostId) {
             return undefined;
         }
 
-        const listener = (viewableItemsMap: Record<string, boolean>) => {
-            const parentKey = `${parentLocation}-${parentPostId}`;
-            if (viewableItemsMap[parentKey]) {
-                const viewableItems = {[`${props.location}-${props.postId}`]: true};
-                DeviceEventEmitter.emit(Events.ITEM_IN_VIEWPORT, viewableItems);
-            }
-        };
-
-        DeviceEventEmitter.addListener(Events.ITEM_IN_VIEWPORT, listener);
-        return () => DeviceEventEmitter.removeAllListeners(Events.ITEM_IN_VIEWPORT);
-    }, [parentLocation, parentPostId, props.location, props.postId]);
+        const subscription = DeviceEventEmitter.addListener(Events.ITEM_IN_VIEWPORT, listener);
+        return () => subscription.remove();
+    }, [listener, parentLocation, parentPostId]);
 
     const onLayout = (event: LayoutChangeEvent) => {
         setLayoutWidth(event.nativeEvent.layout.width);
@@ -37,6 +41,7 @@ const PermalinkFiles = (props: React.ComponentProps<typeof Files> & {parentLocat
             <Files
                 {...filesProps}
                 layoutWidth={layoutWidth}
+                isPermalinkPreview={true}
             />
         </View>
     );

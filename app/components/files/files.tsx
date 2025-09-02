@@ -26,6 +26,7 @@ type FilesProps = {
     isReplyPost: boolean;
     postId?: string;
     postProps?: Record<string, unknown>;
+    isPermalinkPreview?: boolean;
 }
 
 const MAX_VISIBLE_ROW_IMAGES = 4;
@@ -59,6 +60,7 @@ const Files = ({
     location,
     postId,
     postProps,
+    isPermalinkPreview = false,
 }: FilesProps) => {
     const galleryIdentifier = `${postId}-fileAttachments-${location}`;
     const [inViewPort, setInViewPort] = useState(false);
@@ -87,7 +89,11 @@ const Files = ({
     const renderItems = (items: FileInfo[], moreImagesCount = 0, includeGutter = false) => {
         let nonVisibleImagesCount: number;
 
-        let container: StyleProp<ViewStyle> = (includeGutter && items.length > 1) ? styles.rowItemContainer : undefined;
+        // Apply flex: 1 for multiple items, except in permalink previews where vertical
+        // document lists should not use flex to prevent shrinking under maxHeight constraints.
+        // Horizontal image rows (includeGutter=true) still need flex for space distribution.
+        const shouldApplyFlex = items.length > 1 && !(isPermalinkPreview && !includeGutter);
+        let container: StyleProp<ViewStyle> = shouldApplyFlex ? styles.rowItemContainer : undefined;
         const containerWithGutter = [container, styles.gutter];
         const wrapperWidth = getViewPortWidth(isReplyPost, isTablet) - 6;
 
