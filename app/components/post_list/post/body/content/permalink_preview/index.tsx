@@ -3,7 +3,7 @@
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of as of$} from 'rxjs';
-import {switchMap, distinctUntilChanged} from 'rxjs/operators';
+import {switchMap, distinctUntilChanged, map} from 'rxjs/operators';
 
 import {fetchUsersByIds} from '@actions/remote/user';
 import {withServerUrl} from '@context/server';
@@ -15,18 +15,21 @@ import {observeUserOrFetch, observeTeammateNameDisplay, observeCurrentUser} from
 import PermalinkPreview from './permalink_preview';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
+import type PostModel from '@typings/database/models/servers/post';
 
 type OwnProps = WithDatabaseArgs & {
-    embedData: PermalinkEmbedData;
+    post: PostModel;
     serverUrl?: string;
 };
 
-const enhance = withObservables(['embedData', 'serverUrl'], ({database, embedData, serverUrl}: OwnProps) => {
+const enhance = withObservables(['post', 'serverUrl'], ({database, post, serverUrl}: OwnProps) => {
     const showPermalinkPreviews = observeConfigBooleanValue(database, 'EnablePermalinkPreviews', false);
     const teammateNameDisplay = observeTeammateNameDisplay(database);
 
-    const userId = embedData?.post?.user_id;
-    const author = userId ? observeUserOrFetch(database, serverUrl || '', userId, fetchUsersByIds) : of$(undefined);
+    const embedData = post.observe().pipe(
+        map((p) => p.metadata?.embeds?.[0]?.data as PermalinkEmbedData | undefined),
+        distinctUntilChanged(),
+    );
 
     const currentUser = observeCurrentUser(database);
     const locale = currentUser.pipe(
@@ -34,13 +37,22 @@ const enhance = withObservables(['embedData', 'serverUrl'], ({database, embedDat
         distinctUntilChanged(),
     );
 
-    const isOriginPostDeleted = embedData?.post_id ? observePost(database, embedData.post_id).pipe(
-        switchMap((p) => {
-            const initialDeleted = Boolean(embedData?.post?.delete_at > 0 || embedData?.post?.state === 'DELETED');
-            return of$(p ? p.deleteAt > 0 : initialDeleted);
+    const author = embedData.pipe(
+        switchMap((data) => {
+            const userId = data?.post?.user_id;
+            return userId ? observeUserOrFetch(database, serverUrl || '', userId, fetchUsersByIds) : of$(undefined);
         }),
-        distinctUntilChanged(),
-    ) : of$(false);
+    );
+
+    const isOriginPostDeleted = embedData.pipe(
+        switchMap((data) => {
+            if (!data?.post_id) {
+                return of$(false);
+            }
+            return observePost(database, data.post_id);
+        }),
+        map((p) => Boolean(p && typeof p === 'object' && 'deleteAt' in p && p.deleteAt && p.deleteAt > 0)),
+    );
 
     return {
         showPermalinkPreviews,
@@ -51,6 +63,7 @@ const enhance = withObservables(['embedData', 'serverUrl'], ({database, embedDat
         canDownloadFiles: observeCanDownloadFiles(database),
         enableSecureFilePreview: observeEnableSecureFilePreview(database),
         currentUser,
+        embedData,
     };
 });
 

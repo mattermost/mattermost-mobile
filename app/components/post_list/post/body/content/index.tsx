@@ -110,7 +110,7 @@ const Content = ({isReplyPost, layoutWidth, location, post, theme}: ContentProps
         case contentType.permalink:
             return (
                 <PermalinkPreview
-                    embedData={post.metadata!.embeds![0].data as PermalinkEmbedData}
+                    post={post}
                     location={location}
                     parentLocation={location}
                     parentPostId={post.id}

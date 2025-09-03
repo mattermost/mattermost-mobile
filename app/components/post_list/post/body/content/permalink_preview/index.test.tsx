@@ -14,6 +14,34 @@ import EnhancedPermalinkPreview from './index';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database} from '@nozbe/watermelondb';
+import type PostModel from '@typings/database/models/servers/post';
+
+const createPostWithPermalinkEmbed = async (
+    operator: ServerDataOperator,
+    database: Database,
+    embedData: PermalinkEmbedData,
+): Promise<PostModel> => {
+    const postWithPermalink = TestHelper.fakePost({
+        id: `referencing-post-${Date.now()}`,
+        metadata: {
+            embeds: [{
+                type: 'permalink' as PostEmbedType,
+                url: '',
+                data: embedData,
+            }],
+        },
+    });
+
+    const models = await operator.handlePosts({
+        actionType: 'POSTS.RECEIVED_NEW' as 'POSTS.RECEIVED_NEW',
+        order: [postWithPermalink.id],
+        posts: [postWithPermalink],
+        prepareRecordsOnly: true,
+    });
+    await operator.batchRecords(models, 'test');
+
+    return await database.get('Post').find(postWithPermalink.id) as PostModel;
+};
 
 jest.mock('./permalink_preview', () => ({
     __esModule: true,
@@ -75,9 +103,30 @@ describe('PermalinkPreview Enhanced Component', () => {
             channel_id: 'channel-123',
         };
 
+        const postWithPermalink = TestHelper.fakePost({
+            id: 'referencing-post',
+            metadata: {
+                embeds: [{
+                    type: 'permalink' as PostEmbedType,
+                    url: '',
+                    data: embedData,
+                }],
+            },
+        });
+
+        const models = await operator.handlePosts({
+            actionType: 'POSTS.RECEIVED_NEW' as 'POSTS.RECEIVED_NEW',
+            order: [postWithPermalink.id],
+            posts: [postWithPermalink],
+            prepareRecordsOnly: true,
+        });
+        await operator.batchRecords(models, 'test');
+
+        const postModel = await database.get('Post').find(postWithPermalink.id) as PostModel;
+
         const {getByTestId} = renderWithEverything(
             <EnhancedPermalinkPreview
-                embedData={embedData}
+                post={postModel}
                 location={Screens.CHANNEL}
             />,
             {database, serverUrl},
@@ -106,9 +155,11 @@ describe('PermalinkPreview Enhanced Component', () => {
             channel_id: 'channel-123',
         };
 
+        const postModel = await createPostWithPermalinkEmbed(operator, database, embedData);
+
         const {getByTestId} = renderWithEverything(
             <EnhancedPermalinkPreview
-                embedData={embedData}
+                post={postModel}
                 location={Screens.CHANNEL}
             />,
             {database, serverUrl},
@@ -145,9 +196,11 @@ describe('PermalinkPreview Enhanced Component', () => {
             channel_id: 'channel-123',
         };
 
+        const postModel = await createPostWithPermalinkEmbed(operator, database, embedData);
+
         const {getByTestId} = renderWithEverything(
             <EnhancedPermalinkPreview
-                embedData={embedData}
+                post={postModel}
                 location={Screens.CHANNEL}
             />,
             {database, serverUrl},
@@ -182,9 +235,11 @@ describe('PermalinkPreview Enhanced Component', () => {
             channel_id: 'channel-123',
         };
 
+        const postModel = await createPostWithPermalinkEmbed(operator, database, embedData);
+
         const {getByTestId} = renderWithEverything(
             <EnhancedPermalinkPreview
-                embedData={embedData}
+                post={postModel}
                 location={Screens.CHANNEL}
             />,
             {database, serverUrl},
@@ -209,9 +264,11 @@ describe('PermalinkPreview Enhanced Component', () => {
             channel_id: 'channel-123',
         };
 
+        const postModel = await createPostWithPermalinkEmbed(operator, database, embedData);
+
         const {getByTestId} = renderWithEverything(
             <EnhancedPermalinkPreview
-                embedData={embedData}
+                post={postModel}
                 location={Screens.CHANNEL}
             />,
             {database, serverUrl},
@@ -248,9 +305,11 @@ describe('PermalinkPreview Enhanced Component', () => {
             channel_id: 'channel-123',
         };
 
+        const postModel = await createPostWithPermalinkEmbed(operator, database, embedData);
+
         const {getByTestId} = renderWithEverything(
             <EnhancedPermalinkPreview
-                embedData={embedData}
+                post={postModel}
                 location={Screens.CHANNEL}
             />,
             {database, serverUrl},
