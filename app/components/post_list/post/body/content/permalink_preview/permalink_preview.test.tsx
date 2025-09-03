@@ -248,6 +248,165 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
         expect(profilePicture).toBeTruthy();
     });
 
+    it('should enable mentions in markdown component', () => {
+        const currentUser = TestHelper.fakeUserModel({
+            id: 'current-user-123',
+            mentionKeys: [{key: 'testuser', caseSensitive: false}],
+        });
+        const props = {...baseProps, currentUser};
+        renderWithIntlAndTheme(
+            <PermalinkPreview {...props}/>,
+        );
+
+        expect(Markdown).toHaveBeenCalledWith(
+            expect.objectContaining({
+                disableAtMentions: false,
+                mentionKeys: [{key: 'testuser', caseSensitive: false}],
+            }),
+            expect.any(Object),
+        );
+    });
+
+    it('should use empty mention keys when currentUser is not provided', () => {
+        renderWithIntlAndTheme(
+            <PermalinkPreview {...baseProps}/>,
+        );
+
+        expect(Markdown).toHaveBeenCalledWith(
+            expect.objectContaining({
+                disableAtMentions: false,
+                mentionKeys: [],
+            }),
+            expect.any(Object),
+        );
+    });
+
+    describe('External Links', () => {
+        it('should not render external link when no embeds are present', () => {
+            const {queryByTestId} = renderWithIntlAndTheme(
+                <PermalinkPreview {...baseProps}/>,
+            );
+
+            expect(queryByTestId('permalink-preview-external-link')).toBeNull();
+        });
+
+        it('should render external link when opengraph embed is present', () => {
+            const propsWithLink = {
+                ...baseProps,
+                embedData: {
+                    ...baseProps.embedData,
+                    post: {
+                        ...baseProps.embedData.post,
+                        metadata: {
+                            ...baseProps.embedData.post.metadata,
+                            embeds: [{
+                                type: 'opengraph' as PostEmbedType,
+                                url: 'https://example.com',
+                                data: {
+                                    title: 'Example Website',
+                                    description: 'This is an example website',
+                                    site_name: 'Example',
+                                },
+                            }],
+                        },
+                    },
+                },
+            };
+
+            const {getByTestId, getByText} = renderWithIntlAndTheme(
+                <PermalinkPreview {...propsWithLink}/>,
+            );
+
+            expect(getByTestId('permalink-preview-external-link')).toBeTruthy();
+            expect(getByText('Example Website')).toBeTruthy();
+            expect(getByText('This is an example website')).toBeTruthy();
+        });
+
+        it('should show fallback text when link data is incomplete', () => {
+            const propsWithIncompleteLink = {
+                ...baseProps,
+                embedData: {
+                    ...baseProps.embedData,
+                    post: {
+                        ...baseProps.embedData.post,
+                        metadata: {
+                            ...baseProps.embedData.post.metadata,
+                            embeds: [{
+                                type: 'opengraph' as PostEmbedType,
+                                url: 'https://example.com',
+                                data: {},
+                            }],
+                        },
+                    },
+                },
+            };
+
+            const {getByText} = renderWithIntlAndTheme(
+                <PermalinkPreview {...propsWithIncompleteLink}/>,
+            );
+
+            expect(getByText('External Link')).toBeTruthy();
+            expect(getByText('https://example.com')).toBeTruthy();
+        });
+
+        it('should prioritize title over site_name', () => {
+            const propsWithBothTitleAndSiteName = {
+                ...baseProps,
+                embedData: {
+                    ...baseProps.embedData,
+                    post: {
+                        ...baseProps.embedData.post,
+                        metadata: {
+                            ...baseProps.embedData.post.metadata,
+                            embeds: [{
+                                type: 'opengraph' as PostEmbedType,
+                                url: 'https://example.com',
+                                data: {
+                                    title: 'Page Title',
+                                    site_name: 'Site Name',
+                                    description: 'Description text',
+                                },
+                            }],
+                        },
+                    },
+                },
+            };
+
+            const {getByText, queryByText} = renderWithIntlAndTheme(
+                <PermalinkPreview {...propsWithBothTitleAndSiteName}/>,
+            );
+
+            expect(getByText('Page Title')).toBeTruthy();
+            expect(queryByText('Site Name')).toBeNull();
+        });
+
+        it('should not render external link for non-opengraph embeds', () => {
+            const propsWithImageEmbed = {
+                ...baseProps,
+                embedData: {
+                    ...baseProps.embedData,
+                    post: {
+                        ...baseProps.embedData.post,
+                        metadata: {
+                            ...baseProps.embedData.post.metadata,
+                            embeds: [{
+                                type: 'image' as PostEmbedType,
+                                url: 'https://example.com/image.jpg',
+                                data: {},
+                            }],
+                        },
+                    },
+                },
+            };
+
+            const {queryByTestId} = renderWithIntlAndTheme(
+                <PermalinkPreview {...propsWithImageEmbed}/>,
+            );
+
+            expect(queryByTestId('permalink-preview-external-link')).toBeNull();
+        });
+    });
+
     describe('File Attachments', () => {
         const mockFileInfo: FileInfo = {
             id: 'file-123',

@@ -1,13 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
-import {useIntl} from 'react-intl';
+import React from 'react';
 import {Text, TouchableOpacity, View} from 'react-native';
 
+import {useExternalLinkHandler} from '@hooks/use_external_link_handler';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {tryOpenURL} from '@utils/url';
-import {onOpenLinkError} from '@utils/url/links';
 
 import OpengraphImage from './opengraph_image';
 
@@ -61,7 +59,6 @@ const selectOpenGraphData = (url: string, metadata: PostMetadata | undefined | n
 };
 
 const Opengraph = ({isReplyPost, layoutWidth, location, metadata, postId, showLinkPreviews, theme}: OpengraphProps) => {
-    const intl = useIntl();
     const link = metadata?.embeds![0]!.url || '';
     const openGraphData = selectOpenGraphData(link, metadata);
 
@@ -76,13 +73,7 @@ const Opengraph = ({isReplyPost, layoutWidth, location, metadata, postId, showLi
         openGraphData.images.length &&
         metadata?.images);
 
-    const goToLink = useCallback(() => {
-        const onError = () => {
-            onOpenLinkError(intl);
-        };
-
-        tryOpenURL(link, onError);
-    }, [intl, link]);
+    const goToLink = useExternalLinkHandler(link);
 
     let siteName;
     if (openGraphData.site_name) {
