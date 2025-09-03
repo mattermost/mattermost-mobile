@@ -54,7 +54,7 @@ export const doPing = async (serverUrl: string, verifyPushProxy: boolean, timeou
 
     const preauthSecretError = defineMessage({
         id: 'mobile.server_ping_failed_preauth',
-        defaultMessage: 'Cannot connect to the server. Does the server require a pre-authentication secret?',
+        defaultMessage: 'Cannot connect to the server. It may require an authentication secret.',
     });
 
     const deviceId = await getDeviceIdForPing(serverUrl, verifyPushProxy);
