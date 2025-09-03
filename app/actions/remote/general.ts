@@ -79,7 +79,7 @@ export const doPing = async (serverUrl: string, verifyPushProxy: boolean, timeou
         logDebug('Server ping threw an exception', getFullErrorMessage(error));
         NetworkManager.invalidateClient(serverUrl);
         if (isErrorWithStatusCode(error) && error.status_code === 403) {
-            return {error: {intl: preauthSecretError, status_code: 403}};
+            return {error: {intl: preauthSecretError}};
         }
         return {error: {intl: pingError}};
     }
