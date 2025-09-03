@@ -16,6 +16,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
 
+import ExternalLinkPreview from './external_link_preview';
 import PermalinkFiles from './permalink_files';
 
 import type UserModel from '@typings/database/models/servers/user';
@@ -253,6 +254,11 @@ const PermalinkPreview = ({
                             />
                         ) : null}
                     </View>
+
+                    <ExternalLinkPreview
+                        embeds={embedData?.post?.metadata?.embeds}
+                        testID='permalink-preview-external-link'
+                    />
 
                     {hasFiles && (
                         <PermalinkFiles

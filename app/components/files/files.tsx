@@ -48,6 +48,9 @@ const styles = StyleSheet.create({
     marginTop: {
         marginTop: 10,
     },
+    rowPermalinkPreview: {
+        marginTop: 0,
+    },
 });
 
 const Files = ({
@@ -145,7 +148,7 @@ const Files = ({
 
         return (
             <View
-                style={[styles.row, {width: portraitPostWidth}]}
+                style={[styles.row, {width: portraitPostWidth}, isPermalinkPreview && styles.rowPermalinkPreview]}
                 testID='image-row'
             >
                 { renderItems(visibleImages, nonVisibleImagesCount, true) }
