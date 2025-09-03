@@ -48,7 +48,6 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
         isOriginPostDeleted: false,
         canDownloadFiles: true,
         enableSecureFilePreview: false,
-        filesInfo: [],
         parentLocation: Screens.CHANNEL,
         parentPostId: 'parent-post-123',
     };
@@ -262,6 +261,19 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
             user_id: 'user-123',
         };
 
+        const createPropsWithFiles = (files: FileInfo[]) => ({
+            ...baseProps,
+            embedData: {
+                ...baseProps.embedData,
+                post: {
+                    ...baseProps.embedData.post,
+                    metadata: {
+                        files,
+                    },
+                },
+            },
+        });
+
         it('should not render PermalinkFiles when filesInfo is empty', () => {
             const {queryByTestId} = renderWithIntlAndTheme(
                 <PermalinkPreview {...baseProps}/>,
@@ -271,10 +283,7 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
         });
 
         it('should render PermalinkFiles when filesInfo has files', () => {
-            const props = {
-                ...baseProps,
-                filesInfo: [mockFileInfo],
-            };
+            const props = createPropsWithFiles([mockFileInfo]);
             const {getByTestId} = renderWithIntlAndTheme(
                 <PermalinkPreview {...props}/>,
             );
@@ -288,10 +297,7 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
                 {...mockFileInfo, id: 'file-456', name: 'image.jpg', mime_type: 'image/jpeg'},
                 {...mockFileInfo, id: 'file-789', name: 'document.txt', mime_type: 'text/plain'},
             ];
-            const props = {
-                ...baseProps,
-                filesInfo: multipleFiles,
-            };
+            const props = createPropsWithFiles(multipleFiles);
             const {getByTestId} = renderWithIntlAndTheme(
                 <PermalinkPreview {...props}/>,
             );
@@ -302,7 +308,13 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
         it('should handle undefined filesInfo gracefully', () => {
             const props = {
                 ...baseProps,
-                filesInfo: undefined as unknown as FileInfo[],
+                embedData: {
+                    ...baseProps.embedData,
+                    post: {
+                        ...baseProps.embedData.post,
+                        metadata: {},
+                    },
+                },
             };
 
             expect(() => {
@@ -316,10 +328,7 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
                 {...mockFileInfo, id: 'file-2', name: 'meeting-notes.docx', mime_type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'},
                 {...mockFileInfo, id: 'file-3', name: 'vacation-photo.jpg', mime_type: 'image/jpeg', width: 1920, height: 1080, has_preview_image: true},
             ];
-            const props = {
-                ...baseProps,
-                filesInfo: filesWithNames,
-            };
+            const props = createPropsWithFiles(filesWithNames);
 
             const {getByText, queryByText} = renderWithIntlAndTheme(
                 <PermalinkPreview {...props}/>,
@@ -336,10 +345,7 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
                 {...mockFileInfo, id: 'file-1', name: 'small-file.txt', size: 1024}, // 1024 B
                 {...mockFileInfo, id: 'file-2', name: 'large-file.pdf', size: 5242880}, // 5 MB
             ];
-            const props = {
-                ...baseProps,
-                filesInfo: filesWithSizes,
-            };
+            const props = createPropsWithFiles(filesWithSizes);
 
             const {getByText} = renderWithIntlAndTheme(
                 <PermalinkPreview {...props}/>,
@@ -354,10 +360,7 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
                 {...mockFileInfo, id: 'file-1', name: 'document.pdf', mime_type: 'application/pdf', extension: 'pdf'},
                 {...mockFileInfo, id: 'file-2', name: 'spreadsheet.xlsx', mime_type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', extension: 'xlsx'},
             ];
-            const props = {
-                ...baseProps,
-                filesInfo: mixedFiles,
-            };
+            const props = createPropsWithFiles(mixedFiles);
 
             const {getByTestId, getByText} = renderWithIntlAndTheme(
                 <PermalinkPreview {...props}/>,
@@ -376,10 +379,7 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
                 name: 'empty-file.txt',
                 size: 0,
             };
-            const props = {
-                ...baseProps,
-                filesInfo: [fileWithZeroSize],
-            };
+            const props = createPropsWithFiles([fileWithZeroSize]);
 
             const {getByText} = renderWithIntlAndTheme(
                 <PermalinkPreview {...props}/>,
@@ -398,10 +398,7 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
                 mime_type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
                 size: 2097152,
             };
-            const props = {
-                ...baseProps,
-                filesInfo: [fileWithExtension],
-            };
+            const props = createPropsWithFiles([fileWithExtension]);
 
             const {getByText} = renderWithIntlAndTheme(
                 <PermalinkPreview {...props}/>,
@@ -418,10 +415,7 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
                 {...mockFileInfo, id: 'file-mb', name: 'medium.pdf', size: 3145728},
                 {...mockFileInfo, id: 'file-gb', name: 'large.zip', size: 2147483648},
             ];
-            const props = {
-                ...baseProps,
-                filesInfo: filesWithVariousSizes,
-            };
+            const props = createPropsWithFiles(filesWithVariousSizes);
 
             const {getByText} = renderWithIntlAndTheme(
                 <PermalinkPreview {...props}/>,
@@ -441,10 +435,7 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
                 {...mockFileInfo, id: 'file-999b', name: 'almost-kb.txt', size: 999},
                 {...mockFileInfo, id: 'file-1025b', name: 'just-over-kb.txt', size: 1025},
             ];
-            const props = {
-                ...baseProps,
-                filesInfo: edgeCaseFiles,
-            };
+            const props = createPropsWithFiles(edgeCaseFiles);
 
             const {getByText} = renderWithIntlAndTheme(
                 <PermalinkPreview {...props}/>,
@@ -464,10 +455,7 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
                 {...mockFileInfo, id: 'file-special3', name: 'file_with_underscores.txt', size: 512},
                 {...mockFileInfo, id: 'file-special4', name: 'file(with)parentheses.xlsx', size: 4096},
             ];
-            const props = {
-                ...baseProps,
-                filesInfo: filesWithSpecialNames,
-            };
+            const props = createPropsWithFiles(filesWithSpecialNames);
 
             const {getByText} = renderWithIntlAndTheme(
                 <PermalinkPreview {...props}/>,
@@ -481,17 +469,12 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
 
         it('should differentiate between image and document file display', () => {
             const mixedFileTypes = [
-
                 {...mockFileInfo, id: 'doc-1', name: 'report.pdf', mime_type: 'application/pdf', extension: 'pdf'},
                 {...mockFileInfo, id: 'doc-2', name: 'spreadsheet.xlsx', mime_type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', extension: 'xlsx'},
-
                 {...mockFileInfo, id: 'img-1', name: 'screenshot.png', mime_type: 'image/png', extension: 'png', width: 1024, height: 768, has_preview_image: true},
                 {...mockFileInfo, id: 'img-2', name: 'photo.jpeg', mime_type: 'image/jpeg', extension: 'jpeg', width: 1920, height: 1080, has_preview_image: true},
             ];
-            const props = {
-                ...baseProps,
-                filesInfo: mixedFileTypes,
-            };
+            const props = createPropsWithFiles(mixedFileTypes);
 
             const {getByText, queryByText, getByTestId} = renderWithIntlAndTheme(
                 <PermalinkPreview {...props}/>,

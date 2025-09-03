@@ -4,10 +4,10 @@
 import React, {useEffect, useState, useCallback} from 'react';
 import {DeviceEventEmitter, View, type LayoutChangeEvent} from 'react-native';
 
-import Files, {type FilesProps} from '@components/files/files';
+import Files from '@components/files/files';
 import {Events} from '@constants';
 
-type PermalinkFilesProps = FilesProps & {
+type PermalinkFilesProps = React.ComponentProps<typeof Files> & {
     parentLocation?: string;
     parentPostId?: string;
 };
@@ -37,9 +37,9 @@ const PermalinkFiles = (props: PermalinkFilesProps) => {
         return () => subscription.remove();
     }, [listener, parentLocation, parentPostId]);
 
-    const onLayout = (event: LayoutChangeEvent) => {
+    const onLayout = useCallback((event: LayoutChangeEvent) => {
         setLayoutWidth(event.nativeEvent.layout.width);
-    };
+    }, []);
 
     return (
         <View onLayout={onLayout}>

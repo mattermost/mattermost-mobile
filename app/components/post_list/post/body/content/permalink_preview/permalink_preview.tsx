@@ -34,7 +34,6 @@ type PermalinkPreviewProps = {
     location: AvailableScreens;
     canDownloadFiles?: boolean;
     enableSecureFilePreview?: boolean;
-    filesInfo: FileInfo[];
     parentLocation?: string;
     parentPostId?: string;
 };
@@ -53,9 +52,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
                 width: 0,
                 height: 2,
             },
-            shadowOpacity: 0.12,
+            shadowOpacity: 0.08,
             shadowRadius: 3,
-            elevation: 2,
+            elevation: 1,
             overflow: 'hidden',
         },
         header: {
@@ -113,17 +112,29 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const PermalinkPreview = ({embedData, showPermalinkPreviews, author, locale, teammateNameDisplay, isOriginPostDeleted, location, canDownloadFiles = true, enableSecureFilePreview = false, filesInfo = [], parentLocation, parentPostId}: PermalinkPreviewProps) => {
-    if (!showPermalinkPreviews || isOriginPostDeleted) {
-        return null;
-    }
-
+const PermalinkPreview = ({
+    embedData,
+    showPermalinkPreviews,
+    author,
+    locale,
+    teammateNameDisplay,
+    isOriginPostDeleted,
+    location,
+    canDownloadFiles = true,
+    enableSecureFilePreview = false,
+    parentLocation,
+    parentPostId,
+}: PermalinkPreviewProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const [showGradient, setShowGradient] = useState(false);
 
     const textStyles = getMarkdownTextStyles(theme);
     const blockStyles = getMarkdownBlockStyles(theme);
+
+    if (!showPermalinkPreviews || isOriginPostDeleted) {
+        return null;
+    }
 
     const {
         post,
@@ -161,9 +172,11 @@ const PermalinkPreview = ({embedData, showPermalinkPreviews, author, locale, tea
         return `~${displayName}`;
     }, [channel_display_name, channel_type, authorDisplayName]);
 
-    const hasFiles = useMemo(() => {
-        return filesInfo && filesInfo.length > 0;
-    }, [filesInfo]);
+    const filesInfo = useMemo(() => {
+        return embedData?.post?.metadata?.files || [];
+    }, [embedData?.post?.metadata?.files]);
+
+    const hasFiles = filesInfo && filesInfo.length > 0;
 
     const handlePress = usePreventDoubleTap(useCallback(() => {
         // Navigation will be implemented in Task 5

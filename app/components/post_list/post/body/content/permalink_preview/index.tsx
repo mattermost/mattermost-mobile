@@ -16,7 +16,12 @@ import PermalinkPreview from './permalink_preview';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-const enhance = withObservables(['embedData', 'serverUrl'], ({database, embedData, serverUrl, parentLocation, parentPostId}: WithDatabaseArgs & {embedData: PermalinkEmbedData; serverUrl?: string; parentLocation?: string; parentPostId?: string}) => {
+type OwnProps = WithDatabaseArgs & {
+    embedData: PermalinkEmbedData;
+    serverUrl?: string;
+};
+
+const enhance = withObservables(['embedData', 'serverUrl'], ({database, embedData, serverUrl}: OwnProps) => {
     const showPermalinkPreviews = observeConfigBooleanValue(database, 'EnablePermalinkPreviews', false);
     const teammateNameDisplay = observeTeammateNameDisplay(database);
 
@@ -37,8 +42,6 @@ const enhance = withObservables(['embedData', 'serverUrl'], ({database, embedDat
         distinctUntilChanged(),
     ) : of$(false);
 
-    const filesInfo = of$(embedData?.post?.metadata?.files || []);
-
     return {
         showPermalinkPreviews,
         teammateNameDisplay,
@@ -47,9 +50,6 @@ const enhance = withObservables(['embedData', 'serverUrl'], ({database, embedDat
         isOriginPostDeleted,
         canDownloadFiles: observeCanDownloadFiles(database),
         enableSecureFilePreview: observeEnableSecureFilePreview(database),
-        filesInfo,
-        parentLocation: of$(parentLocation),
-        parentPostId: of$(parentPostId),
     };
 });
 
