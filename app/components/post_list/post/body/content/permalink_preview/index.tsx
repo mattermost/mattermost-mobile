@@ -50,6 +50,7 @@ const enhance = withObservables(['embedData', 'serverUrl'], ({database, embedDat
         isOriginPostDeleted,
         canDownloadFiles: observeCanDownloadFiles(database),
         enableSecureFilePreview: observeEnableSecureFilePreview(database),
+        currentUser,
     };
 });
 

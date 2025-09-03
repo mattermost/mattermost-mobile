@@ -248,6 +248,39 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
         expect(profilePicture).toBeTruthy();
     });
 
+    it('should enable mentions in markdown component', () => {
+        const currentUser = TestHelper.fakeUserModel({
+            id: 'current-user-123',
+            mentionKeys: [{key: 'testuser', caseSensitive: false}],
+        });
+        const props = {...baseProps, currentUser};
+        renderWithIntlAndTheme(
+            <PermalinkPreview {...props}/>,
+        );
+
+        expect(Markdown).toHaveBeenCalledWith(
+            expect.objectContaining({
+                disableAtMentions: false,
+                mentionKeys: [{key: 'testuser', caseSensitive: false}],
+            }),
+            expect.any(Object),
+        );
+    });
+
+    it('should use empty mention keys when currentUser is not provided', () => {
+        renderWithIntlAndTheme(
+            <PermalinkPreview {...baseProps}/>,
+        );
+
+        expect(Markdown).toHaveBeenCalledWith(
+            expect.objectContaining({
+                disableAtMentions: false,
+                mentionKeys: [],
+            }),
+            expect.any(Object),
+        );
+    });
+
     describe('File Attachments', () => {
         const mockFileInfo: FileInfo = {
             id: 'file-123',

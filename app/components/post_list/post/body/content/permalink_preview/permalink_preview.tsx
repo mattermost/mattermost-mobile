@@ -19,10 +19,12 @@ import {displayUsername} from '@utils/user';
 import PermalinkFiles from './permalink_files';
 
 import type UserModel from '@typings/database/models/servers/user';
+import type {UserMentionKey} from '@typings/global/markdown';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 const MAX_PERMALINK_PREVIEW_LINES = 4;
 const MAX_PERMALINK_HEIGHT = 506;
+const EMPTY_MENTION_KEYS: UserMentionKey[] = [];
 
 type PermalinkPreviewProps = {
     embedData: PermalinkEmbedData;
@@ -36,6 +38,7 @@ type PermalinkPreviewProps = {
     enableSecureFilePreview?: boolean;
     parentLocation?: string;
     parentPostId?: string;
+    currentUser?: UserModel;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -124,6 +127,7 @@ const PermalinkPreview = ({
     enableSecureFilePreview = false,
     parentLocation,
     parentPostId,
+    currentUser,
 }: PermalinkPreviewProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -231,12 +235,13 @@ const PermalinkPreview = ({
                             channelId={embedData.channel_id}
                             disableGallery={true}
                             disableHashtags={true}
-                            disableAtMentions={true}
+                            disableAtMentions={false}
                             disableChannelLink={true}
                             location={location}
                             theme={theme}
                             textStyles={textStyles}
                             value={truncatedMessage}
+                            mentionKeys={currentUser?.mentionKeys ?? EMPTY_MENTION_KEYS}
                         />
                         {isEdited ? (
                             <EditedIndicator
