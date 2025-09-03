@@ -8,6 +8,7 @@ import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 import {fetchUsersByIds} from '@actions/remote/user';
 import {withServerUrl} from '@context/server';
 import {observePost} from '@queries/servers/post';
+import {observeCanDownloadFiles, observeEnableSecureFilePreview} from '@queries/servers/security';
 import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeUserOrFetch, observeTeammateNameDisplay, observeCurrentUser} from '@queries/servers/user';
 
@@ -15,7 +16,12 @@ import PermalinkPreview from './permalink_preview';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-const enhance = withObservables(['embedData', 'serverUrl'], ({database, embedData, serverUrl}: WithDatabaseArgs & {embedData: PermalinkEmbedData; serverUrl?: string}) => {
+type OwnProps = WithDatabaseArgs & {
+    embedData: PermalinkEmbedData;
+    serverUrl?: string;
+};
+
+const enhance = withObservables(['embedData', 'serverUrl'], ({database, embedData, serverUrl}: OwnProps) => {
     const showPermalinkPreviews = observeConfigBooleanValue(database, 'EnablePermalinkPreviews', false);
     const teammateNameDisplay = observeTeammateNameDisplay(database);
 
@@ -42,6 +48,8 @@ const enhance = withObservables(['embedData', 'serverUrl'], ({database, embedDat
         author,
         locale,
         isOriginPostDeleted,
+        canDownloadFiles: observeCanDownloadFiles(database),
+        enableSecureFilePreview: observeEnableSecureFilePreview(database),
     };
 });
 
