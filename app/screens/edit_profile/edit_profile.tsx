@@ -224,7 +224,7 @@ const EditProfile = ({
             await handleProfileImageUpdate(serverUrl, currentUser);
 
             // Update user info if there are changes
-            if (Object.keys(userInfoUpdates).length > 0) {
+            if (Object.keys(userInfoUpdates).length) {
                 const {error: reqError} = await updateMe(serverUrl, userInfoUpdates);
                 if (reqError) {
                     resetScreenForProfileError(reqError);
