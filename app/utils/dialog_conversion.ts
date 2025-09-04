@@ -4,6 +4,8 @@
 // Dialog conversion utilities for Interactive Dialog to AppsForm migration
 // Based on webapp dialog_conversion.ts from PR #31821
 
+import {logDebug} from '@utils/log';
+
 import {isAppSelectOption, mapDialogTypeToAppFieldType, DialogElementTypes, DialogTextSubtypes} from './dialog_utils';
 
 export interface ConversionContext {
@@ -26,8 +28,14 @@ export function convertAppFormValuesToDialogSubmission(
     const submission: {[key: string]: string | number | boolean} = {};
     const errors: string[] = [];
 
+    // Early return if no values to process
+    const valueKeys = Object.keys(values);
+    if (valueKeys.length === 0) {
+        return {submission, errors};
+    }
+
     // Convert each form value back to dialog submission format
-    Object.keys(values).forEach((fieldName) => {
+    valueKeys.forEach((fieldName) => {
         const value = values[fieldName];
         const element = elements.find((e) => e.name === fieldName);
 
@@ -125,6 +133,22 @@ export function convertDialogElementToAppField(element: DialogElement): AppField
         appField.hint = element.placeholder;
     }
 
+    // Field refresh should be controlled by the server-side dialog configuration
+    // The server should specify which fields trigger form refresh
+    if (element.refresh === true) {
+        logDebug('Dialog conversion: Field has refresh enabled', {
+            fieldName: element.name,
+            fieldType: element.type,
+        });
+        appField.refresh = true;
+    }
+
+    logDebug('Dialog conversion: Converted field', {
+        fieldName: element.name,
+        fieldType: element.type,
+        hasRefresh: Boolean(appField.refresh),
+    });
+
     return appField;
 }
 
@@ -140,7 +164,15 @@ export function convertDialogToAppForm(config: InteractiveDialogConfig): AppForm
             position: index,
         })) || [],
         submit_buttons: undefined,
-        source: undefined,
+        
+        // Pass through submit label from dialog config
+        submit_label: config.dialog.submit_label || undefined,
+
+        // Set source to the dialog URL for field refresh support
+        source: config.url ? {
+            path: config.url,
+            expand: {},
+        } : undefined,
         submit: {
             path: '/dialog/submit',
             expand: {},

@@ -35,7 +35,7 @@ export default {
     MAX_GROUP_CHANNELS_FOR_PROFILES: 50,
     MAX_GET_ROLES_BY_NAMES: 100,
     DEFAULT_AUTOLINKED_URL_SCHEMES: ['http', 'https', 'ftp', 'mailto', 'tel', 'mattermost'],
-    PROFILE_CHUNK_SIZE: 100,
+    PROFILE_CHUNK_SIZE: 10,
     SEARCH_TIMEOUT_MILLISECONDS: 500,
     AUTOCOMPLETE_SPLIT_CHARACTERS: ['.', '-', '_'],
     CHANNEL_USER_ROLE: 'channel_user',

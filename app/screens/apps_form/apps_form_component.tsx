@@ -20,7 +20,8 @@ import SecurityManager from '@managers/security_manager';
 import {filterEmptyOptions} from '@utils/apps';
 import {mapAppFieldTypeToDialogType, getDataSourceForAppFieldType} from '@utils/dialog_utils';
 import {checkDialogElementForError, checkIfErrorsMatchElements} from '@utils/integrations';
-import {logWarning} from '@utils/log';
+import {logDebug, logWarning} from '@utils/log';
+import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {secureGetFromRecord} from '@utils/types';
 
@@ -173,18 +174,19 @@ function AppsFormComponent({
         if (submitButtons) {
             return undefined;
         }
+        const submitLabel = form.submit_label || intl.formatMessage({id: 'interactive_dialog.submit', defaultMessage: 'Submit'});
         return {
             ...buildNavigationButton(
                 SUBMIT_BUTTON_ID,
                 'interactive_dialog.submit.button',
                 undefined,
-                intl.formatMessage({id: 'interactive_dialog.submit', defaultMessage: 'Submit'}),
+                submitLabel,
             ),
             enabled: !submitting,
             showAsAction: 'always' as const,
             color: theme.sidebarHeaderTextColor,
         };
-    }, [theme.sidebarHeaderTextColor, submitButtons, submitting, intl]);
+    }, [theme.sidebarHeaderTextColor, submitButtons, submitting, intl, form.submit_label]);
 
     const rightButtons = useMemo(() => (rightButton ? [rightButton] : []), [rightButton]);
 
@@ -244,12 +246,21 @@ function AppsFormComponent({
     const onChange = useCallback((name: string, value: AppFormValue) => {
         const field = form.fields?.find((f) => f.name === name);
         if (!field) {
+            logDebug('AppsFormComponent: Field not found for onChange', {name});
             return;
         }
+
+        logDebug('AppsFormComponent: Field changed', {
+            name,
+            value,
+            hasRefresh: Boolean(field.refresh),
+            fieldType: field.type,
+        });
 
         const newValues = {...values, [name]: value};
 
         if (field.refresh) {
+            logDebug('AppsFormComponent: Calling refreshOnSelect', {name, fieldType: field.type});
             refreshOnSelect(field, newValues, value).then((res) => {
                 // Check if component is still mounted before updating state
                 if (!isMountedRef.current) {
@@ -268,6 +279,9 @@ function AppsFormComponent({
                 const callResponse = res.data!;
                 switch (callResponse.type) {
                     case AppCallResponseTypes.FORM:
+                        logDebug('AppsFormComponent: Received new form from refresh - parent will handle update');
+
+                        // Form will be updated by parent (DialogRouter) which will trigger re-render
                         return;
                     case AppCallResponseTypes.OK:
                     case AppCallResponseTypes.NAVIGATE:
@@ -306,7 +320,7 @@ function AppsFormComponent({
     [form.fields, form.submit_buttons],
     );
 
-    const handleSubmit = useCallback(async (button?: string) => {
+    const handleSubmit = useCallback(async (button?: string) => {        
         if (submitting) {
             return;
         }
@@ -369,6 +383,9 @@ function AppsFormComponent({
                 handleGotoLocation(serverUrl, intl, callResponse.navigate_to_url!);
                 return;
             case AppCallResponseTypes.FORM:
+                logDebug('AppsFormComponent: Received new form from submit - parent will handle update');
+                
+                // Form will be updated by parent (DialogRouter) which will trigger re-render
                 setSubmitting(false);
                 return;
             default:

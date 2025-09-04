@@ -19,6 +19,7 @@ export const submitInteractiveDialog = async (serverUrl: string, submission: Dia
         submission.channel_id = await getCurrentChannelId(database);
         submission.team_id = await getCurrentTeamId(database);
         const data = await client.submitInteractiveDialog(submission);
+
         return {data};
     } catch (error) {
         logDebug('error on submitInteractiveDialog', getFullErrorMessage(error));

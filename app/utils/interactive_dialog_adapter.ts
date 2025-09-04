@@ -161,12 +161,13 @@ export class InteractiveDialogAdapter {
 
     /**
      * Convert dialog submission response to AppCallResponse format
-     * Handles the response format conversion
+     * Handles the response format conversion including multiform dialogs
      */
     static convertResponseToAppCall(
         result: any,
         intl: IntlShape,
     ): DoAppCallResult<FormResponseData> {
+        
         // Handle server-side validation errors from the response data
         if (result?.data?.error || result?.data?.errors) {
             return {
@@ -199,7 +200,20 @@ export class InteractiveDialogAdapter {
             };
         }
 
-        // Success response
+        // Check for multiform response - server returns new dialog form
+        // Server returns {"form": {...}, "type": "form"} format for multiform dialogs
+        if (result?.data && typeof result.data === 'object' && 'form' in result.data) {
+            // Return the raw form data directly - don't convert it yet
+            // The DialogRouter will handle the conversion after updating its state
+            return {
+                data: {
+                    type: AppCallResponseTypes.FORM,
+                    form: result.data.form, // Return raw dialog data
+                },
+            };
+        }
+
+        // Success response or no form data - closes dialog
         return {
             data: {
                 type: AppCallResponseTypes.OK,
@@ -218,7 +232,8 @@ export class InteractiveDialogAdapter {
         serverUrl: string,
         config?: InteractiveDialogConfig,
     ): Promise<AppSelectOption[]> {
-        if (!element.data_source_url) {
+        // Early return for empty URL or input
+        if (!element.data_source_url || !userInput.trim()) {
             return [];
         }
 

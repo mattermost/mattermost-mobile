@@ -75,6 +75,7 @@ type DialogElement = {
     data_source_url?: string;
     options: DialogOption[];
     multiselect?: boolean;
+    refresh?: boolean;
 };
 
 type InteractiveDialogConfig = {
