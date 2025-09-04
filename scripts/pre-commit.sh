@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 jsfiles=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.js$|\.ts$|\.tsx$')
+exit_code=0
 
 if [ -z "jsfiles" ]; then
     exit 0
@@ -14,7 +15,7 @@ if [ -n "$jsfiles" ]; then
         if [ -n "$e" ]; then
             echo "ERROR: Check eslint hints."
             echo "$e"
-            exit 1 # reject
+            exit_code=1
         fi
     done
 
@@ -24,10 +25,10 @@ if [ -n "$jsfiles" ]; then
     if [ $? -ne 0 ]; then
         echo "ERROR: TypeScript issues found."
         echo "$tsc"
-        exit 1 # reject
+        exit_code=1
     fi
 fi
 
 # scripts/precommit/i18n.sh
 
-exit 0
+exit $exit_code
