@@ -87,6 +87,7 @@ test('uploadAttachment', () => {
             },
         },
         timeoutInterval: 180000,
+        headers: {},
     };
 
     (client.apiClient.upload as jest.Mock).mockReturnValue({
@@ -110,6 +111,7 @@ test('uploadAttachment', () => {
             },
         },
         timeoutInterval: 180000,
+        headers: {},
     };
     client.uploadAttachment(file, channelId, onProgress, onComplete, onError);
     expect(client.apiClient.upload).toHaveBeenCalledWith(client.getFilesRoute(), file.localPath, expectedDefaultOptions);
