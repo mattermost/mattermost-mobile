@@ -234,7 +234,7 @@ const EditProfile = ({
 
             // Handle custom attributes
             const changedCustomAttributes = getChangedCustomAttributes(userInfo, customAttributesSet, customFields, enableCustomAttributes);
-            if (Object.keys(changedCustomAttributes).length > 0) {
+            if (Object.keys(changedCustomAttributes).length) {
                 const {error: attrError} = await updateCustomProfileAttributes(serverUrl, currentUser.id, changedCustomAttributes);
                 if (attrError) {
                     logError('Error updating custom attributes', attrError);
