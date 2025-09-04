@@ -10,7 +10,7 @@ if [ -n "$jsfiles" ]; then
     echo "Checking lint for:"
     for js in $jsfiles; do
         echo "$js"
-        e=$(node_modules/.bin/eslint --quiet --fix $js)
+        e=$(node_modules/.bin/eslint --quiet --fix --config eslint.precommit.config.mjs $js)
         if [ -n "$e" ]; then
             echo "ERROR: Check eslint hints."
             echo "$e"
@@ -18,10 +18,11 @@ if [ -n "$jsfiles" ]; then
         fi
     done
 
-    echo "Checking for TSC"
-    tsc=$(node_modules/.bin/tsc --noEmit)
-    if [ -n "$tsc" ]; then
-        echo "ERROR: Check TSC hints."
+    echo "Checking for TSC (fast incremental check)"
+    # Use incremental TypeScript checking - much faster on subsequent runs
+    tsc=$(node_modules/.bin/tsc --noEmit --incremental --tsBuildInfoFile .tsbuildinfo.precommit 2>&1)
+    if [ $? -ne 0 ]; then
+        echo "ERROR: TypeScript issues found."
         echo "$tsc"
         exit 1 # reject
     fi
