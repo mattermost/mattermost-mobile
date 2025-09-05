@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-/* eslint-disable react/no-multi-comp */
-
 import {setGenerator} from '@nozbe/watermelondb/utils/common/randomId';
 import * as ReactNative from 'react-native';
 import mockSafeAreaContext from 'react-native-safe-area-context/jest/mock';
@@ -389,7 +387,7 @@ jest.mock('react-native-notifications', () => {
             ios: {
                 getDeliveredNotifications: jest.fn().mockImplementation(() => Promise.resolve(deliveredNotifications)),
                 removeDeliveredNotifications: jest.fn((ids) => {
-                    // eslint-disable-next-line
+
                     // @ts-ignore
                     deliveredNotifications = deliveredNotifications.filter((n) => !ids.includes(n.identifier));
                 }),
@@ -428,6 +426,8 @@ jest.mock('@screens/navigation', () => ({
     popTo: jest.fn(),
     bottomSheet: jest.fn(),
 }));
+
+jest.mock('@managers/connectivity_manager', () => 'ConnectivityManager');
 
 jest.mock('@mattermost/react-native-emm', () => ({
     addListener: jest.fn(),

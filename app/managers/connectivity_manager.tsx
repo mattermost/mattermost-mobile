@@ -92,7 +92,7 @@ const ConnectivityManager: React.FC<Props> = ({websocketState}) => {
             clearTimeoutRef(openTimeout);
             clearTimeoutRef(closeTimeout);
         };
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [websocketState, isConnected, showConnectionBanner, clearTimeoutRef]);
 
     useDidUpdate(() => {
         if (isConnected) {
