@@ -64,7 +64,7 @@ const ChannelQuickAction = ({
                 showAsLabel={true}
                 testID='channel.quick_actions.channel_info.action'
             />
-            {hasPlaybookRuns &&
+            {hasPlaybookRuns && !isDMorGM &&
                 <PlaybookRunsOption
                     channelId={channelId}
                     location='quick_actions'

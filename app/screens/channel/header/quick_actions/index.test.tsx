@@ -54,4 +54,12 @@ describe('ChannelQuickAction', () => {
         expect(playbookRunsOption.props.channelId).toBe('channel-id');
         expect(playbookRunsOption.props.location).toBe('quick_actions');
     });
+
+    it('does not show playbook runs option when is DM or GM', () => {
+        const props = getBaseProps();
+        props.isDMorGM = true;
+        props.hasPlaybookRuns = true;
+        const {queryByTestId} = renderWithEverything(<ChannelQuickAction {...props}/>, {database});
+        expect(queryByTestId('playbook-runs-option')).toBeNull();
+    });
 });
