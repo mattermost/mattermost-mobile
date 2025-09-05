@@ -94,6 +94,8 @@ const Server = ({
     const [url, setUrl] = useState<string>('');
     const [displayNameError, setDisplayNameError] = useState<string | undefined>();
     const [urlError, setUrlError] = useState<string | undefined>();
+    const [preauthSecretError, setPreauthSecretError] = useState<string | undefined>();
+    const [showAdvancedOptions, setShowAdvancedOptions] = useState<boolean>(false);
     const styles = getStyleSheet(theme);
     const {formatMessage} = intl;
     const disableServerUrl = Boolean(managedConfig?.allowOtherServers === 'false' && managedConfig?.serverUrl);
@@ -146,12 +148,12 @@ const Server = ({
     }, [managedConfig?.allowOtherServers, managedConfig?.serverUrl, managedConfig?.serverName, defaultServerUrl]);
 
     useEffect(() => {
-        if (url && displayName && !urlError) {
+        if (url && displayName && !urlError && !preauthSecretError) {
             setButtonDisabled(false);
         } else {
             setButtonDisabled(true);
         }
-    }, [url, displayName, urlError]);
+    }, [url, displayName, urlError, preauthSecretError]);
 
     useEffect(() => {
         const listener = {
@@ -282,7 +284,10 @@ const Server = ({
         if (urlError) {
             setUrlError(undefined);
         }
-    }, [urlError]);
+        if (preauthSecretError) {
+            setPreauthSecretError(undefined);
+        }
+    }, [urlError, preauthSecretError]);
 
     const isServerUrlValid = (serverUrl?: string) => {
         const testUrl = sanitizeUrl(serverUrl ?? url);
@@ -325,7 +330,15 @@ const Server = ({
         }
 
         if (result.error) {
-            setUrlError(getErrorMessage(result.error, intl));
+            if (result.isPreauthError) {
+                setPreauthSecretError(intl.formatMessage({
+                    id: 'mobile.server.preauth_secret.invalid',
+                    defaultMessage: 'Authentication secret is invalid. Try again or contact your admin.',
+                }));
+                setShowAdvancedOptions(true);
+            } else {
+                setUrlError(getErrorMessage(result.error, intl));
+            }
             setButtonDisabled(true);
             setConnecting(false);
             return;
@@ -422,6 +435,9 @@ const Server = ({
                         handleUrlTextChanged={handleUrlTextChanged}
                         keyboardAwareRef={keyboardAwareRef}
                         preauthSecret={preauthSecret}
+                        preauthSecretError={preauthSecretError}
+                        setShowAdvancedOptions={setShowAdvancedOptions}
+                        showAdvancedOptions={showAdvancedOptions}
                         theme={theme}
                         url={url}
                         urlError={urlError}
