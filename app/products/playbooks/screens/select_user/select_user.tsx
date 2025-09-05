@@ -23,10 +23,6 @@ import {typography} from '@utils/typography';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
-type DataType = DialogOption | Channel | UserProfile;
-type DataTypeList = DialogOption[] | Channel[] | UserProfile[];
-type Selection = DataType | DataTypeList;
-
 const close = () => {
     popTopScreen();
 };
@@ -34,7 +30,7 @@ const close = () => {
 export type Props = {
     currentTeamId: string;
     currentUserId: string;
-    handleSelect: (opt: Selection) => void;
+    handleSelect: (opt: UserProfile) => void;
     handleRemove?: () => void;
     selected?: string;
     componentId: AvailableScreens;

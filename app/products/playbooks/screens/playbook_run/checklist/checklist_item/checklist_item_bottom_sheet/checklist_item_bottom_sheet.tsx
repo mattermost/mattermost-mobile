@@ -14,6 +14,7 @@ import {setAssignee} from '@playbooks/actions/remote/checklist';
 import {goToSelectUser} from '@playbooks/screens/navigation';
 import {dismissBottomSheet, openUserProfileModal} from '@screens/navigation';
 import {toMilliseconds} from '@utils/datetime';
+import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -229,12 +230,18 @@ const ChecklistItemBottomSheet = ({
         };
     }, [assignee, intl, onUserChipPress, teammateNameDisplay]);
 
-    const handleSelect = useCallback((selected: UserProfile) => {
-        setAssignee(serverUrl, runId, item.id, checklistNumber, itemNumber, selected.id);
+    const handleSelect = useCallback(async (selected: UserProfile) => {
+        const res = await setAssignee(serverUrl, runId, item.id, checklistNumber, itemNumber, selected.id);
+        if (res.error) {
+            showPlaybookErrorSnackbar();
+        }
     }, [checklistNumber, item.id, itemNumber, runId, serverUrl]);
 
-    const handleRemove = useCallback(() => {
-        setAssignee(serverUrl, runId, item.id, checklistNumber, itemNumber, '');
+    const handleRemove = useCallback(async () => {
+        const res = await setAssignee(serverUrl, runId, item.id, checklistNumber, itemNumber, '');
+        if (res.error) {
+            showPlaybookErrorSnackbar();
+        }
     }, [checklistNumber, item.id, itemNumber, runId, serverUrl]);
 
     const openUserSelector = useCallback(() => {

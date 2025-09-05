@@ -10,8 +10,9 @@ import {useServerUrl} from '@context/server';
 import DatabaseManager from '@database/manager';
 import {setOwner} from '@playbooks/actions/remote/runs';
 import {openUserProfileModal} from '@screens/navigation';
-import {renderWithEverything} from '@test/intl-test-helper';
+import {renderWithEverything, waitFor} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
+import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 
 import {goToSelectUser} from '../navigation';
 
@@ -25,6 +26,9 @@ import type {Database} from '@nozbe/watermelondb';
 import type {PlaybookRunModel} from '@playbooks/database/models';
 
 const serverUrl = 'some.server.url';
+
+jest.mock('@utils/snack_bar');
+
 jest.mock('@context/server');
 jest.mocked(useServerUrl).mockReturnValue(serverUrl);
 
@@ -228,6 +232,24 @@ describe('PlaybookRun', () => {
             props.playbookRun!.id,
             'user-2',
         );
+        expect(showPlaybookErrorSnackbar).not.toHaveBeenCalled();
+    });
+
+    it('handles set owner error', async () => {
+        const props = getBaseProps();
+        props.participants.push(TestHelper.fakeUserModel({id: props.currentUserId}));
+        jest.mocked(setOwner).mockResolvedValue({error: 'error'});
+        const {getByTestId} = renderWithEverything(<PlaybookRun {...props}/>, {database});
+
+        const ownerChip = getByTestId('user-chip');
+        ownerChip.props.onPress();
+
+        const handleSelect = jest.mocked(goToSelectUser).mock.calls[0][3];
+        handleSelect(TestHelper.fakeUser({id: 'user-2'}));
+
+        await waitFor(() => {
+            expect(showPlaybookErrorSnackbar).toHaveBeenCalled();
+        });
     });
 
     it('renders checklist list correctly', () => {

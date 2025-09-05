@@ -17,6 +17,7 @@ import {setOwner} from '@playbooks/actions/remote/runs';
 import {getRunScheduledTimestamp, isRunFinished} from '@playbooks/utils/run';
 import {openUserProfileModal, popTopScreen} from '@screens/navigation';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
+import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -182,12 +183,15 @@ export default function PlaybookRun({
         });
     }, [owner, intl, theme, channelId, componentId]);
 
-    const handleSelectOwner = useCallback((selected: UserProfile) => {
+    const handleSelectOwner = useCallback(async (selected: UserProfile) => {
         if (!playbookRun) {
             return;
         }
 
-        setOwner(serverUrl, playbookRun.id, selected.id);
+        const res = await setOwner(serverUrl, playbookRun.id, selected.id);
+        if (res.error) {
+            showPlaybookErrorSnackbar();
+        }
     }, [playbookRun, serverUrl]);
 
     const openChangeOwnerModal = useCallback(() => {

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {BottomSheetScrollView} from '@gorhom/bottom-sheet';
-import {act, fireEvent} from '@testing-library/react-native';
+import {act, fireEvent, waitFor} from '@testing-library/react-native';
 import React, {type ComponentProps} from 'react';
 import {ScrollView} from 'react-native';
 
@@ -14,6 +14,7 @@ import {goToSelectUser} from '@playbooks/screens/navigation';
 import {dismissBottomSheet, openUserProfileModal} from '@screens/navigation';
 import {renderWithIntl} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
+import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 
 import ChecklistItemBottomSheet from './checklist_item_bottom_sheet';
 
@@ -422,6 +423,40 @@ describe('ChecklistItemBottomSheet', () => {
             4,
             '',
         );
+    });
+
+    it('handles set assignee error', async () => {
+        const props = getBaseProps();
+        jest.mocked(setAssignee).mockResolvedValue({error: 'error'});
+        const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
+
+        const assigneeItem = getByTestId('checklist_item.assignee');
+        const onPress = assigneeItem.props.action;
+
+        await act(async () => {
+            onPress('user-1');
+        });
+
+        const handleSelect = jest.mocked(goToSelectUser).mock.calls[0][3];
+        const handleRemove = jest.mocked(goToSelectUser).mock.calls[0][4];
+
+        await act(async () => {
+            handleSelect(TestHelper.fakeUser({id: 'user-1'}));
+        });
+
+        await waitFor(() => {
+            expect(showPlaybookErrorSnackbar).toHaveBeenCalled();
+        });
+
+        jest.mocked(showPlaybookErrorSnackbar).mockClear();
+
+        await act(async () => {
+            handleRemove?.();
+        });
+
+        await waitFor(() => {
+            expect(showPlaybookErrorSnackbar).toHaveBeenCalled();
+        });
     });
 
     it('displays correct assignee label and icon', () => {

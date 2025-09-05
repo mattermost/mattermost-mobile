@@ -7,6 +7,7 @@ import TestHelper from '@test/test_helper';
 
 import {handlePlaybookRuns, setOwner} from './run';
 
+import type {Database} from '@nozbe/watermelondb';
 import type PlaybookRunModel from '@playbooks/types/database/models/playbook_run';
 
 const serverUrl = 'baseHandler.test.com';
@@ -50,6 +51,11 @@ describe('handlePlaybookRuns', () => {
 });
 
 describe('setOwner', () => {
+    let database: Database;
+    beforeEach(() => {
+        database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
+    });
+
     it('should set owner successfully when run exists', async () => {
         // Create a playbook run
         const runs = TestHelper.createPlaybookRuns(1, 0, 0);
@@ -64,7 +70,6 @@ describe('setOwner', () => {
         expect(data).toBe(true);
 
         // Verify the owner was actually updated in the database
-        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const updatedRun = await database.get<PlaybookRunModel>(PLAYBOOK_TABLES.PLAYBOOK_RUN).find(playbookRunId);
         expect(updatedRun.ownerUserId).toBe(newOwnerId);
     });
@@ -99,7 +104,6 @@ describe('setOwner', () => {
         const newOwnerId = 'new_owner_user_id';
 
         // Mock the database.write to throw an error
-        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const originalWrite = database.write;
         database.write = jest.fn().mockRejectedValue(new Error('Database write failed'));
 
@@ -127,7 +131,6 @@ describe('setOwner', () => {
         expect(data).toBe(true);
 
         // Verify the owner remains the same
-        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const updatedRun = await database.get<PlaybookRunModel>(PLAYBOOK_TABLES.PLAYBOOK_RUN).find(playbookRunId);
         expect(updatedRun.ownerUserId).toBe(sameOwnerId);
     });
@@ -146,7 +149,6 @@ describe('setOwner', () => {
         expect(data).toBe(true);
 
         // Verify the owner was updated to empty string
-        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const updatedRun = await database.get<PlaybookRunModel>(PLAYBOOK_TABLES.PLAYBOOK_RUN).find(playbookRunId);
         expect(updatedRun.ownerUserId).toBe(emptyOwnerId);
     });

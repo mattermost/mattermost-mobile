@@ -159,7 +159,6 @@ describe('checklist', () => {
             jest.spyOn(NetworkManager, 'getClient').mockImplementationOnce(throwFunc);
 
             const result = await setAssignee(serverUrl, playbookRunId, itemId, checklistNumber, itemNumber, 'user-id-1');
-            expect(result).toBeDefined();
             expect(result.error).toBeDefined();
             expect(mockClient.setAssignee).not.toHaveBeenCalled();
             expect(localSetAssignee).not.toHaveBeenCalled();
@@ -169,7 +168,6 @@ describe('checklist', () => {
             mockClient.setAssignee.mockImplementationOnce(throwFunc);
 
             const result = await setAssignee(serverUrl, playbookRunId, itemId, checklistNumber, itemNumber, 'user-id-1');
-            expect(result).toBeDefined();
             expect(result.error).toBeDefined();
             expect(mockClient.setAssignee).toHaveBeenCalledWith(playbookRunId, checklistNumber, itemNumber, 'user-id-1');
             expect(localSetAssignee).not.toHaveBeenCalled();
@@ -179,9 +177,8 @@ describe('checklist', () => {
             mockClient.setAssignee.mockResolvedValueOnce({});
 
             const result = await setAssignee(serverUrl, playbookRunId, itemId, checklistNumber, itemNumber, 'user-id-1');
-            expect(result).toBeDefined();
-            expect(result.error).toBeUndefined();
             expect(result.data).toBe(true);
+            expect(result.error).toBeUndefined();
             expect(mockClient.setAssignee).toHaveBeenCalledWith(playbookRunId, checklistNumber, itemNumber, 'user-id-1');
             expect(localSetAssignee).toHaveBeenCalledWith(serverUrl, itemId, 'user-id-1');
         });
@@ -190,9 +187,8 @@ describe('checklist', () => {
             mockClient.setAssignee.mockResolvedValueOnce({});
 
             const result = await setAssignee(serverUrl, playbookRunId, itemId, checklistNumber, itemNumber, '');
-            expect(result).toBeDefined();
-            expect(result.error).toBeUndefined();
             expect(result.data).toBe(true);
+            expect(result.error).toBeUndefined();
             expect(mockClient.setAssignee).toHaveBeenCalledWith(playbookRunId, checklistNumber, itemNumber, '');
             expect(localSetAssignee).toHaveBeenCalledWith(serverUrl, itemId, '');
         });
