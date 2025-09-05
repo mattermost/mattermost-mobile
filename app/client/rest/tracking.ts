@@ -387,6 +387,7 @@ export default class ClientTracking {
         try {
             response = await request!(url, this.buildRequestOptions(options));
         } catch (error) {
+            const response_error = error as ClientError;
             const status_code = isErrorWithStatusCode(error) ? error.status_code : undefined;
             throw new ClientError(this.apiClient.baseUrl, {
                 message: 'Received invalid response from the server.',
@@ -395,7 +396,8 @@ export default class ClientTracking {
                     defaultMessage: 'Received invalid response from the server.',
                 }),
                 url,
-                details: error,
+                details: response_error,
+                headers: response_error.headers ? response_error.headers : undefined,
                 status_code,
             });
         } finally {
@@ -433,6 +435,7 @@ export default class ClientTracking {
             server_error_id: response.data?.id as string,
             status_code: response.code,
             url,
+            headers,
         });
     };
 }

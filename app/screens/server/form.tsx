@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {type RefObject, useCallback, useRef, useState} from 'react';
+import React, {type RefObject, useCallback, useRef} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {Keyboard, Pressable, View} from 'react-native';
 
@@ -28,6 +28,9 @@ type Props = {
     handleUrlTextChanged: (text: string) => void;
     keyboardAwareRef: RefObject<KeyboardAwareScrollView>;
     preauthSecret?: string;
+    preauthSecretError?: string;
+    setShowAdvancedOptions: (show: boolean) => void;
+    showAdvancedOptions: boolean;
     theme: Theme;
     url?: string;
     urlError?: string;
@@ -99,6 +102,10 @@ const messages = defineMessages({
         id: 'mobile.components.select_server_view.sharedSecretHelp',
         defaultMessage: 'The pre-authentication secret shared by the administrator',
     },
+    preauthSecretInvalid: {
+        id: 'mobile.server.preauth_secret.invalid',
+        defaultMessage: 'Authentication secret is invalid. Try again or contact your admin.',
+    },
 });
 
 const ServerForm = ({
@@ -114,6 +121,9 @@ const ServerForm = ({
     handleUrlTextChanged,
     keyboardAwareRef,
     preauthSecret = '',
+    preauthSecretError,
+    setShowAdvancedOptions,
+    showAdvancedOptions,
     theme,
     url = '',
     urlError,
@@ -123,8 +133,6 @@ const ServerForm = ({
     const preauthSecretRef = useRef<FloatingTextInputRef>(null);
     const urlRef = useRef<FloatingTextInputRef>(null);
     const styles = getStyleSheet(theme);
-
-    const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
 
     useAvoidKeyboard(keyboardAwareRef);
 
@@ -138,12 +146,12 @@ const ServerForm = ({
     }, []);
 
     const onDisplayNameSubmit = useCallback(() => {
-        if (showAdvancedOptions) {
+        if (showAdvancedOptions || preauthSecretError) {
             preauthSecretRef.current?.focus();
         } else {
             onConnect();
         }
-    }, [showAdvancedOptions, onConnect]);
+    }, [showAdvancedOptions, preauthSecretError, onConnect]);
 
     const toggleAdvancedOptions = useCallback(() => {
         setShowAdvancedOptions(!showAdvancedOptions);
@@ -190,7 +198,7 @@ const ServerForm = ({
                     onChangeText={handleDisplayNameTextChanged}
                     onSubmitEditing={onDisplayNameSubmit}
                     ref={displayNameRef}
-                    returnKeyType={showAdvancedOptions ? 'next' : 'done'}
+                    returnKeyType={showAdvancedOptions || preauthSecretError ? 'next' : 'done'}
                     spellCheck={false}
                     testID='server_form.server_display_name.input'
                     theme={theme}
@@ -231,6 +239,7 @@ const ServerForm = ({
                             autoCorrect={false}
                             autoCapitalize={'none'}
                             enablesReturnKeyAutomatically={true}
+                            error={preauthSecretError}
                             label={formatMessage(messages.preauthSecret)}
                             onChangeText={handlePreauthSecretTextChanged}
                             onSubmitEditing={onConnect}
