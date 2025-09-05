@@ -45,6 +45,7 @@ export const fetchPlaybookRunsForChannel = async (serverUrl: string, channelId: 
         }
 
         if (!allRuns.length) {
+            EphemeralStore.setChannelPlaybooksSynced(serverUrl, channelId);
             return {runs: []};
         }
 
