@@ -23,6 +23,55 @@ const CONNECTION_BANNER_ID = 'global-connection-status';
 const TIME_TO_OPEN = toMilliseconds({seconds: 3});
 const TIME_TO_CLOSE = toMilliseconds({seconds: 1});
 
+// Extract message generation logic for better testability
+const getConnectionMessage = (
+    websocketState: WebsocketConnectedState,
+    isInternetReachable: boolean | null,
+    formatMessage: (descriptor: {id: string; defaultMessage: string}) => string,
+): string => {
+    const isConnected = websocketState === 'connected';
+
+    if (isConnected) {
+        return formatMessage({id: 'connection_banner.connected', defaultMessage: 'Connection restored'});
+    }
+
+    if (websocketState === 'connecting') {
+        return formatMessage({id: 'connection_banner.connecting', defaultMessage: 'Connecting...'});
+    }
+
+    if (isInternetReachable) {
+        return formatMessage({id: 'connection_banner.not_reachable', defaultMessage: 'The server is not reachable'});
+    }
+
+    return formatMessage({id: 'connection_banner.not_connected', defaultMessage: 'Unable to connect to network'});
+};
+
+// Extract banner configuration logic
+const createBannerConfig = (
+    websocketState: WebsocketConnectedState,
+    message: string,
+    onDismiss: () => void,
+) => {
+    const isConnected = websocketState === 'connected';
+
+    return {
+        id: CONNECTION_BANNER_ID,
+        title: '',
+        message: '',
+        position: 'bottom' as const,
+        dismissible: true,
+        autoHideDuration: isConnected ? TIME_TO_CLOSE : undefined,
+        customContent: (
+            <ConnectionBanner
+                isConnected={isConnected}
+                message={message}
+                dismissible={true}
+                onDismiss={onDismiss}
+            />
+        ),
+    };
+};
+
 const ConnectivityManager: React.FC<Props> = ({websocketState}) => {
     const intl = useIntl();
     const netInfo = useNetInfo();
@@ -46,34 +95,11 @@ const ConnectivityManager: React.FC<Props> = ({websocketState}) => {
         isBannerVisible.current = true;
         clearTimeoutRef(closeTimeout);
 
-        let text;
-        if (isConnected) {
-            text = intl.formatMessage({id: 'connection_banner.connected', defaultMessage: 'Connection restored'});
-        } else if (websocketState === 'connecting') {
-            text = intl.formatMessage({id: 'connection_banner.connecting', defaultMessage: 'Connecting...'});
-        } else if (netInfo.isInternetReachable) {
-            text = intl.formatMessage({id: 'connection_banner.not_reachable', defaultMessage: 'The server is not reachable'});
-        } else {
-            text = intl.formatMessage({id: 'connection_banner.not_connected', defaultMessage: 'Unable to connect to network'});
-        }
+        const message = getConnectionMessage(websocketState, netInfo.isInternetReachable, intl.formatMessage);
+        const bannerConfig = createBannerConfig(websocketState, message, () => hideBanner(CONNECTION_BANNER_ID));
 
-        showCustom({
-            id: CONNECTION_BANNER_ID,
-            title: '',
-            message: '',
-            position: 'bottom',
-            dismissible: true,
-            autoHideDuration: isConnected ? TIME_TO_CLOSE : undefined,
-            customContent: (
-                <ConnectionBanner
-                    isConnected={isConnected}
-                    message={text}
-                    dismissible={true}
-                    onDismiss={() => hideBanner(CONNECTION_BANNER_ID)}
-                />
-            ),
-        });
-    }, [intl, isConnected, websocketState, netInfo.isInternetReachable, showCustom, clearTimeoutRef, hideBanner]);
+        showCustom(bannerConfig);
+    }, [intl.formatMessage, websocketState, netInfo.isInternetReachable, showCustom, clearTimeoutRef, hideBanner]);
 
     const hideConnectionBanner = useCallback(() => {
         isBannerVisible.current = false;
@@ -132,5 +158,14 @@ const ConnectivityManager: React.FC<Props> = ({websocketState}) => {
 const enhanced = withObservables(['serverUrl'], ({serverUrl}: {serverUrl: string}) => ({
     websocketState: WebsocketManager.observeWebsocketState(serverUrl),
 }));
+
+export const testExports = {
+    ConnectivityManager,
+    getConnectionMessage,
+    createBannerConfig,
+    CONNECTION_BANNER_ID,
+    TIME_TO_OPEN,
+    TIME_TO_CLOSE,
+};
 
 export default withServerUrl(enhanced(ConnectivityManager));
