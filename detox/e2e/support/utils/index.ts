@@ -5,6 +5,7 @@ import {adminEmail, adminPassword, adminUsername} from '@support/test_config';
 import {v4 as uuidv4} from 'uuid';
 
 export * from './email';
+export * from './detoxhelpers';
 
 /**
  * Explicit `wait` should not normally used but made available for special cases.
