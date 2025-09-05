@@ -78,7 +78,7 @@ describe('setChecklistItemCommand', () => {
 
     it('should handle item not found', async () => {
         const {error} = await setChecklistItemCommand(serverUrl, 'nonexistent', '/test command');
-        expect(error).toBe('Item not found');
+        expect(error).toBe('Item not found: nonexistent');
     });
 
     it('should handle database write errors', async () => {
