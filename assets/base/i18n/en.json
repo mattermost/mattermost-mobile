@@ -999,7 +999,7 @@
   "playbooks.checklist_item.skip": "Skip",
   "playbooks.checklist_item.skipped": "Skipped",
   "playbooks.edit_command.label": "Command",
-  "playbooks.edit_command.placeholder": "Insert command here",
+  "playbooks.edit_command.placeholder": "Type a command here",
   "playbooks.edit_command.save.button": "Save",
   "playbooks.edit_command.title": "Slash command",
   "playbooks.fetch_error.description": "You don't have permission to view this run, or it may no longer exist.",

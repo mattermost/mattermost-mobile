@@ -61,7 +61,7 @@ export default function EditCommandForm({
     const [commandFieldHeight, setCommandFieldHeight] = useState(0);
 
     const labelCommand = formatMessage({id: 'playbooks.edit_command.label', defaultMessage: 'Command'});
-    const placeholderCommand = formatMessage({id: 'playbooks.edit_command.placeholder', defaultMessage: 'Insert command here'});
+    const placeholderCommand = formatMessage({id: 'playbooks.edit_command.placeholder', defaultMessage: 'Type a command here'});
 
     const onLayoutCommand = useCallback((e: LayoutChangeEvent) => {
         setCommandFieldHeight(e.nativeEvent.layout.height);

@@ -13,6 +13,7 @@ import {Screens} from '@constants';
 import {withServerDatabase} from '@database/components';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 import {loadPlaybooksScreen} from '@playbooks/screens';
+import {logDebug} from '@utils/log';
 
 const withGestures = (Screen: React.ComponentType) => {
     return function gestureHoc(props: any) {
@@ -305,6 +306,10 @@ Navigation.setLazyComponentRegistrator((screenName) => {
 
     if (!screen) {
         screen = loadPlaybooksScreen(screenName);
+    }
+
+    if (!screen) {
+        logDebug(`Screen not found: ${screenName}`);
     }
 
     if (screen) {

@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import DatabaseManager from '@database/manager';
+import IntegrationsManager from '@managers/integrations_manager';
 import NetworkManager from '@managers/network_manager';
 import {setChecklistItemCommand as localSetChecklistItemCommand, updateChecklistItem as localUpdateChecklistItem} from '@playbooks/actions/local/checklist';
 
@@ -90,6 +91,32 @@ describe('checklist', () => {
             expect(result.error).toBeUndefined();
             expect(result.data).toBe(true);
             expect(mockClient.runChecklistItemSlashCommand).toHaveBeenCalledWith(playbookRunId, checklistNumber, itemNumber);
+        });
+
+        it('should set trigger id if it is returned', async () => {
+            mockClient.runChecklistItemSlashCommand.mockResolvedValueOnce({trigger_id: 'trigger_id'});
+            const setTriggerId = jest.fn();
+            jest.spyOn(IntegrationsManager, 'getManager').mockReturnValue({
+                setTriggerId,
+            } as any);
+
+            const result = await runChecklistItem(serverUrl, playbookRunId, checklistNumber, itemNumber);
+            expect(result).toBeDefined();
+            expect(result.error).toBeUndefined();
+            expect(setTriggerId).toHaveBeenCalledWith('trigger_id');
+        });
+
+        it('should not set trigger id if it is not returned', async () => {
+            mockClient.runChecklistItemSlashCommand.mockResolvedValueOnce({});
+            const setTriggerId = jest.fn();
+            jest.spyOn(IntegrationsManager, 'getManager').mockReturnValue({
+                setTriggerId,
+            } as any);
+
+            const result = await runChecklistItem(serverUrl, playbookRunId, checklistNumber, itemNumber);
+            expect(result).toBeDefined();
+            expect(result.error).toBeUndefined();
+            expect(setTriggerId).not.toHaveBeenCalled();
         });
     });
 

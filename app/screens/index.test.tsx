@@ -14,6 +14,7 @@ import {withServerDatabase} from '@database/components';
 import EditCommand from '@playbooks/screens/edit_command';
 import PlaybookRun from '@playbooks/screens/playbook_run';
 import PlaybooksRuns from '@playbooks/screens/playbooks_runs';
+import {logDebug} from '@utils/log';
 
 import EditServer from './edit_server';
 import InAppNotification from './in_app_notification';
@@ -246,5 +247,6 @@ describe('Screen Registration', () => {
     it('handles unknown screen names gracefully', () => {
         registrator('UNKNOWN_SCREEN');
         expect(Navigation.registerComponent).not.toHaveBeenCalled();
+        expect(logDebug).toHaveBeenCalledWith('Screen not found: UNKNOWN_SCREEN');
     });
 });

@@ -141,9 +141,10 @@ describe('runChecklistItemSlashCommand', () => {
         const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunId}/checklists/${checklistNumber}/item/${itemNumber}/run`;
         const expectedOptions = {method: 'post'};
 
-        jest.mocked(client.doFetch).mockResolvedValue(undefined);
+        jest.mocked(client.doFetch).mockResolvedValue({trigger_id: 'trigger123'});
 
-        await client.runChecklistItemSlashCommand(playbookRunId, checklistNumber, itemNumber);
+        const result = await client.runChecklistItemSlashCommand(playbookRunId, checklistNumber, itemNumber);
+        expect(result).toEqual({trigger_id: 'trigger123'});
 
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
     });
@@ -155,9 +156,10 @@ describe('runChecklistItemSlashCommand', () => {
         const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunId}/checklists/${checklistNumber}/item/${itemNumber}/run`;
         const expectedOptions = {method: 'post'};
 
-        jest.mocked(client.doFetch).mockResolvedValue(undefined);
+        jest.mocked(client.doFetch).mockResolvedValue({trigger_id: ''});
 
-        await client.runChecklistItemSlashCommand(playbookRunId, checklistNumber, itemNumber);
+        const result = await client.runChecklistItemSlashCommand(playbookRunId, checklistNumber, itemNumber);
+        expect(result).toEqual({trigger_id: ''});
 
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
     });

@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {forceLogoutIfNecessary} from '@actions/remote/session';
+import IntegrationsManager from '@managers/integrations_manager';
 import NetworkManager from '@managers/network_manager';
 import {setChecklistItemCommand as localSetChecklistItemCommand, updateChecklistItem as localUpdateChecklistItem} from '@playbooks/actions/local/checklist';
 import {getFullErrorMessage} from '@utils/errors';
@@ -36,7 +37,10 @@ export const runChecklistItem = async (
 ) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        await client.runChecklistItemSlashCommand(playbookRunId, checklistNumber, itemNumber);
+        const {trigger_id} = await client.runChecklistItemSlashCommand(playbookRunId, checklistNumber, itemNumber);
+        if (trigger_id) {
+            IntegrationsManager.getManager(serverUrl)?.setTriggerId(trigger_id);
+        }
         return {data: true};
     } catch (error) {
         logDebug('error on runChecklistItem', getFullErrorMessage(error));
