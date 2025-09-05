@@ -21,11 +21,6 @@ import {usePreventDoubleTap} from '@hooks/utils';
 import SecurityManager from '@managers/security_manager';
 import {dismissModal, popTopScreen, setButtons} from '@screens/navigation';
 import {logError} from '@utils/log';
-<<<<<<< HEAD
-import {isCustomFieldSamlLinked} from '@utils/user';
-=======
-import {preventDoubleTap} from '@utils/tap';
->>>>>>> b285a231f (refactor: edit_profile helper functions and tests (#9005))
 
 import ProfileForm, {CUSTOM_ATTRS_PREFIX} from './components/form';
 import ProfileError from './components/profile_error';
@@ -172,8 +167,6 @@ const EditProfile = ({
         scrollViewRef.current?.scrollToPosition(0, 0, true);
     }, [enableSaveButton]);
 
-    const submitUser = usePreventDoubleTap(useCallback(async () => {
-
     const fieldLockConfig = useMemo(() => {
         const service = currentUser?.authService || '';
         const includesSsoService = (sso: string) => ['gitlab', 'google', 'office365'].includes(sso);
@@ -224,7 +217,7 @@ const EditProfile = ({
             await handleProfileImageUpdate(serverUrl, currentUser);
 
             // Update user info if there are changes
-            if (Object.keys(userInfoUpdates).length) {
+            if (Object.keys(userInfoUpdates).length > 0) {
                 const {error: reqError} = await updateMe(serverUrl, userInfoUpdates);
                 if (reqError) {
                     resetScreenForProfileError(reqError);
@@ -234,7 +227,7 @@ const EditProfile = ({
 
             // Handle custom attributes
             const changedCustomAttributes = getChangedCustomAttributes(userInfo, customAttributesSet, customFields, enableCustomAttributes);
-            if (Object.keys(changedCustomAttributes).length) {
+            if (Object.keys(changedCustomAttributes).length > 0) {
                 const {error: attrError} = await updateCustomProfileAttributes(serverUrl, currentUser.id, changedCustomAttributes);
                 if (attrError) {
                     logError('Error updating custom attributes', attrError);
@@ -252,10 +245,8 @@ const EditProfile = ({
         userInfo,
         fieldLockConfig,
         enableCustomAttributes,
-        close,
         serverUrl,
         handleProfileImageUpdate,
-        handleCustomAttributesUpdate,
         close,
         resetScreen,
         resetScreenForProfileError,
