@@ -4,7 +4,7 @@
 /* eslint-disable max-lines */
 
 import {processReceivedThreads} from '@actions/local/thread';
-import {Config, Preferences, Screens} from '@constants';
+import {ActionType, Config, Preferences, Screens} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import TestHelper from '@test/test_helper';
@@ -1215,6 +1215,146 @@ describe('Team Queries', () => {
                 is_following: true,
             })], teamId, true);
             await operator.batchRecords([...channelModels, ...threadModels.models!], 'test');
+
+            await TestHelper.wait(waitTime);
+            expect(subscriptionNext).not.toHaveBeenCalled();
+        });
+
+        it('should not consider the team unread when a gm or a dm are unread', async () => {
+            const subscriptionNext = jest.fn();
+            const notify_props = {mark_unread: 'all' as const};
+            const result = observeIsTeamUnread(database, teamId);
+
+            result.subscribe({next: subscriptionNext});
+            await TestHelper.wait(waitTime);
+
+            // The subscription always return the first value
+            expect(subscriptionNext).toHaveBeenCalledWith(false);
+            subscriptionNext.mockClear();
+
+            // Setup DM channel with unreads
+            let channelModels = (await Promise.all((await prepareAllMyChannels(
+                operator,
+                [TestHelper.fakeChannel({id: 'dm1', team_id: '', type: 'D', total_msg_count: 30})],
+                [TestHelper.fakeMyChannel({
+                    channel_id: 'dm1',
+                    user_id: userId,
+                    notify_props,
+                    msg_count: 20,
+                })],
+                false,
+            )))).flat();
+            await operator.batchRecords([...channelModels], 'test');
+
+            await TestHelper.wait(waitTime);
+            expect(subscriptionNext).not.toHaveBeenCalled();
+
+            // Setup GM channel with unreads
+            channelModels = (await Promise.all((await prepareAllMyChannels(
+                operator,
+                [TestHelper.fakeChannel({id: 'gm1', team_id: '', type: 'G', total_msg_count: 30})],
+                [TestHelper.fakeMyChannel({
+                    channel_id: 'gm1',
+                    user_id: userId,
+                    notify_props,
+                    msg_count: 20,
+                })],
+                false,
+            )))).flat();
+            await operator.batchRecords([...channelModels], 'test');
+
+            await TestHelper.wait(waitTime);
+            expect(subscriptionNext).not.toHaveBeenCalled();
+        });
+
+        it('should not consider the team unread if a thread in a dm or a gm has unread messages', async () => {
+            const subscriptionNext = jest.fn();
+            const notify_props = {mark_unread: 'all' as const};
+            const result = observeIsTeamUnread(database, teamId);
+
+            result.subscribe({next: subscriptionNext});
+            await TestHelper.wait(waitTime);
+
+            // The subscription always return the first value
+            expect(subscriptionNext).toHaveBeenCalledWith(false);
+            subscriptionNext.mockClear();
+
+            // Setup DM channel with thread
+            let channelModels = (await Promise.all((await prepareAllMyChannels(
+                operator,
+                [TestHelper.fakeChannel({id: 'dm1', team_id: '', type: 'D', total_msg_count: 20})],
+                [TestHelper.fakeMyChannel({
+                    channel_id: 'dm1',
+                    user_id: userId,
+                    notify_props,
+                    msg_count: 20,
+                })],
+                false,
+            )))).flat();
+
+            const dmPost = TestHelper.fakePost({id: 'dm_thread', channel_id: 'dm1'});
+
+            const dmThreads = [{
+                ...TestHelper.fakeThread({
+                    id: 'dm_thread',
+                    participants: undefined,
+                    reply_count: 2,
+                    last_reply_at: 123,
+                    is_following: true,
+                    unread_replies: 2,
+                    unread_mentions: 1,
+                }),
+                lastFetchedAt: 0,
+            }];
+
+            const dmModels = await operator.handleThreads({threads: dmThreads, prepareRecordsOnly: false});
+            let postModels = await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [],
+                posts: [dmPost],
+                prepareRecordsOnly: true,
+            });
+            await operator.batchRecords([...channelModels, ...dmModels, ...postModels], 'test');
+
+            await TestHelper.wait(waitTime);
+            expect(subscriptionNext).not.toHaveBeenCalled();
+
+            // Setup GM channel with thread
+            channelModels = (await Promise.all((await prepareAllMyChannels(
+                operator,
+                [TestHelper.fakeChannel({id: 'gm1', team_id: '', type: 'G', total_msg_count: 20})],
+                [TestHelper.fakeMyChannel({
+                    channel_id: 'gm1',
+                    user_id: userId,
+                    notify_props,
+                    msg_count: 20,
+                })],
+                false,
+            )))).flat();
+
+            const gmPost = TestHelper.fakePost({id: 'gm_thread', channel_id: 'gm1'});
+
+            const gmThreads = [{
+                ...TestHelper.fakeThread({
+                    id: 'gm_thread',
+                    participants: undefined,
+                    reply_count: 3,
+                    last_reply_at: 123,
+                    is_following: true,
+                    unread_replies: 3,
+                    unread_mentions: 2,
+                }),
+                lastFetchedAt: 123,
+            }];
+
+            const gmModels = await operator.handleThreads({threads: gmThreads, prepareRecordsOnly: false});
+            postModels = await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [],
+                posts: [gmPost],
+                prepareRecordsOnly: true,
+            });
+            await operator.batchRecords([...channelModels, ...gmModels, ...postModels], 'test');
 
             await TestHelper.wait(waitTime);
             expect(subscriptionNext).not.toHaveBeenCalled();

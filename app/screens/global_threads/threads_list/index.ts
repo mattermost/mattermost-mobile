@@ -31,7 +31,7 @@ const enhanced = withObservables(['tab', 'teamId'], ({database, tab, teamId}: Pr
         threads: teamThreadsSyncObserver.pipe(
             switchMap((teamThreadsSync) => {
                 const earliest = tab === 'all' ? teamThreadsSync?.[0]?.earliest : 0;
-                return queryThreadsInTeam(database, teamId, getOnlyUnreads, true, true, true, earliest).observe();
+                return queryThreadsInTeam(database, teamId, {onlyUnreads: getOnlyUnreads, hasReplies: true, isFollowing: true, sort: true, earliest}).observe();
             }),
         ),
     };

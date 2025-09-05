@@ -814,8 +814,10 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
             <View
               style={
                 {
+                  "alignItems": "center",
                   "flex": 1,
                   "flexDirection": "row",
+                  "gap": 4,
                 }
               }
             >
@@ -1134,8 +1136,10 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
             <View
               style={
                 {
+                  "alignItems": "center",
                   "flex": 1,
                   "flexDirection": "row",
+                  "gap": 4,
                 }
               }
             >
@@ -1492,8 +1496,10 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
             <View
               style={
                 {
+                  "alignItems": "center",
                   "flex": 1,
                   "flexDirection": "row",
+                  "gap": 4,
                 }
               }
             >
@@ -1711,8 +1717,10 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
             <View
               style={
                 {
+                  "alignItems": "center",
                   "flex": 1,
                   "flexDirection": "row",
+                  "gap": 4,
                 }
               }
             >
