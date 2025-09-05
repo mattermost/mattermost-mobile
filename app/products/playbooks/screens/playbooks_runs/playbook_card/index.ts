@@ -2,11 +2,11 @@
 // See LICENSE.txt for license information.
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
-import {of as of$} from 'rxjs';
+import {of as of$, switchMap} from 'rxjs';
 
-import {observePlaybookRunProgress, queryParticipantsFromAPIRun} from '@playbooks/database/queries/run';
+import {observeParticipantsIdsFromPlaybookModel, observePlaybookRunProgress, queryParticipantsFromAPIRun} from '@playbooks/database/queries/run';
 import {getProgressFromRun} from '@playbooks/utils/progress';
-import {observeUser} from '@queries/servers/user';
+import {observeUser, queryUsersById} from '@queries/servers/user';
 
 import PlaybookCard, {ITEM_HEIGHT} from './playbook_card';
 
@@ -18,10 +18,12 @@ type OwnProps = {
 } & WithDatabaseArgs;
 
 const enhanced = withObservables(['run'], ({run, database}: OwnProps) => {
-    if ('participants' in run) {
+    if ('observe' in run) {
         return {
             run: run.observe(),
-            participants: run.participants().observe(),
+            participants: observeParticipantsIdsFromPlaybookModel(run, false).pipe(
+                switchMap((ids) => queryUsersById(database, ids).observe()),
+            ),
             progress: observePlaybookRunProgress(database, run.id),
             owner: observeUser(database, run.ownerUserId),
         };

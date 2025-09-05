@@ -179,12 +179,13 @@ type Props = {
     manageMode?: boolean;
     showManageMode?: boolean;
     showNoResults: boolean;
-    selectedIds: {[id: string]: UserProfile};
+    selectedIds: Set<string>;
     testID?: string;
     term?: string;
     tutorialWatched: boolean;
     includeUserMargin?: boolean;
     location: AvailableScreens;
+    customSection?: (profiles: UserProfile[]) => Array<SectionListData<UserProfile>>;
 }
 
 export default function UserList({
@@ -203,6 +204,7 @@ export default function UserList({
     tutorialWatched,
     includeUserMargin,
     location,
+    customSection,
 }: Props) {
     const intl = useIntl();
     const theme = useTheme();
@@ -223,8 +225,11 @@ export default function UserList({
             return createProfiles(profiles, channelMembers);
         }
 
+        if (customSection) {
+            return customSection(profiles);
+        }
         return createProfilesSections(intl, profiles, channelMembers);
-    }, [channelMembers, intl, loading, profiles, term]);
+    }, [channelMembers, customSection, intl, loading, profiles, term]);
 
     const openUserProfile = useCallback(async (profile: UserProfile | UserModel) => {
         let user: UserModel;
@@ -246,8 +251,8 @@ export default function UserList({
 
     const renderItem = useCallback(({item, index, section}: RenderItemType) => {
         // The list will re-render when the selection changes because it's passed into the list as extraData
-        const selected = Boolean(selectedIds[item.id]);
-        const canAdd = Object.keys(selectedIds).length < General.MAX_USERS_IN_GM;
+        const selected = selectedIds.has(item.id);
+        const canAdd = selectedIds.size < General.MAX_USERS_IN_GM;
 
         const isChAdmin = item.scheme_admin || false;
 

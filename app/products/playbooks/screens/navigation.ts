@@ -24,3 +24,18 @@ export async function goToPlaybookRun(intl: IntlShape, playbookRunId: string, pl
     const title = intl.formatMessage({id: 'playbooks.playbook_run.title', defaultMessage: 'Playbook run'});
     goToScreen(Screens.PLAYBOOK_RUN, title, {playbookRunId, playbookRun}, {});
 }
+
+export async function goToSelectUser(
+    title: string,
+    participantIds: string[],
+    selected: string | undefined,
+    handleSelect: (user: UserProfile) => void,
+    handleRemove?: () => void,
+) {
+    goToScreen(Screens.PLAYBOOK_SELECT_USER, title, {
+        participantIds,
+        selected,
+        handleSelect,
+        handleRemove,
+    }, {});
+}

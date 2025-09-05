@@ -25,3 +25,24 @@ export async function updateChecklistItem(serverUrl: string, itemId: string, sta
         return {error};
     }
 }
+
+export async function setAssignee(serverUrl: string, itemId: string, assigneeId: string) {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const item = await getPlaybookChecklistItemById(database, itemId);
+        if (!item) {
+            return {error: 'Item not found'};
+        }
+
+        await database.write(async () => {
+            item.update((i) => {
+                i.assigneeId = assigneeId;
+            });
+        });
+
+        return {data: true};
+    } catch (error) {
+        logError('failed to update checklist item assignee', error);
+        return {error};
+    }
+}

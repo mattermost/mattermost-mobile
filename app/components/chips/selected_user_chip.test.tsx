@@ -32,7 +32,7 @@ describe('SelectedUserChip', () => {
         const userChip = getByTestId('selected-user-chip');
         expect(userChip.props.user).toBe(mockUser);
         expect(userChip.props.teammateNameDisplay).toBe('username');
-        expect(userChip.props.showRemoveOption).toBe(true);
+        expect(userChip.props.actionIcon).toBe('remove');
         expect(userChip.props.showAnimation).toBe(true);
         userChip.props.onPress();
         expect(mockOnPress).toHaveBeenCalledTimes(1);
