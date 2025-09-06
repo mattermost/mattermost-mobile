@@ -65,6 +65,9 @@ describe('ChecklistItemBottomSheet', () => {
 
     function getBaseProps(): ComponentProps<typeof ChecklistItemBottomSheet> {
         return {
+            runId: 'run-1',
+            checklistNumber: 1,
+            itemNumber: 1,
             item: mockItem,
             assignee: mockAssignee,
             onCheck: mockOnCheck,
@@ -72,6 +75,7 @@ describe('ChecklistItemBottomSheet', () => {
             onRunCommand: mockOnRunCommand,
             teammateNameDisplay: mockTeammateNameDisplay,
             isDisabled: false,
+            currentUserTimezone: {useAutomaticTimezone: false, automaticTimezone: '', manualTimezone: 'America/New_York'},
         };
     }
 
@@ -270,7 +274,7 @@ describe('ChecklistItemBottomSheet', () => {
         const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
 
         const dueDateItem = getByTestId('checklist_item.due_date');
-        expect(dueDateItem.props.info).toBe('Saturday, January 1 at 12:00 AM');
+        expect(dueDateItem.props.info).toBe('Saturday, January 1 at 07:00 PM');
 
         jest.useRealTimers();
     });

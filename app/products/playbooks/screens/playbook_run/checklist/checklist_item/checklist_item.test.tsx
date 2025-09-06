@@ -371,7 +371,6 @@ describe('ChecklistItem', () => {
         const {getByTestId} = renderWithIntl(<BottomSheetComponent/>);
         const bottomSheetRenderedComponent = getByTestId('checklist-item-bottom-sheet-component');
         expect(bottomSheetRenderedComponent.props.item).toBe(props.item);
-        expect(bottomSheetRenderedComponent.props.assignee).toBe(props.assignee);
         expect(bottomSheetRenderedComponent.props.teammateNameDisplay).toBe(props.teammateNameDisplay);
 
         bottomSheetRenderedComponent.props.onCheck();

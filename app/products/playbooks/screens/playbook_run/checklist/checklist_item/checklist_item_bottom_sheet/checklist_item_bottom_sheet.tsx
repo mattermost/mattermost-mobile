@@ -2,19 +2,23 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo, type ComponentProps} from 'react';
-import {defineMessages, useIntl, type IntlShape} from 'react-intl';
+import {defineMessages, useIntl} from 'react-intl';
 import {View, Text} from 'react-native';
 
 import MenuDivider from '@components/menu_divider';
 import OptionBox from '@components/option_box';
 import OptionItem, {ITEM_HEIGHT} from '@components/option_item';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {setDueDate} from '@playbooks/actions/remote/checklist';
+import {goToSelectDate} from '@playbooks/screens/navigation';
+import {getDueDateString} from '@playbooks/utils/time';
 import {dismissBottomSheet, openUserProfileModal} from '@screens/navigation';
-import {toMilliseconds} from '@utils/datetime';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
+import {getTimezone} from '@utils/user';
 
-import Checkbox from './checkbox';
+import Checkbox from '../checkbox';
 
 import type PlaybookChecklistItemModel from '@playbooks/types/database/models/playbook_checklist_item';
 import type UserModel from '@typings/database/models/servers/user';
@@ -59,10 +63,6 @@ const messages = defineMessages({
     none: {
         id: 'playbooks.checklist_item.none',
         defaultMessage: 'None',
-    },
-    dateAtTime: {
-        id: 'playbooks.checklist_item.date_at_time',
-        defaultMessage: '{date} at {time}',
     },
 });
 
@@ -112,6 +112,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
 }));
 
 type Props = {
+    runId: string;
+    checklistNumber: number;
+    itemNumber: number;
     item: PlaybookChecklistItemModel | PlaybookChecklistItem;
     assignee?: UserModel;
     onCheck: () => void;
@@ -119,22 +122,13 @@ type Props = {
     onRunCommand: () => void;
     teammateNameDisplay: string;
     isDisabled: boolean;
+    currentUserTimezone: UserTimezone | null | undefined;
 };
 
-function getDueDateInfo(intl: IntlShape, dueDate: number | undefined) {
-    if (!dueDate) {
-        return intl.formatMessage(messages.none);
-    }
-    const dateObject = new Date(dueDate);
-    const dateString = dateObject.toLocaleDateString(intl.locale, {month: 'long', day: 'numeric', weekday: 'long'});
-    if (Math.abs(dueDate - Date.now()) < toMilliseconds({days: 1})) {
-        const timeString = dateObject.toLocaleTimeString(intl.locale, {hour: '2-digit', minute: '2-digit'});
-        return intl.formatMessage(messages.dateAtTime, {date: dateString, time: timeString});
-    }
-    return dateString;
-}
-
 const ChecklistItemBottomSheet = ({
+    runId,
+    checklistNumber,
+    itemNumber,
     item,
     assignee,
     onCheck,
@@ -142,10 +136,14 @@ const ChecklistItemBottomSheet = ({
     onRunCommand,
     teammateNameDisplay,
     isDisabled,
+    currentUserTimezone,
 }: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const intl = useIntl();
+    const serverUrl = useServerUrl();
+
+    const timezone = getTimezone(currentUserTimezone);
 
     const dueDate = 'dueDate' in item ? item.dueDate : item.due_date;
     const isChecked = item.state === 'closed';
@@ -217,6 +215,12 @@ const ChecklistItemBottomSheet = ({
         };
     }, [assignee, intl, onUserChipPress, teammateNameDisplay]);
 
+    const handleSelectDate = useCallback(async () => {
+        goToSelectDate(intl, (date) => {
+            setDueDate(serverUrl, runId, item.id, checklistNumber, itemNumber, date);
+        }, dueDate);
+    }, [intl, dueDate, serverUrl, runId, item.id, checklistNumber, itemNumber]);
+
     const renderTaskDetails = () => (
         <View style={styles.taskDetailsContainer}>
             <OptionItem
@@ -227,11 +231,12 @@ const ChecklistItemBottomSheet = ({
                 testID='checklist_item.assignee'
             />
             <OptionItem
-                type='none'
+                type='arrow'
                 icon='calendar-outline'
                 label={intl.formatMessage(messages.dueDate)}
-                info={getDueDateInfo(intl, dueDate)}
+                info={getDueDateString(intl, dueDate, timezone)}
                 testID='checklist_item.due_date'
+                action={handleSelectDate}
             />
             <OptionItem
                 type='none'

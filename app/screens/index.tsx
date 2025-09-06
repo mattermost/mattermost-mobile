@@ -195,6 +195,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.PLAYBOOK_RUN:
             screen = withServerDatabase(require('@playbooks/screens/playbook_run').default);
             break;
+        case Screens.PLAYBOOKS_SELECT_DATE:
+            screen = withServerDatabase(require('@playbooks/screens/select_date').default);
+            break;
         case Screens.POST_OPTIONS:
             screen = withServerDatabase(require('@screens/post_options').default);
             break;
