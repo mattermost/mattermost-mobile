@@ -1,30 +1,35 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo, useCallback} from 'react';
+import React, {useMemo, useCallback, useEffect} from 'react';
 import {Text, View, Pressable} from 'react-native';
 
+import {fetchUsersByIds} from '@actions/remote/user';
 import EditedIndicator from '@components/EditedIndicator';
+import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
 import Markdown from '@components/markdown';
 import ProfilePicture from '@components/profile_picture';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {useUserLocale} from '@context/user_locale';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
-import {displayUsername} from '@utils/user';
+import {displayUsername, getUserTimezone} from '@utils/user';
 
 import type UserModel from '@typings/database/models/servers/user';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 const MAX_PERMALINK_PREVIEW_LINES = 4;
+const EDITED_INDICATOR_CONTEXT = ['paragraph'];
 
 type PermalinkPreviewProps = {
     embedData: PermalinkEmbedData;
-    showPermalinkPreviews: boolean;
     author?: UserModel;
-    locale: string;
+    currentUser?: UserModel;
+    isMilitaryTime: boolean;
     teammateNameDisplay: string;
     isOriginPostDeleted?: boolean;
     location: AvailableScreens;
@@ -90,14 +95,32 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const PermalinkPreview = ({embedData, showPermalinkPreviews, author, locale, teammateNameDisplay, isOriginPostDeleted, location}: PermalinkPreviewProps) => {
+const PermalinkPreview = ({
+    embedData,
+    author,
+    currentUser,
+    isMilitaryTime,
+    teammateNameDisplay,
+    isOriginPostDeleted,
+    location,
+}: PermalinkPreviewProps) => {
     const theme = useTheme();
+    const serverUrl = useServerUrl();
+    const locale = useUserLocale();
     const styles = getStyleSheet(theme);
 
     const textStyles = getMarkdownTextStyles(theme);
     const blockStyles = getMarkdownBlockStyles(theme);
 
-    if (!showPermalinkPreviews || isOriginPostDeleted) {
+    const userId = embedData?.post?.user_id;
+
+    useEffect(() => {
+        if (userId && !author) {
+            fetchUsersByIds(serverUrl, [userId], false);
+        }
+    }, [userId, author, serverUrl]);
+
+    if (isOriginPostDeleted) {
         return null;
     }
 
@@ -117,7 +140,7 @@ const PermalinkPreview = ({embedData, showPermalinkPreviews, author, locale, tea
         const cleanMessage = message.trim();
         const lines = cleanMessage.split('\n');
         if (lines.length > MAX_PERMALINK_PREVIEW_LINES) {
-            return lines.slice(0, MAX_PERMALINK_PREVIEW_LINES).join('\n') + '...';
+            return lines.slice(0, MAX_PERMALINK_PREVIEW_LINES).join('\n...');
         }
 
         return cleanMessage;
@@ -126,10 +149,7 @@ const PermalinkPreview = ({embedData, showPermalinkPreviews, author, locale, tea
     const isEdited = useMemo(() => post && post.edit_at, [post]);
 
     const authorDisplayName = useMemo(() => {
-        if (author) {
-            return displayUsername(author, locale, teammateNameDisplay);
-        }
-        return displayUsername(undefined, locale, teammateNameDisplay);
+        return displayUsername(author, locale, teammateNameDisplay);
     }, [author, locale, teammateNameDisplay]);
 
     const channelContextText = useMemo(() => {
@@ -168,8 +188,8 @@ const PermalinkPreview = ({embedData, showPermalinkPreviews, author, locale, tea
                         {authorDisplayName}
                     </Text>
                     <FormattedTime
-                        timezone=''
-                        isMilitaryTime={false}
+                        timezone={getUserTimezone(currentUser)}
+                        isMilitaryTime={isMilitaryTime}
                         value={post.create_at}
                         style={styles.timestamp}
                     />
@@ -181,10 +201,10 @@ const PermalinkPreview = ({embedData, showPermalinkPreviews, author, locale, tea
                     baseTextStyle={styles.messageText}
                     blockStyles={blockStyles}
                     channelId={embedData.channel_id}
-                    disableGallery={true}
-                    disableHashtags={true}
+                    disableGallery={false}
+                    disableHashtags={false}
                     disableAtMentions={true}
-                    disableChannelLink={true}
+                    disableChannelLink={false}
                     location={location}
                     theme={theme}
                     textStyles={textStyles}
@@ -194,7 +214,7 @@ const PermalinkPreview = ({embedData, showPermalinkPreviews, author, locale, tea
                     <EditedIndicator
                         baseTextStyle={styles.messageText}
                         theme={theme}
-                        context={['paragraph']}
+                        context={EDITED_INDICATOR_CONTEXT}
                         iconSize={12}
                         testID='permalink_preview.edited_indicator_separate'
                     />
@@ -202,7 +222,11 @@ const PermalinkPreview = ({embedData, showPermalinkPreviews, author, locale, tea
             </View>
 
             <Text style={styles.channelContext}>
-                {'Originally posted in '}
+                <FormattedText
+                    id='mobile.permalink_preview.originally_posted'
+                    defaultMessage='Originally posted in '
+                    style={styles.channelContext}
+                />
                 <Text style={styles.channelName}>
                     {channelContextText}
                 </Text>

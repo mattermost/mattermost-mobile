@@ -35,14 +35,17 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
             channel_type: 'O',
             channel_id: 'channel-123',
         },
-        showPermalinkPreviews: true,
         author: TestHelper.fakeUserModel({
             id: 'user-123',
             username: 'testuser',
             firstName: 'Test',
             lastName: 'User',
         }),
-        locale: 'en',
+        currentUser: TestHelper.fakeUserModel({
+            id: 'current-user',
+            locale: 'en',
+        }),
+        isMilitaryTime: false,
         teammateNameDisplay: 'username',
         location: Screens.CHANNEL,
         isOriginPostDeleted: false,
@@ -56,16 +59,6 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
         expect(getByText('testuser')).toBeTruthy();
         expect(getByText('This is a test message')).toBeTruthy();
         expect(getByText('Originally posted in ~Test Channel')).toBeTruthy();
-    });
-
-    it('should not render when showPermalinkPreviews is false', () => {
-        const props = {...baseProps, showPermalinkPreviews: false};
-        const {queryByText} = renderWithIntlAndTheme(
-            <PermalinkPreview {...props}/>,
-        );
-
-        expect(queryByText('testuser')).toBeNull();
-        expect(queryByText('This is a test message')).toBeNull();
     });
 
     it('should not render when origin post is deleted', () => {
@@ -173,7 +166,7 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
             <PermalinkPreview {...props}/>,
         );
 
-        expect(getByText('Line 1\nLine 2\nLine 3\nLine 4...')).toBeTruthy();
+        expect(getByText('Line 1\n...Line 2\n...Line 3\n...Line 4')).toBeTruthy();
     });
 
     it('should handle empty message', () => {

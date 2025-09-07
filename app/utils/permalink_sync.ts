@@ -14,11 +14,9 @@ import type PostModel from '@typings/database/models/servers/post';
 export async function findPostsWithPermalinkReferences(
     database: Database,
     referencedPostId: string,
-    channelId?: string,
 ): Promise<PostModel[]> {
     try {
-        const referencingPosts = await queryPostsWithPermalinkReferences(database, referencedPostId, channelId);
-        logDebug(`Found ${referencingPosts.length} posts with permalink references to ${referencedPostId}`);
+        const referencingPosts = await queryPostsWithPermalinkReferences(database, referencedPostId);
         return referencingPosts;
     } catch (error) {
         logWarning('Error finding posts with permalink references:', error);
@@ -47,7 +45,6 @@ export function updatePermalinkMetadata(
                 const freshEditAt = freshPostData.edit_at || 0;
 
                 if (freshEditAt > currentEditAt) {
-                    logDebug(`Updating permalink metadata for post ${referencingPost.id}, referenced post ${referencedPostId}`);
                     updated = true;
                     return {
                         ...embed,
@@ -97,7 +94,6 @@ export async function syncPermalinkPreviewsForEditedPost(
         const referencingPosts = await findPostsWithPermalinkReferences(
             database,
             editedPost.id,
-            undefined,
         );
 
         if (!referencingPosts.length) {

@@ -98,7 +98,7 @@ describe('Permalink Sync Utils', () => {
             expect(result.map((p) => p.id)).toEqual(expect.arrayContaining([referencingPost1.id, referencingPost2.id]));
         });
 
-        it('should return posts filtered by channel when channelId is provided', async () => {
+        it('should return posts from multiple channels when they reference the same post', async () => {
             const referencedPostId = 'referenced_post_123';
             const channel1Post = TestHelper.fakePost({
                 id: 'channel1_post',
@@ -140,11 +140,10 @@ describe('Permalink Sync Utils', () => {
             });
             await operator.batchRecords(models, 'test');
 
-            const result = await findPostsWithPermalinkReferences(database, referencedPostId, 'channel1');
+            const result = await findPostsWithPermalinkReferences(database, referencedPostId);
 
-            expect(result).toHaveLength(1);
-            expect(result[0].id).toBe(channel1Post.id);
-            expect(result[0].channelId).toBe('channel1');
+            expect(result).toHaveLength(2);
+            expect(result.map((p) => p.id)).toEqual(expect.arrayContaining([channel1Post.id, channel2Post.id]));
         });
 
         it('should return empty array when no posts reference the given post ID', async () => {
