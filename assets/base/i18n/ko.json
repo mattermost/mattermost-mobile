@@ -158,6 +158,7 @@
   "channel_info.convert_gm_to_channel.screen_title": "비공개 채널로 변환",
   "channel_info.convert_gm_to_channel.team_selector_list.title": "팀 선택",
   "channel_info.convert_gm_to_channel.warning.body.yourself": "당신",
+  "channel_info.convert_gm_to_channel.warning.bodyXXXX": "{memberNames}과의 그룹 메시지를 채널로 변환하려고 합니다. 이 행동을 되돌릴 수 없습니다.",
   "channel_info.convert_gm_to_channel.warning.header": "대화 이력이 모든 채널 회원들한테 표시됩니다",
   "channel_info.convert_gm_to_channel.warning.no_teams.header": "그룹 회원들이 서로 다른 팀의 회원이기 때문에 채널로 변환하지 못했습니다",
   "channel_info.convert_private": "비공개 채널로 변환",
