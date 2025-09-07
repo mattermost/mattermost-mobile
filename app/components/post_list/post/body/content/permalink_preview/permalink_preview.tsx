@@ -2,10 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {LinearGradient} from 'expo-linear-gradient';
-import React, {useMemo, useCallback, useState} from 'react';
+import React, {useMemo, useCallback, useEffect, useState} from 'react';
 import {Text, View, Pressable, type LayoutChangeEvent} from 'react-native';
-import React, {useMemo, useCallback, useEffect} from 'react';
-import {Text, View, Pressable} from 'react-native';
 
 import {fetchUsersByIds} from '@actions/remote/user';
 import EditedIndicator from '@components/EditedIndicator';
@@ -121,16 +119,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const PermalinkPreview = ({
     embedData,
-    canDownloadFiles = true,
-    enableSecureFilePreview = false,
-    parentLocation,
-    parentPostId,
     author,
     currentUser,
     isMilitaryTime,
     teammateNameDisplay,
     isOriginPostDeleted,
     location,
+    canDownloadFiles = true,
+    enableSecureFilePreview = false,
+    parentLocation,
+    parentPostId,
 }: PermalinkPreviewProps) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -256,7 +254,7 @@ const PermalinkPreview = ({
                             <EditedIndicator
                                 baseTextStyle={styles.messageText}
                                 theme={theme}
-                                context={['paragraph']}
+                                context={EDITED_INDICATOR_CONTEXT}
                                 iconSize={12}
                                 testID='permalink_preview.edited_indicator_separate'
                             />

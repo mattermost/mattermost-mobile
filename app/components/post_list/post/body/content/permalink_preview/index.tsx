@@ -7,10 +7,8 @@ import {map, switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
 import {observePost} from '@queries/servers/post';
-import {observeCanDownloadFiles, observeEnableSecureFilePreview} from '@queries/servers/security';
-import {observeConfigBooleanValue} from '@queries/servers/system';
-import {observeUserOrFetch, observeTeammateNameDisplay, observeCurrentUser} from '@queries/servers/user';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
+import {observeCanDownloadFiles, observeEnableSecureFilePreview} from '@queries/servers/security';
 import {observeUser, observeTeammateNameDisplay, observeCurrentUser} from '@queries/servers/user';
 
 import PermalinkPreview from './permalink_preview';
