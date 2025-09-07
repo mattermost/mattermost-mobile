@@ -73,7 +73,7 @@ describe('Post Queries', () => {
             expect(result[0].id).toBe(referencingPost.id);
         });
 
-        it('should filter by channel when channelId is provided', async () => {
+        it('should return posts from multiple channels that reference the same post', async () => {
             const referencedPostId = 'referenced_post_123';
             const channel1Post = TestHelper.fakePost({
                 id: 'channel1_post',
@@ -115,11 +115,10 @@ describe('Post Queries', () => {
             });
             await operator.batchRecords(models, 'test');
 
-            const result = await queryPostsWithPermalinkReferences(database, referencedPostId, 'channel1');
+            const result = await queryPostsWithPermalinkReferences(database, referencedPostId);
 
-            expect(result).toHaveLength(1);
-            expect(result[0].id).toBe(channel1Post.id);
-            expect(result[0].channelId).toBe('channel1');
+            expect(result).toHaveLength(2);
+            expect(result.map((p) => p.id)).toEqual(expect.arrayContaining([channel1Post.id, channel2Post.id]));
         });
 
         it('should exclude deleted posts', async () => {

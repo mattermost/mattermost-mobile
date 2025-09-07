@@ -283,17 +283,12 @@ export const countUsersFromMentions = async (database: Database, mentions: strin
 export const queryPostsWithPermalinkReferences = async (
     database: Database,
     referencedPostId: string,
-    channelId?: string,
 ): Promise<PostModel[]> => {
     try {
         const clauses: Q.Clause[] = [
             Q.where('metadata', Q.notEq(null)),
             Q.where('delete_at', Q.eq(0)),
         ];
-
-        if (channelId) {
-            clauses.push(Q.where('channel_id', channelId));
-        }
 
         const postsWithMetadata = await database.get<PostModel>(POST).
             query(...clauses).

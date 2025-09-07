@@ -3,36 +3,29 @@
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of as of$} from 'rxjs';
-import {switchMap, distinctUntilChanged} from 'rxjs/operators';
+import {map, switchMap, distinctUntilChanged} from 'rxjs/operators';
 
-import {fetchUsersByIds} from '@actions/remote/user';
-import {withServerUrl} from '@context/server';
+import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
 import {observePost} from '@queries/servers/post';
 import {observeCanDownloadFiles, observeEnableSecureFilePreview} from '@queries/servers/security';
 import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeUserOrFetch, observeTeammateNameDisplay, observeCurrentUser} from '@queries/servers/user';
+import {queryDisplayNamePreferences} from '@queries/servers/preference';
+import {observeUser, observeTeammateNameDisplay, observeCurrentUser} from '@queries/servers/user';
 
 import PermalinkPreview from './permalink_preview';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-type OwnProps = WithDatabaseArgs & {
-    embedData: PermalinkEmbedData;
-    serverUrl?: string;
-};
-
-const enhance = withObservables(['embedData', 'serverUrl'], ({database, embedData, serverUrl}: OwnProps) => {
-    const showPermalinkPreviews = observeConfigBooleanValue(database, 'EnablePermalinkPreviews', false);
+const enhance = withObservables(['embedData'], ({database, embedData}: WithDatabaseArgs & {embedData: PermalinkEmbedData}) => {
     const teammateNameDisplay = observeTeammateNameDisplay(database);
+    const currentUser = observeCurrentUser(database);
+
+    const preferences = queryDisplayNamePreferences(database).observeWithColumns(['value']);
+    const isMilitaryTime = preferences.pipe(map((prefs) => getDisplayNamePreferenceAsBool(prefs, 'use_military_time')));
 
     const userId = embedData?.post?.user_id;
-    const author = userId ? observeUserOrFetch(database, serverUrl || '', userId, fetchUsersByIds) : of$(undefined);
-
-    const currentUser = observeCurrentUser(database);
-    const locale = currentUser.pipe(
-        switchMap((u) => of$(u?.locale || 'en')),
-        distinctUntilChanged(),
-    );
+    const author = userId ? observeUser(database, userId) : of$(undefined);
 
     const isOriginPostDeleted = embedData?.post_id ? observePost(database, embedData.post_id).pipe(
         switchMap((p) => {
@@ -43,14 +36,14 @@ const enhance = withObservables(['embedData', 'serverUrl'], ({database, embedDat
     ) : of$(false);
 
     return {
-        showPermalinkPreviews,
         teammateNameDisplay,
+        currentUser,
+        isMilitaryTime,
         author,
-        locale,
         isOriginPostDeleted,
         canDownloadFiles: observeCanDownloadFiles(database),
         enableSecureFilePreview: observeEnableSecureFilePreview(database),
     };
 });
 
-export default withDatabase(withServerUrl(enhance(PermalinkPreview)));
+export default withDatabase(enhance(PermalinkPreview));

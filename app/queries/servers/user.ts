@@ -9,12 +9,10 @@ import {General} from '@constants';
 import {MM_TABLES} from '@constants/database';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {sanitizeLikeString} from '@helpers/database';
-import {logWarning} from '@utils/log';
 
 import {queryDisplayNamePreferences} from './preference';
 import {observeCurrentUserId, observeLicense, getCurrentUserId, getConfig, getLicense, observeConfigValue} from './system';
 
-import type {fetchUsersByIds} from '@actions/remote/user';
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
 import type TeamMembershipModel from '@typings/database/models/servers/team_membership';
@@ -33,22 +31,6 @@ export const getUserById = async (database: Database, userId: string) => {
 export const observeUser = (database: Database, userId: string) => {
     return database.get<UserModel>(USER).query(Q.where('id', userId), Q.take(1)).observe().pipe(
         switchMap((result) => (result.length ? result[0].observe() : of$(undefined))),
-    );
-};
-
-export const observeUserOrFetch = (database: Database, serverUrl: string, userId: string, fetchFunction?: typeof fetchUsersByIds) => {
-    return observeUser(database, userId).pipe(
-        switchMap((user) => {
-            if (!user && fetchFunction) {
-                // User not found locally, fetch from server using provided function
-                fetchFunction(serverUrl, [userId], false).catch((error) => {
-                    logWarning('Failed to fetch user data:', error);
-                });
-                return observeUser(database, userId);
-            }
-            return of$(user);
-        }),
-        distinctUntilChanged(),
     );
 };
 
