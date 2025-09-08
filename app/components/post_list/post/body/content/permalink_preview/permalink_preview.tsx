@@ -2,44 +2,46 @@
 // See LICENSE.txt for license information.
 
 import {LinearGradient} from 'expo-linear-gradient';
-import React, {useMemo, useCallback, useState} from 'react';
-import {Text, View, Pressable, type LayoutChangeEvent} from 'react-native';
+import React, {useMemo, useCallback, useEffect, useState} from 'react';
+import {Text, View, Pressable, type LayoutChangeEvent, useWindowDimensions} from 'react-native';
 
+import {fetchUsersByIds} from '@actions/remote/user';
 import EditedIndicator from '@components/EditedIndicator';
+import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
 import Markdown from '@components/markdown';
 import ProfilePicture from '@components/profile_picture';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {useUserLocale} from '@context/user_locale';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
-import {displayUsername} from '@utils/user';
+import {displayUsername, getUserTimezone} from '@utils/user';
 
 import ExternalLinkPreview from './external_link_preview';
 import PermalinkFiles from './permalink_files';
 
+import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
-import type {UserMentionKey} from '@typings/global/markdown';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 const MAX_PERMALINK_PREVIEW_LINES = 4;
-const MAX_PERMALINK_HEIGHT = 506;
-const EMPTY_MENTION_KEYS: UserMentionKey[] = [];
+const SHOW_MORE_HEIGHT = 54;
+const EDITED_INDICATOR_CONTEXT = ['paragraph'];
 
 type PermalinkPreviewProps = {
     embedData: PermalinkEmbedData;
-    showPermalinkPreviews: boolean;
     author?: UserModel;
-    locale: string;
+    currentUser?: UserModel;
+    isMilitaryTime: boolean;
     teammateNameDisplay: string;
+    post?: PostModel;
     isOriginPostDeleted?: boolean;
     location: AvailableScreens;
-    canDownloadFiles?: boolean;
-    enableSecureFilePreview?: boolean;
     parentLocation?: string;
     parentPostId?: string;
-    currentUser?: UserModel;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -102,7 +104,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             ...typography('Body', 75, 'SemiBold'),
         },
         contentContainer: {
-            maxHeight: MAX_PERMALINK_HEIGHT,
             overflow: 'hidden',
             position: 'relative',
         },
@@ -118,37 +119,48 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const PermalinkPreview = ({
     embedData,
-    showPermalinkPreviews,
     author,
-    locale,
+    currentUser,
+    isMilitaryTime,
     teammateNameDisplay,
+    post,
     isOriginPostDeleted,
     location,
-    canDownloadFiles = true,
-    enableSecureFilePreview = false,
     parentLocation,
     parentPostId,
-    currentUser,
 }: PermalinkPreviewProps) => {
     const theme = useTheme();
+    const serverUrl = useServerUrl();
+    const locale = useUserLocale();
+    const dimensions = useWindowDimensions();
     const styles = getStyleSheet(theme);
     const [showGradient, setShowGradient] = useState(false);
+
+    const maxPermalinkHeight = Math.round((dimensions.height * 0.5) + SHOW_MORE_HEIGHT);
 
     const textStyles = getMarkdownTextStyles(theme);
     const blockStyles = getMarkdownBlockStyles(theme);
 
-    if (!showPermalinkPreviews || isOriginPostDeleted) {
+    const userId = embedData?.post?.user_id;
+
+    useEffect(() => {
+        if (userId && !author) {
+            fetchUsersByIds(serverUrl, [userId], false);
+        }
+    }, [userId, author, serverUrl]);
+
+    if (isOriginPostDeleted) {
         return null;
     }
 
     const {
-        post,
+        post: embedPost,
         channel_display_name,
         channel_type,
     } = embedData;
 
     const truncatedMessage = useMemo(() => {
-        const message = post?.message;
+        const message = embedPost?.message;
 
         if (!message || typeof message !== 'string') {
             return '';
@@ -157,19 +169,16 @@ const PermalinkPreview = ({
         const cleanMessage = message.trim();
         const lines = cleanMessage.split('\n');
         if (lines.length > MAX_PERMALINK_PREVIEW_LINES) {
-            return lines.slice(0, MAX_PERMALINK_PREVIEW_LINES).join('\n') + '...';
+            return lines.slice(0, MAX_PERMALINK_PREVIEW_LINES).join('\n...');
         }
 
         return cleanMessage;
-    }, [post?.message]);
+    }, [embedPost?.message]);
 
-    const isEdited = useMemo(() => post && post.edit_at, [post]);
+    const isEdited = useMemo(() => embedPost && embedPost.edit_at, [embedPost]);
 
     const authorDisplayName = useMemo(() => {
-        if (author) {
-            return displayUsername(author, locale, teammateNameDisplay);
-        }
-        return displayUsername(undefined, locale, teammateNameDisplay);
+        return displayUsername(author, locale, teammateNameDisplay);
     }, [author, locale, teammateNameDisplay]);
 
     const channelContextText = useMemo(() => {
@@ -189,8 +198,8 @@ const PermalinkPreview = ({
 
     const handleContentLayout = useCallback((event: LayoutChangeEvent) => {
         const {height} = event.nativeEvent.layout;
-        setShowGradient(height >= MAX_PERMALINK_HEIGHT);
-    }, []);
+        setShowGradient(height >= maxPermalinkHeight);
+    }, [maxPermalinkHeight]);
 
     if (!post) {
         return null;
@@ -205,11 +214,11 @@ const PermalinkPreview = ({
             onPress={handlePress}
             testID='permalink-preview-container'
         >
-            <View style={styles.contentContainer}>
+            <View style={[styles.contentContainer, {maxHeight: maxPermalinkHeight}]}>
                 <View onLayout={handleContentLayout}>
                     <View style={styles.header}>
                         <ProfilePicture
-                            author={author || {id: post.user_id} as UserModel}
+                            author={author}
                             size={32}
                             showStatus={false}
                         />
@@ -221,9 +230,9 @@ const PermalinkPreview = ({
                                 {authorDisplayName}
                             </Text>
                             <FormattedTime
-                                timezone=''
-                                isMilitaryTime={false}
-                                value={post.create_at}
+                                timezone={getUserTimezone(currentUser)}
+                                isMilitaryTime={isMilitaryTime}
+                                value={embedPost.create_at}
                                 style={styles.timestamp}
                             />
                         </View>
@@ -242,13 +251,13 @@ const PermalinkPreview = ({
                             theme={theme}
                             textStyles={textStyles}
                             value={truncatedMessage}
-                            mentionKeys={currentUser?.mentionKeys ?? EMPTY_MENTION_KEYS}
+                            mentionKeys={currentUser?.mentionKeys ?? []}
                         />
                         {isEdited ? (
                             <EditedIndicator
                                 baseTextStyle={styles.messageText}
                                 theme={theme}
-                                context={['paragraph']}
+                                context={EDITED_INDICATOR_CONTEXT}
                                 iconSize={12}
                                 testID='permalink_preview.edited_indicator_separate'
                             />
@@ -260,15 +269,11 @@ const PermalinkPreview = ({
                         testID='permalink-preview-external-link'
                     />
 
-                    {hasFiles && (
+                    {hasFiles && post && (
                         <PermalinkFiles
-                            canDownloadFiles={canDownloadFiles}
-                            enableSecureFilePreview={enableSecureFilePreview}
-                            filesInfo={filesInfo}
+                            post={post}
                             location='permalink_preview'
                             isReplyPost={false}
-                            postId={post.id}
-                            postProps={post.props}
                             parentLocation={parentLocation}
                             parentPostId={parentPostId}
                         />
@@ -285,7 +290,11 @@ const PermalinkPreview = ({
             </View>
 
             <Text style={styles.channelContext}>
-                {'Originally posted in '}
+                <FormattedText
+                    id='mobile.permalink_preview.originally_posted'
+                    defaultMessage='Originally posted in '
+                    style={styles.channelContext}
+                />
                 <Text style={styles.channelName}>
                     {channelContextText}
                 </Text>

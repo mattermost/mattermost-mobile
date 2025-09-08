@@ -122,11 +122,9 @@ describe('PermalinkPreview Enhanced Component', () => {
         });
         await operator.batchRecords(models, 'test');
 
-        const postModel = await database.get('Post').find(postWithPermalink.id) as PostModel;
-
         const {getByTestId} = renderWithEverything(
             <EnhancedPermalinkPreview
-                post={postModel}
+                embedData={embedData}
                 location={Screens.CHANNEL}
             />,
             {database, serverUrl},
@@ -134,10 +132,10 @@ describe('PermalinkPreview Enhanced Component', () => {
 
         await waitFor(() => {
             const permalinkPreview = getByTestId('permalink-preview');
-            expect(permalinkPreview.props.showPermalinkPreviews).toBe(true);
             expect(permalinkPreview.props.teammateNameDisplay).toBe('username');
             expect(permalinkPreview.props.author).toBeDefined();
-            expect(permalinkPreview.props.locale).toBe('en');
+            expect(permalinkPreview.props.currentUser).toBeDefined();
+            expect(permalinkPreview.props.isMilitaryTime).toBe(false);
         });
     });
 
@@ -155,11 +153,11 @@ describe('PermalinkPreview Enhanced Component', () => {
             channel_id: 'channel-123',
         };
 
-        const postModel = await createPostWithPermalinkEmbed(operator, database, embedData);
+        await createPostWithPermalinkEmbed(operator, database, embedData);
 
         const {getByTestId} = renderWithEverything(
             <EnhancedPermalinkPreview
-                post={postModel}
+                embedData={embedData}
                 location={Screens.CHANNEL}
             />,
             {database, serverUrl},
@@ -167,10 +165,10 @@ describe('PermalinkPreview Enhanced Component', () => {
 
         await waitFor(() => {
             const permalinkPreview = getByTestId('permalink-preview');
-            expect(permalinkPreview.props.showPermalinkPreviews).toBe(true);
             expect(permalinkPreview.props.teammateNameDisplay).toBe('username');
             expect(permalinkPreview.props.author).toBeUndefined();
-            expect(permalinkPreview.props.locale).toBe('en');
+            expect(permalinkPreview.props.currentUser).toBeDefined();
+            expect(permalinkPreview.props.isMilitaryTime).toBe(false);
         });
     });
 
@@ -196,11 +194,11 @@ describe('PermalinkPreview Enhanced Component', () => {
             channel_id: 'channel-123',
         };
 
-        const postModel = await createPostWithPermalinkEmbed(operator, database, embedData);
+        await createPostWithPermalinkEmbed(operator, database, embedData);
 
         const {getByTestId} = renderWithEverything(
             <EnhancedPermalinkPreview
-                post={postModel}
+                embedData={embedData}
                 location={Screens.CHANNEL}
             />,
             {database, serverUrl},
@@ -208,46 +206,9 @@ describe('PermalinkPreview Enhanced Component', () => {
 
         await waitFor(() => {
             const permalinkPreview = getByTestId('permalink-preview');
-            expect(permalinkPreview.props.showPermalinkPreviews).toBe(false);
             expect(permalinkPreview.props.teammateNameDisplay).toBe('username');
-            expect(permalinkPreview.props.locale).toBe('en');
-        });
-    });
-
-    it('should pass props to permalink preview component with different locale', async () => {
-        const frenchUser = TestHelper.fakeUser({id: 'french-user', locale: 'fr'});
-        await operator.handleUsers({users: [frenchUser], prepareRecordsOnly: false});
-        await operator.handleSystem({
-            systems: [{id: 'currentUserId', value: frenchUser.id}],
-            prepareRecordsOnly: false,
-        });
-
-        const embedData: PermalinkEmbedData = {
-            post_id: 'post-123',
-            post: TestHelper.fakePost({
-                id: 'post-123',
-                user_id: 'author-user',
-                message: 'Test message',
-            }),
-            team_name: 'test-team',
-            channel_display_name: 'Test Channel',
-            channel_type: 'O',
-            channel_id: 'channel-123',
-        };
-
-        const postModel = await createPostWithPermalinkEmbed(operator, database, embedData);
-
-        const {getByTestId} = renderWithEverything(
-            <EnhancedPermalinkPreview
-                post={postModel}
-                location={Screens.CHANNEL}
-            />,
-            {database, serverUrl},
-        );
-
-        await waitFor(() => {
-            const permalinkPreview = getByTestId('permalink-preview');
-            expect(permalinkPreview.props.locale).toBe('fr');
+            expect(permalinkPreview.props.currentUser).toBeDefined();
+            expect(permalinkPreview.props.isMilitaryTime).toBe(false);
         });
     });
 
@@ -264,11 +225,11 @@ describe('PermalinkPreview Enhanced Component', () => {
             channel_id: 'channel-123',
         };
 
-        const postModel = await createPostWithPermalinkEmbed(operator, database, embedData);
+        await createPostWithPermalinkEmbed(operator, database, embedData);
 
         const {getByTestId} = renderWithEverything(
             <EnhancedPermalinkPreview
-                post={postModel}
+                embedData={embedData}
                 location={Screens.CHANNEL}
             />,
             {database, serverUrl},
@@ -276,10 +237,10 @@ describe('PermalinkPreview Enhanced Component', () => {
 
         await waitFor(() => {
             const permalinkPreview = getByTestId('permalink-preview');
-            expect(permalinkPreview.props.showPermalinkPreviews).toBe(true);
             expect(permalinkPreview.props.teammateNameDisplay).toBe('username');
             expect(permalinkPreview.props.author).toBeUndefined();
-            expect(permalinkPreview.props.locale).toBe('en');
+            expect(permalinkPreview.props.currentUser).toBeDefined();
+            expect(permalinkPreview.props.isMilitaryTime).toBe(false);
         });
     });
 
@@ -305,11 +266,11 @@ describe('PermalinkPreview Enhanced Component', () => {
             channel_id: 'channel-123',
         };
 
-        const postModel = await createPostWithPermalinkEmbed(operator, database, embedData);
+        await createPostWithPermalinkEmbed(operator, database, embedData);
 
         const {getByTestId} = renderWithEverything(
             <EnhancedPermalinkPreview
-                post={postModel}
+                embedData={embedData}
                 location={Screens.CHANNEL}
             />,
             {database, serverUrl},
@@ -318,6 +279,46 @@ describe('PermalinkPreview Enhanced Component', () => {
         await waitFor(() => {
             const permalinkPreview = getByTestId('permalink-preview');
             expect(permalinkPreview.props.teammateNameDisplay).toBe('full_name');
+            expect(permalinkPreview.props.currentUser).toBeDefined();
+            expect(permalinkPreview.props.isMilitaryTime).toBe(false);
+        });
+    });
+
+    it('should pass military time preference correctly', async () => {
+        await operator.handlePreferences({
+            preferences: [{
+                category: 'display_settings',
+                name: 'use_military_time',
+                user_id: 'current-user',
+                value: 'true',
+            }],
+            prepareRecordsOnly: false,
+        });
+
+        const embedData: PermalinkEmbedData = {
+            post_id: 'post-123',
+            post: TestHelper.fakePost({
+                id: 'post-123',
+                user_id: 'author-user',
+                message: 'Test message',
+            }),
+            team_name: 'test-team',
+            channel_display_name: 'Test Channel',
+            channel_type: 'O',
+            channel_id: 'channel-123',
+        };
+
+        const {getByTestId} = renderWithEverything(
+            <EnhancedPermalinkPreview
+                embedData={embedData}
+                location={Screens.CHANNEL}
+            />,
+            {database, serverUrl},
+        );
+
+        await waitFor(() => {
+            const permalinkPreview = getByTestId('permalink-preview');
+            expect(permalinkPreview.props.isMilitaryTime).toBe(true);
         });
     });
 });

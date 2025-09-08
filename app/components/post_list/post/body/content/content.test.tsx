@@ -7,9 +7,8 @@ import {Preferences} from '@constants';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
+import Content from './content';
 import PermalinkPreview from './permalink_preview';
-
-import Content from './index';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
@@ -53,6 +52,7 @@ describe('components/post_list/post/body/content/Content - PermalinkPreview', ()
         layoutWidth: 350,
         location: 'Channel' as AvailableScreens,
         theme: Preferences.THEMES.denim,
+        showPermalinkPreviews: true,
     };
 
     const permalinkEmbedData: PermalinkEmbedData = {
