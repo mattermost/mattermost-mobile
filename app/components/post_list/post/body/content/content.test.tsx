@@ -95,8 +95,8 @@ describe('components/post_list/post/body/content/Content - PermalinkPreview', ()
         );
 
         const permalinkPreview = getByTestId('permalink-preview');
-        expect(permalinkPreview.props.post).toBeDefined();
-        expect(permalinkPreview.props.post.metadata.embeds[0].data).toEqual(permalinkEmbedData);
+        expect(permalinkPreview.props.embedData).toBeDefined();
+        expect(permalinkPreview.props.embedData).toEqual(permalinkEmbedData);
     });
 
     it('should pass correct embedData to PermalinkPreview', () => {
@@ -135,8 +135,8 @@ describe('components/post_list/post/body/content/Content - PermalinkPreview', ()
         );
 
         const permalinkPreview = getByTestId('permalink-preview');
-        expect(permalinkPreview.props.post).toBeDefined();
-        expect(permalinkPreview.props.post.metadata.embeds[0].data).toEqual(customEmbedData);
+        expect(permalinkPreview.props.embedData).toBeDefined();
+        expect(permalinkPreview.props.embedData).toEqual(customEmbedData);
     });
 
     it('should not render anything when no embeds metadata exists', () => {
@@ -204,8 +204,8 @@ describe('components/post_list/post/body/content/Content - PermalinkPreview', ()
         );
 
         const permalinkPreview = getByTestId('permalink-preview');
-        expect(permalinkPreview.props.post).toBeDefined();
-        expect(permalinkPreview.props.post.metadata.embeds[0].data).toEqual(firstEmbedData);
+        expect(permalinkPreview.props.embedData).toBeDefined();
+        expect(permalinkPreview.props.embedData).toEqual(firstEmbedData);
     });
 
     it('should render PermalinkPreview with different post props', () => {
@@ -237,8 +237,8 @@ describe('components/post_list/post/body/content/Content - PermalinkPreview', ()
         );
 
         const permalinkPreview = getByTestId('permalink-preview');
-        expect(permalinkPreview.props.post).toBeDefined();
-        expect(permalinkPreview.props.post.metadata.embeds[0].data).toEqual(permalinkEmbedData);
+        expect(permalinkPreview.props.embedData).toBeDefined();
+        expect(permalinkPreview.props.embedData).toEqual(permalinkEmbedData);
     });
 
     it('should handle permalink with direct message channel type', () => {
@@ -275,9 +275,9 @@ describe('components/post_list/post/body/content/Content - PermalinkPreview', ()
         );
 
         const permalinkPreview = getByTestId('permalink-preview');
-        expect(permalinkPreview.props.post).toBeDefined();
-        expect(permalinkPreview.props.post.metadata.embeds[0].data).toEqual(dmEmbedData);
-        expect(permalinkPreview.props.post.metadata.embeds[0].data.channel_type).toBe('D');
+        expect(permalinkPreview.props.embedData).toBeDefined();
+        expect(permalinkPreview.props.embedData).toEqual(dmEmbedData);
+        expect(permalinkPreview.props.embedData.channel_type).toBe('D');
     });
 
     it('should handle permalink with group message channel type', () => {
@@ -314,8 +314,8 @@ describe('components/post_list/post/body/content/Content - PermalinkPreview', ()
         );
 
         const permalinkPreview = getByTestId('permalink-preview');
-        expect(permalinkPreview.props.post).toBeDefined();
-        expect(permalinkPreview.props.post.metadata.embeds[0].data).toEqual(gmEmbedData);
-        expect(permalinkPreview.props.post.metadata.embeds[0].data.channel_type).toBe('G');
+        expect(permalinkPreview.props.embedData).toBeDefined();
+        expect(permalinkPreview.props.embedData).toEqual(gmEmbedData);
+        expect(permalinkPreview.props.embedData.channel_type).toBe('G');
     });
 });
