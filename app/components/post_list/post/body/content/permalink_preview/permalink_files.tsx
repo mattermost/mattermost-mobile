@@ -4,16 +4,22 @@
 import React, {useEffect, useState, useCallback} from 'react';
 import {DeviceEventEmitter, View, type LayoutChangeEvent} from 'react-native';
 
-import Files from '@components/files/files';
+import Files from '@components/files';
 import {Events} from '@constants';
 
-type PermalinkFilesProps = React.ComponentProps<typeof Files> & {
+import type PostModel from '@typings/database/models/servers/post';
+
+type PermalinkFilesProps = {
+    post: PostModel;
+    location: string;
+    isReplyPost: boolean;
+    failed?: boolean;
     parentLocation?: string;
     parentPostId?: string;
 };
 
 const PermalinkFiles = (props: PermalinkFilesProps) => {
-    const {parentLocation, parentPostId, ...filesProps} = props;
+    const {parentLocation, parentPostId, post, location, isReplyPost, failed} = props;
     const [layoutWidth, setLayoutWidth] = useState(0);
 
     const listener = useCallback((viewableItemsMap: Record<string, boolean>) => {
@@ -23,10 +29,10 @@ const PermalinkFiles = (props: PermalinkFilesProps) => {
 
         const parentKey = `${parentLocation}-${parentPostId}`;
         if (viewableItemsMap[parentKey]) {
-            const viewableItems = {[`${filesProps.location}-${filesProps.postId}`]: true};
+            const viewableItems = {[`${location}-${post.id}`]: true};
             DeviceEventEmitter.emit(Events.ITEM_IN_VIEWPORT, viewableItems);
         }
-    }, [parentLocation, parentPostId, filesProps.location, filesProps.postId]);
+    }, [parentLocation, parentPostId, location, post.id]);
 
     useEffect(() => {
         if (!parentLocation || !parentPostId) {
@@ -42,9 +48,15 @@ const PermalinkFiles = (props: PermalinkFilesProps) => {
     }, []);
 
     return (
-        <View onLayout={onLayout}>
+        <View
+            onLayout={onLayout}
+            testID='permalink-files-container'
+        >
             <Files
-                {...filesProps}
+                post={post}
+                location={location}
+                isReplyPost={isReplyPost}
+                failed={failed}
                 layoutWidth={layoutWidth}
                 isPermalinkPreview={true}
             />

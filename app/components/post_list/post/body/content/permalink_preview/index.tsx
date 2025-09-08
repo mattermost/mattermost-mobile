@@ -8,7 +8,6 @@ import {map, switchMap, distinctUntilChanged} from 'rxjs/operators';
 import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
 import {observePost} from '@queries/servers/post';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
-import {observeCanDownloadFiles, observeEnableSecureFilePreview} from '@queries/servers/security';
 import {observeUser, observeTeammateNameDisplay, observeCurrentUser} from '@queries/servers/user';
 
 import PermalinkPreview from './permalink_preview';
@@ -25,22 +24,22 @@ const enhance = withObservables(['embedData'], ({database, embedData}: WithDatab
     const userId = embedData?.post?.user_id;
     const author = userId ? observeUser(database, userId) : of$(undefined);
 
-    const isOriginPostDeleted = embedData?.post_id ? observePost(database, embedData.post_id).pipe(
+    const post = embedData?.post_id ? observePost(database, embedData.post_id) : of$(undefined);
+    const isOriginPostDeleted = post.pipe(
         switchMap((p) => {
             const initialDeleted = Boolean(embedData?.post?.delete_at > 0 || embedData?.post?.state === 'DELETED');
             return of$(p ? p.deleteAt > 0 : initialDeleted);
         }),
         distinctUntilChanged(),
-    ) : of$(false);
+    );
 
     return {
         teammateNameDisplay,
         currentUser,
         isMilitaryTime,
         author,
+        post,
         isOriginPostDeleted,
-        canDownloadFiles: observeCanDownloadFiles(database),
-        enableSecureFilePreview: observeEnableSecureFilePreview(database),
     };
 });
 
