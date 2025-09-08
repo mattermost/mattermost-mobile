@@ -4,23 +4,20 @@
 import {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 
-import {tryOpenURL} from '@utils/url';
-import {onOpenLinkError} from '@utils/url/links';
+import {useServerUrl} from '@context/server';
+import {openLink} from '@utils/url/links';
 
-export const useExternalLinkHandler = (url?: string) => {
+export const useExternalLinkHandler = (url?: string, siteURL?: string) => {
     const intl = useIntl();
+    const serverUrl = useServerUrl();
 
     return useCallback(() => {
-        if (!url) {
+        if (!url || !serverUrl) {
             return;
         }
 
-        const onError = () => {
-            onOpenLinkError(intl);
-        };
-
-        tryOpenURL(url, onError);
-    }, [intl, url]);
+        openLink(url, serverUrl, siteURL || '', intl);
+    }, [intl, url, serverUrl, siteURL]);
 };
 
 export default useExternalLinkHandler;

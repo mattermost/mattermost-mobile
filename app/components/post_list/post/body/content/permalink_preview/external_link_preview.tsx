@@ -4,6 +4,7 @@
 import React, {useMemo} from 'react';
 import {Text, TouchableOpacity} from 'react-native';
 
+import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {useExternalLinkHandler} from '@hooks/use_external_link_handler';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -72,13 +73,23 @@ const ExternalLinkPreview = ({embeds, testID = 'external-link-preview'}: Externa
             onPress={handleExternalLinkPress}
             testID={testID}
         >
-            <Text
-                style={styles.externalLinkTitle}
-                numberOfLines={2}
-                ellipsizeMode='tail'
-            >
-                {String(externalLinkData.data?.title || externalLinkData.data?.site_name || 'External Link')}
-            </Text>
+            {externalLinkData.data?.title || externalLinkData.data?.site_name ? (
+                <Text
+                    style={styles.externalLinkTitle}
+                    numberOfLines={2}
+                    ellipsizeMode='tail'
+                >
+                    {String(externalLinkData.data.title || externalLinkData.data.site_name)}
+                </Text>
+            ) : (
+                <FormattedText
+                    id='mobile.permalink_preview.external_link'
+                    defaultMessage='External Link'
+                    style={styles.externalLinkTitle}
+                    numberOfLines={2}
+                    ellipsizeMode='tail'
+                />
+            )}
             <Text
                 style={styles.externalLinkUrl}
                 numberOfLines={1}
