@@ -178,7 +178,7 @@ const PermalinkPreview = ({
         return cleanMessage;
     }, [embedPost?.message]);
 
-    const isEdited = useMemo(() => post && post.edit_at > 0, [post]);
+    const isEdited = useMemo(() => post && post.editAt > 0, [post]);
 
     const authorDisplayName = useMemo(() => {
         return displayUsername(author, locale, teammateNameDisplay);
@@ -246,7 +246,7 @@ const PermalinkPreview = ({
                             baseTextStyle={styles.messageText}
                             blockStyles={blockStyles}
                             channelId={embedData.channel_id}
-                            disableAtMentions={true}
+                            disableAtMentions={false}
                             location={location}
                             theme={theme}
                             textStyles={textStyles}
