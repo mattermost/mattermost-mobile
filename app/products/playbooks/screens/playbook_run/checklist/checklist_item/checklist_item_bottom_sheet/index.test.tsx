@@ -36,6 +36,7 @@ describe('ChecklistItemBottomSheet Enhanced Component', () => {
             runId: 'run-1',
             checklistNumber: 1,
             itemNumber: 1,
+            channelId: 'channel-1',
             onCheck: jest.fn(),
             onSkip: jest.fn(),
             onRunCommand: jest.fn(),

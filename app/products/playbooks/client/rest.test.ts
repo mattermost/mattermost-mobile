@@ -135,9 +135,10 @@ describe('runChecklistItemSlashCommand', () => {
         const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunId}/checklists/${checklistNumber}/item/${itemNumber}/run`;
         const expectedOptions = {method: 'post'};
 
-        jest.mocked(client.doFetch).mockResolvedValue(undefined);
+        jest.mocked(client.doFetch).mockResolvedValue({trigger_id: 'trigger123'});
 
-        await client.runChecklistItemSlashCommand(playbookRunId, checklistNumber, itemNumber);
+        const result = await client.runChecklistItemSlashCommand(playbookRunId, checklistNumber, itemNumber);
+        expect(result).toEqual({trigger_id: 'trigger123'});
 
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
     });
@@ -149,9 +150,10 @@ describe('runChecklistItemSlashCommand', () => {
         const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunId}/checklists/${checklistNumber}/item/${itemNumber}/run`;
         const expectedOptions = {method: 'post'};
 
-        jest.mocked(client.doFetch).mockResolvedValue(undefined);
+        jest.mocked(client.doFetch).mockResolvedValue({trigger_id: ''});
 
-        await client.runChecklistItemSlashCommand(playbookRunId, checklistNumber, itemNumber);
+        const result = await client.runChecklistItemSlashCommand(playbookRunId, checklistNumber, itemNumber);
+        expect(result).toEqual({trigger_id: ''});
 
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
     });
@@ -244,6 +246,36 @@ describe('restoreChecklistItem', () => {
         jest.mocked(client.doFetch).mockRejectedValue(new Error('Network error'));
 
         await expect(client.restoreChecklistItem(playbookRunID, checklistNum, itemNum)).rejects.toThrow('Network error');
+    });
+});
+
+describe('setChecklistItemCommand', () => {
+    test('should set checklist item command successfully', async () => {
+        const playbookRunID = 'run123';
+        const checklistNum = 1;
+        const itemNum = 2;
+        const command = '/test command';
+        const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunID}/checklists/${checklistNum}/item/${itemNum}/command`;
+        const expectedOptions = {method: 'put', body: {command}};
+        const mockResponse = {success: true};
+
+        jest.mocked(client.doFetch).mockResolvedValue(mockResponse);
+
+        const result = await client.setChecklistItemCommand(playbookRunID, checklistNum, itemNum, command);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+        expect(result).toEqual(mockResponse);
+    });
+
+    test('should handle error when setting checklist item command', async () => {
+        const playbookRunID = 'run123';
+        const checklistNum = 1;
+        const itemNum = 2;
+        const command = '/test command';
+
+        jest.mocked(client.doFetch).mockRejectedValue(new Error('Network error'));
+
+        await expect(client.setChecklistItemCommand(playbookRunID, checklistNum, itemNum, command)).rejects.toThrow('Network error');
     });
 });
 
@@ -359,4 +391,3 @@ describe('setAssignee', () => {
         await expect(client.setAssignee(playbookRunId, checklistNum, itemNum, assigneeId)).rejects.toThrow('Network error');
     });
 });
-
