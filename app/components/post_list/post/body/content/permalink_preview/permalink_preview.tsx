@@ -20,7 +20,8 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {displayUsername, getUserTimezone} from '@utils/user';
 
-import ExternalLinkPreview from './external_link_preview';
+import Opengraph from '../opengraph';
+
 import PermalinkFiles from './permalink_files';
 
 import type PostModel from '@typings/database/models/servers/post';
@@ -266,9 +267,14 @@ const PermalinkPreview = ({
                         ) : null}
                     </View>
 
-                    <ExternalLinkPreview
-                        embeds={embedData?.post?.metadata?.embeds}
-                        testID='permalink-preview-external-link'
+                    <Opengraph
+                        isReplyPost={false}
+                        removeLinkPreview={false}
+                        location={location}
+                        metadata={embedData?.post?.metadata}
+                        postId={embedData?.post?.id || ''}
+                        theme={theme}
+                        isEmbedded={true}
                     />
 
                     {hasFiles && post && (

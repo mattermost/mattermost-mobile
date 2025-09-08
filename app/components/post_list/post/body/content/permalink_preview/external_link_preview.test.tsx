@@ -4,29 +4,55 @@
 import {fireEvent} from '@testing-library/react-native';
 import React from 'react';
 
-import {renderWithIntlAndTheme} from '@test/intl-test-helper';
-import * as UrlUtils from '@utils/url';
+import DatabaseManager from '@database/manager';
+import {renderWithEverything} from '@test/intl-test-helper';
+import TestHelper from '@test/test_helper';
+import * as UrlLinks from '@utils/url/links';
 
 import ExternalLinkPreview from './external_link_preview';
 
-describe('components/post_list/post/body/content/permalink_preview/ExternalLinkPreview', () => {
-    const mockTryOpenURL = jest.spyOn(UrlUtils, 'tryOpenURL').mockImplementation(() => {});
+import type ServerDataOperator from '@database/operator/server_data_operator';
+import type {Database} from '@nozbe/watermelondb';
 
-    beforeEach(() => {
-        mockTryOpenURL.mockClear();
+describe('components/post_list/post/body/content/permalink_preview/ExternalLinkPreview', () => {
+    const serverUrl = 'http://localhost:8065';
+    let database: Database;
+    let operator: ServerDataOperator;
+    const mockOpenLink = jest.spyOn(UrlLinks, 'openLink').mockImplementation(() => Promise.resolve());
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        const serverDatabaseAndOperator = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        database = serverDatabaseAndOperator.database;
+        operator = serverDatabaseAndOperator.operator;
+
+        // Add a current user
+        const currentUser = TestHelper.fakeUser({id: 'current-user', locale: 'en'});
+        await operator.handleUsers({users: [currentUser], prepareRecordsOnly: false});
+        await operator.handleSystem({
+            systems: [{id: 'currentUserId', value: currentUser.id}],
+            prepareRecordsOnly: false,
+        });
+        mockOpenLink.mockClear();
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
     });
 
     it('should not render when no embeds are provided', () => {
-        const {queryByTestId} = renderWithIntlAndTheme(
+        const {queryByTestId} = renderWithEverything(
             <ExternalLinkPreview embeds={undefined}/>,
+            {database, serverUrl},
         );
 
         expect(queryByTestId('external-link-preview')).toBeNull();
     });
 
     it('should not render when embeds array is empty', () => {
-        const {queryByTestId} = renderWithIntlAndTheme(
+        const {queryByTestId} = renderWithEverything(
             <ExternalLinkPreview embeds={[]}/>,
+            {database, serverUrl},
         );
 
         expect(queryByTestId('external-link-preview')).toBeNull();
@@ -39,8 +65,9 @@ describe('components/post_list/post/body/content/permalink_preview/ExternalLinkP
             data: {},
         }];
 
-        const {queryByTestId} = renderWithIntlAndTheme(
+        const {queryByTestId} = renderWithEverything(
             <ExternalLinkPreview embeds={embeds}/>,
+            {database, serverUrl},
         );
 
         expect(queryByTestId('external-link-preview')).toBeNull();
@@ -57,8 +84,9 @@ describe('components/post_list/post/body/content/permalink_preview/ExternalLinkP
             },
         }];
 
-        const {getByTestId, getByText} = renderWithIntlAndTheme(
+        const {getByTestId, getByText} = renderWithEverything(
             <ExternalLinkPreview embeds={embeds}/>,
+            {database, serverUrl},
         );
 
         expect(getByTestId('external-link-preview')).toBeTruthy();
@@ -73,8 +101,9 @@ describe('components/post_list/post/body/content/permalink_preview/ExternalLinkP
             data: {},
         }];
 
-        const {getByText} = renderWithIntlAndTheme(
+        const {getByText} = renderWithEverything(
             <ExternalLinkPreview embeds={embeds}/>,
+            {database, serverUrl},
         );
 
         expect(getByText('External Link')).toBeTruthy();
@@ -92,8 +121,9 @@ describe('components/post_list/post/body/content/permalink_preview/ExternalLinkP
             },
         }];
 
-        const {getByText, queryByText} = renderWithIntlAndTheme(
+        const {getByText, queryByText} = renderWithEverything(
             <ExternalLinkPreview embeds={embeds}/>,
+            {database, serverUrl},
         );
 
         expect(getByText('Page Title')).toBeTruthy();
@@ -111,8 +141,9 @@ describe('components/post_list/post/body/content/permalink_preview/ExternalLinkP
             },
         }];
 
-        const {getByText} = renderWithIntlAndTheme(
+        const {getByText} = renderWithEverything(
             <ExternalLinkPreview embeds={embeds}/>,
+            {database, serverUrl},
         );
 
         expect(getByText('Site Name')).toBeTruthy();
@@ -128,8 +159,9 @@ describe('components/post_list/post/body/content/permalink_preview/ExternalLinkP
             },
         }];
 
-        const {getByText} = renderWithIntlAndTheme(
+        const {getByText} = renderWithEverything(
             <ExternalLinkPreview embeds={embeds}/>,
+            {database, serverUrl},
         );
 
         expect(getByText('Page Title')).toBeTruthy();
@@ -142,17 +174,19 @@ describe('components/post_list/post/body/content/permalink_preview/ExternalLinkP
             url: 'https://example.com',
             data: {
                 title: 'Example Website',
+                description: 'Example description',
             },
         }];
 
-        const {getByTestId} = renderWithIntlAndTheme(
+        const {getByTestId} = renderWithEverything(
             <ExternalLinkPreview embeds={embeds}/>,
+            {database, serverUrl},
         );
 
         const linkContainer = getByTestId('external-link-preview');
         fireEvent.press(linkContainer);
 
-        expect(mockTryOpenURL).toHaveBeenCalledWith('https://example.com', expect.any(Function));
+        expect(mockOpenLink).toHaveBeenCalledWith('https://example.com', 'http://localhost:8065', '', expect.any(Object));
     });
 
     it('should use custom testID when provided', () => {
@@ -164,11 +198,12 @@ describe('components/post_list/post/body/content/permalink_preview/ExternalLinkP
             },
         }];
 
-        const {getByTestId, queryByTestId} = renderWithIntlAndTheme(
+        const {getByTestId, queryByTestId} = renderWithEverything(
             <ExternalLinkPreview
                 embeds={embeds}
                 testID='custom-test-id'
             />,
+            {database, serverUrl},
         );
 
         expect(getByTestId('custom-test-id')).toBeTruthy();
