@@ -15,14 +15,13 @@ import {ActionType, Events, Screens} from '@constants';
 import {PostTypes} from '@constants/post';
 import DatabaseManager from '@database/manager';
 import {getChannelById, getMyChannel} from '@queries/servers/channel';
-import {getPostById} from '@queries/servers/post';
+import {getPostById, syncPermalinkPreviewsForEditedPost} from '@queries/servers/post';
 import {getCurrentChannelId, getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 import {hasArrayChanged, isTablet} from '@utils/helpers';
 import {logWarning} from '@utils/log';
-import {syncPermalinkPreviewsForEditedPost} from '@utils/permalink_sync';
 import {isFromWebhook, isSystemMessage, shouldIgnorePost} from '@utils/post';
 
 import type {Model} from '@nozbe/watermelondb';
