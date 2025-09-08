@@ -15,14 +15,13 @@ import {PostTypes} from '@constants/post';
 import DatabaseManager from '@database/manager';
 import {PostsInChannelModel} from '@database/models/server';
 import {getChannelById, getMyChannel} from '@queries/servers/channel';
-import {getPostById} from '@queries/servers/post';
+import {getPostById, syncPermalinkPreviewsForEditedPost} from '@queries/servers/post';
 import {getCurrentUserId, getCurrentChannelId} from '@queries/servers/system';
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 import TestHelper from '@test/test_helper';
 import {isTablet} from '@utils/helpers';
-import {syncPermalinkPreviewsForEditedPost} from '@utils/permalink_sync';
 import {shouldIgnorePost} from '@utils/post';
 
 import {handleNewPostEvent, handlePostEdited, handlePostDeleted, handlePostUnread, handlePostAcknowledgementAdded, handlePostAcknowledgementRemoved} from './posts';
