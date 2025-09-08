@@ -45,6 +45,8 @@ jest.mock('@context/server', () => ({
     useServerUrl: jest.fn().mockReturnValue('server-url'),
 }));
 
+jest.mock('@utils/snack_bar');
+
 describe('ChecklistItemBottomSheet', () => {
     const mockOnCheck = jest.fn();
     const mockOnSkip = jest.fn();
