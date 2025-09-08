@@ -70,14 +70,11 @@ export default function EditCommandForm({
         setWrapperHeight(e.nativeEvent.layout.height);
     }, []);
 
-    const otherElementsSize = LIST_PADDING;
+    const spaceOnTop = LIST_PADDING - AUTOCOMPLETE_ADJUST;
+    const spaceOnBottom = (wrapperHeight) - (LIST_PADDING + commandFieldHeight + BOTTOM_AUTOCOMPLETE_SEPARATION);
 
-    const workingSpace = wrapperHeight;
-    const spaceOnTop = otherElementsSize - AUTOCOMPLETE_ADJUST;
-    const spaceOnBottom = (workingSpace) - (otherElementsSize + commandFieldHeight + BOTTOM_AUTOCOMPLETE_SEPARATION);
-
-    const bottomPosition = (otherElementsSize + commandFieldHeight);
-    const topPosition = (workingSpace + AUTOCOMPLETE_ADJUST) - otherElementsSize;
+    const bottomPosition = (LIST_PADDING + commandFieldHeight);
+    const topPosition = (wrapperHeight + AUTOCOMPLETE_ADJUST) - LIST_PADDING;
     const autocompletePosition = spaceOnBottom > spaceOnTop ? bottomPosition : topPosition;
     const autocompleteAvailableSpace = spaceOnBottom > spaceOnTop ? spaceOnBottom : spaceOnTop;
     const growDown = spaceOnBottom > spaceOnTop;
