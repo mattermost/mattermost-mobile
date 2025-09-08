@@ -178,7 +178,7 @@ const PermalinkPreview = ({
         return cleanMessage;
     }, [embedPost?.message]);
 
-    const isEdited = useMemo(() => post && post.editAt > 0, [post]);
+    const isEdited = useMemo(() => embedData && embedData.post && embedData.post.edit_at > 0, [embedData]);
 
     const authorDisplayName = useMemo(() => {
         return displayUsername(author, locale, teammateNameDisplay);
