@@ -6,7 +6,7 @@ import React, {useMemo, useCallback, useEffect, useState} from 'react';
 import {Text, View, Pressable, type LayoutChangeEvent, useWindowDimensions} from 'react-native';
 
 import {fetchUsersByIds} from '@actions/remote/user';
-import EditedIndicator from '@components/EditedIndicator';
+import EditedIndicator from '@components/edited_indicator';
 import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
 import Markdown from '@components/markdown';
@@ -178,7 +178,7 @@ const PermalinkPreview = ({
         return cleanMessage;
     }, [embedPost?.message]);
 
-    const isEdited = useMemo(() => embedPost && embedPost.edit_at, [embedPost]);
+    const isEdited = useMemo(() => post && post.edit_at > 0, [post]);
 
     const authorDisplayName = useMemo(() => {
         return displayUsername(author, locale, teammateNameDisplay);
@@ -246,10 +246,7 @@ const PermalinkPreview = ({
                             baseTextStyle={styles.messageText}
                             blockStyles={blockStyles}
                             channelId={embedData.channel_id}
-                            disableGallery={true}
-                            disableHashtags={true}
-                            disableAtMentions={false}
-                            disableChannelLink={true}
+                            disableAtMentions={true}
                             location={location}
                             theme={theme}
                             textStyles={textStyles}
