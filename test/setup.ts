@@ -35,6 +35,13 @@ jest.mock('expo-application', () => {
 
 jest.mock('expo-crypto', () => ({
     randomUUID: jest.fn(() => '12345678-1234-1234-1234-1234567890ab'),
+    getRandomValues: jest.fn((arr: Uint8Array) => {
+        for (let i = 0; i < arr.length; i++) {
+            // deterministic but non-zero bytes for tests
+            arr[i] = (i * 31 + 17) & 0xff;
+        }
+        return arr;
+    }),
 }));
 
 jest.mock('expo-device', () => {

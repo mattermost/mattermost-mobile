@@ -10,6 +10,7 @@ import urlParse from 'url-parse';
 import {Sso} from '@constants';
 import {isErrorWithMessage} from '@utils/errors';
 import {isBetaApp} from '@utils/general';
+import {createPkceBundle} from '@utils/pkce';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {tryOpenURL} from '@utils/url';
@@ -20,6 +21,7 @@ import AuthSuccess from './components/auth_success';
 
 interface SSOWithRedirectURLProps {
     doSSOLogin: (bearerToken: string, csrfToken: string) => void;
+    doSSOCodeExchange: (loginCode: string, pkce: {codeVerifier: string; state: string}) => void;
     loginError: string;
     loginUrl: string;
     setLoginError: (value: string) => void;
@@ -57,7 +59,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const SSOAuthenticationWithExternalBrowser = ({doSSOLogin, loginError, loginUrl, setLoginError, theme}: SSOWithRedirectURLProps) => {
+const SSOAuthenticationWithExternalBrowser = ({doSSOLogin, doSSOCodeExchange, loginError, loginUrl, setLoginError, theme}: SSOWithRedirectURLProps) => {
     const [error, setError] = useState<string>('');
     const [loginSuccess, setLoginSuccess] = useState(false);
     const style = getStyleSheet(theme);
@@ -68,6 +70,7 @@ const SSOAuthenticationWithExternalBrowser = ({doSSOLogin, loginError, loginUrl,
     }
 
     const redirectUrl = customUrlScheme + 'callback';
+    const pkce = createPkceBundle();
     const init = (resetErrors = true) => {
         setLoginSuccess(false);
         if (resetErrors !== false) {
@@ -78,6 +81,9 @@ const SSOAuthenticationWithExternalBrowser = ({doSSOLogin, loginError, loginUrl,
         const query: Record<string, string> = {
             ...parsedUrl.query,
             redirect_to: redirectUrl,
+            state: pkce.state,
+            code_challenge: pkce.codeChallenge,
+            code_challenge_method: pkce.method,
         };
         parsedUrl.set('query', qs.stringify(query));
         const url = parsedUrl.toString();
@@ -107,6 +113,12 @@ const SSOAuthenticationWithExternalBrowser = ({doSSOLogin, loginError, loginUrl,
         const onURLChange = ({url}: { url: string }) => {
             if (url && url.startsWith(redirectUrl)) {
                 const parsedUrl = urlParse(url, true);
+                const loginCode = parsedUrl.query?.login_code as string | undefined;
+                if (loginCode) {
+                    setLoginSuccess(true);
+                    doSSOCodeExchange(loginCode, {codeVerifier: pkce.codeVerifier, state: pkce.state});
+                    return;
+                }
                 const bearerToken = parsedUrl.query?.MMAUTHTOKEN;
                 const csrfToken = parsedUrl.query?.MMCSRF;
                 if (bearerToken && csrfToken) {
