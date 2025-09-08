@@ -23,6 +23,7 @@ let baseAppInitialized = false;
 let serverCredentials: ServerCredential[];
 
 // Fallback Polyfill for Promise.allSettle
+// Add comment to trigger github action test 01
 Promise.allSettled = Promise.allSettled || (<T>(promises: Array<Promise<T>>) => Promise.all(
     promises.map((p) => p.
         then((value) => ({
