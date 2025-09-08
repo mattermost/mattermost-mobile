@@ -62,7 +62,7 @@ const selectOpenGraphData = (url: string, metadata: PostMetadata | undefined | n
 };
 
 const Opengraph = ({isReplyPost, layoutWidth, location, metadata, postId, showLinkPreviews, theme, isEmbedded}: OpengraphProps) => {
-    const link = metadata?.embeds![0]!.url || '';
+    const link = metadata?.embeds?.[0]?.url || '';
     const openGraphData = selectOpenGraphData(link, metadata);
 
     if (!showLinkPreviews || !openGraphData) {
