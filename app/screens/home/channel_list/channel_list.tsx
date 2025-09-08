@@ -5,9 +5,9 @@ import {useManagedConfig} from '@mattermost/react-native-emm';
 import {useIsFocused, useNavigation, useRoute} from '@react-navigation/native';
 import React, {useCallback, useEffect} from 'react';
 import {useIntl} from 'react-intl';
-import {BackHandler, DeviceEventEmitter, StyleSheet, ToastAndroid, View} from 'react-native';
+import {BackHandler, DeviceEventEmitter, ToastAndroid, View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
-import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {refetchCurrentUser} from '@actions/remote/user';
 import FloatingCallContainer from '@calls/components/floating_call_container';
@@ -24,6 +24,7 @@ import NavigationStore from '@store/navigation_store';
 import {isMainActivity} from '@utils/helpers';
 import {tryRunAppReview} from '@utils/reviews';
 import {addSentryContext} from '@utils/sentry';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import AdditionalTabletView from './additional_tablet_view';
 import CategoriesList from './categories_list';
@@ -45,9 +46,7 @@ type ChannelProps = {
     showIncomingCalls: boolean;
 };
 
-const edges: Edge[] = ['bottom', 'left', 'right'];
-
-const styles = StyleSheet.create({
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     content: {
         flex: 1,
         flexDirection: 'row',
@@ -55,7 +54,10 @@ const styles = StyleSheet.create({
     flex: {
         flex: 1,
     },
-});
+    background: {
+        backgroundColor: theme.sidebarBg,
+    },
+}));
 
 let backPressedCount = 0;
 let backPressTimeout: NodeJS.Timeout|undefined;
@@ -70,6 +72,7 @@ let hasRendered = false;
 
 const ChannelListScreen = (props: ChannelProps) => {
     const theme = useTheme();
+    const styles = getStyleSheet(theme);
     const managedConfig = useManagedConfig<ManagedConfig>();
     const intl = useIntl();
 
@@ -77,7 +80,6 @@ const ChannelListScreen = (props: ChannelProps) => {
     const route = useRoute();
     const isFocused = useIsFocused();
     const navigation = useNavigation();
-    const insets = useSafeAreaInsets();
     const serverUrl = useServerUrl();
     const params = route.params as {direction: string};
     const canAddOtherServers = managedConfig?.allowOtherServers !== 'false';
@@ -128,10 +130,6 @@ const ChannelListScreen = (props: ChannelProps) => {
         };
     }, [isFocused, params]);
 
-    const top = useAnimatedStyle(() => {
-        return {height: insets.top, backgroundColor: theme.sidebarBg};
-    }, [theme, insets.top]);
-
     useEffect(() => {
         if (!props.hasTeams) {
             resetToTeams();
@@ -177,10 +175,8 @@ const ChannelListScreen = (props: ChannelProps) => {
 
     return (
         <>
-            <Animated.View style={top}/>
             <SafeAreaView
-                style={styles.flex}
-                edges={edges}
+                style={[styles.flex, styles.background]}
                 testID='channel_list.screen'
             >
                 <ConnectionBanner/>

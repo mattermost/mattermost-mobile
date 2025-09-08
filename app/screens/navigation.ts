@@ -5,7 +5,7 @@
 
 import merge from 'deepmerge';
 import {Appearance, DeviceEventEmitter, StatusBar, Platform, Alert, type EmitterSubscription, Keyboard} from 'react-native';
-import {type ComponentWillAppearEvent, type ImageResource, type LayoutOrientation, Navigation, type Options, OptionsModalPresentationStyle, type OptionsTopBarButton, type ScreenPoppedEvent, type EventSubscription} from 'react-native-navigation';
+import {type ComponentWillAppearEvent, type ImageResource, type LayoutOrientation, Navigation, type Options, OptionsModalPresentationStyle, type OptionsTopBarButton, type ScreenPoppedEvent, type EventSubscription, type OptionsStatusBar} from 'react-native-navigation';
 import tinyColor from 'tinycolor2';
 
 import CompassIcon from '@components/compass_icon';
@@ -220,6 +220,11 @@ Navigation.setDefaultOptions({
             fontWeight: '400',
         },
     },
+    statusBar: {
+        backgroundColor: 'transparent',
+        drawBehind: true,
+        translucent: true,
+    },
 });
 
 Appearance.addChangeListener(() => {
@@ -274,10 +279,28 @@ export function openToS() {
     return showOverlay(Screens.TERMS_OF_SERVICE, {}, {overlay: {interceptTouchOutside: true}});
 }
 
+function getStatusBarOptions(bgColor: string, otherOpts?: Partial<OptionsStatusBar>): OptionsStatusBar {
+    const isDark = tinyColor(bgColor).isDark();
+    const rnnStyle = isDark ? 'light' : 'dark';
+
+    // This directly updates the React Native StatusBar for cases where the status bar
+    // might need to change outside of React Native Navigation lifecycle.
+    // RNN also applies the style via `options.statusBar`, so this may be redundant
+    // when used in standard navigation flows.
+    const rnStyle = isDark ? 'light-content' : 'dark-content';
+    StatusBar.setBarStyle(rnStyle);
+
+    return {
+        visible: true,
+        backgroundColor: bgColor,
+        style: rnnStyle,
+        ...otherOpts,
+    };
+}
+
 export function resetToHome(passProps: LaunchProps = {launchType: Launch.Normal}) {
     const theme = getThemeFromState();
-    const isDark = tinyColor(theme.sidebarBg).isDark();
-    StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
+    const baseStatusBarOptions = getStatusBarOptions(theme.sidebarBg);
 
     if (!passProps.coldStart && (passProps.launchType === Launch.AddServer || passProps.launchType === Launch.AddServerFromDeepLink)) {
         dismissModal({componentId: Screens.SERVER});
@@ -300,10 +323,7 @@ export function resetToHome(passProps: LaunchProps = {launchType: Launch.Normal}
                     layout: {
                         componentBackgroundColor: theme.centerChannelBg,
                     },
-                    statusBar: {
-                        visible: true,
-                        backgroundColor: theme.sidebarBg,
-                    },
+                    statusBar: baseStatusBarOptions,
                     topBar: {
                         visible: false,
                         height: 0,
@@ -327,8 +347,7 @@ export function resetToHome(passProps: LaunchProps = {launchType: Launch.Normal}
 
 export function resetToSelectServer(passProps: LaunchProps) {
     const theme = getDefaultThemeByAppearance();
-    const isDark = tinyColor(theme.sidebarBg).isDark();
-    StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
+    const baseStatusBarOptions = getStatusBarOptions(theme.sidebarBg);
 
     const children = [{
         component: {
@@ -343,10 +362,7 @@ export function resetToSelectServer(passProps: LaunchProps) {
                     backgroundColor: theme.centerChannelBg,
                     componentBackgroundColor: theme.centerChannelBg,
                 },
-                statusBar: {
-                    visible: true,
-                    backgroundColor: theme.sidebarBg,
-                },
+                StatusBar: baseStatusBarOptions,
                 topBar: {
                     backButton: {
                         color: theme.sidebarHeaderTextColor,
@@ -373,8 +389,7 @@ export function resetToSelectServer(passProps: LaunchProps) {
 
 export function resetToOnboarding(passProps: LaunchProps) {
     const theme = getDefaultThemeByAppearance();
-    const isDark = tinyColor(theme.sidebarBg).isDark();
-    StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
+    const baseStatusBarOptions = getStatusBarOptions(theme.sidebarBg);
 
     const children = [{
         component: {
@@ -389,10 +404,7 @@ export function resetToOnboarding(passProps: LaunchProps) {
                     backgroundColor: theme.centerChannelBg,
                     componentBackgroundColor: theme.centerChannelBg,
                 },
-                statusBar: {
-                    visible: true,
-                    backgroundColor: theme.sidebarBg,
-                },
+                statusBar: baseStatusBarOptions,
                 topBar: {
                     backButton: {
                         color: theme.sidebarHeaderTextColor,
@@ -419,8 +431,7 @@ export function resetToOnboarding(passProps: LaunchProps) {
 
 export function resetToTeams() {
     const theme = getThemeFromState();
-    const isDark = tinyColor(theme.sidebarBg).isDark();
-    StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
+    const baseStatusBarOptions = getStatusBarOptions(theme.sidebarBg);
 
     return Navigation.setRoot({
         root: {
@@ -433,10 +444,7 @@ export function resetToTeams() {
                             layout: {
                                 componentBackgroundColor: theme.centerChannelBg,
                             },
-                            statusBar: {
-                                visible: true,
-                                backgroundColor: theme.sidebarBg,
-                            },
+                            statusBar: baseStatusBarOptions,
                             topBar: {
                                 visible: false,
                                 height: 0,
@@ -462,7 +470,8 @@ export function goToScreen(name: AvailableScreens, title: string, passProps = {}
     }
 
     const theme = getThemeFromState();
-    const isDark = tinyColor(theme.sidebarBg).isDark();
+    const baseStatusBarOptions = getStatusBarOptions(theme.sidebarBg);
+
     const componentId = NavigationStore.getVisibleScreen();
     if (!componentId) {
         logError('Trying to go to screen without any screen on the navigation store');
@@ -478,10 +487,7 @@ export function goToScreen(name: AvailableScreens, title: string, passProps = {}
             left: {enabled: false},
             right: {enabled: false},
         },
-        statusBar: {
-            style: isDark ? 'light' : 'dark',
-            backgroundColor: theme.sidebarBg,
-        },
+        statusBar: baseStatusBarOptions,
         topBar: {
             animate: true,
             visible: true,
@@ -598,16 +604,15 @@ export function showModal(name: AvailableScreens, title: string, passProps = {},
     }
 
     const theme = getThemeFromState();
+    const baseStatusBarOptions = getStatusBarOptions(theme.sidebarBg);
+
     const modalPresentationStyle: OptionsModalPresentationStyle = Platform.OS === 'ios' ? OptionsModalPresentationStyle.pageSheet : OptionsModalPresentationStyle.none;
     const defaultOptions: Options = {
         modalPresentationStyle,
         layout: {
             componentBackgroundColor: theme.centerChannelBg,
         },
-        statusBar: {
-            visible: true,
-            backgroundColor: theme.sidebarBg,
-        },
+        statusBar: baseStatusBarOptions,
         topBar: {
             animate: true,
             visible: true,

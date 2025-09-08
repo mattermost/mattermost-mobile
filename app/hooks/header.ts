@@ -7,6 +7,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import ViewConstants from '@constants/view';
 import {useIsTablet} from '@hooks/device';
+import {topInsetShared} from '@utils/inset_shared';
 
 import type {NativeScrollEvent} from 'react-native';
 
@@ -19,14 +20,13 @@ type HeaderScrollContext = {
 export const MAX_OVERSCROLL = 80;
 
 export const useDefaultHeaderHeight = () => {
-    const insets = useSafeAreaInsets();
     const isTablet = useIsTablet();
 
     let headerHeight = ViewConstants.DEFAULT_HEADER_HEIGHT;
     if (isTablet) {
         headerHeight = ViewConstants.TABLET_HEADER_HEIGHT;
     }
-    return headerHeight + insets.top;
+    return headerHeight + topInsetShared.value;
 };
 
 export const useLargeHeaderHeight = () => {

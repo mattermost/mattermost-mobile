@@ -5,9 +5,8 @@ import {useIsFocused, useRoute} from '@react-navigation/native';
 import React, {useCallback, useState, useEffect, useMemo} from 'react';
 import {Freeze} from 'react-freeze';
 import {useIntl} from 'react-intl';
-import {ActivityIndicator, DeviceEventEmitter, type ListRenderItemInfo, StyleSheet, View} from 'react-native';
+import {ActivityIndicator, DeviceEventEmitter, type ListRenderItemInfo, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
-import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
 import {fetchRecentMentions} from '@actions/remote/search';
 import NavigationHeader from '@components/navigation_header';
@@ -20,13 +19,12 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useCollapsibleHeader} from '@hooks/header';
 import {getDateForDateLine, selectOrderedPosts} from '@utils/post_list';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import EmptyState from './components/empty';
 
 import type {PostListItem, PostListOtherItem, ViewableItemsChanged} from '@typings/components/post_list';
 import type PostModel from '@typings/database/models/servers/post';
-
-const EDGES: Edge[] = ['bottom', 'left', 'right'];
 
 type Props = {
     appsEnabled: boolean;
@@ -35,19 +33,23 @@ type Props = {
     mentions: PostModel[];
 }
 
-const styles = StyleSheet.create({
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     flex: {
         flex: 1,
+    },
+    background: {
+        backgroundColor: theme.centerChannelBg,
     },
     empty: {
         alignItems: 'center',
         flex: 1,
         justifyContent: 'center',
     },
-});
+}));
 
 const RecentMentionsScreen = ({appsEnabled, customEmojiNames, mentions, currentTimezone}: Props) => {
     const theme = useTheme();
+    const styles = getStyleSheet(theme);
     const route = useRoute();
     const isFocused = useIsFocused();
     const {formatMessage} = useIntl();
@@ -162,9 +164,8 @@ const RecentMentionsScreen = ({appsEnabled, customEmojiNames, mentions, currentT
     return (
         <Freeze freeze={!isFocused}>
             <ExtraKeyboardProvider>
-                <SafeAreaView
-                    style={styles.flex}
-                    edges={EDGES}
+                <View
+                    style={[styles.flex, styles.background]}
                     testID='recent_mentions.screen'
                 >
                     <NavigationHeader
@@ -198,7 +199,7 @@ const RecentMentionsScreen = ({appsEnabled, customEmojiNames, mentions, currentT
                             testID='recent_mentions.post_list.flat_list'
                         />
                     </Animated.View>
-                </SafeAreaView>
+                </View>
             </ExtraKeyboardProvider>
         </Freeze>
     );

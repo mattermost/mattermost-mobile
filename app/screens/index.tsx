@@ -7,12 +7,13 @@ import {IntlProvider} from 'react-intl';
 import {Platform} from 'react-native';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {Navigation} from 'react-native-navigation';
-import {SafeAreaProvider} from 'react-native-safe-area-context';
+import {SafeAreaProvider, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {Screens} from '@constants';
 import {withServerDatabase} from '@database/components';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 import {loadPlaybooksScreen} from '@playbooks/screens';
+import {topInsetShared} from '@utils/inset_shared';
 import {logDebug} from '@utils/log';
 
 const withGestures = (Screen: React.ComponentType) => {
@@ -38,14 +39,37 @@ const withIntl = (Screen: React.ComponentType) => {
     };
 };
 
-const withSafeAreaInsets = (Screen: React.ComponentType) => {
-    return function SafeAreaInsets(props: any) {
+export const withSafeAreaInsets = (Screen: React.ComponentType) => {
+    const SafeAreaInsetsWrapper: React.ComponentType = (props) => {
+        const Inner: React.ComponentType = (innerProps) => {
+            const insets = useSafeAreaInsets();
+
+            // In RNN, each screen is a separate React tree, so the SafeArea context
+            // is independent per screen. useSafeAreaInsets() is computed asynchronously
+            // after JS is loaded, which can cause a visible "jump" from 0 → inset.
+            // To avoid this glitch, we store the top inset in a shared module-level
+            // value (topInsetShared) as soon as it becomes available on the first screen.
+            // Subsequent screens can immediately read this cached value, avoiding
+            // the visual jump between screens.
+            if (insets.top > 0 && topInsetShared.value === 0) {
+                topInsetShared.value = insets.top;
+            }
+
+            return (
+                <Screen
+                    {...innerProps}
+                />
+            );
+        };
+
         return (
             <SafeAreaProvider>
-                <Screen {...props}/>
+                <Inner {...props}/>
             </SafeAreaProvider>
         );
     };
+
+    return SafeAreaInsetsWrapper;
 };
 
 const withManagedConfig = (Screen: React.ComponentType) => {
