@@ -8,6 +8,7 @@ if command -v watchman &> /dev/null; then
   watchman watch-del . 2>/dev/null || echo "No watch found for this directory"
 fi
 
+rm -rf .tsbuildinfo.precommit
 rm -rf ios/Pods
 rm -rf node_modules
 rm -rf dist

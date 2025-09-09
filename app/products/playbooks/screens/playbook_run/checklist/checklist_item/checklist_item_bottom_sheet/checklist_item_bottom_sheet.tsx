@@ -8,13 +8,15 @@ import {View, Text} from 'react-native';
 import MenuDivider from '@components/menu_divider';
 import OptionBox from '@components/option_box';
 import OptionItem, {ITEM_HEIGHT} from '@components/option_item';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {dismissBottomSheet, openUserProfileModal} from '@screens/navigation';
+import {setChecklistItemCommand} from '@playbooks/actions/remote/checklist';
+import {dismissBottomSheet, goToScreen, openUserProfileModal} from '@screens/navigation';
 import {toMilliseconds} from '@utils/datetime';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import Checkbox from './checkbox';
+import Checkbox from '../checkbox';
 
 import type PlaybookChecklistItemModel from '@playbooks/types/database/models/playbook_checklist_item';
 import type UserModel from '@typings/database/models/servers/user';
@@ -112,6 +114,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
 }));
 
 type Props = {
+    runId: string;
+    checklistNumber: number;
+    itemNumber: number;
+    channelId: string;
     item: PlaybookChecklistItemModel | PlaybookChecklistItem;
     assignee?: UserModel;
     onCheck: () => void;
@@ -135,6 +141,10 @@ function getDueDateInfo(intl: IntlShape, dueDate: number | undefined) {
 }
 
 const ChecklistItemBottomSheet = ({
+    runId,
+    checklistNumber,
+    itemNumber,
+    channelId,
     item,
     assignee,
     onCheck,
@@ -146,6 +156,7 @@ const ChecklistItemBottomSheet = ({
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const intl = useIntl();
+    const serverUrl = useServerUrl();
 
     const dueDate = 'dueDate' in item ? item.dueDate : item.due_date;
     const isChecked = item.state === 'closed';
@@ -205,6 +216,22 @@ const ChecklistItemBottomSheet = ({
         });
     }, [intl, theme]);
 
+    const updateCommand = useCallback(async (command: string) => {
+        await setChecklistItemCommand(serverUrl, runId, item.id, checklistNumber, itemNumber, command);
+    }, [checklistNumber, item.id, itemNumber, runId, serverUrl]);
+
+    const openEditCommandModal = useCallback(() => {
+        goToScreen(
+            'PlaybookEditCommand',
+            intl.formatMessage({id: 'playbooks.edit_command.title', defaultMessage: 'Slash command'}),
+            {
+                savedCommand: item.command,
+                updateCommand,
+                channelId,
+            },
+        );
+    }, [intl, item.command, updateCommand, channelId]);
+
     const assigneeInfo: ComponentProps<typeof OptionItem>['info'] = useMemo(() => {
         if (!assignee) {
             return intl.formatMessage(messages.none);
@@ -234,12 +261,13 @@ const ChecklistItemBottomSheet = ({
                 testID='checklist_item.due_date'
             />
             <OptionItem
-                type='none'
+                type={isDisabled ? 'none' : 'arrow'}
                 icon='slash-forward'
                 label={intl.formatMessage(messages.command)}
                 info={item.command || intl.formatMessage(messages.none)}
                 testID='checklist_item.command'
                 longInfo={true}
+                action={isDisabled ? undefined : openEditCommandModal}
             />
         </View>
     );
