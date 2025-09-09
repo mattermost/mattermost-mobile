@@ -96,11 +96,11 @@ const messages = defineMessages({
     },
     preauthSecret: {
         id: 'mobile.components.select_server_view.sharedSecret',
-        defaultMessage: 'Pre-authentication secret',
+        defaultMessage: 'Authentication secret',
     },
     preauthSecretHelp: {
         id: 'mobile.components.select_server_view.sharedSecretHelp',
-        defaultMessage: 'The pre-authentication secret shared by the administrator',
+        defaultMessage: 'The authentication secret shared by the administrator',
     },
     preauthSecretInvalid: {
         id: 'mobile.server.preauth_secret.invalid',
