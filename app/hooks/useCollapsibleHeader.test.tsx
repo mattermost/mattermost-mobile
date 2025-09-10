@@ -12,6 +12,19 @@ import {useCollapsibleHeader} from './header';
 const LARGE_HEADER_TITLE_HEIGHT = 128;
 const HEADER_OFFSET = LARGE_HEADER_TITLE_HEIGHT - ViewConstants.DEFAULT_HEADER_HEIGHT;
 
+jest.mock('react-native-reanimated', () => {
+    const ReanimatedMock = jest.requireActual('react-native-reanimated/mock');
+    return {
+        ...ReanimatedMock,
+        useAnimatedRef: () => jest.fn(),
+        useAnimatedScrollHandler: () => ({}),
+    };
+});
+
+jest.mock('@utils/inset_shared', () => ({
+    topInsetShared: {value: 0},
+}));
+
 describe('useCollapsibleHeader', () => {
     const commonHookResponse = {
         largeHeight: LARGE_HEADER_TITLE_HEIGHT,
@@ -28,6 +41,8 @@ describe('useCollapsibleHeader', () => {
 
     it('should return the correct values with isLargeTitle is true', () => {
         const {result} = renderHook(() => useCollapsibleHeader(true));
+
+        console.log('AAAAHHHHHHHH', JSON.stringify(result.current));
 
         expect(result.current).toEqual({
             defaultHeight: ViewConstants.DEFAULT_HEADER_HEIGHT,

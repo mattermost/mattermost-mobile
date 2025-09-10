@@ -8,6 +8,10 @@ import {Preferences} from '@constants';
 
 import Header from './header';
 
+jest.mock('react-native-reanimated', () =>
+    jest.requireActual('react-native-reanimated/mock'),
+);
+
 describe('Header', () => {
     const getBaseProps = (): ComponentProps<typeof Header> => ({
         defaultHeight: 0,

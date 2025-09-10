@@ -24,6 +24,10 @@ jest.mock('@react-native-camera-roll/camera-roll', () => ({
     },
 }));
 
+jest.mock('react-native-reanimated', () =>
+    jest.requireActual('react-native-reanimated/mock'),
+);
+
 function getBaseProps(): ComponentProps<typeof ChannelListScreen> {
     return {
         hasChannels: true,
