@@ -1,24 +1,9 @@
 <resources>
-
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="android:windowBackground">@color/splashscreen_bg</item>
         <item name="android:editTextBackground">@drawable/rn_edit_text_material</item>
-        <item name="android:windowIsTranslucent">true</item>
-        <item name="android:windowFullscreen">true</item>
-        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item> <!-- this is added for api level 27+ so the splashscreen view is fully edge to edge. -->
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges </item> <!-- this is added for api level 27+ so the splashscreen view is fully edge to edge. -->
     </style>
-
-    <style name="Theme.Material3.DynamicColors.DayNight.NoActionBar">
-        <item name="windowActionBar">false</item>
-        <item name="windowNoTitle">true</item>
-    </style>
-
-    <style name="CallTheme" parent="Theme.Material3.DynamicColors.DayNight.NoActionBar">
-        <item name="android:statusBarColor">@color/call_background_color</item>
-        <item name="android:background">@color/call_background_color</item>
-        <item name="android:windowBackground">@color/call_background_color</item>
-    </style>
-
 </resources>
