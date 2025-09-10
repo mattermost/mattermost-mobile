@@ -7,7 +7,7 @@ import {Keyboard, Pressable, View} from 'react-native';
 
 import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
-import FloatingTextInput, {type FloatingTextInputRef} from '@components/floating_text_input_label';
+import FloatingTextInput, {type FloatingTextInputRef} from '@components/floating_input/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import {useAvoidKeyboard} from '@hooks/device';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -39,9 +39,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         maxWidth: 600,
         width: '100%',
         paddingHorizontal: 20,
-    },
-    enterServer: {
-        marginBottom: 24,
     },
     fullWidth: {
         width: '100%',
@@ -75,6 +72,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginTop: 32,
         marginLeft: 20,
         marginRight: 20,
+    },
+    inputsContainer: {
+        gap: 24,
+        width: '100%',
     },
 }));
 
@@ -153,12 +154,10 @@ const ServerForm = ({
 
     return (
         <View style={styles.formContainer}>
-            <View style={styles.fullWidth}>
+            <View style={styles.inputsContainer}>
                 <FloatingTextInput
-                    autoCorrect={false}
-                    autoCapitalize={'none'}
+                    rawInput={true}
                     autoFocus={autoFocus}
-                    containerStyle={styles.enterServer}
                     enablesReturnKeyAutomatically={true}
                     editable={!disableServerUrl}
                     error={urlError}
@@ -171,16 +170,12 @@ const ServerForm = ({
                     onSubmitEditing={onUrlSubmit}
                     ref={urlRef}
                     returnKeyType='next'
-                    spellCheck={false}
                     testID='server_form.server_url.input'
                     theme={theme}
                     value={url}
                 />
-            </View>
-            <View style={styles.fullWidth}>
                 <FloatingTextInput
-                    autoCorrect={false}
-                    autoCapitalize={'none'}
+                    rawInput={true}
                     enablesReturnKeyAutomatically={true}
                     error={displayNameError}
                     label={formatMessage({
@@ -191,7 +186,6 @@ const ServerForm = ({
                     onSubmitEditing={onDisplayNameSubmit}
                     ref={displayNameRef}
                     returnKeyType={showAdvancedOptions ? 'next' : 'done'}
-                    spellCheck={false}
                     testID='server_form.server_display_name.input'
                     theme={theme}
                     value={displayName}
@@ -228,8 +222,7 @@ const ServerForm = ({
                 {showAdvancedOptions && (
                     <View style={styles.advancedOptionsContent}>
                         <FloatingTextInput
-                            autoCorrect={false}
-                            autoCapitalize={'none'}
+                            rawInput={true}
                             enablesReturnKeyAutomatically={true}
                             label={formatMessage(messages.preauthSecret)}
                             onChangeText={handlePreauthSecretTextChanged}
@@ -237,7 +230,6 @@ const ServerForm = ({
                             ref={preauthSecretRef}
                             returnKeyType='done'
                             secureTextEntry={true}
-                            spellCheck={false}
                             testID='server_form.preauth_secret.input'
                             theme={theme}
                             value={preauthSecret}

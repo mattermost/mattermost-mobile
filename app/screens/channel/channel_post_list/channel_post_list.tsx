@@ -11,9 +11,9 @@ import {PER_PAGE_DEFAULT} from '@client/rest/constants';
 import PostList from '@components/post_list';
 import {Events, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
-import {debounce} from '@helpers/api/general';
 import {useAppState, useIsTablet} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
+import {useDebounce} from '@hooks/utils';
 import EphemeralStore from '@store/ephemeral_store';
 
 import Intro from './intro';
@@ -49,7 +49,7 @@ const ChannelPostList = ({
     const [fetchingPosts, setFetchingPosts] = useState(EphemeralStore.isLoadingMessagesForChannel(serverUrl, channelId));
     const oldPostsCount = useRef<number>(posts.length);
 
-    const onEndReached = useCallback(debounce(async () => {
+    const onEndReached = useDebounce(useCallback(async () => {
         if (!fetchingPosts && canLoadPostsBefore.current && posts.length) {
             const lastPost = posts[posts.length - 1];
             const result = await fetchPostsBefore(serverUrl, channelId, lastPost?.id || '');
@@ -58,7 +58,7 @@ const ChannelPostList = ({
                 canLoadPostsBefore.current = (result.posts?.length ?? 0) > 0;
             }
         }
-    }, 500), [fetchingPosts, serverUrl, channelId, posts]);
+    }, [fetchingPosts, serverUrl, channelId, posts]), 500);
 
     useDidUpdate(() => {
         setFetchingPosts(EphemeralStore.isLoadingMessagesForChannel(serverUrl, channelId));
@@ -82,6 +82,9 @@ const ChannelPostList = ({
             canLoadPost.current = false;
             fetchPosts(serverUrl, channelId);
         }
+
+        // We only want to run this when the number of posts changes or we stop fetching posts
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [fetchingPosts, posts]);
 
     useDidUpdate(() => {
@@ -104,6 +107,9 @@ const ChannelPostList = ({
         return () => {
             unsetActiveChannelOnServer(serverUrl);
         };
+
+        // We only want to run this on unmount
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const intro = (<Intro channelId={channelId}/>);
