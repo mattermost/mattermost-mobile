@@ -6,6 +6,8 @@ import {of as of$, combineLatestWith} from 'rxjs';
 import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {MM_TABLES} from '@constants/database';
+import {logDebug, logWarning} from '@utils/log';
+import {updatePermalinkMetadata} from '@utils/permalink_sync';
 
 import {queryGroupsByNames} from './group';
 import {querySavedPostsPreferences} from './preference';
@@ -278,4 +280,92 @@ export const countUsersFromMentions = async (database: Database, mentions: strin
     const usersQuery = queryUsersByUsername(database, mentions).fetchCount();
     const [groups, usersCount] = await Promise.all([groupsQuery, usersQuery]);
     return groups.reduce((acc, v) => acc + v.memberCount, usersCount);
+};
+
+export const queryPostsWithPermalinkReferences = async (
+    database: Database,
+    referencedPostId: string,
+): Promise<PostModel[]> => {
+    try {
+        const clauses: Q.Clause[] = [
+            Q.where('metadata', Q.notEq(null)),
+            Q.where('delete_at', Q.eq(0)),
+        ];
+
+        const postsWithMetadata = await database.get<PostModel>(POST).
+            query(...clauses).
+            fetch();
+
+        const referencingPosts: PostModel[] = [];
+
+        for (const post of postsWithMetadata) {
+            const metadata = post.metadata;
+            if (metadata?.embeds?.length) {
+                for (const embed of metadata.embeds) {
+                    if (embed.type === 'permalink' && embed.data?.post_id === referencedPostId) {
+                        referencingPosts.push(post);
+                        break;
+                    }
+                }
+            }
+        }
+
+        return referencingPosts;
+    } catch (error) {
+        return [];
+    }
+};
+
+/**
+ * Find posts that contain permalink previews referencing the given post ID
+ */
+export const findPostsWithPermalinkReferences = async (
+    database: Database,
+    referencedPostId: string,
+): Promise<PostModel[]> => {
+    try {
+        const referencingPosts = await queryPostsWithPermalinkReferences(database, referencedPostId);
+        return referencingPosts;
+    } catch (error) {
+        logWarning('Error finding posts with permalink references:', error);
+        return [];
+    }
+};
+
+/**
+ * Synchronize permalink previews when a post is edited
+ */
+export const syncPermalinkPreviewsForEditedPost = async (
+    database: Database,
+    editedPost: Post,
+): Promise<PostModel[]> => {
+    try {
+        const referencingPosts = await findPostsWithPermalinkReferences(
+            database,
+            editedPost.id,
+        );
+
+        if (!referencingPosts.length) {
+            return [];
+        }
+
+        const updatedPosts: PostModel[] = [];
+        for (const referencingPost of referencingPosts) {
+            const updatedPost = updatePermalinkMetadata(
+                referencingPost,
+                editedPost.id,
+                editedPost,
+            );
+
+            if (updatedPost) {
+                updatedPosts.push(updatedPost);
+            }
+        }
+
+        logDebug(`Updated ${updatedPosts.length} permalink previews for edited post ${editedPost.id}`);
+        return updatedPosts;
+    } catch (error) {
+        logWarning('Error syncing permalink previews for edited post:', error);
+        return [];
+    }
 };
