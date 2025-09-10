@@ -7,6 +7,7 @@ import {Text, TouchableHighlight, View} from 'react-native';
 
 import {switchToChannelById} from '@actions/remote/channel';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
+import File from '@components/files/file';
 import FormattedText from '@components/formatted_text';
 import FriendlyDate from '@components/friendly_date';
 import Markdown from '@components/markdown';
@@ -21,8 +22,6 @@ import {getMarkdownTextStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
-
-import FileCard from '../file_card/file_card';
 
 import ThreadFooter from './thread_footer';
 
@@ -40,6 +39,7 @@ type Props = {
     teammateNameDisplay: string;
     testID: string;
     thread: ThreadModel;
+    filesInfo: FileInfo[];
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -130,7 +130,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const Thread = ({author, channel, location, post, teammateNameDisplay, testID, thread}: Props) => {
+const Thread = ({author, channel, location, post, teammateNameDisplay, testID, thread, filesInfo}: Props) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
     const theme = useTheme();
@@ -237,9 +237,16 @@ const Thread = ({author, channel, location, post, teammateNameDisplay, testID, t
             );
         } else {
             postBody = (
-                <FileCard
-                    post={post}
-                    theme={theme}
+                <File
+                    canDownloadFiles={true}
+                    enableSecureFilePreview={false}
+                    file={filesInfo[0]}
+                    galleryIdentifier='file-card'
+                    isPressDisabled={true}
+                    index={0}
+                    inViewPort={true}
+                    nonVisibleImagesCount={0}
+                    asCard={true}
                 />
             );
         }
