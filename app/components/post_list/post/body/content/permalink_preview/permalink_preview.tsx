@@ -12,9 +12,11 @@ import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
 import Markdown from '@components/markdown';
 import ProfilePicture from '@components/profile_picture';
+import {View as ViewConstants} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useUserLocale} from '@context/user_locale';
+import {useIsTablet} from '@hooks/device';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -34,6 +36,8 @@ const MAX_PERMALINK_PREVIEW_LINES = 4;
 const SHOW_MORE_HEIGHT = 54;
 const EDITED_INDICATOR_CONTEXT = ['paragraph'];
 const EMPTY_MENTION_KEYS: UserMentionKey[] = [];
+const MIN_PERMALINK_WIDTH = 340;
+const TABLET_PADDING_OFFSET = 40;
 
 type PermalinkPreviewProps = {
     embedData: PermalinkEmbedData;
@@ -137,10 +141,22 @@ const PermalinkPreview = ({
     const serverUrl = useServerUrl();
     const locale = useUserLocale();
     const dimensions = useWindowDimensions();
+    const isTablet = useIsTablet();
     const styles = getStyleSheet(theme);
     const [showGradient, setShowGradient] = useState(false);
 
     const maxPermalinkHeight = Math.round((dimensions.height * 0.5) + SHOW_MORE_HEIGHT);
+
+    const maxWidth = useMemo(() => {
+        if (!isTablet) {
+            return undefined;
+        }
+
+        const deviceSize = Math.min(dimensions.width, dimensions.height);
+        const availableWidth = deviceSize - ViewConstants.TABLET_SIDEBAR_WIDTH;
+
+        return Math.max(availableWidth - TABLET_PADDING_OFFSET, MIN_PERMALINK_WIDTH);
+    }, [dimensions.width, dimensions.height, isTablet]);
 
     const textStyles = getMarkdownTextStyles(theme);
     const blockStyles = getMarkdownBlockStyles(theme);
@@ -218,7 +234,10 @@ const PermalinkPreview = ({
         <Pressable
             style={({pressed}) => [
                 styles.container,
-                {opacity: pressed ? 0.8 : 1},
+                {
+                    opacity: pressed ? 0.8 : 1,
+                    maxWidth,
+                },
             ]}
             onPress={handlePress}
             testID='permalink-preview-container'
