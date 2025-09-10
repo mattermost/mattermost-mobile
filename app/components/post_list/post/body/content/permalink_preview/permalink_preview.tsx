@@ -5,6 +5,7 @@ import {LinearGradient} from 'expo-linear-gradient';
 import React, {useMemo, useCallback, useEffect, useState} from 'react';
 import {Text, View, Pressable, type LayoutChangeEvent, useWindowDimensions} from 'react-native';
 
+import {showPermalink} from '@actions/remote/permalink';
 import {fetchUsersByIds} from '@actions/remote/user';
 import EditedIndicator from '@components/edited_indicator';
 import FormattedText from '@components/formatted_text';
@@ -196,8 +197,13 @@ const PermalinkPreview = ({
     const hasFiles = filesInfo && filesInfo.length > 0;
 
     const handlePress = usePreventDoubleTap(useCallback(() => {
-        // Navigation will be implemented in Task 5
-    }, []));
+        const teamName = embedData.team_name;
+        const postId = embedData.post_id;
+
+        if (teamName && postId) {
+            showPermalink(serverUrl, teamName, postId);
+        }
+    }, [embedData.team_name, embedData.post_id, serverUrl]));
 
     const handleContentLayout = useCallback((event: LayoutChangeEvent) => {
         const {height} = event.nativeEvent.layout;

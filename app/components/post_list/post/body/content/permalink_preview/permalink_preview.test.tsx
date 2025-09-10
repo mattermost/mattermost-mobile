@@ -4,6 +4,7 @@
 import {fireEvent} from '@testing-library/react-native';
 import React from 'react';
 
+import {showPermalink} from '@actions/remote/permalink';
 import Markdown from '@components/markdown';
 import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -14,6 +15,10 @@ import PermalinkPreview from './permalink_preview';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database} from '@nozbe/watermelondb';
+
+jest.mock('@actions/remote/permalink', () => ({
+    showPermalink: jest.fn(),
+}));
 
 jest.mock('@components/markdown', () => ({
     __esModule: true,
@@ -29,6 +34,8 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
     const serverUrl = 'http://localhost:8065';
 
     beforeEach(async () => {
+        jest.clearAllMocks();
+
         await DatabaseManager.init([serverUrl]);
         const serverDatabaseAndOperator = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         database = serverDatabaseAndOperator.database;
@@ -150,6 +157,20 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
             fireEvent.press(permalinkContainer);
         }).not.toThrow();
         expect(getByTestId('permalink-preview-container')).toBeTruthy();
+    });
+
+    it('should call showPermalink with correct parameters when container is pressed', () => {
+        const mockShowPermalink = jest.mocked(showPermalink);
+        const {getByTestId} = renderPermalinkPreview(baseProps);
+        const permalinkContainer = getByTestId('permalink-preview-container');
+
+        fireEvent.press(permalinkContainer);
+
+        expect(mockShowPermalink).toHaveBeenCalledWith(
+            serverUrl,
+            baseProps.embedData.team_name,
+            baseProps.embedData.post_id,
+        );
     });
 
     it('should display author name from user model', () => {
