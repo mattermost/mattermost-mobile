@@ -27,7 +27,6 @@ type FilesProps = {
     postId?: string;
     postProps?: Record<string, unknown>;
     isPermalinkPreview?: boolean;
-    asCard?: boolean;
 }
 
 const MAX_VISIBLE_ROW_IMAGES = 4;
@@ -65,7 +64,6 @@ const Files = ({
     postId,
     postProps,
     isPermalinkPreview = false,
-    asCard,
 }: FilesProps) => {
     const galleryIdentifier = `${postId}-fileAttachments-${location}`;
     const [inViewPort, setInViewPort] = useState(false);
@@ -121,7 +119,6 @@ const Files = ({
                     key={file.id}
                 >
                     <File
-                        asCard={asCard}
                         galleryIdentifier={galleryIdentifier}
                         key={file.id}
                         canDownloadFiles={canDownloadFiles}
