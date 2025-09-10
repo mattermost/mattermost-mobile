@@ -80,7 +80,7 @@ export function alertChannelArchived(displayName: string, intl: IntlShape) {
 }
 
 export function alertTeamAddError(error: unknown, intl: IntlShape) {
-    let errMsg = intl.formatMessage({id: 'join_team.error.message', defaultMessage: 'There has been an error joining the team.'});
+    let errMsg = intl.formatMessage({id: 'join_team.error.message', defaultMessage: 'There has been an error joining the team'});
 
     if (isServerError(error)) {
         if (error.server_error_id === ServerErrors.TEAM_MEMBERSHIP_DENIAL_ERROR_ID) {

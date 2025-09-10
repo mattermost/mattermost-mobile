@@ -3,11 +3,11 @@
 
 import Clipboard from '@react-native-clipboard/clipboard';
 import React, {useCallback} from 'react';
+import {defineMessages} from 'react-intl';
 
 import {BaseOption} from '@components/common_post_options';
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useServerUrl} from '@context/server';
-import {t} from '@i18n';
 import {dismissBottomSheet} from '@screens/navigation';
 import {showSnackBar} from '@utils/snack_bar';
 
@@ -20,6 +20,14 @@ type Props = {
     post: PostModel;
     teamName: string;
 }
+
+const messages = defineMessages({
+    copyLink: {
+        id: 'get_post_link_modal.title',
+        defaultMessage: 'Copy Link',
+    },
+});
+
 const CopyPermalinkOption = ({bottomSheetId, teamName, post, sourceScreen}: Props) => {
     const serverUrl = useServerUrl();
 
@@ -28,12 +36,11 @@ const CopyPermalinkOption = ({bottomSheetId, teamName, post, sourceScreen}: Prop
         Clipboard.setString(permalink);
         await dismissBottomSheet(bottomSheetId);
         showSnackBar({barType: SNACK_BAR_TYPE.LINK_COPIED, sourceScreen});
-    }, [teamName, post.id, bottomSheetId]);
+    }, [serverUrl, teamName, post.id, bottomSheetId, sourceScreen]);
 
     return (
         <BaseOption
-            i18nId={t('get_post_link_modal.title')}
-            defaultMessage='Copy Link'
+            message={messages.copyLink}
             onPress={handleCopyLink}
             iconName='link-variant'
             testID='post_options.copy_permalink.option'

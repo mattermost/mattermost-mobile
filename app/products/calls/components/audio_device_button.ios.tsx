@@ -8,6 +8,8 @@ import {Pressable, type StyleProp, Text, type TextStyle, type ViewStyle} from 'r
 import {setSpeakerphoneOn} from '@calls/actions';
 import CompassIcon from '@components/compass_icon';
 
+import {messages} from './messages';
+
 import type {CurrentCall} from '@calls/types/calls';
 
 type Props = {
@@ -19,7 +21,7 @@ type Props = {
 
 export const AudioDeviceButton = ({pressableStyle, iconStyle, buttonTextStyle, currentCall}: Props) => {
     const intl = useIntl();
-    const speakerLabel = intl.formatMessage({id: 'mobile.calls_speaker', defaultMessage: 'SpeakerPhone'});
+    const speakerLabel = intl.formatMessage(messages.speaker);
 
     const toggleSpeakerPhone = useCallback(() => {
         setSpeakerphoneOn(!currentCall?.speakerphoneOn);

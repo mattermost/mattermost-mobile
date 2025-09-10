@@ -69,12 +69,12 @@ const AdvancedSettings = ({
         }
     }, [files.length, getAllCachedFiles, intl, serverUrl]));
 
-    const onPressComponentLibrary = () => {
+    const onPressComponentLibrary = useCallback(() => {
         const screen = Screens.COMPONENT_LIBRARY;
         const title = intl.formatMessage({id: 'settings.advanced_settings.component_library', defaultMessage: 'Component library'});
 
         goToScreen(screen, title);
-    };
+    }, [intl]);
 
     useEffect(() => {
         getAllCachedFiles();

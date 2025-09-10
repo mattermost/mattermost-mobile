@@ -1,21 +1,23 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {act, waitFor} from '@testing-library/react-native';
+import {act, fireEvent, waitFor} from '@testing-library/react-native';
 import React, {type ComponentProps} from 'react';
 
+import {handleCallsSlashCommand} from '@calls/actions';
 import BaseChip from '@components/chips/base_chip';
 import UserChip from '@components/chips/user_chip';
-import {Preferences} from '@constants';
+import {General, Preferences} from '@constants';
 import {useServerUrl} from '@context/server';
-import {runChecklistItem, updateChecklistItem} from '@playbooks/actions/remote/checklist';
-import {openUserProfileModal, popTo} from '@screens/navigation';
+import {runChecklistItem, skipChecklistItem, updateChecklistItem} from '@playbooks/actions/remote/checklist';
+import {bottomSheet, openUserProfileModal, popTo} from '@screens/navigation';
 import {renderWithIntl} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 
 import Checkbox from './checkbox';
 import ChecklistItem from './checklist_item';
+import ChecklistItemBottomSheet from './checklist_item_bottom_sheet';
 
 const serverUrl = 'some.server.url';
 jest.mock('@context/server');
@@ -30,6 +32,10 @@ jest.mocked(UserChip).mockImplementation((props) => React.createElement('UserChi
 jest.mock('@components/chips/base_chip');
 jest.mocked(BaseChip).mockImplementation((props) => React.createElement('BaseChip', {...props, testID: 'base-chip-component'}));
 
+jest.mock('./checklist_item_bottom_sheet');
+jest.mocked(ChecklistItemBottomSheet).mockImplementation((props) => React.createElement('ChecklistItemBottomSheet', {...props, testID: 'checklist-item-bottom-sheet-component'}));
+
+jest.mock('@calls/actions');
 jest.mock('@playbooks/actions/remote/checklist');
 jest.mock('@utils/snack_bar');
 
@@ -56,6 +62,8 @@ describe('ChecklistItem', () => {
             itemNumber: 0,
             playbookRunId: 'run-id-1',
             isDisabled: false,
+            currentUserId: 'user-id-1',
+            channelType: General.OPEN_CHANNEL,
         };
     }
 
@@ -299,7 +307,7 @@ describe('ChecklistItem', () => {
         expect(chip.props.prefix.props.style).toBeDefined();
 
         let resolve: (value: {data: boolean}) => void;
-        jest.mocked(runChecklistItem).mockImplementation(() => new Promise((r) => {
+        jest.mocked(runChecklistItem).mockImplementationOnce(() => new Promise((r) => {
             resolve = r;
         }));
 
@@ -321,6 +329,29 @@ describe('ChecklistItem', () => {
         await waitFor(() => {
             expect(getByTestId('base-chip-component')).toBeVisible();
             expect(popTo).toHaveBeenCalledWith('Channel');
+            expect(handleCallsSlashCommand).not.toHaveBeenCalled();
+        });
+    });
+
+    it('should call handleCallsSlashCommand when the command is a call command', async () => {
+        const props = getBaseProps();
+        const item = TestHelper.fakePlaybookChecklistItemModel({});
+        item.command = '/call start';
+        props.item = item;
+
+        const {getByTestId} = renderWithIntl(<ChecklistItem {...props}/>);
+
+        const chip = getByTestId('base-chip-component');
+        jest.mocked(runChecklistItem).mockResolvedValueOnce({data: true});
+        jest.mocked(handleCallsSlashCommand).mockResolvedValueOnce({handled: true});
+
+        act(() => {
+            chip.props.onPress();
+        });
+
+        await waitFor(() => {
+            expect(runChecklistItem).toHaveBeenCalled();
+            expect(handleCallsSlashCommand).toHaveBeenCalledWith(item.command, serverUrl, props.channelId, props.channelType, '', props.currentUserId, expect.anything());
         });
     });
 
@@ -343,6 +374,54 @@ describe('ChecklistItem', () => {
         await waitFor(() => {
             expect(showPlaybookErrorSnackbar).toHaveBeenCalled();
             expect(popTo).not.toHaveBeenCalled();
+        });
+    });
+
+    it('opens the bottom sheet when the item is pressed', async () => {
+        const props = getBaseProps();
+        props.itemNumber = 2;
+        props.checklistNumber = 4;
+
+        const {getByText} = renderWithIntl(<ChecklistItem {...props}/>);
+
+        const item = getByText('Test Item');
+        act(() => {
+            fireEvent.press(item);
+        });
+
+        expect(bottomSheet).toHaveBeenCalled();
+        const args = jest.mocked(bottomSheet).mock.calls[0][0] as Parameters<typeof bottomSheet>[0];
+        expect(args.title).toBe('Task Details');
+        expect(args.snapPoints).toEqual([1, 354, '80%']);
+        expect(args.theme).toBe(Preferences.THEMES.denim);
+        expect(args.closeButtonId).toBe('close-checklist-item');
+
+        const BottomSheetComponent = args.renderContent;
+        const {getByTestId} = renderWithIntl(<BottomSheetComponent/>);
+        const bottomSheetRenderedComponent = getByTestId('checklist-item-bottom-sheet-component');
+        expect(bottomSheetRenderedComponent.props.item).toBe(props.item);
+        expect(bottomSheetRenderedComponent.props.teammateNameDisplay).toBe(props.teammateNameDisplay);
+        expect(bottomSheetRenderedComponent.props.runId).toBe(props.playbookRunId);
+        expect(bottomSheetRenderedComponent.props.checklistNumber).toBe(props.checklistNumber);
+        expect(bottomSheetRenderedComponent.props.itemNumber).toBe(props.itemNumber);
+        expect(bottomSheetRenderedComponent.props.channelId).toBe(props.channelId);
+
+        bottomSheetRenderedComponent.props.onCheck();
+
+        await waitFor(() => {
+            expect(updateChecklistItem).toHaveBeenCalledWith(serverUrl, props.playbookRunId, props.item.id, props.checklistNumber, props.itemNumber, 'closed');
+        });
+
+        bottomSheetRenderedComponent.props.onSkip();
+
+        await waitFor(() => {
+            expect(skipChecklistItem).toHaveBeenCalledWith(serverUrl, props.playbookRunId, props.item.id, props.checklistNumber, props.itemNumber);
+        });
+
+        bottomSheetRenderedComponent.props.onRunCommand();
+
+        await waitFor(() => {
+            expect(runChecklistItem).toHaveBeenCalledWith(serverUrl, props.playbookRunId, props.checklistNumber, props.itemNumber);
         });
     });
 });

@@ -12,12 +12,12 @@ import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {TITLE_HEIGHT} from '@screens/bottom_sheet/content';
 import PanelItem from '@screens/edit_profile/components/panel_item';
 import {bottomSheet} from '@screens/navigation';
 import PickerUtil from '@utils/file/file_picker';
 import {bottomSheetSnapPoint} from '@utils/helpers';
-import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -73,7 +73,7 @@ const ProfileImagePicker = ({
     const styles = getStyleSheet(theme);
     const isTablet = useIsTablet();
 
-    const showFileAttachmentOptions = useCallback(preventDoubleTap(() => {
+    const showFileAttachmentOptions = usePreventDoubleTap(useCallback(() => {
         const renderContent = () => {
             return (
                 <>
@@ -116,7 +116,7 @@ const ProfileImagePicker = ({
             title: 'Change profile photo',
             theme,
         });
-    }), [canRemovePicture, onRemoveProfileImage, pictureUtils, theme]);
+    }, [canRemovePicture, isTablet, onRemoveProfileImage, pictureUtils, styles.title, theme]));
 
     return (
         <TouchableOpacity

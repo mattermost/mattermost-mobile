@@ -9,20 +9,21 @@ export interface ClientPlaybooksMix {
 
     // Playbook Runs
     fetchPlaybookRuns: (params: FetchPlaybookRunsParams, groupLabel?: RequestGroupLabel) => Promise<FetchPlaybookRunsReturn>;
-
     fetchPlaybookRun: (id: string, groupLabel?: RequestGroupLabel) => Promise<PlaybookRun>;
 
     // Run Management
     // finishRun: (playbookRunId: string) => Promise<any>;
 
     // Checklist Management
-    setChecklistItemState: (playbookRunID: string, checklistNum: number, itemNum: number, newState: ChecklistItemState) => Promise<any>;
+    setChecklistItemState: (playbookRunID: string, checklistNum: number, itemNum: number, newState: ChecklistItemState) => Promise<void>;
+    skipChecklistItem: (playbookRunID: string, checklistNum: number, itemNum: number) => Promise<void>;
+    restoreChecklistItem: (playbookRunID: string, checklistNum: number, itemNum: number) => Promise<void>;
 
-    // skipChecklistItem: (playbookRunID: string, checklistNum: number, itemNum: number) => Promise<void>;
     // skipChecklist: (playbookRunID: string, checklistNum: number) => Promise<void>;
 
     // Slash Commands
-    runChecklistItemSlashCommand: (playbookRunId: string, checklistNumber: number, itemNumber: number) => Promise<void>;
+    runChecklistItemSlashCommand: (playbookRunId: string, checklistNumber: number, itemNumber: number) => Promise<{trigger_id: string}>;
+    setChecklistItemCommand: (playbookRunID: string, checklistNum: number, itemNum: number, command: string) => Promise<void>;
 }
 
 const ClientPlaybooks = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
@@ -85,12 +86,19 @@ const ClientPlaybooks = <TBase extends Constructor<ClientBase>>(superclass: TBas
         }
     };
 
-    // skipChecklistItem = async (playbookRunID: string, checklistNum: number, itemNum: number) => {
-    //     await this.doFetch(
-    //         `${this.getPlaybookRunRoute(playbookRunID)}/checklists/${checklistNum}/item/${itemNum}/skip`,
-    //         {method: 'put', body: ''},
-    //     );
-    // };
+    skipChecklistItem = async (playbookRunID: string, checklistNum: number, itemNum: number) => {
+        await this.doFetch(
+            `${this.getPlaybookRunRoute(playbookRunID)}/checklists/${checklistNum}/item/${itemNum}/skip`,
+            {method: 'put', body: ''},
+        );
+    };
+
+    restoreChecklistItem = async (playbookRunID: string, checklistNum: number, itemNum: number) => {
+        await this.doFetch(
+            `${this.getPlaybookRunRoute(playbookRunID)}/checklists/${checklistNum}/item/${itemNum}/restore`,
+            {method: 'put', body: ''},
+        );
+    };
 
     // skipChecklist = async (playbookRunID: string, checklistNum: number) => {
     //     await this.doFetch(
@@ -101,10 +109,21 @@ const ClientPlaybooks = <TBase extends Constructor<ClientBase>>(superclass: TBas
 
     // Slash Commands
     runChecklistItemSlashCommand = async (playbookRunId: string, checklistNumber: number, itemNumber: number) => {
-        await this.doFetch(
+        const data = await this.doFetch(
             `${this.getPlaybookRunRoute(playbookRunId)}/checklists/${checklistNumber}/item/${itemNumber}/run`,
             {method: 'post'},
         );
+
+        return data;
+    };
+
+    setChecklistItemCommand = async (playbookRunID: string, checklistNum: number, itemNum: number, command: string) => {
+        const data = await this.doFetch(
+            `${this.getPlaybookRunRoute(playbookRunID)}/checklists/${checklistNum}/item/${itemNum}/command`,
+            {method: 'put', body: {command}},
+        );
+
+        return data;
     };
 };
 

@@ -2,15 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {defineMessages, type IntlShape, type MessageDescriptor} from 'react-intl';
 import {View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
-import {t} from '@i18n';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import CustomStatusSuggestion from './custom_status_suggestion';
-
-import type {IntlShape} from 'react-intl';
 
 type Props = {
     intl: IntlShape;
@@ -21,8 +19,7 @@ type Props = {
 
 type DefaultUserCustomStatus = {
     emoji: string;
-    message: string;
-    messageDefault: string;
+    message: MessageDescriptor;
     durationDefault: CustomStatusDuration;
 };
 
@@ -47,12 +44,35 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
+const messages = defineMessages({
+    inAMeeting: {
+        id: 'custom_status.suggestions.in_a_meeting',
+        defaultMessage: 'In a meeting',
+    },
+    outForLunch: {
+        id: 'custom_status.suggestions.out_for_lunch',
+        defaultMessage: 'Out for lunch',
+    },
+    outSick: {
+        id: 'custom_status.suggestions.out_sick',
+        defaultMessage: 'Out sick',
+    },
+    workingFromHome: {
+        id: 'custom_status.suggestions.working_from_home',
+        defaultMessage: 'Working from home',
+    },
+    onAVacation: {
+        id: 'custom_status.suggestions.on_a_vacation',
+        defaultMessage: 'On a vacation',
+    },
+});
+
 const defaultCustomStatusSuggestions: DefaultUserCustomStatus[] = [
-    {emoji: 'calendar', message: t('custom_status.suggestions.in_a_meeting'), messageDefault: 'In a meeting', durationDefault: 'one_hour'},
-    {emoji: 'hamburger', message: t('custom_status.suggestions.out_for_lunch'), messageDefault: 'Out for lunch', durationDefault: 'thirty_minutes'},
-    {emoji: 'sneezing_face', message: t('custom_status.suggestions.out_sick'), messageDefault: 'Out sick', durationDefault: 'today'},
-    {emoji: 'house', message: t('custom_status.suggestions.working_from_home'), messageDefault: 'Working from home', durationDefault: 'today'},
-    {emoji: 'palm_tree', message: t('custom_status.suggestions.on_a_vacation'), messageDefault: 'On a vacation', durationDefault: 'this_week'},
+    {emoji: 'calendar', message: messages.inAMeeting, durationDefault: 'one_hour'},
+    {emoji: 'hamburger', message: messages.outForLunch, durationDefault: 'thirty_minutes'},
+    {emoji: 'sneezing_face', message: messages.outSick, durationDefault: 'today'},
+    {emoji: 'house', message: messages.workingFromHome, durationDefault: 'today'},
+    {emoji: 'palm_tree', message: messages.onAVacation, durationDefault: 'this_week'},
 ];
 
 const CustomStatusSuggestions = ({
@@ -67,7 +87,7 @@ const CustomStatusSuggestions = ({
     const customStatusSuggestions = defaultCustomStatusSuggestions.
         map((status) => ({
             emoji: status.emoji,
-            text: intl.formatMessage({id: status.message, defaultMessage: status.messageDefault}),
+            text: intl.formatMessage(status.message),
             duration: status.durationDefault,
         })).
         filter((status) => !recentCustomStatusTexts.has(status.text)).
@@ -92,7 +112,7 @@ const CustomStatusSuggestions = ({
             <View style={style.separator}/>
             <View testID='custom_status.suggestions'>
                 <FormattedText
-                    id={t('custom_status.suggestions.title')}
+                    id={'custom_status.suggestions.title'}
                     defaultMessage='Suggestions'
                     style={style.title}
                 />

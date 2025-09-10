@@ -1,15 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
-import {useIntl} from 'react-intl';
+import React, {useCallback} from 'react';
+import {defineMessage, useIntl} from 'react-intl';
 import {type StyleProp, Text, type TextStyle} from 'react-native';
 
 import {joinChannel, switchToChannelById} from '@actions/remote/channel';
 import {useServerUrl} from '@context/server';
-import {t} from '@i18n';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {alertErrorWithFallback} from '@utils/draft';
-import {preventDoubleTap} from '@utils/tap';
 import {secureGetFromRecord, isRecordOf} from '@utils/types';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -90,16 +89,16 @@ const ChannelMention = ({
     const serverUrl = useServerUrl();
     const channel = getChannelFromChannelName(channelName, channels, channelMentions, team.name);
 
-    const handlePress = preventDoubleTap(async () => {
+    const handlePress = usePreventDoubleTap(useCallback((async () => {
         let c = channel;
 
         if (!c?.id && c?.display_name) {
             const result = await joinChannel(serverUrl, currentTeamId, undefined, channelName);
             if (result.error || !result.channel) {
-                const joinFailedMessage = {
-                    id: t('mobile.join_channel.error'),
+                const joinFailedMessage = defineMessage({
+                    id: 'mobile.join_channel.error',
                     defaultMessage: "We couldn't join the channel {displayName}.",
-                };
+                });
                 alertErrorWithFallback(intl, result.error || {}, joinFailedMessage, {displayName: c.display_name});
             } else if (result.channel) {
                 c = {
@@ -113,7 +112,7 @@ const ChannelMention = ({
         if (c?.id) {
             switchToChannelById(serverUrl, c.id);
         }
-    });
+    }), [channel, channelName, currentTeamId, intl, serverUrl]));
 
     if (!channel) {
         return <Text style={textStyle}>{`~${channelName}`}</Text>;

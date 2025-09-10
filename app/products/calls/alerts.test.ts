@@ -126,7 +126,7 @@ describe('alerts', () => {
 
             expect(mockAlert).toHaveBeenCalledWith(
                 'You are recording',
-                'Consider letting everyone know that this meeting is being recorded.',
+                'You are recording this meeting. Consider letting everyone know that this meeting is being recorded.',
                 [{
                     text: 'Dismiss',
                 }],
@@ -139,7 +139,7 @@ describe('alerts', () => {
 
             expect(mockAlert).toHaveBeenCalledWith(
                 'You are recording',
-                'Consider letting everyone know that this meeting is being recorded.',
+                'You are recording this meeting. Consider letting everyone know that this meeting is being recorded.',
                 [{
                     text: 'Dismiss',
                 }],

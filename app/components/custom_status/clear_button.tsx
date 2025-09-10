@@ -5,7 +5,7 @@ import React from 'react';
 import {TouchableOpacity} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import {preventDoubleTap} from '@utils/tap';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 interface Props {
@@ -34,9 +34,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 const ClearButton = ({handlePress, iconName = 'close-circle', size = 20, containerSize = 40, theme, testID}: Props) => {
     const style = getStyleSheet(theme);
 
+    const onPress = usePreventDoubleTap(handlePress);
+
     return (
         <TouchableOpacity
-            onPress={preventDoubleTap(handlePress)}
+            onPress={onPress}
             style={[style.container, {height: containerSize, width: containerSize}]}
             testID={testID}
         >

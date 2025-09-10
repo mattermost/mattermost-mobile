@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {defineMessages} from 'react-intl';
+
 import {searchGroupsByName, searchGroupsByNameInChannel, searchGroupsByNameInTeam} from '@actions/local/group';
 import {AT_MENTION_REGEX, AT_MENTION_SEARCH_REGEX} from '@constants/autocomplete';
 import DatabaseManager from '@database/manager';
-import {t} from '@i18n';
 import {getUsersFromDMSorted, queryAllUsers} from '@queries/servers/user';
 import {hasTrailingSpaces} from '@utils/helpers';
 
@@ -39,19 +40,31 @@ export const getMatchTermForAtMention = (() => {
     };
 })();
 
+const specialMentionsMessages = defineMessages({
+    all: {
+        id: 'suggestion.mention.all',
+        defaultMessage: 'Notifies everyone in this channel',
+    },
+    channel: {
+        id: 'suggestion.mention.channel',
+        defaultMessage: 'Notifies everyone in this channel',
+    },
+    here: {
+        id: 'suggestion.mention.here',
+        defaultMessage: 'Notifies everyone online in this channel',
+    },
+});
+
 const getSpecialMentions: () => SpecialMention[] = () => {
     return [{
         completeHandle: 'all',
-        id: t('suggestion.mention.all'),
-        defaultMessage: 'Notifies everyone in this channel',
+        ...specialMentionsMessages.all,
     }, {
         completeHandle: 'channel',
-        id: t('suggestion.mention.channel'),
-        defaultMessage: 'Notifies everyone in this channel',
+        ...specialMentionsMessages.channel,
     }, {
         completeHandle: 'here',
-        id: t('suggestion.mention.here'),
-        defaultMessage: 'Notifies everyone online in this channel',
+        ...specialMentionsMessages.here,
     }];
 };
 
@@ -115,14 +128,36 @@ export const filterResults = (users: Array<UserModel | UserProfile>, term: strin
     });
 };
 
+const sectionMessages = defineMessages({
+    members: {
+        id: 'mobile.suggestion.members',
+        defaultMessage: 'Members',
+    },
+    groups: {
+        id: 'suggestion.mention.groups',
+        defaultMessage: 'Group Mentions',
+    },
+    special: {
+        id: 'suggestion.mention.special',
+        defaultMessage: 'Special Mentions',
+    },
+    users: {
+        id: 'suggestion.mention.users',
+        defaultMessage: 'Users',
+    },
+    nonmembers: {
+        id: 'suggestion.mention.nonmembers',
+        defaultMessage: 'Not in Channel',
+    },
+});
+
 export const makeSections = (teamMembers: Array<UserProfile | UserModel>, usersInChannel: Array<UserProfile | UserModel>, usersOutOfChannel: Array<UserProfile | UserModel>, groups: GroupModel[], showSpecialMentions: boolean, isLocal = false, isSearch = false) => {
     const newSections: UserMentionSections = [];
 
     if (isSearch) {
         if (teamMembers.length) {
             newSections.push({
-                id: t('mobile.suggestion.members'),
-                defaultMessage: 'Members',
+                ...sectionMessages.members,
                 data: teamMembers,
                 key: SECTION_KEY_TEAM_MEMBERS,
             });
@@ -130,8 +165,7 @@ export const makeSections = (teamMembers: Array<UserProfile | UserModel>, usersI
     } else if (isLocal) {
         if (teamMembers.length) {
             newSections.push({
-                id: t('mobile.suggestion.members'),
-                defaultMessage: 'Members',
+                ...sectionMessages.members,
                 data: teamMembers,
                 key: SECTION_KEY_TEAM_MEMBERS,
             });
@@ -139,8 +173,7 @@ export const makeSections = (teamMembers: Array<UserProfile | UserModel>, usersI
 
         if (groups.length) {
             newSections.push({
-                id: t('suggestion.mention.groups'),
-                defaultMessage: 'Group Mentions',
+                ...sectionMessages.groups,
                 data: groups,
                 key: SECTION_KEY_GROUPS,
             });
@@ -148,8 +181,7 @@ export const makeSections = (teamMembers: Array<UserProfile | UserModel>, usersI
 
         if (showSpecialMentions) {
             newSections.push({
-                id: t('suggestion.mention.special'),
-                defaultMessage: 'Special Mentions',
+                ...sectionMessages.special,
                 data: getSpecialMentions(),
                 key: SECTION_KEY_SPECIAL,
             });
@@ -157,8 +189,7 @@ export const makeSections = (teamMembers: Array<UserProfile | UserModel>, usersI
     } else {
         if (usersInChannel.length) {
             newSections.push({
-                id: t('suggestion.mention.users'),
-                defaultMessage: 'Users',
+                ...sectionMessages.users,
                 data: usersInChannel,
                 key: SECTION_KEY_IN_CHANNEL,
             });
@@ -166,8 +197,7 @@ export const makeSections = (teamMembers: Array<UserProfile | UserModel>, usersI
 
         if (groups.length) {
             newSections.push({
-                id: t('suggestion.mention.groups'),
-                defaultMessage: 'Group Mentions',
+                ...sectionMessages.groups,
                 data: groups,
                 key: SECTION_KEY_GROUPS,
             });
@@ -175,8 +205,7 @@ export const makeSections = (teamMembers: Array<UserProfile | UserModel>, usersI
 
         if (showSpecialMentions) {
             newSections.push({
-                id: t('suggestion.mention.special'),
-                defaultMessage: 'Special Mentions',
+                ...sectionMessages.special,
                 data: getSpecialMentions(),
                 key: SECTION_KEY_SPECIAL,
             });
@@ -184,8 +213,7 @@ export const makeSections = (teamMembers: Array<UserProfile | UserModel>, usersI
 
         if (usersOutOfChannel.length) {
             newSections.push({
-                id: t('suggestion.mention.nonmembers'),
-                defaultMessage: 'Not in Channel',
+                ...sectionMessages.nonmembers,
                 data: usersOutOfChannel,
                 key: SECTION_KEY_OUT_OF_CHANNEL,
             });

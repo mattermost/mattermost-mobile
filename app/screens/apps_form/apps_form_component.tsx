@@ -236,7 +236,7 @@ function AppsFormComponent({
                     case AppCallResponseTypes.NAVIGATE:
                         updateErrors([], undefined, intl.formatMessage({
                             id: 'apps.error.responses.unexpected_type',
-                            defaultMessage: 'App response type was not expected. Response type: {type}.',
+                            defaultMessage: 'App response type was not expected. Response type: {type}',
                         }, {
                             type: callResponse.type,
                         }));
@@ -340,7 +340,7 @@ function AppsFormComponent({
             const errorResponse = res.error;
             const errMsg = errorResponse.text || intl.formatMessage({
                 id: 'apps.error.unknown',
-                defaultMessage: 'Unknown error.',
+                defaultMessage: 'Unknown error occurred.',
             });
             setErrors({[field.name]: errMsg});
             return [];
@@ -357,7 +357,7 @@ function AppsFormComponent({
             case AppCallResponseTypes.NAVIGATE: {
                 const errMsg = intl.formatMessage({
                     id: 'apps.error.responses.unexpected_type',
-                    defaultMessage: 'App response type was not expected. Response type: {type}.',
+                    defaultMessage: 'App response type was not expected. Response type: {type}',
                 }, {
                     type: callResp.type,
                 },

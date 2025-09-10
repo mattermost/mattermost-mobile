@@ -2,7 +2,7 @@
 
 /* eslint-disable */
 
-import {t} from '@i18n';
+import {defineMessages} from 'react-intl';
 
 import emojis from './emoji.json';
 
@@ -18,9 +18,86 @@ export const CategoryNames = ["recent","smileys-emotion","people-body","animals-
 
 export const CategoryMessage = new Map([["smileys-emotion","Smileys & Emotion"],["people-body","People & Body"],["component","Component"],["animals-nature","Animals & Nature"],["food-drink","Food & Drink"],["travel-places","Travel & Places"],["activities","Activities"],["objects","Objects"],["symbols","Symbols"],["flags","Flags"],["custom","Custom"],["recent","Recently Used"],["searchResults","Search Results"]]);
 
-export const CategoryTranslations = new Map([['recent', t('emoji_picker.recent')],['searchResults', t('emoji_picker.searchResults')],['recent', t('emoji_picker.recent')],['smileys-emotion', t('emoji_picker.smileys-emotion')],['people-body', t('emoji_picker.people-body')],['animals-nature', t('emoji_picker.animals-nature')],['food-drink', t('emoji_picker.food-drink')],['travel-places', t('emoji_picker.travel-places')],['activities', t('emoji_picker.activities')],['objects', t('emoji_picker.objects')],['symbols', t('emoji_picker.symbols')],['flags', t('emoji_picker.flags')],['custom', t('emoji_picker.custom')]]);
+const categoryMessages = defineMessages({
+    recent: {
+        id: 'emoji_picker.recent',
+        defaultMessage: 'Recently Used',
+    },
+    searchResults: {
+        id: 'emoji_picker.searchResults',
+        defaultMessage: 'Search Results',
+    },
+    smileys: {
+        id: 'emoji_picker.smileys-emotion',
+        defaultMessage: 'Smileys & Emotion',
+    },
+    people: {
+        id: 'emoji_picker.people-body',
+        defaultMessage: 'People & Body',
+    },
+    animals: {
+        id: 'emoji_picker.animals-nature',
+        defaultMessage: 'Animals & Nature',
+    },
+    food: {
+        id: 'emoji_picker.food-drink',
+        defaultMessage: 'Food & Drink',
+    },
+    travel: {
+        id: 'emoji_picker.travel-places',
+        defaultMessage: 'Travel & Places',
+    },
+    activities: {
+        id: 'emoji_picker.activities',
+        defaultMessage: 'Activities',
+    },
+    objects: {
+        id: 'emoji_picker.objects',
+        defaultMessage: 'Objects',
+    },
+    symbols: {
+        id: 'emoji_picker.symbols',
+        defaultMessage: 'Symbols',
+    },
+    flags: {
+        id: 'emoji_picker.flags',
+        defaultMessage: 'Flags',
+    },
+    custom: {
+        id: 'emoji_picker.custom',
+        defaultMessage: 'Custom',
+    }
+});
 
-export const SkinTranslations = new Map([['default', t('emoji_skin.default')], ['1F3FB', t('emoji_skin.light_skin_tone')], ['1F3FC', t('emoji_skin.medium_light_skin_tone')], ['1F3FD', t('emoji_skin.medium_skin_tone')], ['1F3FE', t('emoji_skin.medium_dark_skin_tone')], ['1F3FF', t('emoji_skin.dark_skin_tone')]]);
+export const CategoryTranslations = new Map([['recent', categoryMessages.recent.id],['searchResults', categoryMessages.searchResults.id],['recent', categoryMessages.recent.id],['smileys-emotion', categoryMessages.smileys.id],['people-body', categoryMessages.people.id],['animals-nature', categoryMessages.animals.id],['food-drink', categoryMessages.food.id],['travel-places', categoryMessages.travel.id],['activities', categoryMessages.activities.id],['objects', categoryMessages.objects.id],['symbols', categoryMessages.symbols.id],['flags', categoryMessages.flags.id],['custom', categoryMessages.custom.id]]);
+
+const skinMessages = defineMessages({
+    default: {
+        id: 'emoji_skin.default',
+        defaultMessage: 'default skin tone',
+    },
+    light: {
+        id: 'emoji_skin.light_skin_tone',
+        defaultMessage: 'light skin tone',
+    },
+    mediumLight: {
+        id: 'emoji_skin.medium_light_skin_tone',
+        defaultMessage: 'medium light skin tone',
+    },
+    medium: {
+        id: 'emoji_skin.medium_skin_tone',
+        defaultMessage: 'medium skin tone',
+    },
+    mediumDark: {
+        id: 'emoji_skin.medium_dark_skin_tone',
+        defaultMessage: 'medium dark skin tone',
+    },
+    dark: {
+        id: 'emoji_skin.dark_skin_tone',
+        defaultMessage: 'dark skin tone',
+    },
+});
+export const SkinTranslations = new Map([['default', skinMessages.default.id], ['1F3FB', skinMessages.light.id], ['1F3FC', skinMessages.mediumLight.id], ['1F3FD', skinMessages.medium.id], ['1F3FE', skinMessages.mediumDark.id], ['1F3FF', skinMessages.dark.id]]);
 
 export const ComponentCategory = 'Component';
 

@@ -1,14 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useState} from 'react';
+import React, {useCallback, useState} from 'react';
 import {defineMessage, useIntl} from 'react-intl';
 
 import {updateChannelNotifyProps} from '@actions/remote/channel';
 import OptionItem from '@components/option_item';
 import {useServerUrl} from '@context/server';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {alertErrorWithFallback} from '@utils/draft';
-import {preventDoubleTap} from '@utils/tap';
 
 type Props = {
     channelId: string;
@@ -21,7 +21,7 @@ const IgnoreMentions = ({channelId, ignoring, displayName}: Props) => {
     const serverUrl = useServerUrl();
     const intl = useIntl();
 
-    const toggleIgnore = preventDoubleTap(async () => {
+    const toggleIgnore = usePreventDoubleTap(useCallback(async () => {
         const props: Partial<ChannelNotifyProps> = {
             ignore_channel_mentions: ignoring ? 'off' : 'on',
         };
@@ -39,7 +39,7 @@ const IgnoreMentions = ({channelId, ignoring, displayName}: Props) => {
             );
             setIgnored((v) => !v);
         }
-    });
+    }, [channelId, displayName, ignoring, intl, serverUrl]));
 
     return (
         <OptionItem
