@@ -48,9 +48,6 @@ const styles = StyleSheet.create({
     marginTop: {
         marginTop: 10,
     },
-    rowPermalinkPreview: {
-        marginTop: 0,
-    },
 });
 
 const Files = ({
