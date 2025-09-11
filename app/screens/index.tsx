@@ -10,10 +10,8 @@ import {Navigation} from 'react-native-navigation';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 
 import {Screens} from '@constants';
-import {FloatingBannerProvider} from '@context/floating_banner';
 import {withServerDatabase} from '@database/components';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
-import ConnectivityManager from '@managers/connectivity_manager';
 
 const withGestures = (Screen: React.ComponentType) => {
     return function gestureHoc(props: any) {
@@ -54,22 +52,6 @@ const withManagedConfig = (Screen: React.ComponentType) => {
             <EMMProvider>
                 <Screen {...props}/>
             </EMMProvider>
-        );
-    };
-};
-
-const withFloatingBanner = (Screen: React.ComponentType) => {
-    return function WithFloatingBannerProvider(props: any) {
-        return (
-            <FloatingBannerProvider>
-                <IntlProvider
-                    locale={DEFAULT_LOCALE}
-                    messages={getTranslations(DEFAULT_LOCALE)}
-                >
-                    <ConnectivityManager/>
-                </IntlProvider>
-                <Screen {...props}/>
-            </FloatingBannerProvider>
         );
     };
 };
@@ -154,6 +136,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             break;
         case Screens.GENERIC_OVERLAY:
             screen = withServerDatabase(require('@screens/overlay').default);
+            break;
+        case Screens.FLOATING_BANNER:
+            screen = require('@components/floating_banner/floating_banner').default;
             break;
         case Screens.GLOBAL_DRAFTS:
             screen = withServerDatabase(require('@screens/global_drafts').default);
@@ -327,7 +312,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     }
 
     if (screen) {
-        Navigation.registerComponent(screenName, () => withGestures(withSafeAreaInsets(withManagedConfig(withFloatingBanner(screen)))));
+        Navigation.registerComponent(screenName, () => withGestures(withSafeAreaInsets(withManagedConfig((screen)))));
     }
 });
 
@@ -337,5 +322,5 @@ export function registerScreens() {
     const onboardingScreen = require('@screens/onboarding').default;
     Navigation.registerComponent(Screens.ONBOARDING, () => withGestures(withIntl(withManagedConfig(onboardingScreen))));
     Navigation.registerComponent(Screens.SERVER, () => withSafeAreaInsets(withGestures(withIntl(withManagedConfig(serverScreen)))));
-    Navigation.registerComponent(Screens.HOME, () => withGestures(withSafeAreaInsets(withServerDatabase(withManagedConfig(withFloatingBanner(homeScreen))))));
+    Navigation.registerComponent(Screens.HOME, () => withGestures(withSafeAreaInsets(withServerDatabase(withManagedConfig(homeScreen)))));
 }

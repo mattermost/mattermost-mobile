@@ -7,7 +7,7 @@ import {Text} from 'react-native';
 
 import FloatingBanner from './floating_banner';
 
-import {useBanner, type BannerConfig} from './';
+import type {BannerConfig} from './types';
 
 // Mock the dependencies
 jest.mock('@components/banner', () => {
@@ -56,16 +56,7 @@ jest.mock('@components/banner/banner_item', () => {
     };
 });
 
-// Mock the context hook
-jest.mock('./', () => ({
-    useBanner: jest.fn(),
-    BannerConfig: {},
-}));
-
-const mockUseBanner = useBanner as jest.MockedFunction<typeof useBanner>;
-
 describe('FloatingBanner', () => {
-    const mockHideBanner = jest.fn();
     const mockOnPress = jest.fn();
     const mockOnDismiss = jest.fn();
 
@@ -80,23 +71,20 @@ describe('FloatingBanner', () => {
         ...overrides,
     });
 
-    const setupMockBanner = (banners: BannerConfig[] = []) => {
-        mockUseBanner.mockReturnValue({
-            banners,
-            showBanner: jest.fn(),
-            hideBanner: mockHideBanner,
-            hideAllBanners: jest.fn(),
-        });
-    };
+    const mockOverlayOnDismiss = jest.fn();
 
     const renderFloatingBanner = (banners: BannerConfig[] = []) => {
-        setupMockBanner(banners);
-        return render(<FloatingBanner/>);
+        return render(
+            <FloatingBanner
+                banners={banners}
+                onDismiss={mockOverlayOnDismiss}
+            />,
+        );
     };
 
     beforeEach(() => {
         jest.clearAllMocks();
-        setupMockBanner([]);
+        mockOverlayOnDismiss.mockClear();
     });
 
     describe('rendering', () => {
@@ -115,7 +103,7 @@ describe('FloatingBanner', () => {
             expect(bannerElement.props.position).toBe('top');
             expect(bannerElement.props.visible).toBe(true);
             expect(bannerElement.props.customTopOffset).toBe(0);
-            expect(bannerElement.props.customBottomOffset).toBe(120);
+            expect(bannerElement.props.customBottomOffset).toBeUndefined();
             expect(bannerElement.props.dismissible).toBe(true);
         });
 
@@ -195,26 +183,25 @@ describe('FloatingBanner', () => {
             expect(mockOnPress).not.toHaveBeenCalled();
         });
 
-        it('should call hideBanner and banner onDismiss when dismissBanner is triggered', () => {
+        it('should call onDismiss and banner onDismiss when dismissBanner is triggered', () => {
             const banner = createMockBanner();
             renderFloatingBanner([banner]);
 
             const dismissButton = screen.getByTestId('banner-item-dismiss');
             fireEvent.press(dismissButton);
 
-            expect(mockHideBanner).toHaveBeenCalledWith('test-banner-1');
+            expect(mockOverlayOnDismiss).toHaveBeenCalledWith('test-banner-1');
             expect(mockOnDismiss).toHaveBeenCalledTimes(1);
         });
 
-        it('should only call hideBanner when banner has no onDismiss handler', () => {
+        it('should only call onDismiss when banner has no onDismiss handler', () => {
             const banner = createMockBanner({onDismiss: undefined});
             renderFloatingBanner([banner]);
 
             const dismissButton = screen.getByTestId('banner-item-dismiss');
             fireEvent.press(dismissButton);
 
-            expect(mockHideBanner).toHaveBeenCalledWith('test-banner-1');
-            expect(mockOnDismiss).not.toHaveBeenCalled();
+            expect(mockOverlayOnDismiss).toHaveBeenCalledWith('test-banner-1');
         });
 
         it('should call dismissBanner when Banner onDismiss is triggered', () => {
@@ -224,8 +211,7 @@ describe('FloatingBanner', () => {
             const bannerDismissButton = screen.getByTestId('banner-dismiss');
             fireEvent.press(bannerDismissButton);
 
-            expect(mockHideBanner).toHaveBeenCalledWith('test-banner-1');
-            expect(mockOnDismiss).toHaveBeenCalledTimes(1);
+            expect(mockOverlayOnDismiss).toHaveBeenCalledWith('test-banner-1');
         });
     });
 
@@ -254,18 +240,19 @@ describe('FloatingBanner', () => {
             const bannerElements = screen.getAllByTestId('banner');
             expect(bannerElements).toHaveLength(3);
 
-            // Check first banner (info)
+            // Check first banner (info - top)
             expect(bannerElements[0].props.position).toBe('top');
             expect(bannerElements[0].props.dismissible).toBe(true);
             expect(bannerElements[0].props.customTopOffset).toBe(0);
 
-            // Check second banner (error)
-            expect(bannerElements[1].props.position).toBe('bottom');
-            expect(bannerElements[1].props.dismissible).toBe(false);
+            // Check second banner (custom - top, rendered after info)
+            expect(bannerElements[1].props.position).toBe('top');
             expect(bannerElements[1].props.customTopOffset).toBe(60);
 
-            // Check third banner (custom)
-            expect(bannerElements[2].props.customTopOffset).toBe(120);
+            // Check third banner (error - bottom)
+            expect(bannerElements[2].props.position).toBe('bottom');
+            expect(bannerElements[2].props.dismissible).toBe(false);
+            expect(bannerElements[2].props.customBottomOffset).toBe(8);
 
             // Verify content types
             expect(screen.getByTestId('custom-banner')).toBeTruthy();

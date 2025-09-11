@@ -3,20 +3,9 @@
 
 import React, {createContext, useContext, useState, useCallback, type ReactNode} from 'react';
 
-import FloatingBanner from './floating_banner';
+import type {BannerConfig} from '@components/floating_banner/types';
 
-export interface BannerConfig {
-    id: string;
-    title: string;
-    message: string;
-    type?: 'info' | 'success' | 'warning' | 'error';
-    dismissible?: boolean;
-    autoHideDuration?: number;
-    position?: 'top' | 'bottom';
-    onPress?: () => void;
-    onDismiss?: () => void;
-    customContent?: React.ReactNode;
-}
+export type {BannerConfig};
 
 interface BannerContextType {
     banners: BannerConfig[];
@@ -126,7 +115,6 @@ export const FloatingBannerProvider: React.FC<{children: ReactNode}> = ({childre
     return (
         <BannerContext.Provider value={contextValue}>
             {children}
-            <FloatingBanner/>
         </BannerContext.Provider>
     );
 };

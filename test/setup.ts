@@ -407,8 +407,6 @@ jest.mock('react-native-share', () => ({
     default: jest.fn(),
 }));
 
-jest.mock('@managers/connectivity_manager', () => 'ConnectivityManager');
-
 jest.mock('@screens/navigation', () => ({
     buildNavigationButton: jest.fn(() => ({
         fontSize: 16,

@@ -8,6 +8,8 @@ import {initialLaunch} from '@init/launch';
 import ManagedApp from '@init/managed_app';
 import PushNotifications from '@init/push_notifications';
 import GlobalEventHandler from '@managers/global_event_handler';
+import NetworkConnectivityManager from '@managers/network_connectivity_manager';
+import {startNetworkConnectivitySubscriptions} from '@managers/network_connectivity_manager_subscription';
 import NetworkManager from '@managers/network_manager';
 import SessionManager from '@managers/session_manager';
 import WebsocketManager from '@managers/websocket_manager';
@@ -49,6 +51,9 @@ export async function initialize() {
         ManagedApp.init();
         SessionManager.init();
         CallsManager.initialize();
+
+        const initialServerUrl = serverCredentials[0]?.serverUrl ?? null;
+        NetworkConnectivityManager.setServerConnectionStatus(Boolean(initialServerUrl), initialServerUrl);
     }
 }
 
@@ -66,6 +71,8 @@ export async function start() {
     registerScreens();
 
     await WebsocketManager.init(serverCredentials);
+
+    startNetworkConnectivitySubscriptions();
 
     initialLaunch();
 }
