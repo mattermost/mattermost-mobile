@@ -276,7 +276,7 @@ const ChecklistItemBottomSheet = ({
         <View style={styles.taskDetailsContainer}>
             <OptionItem
                 type={isDisabled ? 'none' : 'arrow'}
-                icon='account-multiple-plus-outline'
+                icon='account-plus-outline'
                 label={intl.formatMessage(messages.assignee)}
                 info={assigneeInfo}
                 testID='checklist_item.assignee'

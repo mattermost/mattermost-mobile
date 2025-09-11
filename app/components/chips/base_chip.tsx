@@ -129,7 +129,7 @@ export default function BaseChip({
                     <CompassIcon
                         name={iconName}
                         size={16}
-                        color={changeOpacity(theme.centerChannelColor, 0.32)}
+                        color={changeOpacity(theme.centerChannelColor, 0.64)}
                     />
                 </TouchableOpacity>
             </>
