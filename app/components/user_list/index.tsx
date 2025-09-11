@@ -297,7 +297,7 @@ export default function UserList({
                 <NoResultsWithTerm term={term}/>
             </View>
         );
-    }, [showNoResults, style, term, noResutsStyle]);
+    }, [showNoResults, term, noResutsStyle]);
 
     const renderSectionHeader = useCallback(({section}: {section: SectionListData<UserProfile>}) => {
         return (
