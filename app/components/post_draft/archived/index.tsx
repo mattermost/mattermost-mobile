@@ -3,6 +3,7 @@
 
 import {Button} from '@rneui/base';
 import React, {useCallback} from 'react';
+import {defineMessages} from 'react-intl';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {switchToPenultimateChannel} from '@actions/remote/channel';
@@ -11,7 +12,6 @@ import FormattedText from '@components/formatted_text';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {t} from '@i18n';
 import {popToRoot} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -57,6 +57,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
 
 const edges: Edge[] = ['bottom'];
 
+const messages = defineMessages({
+    archivedChannelMessage: {
+        id: 'archivedChannelMessage',
+        defaultMessage: 'You are viewing an **archived channel**. New messages cannot be posted.',
+    },
+    deactivatedChannelMessage: {
+        id: 'create_post.deactivated',
+        defaultMessage: 'You are viewing an archived channel with a deactivated user.',
+    },
+});
+
 export default function Archived({
     testID,
     deactivated,
@@ -75,17 +86,11 @@ export default function Archived({
         }
     }, [serverUrl, isTablet]);
 
-    let message = {
-        id: t('archivedChannelMessage'),
-        defaultMessage: 'You are viewing an **archived channel**. New messages cannot be posted.',
-    };
+    let message = messages.archivedChannelMessage;
 
     if (deactivated) {
         // only applies to DM's when the user was deactivated
-        message = {
-            id: t('create_post.deactivated'),
-            defaultMessage: 'You are viewing an archived channel with a deactivated user.',
-        };
+        message = messages.deactivatedChannelMessage;
     }
 
     return (

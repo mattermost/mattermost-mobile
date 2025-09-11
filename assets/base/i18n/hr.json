@@ -271,7 +271,6 @@
   "mobile.message_length.message": "Tvoja je poruka predugačka. Broj znakova: {count}/{max}",
   "mobile.message_length.message_split_left": "Poruka premašuje ograničenje broja znakova",
   "mobile.message_length.title": "Dužina poruke",
-  "mobile.no_results_with_term": "Nema rezultata za „{term}”",
   "mobile.no_results_with_term.files": "Nema datoteka za „{term}”",
   "mobile.no_results_with_term.messages": "Ništa nije pronađeno za „{term}”",
   "mobile.oauth.failed_to_login": "Pokušaj prijave neuspio. Pokušaj ponovo.",

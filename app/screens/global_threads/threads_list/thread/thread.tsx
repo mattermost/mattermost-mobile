@@ -15,9 +15,9 @@ import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {bottomSheetModalOptions, showModal, showModalOverCurrentContext} from '@screens/navigation';
 import {getMarkdownTextStyles} from '@utils/markdown';
-import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
@@ -142,9 +142,9 @@ const Thread = ({author, channel, location, post, teammateNameDisplay, testID, t
         setIsChannelNamePressed((prevState) => !prevState);
     }, []);
 
-    const showThread = useCallback(preventDoubleTap(() => {
+    const showThread = usePreventDoubleTap(useCallback(() => {
         fetchAndSwitchToThread(serverUrl, thread.id);
-    }), [serverUrl, thread.id]);
+    }, [serverUrl, thread.id]));
 
     const onChannelNamePressed = useCallback(() => {
         if (channel?.id) {
@@ -161,7 +161,7 @@ const Thread = ({author, channel, location, post, teammateNameDisplay, testID, t
         } else {
             showModalOverCurrentContext(Screens.THREAD_OPTIONS, passProps);
         }
-    }, [isTablet, theme, thread]);
+    }, [intl, isTablet, theme, thread]);
 
     if (!post || !channel) {
         return null;

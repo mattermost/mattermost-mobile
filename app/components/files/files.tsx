@@ -89,7 +89,7 @@ const Files = ({
 
     const isSingleImage = useMemo(() => filesInfo.filter((f) => isImage(f) || isVideo(f)).length === 1, [filesInfo]);
 
-    const renderItems = (items: FileInfo[], moreImagesCount = 0, includeGutter = false) => {
+    const renderItems = (items: FileInfo[], moreImagesCount = 0, includeGutter = false, isImageRow = false) => {
         let nonVisibleImagesCount: number;
 
         // Apply flex: 1 for multiple items, except in permalink previews where vertical
@@ -108,9 +108,13 @@ const Files = ({
             if (idx !== 0 && includeGutter) {
                 container = containerWithGutter;
             }
+            const shouldRemoveMarginTop = isPermalinkPreview && (
+                (isImageRow) || // Remove marginTop for all images in image row
+                (!isImageRow && idx === 0 && imageAttachments.length === 0) // Remove marginTop for first non-image only if no images present
+            );
             return (
                 <View
-                    style={[container, styles.marginTop]}
+                    style={[container, styles.marginTop, shouldRemoveMarginTop && {marginTop: 0}]}
                     testID={`${file.id}-file-container`}
                     key={file.id}
                 >
@@ -148,10 +152,14 @@ const Files = ({
 
         return (
             <View
-                style={[styles.row, {width: portraitPostWidth}, isPermalinkPreview && styles.rowPermalinkPreview]}
+                style={[
+                    styles.row,
+                    {width: portraitPostWidth},
+                    isPermalinkPreview && {marginTop: 0},
+                ]}
                 testID='image-row'
             >
-                { renderItems(visibleImages, nonVisibleImagesCount, true) }
+                { renderItems(visibleImages, nonVisibleImagesCount, true, true) }
             </View>
         );
     };
@@ -174,7 +182,10 @@ const Files = ({
         <GalleryInit galleryIdentifier={galleryIdentifier}>
             <Animated.View
                 testID='files-container'
-                style={failed ? styles.failed : undefined}
+                style={[
+                    failed ? styles.failed : undefined,
+                    isPermalinkPreview && {marginTop: 0},
+                ]}
             >
                 {renderImageRow()}
                 {renderItems(nonImageAttachments)}

@@ -245,7 +245,3 @@ export function getLocalizedMessage(lang: string, id: string, defaultMessage?: s
 
     return translations[id] || defaultMessage || '';
 }
-
-export function t(v: string): string {
-    return v;
-}

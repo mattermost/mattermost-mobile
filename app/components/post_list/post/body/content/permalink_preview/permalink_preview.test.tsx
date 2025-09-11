@@ -207,7 +207,7 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
     });
 
     it('should truncate long messages', () => {
-        const longMessage = 'Line 1\nLine 2\nLine 3\nLine 4\nLine 5\nLine 6';
+        const longMessage = 'This is a very long message that should be truncated when it exceeds the maximum character limit of 150 characters for permalink previews in the mobile app.';
         const props = {
             ...baseProps,
             embedData: {
@@ -231,7 +231,8 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
         };
         const {getByText} = renderPermalinkPreview(props);
 
-        expect(getByText('Line 1\n...Line 2\n...Line 3\n...Line 4')).toBeTruthy();
+        const expectedTruncated = longMessage.substring(0, 150) + '...';
+        expect(getByText(expectedTruncated)).toBeTruthy();
     });
 
     it('should handle empty message', () => {

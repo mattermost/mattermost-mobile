@@ -282,7 +282,7 @@ describe('executeAppCommand', () => {
 
         expect(parser.composeCommandSubmitCall).toHaveBeenCalledWith(msg);
         expect(doAppSubmit).toHaveBeenCalledWith(serverUrl, {}, intl);
-        expect(result).toEqual({error: {message: 'Unknown error.'}});
+        expect(result).toEqual({error: {message: 'Unknown error occurred.'}});
     });
 
     it('should handle a form response', async () => {

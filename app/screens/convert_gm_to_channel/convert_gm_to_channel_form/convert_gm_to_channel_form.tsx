@@ -10,9 +10,9 @@ import Button from '@components/button';
 import {ServerErrors} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {isErrorWithMessage, isServerError} from '@utils/errors';
 import {logError} from '@utils/log';
-import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {displayUsername} from '@utils/user';
 
@@ -70,7 +70,7 @@ export const ConvertGMToChannelForm = ({
     const userDisplayNames = useMemo(() => profiles.map((profile) => displayUsername(profile, locale, teammateNameDisplay)), [profiles, teammateNameDisplay, locale]);
     const submitButtonEnabled = !conversionInProgress && selectedTeam && newChannelName.trim();
 
-    const handleOnPress = useCallback(preventDoubleTap(async () => {
+    const handleOnPress = usePreventDoubleTap(useCallback(async () => {
         if (!submitButtonEnabled) {
             return;
         }
@@ -101,7 +101,7 @@ export const ConvertGMToChannelForm = ({
         setErrorMessage('');
         switchToChannelById(serverUrl, updatedChannel.id, selectedTeam.id);
         setConversionInProgress(false);
-    }), [selectedTeam, newChannelName, submitButtonEnabled]);
+    }, [submitButtonEnabled, serverUrl, channelId, selectedTeam.id, newChannelName, formatMessage]));
 
     if (commonTeams.length === 0) {
         return (

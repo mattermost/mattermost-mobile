@@ -81,11 +81,11 @@ const definedMessages = defineMessages({
     },
     messageOne: {
         id: 'post_body.check_for_out_of_channel_mentions.message.one',
-        defaultMessage: '{username} was mentioned but is not in the channel. Would you like to ',
+        defaultMessage: 'was mentioned but is not in the channel. Would you like to ',
     },
     messageMultiple: {
         id: 'post_body.check_for_out_of_channel_mentions.message.multiple',
-        defaultMessage: '{usernames} were mentioned but they are not in the channel. Would you like to ',
+        defaultMessage: 'were mentioned but they are not in the channel. Would you like to ',
     },
     outOfGroupsMessage: {
         id: 'post_body.check_for_out_of_channel_groups_mentions.message',

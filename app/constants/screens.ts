@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import PLAYBOOKS_SCREENS from '@playbooks/constants/screens';
+
 export const ABOUT = 'About';
 export const ACCOUNT = 'Account';
 export const APPS_FORM = 'AppForm';
@@ -52,8 +54,6 @@ export const ONBOARDING = 'Onboarding';
 export const PDF_VIEWER = 'PdfViewer';
 export const PERMALINK = 'Permalink';
 export const PINNED_MESSAGES = 'PinnedMessages';
-export const PLAYBOOKS_RUNS = 'PlaybookRuns';
-export const PLAYBOOK_RUN = 'PlaybookRun';
 export const POST_OPTIONS = 'PostOptions';
 export const POST_PRIORITY_PICKER = 'PostPriorityPicker';
 export const REACTIONS = 'Reactions';
@@ -141,8 +141,6 @@ export default {
     PDF_VIEWER,
     PERMALINK,
     PINNED_MESSAGES,
-    PLAYBOOKS_RUNS,
-    PLAYBOOK_RUN,
     POST_OPTIONS,
     POST_PRIORITY_PICKER,
     REACTIONS,
@@ -178,6 +176,7 @@ export default {
     THREAD_FOLLOW_BUTTON,
     THREAD_OPTIONS,
     USER_PROFILE,
+    ...PLAYBOOKS_SCREENS,
 } as const;
 
 export const MODAL_SCREENS_WITHOUT_BACK = new Set<string>([

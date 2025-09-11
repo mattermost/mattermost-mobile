@@ -2,13 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessages, useIntl} from 'react-intl';
 
 import {BaseOption} from '@components/common_post_options';
 import CompassIcon from '@components/compass_icon';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
-import {t} from '@i18n';
 import {dismissBottomSheet, showModal} from '@screens/navigation';
 
 import type PostModel from '@typings/database/models/servers/post';
@@ -20,6 +19,14 @@ type Props = {
     canDelete: boolean;
     files?: FileInfo[];
 }
+
+const messages = defineMessages({
+    edit: {
+        id: 'post_info.edit',
+        defaultMessage: 'Edit',
+    },
+});
+
 const EditOption = ({bottomSheetId, post, canDelete, files}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -45,8 +52,7 @@ const EditOption = ({bottomSheetId, post, canDelete, files}: Props) => {
 
     return (
         <BaseOption
-            i18nId={t('post_info.edit')}
-            defaultMessage='Edit'
+            message={messages.edit}
             onPress={onPress}
             iconName='pencil-outline'
             testID='post_options.edit_post.option'
