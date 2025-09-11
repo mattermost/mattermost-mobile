@@ -109,3 +109,13 @@ export const fetchPlaybookRun = async (serverUrl: string, runId: string, fetchOn
         return {error};
     }
 };
+
+export const postStatusUpdate = async (serverUrl: string, playbookRunID: string, payload: PostStatusUpdatePayload, ids: PostStatusUpdateIds) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        await client.postStatusUpdate(playbookRunID, payload, ids);
+    } catch (error) {
+        logDebug('error on postStatusUpdate', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+    }
+};
