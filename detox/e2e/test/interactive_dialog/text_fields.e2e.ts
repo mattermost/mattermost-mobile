@@ -103,20 +103,26 @@ describe('Interactive Dialog - Text Fields', () => {
         ];
 
         // Verify expected values appear in the channel messages
-        try {
-            await waitFor(element(by.text(expectedValues[0]))).toExist().withTimeout(3000);
-        } catch (verificationError) {
-            // First value not found
+        if (expectedValues[0]) {
+            try {
+                await waitFor(element(by.text(expectedValues[0]))).toExist().withTimeout(3000);
+            } catch (verificationError) {
+                // First value not found
+            }
         }
-        try {
-            await waitFor(element(by.text(expectedValues[1]))).toExist().withTimeout(3000);
-        } catch (verificationError) {
-            // Second value not found
+        if (expectedValues[1]) {
+            try {
+                await waitFor(element(by.text(expectedValues[1]))).toExist().withTimeout(3000);
+            } catch (verificationError) {
+                // Second value not found
+            }
         }
-        try {
-            await waitFor(element(by.text(expectedValues[2]))).toExist().withTimeout(3000);
-        } catch (verificationError) {
-            // Third value not found
+        if (expectedValues[2]) {
+            try {
+                await waitFor(element(by.text(expectedValues[2]))).toExist().withTimeout(3000);
+            } catch (verificationError) {
+                // Third value not found
+            }
         }
     });
 

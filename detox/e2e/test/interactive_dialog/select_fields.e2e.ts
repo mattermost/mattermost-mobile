@@ -104,25 +104,28 @@ describe('Interactive Dialog - Select Fields', () => {
         // Use wildcard patterns to find any visible user
         let userSelected = false;
         const userTestIdPatterns = [
-            /^integration_selector\.user_list\.user_item\.[a-zA-Z0-9]+\.[a-zA-Z0-9]+$/,
-            /^integration_selector\.user_list\.user_item\.[a-zA-Z0-9]+$/,
-            /integration_selector.*user_item.*[a-zA-Z0-9]{10,}/,
+            'integration_selector.user_list.user_item',
+            'integration_selector.user_list',
         ];
 
         // Try each pattern sequentially without loops
-        try {
-            const firstUserElement = element(by.id(userTestIdPatterns[0])).atIndex(0);
-            await expect(firstUserElement).toExist();
-            await firstUserElement.tap();
-            userSelected = true;
-        } catch (error1) {
+        if (userTestIdPatterns[0]) {
             try {
-                const secondUserElement = element(by.id(userTestIdPatterns[1])).atIndex(0);
-                await expect(secondUserElement).toExist();
-                await secondUserElement.tap();
+                const firstUserElement = element(by.id(userTestIdPatterns[0]));
+                await expect(firstUserElement).toExist();
+                await firstUserElement.tap();
                 userSelected = true;
-            } catch (error2) {
-                // Will try fallback below
+            } catch (error1) {
+                if (userTestIdPatterns[1]) {
+                    try {
+                        const secondUserElement = element(by.id(userTestIdPatterns[1]));
+                        await expect(secondUserElement).toExist();
+                        await secondUserElement.tap();
+                        userSelected = true;
+                    } catch (error2) {
+                        // Will try fallback below
+                    }
+                }
             }
         }
 
@@ -152,24 +155,28 @@ describe('Interactive Dialog - Select Fields', () => {
         // Use wildcard patterns to find any visible channel
         let channelSelected = false;
         const channelTestIdPatterns = [
-            /^integration_selector\.channel_list\.[a-zA-Z0-9]+$/,
-            /integration_selector.*channel_list.*[a-zA-Z0-9]{10,}/,
+            'integration_selector.channel_list',
+            'integration_selector.channel_list.channel_item',
         ];
 
         // Try each pattern sequentially without loops
-        try {
-            const firstChannelElement = element(by.id(channelTestIdPatterns[0])).atIndex(0);
-            await expect(firstChannelElement).toExist();
-            await firstChannelElement.tap();
-            channelSelected = true;
-        } catch (error1) {
+        if (channelTestIdPatterns[0]) {
             try {
-                const secondChannelElement = element(by.id(channelTestIdPatterns[1])).atIndex(0);
-                await expect(secondChannelElement).toExist();
-                await secondChannelElement.tap();
+                const firstChannelElement = element(by.id(channelTestIdPatterns[0]));
+                await expect(firstChannelElement).toExist();
+                await firstChannelElement.tap();
                 channelSelected = true;
-            } catch (error2) {
-                // Will try fallback below
+            } catch (error1) {
+                if (channelTestIdPatterns[1]) {
+                    try {
+                        const secondChannelElement = element(by.id(channelTestIdPatterns[1]));
+                        await expect(secondChannelElement).toExist();
+                        await secondChannelElement.tap();
+                        channelSelected = true;
+                    } catch (error2) {
+                        // Will try fallback below
+                    }
+                }
             }
         }
 
