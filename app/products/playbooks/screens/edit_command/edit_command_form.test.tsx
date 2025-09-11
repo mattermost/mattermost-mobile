@@ -4,7 +4,7 @@
 import React, {type ComponentProps} from 'react';
 
 import Autocomplete from '@components/autocomplete';
-import FloatingTextInput from '@components/floating_text_input_label';
+import FloatingTextInput from '@components/floating_input/floating_text_input_label';
 import DatabaseManager from '@database/manager';
 import {renderWithEverything} from '@test/intl-test-helper';
 

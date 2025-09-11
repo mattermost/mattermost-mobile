@@ -14,9 +14,9 @@ import ServerUserList from '@components/server_user_list';
 import {General, Screens, View as ViewConstants} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {debounce} from '@helpers/api/general';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import {useDebounce} from '@hooks/utils';
 import SecurityManager from '@managers/security_manager';
 import {
     buildNavigationButton,
@@ -191,7 +191,19 @@ function IntegrationSelector(
     const [searchResults, setSearchResults] = useState<DataTypeList>([]);
 
     // Channels and DialogOptions, will be removed
-    const [multiselectSelected, setMultiselectSelected] = useState<MultiselectSelectedMap>({});
+    const [multiselectSelected, setMultiselectSelected] = useState<MultiselectSelectedMap>(() => {
+        const multiselectItems: MultiselectSelectedMap = {};
+
+        if (isMultiselect && Array.isArray(selected) && !([ViewConstants.DATA_SOURCE_USERS, ViewConstants.DATA_SOURCE_CHANNELS].includes(dataSource))) {
+            for (const value of selected) {
+                const option = filteredOptions?.find((opt) => opt.value === value);
+                if (option) {
+                    multiselectItems[value] = option;
+                }
+            }
+        }
+        return multiselectItems;
+    });
 
     // Users selection and in the future Channels and DialogOptions
     const [selectedIds, setSelectedIds] = useState<{[id: string]: DataType}>({});
@@ -264,7 +276,7 @@ function IntegrationSelector(
         }
     }, [dataSource]);
 
-    const getChannels = useCallback(debounce(async () => {
+    const getChannels = useDebounce(useCallback(async () => {
         if (next.current && !loading && !term) {
             setLoading(true);
             page.current += 1;
@@ -279,7 +291,7 @@ function IntegrationSelector(
                 next.current = false;
             }
         }
-    }, 100), [loading, term, serverUrl, currentTeamId, integrationData]);
+    }, [loading, term, serverUrl, currentTeamId, integrationData]), 100);
 
     const loadMore = useCallback(async () => {
         if (dataSource === ViewConstants.DATA_SOURCE_CHANNELS) {
@@ -384,6 +396,9 @@ function IntegrationSelector(
             // Static and dynamic option search
             searchDynamicOptions('');
         }
+
+        // We only want to get the channels on mount
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
@@ -398,6 +413,9 @@ function IntegrationSelector(
         }
 
         setCustomListData(listData);
+
+        // We only want to update the list data when the search results or integration data changes
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchResults, integrationData]);
 
     useEffect(() => {
@@ -409,21 +427,6 @@ function IntegrationSelector(
             rightButtons: [rightButton],
         });
     }, [rightButton, componentId, isMultiselect]);
-
-    useEffect(() => {
-        const multiselectItems: MultiselectSelectedMap = {};
-
-        if (isMultiselect && Array.isArray(selected) && !([ViewConstants.DATA_SOURCE_USERS, ViewConstants.DATA_SOURCE_CHANNELS].includes(dataSource))) {
-            for (const value of selected) {
-                const option = filteredOptions?.find((opt) => opt.value === value);
-                if (option) {
-                    multiselectItems[value] = option;
-                }
-            }
-
-            setMultiselectSelected(multiselectItems);
-        }
-    }, []);
 
     // Renders
     const renderLoading = useCallback(() => {

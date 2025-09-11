@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {debounce} from 'lodash';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {Platform, SectionList, type SectionListRenderItemInfo, type StyleProp, type ViewStyle} from 'react-native';
 
@@ -12,6 +11,7 @@ import AutocompleteSectionHeader from '@components/autocomplete/autocomplete_sec
 import SpecialMentionItem from '@components/autocomplete/special_mention_item';
 import {AT_MENTION_REGEX, AT_MENTION_SEARCH_REGEX} from '@constants/autocomplete';
 import {useServerUrl} from '@context/server';
+import {useDebounce} from '@hooks/utils';
 
 import {SECTION_KEY_GROUPS, SECTION_KEY_SPECIAL, emptyGroupList, emptySectionList, emptyUserlList} from './constants';
 import {checkSpecialMentions, filterResults, getAllUsers, getMatchTermForAtMention, keyExtractor, makeSections, searchGroups, sortReceivedUsers} from './utils';
@@ -66,7 +66,7 @@ const AtMention = ({
 
     const latestSearchAt = useRef(0);
 
-    const runSearch = useMemo(() => debounce(async (sUrl: string, term: string, groupMentions: boolean, channelConstrained: boolean, teamConstrained: boolean, tId: string, cId?: string) => {
+    const runSearch = useDebounce(useCallback(async (sUrl: string, term: string, groupMentions: boolean, channelConstrained: boolean, teamConstrained: boolean, tId: string, cId?: string) => {
         const searchAt = Date.now();
         latestSearchAt.current = searchAt;
 
@@ -101,7 +101,7 @@ const AtMention = ({
         }
 
         setLoading(false);
-    }, 200), []);
+    }, [localUsers]), 200);
 
     const teamMembers = useMemo(
         () => [...usersInChannel, ...usersOutOfChannel],
@@ -144,7 +144,7 @@ const AtMention = ({
         setNoResultsTerm(mention);
         setSections(emptySectionList);
         latestSearchAt.current = Date.now();
-    }, [value, localCursorPosition, isSearch]);
+    }, [value, localCursorPosition, isSearch, cursorPosition, updateValue, onShowingChange]);
 
     const renderSpecialMentions = useCallback((item: SpecialMention) => {
         return (
@@ -206,6 +206,9 @@ const AtMention = ({
         if (localCursorPosition !== cursorPosition) {
             setLocalCursorPosition(cursorPosition);
         }
+
+        // We only want to update the local cursor position if the cursor position changes
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [cursorPosition]);
 
     useEffect(() => {
@@ -222,6 +225,8 @@ const AtMention = ({
         setNoResultsTerm(null);
         setLoading(true);
         runSearch(serverUrl, matchTerm, useGroupMentions, isChannelConstrained, isTeamConstrained, teamId, channelId);
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [matchTerm, teamId, useGroupMentions, isChannelConstrained, isTeamConstrained]);
 
     useEffect(() => {
@@ -247,6 +252,8 @@ const AtMention = ({
         }
         setSections(nSections ? newSections : emptySectionList);
         onShowingChange(Boolean(nSections));
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [!useLocal && usersInChannel, !useLocal && usersOutOfChannel, groups, loading, channelId, useLocal && filteredLocalUsers]);
 
     if (sections.length === 0 || noResultsTerm != null) {

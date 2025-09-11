@@ -10,7 +10,7 @@ import {Keyboard, TextInput, TouchableOpacity, View} from 'react-native';
 import {login} from '@actions/remote/session';
 import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
-import FloatingTextInput from '@components/floating_text_input_label';
+import FloatingTextInput from '@components/floating_input/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import {FORGOT_PASSWORD, MFA} from '@constants/screens';
 import {useAvoidKeyboard} from '@hooks/device';
@@ -37,16 +37,7 @@ const hitSlop = {top: 8, right: 8, bottom: 8, left: 8};
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         marginBottom: 24,
-    },
-    inputBoxEmail: {
-        marginTop: 16,
-        marginBottom: 5,
-        color: theme.centerChannelColor,
-    },
-    inputBoxPassword: {
-        marginTop: 24,
-        marginBottom: 11,
-        color: theme.centerChannelColor,
+        gap: 24,
     },
     forgotPasswordBtn: {
         backgroundColor: 'transparent',
@@ -56,17 +47,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         borderColor: 'transparent',
         width: '60%',
     },
-    forgotPasswordError: {
-        marginTop: 30,
-    },
     forgotPasswordTxt: {
-        paddingVertical: 10,
         color: theme.buttonBg,
         fontSize: 14,
         fontFamily: 'OpenSans-SemiBold',
     },
     loginButtonContainer: {
-        marginTop: 25,
+        marginTop: 20,
     },
     endAdornment: {
         top: 2,
@@ -290,10 +277,8 @@ const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchEr
     return (
         <View style={styles.container}>
             <FloatingTextInput
-                autoCorrect={false}
-                autoCapitalize={'none'}
+                rawInput={true}
                 blurOnSubmit={false}
-                containerStyle={styles.inputBoxEmail}
                 autoComplete='email'
                 disableFullscreenUI={true}
                 enablesReturnKeyAutomatically={true}
@@ -304,17 +289,14 @@ const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchEr
                 onSubmitEditing={focusPassword}
                 ref={loginRef}
                 returnKeyType='next'
-                showErrorIcon={false}
-                spellCheck={false}
+                hideErrorIcon={true}
                 testID='login_form.username.input'
                 theme={theme}
                 value={loginId}
             />
             <FloatingTextInput
-                autoCorrect={false}
-                autoCapitalize={'none'}
+                rawInput={true}
                 blurOnSubmit={false}
-                containerStyle={styles.inputBoxPassword}
                 autoComplete='current-password'
                 disableFullscreenUI={true}
                 enablesReturnKeyAutomatically={true}
@@ -325,7 +307,6 @@ const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchEr
                 onSubmitEditing={onLogin}
                 ref={passwordRef}
                 returnKeyType='join'
-                spellCheck={false}
                 secureTextEntry={!isPasswordVisible}
                 testID='login_form.password.input'
                 theme={theme}
@@ -336,7 +317,7 @@ const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchEr
             {(emailEnabled || usernameEnabled) && config.PasswordEnableForgotLink !== 'false' && (
                 <RNEButton
                     onPress={onPressForgotPassword}
-                    buttonStyle={[styles.forgotPasswordBtn, error ? styles.forgotPasswordError : undefined]}
+                    buttonStyle={styles.forgotPasswordBtn}
                     testID='login_form.forgot_password.button'
                 >
                     <FormattedText

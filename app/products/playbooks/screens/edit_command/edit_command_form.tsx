@@ -12,12 +12,9 @@ import {
 import {SafeAreaView, type Edges} from 'react-native-safe-area-context';
 
 import Autocomplete from '@components/autocomplete';
-import FloatingTextInput from '@components/floating_text_input_label';
+import FloatingTextInput from '@components/floating_input/floating_text_input_label';
 import {useTheme} from '@context/theme';
 import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
-import {
-    getKeyboardAppearanceFromTheme,
-} from '@utils/theme';
 
 const BOTTOM_AUTOCOMPLETE_SEPARATION = Platform.select({ios: 10, default: 10});
 const LIST_PADDING = 32;
@@ -90,15 +87,12 @@ export default function EditCommandForm({
         >
             <View style={styles.mainView}>
                 <FloatingTextInput
-                    autoCorrect={false}
-                    autoCapitalize={'none'}
+                    rawInput={true}
                     disableFullscreenUI={true}
                     label={labelCommand}
                     placeholder={placeholderCommand}
                     onChangeText={onCommandChange}
-                    keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                    showErrorIcon={false}
-                    spellCheck={false}
+                    hideErrorIcon={true}
                     testID='playbooks.edit_command.input'
                     value={command}
                     theme={theme}

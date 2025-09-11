@@ -9,4 +9,4 @@ export default {
     PLAYBOOKS_RUNS,
     PLAYBOOK_RUN,
     PLAYBOOK_EDIT_COMMAND,
-};
+} as const;

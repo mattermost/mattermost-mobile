@@ -1,8 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {debounce} from 'lodash';
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {FlatList, Platform, type StyleProp, type ViewStyle} from 'react-native';
 
@@ -10,6 +9,7 @@ import AtMentionItem from '@components/autocomplete/at_mention_item';
 import ChannelItem from '@components/channel_item';
 import {COMMAND_SUGGESTION_CHANNEL, COMMAND_SUGGESTION_USER} from '@constants/apps';
 import {useServerUrl} from '@context/server';
+import {useDebounce} from '@hooks/utils';
 
 import {AppCommandParser, type ExtendedAutocompleteSuggestion} from '../app_command_parser/app_command_parser';
 import SlashSuggestionItem from '../slash_suggestion_item';
@@ -62,19 +62,19 @@ const AppSlashSuggestion = ({
     const active = isAppsEnabled && Boolean(dataSource.length);
     const mounted = useRef(false);
 
-    const fetchAndShowAppCommandSuggestions = useMemo(() => debounce(async (pretext: string, cId: string, tId = '', rId?: string) => {
+    const updateSuggestions = useCallback((matches: ExtendedAutocompleteSuggestion[]) => {
+        setDataSource(matches);
+        onShowingChange(Boolean(matches.length));
+    }, [onShowingChange]);
+
+    const fetchAndShowAppCommandSuggestions = useDebounce(useCallback(async (pretext: string, cId: string, tId = '', rId?: string) => {
         appCommandParser.current.setChannelContext(cId, tId, rId);
         const suggestions = await appCommandParser.current.getSuggestions(pretext);
         if (!mounted.current) {
             return;
         }
         updateSuggestions(suggestions);
-    }), []);
-
-    const updateSuggestions = (matches: ExtendedAutocompleteSuggestion[]) => {
-        setDataSource(matches);
-        onShowingChange(Boolean(matches.length));
-    };
+    }, [updateSuggestions]), 200);
 
     const completeSuggestion = useCallback((command: string) => {
         // We are going to set a double / on iOS to prevent the auto correct from taking over and replacing it
@@ -93,7 +93,7 @@ const AppSlashSuggestion = ({
                 updateValue(completedDraft.replace(`//${command} `, `/${command} `));
             });
         }
-    }, [serverUrl, updateValue]);
+    }, [updateValue]);
 
     const completeIgnoringSuggestion = useCallback((base: string): () => void => {
         return () => {
@@ -172,6 +172,9 @@ const AppSlashSuggestion = ({
             return;
         }
         fetchAndShowAppCommandSuggestions(value, channelId, currentTeamId, rootId);
+
+        // We only want to fetch and show app command suggestions if the value changes
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [value]);
 
     useEffect(() => {
