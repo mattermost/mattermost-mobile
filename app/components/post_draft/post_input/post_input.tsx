@@ -5,7 +5,7 @@ import {useHardwareKeyboardEvents} from '@mattermost/hardware-keyboard';
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import PasteableTextInput, {type PastedFile, type PasteInputRef} from '@mattermost/react-native-paste-input';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {type IntlShape, useIntl} from 'react-intl';
+import {defineMessage, type IntlShape, useIntl} from 'react-intl';
 import {
     Alert, AppState, type AppStateStatus, DeviceEventEmitter, type EmitterSubscription, Keyboard,
     type NativeSyntheticEvent, Platform, type TextInputSelectionChangeEventData,
@@ -19,7 +19,6 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {useInputPropagation} from '@hooks/input';
-import {t} from '@i18n';
 import NavigationStore from '@store/navigation_store';
 import {handleDraftUpdate} from '@utils/draft';
 import {extractFileInfo} from '@utils/file';
@@ -72,9 +71,9 @@ const getPlaceHolder = (rootId?: string) => {
     let placeholder;
 
     if (rootId) {
-        placeholder = {id: t('create_post.thread_reply'), defaultMessage: 'Reply to this thread...'};
+        placeholder = defineMessage({id: 'create_post.thread_reply', defaultMessage: 'Reply to this thread...'});
     } else {
-        placeholder = {id: t('create_post.write'), defaultMessage: 'Write to {channelDisplayName}'};
+        placeholder = defineMessage({id: 'create_post.write', defaultMessage: 'Write to {channelDisplayName}'});
     }
 
     return placeholder;
@@ -214,12 +213,16 @@ export default function PostInput({
             lastTypingEventSent.current = Date.now();
         }
     }, [
+        shouldProcessEvent,
         updateValue,
         checkMessageLength,
         timeBetweenUserTypingUpdatesMilliseconds,
+        membersInChannel,
+        maxNotificationsPerChannel,
+        enableUserTypingMessage,
+        serverUrl,
         channelId,
         rootId,
-        (membersInChannel < maxNotificationsPerChannel) && enableUserTypingMessage,
     ]);
 
     const onPaste = useCallback(async (error: string | null | undefined, files: PastedFile[]) => {

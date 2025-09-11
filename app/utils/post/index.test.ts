@@ -337,17 +337,8 @@ describe('post utils', () => {
             );
 
             expect(Alert.alert).toHaveBeenCalledWith(
-                intl.formatMessage({
-                    id: 'persistent_notifications.confirm.title',
-                    defaultMessage: 'Send persistent notifications',
-                }),
-                intl.formatMessage({
-                    id: 'persistent_notifications.dm_channel.description',
-                    defaultMessage: '@{username} will be notified every {interval, plural, one {minute} other {{interval} minutes}} until they’ve acknowledged or replied to the message.',
-                }, {
-                    interval: persistentNotificationInterval,
-                    username: mockUser.username,
-                }),
+                'Send persistent notifications',
+                `${mockUser.username} will be notified every ${persistentNotificationInterval} minutes until they’ve acknowledged or replied to the message.`,
                 expect.any(Array),
             );
         });
@@ -367,10 +358,7 @@ describe('post utils', () => {
 
             expect(Alert.alert).toHaveBeenCalledWith(
                 '',
-                intl.formatMessage({
-                    id: 'persistent_notifications.error.special_mentions',
-                    defaultMessage: 'Cannot use @channel, @all or @here to mention recipients of persistent notifications.',
-                }),
+                'Cannot use @channel, @all or @here to mention recipients of persistent notifications.',
                 expect.any(Array),
             );
         });
@@ -391,14 +379,8 @@ describe('post utils', () => {
             );
 
             expect(Alert.alert).toHaveBeenCalledWith(
-                intl.formatMessage({
-                    id: 'persistent_notifications.error.no_mentions.title',
-                    defaultMessage: 'Recipients must be @mentioned',
-                }),
-                intl.formatMessage({
-                    id: 'persistent_notifications.error.no_mentions.description',
-                    defaultMessage: 'There are no recipients mentioned in your message. You’ll need add mentions to be able to send persistent notifications.',
-                }),
+                'Recipients must be @mentioned',
+                'There are no recipients mentioned in your message. You’ll need add mentions to be able to send persistent notifications.',
                 expect.any(Array),
             );
         });
@@ -419,17 +401,8 @@ describe('post utils', () => {
             );
 
             expect(Alert.alert).toHaveBeenCalledWith(
-                intl.formatMessage({
-                    id: 'persistent_notifications.error.max_recipients.title',
-                    defaultMessage: 'Too many recipients',
-                }),
-                intl.formatMessage({
-                    id: 'persistent_notifications.error.max_recipients.description',
-                    defaultMessage: 'You can send persistent notifications to a maximum of {max} recipients. There are {count} recipients mentioned in your message. You’ll need to change who you’ve mentioned before you can send.',
-                }, {
-                    max: persistentNotificationMaxRecipients,
-                    count: mentionsList.length,
-                }),
+                'Too many recipients',
+                `You can send persistent notifications to a maximum of ${persistentNotificationMaxRecipients} recipients. There are ${mentionsList.length} recipients mentioned in your message. You’ll need to change who you’ve mentioned before you can send.`,
                 expect.any(Array),
             );
         });
@@ -450,16 +423,8 @@ describe('post utils', () => {
             );
 
             expect(Alert.alert).toHaveBeenCalledWith(
-                intl.formatMessage({
-                    id: 'persistent_notifications.confirm.title',
-                    defaultMessage: 'Send persistent notifications',
-                }),
-                intl.formatMessage({
-                    id: 'persistent_notifications.confirm.description',
-                    defaultMessage: 'Mentioned recipients will be notified every {interval, plural, one {minute} other {{interval} minutes}} until they’ve acknowledged or replied to the message.',
-                }, {
-                    interval: persistentNotificationInterval,
-                }),
+                'Send persistent notifications',
+                `Mentioned recipients will be notified every ${persistentNotificationInterval} minutes until they’ve acknowledged or replied to the message.`,
                 expect.any(Array),
             );
         });

@@ -94,8 +94,13 @@ public class Network: NSObject {
             }
         }
         
-        if let token = try? Keychain.default.getToken(for: serverUrl) {
-            request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        if let credentials = try? Keychain.default.getCredentials(for: serverUrl) {
+            if let token = credentials.token {
+                request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+            }
+            if let preauthSecret = credentials.preauthSecret {
+                request.addValue(preauthSecret, forHTTPHeaderField: GekidouConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET)
+            }
         }
         
         return request as URLRequest

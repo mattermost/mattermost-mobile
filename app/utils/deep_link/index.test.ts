@@ -10,7 +10,6 @@ import {showPermalink} from '@actions/remote/permalink';
 import {fetchUsersByUsernames} from '@actions/remote/user';
 import {DeepLink, Launch, Preferences, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
-import {t} from '@i18n';
 import WebsocketManager from '@managers/websocket_manager';
 import {fetchPlaybookRun} from '@playbooks/actions/remote/runs';
 import {getPlaybookRunById} from '@playbooks/database/queries/run';
@@ -355,8 +354,6 @@ describe('alertInvalidDeepLink', () => {
             id: 'mobile.deep_link.invalid',
             defaultMessage: 'This link you are trying to open is invalid.',
         };
-
-        jest.mocked(t).mockReturnValue(message.id);
 
         alertInvalidDeepLink(intl);
 

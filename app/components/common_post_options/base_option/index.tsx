@@ -2,13 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {useIntl} from 'react-intl';
+import {useIntl, type MessageDescriptor} from 'react-intl';
 
 import OptionItem from '@components/option_item';
 
 type BaseOptionType = {
-    defaultMessage: string;
-    i18nId: string;
+    message: MessageDescriptor;
     iconName: string;
     isDestructive?: boolean;
     onPress: () => void;
@@ -16,8 +15,7 @@ type BaseOptionType = {
 }
 
 const BaseOption = ({
-    defaultMessage,
-    i18nId,
+    message,
     iconName,
     isDestructive = false,
     onPress,
@@ -30,7 +28,7 @@ const BaseOption = ({
             action={onPress}
             destructive={isDestructive}
             icon={iconName}
-            label={intl.formatMessage({id: i18nId, defaultMessage})}
+            label={intl.formatMessage(message)}
             testID={testID}
             type='default'
         />

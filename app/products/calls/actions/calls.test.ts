@@ -811,7 +811,7 @@ describe('Actions.Calls', () => {
 
                     expect(Alert.alert).toHaveBeenCalledWith(
                         'Error',
-                        'You don\'t have permission to end the call. Please ask the call owner to end the call.',
+                        'You don\'t have permission to end the call. Please ask the call host to end the call.',
                     );
                     expect(mockClient.endCall).not.toHaveBeenCalled();
                 });

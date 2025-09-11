@@ -1,11 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {defineMessages} from 'react-intl';
 import {DeviceEventEmitter} from 'react-native';
 
 import {ActionType, General, Navigation, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
-import {getTranslations, t} from '@i18n';
+import {getTranslations} from '@i18n';
 import {getChannelById} from '@queries/servers/channel';
 import {getPostById} from '@queries/servers/post';
 import {getCurrentTeamId, getCurrentUserId, prepareCommonSystemValues, type PrepareCommonSystemValuesArgs, setCurrentTeamAndChannelId} from '@queries/servers/system';
@@ -56,6 +57,17 @@ export const switchToGlobalThreads = async (serverUrl: string, teamId?: string, 
         return {error};
     }
 };
+
+const threadMessages = defineMessages({
+    thread: {
+        id: 'thread.header.thread',
+        defaultMessage: 'Thread',
+    },
+    threadIn: {
+        id: 'thread.header.thread_in',
+        defaultMessage: 'in {channelName}',
+    },
+});
 
 export const switchToThread = async (serverUrl: string, rootId: string, isFromNotification = false) => {
     try {
@@ -112,14 +124,14 @@ export const switchToThread = async (serverUrl: string, rootId: string, isFromNo
         const translations = getTranslations(user.locale);
 
         // Get title translation or default title message
-        const title = translations[t('thread.header.thread')] || 'Thread';
+        const title = translations[threadMessages.thread.id] || 'Thread';
 
         let subtitle = '';
         if (channel?.type === General.DM_CHANNEL) {
             subtitle = channel.displayName;
         } else {
             // Get translation or default message
-            subtitle = translations[t('thread.header.thread_in')] || 'in {channelName}';
+            subtitle = translations[threadMessages.threadIn.id] || 'in {channelName}';
             subtitle = subtitle.replace('{channelName}', channel.displayName);
         }
 

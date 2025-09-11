@@ -49,6 +49,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         actionContainer: {
             flexDirection: 'row',
             alignItems: 'center',
+            justifyContent: 'flex-end',
         },
         container: {
             flexDirection: 'row',
@@ -96,6 +97,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         labelText: {
             color: theme.centerChannelColor,
             ...typography('Body', 200),
+        },
+        shrink: {
+            flexShrink: 1,
         },
     };
 });
@@ -184,9 +188,9 @@ const OptionItem = ({
     ]);
 
     const actionContainerStyle = useMemo(() => {
-        const extraStyle = longInfo ? {maxWidth: 300} : {};
+        const extraStyle = longInfo ? styles.shrink : {};
         return [styles.actionContainer, extraStyle];
-    }, [longInfo, styles.actionContainer]);
+    }, [longInfo, styles.actionContainer, styles.shrink]);
 
     let actionComponent;
     let radioComponent;
@@ -277,6 +281,15 @@ const OptionItem = ({
                 {info}
             </Text>
         );
+        if (actionComponent) {
+            // Wrap the text into another view to properly calculate
+            // the space available.
+            infoComponent = (
+                <View style={styles.shrink}>
+                    {infoComponent}
+                </View>
+            );
+        }
     }
 
     const component = (

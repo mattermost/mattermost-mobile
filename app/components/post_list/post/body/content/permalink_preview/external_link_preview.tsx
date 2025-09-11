@@ -12,7 +12,7 @@ import {typography} from '@utils/typography';
 
 type ExternalLinkData = {
     url: string;
-    data: Record<string, unknown>;
+    data: Record<string, any>;
 };
 
 type ExternalLinkPreviewProps = {
@@ -61,6 +61,26 @@ const ExternalLinkPreview = ({embeds, testID = 'external-link-preview'}: Externa
         };
     }, [embeds]);
 
+    const displayTitle = useMemo(() => {
+        if (!externalLinkData?.data) {
+            return null;
+        }
+
+        const title = typeof externalLinkData.data.title === 'string' && externalLinkData.data.title.trim() ? externalLinkData.data.title : null;
+        const siteName = typeof externalLinkData.data.site_name === 'string' && externalLinkData.data.site_name.trim() ? externalLinkData.data.site_name : null;
+
+        return title || siteName;
+    }, [externalLinkData?.data]);
+
+    const displayDescription = useMemo(() => {
+        if (!externalLinkData?.data) {
+            return externalLinkData?.url || '';
+        }
+
+        const description = typeof externalLinkData.data.description === 'string' && externalLinkData.data.description.trim() ? externalLinkData.data.description : null;
+        return description || externalLinkData.url;
+    }, [externalLinkData?.data, externalLinkData?.url]);
+
     const handleExternalLinkPress = useExternalLinkHandler(externalLinkData?.url);
 
     if (!externalLinkData) {
@@ -73,13 +93,13 @@ const ExternalLinkPreview = ({embeds, testID = 'external-link-preview'}: Externa
             onPress={handleExternalLinkPress}
             testID={testID}
         >
-            {externalLinkData.data?.title || externalLinkData.data?.site_name ? (
+            {displayTitle ? (
                 <Text
                     style={styles.externalLinkTitle}
                     numberOfLines={2}
                     ellipsizeMode='tail'
                 >
-                    {String(externalLinkData.data.title || externalLinkData.data.site_name)}
+                    {displayTitle}
                 </Text>
             ) : (
                 <FormattedText
@@ -95,7 +115,7 @@ const ExternalLinkPreview = ({embeds, testID = 'external-link-preview'}: Externa
                 numberOfLines={1}
                 ellipsizeMode='tail'
             >
-                {String(externalLinkData.data?.description || externalLinkData.url)}
+                {displayDescription}
             </Text>
         </TouchableOpacity>
     );

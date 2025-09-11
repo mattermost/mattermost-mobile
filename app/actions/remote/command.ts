@@ -97,7 +97,7 @@ export const executeAppCommand = async (serverUrl: string, intl: IntlShape, pars
         const errorResponse = res.error;
         return createErrorMessage(errorResponse.text || intl.formatMessage({
             id: 'apps.error.unknown',
-            defaultMessage: 'Unknown error.',
+            defaultMessage: 'Unknown error occurred.',
         }));
     }
     const callResp = res.data;

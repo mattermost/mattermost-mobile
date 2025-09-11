@@ -5,7 +5,6 @@ import React from 'react';
 import {View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
-import {t} from '@i18n';
 import CustomStatusSuggestion from '@screens/custom_status/components/custom_status_suggestion';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -49,7 +48,7 @@ const RecentCustomStatuses = ({onHandleClear, onHandleSuggestionClick, recentCus
             <View style={style.separator}/>
             <View testID='custom_status.recents'>
                 <FormattedText
-                    id={t('custom_status.suggestions.recent_title')}
+                    id={'custom_status.suggestions.recent_title'}
                     defaultMessage='Recent'
                     style={style.title}
                 />

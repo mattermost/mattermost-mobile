@@ -15,8 +15,8 @@ import {useServerDisplayName, useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {dismissModal, goToScreen, setButtons} from '@screens/navigation';
-import {preventDoubleTap} from '@utils/tap';
 
 import ReportProblem from './report_problem';
 
@@ -30,8 +30,6 @@ type SettingsProps = {
     showHelp: boolean;
     siteName: string;
 }
-
-//todo: Profile the whole feature - https://mattermost.atlassian.net/browse/MM-39711
 
 const Settings = ({componentId, helpLink, showHelp, siteName}: SettingsProps) => {
     const theme = useTheme();
@@ -62,39 +60,39 @@ const Settings = ({componentId, helpLink, showHelp, siteName}: SettingsProps) =>
     useAndroidHardwareBackHandler(componentId, close);
     useNavButtonPressed(CLOSE_BUTTON_ID, componentId, close, []);
 
-    const goToNotifications = preventDoubleTap(() => {
+    const goToNotifications = usePreventDoubleTap(useCallback(() => {
         const screen = Screens.SETTINGS_NOTIFICATION;
         const title = intl.formatMessage({id: 'settings.notifications', defaultMessage: 'Notifications'});
 
         goToScreen(screen, title);
-    });
+    }, [intl]));
 
-    const goToDisplaySettings = preventDoubleTap(() => {
+    const goToDisplaySettings = usePreventDoubleTap(useCallback(() => {
         const screen = Screens.SETTINGS_DISPLAY;
         const title = intl.formatMessage({id: 'settings.display', defaultMessage: 'Display'});
 
         goToScreen(screen, title);
-    });
+    }, [intl]));
 
-    const goToAbout = preventDoubleTap(() => {
+    const goToAbout = usePreventDoubleTap(useCallback(() => {
         const screen = Screens.ABOUT;
         const title = intl.formatMessage({id: 'settings.about', defaultMessage: 'About {appTitle}'}, {appTitle: serverName});
 
         goToScreen(screen, title);
-    });
+    }, [intl, serverName]));
 
-    const goToAdvancedSettings = preventDoubleTap(() => {
+    const goToAdvancedSettings = usePreventDoubleTap(useCallback(() => {
         const screen = Screens.SETTINGS_ADVANCED;
         const title = intl.formatMessage({id: 'settings.advanced_settings', defaultMessage: 'Advanced Settings'});
 
         goToScreen(screen, title);
-    });
+    }, [intl]));
 
-    const openHelp = preventDoubleTap(() => {
+    const openHelp = usePreventDoubleTap(useCallback(() => {
         if (helpLink) {
             handleGotoLocation(serverUrl, intl, helpLink);
         }
-    });
+    }, [helpLink, intl, serverUrl]));
 
     return (
         <SettingContainer testID='settings'>

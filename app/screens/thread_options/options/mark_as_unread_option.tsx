@@ -2,11 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
+import {defineMessages} from 'react-intl';
 
 import {markThreadAsRead, markThreadAsUnread} from '@actions/remote/thread';
 import {BaseOption} from '@components/common_post_options';
 import {useServerUrl} from '@context/server';
-import {t} from '@i18n';
 import {dismissBottomSheet} from '@screens/navigation';
 
 import type ThreadModel from '@typings/database/models/servers/thread';
@@ -17,6 +17,18 @@ type Props = {
     teamId: string;
     thread: ThreadModel;
 }
+
+const messages = defineMessages({
+    markAsRead: {
+        id: 'global_threads.options.mark_as_read',
+        defaultMessage: 'Mark as Read',
+    },
+    markAsUnread: {
+        id: 'mobile.post_info.mark_unread',
+        defaultMessage: 'Mark as Unread',
+    },
+});
+
 const MarkAsUnreadOption = ({bottomSheetId, teamId, thread}: Props) => {
     const serverUrl = useServerUrl();
 
@@ -29,14 +41,12 @@ const MarkAsUnreadOption = ({bottomSheetId, teamId, thread}: Props) => {
         }
     }, [bottomSheetId, serverUrl, teamId, thread]);
 
-    const id = thread.unreadReplies ? t('global_threads.options.mark_as_read') : t('mobile.post_info.mark_unread');
-    const defaultMessage = thread.unreadReplies ? 'Mark as Read' : 'Mark as Unread';
+    const message = thread.unreadReplies ? messages.markAsRead : messages.markAsUnread;
     const markAsUnreadTestId = thread.unreadReplies ? 'thread_options.mark_as_read.option' : 'thread_options.mark_as_unread.option';
 
     return (
         <BaseOption
-            i18nId={id}
-            defaultMessage={defaultMessage}
+            message={message}
             iconName='mark-as-unread'
             onPress={onHandlePress}
             testID={markAsUnreadTestId}

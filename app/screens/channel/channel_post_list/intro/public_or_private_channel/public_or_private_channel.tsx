@@ -2,14 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React, {useEffect, useMemo} from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessages, useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
 import {fetchChannelCreator} from '@actions/remote/channel';
 import CompassIcon from '@components/compass_icon';
 import {General, Permissions} from '@constants';
 import {useServerUrl} from '@context/server';
-import {t} from '@i18n';
 import {hasPermission} from '@utils/role';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -55,6 +54,33 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
+const messages = defineMessages({
+    publicChannel: {
+        id: 'intro.public_channel',
+        defaultMessage: 'Public Channel',
+    },
+    privateChannel: {
+        id: 'intro.private_channel',
+        defaultMessage: 'Private Channel',
+    },
+    welcomePublic: {
+        id: 'intro.welcome.public',
+        defaultMessage: 'Add some more team members to the channel or start a conversation below.',
+    },
+    welcomePrivate: {
+        id: 'intro.welcome.private',
+        defaultMessage: 'Only invited members can see messages posted in this private channel.',
+    },
+    welcome: {
+        id: 'intro.welcome',
+        defaultMessage: 'Welcome to {displayName} channel.',
+    },
+    createdBy: {
+        id: 'intro.created_by',
+        defaultMessage: 'created by {creator} on {date}.',
+    },
+});
+
 const PublicOrPrivateChannel = ({channel, creator, roles, theme}: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
@@ -90,35 +116,30 @@ const PublicOrPrivateChannel = ({channel, creator, roles, theme}: Props) => {
     }, [channel.type, roles, channel.deleteAt]);
 
     const createdBy = useMemo(() => {
-        const id = channel.type === General.OPEN_CHANNEL ? t('intro.public_channel') : t('intro.private_channel');
-        const defaultMessage = channel.type === General.OPEN_CHANNEL ? 'Public Channel' : 'Private Channel';
-        const channelType = `${intl.formatMessage({id, defaultMessage})} `;
+        const message = channel.type === General.OPEN_CHANNEL ? messages.publicChannel : messages.privateChannel;
+        const channelType = `${intl.formatMessage(message)} `;
 
         const date = intl.formatDate(channel.createAt, {
             year: 'numeric',
             month: 'long',
             day: 'numeric',
         });
-        const by = intl.formatMessage({id: 'intro.created_by', defaultMessage: 'created by {creator} on {date}.'}, {
+        const by = intl.formatMessage(messages.createdBy, {
             creator,
             date,
         });
 
         return `${channelType} ${by}`;
-    }, [channel.type, creator, theme]);
+    }, [channel.createAt, channel.type, creator, intl]);
 
     const message = useMemo(() => {
-        const id = channel.type === General.OPEN_CHANNEL ? t('intro.welcome.public') : t('intro.welcome.private');
-        const msg = channel.type === General.OPEN_CHANNEL ? 'Add some more team members to the channel or start a conversation below.' : 'Only invited members can see messages posted in this private channel.';
-        const mainMessage = intl.formatMessage({
-            id: 'intro.welcome',
-            defaultMessage: 'Welcome to {displayName} channel.',
-        }, {displayName: channel.displayName});
+        const msg = channel.type === General.OPEN_CHANNEL ? messages.welcomePublic : messages.welcomePrivate;
+        const mainMessage = intl.formatMessage(messages.welcome, {displayName: channel.displayName});
 
-        const suffix = intl.formatMessage({id, defaultMessage: msg});
+        const suffix = intl.formatMessage(msg);
 
         return `${mainMessage} ${suffix}`;
-    }, [channel.displayName, channel.type, theme]);
+    }, [channel.displayName, channel.type, intl]);
 
     return (
         <View style={styles.container}>

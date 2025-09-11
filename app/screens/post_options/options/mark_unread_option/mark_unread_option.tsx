@@ -2,13 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
+import {defineMessages} from 'react-intl';
 
 import {markPostAsUnread} from '@actions/remote/post';
 import {markThreadAsUnread} from '@actions/remote/thread';
 import {BaseOption} from '@components/common_post_options';
 import Screens from '@constants/screens';
 import {useServerUrl} from '@context/server';
-import {t} from '@i18n';
 import {dismissBottomSheet} from '@screens/navigation';
 
 import type PostModel from '@typings/database/models/servers/post';
@@ -22,6 +22,13 @@ type Props = {
     teamId: string;
 }
 
+const messages = defineMessages({
+    markAsUnread: {
+        id: 'mobile.post_info.mark_unread',
+        defaultMessage: 'Mark as Unread',
+    },
+});
+
 const MarkAsUnreadOption = ({bottomSheetId, isCRTEnabled, sourceScreen, post, teamId}: Props) => {
     const serverUrl = useServerUrl();
 
@@ -33,12 +40,11 @@ const MarkAsUnreadOption = ({bottomSheetId, isCRTEnabled, sourceScreen, post, te
         } else {
             markPostAsUnread(serverUrl, post.id);
         }
-    }, [bottomSheetId, sourceScreen, post, serverUrl, teamId]);
+    }, [bottomSheetId, sourceScreen, isCRTEnabled, post.rootId, post.id, serverUrl, teamId]);
 
     return (
         <BaseOption
-            i18nId={t('mobile.post_info.mark_unread')}
-            defaultMessage='Mark as Unread'
+            message={messages.markAsUnread}
             iconName='mark-as-unread'
             onPress={onPress}
             testID='post_options.mark_as_unread.option'

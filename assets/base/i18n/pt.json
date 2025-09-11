@@ -409,5 +409,8 @@
   "mobile.calls_remove_alert_title": "Remover participante",
   "mobile.calls_remove_participant": "Remover da chamada",
   "mobile.calls_starting": "A iniciar...",
-  "mobile.calls_stop_recording": "Parar Gravação"
+  "mobile.calls_stop_recording": "Parar Gravação",
+  "post_priority.picker.cancel": "Cancelar",
+  "suggestion.search.private": "Canais Privados",
+  "suggestion.search.public": "Canais Públicos"
 }
