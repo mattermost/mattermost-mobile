@@ -12,6 +12,8 @@ export function loadPlaybooksScreen(screenName: string | number) {
             return withServerDatabase(require('@playbooks/screens/playbook_run').default);
         case Screens.PLAYBOOK_EDIT_COMMAND:
             return withServerDatabase(require('@playbooks/screens/edit_command').default);
+        case Screens.PLAYBOOK_POST_UPDATE:
+            return withServerDatabase(require('@playbooks/screens/post_update').default);
         default:
             return undefined;
     }
