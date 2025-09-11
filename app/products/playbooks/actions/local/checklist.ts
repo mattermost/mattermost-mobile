@@ -26,6 +26,27 @@ export async function updateChecklistItem(serverUrl: string, itemId: string, sta
     }
 }
 
+export async function setChecklistItemCommand(serverUrl: string, itemId: string, command: string) {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const item = await getPlaybookChecklistItemById(database, itemId);
+        if (!item) {
+            return {error: `Item not found: ${itemId}`};
+        }
+
+        await database.write(async () => {
+            item.update((i) => {
+                i.command = command;
+            });
+        });
+
+        return {data: true};
+    } catch (error) {
+        logError('failed to set checklist item command', error);
+        return {error};
+    }
+}
+
 export async function setDueDate(serverUrl: string, itemId: string, date?: number) {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);

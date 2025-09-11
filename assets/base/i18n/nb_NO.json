@@ -514,7 +514,7 @@
   "mobile.calls_end_call_title": "Avslutt anropet",
   "mobile.calls_end_msg_channel": "Er du sikker på at du vil avslutte en samtale med {numParticipants} deltakere i {displayName}?",
   "mobile.calls_end_msg_channel_default": "Er du sikker på at du vil avslutte oppringningen?",
-  "mobile.calls_end_msg_dm": "Er du sikker på at du vil avslutte en samtale med {displayName}?",
+  "mobile.calls_end_msg_dm": "Er du sikker på at du vil avslutte samtalen med {displayName}?",
   "mobile.calls_end_permission_msg": "Du har ikke tillatelse til å avslutte samtalen. Vennligst be personen som startet samtalen om å avslutte den.",
   "mobile.calls_end_permission_title": "Feil",
   "mobile.calls_ended_at": "Sluttet kl",

@@ -5,6 +5,7 @@ import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View, Text, ActivityIndicator} from 'react-native';
 
+import {handleCallsSlashCommand} from '@calls/actions';
 import BaseChip from '@components/chips/base_chip';
 import UserChip from '@components/chips/user_chip';
 import CompassIcon from '@components/compass_icon';
@@ -78,6 +79,8 @@ type Props = {
     itemNumber: number;
     playbookRunId: string;
     isDisabled: boolean;
+    currentUserId: string;
+    channelType: ChannelType;
 }
 
 const ChecklistItem = ({
@@ -89,6 +92,8 @@ const ChecklistItem = ({
     itemNumber,
     playbookRunId,
     isDisabled,
+    currentUserId,
+    channelType,
 }: Props) => {
     const dueDate = 'dueDate' in item ? item.dueDate : item.due_date;
     const theme = useTheme();
@@ -120,11 +125,15 @@ const ChecklistItem = ({
         const res = await runChecklistItem(serverUrl, playbookRunId, checklistNumber, itemNumber);
         if (res.error) {
             showPlaybookErrorSnackbar();
-        } else {
-            popTo('Channel');
+            setIsExecuting(false);
+            return;
         }
-        setIsExecuting(false);
-    }, [checklistNumber, isExecuting, itemNumber, playbookRunId, serverUrl]);
+
+        popTo('Channel');
+        if (item.command?.startsWith('/call')) {
+            await handleCallsSlashCommand(item.command, serverUrl, channelId, channelType, '', currentUserId, intl);
+        }
+    }, [channelId, channelType, checklistNumber, currentUserId, intl, isExecuting, item.command, itemNumber, playbookRunId, serverUrl]);
 
     const toggleChecked = useCallback(async () => {
         if (isChecking) {
@@ -196,6 +205,7 @@ const ChecklistItem = ({
             runId={playbookRunId}
             checklistNumber={checklistNumber}
             itemNumber={itemNumber}
+            channelId={channelId}
             item={item}
             onCheck={toggleChecked}
             onSkip={toggleSkipped}
@@ -207,6 +217,7 @@ const ChecklistItem = ({
         playbookRunId,
         checklistNumber,
         itemNumber,
+        channelId,
         item,
         toggleChecked,
         toggleSkipped,

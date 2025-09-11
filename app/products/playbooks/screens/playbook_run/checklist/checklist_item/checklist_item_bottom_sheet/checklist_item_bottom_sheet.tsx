@@ -10,10 +10,10 @@ import OptionBox from '@components/option_box';
 import OptionItem, {ITEM_HEIGHT} from '@components/option_item';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {setDueDate} from '@playbooks/actions/remote/checklist';
+import {setChecklistItemCommand, setDueDate} from '@playbooks/actions/remote/checklist';
 import {goToSelectDate} from '@playbooks/screens/navigation';
 import {getDueDateString} from '@playbooks/utils/time';
-import {dismissBottomSheet, openUserProfileModal} from '@screens/navigation';
+import {dismissBottomSheet, goToScreen, openUserProfileModal} from '@screens/navigation';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getTimezone} from '@utils/user';
@@ -115,6 +115,7 @@ type Props = {
     runId: string;
     checklistNumber: number;
     itemNumber: number;
+    channelId: string;
     item: PlaybookChecklistItemModel | PlaybookChecklistItem;
     assignee?: UserModel;
     onCheck: () => void;
@@ -129,6 +130,7 @@ const ChecklistItemBottomSheet = ({
     runId,
     checklistNumber,
     itemNumber,
+    channelId,
     item,
     assignee,
     onCheck,
@@ -203,6 +205,22 @@ const ChecklistItemBottomSheet = ({
         });
     }, [intl, theme]);
 
+    const updateCommand = useCallback(async (command: string) => {
+        await setChecklistItemCommand(serverUrl, runId, item.id, checklistNumber, itemNumber, command);
+    }, [checklistNumber, item.id, itemNumber, runId, serverUrl]);
+
+    const openEditCommandModal = useCallback(() => {
+        goToScreen(
+            'PlaybookEditCommand',
+            intl.formatMessage({id: 'playbooks.edit_command.title', defaultMessage: 'Slash command'}),
+            {
+                savedCommand: item.command,
+                updateCommand,
+                channelId,
+            },
+        );
+    }, [intl, item.command, updateCommand, channelId]);
+
     const assigneeInfo: ComponentProps<typeof OptionItem>['info'] = useMemo(() => {
         if (!assignee) {
             return intl.formatMessage(messages.none);
@@ -239,12 +257,13 @@ const ChecklistItemBottomSheet = ({
                 action={handleSelectDate}
             />
             <OptionItem
-                type='none'
+                type={isDisabled ? 'none' : 'arrow'}
                 icon='slash-forward'
                 label={intl.formatMessage(messages.command)}
                 info={item.command || intl.formatMessage(messages.none)}
                 testID='checklist_item.command'
                 longInfo={true}
+                action={isDisabled ? undefined : openEditCommandModal}
             />
         </View>
     );

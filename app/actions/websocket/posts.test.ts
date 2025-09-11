@@ -15,7 +15,7 @@ import {PostTypes} from '@constants/post';
 import DatabaseManager from '@database/manager';
 import {PostsInChannelModel} from '@database/models/server';
 import {getChannelById, getMyChannel} from '@queries/servers/channel';
-import {getPostById} from '@queries/servers/post';
+import {getPostById, syncPermalinkPreviewsForEditedPost} from '@queries/servers/post';
 import {getCurrentUserId, getCurrentChannelId} from '@queries/servers/system';
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import EphemeralStore from '@store/ephemeral_store';
@@ -44,6 +44,7 @@ jest.mock('@utils/post', () => ({
     ...jest.requireActual('@utils/post'),
     shouldIgnorePost: jest.fn(),
 }));
+jest.mock('@utils/permalink_sync');
 
 const serverUrl = 'baseHandler.test.com';
 
@@ -75,6 +76,7 @@ describe('WebSocket Post Actions', () => {
     const mockedAddPostAcknowledgement = jest.mocked(addPostAcknowledgement);
     const mockedFetchMissingProfilesByIds = jest.mocked(fetchMissingProfilesByIds);
     const mockedRemovePostAcknowledgement = jest.mocked(removePostAcknowledgement);
+    const mockedSyncPermalinkPreviewsForEditedPost = jest.mocked(syncPermalinkPreviewsForEditedPost);
 
     beforeEach(async () => {
         await DatabaseManager.init([serverUrl]);
@@ -277,22 +279,93 @@ describe('WebSocket Post Actions', () => {
     });
 
     describe('handlePostEdited', () => {
+        const editedPost = {id: 'post1', channel_id: 'channel1', user_id: 'user1', is_pinned: false, edit_at: 54321, message: 'edited message'};
         const msg = {
             data: {
-                post: JSON.stringify({id: 'post1', channel_id: 'channel1', user_id: 'user1', is_pinned: false}),
+                post: JSON.stringify(editedPost),
             },
         } as WebSocketMessage;
 
-        it('should handle post edited event', async () => {
-            const batchRecordsSpy = jest.spyOn(operator, 'batchRecords').mockImplementation(jest.fn());
+        const permalinkPostModel = TestHelper.fakePostModel({id: 'permalink_post', channelId: 'channel2'});
 
-            mockedGetPostById.mockResolvedValue(postModels[0]);
+        beforeEach(() => {
+            mockedSyncPermalinkPreviewsForEditedPost.mockResolvedValue([]);
             mockedFetchPostAuthors.mockResolvedValue({authors: []});
             mockedGetIsCRTEnabled.mockResolvedValue(false);
+        });
+
+        it('should handle post edited event - post exists locally', async () => {
+            const batchRecordsSpy = jest.spyOn(operator, 'batchRecords');
+
+            mockedGetPostById.mockResolvedValue(postModels[0]);
+            mockedSyncPermalinkPreviewsForEditedPost.mockResolvedValue([]);
 
             await handlePostEdited(serverUrl, msg);
 
+            expect(mockedSyncPermalinkPreviewsForEditedPost).toHaveBeenCalledWith(expect.any(Object), editedPost);
+            expect(mockedGetPostById).toHaveBeenCalledWith(expect.any(Object), 'post1');
             expect(mockedFetchChannelStats).toHaveBeenCalledWith(serverUrl, 'channel1');
+            expect(batchRecordsSpy).toHaveBeenCalledWith([expect.any(PostsInChannelModel)], 'handlePostEdited');
+        });
+
+        it('should handle post edited event - post exists with permalink updates', async () => {
+            const batchRecordsSpy = jest.spyOn(operator, 'batchRecords');
+
+            mockedGetPostById.mockResolvedValue(postModels[0]);
+            mockedSyncPermalinkPreviewsForEditedPost.mockResolvedValue([permalinkPostModel]);
+
+            await handlePostEdited(serverUrl, msg);
+
+            expect(mockedSyncPermalinkPreviewsForEditedPost).toHaveBeenCalledWith(expect.any(Object), editedPost);
+            expect(batchRecordsSpy).toHaveBeenCalledWith(
+                expect.arrayContaining([
+                    permalinkPostModel,
+                    expect.any(PostsInChannelModel),
+                ]),
+                'handlePostEdited',
+            );
+        });
+
+        it('should handle post edited event - post missing but has permalink updates (key fix)', async () => {
+            const batchRecordsSpy = jest.spyOn(operator, 'batchRecords');
+            const addEditingPostSpy = jest.spyOn(EphemeralStore, 'addEditingPost');
+
+            mockedGetPostById.mockResolvedValue(undefined);
+            mockedSyncPermalinkPreviewsForEditedPost.mockResolvedValue([permalinkPostModel]);
+
+            await handlePostEdited(serverUrl, msg);
+
+            expect(mockedSyncPermalinkPreviewsForEditedPost).toHaveBeenCalledWith(expect.any(Object), editedPost);
+            expect(addEditingPostSpy).toHaveBeenCalledWith(serverUrl, editedPost);
+
+            expect(batchRecordsSpy).toHaveBeenCalledWith([permalinkPostModel], 'handlePostEdited - permalink sync only');
+        });
+
+        it('should handle post edited event - post missing and no permalink updates', async () => {
+            const batchRecordsSpy = jest.spyOn(operator, 'batchRecords');
+            const addEditingPostSpy = jest.spyOn(EphemeralStore, 'addEditingPost');
+
+            mockedGetPostById.mockResolvedValue(undefined);
+            mockedSyncPermalinkPreviewsForEditedPost.mockResolvedValue([]);
+
+            await handlePostEdited(serverUrl, msg);
+
+            expect(mockedSyncPermalinkPreviewsForEditedPost).toHaveBeenCalledWith(expect.any(Object), editedPost);
+            expect(addEditingPostSpy).toHaveBeenCalledWith(serverUrl, editedPost);
+
+            expect(batchRecordsSpy).not.toHaveBeenCalled();
+        });
+
+        it('should handle permalink sync errors gracefully', async () => {
+            const batchRecordsSpy = jest.spyOn(operator, 'batchRecords');
+            const logWarningSpy = jest.spyOn(require('@utils/log'), 'logWarning');
+
+            mockedGetPostById.mockResolvedValue(postModels[0]);
+            mockedSyncPermalinkPreviewsForEditedPost.mockRejectedValue(new Error('Permalink sync failed'));
+
+            await handlePostEdited(serverUrl, msg);
+
+            expect(logWarningSpy).toHaveBeenCalledWith('Failed to sync permalink previews for edited post:', expect.any(Error));
             expect(batchRecordsSpy).toHaveBeenCalledWith([expect.any(PostsInChannelModel)], 'handlePostEdited');
         });
 
@@ -301,6 +374,7 @@ describe('WebSocket Post Actions', () => {
 
             await handlePostEdited('junk', msg);
 
+            expect(mockedSyncPermalinkPreviewsForEditedPost).not.toHaveBeenCalled();
             expect(mockedGetPostById).not.toHaveBeenCalled();
             expect(batchRecordsSpy).not.toHaveBeenCalled();
         });
@@ -308,29 +382,70 @@ describe('WebSocket Post Actions', () => {
         it('should handle post edited event - malformed post data', async () => {
             const batchRecordsSpy = jest.spyOn(operator, 'batchRecords');
 
-            mockedGetPostById.mockResolvedValueOnce(postModels[0]);
-
             await handlePostEdited(serverUrl, {data: undefined} as WebSocketMessage);
 
+            expect(mockedSyncPermalinkPreviewsForEditedPost).not.toHaveBeenCalled();
             expect(mockedGetPostById).not.toHaveBeenCalled();
             expect(batchRecordsSpy).not.toHaveBeenCalled();
         });
 
         it('should not update create_at for ephemeral messages', async () => {
             const batchRecordsSpy = jest.spyOn(operator, 'batchRecords').mockImplementation(jest.fn());
+            const ephemeralPost = TestHelper.fakePost({type: PostTypes.EPHEMERAL, create_at: 0});
             const ephemeralMsg = {
-                data: {post: JSON.stringify(
-                    TestHelper.fakePost({type: PostTypes.EPHEMERAL, create_at: 0}),
-                )},
+                data: {post: JSON.stringify(ephemeralPost)},
             } as WebSocketMessage;
 
             mockedGetPostById.mockResolvedValueOnce(postModels[0]);
-            mockedFetchPostAuthors.mockResolvedValue({authors: []});
-            mockedGetIsCRTEnabled.mockResolvedValue(false);
+            mockedSyncPermalinkPreviewsForEditedPost.mockResolvedValue([]);
 
             await handlePostEdited(serverUrl, ephemeralMsg);
 
             expect(batchRecordsSpy).toHaveBeenCalledWith(expect.arrayContaining([expect.objectContaining({createAt: 12345})]), 'handlePostEdited');
+        });
+
+        it('should not double batch permalink models in handlePostEdited', async () => {
+            const batchRecordsSpy = jest.spyOn(operator, 'batchRecords');
+
+            mockedGetPostById.mockResolvedValue(postModels[0]);
+            mockedSyncPermalinkPreviewsForEditedPost.mockResolvedValue([permalinkPostModel]);
+
+            await handlePostEdited(serverUrl, msg);
+
+            expect(batchRecordsSpy).toHaveBeenCalledTimes(1);
+
+            expect(batchRecordsSpy).toHaveBeenCalledWith(
+                expect.arrayContaining([
+                    permalinkPostModel,
+                    expect.any(PostsInChannelModel),
+                ]),
+                'handlePostEdited',
+            );
+
+            expect(batchRecordsSpy).not.toHaveBeenCalledWith(
+                [permalinkPostModel],
+                'handlePostEdited - permalink sync only',
+            );
+        });
+
+        it('should batch only permalink models when post does not exist locally', async () => {
+            const batchRecordsSpy = jest.spyOn(operator, 'batchRecords');
+
+            mockedGetPostById.mockResolvedValue(undefined);
+            mockedSyncPermalinkPreviewsForEditedPost.mockResolvedValue([permalinkPostModel]);
+
+            await handlePostEdited(serverUrl, msg);
+
+            expect(batchRecordsSpy).toHaveBeenCalledTimes(1);
+            expect(batchRecordsSpy).toHaveBeenCalledWith(
+                [permalinkPostModel],
+                'handlePostEdited - permalink sync only',
+            );
+
+            expect(batchRecordsSpy).not.toHaveBeenCalledWith(
+                expect.anything(),
+                'handlePostEdited',
+            );
         });
     });
 
