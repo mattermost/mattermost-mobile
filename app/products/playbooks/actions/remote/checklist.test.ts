@@ -4,9 +4,9 @@
 import DatabaseManager from '@database/manager';
 import IntegrationsManager from '@managers/integrations_manager';
 import NetworkManager from '@managers/network_manager';
-import {setChecklistItemCommand as localSetChecklistItemCommand, updateChecklistItem as localUpdateChecklistItem} from '@playbooks/actions/local/checklist';
+import {setChecklistItemCommand as localSetChecklistItemCommand, updateChecklistItem as localUpdateChecklistItem, setDueDate as localSetDueDate} from '@playbooks/actions/local/checklist';
 
-import {updateChecklistItem, runChecklistItem, skipChecklistItem, restoreChecklistItem, setChecklistItemCommand} from './checklist';
+import {updateChecklistItem, runChecklistItem, skipChecklistItem, restoreChecklistItem, setChecklistItemCommand, setDueDate} from './checklist';
 
 const serverUrl = 'baseHandler.test.com';
 
@@ -22,6 +22,7 @@ const mockClient = {
     skipChecklistItem: jest.fn(),
     restoreChecklistItem: jest.fn(),
     setChecklistItemCommand: jest.fn(),
+    setDueDate: jest.fn(),
 };
 
 jest.mock('@playbooks/actions/local/checklist');
@@ -211,6 +212,60 @@ describe('checklist', () => {
             expect(result.data).toBe(true);
             expect(mockClient.setChecklistItemCommand).toHaveBeenCalledWith(playbookRunId, checklistNumber, itemNumber, command);
             expect(localSetChecklistItemCommand).toHaveBeenCalledWith(serverUrl, itemId, command);
+        });
+    });
+
+    describe('setDueDate', () => {
+        it('should handle client error', async () => {
+            jest.spyOn(NetworkManager, 'getClient').mockImplementationOnce(throwFunc);
+
+            const result = await setDueDate(serverUrl, playbookRunId, itemId, checklistNumber, itemNumber, 1234567890);
+            expect(result).toBeDefined();
+            expect(result.error).toBeDefined();
+            expect(localSetDueDate).not.toHaveBeenCalled();
+        });
+
+        it('should handle API exception', async () => {
+            mockClient.setDueDate.mockImplementationOnce(throwFunc);
+
+            const result = await setDueDate(serverUrl, playbookRunId, itemId, checklistNumber, itemNumber, 1234567890);
+            expect(result).toBeDefined();
+            expect(result.error).toBeDefined();
+            expect(mockClient.setDueDate).toHaveBeenCalledWith(playbookRunId, checklistNumber, itemNumber, 1234567890);
+            expect(localSetDueDate).not.toHaveBeenCalled();
+        });
+
+        it('should set due date successfully with valid date', async () => {
+            mockClient.setDueDate.mockResolvedValueOnce({});
+
+            const result = await setDueDate(serverUrl, playbookRunId, itemId, checklistNumber, itemNumber, 1234567890);
+            expect(result).toBeDefined();
+            expect(result.error).toBeUndefined();
+            expect(result.data).toBe(true);
+            expect(mockClient.setDueDate).toHaveBeenCalledWith(playbookRunId, checklistNumber, itemNumber, 1234567890);
+            expect(localSetDueDate).toHaveBeenCalledWith(serverUrl, itemId, 1234567890);
+        });
+
+        it('should set due date successfully with undefined date', async () => {
+            mockClient.setDueDate.mockResolvedValueOnce({});
+
+            const result = await setDueDate(serverUrl, playbookRunId, itemId, checklistNumber, itemNumber);
+            expect(result).toBeDefined();
+            expect(result.error).toBeUndefined();
+            expect(result.data).toBe(true);
+            expect(mockClient.setDueDate).toHaveBeenCalledWith(playbookRunId, checklistNumber, itemNumber, undefined);
+            expect(localSetDueDate).toHaveBeenCalledWith(serverUrl, itemId, undefined);
+        });
+
+        it('should set due date successfully with zero date', async () => {
+            mockClient.setDueDate.mockResolvedValueOnce({});
+
+            const result = await setDueDate(serverUrl, playbookRunId, itemId, checklistNumber, itemNumber, 0);
+            expect(result).toBeDefined();
+            expect(result.error).toBeUndefined();
+            expect(result.data).toBe(true);
+            expect(mockClient.setDueDate).toHaveBeenCalledWith(playbookRunId, checklistNumber, itemNumber, 0);
+            expect(localSetDueDate).toHaveBeenCalledWith(serverUrl, itemId, 0);
         });
     });
 });

@@ -285,3 +285,29 @@ describe('setChecklistItemCommand', () => {
     });
 });
 
+describe('setDueDate', () => {
+    test('should set due date successfully with valid date', async () => {
+        const playbookRunId = 'run123';
+        const checklistNum = 1;
+        const itemNum = 2;
+        const date = 1640995200000; // January 1, 2022 00:00:00 UTC
+        const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunId}/checklists/${checklistNum}/item/${itemNum}/duedate`;
+        const expectedOptions = {method: 'put', body: {due_date: date}};
+
+        jest.mocked(client.doFetch).mockResolvedValue(undefined);
+
+        await client.setDueDate(playbookRunId, checklistNum, itemNum, date);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+    });
+    test('should handle error when setting due date', async () => {
+        const playbookRunId = 'run123';
+        const checklistNum = 1;
+        const itemNum = 2;
+        const date = 1640995200000;
+
+        jest.mocked(client.doFetch).mockRejectedValue(new Error('Network error'));
+
+        await expect(client.setDueDate(playbookRunId, checklistNum, itemNum, date)).rejects.toThrow('Network error');
+    });
+});

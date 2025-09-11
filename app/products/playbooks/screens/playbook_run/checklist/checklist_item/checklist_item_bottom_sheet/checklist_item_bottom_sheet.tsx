@@ -233,7 +233,7 @@ const ChecklistItemBottomSheet = ({
         };
     }, [assignee, intl, onUserChipPress, teammateNameDisplay]);
 
-    const handleSelectDate = useCallback(async () => {
+    const openEditDateModal = useCallback(async () => {
         goToSelectDate(intl, (date) => {
             setDueDate(serverUrl, runId, item.id, checklistNumber, itemNumber, date);
         }, dueDate);
@@ -249,12 +249,12 @@ const ChecklistItemBottomSheet = ({
                 testID='checklist_item.assignee'
             />
             <OptionItem
-                type='arrow'
+                type={isDisabled ? 'none' : 'arrow'}
                 icon='calendar-outline'
                 label={intl.formatMessage(messages.dueDate)}
                 info={getDueDateString(intl, dueDate, timezone)}
                 testID='checklist_item.due_date'
-                action={handleSelectDate}
+                action={isDisabled ? undefined : openEditDateModal}
             />
             <OptionItem
                 type={isDisabled ? 'none' : 'arrow'}

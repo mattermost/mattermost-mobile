@@ -4,6 +4,7 @@
 import React, {type ComponentProps} from 'react';
 
 import {General} from '@constants';
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getPlaybookChecklistItemById} from '@playbooks/database/queries/item';
 import {act, renderWithEverything, waitFor} from '@test/intl-test-helper';
@@ -64,6 +65,8 @@ describe('ChecklistItemBottomSheet Enhanced Component', () => {
         const serverDatabaseAndOperator = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         database = serverDatabaseAndOperator.database;
         operator = serverDatabaseAndOperator.operator;
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: 'currentUser'}], prepareRecordsOnly: false});
+        await addUserToDatabase(TestHelper.fakeUser({id: 'currentUser', timezone: {useAutomaticTimezone: false, manualTimezone: 'America/New_York', automaticTimezone: 'America/New_York'}}));
         jest.clearAllMocks();
     });
 
@@ -88,6 +91,7 @@ describe('ChecklistItemBottomSheet Enhanced Component', () => {
             expect(bottomSheet).toBeTruthy();
             expect(bottomSheet).toHaveProp('item', item);
             expect(bottomSheet).toHaveProp('assignee', expect.objectContaining({id: 'user-1'}));
+            expect(bottomSheet).toHaveProp('currentUserTimezone', expect.objectContaining({useAutomaticTimezone: false, manualTimezone: 'America/New_York', automaticTimezone: 'America/New_York'}));
         });
 
         it('should handle assigneeId changes through observable', async () => {
@@ -159,6 +163,7 @@ describe('ChecklistItemBottomSheet Enhanced Component', () => {
             expect(bottomSheet).toBeTruthy();
             expect(bottomSheet).toHaveProp('item', apiItem);
             expect(bottomSheet).toHaveProp('assignee', expect.objectContaining({id: 'user-1'}));
+            expect(bottomSheet).toHaveProp('currentUserTimezone', expect.objectContaining({useAutomaticTimezone: false, manualTimezone: 'America/New_York', automaticTimezone: 'America/New_York'}));
         });
 
         it('should handle assigneeId changes through observable', async () => {
