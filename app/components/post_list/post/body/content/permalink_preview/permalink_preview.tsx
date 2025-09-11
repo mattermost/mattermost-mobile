@@ -3,7 +3,7 @@
 
 import {LinearGradient} from 'expo-linear-gradient';
 import React, {useMemo, useCallback, useEffect, useState} from 'react';
-import {Text, View, Pressable, type LayoutChangeEvent, useWindowDimensions} from 'react-native';
+import {Text, View, Pressable, type LayoutChangeEvent} from 'react-native';
 
 import {fetchUsersByIds} from '@actions/remote/user';
 import EditedIndicator from '@components/edited_indicator';
@@ -14,6 +14,7 @@ import ProfilePicture from '@components/profile_picture';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useUserLocale} from '@context/user_locale';
+import {useWindowDimensions} from '@hooks/device';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -26,8 +27,7 @@ import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
-const MAX_PERMALINK_PREVIEW_LINES = 4;
-const SHOW_MORE_HEIGHT = 54;
+const MAX_PERMALINK_PREVIEW_CHARACTERS = 150;
 const EDITED_INDICATOR_CONTEXT = ['paragraph'];
 
 type PermalinkPreviewProps = {
@@ -84,8 +84,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         messageContainer: {
             marginBottom: 8,
-            maxHeight: 20 * MAX_PERMALINK_PREVIEW_LINES,
-            overflow: 'hidden',
         },
         messageText: {
             color: theme.centerChannelColor,
@@ -94,7 +92,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
 
         channelContext: {
-            marginTop: 4,
+            marginTop: 16,
             color: changeOpacity(theme.centerChannelColor, 0.64),
             ...typography('Body', 75),
         },
@@ -135,8 +133,7 @@ const PermalinkPreview = ({
     const styles = getStyleSheet(theme);
     const [showGradient, setShowGradient] = useState(false);
 
-    const maxPermalinkHeight = Math.round((dimensions.height * 0.5) + SHOW_MORE_HEIGHT);
-
+    const maxPermalinkHeight = Math.round(dimensions.height * 0.5);
     const textStyles = getMarkdownTextStyles(theme);
     const blockStyles = getMarkdownBlockStyles(theme);
 
@@ -159,16 +156,15 @@ const PermalinkPreview = ({
     } = embedData;
 
     const truncatedMessage = useMemo(() => {
-        const message = embedPost?.message;
-
-        if (!message || typeof message !== 'string') {
+        const msg = embedPost?.message;
+        if (!msg || typeof msg !== 'string') {
             return '';
         }
 
-        const cleanMessage = message.trim();
-        const lines = cleanMessage.split('\n');
-        if (lines.length > MAX_PERMALINK_PREVIEW_LINES) {
-            return lines.slice(0, MAX_PERMALINK_PREVIEW_LINES).join('\n...');
+        const cleanMessage = msg.trim();
+
+        if (cleanMessage.length > MAX_PERMALINK_PREVIEW_CHARACTERS) {
+            return cleanMessage.substring(0, MAX_PERMALINK_PREVIEW_CHARACTERS) + '...';
         }
 
         return cleanMessage;
