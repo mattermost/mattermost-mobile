@@ -68,7 +68,7 @@ function RadioSetting({
             );
         }
         return elements;
-    }, [value, onChange, options]);
+    }, [value, onChange, options, testID]);
 
     return (
         <View>

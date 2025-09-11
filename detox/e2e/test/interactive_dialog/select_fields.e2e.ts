@@ -63,10 +63,10 @@ describe('Interactive Dialog - Select Fields', () => {
         // # Login to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
-        
+
         // * Verify on channel list screen
         await ChannelListScreen.toBeVisible();
-        
+
         // # Navigate to the test channel for all tests
         await ChannelScreen.open(channelsCategory, testChannel.name);
     });
@@ -89,7 +89,7 @@ describe('Interactive Dialog - Select Fields', () => {
         await expect(selectDropdownButton).toExist();
         await selectDropdownButton.tap();
         await wait(1000);
-        
+
         await IntegrationSelectorScreen.toBeVisible();
         const optionElement = element(by.text('Option2'));
         await optionElement.tap();
@@ -108,16 +108,21 @@ describe('Interactive Dialog - Select Fields', () => {
             /^integration_selector\.user_list\.user_item\.[a-zA-Z0-9]+$/,
             /integration_selector.*user_item.*[a-zA-Z0-9]{10,}/,
         ];
-        
-        for (const pattern of userTestIdPatterns) {
+
+        // Try each pattern sequentially without loops
+        try {
+            const firstUserElement = element(by.id(userTestIdPatterns[0])).atIndex(0);
+            await expect(firstUserElement).toExist();
+            await firstUserElement.tap();
+            userSelected = true;
+        } catch (error1) {
             try {
-                const firstUserElement = element(by.id(pattern)).atIndex(0);
-                await expect(firstUserElement).toExist();
-                await firstUserElement.tap();
+                const secondUserElement = element(by.id(userTestIdPatterns[1])).atIndex(0);
+                await expect(secondUserElement).toExist();
+                await secondUserElement.tap();
                 userSelected = true;
-                break;
-            } catch (wildcardError) {
-                // Continue to next pattern
+            } catch (error2) {
+                // Will try fallback below
             }
         }
 
@@ -150,31 +155,46 @@ describe('Interactive Dialog - Select Fields', () => {
             /^integration_selector\.channel_list\.[a-zA-Z0-9]+$/,
             /integration_selector.*channel_list.*[a-zA-Z0-9]{10,}/,
         ];
-        
-        for (const pattern of channelTestIdPatterns) {
+
+        // Try each pattern sequentially without loops
+        try {
+            const firstChannelElement = element(by.id(channelTestIdPatterns[0])).atIndex(0);
+            await expect(firstChannelElement).toExist();
+            await firstChannelElement.tap();
+            channelSelected = true;
+        } catch (error1) {
             try {
-                const firstChannelElement = element(by.id(pattern)).atIndex(0);
-                await expect(firstChannelElement).toExist();
-                await firstChannelElement.tap();
+                const secondChannelElement = element(by.id(channelTestIdPatterns[1])).atIndex(0);
+                await expect(secondChannelElement).toExist();
+                await secondChannelElement.tap();
                 channelSelected = true;
-                break;
-            } catch (wildcardError) {
-                // Continue to next pattern
+            } catch (error2) {
+                // Will try fallback below
             }
         }
 
         // Fallback to common channel names
         if (!channelSelected) {
-            const commonChannelNames = ['Town Square', 'Off-Topic', 'General'];
-            for (const channelName of commonChannelNames) {
+            try {
+                const townSquare = element(by.text('Town Square'));
+                await expect(townSquare).toExist();
+                await townSquare.tap();
+                channelSelected = true;
+            } catch (error1) {
                 try {
-                    const commonChannel = element(by.text(channelName));
-                    await expect(commonChannel).toExist();
-                    await commonChannel.tap();
+                    const offTopic = element(by.text('Off-Topic'));
+                    await expect(offTopic).toExist();
+                    await offTopic.tap();
                     channelSelected = true;
-                    break;
-                } catch (commonChannelError) {
-                    // Continue to next channel
+                } catch (error2) {
+                    try {
+                        const general = element(by.text('General'));
+                        await expect(general).toExist();
+                        await general.tap();
+                        channelSelected = true;
+                    } catch (error3) {
+                        // No channel found
+                    }
                 }
             }
         }

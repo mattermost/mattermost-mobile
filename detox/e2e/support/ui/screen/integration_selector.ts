@@ -53,3 +53,4 @@ class IntegrationSelectorScreen {
 
 const integrationSelectorScreen = new IntegrationSelectorScreen();
 export default integrationSelectorScreen;
+

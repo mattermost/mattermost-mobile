@@ -223,6 +223,7 @@ class ChannelScreen {
         await this.postInput.tap();
         await this.postInput.clearText();
         await this.postInput.replaceText(message);
+
         // # Wait for UI to settle and send button to be fully visible
         await wait(1000);
         await this.sendButton.tap();

@@ -104,15 +104,15 @@ const requireWebhookServer = async (webhookBaseUrl: string) => {
         const response = await client.get(webhookBaseUrl, {
             timeout: 5000,
         });
-        
+
         if (response.status === 200) {
-            return { success: true };
+            return {success: true};
         }
-        
+
         throw new Error(`Webhook server returned status ${response.status}`);
     } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-        
+
         const helperMessage = `
 **The test you're running requires webhook server to be reachable at ${webhookBaseUrl}**
 
@@ -132,7 +132,7 @@ const apiOpenDialog = async (baseUrl: string, dialog: any) => {
     try {
         // Login as admin to get authentication
         await apiAdminLogin(baseUrl);
-        
+
         // Make the API call to open dialog
         return await client.post(
             `${baseUrl}/api/v4/actions/dialogs/open`,
@@ -152,3 +152,4 @@ const Webhook = {
 };
 
 export default Webhook;
+

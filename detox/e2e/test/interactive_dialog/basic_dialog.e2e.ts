@@ -70,10 +70,10 @@ describe('Interactive Dialog - Basic Dialog', () => {
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
-        
+
         // * Verify on channel list screen
         await ChannelListScreen.toBeVisible();
-        
+
         // # Navigate to the test channel for all tests
         await ChannelScreen.open(channelsCategory, testChannel.name);
     });
@@ -148,6 +148,7 @@ describe('Interactive Dialog - Basic Dialog', () => {
         // * Verify dialog is still visible (server error should keep dialog open)
         try {
             await expect(InteractiveDialogScreen.interactiveDialogScreen).toExist();
+
             // # Clean up by canceling the dialog
             await InteractiveDialogScreen.cancel();
         } catch (dialogClosedError) {

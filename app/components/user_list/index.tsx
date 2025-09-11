@@ -271,7 +271,7 @@ export default function UserList({
                 includeMargin={includeUserMargin}
             />
         );
-    }, [selectedIds, currentUserId, manageMode, handleSelectProfile, openUserProfile, showManageMode, testID, term, location, tutorialWatched, includeUserMargin]);
+    }, [selectedIds, currentUserId, manageMode, handleSelectProfile, openUserProfile, showManageMode, testID, tutorialWatched, includeUserMargin]);
 
     const renderLoading = useCallback(() => {
         if (!loading) {
@@ -285,7 +285,7 @@ export default function UserList({
                 size='large'
             />
         );
-    }, [loading, theme]);
+    }, [loading, theme, style.loadingContainer]);
 
     const renderNoResults = useCallback(() => {
         if (!showNoResults || !term) {
@@ -297,7 +297,7 @@ export default function UserList({
                 <NoResultsWithTerm term={term}/>
             </View>
         );
-    }, [showNoResults && style, term, noResutsStyle]);
+    }, [showNoResults, style, term, noResutsStyle]);
 
     const renderSectionHeader = useCallback(({section}: {section: SectionListData<UserProfile>}) => {
         return (
