@@ -522,7 +522,7 @@ describe('ChecklistItemBottomSheet', () => {
 
         const assigneeItem = getByTestId('checklist_item.assignee');
         expect(assigneeItem.props.label).toBe('Assignee');
-        expect(assigneeItem.props.icon).toBe('account-multiple-plus-outline');
+        expect(assigneeItem.props.icon).toBe('account-plus-outline');
     });
 
     it('displays correct due date label and icon', () => {
