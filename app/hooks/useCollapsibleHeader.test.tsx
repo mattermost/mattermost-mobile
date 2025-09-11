@@ -42,8 +42,6 @@ describe('useCollapsibleHeader', () => {
     it('should return the correct values with isLargeTitle is true', () => {
         const {result} = renderHook(() => useCollapsibleHeader(true));
 
-        console.log('AAAAHHHHHHHH', JSON.stringify(result.current));
-
         expect(result.current).toEqual({
             defaultHeight: ViewConstants.DEFAULT_HEADER_HEIGHT,
             scrollPaddingTop: LARGE_HEADER_TITLE_HEIGHT,
