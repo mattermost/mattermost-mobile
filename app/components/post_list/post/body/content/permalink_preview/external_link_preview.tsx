@@ -28,6 +28,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             borderWidth: 1,
             borderRadius: 4,
             padding: 12,
+            marginBottom: 12,
         },
         externalLinkTitle: {
             color: theme.linkColor,
