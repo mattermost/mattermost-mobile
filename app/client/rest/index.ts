@@ -51,7 +51,10 @@ interface Client extends ClientBase,
     ClientNPSMix,
     ClientCustomAttributesMix,
     ClientPlaybooksMix
-{}
+{
+    setBearerToken: (token: string) => void;
+    setCSRFToken: (csrfToken: string) => void;
+}
 
 class Client extends mix(ClientBase).with(
     ClientApps,
