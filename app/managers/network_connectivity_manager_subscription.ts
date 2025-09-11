@@ -13,73 +13,110 @@ import {getIntlShape} from '@utils/general';
 import NetworkConnectivityManager from './network_connectivity_manager';
 import WebsocketManager from './websocket_manager';
 
-let latestAppState: AppStateStatus = 'active';
-let latestReachable: boolean | null = null;
+type Server = {
+    url: string;
+    lastActiveAt: number;
+};
+
+type SubscriptionState = {
+    appState: AppStateStatus;
+    isInternetReachable: boolean | null;
+    appSubscription: NativeEventSubscription | undefined;
+    netInfoSubscription: NetInfoSubscription | undefined;
+    activeServersUnsubscriber: {unsubscribe: () => void} | undefined;
+    websocketSubscription: Subscription | undefined;
+};
+
+const initialState: SubscriptionState = {
+    appState: 'active',
+    isInternetReachable: null,
+    appSubscription: undefined,
+    netInfoSubscription: undefined,
+    activeServersUnsubscriber: undefined,
+    websocketSubscription: undefined,
+};
+
+let state = {...initialState};
 const intl = getIntlShape();
 
-let appSub: NativeEventSubscription | undefined;
-let netSub: NetInfoSubscription | undefined;
-let activeServersUnsub: {unsubscribe: () => void} | undefined;
-let wsSub: Subscription | undefined;
+const findMostRecentServer = (servers: Server[]): Server | undefined => {
+    return servers?.length ? servers.reduce((a, b) => (b.lastActiveAt > a.lastActiveAt ? b : a)) : undefined;
+};
 
-export const startNetworkConnectivitySubscriptions = () => {
-    // App state tracking
-    appSub?.remove();
-    appSub = AppState.addEventListener('change', (s) => {
-        latestAppState = s;
-    });
+const cleanupWebsocketSubscription = (): void => {
+    state.websocketSubscription?.unsubscribe();
+    state.websocketSubscription = undefined;
+};
 
-    // Net info tracking
-    netSub?.();
-    netSub = NetInfo.addEventListener((s) => {
-        latestReachable = s.isInternetReachable ?? null;
-    });
+const handleActiveServersChange = async (servers: Server[]): Promise<void> => {
+    cleanupWebsocketSubscription();
 
-    // Active server subscription → resubscribe websocket stream per active server
-    activeServersUnsub?.unsubscribe?.();
-    activeServersUnsub = subscribeActiveServers(async (servers) => {
-        // Always clean previous websocket subscription
-        wsSub?.unsubscribe();
-        wsSub = undefined;
+    const activeServer = findMostRecentServer(servers);
+    const serverUrl = activeServer?.url;
 
-        const active = servers?.length ? servers.reduce((a, b) => (b.lastActiveAt > a.lastActiveAt ? b : a)) : undefined;
-        const serverUrl: string | undefined = active?.url;
+    if (!serverUrl) {
+        NetworkConnectivityManager.setServerConnectionStatus(false, null);
+        return;
+    }
 
-        if (!serverUrl) {
-            NetworkConnectivityManager.setServerConnectionStatus(false, null);
-            return;
-        }
+    NetworkConnectivityManager.setServerConnectionStatus(true, serverUrl);
 
-        NetworkConnectivityManager.setServerConnectionStatus(true, serverUrl);
-
-        wsSub = WebsocketManager.observeWebsocketState(serverUrl).subscribe((state) => {
-            NetworkConnectivityManager.updateState(
-                state,
-                {isInternetReachable: latestReachable},
-                latestAppState,
-                intl.formatMessage,
-            );
-        });
-    });
-
-    // If navigation changes root or pushes a new screen and overlays are implicitly dismissed,
-    // re-evaluate and show the overlay again if conditions still apply.
-    Navigation.events().registerComponentDidAppearListener((event) => {
-        if (event.componentName === Screens.FLOATING_BANNER) {
-            return;
-        }
-        NetworkConnectivityManager.reapply();
+    state.websocketSubscription = WebsocketManager.observeWebsocketState(serverUrl).subscribe((websocketState) => {
+        NetworkConnectivityManager.updateState(
+            websocketState,
+            {isInternetReachable: state.isInternetReachable},
+            state.appState,
+            intl.formatMessage,
+        );
     });
 };
 
-export const stopNetworkConnectivitySubscriptions = () => {
-    wsSub?.unsubscribe();
-    wsSub = undefined;
-    activeServersUnsub?.unsubscribe?.();
-    activeServersUnsub = undefined;
-    netSub?.();
-    netSub = undefined;
-    appSub?.remove();
-    appSub = undefined;
+const handleAppStateChange = (newAppState: AppStateStatus): void => {
+    state.appState = newAppState;
+};
+
+const handleNetInfoChange = (netInfo: {isInternetReachable: boolean | null}): void => {
+    state.isInternetReachable = netInfo.isInternetReachable ?? null;
+};
+
+const handleNavigationEvent = (event: {componentName: string}): void => {
+    if (event.componentName === Screens.FLOATING_BANNER) {
+        return;
+    }
+    NetworkConnectivityManager.reapply();
+};
+
+/**
+ * Starts all network connectivity subscriptions including app state, network info,
+ * active servers, and navigation events. This initializes the global connectivity monitoring.
+ */
+export const startNetworkConnectivitySubscriptions = (): void => {
+    state.appSubscription?.remove();
+    state.appSubscription = AppState.addEventListener('change', handleAppStateChange);
+
+    state.netInfoSubscription?.();
+    state.netInfoSubscription = NetInfo.addEventListener(handleNetInfoChange);
+
+    state.activeServersUnsubscriber?.unsubscribe?.();
+    state.activeServersUnsubscriber = subscribeActiveServers(handleActiveServersChange);
+
+    Navigation.events().registerComponentDidAppearListener(handleNavigationEvent);
+};
+
+const cleanupAllSubscriptions = (): void => {
+    state.websocketSubscription?.unsubscribe();
+    state.activeServersUnsubscriber?.unsubscribe?.();
+    state.netInfoSubscription?.();
+    state.appSubscription?.remove();
+
+    state = {...initialState};
+};
+
+/**
+ * Stops all network connectivity subscriptions and cleans up resources.
+ * This should be called when the app is shutting down or connectivity monitoring is no longer needed.
+ */
+export const stopNetworkConnectivitySubscriptions = (): void => {
+    cleanupAllSubscriptions();
 };
 
