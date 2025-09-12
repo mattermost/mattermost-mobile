@@ -53,24 +53,23 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
         }
     }, [config, isAppsFormEnabled]);
 
-    // Helper function to find dialog element
-    const findDialogElement = (fieldName: string) => {
-        const elements = config.dialog.elements || [];
+    // Helper function to find the dialog element by field name
+    function findDialogElement(elements: any[], fieldName: string) {
         return elements.find((e) => e.name === fieldName);
-    };
+    }
 
     // Create performLookupCall for dynamic select fields
     const performLookupCall = useCallback(async (field: AppField, values: AppFormValues, userInput: AppFormValue): Promise<DoAppCallResult<AppLookupResponse>> => {
+        const elements = config.dialog.elements || [];
+        const element = findDialogElement(elements, field.name ?? '');
+
+        if (!element || element.data_source !== 'dynamic' || !element.data_source_url) {
+            return {data: {type: 'ok', data: {items: []}}};
+        }
+
         try {
-            // Find the field in the dialog configuration
-            const element = findDialogElement(field.name || '');
-
-            if (!element || element.data_source !== 'dynamic' || !element.data_source_url) {
-                return {data: {type: 'ok', data: {items: []}}};
-            }
-
             // Make the dynamic lookup request using InteractiveDialogAdapter
-            const result = await InteractiveDialogAdapter.performDynamicLookup(element, String(userInput || ''), serverUrl);
+            const result = await InteractiveDialogAdapter.performDynamicLookup(element, String(userInput || ''), serverUrl, config);
             return {data: {type: 'ok', data: {items: result}}};
         } catch (error) {
             return {data: {type: 'ok', data: {items: []}}};
