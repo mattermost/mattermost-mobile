@@ -9,8 +9,8 @@ import {ScrollView} from 'react-native';
 import OptionBox from '@components/option_box';
 import OptionItem from '@components/option_item';
 import {useIsTablet} from '@hooks/device';
-import {setAssignee, setChecklistItemCommand} from '@playbooks/actions/remote/checklist';
-import {goToSelectUser} from '@playbooks/screens/navigation';
+import {setAssignee, setChecklistItemCommand, setDueDate} from '@playbooks/actions/remote/checklist';
+import {goToSelectDate, goToSelectUser} from '@playbooks/screens/navigation';
 import {dismissBottomSheet, goToScreen, openUserProfileModal} from '@screens/navigation';
 import {renderWithIntl} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
@@ -42,6 +42,7 @@ jest.mock('@context/server', () => ({
     useServerUrl: jest.fn().mockReturnValue('server-url'),
 }));
 
+jest.mock('@playbooks/screens/navigation');
 jest.mock('@utils/snack_bar');
 
 describe('ChecklistItemBottomSheet', () => {
@@ -90,6 +91,7 @@ describe('ChecklistItemBottomSheet', () => {
             onRunCommand: mockOnRunCommand,
             teammateNameDisplay: mockTeammateNameDisplay,
             isDisabled: false,
+            currentUserTimezone: {useAutomaticTimezone: false, automaticTimezone: '', manualTimezone: 'America/New_York'},
             participantIds: ['user-1', 'user-2'],
         };
     }
@@ -289,7 +291,7 @@ describe('ChecklistItemBottomSheet', () => {
         const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
 
         const dueDateItem = getByTestId('checklist_item.due_date');
-        expect(dueDateItem.props.info).toBe('Saturday, January 1 at 12:00 AM');
+        expect(dueDateItem.props.info).toBe('Saturday, January 1 at 07:00 PM');
 
         jest.useRealTimers();
     });
@@ -325,6 +327,21 @@ describe('ChecklistItemBottomSheet', () => {
         commandItem = getByTestId('checklist_item.command');
         expect(commandItem).toHaveProp('type', 'arrow');
         expect(commandItem).toHaveProp('action', expect.any(Function));
+    });
+
+    it('set date is disabled when isDisabled is true', () => {
+        const props = getBaseProps();
+        props.isDisabled = true;
+        const {getByTestId, rerender} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
+        let dueDateItem = getByTestId('checklist_item.due_date');
+        expect(dueDateItem).toHaveProp('type', 'none');
+        expect(dueDateItem).toHaveProp('action', undefined);
+
+        props.isDisabled = false;
+        rerender(<ChecklistItemBottomSheet {...props}/>);
+        dueDateItem = getByTestId('checklist_item.due_date');
+        expect(dueDateItem).toHaveProp('type', 'arrow');
+        expect(dueDateItem).toHaveProp('action', expect.any(Function));
     });
 
     it('displays correct command information', () => {
@@ -406,6 +423,47 @@ describe('ChecklistItemBottomSheet', () => {
             4,
             'new command',
         );
+    });
+
+    it('opens the set date modal when the due date is clicked', async () => {
+        const props = getBaseProps();
+        props.checklistNumber = 2;
+        props.itemNumber = 4;
+        props.item = TestHelper.fakePlaybookChecklistItemModel({
+            ...props.item,
+            dueDate: 1640995200000, // 2022-01-01
+        });
+        const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
+        const dueDateItem = getByTestId('checklist_item.due_date');
+        act(() => {
+            dueDateItem.props.action();
+        });
+        expect(goToSelectDate).toHaveBeenCalledWith(
+            expect.anything(),
+            expect.any(Function),
+            1640995200000,
+        );
+
+        const setDate = jest.mocked(goToSelectDate).mock.calls[0][1];
+        await act(async () => {
+            setDate(1672531200000);
+        });
+        expect(setDueDate).toHaveBeenCalledWith(
+            'server-url',
+            'run-1',
+            'item-1',
+            2,
+            4,
+            1672531200000,
+        );
+    });
+
+    it('does not open the set date modal when the due date is clicked and isDisabled is true', async () => {
+        const props = getBaseProps();
+        props.isDisabled = true;
+        const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
+        const dueDateItem = getByTestId('checklist_item.due_date');
+        expect(dueDateItem.props.action).toBeUndefined();
     });
 
     it('handles user profile modal opening correctly', async () => {

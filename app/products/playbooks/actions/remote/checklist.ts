@@ -8,6 +8,7 @@ import {
     setChecklistItemCommand as localSetChecklistItemCommand,
     updateChecklistItem as localUpdateChecklistItem,
     setAssignee as localSetAssignee,
+    setDueDate as localSetDueDate,
 } from '@playbooks/actions/local/checklist';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
@@ -130,6 +131,27 @@ export const setAssignee = async (
         return {data: true};
     } catch (error) {
         logDebug('error on setAssignee', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
+export const setDueDate = async (
+    serverUrl: string,
+    playbookRunId: string,
+    itemId: string,
+    checklistNumber: number,
+    itemNumber: number,
+    date?: number,
+) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        await client.setDueDate(playbookRunId, checklistNumber, itemNumber, date);
+
+        await localSetDueDate(serverUrl, itemId, date);
+        return {data: true};
+    } catch (error) {
+        logDebug('error on setDueDate', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
