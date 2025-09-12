@@ -190,7 +190,7 @@ describe('setDueDate', () => {
 
     it('should handle item not found', async () => {
         const {error} = await setDueDate(serverUrl, 'nonexistent', 1234567890);
-        expect(error).toBe('Item not found');
+        expect(error).toBe('Item not found: nonexistent');
     });
 
     it('should handle database write errors', async () => {
