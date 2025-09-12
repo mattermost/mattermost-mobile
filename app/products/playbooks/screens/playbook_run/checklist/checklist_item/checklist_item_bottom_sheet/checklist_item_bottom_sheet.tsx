@@ -10,9 +10,11 @@ import OptionBox from '@components/option_box';
 import OptionItem, {ITEM_HEIGHT} from '@components/option_item';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {setChecklistItemCommand} from '@playbooks/actions/remote/checklist';
+import {setAssignee, setChecklistItemCommand} from '@playbooks/actions/remote/checklist';
+import {goToSelectUser} from '@playbooks/screens/navigation';
 import {dismissBottomSheet, goToScreen, openUserProfileModal} from '@screens/navigation';
 import {toMilliseconds} from '@utils/datetime';
+import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -125,6 +127,7 @@ type Props = {
     onRunCommand: () => void;
     teammateNameDisplay: string;
     isDisabled: boolean;
+    participantIds: string[];
 };
 
 function getDueDateInfo(intl: IntlShape, dueDate: number | undefined) {
@@ -152,6 +155,7 @@ const ChecklistItemBottomSheet = ({
     onRunCommand,
     teammateNameDisplay,
     isDisabled,
+    participantIds,
 }: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -244,14 +248,39 @@ const ChecklistItemBottomSheet = ({
         };
     }, [assignee, intl, onUserChipPress, teammateNameDisplay]);
 
+    const handleSelect = useCallback(async (selected: UserProfile) => {
+        const res = await setAssignee(serverUrl, runId, item.id, checklistNumber, itemNumber, selected.id);
+        if (res.error) {
+            showPlaybookErrorSnackbar();
+        }
+    }, [checklistNumber, item.id, itemNumber, runId, serverUrl]);
+
+    const handleRemove = useCallback(async () => {
+        const res = await setAssignee(serverUrl, runId, item.id, checklistNumber, itemNumber, '');
+        if (res.error) {
+            showPlaybookErrorSnackbar();
+        }
+    }, [checklistNumber, item.id, itemNumber, runId, serverUrl]);
+
+    const openUserSelector = useCallback(() => {
+        goToSelectUser(
+            intl.formatMessage(messages.assignee),
+            participantIds,
+            assignee?.id,
+            handleSelect,
+            handleRemove,
+        );
+    }, [assignee?.id, handleRemove, handleSelect, intl, participantIds]);
+
     const renderTaskDetails = () => (
         <View style={styles.taskDetailsContainer}>
             <OptionItem
-                type='none'
-                icon='account-multiple-plus-outline'
+                type={isDisabled ? 'none' : 'arrow'}
+                icon='account-plus-outline'
                 label={intl.formatMessage(messages.assignee)}
                 info={assigneeInfo}
                 testID='checklist_item.assignee'
+                action={isDisabled ? undefined : openUserSelector}
             />
             <OptionItem
                 type='none'
