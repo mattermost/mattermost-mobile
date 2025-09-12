@@ -39,6 +39,8 @@ export function updatePermalinkMetadata(
                                 update_at: freshPostData.update_at,
                                 user_id: freshPostData.user_id,
                                 create_at: freshPostData.create_at,
+                                file_ids: freshPostData.file_ids,
+                                metadata: freshPostData.metadata,
                             },
                         },
                     };

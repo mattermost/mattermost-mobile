@@ -116,6 +116,8 @@ const Content = ({isReplyPost, layoutWidth, location, post, theme, showPermalink
                 <PermalinkPreview
                     embedData={post.metadata!.embeds![0].data as PermalinkEmbedData}
                     location={location}
+                    parentLocation={location}
+                    parentPostId={post.id}
                 />
             );
     }
