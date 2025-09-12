@@ -14,6 +14,7 @@ import {getAllServerCredentials, removeServerCredentials} from '@init/credential
 import {relaunchApp} from '@init/launch';
 import PushNotifications from '@init/push_notifications';
 import NetworkManager from '@managers/network_manager';
+import NetworkPerformanceManager from '@managers/network_performance_manager';
 import SecurityManager from '@managers/security_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getAllServers, getServerDisplayName} from '@queries/app/servers';
@@ -118,6 +119,7 @@ export class SessionManagerSingleton {
         SecurityManager.removeServer(serverUrl);
 
         NetworkManager.invalidateClient(serverUrl);
+        NetworkPerformanceManager.removeServer(serverUrl);
         WebsocketManager.invalidateClient(serverUrl);
 
         if (removeServer) {

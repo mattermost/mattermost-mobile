@@ -8,6 +8,7 @@ import {Screens} from '@constants';
 import {showOverlay, dismissOverlay} from '@screens/navigation';
 import {toMilliseconds} from '@utils/datetime';
 
+import type {NetworkPerformanceState} from './network_performance_manager';
 import type {BannerConfig} from '@context/floating_banner';
 
 const FLOATING_BANNER_OVERLAY_ID = 'floating-banner-overlay';
@@ -28,6 +29,7 @@ class NetworkConnectivityManagerSingleton {
     private lastShownMessage: string | null = null;
     private lastDismissedKey: string | null = null;
     private autoHideExpiresAt: number | null = null;
+    private currentPerformanceState: NetworkPerformanceState | null = null;
 
     private clearTimeout(timeout: NodeJS.Timeout | null) {
         if (timeout) {
@@ -57,13 +59,18 @@ class NetworkConnectivityManagerSingleton {
         return this.formatMessage({id: 'connection_banner.not_connected', defaultMessage: 'Unable to connect to network'});
     }
 
-    private showConnectivityOverlay() {
+    private getPerformanceMessage(): string {
+        if (!this.formatMessage) {
+            return 'Limited Network Connection';
+        }
+
+        return this.formatMessage({id: 'connection_banner.limited_network_connection', defaultMessage: 'Limited Network Connection'});
+    }
+
+    private showOverlayBanner(type: 'connectivity' | 'performance', message: string, isConnected: boolean) {
         if (!this.currentServerUrl) {
             return;
         }
-
-        const message = this.getConnectionMessage();
-        const isConnected = this.websocketState === 'connected';
 
         if (this.isOverlayVisible) {
             if (this.lastShownIsConnected === isConnected && this.lastShownMessage === message) {
@@ -84,7 +91,7 @@ class NetworkConnectivityManagerSingleton {
         };
 
         const bannerConfig: BannerConfig = {
-            id: 'connectivity',
+            id: type,
             title: '', // Not used when customContent is provided
             message: '', // Not used when customContent is provided
             dismissible: true,
@@ -95,7 +102,6 @@ class NetworkConnectivityManagerSingleton {
                 onDismiss: handleDismiss,
             }),
             onDismiss: handleDismiss,
-
             position: 'bottom',
         };
 
@@ -104,7 +110,7 @@ class NetworkConnectivityManagerSingleton {
             {
                 banners: [bannerConfig],
                 onDismiss: (id: string) => {
-                    if (id === 'connectivity') {
+                    if (id === type) {
                         this.isOverlayVisible = false;
                         const key = `${this.lastShownIsConnected}-${this.lastShownMessage}`;
                         this.lastDismissedKey = key;
@@ -144,12 +150,16 @@ class NetworkConnectivityManagerSingleton {
         }
 
         this.openTimeout = setTimeout(() => {
-            this.showConnectivityOverlay();
+            const message = this.getConnectionMessage();
+            const isConnected = this.websocketState === 'connected';
+            this.showOverlayBanner('connectivity', message, isConnected);
         }, TIME_TO_OPEN);
     }
 
     private showWithAutoHide(durationMs: number = TIME_TO_CLOSE) {
-        this.showConnectivityOverlay();
+        const message = this.getConnectionMessage();
+        const isConnected = this.websocketState === 'connected';
+        this.showOverlayBanner('connectivity', message, isConnected);
         this.autoHideExpiresAt = Date.now() + durationMs;
         this.closeTimeout = setTimeout(() => {
             this.hideConnectivityOverlay();
@@ -185,6 +195,19 @@ class NetworkConnectivityManagerSingleton {
         this.clearTimeout(this.closeTimeout);
 
         this.applyState(false, false);
+    }
+
+    updatePerformanceState(
+        performanceState: NetworkPerformanceState,
+        formatMessage: (descriptor: {id: string; defaultMessage: string}) => string,
+    ) {
+        this.currentPerformanceState = performanceState;
+        this.formatMessage = formatMessage;
+
+        if (performanceState === 'slow') {
+            const message = this.getPerformanceMessage();
+            this.showOverlayBanner('performance', message, false);
+        }
     }
 
     cleanup() {
@@ -224,7 +247,7 @@ class NetworkConnectivityManagerSingleton {
         }
 
         if (this.websocketState === 'connecting') {
-            this.showConnectivityOverlay();
+            this.showOverlayBanner('connectivity', currentMessage, isConnected);
             return;
         }
 
@@ -233,7 +256,7 @@ class NetworkConnectivityManagerSingleton {
                 return;
             }
             if (immediate) {
-                this.showConnectivityOverlay();
+                this.showOverlayBanner('connectivity', currentMessage, isConnected);
             } else {
                 this.showWithDelay();
             }
