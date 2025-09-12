@@ -988,7 +988,6 @@
   "playbooks.checklist_item.check": "Zkontrolovat",
   "playbooks.checklist_item.checked": "Zkontrolováno",
   "playbooks.checklist_item.command": "Příkaz",
-  "playbooks.checklist_item.date_at_time": "{date} v {time}",
   "playbooks.checklist_item.due_date": "Termín dokončení",
   "playbooks.checklist_item.none": "Žádný",
   "playbooks.checklist_item.rerun_command": "Znovu spustit příkaz",

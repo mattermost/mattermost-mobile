@@ -991,7 +991,6 @@
   "playbooks.checklist_item.check": "Kontrollera",
   "playbooks.checklist_item.checked": "Avbockad",
   "playbooks.checklist_item.command": "Kommando",
-  "playbooks.checklist_item.date_at_time": "{date} kl. {time}",
   "playbooks.checklist_item.due_date": "Förfallodag",
   "playbooks.checklist_item.none": "Inget",
   "playbooks.checklist_item.rerun_command": "Kommando för att köra igen",

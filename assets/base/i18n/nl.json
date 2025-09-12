@@ -991,7 +991,6 @@
   "playbooks.checklist_item.check": "Controleren",
   "playbooks.checklist_item.checked": "Aangevinkt",
   "playbooks.checklist_item.command": "Opdracht",
-  "playbooks.checklist_item.date_at_time": "{date} om {time}",
   "playbooks.checklist_item.due_date": "Vervaldatum",
   "playbooks.checklist_item.none": "Geen",
   "playbooks.checklist_item.rerun_command": "Opdracht opnieuw uitvoeren",
