@@ -8,11 +8,11 @@
   "apps": {
     "ios.debug": {
       "type": "ios.app",
-      "binaryPath": "../mobile-artifacts/Mattermost.app"
+      "binaryPath": "../ios/build/Products/Debug-iphonesimulator/Mattermost.app"
     },
     "ios.release": {
       "type": "ios.app",
-      "binaryPath": "../ios/Build/Products/Release-iphonesimulator/Mattermost.app",
+      "binaryPath": "../ios/build/Products/Release-iphonesimulator/Mattermost.app",
       "build": "cd .. && npm run build:ios-sim && cd detox"
     },
     "android.debug": {
@@ -30,14 +30,19 @@
     "ios.simulator": {
       "type": "ios.simulator",
       "device": {
-        "type": "__DEVICE_NAME__",
-        "os": "__DEVICE_OS_VERSION__"
+        "type": "iPhone 16 Pro"
+      },
+      "environment": {
+        "MM_FEATUREFLAGS_InteractiveDialogAppsForm": "true"
       }
     },
     "android.emulator": {
       "type": "android.emulator",
       "device": {
         "avdName": "detox_pixel_4_xl_api_34"
+      },
+      "environment": {
+        "MM_FEATUREFLAGS_InteractiveDialogAppsForm": "true"
       }
     }
   },
