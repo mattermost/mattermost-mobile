@@ -110,10 +110,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-function removeProfileFromList(list: {[id: string]: UserProfile}, id: string) {
-    const newSelectedIds = Object.assign({}, list);
-
-    Reflect.deleteProperty(newSelectedIds, id);
+function removeProfileFromList(list: Set<string>, id: string) {
+    const newSelectedIds = new Set(list);
+    newSelectedIds.delete(id);
     return newSelectedIds;
 }
 
@@ -137,7 +136,7 @@ export default function ChannelAddMembers({
 
     const [term, setTerm] = useState('');
     const [addingMembers, setAddingMembers] = useState(false);
-    const [selectedIds, setSelectedIds] = useState<{[id: string]: UserProfile}>({});
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set<string>());
     const [showBanner, setShowBanner] = useState(Boolean(channel?.abacPolicyEnforced));
 
     // Use the hook to fetch access control attributes
@@ -184,12 +183,12 @@ export default function ChannelAddMembers({
     const handleSelectProfile = useCallback((user: UserProfile) => {
         clearSearch();
         setSelectedIds((current) => {
-            if (current[user.id]) {
+            if (current.has(user.id)) {
                 return removeProfileFromList(current, user.id);
             }
 
-            const newSelectedIds = Object.assign({}, current);
-            newSelectedIds[user.id] = user;
+            const newSelectedIds = new Set(current);
+            newSelectedIds.add(user.id);
 
             return newSelectedIds;
         });

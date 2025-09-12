@@ -6,7 +6,7 @@ import Renderer from 'commonmark-react-renderer';
 import React, {type ReactElement, useRef} from 'react';
 import {type StyleProp, StyleSheet, Text, type TextStyle, View} from 'react-native';
 
-import EditedIndicator from '@components/EditedIndicator';
+import EditedIndicator from '@components/edited_indicator';
 import Emoji from '@components/emoji';
 import {useTheme} from '@context/theme';
 

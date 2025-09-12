@@ -9,7 +9,7 @@ import React, {type ReactElement, useMemo, useRef} from 'react';
 import {Dimensions, type GestureResponderEvent, type StyleProp, StyleSheet, Text, type TextStyle, View, type ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import EditedIndicator from '@components/EditedIndicator';
+import EditedIndicator from '@components/edited_indicator';
 import Emoji from '@components/emoji';
 import FormattedText from '@components/formatted_text';
 import {logError} from '@utils/log';

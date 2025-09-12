@@ -15,12 +15,13 @@ import {ActionType, Events, Screens} from '@constants';
 import {PostTypes} from '@constants/post';
 import DatabaseManager from '@database/manager';
 import {getChannelById, getMyChannel} from '@queries/servers/channel';
-import {getPostById} from '@queries/servers/post';
+import {getPostById, syncPermalinkPreviewsForEditedPost} from '@queries/servers/post';
 import {getCurrentChannelId, getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 import {hasArrayChanged, isTablet} from '@utils/helpers';
+import {logWarning} from '@utils/log';
 import {isFromWebhook, isSystemMessage, shouldIgnorePost} from '@utils/post';
 
 import type {Model} from '@nozbe/watermelondb';
@@ -208,13 +209,28 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
         return;
     }
 
-    const models: Model[] = [];
+    const permalinkModels: Model[] = [];
+    try {
+        const updatedPermalinkPosts = await syncPermalinkPreviewsForEditedPost(database, post);
+        if (updatedPermalinkPosts.length) {
+            permalinkModels.push(...updatedPermalinkPosts);
+        }
+    } catch (error) {
+        logWarning('Failed to sync permalink previews for edited post:', error);
+    }
 
     const oldPost = await getPostById(database, post.id);
     if (!oldPost) {
         EphemeralStore.addEditingPost(serverUrl, post);
+
+        // If we have permalink updates but no post to process, batch just the permalinks
+        if (permalinkModels.length) {
+            operator.batchRecords(permalinkModels, 'handlePostEdited - permalink sync only');
+        }
         return;
     }
+
+    const models: Model[] = [...permalinkModels];
 
     if (post.type === PostTypes.EPHEMERAL && post.create_at === 0) {
         // Updated ephemeral messages don't have a create_at value

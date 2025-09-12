@@ -4,6 +4,7 @@
 import React, {type ComponentProps} from 'react';
 
 import NavigationHeader from '@components/navigation_header';
+import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {fetchPlaybookRunsForChannel} from '@playbooks/actions/remote/runs';
 import {goToPlaybookRun, goToPlaybookRuns} from '@playbooks/screens/navigation';
@@ -69,6 +70,45 @@ describe('ChannelHeader', () => {
         expect(navHeader.rightButtons).toEqual(
             expect.arrayContaining([
                 expect.not.objectContaining({
+                    iconName: 'product-playbooks',
+                }),
+            ]),
+        );
+    });
+
+    it('does not show playbook button when is DM or GM', () => {
+        const props = getBaseProps();
+        props.hasPlaybookRuns = true;
+        props.playbooksActiveRuns = 1;
+        props.channelType = General.DM_CHANNEL;
+        const {getByTestId, rerender} = renderWithIntl(<ChannelHeader {...props}/>);
+        const navHeader = getByTestId('navigation-header');
+        let rightButtons = navHeader.props.rightButtons;
+        expect(rightButtons).not.toEqual(expect.arrayContaining(
+            [
+                expect.objectContaining({
+                    iconName: 'product-playbooks',
+                }),
+            ]),
+        );
+
+        props.channelType = General.GM_CHANNEL;
+        rerender(<ChannelHeader {...props}/>);
+        rightButtons = navHeader.props.rightButtons;
+        expect(rightButtons).not.toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({
+                    iconName: 'product-playbooks',
+                }),
+            ]),
+        );
+
+        props.channelType = General.OPEN_CHANNEL;
+        rerender(<ChannelHeader {...props}/>);
+        rightButtons = navHeader.props.rightButtons;
+        expect(rightButtons).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({
                     iconName: 'product-playbooks',
                 }),
             ]),

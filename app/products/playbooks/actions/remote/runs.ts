@@ -6,7 +6,7 @@ import {PER_PAGE_DEFAULT} from '@client/rest/constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {updateLastPlaybookRunsFetchAt} from '@playbooks/actions/local/channel';
-import {handlePlaybookRuns} from '@playbooks/actions/local/run';
+import {handlePlaybookRuns, setOwner as localSetOwner} from '@playbooks/actions/local/run';
 import {getLastPlaybookRunsFetchAt} from '@playbooks/database/queries/run';
 import {getMaxRunUpdateAt} from '@playbooks/utils/run';
 import EphemeralStore from '@store/ephemeral_store';
@@ -105,6 +105,20 @@ export const fetchPlaybookRun = async (serverUrl: string, runId: string, fetchOn
         return {runs: [run]};
     } catch (error) {
         logDebug('error on fetchPlaybookRun', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
+export const setOwner = async (serverUrl: string, playbookRunId: string, ownerId: string) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        await client.setOwner(playbookRunId, ownerId);
+
+        await localSetOwner(serverUrl, playbookRunId, ownerId);
+        return {data: true};
+    } catch (error) {
+        logDebug('error on setOwner', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }

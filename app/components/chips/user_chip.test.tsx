@@ -33,14 +33,14 @@ describe('UserChip', () => {
                 onPress={mockOnPress}
                 testID='user-chip'
                 teammateNameDisplay='username'
-                showRemoveOption={true}
                 showAnimation={true}
+                actionIcon='remove'
             />,
         );
 
         const baseChip = getByTestId('user-chip');
         expect(baseChip.props.label).toBe('test-user');
-        expect(baseChip.props.showRemoveOption).toBe(true);
+        expect(baseChip.props.actionIcon).toBe('remove');
         expect(baseChip.props.showAnimation).toBe(true);
 
         expect(baseChip.props.prefix).toBeDefined();

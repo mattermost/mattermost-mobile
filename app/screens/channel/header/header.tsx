@@ -186,7 +186,7 @@ const ChannelHeader = ({
         if (callsAvailable && !isDMorGM) {
             items += 1;
         }
-        if (hasPlaybookRuns) {
+        if (hasPlaybookRuns && !isDMorGM) {
             items += 1;
         }
         let height = CHANNEL_ACTIONS_OPTIONS_HEIGHT + SEPARATOR_HEIGHT + MARGIN + (items * ITEM_HEIGHT);
@@ -224,7 +224,7 @@ const ChannelHeader = ({
 
     const rightButtons = useMemo(() => {
         const buttons: HeaderRightButton[] = [];
-        if (playbooksActiveRuns) {
+        if (playbooksActiveRuns && !isDMorGM) {
             buttons.push({
                 iconName: 'product-playbooks',
                 onPress: openPlaybooksRuns,
@@ -250,7 +250,7 @@ const ChannelHeader = ({
         });
 
         return buttons;
-    }, [playbooksActiveRuns, onChannelQuickAction, openPlaybooksRuns]);
+    }, [playbooksActiveRuns, isDMorGM, onChannelQuickAction, openPlaybooksRuns]);
 
     let title = displayName;
     if (isOwnDirectMessage) {

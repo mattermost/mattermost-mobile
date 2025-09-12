@@ -28,26 +28,39 @@ describe('BaseChip', () => {
         expect(getByText('Test Label')).toBeTruthy();
     });
 
-    it('should render with the X button when showRemoveOption is true', () => {
+    it('should render with the X button when actionIcon is remove', () => {
         const {getByTestId} = renderWithIntlAndTheme(
             <BaseChip
                 onPress={onPressMock}
                 label='Test Label'
                 testID='base_chip'
-                showRemoveOption={true}
+                actionIcon='remove'
             />,
         );
 
         expect(getByTestId('base_chip.remove.button')).toBeTruthy();
     });
 
-    it('should not render the X button when showRemoveOption is false', () => {
+    it('should render with the chevron down button when actionIcon is downArrow', () => {
+        const {getByTestId} = renderWithIntlAndTheme(
+            <BaseChip
+                onPress={onPressMock}
+                label='Test Label'
+                testID='base_chip'
+                actionIcon='downArrow'
+            />,
+        );
+
+        expect(getByTestId('base_chip.downArrow.button')).toBeTruthy();
+    });
+
+    it('should not render the X button when actionIcon is undefined', () => {
         const {queryByTestId} = renderWithIntlAndTheme(
             <BaseChip
                 onPress={onPressMock}
                 label='Test Label'
                 testID='base_chip'
-                showRemoveOption={false}
+                actionIcon={undefined}
             />,
         );
 
@@ -60,7 +73,7 @@ describe('BaseChip', () => {
                 onPress={onPressMock}
                 label='Test Label'
                 testID='base_chip'
-                showRemoveOption={true}
+                actionIcon='remove'
             />,
         );
 
@@ -74,7 +87,7 @@ describe('BaseChip', () => {
                 onPress={onPressMock}
                 label='Test Label'
                 testID='base_chip'
-                showRemoveOption={false}
+                actionIcon={undefined}
             />,
         );
 

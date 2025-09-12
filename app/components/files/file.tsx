@@ -45,7 +45,6 @@ type FileProps = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         fileWrapper: {
-            flex: 1,
             flexDirection: 'row',
             alignItems: 'center',
             borderWidth: 1,
@@ -64,7 +63,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             margin: 4,
         },
         audioFile: {
-            flex: 1,
             flexDirection: 'row',
             alignItems: 'center',
         },

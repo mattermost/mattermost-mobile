@@ -13,7 +13,7 @@ import {removeRecentCustomStatus, updateCustomStatus, unsetCustomStatus} from '@
 import CompassIcon from '@components/compass_icon';
 import TabletTitle from '@components/tablet_title';
 import {Events, Screens} from '@constants';
-import {CustomStatusDurationEnum, SET_CUSTOM_STATUS_FAILURE} from '@constants/custom_status';
+import {CUSTOM_STATUS_TIME_PICKER_INTERVALS_IN_MINUTES, CustomStatusDurationEnum, SET_CUSTOM_STATUS_FAILURE} from '@constants/custom_status';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
@@ -179,7 +179,7 @@ const CustomStatus = ({
         return getUserCustomStatus(currentUser);
     }, [currentUser]);
 
-    const initialStatus = useMemo(() => {
+    const [initialStatus] = useState(() => {
         const userTimezone = getTimezone(currentUser?.timezone);
 
         // May be a ref
@@ -187,7 +187,7 @@ const CustomStatus = ({
 
         const currentTime = getCurrentMomentForTimezone(userTimezone ?? '');
 
-        let initialCustomExpiryTime = getRoundedTime(currentTime);
+        let initialCustomExpiryTime = getRoundedTime(currentTime, CUSTOM_STATUS_TIME_PICKER_INTERVALS_IN_MINUTES);
         const isCurrentCustomStatusSet = !isCustomStatusExpired && (storedStatus?.text || storedStatus?.emoji);
         if (isCurrentCustomStatusSet && storedStatus?.duration === 'date_and_time' && storedStatus?.expires_at) {
             initialCustomExpiryTime = moment(storedStatus?.expires_at);
@@ -199,7 +199,7 @@ const CustomStatus = ({
             expiresAt: initialCustomExpiryTime,
             text: isCurrentCustomStatusSet ? storedStatus?.text : '',
         };
-    }, []);
+    });
 
     const [newStatus, dispatchStatus] = useReducer(reducer, initialStatus);
 
@@ -353,7 +353,7 @@ const CustomStatus = ({
                 }],
             },
         });
-    }, [isBtnEnabled]);
+    }, [componentId, intl, isBtnEnabled, theme.sidebarHeaderTextColor]);
 
     return (
         <View

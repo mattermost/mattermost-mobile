@@ -3,6 +3,7 @@
 
 import React, {type ComponentProps} from 'react';
 
+import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import PlaybookRunsOption from '@playbooks/components/channel_actions/playbook_runs_option';
 import {renderWithEverything} from '@test/intl-test-helper';
@@ -45,5 +46,15 @@ describe('ChannelInfoOptions', () => {
         props.channelId = 'channel-id-2';
         rerender(<ChannelInfoOptions {...props}/>);
         expect(getByTestId('playbook-runs-option')).toHaveProp('channelId', 'channel-id-2');
+    });
+    it('should not show playbook runs option when is DM or GM', () => {
+        const props = getBaseProps();
+        props.type = General.DM_CHANNEL;
+        const {queryByTestId, rerender} = renderWithEverything(<ChannelInfoOptions {...props}/>, {database});
+        expect(queryByTestId('playbook-runs-option')).toBeNull();
+
+        props.type = General.GM_CHANNEL;
+        rerender(<ChannelInfoOptions {...props}/>);
+        expect(queryByTestId('playbook-runs-option')).toBeNull();
     });
 });

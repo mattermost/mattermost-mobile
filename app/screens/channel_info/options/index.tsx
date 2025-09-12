@@ -51,7 +51,7 @@ const Options = ({
             <NotificationPreference channelId={channelId}/>
             <PinnedMessages channelId={channelId}/>
             <ChannelFiles channelId={channelId}/>
-            {isPlaybooksEnabled &&
+            {isPlaybooksEnabled && !isDMorGM &&
             <PlaybookRunsOption
                 channelId={channelId}
                 location='channel_actions'
