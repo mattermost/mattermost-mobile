@@ -26,16 +26,17 @@ type FilesProps = {
     isReplyPost: boolean;
     postId?: string;
     postProps?: Record<string, unknown>;
+    isPermalinkPreview?: boolean;
 }
 
 const MAX_VISIBLE_ROW_IMAGES = 4;
 const styles = StyleSheet.create({
     row: {
-        flex: 1,
         flexDirection: 'row',
         marginTop: 5,
+        flexShrink: 0,
     },
-    container: {
+    rowItemContainer: {
         flex: 1,
     },
     gutter: {
@@ -46,6 +47,9 @@ const styles = StyleSheet.create({
     },
     marginTop: {
         marginTop: 10,
+    },
+    rowPermalinkPreview: {
+        marginTop: 0,
     },
 });
 
@@ -59,6 +63,7 @@ const Files = ({
     location,
     postId,
     postProps,
+    isPermalinkPreview = false,
 }: FilesProps) => {
     const galleryIdentifier = `${postId}-fileAttachments-${location}`;
     const [inViewPort, setInViewPort] = useState(false);
@@ -84,9 +89,14 @@ const Files = ({
 
     const isSingleImage = useMemo(() => filesInfo.filter((f) => isImage(f) || isVideo(f)).length === 1, [filesInfo]);
 
-    const renderItems = (items: FileInfo[], moreImagesCount = 0, includeGutter = false) => {
+    const renderItems = (items: FileInfo[], moreImagesCount = 0, includeGutter = false, isImageRow = false) => {
         let nonVisibleImagesCount: number;
-        let container: StyleProp<ViewStyle> = items.length > 1 ? styles.container : undefined;
+
+        // Apply flex: 1 for multiple items, except in permalink previews where vertical
+        // document lists should not use flex to prevent shrinking under maxHeight constraints.
+        // Horizontal image rows (includeGutter=true) still need flex for space distribution.
+        const shouldApplyFlex = items.length > 1 && !(isPermalinkPreview && !includeGutter);
+        let container: StyleProp<ViewStyle> = shouldApplyFlex ? styles.rowItemContainer : undefined;
         const containerWithGutter = [container, styles.gutter];
         const wrapperWidth = getViewPortWidth(isReplyPost, isTablet) - 6;
 
@@ -98,9 +108,13 @@ const Files = ({
             if (idx !== 0 && includeGutter) {
                 container = containerWithGutter;
             }
+            const shouldRemoveMarginTop = isPermalinkPreview && (
+                (isImageRow) || // Remove marginTop for all images in image row
+                (!isImageRow && idx === 0 && imageAttachments.length === 0) // Remove marginTop for first non-image only if no images present
+            );
             return (
                 <View
-                    style={[container, styles.marginTop]}
+                    style={[container, styles.marginTop, shouldRemoveMarginTop && {marginTop: 0}]}
                     testID={`${file.id}-file-container`}
                     key={file.id}
                 >
@@ -138,10 +152,14 @@ const Files = ({
 
         return (
             <View
-                style={[styles.row, {width: portraitPostWidth}]}
+                style={[
+                    styles.row,
+                    {width: portraitPostWidth},
+                    isPermalinkPreview && {marginTop: 0},
+                ]}
                 testID='image-row'
             >
-                { renderItems(visibleImages, nonVisibleImagesCount, true) }
+                { renderItems(visibleImages, nonVisibleImagesCount, true, true) }
             </View>
         );
     };
@@ -164,7 +182,10 @@ const Files = ({
         <GalleryInit galleryIdentifier={galleryIdentifier}>
             <Animated.View
                 testID='files-container'
-                style={failed ? styles.failed : undefined}
+                style={[
+                    failed ? styles.failed : undefined,
+                    isPermalinkPreview && {marginTop: 0},
+                ]}
             >
                 {renderImageRow()}
                 {renderItems(nonImageAttachments)}
