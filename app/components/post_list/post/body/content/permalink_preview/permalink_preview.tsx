@@ -92,7 +92,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
 
         channelContext: {
-            marginTop: 16,
+            marginTop: 8,
             color: changeOpacity(theme.centerChannelColor, 0.64),
             ...typography('Body', 75),
         },
@@ -185,7 +185,7 @@ const PermalinkPreview = ({
         return embedData?.post?.metadata?.files || [];
     }, [embedData?.post?.metadata?.files]);
 
-    const hasFiles = filesInfo && filesInfo.length > 0;
+    const hasFiles = filesInfo.length > 0;
 
     const handlePress = usePreventDoubleTap(useCallback(() => {
         // Navigation will be implemented in Task 5
