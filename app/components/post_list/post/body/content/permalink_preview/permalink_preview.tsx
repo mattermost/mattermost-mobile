@@ -211,7 +211,7 @@ const PermalinkPreview = ({
         const teamName = embedData.team_name;
         const postId = embedData.post_id;
 
-        if (teamName && postId) {
+        if (postId) {
             showPermalink(serverUrl, teamName, postId);
         }
     }, [embedData.team_name, embedData.post_id, serverUrl]));

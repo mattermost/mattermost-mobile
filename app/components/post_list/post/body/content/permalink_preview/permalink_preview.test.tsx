@@ -173,6 +173,29 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
         );
     });
 
+    it('should call showPermalink even when team_name is empty for DM posts', () => {
+        const mockShowPermalink = jest.mocked(showPermalink);
+        const dmProps = {
+            ...baseProps,
+            embedData: {
+                ...baseProps.embedData,
+                team_name: '',
+                channel_type: 'D',
+                channel_display_name: 'testuser',
+            },
+        };
+        const {getByTestId} = renderPermalinkPreview(dmProps);
+        const permalinkContainer = getByTestId('permalink-preview-container');
+
+        fireEvent.press(permalinkContainer);
+
+        expect(mockShowPermalink).toHaveBeenCalledWith(
+            serverUrl,
+            '',
+            baseProps.embedData.post_id,
+        );
+    });
+
     it('should display author name from user model', () => {
         const {getByText} = renderPermalinkPreview(baseProps);
 
