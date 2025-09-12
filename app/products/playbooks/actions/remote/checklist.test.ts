@@ -4,9 +4,22 @@
 import DatabaseManager from '@database/manager';
 import IntegrationsManager from '@managers/integrations_manager';
 import NetworkManager from '@managers/network_manager';
-import {setChecklistItemCommand as localSetChecklistItemCommand, updateChecklistItem as localUpdateChecklistItem, setDueDate as localSetDueDate} from '@playbooks/actions/local/checklist';
+import {
+    setChecklistItemCommand as localSetChecklistItemCommand,
+    updateChecklistItem as localUpdateChecklistItem,
+    setAssignee as localSetAssignee,
+    setDueDate as localSetDueDate,
+} from '@playbooks/actions/local/checklist';
 
-import {updateChecklistItem, runChecklistItem, skipChecklistItem, restoreChecklistItem, setChecklistItemCommand, setDueDate} from './checklist';
+import {
+    updateChecklistItem,
+    runChecklistItem,
+    skipChecklistItem,
+    restoreChecklistItem,
+    setChecklistItemCommand,
+    setAssignee,
+    setDueDate,
+} from './checklist';
 
 const serverUrl = 'baseHandler.test.com';
 
@@ -21,6 +34,7 @@ const mockClient = {
     runChecklistItemSlashCommand: jest.fn(),
     skipChecklistItem: jest.fn(),
     restoreChecklistItem: jest.fn(),
+    setAssignee: jest.fn(),
     setChecklistItemCommand: jest.fn(),
     setDueDate: jest.fn(),
 };
@@ -180,6 +194,46 @@ describe('checklist', () => {
             expect(result.data).toBe(true);
             expect(mockClient.restoreChecklistItem).toHaveBeenCalledWith(playbookRunId, checklistNumber, itemNumber);
             expect(localUpdateChecklistItem).toHaveBeenCalledWith(serverUrl, itemId, '');
+        });
+    });
+
+    describe('setAssignee', () => {
+        it('should handle client error', async () => {
+            jest.spyOn(NetworkManager, 'getClient').mockImplementationOnce(throwFunc);
+
+            const result = await setAssignee(serverUrl, playbookRunId, itemId, checklistNumber, itemNumber, 'user-id-1');
+            expect(result.error).toBeDefined();
+            expect(mockClient.setAssignee).not.toHaveBeenCalled();
+            expect(localSetAssignee).not.toHaveBeenCalled();
+        });
+
+        it('should handle API exception', async () => {
+            mockClient.setAssignee.mockImplementationOnce(throwFunc);
+
+            const result = await setAssignee(serverUrl, playbookRunId, itemId, checklistNumber, itemNumber, 'user-id-1');
+            expect(result.error).toBeDefined();
+            expect(mockClient.setAssignee).toHaveBeenCalledWith(playbookRunId, checklistNumber, itemNumber, 'user-id-1');
+            expect(localSetAssignee).not.toHaveBeenCalled();
+        });
+
+        it('should set assignee successfully', async () => {
+            mockClient.setAssignee.mockResolvedValueOnce({});
+
+            const result = await setAssignee(serverUrl, playbookRunId, itemId, checklistNumber, itemNumber, 'user-id-1');
+            expect(result.data).toBe(true);
+            expect(result.error).toBeUndefined();
+            expect(mockClient.setAssignee).toHaveBeenCalledWith(playbookRunId, checklistNumber, itemNumber, 'user-id-1');
+            expect(localSetAssignee).toHaveBeenCalledWith(serverUrl, itemId, 'user-id-1');
+        });
+
+        it('should handle empty assignee ID', async () => {
+            mockClient.setAssignee.mockResolvedValueOnce({});
+
+            const result = await setAssignee(serverUrl, playbookRunId, itemId, checklistNumber, itemNumber, '');
+            expect(result.data).toBe(true);
+            expect(result.error).toBeUndefined();
+            expect(mockClient.setAssignee).toHaveBeenCalledWith(playbookRunId, checklistNumber, itemNumber, '');
+            expect(localSetAssignee).toHaveBeenCalledWith(serverUrl, itemId, '');
         });
     });
 

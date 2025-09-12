@@ -11,7 +11,7 @@ import DraftEditPostUploadManager from '@managers/draft_upload_manager';
 import {fireEvent, renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
-import UploadItem from '.';
+import UploadItem from './upload_item_wrapper';
 
 import type {Database} from '@nozbe/watermelondb';
 

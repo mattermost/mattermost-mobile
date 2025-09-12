@@ -11,6 +11,7 @@ import EditCommand from './edit_command';
 import PlaybookRun from './playbook_run';
 import PlaybookRuns from './playbooks_runs';
 import SelectDate from './select_date';
+import SelectUser from './select_user';
 
 import {loadPlaybooksScreen} from '.';
 
@@ -38,6 +39,12 @@ jest.mock('@playbooks/screens/edit_command', () => ({
     default: jest.fn(),
 }));
 jest.mocked(EditCommand).mockImplementation((props) => <Text {...props}>{Screens.PLAYBOOK_EDIT_COMMAND}</Text>);
+
+jest.mock('@playbooks/screens/select_user', () => ({
+    __esModule: true,
+    default: jest.fn(),
+}));
+jest.mocked(SelectUser).mockImplementation((props) => <Text {...props}>{Screens.PLAYBOOK_SELECT_USER}</Text>);
 
 jest.mock('@playbooks/screens/select_date', () => ({
     __esModule: true,

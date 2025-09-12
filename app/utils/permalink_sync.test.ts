@@ -187,6 +187,115 @@ describe('Permalink Sync Utils', () => {
             expect(result).toBeNull();
         });
 
+        it('should update permalink metadata including file metadata when fresh post is newer', async () => {
+            const referencedPostId = 'referenced_post_with_files';
+
+            const oldFileMetadata: FileInfo[] = [
+                {
+                    id: 'file1',
+                    name: 'old_file.txt',
+                    extension: 'txt',
+                    size: 100,
+                    mime_type: 'text/plain',
+                    width: 0,
+                    height: 0,
+                    has_preview_image: false,
+                    user_id: 'user_123',
+                },
+            ];
+
+            const newFileMetadata: FileInfo[] = [
+                {
+                    id: 'file1',
+                    name: 'old_file.txt',
+                    extension: 'txt',
+                    size: 100,
+                    mime_type: 'text/plain',
+                    width: 0,
+                    height: 0,
+                    has_preview_image: false,
+                    user_id: 'user_123',
+                },
+                {
+                    id: 'file2',
+                    name: 'new_file.jpg',
+                    extension: 'jpg',
+                    size: 2000,
+                    mime_type: 'image/jpeg',
+                    width: 1920,
+                    height: 1080,
+                    has_preview_image: true,
+                    user_id: 'user_123',
+                },
+            ];
+
+            const referencingPost = TestHelper.fakePost({
+                id: 'referencing_post_files',
+                channel_id: 'channel1',
+                metadata: {
+                    embeds: [
+                        {
+                            type: 'permalink',
+                            url: '',
+                            data: {
+                                post_id: referencedPostId,
+                                post: {
+                                    id: referencedPostId,
+                                    message: 'Post with old files',
+                                    edit_at: 1000,
+                                    update_at: 1000,
+                                    user_id: 'user_123',
+                                    create_at: 500,
+                                    metadata: {
+                                        files: oldFileMetadata,
+                                    },
+                                },
+                            },
+                        },
+                    ],
+                },
+            });
+
+            const models = await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_NEW,
+                order: [referencingPost.id],
+                posts: [referencingPost],
+                prepareRecordsOnly: true,
+            });
+            await operator.batchRecords(models, 'test');
+
+            const postModel = await database.get('Post').find(referencingPost.id) as PostModel;
+
+            const freshPostData = TestHelper.fakePost({
+                id: referencedPostId,
+                message: 'Post with updated files',
+                edit_at: 2000,
+                update_at: 2000,
+                user_id: 'user_123',
+                create_at: 500,
+                metadata: {
+                    files: newFileMetadata,
+                },
+            });
+
+            const result = updatePermalinkMetadata(postModel, referencedPostId, freshPostData);
+
+            expect(result).not.toBeNull();
+            expect(result!.id).toBe(referencingPost.id);
+            expect(result!._preparedState).toBe('update');
+
+            // Verify the metadata changes
+            expect(result!.metadata!.embeds![0].data.post.message).toBe('Post with updated files');
+            expect(result!.metadata!.embeds![0].data.post.edit_at).toBe(2000);
+            expect(result!.metadata!.embeds![0].data.post.metadata).toEqual({
+                files: newFileMetadata,
+            });
+            expect(result!.metadata!.embeds![0].data.post.metadata!.files).toHaveLength(2);
+            expect(result!.metadata!.embeds![0].data.post.metadata!.files![1].name).toBe('new_file.jpg');
+
+            await operator.batchRecords([result!], 'test file metadata update');
+        });
+
         it('should handle errors during post update gracefully', async () => {
             const referencedPostId = 'referenced_post_456';
 

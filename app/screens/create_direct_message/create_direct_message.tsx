@@ -24,7 +24,6 @@ import {dismissModal, setButtons} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
-import {displayUsername} from '@utils/user';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
@@ -95,10 +94,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-function removeProfileFromList(list: {[id: string]: UserProfile}, id: string) {
-    const newSelectedIds = Object.assign({}, list);
-
-    Reflect.deleteProperty(newSelectedIds, id);
+function removeProfileFromList(list: Set<string>, id: string) {
+    const newSelectedIds = new Set(list);
+    newSelectedIds.delete(id);
     return newSelectedIds;
 }
 
@@ -122,9 +120,9 @@ export default function CreateDirectMessage({
 
     const [term, setTerm] = useState('');
     const [startingConversation, setStartingConversation] = useState(false);
-    const [selectedIds, setSelectedIds] = useState<{[id: string]: UserProfile}>({});
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set<string>());
     const [showToast, setShowToast] = useState(false);
-    const selectedCount = Object.keys(selectedIds).length;
+    const selectedCount = selectedIds.size;
 
     const clearSearch = useCallback(() => {
         setTerm('');
@@ -134,17 +132,15 @@ export default function CreateDirectMessage({
         setSelectedIds((current) => removeProfileFromList(current, id));
     }, []);
 
-    const createDirectChannel = useCallback(async (id: string, selectedUser?: UserProfile): Promise<boolean> => {
-        const user = selectedUser || selectedIds[id];
-        const displayName = displayUsername(user, intl.locale, teammateNameDisplay);
-        const result = await makeDirectChannel(serverUrl, id, displayName);
+    const createDirectChannel = useCallback(async (id: string): Promise<boolean> => {
+        const result = await makeDirectChannel(serverUrl, id);
 
         if (result.error) {
             alertErrorWithFallback(intl, result.error, messages.dm);
         }
 
         return !result.error;
-    }, [selectedIds, intl, teammateNameDisplay, serverUrl]);
+    }, [intl, serverUrl]);
 
     const createGroupChannel = useCallback(async (ids: string[]): Promise<boolean> => {
         const result = await makeGroupChannel(serverUrl, ids);
@@ -156,7 +152,7 @@ export default function CreateDirectMessage({
         return !result.error;
     }, [intl, serverUrl]);
 
-    const startConversation = useCallback(async (selectedId?: {[id: string]: boolean}, selectedUser?: UserProfile) => {
+    const startConversation = useCallback(async (selectedId?: {[id: string]: boolean}) => {
         if (startingConversation) {
             return;
         }
@@ -170,7 +166,7 @@ export default function CreateDirectMessage({
         } else if (idsToUse.length > 1) {
             success = await createGroupChannel(idsToUse);
         } else {
-            success = await createDirectChannel(idsToUse[0], selectedUser);
+            success = await createDirectChannel(idsToUse[0]);
         }
 
         if (success) {
@@ -186,25 +182,21 @@ export default function CreateDirectMessage({
                 [currentUserId]: true,
             };
 
-            startConversation(selectedId, user);
+            startConversation(selectedId);
         } else {
             clearSearch();
             setSelectedIds((current) => {
-                if (current[user.id]) {
+                if (current.has(user.id)) {
                     return removeProfileFromList(current, user.id);
                 }
 
-                const wasSelected = current[user.id];
-
-                if (!wasSelected && selectedCount >= General.MAX_USERS_IN_GM) {
+                if (selectedCount >= General.MAX_USERS_IN_GM) {
                     setShowToast(true);
                     return current;
                 }
 
-                const newSelectedIds = Object.assign({}, current);
-                if (!wasSelected) {
-                    newSelectedIds[user.id] = user;
-                }
+                const newSelectedIds = new Set(current);
+                newSelectedIds.add(user.id);
 
                 return newSelectedIds;
             });

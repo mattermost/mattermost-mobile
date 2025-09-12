@@ -8,7 +8,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import Button from '@components/button';
 import {CHIP_HEIGHT} from '@components/chips/constants';
-import SelectedUserChip from '@components/chips/selected_user_chip';
+import SelectedUserChipById from '@components/chips/selected_user_chip_by_id';
 import Toast from '@components/toast';
 import {useTheme} from '@context/theme';
 import {useIsTablet, useKeyboardHeightWithDuration} from '@hooks/device';
@@ -44,7 +44,7 @@ type Props = {
     /**
      * An object mapping user ids to a falsey value indicating whether or not they have been selected.
      */
-    selectedIds: {[id: string]: UserProfile};
+    selectedIds: Set<string>;
 
     /**
      * callback to set the value of showToast
@@ -165,17 +165,13 @@ export default function SelectedUsers({
 
     const users = useMemo(() => {
         const u = [];
-        for (const user of Object.values(selectedIds)) {
-            if (!user) {
-                continue;
-            }
-
-            const userItemTestID = `${testID}.${user.id}`;
+        for (const userId of selectedIds) {
+            const userItemTestID = `${testID}.${userId}`;
 
             u.push(
-                <SelectedUserChip
-                    key={user.id}
-                    user={user}
+                <SelectedUserChipById
+                    key={userId}
+                    userId={userId}
                     onPress={onRemove}
                     teammateNameDisplay={teammateNameDisplay}
                     testID={userItemTestID}

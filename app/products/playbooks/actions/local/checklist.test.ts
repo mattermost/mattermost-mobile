@@ -5,7 +5,7 @@ import DatabaseManager from '@database/manager';
 import {getPlaybookChecklistItemById} from '@playbooks/database/queries/item';
 import TestHelper from '@test/test_helper';
 
-import {updateChecklistItem, setChecklistItemCommand, setDueDate} from './checklist';
+import {updateChecklistItem, setChecklistItemCommand, setAssignee, setDueDate} from './checklist';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 
@@ -122,6 +122,62 @@ describe('setChecklistItemCommand', () => {
         const updated = await getPlaybookChecklistItemById(operator.database, item.id);
         expect(updated).toBeDefined();
         expect(updated!.command).toBe('');
+    });
+});
+
+describe('setAssignee', () => {
+    it('should handle not found database', async () => {
+        const {error} = await setAssignee('foo', 'itemid', 'user123');
+        expect(error).toBeTruthy();
+        expect((error as Error).message).toContain('foo database not found');
+    });
+
+    it('should handle item not found', async () => {
+        const {error} = await setAssignee(serverUrl, 'nonexistent', 'user123');
+        expect(error).toBe('Item not found: nonexistent');
+    });
+
+    it('should handle database write errors', async () => {
+        const checklistId = 'checklistid';
+        const item = TestHelper.createPlaybookItem(checklistId, 0);
+        await operator.handlePlaybookChecklistItem({items: [{...item, checklist_id: checklistId}], prepareRecordsOnly: false});
+
+        const originalWrite = operator.database.write;
+        operator.database.write = jest.fn().mockRejectedValue(new Error('Database write failed'));
+
+        const {error} = await setAssignee(serverUrl, item.id, 'user123');
+        expect(error).toBeTruthy();
+
+        operator.database.write = originalWrite;
+    });
+
+    it('should successfully set assignee for existing item', async () => {
+        const checklistId = 'checklistid';
+        const item = TestHelper.createPlaybookItem(checklistId, 0);
+        await operator.handlePlaybookChecklistItem({items: [{...item, checklist_id: checklistId}], prepareRecordsOnly: false});
+
+        const assigneeId = 'user123';
+        const {data, error} = await setAssignee(serverUrl, item.id, assigneeId);
+        expect(error).toBeUndefined();
+        expect(data).toBe(true);
+
+        const updated = await getPlaybookChecklistItemById(operator.database, item.id);
+        expect(updated).toBeDefined();
+        expect(updated!.assigneeId).toBe(assigneeId);
+    });
+
+    it('should handle empty assignee ID', async () => {
+        const checklistId = 'checklistid';
+        const item = TestHelper.createPlaybookItem(checklistId, 0);
+        await operator.handlePlaybookChecklistItem({items: [{...item, checklist_id: checklistId}], prepareRecordsOnly: false});
+
+        const {data, error} = await setAssignee(serverUrl, item.id, '');
+        expect(error).toBeUndefined();
+        expect(data).toBe(true);
+
+        const updated = await getPlaybookChecklistItemById(operator.database, item.id);
+        expect(updated).toBeDefined();
+        expect(updated!.assigneeId).toBe('');
     });
 });
 
