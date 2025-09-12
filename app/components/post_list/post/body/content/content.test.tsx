@@ -95,6 +95,7 @@ describe('components/post_list/post/body/content/Content - PermalinkPreview', ()
         );
 
         const permalinkPreview = getByTestId('permalink-preview');
+        expect(permalinkPreview.props.embedData).toBeDefined();
         expect(permalinkPreview.props.embedData).toEqual(permalinkEmbedData);
     });
 
@@ -134,6 +135,7 @@ describe('components/post_list/post/body/content/Content - PermalinkPreview', ()
         );
 
         const permalinkPreview = getByTestId('permalink-preview');
+        expect(permalinkPreview.props.embedData).toBeDefined();
         expect(permalinkPreview.props.embedData).toEqual(customEmbedData);
     });
 
@@ -202,6 +204,7 @@ describe('components/post_list/post/body/content/Content - PermalinkPreview', ()
         );
 
         const permalinkPreview = getByTestId('permalink-preview');
+        expect(permalinkPreview.props.embedData).toBeDefined();
         expect(permalinkPreview.props.embedData).toEqual(firstEmbedData);
     });
 
@@ -234,6 +237,7 @@ describe('components/post_list/post/body/content/Content - PermalinkPreview', ()
         );
 
         const permalinkPreview = getByTestId('permalink-preview');
+        expect(permalinkPreview.props.embedData).toBeDefined();
         expect(permalinkPreview.props.embedData).toEqual(permalinkEmbedData);
     });
 
@@ -271,6 +275,7 @@ describe('components/post_list/post/body/content/Content - PermalinkPreview', ()
         );
 
         const permalinkPreview = getByTestId('permalink-preview');
+        expect(permalinkPreview.props.embedData).toBeDefined();
         expect(permalinkPreview.props.embedData).toEqual(dmEmbedData);
         expect(permalinkPreview.props.embedData.channel_type).toBe('D');
     });
@@ -309,6 +314,7 @@ describe('components/post_list/post/body/content/Content - PermalinkPreview', ()
         );
 
         const permalinkPreview = getByTestId('permalink-preview');
+        expect(permalinkPreview.props.embedData).toBeDefined();
         expect(permalinkPreview.props.embedData).toEqual(gmEmbedData);
         expect(permalinkPreview.props.embedData.channel_type).toBe('G');
     });

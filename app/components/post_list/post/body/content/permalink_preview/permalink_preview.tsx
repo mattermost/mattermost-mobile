@@ -21,14 +21,18 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {displayUsername, getUserTimezone} from '@utils/user';
 
+import Opengraph from '../opengraph';
+
 import PermalinkFiles from './permalink_files';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
+import type {UserMentionKey} from '@typings/global/markdown';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 const MAX_PERMALINK_PREVIEW_CHARACTERS = 150;
 const EDITED_INDICATOR_CONTEXT = ['paragraph'];
+const EMPTY_MENTION_KEYS: UserMentionKey[] = [];
 
 type PermalinkPreviewProps = {
     embedData: PermalinkEmbedData;
@@ -238,11 +242,11 @@ const PermalinkPreview = ({
                             baseTextStyle={styles.messageText}
                             blockStyles={blockStyles}
                             channelId={embedData.channel_id}
-                            disableAtMentions={true}
                             location={location}
                             theme={theme}
                             textStyles={textStyles}
                             value={truncatedMessage}
+                            mentionKeys={currentUser?.mentionKeys ?? EMPTY_MENTION_KEYS}
                         />
                         {isEdited ? (
                             <EditedIndicator
@@ -254,6 +258,16 @@ const PermalinkPreview = ({
                             />
                         ) : null}
                     </View>
+
+                    <Opengraph
+                        isReplyPost={false}
+                        removeLinkPreview={false}
+                        location={location}
+                        metadata={embedData?.post?.metadata || null}
+                        postId={embedData?.post?.id || ''}
+                        theme={theme}
+                        isEmbedded={true}
+                    />
 
                     {hasFiles && post && (
                         <PermalinkFiles

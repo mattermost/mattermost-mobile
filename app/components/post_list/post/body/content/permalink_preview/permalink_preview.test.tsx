@@ -72,6 +72,16 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
                 message: 'This is a test message',
                 create_at: 1234567890000,
                 edit_at: 0,
+                metadata: {
+                    embeds: [{
+                        type: 'opengraph' as PostEmbedType,
+                        url: 'https://example.com',
+                        data: {
+                            title: 'Example Title',
+                            description: 'Example Description',
+                        },
+                    }],
+                },
             }),
             team_name: 'test-team',
             channel_display_name: 'Test Channel',
@@ -158,6 +168,16 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
                     id: 'post-123',
                     user_id: '',
                     message: 'Test message',
+                    metadata: {
+                        embeds: [{
+                            type: 'opengraph' as PostEmbedType,
+                            url: 'https://example.com',
+                            data: {
+                                title: 'Example Title',
+                                description: 'Example Description',
+                            },
+                        }],
+                    },
                 }),
             },
         };
@@ -196,6 +216,16 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
                     id: 'post-123',
                     user_id: 'user-123',
                     message: longMessage,
+                    metadata: {
+                        embeds: [{
+                            type: 'opengraph' as PostEmbedType,
+                            url: 'https://example.com',
+                            data: {
+                                title: 'Example Title',
+                                description: 'Example Description',
+                            },
+                        }],
+                    },
                 }),
             },
         };
@@ -214,6 +244,16 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
                     id: 'post-123',
                     user_id: 'user-123',
                     message: '',
+                    metadata: {
+                        embeds: [{
+                            type: 'opengraph' as PostEmbedType,
+                            url: 'https://example.com',
+                            data: {
+                                title: 'Example Title',
+                                description: 'Example Description',
+                            },
+                        }],
+                    },
                 }),
             },
         };
@@ -233,6 +273,16 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
                     message: 'Edited message',
                     edit_at: 1234567891000,
                     create_at: 1234567890000,
+                    metadata: {
+                        embeds: [{
+                            type: 'opengraph' as PostEmbedType,
+                            url: 'https://example.com',
+                            data: {
+                                title: 'Example Title',
+                                description: 'Example Description',
+                            },
+                        }],
+                    },
                 }),
             },
         };
@@ -271,6 +321,14 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
                         message: 'Post with file attachment',
                         metadata: {
                             files: [fileInfo],
+                            embeds: [{
+                                type: 'opengraph' as PostEmbedType,
+                                url: 'https://example.com',
+                                data: {
+                                    title: 'Example Title',
+                                    description: 'Example Description',
+                                },
+                            }],
                         },
                     }),
                 },
@@ -309,6 +367,14 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
                         message: 'Post with multiple attachments',
                         metadata: {
                             files: fileInfos,
+                            embeds: [{
+                                type: 'opengraph' as PostEmbedType,
+                                url: 'https://example.com',
+                                data: {
+                                    title: 'Example Title',
+                                    description: 'Example Description',
+                                },
+                            }],
                         },
                     }),
                 },
@@ -330,7 +396,16 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
                         id: 'post-123',
                         user_id: 'user-123',
                         message: 'Post without files',
-                        metadata: {},
+                        metadata: {
+                            embeds: [{
+                                type: 'opengraph' as PostEmbedType,
+                                url: 'https://example.com',
+                                data: {
+                                    title: 'Example Title',
+                                    description: 'Example Description',
+                                },
+                            }],
+                        },
                     }),
                 },
             };
@@ -353,6 +428,14 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
                         message: 'Post with empty files',
                         metadata: {
                             files: [],
+                            embeds: [{
+                                type: 'opengraph' as PostEmbedType,
+                                url: 'https://example.com',
+                                data: {
+                                    title: 'Example Title',
+                                    description: 'Example Description',
+                                },
+                            }],
                         },
                     }),
                 },

@@ -772,6 +772,7 @@
   "mobile.pdf_viewer.password_limit_reached": "You’ve entered the wrong password too many times.",
   "mobile.pdf_viewer.password_required": "This document is password protected.",
   "mobile.pdf_viewer.unlock": "Unlock",
+  "mobile.permalink_preview.external_link": "External Link",
   "mobile.permalink_preview.originally_posted": "Originally posted in ",
   "mobile.permission_denied_dismiss": "Don't Allow",
   "mobile.permission_denied_retry": "Settings",
