@@ -6,7 +6,7 @@ import {goToScreen} from '@screens/navigation';
 import TestHelper from '@test/test_helper';
 import {changeOpacity} from '@utils/theme';
 
-import {goToPlaybookRuns, goToPlaybookRun} from './navigation';
+import {goToPlaybookRuns, goToPlaybookRun, goToSelectUser} from './navigation';
 
 jest.mock('@screens/navigation', () => ({
     goToScreen: jest.fn(),
@@ -60,6 +60,30 @@ describe('Playbooks Navigation', () => {
                 Screens.PLAYBOOK_RUN,
                 'Playbook run',
                 {playbookRunId},
+                {},
+            );
+        });
+    });
+
+    describe('goToSelectUser', () => {
+        it('should navigate to select user screen with correct parameters when handleRemove is provided', async () => {
+            const title = 'Select User';
+            const participantIds = ['user1', 'user2', 'user3'];
+            const selected = 'user2';
+            const handleSelect = jest.fn();
+            const handleRemove = jest.fn();
+
+            await goToSelectUser(title, participantIds, selected, handleSelect, handleRemove);
+
+            expect(goToScreen).toHaveBeenCalledWith(
+                Screens.PLAYBOOK_SELECT_USER,
+                title,
+                {
+                    participantIds,
+                    selected,
+                    handleSelect,
+                    handleRemove,
+                },
                 {},
             );
         });

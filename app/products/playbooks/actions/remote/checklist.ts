@@ -4,7 +4,11 @@
 import {forceLogoutIfNecessary} from '@actions/remote/session';
 import IntegrationsManager from '@managers/integrations_manager';
 import NetworkManager from '@managers/network_manager';
-import {setChecklistItemCommand as localSetChecklistItemCommand, updateChecklistItem as localUpdateChecklistItem} from '@playbooks/actions/local/checklist';
+import {
+    setChecklistItemCommand as localSetChecklistItemCommand,
+    updateChecklistItem as localUpdateChecklistItem,
+    setAssignee as localSetAssignee,
+} from '@playbooks/actions/local/checklist';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 
@@ -105,6 +109,27 @@ export const setChecklistItemCommand = async (
         return {data: true};
     } catch (error) {
         logDebug('error on setChecklistItemCommand', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
+export const setAssignee = async (
+    serverUrl: string,
+    playbookRunId: string,
+    itemId: string,
+    checklistNumber: number,
+    itemNumber: number,
+    assigneeId: string,
+) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        await client.setAssignee(playbookRunId, checklistNumber, itemNumber, assigneeId);
+
+        await localSetAssignee(serverUrl, itemId, assigneeId);
+        return {data: true};
+    } catch (error) {
+        logDebug('error on setAssignee', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
