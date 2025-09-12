@@ -54,8 +54,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flex: 1,
         },
         searchBar: {
-            marginVertical: 5,
+            marginVertical: 12,
             height: 38,
+            paddingHorizontal: 12,
+            flexDirection: 'row',
+        },
+        searchbarComponentContainer: {
+            flex: 1,
         },
         loadingContainer: {
             alignItems: 'center',
@@ -234,16 +239,17 @@ function SelectUser({
                     autoCapitalize='none'
                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                     value={term}
+                    containerStyle={style.searchbarComponentContainer}
                 />
+                {Boolean(handleRemove) && !term && (
+                    <Button
+                        text={intl.formatMessage({id: 'playbooks.select_user.no_assignee', defaultMessage: 'No Assignee'})}
+                        theme={theme}
+                        onPress={handleSelectRemove}
+                        emphasis='link'
+                    />
+                )}
             </View>
-            {Boolean(handleRemove) && !term && (
-                <Button
-                    text={intl.formatMessage({id: 'playbooks.select_user.no_assignee', defaultMessage: 'No Assignee'})}
-                    theme={theme}
-                    onPress={handleSelectRemove}
-                    emphasis='link'
-                />
-            )}
             <ServerUserList
                 currentUserId={currentUserId}
                 term={term}
