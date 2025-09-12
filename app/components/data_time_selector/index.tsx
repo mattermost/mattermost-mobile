@@ -10,7 +10,6 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
-import {CUSTOM_STATUS_TIME_PICKER_INTERVALS_IN_MINUTES} from '@constants/custom_status';
 import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {getCurrentMomentForTimezone, getRoundedTime} from '@utils/helpers';
@@ -52,7 +51,7 @@ const DateTimeSelector = ({
     theme,
     showInitially,
     initialDate,
-    minuteInterval = CUSTOM_STATUS_TIME_PICKER_INTERVALS_IN_MINUTES,
+    minuteInterval = 30,
 }: Props) => {
     const styles = getStyleSheet(theme);
     const currentTime = getCurrentMomentForTimezone(timezone);
