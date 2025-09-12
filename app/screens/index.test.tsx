@@ -52,6 +52,7 @@ jest.mocked(GestureHandlerRootView).mockImplementation((props) => (
 
 jest.mock('react-native-safe-area-context', () => ({
     SafeAreaProvider: jest.fn(),
+    useSafeAreaInsets: jest.fn().mockReturnValue({top: 20}),
 }));
 jest.mocked(SafeAreaProvider).mockImplementation((props) => (
     <View
@@ -113,6 +114,10 @@ jest.mock('@playbooks/screens/edit_command', () => ({
     default: jest.fn(),
 }));
 jest.mocked(EditCommand).mockImplementation((props) => <Text {...props}>{Screens.PLAYBOOK_EDIT_COMMAND}</Text>);
+
+jest.mock('react-native-reanimated', () =>
+    jest.requireActual('react-native-reanimated/mock'),
+);
 
 describe('Screen Registration', () => {
     let registrator: (screenName: string) => void;

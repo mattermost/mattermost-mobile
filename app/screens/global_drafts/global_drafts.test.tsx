@@ -15,6 +15,10 @@ jest.mock('@hooks/device', () => ({
     useIsTablet: jest.fn().mockReturnValue(false),
 }));
 
+jest.mock('react-native-reanimated', () =>
+    jest.requireActual('react-native-reanimated/mock'),
+);
+
 describe('screens/global_drafts', () => {
     let database: Database;
 

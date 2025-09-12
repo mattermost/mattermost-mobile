@@ -20,6 +20,10 @@ jest.mocked(ChannelHeaderComponent).mockImplementation(
     (props) => React.createElement('ChannelHeader', {testID: 'channel-header', ...props}),
 );
 
+jest.mock('react-native-reanimated', () =>
+    jest.requireActual('react-native-reanimated/mock'),
+);
+
 const serverUrl = 'server-url';
 
 describe('ChannelHeader Index', () => {
