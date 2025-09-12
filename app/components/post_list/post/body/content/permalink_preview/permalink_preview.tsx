@@ -221,11 +221,6 @@ const PermalinkPreview = ({
         setShowGradient(height >= maxPermalinkHeight);
     }, [maxPermalinkHeight]);
 
-    const handleContentLayout = useCallback((event: LayoutChangeEvent) => {
-        const {height} = event.nativeEvent.layout;
-        setShowGradient(height >= maxPermalinkHeight);
-    }, [maxPermalinkHeight]);
-
     if (!post) {
         return null;
     }
