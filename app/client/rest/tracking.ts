@@ -4,9 +4,10 @@
 import {defineMessage} from 'react-intl';
 import {DeviceEventEmitter, Platform} from 'react-native';
 
-import {CollectNetworkMetrics} from '@assets/config.json';
+import {CollectNetworkMetrics, MonitorNetworkPerformance} from '@assets/config.json';
 import {Events} from '@constants';
 import {setServerCredentials} from '@init/credentials';
+import NetworkPerformanceManager from '@managers/network_performance_manager';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {NetworkRequestMetrics} from '@managers/performance_metrics_manager/constant';
 import {isErrorWithStatusCode} from '@utils/errors';
@@ -129,6 +130,10 @@ export default class ClientTracking {
         }
         group.totalSize += metrics?.size ?? 0;
         group.totalCompressedSize += metrics?.compressedSize ?? 0;
+    }
+
+    trackNetworkPerformance(metrics: ClientResponseMetrics) {
+        NetworkPerformanceManager.addMetrics(this.apiClient.baseUrl, metrics);
     }
 
     getAverageLatency(groupLabel: RequestGroupLabel): number {
@@ -406,6 +411,9 @@ export default class ClientTracking {
         const headers: ClientHeaders = response.headers || {};
         if (groupLabel && CollectNetworkMetrics) {
             this.trackRequest(groupLabel, url, response.metrics);
+        }
+        if (MonitorNetworkPerformance && response.metrics) {
+            this.trackNetworkPerformance(response.metrics);
         }
         const serverVersion = semverFromServerVersion(
             headers[ClientConstants.HEADER_X_VERSION_ID] || headers[ClientConstants.HEADER_X_VERSION_ID.toLowerCase()],

@@ -11,6 +11,7 @@ import {subscribeActiveServers} from '@database/subscription/servers';
 import {getIntlShape} from '@utils/general';
 
 import NetworkConnectivityManager from './network_connectivity_manager';
+import NetworkPerformanceManager from './network_performance_manager';
 import WebsocketManager from './websocket_manager';
 
 type Server = {
@@ -25,6 +26,7 @@ type SubscriptionState = {
     netInfoSubscription: NetInfoSubscription | undefined;
     activeServersUnsubscriber: {unsubscribe: () => void} | undefined;
     websocketSubscription: Subscription | undefined;
+    performanceSubscription: Subscription | undefined;
 };
 
 const initialState: SubscriptionState = {
@@ -34,6 +36,7 @@ const initialState: SubscriptionState = {
     netInfoSubscription: undefined,
     activeServersUnsubscriber: undefined,
     websocketSubscription: undefined,
+    performanceSubscription: undefined,
 };
 
 let state = {...initialState};
@@ -48,8 +51,14 @@ const cleanupWebsocketSubscription = (): void => {
     state.websocketSubscription = undefined;
 };
 
+const cleanupPerformanceSubscription = (): void => {
+    state.performanceSubscription?.unsubscribe();
+    state.performanceSubscription = undefined;
+};
+
 const handleActiveServersChange = async (servers: Server[]): Promise<void> => {
     cleanupWebsocketSubscription();
+    cleanupPerformanceSubscription();
 
     const activeServer = findMostRecentServer(servers);
     const serverUrl = activeServer?.url;
@@ -68,6 +77,10 @@ const handleActiveServersChange = async (servers: Server[]): Promise<void> => {
             state.appState,
             intl.formatMessage,
         );
+    });
+
+    state.performanceSubscription = NetworkPerformanceManager.observePerformanceState(serverUrl).subscribe((performanceState) => {
+        NetworkConnectivityManager.updatePerformanceState(performanceState, intl.formatMessage);
     });
 };
 
@@ -105,6 +118,7 @@ export const startNetworkConnectivitySubscriptions = (): void => {
 
 const cleanupAllSubscriptions = (): void => {
     state.websocketSubscription?.unsubscribe();
+    state.performanceSubscription?.unsubscribe();
     state.activeServersUnsubscriber?.unsubscribe?.();
     state.netInfoSubscription?.();
     state.appSubscription?.remove();

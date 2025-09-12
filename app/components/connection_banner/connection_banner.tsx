@@ -33,6 +33,7 @@ const getStyle = makeStyleSheetFromTheme((theme: Theme) => {
             shadowOpacity: 0.1,
             shadowRadius: 4,
             elevation: 4,
+            width: '100%',
         },
         containerNotConnected: {
             backgroundColor: theme.centerChannelColor,
