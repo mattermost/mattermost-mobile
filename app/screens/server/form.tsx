@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {type RefObject, useCallback, useRef} from 'react';
+import React, {type RefObject, useCallback, useMemo, useRef, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
-import {Keyboard, Pressable, View} from 'react-native';
+import {Keyboard, Pressable, TouchableOpacity, View} from 'react-native';
 
 import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
@@ -79,7 +79,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginLeft: 20,
         marginRight: 20,
     },
+    endAdornment: {
+        top: 2,
+    },
 }));
+
+const hitSlop = {top: 8, right: 8, bottom: 8, left: 8};
 
 const messages = defineMessages({
     connect: {
@@ -133,6 +138,7 @@ const ServerForm = ({
     const preauthSecretRef = useRef<FloatingTextInputRef>(null);
     const urlRef = useRef<FloatingTextInputRef>(null);
     const styles = getStyleSheet(theme);
+    const [isPreauthSecretVisible, setIsPreauthSecretVisible] = useState(false);
 
     useAvoidKeyboard(keyboardAwareRef);
 
@@ -155,7 +161,25 @@ const ServerForm = ({
 
     const toggleAdvancedOptions = useCallback(() => {
         setShowAdvancedOptions(!showAdvancedOptions);
-    }, [showAdvancedOptions]);
+    }, [showAdvancedOptions, setShowAdvancedOptions]);
+
+    const togglePreauthSecretVisibility = useCallback(() => {
+        setIsPreauthSecretVisible((prevState) => !prevState);
+    }, []);
+
+    const preauthSecretEndAdornment = useMemo(() => (
+        <TouchableOpacity
+            onPress={togglePreauthSecretVisibility}
+            hitSlop={hitSlop}
+            style={styles.endAdornment}
+        >
+            <CompassIcon
+                name={isPreauthSecretVisible ? 'eye-off-outline' : 'eye-outline'}
+                size={20}
+                color={changeOpacity(theme.centerChannelColor, 0.64)}
+            />
+        </TouchableOpacity>
+    ), [isPreauthSecretVisible, styles.endAdornment, theme.centerChannelColor, togglePreauthSecretVisibility]);
 
     const connectButtonTestId = buttonDisabled ? 'server_form.connect.button.disabled' : 'server_form.connect.button';
 
@@ -239,13 +263,15 @@ const ServerForm = ({
                             autoCorrect={false}
                             autoCapitalize={'none'}
                             enablesReturnKeyAutomatically={true}
+                            endAdornment={preauthSecretEndAdornment}
                             error={preauthSecretError}
+                            keyboardType={isPreauthSecretVisible ? 'visible-password' : 'default'}
                             label={formatMessage(messages.preauthSecret)}
                             onChangeText={handlePreauthSecretTextChanged}
                             onSubmitEditing={onConnect}
                             ref={preauthSecretRef}
                             returnKeyType='done'
-                            secureTextEntry={true}
+                            secureTextEntry={!isPreauthSecretVisible}
                             spellCheck={false}
                             testID='server_form.preauth_secret.input'
                             theme={theme}
