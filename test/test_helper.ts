@@ -1211,7 +1211,6 @@ class TestHelperSingleton {
             channel: this.fakeRelation(),
             owner: this.fakeRelation(),
             checklists: this.fakeQuery([]),
-            participants: () => this.fakeQuery([]),
             prepareDestroyWithRelations: jest.fn().mockResolvedValue([]),
             previousReminder: 0,
             itemsOrder: [],
