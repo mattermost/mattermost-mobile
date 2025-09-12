@@ -301,7 +301,7 @@ export const sendPasswordResetEmail = async (serverUrl: string, email: string) =
     }
 };
 
-export const ssoLogin = async (serverUrl: string, serverDisplayName: string, serverIdentifier: string, bearerToken: string, csrfToken: string): Promise<LoginActionResponse> => {
+export const ssoLogin = async (serverUrl: string, serverDisplayName: string, serverIdentifier: string, bearerToken: string, csrfToken: string, preauthSecret?: string): Promise<LoginActionResponse> => {
     const database = DatabaseManager.appDatabase?.database;
     if (!database) {
         return {error: 'App database not found', failed: true};
@@ -310,7 +310,7 @@ export const ssoLogin = async (serverUrl: string, serverDisplayName: string, ser
     try {
         const client = NetworkManager.getClient(serverUrl);
 
-        client.setBearerToken(bearerToken);
+        client.setClientCredentials(bearerToken, preauthSecret);
         client.setCSRFToken(csrfToken);
 
         // Setting up active database for this SSO login flow

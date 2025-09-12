@@ -4,6 +4,9 @@
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of as of$, switchMap} from 'rxjs';
 
+import {General} from '@constants';
+import {observeChannel} from '@queries/servers/channel';
+import {observeCurrentUserId} from '@queries/servers/system';
 import {observeTeammateNameDisplay, observeUser} from '@queries/servers/user';
 
 import ChecklistItem from './checklist_item';
@@ -13,10 +16,13 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 
 type OwnProps = {
     item: PlaybookChecklistItemModel | PlaybookChecklistItem;
+    channelId: string;
 } & WithDatabaseArgs;
 
-const enhanced = withObservables(['item'], ({item, database}: OwnProps) => {
+const enhanced = withObservables(['item', 'channelId'], ({item, database, channelId}: OwnProps) => {
     const teammateNameDisplay = observeTeammateNameDisplay(database);
+    const currentUserId = observeCurrentUserId(database);
+    const channelType = observeChannel(database, channelId).pipe(switchMap((c) => of$(c?.type || General.OPEN_CHANNEL)));
 
     if ('observe' in item) {
         const observedItem = item.observe();
@@ -36,6 +42,8 @@ const enhanced = withObservables(['item'], ({item, database}: OwnProps) => {
             item: observedItem,
             assignee,
             teammateNameDisplay,
+            currentUserId,
+            channelType,
         };
     }
 
@@ -45,6 +53,8 @@ const enhanced = withObservables(['item'], ({item, database}: OwnProps) => {
         item: of$(item),
         assignee,
         teammateNameDisplay,
+        currentUserId,
+        channelType,
     };
 });
 
