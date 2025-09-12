@@ -133,6 +133,5 @@ export default function SelectDate({
                 minuteInterval={5}
             />
         </View>
-
     );
 }
