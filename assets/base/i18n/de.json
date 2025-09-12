@@ -992,7 +992,6 @@
   "playbooks.checklist_item.check": "Prüfe",
   "playbooks.checklist_item.checked": "Geprüft",
   "playbooks.checklist_item.command": "Befehl",
-  "playbooks.checklist_item.date_at_time": "{date} um {time}",
   "playbooks.checklist_item.due_date": "Fälligkeitsdatum",
   "playbooks.checklist_item.none": "Kein",
   "playbooks.checklist_item.rerun_command": "Befehl wiederholen",

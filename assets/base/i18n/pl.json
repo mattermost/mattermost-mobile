@@ -992,7 +992,6 @@
   "playbooks.checklist_item.check": "Zaznacz",
   "playbooks.checklist_item.checked": "Zaznaczony",
   "playbooks.checklist_item.command": "Polecenie",
-  "playbooks.checklist_item.date_at_time": "{date} o {time}",
   "playbooks.checklist_item.due_date": "Termin",
   "playbooks.checklist_item.none": "Brak",
   "playbooks.checklist_item.rerun_command": "Polecenie ponownego uruchomienia",
