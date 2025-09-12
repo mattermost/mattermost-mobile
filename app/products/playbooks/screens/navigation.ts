@@ -39,3 +39,15 @@ export async function goToSelectUser(
         handleRemove,
     }, {});
 }
+
+export async function goToSelectDate(
+    intl: IntlShape,
+    onSave: (date: number | undefined) => void,
+    selectedDate: number | undefined,
+) {
+    const title = intl.formatMessage({id: 'playbooks.select_date.title', defaultMessage: 'Due date'});
+    goToScreen(Screens.PLAYBOOKS_SELECT_DATE, title, {
+        onSave,
+        selectedDate,
+    }, {});
+}

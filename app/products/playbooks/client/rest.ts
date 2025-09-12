@@ -20,6 +20,7 @@ export interface ClientPlaybooksMix {
     skipChecklistItem: (playbookRunID: string, checklistNum: number, itemNum: number) => Promise<void>;
     restoreChecklistItem: (playbookRunID: string, checklistNum: number, itemNum: number) => Promise<void>;
     setAssignee: (playbookRunId: string, checklistNum: number, itemNum: number, assigneeId?: string) => Promise<void>;
+    setDueDate: (playbookRunId: string, checklistNum: number, itemNum: number, date?: number) => Promise<void>;
 
     // skipChecklist: (playbookRunID: string, checklistNum: number) => Promise<void>;
 
@@ -117,6 +118,13 @@ const ClientPlaybooks = <TBase extends Constructor<ClientBase>>(superclass: TBas
         await this.doFetch(
             `${this.getPlaybookRunRoute(playbookRunId)}/checklists/${checklistNum}/item/${itemNum}/assignee`,
             {method: 'put', body: {assignee_id: assigneeId}},
+        );
+    };
+
+    setDueDate = async (playbookRunId: string, checklistNum: number, itemNum: number, date?: number) => {
+        await this.doFetch(
+            `${this.getPlaybookRunRoute(playbookRunId)}/checklists/${checklistNum}/item/${itemNum}/duedate`,
+            {method: 'put', body: {due_date: date}},
         );
     };
 
