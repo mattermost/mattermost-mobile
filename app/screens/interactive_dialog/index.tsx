@@ -123,24 +123,12 @@ function InteractiveDialog({
     }, []);
 
     const getDynamicOptions = useCallback(async (element: DialogElement, userInput = ''): Promise<DialogOption[]> => {
-        // eslint-disable-next-line no-console
-        console.log('getDynamicOptions called:', {
-            name: element.name,
-            userInput,
-            data_source_url: element.data_source_url,
-        });
-
         if (!element.data_source_url) {
-            // eslint-disable-next-line no-console
-            console.log('No data_source_url, returning empty array');
             return [];
         }
 
         try {
             const client = NetworkManager.getClient(serverUrl);
-            // eslint-disable-next-line no-console
-            console.log('Making request to:', element.data_source_url);
-
             const response = await client.doFetch(element.data_source_url, {
                 method: 'POST',
                 body: JSON.stringify({
@@ -150,11 +138,9 @@ function InteractiveDialog({
                 }),
             });
 
-            // eslint-disable-next-line no-console
-            console.log('Dynamic options response:', response);
-
             if (response && typeof response === 'object' && 'options' in response) {
-                return (response as any).options || [];
+                const options = (response as any).options || [];
+                return options;
             }
         } catch (err) {
             // eslint-disable-next-line no-console
@@ -325,18 +311,6 @@ function InteractiveDialog({
                     const elementGetDynamicOptions = e.data_source === 'dynamic' && e.data_source_url ?
                         (userInput: string) => getDynamicOptions(e, userInput) :
                         undefined;
-
-                    // Debug logging
-                    if (e.data_source === 'dynamic') {
-                        // eslint-disable-next-line no-console
-                        console.log('Dynamic select element:', {
-                            name: e.name,
-                            data_source: e.data_source,
-                            data_source_url: e.data_source_url,
-                            hasGetDynamicOptions: Boolean(elementGetDynamicOptions),
-                            fullElement: e,
-                        });
-                    }
 
                     return (
                         <DialogElement
