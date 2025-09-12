@@ -100,7 +100,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
 
         channelContext: {
-            marginTop: 16,
+            marginTop: 8,
             color: changeOpacity(theme.centerChannelColor, 0.64),
             ...typography('Body', 75),
         },
@@ -205,7 +205,7 @@ const PermalinkPreview = ({
         return embedData?.post?.metadata?.files || [];
     }, [embedData?.post?.metadata?.files]);
 
-    const hasFiles = filesInfo && filesInfo.length > 0;
+    const hasFiles = filesInfo.length > 0;
 
     const handlePress = usePreventDoubleTap(useCallback(() => {
         const teamName = embedData.team_name;
@@ -215,6 +215,11 @@ const PermalinkPreview = ({
             showPermalink(serverUrl, teamName, postId);
         }
     }, [embedData.team_name, embedData.post_id, serverUrl]));
+
+    const handleContentLayout = useCallback((event: LayoutChangeEvent) => {
+        const {height} = event.nativeEvent.layout;
+        setShowGradient(height >= maxPermalinkHeight);
+    }, [maxPermalinkHeight]);
 
     const handleContentLayout = useCallback((event: LayoutChangeEvent) => {
         const {height} = event.nativeEvent.layout;
@@ -266,7 +271,6 @@ const PermalinkPreview = ({
                             baseTextStyle={styles.messageText}
                             blockStyles={blockStyles}
                             channelId={embedData.channel_id}
-                            disableAtMentions={false}
                             location={location}
                             theme={theme}
                             textStyles={textStyles}

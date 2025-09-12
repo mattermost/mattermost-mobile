@@ -28,6 +28,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             borderWidth: 1,
             borderRadius: 4,
             padding: 12,
+            marginBottom: 12,
         },
         externalLinkTitle: {
             color: theme.linkColor,
@@ -66,8 +67,8 @@ const ExternalLinkPreview = ({embeds, testID = 'external-link-preview'}: Externa
             return null;
         }
 
-        const title = typeof externalLinkData.data.title === 'string' && externalLinkData.data.title.trim() ? externalLinkData.data.title : null;
-        const siteName = typeof externalLinkData.data.site_name === 'string' && externalLinkData.data.site_name.trim() ? externalLinkData.data.site_name : null;
+        const title = (typeof externalLinkData.data.title === 'string' && externalLinkData.data.title.trim()) ? externalLinkData.data.title : null;
+        const siteName = (typeof externalLinkData.data.site_name === 'string' && externalLinkData.data.site_name.trim()) ? externalLinkData.data.site_name : null;
 
         return title || siteName;
     }, [externalLinkData?.data]);
@@ -77,7 +78,7 @@ const ExternalLinkPreview = ({embeds, testID = 'external-link-preview'}: Externa
             return externalLinkData?.url || '';
         }
 
-        const description = typeof externalLinkData.data.description === 'string' && externalLinkData.data.description.trim() ? externalLinkData.data.description : null;
+        const description = (typeof externalLinkData.data.description === 'string' && externalLinkData.data.description.trim()) ? externalLinkData.data.description : null;
         return description || externalLinkData.url;
     }, [externalLinkData?.data, externalLinkData?.url]);
 

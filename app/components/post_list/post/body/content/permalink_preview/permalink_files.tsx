@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useEffect, useState, useCallback} from 'react';
-import {DeviceEventEmitter, View, type LayoutChangeEvent} from 'react-native';
+import {DeviceEventEmitter, View, type LayoutChangeEvent, StyleSheet} from 'react-native';
 
 import Files from '@components/files';
 import {Events} from '@constants';
@@ -17,6 +17,12 @@ type PermalinkFilesProps = {
     parentLocation?: string;
     parentPostId?: string;
 };
+
+const styles = StyleSheet.create({
+    container: {
+        marginBottom: 8,
+    },
+});
 
 const PermalinkFiles = (props: PermalinkFilesProps) => {
     const {parentLocation, parentPostId, post, location, isReplyPost, failed} = props;
@@ -51,6 +57,7 @@ const PermalinkFiles = (props: PermalinkFilesProps) => {
         <View
             onLayout={onLayout}
             testID='permalink-files-container'
+            style={styles.container}
         >
             <Files
                 post={post}
