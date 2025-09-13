@@ -19,6 +19,7 @@ describe('SSO with redirect url', () => {
     const baseProps = {
         customUrlScheme: LocalConfig.AuthUrlSchemeDev,
         doSSOLogin: jest.fn(),
+        doSSOCodeExchange: jest.fn(),
         intl: {},
         loginError: '',
         loginUrl: '',
