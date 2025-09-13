@@ -3,7 +3,7 @@
 
 import {openAuthSessionAsync} from 'expo-web-browser';
 import qs from 'querystringify';
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Linking, Platform, StyleSheet, View, type EventSubscription} from 'react-native';
 import urlParse from 'url-parse';
@@ -42,8 +42,8 @@ const SSOAuthentication = ({doSSOLogin, doSSOCodeExchange, loginError, loginUrl,
     }
 
     const redirectUrl = customUrlScheme + 'callback';
-    const pkce = createPkceBundle();
-    const init = async (resetErrors = true) => {
+    const pkce = useMemo(() => createPkceBundle(), []);
+    const init = useCallback(async (resetErrors = true) => {
         setLoginSuccess(false);
         if (resetErrors !== false) {
             setError('');
@@ -83,7 +83,7 @@ const SSOAuthentication = ({doSSOLogin, doSSOCodeExchange, loginError, loginUrl,
                 }),
             );
         }
-    };
+    }, [doSSOCodeExchange, doSSOLogin, intl, loginUrl, pkce, redirectUrl, setLoginError]);
 
     useEffect(() => {
         let listener: EventSubscription | null = null;
@@ -126,7 +126,7 @@ const SSOAuthentication = ({doSSOLogin, doSSOCodeExchange, loginError, loginUrl,
             clearTimeout(timeout);
             listener?.remove();
         };
-    }, []);
+    }, [doSSOCodeExchange, doSSOLogin, init, intl, pkce, redirectUrl]);
 
     let content;
     if (loginSuccess) {

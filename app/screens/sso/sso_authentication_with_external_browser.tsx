@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import qs from 'querystringify';
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Linking, Platform, View} from 'react-native';
 import urlParse from 'url-parse';
@@ -70,8 +70,8 @@ const SSOAuthenticationWithExternalBrowser = ({doSSOLogin, doSSOCodeExchange, lo
     }
 
     const redirectUrl = customUrlScheme + 'callback';
-    const pkce = createPkceBundle();
-    const init = (resetErrors = true) => {
+    const pkce = useMemo(() => createPkceBundle(), []);
+    const init = useCallback((resetErrors = true) => {
         setLoginSuccess(false);
         if (resetErrors !== false) {
             setError('');
@@ -107,9 +107,10 @@ const SSOAuthenticationWithExternalBrowser = ({doSSOLogin, doSSOCodeExchange, lo
         };
 
         tryOpenURL(url, onError);
-    };
+    }, [intl, loginUrl, redirectUrl, pkce, setLoginError]);
 
     useEffect(() => {
+        const startedRef = {current: false};
         const onURLChange = ({url}: { url: string }) => {
             if (url && url.startsWith(redirectUrl)) {
                 const parsedUrl = urlParse(url, true);
@@ -138,13 +139,16 @@ const SSOAuthenticationWithExternalBrowser = ({doSSOLogin, doSSOCodeExchange, lo
         const listener = Linking.addEventListener('url', onURLChange);
 
         const timeout = setTimeout(() => {
-            init(false);
+            if (!startedRef.current) {
+                startedRef.current = true;
+                init(false);
+            }
         }, 1000);
         return () => {
             listener.remove();
             clearTimeout(timeout);
         };
-    }, []);
+    }, [doSSOCodeExchange, doSSOLogin, init, intl, pkce, redirectUrl]);
 
     let content;
     if (loginSuccess) {

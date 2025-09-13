@@ -346,7 +346,7 @@ export const ssoLogin = async (serverUrl: string, serverDisplayName: string, ser
     }
 };
 
-export const ssoLoginWithCodeExchange = async (serverUrl: string, serverDisplayName: string, serverIdentifier: string, loginCode: string, pkce: Pick<PkceBundle, 'codeVerifier' | 'state'>): Promise<LoginActionResponse> => {
+export const ssoLoginWithCodeExchange = async (serverUrl: string, serverDisplayName: string, serverIdentifier: string, loginCode: string, pkce: Pick<PkceBundle, 'codeVerifier' | 'state'>, preauthSecret?: string): Promise<LoginActionResponse> => {
     const database = DatabaseManager.appDatabase?.database;
     if (!database) {
         return {error: 'App database not found', failed: true};
@@ -356,7 +356,7 @@ export const ssoLoginWithCodeExchange = async (serverUrl: string, serverDisplayN
         const client = NetworkManager.getClient(serverUrl);
         const {token, csrf} = await client.exchangeSsoLoginCode(loginCode, pkce.codeVerifier, pkce.state);
 
-        client.setBearerToken(token);
+        client.setClientCredentials(token, preauthSecret);
         client.setCSRFToken(csrf);
 
         const server = await DatabaseManager.createServerDatabase({

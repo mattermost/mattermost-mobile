@@ -99,7 +99,7 @@ const SSO = ({
     };
 
     const doSSOCodeExchange = async (loginCode: string, pkce: {codeVerifier: string; state: string}) => {
-        const result: LoginActionResponse = await ssoLoginWithCodeExchange(serverUrl!, serverDisplayName, config.DiagnosticId!, loginCode, pkce);
+        const result: LoginActionResponse = await ssoLoginWithCodeExchange(serverUrl!, serverDisplayName, config.DiagnosticId!, loginCode, pkce, serverPreauthSecret);
         if (result?.error && result.failed) {
             onLoadEndError(result.error);
             return;
