@@ -774,6 +774,7 @@ export const uploadUserProfileImage = async (serverUrl: string, localPath: strin
                 multipart: {
                     fileKey: 'image',
                 },
+                headers: client.getRequestHeaders('POST'),
             });
         }
         return {};
