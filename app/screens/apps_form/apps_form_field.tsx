@@ -85,7 +85,7 @@ const AppsFormField = React.memo<Props>(({
 
     const handleChange = useCallback((newValue: string | boolean) => {
         onChange(name, newValue);
-    }, [name]);
+    }, [onChange, name]);
 
     const handleSelect = useCallback((newValue: SelectedDialogOption) => {
         if (!newValue) {
@@ -137,7 +137,7 @@ const AppsFormField = React.memo<Props>(({
             return undefined;
         }
 
-        if (!value || value === '') {
+        if (!value) {
             return undefined;
         }
 
