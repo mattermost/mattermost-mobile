@@ -7,14 +7,18 @@ import {Platform, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
+import {doPing} from '@actions/remote/general';
 import DatabaseManager from '@database/manager';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import {getServerCredentials, setServerCredentials} from '@init/credentials';
 import SecurityManager from '@managers/security_manager';
 import {getServerByDisplayName} from '@queries/app/servers';
 import Background from '@screens/background';
 import {dismissModal} from '@screens/navigation';
+import {getErrorMessage} from '@utils/errors';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {getServerUrlAfterRedirect} from '@utils/url';
 
 import Form from './form';
 import Header from './header';
@@ -44,21 +48,99 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) => {
-    const {formatMessage} = useIntl();
+    const intl = useIntl();
+    const {formatMessage} = intl;
     const keyboardAwareRef = useRef<KeyboardAwareScrollView>(null);
     const [saving, setSaving] = useState(false);
     const [displayName, setDisplayName] = useState<string>(server.displayName);
     const [buttonDisabled, setButtonDisabled] = useState(true);
     const [displayNameError, setDisplayNameError] = useState<string | undefined>();
+    const [preauthSecret, setPreauthSecret] = useState<string>('');
+    const [preauthSecretError, setPreauthSecretError] = useState<string | undefined>();
+    const [showAdvancedOptions, setShowAdvancedOptions] = useState<boolean>(false);
+    const [isPreauthSecretVisible, setIsPreauthSecretVisible] = useState(false);
+    const [validating, setValidating] = useState(false);
     const styles = getStyleSheet(theme);
 
     const close = useCallback(() => {
         dismissModal({componentId});
     }, [componentId]);
 
+    const [initialPreauthSecret, setInitialPreauthSecret] = useState<string>('');
+
+    // Load current preauth secret from credentials
     useEffect(() => {
-        setButtonDisabled(Boolean(!displayName || displayName === server.displayName));
-    }, [displayName]);
+        const loadCredentials = async () => {
+            try {
+                const credentials = await getServerCredentials(server.url);
+                const currentPreauthSecret = credentials?.preauthSecret || '';
+                setPreauthSecret(currentPreauthSecret);
+                setInitialPreauthSecret(currentPreauthSecret);
+
+                // Auto-open advanced options if preauth secret exists
+                if (currentPreauthSecret) {
+                    setShowAdvancedOptions(true);
+                }
+            } catch (error) {
+                // Credentials not found or error loading, keep empty
+            }
+        };
+
+        loadCredentials();
+    }, [server.url]);
+
+    useEffect(() => {
+        const hasNameChanged = displayName !== server.displayName;
+        const hasPreauthChanged = preauthSecret !== initialPreauthSecret;
+        setButtonDisabled(Boolean(!displayName || (!hasNameChanged && !hasPreauthChanged)));
+    }, [displayName, preauthSecret, initialPreauthSecret, server.displayName]);
+
+    // Validate server connection with preauth secret
+    const validateServer = useCallback(async (): Promise<boolean> => {
+        if (!preauthSecret.trim()) {
+            return true; // No preauth secret to validate
+        }
+
+        setValidating(true);
+
+        try {
+            // First try HEAD request
+            const headRequest = await getServerUrlAfterRedirect(server.url, true, preauthSecret.trim());
+            if (!headRequest.url) {
+                setPreauthSecretError(getErrorMessage(headRequest.error, intl));
+                setShowAdvancedOptions(true);
+                return false;
+            }
+
+            // Then try ping request
+            const result = await doPing(headRequest.url, true, undefined, preauthSecret.trim());
+            if (result.error) {
+                if (result.isPreauthError) {
+                    setPreauthSecretError(formatMessage({
+                        id: 'mobile.server.preauth_secret.invalid',
+                        defaultMessage: 'Authentication secret is invalid. Try again or contact your admin.',
+                    }));
+                    setShowAdvancedOptions(true);
+                } else {
+                    setPreauthSecretError(getErrorMessage(result.error, intl));
+                    setShowAdvancedOptions(true);
+                }
+                return false;
+            }
+
+            return true;
+        } catch (error) {
+            // Handle any unexpected errors during validation
+            setPreauthSecretError(formatMessage({
+                id: 'mobile.server.validation.error',
+                defaultMessage: 'Unable to validate server. Please check your connection and try again.',
+            }));
+            setShowAdvancedOptions(true);
+            return false;
+        } finally {
+            setValidating(false);
+        }
+    }, [server.url, preauthSecret, formatMessage]);
 
     const handleUpdate = useCallback(async () => {
         if (buttonDisabled) {
@@ -69,7 +151,13 @@ const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) =>
             setDisplayNameError(undefined);
         }
 
+        if (preauthSecretError) {
+            setPreauthSecretError(undefined);
+        }
+
         setSaving(true);
+
+        // Check display name uniqueness
         const knownServer = await getServerByDisplayName(displayName);
         if (knownServer && knownServer.lastActiveAt > 0 && knownServer.url !== server.url) {
             setButtonDisabled(true);
@@ -81,13 +169,35 @@ const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) =>
             return;
         }
 
+        // Validate preauth secret if changed
+        const isValidServer = await validateServer();
+        if (!isValidServer) {
+            setSaving(false);
+            return;
+        }
+
+        // Save display name
         await DatabaseManager.updateServerDisplayName(server.url, displayName);
+
+        // Save preauth secret to credentials (or remove if empty)
+        const credentials = await getServerCredentials(server.url);
+        await setServerCredentials(server.url, credentials?.token || '', preauthSecret.trim() || undefined);
+
         dismissModal({componentId});
-    }, [!buttonDisabled && displayName, !buttonDisabled && displayNameError]);
+    }, [buttonDisabled, displayName, displayNameError, preauthSecretError, server.url, preauthSecret, formatMessage, validateServer, componentId]);
 
     const handleDisplayNameTextChanged = useCallback((text: string) => {
         setDisplayName(text);
         setDisplayNameError(undefined);
+    }, []);
+
+    const handlePreauthSecretTextChanged = useCallback((text: string) => {
+        setPreauthSecret(text);
+        setPreauthSecretError(undefined);
+    }, []);
+
+    const togglePreauthSecretVisibility = useCallback(() => {
+        setIsPreauthSecretVisible((prevState) => !prevState);
     }, []);
 
     useNavButtonPressed(closeButtonId || '', componentId, close, []);
@@ -120,14 +230,21 @@ const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) =>
                     <Header theme={theme}/>
                     <Form
                         buttonDisabled={buttonDisabled}
-                        connecting={saving}
+                        connecting={saving || validating}
                         displayName={displayName}
                         displayNameError={displayNameError}
                         handleUpdate={handleUpdate}
                         handleDisplayNameTextChanged={handleDisplayNameTextChanged}
+                        handlePreauthSecretTextChanged={handlePreauthSecretTextChanged}
+                        isPreauthSecretVisible={isPreauthSecretVisible}
                         keyboardAwareRef={keyboardAwareRef}
+                        preauthSecret={preauthSecret}
+                        preauthSecretError={preauthSecretError}
                         serverUrl={server.url}
+                        setShowAdvancedOptions={setShowAdvancedOptions}
+                        showAdvancedOptions={showAdvancedOptions}
                         theme={theme}
+                        togglePreauthSecretVisibility={togglePreauthSecretVisibility}
                     />
                 </KeyboardAwareScrollView>
             </SafeAreaView>
