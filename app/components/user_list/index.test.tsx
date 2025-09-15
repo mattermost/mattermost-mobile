@@ -117,7 +117,7 @@ describe('components/channel_list_row', () => {
             handleSelectProfile: jest.fn(),
             fetchMore: jest.fn(),
             loading: true,
-            selectedIds: {},
+            selectedIds: new Set(),
             showNoResults: true,
             tutorialWatched: true,
             term: 'some term',

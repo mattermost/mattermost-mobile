@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo, type ComponentProps} from 'react';
-import {defineMessages, useIntl, type IntlShape} from 'react-intl';
+import {defineMessages, useIntl} from 'react-intl';
 import {View, Text} from 'react-native';
 
 import MenuDivider from '@components/menu_divider';
@@ -10,11 +10,14 @@ import OptionBox from '@components/option_box';
 import OptionItem, {ITEM_HEIGHT} from '@components/option_item';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {setChecklistItemCommand} from '@playbooks/actions/remote/checklist';
+import {setAssignee, setChecklistItemCommand, setDueDate} from '@playbooks/actions/remote/checklist';
+import {goToSelectDate, goToSelectUser} from '@playbooks/screens/navigation';
+import {getDueDateString} from '@playbooks/utils/time';
 import {dismissBottomSheet, goToScreen, openUserProfileModal} from '@screens/navigation';
-import {toMilliseconds} from '@utils/datetime';
+import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
+import {getTimezone} from '@utils/user';
 
 import Checkbox from '../checkbox';
 
@@ -61,10 +64,6 @@ const messages = defineMessages({
     none: {
         id: 'playbooks.checklist_item.none',
         defaultMessage: 'None',
-    },
-    dateAtTime: {
-        id: 'playbooks.checklist_item.date_at_time',
-        defaultMessage: '{date} at {time}',
     },
 });
 
@@ -125,20 +124,9 @@ type Props = {
     onRunCommand: () => void;
     teammateNameDisplay: string;
     isDisabled: boolean;
+    currentUserTimezone: UserTimezone | null | undefined;
+    participantIds: string[];
 };
-
-function getDueDateInfo(intl: IntlShape, dueDate: number | undefined) {
-    if (!dueDate) {
-        return intl.formatMessage(messages.none);
-    }
-    const dateObject = new Date(dueDate);
-    const dateString = dateObject.toLocaleDateString(intl.locale, {month: 'long', day: 'numeric', weekday: 'long'});
-    if (Math.abs(dueDate - Date.now()) < toMilliseconds({days: 1})) {
-        const timeString = dateObject.toLocaleTimeString(intl.locale, {hour: '2-digit', minute: '2-digit'});
-        return intl.formatMessage(messages.dateAtTime, {date: dateString, time: timeString});
-    }
-    return dateString;
-}
 
 const ChecklistItemBottomSheet = ({
     runId,
@@ -152,11 +140,15 @@ const ChecklistItemBottomSheet = ({
     onRunCommand,
     teammateNameDisplay,
     isDisabled,
+    currentUserTimezone,
+    participantIds,
 }: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const intl = useIntl();
     const serverUrl = useServerUrl();
+
+    const timezone = getTimezone(currentUserTimezone);
 
     const dueDate = 'dueDate' in item ? item.dueDate : item.due_date;
     const isChecked = item.state === 'closed';
@@ -244,21 +236,53 @@ const ChecklistItemBottomSheet = ({
         };
     }, [assignee, intl, onUserChipPress, teammateNameDisplay]);
 
+    const openEditDateModal = useCallback(async () => {
+        goToSelectDate(intl, (date) => {
+            setDueDate(serverUrl, runId, item.id, checklistNumber, itemNumber, date);
+        }, dueDate);
+    }, [intl, dueDate, serverUrl, runId, item.id, checklistNumber, itemNumber]);
+
+    const handleSelect = useCallback(async (selected: UserProfile) => {
+        const res = await setAssignee(serverUrl, runId, item.id, checklistNumber, itemNumber, selected.id);
+        if (res.error) {
+            showPlaybookErrorSnackbar();
+        }
+    }, [checklistNumber, item.id, itemNumber, runId, serverUrl]);
+
+    const handleRemove = useCallback(async () => {
+        const res = await setAssignee(serverUrl, runId, item.id, checklistNumber, itemNumber, '');
+        if (res.error) {
+            showPlaybookErrorSnackbar();
+        }
+    }, [checklistNumber, item.id, itemNumber, runId, serverUrl]);
+
+    const openUserSelector = useCallback(() => {
+        goToSelectUser(
+            intl.formatMessage(messages.assignee),
+            participantIds,
+            assignee?.id,
+            handleSelect,
+            handleRemove,
+        );
+    }, [assignee?.id, handleRemove, handleSelect, intl, participantIds]);
+
     const renderTaskDetails = () => (
         <View style={styles.taskDetailsContainer}>
             <OptionItem
-                type='none'
-                icon='account-multiple-plus-outline'
+                type={isDisabled ? 'none' : 'arrow'}
+                icon='account-plus-outline'
                 label={intl.formatMessage(messages.assignee)}
                 info={assigneeInfo}
                 testID='checklist_item.assignee'
+                action={isDisabled ? undefined : openUserSelector}
             />
             <OptionItem
-                type='none'
+                type={isDisabled ? 'none' : 'arrow'}
                 icon='calendar-outline'
                 label={intl.formatMessage(messages.dueDate)}
-                info={getDueDateInfo(intl, dueDate)}
+                info={getDueDateString(intl, dueDate, timezone)}
                 testID='checklist_item.due_date'
+                action={isDisabled ? undefined : openEditDateModal}
             />
             <OptionItem
                 type={isDisabled ? 'none' : 'arrow'}
