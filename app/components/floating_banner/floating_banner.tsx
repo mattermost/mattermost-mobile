@@ -67,26 +67,27 @@ const FloatingBanner: React.FC<FloatingBannerProps> = ({banners, onDismiss}) => 
                 style={containerStyle}
                 edges={edges}
             >
-                {sectionBanners.map((banner, index) => (
-                    <Banner
-                        key={banner.id}
-                        position={position}
-                        visible={true}
-                        {...(isTop ? {customTopOffset: index * BANNER_STACK_SPACING} : {customBottomOffset: (index * BANNER_STACK_SPACING) + BOTTOM_BANNER_EXTRA_OFFSET})}
-                        dismissible={banner.dismissible !== false}
-                        onDismiss={() => dismissBanner(banner)}
-                    >
-                        {banner.customContent ? (
-                            banner.customContent
-                        ) : (
-                            <BannerItem
-                                banner={banner}
-                                onPress={executeBannerAction}
-                                onDismiss={dismissBanner}
-                            />
-                        )}
-                    </Banner>
-                ))}
+                {sectionBanners.map((banner, index) => {
+                    const {id, dismissible = true, customContent} = banner;
+                    return (
+                        <Banner
+                            key={id}
+                            position={position}
+                            visible={true}
+                            {...(isTop ? {customTopOffset: index * BANNER_STACK_SPACING} : {customBottomOffset: (index * BANNER_STACK_SPACING) + BOTTOM_BANNER_EXTRA_OFFSET})}
+                            dismissible={dismissible}
+                            onDismiss={() => dismissBanner(banner)}
+                        >
+                            {customContent || (
+                                <BannerItem
+                                    banner={banner}
+                                    onPress={executeBannerAction}
+                                    onDismiss={dismissBanner}
+                                />
+                            )}
+                        </Banner>
+                    );
+                })}
             </SafeAreaView>
         );
     };
