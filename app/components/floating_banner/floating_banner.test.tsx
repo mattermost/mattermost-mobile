@@ -5,9 +5,13 @@ import {render, fireEvent, screen} from '@testing-library/react-native';
 import React from 'react';
 import {Text} from 'react-native';
 
-import FloatingBanner from './floating_banner';
+import * as Device from '@hooks/device';
+
+import FloatingBanner, {testExports} from './floating_banner';
 
 import type {BannerConfig} from './types';
+
+jest.mock('@hooks/device');
 
 // Mock the dependencies
 jest.mock('@components/banner', () => {
@@ -85,6 +89,9 @@ describe('FloatingBanner', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         mockOverlayOnDismiss.mockClear();
+
+        // Default to phone behavior unless a test overrides
+        jest.mocked(Device.useIsTablet).mockReturnValue(false);
     });
 
     describe('rendering', () => {
@@ -159,6 +166,17 @@ describe('FloatingBanner', () => {
 
             expect(screen.getByTestId('custom-content')).toBeTruthy();
             expect(screen.queryByTestId('banner-item')).toBeNull();
+        });
+
+        it('should render custom content for a bottom-positioned banner', () => {
+            const customContent = <Text testID={'custom-content-bottom'}>{'Bottom Custom'}</Text>;
+            const banner = createMockBanner({id: 'bottom-custom', position: 'bottom', customContent, dismissible: false});
+            renderFloatingBanner([banner]);
+
+            expect(screen.getByTestId('custom-content-bottom')).toBeTruthy();
+            const bannerElement = screen.getByTestId('banner');
+            expect(bannerElement.props.position).toBe('bottom');
+            expect(bannerElement.props.dismissible).toBe(false);
         });
     });
 
@@ -257,6 +275,38 @@ describe('FloatingBanner', () => {
             // Verify content types
             expect(screen.getByTestId('custom-banner')).toBeTruthy();
             expect(screen.getAllByTestId('banner-item')).toHaveLength(2); // Only first two have BannerItem
+        });
+    });
+
+    describe('tablet and default branches', () => {
+        it('uses default top when position is undefined', () => {
+            const banners = [
+                createMockBanner({id: 'no-pos-1', position: undefined}),
+                createMockBanner({id: 'no-pos-2', position: undefined}),
+            ];
+            renderFloatingBanner(banners);
+
+            const bannerElements = screen.getAllByTestId('banner');
+            expect(bannerElements).toHaveLength(2);
+            expect(bannerElements[0].props.position).toBe('top');
+            expect(bannerElements[1].props.position).toBe('top');
+            expect(bannerElements[1].props.customTopOffset).toBe(60);
+        });
+
+        it('applies tablet-specific bottom offset', () => {
+            jest.mocked(Device.useIsTablet).mockReturnValue(true);
+
+            const banners = [
+                createMockBanner({id: 'bottom-1', position: 'bottom', dismissible: false}),
+            ];
+            renderFloatingBanner(banners);
+
+            const container = screen.getByTestId('floating-banner-bottom-container');
+            const styleProp = container.props.style as Array<Record<string, unknown>>;
+            const styleWithBottom = styleProp[styleProp.length - 1] as {bottom: number};
+
+            const {BOTTOM_OFFSET_PHONE, TABLET_EXTRA_BOTTOM_OFFSET} = testExports;
+            expect(styleWithBottom.bottom).toBe(BOTTOM_OFFSET_PHONE + TABLET_EXTRA_BOTTOM_OFFSET);
         });
     });
 });
