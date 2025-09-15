@@ -217,6 +217,8 @@ describe('PlaybookRun', () => {
         ownerChip.props.onPress();
 
         expect(goToSelectUser).toHaveBeenCalledWith(
+            expect.anything(),
+            'Test Playbook Run',
             'Owner',
             [...props.participants.map((p) => p.id), props.owner!.id],
             props.owner!.id,
@@ -224,7 +226,7 @@ describe('PlaybookRun', () => {
         );
         expect(openUserProfileModal).not.toHaveBeenCalled();
 
-        const handleSelect = jest.mocked(goToSelectUser).mock.calls[0][3];
+        const handleSelect = jest.mocked(goToSelectUser).mock.calls[0][5];
         handleSelect(TestHelper.fakeUser({id: 'user-2'}));
 
         expect(setOwner).toHaveBeenCalledWith(
@@ -244,7 +246,7 @@ describe('PlaybookRun', () => {
         const ownerChip = getByTestId('user-chip');
         ownerChip.props.onPress();
 
-        const handleSelect = jest.mocked(goToSelectUser).mock.calls[0][3];
+        const handleSelect = jest.mocked(goToSelectUser).mock.calls[0][5];
         handleSelect(TestHelper.fakeUser({id: 'user-2'}));
 
         await waitFor(() => {
