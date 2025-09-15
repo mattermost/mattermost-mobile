@@ -86,25 +86,20 @@ describe('Interactive Dialog - Date and DateTime Fields', () => {
         await expect(introText).toExist();
 
         // # Test the date/datetime field interactions
-        console.log('Testing date field interactions...');
 
         // * Verify date/datetime field buttons exist and are tappable
         const requiredDateField = element(by.id('AppFormElement.required_date.select.button'));
         await expect(requiredDateField).toExist();
-        console.log('✅ Required date field button found');
-        
+
         const requiredDateTimeField = element(by.id('AppFormElement.required_datetime.select.button'));
         await expect(requiredDateTimeField).toExist();
-        console.log('✅ Required datetime field button found');
-        
+
         // # Test basic interaction - tap date field
         await requiredDateField.tap();
-        console.log('✅ Successfully tapped date field');
         await wait(1000);
-        
-        // # Test basic interaction - tap datetime field  
+
+        // # Test basic interaction - tap datetime field
         await requiredDateTimeField.tap();
-        console.log('✅ Successfully tapped datetime field');
         await wait(1000);
 
         // # Submit dialog with default values (required fields should have defaults)
@@ -120,8 +115,7 @@ describe('Interactive Dialog - Date and DateTime Fields', () => {
         await expect(submissionMessage).toExist();
 
         // * Verify submission response was successful (basic validation)
-        console.log('✅ Dialog submitted successfully and returned to channel');
-        
+
         // * Verify date/datetime fields were submitted with values
         // Based on webhook logs, the fields submit with both default and current date values
         // The test demonstrates that date/datetime field interaction is working

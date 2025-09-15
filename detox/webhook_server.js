@@ -302,6 +302,7 @@ function onDialogSubmit(req, res) {
                 deadline_datetime: submission.deadline_datetime,
             };
             console.log('📝 Date/DateTime dialog submission:', dateTimeValues);
+
             // Post structured submission results to channel for e2e verification
             message = `Date/DateTime Dialog Submitted:
 - required_date: ${dateTimeValues.required_date}
