@@ -57,6 +57,7 @@ server.post('/boolean_dialog_request', onBooleanDialogRequest);
 server.post('/simple_dialog_error_request', onSimpleDialogErrorRequest);
 server.post('/select_fields_dialog_request', onSelectFieldsDialogRequest);
 server.post('/multiselect_dynamic_dialog_request', onMultiselectDynamicDialogRequest);
+server.post('/date_datetime_dialog_request', onDateTimeDialogRequest);
 server.post('/dynamic_options', getDynamicOptions);
 server.post('/dynamic_multiselect_options', getDynamicMultiselectOptions);
 server.post('/slack_compatible_message_response', postSlackCompatibleMessageResponse);
@@ -230,7 +231,89 @@ function onDialogSubmit(req, res) {
         message = 'Dialog cancelled';
         sendSysadminResponse(message, body.channel_id);
     } else {
-        message = 'Dialog submitted';
+        const submission = body.submission || {};
+
+        // Debug logging for dialog submissions (can be removed in production)
+        console.log('📋 Dialog submission received:', {
+            callback_id: body.callback_id,
+            submission,
+        });
+
+        // For boolean dialog, post detailed submission values to channel
+        if (body.callback_id === 'booleancallbackid') {
+            const booleanValues = {
+                required_boolean: submission.required_boolean,
+                optional_boolean: submission.optional_boolean,
+                boolean_default_true: submission.boolean_default_true,
+                boolean_default_false: submission.boolean_default_false,
+            };
+
+            console.log('📝 Boolean dialog submission:', booleanValues);
+
+            // Post structured submission results to channel for e2e verification
+            message = `Boolean Dialog Submitted:
+- required_boolean: ${booleanValues.required_boolean}
+- optional_boolean: ${booleanValues.optional_boolean}  
+- boolean_default_true: ${booleanValues.boolean_default_true}
+- boolean_default_false: ${booleanValues.boolean_default_false}`;
+        } else if (body.callback_id === 'textfieldscallbackid') {
+            const textValues = {
+                text_field: submission.text_field,
+                required_text: submission.required_text,
+                email_field: submission.email_field,
+                number_field: submission.number_field,
+                password_field: submission.password_field,
+                textarea_field: submission.textarea_field,
+            };
+
+            console.log('📝 Text fields dialog submission:', textValues);
+
+            // Post structured submission results to channel for e2e verification
+            message = `Text Fields Dialog Submitted:
+- text_field: ${textValues.text_field}
+- required_text: ${textValues.required_text}
+- email_field: ${textValues.email_field}
+- number_field: ${textValues.number_field}
+- password_field: ${textValues.password_field}
+- textarea_field: ${textValues.textarea_field}`;
+        } else if (body.callback_id === 'selectfieldscallbackid') {
+            const selectValues = {
+                someradiooptions: submission.someradiooptions,
+                someoptionselector: submission.someoptionselector,
+                someuserselector: submission.someuserselector,
+                somechannelselector: submission.somechannelselector,
+            };
+
+            console.log('📝 Select fields dialog submission:', selectValues);
+
+            // Post structured submission results to channel for e2e verification
+            message = `Select Fields Dialog Submitted:
+- someradiooptions: ${selectValues.someradiooptions}
+- someoptionselector: ${selectValues.someoptionselector}
+- someuserselector: ${selectValues.someuserselector}
+- somechannelselector: ${selectValues.somechannelselector}`;
+        } else if (body.callback_id === 'datetimecallbackid') {
+            const dateTimeValues = {
+                required_date: submission.required_date,
+                optional_date: submission.optional_date,
+                required_datetime: submission.required_datetime,
+                optional_datetime: submission.optional_datetime,
+                meeting_date: submission.meeting_date,
+                deadline_datetime: submission.deadline_datetime,
+            };
+            console.log('📝 Date/DateTime dialog submission:', dateTimeValues);
+            // Post structured submission results to channel for e2e verification
+            message = `Date/DateTime Dialog Submitted:
+- required_date: ${dateTimeValues.required_date}
+- optional_date: ${dateTimeValues.optional_date}
+- required_datetime: ${dateTimeValues.required_datetime}
+- optional_datetime: ${dateTimeValues.optional_datetime}
+- meeting_date: ${dateTimeValues.meeting_date}
+- deadline_datetime: ${dateTimeValues.deadline_datetime}`;
+        } else {
+            message = `Dialog submitted with values: ${JSON.stringify(submission)}`;
+        }
+
         sendSysadminResponse(message, body.channel_id);
     }
 
@@ -341,6 +424,17 @@ function onMultiselectDynamicDialogRequest(req, res) {
     res.setHeader('Content-Type', 'application/json');
     console.log('=== END MULTISELECT DYNAMIC DIALOG REQUEST ===');
     return res.json({text: 'Multiselect dynamic dialog triggered via slash command!'});
+}
+
+function onDateTimeDialogRequest(req, res) {
+    const {body} = req;
+    if (body.trigger_id) {
+        const webhookBaseUrl = getWebhookBaseUrl();
+        const dialog = webhookUtils.getDateTimeDialog(body.trigger_id, webhookBaseUrl);
+        openDialog(dialog);
+    }
+    res.setHeader('Content-Type', 'application/json');
+    return res.json({text: 'Date/DateTime dialog triggered via slash command!'});
 }
 
 function getDynamicOptions(req, res) {

@@ -6,7 +6,7 @@ import React, {useCallback, useMemo} from 'react';
 import {View, Text} from 'react-native';
 
 import AutocompleteSelector from '@components/autocomplete_selector';
-import DateTimePicker from '@components/data_time_selector';
+import DateTimeSelector from '@components/data_time_selector';
 import FormattedDate from '@components/formatted_date';
 import FormattedTime from '@components/formatted_time';
 import Markdown from '@components/markdown';
@@ -351,12 +351,13 @@ const AppsFormField = React.memo<Props>(({
                         )}
                     </View>
 
-                    <DateTimePicker
+                    <DateTimeSelector
                         timezone={null}
                         theme={theme}
                         handleChange={handleDateChange}
                         initialDate={selectedDate}
                         dateOnly={field.type === AppFieldTypes.DATE}
+                        testID={testID}
                     />
 
                     {field.description && (

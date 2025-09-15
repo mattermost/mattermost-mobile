@@ -12,7 +12,7 @@ import {switchMap} from 'rxjs/operators';
 import {Preferences} from '@constants';
 import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
-import {getCurrentMomentForTimezone, getRoundedTime, getUtcOffsetForTimeZone} from '@utils/helpers';
+import {getCurrentMomentForTimezone, getRoundedTime} from '@utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
@@ -26,6 +26,7 @@ type Props = {
     initialDate?: Moment;
     minuteInterval?: 5 | 30;
     dateOnly?: boolean;
+    testID?: string;
 }
 
 type AndroidMode = 'date' | 'time';
@@ -51,7 +52,7 @@ const DateTimeSelector = ({
     isMilitaryTime,
     theme,
     showInitially,
-    initialDate, dateOnly = false,
+    initialDate, dateOnly = false, testID,
     minuteInterval = 30,
 }: Props) => {
     const styles = getStyleSheet(theme);
@@ -100,18 +101,18 @@ const DateTimeSelector = ({
     return (
         <View
             style={styles.container}
-            testID='custom_date_time_picker'
+            testID={testID || 'custom_date_time_picker'}
         >
             <View style={styles.buttonContainer}>
                 <Button
-                    testID={'custom_status_clear_after.menu_item.date_and_time.button.date'}
+                    testID={testID ? `${testID}.select.button` : 'custom_status_clear_after.menu_item.date_and_time.button.date'}
                     onPress={showDatepicker}
                     title='Select Date'
                     color={theme.buttonBg}
                 />
                 {!dateOnly && (
                     <Button
-                        testID={'custom_status_clear_after.menu_item.date_and_time.button.time'}
+                        testID={testID ? `${testID}.time.button` : 'custom_status_clear_after.menu_item.date_and_time.button.time'}
                         onPress={showTimepicker}
                         title='Select Time'
                         color={theme.buttonBg}

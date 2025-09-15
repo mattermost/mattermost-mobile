@@ -483,6 +483,78 @@ function getDynamicMultiselectOptionsResponse(query = '') {
     };
 }
 
+function getDateTimeDialog(triggerId, webhookBaseUrl) {
+    return {
+        trigger_id: triggerId,
+        url: `${webhookBaseUrl}/dialog_submit`,
+        dialog: {
+            callback_id: 'datetimecallbackid',
+            title: 'Date and DateTime Fields Test',
+            icon_url: 'http://www.mattermost.org/wp-content/uploads/2016/04/icon.png',
+            introduction_text: 'Test dialog for date and datetime field types with various configurations.',
+            elements: [
+                {
+                    display_name: 'Required Date Field',
+                    name: 'required_date',
+                    type: 'date',
+                    default: '2024-01-15',
+                    placeholder: '',
+                    help_text: 'Select a date (required field with default value)',
+                    optional: false,
+                },
+                {
+                    display_name: 'Optional Date Field',
+                    name: 'optional_date',
+                    type: 'date',
+                    default: '',
+                    placeholder: '',
+                    help_text: 'Select a date (optional field without default)',
+                    optional: true,
+                },
+                {
+                    display_name: 'Required DateTime Field',
+                    name: 'required_datetime',
+                    type: 'datetime',
+                    default: '2024-01-15T14:30:00.000Z',
+                    placeholder: '',
+                    help_text: 'Select a date and time (required field with default value)',
+                    optional: false,
+                },
+                {
+                    display_name: 'Optional DateTime Field',
+                    name: 'optional_datetime',
+                    type: 'datetime',
+                    default: '',
+                    placeholder: '',
+                    help_text: 'Select a date and time (optional field without default)',
+                    optional: true,
+                },
+                {
+                    display_name: 'Meeting Date',
+                    name: 'meeting_date',
+                    type: 'date',
+                    default: '',
+                    placeholder: '',
+                    help_text: 'When should this meeting be scheduled?',
+                    optional: false,
+                },
+                {
+                    display_name: 'Deadline DateTime',
+                    name: 'deadline_datetime',
+                    type: 'datetime',
+                    default: '',
+                    placeholder: '',
+                    help_text: 'What is the exact deadline for this task?',
+                    optional: false,
+                },
+            ],
+            submit_label: 'Submit Date/Time',
+            notify_on_cancel: true,
+            state: 'datetime_dialog_state',
+        },
+    };
+}
+
 module.exports = {
     getFullDialog,
     getSimpleDialog,
@@ -490,6 +562,7 @@ module.exports = {
     getBooleanDialog,
     getTextFieldsDialog,
     getMultiselectDynamicDialog,
+    getDateTimeDialog,
     getDynamicOptionsResponse,
     getDynamicMultiselectOptionsResponse,
 };
