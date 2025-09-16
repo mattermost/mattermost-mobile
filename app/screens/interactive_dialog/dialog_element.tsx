@@ -282,7 +282,7 @@ function DialogElement({
 
                     {/* DateTimePicker for changing the value */}
                     <DateTimePicker
-                        timezone={null}
+                        timezone={'UTC'}
                         theme={theme}
                         handleChange={handleDateChange}
                         initialDate={selectedDate}
