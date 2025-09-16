@@ -6,7 +6,7 @@ import React, {useCallback, useMemo} from 'react';
 import {View, Text} from 'react-native';
 
 import AutocompleteSelector from '@components/autocomplete_selector';
-import DateTimeSelector from '@components/data_time_selector';
+import DateTimeSelector from '@components/date_time_selector';
 import FormattedDate from '@components/formatted_date';
 import FormattedTime from '@components/formatted_time';
 import Markdown from '@components/markdown';
