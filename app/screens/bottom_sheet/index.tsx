@@ -221,7 +221,7 @@ const BottomSheet = ({
         if (scrollable) {
             content = (
                 <ScrollView {...scrollViewProps}>
-                    {renderContainerContent()}
+                    {content}
                 </ScrollView>
             );
         }
