@@ -17,7 +17,7 @@ import {CHIP_HEIGHT} from './constants';
 type SelectedChipProps = {
     onPress?: () => void;
     testID?: string;
-    showRemoveOption?: boolean;
+    actionIcon?: 'remove' | 'downArrow';
     showAnimation?: boolean;
     label: string;
     prefix?: JSX.Element;
@@ -70,7 +70,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 export default function BaseChip({
     testID,
     onPress,
-    showRemoveOption,
+    actionIcon,
     showAnimation,
     label,
     prefix,
@@ -85,7 +85,7 @@ export default function BaseChip({
         // We set the max width to 70% of the screen width to make sure
         // text like names get ellipsized correctly.
         const textMaxWidth = maxWidth || dimensions.width * 0.70;
-        const marginRight = showRemoveOption ? undefined : 7;
+        const marginRight = actionIcon ? undefined : 7;
         const marginLeft = prefix ? 5 : 7;
         return [
             style.text,
@@ -94,7 +94,7 @@ export default function BaseChip({
             type === 'danger' && style.dangerText,
             boldText && style.boldText,
         ];
-    }, [maxWidth, dimensions.width, showRemoveOption, prefix, style.text, style.linkText, style.dangerText, style.boldText, type, boldText]);
+    }, [maxWidth, dimensions.width, actionIcon, prefix, style.text, style.linkText, style.dangerText, style.boldText, type, boldText]);
     const containerStyle = useMemo(() => {
         return [
             style.container,
@@ -116,19 +116,20 @@ export default function BaseChip({
     );
 
     let content = chipContent;
-    if (showRemoveOption) {
+    if (actionIcon) {
+        const iconName = actionIcon === 'remove' ? 'close-circle' : 'chevron-down';
         content = (
             <>
                 {chipContent}
                 <TouchableOpacity
                     style={style.remove}
                     onPress={onPress}
-                    testID={`${testID}.remove.button`}
+                    testID={`${testID}.${actionIcon}.button`}
                 >
                     <CompassIcon
-                        name='close-circle'
+                        name={iconName}
                         size={16}
-                        color={changeOpacity(theme.centerChannelColor, 0.32)}
+                        color={changeOpacity(theme.centerChannelColor, 0.64)}
                     />
                 </TouchableOpacity>
             </>

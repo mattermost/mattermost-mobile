@@ -72,3 +72,19 @@ export const queryParticipantsFromAPIRun = (database: Database, run: PlaybookRun
     const participantsIds = run.participant_ids.filter((id) => id !== run.owner_user_id);
     return queryUsersById(database, participantsIds);
 };
+
+const emptyParticipantsList: string[] = [];
+export const observeParticipantsIdsFromPlaybookModel = (runModel: PlaybookRunModel | undefined, includeOwner = false) => {
+    if (!runModel) {
+        return of$(emptyParticipantsList);
+    }
+    return runModel.observe().pipe(
+        switchMap((run) => {
+            let participantsIds = run.participantIds;
+            if (!includeOwner) {
+                participantsIds = participantsIds.filter((id) => id !== run.ownerUserId);
+            }
+            return of$(participantsIds);
+        }),
+    );
+};

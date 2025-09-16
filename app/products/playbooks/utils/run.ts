@@ -23,7 +23,10 @@ export function getRunScheduledTimestamp(run: PlaybookRunModel | PlaybookRun): n
     return timestamp;
 }
 
-export function isRunFinished(run: PlaybookRunModel | PlaybookRun): boolean {
+export function isRunFinished(run?: PlaybookRunModel | PlaybookRun): boolean {
+    if (!run) {
+        return true;
+    }
     const currentStatus = 'currentStatus' in run ? run.currentStatus : run.current_status;
     return currentStatus === 'Finished';
 }

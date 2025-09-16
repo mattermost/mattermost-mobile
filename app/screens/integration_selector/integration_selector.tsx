@@ -560,6 +560,14 @@ function IntegrationSelector(
         };
     }, []);
 
+    const selectedUserIds = useMemo<Set<string>>(() => {
+        if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
+            return new Set(Object.keys(selectedIds));
+        }
+
+        return new Set();
+    }, [dataSource, selectedIds]);
+
     const renderDataTypeList = () => {
         switch (dataSource) {
             case ViewConstants.DATA_SOURCE_USERS:
@@ -569,7 +577,7 @@ function IntegrationSelector(
                         term={term}
                         tutorialWatched={true}
                         handleSelectProfile={handleSelectProfile}
-                        selectedIds={selectedIds as {[id: string]: UserProfile}}
+                        selectedIds={selectedUserIds}
                         fetchFunction={userFetchFunction}
                         searchFunction={userSearchFunction}
                         createFilter={createUserFilter}
