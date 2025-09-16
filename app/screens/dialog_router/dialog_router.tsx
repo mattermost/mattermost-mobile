@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useState, useRef} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Navigation} from 'react-native-navigation';
 
@@ -49,9 +49,6 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
     // State to accumulate values across multiform steps
     const [accumulatedValues, setAccumulatedValues] = useState<AppFormValues>({});
 
-    // Ref to track if this is a multiform dialog to avoid repeated checks
-    const isMultiformRef = useRef(false);
-
     // Helper to convert select options array to comma-separated string
     const convertSelectOptionsToString = (optionsArray: AppSelectOption[]): string => {
         return optionsArray.map((opt) => opt.value || '').join(',');
@@ -84,7 +81,7 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
 
     // Update modal title when dialog config changes
     React.useEffect(() => {
-        if (currentConfig.dialog.title) {
+        if (currentConfig?.dialog?.title) {
             Navigation.mergeOptions(componentId, {
                 topBar: {
                     title: {
@@ -93,7 +90,7 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
                 },
             });
         }
-    }, [currentConfig.dialog.title, componentId]);
+    }, [currentConfig?.dialog?.title, componentId]);
 
     // Create submit handler that converts AppForm values back to legacy format
     const handleSubmit = useCallback(async (values: AppFormValues): Promise<DoAppCallResult<FormResponseData>> => {
@@ -119,7 +116,6 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
             let legacySubmission: DialogSubmission;
 
             const isMultiform = Object.keys(accumulatedValues).length > 0;
-            isMultiformRef.current = isMultiform;
 
             if (isMultiform) {
                 // This is a multiform submission - include ALL accumulated values
@@ -165,6 +161,7 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
                             rawDialogData.notify_on_cancel,
                     },
                 };
+
                 setCurrentConfig(newDialogConfig);
             } else {
             // Clear accumulated values since dialog is completing
@@ -216,18 +213,18 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
 
     // Memoize form conversion to avoid recalculation on every render
     const appForm = useMemo(() => {
-        if (!isAppsFormEnabled) {
-            logDebug('DialogRouter: Apps Form disabled, using legacy dialog');
+        if (!isAppsFormEnabled || !currentConfig?.dialog) {
             return null;
         }
+
         try {
             const converted = InteractiveDialogAdapter.convertToAppForm(currentConfig);
+
             return converted;
         } catch (error) {
-            logDebug('DialogRouter: Failed to convert to AppForm', error);
             return null;
         }
-    }, [currentConfig.dialog, isAppsFormEnabled]); // More specific dependency
+    }, [currentConfig, isAppsFormEnabled]);
 
     // Helper function to find the dialog element by field name
     function findDialogElement(elements: any[], fieldName: string) {
@@ -236,6 +233,10 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
 
     // Create performLookupCall for dynamic select fields
     const performLookupCall = useCallback(async (field: AppField, values: AppFormValues, userInput: AppFormValue): Promise<DoAppCallResult<AppLookupResponse>> => {
+        if (!field || !config?.dialog?.elements) {
+            return {data: {type: 'ok', data: {items: []}}};
+        }
+
         const elements = config.dialog.elements || [];
         const element = findDialogElement(elements, field.name ?? '');
 
@@ -250,17 +251,23 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
         } catch (error) {
             return {data: {type: 'ok', data: {items: []}}};
         }
-    }, [currentConfig, serverUrl]);
+    }, [config, serverUrl]);
 
     // Create refreshOnSelect for Interactive Dialog field refresh support
     const refreshOnSelect = useCallback(async (field: AppField, values: AppFormValues): Promise<DoAppCallResult<FormResponseData>> => {
+        // Early return if required parameters are missing
+        if (!field || !currentConfig) {
+            return {data: {type: 'ok'}};
+        }
 
         // For Interactive Dialogs, field refresh uses the standard dialog submission
         // which routes to the plugin URL automatically
         try {
+            // Merge current values with accumulated values for field refresh
+            const allValues = {...accumulatedValues, ...values};
 
             // Convert current values back to dialog submission format
-            const dialogSubmission = InteractiveDialogAdapter.convertValuesToSubmission(values, currentConfig);
+            const dialogSubmission = InteractiveDialogAdapter.convertValuesToSubmission(allValues, currentConfig);
 
             // Add the selected field that triggered refresh
             dialogSubmission.submission.selected_field = field.name || '';
@@ -275,6 +282,10 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
             // Server returns {"form": {...}, "type": "form"} format
             if (result.data && typeof result.data === 'object' && 'form' in result.data) {
                 const formResult = result.data as {form: InteractiveDialogConfig['dialog']; type: string};
+
+                // Accumulate values from field refresh for preservation
+                const newAccumulatedValues = {...accumulatedValues, ...values};
+                setAccumulatedValues(newAccumulatedValues);
 
                 // Update the dialog config state with new form data
                 const newConfig = {
@@ -319,12 +330,26 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
                 },
             };
         }
-    }, [currentConfig, serverUrl, intl, setCurrentConfig]);
+    }, [currentConfig, serverUrl, intl, setCurrentConfig, accumulatedValues]);
 
     if (isAppsFormEnabled && appForm && appForm.fields) {
+        // Pre-populate form fields with accumulated values to preserve field refresh state
+        const formWithValues = {
+            ...appForm,
+            fields: appForm.fields.map((field) => {
+                if (field.name && accumulatedValues[field.name] !== undefined && !field.value) {
+                    return {
+                        ...field,
+                        value: accumulatedValues[field.name],
+                    };
+                }
+                return field;
+            }),
+        };
+
         return (
             <AppsFormComponent
-                form={appForm}
+                form={formWithValues}
                 componentId={componentId}
                 submit={handleSubmit}
                 performLookupCall={performLookupCall}

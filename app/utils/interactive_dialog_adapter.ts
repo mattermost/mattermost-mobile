@@ -167,7 +167,7 @@ export class InteractiveDialogAdapter {
         result: any,
         intl: IntlShape,
     ): DoAppCallResult<FormResponseData> {
-        
+
         // Handle server-side validation errors from the response data
         if (result?.data?.error || result?.data?.errors) {
             return {

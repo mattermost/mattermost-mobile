@@ -483,6 +483,260 @@ function getDynamicMultiselectOptionsResponse(query = '') {
     };
 }
 
+function getMultiformDialog(triggerId, webhookBaseUrl, step = 1) {
+    const dialogs = {
+        1: {
+            callback_id: 'multiform_step_1',
+            title: 'Personal Information - Step 1 of 3',
+            introduction_text: 'Please provide your basic information',
+            submit_label: 'Next Step',
+            elements: [
+                {
+                    display_name: 'First Name',
+                    name: 'first_name',
+                    type: 'text',
+                    placeholder: 'Enter your first name',
+                    help_text: 'Your given name',
+                    optional: false,
+                },
+                {
+                    display_name: 'Email Address',
+                    name: 'email',
+                    type: 'text',
+                    subtype: 'email',
+                    placeholder: 'Enter your email address',
+                    help_text: 'We will use this for notifications',
+                    optional: false,
+                },
+            ],
+        },
+        2: {
+            callback_id: 'multiform_step_2',
+            title: 'Work Information - Step 2 of 3',
+            introduction_text: 'Tell us about your work experience',
+            submit_label: 'Continue',
+            elements: [
+                {
+                    display_name: 'Department',
+                    name: 'department',
+                    type: 'radio',
+                    help_text: 'Choose your department',
+                    optional: false,
+                    options: [
+                        {text: 'Engineering', value: 'Engineering'},
+                        {text: 'Marketing', value: 'Marketing'},
+                        {text: 'Sales', value: 'Sales'},
+                        {text: 'Support', value: 'Support'},
+                    ],
+                },
+                {
+                    display_name: 'Experience Level',
+                    name: 'experience_level',
+                    type: 'select',
+                    placeholder: 'Select your experience level',
+                    help_text: 'Your professional experience',
+                    optional: false,
+                    options: [
+                        {text: 'Junior', value: 'Junior'},
+                        {text: 'Mid-level', value: 'Mid-level'},
+                        {text: 'Senior', value: 'Senior'},
+                        {text: 'Lead', value: 'Lead'},
+                    ],
+                },
+            ],
+        },
+        3: {
+            callback_id: 'multiform_step_3',
+            title: 'Final Details - Step 3 of 3',
+            introduction_text: 'Complete your registration',
+            submit_label: 'Complete Registration',
+            elements: [
+                {
+                    display_name: 'Additional Comments',
+                    name: 'comments',
+                    type: 'textarea',
+                    placeholder: 'Any additional information...',
+                    help_text: 'Optional comments about your application',
+                    optional: true,
+                },
+                {
+                    display_name: 'Terms and Conditions',
+                    name: 'terms_accepted',
+                    type: 'bool',
+                    help_text: 'I agree to the terms and conditions',
+                    optional: false,
+                },
+            ],
+        },
+    };
+
+    return {
+        trigger_id: triggerId,
+        url: `${webhookBaseUrl}/multiform_dialog_submit`,
+        dialog: dialogs[step],
+    };
+}
+
+function getFieldRefreshDialog(triggerId, webhookBaseUrl, projectType = null) {
+    const baseElements = [
+        {
+            display_name: 'Project Name',
+            name: 'project_name',
+            type: 'text',
+            placeholder: 'Enter project name',
+            help_text: 'Name of your project',
+            optional: false,
+        },
+        {
+            display_name: 'Description',
+            name: 'description',
+            type: 'textarea',
+            placeholder: 'Enter project description',
+            help_text: 'Brief description of your project',
+            optional: true,
+        },
+        {
+            display_name: 'Project Type',
+            name: 'project_type',
+            type: 'select',
+            placeholder: 'Select project type',
+            help_text: 'Choose the type of project you want to create',
+            optional: false,
+            refresh: true, // This field triggers refresh
+            options: [
+                {text: 'Web Application', value: 'web_application'},
+                {text: 'Mobile App', value: 'mobile_app'},
+                {text: 'Database Application', value: 'database_app'},
+                {text: 'API Service', value: 'api_service'},
+                {text: 'Unknown Type', value: 'unknown_type'}, // For error testing
+            ],
+        },
+    ];
+
+    // Add project-type specific fields based on selection
+    if (projectType === 'web_application') {
+        baseElements.push(
+            {
+                display_name: 'Frontend Framework',
+                name: 'frontend_framework',
+                type: 'select',
+                placeholder: 'Select frontend framework',
+                optional: false,
+                options: [
+                    {text: 'React', value: 'React'},
+                    {text: 'Vue.js', value: 'Vue.js'},
+                    {text: 'Angular', value: 'Angular'},
+                    {text: 'Svelte', value: 'Svelte'},
+                ],
+            },
+            {
+                display_name: 'Backend Language',
+                name: 'backend_language',
+                type: 'select',
+                placeholder: 'Select backend language',
+                optional: false,
+                options: [
+                    {text: 'Node.js', value: 'Node.js'},
+                    {text: 'Python', value: 'Python'},
+                    {text: 'Java', value: 'Java'},
+                    {text: 'Go', value: 'Go'},
+                ],
+            },
+        );
+    } else if (projectType === 'mobile_app') {
+        baseElements.push(
+            {
+                display_name: 'Platform',
+                name: 'platform',
+                type: 'select',
+                placeholder: 'Select platform',
+                optional: false,
+                options: [
+                    {text: 'iOS', value: 'iOS'},
+                    {text: 'Android', value: 'Android'},
+                    {text: 'Cross-platform', value: 'Cross-platform'},
+                ],
+            },
+            {
+                display_name: 'Development Framework',
+                name: 'dev_framework',
+                type: 'select',
+                placeholder: 'Select development framework',
+                optional: false,
+                options: [
+                    {text: 'React Native', value: 'React Native'},
+                    {text: 'Flutter', value: 'Flutter'},
+                    {text: 'Swift UI', value: 'Swift UI'},
+                    {text: 'Kotlin', value: 'Kotlin'},
+                ],
+            },
+        );
+    } else if (projectType === 'database_app') {
+        baseElements.push(
+            {
+                display_name: 'Database Type',
+                name: 'database_type',
+                type: 'select',
+                placeholder: 'Select database type',
+                optional: false,
+                options: [
+                    {text: 'PostgreSQL', value: 'PostgreSQL'},
+                    {text: 'MySQL', value: 'MySQL'},
+                    {text: 'MongoDB', value: 'MongoDB'},
+                    {text: 'SQLite', value: 'SQLite'},
+                ],
+            },
+            {
+                display_name: 'Schema Migration',
+                name: 'schema_migration',
+                type: 'bool',
+                default: 'false',
+                help_text: 'Enable automatic schema migration',
+                optional: false,
+            },
+        );
+    } else if (projectType === 'api_service') {
+        baseElements.push(
+            {
+                display_name: 'API Protocol',
+                name: 'api_protocol',
+                type: 'select',
+                placeholder: 'Select API protocol',
+                optional: false,
+                options: [
+                    {text: 'REST', value: 'REST'},
+                    {text: 'GraphQL', value: 'GraphQL'},
+                    {text: 'gRPC', value: 'gRPC'},
+                ],
+            },
+            {
+                display_name: 'Authentication Method',
+                name: 'auth_method',
+                type: 'select',
+                placeholder: 'Select authentication method',
+                optional: false,
+                options: [
+                    {text: 'JWT', value: 'JWT'},
+                    {text: 'OAuth', value: 'OAuth'},
+                    {text: 'API Key', value: 'API Key'},
+                ],
+            },
+        );
+    }
+
+    return {
+        trigger_id: triggerId,
+        url: `${webhookBaseUrl}/field_refresh_dialog_submit`,
+        dialog: {
+            callback_id: 'field_refresh_dialog',
+            title: 'Project Configuration',
+            introduction_text: 'Configure your project settings',
+            submit_label: 'Create Project',
+            elements: baseElements,
+        },
+    };
+}
+
 module.exports = {
     getFullDialog,
     getSimpleDialog,
@@ -492,4 +746,6 @@ module.exports = {
     getMultiselectDynamicDialog,
     getDynamicOptionsResponse,
     getDynamicMultiselectOptionsResponse,
+    getMultiformDialog,
+    getFieldRefreshDialog,
 };
