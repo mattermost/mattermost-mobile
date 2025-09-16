@@ -1080,6 +1080,7 @@ class TestHelperSingleton {
         due_date: 0,
         completed_at: 0,
         task_actions: [],
+        condition_action: '',
         update_at: 0,
     });
 
@@ -1253,6 +1254,7 @@ class TestHelperSingleton {
             sync: 'synced',
             lastSyncAt: 0,
             taskActions: [],
+            conditionAction: '',
             checklist: this.fakeRelation(),
             updateAt: 0,
             ...overwrite,
