@@ -172,7 +172,8 @@ const Server = ({
     useEffect(() => {
         const listener = {
             componentDidAppear: () => {
-                if (url) {
+                // Don't invalidate client during auto-connect as it cancels the ping
+                if (url && !isAutoConnecting) {
                     NetworkManager.invalidateClient(url);
                 }
             },
@@ -180,7 +181,7 @@ const Server = ({
         const unsubscribe = Navigation.events().registerComponentListener(listener, componentId);
 
         return () => unsubscribe.remove();
-    }, [componentId, url]);
+    }, [componentId, url, isAutoConnecting]);
 
     useEffect(() => {
         const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
