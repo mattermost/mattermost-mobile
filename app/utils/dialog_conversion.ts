@@ -164,7 +164,7 @@ export function convertDialogToAppForm(config: InteractiveDialogConfig): AppForm
             position: index,
         })) || [],
         submit_buttons: undefined,
-        
+
         // Pass through submit label from dialog config
         submit_label: config.dialog.submit_label || undefined,
 

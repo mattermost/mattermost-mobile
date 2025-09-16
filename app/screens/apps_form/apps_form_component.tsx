@@ -320,7 +320,7 @@ function AppsFormComponent({
     [form.fields, form.submit_buttons],
     );
 
-    const handleSubmit = useCallback(async (button?: string) => {        
+    const handleSubmit = useCallback(async (button?: string) => {
         if (submitting) {
             return;
         }
@@ -384,7 +384,7 @@ function AppsFormComponent({
                 return;
             case AppCallResponseTypes.FORM:
                 logDebug('AppsFormComponent: Received new form from submit - parent will handle update');
-                
+
                 // Form will be updated by parent (DialogRouter) which will trigger re-render
                 setSubmitting(false);
                 return;
