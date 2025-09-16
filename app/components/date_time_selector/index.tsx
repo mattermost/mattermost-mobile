@@ -52,7 +52,9 @@ const DateTimeSelector = ({
     isMilitaryTime,
     theme,
     showInitially,
-    initialDate, dateOnly = false, testID,
+    initialDate,
+    dateOnly = false,
+    testID,
     minuteInterval = 30,
 }: Props) => {
     const styles = getStyleSheet(theme);
