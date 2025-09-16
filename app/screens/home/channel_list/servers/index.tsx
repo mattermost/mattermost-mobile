@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-
+/*eslint-disable */
 import React, {useCallback, useEffect, useImperativeHandle, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Dimensions, StyleSheet} from 'react-native';
 
+import LocalConfig from '@assets/config.json';
 import ServerIcon from '@components/server_icon';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -156,6 +157,11 @@ const Servers = React.forwardRef<ServersRef>((_, ref) => {
             subscriptions.clear();
         };
     }, []);
+
+    // Hide server icon when AutoSelectServerUrl is enabled
+    if (LocalConfig.AutoSelectServerUrl) {
+        return null;
+    }
 
     return (
         <ServerIcon

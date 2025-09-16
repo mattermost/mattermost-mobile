@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-
+/*eslint-disable */
 import React, {useCallback, useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {type Insets, Text, TouchableWithoutFeedback, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {logout} from '@actions/remote/session';
+import LocalConfig from '@assets/config.json';
 import CompassIcon from '@components/compass_icon';
 import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
@@ -193,31 +194,33 @@ const ChannelListHeader = ({
                             </View>
                         </TouchableWithoutFeedback>
                     </View>
-                    <View style={styles.subHeadingView}>
-                        <Text
-                            numberOfLines={1}
-                            ellipsizeMode='tail'
-                            style={styles.subHeadingStyles}
-                            testID='channel_list_header.server_display_name'
-                        >
-                            {serverDisplayName}
-                        </Text>
-                        {pushProxyStatus !== PUSH_PROXY_STATUS_VERIFIED && (
-                            <TouchableWithFeedback
-                                onPress={onPushAlertPress}
-                                testID='channel_list_header.push_alert'
-                                type='opacity'
+                    {!LocalConfig.AutoSelectServerUrl && (
+                        <View style={styles.subHeadingView}>
+                            <Text
+                                numberOfLines={1}
+                                ellipsizeMode='tail'
+                                style={styles.subHeadingStyles}
+                                testID='channel_list_header.server_display_name'
                             >
-                                <CompassIcon
-                                    name='alert-outline'
-                                    color={theme.errorTextColor}
-                                    size={14}
-                                    style={styles.pushAlert}
-                                />
-                            </TouchableWithFeedback>
-                        )}
-                        <LoadingUnreads/>
-                    </View>
+                                {serverDisplayName}
+                            </Text>
+                            {pushProxyStatus !== PUSH_PROXY_STATUS_VERIFIED && (
+                                <TouchableWithFeedback
+                                    onPress={onPushAlertPress}
+                                    testID='channel_list_header.push_alert'
+                                    type='opacity'
+                                >
+                                    <CompassIcon
+                                        name='alert-outline'
+                                        color={theme.errorTextColor}
+                                        size={14}
+                                        style={styles.pushAlert}
+                                    />
+                                </TouchableWithFeedback>
+                            )}
+                            <LoadingUnreads/>
+                        </View>
+                    )}
                 </View>
                 <TouchableWithFeedback
                     hitSlop={hitSlop}

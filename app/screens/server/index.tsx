@@ -217,6 +217,7 @@ const Server = ({
             serverUrl,
             ssoOptions,
             theme,
+            preventBackNavigation: LocalConfig.AutoSelectServerUrl && LocalConfig.DefaultServerUrl,
         };
 
         const redirectSSO = !hasLoginForm && numberSSOs === 1;
@@ -232,7 +233,19 @@ const Server = ({
             passProps.launchType = Launch.Normal;
         }
 
-        goToScreen(screen, '', passProps, loginAnimationOptions());
+        // Hide back button if auto-connecting to default server
+        const navigationOptions = LocalConfig.AutoSelectServerUrl && LocalConfig.DefaultServerUrl ? 
+            {
+                ...loginAnimationOptions(),
+                topBar: {
+                    ...loginAnimationOptions().topBar,
+                    backButton: {
+                        visible: false,
+                    },
+                },
+            } : loginAnimationOptions();
+        
+        goToScreen(screen, '', passProps, navigationOptions);
         setConnecting(false);
         setButtonDisabled(false);
         setUrl(serverUrl);
