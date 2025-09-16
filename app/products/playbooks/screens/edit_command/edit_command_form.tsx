@@ -6,7 +6,6 @@ import {useIntl} from 'react-intl';
 import {
     type LayoutChangeEvent,
     View,
-    Platform,
     StyleSheet,
 } from 'react-native';
 import {SafeAreaView, type Edges} from 'react-native-safe-area-context';
@@ -19,9 +18,8 @@ import {
     getKeyboardAppearanceFromTheme,
 } from '@utils/theme';
 
-const BOTTOM_AUTOCOMPLETE_SEPARATION = Platform.select({ios: 10, default: 10});
+const BOTTOM_AUTOCOMPLETE_SEPARATION = 4;
 const LIST_PADDING = 32;
-const AUTOCOMPLETE_ADJUST = 5;
 
 const styles = StyleSheet.create({
     container: {
@@ -70,14 +68,12 @@ export default function EditCommandForm({
         setWrapperHeight(e.nativeEvent.layout.height);
     }, []);
 
-    const spaceOnTop = LIST_PADDING - AUTOCOMPLETE_ADJUST;
-    const spaceOnBottom = (wrapperHeight) - (LIST_PADDING + commandFieldHeight + BOTTOM_AUTOCOMPLETE_SEPARATION);
+    const spaceOnBottom = (wrapperHeight) - (LIST_PADDING + commandFieldHeight + (BOTTOM_AUTOCOMPLETE_SEPARATION * 2));
 
-    const bottomPosition = (LIST_PADDING + commandFieldHeight);
-    const topPosition = (wrapperHeight + AUTOCOMPLETE_ADJUST) - LIST_PADDING;
-    const autocompletePosition = spaceOnBottom > spaceOnTop ? bottomPosition : topPosition;
-    const autocompleteAvailableSpace = spaceOnBottom > spaceOnTop ? spaceOnBottom : spaceOnTop;
-    const growDown = spaceOnBottom > spaceOnTop;
+    const bottomPosition = (LIST_PADDING + commandFieldHeight + BOTTOM_AUTOCOMPLETE_SEPARATION);
+    const autocompletePosition = bottomPosition;
+    const autocompleteAvailableSpace = spaceOnBottom;
+    const growDown = true;
 
     const [animatedAutocompletePosition, animatedAutocompleteAvailableSpace] = useAutocompleteDefaultAnimatedValues(autocompletePosition, autocompleteAvailableSpace);
 
@@ -103,6 +99,7 @@ export default function EditCommandForm({
                     value={command}
                     theme={theme}
                     onLayout={onLayoutCommand}
+                    autoFocus={true}
                 />
             </View>
             <Autocomplete
@@ -116,6 +113,8 @@ export default function EditCommandForm({
                 growDown={growDown}
                 channelId={channelId}
                 autocompleteProviders={autocompleteProviders}
+                useAllAvailableSpace={true}
+                horizontalPadding={20}
             />
         </SafeAreaView>
     );
