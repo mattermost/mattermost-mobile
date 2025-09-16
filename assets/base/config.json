@@ -1,14 +1,14 @@
 {
-    "AuthUrlScheme": "mmauth://",
-    "AuthUrlSchemeDev": "mmauthbeta://",
-    "DefaultServerUrl": "",
-    "DefaultServerName": "",
+    "AuthUrlScheme": "daakiaauth://",
+    "AuthUrlSchemeDev": "daakiaauth-dev://",
+    "DefaultServerUrl": "https://chat.daakia.ai",
+    "DefaultServerName": "Daakia",
     "TestServerUrl": "http://localhost:8065",
-    "AutoSelectServerUrl": false,
+    "AutoSelectServerUrl": true,
 
-    "WebsiteURL": "https://mattermost.com",
-    "ServerNoticeURL": "https://github.com/mattermost/mattermost-server/blob/master/NOTICE.txt",
-    "MobileNoticeURL": "https://github.com/mattermost/mattermost-mobile/blob/master/NOTICE.txt",
+    "WebsiteURL": "https://chat.daakia.ai",
+    "ServerNoticeURL": "https://www.daakia.co.in/",
+    "MobileNoticeURL": "https://www.daakia.co.in/",
 
     "RudderApiKey": "",
 
@@ -25,7 +25,7 @@
     },
 
     "ShowReview": false,
-    "ShowOnboarding": false,
+    "ShowOnboarding": true,
 
     "ExperimentalNormalizeMarkdownLinks": false,
     "CustomRequestHeaders": {},
