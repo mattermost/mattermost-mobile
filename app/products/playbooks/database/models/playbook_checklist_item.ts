@@ -70,6 +70,9 @@ export default class PlaybookChecklistItemModel extends Model implements Playboo
     /** task_actions : The JSON string representing the task actions */
     @json('task_actions', safeParseJSONStringArray) taskActions!: TaskAction[];
 
+    /** condition_action : The condition action for the checklist item */
+    @field('condition_action') conditionAction!: ConditionAction;
+
     /** sync : The sync status of the checklist item */
     @field('sync') sync!: SyncStatus;
 
