@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q, type Query, type Relation} from '@nozbe/watermelondb';
 import {children, field, immutableRelation, json} from '@nozbe/watermelondb/decorators';
 import Model, {type Associations} from '@nozbe/watermelondb/Model';
 
@@ -9,6 +8,7 @@ import {MM_TABLES} from '@constants/database';
 import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
 import {safeParseJSONStringArray} from '@utils/helpers';
 
+import type {Query, Relation} from '@nozbe/watermelondb';
 import type PlaybookRunModelInterface from '@playbooks//types/database/models/playbook_run';
 import type PlaybookChecklistModel from '@playbooks/types/database/models/playbook_checklist';
 import type {SyncStatus} from '@typings/database/database';
@@ -136,11 +136,6 @@ export default class PlaybookRunModel extends Model implements PlaybookRunModelI
     @immutableRelation(USER, 'owner_user_id') owner!: Relation<UserModel>;
 
     @children(PLAYBOOK_CHECKLIST) checklists!: Query<PlaybookChecklistModel>;
-
-    participants = (): Query<UserModel> => {
-        const filteredParticipantIds = this.participantIds.filter((id) => id !== this.ownerUserId);
-        return this.database.get<UserModel>(USER).query(Q.where('id', Q.oneOf(filteredParticipantIds)));
-    };
 
     prepareDestroyWithRelations = async (): Promise<Model[]> => {
         const preparedModels: Model[] = [this.prepareDestroyPermanently()];

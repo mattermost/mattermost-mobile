@@ -991,7 +991,6 @@
   "playbooks.checklist_item.check": "勾选",
   "playbooks.checklist_item.checked": "已勾选",
   "playbooks.checklist_item.command": "命令",
-  "playbooks.checklist_item.date_at_time": "{date}  {time}",
   "playbooks.checklist_item.due_date": "截止日期",
   "playbooks.checklist_item.none": "无",
   "playbooks.checklist_item.rerun_command": "重新执行命令",

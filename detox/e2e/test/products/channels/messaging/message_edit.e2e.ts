@@ -78,7 +78,7 @@ describe('Messaging - Message Edit', () => {
         // * Verify post message is updated and displays edited indicator '(edited)'
         const {postListPostItem: updatedPostListPostItem, postListPostItemEditedIndicator} = ChannelScreen.getPostListPostItem(post.id, updatedMessage);
         await expect(updatedPostListPostItem).toBeVisible();
-        await expect(postListPostItemEditedIndicator).toHaveText('(edited)');
+        await expect(postListPostItemEditedIndicator).toHaveText('Edited');
 
         // # Go back to channel list screen
         await ChannelScreen.back();
@@ -144,7 +144,7 @@ describe('Messaging - Message Edit', () => {
         // * Verify reply post message is updated and displays edited indicator '(edited)'
         const {postListPostItem: updatedReplyPostListPostItem, postListPostItemEditedIndicator} = ThreadScreen.getPostListPostItem(replyPost.id, updatedReplyMessage);
         await expect(updatedReplyPostListPostItem).toBeVisible();
-        await expect(postListPostItemEditedIndicator).toHaveText('(edited)');
+        await expect(postListPostItemEditedIndicator).toHaveText('Edited');
 
         // # Go back to channel list screen
         await ThreadScreen.back();

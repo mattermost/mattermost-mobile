@@ -6,7 +6,7 @@ import {goToScreen} from '@screens/navigation';
 import TestHelper from '@test/test_helper';
 import {changeOpacity} from '@utils/theme';
 
-import {goToPlaybookRuns, goToPlaybookRun} from './navigation';
+import {goToPlaybookRuns, goToPlaybookRun, goToSelectUser, goToSelectDate} from './navigation';
 
 jest.mock('@screens/navigation', () => ({
     goToScreen: jest.fn(),
@@ -60,6 +60,73 @@ describe('Playbooks Navigation', () => {
                 Screens.PLAYBOOK_RUN,
                 'Playbook run',
                 {playbookRunId},
+                {},
+            );
+        });
+    });
+
+    describe('goToSelectUser', () => {
+        it('should navigate to select user screen with correct parameters when handleRemove is provided', async () => {
+            const title = 'Select User';
+            const participantIds = ['user1', 'user2', 'user3'];
+            const selected = 'user2';
+            const handleSelect = jest.fn();
+            const handleRemove = jest.fn();
+
+            await goToSelectUser(title, participantIds, selected, handleSelect, handleRemove);
+
+            expect(goToScreen).toHaveBeenCalledWith(
+                Screens.PLAYBOOK_SELECT_USER,
+                title,
+                {
+                    participantIds,
+                    selected,
+                    handleSelect,
+                    handleRemove,
+                },
+                {},
+            );
+        });
+    });
+
+    describe('goToSelectDate', () => {
+        it('should navigate to select date screen with selected date', async () => {
+            const onSave = jest.fn();
+            const selectedDate = 1640995200000; // January 1, 2022
+
+            await goToSelectDate(mockIntl, onSave, selectedDate);
+
+            expect(mockIntl.formatMessage).toHaveBeenCalledWith({
+                id: 'playbooks.select_date.title',
+                defaultMessage: 'Due date',
+            });
+            expect(goToScreen).toHaveBeenCalledWith(
+                Screens.PLAYBOOKS_SELECT_DATE,
+                'Due date',
+                {
+                    onSave,
+                    selectedDate,
+                },
+                {},
+            );
+        });
+
+        it('should navigate to select date screen without selected date', async () => {
+            const onSave = jest.fn();
+
+            await goToSelectDate(mockIntl, onSave, undefined);
+
+            expect(mockIntl.formatMessage).toHaveBeenCalledWith({
+                id: 'playbooks.select_date.title',
+                defaultMessage: 'Due date',
+            });
+            expect(goToScreen).toHaveBeenCalledWith(
+                Screens.PLAYBOOKS_SELECT_DATE,
+                'Due date',
+                {
+                    onSave,
+                    selectedDate: undefined,
+                },
                 {},
             );
         });

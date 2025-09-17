@@ -78,10 +78,9 @@ describe('setChecklistItemState', () => {
 
         jest.mocked(client.doFetch).mockResolvedValue(mockResponse);
 
-        const result = await client.setChecklistItemState(playbookRunID, checklistNum, itemNum, newState);
+        await client.setChecklistItemState(playbookRunID, checklistNum, itemNum, newState);
 
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
-        expect(result).toEqual(mockResponse);
     });
 
     test('should handle error when setting checklist item state', async () => {
@@ -89,13 +88,10 @@ describe('setChecklistItemState', () => {
         const checklistNum = 1;
         const itemNum = 2;
         const newState = 'in_progress' as ChecklistItemState;
-        const expectedError = {error: new Error('Network error')};
 
         jest.mocked(client.doFetch).mockRejectedValue(new Error('Network error'));
 
-        const result = await client.setChecklistItemState(playbookRunID, checklistNum, itemNum, newState);
-
-        expect(result).toEqual(expectedError);
+        await expect(client.setChecklistItemState(playbookRunID, checklistNum, itemNum, newState)).rejects.toThrow('Network error');
     });
 
     test('should set checklist item state with empty state', async () => {
@@ -109,10 +105,9 @@ describe('setChecklistItemState', () => {
 
         jest.mocked(client.doFetch).mockResolvedValue(mockResponse);
 
-        const result = await client.setChecklistItemState(playbookRunID, checklistNum, itemNum, newState);
+        await client.setChecklistItemState(playbookRunID, checklistNum, itemNum, newState);
 
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
-        expect(result).toEqual(mockResponse);
     });
 
     test('should set checklist item state with skipped state', async () => {
@@ -126,10 +121,9 @@ describe('setChecklistItemState', () => {
 
         jest.mocked(client.doFetch).mockResolvedValue(mockResponse);
 
-        const result = await client.setChecklistItemState(playbookRunID, checklistNum, itemNum, newState);
+        await client.setChecklistItemState(playbookRunID, checklistNum, itemNum, newState);
 
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
-        expect(result).toEqual(mockResponse);
     });
 });
 
@@ -285,3 +279,142 @@ describe('setChecklistItemCommand', () => {
     });
 });
 
+describe('setDueDate', () => {
+    test('should set due date successfully with valid date', async () => {
+        const playbookRunId = 'run123';
+        const checklistNum = 1;
+        const itemNum = 2;
+        const date = 1640995200000; // January 1, 2022 00:00:00 UTC
+        const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunId}/checklists/${checklistNum}/item/${itemNum}/duedate`;
+        const expectedOptions = {method: 'put', body: {due_date: date}};
+
+        jest.mocked(client.doFetch).mockResolvedValue(undefined);
+
+        await client.setDueDate(playbookRunId, checklistNum, itemNum, date);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+    });
+    test('should handle error when setting due date', async () => {
+        const playbookRunId = 'run123';
+        const checklistNum = 1;
+        const itemNum = 2;
+        const date = 1640995200000;
+
+        jest.mocked(client.doFetch).mockRejectedValue(new Error('Network error'));
+
+        await expect(client.setDueDate(playbookRunId, checklistNum, itemNum, date)).rejects.toThrow('Network error');
+    });
+});
+
+describe('setOwner', () => {
+    test('should set owner successfully', async () => {
+        const playbookRunId = 'run123';
+        const ownerId = 'user456';
+        const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunId}/owner`;
+        const expectedOptions = {method: 'post', body: {owner_id: ownerId}};
+        const mockResponse = {success: true};
+
+        jest.mocked(client.doFetch).mockResolvedValue(mockResponse);
+
+        const result = await client.setOwner(playbookRunId, ownerId);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+        expect(result).toEqual(mockResponse);
+    });
+
+    test('should set owner with empty owner id', async () => {
+        const playbookRunId = 'run123';
+        const ownerId = '';
+        const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunId}/owner`;
+        const expectedOptions = {method: 'post', body: {owner_id: ownerId}};
+        const mockResponse = {success: true};
+
+        jest.mocked(client.doFetch).mockResolvedValue(mockResponse);
+
+        const result = await client.setOwner(playbookRunId, ownerId);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+        expect(result).toEqual(mockResponse);
+    });
+
+    test('should handle error when setting owner', async () => {
+        const playbookRunId = 'run123';
+        const ownerId = 'user456';
+
+        jest.mocked(client.doFetch).mockRejectedValue(new Error('Network error'));
+
+        await expect(client.setOwner(playbookRunId, ownerId)).rejects.toThrow('Network error');
+    });
+});
+
+describe('setAssignee', () => {
+    test('should set assignee successfully', async () => {
+        const playbookRunId = 'run123';
+        const checklistNum = 1;
+        const itemNum = 2;
+        const assigneeId = 'user789';
+        const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunId}/checklists/${checklistNum}/item/${itemNum}/assignee`;
+        const expectedOptions = {method: 'put', body: {assignee_id: assigneeId}};
+
+        jest.mocked(client.doFetch).mockResolvedValue(undefined);
+
+        await client.setAssignee(playbookRunId, checklistNum, itemNum, assigneeId);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+    });
+
+    test('should set assignee with zero indices', async () => {
+        const playbookRunId = 'run123';
+        const checklistNum = 0;
+        const itemNum = 0;
+        const assigneeId = 'user789';
+        const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunId}/checklists/${checklistNum}/item/${itemNum}/assignee`;
+        const expectedOptions = {method: 'put', body: {assignee_id: assigneeId}};
+
+        jest.mocked(client.doFetch).mockResolvedValue(undefined);
+
+        await client.setAssignee(playbookRunId, checklistNum, itemNum, assigneeId);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+    });
+
+    test('should set assignee with undefined assignee id', async () => {
+        const playbookRunId = 'run123';
+        const checklistNum = 1;
+        const itemNum = 2;
+        const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunId}/checklists/${checklistNum}/item/${itemNum}/assignee`;
+        const expectedOptions = {method: 'put', body: {assignee_id: undefined}};
+
+        jest.mocked(client.doFetch).mockResolvedValue(undefined);
+
+        await client.setAssignee(playbookRunId, checklistNum, itemNum);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+    });
+
+    test('should set assignee with empty assignee id', async () => {
+        const playbookRunId = 'run123';
+        const checklistNum = 1;
+        const itemNum = 2;
+        const assigneeId = '';
+        const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunId}/checklists/${checklistNum}/item/${itemNum}/assignee`;
+        const expectedOptions = {method: 'put', body: {assignee_id: assigneeId}};
+
+        jest.mocked(client.doFetch).mockResolvedValue(undefined);
+
+        await client.setAssignee(playbookRunId, checklistNum, itemNum, assigneeId);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+    });
+
+    test('should handle error when setting assignee', async () => {
+        const playbookRunId = 'run123';
+        const checklistNum = 1;
+        const itemNum = 2;
+        const assigneeId = 'user789';
+
+        jest.mocked(client.doFetch).mockRejectedValue(new Error('Network error'));
+
+        await expect(client.setAssignee(playbookRunId, checklistNum, itemNum, assigneeId)).rejects.toThrow('Network error');
+    });
+});

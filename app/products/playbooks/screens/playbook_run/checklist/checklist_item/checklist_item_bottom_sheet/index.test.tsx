@@ -4,6 +4,7 @@
 import React, {type ComponentProps} from 'react';
 
 import {General} from '@constants';
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getPlaybookChecklistItemById} from '@playbooks/database/queries/item';
 import {act, renderWithEverything, waitFor} from '@test/intl-test-helper';
@@ -52,6 +53,13 @@ describe('ChecklistItemBottomSheet Enhanced Component', () => {
         });
     }
 
+    async function addRunToDatabase(run: PartialPlaybookRun) {
+        await operator.handlePlaybookRun({
+            prepareRecordsOnly: false,
+            runs: [run],
+        });
+    }
+
     async function addUserToDatabase(user: UserProfile) {
         await operator.handleUsers({
             prepareRecordsOnly: false,
@@ -64,6 +72,8 @@ describe('ChecklistItemBottomSheet Enhanced Component', () => {
         const serverDatabaseAndOperator = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         database = serverDatabaseAndOperator.database;
         operator = serverDatabaseAndOperator.operator;
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: 'currentUser'}], prepareRecordsOnly: false});
+        await addUserToDatabase(TestHelper.fakeUser({id: 'currentUser', timezone: {useAutomaticTimezone: false, manualTimezone: 'America/New_York', automaticTimezone: 'America/New_York'}}));
         jest.clearAllMocks();
     });
 
@@ -74,12 +84,15 @@ describe('ChecklistItemBottomSheet Enhanced Component', () => {
     describe('with database model item', () => {
         it('should render enhanced component with database model item', async () => {
             const rawItem = TestHelper.fakePlaybookChecklistItem('checklist-id', {id: 'item-1', assignee_id: 'user-1'});
+            const rawRun = TestHelper.fakePlaybookRun({id: 'run-1', participant_ids: ['user-1', 'user-2']});
+            await addRunToDatabase(rawRun);
             await addItemToDatabase(rawItem);
             await addUserToDatabase(TestHelper.fakeUser({id: 'user-1'}));
 
             const item = await getPlaybookChecklistItemById(database, rawItem.id);
 
             const props = getBaseProps();
+            props.runId = rawRun.id;
             props.item = item!;
 
             const {getByTestId} = renderWithEverything(<ChecklistItemBottomSheet {...props}/>, {database});
@@ -88,6 +101,25 @@ describe('ChecklistItemBottomSheet Enhanced Component', () => {
             expect(bottomSheet).toBeTruthy();
             expect(bottomSheet).toHaveProp('item', item);
             expect(bottomSheet).toHaveProp('assignee', expect.objectContaining({id: 'user-1'}));
+            expect(bottomSheet).toHaveProp('currentUserTimezone', expect.objectContaining({useAutomaticTimezone: false, manualTimezone: 'America/New_York', automaticTimezone: 'America/New_York'}));
+            expect(bottomSheet).toHaveProp('participantIds', ['user-1', 'user-2']);
+        });
+
+        it('should handle missing run correctly', async () => {
+            const rawItem = TestHelper.fakePlaybookChecklistItem('checklist-id', {id: 'item-1', assignee_id: 'user-1'});
+            await addItemToDatabase(rawItem);
+
+            const item = await getPlaybookChecklistItemById(database, rawItem.id);
+
+            const props = getBaseProps();
+            props.runId = 'missing-run-id';
+            props.item = item!;
+
+            const {getByTestId} = renderWithEverything(<ChecklistItemBottomSheet {...props}/>, {database});
+
+            const bottomSheet = getByTestId('checklist_item_bottom_sheet');
+            expect(bottomSheet).toBeTruthy();
+            expect(bottomSheet).toHaveProp('participantIds', []);
         });
 
         it('should handle assigneeId changes through observable', async () => {
@@ -159,6 +191,8 @@ describe('ChecklistItemBottomSheet Enhanced Component', () => {
             expect(bottomSheet).toBeTruthy();
             expect(bottomSheet).toHaveProp('item', apiItem);
             expect(bottomSheet).toHaveProp('assignee', expect.objectContaining({id: 'user-1'}));
+            expect(bottomSheet).toHaveProp('currentUserTimezone', expect.objectContaining({useAutomaticTimezone: false, manualTimezone: 'America/New_York', automaticTimezone: 'America/New_York'}));
+            expect(bottomSheet).toHaveProp('participantIds', []);
         });
 
         it('should handle assigneeId changes through observable', async () => {

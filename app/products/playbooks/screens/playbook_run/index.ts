@@ -7,15 +7,14 @@ import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import {queryPlaybookChecklistByRun} from '@playbooks/database/queries/checklist';
 import {queryPlaybookChecklistItemsByChecklists} from '@playbooks/database/queries/item';
-import {observePlaybookRunById, queryParticipantsFromAPIRun} from '@playbooks/database/queries/run';
+import {observeParticipantsIdsFromPlaybookModel, observePlaybookRunById, queryParticipantsFromAPIRun} from '@playbooks/database/queries/run';
 import {areItemsOrdersEqual} from '@playbooks/utils/items_order';
 import {isOverdue} from '@playbooks/utils/run';
 import {observeCurrentUserId} from '@queries/servers/system';
-import {observeTeammateNameDisplay, observeUser} from '@queries/servers/user';
+import {observeTeammateNameDisplay, observeUser, queryUsersById} from '@queries/servers/user';
 
 import PlaybookRun from './playbook_run';
 
-import type {UserModel} from '@database/models/server';
 import type PlaybookChecklistModel from '@playbooks/types/database/models/playbook_checklist';
 import type PlaybookRunModel from '@playbooks/types/database/models/playbook_run';
 import type {WithDatabaseArgs} from '@typings/database/database';
@@ -38,7 +37,6 @@ const getIds = (checklists: PlaybookChecklistModel[]) => {
     return checklists.map((c) => c.id);
 };
 
-const emptyParticipantsList: UserModel[] = [];
 const enhanced = withObservables(['playbookRunId', 'playbookRun'], ({playbookRunId, playbookRun: providedRun, database}: OwnProps) => {
     // We receive a API run instead of a model from the database
     if (providedRun) {
@@ -61,10 +59,11 @@ const enhanced = withObservables(['playbookRunId', 'playbookRun'], ({playbookRun
     // We only receive the id, so it should be a model from the database
     const playbookRun = observePlaybookRunById(database, playbookRunId);
     const owner = playbookRun.pipe(
-        switchMap((r) => (r ? r.owner.observe() : of$(undefined))),
+        switchMap((r) => (r ? observeUser(database, r.ownerUserId) : of$(undefined))),
     );
     const participants = playbookRun.pipe(
-        switchMap((r) => (r ? r.participants().observe() : of$(emptyParticipantsList))),
+        switchMap((r) => observeParticipantsIdsFromPlaybookModel(r, false)),
+        switchMap((ids) => queryUsersById(database, ids).observe()),
     );
 
     const checklists = queryPlaybookChecklistByRun(database, playbookRunId).observe();

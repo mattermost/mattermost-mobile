@@ -2,13 +2,11 @@
 // See LICENSE.txt for license information.
 
 import {Image} from 'expo-image';
-import React, {useCallback} from 'react';
-import {useIntl} from 'react-intl';
+import React from 'react';
 import {Text, View} from 'react-native';
 
+import {useExternalLinkHandler} from '@hooks/use_external_link_handler';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {tryOpenURL} from '@utils/url';
-import {onOpenLinkError} from '@utils/url/links';
 
 type Props = {
     icon?: string;
@@ -37,18 +35,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const AttachmentAuthor = ({icon, link, name, theme}: Props) => {
-    const intl = useIntl();
     const style = getStyleSheet(theme);
-
-    const openLink = useCallback(() => {
-        if (link) {
-            const onError = () => {
-                onOpenLinkError(intl);
-            };
-
-            tryOpenURL(link, onError);
-        }
-    }, [intl, link]);
+    const openLink = useExternalLinkHandler(link);
 
     return (
         <View style={style.container}>
