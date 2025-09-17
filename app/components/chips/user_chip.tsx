@@ -44,7 +44,8 @@ export default function UserChip({
         if (!receivedAction) {
             return undefined;
         }
-        return {icon: receivedAction.icon, onPress: receivedAction.onPress ? (() => receivedAction.onPress?.(user.id)) : undefined};
+        const onActionPress = receivedAction.onPress ? (() => receivedAction.onPress?.(user.id)) : undefined;
+        return {icon: receivedAction.icon, onPress: onActionPress};
     }, [receivedAction, user.id]);
 
     const name = displayUsername(user, intl.locale, teammateNameDisplay);

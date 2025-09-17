@@ -63,4 +63,31 @@ describe('UserChip', () => {
         expect(mockOnActionPress).toHaveBeenCalledWith('user-id');
         expect(mockOnPress).not.toHaveBeenCalled();
     });
+
+    it('should leave action onPress undefined when action with no onPress is provided', () => {
+        const {getByTestId} = renderWithIntlAndTheme(
+            <UserChip
+                user={mockUser}
+                onPress={mockOnPress}
+                teammateNameDisplay='username'
+                action={{icon: 'remove'}}
+            />,
+        );
+
+        const baseChip = getByTestId('user-chip');
+        expect(baseChip.props.action.onPress).toBeUndefined();
+    });
+
+    it('should leave onPress undefined when onPress is not provided', () => {
+        const {getByTestId} = renderWithIntlAndTheme(
+            <UserChip
+                user={mockUser}
+                teammateNameDisplay='username'
+                action={{icon: 'remove', onPress: mockOnActionPress}}
+            />,
+        );
+
+        const baseChip = getByTestId('user-chip');
+        expect(baseChip.props.onPress).toBeUndefined();
+    });
 });
