@@ -890,231 +890,105 @@ describe('ClientTracking', () => {
     });
 
     describe('Network Performance Tracking', () => {
+        const createMockMetrics = (overrides = {}) => ({
+            latency: 500,
+            size: 1000,
+            compressedSize: 500,
+            startTime: Date.now(),
+            endTime: Date.now() + 500,
+            speedInMbps: 1,
+            networkType: 'Wi-Fi',
+            tlsCipherSuite: 'none',
+            tlsVersion: 'none',
+            isCached: false,
+            httpVersion: 'h2',
+            connectionTime: 0,
+            ...overrides,
+        });
+
+        const mockSuccessResponse = (metrics = createMockMetrics()) => ({
+            ok: true,
+            data: {success: true},
+            headers: {},
+            metrics,
+        });
+
+        const requestOptions = {
+            method: 'GET',
+            groupLabel: 'Cold Start' as RequestGroupLabel,
+        };
+
         beforeEach(() => {
-            // Reset the config to enable network performance monitoring
             LocalConfig.MonitorNetworkPerformance = true;
         });
 
         afterEach(() => {
-            // Reset the config
             LocalConfig.MonitorNetworkPerformance = false;
             jest.clearAllMocks();
         });
 
-        it('should call trackNetworkPerformance when MonitorNetworkPerformance is enabled', async () => {
-            const mockMetrics = {
-                latency: 500,
-                size: 1000,
-                compressedSize: 500,
-                startTime: Date.now(),
-                endTime: Date.now() + 500,
-                speedInMbps: 1,
-                networkType: 'Wi-Fi',
-                tlsCipherSuite: 'none',
-                tlsVersion: 'none',
-                isCached: false,
-                httpVersion: 'h2',
-                connectionTime: 0,
-            };
+        it('should call addMetrics when MonitorNetworkPerformance is enabled', async () => {
+            const mockMetrics = createMockMetrics();
+            apiClientMock.get.mockResolvedValue(mockSuccessResponse(mockMetrics));
 
-            apiClientMock.get.mockResolvedValue({
-                ok: true,
-                data: {success: true},
-                headers: {},
-                metrics: mockMetrics,
-            });
+            await client.doFetchWithTracking('https://example.com/api', requestOptions);
 
-            const options = {
-                method: 'GET',
-                groupLabel: 'Cold Start' as RequestGroupLabel,
-            };
-
-            await client.doFetchWithTracking('https://example.com/api', options);
-
-            expect(mockedNPM.addMetrics).toHaveBeenCalledWith(
-                'https://example.com',
-                mockMetrics,
-            );
+            expect(mockedNPM.addMetrics).toHaveBeenCalledWith('https://example.com', mockMetrics);
         });
 
-        it('should not call trackNetworkPerformance when MonitorNetworkPerformance is disabled', async () => {
+        it('should not call addMetrics when MonitorNetworkPerformance is disabled', async () => {
             LocalConfig.MonitorNetworkPerformance = false;
+            apiClientMock.get.mockResolvedValue(mockSuccessResponse());
 
-            const mockMetrics = {
-                latency: 500,
-                size: 1000,
-                compressedSize: 500,
-                startTime: Date.now(),
-                endTime: Date.now() + 500,
-                speedInMbps: 1,
-                networkType: 'Wi-Fi',
-                tlsCipherSuite: 'none',
-                tlsVersion: 'none',
-                isCached: false,
-                httpVersion: 'h2',
-                connectionTime: 0,
-            };
-
-            apiClientMock.get.mockResolvedValue({
-                ok: true,
-                data: {success: true},
-                headers: {},
-                metrics: mockMetrics,
-            });
-
-            const options = {
-                method: 'GET',
-                groupLabel: 'Cold Start' as RequestGroupLabel,
-            };
-
-            await client.doFetchWithTracking('https://example.com/api', options);
+            await client.doFetchWithTracking('https://example.com/api', requestOptions);
 
             expect(mockedNPM.addMetrics).not.toHaveBeenCalled();
         });
 
-        it('should not call trackNetworkPerformance when response.metrics is undefined', async () => {
+        it('should not call addMetrics when response.metrics is undefined', async () => {
             apiClientMock.get.mockResolvedValue({
                 ok: true,
                 data: {success: true},
                 headers: {},
-
-                // No metrics property
             });
 
-            const options = {
-                method: 'GET',
-                groupLabel: 'Cold Start' as RequestGroupLabel,
-            };
-
-            await client.doFetchWithTracking('https://example.com/api', options);
+            await client.doFetchWithTracking('https://example.com/api', requestOptions);
 
             expect(mockedNPM.addMetrics).not.toHaveBeenCalled();
         });
 
-        it('should call trackNetworkPerformance independently of CollectNetworkMetrics', async () => {
+        it('should call addMetrics independently of CollectNetworkMetrics', async () => {
             LocalConfig.CollectNetworkMetrics = false;
-            LocalConfig.MonitorNetworkPerformance = true;
+            const mockMetrics = createMockMetrics();
+            apiClientMock.get.mockResolvedValue(mockSuccessResponse(mockMetrics));
 
-            const mockMetrics = {
-                latency: 500,
-                size: 1000,
-                compressedSize: 500,
-                startTime: Date.now(),
-                endTime: Date.now() + 500,
-                speedInMbps: 1,
-                networkType: 'Wi-Fi',
-                tlsCipherSuite: 'none',
-                tlsVersion: 'none',
-                isCached: false,
-                httpVersion: 'h2',
-                connectionTime: 0,
-            };
+            await client.doFetchWithTracking('https://example.com/api', requestOptions);
 
-            apiClientMock.get.mockResolvedValue({
-                ok: true,
-                data: {success: true},
-                headers: {},
-                metrics: mockMetrics,
-            });
-
-            const options = {
-                method: 'GET',
-                groupLabel: 'Cold Start' as RequestGroupLabel,
-            };
-
-            await client.doFetchWithTracking('https://example.com/api', options);
-
-            // Should not call trackRequest (CollectNetworkMetrics is false)
             expect(mockedPMM.collectNetworkRequestData).not.toHaveBeenCalled();
-
-            // But should call trackNetworkPerformance (MonitorNetworkPerformance is true)
-            expect(mockedNPM.addMetrics).toHaveBeenCalledWith(
-                'https://example.com',
-                mockMetrics,
-            );
+            expect(mockedNPM.addMetrics).toHaveBeenCalledWith('https://example.com', mockMetrics);
         });
 
-        it('should call trackNetworkPerformance when both flags are enabled', async () => {
+        it('should call addMetrics when both flags are enabled', async () => {
             LocalConfig.CollectNetworkMetrics = true;
-            LocalConfig.MonitorNetworkPerformance = true;
+            const mockMetrics = createMockMetrics();
+            apiClientMock.get.mockResolvedValue(mockSuccessResponse(mockMetrics));
 
-            const mockMetrics = {
-                latency: 500,
-                size: 1000,
-                compressedSize: 500,
-                startTime: Date.now(),
-                endTime: Date.now() + 500,
-                speedInMbps: 1,
-                networkType: 'Wi-Fi',
-                tlsCipherSuite: 'none',
-                tlsVersion: 'none',
-                isCached: false,
-                httpVersion: 'h2',
-                connectionTime: 0,
-            };
+            await client.doFetchWithTracking('https://example.com/api', requestOptions);
 
-            apiClientMock.get.mockResolvedValue({
-                ok: true,
-                data: {success: true},
-                headers: {},
-                metrics: mockMetrics,
-            });
-
-            const options = {
-                method: 'GET',
-                groupLabel: 'Cold Start' as RequestGroupLabel,
-            };
-
-            await client.doFetchWithTracking('https://example.com/api', options);
-
-            // Should call trackNetworkPerformance
-            expect(mockedNPM.addMetrics).toHaveBeenCalledWith(
-                'https://example.com',
-                mockMetrics,
-            );
+            expect(mockedNPM.addMetrics).toHaveBeenCalledWith('https://example.com', mockMetrics);
         });
 
         it('should pass correct server URL to NetworkPerformanceManager', async () => {
             const customBaseUrl = 'https://custom-server.com';
-            const customApiClient = {
-                ...apiClientMock,
-                baseUrl: customBaseUrl,
-            };
+            const customApiClient = {...apiClientMock, baseUrl: customBaseUrl};
             const customClient = new ClientTracking(customApiClient as unknown as APIClientInterface);
+            const mockMetrics = createMockMetrics({latency: 300, size: 2000, compressedSize: 1000, speedInMbps: 2});
 
-            const mockMetrics = {
-                latency: 300,
-                size: 2000,
-                compressedSize: 1000,
-                startTime: Date.now(),
-                endTime: Date.now() + 300,
-                speedInMbps: 2,
-                networkType: 'Wi-Fi',
-                tlsCipherSuite: 'none',
-                tlsVersion: 'none',
-                isCached: false,
-                httpVersion: 'h2',
-                connectionTime: 0,
-            };
+            customApiClient.get.mockResolvedValue(mockSuccessResponse(mockMetrics));
 
-            customApiClient.get.mockResolvedValue({
-                ok: true,
-                data: {success: true},
-                headers: {},
-                metrics: mockMetrics,
-            });
+            await customClient.doFetchWithTracking('https://custom-server.com/api', requestOptions);
 
-            const options = {
-                method: 'GET',
-                groupLabel: 'Cold Start' as RequestGroupLabel,
-            };
-
-            await customClient.doFetchWithTracking('https://custom-server.com/api', options);
-
-            expect(mockedNPM.addMetrics).toHaveBeenCalledWith(
-                customBaseUrl,
-                mockMetrics,
-            );
+            expect(mockedNPM.addMetrics).toHaveBeenCalledWith(customBaseUrl, mockMetrics);
         });
     });
 });
