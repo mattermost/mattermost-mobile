@@ -106,9 +106,8 @@ class NetworkManagerSingleton {
             const {client} = await getOrCreateAPIClient(serverUrl, config, this.clientErrorEventHandler);
             const csrfToken = await getCSRFFromCookie(serverUrl);
 
-            // Client constructor signature: (apiClient, serverUrl, bearerToken?, csrfToken?)
-            // Preauth secret is already injected via headers in buildConfig.
-            this.clients[serverUrl] = new Client(client, serverUrl, bearerToken, csrfToken);
+            // Pass preauthSecret explicitly to constructor to match ClientBase behavior
+            this.clients[serverUrl] = new Client(client, serverUrl, bearerToken, csrfToken, preauthSecret);
         } catch (error) {
             throw new ClientError(serverUrl, {
                 message: 'Can’t find this server. Check spelling and URL format.',
