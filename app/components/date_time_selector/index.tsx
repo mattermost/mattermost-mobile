@@ -89,6 +89,9 @@ const DateTimeSelector = ({
             // Show date picker
             showMode('date');
         }
+
+        // Always call handleChange with current date when date picker is accessed
+        handleChange(date);
     };
 
     const showTimepicker = () => {
@@ -99,6 +102,9 @@ const DateTimeSelector = ({
             // Show time picker
             showMode('time');
         }
+
+        // Always call handleChange with current date when date picker is accessed
+        handleChange(date);
     };
 
     return (
