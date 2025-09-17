@@ -108,7 +108,7 @@ export function convertDialogElementToAppField(element: DialogElement): AppField
     if (element.type === DialogElementTypes.TEXT || element.type === DialogElementTypes.TEXTAREA) {
         appField.max_length = element.max_length;
         appField.min_length = element.min_length;
-        if (element.type !== DialogElementTypes.TEXTAREA) {
+        if (element.type !== DialogElementTypes.TEXTAREA && element.subtype) {
             appField.subtype = element.subtype;
         }
     }
@@ -156,21 +156,27 @@ export function convertDialogElementToAppField(element: DialogElement): AppField
  * Converts InteractiveDialogConfig to AppForm
  */
 export function convertDialogToAppForm(config: InteractiveDialogConfig): AppForm {
+    const convertedFields = config.dialog.elements?.map((element, index) => ({
+        ...convertDialogElementToAppField(element),
+        position: index,
+    })) || [];
+
+    // Set source only if source_url is provided or if any fields have refresh enabled (matching webapp behavior)
+    const hasRefreshFields = convertedFields.some((field) => field.refresh === true);
+    const sourceUrl = config.dialog.source_url;
+
     const form: AppForm = {
         title: config.dialog.title,
         header: config.dialog.introduction_text || undefined,
-        fields: config.dialog.elements?.map((element, index) => ({
-            ...convertDialogElementToAppField(element),
-            position: index,
-        })) || [],
+        fields: convertedFields,
         submit_buttons: undefined,
 
         // Pass through submit label from dialog config
         submit_label: config.dialog.submit_label || undefined,
 
-        // Set source to the dialog URL for field refresh support
-        source: config.url ? {
-            path: config.url,
+        // Set source if sourceUrl is provided or if any fields have refresh enabled (matching webapp behavior)
+        source: ((sourceUrl && sourceUrl.trim()) || hasRefreshFields) ? {
+            path: sourceUrl || '/dialog/refresh',
             expand: {},
         } : undefined,
         submit: {

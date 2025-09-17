@@ -91,6 +91,7 @@ type InteractiveDialogConfig = {
         submit_label: string;
         notify_on_cancel: boolean;
         state: string;
+        source_url?: string;
     };
 };
 

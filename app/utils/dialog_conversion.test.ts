@@ -747,6 +747,7 @@ describe('dialog_conversion', () => {
                     },
                 ],
                 submit_buttons: undefined,
+                submit_label: 'Submit',
                 source: undefined,
                 submit: {
                     path: '/dialog/submit',
@@ -862,6 +863,91 @@ describe('dialog_conversion', () => {
             });
             expect(result.submit_buttons).toBeUndefined();
             expect(result.source).toBeUndefined();
+        });
+
+        it('should set source when fields have refresh enabled', () => {
+            const configWithRefreshField = {
+                ...mockConfig,
+                dialog: {
+                    ...mockConfig.dialog,
+                    elements: [
+                        ...mockConfig.dialog.elements,
+                        {
+                            name: 'refresh_field',
+                            type: DialogElementTypes.SELECT,
+                            display_name: 'Refresh Field',
+                            help_text: 'This field triggers refresh',
+                            optional: false,
+                            refresh: true,
+                            options: [
+                                {value: 'option1', text: 'Option 1'},
+                            ],
+                            default: '',
+                            placeholder: '',
+                            min_length: 0,
+                            max_length: 0,
+                            data_source: '',
+                        },
+                    ],
+                },
+            };
+
+            const result = convertDialogToAppForm(configWithRefreshField as InteractiveDialogConfig);
+
+            expect(result.source).toEqual({
+                path: '/dialog/refresh',
+                expand: {},
+            });
+        });
+
+        it('should set source when source_url is provided', () => {
+            const configWithSourceUrl = {
+                ...mockConfig,
+                dialog: {
+                    ...mockConfig.dialog,
+                    source_url: 'https://example.com/refresh',
+                },
+            };
+
+            const result = convertDialogToAppForm(configWithSourceUrl);
+
+            expect(result.source).toEqual({
+                path: 'https://example.com/refresh',
+                expand: {},
+            });
+        });
+
+        it('should prioritize source_url over default refresh path', () => {
+            const configWithBoth = {
+                ...mockConfig,
+                dialog: {
+                    ...mockConfig.dialog,
+                    source_url: 'https://example.com/custom-refresh',
+                    elements: [
+                        {
+                            name: 'refresh_field',
+                            type: DialogElementTypes.SELECT,
+                            display_name: 'Refresh Field',
+                            refresh: true,
+                            options: [],
+                            optional: false,
+                            default: '',
+                            placeholder: '',
+                            help_text: '',
+                            min_length: 0,
+                            max_length: 0,
+                            data_source: '',
+                        },
+                    ],
+                },
+            };
+
+            const result = convertDialogToAppForm(configWithBoth as InteractiveDialogConfig);
+
+            expect(result.source).toEqual({
+                path: 'https://example.com/custom-refresh',
+                expand: {},
+            });
         });
     });
 });
