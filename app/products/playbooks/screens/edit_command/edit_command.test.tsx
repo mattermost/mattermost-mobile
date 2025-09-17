@@ -58,7 +58,7 @@ describe('EditCommand', () => {
         expect(editCommandForm.props.channelId).toBe(props.channelId);
     });
 
-    it('renders correctly without saved command, addinga a slash automatically', () => {
+    it('renders correctly without saved command, adding a slash automatically', () => {
         const props = getBaseProps();
         props.savedCommand = undefined;
         const {getByTestId} = renderWithEverything(<EditCommand {...props}/>, {database});

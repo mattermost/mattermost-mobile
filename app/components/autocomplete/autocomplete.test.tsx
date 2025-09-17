@@ -121,7 +121,7 @@ describe('Autocomplete', () => {
         expect(getByTestId('app-slash-suggestion-mock')).toBeTruthy();
     });
 
-    it('should render witht the correct horizontal padding', () => {
+    it('should render with the correct horizontal padding', () => {
         const props = getBaseProps();
         const {getByTestId, rerender} = render(<Autocomplete {...props}/>);
 
