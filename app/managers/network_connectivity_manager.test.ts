@@ -1,17 +1,50 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {BannerManager} from './banner_manager';
 import NetworkConnectivityManager, {testExports} from './network_connectivity_manager';
 
-const {FLOATING_BANNER_OVERLAY_ID, TIME_TO_OPEN, TIME_TO_CLOSE} = testExports;
+const {
+    shouldShowDisconnectedBanner,
+    shouldShowConnectingBanner,
+    shouldShowPerformanceBanner,
+    shouldShowReconnectionBanner,
+} = testExports;
 
-const mockShowOverlay = jest.fn();
-const mockDismissOverlay = jest.fn();
+// Define constants locally for testing
+const FLOATING_BANNER_OVERLAY_ID = 'floating-banner-overlay';
+const TIME_TO_OPEN = 1000;
+const TIME_TO_CLOSE = 5000;
 
-jest.mock('@screens/navigation', () => ({
-    showOverlay: (...args: unknown[]) => mockShowOverlay(...args),
-    dismissOverlay: (...args: unknown[]) => mockDismissOverlay(...args),
+const mockBannerManager = BannerManager as jest.Mocked<typeof BannerManager>;
+
+jest.mock('./banner_manager', () => ({
+    BannerManager: {
+        showBanner: jest.fn(),
+        showBannerWithAutoHide: jest.fn(),
+        showBannerWithDelay: jest.fn(),
+        hideBanner: jest.fn(),
+        cleanup: jest.fn(),
+        getCurrentBannerId: jest.fn().mockReturnValue(null),
+        isBannerVisible: jest.fn().mockReturnValue(false),
+    },
 }));
+
+function simulateBannerDismissal() {
+    const showBannerCall = mockBannerManager.showBanner.mock.calls[0];
+    if (showBannerCall?.[0]?.onDismiss) {
+        showBannerCall[0].onDismiss();
+    }
+}
+
+function setupConnectedState(manager: typeof NetworkConnectivityManager) {
+    manager.updateState('connected', {isInternetReachable: true}, 'active');
+}
+
+function setupReconnectionScenario(manager: typeof NetworkConnectivityManager) {
+    setupConnectedState(manager);
+    manager.updateState('not_connected', {isInternetReachable: true}, 'active');
+}
 
 describe('NetworkConnectivityManager', () => {
     let manager: typeof NetworkConnectivityManager;
@@ -22,9 +55,12 @@ describe('NetworkConnectivityManager', () => {
     jest.spyOn(global, 'clearTimeout').mockImplementation(() => undefined);
 
     beforeEach(() => {
-        mockShowOverlay.mockClear();
-        mockDismissOverlay.mockClear();
         mockSetTimeout.mockClear();
+        Object.values(mockBannerManager).forEach((mock) => {
+            if (typeof mock === 'function' && 'mockClear' in mock) {
+                mock.mockClear();
+            }
+        });
         manager = NetworkConnectivityManager;
 
         manager.cleanup();
@@ -39,36 +75,87 @@ describe('NetworkConnectivityManager', () => {
         });
     });
 
-    describe('server connection status', () => {
-        it('should hide overlay when server is disconnected', () => {
-            manager.setServerConnectionStatus(false, null);
-            manager.updateState('not_connected', {isInternetReachable: false}, 'active', jest.fn());
+    describe('initialization', () => {
+        it('should initialize with server URL', () => {
+            const serverUrl = 'https://test.server.com';
+            manager.init(serverUrl);
 
-            expect(mockShowOverlay).not.toHaveBeenCalled();
+            expect((manager as any).currentServerUrl).toBe(serverUrl);
         });
 
-        it('should show overlay when server is connected after first connection', () => {
+        it('should initialize with null server URL', () => {
+            manager.init(null);
+
+            expect((manager as any).currentServerUrl).toBeNull();
+        });
+
+        it('should reset state on initialization', () => {
+            manager.setServerConnectionStatus(true, 'https://old.server.com');
+            setupReconnectionScenario(manager);
+
+            manager.init('https://new.server.com');
+
+            expect((manager as any).currentServerUrl).toBe('https://new.server.com');
+            expect((manager as any).isFirstConnection).toBe(true);
+            expect((manager as any).hasShownReconnectionBanner).toBe(false);
+        });
+    });
+
+    describe('shutdown', () => {
+        it('should completely reset all state', () => {
+            manager.setServerConnectionStatus(true, 'https://test.server.com');
+            setupReconnectionScenario(manager);
+
+            manager.shutdown();
+
+            expect((manager as any).currentServerUrl).toBeNull();
+            expect((manager as any).websocketState).toBeNull();
+            expect((manager as any).netInfo).toBeNull();
+            expect((manager as any).appState).toBeNull();
+            expect((manager as any).currentPerformanceState).toBeNull();
+            expect((manager as any).performanceSuppressedUntilNormal).toBe(false);
+            expect((manager as any).isFirstConnection).toBe(true);
+            expect((manager as any).hasShownReconnectionBanner).toBe(false);
+        });
+
+        it('should call cleanup during shutdown', () => {
             manager.setServerConnectionStatus(true, 'https://test.server.com');
 
-            manager.updateState('connected', {isInternetReachable: true}, 'active', jest.fn());
-            manager.updateState('not_connected', {isInternetReachable: true}, 'active', jest.fn());
-            manager.updateState('connecting', {isInternetReachable: true}, 'active', jest.fn());
+            manager.shutdown();
 
-            expect(mockShowOverlay).toHaveBeenCalled();
+            expect(mockBannerManager.cleanup).toHaveBeenCalled();
+        });
+    });
+
+    describe('server connection status', () => {
+        it('should hide banner when server is disconnected', () => {
+            manager.setServerConnectionStatus(false, null);
+            manager.updateState('not_connected', {isInternetReachable: false}, 'active');
+
+            expect(mockBannerManager.showBanner).not.toHaveBeenCalled();
         });
 
-        it('should hide overlay when server URL is empty', () => {
+        it('should show banner when server is connected after first connection', () => {
+            manager.setServerConnectionStatus(true, 'https://test.server.com');
+
+            setupReconnectionScenario(manager);
+            manager.updateState('connecting', {isInternetReachable: true}, 'active');
+
+            expect(mockBannerManager.showBanner).toHaveBeenCalled();
+        });
+
+        it('should hide banner when server URL is empty', () => {
             manager.setServerConnectionStatus(true, '');
-            manager.updateState('connecting', {isInternetReachable: true}, 'active', jest.fn());
+            manager.updateState('connecting', {isInternetReachable: true}, 'active');
 
-            expect(mockShowOverlay).not.toHaveBeenCalled();
+            expect(mockBannerManager.showBanner).not.toHaveBeenCalled();
         });
 
-        it('should hide overlay when server URL is null', () => {
+        it('should hide banner when server URL is null', () => {
             manager.setServerConnectionStatus(true, null);
-            manager.updateState('connecting', {isInternetReachable: true}, 'active', jest.fn());
+            manager.updateState('connecting', {isInternetReachable: true}, 'active');
 
-            expect(mockShowOverlay).not.toHaveBeenCalled();
+            expect(mockBannerManager.showBanner).not.toHaveBeenCalled();
         });
     });
 
@@ -77,44 +164,40 @@ describe('NetworkConnectivityManager', () => {
             manager.setServerConnectionStatus(true, 'https://test.server.com');
         });
 
-        it('should not show overlay when connecting on first connection', () => {
-            manager.updateState('connecting', {isInternetReachable: true}, 'active', jest.fn());
+        it('should not show banner when connecting on first connection', () => {
+            manager.updateState('connecting', {isInternetReachable: true}, 'active');
 
-            expect(mockShowOverlay).not.toHaveBeenCalled();
+            expect(mockBannerManager.showBanner).not.toHaveBeenCalled();
         });
 
-        it('should not show overlay when not connected on first connection', () => {
+        it('should not show banner when not connected on first connection', () => {
             manager.setServerConnectionStatus(true, 'https://test.server.com');
 
-            const formatMessageSpy = jest.fn().mockReturnValue('Test message');
-            manager.updateState('not_connected', {isInternetReachable: true}, 'active', formatMessageSpy);
+            manager.updateState('not_connected', {isInternetReachable: true}, 'active');
 
-            expect(formatMessageSpy).toHaveBeenCalled();
             expect(mockSetTimeout).not.toHaveBeenCalled();
-            expect(mockShowOverlay).not.toHaveBeenCalled();
+            expect(mockBannerManager.showBanner).not.toHaveBeenCalled();
         });
 
-        it('should show overlay when connecting after first connection', () => {
+        it('should show banner when connecting after first connection', () => {
             manager.setServerConnectionStatus(true, 'https://test.server.com');
 
-            manager.updateState('connected', {isInternetReachable: true}, 'active', jest.fn());
-            manager.updateState('not_connected', {isInternetReachable: true}, 'active', jest.fn());
-            manager.updateState('connecting', {isInternetReachable: true}, 'active', jest.fn());
+            setupReconnectionScenario(manager);
+            manager.updateState('connecting', {isInternetReachable: true}, 'active');
 
-            expect(mockShowOverlay).toHaveBeenCalled();
+            expect(mockBannerManager.showBanner).toHaveBeenCalled();
         });
 
-        it('should refresh overlay with auto-hide when transitioning to connected', () => {
-            manager.updateState('connected', {isInternetReachable: true}, 'active', jest.fn());
-            manager.updateState('not_connected', {isInternetReachable: true}, 'active', jest.fn());
-            manager.updateState('connecting', {isInternetReachable: true}, 'active', jest.fn());
-            expect(mockShowOverlay).toHaveBeenCalled();
+        it('should show banner with auto-hide when transitioning to connected', () => {
+            manager.updateState('connected', {isInternetReachable: true}, 'active');
+            manager.updateState('not_connected', {isInternetReachable: true}, 'active');
+            manager.updateState('connecting', {isInternetReachable: true}, 'active');
+            expect(mockBannerManager.showBanner).toHaveBeenCalled();
 
-            mockShowOverlay.mockClear();
-            manager.updateState('connected', {isInternetReachable: true}, 'active', jest.fn());
+            mockBannerManager.showBanner.mockClear();
+            manager.updateState('connected', {isInternetReachable: true}, 'active');
 
-            expect(mockShowOverlay).toHaveBeenCalled();
-            expect(mockSetTimeout).toHaveBeenCalled();
+            expect(mockBannerManager.showBannerWithAutoHide).toHaveBeenCalled();
         });
     });
 
@@ -123,41 +206,40 @@ describe('NetworkConnectivityManager', () => {
             manager.setServerConnectionStatus(true, 'https://test.server.com');
         });
 
-        it('should hide overlay when app goes to background', () => {
-            manager.updateState('connected', {isInternetReachable: true}, 'active', jest.fn());
-            manager.updateState('not_connected', {isInternetReachable: true}, 'active', jest.fn());
-            manager.updateState('connecting', {isInternetReachable: true}, 'active', jest.fn());
-            expect(mockShowOverlay).toHaveBeenCalled();
+        it('should hide banner when app goes to background', () => {
+            manager.updateState('connected', {isInternetReachable: true}, 'active');
+            manager.updateState('not_connected', {isInternetReachable: true}, 'active');
+            manager.updateState('connecting', {isInternetReachable: true}, 'active');
+            expect(mockBannerManager.showBanner).toHaveBeenCalled();
 
-            mockDismissOverlay.mockClear();
-            manager.updateState('not_connected', {isInternetReachable: true}, 'background', jest.fn());
+            mockBannerManager.hideBanner.mockClear();
+            manager.updateState('not_connected', {isInternetReachable: true}, 'background');
 
-            expect(mockDismissOverlay).toHaveBeenCalled();
+            expect(mockBannerManager.hideBanner).toHaveBeenCalled();
         });
 
-        it('should show overlay when app becomes active and not connected after first connection', () => {
+        it('should show banner when app becomes active and not connected after first connection', () => {
             manager.setServerConnectionStatus(true, 'https://test.server.com');
 
-            manager.updateState('connected', {isInternetReachable: true}, 'active', jest.fn());
-            manager.updateState('not_connected', {isInternetReachable: true}, 'active', jest.fn());
-            manager.updateState('not_connected', {isInternetReachable: true}, 'active', jest.fn());
+            manager.updateState('connected', {isInternetReachable: true}, 'active');
+            manager.updateState('not_connected', {isInternetReachable: true}, 'active');
+            manager.updateState('not_connected', {isInternetReachable: true}, 'active');
 
-            expect(mockSetTimeout).toHaveBeenCalled();
-            expect(mockShowOverlay).toHaveBeenCalled();
+            expect(mockBannerManager.showBanner).toHaveBeenCalled();
         });
     });
 
     describe('cleanup', () => {
-        it('should hide overlay and clear timeouts on cleanup', () => {
+        it('should hide banner and cleanup on cleanup', () => {
             manager.setServerConnectionStatus(true, 'https://test.server.com');
 
-            manager.updateState('connected', {isInternetReachable: true}, 'active', jest.fn());
-            manager.updateState('not_connected', {isInternetReachable: true}, 'active', jest.fn());
-            manager.updateState('connecting', {isInternetReachable: true}, 'active', jest.fn());
+            manager.updateState('connected', {isInternetReachable: true}, 'active');
+            manager.updateState('not_connected', {isInternetReachable: true}, 'active');
+            manager.updateState('connecting', {isInternetReachable: true}, 'active');
 
             manager.cleanup();
 
-            expect(mockDismissOverlay).toHaveBeenCalled();
+            expect(mockBannerManager.cleanup).toHaveBeenCalled();
         });
     });
 
@@ -166,67 +248,67 @@ describe('NetworkConnectivityManager', () => {
             manager.setServerConnectionStatus(true, 'https://test.server.com');
 
             expect((manager as any).previousWebsocketState).toBeNull();
-            manager.updateState('connected', {isInternetReachable: true}, 'active', jest.fn());
+            manager.updateState('connected', {isInternetReachable: true}, 'active');
 
-            expect(mockShowOverlay).not.toHaveBeenCalled();
+            expect(mockBannerManager.showBanner).not.toHaveBeenCalled();
         });
 
         it('should show banner when transitioning from disconnected to connected after first connection', () => {
             manager.setServerConnectionStatus(true, 'https://test.server.com');
 
-            manager.updateState('connected', {isInternetReachable: true}, 'active', jest.fn());
-            manager.updateState('not_connected', {isInternetReachable: true}, 'active', jest.fn());
-            mockShowOverlay.mockClear();
+            manager.updateState('connected', {isInternetReachable: true}, 'active');
+            manager.updateState('not_connected', {isInternetReachable: true}, 'active');
+            mockBannerManager.showBannerWithAutoHide.mockClear();
 
-            manager.updateState('connected', {isInternetReachable: true}, 'active', jest.fn());
+            manager.updateState('connected', {isInternetReachable: true}, 'active');
 
-            expect(mockShowOverlay).toHaveBeenCalled();
+            expect(mockBannerManager.showBannerWithAutoHide).toHaveBeenCalled();
         });
 
         it('should not show banner when transitioning from connecting to connected on first connection', () => {
             manager.setServerConnectionStatus(true, 'https://test.server.com');
 
-            manager.updateState('connecting', {isInternetReachable: true}, 'active', jest.fn());
-            mockShowOverlay.mockClear();
+            manager.updateState('connecting', {isInternetReachable: true}, 'active');
+            mockBannerManager.showBanner.mockClear();
 
-            manager.updateState('connected', {isInternetReachable: true}, 'active', jest.fn());
+            manager.updateState('connected', {isInternetReachable: true}, 'active');
 
-            expect(mockShowOverlay).not.toHaveBeenCalled();
+            expect(mockBannerManager.showBannerWithAutoHide).not.toHaveBeenCalled();
         });
 
         it('should not show banner when staying connected', () => {
             manager.setServerConnectionStatus(true, 'https://test.server.com');
 
-            manager.updateState('connected', {isInternetReachable: true}, 'active', jest.fn());
-            mockShowOverlay.mockClear();
+            manager.updateState('connected', {isInternetReachable: true}, 'active');
+            mockBannerManager.showBanner.mockClear();
 
-            manager.updateState('connected', {isInternetReachable: true}, 'active', jest.fn());
+            manager.updateState('connected', {isInternetReachable: true}, 'active');
 
-            expect(mockShowOverlay).not.toHaveBeenCalled();
+            expect(mockBannerManager.showBanner).not.toHaveBeenCalled();
         });
 
         it('should not show banner on reapply for initial connection', () => {
             manager.setServerConnectionStatus(true, 'https://test.server.com');
 
-            manager.updateState('connected', {isInternetReachable: true}, 'active', jest.fn());
-            mockShowOverlay.mockClear();
+            manager.updateState('connected', {isInternetReachable: true}, 'active');
+            mockBannerManager.showBanner.mockClear();
 
             manager.reapply();
 
-            expect(mockShowOverlay).not.toHaveBeenCalled();
+            expect(mockBannerManager.showBanner).not.toHaveBeenCalled();
         });
 
         it('should show banner on reapply for reconnection', () => {
             manager.setServerConnectionStatus(true, 'https://test.server.com');
 
-            manager.updateState('connected', {isInternetReachable: true}, 'active', jest.fn());
-            manager.updateState('not_connected', {isInternetReachable: true}, 'active', jest.fn());
-            manager.updateState('connected', {isInternetReachable: true}, 'active', jest.fn());
-            mockShowOverlay.mockClear();
+            manager.updateState('connected', {isInternetReachable: true}, 'active');
+            manager.updateState('not_connected', {isInternetReachable: true}, 'active');
+            manager.updateState('connected', {isInternetReachable: true}, 'active');
+            mockBannerManager.showBannerWithAutoHide.mockClear();
 
             manager.reapply();
 
-            expect(mockShowOverlay).toHaveBeenCalled();
+            expect(mockBannerManager.showBannerWithAutoHide).toHaveBeenCalled();
         });
     });
 
@@ -311,50 +393,148 @@ describe('NetworkConnectivityManager', () => {
                 expect(result).toBe(false);
             });
         });
-    });
 
-    describe('dismiss handlers', () => {
-        beforeEach(() => {
-            manager.setServerConnectionStatus(true, 'https://test.server.com');
+        describe('shouldShowDisconnectedBanner', () => {
+            it('should return true when websocket is not_connected and not first connection', () => {
+                const result = shouldShowDisconnectedBanner('not_connected', false);
+                expect(result).toBe(true);
+            });
+
+            it('should return false when websocket is not_connected but is first connection', () => {
+                const result = shouldShowDisconnectedBanner('not_connected', true);
+                expect(result).toBe(false);
+            });
+
+            it('should return false when websocket is connected', () => {
+                const result = shouldShowDisconnectedBanner('connected', false);
+                expect(result).toBe(false);
+            });
+
+            it('should return false when websocket is connecting', () => {
+                const result = shouldShowDisconnectedBanner('connecting', false);
+                expect(result).toBe(false);
+            });
+
+            it('should return false when websocket state is null', () => {
+                const result = shouldShowDisconnectedBanner(null, false);
+                expect(result).toBe(false);
+            });
         });
 
-        it('should handle dismiss from handleDismiss callback', () => {
-            manager.updateState('connected', {isInternetReachable: true}, 'active', jest.fn());
-            manager.updateState('not_connected', {isInternetReachable: true}, 'active', jest.fn());
-            manager.updateState('connecting', {isInternetReachable: true}, 'active', jest.fn());
+        describe('shouldShowConnectingBanner', () => {
+            it('should return true when websocket is connecting and not first connection', () => {
+                const result = shouldShowConnectingBanner('connecting', false);
+                expect(result).toBe(true);
+            });
 
-            expect(mockShowOverlay).toHaveBeenCalled();
+            it('should return false when websocket is connecting but is first connection', () => {
+                const result = shouldShowConnectingBanner('connecting', true);
+                expect(result).toBe(false);
+            });
 
-            const bannerConfig = mockShowOverlay.mock.calls[mockShowOverlay.mock.calls.length - 1][1].banners[0];
-            bannerConfig.onDismiss();
+            it('should return false when websocket is connected', () => {
+                const result = shouldShowConnectingBanner('connected', false);
+                expect(result).toBe(false);
+            });
 
-            expect(mockDismissOverlay).toHaveBeenCalledWith(FLOATING_BANNER_OVERLAY_ID);
+            it('should return false when websocket is not_connected', () => {
+                const result = shouldShowConnectingBanner('not_connected', false);
+                expect(result).toBe(false);
+            });
+
+            it('should return false when websocket state is null', () => {
+                const result = shouldShowConnectingBanner(null, false);
+                expect(result).toBe(false);
+            });
         });
 
-        it('should handle dismiss from showOverlay onDismiss callback', () => {
-            manager.updateState('connected', {isInternetReachable: true}, 'active', jest.fn());
-            manager.updateState('not_connected', {isInternetReachable: true}, 'active', jest.fn());
-            manager.updateState('connecting', {isInternetReachable: true}, 'active', jest.fn());
+        describe('shouldShowPerformanceBanner', () => {
+            it('should return true when websocket is connected, performance is slow, and not suppressed', () => {
+                const result = shouldShowPerformanceBanner('connected', 'slow', false);
+                expect(result).toBe(true);
+            });
 
-            expect(mockShowOverlay).toHaveBeenCalled();
+            it('should return false when websocket is not connected', () => {
+                const result = shouldShowPerformanceBanner('not_connected', 'slow', false);
+                expect(result).toBe(false);
+            });
 
-            const onDismissCallback = mockShowOverlay.mock.calls[mockShowOverlay.mock.calls.length - 1][1].onDismiss;
-            onDismissCallback('connectivity');
+            it('should return false when websocket is connecting', () => {
+                const result = shouldShowPerformanceBanner('connecting', 'slow', false);
+                expect(result).toBe(false);
+            });
 
-            expect(mockDismissOverlay).toHaveBeenCalledWith(FLOATING_BANNER_OVERLAY_ID);
+            it('should return false when performance is normal', () => {
+                const result = shouldShowPerformanceBanner('connected', 'normal', false);
+                expect(result).toBe(false);
+            });
+
+            it('should return false when performance is suppressed', () => {
+                const result = shouldShowPerformanceBanner('connected', 'slow', true);
+                expect(result).toBe(false);
+            });
+
+            it('should return false when websocket state is null', () => {
+                const result = shouldShowPerformanceBanner(null, 'slow', false);
+                expect(result).toBe(false);
+            });
+
+            it('should return false when performance state is null', () => {
+                const result = shouldShowPerformanceBanner('connected', null, false);
+                expect(result).toBe(false);
+            });
         });
 
-        it('should not dismiss when onDismiss callback is called with different id', () => {
-            manager.updateState('connected', {isInternetReachable: true}, 'active', jest.fn());
-            manager.updateState('not_connected', {isInternetReachable: true}, 'active', jest.fn());
-            manager.updateState('connecting', {isInternetReachable: true}, 'active', jest.fn());
+        describe('shouldShowReconnectionBanner', () => {
+            it('should return true when all conditions are met for reconnection', () => {
+                const result = shouldShowReconnectionBanner('connected', 'not_connected', false, false, false);
+                expect(result).toBe(true);
+            });
 
-            expect(mockShowOverlay).toHaveBeenCalled();
+            it('should return true when previous state was connecting', () => {
+                const result = shouldShowReconnectionBanner('connected', 'connecting', false, false, false);
+                expect(result).toBe(true);
+            });
 
-            const onDismissCallback = mockShowOverlay.mock.calls[mockShowOverlay.mock.calls.length - 1][1].onDismiss;
-            onDismissCallback('other-banner');
+            it('should return false when websocket is not connected', () => {
+                const result = shouldShowReconnectionBanner('not_connected', 'not_connected', false, false, false);
+                expect(result).toBe(false);
+            });
 
-            expect(mockDismissOverlay).not.toHaveBeenCalled();
+            it('should return false when websocket is connecting', () => {
+                const result = shouldShowReconnectionBanner('connecting', 'not_connected', false, false, false);
+                expect(result).toBe(false);
+            });
+
+            it('should return false when it is first connection', () => {
+                const result = shouldShowReconnectionBanner('connected', 'not_connected', true, false, false);
+                expect(result).toBe(false);
+            });
+
+            it('should return false when reconnection banner was already shown', () => {
+                const result = shouldShowReconnectionBanner('connected', 'not_connected', false, true, false);
+                expect(result).toBe(false);
+            });
+
+            it('should return false when performance is suppressed', () => {
+                const result = shouldShowReconnectionBanner('connected', 'not_connected', false, false, true);
+                expect(result).toBe(false);
+            });
+
+            it('should return false when previous state was connected', () => {
+                const result = shouldShowReconnectionBanner('connected', 'connected', false, false, false);
+                expect(result).toBe(false);
+            });
+
+            it('should return false when previous state is null', () => {
+                const result = shouldShowReconnectionBanner('connected', null, false, false, false);
+                expect(result).toBe(false);
+            });
+
+            it('should return false when websocket state is null', () => {
+                const result = shouldShowReconnectionBanner(null, 'not_connected', false, false, false);
+                expect(result).toBe(false);
+            });
         });
     });
 
@@ -364,38 +544,29 @@ describe('NetworkConnectivityManager', () => {
 
             manager.reapply();
 
-            expect(mockShowOverlay).not.toHaveBeenCalled();
+            expect(mockBannerManager.showBanner).not.toHaveBeenCalled();
         });
 
         it('should return early when netInfo is null', () => {
             manager.setServerConnectionStatus(true, 'https://test.server.com');
 
-            manager.updateState('connected', null as any, 'active', jest.fn());
+            manager.updateState('connected', null as any, 'active');
 
             manager.reapply();
 
-            expect(mockShowOverlay).not.toHaveBeenCalled();
+            expect(mockBannerManager.showBanner).not.toHaveBeenCalled();
         });
 
         it('should return early when appState is null', () => {
             manager.setServerConnectionStatus(true, 'https://test.server.com');
 
-            manager.updateState('connected', {isInternetReachable: true}, null as any, jest.fn());
+            manager.updateState('connected', {isInternetReachable: true}, null as any);
 
             manager.reapply();
 
-            expect(mockShowOverlay).not.toHaveBeenCalled();
+            expect(mockBannerManager.showBanner).not.toHaveBeenCalled();
         });
 
-        it('should return early when formatMessage is null', () => {
-            manager.setServerConnectionStatus(true, 'https://test.server.com');
-
-            manager.updateState('connected', {isInternetReachable: true}, 'active', null as any);
-
-            manager.reapply();
-
-            expect(mockShowOverlay).not.toHaveBeenCalled();
-        });
     });
 
     describe('dismissed key logic', () => {
@@ -403,36 +574,113 @@ describe('NetworkConnectivityManager', () => {
             manager.setServerConnectionStatus(true, 'https://test.server.com');
         });
 
-        it('should not show banner when dismissed key matches current key on reapply', () => {
-            const formatMessage = jest.fn().mockReturnValue('Test message');
+        it('should show sticky banner on reapply even after dismissal', () => {
 
-            manager.updateState('connected', {isInternetReachable: true}, 'active', formatMessage);
-            manager.updateState('not_connected', {isInternetReachable: true}, 'active', formatMessage);
+            manager.updateState('connected', {isInternetReachable: true}, 'active');
+            manager.updateState('not_connected', {isInternetReachable: true}, 'active');
 
-            const bannerConfig = mockShowOverlay.mock.calls[mockShowOverlay.mock.calls.length - 1][1].banners[0];
-            bannerConfig.onDismiss();
+            simulateBannerDismissal();
 
-            mockShowOverlay.mockClear();
+            mockBannerManager.showBanner.mockClear();
             manager.reapply();
 
-            expect(mockShowOverlay).not.toHaveBeenCalled();
+            expect(mockBannerManager.showBanner).toHaveBeenCalled();
         });
 
         it('should show banner when dismissed key does not match current key', () => {
-            const formatMessage1 = jest.fn().mockReturnValue('Test message 1');
-            const formatMessage2 = jest.fn().mockReturnValue('Test message 2');
 
-            manager.updateState('connected', {isInternetReachable: true}, 'active', formatMessage1);
-            manager.updateState('not_connected', {isInternetReachable: true}, 'active', formatMessage1);
+            manager.updateState('connected', {isInternetReachable: true}, 'active');
+            manager.updateState('not_connected', {isInternetReachable: true}, 'active');
 
-            const bannerConfig = mockShowOverlay.mock.calls[mockShowOverlay.mock.calls.length - 1][1].banners[0];
-            bannerConfig.onDismiss();
+            simulateBannerDismissal();
 
-            mockShowOverlay.mockClear();
-            manager.updateState('not_connected', {isInternetReachable: true}, 'active', formatMessage2);
+            mockBannerManager.showBanner.mockClear();
+            manager.updateState('not_connected', {isInternetReachable: true}, 'active');
             manager.reapply();
 
-            expect(mockShowOverlay).toHaveBeenCalled();
+            expect(mockBannerManager.showBanner).toHaveBeenCalled();
         });
+    });
+
+    describe('performance state handling', () => {
+        beforeEach(() => {
+            mockSetTimeout.mockClear();
+            Object.values(mockBannerManager).forEach((mock) => {
+                if (typeof mock === 'function' && 'mockClear' in mock) {
+                    mock.mockClear();
+                }
+            });
+            manager = NetworkConnectivityManager;
+            manager.setServerConnectionStatus(true, 'https://test.server.com');
+
+            jest.spyOn(global, 'setTimeout').mockImplementation((cb: () => void, delay: number) => {
+                if (!delay) {
+                    cb();
+                }
+                return 1 as unknown as NodeJS.Timeout;
+            });
+        });
+
+        it('should show performance banner when performance is slow', () => {
+            setupConnectedState(manager);
+            manager.updatePerformanceState('slow');
+
+            expect(mockBannerManager.showBannerWithAutoHide).toHaveBeenCalled();
+        });
+
+        it('should hide performance banner when performance returns to normal', () => {
+            setupConnectedState(manager);
+
+            manager.updatePerformanceState('slow');
+            expect(mockBannerManager.showBannerWithAutoHide).toHaveBeenCalled();
+
+            mockBannerManager.hideBanner.mockClear();
+
+            manager.updatePerformanceState('normal');
+            expect(mockBannerManager.hideBanner).toHaveBeenCalled();
+        });
+
+        it('should not hide banner if it is not a performance banner', () => {
+
+            manager.updateState('connected', {isInternetReachable: true}, 'active');
+            manager.updateState('not_connected', {isInternetReachable: true}, 'active');
+
+            mockBannerManager.hideBanner.mockClear();
+
+            manager.updatePerformanceState('normal');
+            expect(mockBannerManager.hideBanner).not.toHaveBeenCalled();
+        });
+
+        it('should persist performance banner across navigation', () => {
+
+            manager.setServerConnectionStatus(true, 'https://test.server.com');
+            manager.updateState('connected', {isInternetReachable: true}, 'active');
+
+            manager.updatePerformanceState('slow');
+            expect(mockBannerManager.showBannerWithAutoHide).toHaveBeenCalled();
+            expect((manager as any).currentPerformanceState).toBe('slow');
+
+            mockBannerManager.hideBanner.mockClear();
+            mockBannerManager.showBannerWithAutoHide.mockClear();
+
+            manager.reapply();
+
+            expect(mockBannerManager.showBannerWithAutoHide).toHaveBeenCalledTimes(1);
+            expect(mockBannerManager.hideBanner).not.toHaveBeenCalled();
+        });
+
+        it('should reapply performance banner when navigating', () => {
+
+            manager.setServerConnectionStatus(true, 'https://test.server.com');
+            manager.updateState('connected', {isInternetReachable: true}, 'active');
+
+            manager.updatePerformanceState('slow');
+            mockBannerManager.showBannerWithAutoHide.mockClear();
+
+            manager.reapply();
+
+            expect(mockBannerManager.showBannerWithAutoHide).toHaveBeenCalledTimes(1);
+        });
+
     });
 });

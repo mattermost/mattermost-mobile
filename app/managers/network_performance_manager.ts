@@ -21,7 +21,7 @@ interface AccumulatedMetrics {
 
 const SLOW_LATENCY_THRESHOLD = 3000;
 
-const REPORT_INTERVAL = 10;
+const REPORT_INTERVAL = 3;
 const HISTORY_LIMIT = 10;
 
 const shouldReportMetrics = (requestCount: number): boolean => {

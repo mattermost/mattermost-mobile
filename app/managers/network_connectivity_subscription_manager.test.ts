@@ -13,7 +13,8 @@ import NetworkConnectivityManager from './network_connectivity_manager';
 import {
     startNetworkConnectivitySubscriptions,
     stopNetworkConnectivitySubscriptions,
-} from './network_connectivity_manager_subscription';
+    shutdownNetworkConnectivitySubscriptions,
+} from './network_connectivity_subscription_manager';
 import NetworkPerformanceManager from './network_performance_manager';
 import WebsocketManager from './websocket_manager';
 
@@ -55,6 +56,7 @@ jest.mock('./network_connectivity_manager', () => ({
     updateState: jest.fn(),
     updatePerformanceState: jest.fn(),
     reapply: jest.fn(),
+    shutdown: jest.fn(),
 }));
 jest.mock('./websocket_manager', () => ({
     observeWebsocketState: jest.fn(),
@@ -71,7 +73,7 @@ const mockNetworkConnectivityManager = NetworkConnectivityManager as jest.Mocked
 const mockNetworkPerformanceManager = NetworkPerformanceManager as jest.Mocked<typeof NetworkPerformanceManager>;
 const mockWebsocketManager = WebsocketManager as jest.Mocked<typeof WebsocketManager>;
 
-describe('NetworkConnectivityManagerSubscription', () => {
+describe('NetworkConnectivitySubscriptionManager', () => {
     const mockWebsocketSubscription = {
         unsubscribe: jest.fn(),
     } as unknown as Subscription;
@@ -104,14 +106,23 @@ describe('NetworkConnectivityManagerSubscription', () => {
     });
 
     afterEach(() => {
-        stopNetworkConnectivitySubscriptions();
+        shutdownNetworkConnectivitySubscriptions();
     });
 
     describe('startNetworkConnectivitySubscriptions', () => {
-        it('should set up app state listener', () => {
+        it('should set up app state listener on first call', () => {
             startNetworkConnectivitySubscriptions();
 
             expect(mockAppState.addEventListener).toHaveBeenCalledWith('change', expect.any(Function));
+        });
+
+        it('should not recreate app state listener on subsequent calls', () => {
+            startNetworkConnectivitySubscriptions();
+            mockAppState.addEventListener.mockClear();
+
+            startNetworkConnectivitySubscriptions();
+
+            expect(mockAppState.addEventListener).not.toHaveBeenCalled();
         });
 
         it('should set up net info listener', () => {
@@ -132,13 +143,55 @@ describe('NetworkConnectivityManagerSubscription', () => {
             expect(mockNavigation.events).toHaveBeenCalled();
         });
 
-        it('should handle app state changes', () => {
+        it('should stop subscriptions when going to background and restart when returning to active', () => {
+            const mockAppStateListener = {remove: jest.fn()};
+            const mockNetInfoUnsubscriber = jest.fn();
+            const mockActiveServersUnsubscriber = {unsubscribe: jest.fn()};
+
+            mockAppState.addEventListener.mockReturnValue(mockAppStateListener as any); // eslint-disable-line @typescript-eslint/no-explicit-any
+            mockNetInfo.addEventListener.mockReturnValue(mockNetInfoUnsubscriber);
+            mockSubscribeActiveServers.mockReturnValue(mockActiveServersUnsubscriber as any); // eslint-disable-line @typescript-eslint/no-explicit-any
+
             startNetworkConnectivitySubscriptions();
 
             const appStateCallback = mockAppState.addEventListener.mock.calls[0][1];
+
             appStateCallback('background');
 
-            expect(mockAppState.addEventListener).toHaveBeenCalledWith('change', expect.any(Function));
+            expect(mockNetInfoUnsubscriber).toHaveBeenCalled();
+            expect(mockActiveServersUnsubscriber.unsubscribe).toHaveBeenCalled();
+            expect(mockAppStateListener.remove).not.toHaveBeenCalled();
+
+            mockNetInfo.addEventListener.mockClear();
+            mockSubscribeActiveServers.mockClear();
+
+            appStateCallback('active');
+
+            expect(mockNetInfo.addEventListener).toHaveBeenCalled();
+            expect(mockSubscribeActiveServers).toHaveBeenCalled();
+            expect(mockAppStateListener.remove).not.toHaveBeenCalled();
+        });
+
+        it('should not restart subscriptions when app state does not change', () => {
+            const mockNetInfoUnsubscriber = jest.fn();
+            const mockActiveServersUnsubscriber = {unsubscribe: jest.fn()};
+
+            mockNetInfo.addEventListener.mockReturnValue(mockNetInfoUnsubscriber);
+            mockSubscribeActiveServers.mockReturnValue(mockActiveServersUnsubscriber as any); // eslint-disable-line @typescript-eslint/no-explicit-any
+
+            startNetworkConnectivitySubscriptions();
+
+            const appStateCallback = mockAppState.addEventListener.mock.calls[0][1];
+
+            mockNetInfo.addEventListener.mockClear();
+            mockSubscribeActiveServers.mockClear();
+
+            appStateCallback('active');
+
+            expect(mockNetInfo.addEventListener).not.toHaveBeenCalled();
+            expect(mockSubscribeActiveServers).not.toHaveBeenCalled();
+            expect(mockNetInfoUnsubscriber).not.toHaveBeenCalled();
+            expect(mockActiveServersUnsubscriber.unsubscribe).not.toHaveBeenCalled();
         });
 
         it('should handle net info changes', () => {
@@ -158,6 +211,7 @@ describe('NetworkConnectivityManagerSubscription', () => {
             await serversCallback([] as any); // eslint-disable-line @typescript-eslint/no-explicit-any
 
             expect(mockNetworkConnectivityManager.setServerConnectionStatus).toHaveBeenCalledWith(false, null);
+            expect(mockNetworkConnectivityManager.shutdown).toHaveBeenCalled();
         });
 
         it('should handle active servers change with servers', async () => {
@@ -198,7 +252,7 @@ describe('NetworkConnectivityManagerSubscription', () => {
     });
 
     describe('stopNetworkConnectivitySubscriptions', () => {
-        it('should clean up all subscriptions', async () => {
+        it('should clean up subscriptions but preserve AppState listener', async () => {
             const mockAppStateListener = {remove: jest.fn()};
             const mockNetInfoUnsubscriber = jest.fn();
             const mockActiveServersUnsubscriber = {unsubscribe: jest.fn()};
@@ -223,7 +277,7 @@ describe('NetworkConnectivityManagerSubscription', () => {
 
             stopNetworkConnectivitySubscriptions();
 
-            expect(mockAppStateListener.remove).toHaveBeenCalled();
+            expect(mockAppStateListener.remove).not.toHaveBeenCalled();
             expect(mockNetInfoUnsubscriber).toHaveBeenCalled();
             expect(mockActiveServersUnsubscriber.unsubscribe).toHaveBeenCalled();
             expect(mockWebsocketSubscriptionForCleanup.unsubscribe).toHaveBeenCalled();
@@ -283,6 +337,42 @@ describe('NetworkConnectivityManagerSubscription', () => {
             await serversCallback(mockServers2 as any); // eslint-disable-line @typescript-eslint/no-explicit-any
             expect(mockWebsocketSubscription.unsubscribe).toHaveBeenCalled();
             expect(mockWebsocketManager.observeWebsocketState).toHaveBeenCalledWith('https://server2.com');
+        });
+    });
+
+    describe('shutdownNetworkConnectivitySubscriptions', () => {
+        it('should clean up all subscriptions including AppState listener', async () => {
+            const mockAppStateListener = {remove: jest.fn()};
+            const mockNetInfoUnsubscriber = jest.fn();
+            const mockActiveServersUnsubscriber = {unsubscribe: jest.fn()};
+            const mockWebsocketSubscriptionForCleanup = {unsubscribe: jest.fn()};
+            const mockPerformanceSubscriptionForCleanup = {unsubscribe: jest.fn()};
+
+            mockAppState.addEventListener.mockReturnValue(mockAppStateListener as any); // eslint-disable-line @typescript-eslint/no-explicit-any
+            mockNetInfo.addEventListener.mockReturnValue(mockNetInfoUnsubscriber);
+            mockSubscribeActiveServers.mockReturnValue(mockActiveServersUnsubscriber as any); // eslint-disable-line @typescript-eslint/no-explicit-any
+
+            mockWebsocketManager.observeWebsocketState.mockReturnValue({
+                subscribe: jest.fn(() => mockWebsocketSubscriptionForCleanup),
+            } as any); // eslint-disable-line @typescript-eslint/no-explicit-any
+
+            mockNetworkPerformanceManager.observePerformanceState.mockReturnValue({
+                subscribe: jest.fn(() => mockPerformanceSubscriptionForCleanup),
+            } as any); // eslint-disable-line @typescript-eslint/no-explicit-any
+
+            startNetworkConnectivitySubscriptions();
+
+            // Simulate active servers to create websocket subscription
+            const serversCallback = mockSubscribeActiveServers.mock.calls[0][0];
+            await serversCallback([{url: 'https://test.com', lastActiveAt: 1000}] as any); // eslint-disable-line @typescript-eslint/no-explicit-any
+
+            shutdownNetworkConnectivitySubscriptions();
+
+            expect(mockAppStateListener.remove).toHaveBeenCalled();
+            expect(mockNetInfoUnsubscriber).toHaveBeenCalled();
+            expect(mockActiveServersUnsubscriber.unsubscribe).toHaveBeenCalled();
+            expect(mockWebsocketSubscriptionForCleanup.unsubscribe).toHaveBeenCalled();
+            expect(mockPerformanceSubscriptionForCleanup.unsubscribe).toHaveBeenCalled();
         });
     });
 });
