@@ -12,7 +12,7 @@ import EditCommandForm from './edit_command_form';
 
 import type {Database} from '@nozbe/watermelondb';
 
-jest.mock('@components/floating_text_input_label', () => ({
+jest.mock('@components/floating_input/floating_text_input_label', () => ({
     __esModule: true,
     default: jest.fn(),
 }));
@@ -57,11 +57,9 @@ describe('EditCommandForm', () => {
         expect(floatingTextInput).toBeTruthy();
         expect(floatingTextInput).toHaveProp('value', props.command);
         expect(floatingTextInput).toHaveProp('onChangeText', props.onCommandChange);
-        expect(floatingTextInput).toHaveProp('autoCorrect', false);
-        expect(floatingTextInput).toHaveProp('autoCapitalize', 'none');
+        expect(floatingTextInput).toHaveProp('rawInput', true);
         expect(floatingTextInput).toHaveProp('disableFullscreenUI', true);
-        expect(floatingTextInput).toHaveProp('showErrorIcon', false);
-        expect(floatingTextInput).toHaveProp('spellCheck', false);
+        expect(floatingTextInput).toHaveProp('hideErrorIcon', true);
         expect(floatingTextInput).toHaveProp('disableFullscreenUI', true);
 
         const autocomplete = getByTestId('autocomplete');
