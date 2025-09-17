@@ -162,7 +162,7 @@ const Servers = React.forwardRef<ServersRef>((_, ref) => {
     if (LocalConfig.AutoSelectServerUrl) {
         return (
             <Image
-                source={require('@assets/images/daakiaDlogoCircle.png')}
+                source={require('../../../../../assets/base/images/daakiaDlogoCircle.png')}
                 style={[styles.icon, {width: 32, height: 32, borderRadius: 16}]}
                 testID={'channel_list.app_logo'}
             />

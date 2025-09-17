@@ -408,8 +408,8 @@ export default class ClientTracking {
         try {
             response = await request!(url, this.buildRequestOptions(options));
         } catch (error) {
-            this.cancelNetworkPerformanceTracking(performanceRequestId);
             const response_error = error as ClientError;
+            this.cancelNetworkPerformanceTracking(performanceRequestId);
             const status_code = isErrorWithStatusCode(error) ? error.status_code : undefined;
             throw new ClientError(this.apiClient.baseUrl, {
                 message: 'Received invalid response from the server.',
@@ -458,6 +458,7 @@ export default class ClientTracking {
             server_error_id: response.data?.id as string,
             status_code: response.code,
             url,
+            headers,
         });
     };
 }
