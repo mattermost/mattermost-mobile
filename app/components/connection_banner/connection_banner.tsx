@@ -23,7 +23,6 @@ const getStyle = makeStyleSheetFromTheme((theme: Theme) => {
             alignItems: 'center' as const,
             paddingHorizontal: 12,
             paddingVertical: 10,
-            marginHorizontal: 8,
             borderRadius: 8,
             shadowColor: theme.centerChannelColor,
             shadowOffset: {
@@ -33,7 +32,6 @@ const getStyle = makeStyleSheetFromTheme((theme: Theme) => {
             shadowOpacity: 0.1,
             shadowRadius: 4,
             elevation: 4,
-            width: '100%',
         },
         containerNotConnected: {
             backgroundColor: theme.centerChannelColor,
