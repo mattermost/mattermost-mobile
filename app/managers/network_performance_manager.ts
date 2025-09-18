@@ -19,7 +19,7 @@ interface AccumulatedMetrics {
     requestCount: number;
 }
 
-const SLOW_LATENCY_THRESHOLD = 3000;
+const SLOW_LATENCY_THRESHOLD = 2000;
 
 const REPORT_INTERVAL = 3;
 const HISTORY_LIMIT = 10;
@@ -50,7 +50,7 @@ class NetworkPerformanceManagerSingleton {
 
     /**
      * Adds network request metrics and triggers performance reporting when thresholds are met.
-     * Reports every 10 requests.
+     * Reports every 3 requests.
      */
     public addMetrics = (serverUrl: string, metrics: ClientResponseMetrics) => {
         if (!this.currentMetrics[serverUrl]) {

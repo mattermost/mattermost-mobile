@@ -351,7 +351,7 @@ class NetworkConnectivityManagerSingleton {
 
     private handlePerformanceState(): boolean {
         if (shouldShowPerformanceBanner(this.websocketState, this.currentPerformanceState, this.performanceSuppressedUntilNormal)) {
-            this.showPerformanceWithAutoHide(5000);
+            this.showPerformanceWithAutoHide(10000);
             return true;
         }
         return false;
