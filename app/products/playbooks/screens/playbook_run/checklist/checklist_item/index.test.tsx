@@ -4,6 +4,7 @@
 import React, {act, type ComponentProps} from 'react';
 
 import {General, Preferences} from '@constants';
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {renderWithEverything, waitFor} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
@@ -71,6 +72,63 @@ describe('ChecklistItem', () => {
 
             await waitFor(() => {
                 expect(checklistItem.props.teammateNameDisplay).toBe(General.TEAMMATE_NAME_DISPLAY.SHOW_FULLNAME);
+            });
+        });
+
+        it('should set the correct channel type', async () => {
+            const props = {
+                item: TestHelper.fakePlaybookChecklistItem(checklistId, {id: itemId}),
+                channelId: 'channel-id',
+                checklistNumber: 0,
+                itemNumber: 0,
+                playbookRunId: 'run-id',
+                isDisabled: false,
+            };
+
+            const {getByTestId} = renderWithEverything(<ChecklistItem {...props}/>, {database});
+
+            // Default value is open channel
+            const checklistItem = getByTestId('checklist-item');
+            expect(checklistItem.props.channelType).toBe(General.OPEN_CHANNEL);
+
+            await act((async () => {
+                await operator.handleChannel({
+                    prepareRecordsOnly: false,
+                    channels: [TestHelper.fakeChannel({id: 'channel-id', type: General.PRIVATE_CHANNEL})],
+                });
+            }));
+
+            await waitFor(() => {
+                expect(checklistItem.props.channelType).toBe(General.PRIVATE_CHANNEL);
+            });
+        });
+
+        it('should set the correct current user id', async () => {
+            const props = {
+                item: TestHelper.fakePlaybookChecklistItem(checklistId, {id: itemId}),
+                channelId: 'channel-id',
+                checklistNumber: 0,
+                itemNumber: 0,
+                playbookRunId: 'run-id',
+                isDisabled: false,
+            };
+
+            const {getByTestId} = renderWithEverything(<ChecklistItem {...props}/>, {database});
+
+            const checklistItem = getByTestId('checklist-item');
+
+            // Default value is empty string
+            expect(checklistItem.props.currentUserId).toBe('');
+
+            await act((async () => {
+                await operator.handleSystem({
+                    prepareRecordsOnly: false,
+                    systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: 'user-id'}],
+                });
+            }));
+
+            await waitFor(() => {
+                expect(checklistItem.props.currentUserId).toBe('user-id');
             });
         });
     });

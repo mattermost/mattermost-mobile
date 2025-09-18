@@ -115,11 +115,7 @@ async function createTestExecutions(allTests, testCycle) {
     const promises = [];
     Object.entries(testCases).forEach(([key, steps], index) => {
         const testScriptResults = steps.
-            sort((a, b) => {
-                const aKey = a.title.match(/(MM-T\d+_\d+)/)[0].split('_')[1];
-                const bKey = b.title.match(/(MM-T\d+_\d+)/)[0].split('_')[1];
-                return parseInt(aKey, 10) - parseInt(bKey, 10);
-            }).
+            sort((a, b) => a.title.localeCompare(b.title)).
             map((item) => {
                 return {
                     title: item.title,

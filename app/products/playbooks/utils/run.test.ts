@@ -106,6 +106,10 @@ describe('run utils', () => {
 
             expect(isRunFinished(run)).toBe(true);
         });
+
+        it('should return true for undefined run', () => {
+            expect(isRunFinished(undefined)).toBe(true);
+        });
     });
 
     describe('getMaxRunUpdateAt', () => {

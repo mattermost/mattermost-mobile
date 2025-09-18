@@ -24,3 +24,30 @@ export async function goToPlaybookRun(intl: IntlShape, playbookRunId: string, pl
     const title = intl.formatMessage({id: 'playbooks.playbook_run.title', defaultMessage: 'Playbook run'});
     goToScreen(Screens.PLAYBOOK_RUN, title, {playbookRunId, playbookRun}, {});
 }
+
+export async function goToSelectUser(
+    title: string,
+    participantIds: string[],
+    selected: string | undefined,
+    handleSelect: (user: UserProfile) => void,
+    handleRemove?: () => void,
+) {
+    goToScreen(Screens.PLAYBOOK_SELECT_USER, title, {
+        participantIds,
+        selected,
+        handleSelect,
+        handleRemove,
+    }, {});
+}
+
+export async function goToSelectDate(
+    intl: IntlShape,
+    onSave: (date: number | undefined) => void,
+    selectedDate: number | undefined,
+) {
+    const title = intl.formatMessage({id: 'playbooks.select_date.title', defaultMessage: 'Due date'});
+    goToScreen(Screens.PLAYBOOKS_SELECT_DATE, title, {
+        onSave,
+        selectedDate,
+    }, {});
+}

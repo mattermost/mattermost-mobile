@@ -16,7 +16,7 @@ import DraftEditPostUploadManager from '@managers/draft_upload_manager';
 import {fileToGalleryItem, openGalleryAtIndex} from '@utils/gallery';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import UploadItem from './upload_item';
+import UploadItem from './upload_item/upload_item_wrapper';
 
 const CONTAINER_HEIGHT_MAX = 80;
 const CONTAINER_HEIGHT_MIN = 0;
