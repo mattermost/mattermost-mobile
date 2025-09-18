@@ -60,6 +60,12 @@ export function useKeyboardHeightWithDuration() {
     const insets = useSafeAreaInsets();
 
     useEffect(() => {
+        const currentKeyboardMetrics = Keyboard.metrics();
+
+        if (Keyboard.isVisible() && currentKeyboardMetrics) {
+            setKeyboardHeight({height: currentKeyboardMetrics.height, duration: 0});
+        }
+
         const show = Keyboard.addListener(Platform.select({ios: 'keyboardWillShow', default: 'keyboardDidShow'}), async (event) => {
             // Do not use set the height on Android versions below 11
             if (Platform.OS === 'android' && Platform.Version < 30) {
@@ -108,7 +114,7 @@ export function useViewPosition(viewRef: RefObject<View>, deps: React.Dependency
                 }
             });
         }
-    }, [...deps, isTablet, height, viewRef, modalPosition]);
+    }, [...deps, isTablet, height, viewRef, modalPosition]); // eslint-disable-line react-hooks/exhaustive-deps
 
     return modalPosition;
 }
