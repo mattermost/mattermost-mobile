@@ -71,6 +71,7 @@ describe('UserChip', () => {
                 onPress={mockOnPress}
                 teammateNameDisplay='username'
                 action={{icon: 'remove'}}
+                testID='user-chip'
             />,
         );
 
@@ -84,6 +85,7 @@ describe('UserChip', () => {
                 user={mockUser}
                 teammateNameDisplay='username'
                 action={{icon: 'remove', onPress: mockOnActionPress}}
+                testID='user-chip'
             />,
         );
 
