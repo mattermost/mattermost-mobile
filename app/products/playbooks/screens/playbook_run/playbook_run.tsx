@@ -3,9 +3,10 @@
 
 import React, {useCallback, useMemo} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
-import {View, Text, ScrollView} from 'react-native';
+import {View, Text, ScrollView, Alert} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import Button from '@components/button';
 import UserChip from '@components/chips/user_chip';
 import Markdown from '@components/markdown';
 import Tag from '@components/tag';
@@ -13,7 +14,7 @@ import UserAvatarsStack from '@components/user_avatars_stack';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import {setOwner} from '@playbooks/actions/remote/runs';
+import {finishRun, setOwner} from '@playbooks/actions/remote/runs';
 import {getRunScheduledTimestamp, isRunFinished} from '@playbooks/utils/run';
 import {openUserProfileModal, popTopScreen} from '@screens/navigation';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
@@ -66,6 +67,26 @@ const messages = defineMessages({
         id: 'playbooks.playbook_run.finished',
         defaultMessage: 'Finished',
     },
+    finishRunDialogTitle: {
+        id: 'playbooks.playbook_run.finish_run_dialog_title',
+        defaultMessage: 'Finish Run',
+    },
+    finishRunDialogDescription: {
+        id: 'playbooks.playbook_run.finish_run_dialog_description',
+        defaultMessage: 'There are {pendingCount} {pendingCount, plural, =1 {task} other {tasks}} pending.\n\nAre you sure you want to finish the run for all participants?',
+    },
+    finishRunDialogCancel: {
+        id: 'playbooks.playbook_run.finish_run_dialog_cancel',
+        defaultMessage: 'Cancel',
+    },
+    finishRunDialogFinish: {
+        id: 'playbooks.playbook_run.finish_run_dialog_finish',
+        defaultMessage: 'Finish',
+    },
+    finishRunButton: {
+        id: 'playbooks.playbook_run.finish_run_button',
+        defaultMessage: 'Finish Run',
+    },
 });
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
@@ -75,7 +96,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     },
     intro: {
         gap: 32,
-        marginVertical: 24,
     },
     titleAndDescription: {
         gap: 10,
@@ -118,6 +138,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     },
     scrollView: {
         paddingHorizontal: 20,
+        paddingVertical: 32,
+        gap: 16,
     },
     markdownContainer: {
         width: '100%',
@@ -131,6 +153,7 @@ type Props = {
     componentId: AvailableScreens;
     checklists: Array<PlaybookChecklistModel | PlaybookChecklist>;
     overdueCount: number;
+    pendingCount: number;
     currentUserId: string;
     teammateNameDisplay: string;
 }
@@ -141,6 +164,7 @@ export default function PlaybookRun({
     participants,
     checklists,
     overdueCount,
+    pendingCount,
     componentId,
     currentUserId,
     teammateNameDisplay,
@@ -206,6 +230,33 @@ export default function PlaybookRun({
             handleSelectOwner,
         );
     }, [handleSelectOwner, intl, owner, participants]);
+
+    const handleFinishRun = useCallback(() => {
+        if (!playbookRun) {
+            return;
+        }
+
+        Alert.alert(
+            intl.formatMessage(messages.finishRunDialogTitle),
+            intl.formatMessage(messages.finishRunDialogDescription, {pendingCount}),
+            [
+                {
+                    text: intl.formatMessage(messages.finishRunDialogCancel),
+                    style: 'cancel',
+                },
+                {
+                    text: intl.formatMessage(messages.finishRunDialogFinish),
+                    onPress: async () => {
+                        const res = await finishRun(serverUrl, playbookRun.id);
+                        if (res.error) {
+                            showPlaybookErrorSnackbar();
+                        }
+                    },
+                    style: 'destructive',
+                },
+            ],
+        );
+    }, [intl, pendingCount, playbookRun, serverUrl]);
 
     if (!playbookRun) {
         return <ErrorState/>;
@@ -299,6 +350,15 @@ export default function PlaybookRun({
                             isParticipant={isParticipant}
                         />
                     </View>
+                    {!readOnly && (
+                        <Button
+                            text={intl.formatMessage(messages.finishRunButton)}
+                            onPress={handleFinishRun}
+                            theme={theme}
+                            size='lg'
+                            emphasis='tertiary'
+                        />
+                    )}
                 </ScrollView>
             </View>
         </>
