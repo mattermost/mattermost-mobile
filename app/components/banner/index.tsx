@@ -121,11 +121,10 @@ export interface BannerProps {
 const getDefaultStyles = () => StyleSheet.create({
     wrapper: {
         position: 'absolute',
+        width: '100%',
         gap: 8,
-        alignSelf: 'center',
     },
     container: {
-        marginHorizontal: 8,
     },
 });
 
@@ -279,7 +278,6 @@ const Banner: React.FC<BannerProps> = ({
                 styles.wrapper,
                 positionStyle,
                 animatedStyle,
-                {width: isTablet ? '60%' : '100%'},
                 style,
             ]}
         >

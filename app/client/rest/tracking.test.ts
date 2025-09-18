@@ -6,6 +6,8 @@ import {DeviceEventEmitter} from 'react-native';
 
 import LocalConfig from '@assets/config.json';
 import {Events} from '@constants';
+import NetworkPerformanceManager from '@managers/network_performance_manager';
+import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import test_helper from '@test/test_helper';
 
 import * as ClientConstants from './constants';
@@ -62,7 +64,16 @@ jest.mock('@managers/performance_metrics_manager', () => ({
     collectNetworkRequestData: jest.fn(),
 }));
 
+jest.mock('@managers/network_performance_manager', () => ({
+    __esModule: true,
+    default: {
+        addMetrics: jest.fn(),
+    },
+}));
+
 describe('ClientTracking', () => {
+    const mockedNPM = jest.mocked(NetworkPerformanceManager);
+    const mockedPMM = jest.mocked(PerformanceMetricsManager);
     const apiClientMock = {
         baseUrl: 'https://example.com',
         get: jest.fn(),
@@ -875,6 +886,109 @@ describe('ClientTracking', () => {
             client.setClientCredentials('bearer3', undefined);
             expect(client.requestHeaders[ClientConstants.HEADER_AUTH]).toBe(`${ClientConstants.HEADER_BEARER} bearer3`);
             expect(client.requestHeaders[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET]).toBeUndefined();
+        });
+    });
+
+    describe('Network Performance Tracking', () => {
+        const createMockMetrics = (overrides = {}) => ({
+            latency: 500,
+            size: 1000,
+            compressedSize: 500,
+            startTime: Date.now(),
+            endTime: Date.now() + 500,
+            speedInMbps: 1,
+            networkType: 'Wi-Fi',
+            tlsCipherSuite: 'none',
+            tlsVersion: 'none',
+            isCached: false,
+            httpVersion: 'h2',
+            connectionTime: 0,
+            ...overrides,
+        });
+
+        const mockSuccessResponse = (metrics = createMockMetrics()) => ({
+            ok: true,
+            data: {success: true},
+            headers: {},
+            metrics,
+        });
+
+        const requestOptions = {
+            method: 'GET',
+            groupLabel: 'Cold Start' as RequestGroupLabel,
+        };
+
+        beforeEach(() => {
+            LocalConfig.MonitorNetworkPerformance = true;
+        });
+
+        afterEach(() => {
+            LocalConfig.MonitorNetworkPerformance = false;
+            jest.clearAllMocks();
+        });
+
+        it('should call addMetrics when MonitorNetworkPerformance is enabled', async () => {
+            const mockMetrics = createMockMetrics();
+            apiClientMock.get.mockResolvedValue(mockSuccessResponse(mockMetrics));
+
+            await client.doFetchWithTracking('https://example.com/api', requestOptions);
+
+            expect(mockedNPM.addMetrics).toHaveBeenCalledWith('https://example.com', mockMetrics);
+        });
+
+        it('should not call addMetrics when MonitorNetworkPerformance is disabled', async () => {
+            LocalConfig.MonitorNetworkPerformance = false;
+            apiClientMock.get.mockResolvedValue(mockSuccessResponse());
+
+            await client.doFetchWithTracking('https://example.com/api', requestOptions);
+
+            expect(mockedNPM.addMetrics).not.toHaveBeenCalled();
+        });
+
+        it('should not call addMetrics when response.metrics is undefined', async () => {
+            apiClientMock.get.mockResolvedValue({
+                ok: true,
+                data: {success: true},
+                headers: {},
+            });
+
+            await client.doFetchWithTracking('https://example.com/api', requestOptions);
+
+            expect(mockedNPM.addMetrics).not.toHaveBeenCalled();
+        });
+
+        it('should call addMetrics independently of CollectNetworkMetrics', async () => {
+            LocalConfig.CollectNetworkMetrics = false;
+            const mockMetrics = createMockMetrics();
+            apiClientMock.get.mockResolvedValue(mockSuccessResponse(mockMetrics));
+
+            await client.doFetchWithTracking('https://example.com/api', requestOptions);
+
+            expect(mockedPMM.collectNetworkRequestData).not.toHaveBeenCalled();
+            expect(mockedNPM.addMetrics).toHaveBeenCalledWith('https://example.com', mockMetrics);
+        });
+
+        it('should call addMetrics when both flags are enabled', async () => {
+            LocalConfig.CollectNetworkMetrics = true;
+            const mockMetrics = createMockMetrics();
+            apiClientMock.get.mockResolvedValue(mockSuccessResponse(mockMetrics));
+
+            await client.doFetchWithTracking('https://example.com/api', requestOptions);
+
+            expect(mockedNPM.addMetrics).toHaveBeenCalledWith('https://example.com', mockMetrics);
+        });
+
+        it('should pass correct server URL to NetworkPerformanceManager', async () => {
+            const customBaseUrl = 'https://custom-server.com';
+            const customApiClient = {...apiClientMock, baseUrl: customBaseUrl};
+            const customClient = new ClientTracking(customApiClient as unknown as APIClientInterface);
+            const mockMetrics = createMockMetrics({latency: 300, size: 2000, compressedSize: 1000, speedInMbps: 2});
+
+            customApiClient.get.mockResolvedValue(mockSuccessResponse(mockMetrics));
+
+            await customClient.doFetchWithTracking('https://custom-server.com/api', requestOptions);
+
+            expect(mockedNPM.addMetrics).toHaveBeenCalledWith(customBaseUrl, mockMetrics);
         });
     });
 });

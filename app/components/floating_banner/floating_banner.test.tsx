@@ -13,6 +13,26 @@ import type {BannerConfig} from './types';
 
 jest.mock('@hooks/device');
 
+// Mock react-native-reanimated
+jest.mock('react-native-reanimated', () => {
+    const {View} = require('react-native');
+    const ReactLib = require('react');
+
+    const AnimatedView = ReactLib.forwardRef((props: Record<string, unknown>, ref: unknown) => {
+        return ReactLib.createElement(View, {...props, ref});
+    });
+    AnimatedView.displayName = 'AnimatedView';
+
+    return {
+        __esModule: true,
+        useAnimatedStyle: (fn: () => unknown) => fn(),
+        withTiming: (value: unknown) => value,
+        default: {
+            View: AnimatedView,
+        },
+    };
+});
+
 // Mock the dependencies
 jest.mock('@components/banner', () => {
     const mockView = require('react-native').View;
@@ -92,6 +112,7 @@ describe('FloatingBanner', () => {
 
         // Default to phone behavior unless a test overrides
         jest.mocked(Device.useIsTablet).mockReturnValue(false);
+        jest.mocked(Device.useKeyboardHeight).mockReturnValue(0);
     });
 
     describe('rendering', () => {
@@ -307,6 +328,79 @@ describe('FloatingBanner', () => {
 
             const {BOTTOM_OFFSET_PHONE, TABLET_EXTRA_BOTTOM_OFFSET} = testExports;
             expect(styleWithBottom.bottom).toBe(BOTTOM_OFFSET_PHONE + TABLET_EXTRA_BOTTOM_OFFSET);
+        });
+    });
+
+    describe('keyboard height adjustment', () => {
+        it('should adjust bottom banner position when keyboard is open', () => {
+            const keyboardHeight = 300;
+            jest.mocked(Device.useKeyboardHeight).mockReturnValue(keyboardHeight);
+
+            const banners = [
+                createMockBanner({id: 'bottom-banner', position: 'bottom'}),
+            ];
+            renderFloatingBanner(banners);
+
+            const container = screen.getByTestId('floating-banner-bottom-container');
+            const styleProp = container.props.style as Array<Record<string, unknown>>;
+            const animatedStyle = styleProp[styleProp.length - 1] as {bottom: number};
+
+            const {BOTTOM_OFFSET_PHONE} = testExports;
+            expect(animatedStyle.bottom).toBe(BOTTOM_OFFSET_PHONE + keyboardHeight);
+        });
+
+        it('should adjust bottom banner position on tablet when keyboard is open', () => {
+            const keyboardHeight = 250;
+            jest.mocked(Device.useIsTablet).mockReturnValue(true);
+            jest.mocked(Device.useKeyboardHeight).mockReturnValue(keyboardHeight);
+
+            const banners = [
+                createMockBanner({id: 'tablet-bottom-banner', position: 'bottom'}),
+            ];
+            renderFloatingBanner(banners);
+
+            const container = screen.getByTestId('floating-banner-bottom-container');
+            const styleProp = container.props.style as Array<Record<string, unknown>>;
+            const animatedStyle = styleProp[styleProp.length - 1] as {bottom: number};
+
+            const {BOTTOM_OFFSET_PHONE, TABLET_EXTRA_BOTTOM_OFFSET} = testExports;
+            const expectedBottom = BOTTOM_OFFSET_PHONE + TABLET_EXTRA_BOTTOM_OFFSET + keyboardHeight;
+            expect(animatedStyle.bottom).toBe(expectedBottom);
+        });
+
+        it('should not adjust top banner position when keyboard is open', () => {
+            const keyboardHeight = 300;
+            jest.mocked(Device.useKeyboardHeight).mockReturnValue(keyboardHeight);
+
+            const banners = [
+                createMockBanner({id: 'top-banner', position: 'top'}),
+            ];
+            renderFloatingBanner(banners);
+
+            const container = screen.getByTestId('floating-banner-top-container');
+            const styleProp = container.props.style as Array<Record<string, unknown>>;
+
+            // Top banners should not have animated styles with bottom positioning
+            const hasBottomStyle = styleProp.some((style) =>
+                typeof style === 'object' && style !== null && 'bottom' in style,
+            );
+            expect(hasBottomStyle).toBe(false);
+        });
+
+        it('should handle zero keyboard height correctly', () => {
+            jest.mocked(Device.useKeyboardHeight).mockReturnValue(0);
+
+            const banners = [
+                createMockBanner({id: 'bottom-banner', position: 'bottom'}),
+            ];
+            renderFloatingBanner(banners);
+
+            const container = screen.getByTestId('floating-banner-bottom-container');
+            const styleProp = container.props.style as Array<Record<string, unknown>>;
+            const animatedStyle = styleProp[styleProp.length - 1] as {bottom: number};
+
+            const {BOTTOM_OFFSET_PHONE} = testExports;
+            expect(animatedStyle.bottom).toBe(BOTTOM_OFFSET_PHONE);
         });
     });
 });
