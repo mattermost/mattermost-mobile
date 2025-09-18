@@ -3,11 +3,13 @@
 
 import React from 'react';
 
+import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
-import type Database from '@nozbe/watermelondb/Database';
+
 import Notifications from './notifications';
+
 import type UserModel from '@database/models/server/user';
-import { renderWithEverything } from '@test/intl-test-helper';
+import type Database from '@nozbe/watermelondb/Database';
 
 jest.mock('react-native-notifications', () => ({
     Notifications: {
@@ -41,13 +43,14 @@ describe('NoticeDisabledAppears', () => {
 
     it('should show notice if disabled', () => {
         MockedNotifications.isRegisteredForRemoteNotifications.mockResolvedValue(false);
-        const wrapper = renderWithEverything(<Notifications {...getBaseProps()} />, { database });
+        const wrapper = renderWithEverything(<Notifications {...getBaseProps()}/>, {database});
         expect(wrapper.getByText(titleText)).toBeVisible();
     });
 
     it('should not show notice if enabled', () => {
         MockedNotifications.isRegisteredForRemoteNotifications.mockResolvedValue(true);
-        const wrapper = renderWithEverything(<Notifications {...getBaseProps()} />, { database });
+        const wrapper = renderWithEverything(<Notifications {...getBaseProps()}/>, {database});
+        // eslint-disable-next-line no-unused-expressions
         expect(wrapper.getByText(titleText)).not.toBeVisible;
     });
 

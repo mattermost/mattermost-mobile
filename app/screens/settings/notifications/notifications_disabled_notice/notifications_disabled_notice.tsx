@@ -1,15 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, { useCallback, useMemo } from 'react';
-import { useIntl } from 'react-intl';
-import { StyleSheet, View } from 'react-native';
-
-import SectionNotice from '@components/section_notice';
-import { Screens } from '@constants';
+import React, {useCallback, useMemo} from 'react';
+import {useIntl} from 'react-intl';
+import {StyleSheet, View} from 'react-native';
 import Permissions from 'react-native-permissions';
 
-type Props = {}
+import SectionNotice from '@components/section_notice';
+import {Screens} from '@constants';
 
 const styles = StyleSheet.create({
     wrapper: {
@@ -19,7 +17,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const NotificationsDisabledNotice = ({ }: Props) => {
+const NotificationsDisabledNotice = () => {
     const intl = useIntl();
 
     const onEnableNotificationClick = useCallback(async () => {
@@ -27,13 +25,13 @@ const NotificationsDisabledNotice = ({ }: Props) => {
     }, []);
 
     const primaryButton = useMemo(() => {
-        let text = intl.formatMessage({
+        const text = intl.formatMessage({
             id: 'user_settings.notifications.disabled.button',
-            defaultMessage: 'Enable notifications'
+            defaultMessage: 'Enable notifications',
         });
         return {
             onClick: onEnableNotificationClick,
-            text
+            text,
         };
     }, [intl, onEnableNotificationClick]);
 
@@ -44,7 +42,7 @@ const NotificationsDisabledNotice = ({ }: Props) => {
                     id: 'user_settings.notifications.disabled.body',
                     defaultMessage: 'You will still see mention badges within the app, but you will not receive push notifications on your device.',
                 })}
-                title={intl.formatMessage({ id: 'user_settings.notifications.disabled.title', defaultMessage: 'Notifications are disabled' })}
+                title={intl.formatMessage({id: 'user_settings.notifications.disabled.title', defaultMessage: 'Notifications are disabled'})}
                 primaryButton={primaryButton}
                 type='danger'
                 location={Screens.SETTINGS_NOTIFICATION_PUSH}

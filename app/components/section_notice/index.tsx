@@ -1,21 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, { useMemo } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import React, {useMemo} from 'react';
+import {Pressable, Text, View} from 'react-native';
 
 import Tag from '@components/tag';
-import { useTheme } from '@context/theme';
-import { getMarkdownBlockStyles, getMarkdownTextStyles } from '@utils/markdown';
-import { changeOpacity, makeStyleSheetFromTheme } from '@utils/theme';
-import { typography } from '@utils/typography';
+import {useTheme} from '@context/theme';
+import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import CompassIcon from '../compass_icon';
 import Markdown from '../markdown';
 
 import SectionNoticeButton from './section_notice_button';
 
-import type { AvailableScreens } from '@typings/screens/navigation';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     title: string;
