@@ -40,7 +40,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         alignItems: 'center',
         maxWidth: 600,
         width: '100%',
-        paddingHorizontal: 20,
+        paddingHorizontal: 24,
     },
     fullWidth: {
         width: '100%',
