@@ -1,14 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {debounce} from 'lodash';
 import React, {useCallback, useMemo, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 
 import SearchBar from '@components/search';
 import TeamList from '@components/team_list';
 import {useTheme} from '@context/theme';
-import {usePreventDoubleTap} from '@hooks/utils';
+import {useDebounce, usePreventDoubleTap} from '@hooks/utils';
 import SecurityManager from '@managers/security_manager';
 import {popTopScreen} from '@screens/navigation';
 import {changeOpacity, getKeyboardAppearanceFromTheme} from '@utils/theme';
@@ -35,18 +34,18 @@ const TeamSelectorList = ({componentId, teams, selectTeam}: Props) => {
     const [filteredTeams, setFilteredTeam] = useState(teams);
     const color = useMemo(() => changeOpacity(theme.centerChannelColor, 0.72), [theme]);
 
-    const handleOnChangeSearchText = useCallback(debounce((searchTerm: string) => {
+    const handleOnChangeSearchText = useDebounce(useCallback((searchTerm: string) => {
         if (searchTerm === '') {
             setFilteredTeam(teams);
         } else {
             setFilteredTeam(teams.filter((team) => team.display_name.includes(searchTerm) || team.name.includes(searchTerm)));
         }
-    }, 200), [teams]);
+    }, [teams]), 200);
 
     const handleOnPress = usePreventDoubleTap(useCallback((teamId: string) => {
         selectTeam(teamId);
         popTopScreen();
-    }, []));
+    }, [selectTeam]));
 
     return (
         <View

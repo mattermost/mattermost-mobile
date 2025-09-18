@@ -11,9 +11,9 @@ import PostList from '@components/post_list';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {debounce} from '@helpers/api/general';
 import {useAppState} from '@hooks/device';
 import {useFetchingThreadState} from '@hooks/fetching_thread';
+import {useDebounce} from '@hooks/utils';
 import {isMinimumServerVersion} from '@utils/helpers';
 
 import type PostModel from '@typings/database/models/servers/post';
@@ -46,7 +46,7 @@ const ThreadPostList = ({
     const isFetchingThread = useFetchingThreadState(rootPost.id);
 
     const canLoadMorePosts = useRef(true);
-    const onEndReached = useCallback(debounce(async () => {
+    const onEndReached = useDebounce(useCallback(async () => {
         if (isMinimumServerVersion(version || '', 6, 7) && !isFetchingThread && canLoadMorePosts.current && posts.length) {
             const options: FetchPaginatedThreadOptions = {
                 perPage: PER_PAGE_DEFAULT,
@@ -63,7 +63,7 @@ const ThreadPostList = ({
         } else {
             canLoadMorePosts.current = false;
         }
-    }, 500), [isFetchingThread, rootPost, posts, version]);
+    }, [version, isFetchingThread, posts, serverUrl, rootPost.id]), 500);
 
     const threadPosts = useMemo(() => {
         return [...posts, rootPost];
@@ -74,6 +74,9 @@ const ThreadPostList = ({
         if (isCRTEnabled && thread?.isFollowing) {
             markThreadAsRead(serverUrl, teamId, rootPost.id);
         }
+
+        // We only want to mark the thread as read on mount
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // If CRT is enabled, When new post arrives and thread modal is open, mark thread as read.

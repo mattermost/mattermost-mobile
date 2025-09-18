@@ -11,7 +11,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {sendPasswordResetEmail} from '@actions/remote/session';
 import Button from '@components/button';
-import FloatingTextInput from '@components/floating_text_input_label';
+import FloatingTextInput from '@components/floating_input/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
@@ -209,8 +209,7 @@ const ForgotPassword = ({componentId, serverUrl, theme}: Props) => {
                     />
                     <View style={styles.form}>
                         <FloatingTextInput
-                            autoCorrect={false}
-                            autoCapitalize={'none'}
+                            rawInput={true}
                             blurOnSubmit={true}
                             disableFullscreenUI={true}
                             enablesReturnKeyAutomatically={true}
@@ -220,7 +219,6 @@ const ForgotPassword = ({componentId, serverUrl, theme}: Props) => {
                             onChangeText={changeEmail}
                             onSubmitEditing={submitResetPassword}
                             returnKeyType='next'
-                            spellCheck={false}
                             testID='forgot.password.email'
                             theme={theme}
                             value={email}

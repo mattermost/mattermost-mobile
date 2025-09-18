@@ -1,13 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useState} from 'react';
+import React, {useCallback, useState} from 'react';
 import {defineMessage, useIntl} from 'react-intl';
-import {Text} from 'react-native';
+import {Text, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 import {updateMe} from '@actions/remote/user';
-import FloatingTextChipsInput from '@components/floating_text_chips_input';
+import FloatingTextChipsInput from '@components/floating_input/floating_text_chips_input';
 import SettingBlock from '@components/settings/block';
 import SettingOption from '@components/settings/option';
 import SettingSeparator from '@components/settings/separator';
@@ -18,7 +18,7 @@ import useBackNavigation from '@hooks/navigate_back';
 import {popTopScreen} from '@screens/navigation';
 import ReplySettings from '@screens/settings/notification_mention/reply_settings';
 import {areBothStringArraysEqual} from '@utils/helpers';
-import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getNotificationProps} from '@utils/user';
 
@@ -35,18 +35,12 @@ const COMMA_KEY = ',';
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         flex: {flex: 1},
-        input: {
-            color: theme.centerChannelColor,
-            paddingHorizontal: 15,
-            ...typography('Body', 100, 'Regular'),
-        },
         containerStyle: {
+            flexDirection: 'row',
             marginTop: 30,
             alignSelf: 'center',
-            paddingHorizontal: 18.5,
         },
         keywordLabelStyle: {
-            paddingHorizontal: 18.5,
             marginTop: 4,
             color: changeOpacity(theme.centerChannelColor, 0.64),
             ...typography('Body', 75, 'Regular'),
@@ -117,7 +111,7 @@ export function getUniqueKeywordsFromInput(inputText: string, keywords: string[]
 
 const MentionSettings = ({componentId, currentUser, isCRTEnabled}: Props) => {
     const serverUrl = useServerUrl();
-    const mentionProps = useMemo(() => getMentionProps(currentUser), []);
+    const [mentionProps] = useState(() => getMentionProps(currentUser));
     const notifyProps = mentionProps.notifyProps;
 
     const [mentionKeywords, setMentionKeywords] = useState(mentionProps.mentionKeywords);
@@ -264,29 +258,23 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: Props) => {
                     type='toggle'
                 />
                 <SettingSeparator/>
-                <FloatingTextChipsInput
-                    allowFontScaling={true}
-                    autoCapitalize='none'
-                    autoCorrect={false}
-                    blurOnSubmit={true}
-                    containerStyle={styles.containerStyle}
-                    keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                    label={intl.formatMessage({
-                        id: 'notification_settings.mentions.keywords',
-                        defaultMessage: 'Enter other keywords',
-                    })}
-                    onTextInputChange={handleMentionKeywordsInputChanged}
-                    onChipRemove={handleMentionKeywordRemoved}
-                    returnKeyType='done'
-                    testID='mention_notification_settings.keywords.input'
-                    textInputStyle={styles.input}
-                    textAlignVertical='center'
-                    theme={theme}
-                    underlineColorAndroid='transparent'
-                    chipsValues={mentionKeywords}
-                    textInputValue={mentionKeywordsInput}
-                    onTextInputSubmitted={handleMentionKeywordEntered}
-                />
+                <View style={styles.containerStyle}>
+                    <FloatingTextChipsInput
+                        blurOnSubmit={true}
+                        label={intl.formatMessage({
+                            id: 'notification_settings.mentions.keywords',
+                            defaultMessage: 'Enter other keywords',
+                        })}
+                        onTextInputChange={handleMentionKeywordsInputChanged}
+                        onChipRemove={handleMentionKeywordRemoved}
+                        returnKeyType='done'
+                        testID='mention_notification_settings.keywords.input'
+                        theme={theme}
+                        chipsValues={mentionKeywords}
+                        textInputValue={mentionKeywordsInput}
+                        onTextInputSubmitted={handleMentionKeywordEntered}
+                    />
+                </View>
                 <Text
                     style={styles.keywordLabelStyle}
                     testID='mention_notification_settings.keywords.input.description'
