@@ -127,6 +127,7 @@ export const transformPlaybookChecklistItemRecord = ({action, database, value}: 
         item.completedAt = raw.completed_at ?? record?.completedAt ?? 0;
         item.taskActions = raw.task_actions ?? record?.taskActions ?? [];
         item.conditionAction = raw.condition_action ?? record?.conditionAction ?? '';
+        item.conditionReason = raw.condition_reason ?? record?.conditionReason ?? '';
         item.updateAt = raw.update_at ?? record?.updateAt ?? 0;
         item.lastSyncAt = Date.now();
     };

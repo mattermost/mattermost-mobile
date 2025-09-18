@@ -32,6 +32,7 @@ export default schemaMigrations({migrations: [
                 table: PLAYBOOK_CHECKLIST_ITEM,
                 columns: [
                     {name: 'condition_action', type: 'string'},
+                    {name: 'condition_reason', type: 'string'},
                 ],
             }),
         ],

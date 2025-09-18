@@ -528,6 +528,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         completed_at: {name: 'completed_at', type: 'number'},
                         task_actions: {name: 'task_actions', type: 'string', isOptional: true}, // JSON string
                         condition_action: {name: 'condition_action', type: 'string'},
+                        condition_reason: {name: 'condition_reason', type: 'string'},
                         sync: {name: 'sync', type: 'string', isIndexed: true, isOptional: true},
                         last_sync_at: {name: 'last_sync_at', type: 'number', isOptional: true},
                         update_at: {name: 'update_at', type: 'number'},
@@ -546,6 +547,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'completed_at', type: 'number'},
                         {name: 'task_actions', type: 'string', isOptional: true}, // JSON string
                         {name: 'condition_action', type: 'string'},
+                        {name: 'condition_reason', type: 'string'},
                         {name: 'sync', type: 'string', isIndexed: true, isOptional: true},
                         {name: 'last_sync_at', type: 'number', isOptional: true},
                         {name: 'update_at', type: 'number'},

@@ -23,6 +23,7 @@ export default tableSchema({
         {name: 'completed_at', type: 'number'},
         {name: 'task_actions', type: 'string', isOptional: true}, // JSON string
         {name: 'condition_action', type: 'string'},
+        {name: 'condition_reason', type: 'string'},
         {name: 'sync', type: 'string', isIndexed: true, isOptional: true},
         {name: 'last_sync_at', type: 'number', isOptional: true},
         {name: 'update_at', type: 'number'},

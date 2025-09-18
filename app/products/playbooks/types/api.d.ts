@@ -33,6 +33,7 @@ type PlaybookChecklistItem = {
     due_date: number;
     task_actions?: TaskAction[];
     condition_action?: ConditionAction;
+    condition_reason?: string;
     completed_at: number;
     update_at: number;
 }

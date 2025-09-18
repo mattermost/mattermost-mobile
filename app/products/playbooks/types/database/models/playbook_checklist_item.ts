@@ -62,6 +62,9 @@ declare class PlaybookChecklistItemModel extends Model {
     // The condition action for the checklist item
     conditionAction: ConditionAction;
 
+    // The condition reason for the checklist item
+    conditionReason: string;
+
     // The timestamp when the checklist item was updated
     updateAt: number;
 

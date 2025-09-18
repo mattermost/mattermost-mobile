@@ -1255,6 +1255,7 @@ class TestHelperSingleton {
             lastSyncAt: 0,
             taskActions: [],
             conditionAction: '',
+            conditionReason: '',
             checklist: this.fakeRelation(),
             updateAt: 0,
             ...overwrite,
