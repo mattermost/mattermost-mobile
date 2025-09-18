@@ -10,6 +10,7 @@ export interface ClientPlaybooksMix {
     // Playbook Runs
     fetchPlaybookRuns: (params: FetchPlaybookRunsParams, groupLabel?: RequestGroupLabel) => Promise<FetchPlaybookRunsReturn>;
     fetchPlaybookRun: (id: string, groupLabel?: RequestGroupLabel) => Promise<PlaybookRun>;
+    fetchPlaybookRunMetadata: (id: string) => Promise<PlaybookRunMetadata>;
 
     // Run Management
     // finishRun: (playbookRunId: string) => Promise<any>;
@@ -60,6 +61,13 @@ const ClientPlaybooks = <TBase extends Constructor<ClientBase>>(superclass: TBas
         return this.doFetch(
             `${this.getPlaybookRunRoute(id)}`,
             {method: 'get', groupLabel},
+        );
+    };
+
+    fetchPlaybookRunMetadata = async (id: string) => {
+        return this.doFetch(
+            `${this.getPlaybookRunRoute(id)}/metadata`,
+            {method: 'get'},
         );
     };
 

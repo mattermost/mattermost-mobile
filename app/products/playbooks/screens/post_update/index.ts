@@ -41,15 +41,15 @@ const enhanced = withObservables(['playbookRunId'], ({playbookRunId, database}: 
     );
 
     return {
-        playbookRun,
-
+        runName: playbookRun.pipe(
+            switchMap((r) => of$(r?.name ?? '')),
+        ),
         userId: observeCurrentUserId(database),
         channelId: playbookRun.pipe(
             switchMap((r) => (r ? of$(r.channelId) : of$(undefined))),
         ),
         teamId: observeCurrentTeamId(database),
         outstanding: outstandingCount,
-        template: of$(''),
     };
 });
 

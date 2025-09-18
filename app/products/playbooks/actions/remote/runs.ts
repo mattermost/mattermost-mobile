@@ -89,7 +89,7 @@ export const fetchFinishedRunsForChannel = async (serverUrl: string, channelId: 
     }
 };
 
-export const fetchPlaybookRun = async (serverUrl: string, runId: string, fetchOnly = false): Promise<PlaybookRunsRequest> => {
+export const fetchPlaybookRun = async (serverUrl: string, runId: string, fetchOnly = false) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
         const run = await client.fetchPlaybookRun(runId);
@@ -102,9 +102,21 @@ export const fetchPlaybookRun = async (serverUrl: string, runId: string, fetchOn
             }
         }
 
-        return {runs: [run]};
+        return {run};
     } catch (error) {
         logDebug('error on fetchPlaybookRun', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
+export const fetchPlaybookRunMetadata = async (serverUrl: string, runId: string) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const metadata = await client.fetchPlaybookRunMetadata(runId);
+        return {metadata};
+    } catch (error) {
+        logDebug('error on fetchPlaybookRunMetadata', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }

@@ -1,28 +1,31 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useCallback, useEffect, useMemo, useState} from 'react';
-import {useIntl} from 'react-intl';
-import {Alert, Keyboard, StyleSheet, View} from 'react-native';
+import {type ComponentProps, useCallback, useEffect, useMemo, useState} from 'react';
+import {FormattedMessage, useIntl} from 'react-intl';
+import {Alert, Keyboard, Text, View} from 'react-native';
 
+import {getPosts} from '@actions/local/post';
 import FloatingAutocompleteSelector from '@components/floating_input/floating_autocomplete_selector';
 import FloatingTextInput from '@components/floating_input/floating_text_input_label';
+import Loading from '@components/loading';
 import OptionItem from '@components/option_item';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
-import {postStatusUpdate} from '@playbooks/actions/remote/runs';
+import {fetchPlaybookRun, fetchPlaybookRunMetadata, postStatusUpdate} from '@playbooks/actions/remote/runs';
 import {buildNavigationButton, popTopScreen, setButtons} from '@screens/navigation';
 import {toSeconds} from '@utils/datetime';
 import {logDebug} from '@utils/log';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     componentId: AvailableScreens;
     playbookRunId: string;
-    template: string;
     runName: string;
     userId: string;
     channelId?: string;
@@ -30,13 +33,20 @@ type Props = {
     outstanding: number;
 }
 
-const styles = StyleSheet.create({
+const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         flex: 1,
         padding: 20,
         gap: 12,
     },
-});
+    introMessage: {
+        ...typography('Body', 200),
+        color: changeOpacity(theme.centerChannelColor, 0.72),
+    },
+    introMessageBold: {
+        ...typography('Body', 200, 'SemiBold'),
+    },
+}));
 
 const SAVE_BUTTON_ID = 'save-post-update';
 
@@ -59,7 +69,6 @@ type NextUpdateValues = keyof typeof valueToTimeMap;
 const PostUpdate = ({
     componentId,
     playbookRunId,
-    template,
     runName,
     userId,
     channelId,
@@ -69,10 +78,16 @@ const PostUpdate = ({
     const theme = useTheme();
     const intl = useIntl();
     const serverUrl = useServerUrl();
-    const [updateMessage, setUpdateMessage] = useState(template);
+    const styles = getStyles(theme);
+    const [updateMessage, setUpdateMessage] = useState('');
     const [nextUpdate, setNextUpdate] = useState<NextUpdateValues>('15_minutes');
     const [alsoMarkRunAsFinished, setAlsoMarkRunAsFinished] = useState(false);
-    const [canSave, setCanSave] = useState(template.length > 0);
+    const [canSave, setCanSave] = useState(false);
+
+    const [followersCount, setFollowersCount] = useState<number>(0);
+    const [broadcastChannelCount, setBroadcastChannelCount] = useState<number>(0);
+
+    const [loading, setLoading] = useState(true);
 
     const onChangeText = useCallback((text: string) => {
         setUpdateMessage(text);
@@ -96,6 +111,47 @@ const PostUpdate = ({
             rightButtons: [rightButton],
         });
     }, [rightButton, componentId]);
+
+    useEffect(() => {
+        async function initialLoad() {
+            let calculatedFollowersCount = 0;
+            let calculatedBroadcastChannelCount = 0;
+            let calculatedDefaultMessage = '';
+
+            const metadataRes = await fetchPlaybookRunMetadata(serverUrl, playbookRunId);
+            if (metadataRes.error) {
+                logDebug('error on fetchPlaybookRunMetadata', metadataRes.error);
+            } else {
+                calculatedFollowersCount = metadataRes.metadata?.followers?.length ?? 0;
+            }
+
+            const runRes = await fetchPlaybookRun(serverUrl, playbookRunId, true);
+            if (runRes.error) {
+                logDebug('error on fetchPlaybookRun', runRes.error);
+            } else {
+                if (runRes.run?.status_update_broadcast_channels_enabled) {
+                    calculatedBroadcastChannelCount = runRes.run?.broadcast_channel_ids?.length ?? 0;
+                }
+                calculatedDefaultMessage = runRes.run?.reminder_message_template ?? '';
+                const lastStatusPostMetadata = runRes.run?.status_posts?.slice().reverse().find((post) => !post.delete_at);
+                const lastStatusPost = (await getPosts(serverUrl, [lastStatusPostMetadata?.id ?? '']))[0];
+                if (lastStatusPost) {
+                    calculatedDefaultMessage = lastStatusPost.message;
+                }
+            }
+
+            setFollowersCount(calculatedFollowersCount);
+            setBroadcastChannelCount(calculatedBroadcastChannelCount);
+            setUpdateMessage(calculatedDefaultMessage);
+            setCanSave(calculatedDefaultMessage.trim().length > 0);
+            setLoading(false);
+        }
+
+        initialLoad();
+
+    // This is the initial load, so we don't need to re-run it on every change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const onNextUpdateSelected = useCallback((value: SelectedDialogOption) => {
         if (!value) {
@@ -179,8 +235,43 @@ const PostUpdate = ({
 
     useNavButtonPressed(SAVE_BUTTON_ID, componentId, onPostUpdate, [onPostUpdate]);
     useAndroidHardwareBackHandler(componentId, handleClose);
+
+    const introMessageValues = useMemo<ComponentProps<typeof FormattedMessage>['values']>(() => {
+        return {
+            runName,
+            hasFollowersAndChannels: Boolean(followersCount && broadcastChannelCount).toString(),
+            hasChannels: Boolean(broadcastChannelCount).toString(),
+            hasFollowers: Boolean(followersCount).toString(),
+            broadcastChannelCount,
+            followersChannelCount: followersCount,
+            Bold: (...chunks) => <Text style={styles.introMessageBold}>{chunks}</Text>,
+        };
+    }, [runName, followersCount, broadcastChannelCount, styles.introMessageBold]);
+
+    if (loading) {
+        return <Loading/>;
+    }
+    let introMessage;
+    if (broadcastChannelCount + followersCount === 0) {
+        introMessage = (
+            <FormattedMessage
+                id='playbooks.post_update.intro.no_followers_or_broadcast_channels'
+                defaultMessage='This update will be saved to the overview page.'
+            />
+        );
+    } else {
+        introMessage = (
+            <FormattedMessage
+                id='playbooks.post_update.intro'
+                defaultMessage='This update for the run <Bold>{runName}</Bold> will be broadcasted to {hasChannels, select, true {<Bold>{broadcastChannelCount, plural, =1 {one channel} other {{broadcastChannelCount, number} channels}}</Bold>} other {}}{hasFollowersAndChannels, select, true { and } other {}}{hasFollowers, select, true {<Bold>{followersChannelCount, plural, =1 {one direct message} other {{followersChannelCount, number} direct messages}}</Bold>} other {}}.'
+                values={introMessageValues}
+            />
+        );
+    }
+
     return (
         <View style={styles.container}>
+            <Text style={styles.introMessage}>{introMessage}</Text>
             <FloatingTextInput
                 label={intl.formatMessage({id: 'playbooks.post_update.label', defaultMessage: 'Update message'})}
                 placeholder={intl.formatMessage({id: 'playbooks.post_update.placeholder', defaultMessage: 'Enter your update message'})}
