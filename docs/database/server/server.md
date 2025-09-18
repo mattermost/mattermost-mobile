@@ -199,6 +199,8 @@ retrospective string
 retrospective_published_at number
 synced string NULL INDEX # optional field for sync status
 last_sync_at number NULL # optional field for last sync timestamp
+broadcast_channel_ids string # stringified array of user IDs
+status_posts string # stringified array of status posts metadata
 
 PlaybookChecklist
 -

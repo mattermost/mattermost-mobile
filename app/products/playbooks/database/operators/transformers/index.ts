@@ -53,6 +53,8 @@ export const transformPlaybookRunRecord = ({action, database, value}: Transforme
         run.updateAt = raw.update_at ?? record?.updateAt ?? raw.create_at ?? record?.createAt ?? 0;
         run.lastSyncAt = Date.now();
         run.itemsOrder = raw.items_order ?? record?.itemsOrder ?? [];
+        run.statusPosts = raw.status_posts ?? record?.statusPosts ?? [];
+        run.broadcastChannelIds = raw.broadcast_channel_ids ?? record?.broadcastChannelIds ?? [];
     };
 
     return prepareBaseRecord({

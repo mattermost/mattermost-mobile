@@ -108,6 +108,8 @@ describe('*** PLAYBOOK_RUN Prepare Records Test ***', () => {
                 record.retrospective = 'Existing retrospective';
                 record.retrospectivePublishedAt = 1620000002000;
                 record.updateAt = 1620000003000;
+                record.statusPosts = [{create_at: 1620000004000, delete_at: 0, id: 'post_2'}];
+                record.broadcastChannelIds = ['channel_2'];
             });
         });
 
@@ -150,10 +152,10 @@ describe('*** PLAYBOOK_RUN Prepare Records Test ***', () => {
                     invited_user_ids: [],
                     invited_group_ids: [],
                     timeline_events: [],
-                    broadcast_channel_ids: [],
+                    broadcast_channel_ids: ['channel_2', 'channel_3'],
                     webhook_on_creation_urls: [],
                     webhook_on_status_update_urls: [],
-                    status_posts: [],
+                    status_posts: [{create_at: 1620000004000, delete_at: 0, id: 'post_2'}, {create_at: 1620000005000, delete_at: 0, id: 'post_3'}],
                     checklists: [],
                     metrics_data: [],
                     update_at: 1620000004000,
@@ -262,6 +264,8 @@ describe('*** PLAYBOOK_RUN Prepare Records Test ***', () => {
                 record.updateAt = 1620000003000;
                 record.lastSyncAt = 1620000003000;
                 record.itemsOrder = ['checklist_1', 'checklist_2'];
+                record.statusPosts = [{create_at: 1620000004000, delete_at: 0, id: 'post_2'}];
+                record.broadcastChannelIds = ['channel_2'];
             });
         });
 
@@ -304,6 +308,8 @@ describe('*** PLAYBOOK_RUN Prepare Records Test ***', () => {
         expect(preparedRecord.retrospective).toBe('Existing retrospective');
         expect(preparedRecord.retrospectivePublishedAt).toBe(1620000002000);
         expect(preparedRecord.itemsOrder).toEqual(['checklist_1', 'checklist_2']);
+        expect(preparedRecord.statusPosts).toEqual([{create_at: 1620000004000, delete_at: 0, id: 'post_2'}]);
+        expect(preparedRecord.broadcastChannelIds).toEqual(['channel_2']);
 
         // Changing values
         expect(preparedRecord.updateAt).toBe(1620000004000);

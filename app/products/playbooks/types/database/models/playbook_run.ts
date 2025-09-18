@@ -92,6 +92,12 @@ declare class PlaybookRunModel extends Model {
     // The timestamp when the playbook run was updated
     updateAt: number;
 
+    // The status posts of the playbook run
+    statusPosts: StatusPost[];
+
+    // The broadcast channel ids of the playbook run
+    broadcastChannelIds: string[];
+
     /** post : the post that created the run (nullable) */
     post: Relation<PostModel>;
 

@@ -50,6 +50,7 @@ type RunMetricData = {
 type StatusPost = {
     id: string;
     create_at: number;
+    delete_at: number;
 }
 
 type TimelineEvent = {

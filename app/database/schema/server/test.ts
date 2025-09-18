@@ -52,7 +52,7 @@ const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM} = PLAYBOOK_TAB
 describe('*** Test schema for SERVER database ***', () => {
     it('=> The SERVER SCHEMA should strictly match', () => {
         expect(serverSchema).toEqual({
-            version: 12,
+            version: 13,
             unsafeSql: undefined,
             tables: {
                 [CATEGORY]: {
@@ -463,6 +463,8 @@ describe('*** Test schema for SERVER database ***', () => {
                         items_order: {name: 'items_order', type: 'string'},
                         previous_reminder: {name: 'previous_reminder', type: 'number', isOptional: true},
                         update_at: {name: 'update_at', type: 'number'},
+                        status_posts: {name: 'status_posts', type: 'string'}, // JSON string
+                        broadcast_channel_ids: {name: 'broadcast_channel_ids', type: 'string'}, // JSON string
                     },
                     columnArray: [
                         {name: 'playbook_id', type: 'string'},
@@ -489,6 +491,8 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'previous_reminder', type: 'number', isOptional: true},
                         {name: 'items_order', type: 'string'},
                         {name: 'update_at', type: 'number'},
+                        {name: 'status_posts', type: 'string'}, // JSON string
+                        {name: 'broadcast_channel_ids', type: 'string'}, // JSON string
                     ],
                 },
                 [PLAYBOOK_CHECKLIST]: {

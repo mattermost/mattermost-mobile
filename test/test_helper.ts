@@ -1215,6 +1215,8 @@ class TestHelperSingleton {
             previousReminder: 0,
             itemsOrder: [],
             updateAt: 0,
+            statusPosts: [],
+            broadcastChannelIds: [],
             ...overwrite,
         };
     };

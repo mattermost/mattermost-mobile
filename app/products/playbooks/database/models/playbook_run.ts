@@ -123,6 +123,12 @@ export default class PlaybookRunModel extends Model implements PlaybookRunModelI
     /** update_at : The timestamp when the playbook run was updated */
     @field('update_at') updateAt!: number;
 
+    /** last_status_post_id : The id of the last status post */
+    @json('status_posts', safeParseJSONStringArray) statusPosts!: StatusPost[];
+
+    /** broadcast_channel_ids : The ids of the broadcast channels */
+    @json('broadcast_channel_ids', safeParseJSONStringArray) broadcastChannelIds!: string[];
+
     /** post : The POST to which this PLAYBOOK_RUN belongs (can be null) */
     @immutableRelation(POST, 'post_id') post!: Relation<PostModel>;
 
