@@ -24,6 +24,8 @@ import EmojiPickerScreen from './emoji_picker';
 import FindChannelsScreen from './find_channels';
 import GlobalThreadsScreen from './global_threads';
 import HomeScreen from './home';
+import IntegrationSelectorScreen from './integration_selector';
+import InteractiveDialogScreen from './interactive_dialog';
 import Invite from './invite';
 import LoginScreen from './login';
 import MentionNotificationSettingsScreen from './mention_notification_settings';
@@ -72,6 +74,8 @@ export {
     FindChannelsScreen,
     GlobalThreadsScreen,
     HomeScreen,
+    IntegrationSelectorScreen,
+    InteractiveDialogScreen,
     Invite,
     LoginScreen,
     MentionNotificationSettingsScreen,
