@@ -31,13 +31,13 @@ type FileProps = {
     inViewPort: boolean;
     isSingleImage?: boolean;
     nonVisibleImagesCount: number;
-    onPress: (index: number) => void;
+    onPress?: (index: number) => void;
     channelName?: string;
     onOptionsPress?: (fileInfo: FileInfo) => void;
     optionSelected?: boolean;
     wrapperWidth?: number;
     showDate?: boolean;
-    updateFileForGallery: (idx: number, file: FileInfo) => void;
+    updateFileForGallery?: (idx: number, file: FileInfo) => void;
     asCard?: boolean;
     isPressDisabled?: boolean;
 };
@@ -93,6 +93,9 @@ const File = ({
     const style = getStyleSheet(theme);
 
     const handlePreviewPress = useCallback(() => {
+        if (!onPress) {
+            return;
+        }
         if (document.current) {
             document.current.handlePreviewPress();
         } else {
