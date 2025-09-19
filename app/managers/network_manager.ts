@@ -105,6 +105,8 @@ class NetworkManagerSingleton {
         try {
             const {client} = await getOrCreateAPIClient(serverUrl, config, this.clientErrorEventHandler);
             const csrfToken = await getCSRFFromCookie(serverUrl);
+
+            // Pass preauthSecret explicitly to constructor to match ClientBase behavior
             this.clients[serverUrl] = new Client(client, serverUrl, bearerToken, csrfToken, preauthSecret);
         } catch (error) {
             throw new ClientError(serverUrl, {
