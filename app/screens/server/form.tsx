@@ -169,7 +169,7 @@ const ServerForm = ({
     useEffect(() => {
         chevronRotation.value = withTiming(showAdvancedOptions ? 180 : 0, {duration: 250});
 
-        // no need for the sharedValue
+        // chevronRotation is a Reanimated shared value; its reference is stable and does not need to be in the dependency array.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [showAdvancedOptions]);
 
