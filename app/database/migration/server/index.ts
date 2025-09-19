@@ -26,6 +26,18 @@ const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM} = PLAYBOOK_TAB
 
 export default schemaMigrations({migrations: [
     {
+        toVersion: 13,
+        steps: [
+            addColumns({
+                table: PLAYBOOK_CHECKLIST_ITEM,
+                columns: [
+                    {name: 'condition_action', type: 'string'},
+                    {name: 'condition_reason', type: 'string'},
+                ],
+            }),
+        ],
+    },
+    {
         toVersion: 12,
         steps: [
             createTable({

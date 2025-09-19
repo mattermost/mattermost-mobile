@@ -59,6 +59,12 @@ declare class PlaybookChecklistItemModel extends Model {
     // JSON string representing the task actions
     taskActions: TaskAction[];
 
+    // The condition action for the checklist item
+    conditionAction: ConditionAction;
+
+    // The condition reason for the checklist item
+    conditionReason: string;
+
     // The timestamp when the checklist item was updated
     updateAt: number;
 
