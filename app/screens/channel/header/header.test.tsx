@@ -33,6 +33,10 @@ const serverUrl = 'some.server.url';
 jest.mock('@context/server');
 jest.mocked(useServerUrl).mockReturnValue(serverUrl);
 
+jest.mock('react-native-reanimated', () =>
+    jest.requireActual('react-native-reanimated/mock'),
+);
+
 describe('ChannelHeader', () => {
     function getBaseProps(): ComponentProps<typeof ChannelHeader> {
         return {

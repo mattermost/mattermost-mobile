@@ -6,9 +6,9 @@ import {useIsFocused, useNavigation} from '@react-navigation/native';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {Freeze} from 'react-freeze';
 import {defineMessage, useIntl} from 'react-intl';
-import {FlatList, type LayoutChangeEvent, Platform, type ViewStyle, KeyboardAvoidingView, Keyboard, StyleSheet} from 'react-native';
+import {FlatList, type LayoutChangeEvent, Platform, type ViewStyle, KeyboardAvoidingView, Keyboard, View} from 'react-native';
 import Animated, {useAnimatedStyle, useDerivedValue, withTiming, type AnimatedStyle} from 'react-native-reanimated';
-import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {getPosts} from '@actions/local/post';
 import {addSearchToTeamSearchHistory} from '@actions/local/team';
@@ -29,6 +29,7 @@ import useTabs from '@hooks/use_tabs';
 import NavigationStore from '@store/navigation_store';
 import {type FileFilter, FileFilters, filterFileExtensions} from '@utils/file';
 import {TabTypes} from '@utils/search';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import Initial from './initial';
 import Results from './results';
@@ -38,7 +39,6 @@ import type {SearchRef} from '@components/search';
 import type PostModel from '@typings/database/models/servers/post';
 import type TeamModel from '@typings/database/models/servers/team';
 
-const EDGES: Edge[] = ['bottom', 'left', 'right'];
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
 const emptyFileResults: FileInfo[] = [];
@@ -55,9 +55,12 @@ type Props = {
     crossTeamSearchEnabled: boolean;
 }
 
-const styles = StyleSheet.create({
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     flex: {
         flex: 1,
+    },
+    background: {
+        backgroundColor: theme.centerChannelBg,
     },
     loading: {
         flex: 1,
@@ -66,7 +69,7 @@ const styles = StyleSheet.create({
     autocompleteContainer: {
         zIndex: 11,
     },
-});
+}));
 
 const getSearchParams = (terms: string, filterValue?: FileFilter) => {
     const fileExtensions = filterFileExtensions(filterValue);
@@ -102,6 +105,7 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
     const isFocused = useIsFocused();
     const intl = useIntl();
     const theme = useTheme();
+    const styles = getStyleSheet(theme);
     const insets = useSafeAreaInsets();
     const keyboardHeight = useKeyboardHeight();
 
@@ -408,9 +412,8 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
 
     return (
         <Freeze freeze={!isFocused}>
-            <SafeAreaView
-                style={styles.flex}
-                edges={EDGES}
+            <View
+                style={[styles.flex, styles.background]}
                 onLayout={onLayout}
                 testID='search_messages.screen'
             >
@@ -485,7 +488,7 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
                         }
                     </Animated.View>
                 </KeyboardAvoidingView>
-            </SafeAreaView>
+            </View>
             {searchIsFocused &&
             <Autocomplete
                 updateValue={handleTextChange}

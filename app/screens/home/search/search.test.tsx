@@ -55,6 +55,10 @@ jest.mock('@hooks/use_tabs', () => ({
     default: jest.fn(jest.requireActual('@hooks/use_tabs').default),
 }));
 
+jest.mock('react-native-reanimated', () =>
+    jest.requireActual('react-native-reanimated/mock'),
+);
+
 describe('SearchScreen', () => {
     const baseProps = {
         teamId: 'team1',

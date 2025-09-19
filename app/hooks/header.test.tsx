@@ -10,6 +10,14 @@ import {useIsTablet} from '@hooks/device';
 
 import {useDefaultHeaderHeight, useLargeHeaderHeight, useHeaderHeight, useCollapsibleHeader} from './header';
 
+jest.mock('@utils/inset_shared', () => {
+    const original = jest.requireActual('@utils/inset_shared');
+    return {
+        ...original,
+        topInsetShared: {value: 20},
+    };
+});
+
 jest.mock('react-native-reanimated', () => {
     const sharedValues = new Map();
 

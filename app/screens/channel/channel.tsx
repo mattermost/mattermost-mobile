@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useState} from 'react';
-import {type LayoutChangeEvent, StyleSheet, View} from 'react-native';
+import {type LayoutChangeEvent, Platform, StyleSheet, View} from 'react-native';
 import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {storeLastViewedChannelIdAndServer, removeLastViewedChannelIdAndServer} from '@actions/app/global';
@@ -46,7 +46,10 @@ type ChannelProps = {
     scheduledPostCount: number;
 };
 
-const edges: Edge[] = ['left', 'right'];
+const edges: Edge[] = Platform.select({
+    android: ['left', 'right', 'bottom'],
+    ios: ['left', 'right'],
+}) as Edge[];
 
 const styles = StyleSheet.create({
     flex: {
