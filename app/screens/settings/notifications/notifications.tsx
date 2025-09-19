@@ -14,9 +14,10 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useAppState} from '@hooks/device';
 import {popTopScreen} from '@screens/navigation';
 import {gotoSettingsScreen} from '@screens/settings/config';
+import {logError} from '@utils/log';
 import {getEmailInterval, getEmailIntervalTexts, getNotificationProps} from '@utils/user';
 
-import NotificationsDisabledNotice from './notifications_disabled_notice/notifications_disabled_notice';
+import NotificationsDisabledNotice from './notifications_disabled_notice';
 import SendTestNotificationNotice from './send_test_notification_notice';
 
 import type UserModel from '@typings/database/models/servers/user';
@@ -41,7 +42,7 @@ const mentionTexts = defineMessages({
     },
 });
 
-type NotificationsProps = {
+export type NotificationsProps = {
     componentId: AvailableScreens;
     currentUser?: UserModel;
     emailInterval: string;
@@ -65,20 +66,30 @@ const Notifications = ({
     const serverUrl = useServerUrl();
     const notifyProps = useMemo(() => getNotificationProps(currentUser), [currentUser?.notifyProps]);
     const callsRingingEnabled = useMemo(() => getCallsConfig(serverUrl).EnableRinging, [serverUrl]);
-    const [isNotRegistered, setIsNotRegistered] = useState(false);
+    const [isRegistered, setIsRegistered] = useState(true);
 
     const appState = useAppState();
+
     useEffect(() => {
-        const checkNotificationStatus = async () => {
-            try {
-                const registered = await RNNotifications.isRegisteredForRemoteNotifications();
-                setIsNotRegistered(!registered);
-            } catch (error) {
-                // eslint-disable-next-line no-console
-                console.error('Error checking notification registration status:', error);
-            }
+        let isCurrent = true;
+        if (appState === 'active') {
+            const checkNotificationStatus = async () => {
+                try {
+                    const registered = await RNNotifications.isRegisteredForRemoteNotifications();
+                    if (isCurrent) {
+                        setIsRegistered(registered);
+                    }
+                } catch (error) {
+                    if (isCurrent) {
+                        logError('Error checking notification registration status:', error);
+                    }
+                }
+            };
+            checkNotificationStatus();
+        }
+        return () => {
+            isCurrent = false;
         };
-        checkNotificationStatus();
     }, [appState]);
 
     const emailIntervalPref = useMemo(() =>
@@ -142,7 +153,10 @@ const Notifications = ({
 
     return (
         <SettingContainer testID='notification_settings'>
-            {isNotRegistered && <NotificationsDisabledNotice/>}
+            {!isRegistered &&
+                <NotificationsDisabledNotice
+                    testID='notifications-disabled-notice'
+                />}
             <SettingItem
                 onPress={goToNotificationSettingsMentions}
                 optionName='mentions'

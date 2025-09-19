@@ -375,6 +375,7 @@ jest.mock('react-native-notifications', () => {
         Notifications: {
             registerRemoteNotifications: jest.fn(),
             addEventListener: jest.fn(),
+            isRegisteredForRemoteNotifications: jest.fn(),
             setDeliveredNotifications: jest.fn((notifications) => {
                 deliveredNotifications = notifications;
             }),

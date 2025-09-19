@@ -1,26 +1,23 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {type ComponentProps} from 'react';
 
-import {renderWithEverything} from '@test/intl-test-helper';
+import DatabaseManager from '@database/manager';
+import * as DeviceHooks from '@hooks/device';
+import {renderWithEverything, waitFor} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
 import Notifications from './notifications';
 
-import type UserModel from '@database/models/server/user';
 import type Database from '@nozbe/watermelondb/Database';
 
-jest.mock('react-native-notifications', () => ({
-    Notifications: {
-        isRegisteredForRemoteNotifications: jest.fn(),
-    },
-}));
+const MockedNotifications = jest.mocked(require('react-native-notifications').Notifications);
 
-function getBaseProps() {
+function getBaseProps(): ComponentProps<typeof Notifications> {
     return {
         componentId: 'Settings' as const,
-        currentUser: {} as UserModel,
+        currentUser: TestHelper.fakeUserModel({id: 'user1', username: 'username1'}),
         emailInterval: '0',
         enableAutoResponder: false,
         enableEmailBatching: false,
@@ -29,29 +26,55 @@ function getBaseProps() {
         serverVersion: '10.3.0',
     };
 }
-const MockedNotifications = jest.mocked(require('react-native-notifications').Notifications);
 
-describe('NoticeDisabledAppears', () => {
+describe('Notifications disabled banner', () => {
     let database: Database;
-    const titleText = 'Notifications are disabled';
+    const testId = 'notifications-disabled-notice';
+    const serverUrl = 'server-1';
 
     beforeAll(async () => {
-        const server = await TestHelper.setupServerDatabase();
+        const server = await TestHelper.setupServerDatabase(serverUrl);
         database = server.database;
         jest.clearAllMocks();
     });
 
-    it('should show notice if disabled', () => {
+    it('should be visible if notifications are disabled', async () => {
         MockedNotifications.isRegisteredForRemoteNotifications.mockResolvedValue(false);
         const wrapper = renderWithEverything(<Notifications {...getBaseProps()}/>, {database});
-        expect(wrapper.getByText(titleText)).toBeVisible();
+        await waitFor(() => {
+            expect(wrapper.queryByTestId(testId)).toBeVisible();
+        });
     });
 
-    it('should not show notice if enabled', () => {
+    it('should not be visible if notifications are enabled', async () => {
         MockedNotifications.isRegisteredForRemoteNotifications.mockResolvedValue(true);
         const wrapper = renderWithEverything(<Notifications {...getBaseProps()}/>, {database});
-        // eslint-disable-next-line no-unused-expressions
-        expect(wrapper.getByText(titleText)).not.toBeVisible;
+        await waitFor(() => {
+            expect(wrapper.queryByTestId(testId)).toBeNull();
+        });
     });
 
+    jest.spyOn(DeviceHooks, 'useAppState').mockReturnValue('active');
+
+    it('should re-check notification registration when appState changes', async () => {
+        MockedNotifications.isRegisteredForRemoteNotifications.mockResolvedValueOnce(false);
+        const appStateSpy = jest.spyOn(DeviceHooks, 'useAppState');
+        appStateSpy.mockReturnValue('active');
+        const wrapper = renderWithEverything(<Notifications {...getBaseProps()}/>, {database});
+        await waitFor(() => {
+            expect(MockedNotifications.isRegisteredForRemoteNotifications).toHaveBeenCalledTimes(1);
+        });
+
+        // Testing that this is not called in the background
+        MockedNotifications.isRegisteredForRemoteNotifications.mockResolvedValueOnce(true);
+        appStateSpy.mockReturnValue('background');
+        wrapper.rerender(<Notifications {...getBaseProps()}/>);
+        await waitFor(() => {
+            expect(MockedNotifications.isRegisteredForRemoteNotifications).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    afterAll(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
 });
