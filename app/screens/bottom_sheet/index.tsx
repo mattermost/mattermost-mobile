@@ -10,6 +10,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {Events} from '@constants';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {useBottomSheetListsFix} from '@hooks/bottom_sheet_lists_fix';
 import {useIsTablet} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import SecurityManager from '@managers/security_manager';
@@ -110,6 +111,8 @@ const BottomSheet = ({
     const interaction = useRef<Handle>();
     const timeoutRef = useRef<NodeJS.Timeout>();
 
+    const {enabled, panResponder} = useBottomSheetListsFix();
+
     const animationConfigs = useMemo(() => ({
         ...animatedConfig,
         reduceMotion: reducedMotion ? ReduceMotion.Always : ReduceMotion.Never,
@@ -205,15 +208,30 @@ const BottomSheet = ({
         </View>
     );
 
+    const scrollViewProps = {
+        style: styles.view,
+        showsVerticalScrollIndicator: false,
+        scrollEnabled: enabled,
+        ...panResponder.panHandlers,
+    };
+
     if (isTablet) {
         const FooterComponent = footerComponent;
+        let content = renderContainerContent();
+        if (scrollable) {
+            content = (
+                <ScrollView {...scrollViewProps}>
+                    {content}
+                </ScrollView>
+            );
+        }
         return (
             <View
                 style={styles.view}
                 nativeID={SecurityManager.getShieldScreenId(componentId)}
             >
                 <View style={styles.separator}/>
-                {renderContainerContent()}
+                {content}
                 {FooterComponent && (<FooterComponent/>)}
             </View>
         );
@@ -221,14 +239,10 @@ const BottomSheet = ({
 
     let content;
     if (scrollable) {
-        const Scroll = isTablet ? ScrollView : BottomSheetScrollView;
         content = (
-            <Scroll
-                style={styles.view}
-                showsVerticalScrollIndicator={false}
-            >
+            <BottomSheetScrollView {...scrollViewProps}>
                 {renderContainerContent()}
-            </Scroll>
+            </BottomSheetScrollView>
         );
     } else {
         content = (
