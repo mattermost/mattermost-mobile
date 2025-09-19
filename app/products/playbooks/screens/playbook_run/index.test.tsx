@@ -58,6 +58,11 @@ describe('PlaybookRun', () => {
                         id: 'item-4',
                         due_date: Date.now() + 1000,
                     }),
+                    TestHelper.fakePlaybookChecklistItem(playbookRunId, {
+                        id: 'item-5',
+                        due_date: Date.now() + 1000,
+                        state: 'closed',
+                    }),
                 ],
             }),
         ],
@@ -95,6 +100,7 @@ describe('PlaybookRun', () => {
             expect(playbookRun.props.playbookRun).toBe(props.playbookRun);
             expect(playbookRun.props.checklists).toBe(props.playbookRun!.checklists);
             expect(playbookRun.props.overdueCount).toBe(2);
+            expect(playbookRun.props.pendingCount).toBe(4);
 
             expect(playbookRun.props.participants).toHaveLength(0);
             expect(playbookRun.props.owner).toBeUndefined();
@@ -139,6 +145,7 @@ describe('PlaybookRun', () => {
             expect(playbookRun.props.playbookRun).toBe(props.playbookRun);
             expect(playbookRun.props.checklists).toBe(props.playbookRun!.checklists);
             expect(playbookRun.props.overdueCount).toBe(2);
+            expect(playbookRun.props.pendingCount).toBe(4);
 
             expect(playbookRun.props.participants).toHaveLength(1);
             expect(playbookRun.props.participants[0].id).toBe(participantId);
@@ -164,6 +171,7 @@ describe('PlaybookRun', () => {
             expect(playbookRun.props.playbookRun).toBeUndefined();
             expect(playbookRun.props.checklists).toHaveLength(0);
             expect(playbookRun.props.overdueCount).toBe(0);
+            expect(playbookRun.props.pendingCount).toBe(0);
 
             expect(playbookRun.props.participants).toHaveLength(0);
             expect(playbookRun.props.owner).toBeUndefined();
@@ -222,6 +230,7 @@ describe('PlaybookRun', () => {
             expect(playbookRun.props.checklists[0].id).toBe(baseRun.checklists[0].id);
             expect(playbookRun.props.checklists[1].id).toBe(baseRun.checklists[1].id);
             expect(playbookRun.props.overdueCount).toBe(2);
+            expect(playbookRun.props.pendingCount).toBe(4);
             expect(playbookRun.props.currentUserId).toBe('current-user-id');
             expect(playbookRun.props.teammateNameDisplay).toBe(General.TEAMMATE_NAME_DISPLAY.SHOW_FULLNAME);
 

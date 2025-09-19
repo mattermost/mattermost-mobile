@@ -13,7 +13,7 @@ export interface ClientPlaybooksMix {
     setOwner: (playbookRunId: string, ownerId: string) => Promise<void>;
 
     // Run Management
-    // finishRun: (playbookRunId: string) => Promise<any>;
+    finishRun: (playbookRunId: string) => Promise<void>;
 
     // Checklist Management
     setChecklistItemState: (playbookRunID: string, checklistNum: number, itemNum: number, newState: ChecklistItemState) => Promise<void>;
@@ -74,16 +74,12 @@ const ClientPlaybooks = <TBase extends Constructor<ClientBase>>(superclass: TBas
     };
 
     // Run Management
-    // finishRun = async (playbookRunId: string) => {
-    //     try {
-    //         return await this.doFetch(
-    //             `${this.getPlaybookRunRoute(playbookRunId)}/finish`,
-    //             {method: 'put'},
-    //         );
-    //     } catch (error) {
-    //         return {error};
-    //     }
-    // };
+    finishRun = async (playbookRunId: string) => {
+        return this.doFetch(
+            `${this.getPlaybookRunRoute(playbookRunId)}/finish`,
+            {method: 'put'},
+        );
+    };
 
     // Checklist Management
     setChecklistItemState = async (playbookRunID: string, checklistNum: number, itemNum: number, newState: ChecklistItemState) => {
