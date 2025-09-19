@@ -40,7 +40,7 @@ function buildPropString(inputProps: {[x: string]: any}) {
 export function buildComponent(
     Component: React.ComponentType<any>,
     propPossibilities: {[x: string]: any[]},
-    dropdownPossibilities: Array<{[x: string]: string[]} | undefined>,
+    dropdownPossibilities: Array<{[x: string]: unknown[]} | undefined>,
     setProps: Array<{[x: string]: any} | undefined>,
 ) {
     const res: React.ReactNode[] = [];

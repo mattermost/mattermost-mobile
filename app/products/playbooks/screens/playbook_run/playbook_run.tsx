@@ -207,6 +207,13 @@ export default function PlaybookRun({
         );
     }, [handleSelectOwner, intl, owner, participants]);
 
+    const ownerAction = useMemo(() => {
+        if (readOnly) {
+            return undefined;
+        }
+        return {icon: 'downArrow' as const, onPress: openChangeOwnerModal};
+    }, [openChangeOwnerModal, readOnly]);
+
     if (!playbookRun) {
         return <ErrorState/>;
     }
@@ -255,7 +262,7 @@ export default function PlaybookRun({
                                                 user={owner}
                                                 onPress={readOnly ? openOwnerProfile : openChangeOwnerModal}
                                                 teammateNameDisplay={teammateNameDisplay}
-                                                actionIcon={readOnly ? undefined : 'downArrow'}
+                                                action={ownerAction}
                                             />
                                         </View>
                                     </View>

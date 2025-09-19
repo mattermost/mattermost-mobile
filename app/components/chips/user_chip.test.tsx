@@ -24,6 +24,7 @@ jest.mocked(ProfilePicture).mockImplementation((props) => React.createElement('P
 
 describe('UserChip', () => {
     const mockOnPress = jest.fn();
+    const mockOnActionPress = jest.fn();
     const mockUser = TestHelper.fakeUser({id: 'user-id', username: 'test-user'});
 
     it('should render with the correct props', () => {
@@ -34,13 +35,13 @@ describe('UserChip', () => {
                 testID='user-chip'
                 teammateNameDisplay='username'
                 showAnimation={true}
-                actionIcon='remove'
+                action={{icon: 'remove', onPress: mockOnActionPress}}
             />,
         );
 
         const baseChip = getByTestId('user-chip');
         expect(baseChip.props.label).toBe('test-user');
-        expect(baseChip.props.actionIcon).toBe('remove');
+        expect(baseChip.props.action).toEqual({icon: 'remove', onPress: expect.any(Function)});
         expect(baseChip.props.showAnimation).toBe(true);
 
         expect(baseChip.props.prefix).toBeDefined();
@@ -53,5 +54,42 @@ describe('UserChip', () => {
         baseChip.props.onPress();
         expect(mockOnPress).toHaveBeenCalledTimes(1);
         expect(mockOnPress).toHaveBeenCalledWith('user-id');
+        expect(mockOnActionPress).not.toHaveBeenCalled();
+
+        mockOnPress.mockClear();
+
+        baseChip.props.action.onPress();
+        expect(mockOnActionPress).toHaveBeenCalledTimes(1);
+        expect(mockOnActionPress).toHaveBeenCalledWith('user-id');
+        expect(mockOnPress).not.toHaveBeenCalled();
+    });
+
+    it('should leave action onPress undefined when action with no onPress is provided', () => {
+        const {getByTestId} = renderWithIntlAndTheme(
+            <UserChip
+                user={mockUser}
+                onPress={mockOnPress}
+                teammateNameDisplay='username'
+                action={{icon: 'remove'}}
+                testID='user-chip'
+            />,
+        );
+
+        const baseChip = getByTestId('user-chip');
+        expect(baseChip.props.action.onPress).toBeUndefined();
+    });
+
+    it('should leave onPress undefined when onPress is not provided', () => {
+        const {getByTestId} = renderWithIntlAndTheme(
+            <UserChip
+                user={mockUser}
+                teammateNameDisplay='username'
+                action={{icon: 'remove', onPress: mockOnActionPress}}
+                testID='user-chip'
+            />,
+        );
+
+        const baseChip = getByTestId('user-chip');
+        expect(baseChip.props.onPress).toBeUndefined();
     });
 });
