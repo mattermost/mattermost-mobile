@@ -11,9 +11,9 @@ import OptionItem, {ITEM_HEIGHT} from '@components/option_item';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {setAssignee, setChecklistItemCommand, setDueDate} from '@playbooks/actions/remote/checklist';
-import {goToSelectDate, goToSelectUser} from '@playbooks/screens/navigation';
+import {goToEditCommand, goToSelectDate, goToSelectUser} from '@playbooks/screens/navigation';
 import {getDueDateString} from '@playbooks/utils/time';
-import {dismissBottomSheet, goToScreen, openUserProfileModal} from '@screens/navigation';
+import {dismissBottomSheet, openUserProfileModal} from '@screens/navigation';
 import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -114,6 +114,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
 
 type Props = {
     runId: string;
+    runName: string;
     checklistNumber: number;
     itemNumber: number;
     channelId: string;
@@ -130,6 +131,7 @@ type Props = {
 
 const ChecklistItemBottomSheet = ({
     runId,
+    runName,
     checklistNumber,
     itemNumber,
     channelId,
@@ -213,16 +215,8 @@ const ChecklistItemBottomSheet = ({
     }, [checklistNumber, item.id, itemNumber, runId, serverUrl]);
 
     const openEditCommandModal = useCallback(() => {
-        goToScreen(
-            'PlaybookEditCommand',
-            intl.formatMessage({id: 'playbooks.edit_command.title', defaultMessage: 'Slash command'}),
-            {
-                savedCommand: item.command,
-                updateCommand,
-                channelId,
-            },
-        );
-    }, [intl, item.command, updateCommand, channelId]);
+        goToEditCommand(intl, theme, runName, item.command, channelId, updateCommand);
+    }, [intl, theme, runName, item.command, channelId, updateCommand]);
 
     const assigneeInfo: ComponentProps<typeof OptionItem>['info'] = useMemo(() => {
         if (!assignee) {
@@ -237,10 +231,10 @@ const ChecklistItemBottomSheet = ({
     }, [assignee, intl, onUserChipPress, teammateNameDisplay]);
 
     const openEditDateModal = useCallback(async () => {
-        goToSelectDate(intl, (date) => {
+        goToSelectDate(intl, theme, runName, (date) => {
             setDueDate(serverUrl, runId, item.id, checklistNumber, itemNumber, date);
         }, dueDate);
-    }, [intl, dueDate, serverUrl, runId, item.id, checklistNumber, itemNumber]);
+    }, [intl, theme, runName, dueDate, serverUrl, runId, item.id, checklistNumber, itemNumber]);
 
     const handleSelect = useCallback(async (selected: UserProfile) => {
         const res = await setAssignee(serverUrl, runId, item.id, checklistNumber, itemNumber, selected.id);
@@ -258,13 +252,15 @@ const ChecklistItemBottomSheet = ({
 
     const openUserSelector = useCallback(() => {
         goToSelectUser(
+            theme,
+            runName,
             intl.formatMessage(messages.assignee),
             participantIds,
             assignee?.id,
             handleSelect,
             handleRemove,
         );
-    }, [assignee?.id, handleRemove, handleSelect, intl, participantIds]);
+    }, [assignee?.id, handleRemove, handleSelect, intl, participantIds, runName, theme]);
 
     const renderTaskDetails = () => (
         <View style={styles.taskDetailsContainer}>

@@ -40,6 +40,9 @@ const enhanced = withObservables(['item', 'runId'], ({item, runId, database}: Ow
             participantIds: observePlaybookRunById(database, runId).pipe(
                 switchMap((run) => observeParticipantsIdsFromPlaybookModel(run, true)),
             ),
+            runName: observePlaybookRunById(database, runId).pipe(
+                switchMap((run) => of$(run?.name || '')),
+            ),
         };
     }
 
@@ -50,6 +53,7 @@ const enhanced = withObservables(['item', 'runId'], ({item, runId, database}: Ow
         assignee,
         currentUserTimezone,
         participantIds: of$([]),
+        runName: of$(''),
     };
 });
 
