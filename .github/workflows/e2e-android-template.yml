@@ -100,7 +100,7 @@ jobs:
       workflow_hash: ${{ steps.resolve-device.outputs.WORKFLOW_HASH }}
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
@@ -141,7 +141,7 @@ jobs:
       matrix: ${{ fromJSON(needs.generate-specs.outputs.specs) }}
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
@@ -180,7 +180,7 @@ jobs:
         run: mkdir -p android/app/build
 
       - name: Download APK artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: android-build-files-${{ github.run_id }}
           path: android/app/build
@@ -243,7 +243,7 @@ jobs:
       FAILURES: ${{ steps.summary.outputs.FAILURES }}
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
@@ -251,7 +251,7 @@ jobs:
         uses: ./.github/actions/prepare-node-deps
 
       - name: Download Android Artifacts
-        uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
+        uses: actions/download-artifact@abefc31eafcfbdf6c5336127c1346fdae79ff41c # v4.1.4
         with:
           path: detox/artifacts/
           pattern: android-results-${{ needs.generate-specs.outputs.workflow_hash }}-*
@@ -313,7 +313,7 @@ jobs:
 
       - name: Comment report on the PR
         if: ${{ github.event_name == 'pull_request' }}
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const prNumber = context.payload.pull_request.number;
