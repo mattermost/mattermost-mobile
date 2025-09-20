@@ -5,7 +5,7 @@ import moment from 'moment';
 import React, {type ComponentProps} from 'react';
 import {Keyboard} from 'react-native';
 
-import DateTimeSelector from '@components/data_time_selector';
+import DateTimeSelector from '@components/date_time_selector';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {popTopScreen, setButtons} from '@screens/navigation';
@@ -16,9 +16,9 @@ import SelectDate from './select_date';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 // Mock dependencies
-jest.mock('@components/data_time_selector');
+jest.mock('@components/date_time_selector');
 jest.mocked(DateTimeSelector).mockImplementation(
-    (props) => React.createElement('DateTimeSelector', {testID: 'date-time-selector', ...props}),
+    (props: ComponentProps<typeof DateTimeSelector>) => React.createElement('DateTimeSelector', {testID: 'date-time-selector', ...props}),
 );
 
 jest.mock('@hooks/navigation_button_pressed');
