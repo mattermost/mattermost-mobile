@@ -72,9 +72,32 @@ describe('Notifications disabled banner', () => {
         await waitFor(() => {
             expect(MockedNotifications.isRegisteredForRemoteNotifications).toHaveBeenCalledTimes(1);
         });
+
+        appStateSpy.mockReturnValue('active');
+        wrapper.rerender(<Notifications {...getBaseProps()}/>);
+        await waitFor(() => {
+            expect(MockedNotifications.isRegisteredForRemoteNotifications).toHaveBeenCalledTimes(2);
+        });
     });
 
     afterAll(async () => {
         await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('should prevent state update after unmount (isCurrent race prevention)', async () => {
+        jest.spyOn(DeviceHooks, 'useAppState').mockReturnValue('active');
+
+        let resolvePromise!: (value: boolean) => void;
+        const promise = new Promise<boolean>((resolve) => {
+            resolvePromise = resolve;
+        });
+        MockedNotifications.isRegisteredForRemoteNotifications.mockReturnValue(promise);
+
+        const wrapper = renderWithEverything(<Notifications {...getBaseProps()}/>, {database});
+        wrapper.unmount();
+
+        resolvePromise(false);
+
+        await new Promise((r) => setTimeout(r, 10));
     });
 });

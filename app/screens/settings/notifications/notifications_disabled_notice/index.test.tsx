@@ -48,12 +48,10 @@ describe('Notifications Disabled Notice', () => {
         const {queryByText} = renderWithEverything(
             <NotificationsDisabledNotice testID={testId}/>, {database},
         );
-        await act(async () => {
-            const button = queryByText('Enable notifications');
-            expect(button).toBeVisible();
-            fireEvent.press(button);
-            expect(Permissions.openSettings).toHaveBeenCalledWith('notifications');
-        });
+        const button = queryByText('Enable notifications');
+        expect(button).toBeVisible();
+        fireEvent.press(button);
+        expect(Permissions.openSettings).toHaveBeenCalledWith('notifications');
     });
 
     afterAll(async () => {
