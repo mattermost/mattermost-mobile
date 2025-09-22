@@ -478,6 +478,7 @@ describe('*** PLAYBOOK_CHECKLIST_ITEM Prepare Records Test ***', () => {
                     completed_at: 0,
                     task_actions: [],
                     condition_action: '',
+                    condition_reason: '',
                     update_at: 0,
                 },
             },
@@ -510,6 +511,7 @@ describe('*** PLAYBOOK_CHECKLIST_ITEM Prepare Records Test ***', () => {
                 record.completedAt = 0;
                 record.taskActions = [];
                 record.conditionAction = '';
+                record.conditionReason = '';
                 record.updateAt = 0;
             });
         });
@@ -534,6 +536,7 @@ describe('*** PLAYBOOK_CHECKLIST_ITEM Prepare Records Test ***', () => {
                     completed_at: 1620000008000,
                     task_actions: [],
                     condition_action: 'hidden',
+                    condition_reason: 'test reason',
                     update_at: 0,
                 },
             },
@@ -603,6 +606,7 @@ describe('*** PLAYBOOK_CHECKLIST_ITEM Prepare Records Test ***', () => {
                 record.completedAt = 0;
                 record.taskActions = [];
                 record.conditionAction = '';
+                record.conditionReason = '';
                 record.updateAt = 0;
                 record.lastSyncAt = 1620000003000;
             });
@@ -706,5 +710,67 @@ describe('*** PLAYBOOK_CHECKLIST_ITEM Prepare Records Test ***', () => {
         });
 
         expect(preparedRecordDefault!.conditionAction).toBe('');
+    });
+
+    it('=> transformPlaybookChecklistItemRecord: should handle condition_reason field correctly', async () => {
+        expect.assertions(6);
+
+        const database = await createTestConnection({databaseName: 'playbook_checklist_item_condition_reason', setActive: true});
+        expect(database).toBeTruthy();
+
+        // Test CREATE with condition_reason
+        const preparedRecordWithReason = await transformPlaybookChecklistItemRecord({
+            action: OperationType.CREATE,
+            database: database!,
+            value: {
+                record: undefined,
+                raw: {
+                    id: 'checklist_item_with_reason',
+                    checklist_id: 'checklist_1',
+                    title: 'Test Item with Reason',
+                    condition_reason: 'some reason text',
+                    update_at: 0,
+                },
+            },
+        });
+
+        expect(preparedRecordWithReason).toBeTruthy();
+        expect(preparedRecordWithReason!.conditionReason).toBe('some reason text');
+
+        // Test CREATE with empty condition_reason
+        const preparedRecordEmpty = await transformPlaybookChecklistItemRecord({
+            action: OperationType.CREATE,
+            database: database!,
+            value: {
+                record: undefined,
+                raw: {
+                    id: 'checklist_item_empty_reason',
+                    checklist_id: 'checklist_1',
+                    title: 'Test Item Empty Reason',
+                    condition_reason: '',
+                    update_at: 0,
+                },
+            },
+        });
+
+        expect(preparedRecordEmpty).toBeTruthy();
+        expect(preparedRecordEmpty!.conditionReason).toBe('');
+
+        // Test CREATE without condition_reason (should default to empty string)
+        const preparedRecordDefault = await transformPlaybookChecklistItemRecord({
+            action: OperationType.CREATE,
+            database: database!,
+            value: {
+                record: undefined,
+                raw: {
+                    id: 'checklist_item_default_reason',
+                    checklist_id: 'checklist_1',
+                    title: 'Test Default Reason Item',
+                    update_at: 0,
+                },
+            },
+        });
+
+        expect(preparedRecordDefault!.conditionReason).toBe('');
     });
 });

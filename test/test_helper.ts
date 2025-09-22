@@ -1081,6 +1081,7 @@ class TestHelperSingleton {
         completed_at: 0,
         task_actions: [],
         condition_action: '',
+        condition_reason: '',
         update_at: 0,
     });
 
