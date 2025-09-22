@@ -12,6 +12,8 @@ import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {Screens} from '@constants';
 import {withServerDatabase} from '@database/components';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
+import {loadPlaybooksScreen} from '@playbooks/screens';
+import {logDebug} from '@utils/log';
 
 const withGestures = (Screen: React.ComponentType) => {
     return function gestureHoc(props: any) {
@@ -180,6 +182,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.SELECT_TEAM:
             screen = withServerDatabase(require('@screens/select_team').default);
             break;
+        case Screens.PDF_VIEWER:
+            screen = withServerDatabase(require('@screens/pdf_viewer').default);
+            break;
         case Screens.PERMALINK:
             screen = withServerDatabase(require('@screens/permalink').default);
             break;
@@ -297,6 +302,14 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.SCHEDULED_POST_OPTIONS:
             screen = withServerDatabase(require('@screens/scheduled_post_options').default);
             break;
+    }
+
+    if (!screen) {
+        screen = loadPlaybooksScreen(screenName);
+    }
+
+    if (!screen) {
+        logDebug(`Screen not found: ${screenName}`);
     }
 
     if (screen) {

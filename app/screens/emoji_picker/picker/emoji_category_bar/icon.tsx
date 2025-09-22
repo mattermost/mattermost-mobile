@@ -5,7 +5,7 @@ import React, {useCallback} from 'react';
 import {TouchableOpacity} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import {preventDoubleTap} from '@utils/tap';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
@@ -37,7 +37,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const EmojiCategoryBarIcon = ({currentIndex, icon, index, scrollToIndex, theme}: Props) => {
     const style = getStyleSheet(theme);
-    const onPress = useCallback(preventDoubleTap(() => scrollToIndex(index)), []);
+    const onPress = usePreventDoubleTap(useCallback(() => scrollToIndex(index), [index, scrollToIndex]));
 
     return (
         <TouchableOpacity

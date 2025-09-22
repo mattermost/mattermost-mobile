@@ -27,9 +27,10 @@ type PostType =
     | 'add_bot_teams_channels'
     | 'system_auto_responder'
     | 'custom_calls'
-    | 'custom_calls_recording';
+    | 'custom_calls_recording'
+    | 'custom_run_update';
 
-type PostEmbedType = 'image' | 'message_attachment' | 'opengraph';
+type PostEmbedType = 'image' | 'message_attachment' | 'opengraph' | 'permalink';
 
 type PostAcknowledgement = {
     post_id: string;
@@ -41,6 +42,15 @@ type PostPriority = {
     priority: '' | 'urgent' | 'important';
     requested_ack?: boolean;
     persistent_notifications?: boolean;
+};
+
+type PermalinkEmbedData = {
+    post_id: string;
+    post: Post;
+    team_name: string;
+    channel_display_name: string;
+    channel_type: string;
+    channel_id: string;
 };
 
 type PostEmbed = {

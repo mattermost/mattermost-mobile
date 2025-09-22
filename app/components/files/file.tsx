@@ -24,6 +24,7 @@ import type {DocumentRef} from '@components/document';
 
 type FileProps = {
     canDownloadFiles: boolean;
+    enableSecureFilePreview: boolean;
     file: FileInfo;
     galleryIdentifier: string;
     index: number;
@@ -44,7 +45,6 @@ type FileProps = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         fileWrapper: {
-            flex: 1,
             flexDirection: 'row',
             alignItems: 'center',
             borderWidth: 1,
@@ -63,7 +63,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             margin: 4,
         },
         audioFile: {
-            flex: 1,
             flexDirection: 'row',
             alignItems: 'center',
         },
@@ -74,6 +73,7 @@ const File = ({
     asCard = false,
     canDownloadFiles,
     channelName,
+    enableSecureFilePreview,
     file,
     galleryIdentifier,
     inViewPort = false,
@@ -205,6 +205,7 @@ const File = ({
                     ref={document}
                     canDownloadFiles={canDownloadFiles}
                     disabled={isPressDisabled}
+                    enableSecureFilePreview={enableSecureFilePreview}
                     file={file}
                 />
             </View>
@@ -238,6 +239,7 @@ const File = ({
                 <AudioFile
                     file={file}
                     canDownloadFiles={canDownloadFiles}
+                    enableSecureFilePreview={enableSecureFilePreview}
                 />
             </Animated.View>
         );

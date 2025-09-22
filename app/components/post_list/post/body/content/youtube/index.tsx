@@ -4,12 +4,13 @@
 import {ImageBackground} from 'expo-image';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, StyleSheet, TouchableOpacity} from 'react-native';
+import {StyleSheet, TouchableOpacity} from 'react-native';
 
 import {useIsTablet} from '@hooks/device';
 import {calculateDimensions, getViewPortWidth} from '@utils/images';
 import {changeOpacity} from '@utils/theme';
 import {getYouTubeVideoId, tryOpenURL} from '@utils/url';
+import {onOpenLinkError} from '@utils/url/links';
 
 import YouTubeLogo from './youtube_logo';
 
@@ -62,20 +63,11 @@ const YouTube = ({isReplyPost, layoutWidth, metadata}: YouTubeProps) => {
         }
 
         const onError = () => {
-            Alert.alert(
-                intl.formatMessage({
-                    id: 'mobile.link.error.title',
-                    defaultMessage: 'Error',
-                }),
-                intl.formatMessage({
-                    id: 'mobile.link.error.text',
-                    defaultMessage: 'Unable to open the link.',
-                }),
-            );
+            onOpenLinkError(intl);
         };
 
         tryOpenURL(link, onError);
-    }, [link, intl.locale]);
+    }, [link, intl]);
 
     let imgUrl;
     if (metadata?.images) {

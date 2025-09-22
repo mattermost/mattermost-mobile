@@ -57,7 +57,7 @@ const GlobalThreads = ({componentId, globalThreadsTab, hasUnreads, teamId}: Prop
         {
             name: defineMessage({
                 id: 'global_threads.allThreads',
-                defaultMessage: 'All your threads',
+                defaultMessage: 'All Your Threads',
             }),
             id: 'all',
             requiresUserAttention: false,

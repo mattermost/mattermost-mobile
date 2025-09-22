@@ -21,6 +21,7 @@ import {
     getCurrentCall,
     myselfLeftCall,
     newCurrentCall,
+    setCurrentCallConnected,
     setCallForChannel,
     setCalls,
     setChannelEnabled,
@@ -249,7 +250,9 @@ export const joinCall = async (
     }
 
     try {
-        await connection.waitForPeerConnection();
+        const sessionId = await connection.waitForPeerConnection();
+
+        setCurrentCallConnected(channelId, sessionId);
 
         // Follow the thread.
         const database = DatabaseManager.serverDatabases[serverUrl]?.database;
@@ -396,8 +399,8 @@ export const getEndCallMessage = async (serverUrl: string, channelId: string, cu
 
     msg = intl.formatMessage({
         id: 'mobile.calls_end_msg_channel',
-        defaultMessage: 'Are you sure you want to end a call with {numSessions} participants in {displayName}?',
-    }, {numSessions, displayName: channel.displayName});
+        defaultMessage: 'Are you sure you want to end a call with {numParticipants} participants in {displayName}?',
+    }, {numParticipants: numSessions, displayName: channel.displayName});
 
     if (channel.type === General.DM_CHANNEL) {
         const otherID = getUserIdFromChannelName(currentUserId, channel.name);
@@ -612,7 +615,7 @@ const handleEndCall = async (serverUrl: string, channelId: string, currentUserId
             }),
             intl.formatMessage({
                 id: 'mobile.calls_end_permission_msg',
-                defaultMessage: 'You don\'t have permission to end the call. Please ask the call owner to end the call.',
+                defaultMessage: 'You don\'t have permission to end the call. Please ask the call host to end the call.',
             }));
         return;
     }

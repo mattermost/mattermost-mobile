@@ -4,8 +4,8 @@
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import {Button} from '@rneui/base';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {useIntl, type IntlShape} from 'react-intl';
-import {Alert, StyleSheet} from 'react-native';
+import {useIntl} from 'react-intl';
+import {StyleSheet} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import {ITEM_HEIGHT} from '@components/option_item';
@@ -14,10 +14,9 @@ import {useTheme} from '@context/theme';
 import {useGalleryItem} from '@hooks/gallery';
 import {TITLE_HEIGHT} from '@screens/bottom_sheet';
 import {bottomSheet, dismissOverlay} from '@screens/navigation';
-import {handleDeepLink, matchDeepLink} from '@utils/deep_link';
 import {isDocument} from '@utils/file';
 import {bottomSheetSnapPoint} from '@utils/helpers';
-import {normalizeProtocol, tryOpenURL} from '@utils/url';
+import {openLink} from '@utils/url/links';
 
 import BookmarkDetails from './bookmark_details';
 import BookmarkDocument from './bookmark_document';
@@ -32,6 +31,7 @@ type Props = {
     canDeleteBookmarks: boolean;
     canDownloadFiles: boolean;
     canEditBookmarks: boolean;
+    enableSecureFilePreview: boolean;
     file?: FileModel;
     galleryIdentifier: string;
     index?: number;
@@ -53,39 +53,8 @@ const styles = StyleSheet.create({
     },
 });
 
-const openLink = async (href: string, serverUrl: string, siteURL: string, intl: IntlShape) => {
-    const url = normalizeProtocol(href);
-    if (!url) {
-        return;
-    }
-
-    const match = matchDeepLink(url, serverUrl, siteURL);
-
-    const onLinkError = () => {
-        Alert.alert(
-            intl.formatMessage({
-                id: 'mobile.link.error.title',
-                defaultMessage: 'Error',
-            }),
-            intl.formatMessage({
-                id: 'mobile.link.error.text',
-                defaultMessage: 'Unable to open the link.',
-            }),
-        );
-    };
-
-    if (match) {
-        const {error} = await handleDeepLink(match.url, intl);
-        if (error) {
-            tryOpenURL(match.url, onLinkError);
-        }
-    } else {
-        tryOpenURL(url, onLinkError);
-    }
-};
-
 const ChannelBookmark = ({
-    bookmark, canDeleteBookmarks, canDownloadFiles, canEditBookmarks,
+    bookmark, canDeleteBookmarks, canDownloadFiles, canEditBookmarks, enableSecureFilePreview,
     file, galleryIdentifier, index, onPress, publicLinkEnabled, siteURL,
 }: Props) => {
     const theme = useTheme();
@@ -94,7 +63,7 @@ const ChannelBookmark = ({
     const intl = useIntl();
     const [action, setAction] = useState<GalleryAction>('none');
     const isDocumentFile = useMemo(() => isDocument(file), [file]);
-    const canCopyPublicLink = Boolean((bookmark.type === 'link' || (file?.id && publicLinkEnabled)) && managedConfig.copyAndPasteProtection !== 'true');
+    const canCopyPublicLink = !enableSecureFilePreview && Boolean((bookmark.type === 'link' || (file?.id && publicLinkEnabled)) && managedConfig.copyAndPasteProtection !== 'true');
 
     const handlePress = useCallback(() => {
         if (bookmark.linkUrl) {
@@ -106,7 +75,7 @@ const ChannelBookmark = ({
     }, [bookmark, index, intl, onPress, serverUrl, siteURL]);
 
     const handleLongPress = useCallback(() => {
-        const canShare = canDownloadFiles || bookmark.type === 'link';
+        const canShare = !enableSecureFilePreview && (canDownloadFiles || bookmark.type === 'link');
         const count = [canCopyPublicLink, canDeleteBookmarks, canShare, canEditBookmarks].
             filter((e) => e).length;
 
@@ -115,8 +84,9 @@ const ChannelBookmark = ({
                 bookmark={bookmark}
                 canCopyPublicLink={canCopyPublicLink}
                 canDeleteBookmarks={canDeleteBookmarks}
-                canDownloadFiles={canDownloadFiles}
+                canDownloadFiles={!enableSecureFilePreview && canDownloadFiles}
                 canEditBookmarks={canEditBookmarks}
+                enableSecureFilePreview={enableSecureFilePreview}
                 file={file}
                 setAction={setAction}
             />
@@ -129,7 +99,7 @@ const ChannelBookmark = ({
             theme,
             closeButtonId: 'close-channel-bookmark-actions',
         });
-    }, [bookmark, canCopyPublicLink, canDeleteBookmarks, canDownloadFiles, canEditBookmarks, file, theme]);
+    }, [bookmark, canCopyPublicLink, canDeleteBookmarks, canDownloadFiles, canEditBookmarks, enableSecureFilePreview, file, theme]);
 
     const {onGestureEvent, ref} = useGalleryItem(galleryIdentifier, index || 0, handlePress);
 
@@ -144,6 +114,7 @@ const ChannelBookmark = ({
             <BookmarkDocument
                 bookmark={bookmark}
                 canDownloadFiles={canDownloadFiles}
+                enableSecureFilePreview={enableSecureFilePreview}
                 file={file!}
                 onLongPress={handleLongPress}
             />

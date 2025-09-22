@@ -6,7 +6,7 @@ import {Navigation} from 'react-native-navigation';
 import {Events, Preferences, Screens} from '@constants';
 import NavigationStore from '@store/navigation_store';
 
-import {openAsBottomSheet, openUserProfileModal} from './navigation';
+import {openAsBottomSheet} from './navigation';
 
 import type {FirstArgument} from '@typings/utils/utils';
 import type {IntlShape} from 'react-intl';
@@ -62,6 +62,8 @@ describe('openUserProfileModal', () => {
 
     let eventSubscription: EmitterSubscription;
     const listenerCallback = jest.fn();
+
+    const openUserProfileModal = jest.requireActual('./navigation').openUserProfileModal;
 
     beforeAll(() => {
         eventSubscription = DeviceEventEmitter.addListener(Events.CLOSE_BOTTOM_SHEET, listenerCallback);

@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
+import {defineMessage} from 'react-intl';
 import {TouchableOpacity, View, type ViewStyle} from 'react-native';
 
 import {updateThreadFollowing} from '@actions/remote/thread';
@@ -10,7 +11,7 @@ import FormattedText from '@components/formatted_text';
 import UserAvatarsStack from '@components/user_avatars_stack';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {preventDoubleTap} from '@utils/tap';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -79,16 +80,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
+const bottomSheetTitleMessage = defineMessage({id: 'mobile.participants.header', defaultMessage: 'Thread Participants'});
+
 const Footer = ({channelId, location, participants, teamId, thread}: Props) => {
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const toggleFollow = useCallback(preventDoubleTap(() => {
+    const toggleFollow = usePreventDoubleTap(useCallback(() => {
         if (teamId == null) {
             return;
         }
         updateThreadFollowing(serverUrl, teamId, thread.id, !thread.isFollowing, true);
-    }), [thread.isFollowing]);
+    }, [serverUrl, teamId, thread.id, thread.isFollowing]));
 
     let repliesComponent;
     let followButton;
@@ -163,6 +166,7 @@ const Footer = ({channelId, location, participants, teamId, thread}: Props) => {
                 location={location}
                 style={styles.avatarsContainer}
                 users={participantsList}
+                bottomSheetTitle={bottomSheetTitleMessage}
             />
         );
     }

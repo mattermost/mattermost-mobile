@@ -10,6 +10,7 @@ import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import PushNotifications from '@init/push_notifications';
 import NetworkManager from '@managers/network_manager';
+import WebsocketManager from '@managers/websocket_manager';
 import {getDeviceToken} from '@queries/app/global';
 import {getServerDisplayName} from '@queries/app/servers';
 import {getCurrentUserId, getExpiredSession} from '@queries/servers/system';
@@ -220,6 +221,7 @@ export const logout = async (
         }
     }
 
+    WebsocketManager.getClient(serverUrl)?.close(true);
     if (!skipEvents) {
         DeviceEventEmitter.emit(Events.SERVER_LOGOUT, {serverUrl, removeServer});
     }
@@ -298,7 +300,7 @@ export const sendPasswordResetEmail = async (serverUrl: string, email: string) =
     }
 };
 
-export const ssoLogin = async (serverUrl: string, serverDisplayName: string, serverIdentifier: string, bearerToken: string, csrfToken: string): Promise<LoginActionResponse> => {
+export const ssoLogin = async (serverUrl: string, serverDisplayName: string, serverIdentifier: string, bearerToken: string, csrfToken: string, preauthSecret?: string): Promise<LoginActionResponse> => {
     const database = DatabaseManager.appDatabase?.database;
     if (!database) {
         return {error: 'App database not found', failed: true};
@@ -307,7 +309,7 @@ export const ssoLogin = async (serverUrl: string, serverDisplayName: string, ser
     try {
         const client = NetworkManager.getClient(serverUrl);
 
-        client.setBearerToken(bearerToken);
+        client.setClientCredentials(bearerToken, preauthSecret);
         client.setCSRFToken(csrfToken);
 
         // Setting up active database for this SSO login flow

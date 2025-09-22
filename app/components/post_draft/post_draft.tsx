@@ -117,8 +117,7 @@ function PostDraft({
             cursorPosition={cursorPosition}
             value={value}
             isSearch={isSearch}
-            hasFilesAttached={Boolean(files?.length)}
-            inPost={true}
+            shouldDirectlyReact={!Boolean(files?.length)}
             availableSpace={animatedAutocompleteAvailableSpace}
             serverUrl={serverUrl}
         />

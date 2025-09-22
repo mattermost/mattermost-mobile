@@ -8,6 +8,7 @@ import {markChannelAsUnread, updateLastPostAt} from '@actions/local/channel';
 import {addPostAcknowledgement, removePost, removePostAcknowledgement, storePostsForChannel} from '@actions/local/post';
 import {addRecentReaction} from '@actions/local/reactions';
 import {createThreadFromNewPost} from '@actions/local/thread';
+import {fetchChannelStats} from '@actions/remote/channel';
 import {ActionType, General, Post, ServerErrors} from '@constants';
 import DatabaseManager from '@database/manager';
 import {filterPostsInOrderedArray} from '@helpers/api/post';
@@ -15,6 +16,7 @@ import {getNeededAtMentionedUsernames} from '@helpers/api/user';
 import NetworkManager from '@managers/network_manager';
 import {getMyChannel, prepareMissingChannelsForAllTeams, queryAllMyChannel} from '@queries/servers/channel';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
+import {getFilesByIds, queryFilesForPost} from '@queries/servers/file';
 import {getPostById, getRecentPostsInChannel} from '@queries/servers/post';
 import {getCurrentUserId} from '@queries/servers/system';
 import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers/thread';
@@ -23,6 +25,7 @@ import EphemeralStore from '@store/ephemeral_store';
 import {setFetchingThreadState} from '@store/fetching_thread_store';
 import {getValidEmojis, matchEmoticons} from '@utils/emoji/helpers';
 import {getFullErrorMessage, isServerError} from '@utils/errors';
+import {hasArrayChanged} from '@utils/helpers';
 import {logDebug, logError} from '@utils/log';
 import {processPostsFetched} from '@utils/post';
 import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
@@ -342,12 +345,14 @@ export const fetchPostsForUnreadChannels = async (
 
     const channelsMap = new Map<string, Channel>();
     for (const channel of channels) {
-        channelsMap.set(channel.id, channel);
+        if (channel.id !== excludeChannelId && !channel.delete_at) {
+            channelsMap.set(channel.id, channel);
+        }
     }
 
     const sortedUnreadchannelIdsByTeam = memberships.filter((member) => {
         const channel = channelsMap.get(member.channel_id);
-        if (channel && !channel.delete_at && channel.id !== excludeChannelId) {
+        if (channel) {
             const unreads = isCRTEnabled ? (channel.total_msg_count_root ?? 0) - (member.msg_count_root ?? 0) : channel.total_msg_count - member.msg_count;
             return unreads > 0; // Keep only channels with unreads
         }
@@ -907,14 +912,17 @@ export const markPostAsUnread = async (serverUrl: string, postId: string) => {
     }
 };
 
-export const editPost = async (serverUrl: string, postId: string, postMessage: string) => {
+export const editPost = async (serverUrl: string, postId: string, postMessage: string, file_ids: string[], removed_file_ids: string[]) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         const post = await getPostById(database, postId);
         if (post) {
-            const {update_at, edit_at, message: updatedMessage, message_source} = await client.patchPost({message: postMessage, id: postId});
+            const originalFiles = await queryFilesForPost(database, postId).fetch();
+            const originalFileIds = originalFiles.map((f) => f.id);
+
+            const {update_at, edit_at, message: updatedMessage, message_source} = await client.patchPost({message: postMessage, id: postId, file_ids});
             await database.write(async () => {
                 await post.update((p) => {
                     p.updateAt = update_at;
@@ -923,6 +931,24 @@ export const editPost = async (serverUrl: string, postId: string, postMessage: s
                     p.messageSource = message_source || '';
                 });
             });
+
+            if (removed_file_ids.length > 0) {
+                const filesToDelete = await getFilesByIds(database, removed_file_ids);
+                if (filesToDelete.length > 0) {
+                    const fileDeleteModels = filesToDelete.map((file) => {
+                        file.prepareDestroyPermanently();
+                        return file;
+                    });
+                    await operator.batchRecords(fileDeleteModels, 'delete files');
+                }
+            }
+
+            const filesChanged = hasArrayChanged(originalFileIds, file_ids);
+
+            if (filesChanged && post.channelId) {
+                const channelId = post.channelId;
+                fetchChannelStats(serverUrl, channelId);
+            }
         }
         return {post};
     } catch (error) {

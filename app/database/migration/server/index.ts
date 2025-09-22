@@ -7,10 +7,95 @@
 import {addColumns, createTable, schemaMigrations, unsafeExecuteSql} from '@nozbe/watermelondb/Schema/migrations';
 
 import {MM_TABLES} from '@constants/database';
+import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
 
-const {CHANNEL_BOOKMARK, CHANNEL_INFO, DRAFT, FILE, POST, CHANNEL, CUSTOM_PROFILE_ATTRIBUTE, CUSTOM_PROFILE_FIELD, SCHEDULED_POST} = MM_TABLES.SERVER;
+const {
+    CHANNEL,
+    CHANNEL_BOOKMARK,
+    CHANNEL_INFO,
+    CUSTOM_PROFILE_ATTRIBUTE,
+    CUSTOM_PROFILE_FIELD,
+    DRAFT,
+    FILE,
+    MY_CHANNEL,
+    POST,
+    SCHEDULED_POST,
+} = MM_TABLES.SERVER;
+
+const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM} = PLAYBOOK_TABLES;
 
 export default schemaMigrations({migrations: [
+    {
+        toVersion: 12,
+        steps: [
+            createTable({
+                name: PLAYBOOK_RUN,
+                columns: [
+                    {name: 'playbook_id', type: 'string'},
+                    {name: 'name', type: 'string'},
+                    {name: 'description', type: 'string'},
+                    {name: 'is_active', type: 'boolean', isIndexed: true},
+                    {name: 'owner_user_id', type: 'string'},
+                    {name: 'team_id', type: 'string'},
+                    {name: 'channel_id', type: 'string', isIndexed: true},
+                    {name: 'post_id', type: 'string', isOptional: true},
+                    {name: 'create_at', type: 'number'},
+                    {name: 'end_at', type: 'number'},
+                    {name: 'active_stage', type: 'number'},
+                    {name: 'active_stage_title', type: 'string'},
+                    {name: 'participant_ids', type: 'string'}, // JSON string
+                    {name: 'summary', type: 'string'},
+                    {name: 'current_status', type: 'string', isIndexed: true},
+                    {name: 'last_status_update_at', type: 'number'},
+                    {name: 'previous_reminder', type: 'number'},
+                    {name: 'items_order', type: 'string'},
+                    {name: 'retrospective_enabled', type: 'boolean'},
+                    {name: 'retrospective', type: 'string'},
+                    {name: 'retrospective_published_at', type: 'number'},
+                    {name: 'update_at', type: 'number'},
+                    {name: 'sync', type: 'string', isIndexed: true, isOptional: true},
+                    {name: 'last_sync_at', type: 'number', isOptional: true},
+                ],
+            }),
+            createTable({
+                name: PLAYBOOK_CHECKLIST,
+                columns: [
+                    {name: 'run_id', type: 'string', isIndexed: true},
+                    {name: 'items_order', type: 'string'},
+                    {name: 'title', type: 'string'},
+                    {name: 'update_at', type: 'number'},
+                    {name: 'sync', type: 'string', isIndexed: true, isOptional: true},
+                    {name: 'last_sync_at', type: 'number', isOptional: true},
+                ],
+            }),
+            createTable({
+                name: PLAYBOOK_CHECKLIST_ITEM,
+                columns: [
+                    {name: 'checklist_id', type: 'string', isIndexed: true},
+                    {name: 'title', type: 'string'},
+                    {name: 'state', type: 'string', isIndexed: true},
+                    {name: 'state_modified', type: 'number'},
+                    {name: 'assignee_id', type: 'string', isOptional: true},
+                    {name: 'assignee_modified', type: 'number'},
+                    {name: 'command', type: 'string', isOptional: true},
+                    {name: 'command_last_run', type: 'number'},
+                    {name: 'description', type: 'string'},
+                    {name: 'due_date', type: 'number'},
+                    {name: 'completed_at', type: 'number'},
+                    {name: 'task_actions', type: 'string', isOptional: true}, // JSON string
+                    {name: 'update_at', type: 'number'},
+                    {name: 'sync', type: 'string', isIndexed: true, isOptional: true},
+                    {name: 'last_sync_at', type: 'number', isOptional: true},
+                ],
+            }),
+            addColumns({
+                table: MY_CHANNEL,
+                columns: [
+                    {name: 'last_playbook_runs_fetch_at', type: 'number'},
+                ],
+            }),
+        ],
+    },
     {
         toVersion: 11,
         steps: [

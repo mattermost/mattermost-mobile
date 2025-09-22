@@ -6,13 +6,15 @@ import {DeviceEventEmitter} from 'react-native';
 import {markChannelAsViewed} from '@actions/local/channel';
 import {dataRetentionCleanup} from '@actions/local/systems';
 import {markChannelAsRead} from '@actions/remote/channel';
-import {deferredAppEntryActions, entry, handleEntryAfterLoadNavigation} from '@actions/remote/entry/common';
+import {entry, handleEntryAfterLoadNavigation} from '@actions/remote/entry/common';
+import {deferredAppEntryActions} from '@actions/remote/entry/deferred';
 import {fetchPostsForChannel, fetchPostThread} from '@actions/remote/post';
 import {openAllUnreadChannels} from '@actions/remote/preference';
 import {loadConfigAndCalls} from '@calls/actions/calls';
 import {isSupportedServerCalls} from '@calls/utils';
 import DatabaseManager from '@database/manager';
 import AppsManager from '@managers/apps_manager';
+import {handlePlaybookReconnect} from '@playbooks/actions/websocket/reconnect';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {getLastPostInThread} from '@queries/servers/post';
 import {getConfig, getCurrentChannelId, getCurrentTeamId, setLastFullSync} from '@queries/servers/system';
@@ -28,6 +30,7 @@ jest.mock('@actions/local/channel');
 jest.mock('@actions/local/systems');
 jest.mock('@actions/remote/channel');
 jest.mock('@actions/remote/entry/common');
+jest.mock('@actions/remote/entry/deferred');
 jest.mock('@actions/remote/post');
 jest.mock('@actions/remote/scheduled_post');
 jest.mock('@actions/remote/preference');
@@ -47,6 +50,8 @@ jest.mock('@store/team_load_store');
 jest.mock('@utils/helpers', () => ({
     isTablet: jest.fn().mockReturnValue(false),
 }));
+
+jest.mock('@playbooks/actions/websocket/reconnect');
 
 describe('WebSocket Index Actions', () => {
     const serverUrl = 'baseHandler.test.com';
@@ -101,6 +106,7 @@ describe('WebSocket Index Actions', () => {
             expect(setLastFullSync).toHaveBeenCalled();
             expect(loadConfigAndCalls).toHaveBeenCalled();
             expect(deferredAppEntryActions).toHaveBeenCalled();
+            expect(handlePlaybookReconnect).toHaveBeenCalledWith(serverUrl);
         });
 
         it('should handle error when server database not found', async () => {
@@ -155,6 +161,7 @@ describe('WebSocket Index Actions', () => {
             expect(openAllUnreadChannels).toHaveBeenCalled();
             expect(dataRetentionCleanup).toHaveBeenCalled();
             expect(AppsManager.refreshAppBindings).toHaveBeenCalled();
+            expect(handlePlaybookReconnect).toHaveBeenCalledWith(serverUrl);
         });
 
         it('should fetch posts for channel screen', async () => {

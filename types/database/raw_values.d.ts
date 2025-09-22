@@ -141,3 +141,6 @@ type RawValue =
   | CustomProfileAttribute
   | CustomProfileField
   | Pick<ChannelMembership, 'channel_id' | 'user_id'>
+  | PlaybookRun
+  | PlaybookChecklist
+  | PlaybookChecklistItem

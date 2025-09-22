@@ -10,9 +10,9 @@ import CompassIcon from '@components/compass_icon';
 import CustomStatusExpiry from '@components/custom_status/custom_status_expiry';
 import CustomStatusText from '@components/custom_status/custom_status_text';
 import DateTimePicker from '@components/data_time_selector';
-import {CST, CustomStatusDurationEnum} from '@constants/custom_status';
+import {CST, CUSTOM_STATUS_TIME_PICKER_INTERVALS_IN_MINUTES, CustomStatusDurationEnum} from '@constants/custom_status';
 import {useTheme} from '@context/theme';
-import {preventDoubleTap} from '@utils/tap';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getTimezone} from '@utils/user';
 
@@ -82,9 +82,9 @@ const ClearAfterMenuItem = ({currentUser, duration, expiryTime = '', handleItemC
         [CustomStatusDurationEnum.DATE_AND_TIME]: intl.formatMessage({id: 'custom_status.expiry_dropdown.custom', defaultMessage: 'Custom'}),
     };
 
-    const handleClick = preventDoubleTap(() => {
+    const handleClick = usePreventDoubleTap(useCallback(() => {
         handleItemClick(duration, expiryTime);
-    });
+    }, [duration, expiryTime, handleItemClick]));
 
     const handleCustomExpiresAtChange = useCallback((expiresAt: Moment) => {
         handleItemClick(duration, expiresAt.toISOString());
@@ -136,6 +136,7 @@ const ClearAfterMenuItem = ({currentUser, duration, expiryTime = '', handleItemC
                     handleChange={handleCustomExpiresAtChange}
                     theme={theme}
                     timezone={getTimezone(currentUser?.timezone)}
+                    minuteInterval={CUSTOM_STATUS_TIME_PICKER_INTERVALS_IN_MINUTES}
                 />
             )}
         </View>

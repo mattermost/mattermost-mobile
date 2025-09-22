@@ -8,13 +8,15 @@ import {Alert, type AppStateStatus} from 'react-native';
 import {switchToServer} from '@actions/app/server';
 import {logout} from '@actions/remote/session';
 import {Screens} from '@constants';
-import {DEFAULT_LOCALE, getTranslations, t} from '@i18n';
+import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 import {getServerCredentials} from '@init/credentials';
 import TestHelper from '@test/test_helper';
 import {toMilliseconds} from '@utils/datetime';
 import {logError} from '@utils/log';
 
-import SecurityManager from '.';
+import SecurityManager, {exportsForTesting} from '.';
+
+const messages = exportsForTesting.messages;
 
 jest.mock('@mattermost/react-native-emm', () => ({
     isDeviceSecured: jest.fn(),
@@ -344,11 +346,29 @@ describe('SecurityManager', () => {
         });
 
         test('should not attempt biometric authentication if server was previously authenticated within 5 mins', async () => {
-            SecurityManager.addServer('server-12', {MobileEnableBiometrics: 'true'} as ClientConfig, true);
-            SecurityManager.serverConfig['server-12'].lastAccessed = Date.now() - toMilliseconds({minutes: 1});
-            await expect(SecurityManager.authenticateWithBiometricsIfNeeded('server-12')).resolves.toBe(true);
-            expect(Emm.isDeviceSecured).not.toHaveBeenCalled();
-            expect(Emm.authenticate).not.toHaveBeenCalled();
+            // Mock toMilliseconds locally to return correct value for this test
+            const originalToMilliseconds = jest.requireActual('@utils/datetime').toMilliseconds;
+            jest.mocked(require('@utils/datetime').toMilliseconds).mockImplementation(originalToMilliseconds);
+
+            // Use a fixed timestamp instead of Date.now() to eliminate timing races
+            const fixedTime = 1672574400000; // Fixed timestamp: Jan 1, 2023 12:00:00 GMT
+            const oneMinuteAgo = fixedTime - (60 * 1000);
+
+            // Mock Date.now to return our fixed time
+            const originalDateNow = Date.now;
+            Date.now = jest.fn(() => fixedTime);
+
+            try {
+                SecurityManager.addServer('server-12', {MobileEnableBiometrics: 'true'} as ClientConfig, true);
+                SecurityManager.serverConfig['server-12'].lastAccessed = oneMinuteAgo;
+                await expect(SecurityManager.authenticateWithBiometricsIfNeeded('server-12')).resolves.toBe(true);
+                expect(Emm.isDeviceSecured).not.toHaveBeenCalled();
+                expect(Emm.authenticate).not.toHaveBeenCalled();
+            } finally {
+                // Restore original implementations
+                Date.now = originalDateNow;
+                jest.mocked(require('@utils/datetime').toMilliseconds).mockReturnValue(25000);
+            }
         });
 
         test('should not attempt biometric authentication if server was previously failed authentication even though lastAccess is less than 5 mins', async () => {
@@ -424,7 +444,7 @@ describe('SecurityManager', () => {
             const translations = getTranslations(DEFAULT_LOCALE);
             const buttons = await SecurityManager.buildAlertOptions('server-12', translations);
             expect(buttons.length).toBeGreaterThan(0);
-            const logoutButton = buttons.find((button) => button.text === translations[t('mobile.managed.logout')]);
+            const logoutButton = buttons.find((button) => button.text === translations[messages.logout.id]);
             expect(logoutButton).toBeDefined();
             logoutButton?.onPress?.();
             expect(logout).toHaveBeenCalledWith('server-12', undefined);
@@ -440,8 +460,8 @@ describe('SecurityManager', () => {
             await SecurityManager.showDeviceNotTrustedAlert(server, siteName, translations);
 
             expect(Alert.alert).toHaveBeenCalledWith(
-                translations[t('mobile.managed.blocked_by')].replace('{vendor}', siteName),
-                translations[t('mobile.managed.jailbreak')].replace('{vendor}', siteName),
+                translations[messages.blocked_by.id].replace('{vendor}', siteName),
+                translations[messages.jailbreak.id].replace('{vendor}', siteName),
                 expect.any(Array),
                 {cancelable: false},
             );
@@ -457,8 +477,8 @@ describe('SecurityManager', () => {
             await SecurityManager.showBiometricFailureAlert(server, false, siteName, translations);
 
             expect(Alert.alert).toHaveBeenCalledWith(
-                translations[t('mobile.managed.blocked_by')].replace('{vendor}', siteName),
-                translations[t('mobile.managed.biometric_failed')],
+                translations[messages.blocked_by.id].replace('{vendor}', siteName),
+                translations[messages.biometric_failed.id],
                 expect.any(Array),
                 {cancelable: false},
             );
@@ -477,8 +497,8 @@ describe('SecurityManager', () => {
             expect(result).toBe(true);
             await TestHelper.wait(300);
             expect(Alert.alert).toHaveBeenCalledWith(
-                translations[t('mobile.managed.blocked_by')].replace('{vendor}', siteName),
-                translations[t('mobile.managed.jailbreak')].replace('{vendor}', siteName),
+                translations[messages.blocked_by.id].replace('{vendor}', siteName),
+                translations[messages.jailbreak.id].replace('{vendor}', siteName),
                 expect.any(Array),
                 {cancelable: false},
             );

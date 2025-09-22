@@ -12,11 +12,19 @@ import SecurityManager from '@managers/security_manager';
 import {popTopScreen} from '@screens/navigation';
 
 import ButtonComponentLibrary from './button.cl';
+import ChipComponentLibrary from './chip.cl';
+import OptionItemComponentLibrary from './option_item.cl';
+import SectionNoticeComponentLibrary from './section_notice.cl';
+import TagComponentLibrary from './tag.cl';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 const componentMap = {
     Button: ButtonComponentLibrary,
+    Chip: ChipComponentLibrary,
+    OptionItem: OptionItemComponentLibrary,
+    Tag: TagComponentLibrary,
+    SectionNotice: SectionNoticeComponentLibrary,
 };
 
 type ComponentName = keyof typeof componentMap

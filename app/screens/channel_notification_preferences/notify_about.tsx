@@ -2,14 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessages, useIntl} from 'react-intl';
 import {type LayoutChangeEvent, View} from 'react-native';
 
 import SettingBlock from '@components/settings/block';
 import SettingOption from '@components/settings/option';
 import SettingSeparator from '@components/settings/separator';
 import {NotificationLevel} from '@constants';
-import {t} from '@i18n';
 
 import type {SharedValue} from 'react-native-reanimated';
 
@@ -30,24 +29,40 @@ type NotifPrefOptions = {
 
 export const BLOCK_TITLE_HEIGHT = 13;
 
-const NOTIFY_ABOUT = {id: t('channel_notification_preferences.notify_about'), defaultMessage: 'Notify me about...'};
+const messages = defineMessages({
+    notifyAbout: {
+        id: 'channel_notification_preferences.notify_about',
+        defaultMessage: 'Notify me about...',
+    },
+    [NotificationLevel.ALL]: {
+        id: 'channel_notification_preferences.notification.all',
+        defaultMessage: 'All new messages',
+    },
+    [NotificationLevel.MENTION]: {
+        id: 'channel_notification_preferences.notification.mention',
+        defaultMessage: 'Mentions only',
+    },
+    [NotificationLevel.NONE]: {
+        id: 'channel_notification_preferences.notification.none',
+        defaultMessage: 'Nothing',
+    },
+});
+
+const NOTIFY_ABOUT = messages.notifyAbout;
 
 const NOTIFY_OPTIONS: Record<string, NotifPrefOptions> = {
     [NotificationLevel.ALL]: {
-        defaultMessage: 'All new messages',
-        id: t('channel_notification_preferences.notification.all'),
+        ...messages[NotificationLevel.ALL],
         testID: 'channel_notification_preferences.notification.all',
         value: NotificationLevel.ALL,
     },
     [NotificationLevel.MENTION]: {
-        defaultMessage: 'Mentions only',
-        id: t('channel_notification_preferences.notification.mention'),
+        ...messages[NotificationLevel.MENTION],
         testID: 'channel_notification_preferences.notification.mention',
         value: NotificationLevel.MENTION,
     },
     [NotificationLevel.NONE]: {
-        defaultMessage: 'Nothing',
-        id: t('channel_notification_preferences.notification.none'),
+        ...messages[NotificationLevel.NONE],
         testID: 'channel_notification_preferences.notification.none',
         value: NotificationLevel.NONE,
     },
@@ -65,7 +80,10 @@ const NotifyAbout = ({
         const {y} = e.nativeEvent.layout;
 
         notifyTitleTop.value = y > 0 ? y + 10 : BLOCK_TITLE_HEIGHT;
-    }, []);
+
+        // NotifyTitleTop is a shared value, so its reference should not change between renders.
+        // we add it to the dependencies to satisfy the linter.
+    }, [notifyTitleTop]);
 
     let notifyLevelToUse = notifyLevel;
     if (notifyLevel === NotificationLevel.DEFAULT) {

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Image} from 'expo-image';
-import React, {type ReactNode} from 'react';
+import React, {useCallback, type ReactNode} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform, StyleSheet, TouchableOpacity, View} from 'react-native';
 
@@ -12,8 +12,8 @@ import ProfilePicture from '@components/profile_picture';
 import {View as ViewConstant} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {openUserProfileModal} from '@screens/navigation';
-import {preventDoubleTap} from '@utils/tap';
 import {ensureString} from '@utils/types';
 
 import type PostModel from '@typings/database/models/servers/post';
@@ -88,7 +88,7 @@ const Avatar = ({author, enablePostIconOverride, isAutoReponse, location, post}:
         );
     }
 
-    const openUserProfile = preventDoubleTap(() => {
+    const openUserProfile = usePreventDoubleTap(useCallback(() => {
         if (!author) {
             return;
         }
@@ -99,7 +99,7 @@ const Avatar = ({author, enablePostIconOverride, isAutoReponse, location, post}:
             userIconOverride: propsIconUrl,
             usernameOverride: propsUsername,
         });
-    });
+    }, [author, intl, location, post.channelId, propsIconUrl, propsUsername, theme]));
 
     let component = (
         <ProfilePicture

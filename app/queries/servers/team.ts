@@ -14,7 +14,7 @@ import {prepareDeleteCategory} from './categories';
 import {prepareDeleteChannel, getDefaultChannelForTeam, observeMyChannelMentionCount, observeMyChannelUnreads} from './channel';
 import {queryPreferencesByCategoryAndName} from './preference';
 import {patchTeamHistory, getConfig, getTeamHistory, observeCurrentTeamId, getCurrentTeamId} from './system';
-import {observeThreadMentionCount, observeUnreadsAndMentionsInTeam} from './thread';
+import {observeThreadMentionCount, observeUnreadsAndMentions} from './thread';
 import {getCurrentUser} from './user';
 
 import type {MyChannelModel} from '@database/models/server';
@@ -234,7 +234,7 @@ export async function deleteMyTeams(operator: ServerDataOperator, myTeams: MyTea
     }
 }
 
-export const prepareDeleteTeam = async (team: TeamModel): Promise<Model[]> => {
+export const prepareDeleteTeam = async (serverUrl: string, team: TeamModel): Promise<Model[]> => {
     try {
         const preparedModels: Model[] = [team.prepareDestroyPermanently()];
 
@@ -279,7 +279,7 @@ export const prepareDeleteTeam = async (team: TeamModel): Promise<Model[]> => {
         if (channels.length) {
             for await (const channel of channels) {
                 try {
-                    const preparedChannel = await prepareDeleteChannel(channel);
+                    const preparedChannel = await prepareDeleteChannel(serverUrl, channel);
                     preparedModels.push(...preparedChannel);
                 } catch {
                     // Record not found, do nothing
@@ -416,7 +416,7 @@ export const observeCurrentTeam = (database: Database) => {
 
 export function observeMentionCount(database: Database, teamId?: string, includeDmGm?: boolean): Observable<number> {
     const channelMentionCountObservable = observeMyChannelMentionCount(database, teamId);
-    const threadMentionCountObservable = observeThreadMentionCount(database, teamId, includeDmGm);
+    const threadMentionCountObservable = observeThreadMentionCount(database, {teamId, includeDmGm});
 
     return channelMentionCountObservable.pipe(
         combineLatestWith(threadMentionCountObservable),
@@ -427,7 +427,7 @@ export function observeMentionCount(database: Database, teamId?: string, include
 
 export function observeIsTeamUnread(database: Database, teamId: string): Observable<boolean> {
     const channelUnreads = observeMyChannelUnreads(database, teamId);
-    const threadsUnreadsAndMentions = observeUnreadsAndMentionsInTeam(database, teamId);
+    const threadsUnreadsAndMentions = observeUnreadsAndMentions(database, {teamId});
 
     return channelUnreads.pipe(
         combineLatestWith(threadsUnreadsAndMentions),

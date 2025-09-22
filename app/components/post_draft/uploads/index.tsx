@@ -12,13 +12,13 @@ import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-nati
 
 import {GalleryInit} from '@context/gallery';
 import {useTheme} from '@context/theme';
-import DraftUploadManager from '@managers/draft_upload_manager';
+import DraftEditPostUploadManager from '@managers/draft_upload_manager';
 import {fileToGalleryItem, openGalleryAtIndex} from '@utils/gallery';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import UploadItem from './upload_item';
+import UploadItem from './upload_item/upload_item_wrapper';
 
-const CONTAINER_HEIGHT_MAX = 67;
+const CONTAINER_HEIGHT_MAX = 80;
 const CONTAINER_HEIGHT_MIN = 0;
 const ERROR_HEIGHT_MAX = 20;
 const ERROR_HEIGHT_MIN = 0;
@@ -81,7 +81,7 @@ function Uploads({
 
     const errorHeight = useSharedValue(ERROR_HEIGHT_MIN);
     const containerHeight = useSharedValue(files.length ? CONTAINER_HEIGHT_MAX : CONTAINER_HEIGHT_MIN);
-    const filesForGallery = useRef(files.filter((f) => !f.failed && !DraftUploadManager.isUploading(f.clientId!)));
+    const filesForGallery = useRef(files.filter((f) => !f.failed && !DraftEditPostUploadManager.isUploading(f.clientId!)));
     const hasFiles = files.length > 0;
 
     const errorAnimatedStyle = useAnimatedStyle(() => {
@@ -101,7 +101,7 @@ function Uploads({
     }), [files.length]);
 
     useEffect(() => {
-        filesForGallery.current = files.filter((f) => !f.failed && !DraftUploadManager.isUploading(f.clientId!));
+        filesForGallery.current = files.filter((f) => !f.failed && !DraftEditPostUploadManager.isUploading(f.clientId!));
     }, [files]);
 
     useEffect(() => {
@@ -134,7 +134,7 @@ function Uploads({
                     galleryIdentifier={galleryIdentifier}
                     index={index}
                     file={file}
-                    key={file.clientId}
+                    key={file.clientId || file.id}
                     openGallery={openGallery}
                     rootId={rootId}
                 />

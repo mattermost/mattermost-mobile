@@ -278,6 +278,7 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
             paddingTop: scrollPaddingTop,
             flexGrow: 1,
             justifyContent: (resultsLoading || loading) ? 'center' : 'flex-start',
+            paddingHorizontal: 18,
         };
     }, [loading, resultsLoading, scrollPaddingTop]);
 
@@ -301,9 +302,16 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
             />
         );
     }, [
-        handleModifierTextChange, handleRecentSearch,
-        loading, scrollEnabled, scrollPaddingTop, searchTeamId,
-        searchValue, styles.loading, teams, theme.buttonBg,
+        handleModifierTextChange,
+        handleRecentSearch,
+        loading,
+        scrollEnabled,
+        scrollPaddingTop,
+        searchTeamId,
+        searchValue,
+        teams,
+        theme.buttonBg,
+        updateSearchTeamId,
     ]);
 
     const animated = useAnimatedStyle(() => {
@@ -372,6 +380,19 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
         } else {
             setAutoScroll(false);
         }
+    }, [isFocused]);
+
+    useDidUpdate(() => {
+        if (isFocused && lastSearchedValue && showResults) {
+            // requestAnimationFrame for smooth UI updates
+            requestAnimationFrame(() => {
+                handleSearch(searchTeamId, lastSearchedValue);
+            });
+        }
+
+        // Only watch isFocused to re-run search when screen comes back into focus
+        // Removed lastSearchedValue, showResults, handleSearch, searchTeamId from dependencies
+        // to prevent duplicate search calls (these values are updated by handleSearch itself)
     }, [isFocused]);
 
     const handleEnterPressed = useCallback(() => {
@@ -471,7 +492,7 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
                 cursorPosition={cursorPosition}
                 value={searchValue}
                 isSearch={true}
-                hasFilesAttached={false}
+                shouldDirectlyReact={false}
                 availableSpace={autocompleteMaxHeight}
                 position={autocompletePosition}
                 growDown={true}

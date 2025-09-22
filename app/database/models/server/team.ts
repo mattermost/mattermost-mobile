@@ -6,7 +6,9 @@ import {children, field, immutableRelation, lazy} from '@nozbe/watermelondb/deco
 import Model, {type Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
+import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
 
+import type PlaybookRunModel from '@playbooks/types/database/models/playbook_run';
 import type CategoryModel from '@typings/database/models/servers/category';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type MyTeamModel from '@typings/database/models/servers/my_team';
@@ -27,6 +29,8 @@ const {
     THREADS_IN_TEAM,
     THREAD,
 } = MM_TABLES.SERVER;
+
+const {PLAYBOOK_RUN} = PLAYBOOK_TABLES;
 
 /**
  * A Team houses and enables communication to happen across channels and users.
@@ -58,6 +62,9 @@ export default class TeamModel extends Model implements TeamModelInterface {
 
         /** A TEAM has a 1:1 relationship with TEAM_CHANNEL_HISTORY. */
         [TEAM_CHANNEL_HISTORY]: {type: 'has_many', foreignKey: 'id'},
+
+        /** A TEAM can be associated with multiple PLAYBOOK_RUN (relationship is 1:N) */
+        [PLAYBOOK_RUN]: {type: 'has_many', foreignKey: 'team_id'},
     };
 
     /** is_allow_open_invite : Boolean flag indicating if this team is open to the public */
@@ -95,6 +102,9 @@ export default class TeamModel extends Model implements TeamModelInterface {
 
     /** channels : All the channels associated with this team */
     @children(CHANNEL) channels!: Query<ChannelModel>;
+
+    /** playbookRuns : All playbook runs for this channel */
+    @children(PLAYBOOK_RUN) playbookRuns!: Query<PlaybookRunModel>;
 
     /** myTeam : Retrieves additional information about the team that this user is possibly part of. */
     @immutableRelation(MY_TEAM, 'id') myTeam!: Relation<MyTeamModel>;

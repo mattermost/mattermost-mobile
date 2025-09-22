@@ -7,8 +7,8 @@ import Animated, {useAnimatedStyle, useDerivedValue, useSharedValue, withTiming}
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import Button from '@components/button';
-import {CHIP_BOTTOM_MARGIN, CHIP_HEIGHT} from '@components/chips/constants';
-import SelectedUserChip from '@components/chips/selected_user_chip';
+import {CHIP_HEIGHT} from '@components/chips/constants';
+import SelectedUserChipById from '@components/chips/selected_user_chip_by_id';
 import Toast from '@components/toast';
 import {useTheme} from '@context/theme';
 import {useIsTablet, useKeyboardHeightWithDuration} from '@hooks/device';
@@ -44,7 +44,7 @@ type Props = {
     /**
      * An object mapping user ids to a falsey value indicating whether or not they have been selected.
      */
-    selectedIds: {[id: string]: UserProfile};
+    selectedIds: Set<string>;
 
     /**
      * callback to set the value of showToast
@@ -83,7 +83,8 @@ type Props = {
 }
 
 const BUTTON_HEIGHT = 48;
-const CHIP_HEIGHT_WITH_MARGIN = CHIP_HEIGHT + CHIP_BOTTOM_MARGIN;
+const CHIP_GAP = 8;
+const CHIP_HEIGHT_WITH_MARGIN = CHIP_HEIGHT + CHIP_GAP;
 const EXPOSED_CHIP_HEIGHT = 0.33 * CHIP_HEIGHT;
 const MAX_CHIP_ROWS = 2;
 const SCROLL_MARGIN_TOP = 20;
@@ -125,6 +126,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
             flexGrow: 1,
             flexWrap: 'wrap',
+            gap: CHIP_GAP,
         },
         message: {
             color: theme.centerChannelBg,
@@ -163,17 +165,13 @@ export default function SelectedUsers({
 
     const users = useMemo(() => {
         const u = [];
-        for (const user of Object.values(selectedIds)) {
-            if (!user) {
-                continue;
-            }
-
-            const userItemTestID = `${testID}.${user.id}`;
+        for (const userId of selectedIds) {
+            const userItemTestID = `${testID}.${userId}`;
 
             u.push(
-                <SelectedUserChip
-                    key={user.id}
-                    user={user}
+                <SelectedUserChipById
+                    key={userId}
+                    userId={userId}
                     onPress={onRemove}
                     teammateNameDisplay={teammateNameDisplay}
                     testID={userItemTestID}

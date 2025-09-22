@@ -2,12 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {useIntl} from 'react-intl';
-import {Alert, Text, View} from 'react-native';
+import {Text, View} from 'react-native';
 
 import Markdown from '@components/markdown';
+import {useExternalLinkHandler} from '@hooks/use_external_link_handler';
 import {makeStyleSheetFromTheme} from '@utils/theme';
-import {tryOpenURL} from '@utils/url';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
@@ -38,27 +37,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const AttachmentTitle = ({channelId, link, location, theme, value}: Props) => {
-    const intl = useIntl();
     const style = getStyleSheet(theme);
-
-    const openLink = () => {
-        if (link) {
-            const onError = () => {
-                Alert.alert(
-                    intl.formatMessage({
-                        id: 'mobile.link.error.title',
-                        defaultMessage: 'Error',
-                    }),
-                    intl.formatMessage({
-                        id: 'mobile.link.error.text',
-                        defaultMessage: 'Unable to open the link.',
-                    }),
-                );
-            };
-
-            tryOpenURL(link, onError);
-        }
-    };
+    const openLink = useExternalLinkHandler(link);
 
     let title;
     if (link) {
@@ -79,7 +59,6 @@ const AttachmentTitle = ({channelId, link, location, theme, value}: Props) => {
                 isReplyPost={false}
                 disableHashtags={true}
                 disableAtMentions={true}
-                disableChannelLink={true}
                 disableGallery={true}
                 autolinkedUrlSchemes={[]}
                 mentionKeys={[]}

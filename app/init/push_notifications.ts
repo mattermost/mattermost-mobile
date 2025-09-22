@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import RNUtils from '@mattermost/rnutils/src';
+import {defineMessages} from 'react-intl';
 import {AppState, DeviceEventEmitter, Platform, type EmitterSubscription} from 'react-native';
 import {
     Notification,
@@ -23,7 +24,7 @@ import {backgroundNotification, openNotification} from '@actions/remote/notifica
 import {isCallsStartedMessage} from '@calls/utils';
 import {Device, Events, Navigation, PushNotification, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
-import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
+import {DEFAULT_LOCALE, getLocalizedMessage} from '@i18n';
 import {getServerDisplayName} from '@queries/app/servers';
 import {getCurrentChannelId} from '@queries/servers/system';
 import {getIsCRTEnabled, getThreadById} from '@queries/servers/thread';
@@ -34,6 +35,21 @@ import {isBetaApp} from '@utils/general';
 import {isMainActivity, isTablet} from '@utils/helpers';
 import {logDebug, logInfo} from '@utils/log';
 import {convertToNotificationData} from '@utils/notification';
+
+const messages = defineMessages({
+    replyTitle: {
+        id: 'mobile.push_notification_reply.title',
+        defaultMessage: 'Reply',
+    },
+    replyButton: {
+        id: 'mobile.push_notification_reply.button',
+        defaultMessage: 'Send',
+    },
+    replyPlaceholder: {
+        id: 'mobile.push_notification_reply.placeholder',
+        defaultMessage: 'Write a reply...',
+    },
+});
 
 class PushNotificationsSingleton {
     configured = false;
@@ -64,9 +80,9 @@ class PushNotificationsSingleton {
     }
 
     createReplyCategory = () => {
-        const replyTitle = getLocalizedMessage(DEFAULT_LOCALE, t('mobile.push_notification_reply.title'));
-        const replyButton = getLocalizedMessage(DEFAULT_LOCALE, t('mobile.push_notification_reply.button'));
-        const replyPlaceholder = getLocalizedMessage(DEFAULT_LOCALE, t('mobile.push_notification_reply.placeholder'));
+        const replyTitle = getLocalizedMessage(DEFAULT_LOCALE, messages.replyTitle.id);
+        const replyButton = getLocalizedMessage(DEFAULT_LOCALE, messages.replyButton.id);
+        const replyPlaceholder = getLocalizedMessage(DEFAULT_LOCALE, messages.replyPlaceholder.id);
         const replyTextInput: NotificationTextInput = {buttonTitle: replyButton, placeholder: replyPlaceholder};
         const replyAction = new NotificationAction(PushNotification.REPLY_ACTION, 'background', replyTitle, true, replyTextInput);
         return new NotificationCategory(PushNotification.CATEGORY, [replyAction]);

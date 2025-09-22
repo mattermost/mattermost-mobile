@@ -73,7 +73,7 @@ const sortUsers = (a: UserProfile, b: UserProfile, locale: string, teammateDispl
 const MANAGE_BUTTON = 'manage-button';
 const EMPTY: UserProfile[] = [];
 const EMPTY_MEMBERS: ChannelMembership[] = [];
-const EMPTY_IDS = {};
+const EMPTY_IDS = new Set<string>();
 const {USER_PROFILE} = Screens;
 const CLOSE_BUTTON_ID = 'close-user-profile';
 const TEST_ID = 'manage_members';
@@ -316,9 +316,7 @@ export default function ManageChannelMembers({
                     tags={attributeTags.length > 0 ? attributeTags : undefined}
                     location={Screens.MANAGE_CHANNEL_MEMBERS}
                     testID={`${TEST_ID}.notice`}
-                    containerStyle={styles.flatBottomBanner}
-                    iconSize={24}
-                    tagsVariant='subtle'
+                    squareCorners={true}
                 />
             )}
             <View style={styles.searchBar}>

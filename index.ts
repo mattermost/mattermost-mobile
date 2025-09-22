@@ -48,6 +48,7 @@ if (global.HermesInternal) {
     require('@formatjs/intl-datetimeformat/polyfill-force');
     require('@formatjs/intl-datetimeformat/add-all-tz');
     require('@formatjs/intl-listformat/polyfill-force');
+    require('@formatjs/intl-relativetimeformat/polyfill-force');
 }
 
 if (Platform.OS === 'android') {

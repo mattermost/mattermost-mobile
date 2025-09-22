@@ -13,18 +13,18 @@ import {removeRecentCustomStatus, updateCustomStatus, unsetCustomStatus} from '@
 import CompassIcon from '@components/compass_icon';
 import TabletTitle from '@components/tablet_title';
 import {Events, Screens} from '@constants';
-import {CustomStatusDurationEnum, SET_CUSTOM_STATUS_FAILURE} from '@constants/custom_status';
+import {CUSTOM_STATUS_TIME_PICKER_INTERVALS_IN_MINUTES, CustomStatusDurationEnum, SET_CUSTOM_STATUS_FAILURE} from '@constants/custom_status';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import {usePreventDoubleTap} from '@hooks/utils';
 import SecurityManager from '@managers/security_manager';
 import {dismissModal, goToScreen, openAsBottomSheet, showModal} from '@screens/navigation';
 import {getCurrentMomentForTimezone, getRoundedTime} from '@utils/helpers';
 import {logDebug} from '@utils/log';
 import {mergeNavigationOptions} from '@utils/navigation';
-import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {
     getTimezone,
@@ -179,7 +179,7 @@ const CustomStatus = ({
         return getUserCustomStatus(currentUser);
     }, [currentUser]);
 
-    const initialStatus = useMemo(() => {
+    const [initialStatus] = useState(() => {
         const userTimezone = getTimezone(currentUser?.timezone);
 
         // May be a ref
@@ -187,7 +187,7 @@ const CustomStatus = ({
 
         const currentTime = getCurrentMomentForTimezone(userTimezone ?? '');
 
-        let initialCustomExpiryTime = getRoundedTime(currentTime);
+        let initialCustomExpiryTime = getRoundedTime(currentTime, CUSTOM_STATUS_TIME_PICKER_INTERVALS_IN_MINUTES);
         const isCurrentCustomStatusSet = !isCustomStatusExpired && (storedStatus?.text || storedStatus?.emoji);
         if (isCurrentCustomStatusSet && storedStatus?.duration === 'date_and_time' && storedStatus?.expires_at) {
             initialCustomExpiryTime = moment(storedStatus?.expires_at);
@@ -199,7 +199,7 @@ const CustomStatus = ({
             expiresAt: initialCustomExpiryTime,
             text: isCurrentCustomStatusSet ? storedStatus?.text : '',
         };
-    }, []);
+    });
 
     const [newStatus, dispatchStatus] = useReducer(reducer, initialStatus);
 
@@ -304,9 +304,18 @@ const CustomStatus = ({
             }
         }
         dismissModalAndKeyboard(isTablet, {componentId});
-    }, [newStatus, isStatusSet, storedStatus, currentUser, isTablet]);
+    }, [
+        currentUser,
+        isStatusSet,
+        storedStatus,
+        isTablet,
+        componentId,
+        newStatus,
+        customStatusExpirySupported,
+        serverUrl,
+    ]);
 
-    const openEmojiPicker = useCallback(preventDoubleTap(() => {
+    const openEmojiPicker = usePreventDoubleTap(useCallback(() => {
         openAsBottomSheet({
             closeButtonId: 'close-emoji-picker',
             screen: Screens.EMOJI_PICKER,
@@ -314,7 +323,7 @@ const CustomStatus = ({
             title: intl.formatMessage({id: 'mobile.custom_status.choose_emoji', defaultMessage: 'Choose an emoji'}),
             props: {onEmojiPress: handleEmojiClick},
         });
-    }), [theme, intl, handleEmojiClick]);
+    }, [theme, intl, handleEmojiClick]));
 
     const handleBackButton = useCallback(() => {
         dismissModalAndKeyboard(isTablet, {componentId});
@@ -344,7 +353,7 @@ const CustomStatus = ({
                 }],
             },
         });
-    }, [isBtnEnabled]);
+    }, [componentId, intl, isBtnEnabled, theme.sidebarHeaderTextColor]);
 
     return (
         <View

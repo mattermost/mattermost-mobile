@@ -5,7 +5,6 @@ exports[`Section notice match snapshot 1`] = `
   style={
     [
       {
-        "borderRadius": 4,
         "borderStyle": "solid",
         "borderWidth": 1,
       },
@@ -13,7 +12,9 @@ exports[`Section notice match snapshot 1`] = `
         "backgroundColor": "rgba(93,137,234,0.08)",
         "borderColor": "rgba(93,137,234,0.16)",
       },
-      undefined,
+      {
+        "borderRadius": 4,
+      },
     ]
   }
   testID="sectionNoticeContainer"

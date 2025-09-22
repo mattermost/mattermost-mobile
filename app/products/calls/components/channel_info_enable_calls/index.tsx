@@ -9,7 +9,7 @@ import {useTryCallsFunction} from '@calls/hooks';
 import {getCallsConfig} from '@calls/state';
 import OptionItem from '@components/option_item';
 import {useServerUrl} from '@context/server';
-import {preventDoubleTap} from '@utils/tap';
+import {usePreventDoubleTap} from '@hooks/utils';
 
 interface Props {
     channelId: string;
@@ -34,9 +34,11 @@ const ChannelInfoEnableCalls = ({channelId, enabled}: Props) => {
         return null;
     }
 
+    const onPress = usePreventDoubleTap(tryOnPress);
+
     return (
         <OptionItem
-            action={preventDoubleTap(tryOnPress)}
+            action={onPress}
             label={(enabled ? disableText : enableText) + msgPostfix}
             icon='phone'
             type='default'

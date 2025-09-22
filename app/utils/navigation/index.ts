@@ -2,11 +2,14 @@
 // See LICENSE.txt for license information.
 
 import {Alert} from 'react-native';
-import {Navigation, type Options} from 'react-native-navigation';
+import {Navigation, OptionsModalPresentationStyle, type Options} from 'react-native-navigation';
 
+import CompassIcon from '@components/compass_icon';
 import {Screens, ServerErrors} from '@constants';
+import {showModal} from '@screens/navigation';
 import {isErrorWithMessage, isServerError} from '@utils/errors';
 
+import type {GalleryItemType} from '@typings/screens/gallery';
 import type {AvailableScreens} from '@typings/screens/navigation';
 import type {IntlShape} from 'react-intl';
 
@@ -77,7 +80,7 @@ export function alertChannelArchived(displayName: string, intl: IntlShape) {
 }
 
 export function alertTeamAddError(error: unknown, intl: IntlShape) {
-    let errMsg = intl.formatMessage({id: 'join_team.error.message', defaultMessage: 'There has been an error joining the team.'});
+    let errMsg = intl.formatMessage({id: 'join_team.error.message', defaultMessage: 'There has been an error joining the team'});
 
     if (isServerError(error)) {
         if (error.server_error_id === ServerErrors.TEAM_MEMBERSHIP_DENIAL_ERROR_ID) {
@@ -94,4 +97,28 @@ export function alertTeamAddError(error: unknown, intl: IntlShape) {
         intl.formatMessage({id: 'join_team.error.title', defaultMessage: 'Error joining a team'}),
         errMsg,
     );
+}
+
+export function previewPdf(item: FileInfo | GalleryItemType, path: string, theme: Theme, onDismiss?: () => void) {
+    const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
+    const closeButtonId = 'close-pdf-viewer';
+
+    const options: Options = {
+        modalPresentationStyle: OptionsModalPresentationStyle.currentContext,
+        topBar: {
+            visible: false,
+            animate: false,
+            leftButtons: [{
+                id: closeButtonId,
+                icon: closeButton,
+                testID: closeButtonId,
+            }],
+        },
+    };
+    showModal(Screens.PDF_VIEWER, item.name, {
+        fileId: item.id,
+        filePath: path,
+        closeButtonId,
+        onDismiss,
+    }, options);
 }

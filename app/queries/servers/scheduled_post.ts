@@ -13,7 +13,7 @@ import type ScheduledPostModel from '@typings/database/models/servers/scheduled_
 const {SERVER: {CHANNEL, SCHEDULED_POST}} = MM_TABLES;
 
 export const queryScheduledPostsForTeam = (database: Database, teamId: string, includeDirectChannelPosts?: boolean) => {
-    return database.collections.get<ScheduledPostModel>(SCHEDULED_POST).query(
+    return database.get<ScheduledPostModel>(SCHEDULED_POST).query(
         Q.on(CHANNEL,
             Q.or(
                 Q.where('team_id', teamId),
@@ -27,7 +27,7 @@ export const queryScheduledPostsForTeam = (database: Database, teamId: string, i
 };
 
 export const queryScheduledPost = (database: Database, channelId: string, rootId = '') => {
-    return database.collections.get<ScheduledPostModel>(SCHEDULED_POST).query(
+    return database.get<ScheduledPostModel>(SCHEDULED_POST).query(
         Q.and(
             Q.where('channel_id', channelId),
             Q.where('root_id', rootId),
@@ -67,7 +67,7 @@ export const observeScheduledPostCountForChannel = (
 };
 
 export const observeScheduledPostCountForThread = (database: Database, rootId: string) => {
-    return database.collections.get<ScheduledPostModel>(SCHEDULED_POST).query(
+    return database.get<ScheduledPostModel>(SCHEDULED_POST).query(
         Q.where('root_id', rootId),
     ).observeCount();
 };

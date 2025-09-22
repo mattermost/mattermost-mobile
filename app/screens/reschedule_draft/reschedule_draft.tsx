@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import moment, {type Moment} from 'moment-timezone';
 import React, {useCallback, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, SafeAreaView, StyleSheet, View} from 'react-native';
@@ -22,7 +23,6 @@ import {getTimezone} from '@utils/user';
 
 import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 import type {AvailableScreens} from '@typings/screens/navigation';
-import type {Moment} from 'moment-timezone';
 
 type Props = {
     currentUserTimezone?: UserTimezone | null;
@@ -80,7 +80,7 @@ const RescheduledDraft: React.FC<Props> = ({
     const handleUIUpdates = useCallback((res: {error?: unknown}) => {
         if (res.error) {
             setIsUpdating(false);
-            const errorMessage = intl.formatMessage({id: 'mobile.scheduled_post.update.error', defaultMessage: 'There was a problem updating this post message. Please try again.'});
+            const errorMessage = intl.formatMessage({id: 'mobile.scheduled_post.update.error', defaultMessage: 'There was a problem editing this message. Please try again.'});
             showSnackBar({
                 barType: SNACK_BAR_TYPE.RESCHEDULED_POST,
                 customMessage: errorMessage,
@@ -139,6 +139,7 @@ const RescheduledDraft: React.FC<Props> = ({
                     theme={theme}
                     timezone={userTimezone}
                     showInitially='date'
+                    initialDate={moment(draft.scheduledAt)}
                 />
             </View>
         </SafeAreaView>

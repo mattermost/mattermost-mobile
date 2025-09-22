@@ -4,6 +4,7 @@
 import {fireEvent} from '@testing-library/react-native';
 import React from 'react';
 
+import {Preferences} from '@constants';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
 import BaseChip from './base_chip';
@@ -27,26 +28,39 @@ describe('BaseChip', () => {
         expect(getByText('Test Label')).toBeTruthy();
     });
 
-    it('should render with the X button when showRemoveOption is true', () => {
+    it('should render with the X button when actionIcon is remove', () => {
         const {getByTestId} = renderWithIntlAndTheme(
             <BaseChip
                 onPress={onPressMock}
                 label='Test Label'
                 testID='base_chip'
-                showRemoveOption={true}
+                actionIcon='remove'
             />,
         );
 
         expect(getByTestId('base_chip.remove.button')).toBeTruthy();
     });
 
-    it('should not render the X button when showRemoveOption is false', () => {
+    it('should render with the chevron down button when actionIcon is downArrow', () => {
+        const {getByTestId} = renderWithIntlAndTheme(
+            <BaseChip
+                onPress={onPressMock}
+                label='Test Label'
+                testID='base_chip'
+                actionIcon='downArrow'
+            />,
+        );
+
+        expect(getByTestId('base_chip.downArrow.button')).toBeTruthy();
+    });
+
+    it('should not render the X button when actionIcon is undefined', () => {
         const {queryByTestId} = renderWithIntlAndTheme(
             <BaseChip
                 onPress={onPressMock}
                 label='Test Label'
                 testID='base_chip'
-                showRemoveOption={false}
+                actionIcon={undefined}
             />,
         );
 
@@ -59,7 +73,7 @@ describe('BaseChip', () => {
                 onPress={onPressMock}
                 label='Test Label'
                 testID='base_chip'
-                showRemoveOption={true}
+                actionIcon='remove'
             />,
         );
 
@@ -73,7 +87,7 @@ describe('BaseChip', () => {
                 onPress={onPressMock}
                 label='Test Label'
                 testID='base_chip'
-                showRemoveOption={false}
+                actionIcon={undefined}
             />,
         );
 
@@ -107,5 +121,70 @@ describe('BaseChip', () => {
 
         expect(getByTestId('base_chip').props.entering).toBeUndefined();
         expect(getByTestId('base_chip').props.exiting).toBeUndefined();
+    });
+
+    it('should not have a touchable if onPress is not provided', () => {
+        const {queryByTestId} = renderWithIntlAndTheme(
+            <BaseChip
+                label='Test Label'
+                testID='base_chip'
+            />,
+        );
+
+        expect(queryByTestId('base_chip.chip_button')).toBeNull();
+    });
+
+    it('should bold the text when boldText is true', () => {
+        const {getByText, rerender} = renderWithIntlAndTheme(
+            <BaseChip
+                label='Test Label'
+                testID='base_chip'
+                boldText={true}
+            />,
+        );
+
+        expect(getByText('Test Label')).toHaveStyle({fontWeight: '600'});
+
+        rerender(
+            <BaseChip
+                label='Test Label'
+                testID='base_chip'
+                boldText={false}
+            />,
+        );
+
+        expect(getByText('Test Label')).toHaveStyle({fontWeight: '400'});
+    });
+
+    it('should use the correct text color based on the type', () => {
+        const {getByText, rerender} = renderWithIntlAndTheme(
+            <BaseChip
+                label='Test Label'
+                testID='base_chip'
+                type='normal'
+            />,
+        );
+
+        expect(getByText('Test Label')).toHaveStyle({color: Preferences.THEMES.denim.centerChannelColor});
+
+        rerender(
+            <BaseChip
+                label='Test Label'
+                testID='base_chip'
+                type='danger'
+            />,
+        );
+
+        expect(getByText('Test Label')).toHaveStyle({color: Preferences.THEMES.denim.errorTextColor});
+
+        rerender(
+            <BaseChip
+                label='Test Label'
+                testID='base_chip'
+                type='link'
+            />,
+        );
+
+        expect(getByText('Test Label')).toHaveStyle({color: Preferences.THEMES.denim.linkColor});
     });
 });

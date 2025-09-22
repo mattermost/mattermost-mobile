@@ -7,6 +7,8 @@ import type {Associations} from '@nozbe/watermelondb/Model';
 
 export type CustomProfileFieldAttrs = {
     sort_order?: number;
+    value_type?: string;
+    options?: Array<{id: string; name: string; color?: string}>;
     [key: string]: unknown;
 };
 

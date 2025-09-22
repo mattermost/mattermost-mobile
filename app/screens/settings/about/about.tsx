@@ -5,7 +5,7 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import {applicationId, nativeApplicationVersion, nativeBuildVersion} from 'expo-application';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Text, View} from 'react-native';
+import {Text, View} from 'react-native';
 
 import {getLicenseLoadMetric} from '@actions/remote/license';
 import Config from '@assets/config.json';
@@ -19,12 +19,12 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {usePreventDoubleTap} from '@hooks/utils';
-import {t} from '@i18n';
 import {popTopScreen} from '@screens/navigation';
 import {showSnackBar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {tryOpenURL} from '@utils/url';
+import {onOpenLinkError} from '@utils/url/links';
 
 import LearnMore from './learn_more';
 import Subtitle from './subtitle';
@@ -139,16 +139,7 @@ const About = ({componentId, config, license}: AboutProps) => {
 
     const openURL = useCallback((url: string) => {
         const onError = () => {
-            Alert.alert(
-                intl.formatMessage({
-                    id: 'settings.link.error.title',
-                    defaultMessage: 'Error',
-                }),
-                intl.formatMessage({
-                    id: 'settings.link.error.text',
-                    defaultMessage: 'Unable to open the link.',
-                }),
-            );
+            onOpenLinkError(intl);
         };
 
         tryOpenURL(url, onError);
@@ -320,7 +311,7 @@ const About = ({componentId, config, license}: AboutProps) => {
                     <View style={styles.licenseContainer}>
                         <FormattedText
                             defaultMessage='Licensed to: {company}'
-                            id={t('settings.about.licensed')}
+                            id={'settings.about.licensed'}
                             style={styles.info}
                             testID='about.licensee'
                             values={{company: license.Company}}
@@ -334,7 +325,7 @@ const About = ({componentId, config, license}: AboutProps) => {
                 {!MATTERMOST_BUNDLE_IDS.includes(applicationId || '') &&
                     <FormattedText
                         defaultMessage='{site} is powered by Mattermost'
-                        id={t('settings.about.powered_by')}
+                        id={'settings.about.powered_by'}
                         style={styles.footerText}
                         testID='about.powered_by'
                         values={{site: config.SiteName}}
@@ -345,7 +336,7 @@ const About = ({componentId, config, license}: AboutProps) => {
                 />
                 <FormattedText
                     defaultMessage='Copyright 2015-{currentYear} Mattermost, Inc. All rights reserved'
-                    id={t('settings.about.copyright')}
+                    id={'settings.about.copyright'}
                     style={[styles.footerText, styles.copyrightText]}
                     testID='about.copyright'
                     values={{currentYear: new Date().getFullYear()}}
@@ -359,14 +350,14 @@ const About = ({componentId, config, license}: AboutProps) => {
                 </View>
                 <View style={styles.noticeContainer}>
                     <FormattedText
-                        id={t('settings.notice_text')}
+                        id={'settings.notice_text'}
                         defaultMessage='Mattermost is made possible by the open source software used in our {platform} and {mobile}.'
                         style={styles.footerText}
                         values={{
                             platform: (
                                 <FormattedText
                                     defaultMessage='server'
-                                    id={t('settings.notice_platform_link')}
+                                    id={'settings.notice_platform_link'}
                                     onPress={handlePlatformNotice}
                                     style={styles.noticeLink}
                                 />
@@ -374,7 +365,7 @@ const About = ({componentId, config, license}: AboutProps) => {
                             mobile: (
                                 <FormattedText
                                     defaultMessage='mobile apps'
-                                    id={t('settings.notice_mobile_link')}
+                                    id={'settings.notice_mobile_link'}
                                     onPress={handleMobileNotice}
                                     style={[styles.noticeLink, {marginLeft: 5}]}
                                 />
@@ -387,7 +378,7 @@ const About = ({componentId, config, license}: AboutProps) => {
                     <View>
                         <FormattedText
                             defaultMessage='Build Hash:'
-                            id={t('about.hash')}
+                            id={'about.hash'}
                             style={styles.footerTitleText}
                             testID='about.build_hash.title'
                         />
@@ -401,7 +392,7 @@ const About = ({componentId, config, license}: AboutProps) => {
                     <View>
                         <FormattedText
                             defaultMessage='EE Build Hash:'
-                            id={t('about.hashee')}
+                            id={'about.hashee'}
                             style={styles.footerTitleText}
                             testID='about.build_hash_enterprise.title'
                         />
@@ -416,7 +407,7 @@ const About = ({componentId, config, license}: AboutProps) => {
                 <View style={{marginBottom: 20}}>
                     <FormattedText
                         defaultMessage='Build Date:'
-                        id={t('about.date')}
+                        id={'about.date'}
                         style={styles.footerTitleText}
                         testID='about.build_date.title'
                     />

@@ -1,57 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {DeviceEventEmitter, Image, Keyboard} from 'react-native';
+import {DeviceEventEmitter, Image, Keyboard, View} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import {measure, type AnimatedRef} from 'react-native-reanimated';
 
-import {clamp, clampVelocity, fileToGalleryItem, freezeOtherScreens, friction, galleryItemToFileInfo, getImageSize, getShouldRender, measureItem, openGalleryAtIndex, typedMemo, workletNoop, workletNoopTrue} from '.';
+import {waitFor} from '@test/intl-test-helper';
+
+import {clamp, clampVelocity, fileToGalleryItem, freezeOtherScreens, friction, galleryItemToFileInfo, getImageSize, getShouldRender, measureItem, measureViewInWindow, openGalleryAtIndex, typedMemo} from '.';
 
 import type {GalleryItemType, GalleryManagerSharedValues} from '@typings/screens/gallery';
 
 jest.mock('@screens/navigation', () => ({
     showOverlay: jest.fn(),
 }));
-
-jest.mock('react-native', () => {
-    const ReactNative = jest.requireActual('react-native');
-    const {
-        NativeModules: RNNativeModules,
-    } = ReactNative;
-
-    const NativeModules = {
-        ...RNNativeModules,
-        RNUtils: {
-            getConstants: () => ({
-                appGroupIdentifier: 'group.mattermost.rnbeta',
-                appGroupSharedDirectory: {
-                    sharedDirectory: '',
-                    databasePath: '',
-                },
-            }),
-            addListener: jest.fn(),
-            removeListeners: jest.fn(),
-            isRunningInSplitView: jest.fn().mockReturnValue({isSplit: false, isTablet: false}),
-
-            getDeliveredNotifications: jest.fn().mockResolvedValue([]),
-            removeChannelNotifications: jest.fn().mockImplementation(),
-            removeThreadNotifications: jest.fn().mockImplementation(),
-            removeServerNotifications: jest.fn().mockImplementation(),
-
-            unlockOrientation: jest.fn(),
-        },
-    };
-
-    return Object.setPrototypeOf({
-        NativeModules,
-        DeviceEventEmitter: {
-            emit: jest.fn(),
-        },
-        Keyboard: {
-            dismiss: jest.fn(),
-        },
-    }, ReactNative);
-});
 
 // Mock react-native-reanimated measure function
 jest.mock('react-native-reanimated', () => ({
@@ -145,8 +107,9 @@ describe('Gallery utils', () => {
 
     describe('freezeOtherScreens', () => {
         it('should emit freeze screen event', () => {
+            const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
             freezeOtherScreens(true);
-            expect(DeviceEventEmitter.emit).toHaveBeenCalledWith('FREEZE_SCREEN', true);
+            expect(emitSpy).toHaveBeenCalledWith('FREEZE_SCREEN', true);
         });
     });
 
@@ -228,7 +191,8 @@ describe('Gallery utils', () => {
     });
 
     describe('openGalleryAtIndex', () => {
-        it('should open gallery and freeze other screens', () => {
+        it('should open gallery and freeze other screens', async () => {
+            const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
             const galleryIdentifier = 'gallery1';
             const initialIndex = 0;
             const items = [{id: '1', name: 'item1'}, {id: '2', name: 'item2'}] as GalleryItemType[];
@@ -236,6 +200,10 @@ describe('Gallery utils', () => {
             openGalleryAtIndex(galleryIdentifier, initialIndex, items);
             expect(Keyboard.dismiss).toHaveBeenCalled();
             expect(Navigation.setDefaultOptions).toHaveBeenCalled();
+
+            await waitFor(() => {
+                expect(emitSpy).toHaveBeenCalledWith('FREEZE_SCREEN', true);
+            });
         });
     });
 
@@ -246,18 +214,6 @@ describe('Gallery utils', () => {
 
             // @ts-expect-error type in typedef
             expect(memoizedComponent.type).toBe(component);
-        });
-    });
-
-    describe('workletNoop', () => {
-        it('should execute without doing anything', () => {
-            expect(workletNoop()).toBeUndefined();
-        });
-    });
-
-    describe('workletNoopTrue', () => {
-        it('should always return true', () => {
-            expect(workletNoopTrue()).toBe(true);
         });
     });
 
@@ -278,6 +234,27 @@ describe('Gallery utils', () => {
             });
 
             await expect(getImageSize('test-uri')).rejects.toThrow('Failed to get size');
+        });
+    });
+
+    describe('measureViewInWindow', () => {
+        it('should resolve with measured values when ref.current exists', async () => {
+            const measureMock = jest.fn((cb) => {
+            // x, y, width, height, pageX, pageY
+                cb(0, 0, 120, 80, 50, 60);
+            });
+            const ref = {current: {measure: measureMock}} as unknown as React.RefObject<View>;
+
+            const result = await measureViewInWindow(ref);
+            expect(result).toEqual({x: 50, y: 60, width: 120, height: 80});
+            expect(measureMock).toHaveBeenCalled();
+        });
+
+        it('should resolve with zeros when ref.current does not exist', async () => {
+            const ref = {current: null} as unknown as React.RefObject<View>;
+
+            const result = await measureViewInWindow(ref);
+            expect(result).toEqual({x: 0, y: 0, width: 0, height: 0});
         });
     });
 });

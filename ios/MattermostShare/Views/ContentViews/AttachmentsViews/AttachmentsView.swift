@@ -46,14 +46,20 @@ struct AttachmentsView: View {
   }
   
   var body: some View {
-    VStack (spacing: 8) {
+    VStack(alignment: .leading, spacing: 0) {
       if (attachments.count == 1) {
+        let attachment = attachments[0]
+        let isImageType = attachment.type == .image
+        
         SingleAttachmentView(
-          attachment: attachments[0],
-          hasError: attachments[0].sizeError(server: shareViewModel.server) ||
-          attachments[0].resolutionError(server: shareViewModel.server)
+          attachments: $attachments,
+          attachment: attachment,
+          index: 0,
+          hasError: attachment.sizeError(server: shareViewModel.server) ||
+          attachment.resolutionError(server: shareViewModel.server),
+          isSmall: isImageType
         )
-        .padding(.horizontal, 20)
+        .padding(.horizontal, 16)
         .transition(.opacity)
       } else {
         MultipleAttachmentView(attachments: $attachments)
@@ -62,7 +68,8 @@ struct AttachmentsView: View {
       
       if error != nil {
         ErrorLabelView(error: error!)
-          .padding(.horizontal, 20)
+          .padding(.horizontal, 16)
+          .padding(.top, 8)
       }
     }
     .animation(.linear(duration: 0.3))

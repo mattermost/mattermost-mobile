@@ -10,20 +10,21 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
-import {CUSTOM_STATUS_TIME_PICKER_INTERVALS_IN_MINUTES} from '@constants/custom_status';
 import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
-import {getCurrentMomentForTimezone, getRoundedTime, getUtcOffsetForTimeZone} from '@utils/helpers';
+import {getCurrentMomentForTimezone, getRoundedTime} from '@utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 type Props = {
-    timezone: string | null;
+    timezone: string;
     isMilitaryTime: boolean;
     theme: Theme;
     handleChange: (currentDate: Moment) => void;
     showInitially?: AndroidMode;
+    initialDate?: Moment;
+    minuteInterval?: 5 | 30;
 }
 
 type AndroidMode = 'date' | 'time';
@@ -43,12 +44,21 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const DateTimeSelector = ({timezone, handleChange, isMilitaryTime, theme, showInitially}: Props) => {
+const DateTimeSelector = ({
+    timezone,
+    handleChange,
+    isMilitaryTime,
+    theme,
+    showInitially,
+    initialDate,
+    minuteInterval = 30,
+}: Props) => {
     const styles = getStyleSheet(theme);
     const currentTime = getCurrentMomentForTimezone(timezone);
-    const timezoneOffSetInMinutes = timezone ? getUtcOffsetForTimeZone(timezone) : undefined;
-    const minimumDate = getRoundedTime(currentTime);
-    const [date, setDate] = useState<Moment>(minimumDate);
+    const minimumDate = getRoundedTime(currentTime, minuteInterval);
+
+    const defaultDate = initialDate && initialDate.isAfter(minimumDate) ? initialDate : minimumDate;
+    const [date, setDate] = useState<Moment>(defaultDate);
     const [mode, setMode] = useState<AndroidMode>(showInitially || 'date');
     const [show, setShow] = useState<boolean>(Boolean(showInitially));
 
@@ -105,8 +115,8 @@ const DateTimeSelector = ({timezone, handleChange, isMilitaryTime, theme, showIn
                     onChange={onChange}
                     textColor={theme.centerChannelColor}
                     minimumDate={minimumDate.toDate()}
-                    minuteInterval={CUSTOM_STATUS_TIME_PICKER_INTERVALS_IN_MINUTES}
-                    timeZoneOffsetInMinutes={timezoneOffSetInMinutes}
+                    minuteInterval={minuteInterval}
+                    timeZoneName={timezone}
                 />
             )}
         </View>

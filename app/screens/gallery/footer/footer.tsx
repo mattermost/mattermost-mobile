@@ -4,7 +4,7 @@
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {DeviceEventEmitter, type StyleProp, StyleSheet, View, type ViewStyle} from 'react-native';
 import Animated from 'react-native-reanimated';
-import {SafeAreaView, type Edge, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {Events} from '@constants';
 import {GALLERY_FOOTER_HEIGHT} from '@constants/gallery';
@@ -30,19 +30,15 @@ type Props = {
     enablePostIconOverride: boolean;
     enablePostUsernameOverride: boolean;
     enablePublicLink: boolean;
+    enableSecureFilePreview: boolean;
     hideActions: boolean;
     isDirectChannel: boolean;
     item: GalleryItemType;
     post?: PostModel;
     style: StyleProp<ViewStyle>;
     teammateNameDisplay: string;
-    hasCaptions: boolean;
-    captionEnabled: boolean;
-    onCaptionsPress: () => void;
 }
 
-const AnimatedSafeAreaView = Animated.createAnimatedComponent(SafeAreaView);
-const edges: Edge[] = ['left', 'right'];
 const styles = StyleSheet.create({
     container: {
         alignItems: 'center',
@@ -60,9 +56,8 @@ const styles = StyleSheet.create({
 
 const Footer = ({
     author, canDownloadFiles, channelName, currentUserId,
-    enablePostIconOverride, enablePostUsernameOverride, enablePublicLink,
+    enablePostIconOverride, enablePostUsernameOverride, enablePublicLink, enableSecureFilePreview,
     hideActions, isDirectChannel, item, post, style, teammateNameDisplay,
-    hasCaptions, captionEnabled, onCaptionsPress,
 }: Props) => {
     const showActions = !hideActions && Boolean(item.id) && !item.id?.startsWith('uid');
     const [action, setAction] = useState<GalleryAction>('none');
@@ -105,19 +100,18 @@ const Footer = ({
     }, []);
 
     return (
-        <AnimatedSafeAreaView
-            mode='padding'
-            edges={edges}
+        <Animated.View
             style={[style]}
         >
-            {['downloading', 'sharing'].includes(action) &&
+            {['downloading', 'sharing'].includes(action) && !enableSecureFilePreview && canDownloadFiles &&
                 <DownloadWithAction
                     action={action}
+                    enableSecureFilePreview={enableSecureFilePreview}
                     item={item}
                     setAction={setAction}
                 />
             }
-            {action === 'copying' &&
+            {action === 'copying' && !enableSecureFilePreview && enablePublicLink &&
             <CopyPublicLink
                 item={item}
                 setAction={setAction}
@@ -141,20 +135,17 @@ const Footer = ({
                 {showActions &&
                 <Actions
                     disabled={action !== 'none'}
-                    canDownloadFiles={canDownloadFiles}
-                    enablePublicLinks={enablePublicLink && item.type !== 'avatar'}
+                    canDownloadFiles={!enableSecureFilePreview && canDownloadFiles}
+                    enablePublicLinks={!enableSecureFilePreview && enablePublicLink && item.type !== 'avatar'}
                     fileId={item.id!}
                     onCopyPublicLink={handleCopyLink}
                     onDownload={handleDownload}
                     onShare={handleShare}
-                    hasCaptions={hasCaptions}
-                    captionEnabled={captionEnabled}
-                    onCaptionsPress={onCaptionsPress}
                 />
                 }
             </View>
             <View style={bottomStyle}/>
-        </AnimatedSafeAreaView>
+        </Animated.View>
     );
 };
 

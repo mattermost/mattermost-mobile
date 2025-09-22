@@ -14,9 +14,9 @@ import FloatingTextInput from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import {FORGOT_PASSWORD, MFA} from '@constants/screens';
 import {useAvoidKeyboard} from '@hooks/device';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {goToScreen, loginAnimationOptions, resetToHome} from '@screens/navigation';
 import {getFullErrorMessage, getServerError, isErrorWithMessage, isServerError} from '@utils/errors';
-import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
 
@@ -84,6 +84,14 @@ const messages = defineMessages({
     },
 });
 
+const isMFAError = (loginError: unknown): boolean => {
+    const serverError = getServerError(loginError);
+    if (serverError) {
+        return MFA_EXPECTED_ERRORS.includes(serverError);
+    }
+    return false;
+};
+
 const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchError, launchType, license, serverUrl, theme}: LoginProps) => {
     const styles = getStyleSheet(theme);
     const loginRef = useRef<TextInput>(null);
@@ -102,34 +110,30 @@ const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchEr
 
     useAvoidKeyboard(keyboardAwareRef);
 
-    const preSignIn = preventDoubleTap(async () => {
-        setIsLoading(true);
-
-        Keyboard.dismiss();
-        signIn();
-    });
-
-    const signIn = async () => {
-        const result: LoginActionResponse = await login(serverUrl!, {serverDisplayName, loginId: loginId.toLowerCase(), password, config, license});
-        if (checkLoginResponse(result)) {
-            goToHome(result.error);
-        }
-    };
-
-    const goToHome = (loginError?: unknown) => {
+    const goToHome = useCallback((loginError?: unknown) => {
         const hasError = launchError || Boolean(loginError);
         resetToHome({extra, launchError: hasError, launchType, serverUrl});
-    };
+    }, [extra, launchError, launchType, serverUrl]);
 
-    const isMFAError = (loginError: unknown): boolean => {
-        const serverError = getServerError(loginError);
-        if (serverError) {
-            return MFA_EXPECTED_ERRORS.includes(serverError);
+    const goToMfa = useCallback(() => {
+        goToScreen(MFA, '', {goToHome, loginId, password, config, serverDisplayName, license, serverUrl, theme}, loginAnimationOptions());
+    }, [config, goToHome, license, loginId, password, serverDisplayName, serverUrl, theme]);
+
+    const getLoginErrorMessage = useCallback((loginError: unknown) => {
+        if (isServerError(loginError)) {
+            const errorId = loginError.server_error_id;
+            if (errorId === 'api.user.login.invalid_credentials_email_username' || (!isErrorWithMessage(loginError) && typeof loginError !== 'string')) {
+                return intl.formatMessage({
+                    id: 'login.invalid_credentials',
+                    defaultMessage: 'The email and password combination is incorrect',
+                });
+            }
         }
-        return false;
-    };
 
-    const checkLoginResponse = (data: LoginActionResponse) => {
+        return getFullErrorMessage(loginError);
+    }, [intl]);
+
+    const checkLoginResponse = useCallback((data: LoginActionResponse) => {
         const {failed, error: loginError} = data;
         if (failed && isMFAError(loginError)) {
             goToMfa();
@@ -146,25 +150,21 @@ const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchEr
         setIsLoading(false);
 
         return true;
-    };
+    }, [getLoginErrorMessage, goToMfa]);
 
-    const goToMfa = () => {
-        goToScreen(MFA, '', {goToHome, loginId, password, config, serverDisplayName, license, serverUrl, theme}, loginAnimationOptions());
-    };
-
-    const getLoginErrorMessage = (loginError: unknown) => {
-        if (isServerError(loginError)) {
-            const errorId = loginError.server_error_id;
-            if (errorId === 'api.user.login.invalid_credentials_email_username' || (!isErrorWithMessage(loginError) && typeof loginError !== 'string')) {
-                return intl.formatMessage({
-                    id: 'login.invalid_credentials',
-                    defaultMessage: 'The email and password combination is incorrect',
-                });
-            }
+    const signIn = useCallback(async () => {
+        const result: LoginActionResponse = await login(serverUrl!, {serverDisplayName, loginId: loginId.toLowerCase(), password, config, license});
+        if (checkLoginResponse(result)) {
+            goToHome(result.error);
         }
+    }, [checkLoginResponse, config, goToHome, license, loginId, password, serverDisplayName, serverUrl]);
 
-        return getFullErrorMessage(loginError);
-    };
+    const preSignIn = usePreventDoubleTap(useCallback(async () => {
+        setIsLoading(true);
+
+        Keyboard.dismiss();
+        signIn();
+    }, [signIn]));
 
     const createLoginPlaceholder = () => {
         const {formatMessage} = intl;
@@ -206,7 +206,7 @@ const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchEr
     const onLogin = useCallback(() => {
         Keyboard.dismiss();
         preSignIn();
-    }, [loginId, password, theme]);
+    }, [preSignIn]);
 
     const onLoginChange = useCallback((text: string) => {
         setLoginId(text);
@@ -259,23 +259,21 @@ const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchEr
         setButtonDisabled(true);
     }, [loginId, password]);
 
-    const renderProceedButton = useMemo(() => {
-        return (
-            <View style={styles.loginButtonContainer}>
-                <Button
-                    disabled={buttonDisabled}
-                    onPress={onLogin}
-                    size='lg'
-                    testID={buttonDisabled ? 'login_form.signin.button.disabled' : 'login_form.signin.button'}
-                    text={intl.formatMessage(isLoading ? messages.signingIn : messages.signIn)}
-                    showLoader={isLoading}
-                    theme={theme}
-                />
-            </View>
-        );
-    }, [styles.loginButtonContainer, buttonDisabled, onLogin, intl, isLoading, theme]);
+    const proceedButton = (
+        <View style={styles.loginButtonContainer}>
+            <Button
+                disabled={buttonDisabled}
+                onPress={onLogin}
+                size='lg'
+                testID={buttonDisabled ? 'login_form.signin.button.disabled' : 'login_form.signin.button'}
+                text={intl.formatMessage(isLoading ? messages.signingIn : messages.signIn)}
+                showLoader={isLoading}
+                theme={theme}
+            />
+        </View>
+    );
 
-    const endAdornment = (
+    const endAdornment = useMemo(() => (
         <TouchableOpacity
             onPress={togglePasswordVisiblity}
             hitSlop={hitSlop}
@@ -287,7 +285,7 @@ const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchEr
                 color={changeOpacity(theme.centerChannelColor, 0.64)}
             />
         </TouchableOpacity>
-    );
+    ), [isPasswordVisible, styles.endAdornment, theme.centerChannelColor, togglePasswordVisiblity]);
 
     return (
         <View style={styles.container}>
@@ -348,7 +346,7 @@ const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchEr
                     />
                 </RNEButton>
             )}
-            {renderProceedButton}
+            {proceedButton}
         </View>
     );
 };

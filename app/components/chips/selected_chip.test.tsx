@@ -32,7 +32,7 @@ describe('SelectedChip', () => {
 
         const baseChip = getByTestId('selected-chip');
         expect(baseChip.props.label).toBe('Test Chip');
-        expect(baseChip.props.showRemoveOption).toBe(true);
+        expect(baseChip.props.actionIcon).toBe('remove');
         expect(baseChip.props.showAnimation).toBe(true);
         expect(baseChip.props.prefix).toBeUndefined();
         baseChip.props.onPress();

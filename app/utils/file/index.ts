@@ -298,6 +298,21 @@ export const isDocument = (file?: FileInfo | FileModel) => {
     return SUPPORTED_DOCS_FORMAT!.includes(mime);
 };
 
+export const isPdf = (file?: FileInfo | FileModel) => {
+    if (!file) {
+        return false;
+    }
+
+    let mime = 'mime_type' in file ? file.mime_type : file.mimeType;
+    if (mime && mime.includes(';')) {
+        mime = mime.split(';')[0];
+    } else if (!mime && file?.name) {
+        mime = lookupMimeType(file.name);
+    }
+
+    return mime === 'application/pdf';
+};
+
 export const isVideo = (file?: FileInfo | FileModel) => {
     if (!file) {
         return false;
@@ -581,4 +596,20 @@ export const pathWithPrefix = (prefix: string, path: string) => {
 
 export const deleteFile = async (path: string) => {
     await deleteAsync(pathWithPrefix('file://', path));
+};
+
+export const filesLocalPathValidation = async (files: FileModel[], authorId: string) => {
+    const filesInfo: FileInfo[] = [];
+    for await (const f of files) {
+        const info = f.toFileInfo(authorId);
+        if (info.localPath) {
+            const exists = await fileExists(info.localPath);
+            if (!exists) {
+                info.localPath = '';
+            }
+        }
+        filesInfo.push(info);
+    }
+
+    return filesInfo;
 };

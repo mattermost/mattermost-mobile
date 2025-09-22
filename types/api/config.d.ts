@@ -70,6 +70,7 @@ interface ClientConfig {
     EnableLatex: string;
     EnableLdap: string;
     EnableLinkPreviews: string;
+    EnablePermalinkPreviews: string;
     EnableMarketplace: string;
     EnableMetrics: string;
     EnableMobileFileDownload: string;
@@ -150,7 +151,9 @@ interface ClientConfig {
     MaxNotificationsPerChannel: string;
     MaxPostSize: string;
     MinimumHashtagLength: string;
+    MobileAllowPdfLinkNavigation: string;
     MobileEnableBiometrics: string;
+    MobileEnableSecureFilePreview: string;
     MobileJailbreakProtection: string;
     MobilePreventScreenCapture: string;
     MobileExternalBrowser: string;

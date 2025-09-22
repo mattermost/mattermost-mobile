@@ -179,11 +179,11 @@ GEM
     nanaimo (0.4.0)
     naturally (2.2.1)
     nkf (0.2.0)
-    nokogiri (1.18.7-arm64-darwin)
+    nokogiri (1.18.9-arm64-darwin)
       racc (~> 1.4)
-    nokogiri (1.18.7-x86_64-darwin)
+    nokogiri (1.18.9-x86_64-darwin)
       racc (~> 1.4)
-    nokogiri (1.18.7-x86_64-linux-gnu)
+    nokogiri (1.18.9-x86_64-linux-gnu)
       racc (~> 1.4)
     optparse (0.6.0)
     os (1.1.4)
@@ -249,7 +249,7 @@ DEPENDENCIES
   fastlane-plugin-android_change_string_app_name
   fastlane-plugin-find_replace_string!
   fastlane-plugin-versioning_android
-  nokogiri (~> 1.18.4)
+  nokogiri (~> 1.18.9)
 
 BUNDLED WITH
    2.5.11

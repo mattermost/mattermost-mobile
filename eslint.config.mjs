@@ -58,6 +58,22 @@ export default defineConfig([
       "global-require": "off",
       "no-undefined": "off",
       "no-shadow": "off",
+      "new-cap": [
+        "error", 
+        { 
+          "capIsNewExceptions": [
+            "Gesture.Pan",
+            "Gesture.Tap",
+            "Gesture.LongPress",
+            "Gesture.Pinch",
+            "Gesture.Rotate",
+            "Gesture.ForceTouch",
+            "Gesture.Exclusive",
+            "Gesture.Simultaneous",
+            "Gesture.Race",
+          ]
+        }
+      ],
       "react/display-name": [2, { "ignoreTranspilerName": false }],
       "react/jsx-filename-extension": "off",
       "react-hooks/exhaustive-deps": "warn",
@@ -100,7 +116,7 @@ export default defineConfig([
           "newlines-between": "always",
           "pathGroups": [
             {
-              "pattern": "{@(@actions|@app|@assets|@calls|@client|@components|@constants|@context|@database|@helpers|@hooks|@init|@managers|@queries|@screens|@selectors|@share|@store|@telemetry|@typings|@test|@utils)/**,@(@constants|@i18n|@store|@websocket)}",
+              "pattern": "{@(@actions|@app|@assets|@calls|@client|@components|@constants|@context|@database|@helpers|@hooks|@init|@managers|@playbooks|@queries|@screens|@selectors|@share|@store|@telemetry|@typings|@test|@utils)/**,@(@constants|@i18n|@store|@websocket)}",
               "group": "external",
               "position": "after"
             },

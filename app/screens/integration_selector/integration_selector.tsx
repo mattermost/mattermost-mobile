@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessages, useIntl} from 'react-intl';
 import {View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
@@ -17,7 +17,6 @@ import {useTheme} from '@context/theme';
 import {debounce} from '@helpers/api/general';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
-import {t} from '@i18n';
 import SecurityManager from '@managers/security_manager';
 import {
     buildNavigationButton,
@@ -154,7 +153,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             ...typography('Body', 600, 'Regular'),
         },
         searchBarInput: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
             color: theme.centerChannelColor,
             ...typography('Body', 200, 'Regular'),
         },
@@ -164,6 +162,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
         },
     };
+});
+
+const messages = defineMessages({
+    loadingChannels: {
+        id: 'mobile.integration_selector.loading_channels',
+        defaultMessage: 'Loading channels...',
+    },
+    loadingOptions: {
+        id: 'mobile.integration_selector.loading_options',
+        defaultMessage: 'Loading options...',
+    },
 });
 
 function IntegrationSelector(
@@ -425,16 +434,10 @@ function IntegrationSelector(
         let text;
         switch (dataSource) {
             case ViewConstants.DATA_SOURCE_CHANNELS:
-                text = {
-                    id: t('mobile.integration_selector.loading_channels'),
-                    defaultMessage: 'Loading Channels...',
-                };
+                text = messages.loadingChannels;
                 break;
             default:
-                text = {
-                    id: t('mobile.integration_selector.loading_options'),
-                    defaultMessage: 'Loading Options...',
-                };
+                text = messages.loadingOptions;
                 break;
         }
 
@@ -557,6 +560,14 @@ function IntegrationSelector(
         };
     }, []);
 
+    const selectedUserIds = useMemo<Set<string>>(() => {
+        if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
+            return new Set(Object.keys(selectedIds));
+        }
+
+        return new Set();
+    }, [dataSource, selectedIds]);
+
     const renderDataTypeList = () => {
         switch (dataSource) {
             case ViewConstants.DATA_SOURCE_USERS:
@@ -566,7 +577,7 @@ function IntegrationSelector(
                         term={term}
                         tutorialWatched={true}
                         handleSelectProfile={handleSelectProfile}
-                        selectedIds={selectedIds as {[id: string]: UserProfile}}
+                        selectedIds={selectedUserIds}
                         fetchFunction={userFetchFunction}
                         searchFunction={userSearchFunction}
                         createFilter={createUserFilter}
