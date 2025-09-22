@@ -61,6 +61,7 @@ describe('EditCommandForm', () => {
         expect(floatingTextInput).toHaveProp('disableFullscreenUI', true);
         expect(floatingTextInput).toHaveProp('hideErrorIcon', true);
         expect(floatingTextInput).toHaveProp('disableFullscreenUI', true);
+        expect(floatingTextInput).toHaveProp('autoFocus', true);
 
         const autocomplete = getByTestId('autocomplete');
         expect(autocomplete).toBeTruthy();
@@ -76,6 +77,8 @@ describe('EditCommandForm', () => {
             emoji: false,
             slash: true,
         });
+        expect(autocomplete).toHaveProp('useAllAvailableSpace', true);
+        expect(autocomplete).toHaveProp('horizontalPadding', 20);
     });
 
     it('calls onCommandChange when text input changes', () => {

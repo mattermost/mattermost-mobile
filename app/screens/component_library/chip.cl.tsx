@@ -14,6 +14,7 @@ import {buildComponent} from './utils';
 const propPossibilities = {};
 
 const onPress = () => Alert.alert('Button pressed!');
+const onActionPress = () => Alert.alert('Action pressed!');
 
 const ChipComponentLibrary = () => {
     const theme = useTheme();
@@ -21,9 +22,21 @@ const ChipComponentLibrary = () => {
     const [actionIcon, actionIconPossibilities, actionIconSelector] = useDropdownProp('actionIcon', 'remove', ['remove', 'downArrow'], true);
     const [hasPrefix, hasPrefixSelector] = useBooleanProp('hasPrefix', false);
 
+    const actionPossibilities = useMemo(() => {
+        if (!actionIconPossibilities) {
+            return undefined;
+        }
+        return {
+            action: actionIconPossibilities.actionIcon.map((iconName) => ({
+                icon: iconName,
+                onPress: onActionPress,
+            })),
+        };
+    }, [actionIconPossibilities]);
+
     const components = useMemo(
         () => buildComponent(BaseChip, propPossibilities, [
-            actionIconPossibilities,
+            actionPossibilities,
         ], [
             label,
             actionIcon,
@@ -41,7 +54,7 @@ const ChipComponentLibrary = () => {
                 theme,
             },
         ]),
-        [label, actionIconPossibilities, actionIcon, hasPrefix.hasPrefix, theme],
+        [actionPossibilities, label, actionIcon, hasPrefix.hasPrefix, theme],
     );
 
     return (
