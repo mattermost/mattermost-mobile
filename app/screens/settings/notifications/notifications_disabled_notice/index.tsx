@@ -11,8 +11,6 @@ import {Screens} from '@constants';
 
 const styles = StyleSheet.create({
     wrapper: {
-        flex: 1,
-        justifyContent: 'flex-start',
         marginVertical: 16,
     },
 });
