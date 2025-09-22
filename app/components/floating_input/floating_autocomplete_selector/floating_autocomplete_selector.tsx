@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {type IntlShape, useIntl} from 'react-intl';
 import {Text, View, type StyleProp, type TextStyle, type ViewStyle} from 'react-native';
@@ -14,16 +13,14 @@ import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {getChannelById} from '@queries/servers/channel';
-import {getUserById, observeTeammateNameDisplay} from '@queries/servers/user';
+import {getUserById} from '@queries/servers/user';
 import {goToScreen} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {secureGetFromRecord} from '@utils/types';
 import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
 
-import FloatingInputContainer from './floating_input_container';
-
-import type {WithDatabaseArgs} from '@typings/database/database';
+import FloatingInputContainer from '../floating_input_container';
 
 type Selection = DialogOption | Channel | UserProfile | DialogOption[] | Channel[] | UserProfile[];
 
@@ -231,10 +228,4 @@ function AutoCompleteSelector({
     );
 }
 
-const withTeammateNameDisplay = withObservables([], ({database}: WithDatabaseArgs) => {
-    return {
-        teammateNameDisplay: observeTeammateNameDisplay(database),
-    };
-});
-
-export default withDatabase(withTeammateNameDisplay(AutoCompleteSelector));
+export default AutoCompleteSelector;
