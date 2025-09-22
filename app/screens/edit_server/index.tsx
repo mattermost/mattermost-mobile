@@ -140,20 +140,17 @@ const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) =>
     const keyboardAwareRef = useRef<KeyboardAwareScrollView>(null);
     const [saving, setSaving] = useState(false);
     const [displayName, setDisplayName] = useState<string>(server.displayName);
-    const [buttonDisabled, setButtonDisabled] = useState(true);
+    const [buttonDisabled, setButtonDisabled] = useState(Boolean(!server.displayName));
     const [displayNameError, setDisplayNameError] = useState<string | undefined>();
     const [preauthSecret, setPreauthSecret] = useState<string>('');
     const [preauthSecretError, setPreauthSecretError] = useState<string | undefined>();
     const [showAdvancedOptions, setShowAdvancedOptions] = useState<boolean>(false);
-    const [isPreauthSecretVisible, setIsPreauthSecretVisible] = useState(false);
     const [validating, setValidating] = useState(false);
     const styles = getStyleSheet(theme);
 
     const close = useCallback(() => {
         dismissModal({componentId});
     }, [componentId]);
-
-    const [initialPreauthSecret, setInitialPreauthSecret] = useState<string>('');
 
     // Load current preauth secret from credentials
     useEffect(() => {
@@ -162,7 +159,6 @@ const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) =>
                 const credentials = await getServerCredentials(server.url);
                 const currentPreauthSecret = credentials?.preauthSecret || '';
                 setPreauthSecret(currentPreauthSecret);
-                setInitialPreauthSecret(currentPreauthSecret);
 
                 // Auto-open advanced options if preauth secret exists
                 if (currentPreauthSecret) {
@@ -227,7 +223,7 @@ const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) =>
         } finally {
             setValidating(false);
         }
-    }, [server.url, preauthSecret, initialPreauthSecret, formatMessage, intl]);
+    }, [server.url, preauthSecret, formatMessage, intl]);
 
     const handleUpdate = useCallback(async () => {
         if (buttonDisabled) {
@@ -290,10 +286,6 @@ const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) =>
         setPreauthSecretError(undefined);
     }, []);
 
-    const togglePreauthSecretVisibility = useCallback(() => {
-        setIsPreauthSecretVisible((prevState) => !prevState);
-    }, []);
-
     useNavButtonPressed(closeButtonId || '', componentId, close, []);
     useAndroidHardwareBackHandler(componentId, close);
 
@@ -330,7 +322,6 @@ const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) =>
                         handleUpdate={handleUpdate}
                         handleDisplayNameTextChanged={handleDisplayNameTextChanged}
                         handlePreauthSecretTextChanged={handlePreauthSecretTextChanged}
-                        isPreauthSecretVisible={isPreauthSecretVisible}
                         keyboardAwareRef={keyboardAwareRef}
                         preauthSecret={preauthSecret}
                         preauthSecretError={preauthSecretError}
@@ -338,7 +329,6 @@ const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) =>
                         setShowAdvancedOptions={setShowAdvancedOptions}
                         showAdvancedOptions={showAdvancedOptions}
                         theme={theme}
-                        togglePreauthSecretVisibility={togglePreauthSecretVisibility}
                     />
                 </KeyboardAwareScrollView>
             </SafeAreaView>

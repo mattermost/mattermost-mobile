@@ -1,9 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {type MutableRefObject, useCallback, useEffect, useMemo, useRef} from 'react';
+import React, {type MutableRefObject, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {Keyboard, Platform, Pressable, TouchableOpacity, useWindowDimensions, View} from 'react-native';
+import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
@@ -16,6 +17,9 @@ import {removeProtocol, stripTrailingSlashes} from '@utils/url';
 
 import type {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
+const ADVANCED_OPTIONS_COLLAPSED = 0;
+const ADVANCED_OPTIONS_EXPANDED = 150; // Approximate height for the content
+
 type Props = {
     buttonDisabled: boolean;
     connecting: boolean;
@@ -24,15 +28,13 @@ type Props = {
     handleUpdate: () => void;
     handleDisplayNameTextChanged: (text: string) => void;
     handlePreauthSecretTextChanged: (text: string) => void;
-    isPreauthSecretVisible: boolean;
     keyboardAwareRef: MutableRefObject<KeyboardAwareScrollView | null>;
     preauthSecret?: string;
     preauthSecretError?: string;
     serverUrl: string;
-    setShowAdvancedOptions: (show: boolean) => void;
+    setShowAdvancedOptions: React.Dispatch<React.SetStateAction<boolean>>;
     showAdvancedOptions: boolean;
     theme: Theme;
-    togglePreauthSecretVisibility: () => void;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -75,6 +77,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     advancedOptionsContent: {
         width: '100%',
+        overflow: 'hidden',
     },
     endAdornment: {
         top: 2,
@@ -114,7 +117,6 @@ const EditServerForm = ({
     handleUpdate,
     handleDisplayNameTextChanged,
     handlePreauthSecretTextChanged,
-    isPreauthSecretVisible,
     keyboardAwareRef,
     preauthSecret = '',
     preauthSecretError,
@@ -122,7 +124,6 @@ const EditServerForm = ({
     setShowAdvancedOptions,
     showAdvancedOptions,
     theme,
-    togglePreauthSecretVisibility,
 }: Props) => {
     const {formatMessage} = useIntl();
     const isTablet = useIsTablet();
@@ -130,6 +131,11 @@ const EditServerForm = ({
     const displayNameRef = useRef<FloatingTextInputRef>(null);
     const preauthSecretRef = useRef<FloatingTextInputRef>(null);
     const styles = getStyleSheet(theme);
+    const [isPreauthSecretVisible, setIsPreauthSecretVisible] = useState(false);
+
+    const togglePreauthSecretVisibility = useCallback(() => {
+        setIsPreauthSecretVisible((prevState) => !prevState);
+    }, []);
 
     const preauthSecretEndAdornment = useMemo(() => (
         <TouchableOpacity
@@ -168,8 +174,24 @@ const EditServerForm = ({
     }, [showAdvancedOptions, preauthSecretError, onUpdate]);
 
     const toggleAdvancedOptions = useCallback(() => {
-        setShowAdvancedOptions(!showAdvancedOptions);
-    }, [showAdvancedOptions, setShowAdvancedOptions]);
+        setShowAdvancedOptions((prev: boolean) => !prev);
+    }, [setShowAdvancedOptions]);
+
+    const chevronRotation = useSharedValue(showAdvancedOptions ? 180 : 0);
+    const advancedOptionsStyle = useAnimatedStyle(() => ({
+        height: withTiming(showAdvancedOptions ? ADVANCED_OPTIONS_EXPANDED : ADVANCED_OPTIONS_COLLAPSED, {duration: 250}),
+    }));
+
+    useEffect(() => {
+        chevronRotation.value = withTiming(showAdvancedOptions ? 180 : 0, {duration: 250});
+
+        // chevronRotation is a Reanimated shared value; its reference is stable and does not need to be in the dependency array.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [showAdvancedOptions]);
+
+    const chevronAnimatedStyle = useAnimatedStyle(() => ({
+        transform: [{rotate: `${chevronRotation.value}deg`}],
+    }));
 
     const onFocus = useCallback(() => {
         // For iOS we set the position of the input instead of
@@ -241,11 +263,13 @@ const EditServerForm = ({
                     style={styles.advancedOptionsHeader}
                     testID='edit_server_form.advanced_options.toggle'
                 >
-                    <CompassIcon
-                        name={showAdvancedOptions ? 'chevron-up' : 'chevron-down'}
-                        size={20}
-                        style={styles.advancedOptionsTitle}
-                    />
+                    <Animated.View style={chevronAnimatedStyle}>
+                        <CompassIcon
+                            name={'chevron-down'}
+                            size={20}
+                            style={styles.advancedOptionsTitle}
+                        />
+                    </Animated.View>
                     <FormattedText
                         defaultMessage='Advanced Options'
                         id='mobile.components.select_server_view.advancedOptions'
@@ -253,33 +277,35 @@ const EditServerForm = ({
                     />
                 </Pressable>
 
-                {showAdvancedOptions && (
-                    <View style={styles.advancedOptionsContent}>
-                        <FloatingTextInput
-                            autoCorrect={false}
-                            autoCapitalize={'none'}
-                            enablesReturnKeyAutomatically={true}
-                            endAdornment={preauthSecretEndAdornment}
-                            error={preauthSecretError}
-                            keyboardType={isPreauthSecretVisible ? 'visible-password' : 'default'}
-                            label={formatMessage(messages.preauthSecret)}
-                            onChangeText={handlePreauthSecretTextChanged}
-                            onSubmitEditing={onUpdate}
-                            ref={preauthSecretRef}
-                            returnKeyType='done'
-                            secureTextEntry={!isPreauthSecretVisible}
-                            spellCheck={false}
-                            testID='edit_server_form.preauth_secret.input'
-                            theme={theme}
-                            value={preauthSecret}
-                        />
-                        <FormattedText
-                            {...messages.preauthSecretHelp}
-                            style={styles.chooseText}
-                            testID='edit_server_form.preauth_secret_help'
-                        />
-                    </View>
-                )}
+                <Animated.View style={[styles.advancedOptionsContent, advancedOptionsStyle]}>
+                    {showAdvancedOptions && (
+                        <>
+                            <FloatingTextInput
+                                autoCorrect={false}
+                                autoCapitalize={'none'}
+                                enablesReturnKeyAutomatically={true}
+                                endAdornment={preauthSecretEndAdornment}
+                                error={preauthSecretError}
+                                keyboardType={isPreauthSecretVisible ? 'visible-password' : 'default'}
+                                label={formatMessage(messages.preauthSecret)}
+                                onChangeText={handlePreauthSecretTextChanged}
+                                onSubmitEditing={onUpdate}
+                                ref={preauthSecretRef}
+                                returnKeyType='done'
+                                secureTextEntry={!isPreauthSecretVisible}
+                                spellCheck={false}
+                                testID='edit_server_form.preauth_secret.input'
+                                theme={theme}
+                                value={preauthSecret}
+                            />
+                            <FormattedText
+                                {...messages.preauthSecretHelp}
+                                style={styles.chooseText}
+                                testID='edit_server_form.preauth_secret_help'
+                            />
+                        </>
+                    )}
+                </Animated.View>
             </View>
 
             <View style={styles.buttonContainer}>
