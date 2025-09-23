@@ -77,7 +77,7 @@ const ClientPlaybooks = <TBase extends Constructor<ClientBase>>(superclass: TBas
     finishRun = async (playbookRunId: string) => {
         return this.doFetch(
             `${this.getPlaybookRunRoute(playbookRunId)}/finish`,
-            {method: 'put'},
+            {method: 'put', body: {/* okhttp requires put methods to have a body */}},
         );
     };
 
