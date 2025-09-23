@@ -120,10 +120,32 @@ workflows:
       - name: 环境与依赖（Node）
         script: |
           set -e
-          echo "▶ Using system Node (no nvm)"
+          echo "▶ Using system Node"
           which node || true
           node -v
           npm -v
+
+          echo "▶ Install watchman (required by solidarity/react-native)"
+          if command -v brew >/dev/null 2>&1; then
+            eval "$(/opt/homebrew/bin/brew shellenv)" || true
+            brew list watchman >/dev/null 2>&1 || brew install watchman
+            watchman --version || true
+          else
+            echo "❌ Homebrew 未找到，无法安装 watchman"
+            exit 1
+          fi
+
+          echo "▶ Pin CocoaPods to 1.16.1 (project requires 1.16.1)"
+          gem list -i cocoapods -v 1.16.1 || gem install cocoapods -v 1.16.1 --no-document
+          # 如已装更高版本，这步会优先用 1.16.1。必要时可强制切换：
+          POD_BIN="$(ruby -e 'puts Gem.bin_path(\"cocoapods\",\"pod\",\"1.16.1\")' 2>/dev/null || true)"
+          if [ -n "$POD_BIN" ]; then
+            ln -sf "$POD_BIN" "$HOME/.gem/bin/pod" || true
+            export PATH="$HOME/.gem/bin:$PATH"
+          fi
+          pod --version
+
+          echo "▶ npm ci"
           npm ci
 
 
