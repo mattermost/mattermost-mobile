@@ -121,49 +121,49 @@ workflows:
         script: |
           set -e
 
-              export NVM_DIR="$HOME/.nvm"
+          export NVM_DIR="$HOME/.nvm"
 
-              # 1) 安装 nvm（若缺）
-              if [ ! -s "$NVM_DIR/nvm.sh" ]; then
-                echo "🔧 安装 nvm..."
-                # -f 失败时静默退出，-S 抛错；失败则回退到系统 Node
-                if ! curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash; then
-                  echo "⚠️ nvm 安装失败，改用系统 Node"
-                  node -v
-                  npm -v
-                  npm ci
-                  exit 0
-                fi
-              fi
-
-              # 2) 立即在当前 shell 加载 nvm（CI 不会自动加载 ~/.zprofile）
-              #    同时加载 bash_completion（可选）
-              if [ -s "$NVM_DIR/nvm.sh" ]; then
-                . "$NVM_DIR/nvm.sh"
-              else
-                echo "⚠️ 找不到 $NVM_DIR/nvm.sh，改用系统 Node"
-                node -v
-                npm -v
-                npm ci
-                exit 0
-              fi
-              [ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion" || true
-
-              # 3) 使用项目指定版本；无 .nvmrc 则用最新 LTS
-              if [ -f ".nvmrc" ]; then
-                echo "📦 使用 .nvmrc 指定的 Node 版本"
-                nvm install --silent
-                nvm use --silent
-              else
-                echo "📦 未检测到 .nvmrc，使用 LTS"
-                nvm install --lts --silent
-                nvm use --lts --silent
-              fi
-
-              # 4) 安装依赖
+          # 1) 安装 nvm（若缺）
+          if [ ! -s "$NVM_DIR/nvm.sh" ]; then
+            echo "🔧 安装 nvm..."
+            # -f 失败时静默退出，-S 抛错；失败则回退到系统 Node
+            if ! curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash; then
+              echo "⚠️ nvm 安装失败，改用系统 Node"
               node -v
               npm -v
               npm ci
+              exit 0
+            fi
+          fi
+
+          # 2) 立即在当前 shell 加载 nvm（CI 不会自动加载 ~/.zprofile）
+          #    同时加载 bash_completion（可选）
+          if [ -s "$NVM_DIR/nvm.sh" ]; then
+            . "$NVM_DIR/nvm.sh"
+          else
+            echo "⚠️ 找不到 $NVM_DIR/nvm.sh，改用系统 Node"
+            node -v
+            npm -v
+            npm ci
+            exit 0
+          fi
+          [ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion" || true
+
+          # 3) 使用项目指定版本；无 .nvmrc 则用最新 LTS
+          if [ -f ".nvmrc" ]; then
+            echo "📦 使用 .nvmrc 指定的 Node 版本"
+            nvm install --silent
+            nvm use --silent
+          else
+            echo "📦 未检测到 .nvmrc，使用 LTS"
+            nvm install --lts --silent
+            nvm use --lts --silent
+          fi
+
+          # 4) 安装依赖
+          node -v
+          npm -v
+          npm ci
 
 
       - name: Ruby/CocoaPods/Fastlane
