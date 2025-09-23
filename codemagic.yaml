@@ -119,10 +119,10 @@ workflows:
     publishing:
       app_store_connect:
         api_key:
-              key_id: $ASC_KEY_ID
-              issuer_id: $ASC_ISSUER_ID
-              key: $ASC_PRIVATE_KEY
-            submit_to_testflight: true
+          key_id: $ASC_KEY_ID
+          issuer_id: $ASC_ISSUER_ID
+          key: $ASC_PRIVATE_KEY
+        submit_to_testflight: true
         # beta_groups:
         #   - Internal Testers
         # 如需自动上架正式版，可加：submit_to_app_store: true
