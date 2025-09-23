@@ -120,7 +120,17 @@ workflows:
       - name: 环境与依赖（Node）
         script: |
           set -e
-          if [ -f ".nvmrc" ]; then . $HOME/.nvm/nvm.sh && nvm install && nvm use; fi
+          export NVM_DIR="$HOME/.nvm"
+          if [ -f ".nvmrc" ] && [ -s "$NVM_DIR/nvm.sh" ]; then
+            # 有 nvm 且有 .nvmrc，按项目版本
+            . "$NVM_DIR/nvm.sh"
+            nvm install --silent
+            nvm use --silent
+          else
+            echo "⚠️ 未检测到 nvm，使用系统 Node"
+          fi
+          node -v
+          npm -v
           npm ci
 
       - name: Ruby/CocoaPods/Fastlane
