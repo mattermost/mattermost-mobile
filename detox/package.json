@@ -14,6 +14,8 @@
     "@types/jest": "29.5.14",
     "@types/tough-cookie": "4.0.5",
     "@types/uuid": "10.0.0",
+    "@wix-pilot/core": "^3.4.0",
+    "@wix-pilot/detox": "^1.0.12",
     "async": "3.2.6",
     "axios": "1.8.2",
     "axios-cookiejar-support": "5.0.4",
@@ -60,5 +62,8 @@
     "e2e:save-report": "node save_report.js",
     "start:webhook": "node webhook_server.js",
     "tsc": "NODE_OPTIONS=--max_old_space_size=12000 tsc --noEmit"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.56.0"
   }
 }

@@ -988,7 +988,6 @@
   "playbooks.checklist_item.check": "チェック",
   "playbooks.checklist_item.checked": "チェック済み",
   "playbooks.checklist_item.command": "コマンド",
-  "playbooks.checklist_item.date_at_time": "{date} at {time}",
   "playbooks.checklist_item.due_date": "締切日",
   "playbooks.checklist_item.none": "なし",
   "playbooks.checklist_item.rerun_command": "コマンド再実行",

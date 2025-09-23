@@ -137,7 +137,7 @@ describe('Search - Recent Mentions', () => {
         // * Verify post message is updated and displays edited indicator '(edited)'
         const {postListPostItem: updatedPostListPostItem, postListPostItemEditedIndicator} = RecentMentionsScreen.getPostListPostItem(mentionPost.id, updatedMessage);
         await expect(updatedPostListPostItem).toBeVisible();
-        await expect(postListPostItemEditedIndicator).toHaveText('(edited)');
+        await expect(postListPostItemEditedIndicator).toHaveText('Edited');
 
         // # Open post options for recent mention and tap on reply option
         await RecentMentionsScreen.openPostOptionsFor(mentionPost.id, updatedMessage);
