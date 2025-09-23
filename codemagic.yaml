@@ -158,6 +158,30 @@ workflows:
           bundle install
           cd ios && bundle exec pod install --repo-update && cd ..
 
+      # —— 关键：在 match 之前配置 SSH，并自检访问证书库 ——
+      - name: 配置 SSH 访问 match 证书库并自检在 match 之前配置 SSH，并自检访问证书库 
+        script: |
+          set -e
+          if [ -z "$MATCH_GIT_URL" ]; then
+            echo "❌ 缺少 MATCH_GIT_URL（建议：git@github.com:goodwillworld/ios-certs.git）"
+            exit 1
+          fi
+          mkdir -p ~/.ssh
+          if [ -n "$MATCH_SSH_PRIVATE_KEY" ]; then
+            echo "$MATCH_SSH_PRIVATE_KEY" > ~/.ssh/match_key
+            chmod 600 ~/.ssh/match_key
+            export GIT_SSH_COMMAND='ssh -i ~/.ssh/match_key -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes'
+          else
+            echo "❌ 缺少 MATCH_SSH_PRIVATE_KEY（Deploy Key 私钥全文）"
+            exit 1
+          fi
+          # 预热 known_hosts（GitHub；自建域名请替换）
+          ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts 2>/dev/null || true
+
+          echo "▶ 自检：git ls-remote $MATCH_GIT_URL"
+          git ls-remote "$MATCH_GIT_URL" >/dev/null
+          echo "✅ match 证书库可访问"
+
       - name: 自检关键变量（不会泄露）
         script: |
           set -e
