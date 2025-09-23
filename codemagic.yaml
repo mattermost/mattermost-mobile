@@ -6,14 +6,13 @@ workflows:
     instance_type: linux_x2
     environment:
       android_signing:
-        # 在 Codemagic > Code signing identities 上传 keystore 后，填你的引用名
-        - jboth_android_keystore_ref
+        - jboth_android_keystore_ref   # 在 Team settings → codemagic.yaml settings → Code signing identities 上传后得到的引用名
       groups:
-        - mm_common      # 通用白标变量组（见下文）
-        - jboth_client   # 客户/品牌变量组（见下文）
+        - mm_common
+        - jboth_client
       vars:
         BUILD_FOR_RELEASE: "true"
-        ANDROID_BUILD_TASK: "assemble"    # assemble=APK；bundle=AAB
+        ANDROID_BUILD_TASK: "assemble"  # assemble=APK；bundle=AAB
         REPLACE_ASSETS: "true"
     cache:
       cache_paths:
@@ -73,19 +72,17 @@ workflows:
           mkdir -p $CM_ARTIFACTS
           find . -type f -name "*release*.apk" -maxdepth 6 -print -exec cp -f {} $CM_ARTIFACTS \; || true
           find . -type f -name "*.aab" -maxdepth 6 -print -exec cp -f {} $CM_ARTIFACTS \; || true
-    # 不写 publishing：仅在 Artifacts 输出安装包，便于你自行分发
+    # 不写 publishing：仅在 Artifacts 输出安装包，便于自行分发
 
-workflows:
-  # ……(你的 ANDROID workflow 保持原样)……
-
+  # ========= iOS：白标 + 正常分发（TestFlight / App Store） =========
   mm-whitelabel-ios:
     name: Mattermost WhiteLabel iOS (TestFlight/App Store)
     max_build_duration: 120
     instance_type: mac_mini_m2
 
-    # 集成可保留（可选）。即便配置了 integrations，publishing 里的 api_key 也会生效。
+    # 可保留（可选）；即便写了 integrations，下面的 api_key 也生效。
     integrations:
-      app_store_connect: codemagic   # 如无此集成可保留/删除均可
+      app_store_connect: codemagic
 
     environment:
       groups:
@@ -95,10 +92,6 @@ workflows:
       vars:
         BUILD_FOR_RELEASE: "true"
         REPLACE_ASSETS: "true"
-        # 需要在变量组里提供：
-        # APP_NAME、MAIN_APP_IDENTIFIER、
-        # EXTENSION_APP_IDENTIFIER、NOTIFICATION_SERVICE_IDENTIFIER、
-        # FASTLANE_TEAM_ID、IOS_APP_GROUP、IOS_ICLOUD_CONTAINER、MATCH_* 等
 
     cache:
       cache_paths:
@@ -107,7 +100,7 @@ workflows:
         - node_modules
 
     scripts:
-      # （可选）如果你的 match 仓库是私有自建域名，预热 known_hosts
+      # 若你的 match 仓库是自建域名，可取消注释预热 known_hosts
       # - name: SSH known_hosts
       #   script: |
       #     mkdir -p ~/.ssh && ssh-keyscan your.git.host >> ~/.ssh/known_hosts
@@ -124,7 +117,6 @@ workflows:
           bundle install
           cd ios && bundle exec pod install --repo-update && cd ..
 
-      # 自检：检查关键变量是否存在（不打印密钥内容）
       - name: 自检关键变量（不会泄露）
         script: |
           set -e
@@ -135,10 +127,8 @@ workflows:
           check_var MATCH_GIT_URL
           check_var MATCH_APP_IDENTIFIER
           check_var MATCH_TYPE
-          # App Store Connect API Key 三件套
           check_var ASC_KEY_ID
           check_var ASC_ISSUER_ID
-          # 只检查是否有值，不回显私钥
           if [ -z "$ASC_PRIVATE_KEY" ]; then echo "❌ MISSING ASC_PRIVATE_KEY"; exit 1; else echo "✅ ASC_PRIVATE_KEY OK (hidden)"; fi
 
       - name: 构建 iOS（使用仓库 lane）
@@ -150,16 +140,13 @@ workflows:
           mkdir -p $CM_ARTIFACTS
           find . -type f -name "*.ipa" -maxdepth 6 -print -exec cp -f {} $CM_ARTIFACTS \; || true
 
-    # ✅ 这里是关键：使用 API Key 直接在 YAML 里提供（方案 B）
     publishing:
       app_store_connect:
         api_key:
-          key_id: $ASC_KEY_ID          # 例：1A2BC3D4E5
-          issuer_id: $ASC_ISSUER_ID    # 例：12345678-90ab-cdef-1234-567890abcdef
-          key: $ASC_PRIVATE_KEY        # 把 .p8 原文粘贴到变量里（含 BEGIN/END 与换行）
+          key_id: "$ASC_KEY_ID"         # 例：1A2BC3D4E5
+          issuer_id: "$ASC_ISSUER_ID"   # 例：12345678-90ab-cdef-1234-567890abcdef
+          key: "$ASC_PRIVATE_KEY"       # .p8 原文（含 BEGIN/END 与换行）
         submit_to_testflight: true
-        # 如需直接上架，取消注释：
         # submit_to_app_store: true
         # beta_groups:
         #   - Internal Testers
-
