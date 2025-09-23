@@ -143,18 +143,18 @@ workflows:
           check_var ASC_ISSUER_ID
           if [ -z "$ASC_PRIVATE_KEY" ]; then echo "❌ MISSING ASC_PRIVATE_KEY"; exit 1; else echo "✅ ASC_PRIVATE_KEY OK (hidden)"; fi
 
-      - name: 生成 App Store Connect API Key JSON（供 publishing 使用）
-        script: |
-          set -e
-          cat > asc_api_key.json <<EOF
-          {
-            "key_id": "${ASC_KEY_ID}",
-            "issuer_id": "${ASC_ISSUER_ID}",
-            "key": "${ASC_PRIVATE_KEY}",
-            "in_house": false
-          }
-          EOF
-          echo "✅ asc_api_key.json generated"
+      # - name: 生成 App Store Connect API Key JSON（供 publishing 使用）
+      #   script: |
+      #     set -e
+      #     cat > asc_api_key.json <<EOF
+      #     {
+      #       "key_id": "${ASC_KEY_ID}",
+      #       "issuer_id": "${ASC_ISSUER_ID}",
+      #       "key": "${ASC_PRIVATE_KEY}",
+      #       "in_house": false
+      #     }
+      #     EOF
+      #     echo "✅ asc_api_key.json generated"
 
       - name: 构建 iOS（使用仓库 lane）
         script: |
@@ -167,9 +167,14 @@ workflows:
 
     publishing:
       app_store_connect:
-        api_key_path: "asc_api_key.json"   # 关键：用路径规避“变量未加载前的校验”
+        api_key: |
+          -----BEGIN PRIVATE KEY-----
+          MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgTHFCUEmtmzuEaG/T
+          zD5C5EBtEBsuWf54ZxCbWmpD/lugCgYIKoZIzj0DAQehRANCAAS6nYsA0zoFzGbY
+          t9rYpOKdcq0hG8zmImfhjOct0m609Z/J4fOcoxeLd3LJr4DAo6Kk+PBeCFBvrxIl
+          j5J7JvfX
+          -----END PRIVATE KEY-----
+        key_id: "UZ33M397NY"
+        issuer_id: "26e601c9-c2f0-497a-a9e1-39a426cecf9a"
         submit_to_testflight: true
-        # 如需直接上架，取消注释：
-        # submit_to_app_store: true
-        # beta_groups:
-        #   - Internal Testers
+
