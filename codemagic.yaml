@@ -87,8 +87,8 @@ workflows:
     instance_type: mac_mini_m2
 
     # 可选：即使配置了 integrations，publishing 用的是 api_key_path，不冲突
-    integrations:
-      app_store_connect: codemagic
+    # integrations:
+    #   app_store_connect: codemagic
 
     environment:
       groups:
