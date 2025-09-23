@@ -120,12 +120,13 @@ workflows:
       - name: 环境与依赖（Node）
         script: |
           set -e
+
           echo "▶ Using system Node"
           which node || true
           node -v
           npm -v
 
-          echo "▶ Install watchman (required by solidarity/react-native)"
+          echo "▶ Install watchman (solidarity requires it)"
           if command -v brew >/dev/null 2>&1; then
             eval "$(/opt/homebrew/bin/brew shellenv)" || true
             brew list watchman >/dev/null 2>&1 || brew install watchman
@@ -135,15 +136,35 @@ workflows:
             exit 1
           fi
 
-          echo "▶ Pin CocoaPods to 1.16.1 (project requires 1.16.1)"
+          echo "▶ Pin CocoaPods to 1.16.1 (and ensure PATH picks it first)"
+          # 把 gems 安装到 $HOME/.gem，避免动系统 Ruby
+          export GEM_HOME="$HOME/.gem"
+          export GEM_PATH="$GEM_HOME"
+          export PATH="$GEM_HOME/bin:$PATH"
+
           gem list -i cocoapods -v 1.16.1 || gem install cocoapods -v 1.16.1 --no-document
-          # 如已装更高版本，这步会优先用 1.16.1。必要时可强制切换：
-          POD_BIN="$(ruby -e 'puts Gem.bin_path(\"cocoapods\",\"pod\",\"1.16.1\")' 2>/dev/null || true)"
-          if [ -n "$POD_BIN" ]; then
-            ln -sf "$POD_BIN" "$HOME/.gem/bin/pod" || true
-            export PATH="$HOME/.gem/bin:$PATH"
+
+          # 取出 1.16.1 的实际可执行路径，并把其所在目录插入 PATH 最前面
+          POD_BIN="$(ruby -e 'spec=Gem::Specification.find_all_by_name(%q{cocoapods}, %q{=1.16.1}).first; puts File.join(spec.bin_dir, %q{pod})')"
+          if [ -z "$POD_BIN" ] || [ ! -x "$POD_BIN" ]; then
+            echo "❌ 未找到 cocoapods 1.16.1 可执行文件"
+            exit 1
           fi
+          export PATH="$(dirname "$POD_BIN"):$PATH"
+          hash -r   # 刷新 shell 的可执行缓存
+
+          echo "pod on PATH: $(command -v pod)"
           pod --version
+
+          # 若仍不是 1.16.1，则强制软链一个高优先级的 pod
+          if [ "$(pod --version)" != "1.16.1" ]; then
+            mkdir -p "$HOME/bin"
+            ln -sf "$POD_BIN" "$HOME/bin/pod"
+            export PATH="$HOME/bin:$PATH"
+            hash -r
+            echo "pod forced to: $(command -v pod)"
+            pod --version
+          fi
 
           echo "▶ npm ci"
           npm ci
