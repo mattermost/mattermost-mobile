@@ -1,0 +1,124 @@
+workflows:
+  # ========= ANDROID：白标 + 生成 APK（自行分发），不发布到商店 =========
+  mm-whitelabel-android-sideload:
+    name: Mattermost WhiteLabel ANDROID (sideload)
+    max_build_duration: 120
+    instance_type: linux_x2
+    environment:
+      android_signing:
+        # 在 Codemagic > Code signing identities 上传 keystore 后，填你的引用名
+        - jboth_android_keystore_ref
+      groups:
+        - mm_common      # 通用白标变量组（见下文）
+        - jboth_client   # 客户/品牌变量组（见下文）
+      vars:
+        BUILD_FOR_RELEASE: "true"
+        ANDROID_BUILD_TASK: "assemble"    # assemble=APK；bundle=AAB
+        REPLACE_ASSETS: "true"
+    cache:
+      cache_paths:
+        - $HOME/.gradle/caches
+        - node_modules
+    scripts:
+      - name: Node 环境与依赖
+        script: |
+          set -e
+          if [ -f ".nvmrc" ]; then . $HOME/.nvm/nvm.sh && nvm install && nvm use; fi
+          npm ci
+      - name: 注入签名（Gradle）
+        script: |
+          mkdir -p $HOME/.gradle
+          cat >> $HOME/.gradle/gradle.properties <<EOF
+          MATTERMOST_RELEASE_STORE_FILE=$CM_KEYSTORE_PATH
+          MATTERMOST_RELEASE_KEY_ALIAS=$CM_KEY_ALIAS
+          MATTERMOST_RELEASE_PASSWORD=$CM_KEY_PASSWORD
+          EOF
+      - name: 写入/兜底默认服务器配置（如仓库中已存在将不会覆盖）
+        script: |
+          set -e
+          mkdir -p assets/override
+          CFG=assets/override/config.json
+          if [ ! -f "$CFG" ]; then
+            cat > "$CFG" <<'JSON'
+          {
+            "DefaultServerUrl": "https://hello.jboth.com",
+            "AutoSelectServerUrl": true
+          }
+          JSON
+            echo "Created $CFG with default server URL."
+          else
+            echo "Found existing $CFG, keep your repo version."
+          fi
+      - name: 白标变量确认
+        script: |
+          echo "APP_NAME=$APP_NAME"
+          echo "MAIN_APP_IDENTIFIER=$MAIN_APP_IDENTIFIER"
+          echo "APP_SCHEME=$APP_SCHEME"
+      - name: 构建（优先使用仓库自带 lane）
+        script: |
+          set -e
+          npm run build:android || echo "lane 构建失败，尝试 Gradle 兜底…"
+      - name: 兜底：直接 Gradle 生成 APK（如 lane 只产出 AAB）
+        script: |
+          set -e
+          cd android
+          ./gradlew assembleRelease \
+            -Pandroid.injected.signing.store.file="$CM_KEYSTORE_PATH" \
+            -Pandroid.injected.signing.store.password="$CM_KEY_PASSWORD" \
+            -Pandroid.injected.signing.key.alias="$CM_KEY_ALIAS" \
+            -Pandroid.injected.signing.key.password="$CM_KEY_PASSWORD" || true
+          cd -
+      - name: 收集制品（APK/AAB）
+        script: |
+          mkdir -p $CM_ARTIFACTS
+          find . -type f -name "*release*.apk" -maxdepth 6 -print -exec cp -f {} $CM_ARTIFACTS \; || true
+          find . -type f -name "*.aab" -maxdepth 6 -print -exec cp -f {} $CM_ARTIFACTS \; || true
+    # 不写 publishing：仅在 Artifacts 输出安装包，便于你自行分发
+
+  # ========= iOS：白标 + 正常分发（TestFlight / App Store） =========
+  mm-whitelabel-ios:
+    name: Mattermost WhiteLabel iOS (TestFlight/App Store)
+    max_build_duration: 120
+    instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: codemagic
+    environment:
+      groups:
+        - mm_common
+        - jboth_client
+        - ios_match
+      vars:
+        BUILD_FOR_RELEASE: "true"
+        REPLACE_ASSETS: "true"
+        # 需要在变量组里提供：APP_NAME、MAIN_APP_IDENTIFIER、
+        # EXTENSION_APP_IDENTIFIER、NOTIFICATION_SERVICE_IDENTIFIER、
+        # FASTLANE_TEAM_ID、IOS_APP_GROUP、IOS_ICLOUD_CONTAINER、MATCH_* 等
+    cache:
+      cache_paths:
+        - $HOME/Library/Caches/CocoaPods
+        - ios/Pods
+        - node_modules
+    scripts:
+      - name: Node 依赖
+        script: |
+          set -e
+          if [ -f ".nvmrc" ]; then . $HOME/.nvm/nvm.sh && nvm install && nvm use; fi
+          npm ci
+      - name: Ruby/CocoaPods/Fastlane
+        script: |
+          gem install bundler --no-document
+          bundle install
+          cd ios && bundle exec pod install --repo-update && cd ..
+      - name: 构建 iOS（使用仓库 lane）
+        script: |
+          npm run build:ios
+      - name: 收集制品
+        script: |
+          mkdir -p $CM_ARTIFACTS
+          find . -type f -name "*.ipa" -maxdepth 6 -print -exec cp -f {} $CM_ARTIFACTS \; || true
+    publishing:
+      app_store_connect:
+        submit_to_testflight: true
+        # beta_groups:
+        #   - Internal Testers
+        # 如需自动上架正式版，可加：submit_to_app_store: true
