@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useMemo} from 'react';
 import {StyleSheet} from 'react-native';
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
 import Banner from '@components/banner';
@@ -76,27 +77,35 @@ const FloatingBanner: React.FC<FloatingBannerProps> = ({banners, onDismiss}) => 
                 testID={testID}
                 style={[containerStyle, animatedStyle]}
             >
-                {sectionBanners.map((banner, index) => {
-                    const {id, dismissible = true, customContent} = banner;
-                    return (
-                        <Banner
-                            key={id}
-                            position={position}
-                            visible={true}
-                            {...(isTop ? {customTopOffset: index * BANNER_STACK_SPACING} : {customBottomOffset: (index * BANNER_STACK_SPACING) + BOTTOM_BANNER_EXTRA_OFFSET})}
-                            dismissible={dismissible}
-                            onDismiss={() => dismissBanner(banner)}
-                        >
-                            {customContent || (
-                                <BannerItem
-                                    banner={banner}
-                                    onPress={executeBannerAction}
-                                    onDismiss={dismissBanner}
-                                />
-                            )}
-                        </Banner>
-                    );
-                })}
+                <GestureHandlerRootView style={styles.gestureHandler}>
+                    {sectionBanners.map((banner, index) => {
+                        const {id, dismissible = true, customContent} = banner;
+                        const offsetProps = useMemo(() => {
+                            return isTop ? {customTopOffset: index * BANNER_STACK_SPACING} : {customBottomOffset: (index * BANNER_STACK_SPACING) + BOTTOM_BANNER_EXTRA_OFFSET};
+                        }, [index]);
+
+                        return (
+                            <Banner
+                                key={id}
+                                position={position}
+                                visible={true}
+                                {...offsetProps}
+                                dismissible={dismissible}
+                                onDismiss={() => dismissBanner(banner)}
+                            >
+                                {customContent || (
+
+                                    <BannerItem
+                                        banner={banner}
+                                        onPress={executeBannerAction}
+                                        onDismiss={dismissBanner}
+                                    />
+
+                                )}
+                            </Banner>
+                        );
+                    })}
+                </GestureHandlerRootView>
             </Animated.View>
         );
     };
@@ -124,7 +133,13 @@ const styles = StyleSheet.create({
         paddingTop: 8,
     },
     bottomContainer: {
+        bottom: 0,
         paddingBottom: 8,
+    },
+    gestureHandler: {
+        width: '100%',
+        alignItems: 'center',
+        pointerEvents: 'box-none',
     },
 });
 
