@@ -8,11 +8,11 @@ workflows:
       android_signing:
         - jboth_android_keystore_ref   # 在 Team settings → codemagic.yaml settings → Code signing identities 上传后得到的引用名
       groups:
-        - mm_common
-        - jboth_client
+        - mm_common                    # 通用变量组：REPLACE_ASSETS、APP_SCHEME、等
+        - jboth_client                 # 客户变量组：APP_NAME、MAIN_APP_IDENTIFIER 等
       vars:
         BUILD_FOR_RELEASE: "true"
-        ANDROID_BUILD_TASK: "assemble"  # assemble=APK；bundle=AAB
+        ANDROID_BUILD_TASK: "assemble" # assemble=APK；bundle=AAB
         REPLACE_ASSETS: "true"
     cache:
       cache_paths:
@@ -24,6 +24,7 @@ workflows:
           set -e
           if [ -f ".nvmrc" ]; then . $HOME/.nvm/nvm.sh && nvm install && nvm use; fi
           npm ci
+
       - name: 注入签名（Gradle）
         script: |
           mkdir -p $HOME/.gradle
@@ -32,6 +33,7 @@ workflows:
           MATTERMOST_RELEASE_KEY_ALIAS=$CM_KEY_ALIAS
           MATTERMOST_RELEASE_PASSWORD=$CM_KEY_PASSWORD
           EOF
+
       - name: 写入/兜底默认服务器配置（如仓库中已存在将不会覆盖）
         script: |
           set -e
@@ -48,15 +50,18 @@ workflows:
           else
             echo "Found existing $CFG, keep your repo version."
           fi
+
       - name: 白标变量确认
         script: |
           echo "APP_NAME=$APP_NAME"
           echo "MAIN_APP_IDENTIFIER=$MAIN_APP_IDENTIFIER"
           echo "APP_SCHEME=$APP_SCHEME"
+
       - name: 构建（优先使用仓库自带 lane）
         script: |
           set -e
           npm run build:android || echo "lane 构建失败，尝试 Gradle 兜底…"
+
       - name: 兜底：直接 Gradle 生成 APK（如 lane 只产出 AAB）
         script: |
           set -e
@@ -67,20 +72,21 @@ workflows:
             -Pandroid.injected.signing.key.alias="$CM_KEY_ALIAS" \
             -Pandroid.injected.signing.key.password="$CM_KEY_PASSWORD" || true
           cd -
+
       - name: 收集制品（APK/AAB）
         script: |
           mkdir -p $CM_ARTIFACTS
           find . -type f -name "*release*.apk" -maxdepth 6 -print -exec cp -f {} $CM_ARTIFACTS \; || true
           find . -type f -name "*.aab" -maxdepth 6 -print -exec cp -f {} $CM_ARTIFACTS \; || true
-    # 不写 publishing：仅在 Artifacts 输出安装包，便于自行分发
+    # 不写 publishing：仅在 Artifacts 输出安装包
 
-  # ========= iOS：白标 + 正常分发（TestFlight / App Store） =========
+  # ========= iOS：白标 + TestFlight/App Store 分发（用 api_key_path 方案） =========
   mm-whitelabel-ios:
     name: Mattermost WhiteLabel iOS (TestFlight/App Store)
     max_build_duration: 120
     instance_type: mac_mini_m2
 
-    # 可保留（可选）；即便写了 integrations，下面的 api_key 也生效。
+    # 可选：即使配置了 integrations，publishing 用的是 api_key_path，不冲突
     integrations:
       app_store_connect: codemagic
 
@@ -92,6 +98,12 @@ workflows:
       vars:
         BUILD_FOR_RELEASE: "true"
         REPLACE_ASSETS: "true"
+        # 变量组里需提供：
+        # APP_NAME、MAIN_APP_IDENTIFIER、
+        # EXTENSION_APP_IDENTIFIER、NOTIFICATION_SERVICE_IDENTIFIER、
+        # FASTLANE_TEAM_ID、IOS_APP_GROUP、IOS_ICLOUD_CONTAINER、
+        # MATCH_USERNAME、MATCH_PASSWORD、MATCH_GIT_URL、MATCH_APP_IDENTIFIER、MATCH_TYPE=appstore、SYNC_PROVISIONING_PROFILES=true
+        # 以及 ASC_KEY_ID、ASC_ISSUER_ID、ASC_PRIVATE_KEY（App 或 Team 级环境变量，设为 Secret）
 
     cache:
       cache_paths:
@@ -131,6 +143,19 @@ workflows:
           check_var ASC_ISSUER_ID
           if [ -z "$ASC_PRIVATE_KEY" ]; then echo "❌ MISSING ASC_PRIVATE_KEY"; exit 1; else echo "✅ ASC_PRIVATE_KEY OK (hidden)"; fi
 
+      - name: 生成 App Store Connect API Key JSON（供 publishing 使用）
+        script: |
+          set -e
+          cat > asc_api_key.json <<EOF
+          {
+            "key_id": "${ASC_KEY_ID}",
+            "issuer_id": "${ASC_ISSUER_ID}",
+            "key": "${ASC_PRIVATE_KEY}",
+            "in_house": false
+          }
+          EOF
+          echo "✅ asc_api_key.json generated"
+
       - name: 构建 iOS（使用仓库 lane）
         script: |
           npm run build:ios
@@ -142,11 +167,9 @@ workflows:
 
     publishing:
       app_store_connect:
-        api_key:
-          key_id: "$ASC_KEY_ID"         # 例：1A2BC3D4E5
-          issuer_id: "$ASC_ISSUER_ID"   # 例：12345678-90ab-cdef-1234-567890abcdef
-          key: "$ASC_PRIVATE_KEY"       # .p8 原文（含 BEGIN/END 与换行）
+        api_key_path: "asc_api_key.json"   # 关键：用路径规避“变量未加载前的校验”
         submit_to_testflight: true
+        # 如需直接上架，取消注释：
         # submit_to_app_store: true
         # beta_groups:
         #   - Internal Testers
