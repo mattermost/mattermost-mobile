@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo} from 'react';
+import React from 'react';
 import {StyleSheet} from 'react-native';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
@@ -38,7 +38,7 @@ const FloatingBanner: React.FC<FloatingBannerProps> = ({banners, onDismiss}) => 
         }
     };
 
-    if (!banners.length) {
+    if (!banners || !banners.length) {
         return null;
     }
 
@@ -80,9 +80,7 @@ const FloatingBanner: React.FC<FloatingBannerProps> = ({banners, onDismiss}) => 
                 <GestureHandlerRootView style={styles.gestureHandler}>
                     {sectionBanners.map((banner, index) => {
                         const {id, dismissible = true, customContent} = banner;
-                        const offsetProps = useMemo(() => {
-                            return isTop ? {customTopOffset: index * BANNER_STACK_SPACING} : {customBottomOffset: (index * BANNER_STACK_SPACING) + BOTTOM_BANNER_EXTRA_OFFSET};
-                        }, [index]);
+                        const offsetProps = isTop ? {customTopOffset: index * BANNER_STACK_SPACING} : {customBottomOffset: (index * BANNER_STACK_SPACING) + BOTTOM_BANNER_EXTRA_OFFSET};
 
                         return (
                             <Banner
