@@ -487,52 +487,52 @@ describe('NetworkConnectivityManager', () => {
 
         describe('shouldShowReconnectionBanner', () => {
             it('should return true when all conditions are met for reconnection', () => {
-                const result = shouldShowReconnectionBanner('connected', 'not_connected', false, false, false);
+                const result = shouldShowReconnectionBanner('connected', 'not_connected', false, false);
                 expect(result).toBe(true);
             });
 
             it('should return true when previous state was connecting', () => {
-                const result = shouldShowReconnectionBanner('connected', 'connecting', false, false, false);
+                const result = shouldShowReconnectionBanner('connected', 'connecting', false, false);
                 expect(result).toBe(true);
             });
 
             it('should return false when websocket is not connected', () => {
-                const result = shouldShowReconnectionBanner('not_connected', 'not_connected', false, false, false);
+                const result = shouldShowReconnectionBanner('not_connected', 'not_connected', false, false);
                 expect(result).toBe(false);
             });
 
             it('should return false when websocket is connecting', () => {
-                const result = shouldShowReconnectionBanner('connecting', 'not_connected', false, false, false);
+                const result = shouldShowReconnectionBanner('connecting', 'not_connected', false, false);
                 expect(result).toBe(false);
             });
 
             it('should return false when it is first connection', () => {
-                const result = shouldShowReconnectionBanner('connected', 'not_connected', true, false, false);
+                const result = shouldShowReconnectionBanner('connected', 'not_connected', true, false);
                 expect(result).toBe(false);
             });
 
             it('should return false when reconnection banner was already shown', () => {
-                const result = shouldShowReconnectionBanner('connected', 'not_connected', false, true, false);
+                const result = shouldShowReconnectionBanner('connected', 'not_connected', false, true);
                 expect(result).toBe(false);
             });
 
-            it('should return false when performance is suppressed', () => {
-                const result = shouldShowReconnectionBanner('connected', 'not_connected', false, false, true);
-                expect(result).toBe(false);
+            it('should return true even when performance is suppressed', () => {
+                const result = shouldShowReconnectionBanner('connected', 'not_connected', false, false);
+                expect(result).toBe(true);
             });
 
             it('should return false when previous state was connected', () => {
-                const result = shouldShowReconnectionBanner('connected', 'connected', false, false, false);
+                const result = shouldShowReconnectionBanner('connected', 'connected', false, false);
                 expect(result).toBe(false);
             });
 
             it('should return false when previous state is null', () => {
-                const result = shouldShowReconnectionBanner('connected', null, false, false, false);
+                const result = shouldShowReconnectionBanner('connected', null, false, false);
                 expect(result).toBe(false);
             });
 
             it('should return false when websocket state is null', () => {
-                const result = shouldShowReconnectionBanner(null, 'not_connected', false, false, false);
+                const result = shouldShowReconnectionBanner(null, 'not_connected', false, false);
                 expect(result).toBe(false);
             });
         });
@@ -680,6 +680,31 @@ describe('NetworkConnectivityManager', () => {
             manager.reapply();
 
             expect(mockBannerManager.showBannerWithAutoHide).toHaveBeenCalledTimes(1);
+        });
+
+        it('should show banners on first disconnect/reconnect cycle after performance auto-hide', () => {
+            manager.setServerConnectionStatus(true, 'https://test.server.com');
+            manager.updateState('connected', {isInternetReachable: true}, 'active');
+
+            manager.updatePerformanceState('slow');
+            expect(mockBannerManager.showBannerWithAutoHide).toHaveBeenCalled();
+
+            mockBannerManager.showBanner.mockClear();
+            mockBannerManager.showBannerWithAutoHide.mockClear();
+            mockBannerManager.hideBanner.mockClear();
+
+            manager.updateState('not_connected', {isInternetReachable: true}, 'active');
+            manager.updateState('connected', {isInternetReachable: true}, 'active');
+
+            mockBannerManager.showBanner.mockClear();
+            mockBannerManager.showBannerWithAutoHide.mockClear();
+
+            manager.updateState('not_connected', {isInternetReachable: true}, 'active');
+            manager.updateState('connected', {isInternetReachable: true}, 'active');
+
+            expect(mockBannerManager.showBanner).toHaveBeenCalledWith(
+                expect.objectContaining({id: 'connectivity'}),
+            );
         });
 
     });

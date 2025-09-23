@@ -70,12 +70,10 @@ function shouldShowReconnectionBanner(
     previousWebsocketState: WebsocketConnectedState | null,
     isFirstConnection: boolean,
     hasShownReconnectionBanner: boolean,
-    performanceSuppressed: boolean,
 ): boolean {
     return websocketState === 'connected' &&
            isReconnection(previousWebsocketState, isFirstConnection) &&
-           !hasShownReconnectionBanner &&
-           !performanceSuppressed;
+           !hasShownReconnectionBanner;
 }
 
 class NetworkConnectivityManagerSingleton {
@@ -207,10 +205,6 @@ class NetworkConnectivityManagerSingleton {
         this.netInfo = netInfo;
         this.appState = appState;
 
-        if (this.performanceSuppressedUntilNormal && this.currentPerformanceState === 'slow') {
-            return;
-        }
-
         this.updateBanner();
     }
 
@@ -252,10 +246,6 @@ class NetworkConnectivityManagerSingleton {
         }
 
         this.previousWebsocketState = this.websocketState;
-
-        if (this.performanceSuppressedUntilNormal && this.currentPerformanceState === 'slow') {
-            return;
-        }
 
         if (this.handleActiveAutoHideBanner()) {
             return;
@@ -333,7 +323,6 @@ class NetworkConnectivityManagerSingleton {
         if (shouldShowDisconnectedBanner(this.websocketState, this.isFirstConnection)) {
             this.showConnectivity(false);
             this.hasShownReconnectionBanner = false;
-            this.performanceSuppressedUntilNormal = false;
             return true;
         }
         return false;
@@ -343,7 +332,6 @@ class NetworkConnectivityManagerSingleton {
         if (shouldShowConnectingBanner(this.websocketState, this.isFirstConnection)) {
             this.showConnectivity(false);
             this.hasShownReconnectionBanner = false;
-            this.performanceSuppressedUntilNormal = false;
             return true;
         }
         return false;
@@ -352,6 +340,7 @@ class NetworkConnectivityManagerSingleton {
     private handlePerformanceState(): boolean {
         if (shouldShowPerformanceBanner(this.websocketState, this.currentPerformanceState, this.performanceSuppressedUntilNormal)) {
             this.showPerformanceWithAutoHide(10000);
+            this.isFirstConnection = false;
             return true;
         }
         return false;
@@ -363,7 +352,6 @@ class NetworkConnectivityManagerSingleton {
             this.previousWebsocketState,
             this.isFirstConnection,
             this.hasShownReconnectionBanner,
-            this.performanceSuppressedUntilNormal,
         )) {
             this.showConnectivityWithAutoHide(true, 3000);
             this.isFirstConnection = false;
