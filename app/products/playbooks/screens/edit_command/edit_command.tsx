@@ -46,7 +46,7 @@ const CreateOrEditChannel = ({
     const theme = useTheme();
 
     const [canSave, setCanSave] = useState(false);
-    const [command, setCommand] = useState<string>(savedCommand || '');
+    const [command, setCommand] = useState<string>(savedCommand || '/');
 
     const rightButton = useMemo(() => {
         const base = buildNavigationButton(

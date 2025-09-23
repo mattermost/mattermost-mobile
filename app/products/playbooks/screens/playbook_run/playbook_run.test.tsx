@@ -177,7 +177,7 @@ describe('PlaybookRun', () => {
         expect(ownerChip.props.user).toBe(props.owner);
         expect(ownerChip.props.onPress).toBeDefined();
         expect(ownerChip.props.teammateNameDisplay).toBe(General.TEAMMATE_NAME_DISPLAY.SHOW_USERNAME);
-        expect(ownerChip.props.actionIcon).toBe(undefined);
+        expect(ownerChip.props.action).toBe(undefined);
 
         ownerChip.props.onPress();
         expect(openUserProfileModal).toHaveBeenCalledWith(expect.anything(), expect.anything(), {
@@ -216,7 +216,31 @@ describe('PlaybookRun', () => {
         const {getByTestId} = renderWithEverything(<PlaybookRun {...props}/>, {database});
 
         const ownerChip = getByTestId('user-chip');
-        expect(ownerChip).toHaveProp('actionIcon', 'downArrow');
+        expect(ownerChip).toHaveProp('action', {icon: 'downArrow', onPress: expect.any(Function)});
+        ownerChip.props.action.onPress();
+
+        expect(goToSelectUser).toHaveBeenCalledWith(
+            'Owner',
+            [...props.participants.map((p) => p.id), props.owner!.id],
+            props.owner!.id,
+            expect.any(Function),
+        );
+        expect(openUserProfileModal).not.toHaveBeenCalled();
+
+        let handleSelect = jest.mocked(goToSelectUser).mock.calls[0][3];
+        handleSelect(TestHelper.fakeUser({id: 'user-2'}));
+
+        expect(setOwner).toHaveBeenCalledWith(
+            serverUrl,
+            props.playbookRun!.id,
+            'user-2',
+        );
+        expect(showPlaybookErrorSnackbar).not.toHaveBeenCalled();
+
+        jest.mocked(goToSelectUser).mockClear();
+        jest.mocked(setOwner).mockClear();
+
+        // Test also pressing on the whole chip
         ownerChip.props.onPress();
 
         expect(goToSelectUser).toHaveBeenCalledWith(
@@ -227,7 +251,7 @@ describe('PlaybookRun', () => {
         );
         expect(openUserProfileModal).not.toHaveBeenCalled();
 
-        const handleSelect = jest.mocked(goToSelectUser).mock.calls[0][3];
+        handleSelect = jest.mocked(goToSelectUser).mock.calls[0][3];
         handleSelect(TestHelper.fakeUser({id: 'user-2'}));
 
         expect(setOwner).toHaveBeenCalledWith(
