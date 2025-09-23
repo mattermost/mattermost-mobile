@@ -15,6 +15,7 @@ import {logDebug} from '@utils/log';
 import {forceLogoutIfNecessary} from './session';
 
 import type {Client} from '@client/rest';
+import type ClientError from '@client/rest/error';
 import type {ClientResponse} from '@mattermost/react-native-network-client';
 
 async function getDeviceIdForPing(serverUrl: string, checkDeviceId: boolean) {
@@ -66,12 +67,21 @@ export const doPing = async (serverUrl: string, verifyPushProxy: boolean, timeou
         }
 
         if (!response.ok) {
-            logDebug('Server ping returned not ok response', response);
             NetworkManager.invalidateClient(serverUrl);
+            if (response.code === 403 && response.headers?.['x-reject-reason'] === 'pre-auth') {
+                return {error: {intl: pingError}, isPreauthError: true};
+            }
             return {error: {intl: pingError}};
         }
     } catch (error) {
-        logDebug('Server ping threw an exception', getFullErrorMessage(error));
+        // Check if this is a 403 with pre-auth header
+        const errorObj = error as ClientError;
+        if (errorObj.status_code === 403) {
+            if (errorObj.headers?.['x-reject-reason'] === 'pre-auth') {
+                return {error: {intl: pingError}, isPreauthError: true};
+            }
+        }
+
         NetworkManager.invalidateClient(serverUrl);
         return {error: {intl: pingError}};
     }
