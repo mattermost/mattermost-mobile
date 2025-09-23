@@ -136,35 +136,17 @@ workflows:
             exit 1
           fi
 
-          echo "▶ Pin CocoaPods to 1.16.1 and make sure it's first in PATH"
+          echo "▶ Pin CocoaPods to 1.16.1 (user gem dir) and bypass Bundler"
           # 安装到用户目录，避免动系统 Ruby/Gems
           export GEM_HOME="$HOME/.gem"
           export GEM_PATH="$GEM_HOME"
           export PATH="$GEM_HOME/bin:$PATH"
           gem list -i cocoapods -v 1.16.1 || gem install cocoapods -v 1.16.1 --no-document
 
-          # 找到 1.16.1 的真正可执行文件
-          POD_BIN="$(ruby -e 'spec=Gem::Specification.find_all_by_name(%q{cocoapods}, %q{=1.16.1}).first; puts File.join(spec.bin_dir, %q{pod})')"
-          if [ -z "$POD_BIN" ] || [ ! -x "$POD_BIN" ]; then
-            echo "❌ 未找到 cocoapods 1.16.1 可执行文件"
-            exit 1
-          fi
-          export PATH="$(dirname "$POD_BIN"):$PATH"
-          hash -r
-
-          echo "▶ Verify pod version WITHOUT bundler"
-          # 关键：临时去掉 Bundler 注入，防止 GemfileNotFound
-          env -u BUNDLE_GEMFILE -u RUBYOPT "$POD_BIN" --version
-
-          # 兜底：若还是不是 1.16.1，则强制软链一个高优先级的 pod
-          if [ "$({ env -u BUNDLE_GEMFILE -u RUBYOPT "$POD_BIN" --version; } 2>/dev/null)" != "1.16.1" ]; then
-            mkdir -p "$HOME/bin"
-            ln -sf "$POD_BIN" "$HOME/bin/pod"
-            export PATH="$HOME/bin:$PATH"
-            hash -r
-            echo "pod forced to: $(command -v pod)"
-            env -u BUNDLE_GEMFILE -u RUBYOPT pod --version
-          fi
+          # 彻底规避 Bundler 注入：清掉相关环境变量，再用 RubyGems 的“可执行版本”语法
+          unset RUBYOPT BUNDLE_GEMFILE BUNDLE_BIN_PATH BUNDLE_PATH BUNDLER_ORIG_PATH BUNDLER_ORIG_MANPATH || true
+          echo "pod path: $(command -v pod || echo 'not found')"
+          env -i PATH="$PATH" GEM_HOME="$GEM_HOME" GEM_PATH="$GEM_PATH" HOME="$HOME" LANG="${LANG:-en_US.UTF-8}" pod _1.16.1_ --version
 
           echo "▶ npm ci"
           npm ci
