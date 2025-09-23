@@ -25,7 +25,7 @@ import {
     timeouts,
     wait,
 } from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 describe('Messaging - Message Permalink Preview', () => {
     const serverOneDisplayName = 'Server 1';
@@ -77,8 +77,10 @@ describe('Messaging - Message Permalink Preview', () => {
 
         const copiedPermalink = `${serverOneUrl}/${testTeam.name}/pl/${targetPost.post.id}`;
         const messageWithPastedLink = `Check this out ${copiedPermalink}`;
+        await ChannelScreen.postInput.tap();
         await ChannelScreen.postInput.replaceText(messageWithPastedLink);
 
+        await waitFor(ChannelScreen.sendButton).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         await ChannelScreen.sendButton.tap();
 
         await wait(timeouts.FOUR_SEC);
@@ -119,8 +121,10 @@ describe('Messaging - Message Permalink Preview', () => {
 
         const copiedPermalink = `${serverOneUrl}/${testTeam.name}/pl/${targetPost.post.id}`;
         const messageWithPastedLink = `Check this out from the other channel ${copiedPermalink}`;
+        await ChannelScreen.postInput.tap();
         await ChannelScreen.postInput.replaceText(messageWithPastedLink);
 
+        await waitFor(ChannelScreen.sendButton).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         await ChannelScreen.sendButton.tap();
 
         await wait(timeouts.FOUR_SEC);
@@ -135,9 +139,13 @@ describe('Messaging - Message Permalink Preview', () => {
     });
 
     it('MM-T4877_3 - should navigate to original post when tapping on permalink preview', async () => {
+        // Create both channels at the beginning
         const {channel: targetChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, targetChannel.id);
         await Channel.apiAddUserToChannel(siteOneUrl, testOtherUser.id, targetChannel.id);
+
+        const {channel: otherChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
+        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, otherChannel.id);
 
         const targetMessage = `Original post ${getRandomId()}`;
         const targetPost = await Post.apiCreatePost(siteOneUrl, {
@@ -158,17 +166,19 @@ describe('Messaging - Message Permalink Preview', () => {
 
         await wait(timeouts.FOUR_SEC);
         await ChannelScreen.back();
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.open(channelsCategory, otherChannel.name);
 
         const copiedPermalink = `${serverOneUrl}/${testTeam.name}/pl/${targetPost.post.id}`;
         const messageWithPastedLink = `Check this out ${copiedPermalink}`;
+        await ChannelScreen.postInput.tap();
         await ChannelScreen.postInput.replaceText(messageWithPastedLink);
 
+        await waitFor(ChannelScreen.sendButton).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         await ChannelScreen.sendButton.tap();
 
         await wait(timeouts.FOUR_SEC);
 
-        const permalinkPreview = element(by.id('permalink-preview-container')).atIndex(0);
+        const permalinkPreview = element(by.id('permalink-preview-container'));
         await waitFor(permalinkPreview).toBeVisible().withTimeout(timeouts.FOUR_SEC);
 
         await expect(element(by.text(targetMessage).withAncestor(by.id('permalink-preview-container')))).toBeVisible();
@@ -191,15 +201,16 @@ describe('Messaging - Message Permalink Preview', () => {
     });
 
     it('MM-T4877_4 - should update permalink preview when original post is edited', async () => {
+        // Create the other channel at the beginning
+        const {channel: otherChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
+        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, otherChannel.id);
+
         const originalMessage = `Original message ${getRandomId()}`;
         const targetPost = await Post.apiCreatePost(siteOneUrl, {
             channelId: testChannel.id,
             message: originalMessage,
             userId: testOtherUser.id,
         });
-
-        const {channel: otherChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
-        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, otherChannel.id);
 
         await ChannelScreen.open(channelsCategory, testChannel.name);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(targetPost.post.id, originalMessage);
@@ -218,12 +229,14 @@ describe('Messaging - Message Permalink Preview', () => {
 
         const copiedPermalink = `${serverOneUrl}/${testTeam.name}/pl/${targetPost.post.id}`;
         const messageWithPastedLink = `Check this out ${copiedPermalink}`;
+        await ChannelScreen.postInput.tap();
         await ChannelScreen.postInput.replaceText(messageWithPastedLink);
 
+        await waitFor(ChannelScreen.sendButton).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         await ChannelScreen.sendButton.tap();
         await wait(timeouts.FOUR_SEC);
 
-        const permalinkPreview = element(by.id('permalink-preview-container')).atIndex(0);
+        const permalinkPreview = element(by.id('permalink-preview-container'));
         await waitFor(permalinkPreview).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         await expect(element(by.text(originalMessage).withAncestor(by.id('permalink-preview-container')))).toBeVisible();
 
@@ -250,6 +263,10 @@ describe('Messaging - Message Permalink Preview', () => {
     });
 
     it('MM-T4877_6 - should handle permalink preview with long message content', async () => {
+        // Create the other channel at the beginning
+        const {channel: otherChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
+        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, otherChannel.id);
+
         const longMessage = 'This is a very long message that should be truncated in the permalink preview when it exceeds the maximum character limit. The preview should show only a portion of this content and add ellipsis to indicate there is more content available. This message is intentionally longer than 150 characters to test the truncation functionality properly.';
         const targetPost = await Post.apiCreatePost(siteOneUrl, {
             channelId: testChannel.id,
@@ -267,15 +284,21 @@ describe('Messaging - Message Permalink Preview', () => {
 
         await expect(PostOptionsScreen.postOptionsScreen).not.toBeVisible();
 
+        await wait(timeouts.FOUR_SEC);
+        await ChannelScreen.back();
+        await ChannelScreen.open(channelsCategory, otherChannel.name);
+
         const copiedPermalink = `${serverOneUrl}/${testTeam.name}/pl/${targetPost.post.id}`;
         const messageWithPastedLink = `Long message link ${copiedPermalink}`;
+        await ChannelScreen.postInput.tap();
         await ChannelScreen.postInput.replaceText(messageWithPastedLink);
 
+        await waitFor(ChannelScreen.sendButton).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         await ChannelScreen.sendButton.tap();
 
         await wait(timeouts.FOUR_SEC);
 
-        const permalinkPreview = element(by.id('permalink-preview-container')).atIndex(0);
+        const permalinkPreview = element(by.id('permalink-preview-container'));
         await waitFor(permalinkPreview).toBeVisible().withTimeout(timeouts.FOUR_SEC);
 
         const truncatedText = longMessage.substring(0, 150) + '...';
@@ -287,6 +310,10 @@ describe('Messaging - Message Permalink Preview', () => {
     });
 
     it('MM-T4877_7 - should handle permalink preview when original post is deleted', async () => {
+        // Create the other channel at the beginning
+        const {channel: otherChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
+        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, otherChannel.id);
+
         const targetMessage = `Message to be deleted ${getRandomId()}`;
 
         await ChannelScreen.open(channelsCategory, testChannel.name);
@@ -294,9 +321,6 @@ describe('Messaging - Message Permalink Preview', () => {
 
         await wait(timeouts.TWO_SEC);
         const {post: targetPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-
-        const {channel: otherChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
-        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, otherChannel.id);
 
         const {postListPostItem} = ChannelScreen.getPostListPostItem(targetPost.id, targetMessage);
         await expect(postListPostItem).toBeVisible();
@@ -316,12 +340,14 @@ describe('Messaging - Message Permalink Preview', () => {
 
         const copiedPermalink = `${serverOneUrl}/${testTeam.name}/pl/${targetPost.id}`;
         const messageWithPastedLink = `Check this post ${copiedPermalink}`;
+        await ChannelScreen.postInput.tap();
         await ChannelScreen.postInput.replaceText(messageWithPastedLink);
 
+        await waitFor(ChannelScreen.sendButton).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         await ChannelScreen.sendButton.tap();
         await wait(timeouts.FOUR_SEC);
 
-        const permalinkPreview = element(by.id('permalink-preview-container')).atIndex(0);
+        const permalinkPreview = element(by.id('permalink-preview-container'));
         await waitFor(permalinkPreview).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         await expect(element(by.text(targetMessage).withAncestor(by.id('permalink-preview-container')))).toBeVisible();
 
