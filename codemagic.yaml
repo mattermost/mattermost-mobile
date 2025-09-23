@@ -121,14 +121,20 @@ workflows:
         script: |
           set -e
           export NVM_DIR="$HOME/.nvm"
-          if [ -f ".nvmrc" ] && [ -s "$NVM_DIR/nvm.sh" ]; then
-            # 有 nvm 且有 .nvmrc，按项目版本
-            . "$NVM_DIR/nvm.sh"
+          if [ ! -s "$NVM_DIR/nvm.sh" ]; then
+            echo "🔧 安装 nvm..."
+            curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+          fi
+          . "$NVM_DIR/nvm.sh"
+
+          if [ -f ".nvmrc" ]; then
             nvm install --silent
             nvm use --silent
           else
-            echo "⚠️ 未检测到 nvm，使用系统 Node"
+            nvm install --lts --silent
+            nvm use --lts --silent
           fi
+
           node -v
           npm -v
           npm ci
