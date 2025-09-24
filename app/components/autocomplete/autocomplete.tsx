@@ -19,8 +19,6 @@ import AppSlashSuggestion from './slash_suggestion/app_slash_suggestion/';
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         base: {
-            left: 8,
-            right: 8,
             position: 'absolute',
         },
         borders: {
@@ -65,6 +63,8 @@ type Props = {
     teamId?: string;
     containerStyle?: StyleProp<ViewStyle>;
     autocompleteProviders?: AutocompleteProviders;
+    useAllAvailableSpace?: boolean;
+    horizontalPadding?: number;
 }
 
 type AutocompleteProviders = {
@@ -99,6 +99,8 @@ const Autocomplete = ({
     containerStyle,
     teamId,
     autocompleteProviders = defaultAutocompleteProviders,
+    useAllAvailableSpace = false,
+    horizontalPadding = 8,
 }: Props) => {
     const theme = useTheme();
     const isTablet = useIsTablet();
@@ -121,8 +123,8 @@ const Autocomplete = ({
     const maxHeightAdjust = (isTablet && isLandscape) ? MAX_LIST_TABLET_DIFF : 0;
     const defaultMaxHeight = MAX_LIST_HEIGHT - maxHeightAdjust;
     const maxHeight = useDerivedValue(() => {
-        return Math.min(availableSpace.value, defaultMaxHeight);
-    }, [defaultMaxHeight]);
+        return useAllAvailableSpace ? availableSpace.value : Math.min(availableSpace.value, defaultMaxHeight);
+    }, [defaultMaxHeight, useAllAvailableSpace, availableSpace]);
 
     const containerAnimatedStyle = useAnimatedStyle(() => {
         return growDown ?
@@ -131,7 +133,7 @@ const Autocomplete = ({
     }, [growDown, position]);
 
     const containerStyles = useMemo(() => {
-        const s: StyleProp<ViewStyle> = [style.base, containerAnimatedStyle];
+        const s: StyleProp<ViewStyle> = [style.base, {left: horizontalPadding, right: horizontalPadding}, containerAnimatedStyle];
         if (hasElements) {
             s.push(style.borders);
         }
@@ -142,7 +144,7 @@ const Autocomplete = ({
             s.push(containerStyle);
         }
         return s;
-    }, [hasElements, style, containerStyle, containerAnimatedStyle]);
+    }, [style.base, style.borders, style.shadow, horizontalPadding, containerAnimatedStyle, hasElements, containerStyle]);
 
     return (
         <Animated.View

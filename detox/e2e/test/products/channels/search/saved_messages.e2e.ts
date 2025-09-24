@@ -140,7 +140,7 @@ describe('Search - Saved Messages', () => {
         // * Verify post message is updated and displays edited indicator '(edited)'
         const {postListPostItem: updatedPostListPostItem, postListPostItemEditedIndicator} = SavedMessagesScreen.getPostListPostItem(savedPost.id, updatedMessage);
         await expect(updatedPostListPostItem).toBeVisible();
-        await expect(postListPostItemEditedIndicator).toHaveText('(edited)');
+        await expect(postListPostItemEditedIndicator).toHaveText('Edited');
 
         // # Open post options for updated saved message and tap on reply option
         await SavedMessagesScreen.openPostOptionsFor(savedPost.id, updatedMessage);
