@@ -1041,6 +1041,8 @@
   "playbooks.runs.show_more": "Zobrazit Více",
   "playbooks.select_date.title": "Termín dokončení",
   "playbooks.select_user.no_assignee": "Nepřiřazen",
+  "playbooks.select_user.not_participants": "NEÚČASTEN",
+  "playbooks.select_user.participants": "ÚČASTNÍCI BĚHU",
   "playbooks.status_update_post.num_tasks": "{numTasksChecked, number} z {numTasks, number} {numTasks, plural, =1 {úkolu} other {úkolů}} zaškrtnuto",
   "playbooks.status_update_post.participants": "{numParticipants, number} {numParticipants, plural, =1 {účastník} other {účastníků}}",
   "playbooks.status_update_post.update": "@{authorUsername} zveřejnil aktualizaci pro [{runName}]({link})",
