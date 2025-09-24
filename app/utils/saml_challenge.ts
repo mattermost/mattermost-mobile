@@ -58,5 +58,3 @@ export function createSamlChallenge(): SAMLChallenge {
         return {state, codeVerifier, codeChallenge: codeVerifier, method: 'plain'};
     }
 }
-
-
