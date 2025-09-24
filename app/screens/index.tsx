@@ -142,7 +142,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.FLOATING_BANNER: {
             const floatingBannerScreen = withServerDatabase(require('@screens/floating_banner').default);
             Navigation.registerComponent(Screens.FLOATING_BANNER, () => floatingBannerScreen);
-            break;
+            return;
         }
         case Screens.GLOBAL_DRAFTS:
             screen = withServerDatabase(require('@screens/global_drafts').default);
