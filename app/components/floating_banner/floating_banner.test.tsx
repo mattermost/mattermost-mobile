@@ -324,10 +324,12 @@ describe('FloatingBanner', () => {
 
             const container = screen.getByTestId('floating-banner-bottom-container');
             const styleProp = container.props.style as Array<Record<string, unknown>>;
-            const styleWithBottom = styleProp[styleProp.length - 1] as {bottom: number};
+            const containerStyle = styleProp.find((style) =>
+                typeof style === 'object' && style !== null && 'bottom' in style,
+            ) as {bottom: number};
 
             const {BOTTOM_OFFSET_PHONE, TABLET_EXTRA_BOTTOM_OFFSET} = testExports;
-            expect(styleWithBottom.bottom).toBe(BOTTOM_OFFSET_PHONE + TABLET_EXTRA_BOTTOM_OFFSET);
+            expect(containerStyle.bottom).toBe(BOTTOM_OFFSET_PHONE + TABLET_EXTRA_BOTTOM_OFFSET);
         });
     });
 
@@ -343,7 +345,11 @@ describe('FloatingBanner', () => {
 
             const container = screen.getByTestId('floating-banner-bottom-container');
             const styleProp = container.props.style as Array<Record<string, unknown>>;
-            const animatedStyle = styleProp[styleProp.length - 1] as {bottom: number};
+
+            // Find the animated style (should contain bottom property)
+            const animatedStyle = styleProp.find((style) =>
+                typeof style === 'object' && style !== null && 'bottom' in style,
+            ) as {bottom: number};
 
             const {BOTTOM_OFFSET_PHONE} = testExports;
             expect(animatedStyle.bottom).toBe(BOTTOM_OFFSET_PHONE + keyboardHeight);
@@ -361,7 +367,11 @@ describe('FloatingBanner', () => {
 
             const container = screen.getByTestId('floating-banner-bottom-container');
             const styleProp = container.props.style as Array<Record<string, unknown>>;
-            const animatedStyle = styleProp[styleProp.length - 1] as {bottom: number};
+
+            // Find the animated style (should contain bottom property)
+            const animatedStyle = styleProp.find((style) =>
+                typeof style === 'object' && style !== null && 'bottom' in style,
+            ) as {bottom: number};
 
             const {BOTTOM_OFFSET_PHONE, TABLET_EXTRA_BOTTOM_OFFSET} = testExports;
             const expectedBottom = BOTTOM_OFFSET_PHONE + TABLET_EXTRA_BOTTOM_OFFSET + keyboardHeight;
@@ -397,7 +407,11 @@ describe('FloatingBanner', () => {
 
             const container = screen.getByTestId('floating-banner-bottom-container');
             const styleProp = container.props.style as Array<Record<string, unknown>>;
-            const animatedStyle = styleProp[styleProp.length - 1] as {bottom: number};
+
+            // Find the animated style (should contain bottom property)
+            const animatedStyle = styleProp.find((style) =>
+                typeof style === 'object' && style !== null && 'bottom' in style,
+            ) as {bottom: number};
 
             const {BOTTOM_OFFSET_PHONE} = testExports;
             expect(animatedStyle.bottom).toBe(BOTTOM_OFFSET_PHONE);

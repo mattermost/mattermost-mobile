@@ -61,12 +61,19 @@ const FloatingBanner: React.FC<FloatingBannerProps> = ({banners, onDismiss}) => 
         const containerStyle = isTop ? [styles.containerBase, styles.topContainer] : [
             styles.containerBase,
             styles.bottomContainer,
-            {bottom: baseBottomOffset},
         ];
 
-        const animatedStyle = useAnimatedStyle(() => (
-            isTop || Platform.OS === 'android' ? {} : {transform: [{translateY: withTiming(-keyboardHeight, {duration: 250})}]}
-        ), [keyboardHeight, isTop]);
+        const animatedStyle = useAnimatedStyle(() => {
+            if (isTop) {
+                return {};
+            }
+
+            if (Platform.OS === 'android') {
+                return {bottom: baseBottomOffset};
+            }
+
+            return {bottom: withTiming(baseBottomOffset + keyboardHeight, {duration: 250})};
+        }, [keyboardHeight, isTop, baseBottomOffset]);
 
         return (
             <Animated.View
