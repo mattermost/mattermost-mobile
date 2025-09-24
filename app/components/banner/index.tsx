@@ -117,9 +117,8 @@ export interface BannerProps {
     swipeThreshold?: number;
 }
 
-const getDefaultStyles = () => StyleSheet.create({
+const styles = StyleSheet.create({
     wrapper: {
-        position: 'absolute',
         width: '100%',
         gap: 8,
     },
@@ -162,9 +161,9 @@ const Banner: React.FC<BannerProps> = ({
     onDismiss,
     swipeThreshold = 100,
 }) => {
+
     const insets = useSafeAreaInsets();
     const isTablet = useIsTablet();
-    const styles = getDefaultStyles();
 
     const opacity = useSharedValue(visible ? 1 : 0);
     const slideOffset = position === 'top' ? -50 : 50;
@@ -281,7 +280,6 @@ const Banner: React.FC<BannerProps> = ({
                 animatedStyle,
                 style,
             ]}
-            pointerEvents='box-none'
         >
             <View style={[styles.container, containerStyle]}>
                 {children}

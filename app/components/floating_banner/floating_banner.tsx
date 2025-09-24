@@ -25,6 +25,7 @@ type FloatingBannerProps = {
 const FloatingBanner: React.FC<FloatingBannerProps> = ({banners, onDismiss}) => {
     const isTablet = useIsTablet();
     const keyboardHeight = useKeyboardHeight();
+
     const executeBannerAction = (banner: BannerConfig) => {
         if (banner.onPress) {
             banner.onPress();
@@ -123,7 +124,6 @@ const styles = StyleSheet.create({
         right: 0,
         zIndex: 9999,
         paddingHorizontal: 16,
-        pointerEvents: 'box-none',
         alignItems: 'center',
     },
     topContainer: {
@@ -137,7 +137,6 @@ const styles = StyleSheet.create({
     gestureHandler: {
         width: '100%',
         alignItems: 'center',
-        pointerEvents: 'box-none',
     },
 });
 
