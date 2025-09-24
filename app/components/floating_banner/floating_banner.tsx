@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {StyleSheet} from 'react-native';
+import {StyleSheet, Platform} from 'react-native';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
@@ -61,17 +61,12 @@ const FloatingBanner: React.FC<FloatingBannerProps> = ({banners, onDismiss}) => 
         const containerStyle = isTop ? [styles.containerBase, styles.topContainer] : [
             styles.containerBase,
             styles.bottomContainer,
+            {bottom: baseBottomOffset},
         ];
 
-        const animatedStyle = useAnimatedStyle(() => {
-            if (isTop) {
-                return {};
-            }
-
-            return {
-                bottom: withTiming(baseBottomOffset + keyboardHeight, {duration: 250}),
-            };
-        }, [keyboardHeight, baseBottomOffset, isTop]);
+        const animatedStyle = useAnimatedStyle(() => (
+            isTop || Platform.OS === 'android' ? {} : {transform: [{translateY: withTiming(-keyboardHeight, {duration: 250})}]}
+        ), [keyboardHeight, isTop]);
 
         return (
             <Animated.View
@@ -131,7 +126,6 @@ const styles = StyleSheet.create({
         paddingTop: 8,
     },
     bottomContainer: {
-        bottom: 0,
         paddingBottom: 8,
     },
     gestureHandler: {
