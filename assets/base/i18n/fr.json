@@ -1020,7 +1020,7 @@
   "settings.display": "Affichage",
   "settings.notice_mobile_link": "applications mobiles",
   "settings.notice_platform_link": "serveur",
-  "settings.notice_text": "Mattermost est rendu possible grà¢ce aux logiciels open source utilisés dans notre {platform} et {mobile}.",
+  "settings.notice_text": "Mattermost est rendu possible grâce aux logiciels open source utilisés dans notre {platform} et {mobile}.",
   "settings.notifications": "Notifications",
   "settings.save": "Enregistrer",
   "settings_display.clock.mz": "Horloge 24 heures",

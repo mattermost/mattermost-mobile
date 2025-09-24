@@ -52,7 +52,7 @@ const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM} = PLAYBOOK_TAB
 describe('*** Test schema for SERVER database ***', () => {
     it('=> The SERVER SCHEMA should strictly match', () => {
         expect(serverSchema).toEqual({
-            version: 12,
+            version: 13,
             unsafeSql: undefined,
             tables: {
                 [CATEGORY]: {
@@ -527,6 +527,8 @@ describe('*** Test schema for SERVER database ***', () => {
                         due_date: {name: 'due_date', type: 'number'},
                         completed_at: {name: 'completed_at', type: 'number'},
                         task_actions: {name: 'task_actions', type: 'string', isOptional: true}, // JSON string
+                        condition_action: {name: 'condition_action', type: 'string'},
+                        condition_reason: {name: 'condition_reason', type: 'string'},
                         sync: {name: 'sync', type: 'string', isIndexed: true, isOptional: true},
                         last_sync_at: {name: 'last_sync_at', type: 'number', isOptional: true},
                         update_at: {name: 'update_at', type: 'number'},
@@ -544,6 +546,8 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'due_date', type: 'number'},
                         {name: 'completed_at', type: 'number'},
                         {name: 'task_actions', type: 'string', isOptional: true}, // JSON string
+                        {name: 'condition_action', type: 'string'},
+                        {name: 'condition_reason', type: 'string'},
                         {name: 'sync', type: 'string', isIndexed: true, isOptional: true},
                         {name: 'last_sync_at', type: 'number', isOptional: true},
                         {name: 'update_at', type: 'number'},
