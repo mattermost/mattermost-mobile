@@ -19,7 +19,7 @@ import EphemeralStore from '@store/ephemeral_store';
 import {getFullErrorMessage, isErrorWithStatusCode, isErrorWithUrl} from '@utils/errors';
 import {logWarning, logError, logDebug} from '@utils/log';
 import {scheduleExpiredNotification} from '@utils/notification';
-import {type PkceBundle} from '@utils/pkce';
+import {type SAMLChallenge} from '@utils/saml_challenge';
 import {getCSRFFromCookie} from '@utils/security';
 
 import {loginEntry} from './entry';
@@ -346,7 +346,7 @@ export const ssoLogin = async (serverUrl: string, serverDisplayName: string, ser
     }
 };
 
-export const ssoLoginWithCodeExchange = async (serverUrl: string, serverDisplayName: string, serverIdentifier: string, loginCode: string, pkce: Pick<PkceBundle, 'codeVerifier' | 'state'>, preauthSecret?: string): Promise<LoginActionResponse> => {
+export const ssoLoginWithCodeExchange = async (serverUrl: string, serverDisplayName: string, serverIdentifier: string, loginCode: string, samlChallenge: Pick<SAMLChallenge, 'codeVerifier' | 'state'>, preauthSecret?: string): Promise<LoginActionResponse> => {
     const database = DatabaseManager.appDatabase?.database;
     if (!database) {
         return {error: 'App database not found', failed: true};
@@ -354,7 +354,7 @@ export const ssoLoginWithCodeExchange = async (serverUrl: string, serverDisplayN
 
     try {
         const client = NetworkManager.getClient(serverUrl);
-        const {token, csrf} = await client.exchangeSsoLoginCode(loginCode, pkce.codeVerifier, pkce.state);
+        const {token, csrf} = await client.exchangeSsoLoginCode(loginCode, samlChallenge.codeVerifier, samlChallenge.state);
 
         client.setClientCredentials(token, preauthSecret);
         client.setCSRFToken(csrf);

@@ -10,7 +10,7 @@ import urlParse from 'url-parse';
 
 import {Sso} from '@constants';
 import {isBetaApp} from '@utils/general';
-import {createPkceBundle} from '@utils/pkce';
+import {createSamlChallenge} from '@utils/saml_challenge';
 
 import AuthError from './components/auth_error';
 import AuthRedirect from './components/auth_redirect';
@@ -18,7 +18,7 @@ import AuthSuccess from './components/auth_success';
 
 interface SSOAuthenticationProps {
     doSSOLogin: (bearerToken: string, csrfToken: string) => void;
-    doSSOCodeExchange: (loginCode: string, pkce: {codeVerifier: string; state: string}) => void;
+    doSSOCodeExchange: (loginCode: string, samlChallenge: {codeVerifier: string; state: string}) => void;
     loginError: string;
     loginUrl: string;
     setLoginError: (value: string) => void;
@@ -42,7 +42,7 @@ const SSOAuthentication = ({doSSOLogin, doSSOCodeExchange, loginError, loginUrl,
     }
 
     const redirectUrl = customUrlScheme + 'callback';
-    const pkce = useMemo(() => createPkceBundle(), []);
+    const samlChallenge = useMemo(() => createSamlChallenge(), []);
     const init = useCallback(async (resetErrors = true) => {
         setLoginSuccess(false);
         if (resetErrors !== false) {
@@ -53,9 +53,9 @@ const SSOAuthentication = ({doSSOLogin, doSSOCodeExchange, loginError, loginUrl,
         const query: Record<string, string> = {
             ...parsedUrl.query,
             redirect_to: redirectUrl,
-            state: pkce.state,
-            code_challenge: pkce.codeChallenge,
-            code_challenge_method: pkce.method,
+            state: samlChallenge.state,
+            code_challenge: samlChallenge.codeChallenge,
+            code_challenge_method: samlChallenge.method,
         };
         parsedUrl.set('query', qs.stringify(query));
         const url = parsedUrl.toString();
@@ -66,7 +66,7 @@ const SSOAuthentication = ({doSSOLogin, doSSOCodeExchange, loginError, loginUrl,
             if (loginCode) {
                 // Prefer code exchange when available
                 setLoginSuccess(true);
-                doSSOCodeExchange(loginCode, {codeVerifier: pkce.codeVerifier, state: pkce.state});
+                doSSOCodeExchange(loginCode, {codeVerifier: samlChallenge.codeVerifier, state: samlChallenge.state});
                 return;
             }
             const bearerToken = resultUrl.query?.MMAUTHTOKEN;
@@ -83,7 +83,7 @@ const SSOAuthentication = ({doSSOLogin, doSSOCodeExchange, loginError, loginUrl,
                 }),
             );
         }
-    }, [doSSOCodeExchange, doSSOLogin, intl, loginUrl, pkce, redirectUrl, setLoginError]);
+    }, [doSSOCodeExchange, doSSOLogin, intl, loginUrl, samlChallenge, redirectUrl, setLoginError]);
 
     useEffect(() => {
         let listener: EventSubscription | null = null;
@@ -96,7 +96,7 @@ const SSOAuthentication = ({doSSOLogin, doSSOCodeExchange, loginError, loginUrl,
                     const loginCode = parsedUrl.query?.login_code as string | undefined;
                     if (loginCode) {
                         setLoginSuccess(true);
-                        doSSOCodeExchange(loginCode, {codeVerifier: pkce.codeVerifier, state: pkce.state});
+                        doSSOCodeExchange(loginCode, {codeVerifier: samlChallenge.codeVerifier, state: samlChallenge.state});
                         return;
                     }
                     const bearerToken = parsedUrl.query?.MMAUTHTOKEN;
@@ -126,7 +126,7 @@ const SSOAuthentication = ({doSSOLogin, doSSOCodeExchange, loginError, loginUrl,
             clearTimeout(timeout);
             listener?.remove();
         };
-    }, [doSSOCodeExchange, doSSOLogin, init, intl, pkce, redirectUrl]);
+    }, [doSSOCodeExchange, doSSOLogin, init, intl, samlChallenge, redirectUrl]);
 
     let content;
     if (loginSuccess) {

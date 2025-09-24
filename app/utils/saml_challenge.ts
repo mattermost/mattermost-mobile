@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-// RFC 7636 PKCE helpers for mobile SSO
+// SAML mobile code-exchange challenge helpers (modeled after RFC 7636)
 
 import base64 from 'base-64';
 import {getRandomValues, randomUUID} from 'expo-crypto';
@@ -23,7 +23,7 @@ function bytesToBase64Url(bytes: Uint8Array): string {
 }
 
 export function generateState(): string {
-    // Use UUID for state; allowed PKCE chars include '-'
+    // Use UUID for state; allowed challenge chars include '-'
     return randomUUID();
 }
 
@@ -40,14 +40,14 @@ export function computeS256CodeChallenge(verifier: string): string {
     return bytesToBase64Url(bytes);
 }
 
-export type PkceBundle = {
+export type SAMLChallenge = {
     state: string;
     codeVerifier: string;
     codeChallenge: string;
     method: 'S256' | 'plain';
 };
 
-export function createPkceBundle(): PkceBundle {
+export function createSamlChallenge(): SAMLChallenge {
     const state = generateState();
     const codeVerifier = generateCodeVerifier(64);
     try {
@@ -58,4 +58,5 @@ export function createPkceBundle(): PkceBundle {
         return {state, codeVerifier, codeChallenge: codeVerifier, method: 'plain'};
     }
 }
+
 
