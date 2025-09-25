@@ -132,8 +132,25 @@ export default class ClientTracking {
         group.totalCompressedSize += metrics?.compressedSize ?? 0;
     }
 
-    trackNetworkPerformance(metrics: ClientResponseMetrics) {
-        NetworkPerformanceManager.addMetrics(this.apiClient.baseUrl, metrics);
+    startNetworkPerformanceTracking(url: string): string | undefined {
+        if (!MonitorNetworkPerformance) {
+            return undefined;
+        }
+        return NetworkPerformanceManager.startRequestTracking(this.apiClient.baseUrl, url);
+    }
+
+    completeNetworkPerformanceTracking(requestId: string | undefined, url: string, metrics: ClientResponseMetrics | undefined) {
+        if (!MonitorNetworkPerformance || !requestId || !metrics) {
+            return;
+        }
+        NetworkPerformanceManager.completeRequestTracking(this.apiClient.baseUrl, requestId, metrics);
+    }
+
+    cancelNetworkPerformanceTracking(requestId: string | undefined) {
+        if (!MonitorNetworkPerformance || !requestId) {
+            return;
+        }
+        NetworkPerformanceManager.cancelRequestTracking(this.apiClient.baseUrl, requestId);
     }
 
     getAverageLatency(groupLabel: RequestGroupLabel): number {
@@ -388,10 +405,13 @@ export default class ClientTracking {
             this.incrementRequestCount(groupLabel);
         }
 
+        const performanceRequestId = this.startNetworkPerformanceTracking(url);
+
         let response: ClientResponse;
         try {
             response = await request!(url, this.buildRequestOptions(options));
         } catch (error) {
+            this.cancelNetworkPerformanceTracking(performanceRequestId);
             const status_code = isErrorWithStatusCode(error) ? error.status_code : undefined;
             throw new ClientError(this.apiClient.baseUrl, {
                 message: 'Received invalid response from the server.',
@@ -412,9 +432,7 @@ export default class ClientTracking {
         if (groupLabel && CollectNetworkMetrics) {
             this.trackRequest(groupLabel, url, response.metrics);
         }
-        if (MonitorNetworkPerformance && response.metrics) {
-            this.trackNetworkPerformance(response.metrics);
-        }
+        this.completeNetworkPerformanceTracking(performanceRequestId, url, response.metrics);
         const serverVersion = semverFromServerVersion(
             headers[ClientConstants.HEADER_X_VERSION_ID] || headers[ClientConstants.HEADER_X_VERSION_ID.toLowerCase()],
         );

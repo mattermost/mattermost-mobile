@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {AppState, type AppStateStatus} from 'react-native';
 import {BehaviorSubject} from 'rxjs';
 import {distinctUntilChanged} from 'rxjs/operators';
 
@@ -8,91 +9,96 @@ import type {ClientResponseMetrics} from '@mattermost/react-native-network-clien
 
 export type NetworkPerformanceState = 'normal' | 'slow';
 
-interface NetworkPerformanceMetrics {
-    averageLatency: number;
-    requestCount: number;
+interface ActiveRequest {
+    id: string;
+    url: string;
+    startTime: number;
+    checkTimer?: NodeJS.Timeout;
+}
+
+interface RequestOutcome {
     timestamp: number;
+    isSlow: boolean;
+    wasEarlyDetection: boolean;
 }
 
-interface AccumulatedMetrics {
-    totalLatency: number;
-    requestCount: number;
-}
+const SLOW_REQUEST_THRESHOLD = 2000;
+const SLOW_REQUEST_PERCENTAGE_THRESHOLD = 0.7;
+const REQUEST_OUTCOME_WINDOW_SIZE = 20;
+const MINIMUM_REQUESTS_FOR_PERCENTAGE_CALCULATION = 5;
 
-const SLOW_LATENCY_THRESHOLD = 2000;
-
-const REPORT_INTERVAL = 3;
-const HISTORY_LIMIT = 10;
-
-const shouldReportMetrics = (requestCount: number): boolean => {
-    return requestCount % REPORT_INTERVAL === 0;
-};
-
-const calculatePerformanceState = (metrics: NetworkPerformanceMetrics): NetworkPerformanceState => {
-    const {averageLatency} = metrics;
-
-    if (averageLatency >= SLOW_LATENCY_THRESHOLD) {
-        return 'slow';
+const calculatePerformanceStateFromOutcomes = (outcomes: RequestOutcome[]): NetworkPerformanceState => {
+    if (outcomes.length < MINIMUM_REQUESTS_FOR_PERCENTAGE_CALCULATION) {
+        return 'normal';
     }
 
-    return 'normal';
-};
+    const slowRequestCount = outcomes.filter((outcome) => outcome.isSlow).length;
+    const slowPercentage = slowRequestCount / outcomes.length;
 
-const createAccumulatedMetrics = (): AccumulatedMetrics => ({
-    totalLatency: 0,
-    requestCount: 0,
-});
+    return slowPercentage >= SLOW_REQUEST_PERCENTAGE_THRESHOLD ? 'slow' : 'normal';
+};
 
 class NetworkPerformanceManagerSingleton {
     private performanceSubjects: Record<string, BehaviorSubject<NetworkPerformanceState>> = {};
-    private metricsHistory: Record<string, NetworkPerformanceMetrics[]> = {};
-    private currentMetrics: Record<string, AccumulatedMetrics> = {};
+    private activeRequests: Record<string, Record<string, ActiveRequest>> = {};
+    private requestOutcomes: Record<string, RequestOutcome[]> = {};
+    private appStateSubscription: any = null;
+
+    constructor() {
+        this.setupAppStateMonitoring();
+    }
 
     /**
-     * Adds network request metrics and triggers performance reporting when thresholds are met.
-     * Reports every 3 requests.
+     * Starts tracking a request for early performance detection.
+     * Returns a unique request ID that should be used when the request completes.
      */
-    public addMetrics = (serverUrl: string, metrics: ClientResponseMetrics) => {
-        if (!this.currentMetrics[serverUrl]) {
-            this.currentMetrics[serverUrl] = createAccumulatedMetrics();
+    public startRequestTracking = (serverUrl: string, url: string): string => {
+        const requestId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        if (!this.activeRequests[serverUrl]) {
+            this.activeRequests[serverUrl] = {};
         }
 
-        const current = this.currentMetrics[serverUrl];
+        const request: ActiveRequest = {
+            id: requestId,
+            url,
+            startTime: Date.now(),
+        };
 
-        current.totalLatency += metrics.latency;
-        current.requestCount += 1;
+        request.checkTimer = setTimeout(() => {
+            this.checkRequestLatency(serverUrl, requestId);
+        }, SLOW_REQUEST_THRESHOLD);
 
-        if (shouldReportMetrics(current.requestCount)) {
-            this.reportPerformanceMetrics(serverUrl);
+        this.activeRequests[serverUrl][requestId] = request;
+        return requestId;
+    };
+
+    /**
+     * Completes request tracking and adds metrics for performance reporting.
+     * Should be called when the request finishes with the ID from startRequestTracking.
+     */
+    public completeRequestTracking = (serverUrl: string, requestId: string, metrics: ClientResponseMetrics) => {
+        const activeRequest = this.activeRequests[serverUrl]?.[requestId];
+        const wasEarlyDetected = !activeRequest; // If not found, it was already early detected and removed
+
+        this.clearActiveRequest(serverUrl, requestId);
+
+        // Only record the outcome if it wasn't already recorded by early detection
+        if (!wasEarlyDetected) {
+            this.recordRequestOutcome(serverUrl, {
+                timestamp: Date.now(),
+                isSlow: metrics.latency >= SLOW_REQUEST_THRESHOLD,
+                wasEarlyDetection: false,
+            });
         }
     };
 
-    private reportPerformanceMetrics(serverUrl: string) {
-        const current = this.currentMetrics[serverUrl];
-        if (!current || current.requestCount === 0) {
-            return;
-        }
-
-        const metrics: NetworkPerformanceMetrics = {
-            averageLatency: current.totalLatency / current.requestCount,
-            requestCount: current.requestCount,
-            timestamp: Date.now(),
-        };
-
-        if (!this.metricsHistory[serverUrl]) {
-            this.metricsHistory[serverUrl] = [];
-        }
-        this.metricsHistory[serverUrl].push(metrics);
-
-        if (this.metricsHistory[serverUrl].length > HISTORY_LIMIT) {
-            this.metricsHistory[serverUrl] = this.metricsHistory[serverUrl].slice(-HISTORY_LIMIT);
-        }
-
-        const performanceState = calculatePerformanceState(metrics);
-        this.getPerformanceSubject(serverUrl).next(performanceState);
-
-        this.currentMetrics[serverUrl] = createAccumulatedMetrics();
-    }
+    /**
+     * Cancels request tracking when a request fails.
+     * Should be called when the request fails with the ID from startRequestTracking.
+     */
+    public cancelRequestTracking = (serverUrl: string, requestId: string) => {
+        this.clearActiveRequest(serverUrl, requestId);
+    };
 
     /**
      * Returns an observable that emits network performance state changes.
@@ -112,29 +118,127 @@ class NetworkPerformanceManagerSingleton {
     };
 
     /**
-     * Gets the historical performance metrics for a server.
+     * Gets the current request outcome statistics for a server.
      */
-    public getPerformanceHistory = (serverUrl: string): NetworkPerformanceMetrics[] => {
-        return this.metricsHistory[serverUrl] || [];
+    public getRequestOutcomeStats = (serverUrl: string) => {
+        const outcomes = this.requestOutcomes[serverUrl] || [];
+        if (!outcomes.length) {
+            return {
+                totalRequests: 0,
+                slowRequests: 0,
+                slowPercentage: 0,
+                earlyDetectionCount: 0,
+            };
+        }
+
+        const slowRequests = outcomes.filter((outcome) => outcome.isSlow).length;
+        const earlyDetectionCount = outcomes.filter((outcome) => outcome.wasEarlyDetection).length;
+
+        return {
+            totalRequests: outcomes.length,
+            slowRequests,
+            slowPercentage: slowRequests / outcomes.length,
+            earlyDetectionCount,
+        };
     };
 
     /**
-     * Gets the current accumulated metrics for a server.
+     * Gets the count of active requests for a server (for testing purposes).
      */
-    public getCurrentMetrics = (serverUrl: string) => {
-        return this.currentMetrics[serverUrl];
+    public getActiveRequestCount = (serverUrl: string): number => {
+        return Object.keys(this.activeRequests[serverUrl] || {}).length;
     };
 
     /**
      * Removes all data and subscriptions for a server.
      */
     public removeServer = (serverUrl: string) => {
+        this.clearAllActiveRequests(serverUrl);
         if (this.performanceSubjects[serverUrl]) {
             this.performanceSubjects[serverUrl].complete();
             delete this.performanceSubjects[serverUrl];
         }
-        delete this.metricsHistory[serverUrl];
-        delete this.currentMetrics[serverUrl];
+        delete this.requestOutcomes[serverUrl];
+    };
+
+    /**
+     * Cleans up all resources when the manager is being destroyed.
+     */
+    public destroy = () => {
+        if (this.appStateSubscription) {
+            this.appStateSubscription.remove();
+            this.appStateSubscription = null;
+        }
+
+        Object.keys(this.activeRequests).forEach((serverUrl) => {
+            this.clearAllActiveRequests(serverUrl);
+        });
+
+        Object.keys(this.performanceSubjects).forEach((serverUrl) => {
+            this.performanceSubjects[serverUrl].complete();
+        });
+
+        this.performanceSubjects = {};
+        this.requestOutcomes = {};
+    };
+
+    private checkRequestLatency = (serverUrl: string, requestId: string) => {
+        const activeRequest = this.activeRequests[serverUrl]?.[requestId];
+        if (!activeRequest) {
+            return;
+        }
+
+        const currentTime = Date.now();
+        const elapsedTime = currentTime - activeRequest.startTime;
+
+        if (elapsedTime >= SLOW_REQUEST_THRESHOLD) {
+            this.recordRequestOutcome(serverUrl, {
+                timestamp: currentTime,
+                isSlow: true,
+                wasEarlyDetection: true,
+            });
+
+            this.clearActiveRequest(serverUrl, requestId);
+        }
+    };
+
+    private clearActiveRequest = (serverUrl: string, requestId: string) => {
+        const activeRequest = this.activeRequests[serverUrl]?.[requestId];
+        if (activeRequest?.checkTimer) {
+            clearTimeout(activeRequest.checkTimer);
+        }
+        if (this.activeRequests[serverUrl]) {
+            delete this.activeRequests[serverUrl][requestId];
+        }
+    };
+
+    private clearAllActiveRequests = (serverUrl: string) => {
+        const requests = this.activeRequests[serverUrl];
+        if (requests) {
+            Object.values(requests).forEach((request) => {
+                if (request.checkTimer) {
+                    clearTimeout(request.checkTimer);
+                }
+            });
+            delete this.activeRequests[serverUrl];
+        }
+    };
+
+    private recordRequestOutcome = (serverUrl: string, outcome: RequestOutcome) => {
+        if (!this.requestOutcomes[serverUrl]) {
+            this.requestOutcomes[serverUrl] = [];
+        }
+
+        this.requestOutcomes[serverUrl].push(outcome);
+
+        if (this.requestOutcomes[serverUrl].length > REQUEST_OUTCOME_WINDOW_SIZE) {
+            this.requestOutcomes[serverUrl] = this.requestOutcomes[serverUrl].slice(-REQUEST_OUTCOME_WINDOW_SIZE);
+        }
+
+        const outcomes = this.requestOutcomes[serverUrl];
+        const newPerformanceState = calculatePerformanceStateFromOutcomes(outcomes);
+
+        this.getPerformanceSubject(serverUrl).next(newPerformanceState);
     };
 
     private getPerformanceSubject = (serverUrl: string) => {
@@ -143,15 +247,33 @@ class NetworkPerformanceManagerSingleton {
         }
         return this.performanceSubjects[serverUrl];
     };
+
+    private setupAppStateMonitoring = () => {
+        this.appStateSubscription = AppState.addEventListener('change', this.handleAppStateChange);
+    };
+
+    private handleAppStateChange = (nextAppState: AppStateStatus) => {
+        if (nextAppState !== 'active') {
+            this.cleanupOnAppStateChange();
+        }
+    };
+
+    private cleanupOnAppStateChange = () => {
+        Object.keys(this.activeRequests).forEach((serverUrl) => {
+            this.clearAllActiveRequests(serverUrl);
+        });
+
+        Object.keys(this.performanceSubjects).forEach((serverUrl) => {
+            this.performanceSubjects[serverUrl].next('normal');
+        });
+    };
 }
 
 export const testExports = {
     NetworkPerformanceManagerSingleton,
-    SLOW_LATENCY_THRESHOLD,
-    REPORT_INTERVAL,
-    shouldReportMetrics,
-    calculatePerformanceState,
-    createAccumulatedMetrics,
+    SLOW_REQUEST_THRESHOLD,
+    REQUEST_OUTCOME_WINDOW_SIZE,
+    calculatePerformanceStateFromOutcomes,
 };
 
 const NetworkPerformanceManager = new NetworkPerformanceManagerSingleton();
