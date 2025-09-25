@@ -10,12 +10,10 @@ import {toMilliseconds} from '@utils/datetime';
 import type {BannerConfig} from '@context/floating_banner';
 
 const FLOATING_BANNER_OVERLAY_ID = 'floating-banner-overlay';
-const TIME_TO_OPEN = toMilliseconds({seconds: 1});
 const TIME_TO_CLOSE = toMilliseconds({seconds: 5});
 
 class BannerManagerSingleton {
     private isVisible = false;
-    private openTimeout: NodeJS.Timeout | null = null;
     private closeTimeout: NodeJS.Timeout | null = null;
     private currentBannerId: string | null = null;
     private currentOnDismiss: (() => void) | null = null;
@@ -24,6 +22,17 @@ class BannerManagerSingleton {
         if (timeout) {
             clearTimeout(timeout);
         }
+    }
+
+    private invokeCurrentOnDismiss() {
+        if (typeof this.currentOnDismiss === 'function') {
+            try {
+                this.currentOnDismiss();
+            } catch {
+                // no-op to ensure cleanup still runs
+            }
+        }
+        this.currentOnDismiss = null;
     }
 
     /**
@@ -40,40 +49,30 @@ class BannerManagerSingleton {
         this.isVisible = true;
         this.currentBannerId = bannerConfig.id;
 
-        const originalOnDismiss = bannerConfig.onDismiss;
-        this.currentOnDismiss = originalOnDismiss || null;
+        this.currentOnDismiss = bannerConfig.onDismiss || null;
 
         const handleDismiss = () => {
             this.isVisible = false;
             this.currentBannerId = null;
 
-            // Call consumer-provided onDismiss first so business logic can run
-            if (typeof originalOnDismiss === 'function') {
-                try {
-                    originalOnDismiss();
-                } catch {
-                    // no-op to ensure cleanup still runs
-                }
-            }
-            this.currentOnDismiss = null;
-
+            this.invokeCurrentOnDismiss();
             dismissOverlay(FLOATING_BANNER_OVERLAY_ID);
         };
 
-        // Ensure custom content receives onDismiss so the X button works
-        let customContent = bannerConfig.customContent;
-        if (customContent && React.isValidElement(customContent)) {
+        // Ensure custom component receives onDismiss so the X button works
+        let customComponent = bannerConfig.customComponent;
+        if (customComponent && React.isValidElement(customComponent)) {
             const props: Partial<Record<string, unknown>> = {
                 onDismiss: handleDismiss,
                 dismissible: true,
             };
-            customContent = React.cloneElement(customContent, props);
+            customComponent = React.cloneElement(customComponent, props);
         }
 
         // Update the banner config with our dismiss handler
         const configWithDismiss = {
             ...bannerConfig,
-            customContent,
+            customComponent,
             onDismiss: handleDismiss,
         };
 
@@ -83,17 +82,7 @@ class BannerManagerSingleton {
                 banners: [configWithDismiss],
                 onDismiss: (id: string) => {
                     if (id === bannerConfig.id) {
-                        this.isVisible = false;
-                        this.currentBannerId = null;
-                        if (typeof originalOnDismiss === 'function') {
-                            try {
-                                originalOnDismiss();
-                            } catch {
-                                // no-op
-                            }
-                        }
-                        this.currentOnDismiss = null;
-                        dismissOverlay(FLOATING_BANNER_OVERLAY_ID);
+                        handleDismiss();
                     }
                 },
             },
@@ -117,15 +106,6 @@ class BannerManagerSingleton {
     }
 
     /**
-     * Shows a banner with a delay before appearing
-     */
-    showBannerWithDelay(bannerConfig: BannerConfig, delayMs: number = TIME_TO_OPEN) {
-        this.openTimeout = setTimeout(() => {
-            this.showBanner(bannerConfig);
-        }, delayMs);
-    }
-
-    /**
      * Hides the currently visible banner
      */
     hideBanner() {
@@ -133,18 +113,9 @@ class BannerManagerSingleton {
             return;
         }
 
-        this.clearTimeout(this.openTimeout);
         this.clearTimeout(this.closeTimeout);
 
-        // Invoke the consumer onDismiss synchronously to allow business logic to update
-        if (this.currentOnDismiss) {
-            try {
-                this.currentOnDismiss();
-            } catch {
-                // no-op
-            }
-            this.currentOnDismiss = null;
-        }
+        this.invokeCurrentOnDismiss();
         dismissOverlay(FLOATING_BANNER_OVERLAY_ID);
         this.isVisible = false;
         this.currentBannerId = null;
@@ -154,7 +125,6 @@ class BannerManagerSingleton {
      * Cleans up all timeouts and resets the manager state
      */
     cleanup() {
-        this.clearTimeout(this.openTimeout);
         this.clearTimeout(this.closeTimeout);
         this.hideBanner();
     }

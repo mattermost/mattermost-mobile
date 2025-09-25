@@ -13,5 +13,5 @@ export interface BannerConfig {
     position?: 'top' | 'bottom';
     onPress?: () => void;
     onDismiss?: () => void;
-    customContent?: ReactNode;
+    customComponent?: ReactNode;
 }

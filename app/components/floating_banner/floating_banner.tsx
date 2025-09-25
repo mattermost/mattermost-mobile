@@ -82,7 +82,7 @@ const FloatingBanner: React.FC<FloatingBannerProps> = ({banners, onDismiss}) => 
             >
                 <GestureHandlerRootView style={styles.gestureHandler}>
                     {sectionBanners.map((banner, index) => {
-                        const {id, dismissible = true, customContent} = banner;
+                        const {id, dismissible = true, customComponent} = banner;
                         const offsetProps = isTop ? {customTopOffset: index * BANNER_STACK_SPACING} : {customBottomOffset: (index * BANNER_STACK_SPACING) + BOTTOM_BANNER_EXTRA_OFFSET};
 
                         return (
@@ -94,7 +94,7 @@ const FloatingBanner: React.FC<FloatingBannerProps> = ({banners, onDismiss}) => 
                                 dismissible={dismissible}
                                 onDismiss={() => dismissBanner(banner)}
                             >
-                                {customContent || (
+                                {customComponent || (
 
                                     <BannerItem
                                         banner={banner}

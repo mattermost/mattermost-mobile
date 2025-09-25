@@ -122,15 +122,15 @@ describe('BannerManager', () => {
 
         it('should handle custom content with React elements', () => {
             const customElement = React.createElement('div', {}, 'Custom content');
-            const bannerWithCustomContent: BannerConfig = {
+            const bannerWithCustomComponent: BannerConfig = {
                 ...mockBannerConfig,
-                customContent: customElement,
+                customComponent: customElement,
             };
 
             jest.spyOn(React, 'isValidElement').mockReturnValue(true);
             jest.spyOn(React, 'cloneElement').mockReturnValue(customElement);
 
-            BannerManager.showBanner(bannerWithCustomContent);
+            BannerManager.showBanner(bannerWithCustomComponent);
 
             expect(React.cloneElement).toHaveBeenCalledWith(
                 customElement,
@@ -258,43 +258,6 @@ describe('BannerManager', () => {
         });
     });
 
-    describe('showBannerWithDelay', () => {
-        const mockBannerConfig: BannerConfig = {
-            id: 'delayed-banner',
-            title: 'Delayed Banner',
-            message: 'This will show after delay',
-        };
-
-        it('should set timeout for delayed show with default delay', () => {
-            mockSetTimeout.mockImplementationOnce(() => {
-                return 1 as unknown as NodeJS.Timeout;
-            });
-
-            BannerManager.showBannerWithDelay(mockBannerConfig);
-
-            expect(mockSetTimeout).toHaveBeenCalledWith(expect.any(Function), 1000);
-            expect(mockShowOverlay).not.toHaveBeenCalled();
-        });
-
-        it('should set timeout for delayed show with custom delay', () => {
-            const customDelay = 2000;
-            mockSetTimeout.mockImplementationOnce(() => {
-                return 1 as unknown as NodeJS.Timeout;
-            });
-
-            BannerManager.showBannerWithDelay(mockBannerConfig, customDelay);
-
-            expect(mockSetTimeout).toHaveBeenCalledWith(expect.any(Function), customDelay);
-        });
-
-        it('should show banner when timeout executes', () => {
-            BannerManager.showBannerWithDelay(mockBannerConfig);
-
-            expect(mockShowOverlay).toHaveBeenCalled();
-            expect(BannerManager.isBannerVisible()).toBe(true);
-            expect(BannerManager.getCurrentBannerId()).toBe('delayed-banner');
-        });
-    });
 
     describe('hideBanner', () => {
         const mockBannerConfig: BannerConfig = {
@@ -323,7 +286,7 @@ describe('BannerManager', () => {
             expect(BannerManager.isBannerVisible()).toBe(false);
             expect(BannerManager.getCurrentBannerId()).toBeNull();
             expect(mockDismissOverlay).toHaveBeenCalledWith('floating-banner-overlay');
-            expect(mockClearTimeout).toHaveBeenCalledTimes(clearTimeoutCallsBefore + 2);
+            expect(mockClearTimeout).toHaveBeenCalledTimes(clearTimeoutCallsBefore + 1);
         });
 
         it('should call current onDismiss callback when hiding', () => {
@@ -367,19 +330,15 @@ describe('BannerManager', () => {
             mockSetTimeout.mockImplementationOnce(() => {
                 return 1 as unknown as NodeJS.Timeout;
             });
-            mockSetTimeout.mockImplementationOnce(() => {
-                return 2 as unknown as NodeJS.Timeout;
-            });
 
-            BannerManager.showBannerWithDelay(mockBannerConfig);
             BannerManager.showBannerWithAutoHide(mockBannerConfig);
 
             const clearTimeoutCallsBefore = mockClearTimeout.mock.calls.length;
             BannerManager.cleanup();
 
-            // cleanup calls clearTimeout twice (for openTimeout and closeTimeout)
-            // hideBanner (called by cleanup) also calls clearTimeout twice
-            expect(mockClearTimeout).toHaveBeenCalledTimes(clearTimeoutCallsBefore + 4);
+            // cleanup calls clearTimeout once (for closeTimeout)
+            // hideBanner (called by cleanup) also calls clearTimeout once
+            expect(mockClearTimeout).toHaveBeenCalledTimes(clearTimeoutCallsBefore + 2);
         });
 
         it('should reset manager state', () => {
@@ -466,13 +425,6 @@ describe('BannerManager', () => {
 
             mockSetTimeout.mockImplementationOnce(() => {
                 return 1 as unknown as NodeJS.Timeout;
-            });
-
-            BannerManager.showBannerWithDelay(mockBannerConfig);
-            expect(mockSetTimeout).toHaveBeenCalledWith(expect.any(Function), 1000);
-
-            mockSetTimeout.mockImplementationOnce(() => {
-                return 2 as unknown as NodeJS.Timeout;
             });
 
             BannerManager.showBannerWithAutoHide(mockBannerConfig);

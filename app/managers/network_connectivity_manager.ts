@@ -120,7 +120,7 @@ class NetworkConnectivityManagerSingleton {
             onDismiss: () => {
                 // Banner dismissed by user
             },
-            customContent: React.createElement(ConnectionBanner, {
+            customComponent: React.createElement(ConnectionBanner, {
                 isConnected,
                 message,
                 dismissible: true,
@@ -139,7 +139,7 @@ class NetworkConnectivityManagerSingleton {
             onDismiss: () => {
                 this.performanceSuppressedUntilNormal = true;
             },
-            customContent: React.createElement(ConnectionBanner, {
+            customComponent: React.createElement(ConnectionBanner, {
                 isConnected: false,
                 message,
                 dismissible: true,

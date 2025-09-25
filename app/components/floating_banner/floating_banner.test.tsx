@@ -181,8 +181,8 @@ describe('FloatingBanner', () => {
         });
 
         it('should render custom content when provided', () => {
-            const customContent = <Text testID={'custom-content'}>{'Custom Banner Content'}</Text>;
-            const banner = createMockBanner({customContent});
+            const customComponent = <Text testID={'custom-content'}>{'Custom Banner Content'}</Text>;
+            const banner = createMockBanner({customComponent});
             renderFloatingBanner([banner]);
 
             expect(screen.getByTestId('custom-content')).toBeTruthy();
@@ -190,8 +190,8 @@ describe('FloatingBanner', () => {
         });
 
         it('should render custom content for a bottom-positioned banner', () => {
-            const customContent = <Text testID={'custom-content-bottom'}>{'Bottom Custom'}</Text>;
-            const banner = createMockBanner({id: 'bottom-custom', position: 'bottom', customContent, dismissible: false});
+            const customComponent = <Text testID={'custom-content-bottom'}>{'Bottom Custom'}</Text>;
+            const banner = createMockBanner({id: 'bottom-custom', position: 'bottom', customComponent, dismissible: false});
             renderFloatingBanner([banner]);
 
             expect(screen.getByTestId('custom-content-bottom')).toBeTruthy();
@@ -271,7 +271,7 @@ describe('FloatingBanner', () => {
                 }),
                 createMockBanner({
                     id: 'custom-banner',
-                    customContent: <Text testID={'custom-banner'}>{'Custom'}</Text>,
+                    customComponent: <Text testID={'custom-banner'}>{'Custom'}</Text>,
                 }),
             ];
             renderFloatingBanner(banners);

@@ -64,10 +64,6 @@ graph TB
 stateDiagram-v2
     [*] --> Hidden: Initial State
     Hidden --> Showing: showBanner()
-    Hidden --> DelayedShowing: showBannerWithDelay()
-    
-    DelayedShowing --> Showing: Timeout Expires
-    DelayedShowing --> Hidden: cleanup() / hideBanner()
     
     Showing --> AutoHiding: showBannerWithAutoHide()
     Showing --> Hidden: hideBanner() / User Dismiss
@@ -78,12 +74,11 @@ stateDiagram-v2
     Hidden --> [*]: cleanup()
     Showing --> [*]: cleanup()
     AutoHiding --> [*]: cleanup()
-    DelayedShowing --> [*]: cleanup()
 ```
 
 **Key Features**:
 - Singleton pattern ensures only one banner visible at a time
-- Timeout management for delayed showing and auto-hiding
+- Timeout management for auto-hiding
 - Overlay system integration
 - Error handling for dismiss callbacks
 - State tracking (visibility, current banner ID)
@@ -200,7 +195,7 @@ interface BannerConfig {
     position?: 'top' | 'bottom';   // Screen position (default: 'top')
     onPress?: () => void;          // Tap handler
     onDismiss?: () => void;        // Dismiss handler
-    customContent?: ReactNode;     // Custom banner content
+    customComponent?: ReactNode;   // Custom banner component
 }
 ```
 
@@ -213,9 +208,6 @@ class BannerManager {
     
     // Show banner with auto-hide
     showBannerWithAutoHide(config: BannerConfig, durationMs?: number): void;
-    
-    // Show banner after delay
-    showBannerWithDelay(config: BannerConfig, delayMs?: number): void;
     
     // Hide current banner
     hideBanner(): void;
@@ -292,7 +284,7 @@ private showDisconnectedBanner() {
         message: 'Check your internet connection',
         type: 'error',
         position: 'top',
-        customContent: (
+        customComponent: (
             <ConnectionBanner 
                 isConnected={false}
                 message="No internet connection"
@@ -304,7 +296,7 @@ private showDisconnectedBanner() {
 }
 ```
 
-### 4. Custom Content Banner
+### 4. Custom Component Banner
 
 ```typescript
 // Custom banner with complex content
@@ -312,7 +304,7 @@ BannerManager.showBanner({
     id: 'custom-banner',
     title: 'Custom',
     message: 'Custom message',
-    customContent: (
+    customComponent: (
         <View style={styles.customBanner}>
             <Text>Custom banner content</Text>
             <Button title="Action" onPress={handleAction} />
@@ -403,7 +395,6 @@ const BOTTOM_OFFSET_PHONE = 120;           // Base bottom offset for phones
 const TABLET_EXTRA_BOTTOM_OFFSET = 60;     // Additional offset for tablets
 const BANNER_STACK_SPACING = 60;           // Spacing between stacked banners
 const BOTTOM_BANNER_EXTRA_OFFSET = 8;      // Extra spacing for bottom banners
-const TIME_TO_OPEN = 1000;                 // Default delay before showing (ms)
 const TIME_TO_CLOSE = 5000;                // Default auto-hide duration (ms)
 ```
 
@@ -619,7 +610,6 @@ showOverlay(
 
 ### 2. Timing
 
-- Use delays for non-critical messages
 - Auto-hide success messages after 3-5 seconds
 - Keep error messages visible until user dismisses
 - Avoid banner spam with proper state management
