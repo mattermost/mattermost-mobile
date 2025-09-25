@@ -3,13 +3,12 @@
 
 import React, {useMemo} from 'react';
 import {View, StyleSheet, type ViewStyle} from 'react-native';
-import {PanGestureHandler} from 'react-native-gesture-handler';
+import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import Animated, {
     useAnimatedStyle,
     useSharedValue,
     withTiming,
     runOnJS,
-    useAnimatedGestureHandler,
 } from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -118,14 +117,12 @@ export interface BannerProps {
     swipeThreshold?: number;
 }
 
-const getDefaultStyles = () => StyleSheet.create({
+const styles = StyleSheet.create({
     wrapper: {
-        position: 'absolute',
+        width: '100%',
         gap: 8,
-        alignSelf: 'center',
     },
     container: {
-        marginHorizontal: 8,
     },
 });
 
@@ -164,9 +161,9 @@ const Banner: React.FC<BannerProps> = ({
     onDismiss,
     swipeThreshold = 100,
 }) => {
+
     const insets = useSafeAreaInsets();
     const isTablet = useIsTablet();
-    const styles = getDefaultStyles();
 
     const opacity = useSharedValue(visible ? 1 : 0);
     const slideOffset = position === 'top' ? -50 : 50;
@@ -217,40 +214,42 @@ const Banner: React.FC<BannerProps> = ({
         customBottomOffset,
     ]);
 
-    const swipeGestureHandler = useAnimatedGestureHandler({
-        onStart: (_, context) => {
-            (context as any).startX = translateX.value;
-        },
-        onActive: (event, context) => {
-            if (!dismissible) {
-                return;
-            }
-
-            translateX.value = (context as any).startX + event.translationX;
-        },
-        onEnd: () => {
-            if (!dismissible) {
-                return;
-            }
-
-            const shouldDismiss = Math.abs(translateX.value) > swipeThreshold;
-
-            if (shouldDismiss && !isDismissed.value) {
-                isDismissed.value = true;
-                translateX.value = withTiming(
-                    translateX.value > 0 ? 300 : -300,
-                    {duration: 200},
-                );
-                opacity.value = withTiming(0, {duration: 200});
-
-                if (onDismiss) {
-                    runOnJS(onDismiss)();
+    const startX = useSharedValue(0);
+    const swipeGesture = useMemo(() => {
+        return Gesture.Pan().
+            onStart(() => {
+                startX.value = translateX.value;
+            }).
+            onUpdate((event) => {
+                if (!dismissible) {
+                    return;
                 }
-            } else {
-                translateX.value = withTiming(0, {duration: 200});
-            }
-        },
-    });
+
+                translateX.value = startX.value + event.translationX;
+            }).
+            onEnd(() => {
+                if (!dismissible) {
+                    return;
+                }
+
+                const shouldDismiss = Math.abs(translateX.value) > swipeThreshold;
+
+                if (shouldDismiss && !isDismissed.value) {
+                    isDismissed.value = true;
+                    translateX.value = withTiming(
+                        translateX.value > 0 ? 300 : -300,
+                        {duration: 200},
+                    );
+                    opacity.value = withTiming(0, {duration: 200});
+
+                    if (onDismiss) {
+                        runOnJS(onDismiss)();
+                    }
+                } else {
+                    translateX.value = withTiming(0, {duration: 200});
+                }
+            });
+    }, [dismissible, onDismiss, translateX, swipeThreshold, isDismissed, opacity, startX]);
 
     const animatedStyle = useAnimatedStyle(() => ({
         opacity: withTiming(opacity.value, {duration: animationDuration}),
@@ -279,7 +278,6 @@ const Banner: React.FC<BannerProps> = ({
                 styles.wrapper,
                 positionStyle,
                 animatedStyle,
-                {width: isTablet ? '60%' : '100%'},
                 style,
             ]}
         >
@@ -291,9 +289,9 @@ const Banner: React.FC<BannerProps> = ({
 
     if (dismissible) {
         return (
-            <PanGestureHandler onGestureEvent={swipeGestureHandler}>
+            <GestureDetector gesture={swipeGesture}>
                 {bannerContent}
-            </PanGestureHandler>
+            </GestureDetector>
         );
     }
 

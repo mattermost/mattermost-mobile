@@ -2,12 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {StyleSheet} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import {StyleSheet, Platform} from 'react-native';
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
+import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
 import Banner from '@components/banner';
 import BannerItem from '@components/banner/banner_item';
-import {useIsTablet} from '@hooks/device';
+import {useIsTablet, useKeyboardHeight} from '@hooks/device';
 
 const BOTTOM_OFFSET_PHONE = 120;
 const TABLET_EXTRA_BOTTOM_OFFSET = 60;
@@ -23,6 +24,8 @@ type FloatingBannerProps = {
 
 const FloatingBanner: React.FC<FloatingBannerProps> = ({banners, onDismiss}) => {
     const isTablet = useIsTablet();
+    const keyboardHeight = useKeyboardHeight();
+
     const executeBannerAction = (banner: BannerConfig) => {
         if (banner.onPress) {
             banner.onPress();
@@ -36,7 +39,7 @@ const FloatingBanner: React.FC<FloatingBannerProps> = ({banners, onDismiss}) => 
         }
     };
 
-    if (!banners.length) {
+    if (!banners || !banners.length) {
         return null;
     }
 
@@ -54,41 +57,57 @@ const FloatingBanner: React.FC<FloatingBannerProps> = ({banners, onDismiss}) => 
 
         const isTop = position === 'top';
         const testID = isTop ? 'floating-banner-top-container' : 'floating-banner-bottom-container';
-        const edges = isTop ? ['top'] as const : ['bottom'] as const;
+        const baseBottomOffset = isTablet ? (BOTTOM_OFFSET_PHONE + TABLET_EXTRA_BOTTOM_OFFSET) : BOTTOM_OFFSET_PHONE;
         const containerStyle = isTop ? [styles.containerBase, styles.topContainer] : [
             styles.containerBase,
             styles.bottomContainer,
-            {bottom: isTablet ? (BOTTOM_OFFSET_PHONE + TABLET_EXTRA_BOTTOM_OFFSET) : BOTTOM_OFFSET_PHONE},
         ];
 
+        const animatedStyle = useAnimatedStyle(() => {
+            if (isTop) {
+                return {};
+            }
+
+            if (Platform.OS === 'android') {
+                return {bottom: baseBottomOffset};
+            }
+
+            return {bottom: withTiming(baseBottomOffset + keyboardHeight, {duration: 250})};
+        }, [keyboardHeight, isTop, baseBottomOffset]);
+
         return (
-            <SafeAreaView
+            <Animated.View
                 testID={testID}
-                style={containerStyle}
-                edges={edges}
+                style={[containerStyle, animatedStyle]}
             >
-                {sectionBanners.map((banner, index) => {
-                    const {id, dismissible = true, customContent} = banner;
-                    return (
-                        <Banner
-                            key={id}
-                            position={position}
-                            visible={true}
-                            {...(isTop ? {customTopOffset: index * BANNER_STACK_SPACING} : {customBottomOffset: (index * BANNER_STACK_SPACING) + BOTTOM_BANNER_EXTRA_OFFSET})}
-                            dismissible={dismissible}
-                            onDismiss={() => dismissBanner(banner)}
-                        >
-                            {customContent || (
-                                <BannerItem
-                                    banner={banner}
-                                    onPress={executeBannerAction}
-                                    onDismiss={dismissBanner}
-                                />
-                            )}
-                        </Banner>
-                    );
-                })}
-            </SafeAreaView>
+                <GestureHandlerRootView style={styles.gestureHandler}>
+                    {sectionBanners.map((banner, index) => {
+                        const {id, dismissible = true, customContent} = banner;
+                        const offsetProps = isTop ? {customTopOffset: index * BANNER_STACK_SPACING} : {customBottomOffset: (index * BANNER_STACK_SPACING) + BOTTOM_BANNER_EXTRA_OFFSET};
+
+                        return (
+                            <Banner
+                                key={id}
+                                position={position}
+                                visible={true}
+                                {...offsetProps}
+                                dismissible={dismissible}
+                                onDismiss={() => dismissBanner(banner)}
+                            >
+                                {customContent || (
+
+                                    <BannerItem
+                                        banner={banner}
+                                        onPress={executeBannerAction}
+                                        onDismiss={dismissBanner}
+                                    />
+
+                                )}
+                            </Banner>
+                        );
+                    })}
+                </GestureHandlerRootView>
+            </Animated.View>
         );
     };
 
@@ -107,7 +126,6 @@ const styles = StyleSheet.create({
         right: 0,
         zIndex: 9999,
         paddingHorizontal: 16,
-        pointerEvents: 'box-none',
         alignItems: 'center',
     },
     topContainer: {
@@ -115,8 +133,11 @@ const styles = StyleSheet.create({
         paddingTop: 8,
     },
     bottomContainer: {
-        bottom: BOTTOM_OFFSET_PHONE,
         paddingBottom: 8,
+    },
+    gestureHandler: {
+        width: '100%',
+        alignItems: 'center',
     },
 });
 

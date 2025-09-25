@@ -3,13 +3,13 @@
 
 import {CallsManager} from '@calls/calls_manager';
 import DatabaseManager from '@database/manager';
-import {getAllServerCredentials} from '@init/credentials';
+import {getAllServerCredentials, getActiveServerUrl} from '@init/credentials';
 import {initialLaunch} from '@init/launch';
 import ManagedApp from '@init/managed_app';
 import PushNotifications from '@init/push_notifications';
 import GlobalEventHandler from '@managers/global_event_handler';
 import NetworkConnectivityManager from '@managers/network_connectivity_manager';
-import {startNetworkConnectivitySubscriptions} from '@managers/network_connectivity_manager_subscription';
+import NetworkConnectivitySubscriptionManager from '@managers/network_connectivity_subscription_manager';
 import NetworkManager from '@managers/network_manager';
 import SessionManager from '@managers/session_manager';
 import WebsocketManager from '@managers/websocket_manager';
@@ -52,8 +52,8 @@ export async function initialize() {
         SessionManager.init();
         CallsManager.initialize();
 
-        const initialServerUrl = serverCredentials[0]?.serverUrl ?? null;
-        NetworkConnectivityManager.setServerConnectionStatus(Boolean(initialServerUrl), initialServerUrl);
+        const activeServerUrl = await getActiveServerUrl();
+        NetworkConnectivityManager.init(activeServerUrl || null);
     }
 }
 
@@ -72,7 +72,8 @@ export async function start() {
 
     await WebsocketManager.init(serverCredentials);
 
-    startNetworkConnectivitySubscriptions();
+    NetworkConnectivitySubscriptionManager.init();
 
     initialLaunch();
 }
+
