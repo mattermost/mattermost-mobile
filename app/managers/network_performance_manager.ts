@@ -5,6 +5,8 @@ import {AppState, type AppStateStatus} from 'react-native';
 import {BehaviorSubject} from 'rxjs';
 import {distinctUntilChanged} from 'rxjs/operators';
 
+import {logDebug} from '@utils/log';
+
 import type {ClientResponseMetrics} from '@mattermost/react-native-network-client';
 
 export type NetworkPerformanceState = 'normal' | 'slow';
@@ -236,7 +238,22 @@ class NetworkPerformanceManagerSingleton {
         }
 
         const outcomes = this.requestOutcomes[serverUrl];
+        const currentPerformanceState = this.getCurrentPerformanceState(serverUrl);
         const newPerformanceState = calculatePerformanceStateFromOutcomes(outcomes);
+
+        if (currentPerformanceState !== newPerformanceState && newPerformanceState === 'slow') {
+            const stats = this.getRequestOutcomeStats(serverUrl);
+            logDebug(`Network performance degraded for ${serverUrl}: ${currentPerformanceState} -> ${newPerformanceState}`, {
+                totalRequests: stats.totalRequests,
+                slowRequests: stats.slowRequests,
+                slowPercentage: `${(stats.slowPercentage * 100).toFixed(1)}%`,
+                earlyDetectionCount: stats.earlyDetectionCount,
+                lastOutcome: {
+                    isSlow: outcome.isSlow,
+                    wasEarlyDetection: outcome.wasEarlyDetection,
+                },
+            });
+        }
 
         this.getPerformanceSubject(serverUrl).next(newPerformanceState);
     };

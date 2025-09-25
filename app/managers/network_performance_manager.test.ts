@@ -6,6 +6,10 @@ import {testExports} from './network_performance_manager';
 import type {ClientResponseMetrics} from '@mattermost/react-native-network-client';
 import type {AppStateStatus} from 'react-native';
 
+jest.mock('@utils/log', () => ({
+    logDebug: jest.fn(),
+}));
+
 jest.mock('react-native', () => ({
     AppState: {
         addEventListener: jest.fn(() => ({
@@ -243,6 +247,89 @@ describe('NetworkPerformanceManager', () => {
 
             subscription.unsubscribe();
             expect(states).toEqual(['normal', 'slow']);
+        });
+    });
+
+    describe('debug logging', () => {
+        const {logDebug} = require('@utils/log');
+
+        beforeEach(() => {
+            logDebug.mockClear();
+        });
+
+        it('should log when performance state degrades from normal to slow', () => {
+            for (let i = 0; i < 10; i++) {
+                const requestId = performanceManager.startRequestTracking(serverUrl, `/api/request-${i}`);
+                const metrics = createMockMetrics(i < 8 ? 3000 : 500, 1000, 500);
+                performanceManager.completeRequestTracking(serverUrl, requestId, metrics);
+            }
+
+            expect(logDebug).toHaveBeenCalledWith(
+                `Network performance degraded for ${serverUrl}: normal -> slow`,
+                expect.objectContaining({
+                    totalRequests: expect.any(Number),
+                    slowRequests: expect.any(Number),
+                    slowPercentage: expect.any(String),
+                    earlyDetectionCount: expect.any(Number),
+                    lastOutcome: expect.objectContaining({
+                        isSlow: expect.any(Boolean),
+                        wasEarlyDetection: expect.any(Boolean),
+                    }),
+                }),
+            );
+        });
+
+        it('should not log when performance state remains the same', () => {
+            for (let i = 0; i < 3; i++) {
+                const requestId = performanceManager.startRequestTracking(serverUrl, `/api/request-${i}`);
+                const metrics = createMockMetrics(500, 1000, 500);
+                performanceManager.completeRequestTracking(serverUrl, requestId, metrics);
+            }
+
+            expect(logDebug).not.toHaveBeenCalled();
+        });
+
+        it('should log with correct details when performance degrades', () => {
+            for (let i = 0; i < 5; i++) {
+                const requestId = performanceManager.startRequestTracking(serverUrl, `/api/request-${i}`);
+                const metrics = createMockMetrics(3000, 1000, 500);
+                performanceManager.completeRequestTracking(serverUrl, requestId, metrics);
+            }
+
+            expect(logDebug).toHaveBeenCalledWith(
+                `Network performance degraded for ${serverUrl}: normal -> slow`,
+                {
+                    totalRequests: 5,
+                    slowRequests: 5,
+                    slowPercentage: '100.0%',
+                    earlyDetectionCount: 0,
+                    lastOutcome: {
+                        isSlow: true,
+                        wasEarlyDetection: false,
+                    },
+                },
+            );
+        });
+
+        it('should not log when performance recovers from slow to normal', () => {
+            // First make it slow
+            for (let i = 0; i < 5; i++) {
+                const requestId = performanceManager.startRequestTracking(serverUrl, `/api/request-${i}`);
+                const metrics = createMockMetrics(3000, 1000, 500);
+                performanceManager.completeRequestTracking(serverUrl, requestId, metrics);
+            }
+
+            logDebug.mockClear();
+
+            // Then add fast requests to recover
+            for (let i = 0; i < 20; i++) {
+                const requestId = performanceManager.startRequestTracking(serverUrl, `/api/fast-${i}`);
+                const metrics = createMockMetrics(500, 1000, 500);
+                performanceManager.completeRequestTracking(serverUrl, requestId, metrics);
+            }
+
+            // Should not log the recovery to normal
+            expect(logDebug).not.toHaveBeenCalled();
         });
     });
 
