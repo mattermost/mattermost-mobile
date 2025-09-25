@@ -35,75 +35,52 @@ function getConnectionMessageText(
 
 function isReconnection(
     previousWebsocketState: WebsocketConnectedState | null,
-    isFirstConnection: boolean,
+    isOnAppStart: boolean,
 ): boolean {
-    const wasDisconnected = previousWebsocketState === 'not_connected' || previousWebsocketState === 'connecting';
-    return wasDisconnected && !isFirstConnection;
+    return previousWebsocketState !== 'connected' && !isOnAppStart;
 }
 
 function shouldShowDisconnectedBanner(
     websocketState: WebsocketConnectedState | null,
-    isFirstConnection: boolean,
+    isOnAppStart: boolean,
 ): boolean {
-    return websocketState === 'not_connected' && !isFirstConnection;
+    return websocketState === 'not_connected' && !isOnAppStart;
 }
 
 function shouldShowConnectingBanner(
     websocketState: WebsocketConnectedState | null,
-    isFirstConnection: boolean,
+    isOnAppStart: boolean,
 ): boolean {
-    return websocketState === 'connecting' && !isFirstConnection;
+    return websocketState === 'connecting' && !isOnAppStart;
 }
 
 function shouldShowPerformanceBanner(
-    websocketState: WebsocketConnectedState | null,
     performanceState: NetworkPerformanceState | null,
     performanceSuppressed: boolean,
 ): boolean {
-    return websocketState === 'connected' &&
-           performanceState === 'slow' &&
-           !performanceSuppressed;
+    return performanceState === 'slow' && !performanceSuppressed;
 }
 
 function shouldShowReconnectionBanner(
     websocketState: WebsocketConnectedState | null,
     previousWebsocketState: WebsocketConnectedState | null,
-    isFirstConnection: boolean,
-    hasShownReconnectionBanner: boolean,
+    isOnAppStart: boolean,
 ): boolean {
     return websocketState === 'connected' &&
-           isReconnection(previousWebsocketState, isFirstConnection) &&
-           !hasShownReconnectionBanner;
+           isReconnection(previousWebsocketState, isOnAppStart);
 }
 
 class NetworkConnectivityManagerSingleton {
     private currentServerUrl: string | null = null;
     private websocketState: WebsocketConnectedState | null = null;
     private previousWebsocketState: WebsocketConnectedState | null = null;
-    private isFirstConnection = true;
+    private isOnAppStart = true;
     private netInfo: {isInternetReachable: boolean | null} | null = null;
     private appState: string | null = null;
     private readonly intl = getIntlShape();
     private currentPerformanceState: NetworkPerformanceState | null = null;
-    private hasShownReconnectionBanner = false;
-    private autoHideExpiresAt: number | null = null;
-    private autoHideType: 'connectivity' | 'performance' | null = null;
 
     private performanceSuppressedUntilNormal = false;
-    private setAutoHideState(type: 'connectivity' | 'performance', durationMs: number) {
-        this.autoHideExpiresAt = Date.now() + durationMs;
-        this.autoHideType = type;
-    }
-
-    private clearAutoHideState() {
-        this.autoHideExpiresAt = null;
-        this.autoHideType = null;
-    }
-
-    private clearAutoHideStateAndHideBanner() {
-        this.clearAutoHideState();
-        BannerManager.hideBanner();
-    }
 
     private getConnectionMessage(): string {
         if (!this.websocketState || !this.netInfo) {
@@ -117,24 +94,21 @@ class NetworkConnectivityManagerSingleton {
         return this.intl.formatMessage({id: 'connection_banner.limited_network_connection', defaultMessage: 'Limited Network Connection'});
     }
 
-    private showConnectivity(isConnected: boolean) {
+    private showConnectivity(isConnected: boolean, durationMs?: number) {
         const message = this.getConnectionMessage();
         const bannerConfig = this.createConnectivityBannerConfig(message, isConnected);
-        BannerManager.showBanner(bannerConfig);
+
+        if (durationMs) {
+            BannerManager.showBannerWithAutoHide(bannerConfig, durationMs);
+        } else {
+            BannerManager.showBanner(bannerConfig);
+        }
     }
 
-    private showConnectivityWithAutoHide(isConnected: boolean, durationMs: number) {
-        const message = this.getConnectionMessage();
-        const bannerConfig = this.createConnectivityBannerConfig(message, isConnected);
-        BannerManager.showBannerWithAutoHide(bannerConfig, durationMs);
-        this.setAutoHideState('connectivity', durationMs);
-    }
-
-    private showPerformanceWithAutoHide(durationMs: number) {
+    private showPerformance(durationMs: number) {
         const message = this.getPerformanceMessage();
         const bannerConfig = this.createPerformanceBannerConfig(message);
         BannerManager.showBannerWithAutoHide(bannerConfig, durationMs);
-        this.setAutoHideState('performance', durationMs);
     }
 
     private createConnectivityBannerConfig(message: string, isConnected: boolean): BannerConfig {
@@ -144,11 +118,7 @@ class NetworkConnectivityManagerSingleton {
             message: '',
             dismissible: true,
             onDismiss: () => {
-                this.clearAutoHideState();
-
-                if (isConnected) {
-                    this.hasShownReconnectionBanner = true;
-                }
+                // Banner dismissed by user
             },
             customContent: React.createElement(ConnectionBanner, {
                 isConnected,
@@ -167,7 +137,6 @@ class NetworkConnectivityManagerSingleton {
             message: '',
             dismissible: true,
             onDismiss: () => {
-                this.clearAutoHideState();
                 this.performanceSuppressedUntilNormal = true;
             },
             customContent: React.createElement(ConnectionBanner, {
@@ -206,6 +175,10 @@ class NetworkConnectivityManagerSingleton {
         this.appState = appState;
 
         this.updateBanner();
+
+        if (websocketState === 'connected' && this.isOnAppStart) {
+            this.isOnAppStart = false;
+        }
     }
 
     updatePerformanceState(
@@ -217,17 +190,13 @@ class NetworkConnectivityManagerSingleton {
             this.performanceSuppressedUntilNormal = false;
         }
 
-        if (this.autoHideType === 'performance' || performanceState === 'slow') {
-            this.updateBanner();
-        }
+        this.updateBanner();
     }
 
     cleanup() {
         BannerManager.cleanup();
         this.previousWebsocketState = null;
-        this.isFirstConnection = true;
-        this.hasShownReconnectionBanner = false;
-        this.clearAutoHideState();
+        this.isOnAppStart = true;
     }
 
     shutdown() {
@@ -242,15 +211,15 @@ class NetworkConnectivityManagerSingleton {
 
     private updateBanner() {
         if (!this.currentServerUrl || this.appState === 'background') {
-            this.clearAutoHideStateAndHideBanner();
-            return;
-        }
-
-        if (this.handleActiveAutoHideBanner()) {
+            BannerManager.hideBanner();
             return;
         }
 
         if (this.handleDisconnectedState()) {
+            return;
+        }
+
+        if (this.handlePerformanceState()) {
             return;
         }
 
@@ -262,71 +231,28 @@ class NetworkConnectivityManagerSingleton {
             return;
         }
 
-        if (this.handlePerformanceState()) {
-            return;
-        }
-
         this.handleConnectedState();
     }
 
-    private handleActiveAutoHideBanner(): boolean {
-        if (!this.autoHideExpiresAt || Date.now() >= this.autoHideExpiresAt || !this.autoHideType) {
-            this.clearAutoHideStateAndHideBanner();
-            return false;
-        }
-
-        const remaining = this.autoHideExpiresAt - Date.now();
-
-        if (this.autoHideType === 'performance') {
-            if (this.websocketState === 'connected' && this.currentPerformanceState === 'slow') {
-                const message = this.getPerformanceMessage();
-                const bannerConfig = this.createPerformanceBannerConfig(message);
-                BannerManager.showBannerWithAutoHide(bannerConfig, remaining);
-                return true;
-            }
-
-            this.clearAutoHideStateAndHideBanner();
-            return false;
-        }
-
-        if (this.autoHideType === 'connectivity') {
-            if (this.websocketState === 'connected') {
-                const message = this.getConnectionMessage();
-                const bannerConfig = this.createConnectivityBannerConfig(message, true);
-                BannerManager.showBannerWithAutoHide(bannerConfig, remaining);
-                return true;
-            }
-
-            this.clearAutoHideStateAndHideBanner();
-            return false;
-        }
-
-        this.clearAutoHideStateAndHideBanner();
-        return false;
-    }
-
     private handleDisconnectedState(): boolean {
-        if (shouldShowDisconnectedBanner(this.websocketState, this.isFirstConnection)) {
+        if (shouldShowDisconnectedBanner(this.websocketState, this.isOnAppStart)) {
             this.showConnectivity(false);
-            this.hasShownReconnectionBanner = false;
             return true;
         }
         return false;
     }
 
     private handleConnectingState(): boolean {
-        if (shouldShowConnectingBanner(this.websocketState, this.isFirstConnection)) {
+        if (shouldShowConnectingBanner(this.websocketState, this.isOnAppStart)) {
             this.showConnectivity(false);
-            this.hasShownReconnectionBanner = false;
             return true;
         }
         return false;
     }
 
     private handlePerformanceState(): boolean {
-        if (shouldShowPerformanceBanner(this.websocketState, this.currentPerformanceState, this.performanceSuppressedUntilNormal)) {
-            this.showPerformanceWithAutoHide(10000);
-            this.isFirstConnection = false;
+        if (shouldShowPerformanceBanner(this.currentPerformanceState, this.performanceSuppressedUntilNormal)) {
+            this.showPerformance(10000);
             return true;
         }
         return false;
@@ -336,21 +262,15 @@ class NetworkConnectivityManagerSingleton {
         if (shouldShowReconnectionBanner(
             this.websocketState,
             this.previousWebsocketState,
-            this.isFirstConnection,
-            this.hasShownReconnectionBanner,
+            this.isOnAppStart,
         )) {
-            this.showConnectivityWithAutoHide(true, 3000);
-            this.isFirstConnection = false;
-            this.hasShownReconnectionBanner = true;
+            this.showConnectivity(true, 3000);
             return true;
         }
         return false;
     }
 
     private handleConnectedState(): void {
-        if (this.websocketState === 'connected') {
-            this.isFirstConnection = false;
-        }
         BannerManager.hideBanner();
     }
 }

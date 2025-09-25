@@ -27,10 +27,13 @@ interface RequestOutcome {
 const SLOW_REQUEST_THRESHOLD = 2000;
 const SLOW_REQUEST_PERCENTAGE_THRESHOLD = 0.7;
 const REQUEST_OUTCOME_WINDOW_SIZE = 20;
-const MINIMUM_REQUESTS_FOR_PERCENTAGE_CALCULATION = 5;
+const MINIMUM_REQUESTS_FOR_INITIAL_DETECTION = 4;
+const MINIMUM_REQUESTS_FOR_SUBSEQUENT_DETECTION = 10;
 
-const calculatePerformanceStateFromOutcomes = (outcomes: RequestOutcome[]): NetworkPerformanceState => {
-    if (outcomes.length < MINIMUM_REQUESTS_FOR_PERCENTAGE_CALCULATION) {
+const calculatePerformanceStateFromOutcomes = (outcomes: RequestOutcome[], isInitialDetection: boolean): NetworkPerformanceState => {
+    const minimumRequests = isInitialDetection ? MINIMUM_REQUESTS_FOR_INITIAL_DETECTION : MINIMUM_REQUESTS_FOR_SUBSEQUENT_DETECTION;
+
+    if (isInitialDetection && outcomes.length < minimumRequests) {
         return 'normal';
     }
 
@@ -44,6 +47,8 @@ class NetworkPerformanceManagerSingleton {
     private performanceSubjects: Record<string, BehaviorSubject<NetworkPerformanceState>> = {};
     private activeRequests: Record<string, Record<string, ActiveRequest>> = {};
     private requestOutcomes: Record<string, RequestOutcome[]> = {};
+    private initialRequestTimestamp: Record<string, number> = {};
+    private isInitialDetection: Record<string, boolean> = {};
     private appStateSubscription: any = null;
 
     constructor() {
@@ -161,6 +166,8 @@ class NetworkPerformanceManagerSingleton {
             delete this.performanceSubjects[serverUrl];
         }
         delete this.requestOutcomes[serverUrl];
+        delete this.initialRequestTimestamp[serverUrl];
+        delete this.isInitialDetection[serverUrl];
     };
 
     /**
@@ -182,6 +189,8 @@ class NetworkPerformanceManagerSingleton {
 
         this.performanceSubjects = {};
         this.requestOutcomes = {};
+        this.initialRequestTimestamp = {};
+        this.isInitialDetection = {};
     };
 
     private checkRequestLatency = (serverUrl: string, requestId: string) => {
@@ -231,6 +240,10 @@ class NetworkPerformanceManagerSingleton {
             this.requestOutcomes[serverUrl] = [];
         }
 
+        if (!this.initialRequestTimestamp[serverUrl] && outcome.isSlow) {
+            this.initialRequestTimestamp[serverUrl] = outcome.timestamp;
+        }
+
         this.requestOutcomes[serverUrl].push(outcome);
 
         if (this.requestOutcomes[serverUrl].length > REQUEST_OUTCOME_WINDOW_SIZE) {
@@ -239,20 +252,29 @@ class NetworkPerformanceManagerSingleton {
 
         const outcomes = this.requestOutcomes[serverUrl];
         const currentPerformanceState = this.getCurrentPerformanceState(serverUrl);
-        const newPerformanceState = calculatePerformanceStateFromOutcomes(outcomes);
+        const isInitialDetection = !this.isInitialDetection[serverUrl];
+        const newPerformanceState = calculatePerformanceStateFromOutcomes(outcomes, isInitialDetection);
 
         if (currentPerformanceState !== newPerformanceState && newPerformanceState === 'slow') {
             const stats = this.getRequestOutcomeStats(serverUrl);
+            const detectionDelayMs = outcome.timestamp - this.initialRequestTimestamp[serverUrl];
+
             logDebug(`Network performance degraded for ${serverUrl}: ${currentPerformanceState} -> ${newPerformanceState}`, {
                 totalRequests: stats.totalRequests,
                 slowRequests: stats.slowRequests,
                 slowPercentage: `${(stats.slowPercentage * 100).toFixed(1)}%`,
                 earlyDetectionCount: stats.earlyDetectionCount,
+                currentTimestamp: Date.now(),
+                detectionDelayMs,
+                detectionDelaySeconds: `${(detectionDelayMs / 1000).toFixed(1)}s`,
                 lastOutcome: {
                     isSlow: outcome.isSlow,
                     wasEarlyDetection: outcome.wasEarlyDetection,
                 },
             });
+
+            this.isInitialDetection[serverUrl] = true;
+            delete this.initialRequestTimestamp[serverUrl];
         }
 
         this.getPerformanceSubject(serverUrl).next(newPerformanceState);
@@ -290,6 +312,8 @@ export const testExports = {
     NetworkPerformanceManagerSingleton,
     SLOW_REQUEST_THRESHOLD,
     REQUEST_OUTCOME_WINDOW_SIZE,
+    MINIMUM_REQUESTS_FOR_INITIAL_DETECTION,
+    MINIMUM_REQUESTS_FOR_SUBSEQUENT_DETECTION,
     calculatePerformanceStateFromOutcomes,
 };
 
