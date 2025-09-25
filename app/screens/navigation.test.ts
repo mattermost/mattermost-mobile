@@ -6,7 +6,27 @@ import {Navigation} from 'react-native-navigation';
 import {Events, Preferences, Screens} from '@constants';
 import NavigationStore from '@store/navigation_store';
 
-import {openAsBottomSheet} from './navigation';
+import {openAsBottomSheet, dismissAllOverlays} from './navigation';
+
+jest.mock('react-native-navigation', () => ({
+    Navigation: {
+        dismissOverlay: jest.fn(() => Promise.resolve()),
+        showModal: jest.fn(),
+        setDefaultOptions: jest.fn(),
+        events: jest.fn(() => ({
+            registerScreenPoppedListener: jest.fn(),
+            registerCommandListener: jest.fn(),
+            registerComponentWillAppearListener: jest.fn(),
+        })),
+    },
+    OptionsModalPresentationStyle: {
+        overFullScreen: 'overFullScreen',
+        overCurrentContext: 'overCurrentContext',
+        pageSheet: 'pageSheet',
+        formSheet: 'formSheet',
+        none: 'none',
+    },
+}));
 
 import type {FirstArgument} from '@typings/utils/utils';
 import type {IntlShape} from 'react-intl';
@@ -105,5 +125,64 @@ describe('openUserProfileModal', () => {
             theme,
             props,
         }, false);
+    });
+});
+
+describe('dismissAllOverlays', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+        NavigationStore.reset();
+    });
+
+    it('should return early when no overlays to dismiss', async () => {
+        await dismissAllOverlays();
+
+        expect(Navigation.dismissOverlay).not.toHaveBeenCalled();
+    });
+
+    it('should get overlays to dismiss without modifying stack', async () => {
+        NavigationStore.addOverlayToStack('overlay1');
+        NavigationStore.addOverlayToStack('overlay2');
+        NavigationStore.addOverlayToStack('overlay3');
+
+        expect(NavigationStore.getOverlaysInStack()).toEqual(['overlay3', 'overlay2', 'overlay1']);
+
+        const overlaysToRemove = NavigationStore.getAllOverlaysOtherThanExceptions();
+        expect(overlaysToRemove).toEqual(['overlay3', 'overlay2', 'overlay1']);
+
+        expect(NavigationStore.getOverlaysInStack()).toEqual(['overlay3', 'overlay2', 'overlay1']);
+
+        NavigationStore.removeAllOverlaysFromStackOtherThanExceptions();
+        expect(NavigationStore.getOverlaysInStack()).toEqual([]);
+    });
+
+    it('should preserve floating-banner-overlay in store operations', async () => {
+        NavigationStore.addOverlayToStack('regular-overlay');
+        NavigationStore.addOverlayToStack('floating-banner-overlay');
+        NavigationStore.addOverlayToStack('another-overlay');
+
+        expect(NavigationStore.getOverlaysInStack()).toEqual(['another-overlay', 'floating-banner-overlay', 'regular-overlay']);
+
+        const overlaysToRemove = NavigationStore.getAllOverlaysOtherThanExceptions();
+        expect(overlaysToRemove).toEqual(['another-overlay', 'regular-overlay']);
+
+        expect(NavigationStore.getOverlaysInStack()).toEqual(['another-overlay', 'floating-banner-overlay', 'regular-overlay']);
+
+        NavigationStore.removeAllOverlaysFromStackOtherThanExceptions();
+
+        expect(NavigationStore.getOverlaysInStack()).toEqual(['floating-banner-overlay']);
+    });
+
+    it('should handle only exception overlays', async () => {
+        NavigationStore.addOverlayToStack('floating-banner-overlay');
+
+        expect(NavigationStore.getOverlaysInStack()).toEqual(['floating-banner-overlay']);
+
+        const overlaysToRemove = NavigationStore.getAllOverlaysOtherThanExceptions();
+        expect(overlaysToRemove).toEqual([]);
+
+        NavigationStore.removeAllOverlaysFromStackOtherThanExceptions();
+
+        expect(NavigationStore.getOverlaysInStack()).toEqual(['floating-banner-overlay']);
     });
 });
