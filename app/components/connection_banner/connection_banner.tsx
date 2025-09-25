@@ -22,8 +22,9 @@ const getStyle = makeStyleSheetFromTheme((theme: Theme) => {
             flexDirection: 'row' as const,
             alignItems: 'center' as const,
             paddingHorizontal: 12,
-            paddingVertical: 10,
+            paddingVertical: 6,
             borderRadius: 8,
+            height: 40,
             shadowColor: theme.centerChannelColor,
             shadowOffset: {
                 width: 0,
@@ -78,7 +79,7 @@ const ConnectionBanner: React.FC<Props> = ({isConnected, message, dismissible = 
                 <CompassIcon
                     color={theme.centerChannelBg}
                     name={isConnected ? 'check' : 'information-outline'}
-                    size={18}
+                    size={16}
                     style={style.icon}
                 />
                 <Text
@@ -100,7 +101,7 @@ const ConnectionBanner: React.FC<Props> = ({isConnected, message, dismissible = 
                 >
                     <CompassIcon
                         name={'close'}
-                        size={18}
+                        size={14}
                         color={changeOpacity(theme.centerChannelBg, 0.7)}
                     />
                 </Pressable>

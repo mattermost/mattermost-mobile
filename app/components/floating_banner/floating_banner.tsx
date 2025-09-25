@@ -10,7 +10,10 @@ import Banner from '@components/banner';
 import BannerItem from '@components/banner/banner_item';
 import {useIsTablet, useKeyboardHeight} from '@hooks/device';
 
-const BOTTOM_OFFSET_PHONE = 120;
+const BOTTOM_OFFSET_PHONE_IOS = 105;
+const BOTTOM_OFFSET_PHONE_ANDROID = 90;
+const BOTTOM_OFFSET_WITH_KEYBOARD_IOS = 70;
+const BOTTOM_OFFSET_WITH_KEYBOARD_ANDROID = 80;
 const TABLET_EXTRA_BOTTOM_OFFSET = 60;
 const BANNER_STACK_SPACING = 60;
 const BOTTOM_BANNER_EXTRA_OFFSET = 8;
@@ -57,7 +60,8 @@ const FloatingBanner: React.FC<FloatingBannerProps> = ({banners, onDismiss}) => 
 
         const isTop = position === 'top';
         const testID = isTop ? 'floating-banner-top-container' : 'floating-banner-bottom-container';
-        const baseBottomOffset = isTablet ? (BOTTOM_OFFSET_PHONE + TABLET_EXTRA_BOTTOM_OFFSET) : BOTTOM_OFFSET_PHONE;
+        const baseBottomOffset = Platform.OS === 'android' ? BOTTOM_OFFSET_PHONE_ANDROID : BOTTOM_OFFSET_PHONE_IOS;
+        const bottomOffset = isTablet ? (baseBottomOffset + TABLET_EXTRA_BOTTOM_OFFSET) : baseBottomOffset;
         const containerStyle = isTop ? [styles.containerBase, styles.topContainer] : [
             styles.containerBase,
             styles.bottomContainer,
@@ -69,11 +73,11 @@ const FloatingBanner: React.FC<FloatingBannerProps> = ({banners, onDismiss}) => 
             }
 
             if (Platform.OS === 'android') {
-                return {bottom: baseBottomOffset};
+                return {bottom: withTiming(BOTTOM_OFFSET_WITH_KEYBOARD_ANDROID, {duration: 250})};
             }
 
-            return {bottom: withTiming(baseBottomOffset + keyboardHeight, {duration: 250})};
-        }, [keyboardHeight, isTop, baseBottomOffset]);
+            return {bottom: withTiming((keyboardHeight > 0 ? BOTTOM_OFFSET_WITH_KEYBOARD_IOS : bottomOffset) + keyboardHeight, {duration: 250})};
+        }, [keyboardHeight, isTop, bottomOffset]);
 
         return (
             <Animated.View
@@ -144,6 +148,9 @@ const styles = StyleSheet.create({
 export default FloatingBanner;
 
 export const testExports = {
-    BOTTOM_OFFSET_PHONE,
+    BOTTOM_OFFSET_PHONE_IOS,
+    BOTTOM_OFFSET_PHONE_ANDROID,
     TABLET_EXTRA_BOTTOM_OFFSET,
+    BOTTOM_OFFSET_WITH_KEYBOARD_IOS,
+    BOTTOM_OFFSET_WITH_KEYBOARD_ANDROID,
 };

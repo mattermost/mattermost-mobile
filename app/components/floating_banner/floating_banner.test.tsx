@@ -328,8 +328,8 @@ describe('FloatingBanner', () => {
                 typeof style === 'object' && style !== null && 'bottom' in style,
             ) as {bottom: number};
 
-            const {BOTTOM_OFFSET_PHONE, TABLET_EXTRA_BOTTOM_OFFSET} = testExports;
-            expect(containerStyle.bottom).toBe(BOTTOM_OFFSET_PHONE + TABLET_EXTRA_BOTTOM_OFFSET);
+            const {BOTTOM_OFFSET_PHONE_IOS, TABLET_EXTRA_BOTTOM_OFFSET} = testExports;
+            expect(containerStyle.bottom).toBe(BOTTOM_OFFSET_PHONE_IOS + TABLET_EXTRA_BOTTOM_OFFSET);
         });
     });
 
@@ -351,8 +351,8 @@ describe('FloatingBanner', () => {
                 typeof style === 'object' && style !== null && 'bottom' in style,
             ) as {bottom: number};
 
-            const {BOTTOM_OFFSET_PHONE} = testExports;
-            expect(animatedStyle.bottom).toBe(BOTTOM_OFFSET_PHONE + keyboardHeight);
+            const {BOTTOM_OFFSET_WITH_KEYBOARD_IOS} = testExports;
+            expect(animatedStyle.bottom).toBe(BOTTOM_OFFSET_WITH_KEYBOARD_IOS + keyboardHeight);
         });
 
         it('should adjust bottom banner position on tablet when keyboard is open', () => {
@@ -373,8 +373,8 @@ describe('FloatingBanner', () => {
                 typeof style === 'object' && style !== null && 'bottom' in style,
             ) as {bottom: number};
 
-            const {BOTTOM_OFFSET_PHONE, TABLET_EXTRA_BOTTOM_OFFSET} = testExports;
-            const expectedBottom = BOTTOM_OFFSET_PHONE + TABLET_EXTRA_BOTTOM_OFFSET + keyboardHeight;
+            const {BOTTOM_OFFSET_WITH_KEYBOARD_IOS} = testExports;
+            const expectedBottom = BOTTOM_OFFSET_WITH_KEYBOARD_IOS + keyboardHeight;
             expect(animatedStyle.bottom).toBe(expectedBottom);
         });
 
@@ -413,8 +413,8 @@ describe('FloatingBanner', () => {
                 typeof style === 'object' && style !== null && 'bottom' in style,
             ) as {bottom: number};
 
-            const {BOTTOM_OFFSET_PHONE} = testExports;
-            expect(animatedStyle.bottom).toBe(BOTTOM_OFFSET_PHONE);
+            const {BOTTOM_OFFSET_PHONE_IOS} = testExports;
+            expect(animatedStyle.bottom).toBe(BOTTOM_OFFSET_PHONE_IOS);
         });
     });
 });

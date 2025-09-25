@@ -30,9 +30,10 @@ const getStyleSheet = (theme: Theme) => StyleSheet.create({
         alignItems: 'center',
         backgroundColor: theme.centerChannelBg,
         borderRadius: 8,
-        padding: 12,
+        padding: 8,
         marginHorizontal: 8,
         marginVertical: 4,
+        height: 40,
         shadowColor: theme.centerChannelColor,
         shadowOffset: {
             width: 0,
@@ -43,20 +44,20 @@ const getStyleSheet = (theme: Theme) => StyleSheet.create({
         elevation: 4,
     },
     iconContainer: {
-        marginRight: 12,
-        width: 24,
+        marginRight: 8,
+        width: 20,
         alignItems: 'center',
     },
     content: {
         flex: 1,
     },
     title: {
-        ...typography('Body', 100, 'SemiBold'),
+        ...typography('Body', 75, 'SemiBold'),
         color: theme.centerChannelColor,
-        marginBottom: 2,
+        marginBottom: 1,
     },
     message: {
-        ...typography('Body', 75),
+        ...typography('Body', 50),
         color: changeOpacity(theme.centerChannelColor, 0.7),
     },
     dismissButton: {
@@ -145,7 +146,7 @@ const BannerItem: React.FC<BannerItemProps> = ({banner, onPress, onDismiss}) => 
             <View style={styles.iconContainer}>
                 <CompassIcon
                     name={getBannerIconName(banner.type || 'info')}
-                    size={20}
+                    size={16}
                     color={getBannerIconColor(banner.type || 'info', theme)}
                 />
             </View>
@@ -165,7 +166,7 @@ const BannerItem: React.FC<BannerItemProps> = ({banner, onPress, onDismiss}) => 
                 >
                     <CompassIcon
                         name={'close'}
-                        size={18}
+                        size={14}
                         color={changeOpacity(theme.centerChannelColor, 0.5)}
                     />
                 </Pressable>
