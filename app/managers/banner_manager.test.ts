@@ -8,7 +8,7 @@ import {showOverlay, dismissOverlay} from '@screens/navigation';
 
 import {BannerManager, testExports} from './banner_manager';
 
-import type {BannerConfig} from '@context/floating_banner';
+import type {BannerConfig} from '@components/floating_banner/types';
 
 interface MockOverlayProps {
     banners: BannerConfig[];
@@ -257,7 +257,6 @@ describe('BannerManager', () => {
             expect(mockDismissOverlay).toHaveBeenCalledWith('floating-banner-overlay');
         });
     });
-
 
     describe('hideBanner', () => {
         const mockBannerConfig: BannerConfig = {

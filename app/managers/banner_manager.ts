@@ -7,7 +7,7 @@ import {Screens} from '@constants';
 import {showOverlay, dismissOverlay} from '@screens/navigation';
 import {toMilliseconds} from '@utils/datetime';
 
-import type {BannerConfig} from '@context/floating_banner';
+import type {BannerConfig} from '@components/floating_banner/types';
 
 const FLOATING_BANNER_OVERLAY_ID = 'floating-banner-overlay';
 const TIME_TO_CLOSE = toMilliseconds({seconds: 5});

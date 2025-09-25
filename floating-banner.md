@@ -16,7 +16,6 @@ graph TB
     
     subgraph "Banner Management Layer"
         BM[BannerManager<br/>Singleton]
-        CTX[FloatingBannerProvider<br/>React Context]
     end
     
     subgraph "UI Layer"
@@ -38,7 +37,6 @@ graph TB
     INIT -->|System Setup| BM
     
     BM -->|Overlay Management| OVL
-    CTX -->|State Management| FB
     
     OVL -->|Render| FB
     FB -->|Position & Layout| B
@@ -223,28 +221,6 @@ class BannerManager {
 }
 ```
 
-### FloatingBannerProvider Context API
-
-```typescript
-interface BannerContextType {
-    banners: BannerConfig[];
-    showBanner: (config: BannerConfig) => void;
-    hideBanner: (id: string) => void;
-    hideAllBanners: () => void;
-}
-
-// Convenience hooks
-const useBannerActions = () => ({
-    showSuccess: (title: string, message: string, options?: Partial<BannerConfig>) => void;
-    showError: (title: string, message: string, options?: Partial<BannerConfig>) => void;
-    showInfo: (title: string, message: string, options?: Partial<BannerConfig>) => void;
-    showWarning: (title: string, message: string, options?: Partial<BannerConfig>) => void;
-    showCustom: (config: BannerConfig) => void;
-    hideBanner: (id: string) => void;
-    hideAllBanners: () => void;
-});
-```
-
 ## Usage Patterns
 
 ### 1. Basic Banner Display
@@ -313,35 +289,6 @@ BannerManager.showBanner({
     dismissible: true,
     onDismiss: () => console.log('Custom banner dismissed')
 });
-```
-
-### 5. Context-based Banner Management
-
-```typescript
-import {useBannerActions} from '@context/floating_banner';
-
-const MyComponent = () => {
-    const {showSuccess, showError, hideAllBanners} = useBannerActions();
-    
-    const handleSuccess = () => {
-        showSuccess('Success!', 'Operation completed successfully');
-    };
-    
-    const handleError = () => {
-        showError('Error', 'Something went wrong', {
-            autoHideDuration: 5000,
-            position: 'bottom'
-        });
-    };
-    
-    return (
-        <View>
-            <Button title="Show Success" onPress={handleSuccess} />
-            <Button title="Show Error" onPress={handleError} />
-            <Button title="Hide All" onPress={hideAllBanners} />
-        </View>
-    );
-};
 ```
 
 ## Configuration & Positioning

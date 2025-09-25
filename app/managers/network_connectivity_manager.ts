@@ -9,7 +9,7 @@ import {getIntlShape} from '@utils/general';
 import {BannerManager} from './banner_manager';
 
 import type {NetworkPerformanceState} from './network_performance_manager';
-import type {BannerConfig} from '@context/floating_banner';
+import type {BannerConfig} from '@components/floating_banner/types';
 
 function getConnectionMessageText(
     websocketState: WebsocketConnectedState,
