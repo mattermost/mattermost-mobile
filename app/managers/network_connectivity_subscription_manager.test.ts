@@ -3,10 +3,8 @@
 
 import NetInfo from '@react-native-community/netinfo';
 import {AppState} from 'react-native';
-import {Navigation} from 'react-native-navigation';
 import {Subscription} from 'rxjs';
 
-import {Screens} from '@constants';
 import {subscribeActiveServers} from '@database/subscription/servers';
 
 import NetworkConnectivityManager from './network_connectivity_manager';
@@ -36,13 +34,6 @@ jest.mock('react-native', () => ({
         addEventListener: jest.fn(),
     },
 }));
-jest.mock('react-native-navigation', () => ({
-    Navigation: {
-        events: jest.fn(() => ({
-            registerComponentDidAppearListener: jest.fn(),
-        })),
-    },
-}));
 jest.mock('@database/subscription/servers', () => ({
     subscribeActiveServers: jest.fn(),
 }));
@@ -55,7 +46,6 @@ jest.mock('./network_connectivity_manager', () => ({
     setServerConnectionStatus: jest.fn(),
     updateState: jest.fn(),
     updatePerformanceState: jest.fn(),
-    reapply: jest.fn(),
     shutdown: jest.fn(),
 }));
 jest.mock('./websocket_manager', () => ({
@@ -67,7 +57,6 @@ jest.mock('./network_performance_manager', () => ({
 
 const mockAppState = AppState as jest.Mocked<typeof AppState>;
 const mockNetInfo = NetInfo as jest.Mocked<typeof NetInfo>;
-const mockNavigation = Navigation as jest.Mocked<typeof Navigation>;
 const mockSubscribeActiveServers = subscribeActiveServers as jest.MockedFunction<typeof subscribeActiveServers>;
 const mockNetworkConnectivityManager = NetworkConnectivityManager as jest.Mocked<typeof NetworkConnectivityManager>;
 const mockNetworkPerformanceManager = NetworkPerformanceManager as jest.Mocked<typeof NetworkPerformanceManager>;
@@ -90,11 +79,6 @@ describe('NetworkConnectivitySubscriptionManager', () => {
         } as any); // eslint-disable-line @typescript-eslint/no-explicit-any
 
         mockNetInfo.addEventListener.mockReturnValue(jest.fn());
-
-        const mockRegisterComponentDidAppearListener = jest.fn();
-        mockNavigation.events.mockReturnValue({
-            registerComponentDidAppearListener: mockRegisterComponentDidAppearListener,
-        } as any); // eslint-disable-line @typescript-eslint/no-explicit-any
 
         mockWebsocketManager.observeWebsocketState.mockReturnValue({
             subscribe: jest.fn(() => mockWebsocketSubscription),
@@ -135,12 +119,6 @@ describe('NetworkConnectivitySubscriptionManager', () => {
             startNetworkConnectivitySubscriptions();
 
             expect(mockSubscribeActiveServers).toHaveBeenCalledWith(expect.any(Function));
-        });
-
-        it('should set up navigation listener', () => {
-            startNetworkConnectivitySubscriptions();
-
-            expect(mockNavigation.events).toHaveBeenCalled();
         });
 
         it('should stop subscriptions when going to background and restart when returning to active', () => {
@@ -230,25 +208,6 @@ describe('NetworkConnectivitySubscriptionManager', () => {
             expect(mockNetworkPerformanceManager.observePerformanceState).toHaveBeenCalledWith('https://server2.com');
         });
 
-        it('should handle navigation events for non-floating-banner screens', () => {
-            startNetworkConnectivitySubscriptions();
-
-            const mockRegisterComponentDidAppearListener = mockNavigation.events().registerComponentDidAppearListener as jest.MockedFunction<any>; // eslint-disable-line @typescript-eslint/no-explicit-any
-            const navigationCallback = mockRegisterComponentDidAppearListener.mock.calls[0][0];
-            navigationCallback({componentName: Screens.CHANNEL});
-
-            expect(mockNetworkConnectivityManager.reapply).toHaveBeenCalled();
-        });
-
-        it('should not reapply for floating banner screen', () => {
-            startNetworkConnectivitySubscriptions();
-
-            const mockRegisterComponentDidAppearListener = mockNavigation.events().registerComponentDidAppearListener as jest.MockedFunction<any>; // eslint-disable-line @typescript-eslint/no-explicit-any
-            const navigationCallback = mockRegisterComponentDidAppearListener.mock.calls[0][0];
-            navigationCallback({componentName: Screens.FLOATING_BANNER});
-
-            expect(mockNetworkConnectivityManager.reapply).not.toHaveBeenCalled();
-        });
     });
 
     describe('stopNetworkConnectivitySubscriptions', () => {

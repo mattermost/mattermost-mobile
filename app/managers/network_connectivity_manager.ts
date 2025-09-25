@@ -240,20 +240,6 @@ class NetworkConnectivityManagerSingleton {
         this.performanceSuppressedUntilNormal = false;
     }
 
-    reapply() {
-        if (!this.websocketState || !this.netInfo || !this.appState) {
-            return;
-        }
-
-        this.previousWebsocketState = this.websocketState;
-
-        if (this.handleActiveAutoHideBanner()) {
-            return;
-        }
-
-        this.updateBanner();
-    }
-
     private updateBanner() {
         if (!this.currentServerUrl || this.appState === 'background') {
             this.clearAutoHideStateAndHideBanner();

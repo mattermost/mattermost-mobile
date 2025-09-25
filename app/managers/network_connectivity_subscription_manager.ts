@@ -3,10 +3,8 @@
 
 import NetInfo, {type NetInfoSubscription} from '@react-native-community/netinfo';
 import {AppState, type AppStateStatus, type NativeEventSubscription} from 'react-native';
-import {Navigation} from 'react-native-navigation';
 import {Subscription} from 'rxjs';
 
-import {Screens} from '@constants';
 import {subscribeActiveServers} from '@database/subscription/servers';
 
 import NetworkConnectivityManager from './network_connectivity_manager';
@@ -90,16 +88,9 @@ class NetworkConnectivitySubscriptionManagerSingleton {
         this.isInternetReachable = netInfo.isInternetReachable ?? null;
     };
 
-    private handleNavigationEvent = (event: {componentName: string}): void => {
-        if (event.componentName === Screens.FLOATING_BANNER) {
-            return;
-        }
-        NetworkConnectivityManager.reapply();
-    };
-
     /**
      * Initializes all network connectivity subscriptions including app state, network info,
-     * active servers, and navigation events. This starts the global connectivity monitoring.
+     * and active servers. This starts the global connectivity monitoring.
      */
     public init = (): void => {
         if (!this.appSubscription) {
@@ -111,8 +102,6 @@ class NetworkConnectivitySubscriptionManagerSingleton {
 
         this.activeServersUnsubscriber?.unsubscribe?.();
         this.activeServersUnsubscriber = subscribeActiveServers(this.handleActiveServersChange);
-
-        Navigation.events().registerComponentDidAppearListener(this.handleNavigationEvent);
     };
 
     private cleanupAllSubscriptions = (): void => {
