@@ -356,9 +356,9 @@ describe('NetworkConnectivityManager', () => {
                 expect(isReconnection('connected', true)).toBe(false);
             });
 
-            it('should return false when previous state is null', () => {
+            it('should return true when previous state is null and not first connection', () => {
                 const result = isReconnection(null, false);
-                expect(result).toBe(false);
+                expect(result).toBe(true);
             });
         });
 
@@ -474,9 +474,9 @@ describe('NetworkConnectivityManager', () => {
                 expect(result).toBe(false);
             });
 
-            it('should return false when previous state is null', () => {
+            it('should return true when previous state is null and not first connection', () => {
                 const result = shouldShowReconnectionBanner('connected', null, false);
-                expect(result).toBe(false);
+                expect(result).toBe(true);
             });
 
             it('should return false when websocket state is null', () => {
@@ -512,16 +512,21 @@ describe('NetworkConnectivityManager', () => {
             expect(mockBannerManager.showBannerWithAutoHide).toHaveBeenCalled();
         });
 
-        it('should hide performance banner when performance returns to normal', () => {
+        it('should show reconnection banner when performance returns to normal', () => {
             setupConnectedState(manager);
 
             manager.updatePerformanceState('slow');
             expect(mockBannerManager.showBannerWithAutoHide).toHaveBeenCalled();
 
             mockBannerManager.hideBanner.mockClear();
+            mockBannerManager.showBanner.mockClear();
+            mockBannerManager.showBannerWithAutoHide.mockClear();
 
             manager.updatePerformanceState('normal');
-            expect(mockBannerManager.hideBanner).toHaveBeenCalled();
+            expect(mockBannerManager.showBannerWithAutoHide).toHaveBeenCalledWith(
+                expect.objectContaining({id: 'connectivity'}),
+                3000,
+            );
         });
 
         it('should not hide banner if it is not a performance banner', () => {
