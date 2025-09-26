@@ -7,7 +7,9 @@ import {Text, View} from 'react-native';
 import Markdown from '@components/markdown';
 import {useExternalLinkHandler} from '@hooks/use_external_link_handler';
 import {makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
+import type {UserMentionKey} from '@typings/global/markdown';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
@@ -28,13 +30,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         link: {color: theme.linkColor},
         title: {
             color: theme.centerChannelColor,
-            fontSize: 14,
-            fontFamily: 'OpenSans-SemiBold',
-            lineHeight: 20,
+            ...typography('Heading', 100, 'SemiBold'),
             marginBottom: 5,
         },
     };
 });
+
+const EMPTY_MENTION_KEYS: UserMentionKey[] = [];
 
 const AttachmentTitle = ({channelId, link, location, theme, value}: Props) => {
     const style = getStyleSheet(theme);
@@ -55,17 +57,14 @@ const AttachmentTitle = ({channelId, link, location, theme, value}: Props) => {
             <Markdown
                 channelId={channelId}
                 location={location}
-                isEdited={false}
-                isReplyPost={false}
                 disableHashtags={true}
                 disableAtMentions={true}
                 disableGallery={true}
-                autolinkedUrlSchemes={[]}
-                mentionKeys={[]}
+                mentionKeys={EMPTY_MENTION_KEYS}
+
                 theme={theme}
                 value={value}
                 baseTextStyle={style.title}
-                textStyles={{link: style.link}}
             />
         );
     }

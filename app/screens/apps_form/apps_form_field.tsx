@@ -12,8 +12,9 @@ import {Screens, View as ViewConstants} from '@constants';
 import {AppFieldTypes, SelectableAppFieldTypes} from '@constants/apps';
 import {useTheme} from '@context/theme';
 import {selectKeyboardType} from '@utils/integrations';
-import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {makeStyleSheetFromTheme} from '@utils/theme';
+
+import type {UserMentionKey} from '@typings/global/markdown';
 
 const TEXT_DEFAULT_MAX_LENGTH = 150;
 const TEXTAREA_DEFAULT_MAX_LENGTH = 3000;
@@ -64,6 +65,7 @@ function selectDataSource(fieldType: string): string {
     }
 }
 
+const EMPTY_MENTION_KEYS: UserMentionKey[] = [];
 function AppsFormField({
     field,
     name,
@@ -81,7 +83,7 @@ function AppsFormField({
 
     const handleChange = useCallback((newValue: string | boolean) => {
         onChange(name, newValue);
-    }, [name]);
+    }, [name, onChange]);
 
     const handleSelect = useCallback((newValue: SelectedDialogOption) => {
         if (!newValue) {
@@ -217,11 +219,9 @@ function AppsFormField({
                 >
                     <Markdown
                         value={field.description}
-                        mentionKeys={[]}
+                        mentionKeys={EMPTY_MENTION_KEYS}
                         disableAtMentions={true}
                         location={Screens.APPS_FORM}
-                        blockStyles={getMarkdownBlockStyles(theme)}
-                        textStyles={getMarkdownTextStyles(theme)}
                         baseTextStyle={style.markdownFieldText}
                         theme={theme}
                     />

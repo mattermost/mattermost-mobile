@@ -17,7 +17,6 @@ import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {GalleryInit} from '@context/gallery';
 import {useServerUrl} from '@context/server';
-import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {useGalleryItem} from '@hooks/gallery';
 import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
@@ -46,6 +45,7 @@ type MarkdownImageProps = {
     postId: string;
     source: string;
     sourceSize?: {width?: number; height?: number};
+    theme: Theme;
 }
 
 const ANDROID_MAX_HEIGHT = 4096;
@@ -71,23 +71,40 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 const MarkdownImage = ({
-    disabled, errorTextStyle, imagesMetadata, isReplyPost = false,
-    layoutWidth, layoutHeight, linkDestination, location, postId, source, sourceSize,
+    disabled,
+    errorTextStyle,
+    imagesMetadata,
+    isReplyPost = false,
+    layoutWidth,
+    layoutHeight,
+    linkDestination,
+    location,
+    postId,
+    source,
+    sourceSize,
+    theme,
 }: MarkdownImageProps) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
-    const theme = useTheme();
     const style = getStyleSheet(theme);
     const managedConfig = useManagedConfig<ManagedConfig>();
-    const genericFileId = useRef(generateId('uid')).current;
+
+    // Pattern suggested in https://react.dev/reference/react/useRef#avoiding-recreating-the-ref-contents
+    const genericFileRef = useRef<string | null>(null);
+    if (genericFileRef.current === null) {
+        genericFileRef.current = generateId('uid');
+    }
+    const genericFileId = genericFileRef.current;
+
     const metadata = secureGetFromRecord(imagesMetadata, removeImageProxyForKey(source)) || Object.values(imagesMetadata || {})[0];
-    const [failed, setFailed] = useState(isGifTooLarge(metadata));
-    const originalSize = getMarkdownImageSize(isReplyPost, isTablet, sourceSize, metadata, layoutWidth, layoutHeight);
+    const [failed, setFailed] = useState(() => isGifTooLarge(metadata));
     const serverUrl = useServerUrl();
     const galleryIdentifier = `${postId}-${genericFileId}-${location}`;
-    const uri = source.startsWith('/') ? serverUrl + source : source;
 
     const fileInfo = useMemo(() => {
+        const uri = source.startsWith('/') ? serverUrl + source : source;
+        const originalSize = getMarkdownImageSize(isReplyPost, isTablet, sourceSize, metadata, layoutWidth, layoutHeight);
+
         const decodedLink = safeDecodeURIComponent(uri);
         let filename = parseUrl(decodedLink.substr(decodedLink.lastIndexOf('/'))).pathname.replace('/', '');
         let extension = metadata?.format || filename.split('.').pop();
@@ -108,7 +125,7 @@ const MarkdownImage = ({
             width: originalSize.width,
             height: originalSize.height,
         } as FileInfo;
-    }, [originalSize, metadata]);
+    }, [source, serverUrl, isReplyPost, isTablet, sourceSize, metadata, layoutWidth, layoutHeight, genericFileId, postId]);
 
     const handlePreviewImage = useCallback(() => {
         const item: GalleryItemType = {
@@ -117,7 +134,7 @@ const MarkdownImage = ({
             type: 'image',
         };
         openGalleryAtIndex(galleryIdentifier, 0, [item]);
-    }, [fileInfo]);
+    }, [fileInfo, galleryIdentifier]);
 
     const {ref, onGestureEvent, styles} = useGalleryItem(
         galleryIdentifier,
@@ -231,6 +248,7 @@ const MarkdownImage = ({
                             onError={handleOnError}
                             contentFit='contain'
                             style={{width, height}}
+                            theme={theme}
                         />
                     </Animated.View>
                 </TouchableWithoutFeedback>
@@ -251,6 +269,7 @@ const MarkdownImage = ({
                     onError={handleOnError}
                     contentFit='contain'
                     style={{width, height}}
+                    theme={theme}
                 />
             </TouchableWithFeedback>
         );

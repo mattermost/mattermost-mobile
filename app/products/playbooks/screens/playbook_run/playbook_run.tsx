@@ -16,7 +16,6 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {setOwner} from '@playbooks/actions/remote/runs';
 import {getRunScheduledTimestamp, isRunFinished} from '@playbooks/utils/run';
 import {openUserProfileModal, popTopScreen} from '@screens/navigation';
-import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -242,8 +241,6 @@ export default function PlaybookRun({
                                     theme={theme}
                                     location={componentId}
                                     baseTextStyle={styles.infoText}
-                                    blockStyles={getMarkdownBlockStyles(theme)}
-                                    textStyles={getMarkdownTextStyles(theme)}
                                 />
                             </View>
                         </View>

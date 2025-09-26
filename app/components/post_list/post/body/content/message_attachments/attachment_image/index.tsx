@@ -110,6 +110,7 @@ const AttachmentImage = ({imageUrl, imageMetadata, layoutWidth, location, postId
                             onError={onError}
                             contentFit='contain'
                             style={{height, width}}
+                            theme={theme}
                         />
                     </Animated.View>
                 </TouchableWithoutFeedback>
