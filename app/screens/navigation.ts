@@ -77,10 +77,10 @@ function onCommandListener(name: string, params: any) {
             NavigationStore.removeModalFromStack(params.componentId);
             break;
         case 'showOverlay':
-            NavigationStore.addOverlayToStack(params.layout.id);
+            NavigationStore.addOverlayToStack(params?.layout?.id);
             break;
         case 'dismissOverlay':
-            NavigationStore.removeOverlayFromStack(params.componentId);
+            NavigationStore.removeOverlayFromStack(params?.componentId);
             break;
         case 'dismissAllOverlays': {
             NavigationStore.removeAllOverlaysFromStackOtherThanExceptions();
@@ -811,11 +811,9 @@ export async function dismissAllOverlays() {
         // I've discovered that dismissAllOverlays is causing the app to dismiss 700+ overlays.
         // Even though those overlays doesn't exist in the stack. Since we're tracking the
         // overlays in the store, we can dismiss them individually.
-        const dismissPromises = overlaysToRemove.map(async (overlayId) => {
-            await Navigation.dismissOverlay(overlayId);
-        });
-
-        await Promise.all(dismissPromises);
+        await Promise.all(overlaysToRemove.map((overlayId) =>
+            Navigation.dismissOverlay(overlayId).catch(() => undefined),
+        ));
     } catch {
         // do nothing
     }
