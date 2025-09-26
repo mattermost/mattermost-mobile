@@ -103,7 +103,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             color: theme.dndIndicator,
         },
         dangerIcon: {
-            color: theme.sidebarTextActiveBorder,
+            color: theme.errorTextColor,
         },
         dangerContainer: {
             borderColor: changeOpacity(theme.dndIndicator, 0.16),
