@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {type RefObject, useCallback, useEffect, useRef} from 'react';
+import React, {type RefObject, useCallback, useEffect, useRef, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {Keyboard, Pressable, View} from 'react-native';
 import Animated, {FlipInEasyX, FlipOutXUp, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
@@ -42,7 +42,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         alignItems: 'center',
         maxWidth: 600,
         width: '100%',
-        paddingHorizontal: 20,
+        paddingHorizontal: 24,
     },
     enterServer: {
         marginBottom: 24,
@@ -79,6 +79,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginTop: 32,
         marginLeft: 20,
         marginRight: 20,
+    },
+    endAdornment: {
+        top: 2,
     },
 }));
 
@@ -137,6 +140,7 @@ const ServerForm = ({
     const preauthSecretRef = useRef<FloatingTextInputRef>(null);
     const urlRef = useRef<FloatingTextInputRef>(null);
     const styles = getStyleSheet(theme);
+    const [isPreauthSecretVisible] = useState(false);
 
     useAvoidKeyboard(keyboardAwareRef, 1.8);
 
@@ -266,12 +270,13 @@ const ServerForm = ({
                             autoCapitalize={'none'}
                             enablesReturnKeyAutomatically={true}
                             error={preauthSecretError}
+                            keyboardType={isPreauthSecretVisible ? 'visible-password' : 'default'}
                             label={formatMessage(messages.preauthSecret)}
                             onChangeText={handlePreauthSecretTextChanged}
                             onSubmitEditing={onConnect}
                             ref={preauthSecretRef}
                             returnKeyType='done'
-                            secureTextEntry={true}
+                            secureTextEntry={!isPreauthSecretVisible}
                             spellCheck={false}
                             testID='server_form.preauth_secret.input'
                             theme={theme}

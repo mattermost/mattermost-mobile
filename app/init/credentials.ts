@@ -70,6 +70,12 @@ export const setServerCredentials = (serverUrl: string, token: string, preauthSe
                 server: serverUrl,
                 ...options,
             });
+        } else {
+            // Remove preauth secret if not provided
+            KeyChain.resetGenericPassword({
+                server: serverUrl,
+                ...options,
+            });
         }
     } catch (e) {
         logWarning('could not set credentials', e);

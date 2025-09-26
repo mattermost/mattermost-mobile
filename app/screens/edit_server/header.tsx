@@ -37,7 +37,7 @@ const EditServerHeader = ({theme}: Props) => {
     return (
         <View style={styles.textContainer}>
             <FormattedText
-                defaultMessage='Edit server name'
+                defaultMessage='Edit server'
                 id='edit_server.title'
                 style={styles.title}
                 testID='edit_server_header.title'
