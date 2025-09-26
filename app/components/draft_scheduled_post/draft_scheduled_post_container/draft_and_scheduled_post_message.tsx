@@ -9,7 +9,6 @@ import Markdown from '@components/markdown';
 import ShowMoreButton from '@components/post_list/post/body/message/show_more_button';
 import {useTheme} from '@context/theme';
 import {useShowMoreAnimatedStyle} from '@hooks/show_more';
-import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -52,8 +51,6 @@ const DraftAndScheduledPostMessage: React.FC<Props> = ({
 }) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
-    const blockStyles = getMarkdownBlockStyles(theme);
-    const textStyles = getMarkdownTextStyles(theme);
     const [height, setHeight] = useState<number|undefined>();
     const [open, setOpen] = useState(false);
     const dimensions = useWindowDimensions();
@@ -81,12 +78,10 @@ const DraftAndScheduledPostMessage: React.FC<Props> = ({
                     >
                         <Markdown
                             baseTextStyle={style.message}
-                            blockStyles={blockStyles}
                             channelId={post.channelId}
                             layoutWidth={layoutWidth}
                             location={location}
                             postId={post.id}
-                            textStyles={textStyles}
                             value={post.message}
                             mentionKeys={EMPTY_MENTION_KEYS}
                             theme={theme}

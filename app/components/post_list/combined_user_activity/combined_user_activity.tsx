@@ -14,7 +14,6 @@ import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
 import {bottomSheetModalOptions, showModal, showModalOverCurrentContext} from '@screens/navigation';
 import {emptyFunction} from '@utils/general';
-import {getMarkdownTextStyles} from '@utils/markdown';
 import {isUserActivityProp} from '@utils/post_list';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {secureGetFromRecord} from '@utils/types';
@@ -69,7 +68,6 @@ const CombinedUserActivity = ({
     const intl = useIntl();
     const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
-    const textStyles = getMarkdownTextStyles(theme);
     const styles = getStyleSheet(theme);
     const content = [];
     const removedUserIds: string[] = [];
@@ -172,7 +170,6 @@ const CombinedUserActivity = ({
                 key={postType + actorId}
                 baseTextStyle={styles.baseText}
                 location={location}
-                textStyles={textStyles}
                 value={formattedMessage}
                 theme={theme}
             />
@@ -193,7 +190,7 @@ const CombinedUserActivity = ({
         if (allUsernames.length) {
             fetchMissingProfilesByUsernames(serverUrl, allUsernames);
         }
-    }, [userActivity?.allUserIds, userActivity?.allUsernames]);
+    }, [serverUrl, userActivity]);
 
     if (!post) {
         return null;

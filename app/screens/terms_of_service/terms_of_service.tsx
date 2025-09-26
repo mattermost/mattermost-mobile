@@ -23,7 +23,6 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import SecurityManager from '@managers/security_manager';
 import {dismissOverlay} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
-import {getMarkdownTextStyles, getMarkdownBlockStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -193,6 +192,9 @@ const TermsOfService = ({
 
     useEffect(() => {
         getTerms();
+
+        // Only get the terms on mount
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
@@ -208,9 +210,6 @@ const TermsOfService = ({
     }, [showToS, componentId]);
 
     useAndroidHardwareBackHandler(componentId, onPressClose);
-
-    const blockStyles = useMemo(() => getMarkdownBlockStyles(theme), [theme]);
-    const textStyles = useMemo(() => getMarkdownTextStyles(theme), [theme]);
 
     let content;
     if (loading) {
@@ -253,8 +252,6 @@ const TermsOfService = ({
                 >
                     <Markdown
                         baseTextStyle={styles.baseText}
-                        textStyles={textStyles}
-                        blockStyles={blockStyles}
                         value={termsText}
                         disableHashtags={true}
                         disableAtMentions={true}

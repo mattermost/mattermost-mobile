@@ -4,13 +4,13 @@
 import React, {type ReactNode} from 'react';
 import {type StyleProp, View, type ViewStyle} from 'react-native';
 
-import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 export type MarkdownTableCellProps = {
     align: 'left' | 'center' | 'right';
     children: ReactNode;
     isLastCell: boolean;
+    theme: Theme;
 };
 
 export const CELL_MIN_WIDTH = 96;
@@ -41,8 +41,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const MarkdownTableCell = ({isLastCell, align, children}: MarkdownTableCellProps) => {
-    const theme = useTheme();
+const MarkdownTableCell = ({isLastCell, align, children, theme}: MarkdownTableCellProps) => {
     const style = getStyleSheet(theme);
 
     const cellStyle: StyleProp<ViewStyle> = [style.cell];
