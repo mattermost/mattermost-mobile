@@ -144,6 +144,8 @@ const MarkdownImage = ({
 
     const {height, width} = calculateDimensions(fileInfo.height, fileInfo.width, layoutWidth || getViewPortWidth(isReplyPost, isTablet));
 
+    const progressiveImageStyle = useMemo(() => ({width, height}), [width, height]);
+
     const handleLinkPress = useCallback(() => {
         if (linkDestination) {
             const url = normalizeProtocol(linkDestination);
@@ -247,7 +249,7 @@ const MarkdownImage = ({
                             imageUri={fileInfo.uri}
                             onError={handleOnError}
                             contentFit='contain'
-                            style={{width, height}}
+                            style={progressiveImageStyle}
                             theme={theme}
                         />
                     </Animated.View>
@@ -268,7 +270,7 @@ const MarkdownImage = ({
                     imageUri={fileInfo.uri}
                     onError={handleOnError}
                     contentFit='contain'
-                    style={{width, height}}
+                    style={progressiveImageStyle}
                     theme={theme}
                 />
             </TouchableWithFeedback>

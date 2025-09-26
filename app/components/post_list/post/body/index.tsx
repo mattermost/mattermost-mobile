@@ -125,7 +125,7 @@ const Body = ({
         }
 
         return barStyle;
-    }, [highlightReplyBar, isCRTEnabled, isFirstReply, isLastReply, isReplyPost, location, style.replyBar, style.replyBarFirst, style.replyBarLast, style.replyMention]);
+    }, [highlightReplyBar, isCRTEnabled, isFirstReply, isLastReply, isReplyPost, location, style]);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         if (location === Screens.SAVED_MESSAGES) {

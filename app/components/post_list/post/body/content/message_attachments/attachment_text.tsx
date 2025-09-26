@@ -28,7 +28,15 @@ const style = StyleSheet.create({
     },
 });
 
-const AttachmentText = ({baseTextStyle, channelId, hasThumbnail, location, metadata, theme, value}: Props) => {
+const AttachmentText = ({
+    baseTextStyle,
+    channelId,
+    hasThumbnail,
+    location,
+    metadata,
+    theme,
+    value,
+}: Props) => {
     const [open, setOpen] = useState(false);
     const [height, setHeight] = useState<number|undefined>();
     const dimensions = useWindowDimensions();
