@@ -423,7 +423,7 @@ describe('finishRun', () => {
     test('should call doFetch with correct url and options', async () => {
         const playbookRunId = 'run123';
         const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunId}/finish`;
-        const expectedOptions = {method: 'put'};
+        const expectedOptions = {body: {}, method: 'put'};
 
         jest.mocked(client.doFetch).mockResolvedValue(undefined);
 
