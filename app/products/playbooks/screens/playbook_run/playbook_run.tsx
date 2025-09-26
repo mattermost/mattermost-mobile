@@ -200,12 +200,14 @@ export default function PlaybookRun({
         }
 
         goToSelectUser(
+            theme,
+            playbookRun?.name || '',
             intl.formatMessage(messages.owner),
             [...participants.map((p) => p.id), owner?.id || ''],
             owner?.id,
             handleSelectOwner,
         );
-    }, [handleSelectOwner, intl, owner, participants]);
+    }, [handleSelectOwner, intl, owner, participants, playbookRun?.name, theme]);
 
     const ownerAction = useMemo(() => {
         if (readOnly) {
