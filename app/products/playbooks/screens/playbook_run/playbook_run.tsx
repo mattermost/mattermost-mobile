@@ -200,12 +200,21 @@ export default function PlaybookRun({
         }
 
         goToSelectUser(
+            theme,
+            playbookRun?.name || '',
             intl.formatMessage(messages.owner),
             [...participants.map((p) => p.id), owner?.id || ''],
             owner?.id,
             handleSelectOwner,
         );
-    }, [handleSelectOwner, intl, owner, participants]);
+    }, [handleSelectOwner, intl, owner, participants, playbookRun?.name, theme]);
+
+    const ownerAction = useMemo(() => {
+        if (readOnly) {
+            return undefined;
+        }
+        return {icon: 'downArrow' as const, onPress: openChangeOwnerModal};
+    }, [openChangeOwnerModal, readOnly]);
 
     if (!playbookRun) {
         return <ErrorState/>;
@@ -255,7 +264,7 @@ export default function PlaybookRun({
                                                 user={owner}
                                                 onPress={readOnly ? openOwnerProfile : openChangeOwnerModal}
                                                 teammateNameDisplay={teammateNameDisplay}
-                                                actionIcon={readOnly ? undefined : 'downArrow'}
+                                                action={ownerAction}
                                             />
                                         </View>
                                     </View>
