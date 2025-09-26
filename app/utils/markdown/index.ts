@@ -6,7 +6,7 @@ import parseUrl from 'url-parse';
 
 import {getViewPortWidth} from '@utils/images';
 import {logError} from '@utils/log';
-import {changeOpacity, concatStyles, makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {safeDecodeURIComponent} from '@utils/url';
 
@@ -275,7 +275,7 @@ export const getMarkdownImageSize = (
 
 export const computeTextStyle = (textStyles: MarkdownTextStyles, baseStyle: StyleProp<TextStyle>, context: string[]) => {
     const contextStyles: TextStyle[] = context.map((type) => textStyles[type]).filter((f) => f !== undefined);
-    return contextStyles.length ? concatStyles(baseStyle, contextStyles) : baseStyle;
+    return contextStyles.length ? [baseStyle, contextStyles] : baseStyle;
 };
 
 export function parseSearchTerms(searchTerm: string): string[] | undefined {

@@ -11,8 +11,8 @@ import AtMention from '@components/markdown/at_mention';
 import MarkdownLink from '@components/markdown/markdown_link';
 import {useTheme} from '@context/theme';
 import {logWarning} from '@utils/log';
-import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
-import {concatStyles, changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {computeTextStyle, getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 import type {PrimitiveType} from 'intl-messageformat';
@@ -77,10 +77,6 @@ const FormattedMarkdownText = ({baseTextStyle, channelId, defaultMessage, id, lo
         });
     };
 
-    const computeTextStyle = (base: StyleProp<TextStyle>, context: string[]) => {
-        return concatStyles(base, context.map((type) => (txtStyles as {[s: string]: TextStyle})[type]));
-    };
-
     const renderAtMention = ({context, mentionName}: {context: string[]; mentionName: string}) => {
         return (
             <AtMention
@@ -88,7 +84,7 @@ const FormattedMarkdownText = ({baseTextStyle, channelId, defaultMessage, id, lo
                 mentionStyle={txtStyles.mention}
                 mentionName={mentionName}
                 location={location}
-                textStyle={[computeTextStyle(baseTextStyle, context), styles.atMentionOpacity]}
+                textStyle={[computeTextStyle(txtStyles, baseTextStyle, context), styles.atMentionOpacity]}
                 theme={theme}
             />
         );
@@ -99,7 +95,7 @@ const FormattedMarkdownText = ({baseTextStyle, channelId, defaultMessage, id, lo
     };
 
     const renderCodeSpan = ({context, literal}: {context: string[]; literal: string}) => {
-        const computed = computeTextStyle([styles.message, txtStyles.code], context);
+        const computed = computeTextStyle(txtStyles, [styles.message, txtStyles.code], context);
         return <Text style={computed}>{literal}</Text>;
     };
 
@@ -135,7 +131,7 @@ const FormattedMarkdownText = ({baseTextStyle, channelId, defaultMessage, id, lo
     };
 
     const renderText = ({context, literal}: {context: string[]; literal: string}) => {
-        const computed = computeTextStyle(style || styles.message, context);
+        const computed = computeTextStyle(txtStyles, style || styles.message, context);
         return <Text style={computed}>{literal}</Text>;
     };
 
