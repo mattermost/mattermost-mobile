@@ -93,6 +93,7 @@ function BoolSetting({
                     value={value}
                     style={style.inputSwitch}
                     disabled={disabled}
+                    testID={`${testID}.toggled.${value}.button`}
                 />
             </View>
             <View style={style.separator}/>
