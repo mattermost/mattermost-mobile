@@ -3,13 +3,14 @@
 
 import {openAuthSessionAsync} from 'expo-web-browser';
 import qs from 'querystringify';
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Linking, Platform, StyleSheet, View, type EventSubscription} from 'react-native';
 import urlParse from 'url-parse';
 
 import {Sso} from '@constants';
 import {isBetaApp} from '@utils/general';
+import {createSamlChallenge} from '@utils/saml_challenge';
 
 import AuthError from './components/auth_error';
 import AuthRedirect from './components/auth_redirect';
@@ -17,6 +18,7 @@ import AuthSuccess from './components/auth_success';
 
 interface SSOAuthenticationProps {
     doSSOLogin: (bearerToken: string, csrfToken: string) => void;
+    doSSOCodeExchange: (loginCode: string, samlChallenge: {codeVerifier: string; state: string}) => void;
     loginError: string;
     loginUrl: string;
     setLoginError: (value: string) => void;
@@ -30,7 +32,7 @@ const style = StyleSheet.create({
     },
 });
 
-const SSOAuthentication = ({doSSOLogin, loginError, loginUrl, setLoginError, theme}: SSOAuthenticationProps) => {
+const SSOAuthentication = ({doSSOLogin, doSSOCodeExchange, loginError, loginUrl, setLoginError, theme}: SSOAuthenticationProps) => {
     const [error, setError] = useState<string>('');
     const [loginSuccess, setLoginSuccess] = useState(false);
     const intl = useIntl();
@@ -40,7 +42,8 @@ const SSOAuthentication = ({doSSOLogin, loginError, loginUrl, setLoginError, the
     }
 
     const redirectUrl = customUrlScheme + 'callback';
-    const init = async (resetErrors = true) => {
+    const samlChallenge = useMemo(() => createSamlChallenge(), []);
+    const init = useCallback(async (resetErrors = true) => {
         setLoginSuccess(false);
         if (resetErrors !== false) {
             setError('');
@@ -50,12 +53,22 @@ const SSOAuthentication = ({doSSOLogin, loginError, loginUrl, setLoginError, the
         const query: Record<string, string> = {
             ...parsedUrl.query,
             redirect_to: redirectUrl,
+            state: samlChallenge.state,
+            code_challenge: samlChallenge.codeChallenge,
+            code_challenge_method: samlChallenge.method,
         };
         parsedUrl.set('query', qs.stringify(query));
         const url = parsedUrl.toString();
         const result = await openAuthSessionAsync(url, null, {preferEphemeralSession: true, createTask: false});
         if ('url' in result && result.url) {
             const resultUrl = urlParse(result.url, true);
+            const loginCode = resultUrl.query?.login_code as string | undefined;
+            if (loginCode) {
+                // Prefer code exchange when available
+                setLoginSuccess(true);
+                doSSOCodeExchange(loginCode, {codeVerifier: samlChallenge.codeVerifier, state: samlChallenge.state});
+                return;
+            }
             const bearerToken = resultUrl.query?.MMAUTHTOKEN;
             const csrfToken = resultUrl.query?.MMCSRF;
             if (bearerToken && csrfToken) {
@@ -70,7 +83,7 @@ const SSOAuthentication = ({doSSOLogin, loginError, loginUrl, setLoginError, the
                 }),
             );
         }
-    };
+    }, [doSSOCodeExchange, doSSOLogin, intl, loginUrl, samlChallenge, redirectUrl, setLoginError]);
 
     useEffect(() => {
         let listener: EventSubscription | null = null;
@@ -80,6 +93,12 @@ const SSOAuthentication = ({doSSOLogin, loginError, loginUrl, setLoginError, the
                 setError('');
                 if (url && url.startsWith(redirectUrl)) {
                     const parsedUrl = urlParse(url, true);
+                    const loginCode = parsedUrl.query?.login_code as string | undefined;
+                    if (loginCode) {
+                        setLoginSuccess(true);
+                        doSSOCodeExchange(loginCode, {codeVerifier: samlChallenge.codeVerifier, state: samlChallenge.state});
+                        return;
+                    }
                     const bearerToken = parsedUrl.query?.MMAUTHTOKEN;
                     const csrfToken = parsedUrl.query?.MMCSRF;
                     if (bearerToken && csrfToken) {
@@ -107,7 +126,7 @@ const SSOAuthentication = ({doSSOLogin, loginError, loginUrl, setLoginError, the
             clearTimeout(timeout);
             listener?.remove();
         };
-    }, []);
+    }, [doSSOCodeExchange, doSSOLogin, init, intl, samlChallenge, redirectUrl]);
 
     let content;
     if (loginSuccess) {
