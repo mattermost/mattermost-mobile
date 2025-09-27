@@ -51,8 +51,10 @@ type Props = {
     dataSource?: string;
     optional?: boolean;
     options?: PostActionOption[];
+    multiselect?: boolean;
     value?: string|number|boolean|string[];
     onChange: (name: string, value: string|number|boolean|string[]) => void;
+    getDynamicOptions?: (userInput?: string) => Promise<DialogOption[]>;
 }
 function DialogElement({
     displayName,
@@ -66,8 +68,10 @@ function DialogElement({
     dataSource,
     optional = false,
     options,
+    multiselect = false,
     value,
     onChange,
+    getDynamicOptions,
 }: Props) {
     const testID = `InteractiveDialogElement.${name}`;
     const handleChange = useCallback((newValue: string | boolean | string[]) => {
@@ -79,14 +83,20 @@ function DialogElement({
         onChange(name, newValue);
     }, [type, subtype, onChange, name]);
 
-    const handleSelect = useCallback((newValue: DialogOption | undefined) => {
+    const handleSelect = useCallback((newValue: SelectedDialogOption) => {
         if (!newValue) {
-            onChange(name, '');
+            onChange(name, multiselect ? [] : '');
             return;
         }
 
-        onChange(name, newValue.value);
-    }, [name, onChange]);
+        if (Array.isArray(newValue)) {
+            // Multiselect: return array of values
+            onChange(name, newValue.map((option) => option.value));
+        } else {
+            // Single select: return single value
+            onChange(name, newValue.value);
+        }
+    }, [name, onChange, multiselect]);
 
     const filteredOptions = useMemo(() => {
         return filterOptions(options);
@@ -121,11 +131,13 @@ function DialogElement({
                     options={filteredOptions}
                     optional={optional}
                     onSelected={handleSelect}
+                    getDynamicOptions={getDynamicOptions}
                     helpText={helpText}
                     errorText={errorText}
                     placeholder={placeholder}
                     showRequiredAsterisk={true}
-                    selected={getStringValue(value)}
+                    selected={multiselect && Array.isArray(value) ? value : getStringValue(value)}
+                    isMultiselect={multiselect}
                     roundedBorders={false}
                     testID={testID}
                     location={Screens.INTERACTIVE_DIALOG}
