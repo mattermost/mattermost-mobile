@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: ci/checkout-repo
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
       - name: ci/test
         uses: ./.github/actions/test
 
@@ -31,7 +31,7 @@ jobs:
       - test
     steps:
       - name: ci/checkout-repo
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - name: ci/prepare-ios-build
         uses: ./.github/actions/prepare-ios-build
@@ -81,7 +81,7 @@ jobs:
       - test
     steps:
       - name: ci/checkout-repo
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - name: ci/prepare-android-build
         uses: ./.github/actions/prepare-android-build
@@ -125,10 +125,10 @@ jobs:
       - build-android-unsigned
     steps:
       - name: ci/checkout-repo
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - name: ci/download-sboms
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@abefc31eafcfbdf6c5336127c1346fdae79ff41c # v4.3.0
         with:
           pattern: sbom-*.json
           path: ${{ github.workspace }}
@@ -207,16 +207,16 @@ jobs:
       - generate-consolidated-sbom
     steps:
       - name: ci/checkout-repo
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
-      - uses: ruby/setup-ruby@cb0fda56a307b8c78d38320cd40d9eb22a3bf04e # v1.242.0
+      - uses: ruby/setup-ruby@cf7216d52fba1017929b4d7162fabe2b30af5b49 # v1.262.0
 
       - name: release/setup-fastlane-dependencies
         run: bundle install
         working-directory: ./fastlane
 
       - name: ci/download-artifacts
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@abefc31eafcfbdf6c5336127c1346fdae79ff41c # v4.3.0
         with:
           path: ${{ github.workspace }}
           merge-multiple: true
