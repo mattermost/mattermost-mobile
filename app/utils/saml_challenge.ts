@@ -44,17 +44,12 @@ export type SAMLChallenge = {
     state: string;
     codeVerifier: string;
     codeChallenge: string;
-    method: 'S256' | 'plain';
+    method: 'S256';
 };
 
 export function createSamlChallenge(): SAMLChallenge {
     const state = generateState();
     const codeVerifier = generateCodeVerifier(64);
-    try {
-        const codeChallenge = computeS256CodeChallenge(codeVerifier);
-        return {state, codeVerifier, codeChallenge, method: 'S256'};
-    } catch {
-        // Fallback to plain if hashing fails for any reason
-        return {state, codeVerifier, codeChallenge: codeVerifier, method: 'plain'};
-    }
+    const codeChallenge = computeS256CodeChallenge(codeVerifier);
+    return {state, codeVerifier, codeChallenge, method: 'S256'};
 }
