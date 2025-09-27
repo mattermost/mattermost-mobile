@@ -40,7 +40,7 @@ describe('EditCommand', () => {
 
     function getBaseProps(): ComponentProps<typeof EditCommand> {
         return {
-            componentId: 'EditCommand' as const,
+            componentId: 'PlaybookEditCommand',
             savedCommand: '/test command',
             updateCommand: jest.fn(),
             channelId: 'channel-123',

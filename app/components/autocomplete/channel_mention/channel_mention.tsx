@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {debounce} from 'lodash';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {defineMessages} from 'react-intl';
 import {Platform, SectionList, type SectionListData, type SectionListRenderItemInfo, type StyleProp, type ViewStyle} from 'react-native';
@@ -14,6 +13,7 @@ import {CHANNEL_MENTION_REGEX, CHANNEL_MENTION_SEARCH_REGEX} from '@constants/au
 import {useServerUrl} from '@context/server';
 import DatabaseManager from '@database/manager';
 import useDidUpdate from '@hooks/did_update';
+import {useDebounce} from '@hooks/utils';
 import {getUserById} from '@queries/servers/user';
 import {hasTrailingSpaces} from '@utils/helpers';
 import {getUserIdFromChannelName} from '@utils/user';
@@ -189,7 +189,7 @@ const ChannelMention = ({
 
     const latestSearchAt = useRef(0);
 
-    const runSearch = useMemo(() => debounce(async (sUrl: string, term: string, tId: string) => {
+    const runSearch = useDebounce(useCallback(async (sUrl: string, term: string, tId: string) => {
         const searchAt = Date.now();
         latestSearchAt.current = searchAt;
 
@@ -205,7 +205,7 @@ const ChannelMention = ({
         setRemoteChannels(channelsToStore.length ? channelsToStore : emptyChannels);
 
         setLoading(false);
-    }, 200), []);
+    }, [isSearch]), 200);
 
     const resetState = () => {
         latestSearchAt.current = Date.now();
@@ -297,6 +297,9 @@ const ChannelMention = ({
         if (localCursorPosition !== cursorPosition) {
             setLocalCursorPosition(cursorPosition);
         }
+
+        // We only want to update the local cursor position if the cursor position changes
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [cursorPosition]);
 
     useEffect(() => {
@@ -313,6 +316,8 @@ const ChannelMention = ({
         setNoResultsTerm(null);
         setLoading(true);
         runSearch(serverUrl, matchTerm, teamId);
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [matchTerm, teamId]);
 
     const channels = useMemo(() => {
