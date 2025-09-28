@@ -14,8 +14,6 @@ import {useTheme} from '@context/theme';
 import {selectKeyboardType} from '@utils/integrations';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import type {UserMentionKey} from '@typings/global/markdown';
-
 const TEXT_DEFAULT_MAX_LENGTH = 150;
 const TEXTAREA_DEFAULT_MAX_LENGTH = 3000;
 
@@ -65,7 +63,6 @@ function selectDataSource(fieldType: string): string {
     }
 }
 
-const EMPTY_MENTION_KEYS: UserMentionKey[] = [];
 function AppsFormField({
     field,
     name,
@@ -219,7 +216,6 @@ function AppsFormField({
                 >
                     <Markdown
                         value={field.description}
-                        mentionKeys={EMPTY_MENTION_KEYS}
                         disableAtMentions={true}
                         location={Screens.APPS_FORM}
                         baseTextStyle={style.markdownFieldText}

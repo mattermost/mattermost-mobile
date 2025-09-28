@@ -9,7 +9,6 @@ import {useExternalLinkHandler} from '@hooks/use_external_link_handler';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import type {UserMentionKey} from '@typings/global/markdown';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
@@ -36,8 +35,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const EMPTY_MENTION_KEYS: UserMentionKey[] = [];
-
 const AttachmentTitle = ({channelId, link, location, theme, value}: Props) => {
     const style = getStyleSheet(theme);
     const openLink = useExternalLinkHandler(link);
@@ -60,8 +57,6 @@ const AttachmentTitle = ({channelId, link, location, theme, value}: Props) => {
                 disableHashtags={true}
                 disableAtMentions={true}
                 disableGallery={true}
-                mentionKeys={EMPTY_MENTION_KEYS}
-
                 theme={theme}
                 value={value}
                 baseTextStyle={style.title}

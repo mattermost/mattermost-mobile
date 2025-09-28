@@ -28,12 +28,10 @@ import PermalinkFiles from './permalink_files';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
-import type {UserMentionKey} from '@typings/global/markdown';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 const MAX_PERMALINK_PREVIEW_CHARACTERS = 150;
 const EDITED_INDICATOR_CONTEXT = ['paragraph'];
-const EMPTY_MENTION_KEYS: UserMentionKey[] = [];
 const MIN_PERMALINK_WIDTH = 340;
 const TABLET_PADDING_OFFSET = 40;
 
@@ -220,7 +218,7 @@ const PermalinkPreview = ({
 
     // We need to memoize this value because it is actually a getter that returns a new list
     // on every render. We need to trust that changes in the currentUser will trigger the recalculation.
-    const mentionKeys = useMemo(() => currentUser?.mentionKeys ?? EMPTY_MENTION_KEYS, [currentUser]);
+    const mentionKeys = useMemo(() => currentUser?.mentionKeys ?? undefined, [currentUser]);
 
     if (!post) {
         return null;

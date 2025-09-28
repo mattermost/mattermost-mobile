@@ -16,7 +16,7 @@ import ShowMoreButton from './show_more_button';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
-import type {HighlightWithoutNotificationKey, SearchPattern, UserMentionKey} from '@typings/global/markdown';
+import type {HighlightWithoutNotificationKey, SearchPattern} from '@typings/global/markdown';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 type MessageProps = {
@@ -35,7 +35,6 @@ type MessageProps = {
 
 const SHOW_MORE_HEIGHT = 54;
 
-const EMPTY_MENTION_KEYS: UserMentionKey[] = [];
 const EMPTY_HIGHLIGHT_KEYS: HighlightWithoutNotificationKey[] = [];
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -67,7 +66,7 @@ const Message = ({currentUser, isHighlightWithoutNotificationLicensed, highlight
 
     // We need to memoize these two values because they are actually getters that return a new list
     // on every render. We need to trust that changes in the currentUser will trigger the recalculation.
-    const mentionKeys = useMemo(() => currentUser?.mentionKeys ?? EMPTY_MENTION_KEYS, [currentUser]);
+    const mentionKeys = useMemo(() => currentUser?.mentionKeys ?? undefined, [currentUser]);
     const highlightKeys = useMemo(() => {
         if (isHighlightWithoutNotificationLicensed) {
             return currentUser?.highlightKeys ?? EMPTY_HIGHLIGHT_KEYS;

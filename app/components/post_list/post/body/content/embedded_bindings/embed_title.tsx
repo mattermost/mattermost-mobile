@@ -7,7 +7,6 @@ import {View} from 'react-native';
 import Markdown from '@components/markdown';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import type {UserMentionKey} from '@typings/global/markdown';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
@@ -34,8 +33,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const EMPTY_MENTION_KEYS: UserMentionKey[] = [];
-
 const EmbedTitle = ({channelId, location, theme, value}: Props) => {
     const style = getStyleSheet(theme);
 
@@ -48,7 +45,6 @@ const EmbedTitle = ({channelId, location, theme, value}: Props) => {
                 disableChannelLink={true}
                 disableGallery={true}
                 location={location}
-                mentionKeys={EMPTY_MENTION_KEYS}
                 theme={theme}
                 value={value}
                 baseTextStyle={style.title}

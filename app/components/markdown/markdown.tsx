@@ -14,7 +14,7 @@ import Emoji from '@components/emoji';
 import FormattedText from '@components/formatted_text';
 import {logError} from '@utils/log';
 import {computeTextStyle, getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
-import {changeOpacity, concatStyles, makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import AtMention from './at_mention';
@@ -173,7 +173,7 @@ const Markdown = ({
         }
 
         // Construct the text style based off of the parents of this node since RN's inheritance is limited
-        let styles;
+        let styles: StyleProp<TextStyle>;
         if (disableHeading) {
             styles = computeTextStyle(textStyles, baseTextStyle, context.filter((c) => !c.startsWith('heading')));
         } else {
@@ -181,7 +181,7 @@ const Markdown = ({
         }
 
         if (context.includes('mention_highlight')) {
-            styles = concatStyles(styles, {backgroundColor: theme.mentionHighlightBg});
+            styles = [styles, {backgroundColor: theme.mentionHighlightBg}];
         }
 
         return (
