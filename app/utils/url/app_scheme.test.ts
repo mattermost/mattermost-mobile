@@ -21,6 +21,11 @@ describe('App Scheme URL Validation', () => {
             expect(isValidAppSchemeUrl('http://example.com')).toBe(false);
         });
 
+        it('should return false for FTP and FILE URLs', () => {
+            expect(isValidAppSchemeUrl('ftp://example.com')).toBe(false);
+            expect(isValidAppSchemeUrl('file:///path/to/file')).toBe(false);
+        });
+
         it('should return false for invalid URLs', () => {
             expect(isValidAppSchemeUrl('not-a-url')).toBe(false);
             expect(isValidAppSchemeUrl('://invalid')).toBe(false);
