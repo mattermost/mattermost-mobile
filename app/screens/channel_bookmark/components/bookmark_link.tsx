@@ -15,7 +15,8 @@ import {useDebounce} from '@hooks/utils';
 import {fetchOpenGraph} from '@utils/opengraph';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
-import {getUrlAfterRedirect, isValidAppSchemeUrl} from '@utils/url';
+import {getUrlAfterRedirect} from '@utils/url';
+import {matchDeepLink} from '@utils/deep_link';
 
 type Props = {
     disabled: boolean;
@@ -58,7 +59,7 @@ const BookmarkLink = ({disabled, initialUrl = '', resetBookmark, setBookmark}: P
         setLoading(true);
 
         // Check if it's a custom app scheme URL (like mattermost://)
-        if (isValidAppSchemeUrl(text)) {
+        if (matchDeepLink(text)) {
             setLoading(false);
             setBookmark(text, text, '');
             return;

@@ -19,33 +19,7 @@ export function isValidUrl(url = '') {
     return regex.test(url);
 }
 
-// Check if the URL has a valid app scheme format
-// This supports mattermost:// and other custom app schemes, and explicitly excludes http/https
-export function isValidAppSchemeUrl(url = '') {
-    // Must look like <scheme>://...
-    if (!/^[a-zA-Z][a-zA-Z0-9.+-]*:\/\//.test(url)) {
-        return false;
-    }
 
-    try {
-        const parsedUrl = new URL(url);
-        const protocol = (parsedUrl.protocol || '').toLowerCase(); // includes trailing ':'
-
-        // Exclude common web/file schemes; this function is only for custom app schemes
-        if (protocol === 'http:' || protocol === 'https:' || protocol === 'ftp:' || protocol === 'file:') {
-            return false;
-        }
-
-        // Validate scheme itself
-        return /^[a-z][a-z0-9.+-]*:$/.test(protocol);
-    } catch {
-        return false;
-    }
-}
-
-export function isValidUrlOrAppScheme(url = '') {
-    return isValidUrl(url) || isValidAppSchemeUrl(url);
-}
 
 export function isParsableUrl(url: string): boolean {
     try {
