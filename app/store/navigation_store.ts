@@ -103,6 +103,10 @@ class NavigationStoreSingleton {
 
     getOverlaysInStack = () => this.overlaysInStack;
 
+    removeAllOverlaysFromStack = () => {
+        this.overlaysInStack = [];
+    };
+
     removeAllOverlaysFromStackOtherThanExceptions = () => {
         this.overlaysInStack = this.overlaysInStack.filter((overlayId) => OVERLAY_EXCEPTIONS.includes(overlayId));
     };

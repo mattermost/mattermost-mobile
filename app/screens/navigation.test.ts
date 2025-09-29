@@ -9,6 +9,7 @@ import NavigationStore from '@store/navigation_store';
 jest.unmock('@screens/navigation');
 
 import * as navigationModule from './navigation';
+import {testExports} from './navigation';
 
 import type {FirstArgument} from '@typings/utils/utils';
 import type {IntlShape} from 'react-intl';
@@ -156,7 +157,7 @@ describe('overlay command listeners', () => {
         expect(NavigationStore.getOverlaysInStack()).toEqual(['another-overlay']);
     });
 
-    it('should call NavigationStore.removeAllOverlaysFromStackOtherThanExceptions when dismissAllOverlays command is received', () => {
+    it('should call NavigationStore.removeAllOverlaysFromStack when dismissAllOverlays command is received', () => {
         NavigationStore.addOverlayToStack('overlay1');
         NavigationStore.addOverlayToStack('floating-banner-overlay');
         NavigationStore.addOverlayToStack('overlay2');
@@ -165,7 +166,7 @@ describe('overlay command listeners', () => {
 
         mockCommandListener('dismissAllOverlays', {});
 
-        expect(NavigationStore.getOverlaysInStack()).toEqual(['floating-banner-overlay']);
+        expect(NavigationStore.getOverlaysInStack()).toEqual([]);
     });
 
     it('should not affect NavigationStore when unrecognized commands are received', () => {
@@ -294,7 +295,7 @@ describe('dismissAllOverlays', () => {
         NavigationStore.reset();
     });
 
-    it('should call Navigation.dismissOverlay for each non-exception overlay', async () => {
+    it('should call Navigation.dismissAllOverlays', async () => {
         NavigationStore.addOverlayToStack('overlay1');
         NavigationStore.addOverlayToStack('floating-banner-overlay');
         NavigationStore.addOverlayToStack('overlay2');
@@ -302,6 +303,126 @@ describe('dismissAllOverlays', () => {
         expect(NavigationStore.getOverlaysInStack()).toEqual(['overlay2', 'floating-banner-overlay', 'overlay1']);
 
         await navigationModule.dismissAllOverlays();
+
+        expect(Navigation.dismissAllOverlays).toHaveBeenCalledTimes(1);
+        expect(Navigation.dismissOverlay).not.toHaveBeenCalled();
+    });
+
+    it('should handle empty overlay stack gracefully', async () => {
+        expect(NavigationStore.getOverlaysInStack()).toEqual([]);
+
+        await navigationModule.dismissAllOverlays();
+
+        expect(Navigation.dismissAllOverlays).toHaveBeenCalledTimes(1);
+    });
+
+    it('should handle only exception overlays in stack', async () => {
+        NavigationStore.addOverlayToStack('floating-banner-overlay');
+
+        expect(NavigationStore.getOverlaysInStack()).toEqual(['floating-banner-overlay']);
+
+        await navigationModule.dismissAllOverlays();
+
+        expect(Navigation.dismissAllOverlays).toHaveBeenCalledTimes(1);
+    });
+
+    it('should handle Navigation.dismissAllOverlays rejection gracefully', async () => {
+        (Navigation.dismissAllOverlays as jest.Mock).mockRejectedValueOnce(new Error('Dismiss failed'));
+
+        NavigationStore.addOverlayToStack('overlay1');
+        NavigationStore.addOverlayToStack('overlay2');
+
+        await expect(navigationModule.dismissAllOverlays()).resolves.not.toThrow();
+
+        expect(Navigation.dismissAllOverlays).toHaveBeenCalledTimes(1);
+    });
+
+    it('should call Navigation.dismissAllOverlays once regardless of overlay count', async () => {
+        NavigationStore.addOverlayToStack('overlay1');
+        NavigationStore.addOverlayToStack('overlay2');
+        NavigationStore.addOverlayToStack('overlay3');
+
+        await navigationModule.dismissAllOverlays();
+
+        expect(Navigation.dismissAllOverlays).toHaveBeenCalledTimes(1);
+        expect(Navigation.dismissOverlay).not.toHaveBeenCalled();
+    });
+});
+
+describe('dismissAllModalsAndPopToRoot', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+        NavigationStore.reset();
+    });
+
+    it('should call dismissAllModals, dismissAllOverlaysWithExceptions, and popToRoot in sequence', async () => {
+        NavigationStore.addModalToStack('modal1');
+        NavigationStore.addScreenToStack('screen1');
+
+        await navigationModule.dismissAllModalsAndPopToRoot();
+
+        expect(Navigation.dismissModal).toHaveBeenCalledTimes(1);
+        expect(Navigation.dismissModal).toHaveBeenCalledWith('modal1', {animations: {dismissModal: {enabled: false}}});
+        expect(Navigation.popToRoot).toHaveBeenCalledTimes(1);
+        expect(Navigation.popToRoot).toHaveBeenCalledWith('screen1');
+    });
+
+    it('should dismiss non-exception overlays via dismissAllOverlaysWithExceptions', async () => {
+        NavigationStore.addOverlayToStack('overlay1');
+        NavigationStore.addOverlayToStack('floating-banner-overlay');
+        NavigationStore.addOverlayToStack('overlay2');
+
+        expect(NavigationStore.getOverlaysInStack()).toEqual(['overlay2', 'floating-banner-overlay', 'overlay1']);
+
+        await navigationModule.dismissAllModalsAndPopToRoot();
+
+        expect(Navigation.dismissOverlay).toHaveBeenCalledTimes(2);
+        expect(Navigation.dismissOverlay).toHaveBeenCalledWith('overlay2');
+        expect(Navigation.dismissOverlay).toHaveBeenCalledWith('overlay1');
+        expect(Navigation.dismissOverlay).not.toHaveBeenCalledWith('floating-banner-overlay');
+    });
+
+    it('should handle empty overlay stack gracefully', async () => {
+        expect(NavigationStore.getOverlaysInStack()).toEqual([]);
+        NavigationStore.addScreenToStack('screen1');
+
+        await navigationModule.dismissAllModalsAndPopToRoot();
+
+        expect(Navigation.dismissModal).not.toHaveBeenCalled();
+        expect(Navigation.dismissOverlay).not.toHaveBeenCalled();
+        expect(Navigation.popToRoot).toHaveBeenCalledTimes(1);
+        expect(Navigation.popToRoot).toHaveBeenCalledWith('screen1');
+    });
+
+    it('should continue with popToRoot even if overlay dismissal fails', async () => {
+        (Navigation.dismissOverlay as jest.Mock).mockRejectedValueOnce(new Error('Dismiss failed'));
+
+        NavigationStore.addOverlayToStack('overlay1');
+        NavigationStore.addScreenToStack('screen1');
+
+        await expect(navigationModule.dismissAllModalsAndPopToRoot()).resolves.not.toThrow();
+
+        expect(Navigation.dismissModal).not.toHaveBeenCalled();
+        expect(Navigation.dismissOverlay).toHaveBeenCalledWith('overlay1');
+        expect(Navigation.popToRoot).toHaveBeenCalledTimes(1);
+        expect(Navigation.popToRoot).toHaveBeenCalledWith('screen1');
+    });
+});
+
+describe('dismissAllOverlaysWithExceptions', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+        NavigationStore.reset();
+    });
+
+    it('should dismiss non-exception overlays individually', async () => {
+        NavigationStore.addOverlayToStack('overlay1');
+        NavigationStore.addOverlayToStack('floating-banner-overlay');
+        NavigationStore.addOverlayToStack('overlay2');
+
+        expect(NavigationStore.getOverlaysInStack()).toEqual(['overlay2', 'floating-banner-overlay', 'overlay1']);
+
+        await testExports.dismissAllOverlaysWithExceptions();
 
         expect(Navigation.dismissOverlay).toHaveBeenCalledTimes(2);
         expect(Navigation.dismissOverlay).toHaveBeenCalledWith('overlay2');
@@ -312,7 +433,7 @@ describe('dismissAllOverlays', () => {
     it('should handle empty overlay stack gracefully', async () => {
         expect(NavigationStore.getOverlaysInStack()).toEqual([]);
 
-        await navigationModule.dismissAllOverlays();
+        await testExports.dismissAllOverlaysWithExceptions();
 
         expect(Navigation.dismissOverlay).not.toHaveBeenCalled();
     });
@@ -322,24 +443,9 @@ describe('dismissAllOverlays', () => {
 
         expect(NavigationStore.getOverlaysInStack()).toEqual(['floating-banner-overlay']);
 
-        await navigationModule.dismissAllOverlays();
+        await testExports.dismissAllOverlaysWithExceptions();
 
         expect(Navigation.dismissOverlay).not.toHaveBeenCalled();
-    });
-
-    it('should continue dismissing even if one overlay dismissal fails', async () => {
-        (Navigation.dismissOverlay as jest.Mock).
-            mockImplementationOnce(() => Promise.reject(new Error('Dismiss failed'))).
-            mockImplementationOnce(() => Promise.resolve());
-
-        NavigationStore.addOverlayToStack('overlay1');
-        NavigationStore.addOverlayToStack('overlay2');
-
-        await expect(navigationModule.dismissAllOverlays()).resolves.not.toThrow();
-
-        expect(Navigation.dismissOverlay).toHaveBeenCalledTimes(2);
-        expect(Navigation.dismissOverlay).toHaveBeenCalledWith('overlay2');
-        expect(Navigation.dismissOverlay).toHaveBeenCalledWith('overlay1');
     });
 
     it('should use Promise.all for concurrent dismissals', async () => {
@@ -353,11 +459,26 @@ describe('dismissAllOverlays', () => {
         NavigationStore.addOverlayToStack('overlay2');
         NavigationStore.addOverlayToStack('overlay3');
 
-        await navigationModule.dismissAllOverlays();
+        await testExports.dismissAllOverlaysWithExceptions();
 
         expect(Navigation.dismissOverlay).toHaveBeenCalledTimes(3);
         expect(dismissalOrder).toContain('overlay1');
         expect(dismissalOrder).toContain('overlay2');
         expect(dismissalOrder).toContain('overlay3');
+    });
+
+    it('should continue dismissing even if one overlay dismissal fails', async () => {
+        (Navigation.dismissOverlay as jest.Mock).
+            mockImplementationOnce(() => Promise.reject(new Error('Dismiss failed'))).
+            mockImplementationOnce(() => Promise.resolve());
+
+        NavigationStore.addOverlayToStack('overlay1');
+        NavigationStore.addOverlayToStack('overlay2');
+
+        await expect(testExports.dismissAllOverlaysWithExceptions()).resolves.not.toThrow();
+
+        expect(Navigation.dismissOverlay).toHaveBeenCalledTimes(2);
+        expect(Navigation.dismissOverlay).toHaveBeenCalledWith('overlay2');
+        expect(Navigation.dismissOverlay).toHaveBeenCalledWith('overlay1');
     });
 });
