@@ -1,19 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo} from 'react';
+import React from 'react';
 import {View, StyleSheet, type ViewStyle} from 'react-native';
-import {Gesture, GestureDetector} from 'react-native-gesture-handler';
-import Animated, {
-    useAnimatedStyle,
-    useSharedValue,
-    withTiming,
-    runOnJS,
-} from 'react-native-reanimated';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {GestureDetector} from 'react-native-gesture-handler';
+import Animated from 'react-native-reanimated';
 
-import {BOOKMARKS_BAR_HEIGHT, CHANNEL_BANNER_HEIGHT, DEFAULT_HEADER_HEIGHT, TABLET_HEADER_HEIGHT} from '@constants/view';
-import {useIsTablet} from '@hooks/device';
+import {useBannerAnimation} from './hooks/useBannerAnimation';
+import {useBannerGesture} from './hooks/useBannerGesture';
+import {useBannerPosition} from './hooks/useBannerPosition';
 
 /**
  * Position where the banner should appear on screen
@@ -161,119 +156,33 @@ const Banner: React.FC<BannerProps> = ({
     onDismiss,
     swipeThreshold = 100,
 }) => {
-
-    const insets = useSafeAreaInsets();
-    const isTablet = useIsTablet();
-
-    const opacity = useSharedValue(visible ? 1 : 0);
-    const slideOffset = position === 'top' ? -50 : 50;
-    const translateY = useSharedValue(visible ? 0 : slideOffset);
-
-    const translateX = useSharedValue(0);
-    const isDismissed = useSharedValue(false);
-
-    const positionStyle = useMemo(() => {
-        if (position === 'bottom') {
-            return {
-                bottom: customBottomOffset,
-            };
-        }
-
-        let topOffset = insets.top + customTopOffset;
-
-        const shouldAddTabletHeader = isTablet && !threadScreen;
-        const shouldAddPhoneHeader = !isTablet && !threadScreen;
-
-        if (shouldAddTabletHeader) {
-            topOffset += TABLET_HEADER_HEIGHT;
-        } else if (shouldAddPhoneHeader) {
-            topOffset += DEFAULT_HEADER_HEIGHT;
-        }
-
-        if (includeBookmarkBar) {
-            topOffset += BOOKMARKS_BAR_HEIGHT;
-        }
-
-        if (includeChannelBanner) {
-            topOffset += CHANNEL_BANNER_HEIGHT;
-        }
-
-        topOffset += 8;
-
-        return {
-            top: topOffset,
-        };
-    }, [
+    const {positionStyle} = useBannerPosition({
         position,
-        insets.top,
-        isTablet,
-        threadScreen,
         includeBookmarkBar,
         includeChannelBanner,
         customTopOffset,
         customBottomOffset,
-    ]);
+        threadScreen,
+    });
 
-    const startX = useSharedValue(0);
-    const swipeGesture = useMemo(() => {
-        return Gesture.Pan().
-            onStart(() => {
-                startX.value = translateX.value;
-            }).
-            onUpdate((event) => {
-                if (!dismissible) {
-                    return;
-                }
+    const {opacity, translateX, isDismissed, animatedStyle} = useBannerAnimation({
+        visible,
+        position,
+        animationDuration,
+    });
 
-                translateX.value = startX.value + event.translationX;
-            }).
-            onEnd(() => {
-                if (!dismissible) {
-                    return;
-                }
-
-                const shouldDismiss = Math.abs(translateX.value) > swipeThreshold;
-
-                if (shouldDismiss && !isDismissed.value) {
-                    isDismissed.value = true;
-                    translateX.value = withTiming(
-                        translateX.value > 0 ? 300 : -300,
-                        {duration: 200},
-                    );
-                    opacity.value = withTiming(0, {duration: 200});
-
-                    if (onDismiss) {
-                        runOnJS(onDismiss)();
-                    }
-                } else {
-                    translateX.value = withTiming(0, {duration: 200});
-                }
-            });
-    }, [dismissible, onDismiss, translateX, swipeThreshold, isDismissed, opacity, startX]);
-
-    const animatedStyle = useAnimatedStyle(() => ({
-        opacity: withTiming(opacity.value, {duration: animationDuration}),
-        transform: [
-            {
-                translateY: withTiming(translateY.value, {duration: animationDuration}),
-            },
-            {
-                translateX: translateX.value,
-            },
-        ],
-    }));
-
-    React.useEffect(() => {
-        if (!isDismissed.value) {
-            opacity.value = visible ? 1 : 0;
-            const offset = position === 'top' ? -50 : 50;
-            translateY.value = visible ? 0 : offset;
-            translateX.value = 0;
-        }
-    }, [visible, position, opacity, translateY, translateX, isDismissed]);
+    const {swipeGesture} = useBannerGesture({
+        dismissible,
+        swipeThreshold,
+        onDismiss,
+        translateX,
+        opacity,
+        isDismissed,
+    });
 
     const bannerContent = (
         <Animated.View
+            testID='banner-animated-view'
             style={[
                 styles.wrapper,
                 positionStyle,
