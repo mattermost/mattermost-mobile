@@ -77,7 +77,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     advancedOptionsContent: {
         width: '100%',
-        overflow: 'hidden',
+        overflow: 'visible',
     },
     endAdornment: {
         top: 2,
