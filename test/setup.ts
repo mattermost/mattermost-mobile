@@ -362,6 +362,7 @@ jest.mock('react-native-navigation', () => {
             mergeOptions: jest.fn(),
             showOverlay: jest.fn(),
             dismissOverlay: jest.fn(() => Promise.resolve()),
+            dismissAllOverlays: jest.fn(() => Promise.resolve()),
             updateProps: jest.fn(),
         },
     };
