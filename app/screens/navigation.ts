@@ -808,7 +808,7 @@ export async function dismissOverlay(componentId: string) {
  * tracking the overlays in the store, we can dismiss them individually.
  * @returns
  */
-async function dismissAllOverlaysWithExceptions() {
+export async function dismissAllOverlaysWithExceptions() {
     try {
         const overlaysToRemove = NavigationStore.getAllOverlaysOtherThanExceptions();
         if (!overlaysToRemove.length) {
@@ -947,5 +947,4 @@ export async function openUserProfileModal(
 
 // Export private functions for testing
 export const testExports = {
-    dismissAllOverlaysWithExceptions,
 };

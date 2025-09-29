@@ -9,7 +9,7 @@ import NavigationStore from '@store/navigation_store';
 jest.unmock('@screens/navigation');
 
 import * as navigationModule from './navigation';
-import {testExports} from './navigation';
+import {dismissAllOverlaysWithExceptions} from './navigation';
 
 import type {FirstArgument} from '@typings/utils/utils';
 import type {IntlShape} from 'react-intl';
@@ -422,7 +422,7 @@ describe('dismissAllOverlaysWithExceptions', () => {
 
         expect(NavigationStore.getOverlaysInStack()).toEqual(['overlay2', 'floating-banner-overlay', 'overlay1']);
 
-        await testExports.dismissAllOverlaysWithExceptions();
+        await dismissAllOverlaysWithExceptions();
 
         expect(Navigation.dismissOverlay).toHaveBeenCalledTimes(2);
         expect(Navigation.dismissOverlay).toHaveBeenCalledWith('overlay2');
@@ -433,7 +433,7 @@ describe('dismissAllOverlaysWithExceptions', () => {
     it('should handle empty overlay stack gracefully', async () => {
         expect(NavigationStore.getOverlaysInStack()).toEqual([]);
 
-        await testExports.dismissAllOverlaysWithExceptions();
+        await dismissAllOverlaysWithExceptions();
 
         expect(Navigation.dismissOverlay).not.toHaveBeenCalled();
     });
@@ -443,7 +443,7 @@ describe('dismissAllOverlaysWithExceptions', () => {
 
         expect(NavigationStore.getOverlaysInStack()).toEqual(['floating-banner-overlay']);
 
-        await testExports.dismissAllOverlaysWithExceptions();
+        await dismissAllOverlaysWithExceptions();
 
         expect(Navigation.dismissOverlay).not.toHaveBeenCalled();
     });
@@ -459,7 +459,7 @@ describe('dismissAllOverlaysWithExceptions', () => {
         NavigationStore.addOverlayToStack('overlay2');
         NavigationStore.addOverlayToStack('overlay3');
 
-        await testExports.dismissAllOverlaysWithExceptions();
+        await dismissAllOverlaysWithExceptions();
 
         expect(Navigation.dismissOverlay).toHaveBeenCalledTimes(3);
         expect(dismissalOrder).toContain('overlay1');
@@ -475,7 +475,7 @@ describe('dismissAllOverlaysWithExceptions', () => {
         NavigationStore.addOverlayToStack('overlay1');
         NavigationStore.addOverlayToStack('overlay2');
 
-        await expect(testExports.dismissAllOverlaysWithExceptions()).resolves.not.toThrow();
+        await expect(dismissAllOverlaysWithExceptions()).resolves.not.toThrow();
 
         expect(Navigation.dismissOverlay).toHaveBeenCalledTimes(2);
         expect(Navigation.dismissOverlay).toHaveBeenCalledWith('overlay2');
