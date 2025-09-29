@@ -318,7 +318,7 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     }
 
     if (screen) {
-        Navigation.registerComponent(screenName, () => withGestures(withSafeAreaInsets(withManagedConfig((screen)))));
+        Navigation.registerComponent(screenName, () => withGestures(withSafeAreaInsets(withManagedConfig(screen))));
     }
 });
 

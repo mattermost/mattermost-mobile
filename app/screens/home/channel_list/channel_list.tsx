@@ -169,7 +169,6 @@ const ChannelListScreen = (props: ChannelProps) => {
         }
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-    // Record initial load performance metrics
     useEffect(() => {
         PerformanceMetricsManager.finishLoad('HOME', serverUrl);
         PerformanceMetricsManager.measureTimeToInteraction();
