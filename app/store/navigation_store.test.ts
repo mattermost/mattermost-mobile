@@ -166,30 +166,9 @@ describe('NavigationStore', () => {
             expect(overlaysToRemove).toEqual(['overlay2', 'overlay1']);
         });
 
-        it('should remove all overlays except exceptions from stack', () => {
-            NavigationStore.addOverlayToStack('regular-overlay1');
-            NavigationStore.addOverlayToStack('floating-banner-overlay');
-            NavigationStore.addOverlayToStack('regular-overlay2');
-
-            NavigationStore.removeAllOverlaysFromStackOtherThanExceptions();
-
-            expect(NavigationStore.getOverlaysInStack()).toEqual(['floating-banner-overlay']);
-        });
-
-        it('should clear all overlays when no exceptions exist in stack', () => {
-            NavigationStore.addOverlayToStack('overlay1');
-            NavigationStore.addOverlayToStack('overlay2');
-
-            NavigationStore.removeAllOverlaysFromStackOtherThanExceptions();
-
-            expect(NavigationStore.getOverlaysInStack()).toEqual([]);
-        });
-
-        it('should handle empty overlay stack gracefully', () => {
+        it('should handle empty overlay stack gracefully when getting overlays to remove', () => {
             const overlaysToRemove = NavigationStore.getAllOverlaysOtherThanExceptions();
             expect(overlaysToRemove).toEqual([]);
-
-            NavigationStore.removeAllOverlaysFromStackOtherThanExceptions();
             expect(NavigationStore.getOverlaysInStack()).toEqual([]);
         });
 
