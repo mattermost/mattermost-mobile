@@ -945,6 +945,3 @@ export async function openUserProfileModal(
     openAsBottomSheet({screen, title, theme, closeButtonId, props: {...props}});
 }
 
-// Export private functions for testing
-export const testExports = {
-};
