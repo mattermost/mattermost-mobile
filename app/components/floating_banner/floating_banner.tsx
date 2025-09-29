@@ -6,7 +6,7 @@ import {StyleSheet, Platform} from 'react-native';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
-import Banner from '@components/banner';
+import Banner from '@components/banner/Banner';
 import BannerItem from '@components/banner/banner_item';
 import {useIsTablet, useKeyboardHeight} from '@hooks/device';
 

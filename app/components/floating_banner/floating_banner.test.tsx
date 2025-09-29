@@ -34,7 +34,7 @@ jest.mock('react-native-reanimated', () => {
 });
 
 // Mock the dependencies
-jest.mock('@components/banner', () => {
+jest.mock('@components/banner/Banner', () => {
     const mockView = require('react-native').View;
     const mockText = require('react-native').Text;
     const mockPressable = require('react-native').Pressable;
