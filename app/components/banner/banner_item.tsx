@@ -135,6 +135,7 @@ const BannerItem: React.FC<BannerItemProps> = ({banner, onPress, onDismiss}) => 
 
     return (
         <Pressable
+            testID={`banner-item-${banner.id}`}
             style={({pressed}) => [
                 styles.container,
                 styles[banner.type || 'info'],
@@ -158,6 +159,7 @@ const BannerItem: React.FC<BannerItemProps> = ({banner, onPress, onDismiss}) => 
 
             {banner.dismissible !== false && onDismiss && (
                 <Pressable
+                    testID={`banner-dismiss-${banner.id}`}
                     style={({pressed}) => [
                         styles.dismissButton,
                         pressed && styles.dismissPressed,

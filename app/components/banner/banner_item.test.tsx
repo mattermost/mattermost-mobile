@@ -158,7 +158,7 @@ describe('BannerItem', () => {
             const banner = createMockBanner();
             renderBannerItem(banner, {onPress: mockOnPress});
 
-            const bannerContainer = screen.getByText('Test Banner Title').parent?.parent;
+            const bannerContainer = screen.getByTestId('banner-item-test-banner-1');
             fireEvent.press(bannerContainer);
 
             expect(mockBannerOnPress).toHaveBeenCalledTimes(1);
@@ -169,7 +169,7 @@ describe('BannerItem', () => {
             const banner = createMockBanner({onPress: undefined});
             renderBannerItem(banner, {onPress: mockOnPress});
 
-            const bannerContainer = screen.getByText('Test Banner Title').parent?.parent;
+            const bannerContainer = screen.getByTestId('banner-item-test-banner-1');
             fireEvent.press(bannerContainer);
 
             expect(mockBannerOnPress).not.toHaveBeenCalled();
@@ -180,7 +180,7 @@ describe('BannerItem', () => {
             const banner = createMockBanner();
             renderBannerItem(banner);
 
-            const bannerContainer = screen.getByText('Test Banner Title').parent?.parent;
+            const bannerContainer = screen.getByTestId('banner-item-test-banner-1');
             fireEvent.press(bannerContainer);
 
             expect(mockBannerOnPress).toHaveBeenCalledTimes(1);
@@ -191,7 +191,7 @@ describe('BannerItem', () => {
             const banner = createMockBanner({onPress: undefined});
             renderBannerItem(banner);
 
-            const bannerContainer = screen.getByText('Test Banner Title').parent?.parent;
+            const bannerContainer = screen.getByTestId('banner-item-test-banner-1');
             fireEvent.press(bannerContainer);
 
             // Neither handler should be called
@@ -203,7 +203,7 @@ describe('BannerItem', () => {
             const banner = createMockBanner();
             renderBannerItem(banner);
 
-            const bannerContainer = screen.getByText('Test Banner Title').parent?.parent;
+            const bannerContainer = screen.getByTestId('banner-item-test-banner-1');
 
             expect(bannerContainer.props.disabled).toBeFalsy();
         });
@@ -212,7 +212,7 @@ describe('BannerItem', () => {
             const banner = createMockBanner({onPress: undefined});
             renderBannerItem(banner, {onPress: mockOnPress});
 
-            const bannerContainer = screen.getByText('Test Banner Title').parent?.parent;
+            const bannerContainer = screen.getByTestId('banner-item-test-banner-1');
 
             expect(bannerContainer.props.disabled).toBeFalsy();
         });
@@ -223,7 +223,7 @@ describe('BannerItem', () => {
             const banner = createMockBanner();
             renderBannerItem(banner, {onDismiss: mockOnDismiss});
 
-            const dismissButton = screen.getByText(/Icon: close/).parent;
+            const dismissButton = screen.getByTestId('banner-dismiss-test-banner-1');
             fireEvent.press(dismissButton);
 
             expect(mockOnDismiss).toHaveBeenCalledWith(banner);
@@ -274,7 +274,7 @@ describe('BannerItem', () => {
             const banner = createMockBanner();
             renderBannerItem(banner, {onPress: mockOnPress});
 
-            const bannerContainer = screen.getByText('Test Banner Title').parent?.parent;
+            const bannerContainer = screen.getByTestId('banner-item-test-banner-1');
 
             expect(bannerContainer.props.disabled).toBeFalsy();
         });
@@ -283,7 +283,7 @@ describe('BannerItem', () => {
             const banner = createMockBanner({onPress: undefined});
             renderBannerItem(banner);
 
-            const bannerContainer = screen.getByText('Test Banner Title').parent?.parent;
+            const bannerContainer = screen.getByTestId('banner-item-test-banner-1');
             fireEvent.press(bannerContainer);
 
             // Should not respond to press
@@ -297,7 +297,7 @@ describe('BannerItem', () => {
             const banner = createMockBanner();
             renderBannerItem(banner, {onPress: mockOnPress});
 
-            const bannerContainer = screen.getByText('Test Banner Title').parent?.parent;
+            const bannerContainer = screen.getByTestId('banner-item-test-banner-1');
 
             fireEvent(bannerContainer, 'pressIn');
 
@@ -309,7 +309,7 @@ describe('BannerItem', () => {
             const banner = createMockBanner({onPress: undefined});
             renderBannerItem(banner);
 
-            const bannerContainer = screen.getByText('Test Banner Title').parent?.parent;
+            const bannerContainer = screen.getByTestId('banner-item-test-banner-1');
 
             fireEvent(bannerContainer, 'pressIn');
 
@@ -320,7 +320,7 @@ describe('BannerItem', () => {
             const banner = createMockBanner();
             renderBannerItem(banner, {onDismiss: mockOnDismiss});
 
-            const dismissButton = screen.getByText(/Icon: close/).parent;
+            const dismissButton = screen.getByTestId('banner-dismiss-test-banner-1');
 
             fireEvent(dismissButton, 'pressIn');
             fireEvent(dismissButton, 'pressOut');
