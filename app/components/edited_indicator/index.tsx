@@ -36,14 +36,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             opacity: editedOpacity,
             fontStyle: 'italic',
             ...typography('Body', 25, 'Regular'),
-            lineHeight: undefined, // remove line height, to use the line height of the base text style
+            lineHeight: undefined, // remove line height, to use the natual line height of the text
         },
         editedText: {
             color: editedColor,
             opacity: editedOpacity,
             fontStyle: 'italic',
             ...typography('Body', 100, 'Regular'),
-            lineHeight: undefined, // remove line height, to use the line height of the base text style
+            lineHeight: undefined, // remove line height, to use the natual line height of the text
         },
         icon: {
             color: editedColor,
