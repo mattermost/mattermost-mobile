@@ -36,9 +36,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             opacity: editedOpacity,
             fontStyle: 'italic',
             ...typography('Body', 25, 'Regular'),
+            lineHeight: undefined, // remove line height, to use the line height of the base text style
         },
         editedText: {
+            color: editedColor,
+            opacity: editedOpacity,
+            fontStyle: 'italic',
             ...typography('Body', 100, 'Regular'),
+            lineHeight: undefined, // remove line height, to use the line height of the base text style
+        },
+        icon: {
+            color: editedColor,
         },
     };
 });
@@ -69,7 +77,7 @@ const EditedIndicator = ({
             <CompassIcon
                 name='pencil-outline'
                 size={iconSize}
-                color={theme.centerChannelColor}
+                color={style.icon.color}
             />
             <FormattedText
                 id='post_message_view.edited'
