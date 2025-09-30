@@ -3,6 +3,7 @@
 
 import DatabaseManager from '@database/manager';
 import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
+import TestHelper from '@test/test_helper';
 
 import PlaybookRunAttributeModel from './playbook_run_attribute';
 
@@ -11,6 +12,21 @@ import type ServerDataOperator from '@database/operator/server_data_operator';
 const {PLAYBOOK_RUN_ATTRIBUTE} = PLAYBOOK_TABLES;
 
 const SERVER_URL = `playbookRunAttributeModel.test.${Date.now()}.com`;
+
+const applyMockData = (attribute: PlaybookRunAttributeModel, mockData: PlaybookRunAttribute, includeAttrs = true) => {
+    attribute._raw.id = mockData.id;
+    attribute.groupId = mockData.group_id;
+    attribute.name = mockData.name;
+    attribute.type = mockData.type;
+    attribute.targetId = mockData.target_id;
+    attribute.targetType = mockData.target_type;
+    attribute.createAt = mockData.create_at;
+    attribute.updateAt = mockData.update_at;
+    attribute.deleteAt = mockData.delete_at;
+    if (includeAttrs) {
+        attribute.attrs = mockData.attrs || '{"placeholder": "Enter value"}';
+    }
+};
 
 describe('PlaybookRunAttributeModel', () => {
     let operator: ServerDataOperator;
@@ -23,16 +39,7 @@ describe('PlaybookRunAttributeModel', () => {
 
         await database.write(async () => {
             playbook_run_attribute = await database.get<PlaybookRunAttributeModel>(PLAYBOOK_RUN_ATTRIBUTE).create((attribute: PlaybookRunAttributeModel) => {
-                attribute._raw.id = 'attribute_1';
-                attribute.groupId = 'group_1';
-                attribute.name = 'Test Attribute';
-                attribute.type = 'text';
-                attribute.targetId = 'target_1';
-                attribute.targetType = 'playbook_run';
-                attribute.createAt = 1620000000000;
-                attribute.updateAt = 1620000001000;
-                attribute.deleteAt = 0;
-                attribute.attrs = '{"placeholder": "Enter value"}';
+                applyMockData(attribute, TestHelper.createPlaybookRunAttribute('test', 0));
             });
         });
     });
@@ -43,14 +50,14 @@ describe('PlaybookRunAttributeModel', () => {
 
     it('=> should match model', () => {
         expect(playbook_run_attribute).toBeDefined();
-        expect(playbook_run_attribute.id).toBe('attribute_1');
+        expect(playbook_run_attribute.id).toBe('test-attribute_0');
         expect(playbook_run_attribute.groupId).toBe('group_1');
-        expect(playbook_run_attribute.name).toBe('Test Attribute');
+        expect(playbook_run_attribute.name).toBe('Attribute 1');
         expect(playbook_run_attribute.type).toBe('text');
-        expect(playbook_run_attribute.targetId).toBe('target_1');
+        expect(playbook_run_attribute.targetId).toBe('test');
         expect(playbook_run_attribute.targetType).toBe('playbook_run');
-        expect(playbook_run_attribute.createAt).toBe(1620000000000);
-        expect(playbook_run_attribute.updateAt).toBe(1620000001000);
+        expect(playbook_run_attribute.createAt).toBeGreaterThan(0);
+        expect(playbook_run_attribute.updateAt).toBeGreaterThan(0);
         expect(playbook_run_attribute.deleteAt).toBe(0);
         expect(playbook_run_attribute.attrs).toBe('{"placeholder": "Enter value"}');
     });
@@ -65,20 +72,12 @@ describe('PlaybookRunAttributeModel', () => {
 
         await database.write(async () => {
             attributeWithoutAttrs = await database.get<PlaybookRunAttributeModel>(PLAYBOOK_RUN_ATTRIBUTE).create((attribute: PlaybookRunAttributeModel) => {
-                attribute._raw.id = 'attribute_2';
-                attribute.groupId = 'group_2';
-                attribute.name = 'Test Attribute Without Attrs';
-                attribute.type = 'number';
-                attribute.targetId = 'target_2';
-                attribute.targetType = 'playbook_run';
-                attribute.createAt = 1620000002000;
-                attribute.updateAt = 1620000003000;
-                attribute.deleteAt = 0;
+                applyMockData(attribute, TestHelper.createPlaybookRunAttribute('test', 1), false);
             });
         });
 
         expect(attributeWithoutAttrs!).toBeDefined();
-        expect(attributeWithoutAttrs!.id).toBe('attribute_2');
+        expect(attributeWithoutAttrs!.id).toBe('test-attribute_1');
         expect(attributeWithoutAttrs!.attrs).toBeNull();
     });
 

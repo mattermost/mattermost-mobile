@@ -289,9 +289,9 @@ const PlaybookHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supe
 
     /**
      * Handles the playbook run attribute records.
-     * @param {HandlePlaybookRunAttributeArgs} args - The arguments for handling playbook run field records.
+     * @param {HandlePlaybookRunAttributeArgs} args - The arguments for handling playbook run attribute records.
      * @param {boolean} args.prepareRecordsOnly - If true, only prepares the records without saving them.
-     * @param {PlaybookRunAttribute[]} [args.attributes] - The playbook run field records to handle.
+     * @param {PlaybookRunAttribute[]} [args.attributes] - The playbook run attribute records to handle.
      * @returns {Promise<Model[]>} - A promise that resolves to an array of handled playbook run attribute records.
      */
     handlePlaybookRunAttribute = async ({attributes, prepareRecordsOnly = true}: HandlePlaybookRunAttributeArgs): Promise<Model[]> => {
