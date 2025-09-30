@@ -5,7 +5,7 @@ import {BehaviorSubject} from 'rxjs';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
-const OVERLAY_EXCEPTIONS = ['floating-banner-overlay'];
+const OVERLAY_EXCEPTIONS = new Set(['floating-banner-overlay']);
 
 class NavigationStoreSingleton {
     private screensInStack: AvailableScreens[] = [];
@@ -108,7 +108,7 @@ class NavigationStoreSingleton {
     };
 
     getAllOverlaysOtherThanExceptions = () => {
-        return this.overlaysInStack.filter((overlayId) => !OVERLAY_EXCEPTIONS.includes(overlayId));
+        return this.overlaysInStack.filter((overlayId) => !OVERLAY_EXCEPTIONS.has(overlayId));
     };
 
     setToSOpen = (open: boolean) => {
