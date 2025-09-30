@@ -30,7 +30,7 @@ export default class PlaybookRunAttributeValueModel extends Model implements Pla
         [PLAYBOOK_RUN]: {type: 'belongs_to', key: 'run_id'},
     };
 
-    /** attributeId : The ID of the field this attribute belongs to */
+    /** attributeId : The ID of the attribute this attribute value belongs to */
     @field('attribute_id') attributeId!: string;
 
     /** runId : The ID of the playbook run this attribute belongs to */
