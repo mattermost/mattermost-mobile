@@ -29,18 +29,15 @@ class BannerManagerSingleton {
             try {
                 this.currentOnDismiss();
             } catch {
-                // no-op to ensure cleanup still runs
+                // Silent catch to ensure cleanup still runs
             }
         }
         this.currentOnDismiss = null;
     }
 
-    /**
-     * Shows a banner immediately
-     */
     showBanner(bannerConfig: BannerConfig) {
-        // Always force fresh show on request; overlay might have been dismissed by navigation
         if (this.isVisible) {
+            this.clearTimeout(this.closeTimeout);
             dismissOverlay(FLOATING_BANNER_OVERLAY_ID);
             this.isVisible = false;
             this.currentBannerId = null;
@@ -58,8 +55,6 @@ class BannerManagerSingleton {
             this.invokeCurrentOnDismiss();
             dismissOverlay(FLOATING_BANNER_OVERLAY_ID);
         };
-
-        // Ensure custom component receives onDismiss so the X button works
         let customComponent = bannerConfig.customComponent;
         if (customComponent && React.isValidElement(customComponent)) {
             const props: Partial<Record<string, unknown>> = {
@@ -69,7 +64,6 @@ class BannerManagerSingleton {
             customComponent = React.cloneElement(customComponent, props);
         }
 
-        // Update the banner config with our dismiss handler
         const configWithDismiss = {
             ...bannerConfig,
             customComponent,
@@ -95,9 +89,6 @@ class BannerManagerSingleton {
         );
     }
 
-    /**
-     * Shows a banner with auto-hide after the specified duration
-     */
     showBannerWithAutoHide(bannerConfig: BannerConfig, durationMs: number = TIME_TO_CLOSE) {
         this.showBanner(bannerConfig);
         this.closeTimeout = setTimeout(() => {
@@ -105,9 +96,6 @@ class BannerManagerSingleton {
         }, durationMs);
     }
 
-    /**
-     * Hides the currently visible banner
-     */
     hideBanner() {
         if (!this.isVisible) {
             return;
@@ -121,24 +109,15 @@ class BannerManagerSingleton {
         this.currentBannerId = null;
     }
 
-    /**
-     * Cleans up all timeouts and resets the manager state
-     */
     cleanup() {
         this.clearTimeout(this.closeTimeout);
         this.hideBanner();
     }
 
-    /**
-     * Gets the currently shown banner ID
-     */
     getCurrentBannerId(): string | null {
         return this.currentBannerId;
     }
 
-    /**
-     * Checks if a banner is currently visible
-     */
     isBannerVisible(): boolean {
         return this.isVisible;
     }

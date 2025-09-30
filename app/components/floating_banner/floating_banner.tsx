@@ -105,7 +105,6 @@ const FloatingBanner: React.FC<FloatingBannerProps> = ({banners, onDismiss}) => 
                                         onPress={executeBannerAction}
                                         onDismiss={dismissBanner}
                                     />
-
                                 )}
                             </Banner>
                         );

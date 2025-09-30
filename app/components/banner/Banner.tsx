@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {View, StyleSheet, type ViewStyle} from 'react-native';
+import {View, StyleSheet, type ViewStyle, type StyleProp} from 'react-native';
 import {GestureDetector} from 'react-native-gesture-handler';
 import Animated from 'react-native-reanimated';
 
@@ -80,7 +80,7 @@ export interface BannerProps {
     /**
      * Custom styles applied to the banner content
      */
-    style?: ViewStyle;
+    style?: StyleProp<ViewStyle>;
 
     /**
      * Custom styles applied to the outer container

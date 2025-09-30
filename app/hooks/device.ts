@@ -118,7 +118,7 @@ export function useViewPosition(viewRef: RefObject<View>, deps: React.Dependency
                 }
             });
         }
-    }, [...deps, isTablet, height, viewRef, modalPosition]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [...deps, isTablet, height, viewRef, modalPosition]); // eslint-disable-line react-hooks/exhaustive-deps -- can't verify ...deps
 
     return modalPosition;
 }
