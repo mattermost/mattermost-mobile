@@ -577,30 +577,13 @@ describe('PlaybookHandler', () => {
 
         it('should process attributes correctly', async () => {
             const mockAttributes = [
-                {
-                    id: 'attribute_1',
-                    group_id: 'group_1',
-                    name: 'Test Attribute 1',
-                    type: 'text',
-                    target_id: 'target_1',
-                    target_type: 'playbook_run',
-                    create_at: 1620000000000,
-                    update_at: 1620000001000,
-                    delete_at: 0,
-                    attrs: '{"placeholder": "Enter value"}',
-                },
-                {
-                    id: 'attribute_2',
-                    group_id: 'group_2',
-                    name: 'Test Attribute 2',
-                    type: 'number',
-                    target_id: 'target_2',
-                    target_type: 'playbook_run',
-                    create_at: 1620000002000,
-                    update_at: 1620000003000,
-                    delete_at: 0,
-                },
-            ];
+                TestHelper.createPlaybookRunAttribute('attribute_1', 0),
+                TestHelper.createPlaybookRunAttribute('attribute_2', 1),
+            ].map<PartialPlaybookRunAttribute>((attribute, index) => ({
+                ...attribute,
+                run_id: 'playbook_run_1',
+                order: index,
+            }));
 
             const spyOnPrepareRecords = jest.spyOn(operator, 'prepareRecords');
             const spyOnBatchOperation = jest.spyOn(operator, 'batchRecords');
@@ -623,18 +606,12 @@ describe('PlaybookHandler', () => {
 
         it('should only prepare records when prepareRecordsOnly is true', async () => {
             const mockAttributes = [
-                {
-                    id: 'attribute_3',
-                    group_id: 'group_3',
-                    name: 'Test Attribute 3',
-                    type: 'text',
-                    target_id: 'target_3',
-                    target_type: 'playbook_run',
-                    create_at: 1620000000000,
-                    update_at: 1620000001000,
-                    delete_at: 0,
-                },
-            ];
+                TestHelper.createPlaybookRunAttribute('attribute_3', 2),
+            ].map<PartialPlaybookRunAttribute>((attribute, index) => ({
+                ...attribute,
+                run_id: 'playbook_run_1',
+                order: index,
+            }));
 
             const spyOnPrepareRecords = jest.spyOn(operator, 'prepareRecords');
             const spyOnBatchOperation = jest.spyOn(operator, 'batchRecords');
@@ -679,18 +656,8 @@ describe('PlaybookHandler', () => {
 
         it('should process attribute values correctly', async () => {
             const mockAttributeValues = [
-                {
-                    id: 'value_1',
-                    attribute_id: 'attribute_1',
-                    run_id: 'playbook_run_1',
-                    value: 'Test Value 1',
-                },
-                {
-                    id: 'value_2',
-                    attribute_id: 'attribute_2',
-                    run_id: 'playbook_run_2',
-                    value: 'Test Value 2',
-                },
+                TestHelper.createPlaybookRunAttributeValue('attribute_1', 'playbook_run_1', 0),
+                TestHelper.createPlaybookRunAttributeValue('attribute_2', 'playbook_run_2', 1),
             ];
 
             const spyOnPrepareRecords = jest.spyOn(operator, 'prepareRecords');
@@ -714,12 +681,7 @@ describe('PlaybookHandler', () => {
 
         it('should only prepare records when prepareRecordsOnly is true', async () => {
             const mockAttributeValues = [
-                {
-                    id: 'value_3',
-                    attribute_id: 'attribute_3',
-                    run_id: 'playbook_run_3',
-                    value: 'Test Value 3',
-                },
+                TestHelper.createPlaybookRunAttributeValue('attribute_3', 'playbook_run_3', 2),
             ];
 
             const spyOnPrepareRecords = jest.spyOn(operator, 'prepareRecords');

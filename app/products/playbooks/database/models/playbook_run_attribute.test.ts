@@ -90,7 +90,7 @@ describe('PlaybookRunAttributeModel', () => {
 
         expect(attributeWithoutAttrs!).toBeDefined();
         expect(attributeWithoutAttrs!.id).toBe('attribute_2');
-        expect(attributeWithoutAttrs!.attrs).toBeUndefined();
+        expect(attributeWithoutAttrs!.attrs).toBeNull();
     });
 
     it('=> should allow updating fields', async () => {

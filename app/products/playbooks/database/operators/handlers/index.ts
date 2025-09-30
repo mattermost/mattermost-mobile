@@ -36,12 +36,12 @@ type HandlePlaybookChecklistItemArgs = {
 
 type HandlePlaybookRunAttributeArgs = {
     prepareRecordsOnly: boolean;
-    attributes?: PlaybookRunAttribute[];
+    attributes?: PartialPlaybookRunAttribute[];
 }
 
 type HandlePlaybookRunAttributeValueArgs = {
     prepareRecordsOnly: boolean;
-    attributeValues?: PlaybookRunAttributeValue[];
+    attributeValues?: PartialPlaybookRunAttributeValue[];
 }
 
 const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM, PLAYBOOK_RUN_ATTRIBUTE, PLAYBOOK_RUN_ATTRIBUTE_VALUE} = PLAYBOOK_TABLES;
