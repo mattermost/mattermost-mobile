@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform, View} from 'react-native';
@@ -12,16 +13,22 @@ import {useTheme} from '@context/theme';
 import {debounce} from '@helpers/api/general';
 import {useIsTablet} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
+import {observeConfigValue} from '@queries/servers/system';
 import {fetchOpenGraph} from '@utils/opengraph';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getUrlAfterRedirect} from '@utils/url';
+import {matchDeepLink} from '@utils/deep_link';
+import {isMinimumServerVersion} from '@utils/helpers';
+
+import type {WithDatabaseArgs} from '@typings/database/database';
 
 type Props = {
     disabled: boolean;
     initialUrl?: string;
     resetBookmark: () => void;
     setBookmark: (url: string, title: string, imageUrl: string) => void;
+    serverVersion?: string;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -42,7 +49,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const BookmarkLink = ({disabled, initialUrl = '', resetBookmark, setBookmark}: Props) => {
+const BookmarkLink = ({disabled, initialUrl = '', resetBookmark, setBookmark, serverVersion}: Props) => {
     const theme = useTheme();
     const intl = useIntl();
     const isTablet = useIsTablet();
@@ -53,9 +60,20 @@ const BookmarkLink = ({disabled, initialUrl = '', resetBookmark, setBookmark}: P
     const keyboard = (Platform.OS === 'android') ? 'default' : 'url';
     const subContainerStyle = useMemo(() => [styles.viewContainer, {paddingHorizontal: isTablet ? 42 : 0}], [isTablet, styles]);
     const descContainer = useMemo(() => [styles.description, {paddingHorizontal: isTablet ? 42 : 0}], [isTablet, styles]);
+    
+    // Check if server supports app links (placeholder version - will be updated when server PR is merged)
+    const supportsAppLinks = isMinimumServerVersion(serverVersion || '', 10, 6, 0);
 
     const validateAndFetchOG = useCallback(debounce(async (text: string) => {
         setLoading(true);
+
+        // Check if it's a custom app scheme URL (like mattermost://)
+        if (matchDeepLink(text)) {
+            setLoading(false);
+            setBookmark(text, text, '');
+            return;
+        }
+
         let link = await getUrlAfterRedirect(text, false);
 
         if (link.error) {
@@ -120,8 +138,8 @@ const BookmarkLink = ({disabled, initialUrl = '', resetBookmark, setBookmark}: P
             />
             <View style={descContainer}>
                 <FormattedText
-                    id='channel_bookmark_add.link.input.description'
-                    defaultMessage='Add a link to any post, file, or any external link'
+                    id={supportsAppLinks ? 'channel_bookmark_add.link.input.description' : 'channel_bookmark_add.link.input.description.basic'}
+                    defaultMessage={supportsAppLinks ? 'Add a link to any post, file, or any external link. You can also use app links like mattermost://' : 'Add a link to any post, file, or any external link'}
                     style={styles.descriptionText}
                     testID='channel_bookmark_add.link.input.description'
                 />
@@ -130,4 +148,8 @@ const BookmarkLink = ({disabled, initialUrl = '', resetBookmark, setBookmark}: P
     );
 };
 
-export default BookmarkLink;
+const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
+    serverVersion: observeConfigValue(database, 'Version'),
+}));
+
+export default withDatabase(enhanced(BookmarkLink));
