@@ -39,12 +39,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
     return {
         editedIndicatorText: {
-            ...baseTextStyle,
             ...typography('Body', 25, 'Regular'),
+            ...baseTextStyle,
         },
         editedText: {
-            ...baseTextStyle,
             ...typography('Body', 100, 'Regular'),
+            ...baseTextStyle,
         },
         icon: {
             color: editedColor,
