@@ -91,7 +91,7 @@ class NetworkConnectivityManagerSingleton {
     }
 
     private getPerformanceMessage(): string {
-        return this.intl.formatMessage({id: 'connection_banner.limited_network_connection', defaultMessage: 'Limited Network Connection'});
+        return this.intl.formatMessage({id: 'connection_banner.limited_network_connection', defaultMessage: 'Limited network connection'});
     }
 
     private showConnectivity(isConnected: boolean, durationMs?: number) {
