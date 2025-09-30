@@ -165,7 +165,7 @@
     "jetifier": "2.0.0",
     "mmjstool": "github:mattermost/mattermost-utilities#83b1b311972b8f5e750aae4019457a40abb5aa44",
     "nock": "14.0.3",
-    "patch-package": "8.0.0",
+    "patch-package": "8.0.1",
     "react-devtools-core": "6.1.1",
     "react-test-renderer": "18.3.1",
     "timezones.json": "1.7.1",
