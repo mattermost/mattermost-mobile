@@ -340,6 +340,15 @@ describe('BannerItem', () => {
             expect(screen.getByTestId('compass-icon')).toBeTruthy();
         });
 
+        it('should handle undefined title and message gracefully', () => {
+            const banner = createMockBanner({title: undefined, message: undefined});
+            renderBannerItem(banner);
+
+            expect(screen.getByTestId('compass-icon')).toBeTruthy();
+            const contentContainer = screen.getByTestId('banner-content-test-banner-1');
+            expect(contentContainer.children).toHaveLength(0);
+        });
+
         it('should handle very long title and message', () => {
             const longTitle = 'Very Long Title '.repeat(50);
             const longMessage = 'Very Long Message '.repeat(50);

@@ -180,12 +180,30 @@ describe('FloatingBanner', () => {
             expect(bannerItem.props['data-banner-id']).toBe('test-banner-1');
         });
 
+        it('should render BannerItem without title and message', () => {
+            const banner = createMockBanner({title: undefined, message: undefined});
+            renderFloatingBanner([banner]);
+
+            const bannerItem = screen.getByTestId('banner-item');
+            expect(bannerItem).toBeTruthy();
+            expect(bannerItem.props['data-banner-id']).toBe('test-banner-1');
+        });
+
         it('should render custom content when provided', () => {
             const customComponent = <Text testID={'custom-content'}>{'Custom Banner Content'}</Text>;
             const banner = createMockBanner({customComponent});
             renderFloatingBanner([banner]);
 
             expect(screen.getByTestId('custom-content')).toBeTruthy();
+            expect(screen.queryByTestId('banner-item')).toBeNull();
+        });
+
+        it('should render custom content without title and message', () => {
+            const customComponent = <Text testID={'custom-no-text'}>{'Custom Banner'}</Text>;
+            const banner = createMockBanner({title: undefined, message: undefined, customComponent});
+            renderFloatingBanner([banner]);
+
+            expect(screen.getByTestId('custom-no-text')).toBeTruthy();
             expect(screen.queryByTestId('banner-item')).toBeNull();
         });
 

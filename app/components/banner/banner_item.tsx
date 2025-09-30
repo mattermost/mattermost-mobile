@@ -11,8 +11,8 @@ import {typography} from '@utils/typography';
 
 export interface BannerItemConfig {
     id: string;
-    title: string;
-    message: string;
+    title?: string;
+    message?: string;
     type?: 'info' | 'success' | 'warning' | 'error';
     dismissible?: boolean;
     onPress?: () => void;
@@ -152,9 +152,12 @@ const BannerItem: React.FC<BannerItemProps> = ({banner, onPress, onDismiss}) => 
                 />
             </View>
 
-            <View style={styles.content}>
-                <Text style={styles.title}>{banner.title}</Text>
-                <Text style={styles.message}>{banner.message}</Text>
+            <View
+                style={styles.content}
+                testID={`banner-content-${banner.id}`}
+            >
+                {banner.title && <Text style={styles.title}>{banner.title}</Text>}
+                {banner.message && <Text style={styles.message}>{banner.message}</Text>}
             </View>
 
             {banner.dismissible !== false && onDismiss && (

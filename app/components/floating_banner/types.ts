@@ -5,8 +5,8 @@ import type {ReactNode} from 'react';
 
 export interface BannerConfig {
     id: string;
-    title: string;
-    message: string;
+    title?: string;
+    message?: string;
     type?: 'info' | 'success' | 'warning' | 'error';
     dismissible?: boolean;
     autoHideDuration?: number;

@@ -98,6 +98,27 @@ describe('BannerManager', () => {
             expect(BannerManager.getCurrentBannerId()).toBe('test-banner');
         });
 
+        it('should show banner without title and message when using customComponent', () => {
+            const bannerWithCustomComponent: BannerConfig = {
+                id: 'custom-banner',
+                customComponent: React.createElement('div', {testID: 'custom-content'}, 'Custom Content'),
+            };
+
+            BannerManager.showBanner(bannerWithCustomComponent);
+
+            expect(mockShowOverlay).toHaveBeenCalledWith(
+                Screens.FLOATING_BANNER,
+                expect.objectContaining({
+                    banners: [expect.objectContaining({
+                        id: 'custom-banner',
+                        customComponent: expect.anything(),
+                    })],
+                }),
+                expect.anything(),
+                'floating-banner-overlay',
+            );
+        });
+
         it('should dismiss existing banner before showing new one', () => {
             const firstBanner: BannerConfig = {
                 id: 'first-banner',
