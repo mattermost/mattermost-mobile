@@ -59,7 +59,7 @@ class BannerManagerSingleton {
         if (customComponent && React.isValidElement(customComponent)) {
             const props: Partial<Record<string, unknown>> = {
                 onDismiss: handleDismiss,
-                dismissible: true,
+                dismissible: bannerConfig.dismissible,
             };
             customComponent = React.cloneElement(customComponent, props);
         }

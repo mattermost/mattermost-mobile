@@ -136,7 +136,46 @@ describe('BannerManager', () => {
                 customElement,
                 {
                     onDismiss: expect.any(Function),
+                    dismissible: undefined,
+                },
+            );
+        });
+
+        it('should respect dismissible property from banner config', () => {
+            const customElement = React.createElement('div', {}, 'Custom content');
+
+            const dismissibleBanner: BannerConfig = {
+                ...mockBannerConfig,
+                customComponent: customElement,
+                dismissible: true,
+            };
+
+            const nonDismissibleBanner: BannerConfig = {
+                ...mockBannerConfig,
+                customComponent: customElement,
+                dismissible: false,
+            };
+
+            jest.spyOn(React, 'isValidElement').mockReturnValue(true);
+            jest.spyOn(React, 'cloneElement').mockReturnValue(customElement);
+
+            BannerManager.showBanner(dismissibleBanner);
+            expect(React.cloneElement).toHaveBeenCalledWith(
+                customElement,
+                {
+                    onDismiss: expect.any(Function),
                     dismissible: true,
+                },
+            );
+
+            jest.clearAllMocks();
+
+            BannerManager.showBanner(nonDismissibleBanner);
+            expect(React.cloneElement).toHaveBeenCalledWith(
+                customElement,
+                {
+                    onDismiss: expect.any(Function),
+                    dismissible: false,
                 },
             );
         });
