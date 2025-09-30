@@ -314,16 +314,16 @@ const PlaybookHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supe
     };
 
     /**
-     * Handles the playbook run attribute records.
+     * Handles the playbook run attribute value records.
      * @param {HandlePlaybookRunAttributeValueArgs} args - The arguments for handling playbook run attribute value records.
      * @param {boolean} args.prepareRecordsOnly - If true, only prepares the records without saving them.
-     * @param {PlaybookRunAttributeValue[]} [args.attributes] - The playbook run attribute value records to handle.
+     * @param {PlaybookRunAttributeValue[]} [args.attributeValues] - The playbook run attribute value records to handle.
      * @returns {Promise<Model[]>} - A promise that resolves to an array of handled playbook run attribute value records.
      */
     handlePlaybookRunAttributeValue = async ({attributeValues, prepareRecordsOnly = true}: HandlePlaybookRunAttributeValueArgs): Promise<Model[]> => {
         if (!attributeValues?.length) {
             logWarning(
-                'An empty or undefined "attributes" array has been passed to the handlePlaybookRunAttributeValue method',
+                'An empty or undefined "attributeValues" array has been passed to the handlePlaybookRunAttributeValue method',
             );
             return [];
         }

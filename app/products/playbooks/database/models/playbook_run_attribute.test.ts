@@ -21,17 +21,6 @@ describe('PlaybookRunAttributeModel', () => {
         operator = DatabaseManager.serverDatabases[SERVER_URL]!.operator;
         const {database} = operator;
 
-        // Debug: Check database state
-        console.log('Schema version:', database.schema.version);
-
-        // Check if our table exists in collections
-        const collection = database.collections.get(PLAYBOOK_RUN_ATTRIBUTE);
-        console.log('Our collection exists:', Boolean(collection));
-
-        // List some table names from schema
-        console.log('Tables in schema:', Object.keys(database.schema.tables));
-        console.log('Looking for table:', PLAYBOOK_RUN_ATTRIBUTE);
-
         await database.write(async () => {
             playbook_run_attribute = await database.get<PlaybookRunAttributeModel>(PLAYBOOK_RUN_ATTRIBUTE).create((attribute: PlaybookRunAttributeModel) => {
                 attribute._raw.id = 'attribute_1';

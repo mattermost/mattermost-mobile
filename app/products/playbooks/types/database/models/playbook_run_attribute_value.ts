@@ -7,7 +7,7 @@ import type {Relation} from '@nozbe/watermelondb';
 import type Model from '@nozbe/watermelondb/Model';
 
 /**
- * The PlaybookRunAttribute interface, which will have all the fields from the PLAYBOOK_RUN_ATTRIBUTE_VALUE table
+ * The PlaybookRunAttributeValue interface, which will have all the fields from the PLAYBOOK_RUN_ATTRIBUTE_VALUE table
  */
 interface PlaybookRunAttributeValueModelInterface extends Model {
 
