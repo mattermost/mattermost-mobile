@@ -114,17 +114,14 @@ class NetworkConnectivityManagerSingleton {
     private createConnectivityBannerConfig(message: string, isConnected: boolean): BannerConfig {
         return {
             id: 'connectivity',
-            title: '',
-            message: '',
             dismissible: true,
-            onDismiss: () => {
-                // Banner dismissed by user
-            },
             customComponent: React.createElement(ConnectionBanner, {
                 isConnected,
                 message,
                 dismissible: true,
-                onDismiss: () => undefined,
+                onDismiss: () => {
+                    // Placeholder to enable dismiss button - actual dismissal handled by BannerManager
+                },
             }),
             position: 'bottom',
         };
@@ -133,8 +130,6 @@ class NetworkConnectivityManagerSingleton {
     private createPerformanceBannerConfig(message: string): BannerConfig {
         return {
             id: 'performance',
-            title: '',
-            message: '',
             dismissible: true,
             onDismiss: () => {
                 this.performanceSuppressedUntilNormal = true;
@@ -143,7 +138,9 @@ class NetworkConnectivityManagerSingleton {
                 isConnected: false,
                 message,
                 dismissible: true,
-                onDismiss: () => undefined,
+                onDismiss: () => {
+                    // Placeholder to enable dismiss button - actual dismissal handled by BannerManager
+                },
             }),
             position: 'bottom',
         };
