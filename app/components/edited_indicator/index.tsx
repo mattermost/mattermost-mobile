@@ -30,20 +30,21 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         android: blendColors(theme.centerChannelBg, theme.centerChannelColor, 0.3),
     });
 
+    const baseTextStyle: TextStyle = {
+        color: editedColor,
+        opacity: editedOpacity,
+        fontStyle: 'italic',
+        lineHeight: undefined, // Use natural line height to avoid shrinking the parent layout.
+    };
+
     return {
         editedIndicatorText: {
-            color: editedColor,
-            opacity: editedOpacity,
-            fontStyle: 'italic',
+            ...baseTextStyle,
             ...typography('Body', 25, 'Regular'),
-            lineHeight: undefined, // remove line height, to use the natual line height of the text
         },
         editedText: {
-            color: editedColor,
-            opacity: editedOpacity,
-            fontStyle: 'italic',
+            ...baseTextStyle,
             ...typography('Body', 100, 'Regular'),
-            lineHeight: undefined, // remove line height, to use the natual line height of the text
         },
         icon: {
             color: editedColor,
