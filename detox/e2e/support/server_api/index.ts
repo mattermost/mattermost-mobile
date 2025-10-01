@@ -3,6 +3,7 @@
 
 import Bot from './bot';
 import Channel from './channel';
+import Command from './command';
 import Ldap from './ldap';
 import Playbooks from './playbooks';
 import PlaybooksHelpers from './playbooks_helpers';
@@ -14,10 +15,12 @@ import Status from './status';
 import System from './system';
 import Team from './team';
 import User from './user';
+import Webhook from './webhook';
 
 export {
     Bot,
     Channel,
+    Command,
     Ldap,
     Playbooks,
     PlaybooksHelpers,
@@ -29,4 +32,5 @@ export {
     System,
     Team,
     User,
+    Webhook,
 };
