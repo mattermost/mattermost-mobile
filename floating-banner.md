@@ -114,13 +114,13 @@ flowchart TD
 ```mermaid
 graph LR
     subgraph "Banner Component Features"
-        POS[Position Calculation<br/>• Safe Area<br/>• Header Heights (top only)<br/>• Custom Offsets<br/>• Bottom Positioning]
-        ANIM[Animations<br/>• Fade In/Out<br/>• Slide Transitions<br/>• Keyboard Adjustments]
-        GEST[Gesture Handling<br/>• Swipe to Dismiss<br/>• Threshold Detection<br/>• Spring Back]
-        STYLE[Styling<br/>• Absolute Positioning<br/>• Z-Index Management<br/>• Responsive Layout]
+        POS["Position Calculation<br/>• Safe Area<br/>• Header Heights (top only)<br/>• Custom Offsets<br/>• Bottom Positioning"]
+        ANIM["Animations<br/>• Fade In/Out<br/>• Slide Transitions<br/>• Keyboard Adjustments"]
+        GEST["Gesture Handling<br/>• Swipe to Dismiss<br/>• Threshold Detection<br/>• Spring Back"]
+        STYLE["Styling<br/>• Absolute Positioning<br/>• Z-Index Management<br/>• Responsive Layout"]
     end
     
-    POS --> RENDER[Rendered Banner]
+    POS --> RENDER["Rendered Banner"]
     ANIM --> RENDER
     GEST --> RENDER
     STYLE --> RENDER
@@ -572,6 +572,27 @@ showOverlay(
 - Use custom content sparingly
 - Clean up timeouts and listeners
 - Test on lower-end devices
+
+## Future Enhancements
+
+### Architectural Improvements
+
+The current implementation uses a single-banner-per-overlay approach where each `showBanner()` call creates a new overlay. Future improvements could enhance the BannerManager to:
+
+- **Track overlay visibility state** to ensure only one floating-banner overlay exists
+- **Manage a banner stack** by adding new banner configs to an array instead of replacing the entire overlay
+- **Pass multiple banners** to the FloatingBanner component as a single prop
+- **Support concurrent banners** with individual auto-hide timers
+
+#### Use Case Example
+```
+1. Low connectivity banner (bottom) → banners: [connectivityBanner]
+2. Calls banner (top) added → banners: [connectivityBanner, callsBanner] 
+3. Connectivity banner auto-hides → banners: [callsBanner]
+4. Calls banner dismissed → banners: [] → overlay dismissed
+```
+
+This would eliminate potential race conditions from multiple overlay instances and better utilize the FloatingBanner component's multi-banner capability.
 
 ## Troubleshooting
 
