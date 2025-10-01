@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 export const PLAYBOOKS_RUNS = 'PlaybookRuns';
+export const PARTICIPANT_PLAYBOOKS = 'ParticipantPlaybooks';
 export const PLAYBOOK_RUN = 'PlaybookRun';
 export const PLAYBOOK_EDIT_COMMAND = 'PlaybookEditCommand';
 export const PLAYBOOK_SELECT_USER = 'PlaybookSelectUser';
@@ -9,6 +10,7 @@ export const PLAYBOOKS_SELECT_DATE = 'PlaybooksSelectDate';
 
 export default {
     PLAYBOOKS_RUNS,
+    PARTICIPANT_PLAYBOOKS,
     PLAYBOOK_RUN,
     PLAYBOOK_EDIT_COMMAND,
     PLAYBOOK_SELECT_USER,

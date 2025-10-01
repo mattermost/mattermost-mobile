@@ -8,6 +8,8 @@ export function loadPlaybooksScreen(screenName: string | number) {
     switch (screenName) {
         case Screens.PLAYBOOKS_RUNS:
             return withServerDatabase(require('@playbooks/screens/playbooks_runs').default);
+        case Screens.PARTICIPANT_PLAYBOOKS:
+            return withServerDatabase(require('@playbooks/screens/participant_playbooks').default);
         case Screens.PLAYBOOK_RUN:
             return withServerDatabase(require('@playbooks/screens/playbook_run').default);
         case Screens.PLAYBOOK_EDIT_COMMAND:

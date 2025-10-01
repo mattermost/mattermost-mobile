@@ -8,6 +8,7 @@ import Screens from '@playbooks/constants/screens';
 import {render} from '@test/intl-test-helper';
 
 import EditCommand from './edit_command';
+import ParticipantPlaybooks from './participant_playbooks';
 import PlaybookRun from './playbook_run';
 import PlaybookRuns from './playbooks_runs';
 import SelectDate from './select_date';
@@ -51,6 +52,12 @@ jest.mock('@playbooks/screens/select_date', () => ({
     default: jest.fn(),
 }));
 jest.mocked(SelectDate).mockImplementation((props) => <Text {...props}>{Screens.PLAYBOOKS_SELECT_DATE}</Text>);
+
+jest.mock('@playbooks/screens/participant_playbooks', () => ({
+    __esModule: true,
+    default: jest.fn(),
+}));
+jest.mocked(ParticipantPlaybooks).mockImplementation((props) => <Text {...props}>{Screens.PARTICIPANT_PLAYBOOKS}</Text>);
 
 describe('Screen Registration', () => {
     beforeEach(() => {
