@@ -42,7 +42,7 @@ export const useBannerAnimation = ({
             translateY.value = visible ? 0 : offset;
             translateX.value = 0;
         }
-    }, [visible, position, opacity, translateY, translateX, isDismissed]);
+    }, [visible, position]); // eslint-disable-line react-hooks/exhaustive-deps -- opacity, translateY, translateX, isDismissed are shared values and stable references which are not affected by the effect.
 
     return {
         opacity,
