@@ -27,6 +27,40 @@ export const submitInteractiveDialog = async (serverUrl: string, submission: Dia
     }
 };
 
+export const lookupInteractiveDialog = async (serverUrl: string, submission: DialogSubmission) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        submission.channel_id = await getCurrentChannelId(database);
+        submission.team_id = await getCurrentTeamId(database);
+
+        const requestBody = {
+            url: submission.url,
+            callback_id: submission.callback_id,
+            state: submission.state,
+            submission: submission.submission,
+            user_id: submission.user_id,
+            channel_id: submission.channel_id,
+            team_id: submission.team_id,
+            cancelled: submission.cancelled,
+        };
+
+        const data = await client.doFetch('/api/v4/actions/dialogs/lookup', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: requestBody,
+        });
+        return {data};
+    } catch (error) {
+        logDebug('error on lookupInteractiveDialog', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
 export const postActionWithCookie = async (serverUrl: string, postId: string, actionId: string, actionCookie: string, selectedOption = '') => {
     try {
         const client = NetworkManager.getClient(serverUrl);

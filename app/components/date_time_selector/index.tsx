@@ -10,6 +10,7 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
+import {CUSTOM_STATUS_TIME_PICKER_INTERVALS_IN_MINUTES} from '@constants/custom_status';
 import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {getCurrentMomentForTimezone, getRoundedTime} from '@utils/helpers';
@@ -24,6 +25,8 @@ type Props = {
     handleChange: (currentDate: Moment) => void;
     showInitially?: AndroidMode;
     initialDate?: Moment;
+    dateOnly?: boolean;
+    testID?: string;
     minuteInterval?: 5 | 30;
 }
 
@@ -51,6 +54,8 @@ const DateTimeSelector = ({
     theme,
     showInitially,
     initialDate,
+    dateOnly = false,
+    testID,
     minuteInterval = 30,
 }: Props) => {
     const styles = getStyleSheet(theme);
@@ -77,33 +82,51 @@ const DateTimeSelector = ({
     };
 
     const showDatepicker = () => {
-        showMode('date');
-        handleChange(moment(date));
+        if (show && mode === 'date') {
+            // Toggle off if already showing date picker
+            setShow(false);
+        } else {
+            // Show date picker
+            showMode('date');
+        }
+
+        // Always call handleChange with current date when date picker is accessed
+        handleChange(date);
     };
 
     const showTimepicker = () => {
-        showMode('time');
-        handleChange(moment(date));
+        if (show && mode === 'time') {
+            // Toggle off if already showing time picker
+            setShow(false);
+        } else {
+            // Show time picker
+            showMode('time');
+        }
+
+        // Always call handleChange with current date when date picker is accessed
+        handleChange(date);
     };
 
     return (
         <View
             style={styles.container}
-            testID='custom_date_time_picker'
+            testID={testID || 'custom_date_time_picker'}
         >
             <View style={styles.buttonContainer}>
                 <Button
-                    testID={'custom_status_clear_after.menu_item.date_and_time.button.date'}
+                    testID={testID ? `${testID}.select.button` : 'custom_status_clear_after.menu_item.date_and_time.button.date'}
                     onPress={showDatepicker}
                     title='Select Date'
                     color={theme.buttonBg}
                 />
-                <Button
-                    testID={'custom_status_clear_after.menu_item.date_and_time.button.time'}
-                    onPress={showTimepicker}
-                    title='Select Time'
-                    color={theme.buttonBg}
-                />
+                {!dateOnly && (
+                    <Button
+                        testID={testID ? `${testID}.time.button` : 'custom_status_clear_after.menu_item.date_and_time.button.time'}
+                        onPress={showTimepicker}
+                        title='Select Time'
+                        color={theme.buttonBg}
+                    />
+                )}
             </View>
             {show && (
                 <DateTimePicker
@@ -115,8 +138,8 @@ const DateTimeSelector = ({
                     onChange={onChange}
                     textColor={theme.centerChannelColor}
                     minimumDate={minimumDate.toDate()}
-                    minuteInterval={minuteInterval}
-                    timeZoneName={timezone}
+                    minuteInterval={CUSTOM_STATUS_TIME_PICKER_INTERVALS_IN_MINUTES}
+                    timeZoneName={timezone || undefined}
                 />
             )}
         </View>
