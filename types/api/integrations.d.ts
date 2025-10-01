@@ -64,7 +64,7 @@ type DialogElement = {
     display_name: string;
     name: string;
     type: InteractiveDialogElementType;
-    subtype: InteractiveDialogTextSubtype;
+    subtype?: InteractiveDialogTextSubtype;
     default: string | boolean;
     placeholder: string;
     help_text: string;
@@ -72,7 +72,9 @@ type DialogElement = {
     min_length: number;
     max_length: number;
     data_source: string;
+    data_source_url?: string;
     options: DialogOption[];
+    multiselect?: boolean;
 };
 
 type InteractiveDialogConfig = {
