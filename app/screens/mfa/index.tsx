@@ -10,7 +10,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {login} from '@actions/remote/session';
 import Button from '@components/button';
-import FloatingTextInput from '@components/floating_text_input_label';
+import FloatingTextInput from '@components/floating_input/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useAvoidKeyboard} from '@hooks/device';
@@ -168,8 +168,7 @@ const MFA = ({componentId, config, goToHome, license, loginId, password, serverD
                         />
                         <View style={styles.form}>
                             <FloatingTextInput
-                                autoCorrect={false}
-                                autoCapitalize={'none'}
+                                rawInput={true}
                                 blurOnSubmit={true}
                                 disableFullscreenUI={true}
                                 enablesReturnKeyAutomatically={true}
@@ -179,7 +178,6 @@ const MFA = ({componentId, config, goToHome, license, loginId, password, serverD
                                 onChangeText={handleInput}
                                 onSubmitEditing={submit}
                                 returnKeyType='go'
-                                spellCheck={false}
                                 testID='login_mfa.input'
                                 theme={theme}
                                 value={token}

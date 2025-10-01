@@ -5,15 +5,15 @@ import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform, View} from 'react-native';
 
-import FloatingTextInput from '@components/floating_text_input_label';
+import FloatingTextInput from '@components/floating_input/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import {useTheme} from '@context/theme';
-import {debounce} from '@helpers/api/general';
 import {useIsTablet} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
+import {useDebounce} from '@hooks/utils';
 import {fetchOpenGraph} from '@utils/opengraph';
-import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getUrlAfterRedirect} from '@utils/url';
 
@@ -54,7 +54,7 @@ const BookmarkLink = ({disabled, initialUrl = '', resetBookmark, setBookmark}: P
     const subContainerStyle = useMemo(() => [styles.viewContainer, {paddingHorizontal: isTablet ? 42 : 0}], [isTablet, styles]);
     const descContainer = useMemo(() => [styles.description, {paddingHorizontal: isTablet ? 42 : 0}], [isTablet, styles]);
 
-    const validateAndFetchOG = useCallback(debounce(async (text: string) => {
+    const validateAndFetchOG = useDebounce(useCallback((async (text: string) => {
         setLoading(true);
         let link = await getUrlAfterRedirect(text, false);
 
@@ -75,7 +75,7 @@ const BookmarkLink = ({disabled, initialUrl = '', resetBookmark, setBookmark}: P
             defaultMessage: 'Please enter a valid link',
         }));
         setLoading(false);
-    }, 500), [intl]);
+    }), [intl, setBookmark]), 500);
 
     const onChangeText = useCallback((text: string) => {
         resetBookmark();
@@ -87,27 +87,24 @@ const BookmarkLink = ({disabled, initialUrl = '', resetBookmark, setBookmark}: P
         if (url) {
             validateAndFetchOG(url);
         }
-    }, [url, error]);
+    }, [url, validateAndFetchOG]);
 
-    useDidUpdate(debounce(() => {
-        onSubmitEditing();
-    }, 300), [onSubmitEditing]);
+    const debouncedOnSubmitEditing = useDebounce(onSubmitEditing, 300);
+
+    useDidUpdate(debouncedOnSubmitEditing, [debouncedOnSubmitEditing]);
 
     return (
         <View style={subContainerStyle}>
             <FloatingTextInput
-                autoCapitalize={'none'}
-                autoCorrect={false}
+                rawInput={true}
                 disableFullscreenUI={true}
                 editable={!disabled}
-                keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                 keyboardType={keyboard}
                 returnKeyType='go'
                 label={intl.formatMessage({id: 'channel_bookmark_add.link', defaultMessage: 'Link'})}
                 onChangeText={onChangeText}
                 theme={theme}
                 error={error}
-                showErrorIcon={true}
                 value={url}
                 onSubmitEditing={onSubmitEditing}
                 endAdornment={loading &&
