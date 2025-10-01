@@ -35,8 +35,6 @@ describe('useBannerPosition', () => {
             const {result} = renderHook(() =>
                 useBannerPosition({
                     position: 'bottom',
-                    includeBookmarkBar: false,
-                    includeChannelBanner: false,
                     customTopOffset: 0,
                     customBottomOffset: 20,
                     threadScreen: false,
@@ -54,8 +52,6 @@ describe('useBannerPosition', () => {
             const {result} = renderHook(() =>
                 useBannerPosition({
                     position: 'top',
-                    includeBookmarkBar: false,
-                    includeChannelBanner: false,
                     customTopOffset: 0,
                     customBottomOffset: 0,
                     threadScreen: false,
@@ -72,8 +68,6 @@ describe('useBannerPosition', () => {
             const {result} = renderHook(() =>
                 useBannerPosition({
                     position: 'top',
-                    includeBookmarkBar: false,
-                    includeChannelBanner: false,
                     customTopOffset: 0,
                     customBottomOffset: 0,
                     threadScreen: false,
@@ -90,8 +84,6 @@ describe('useBannerPosition', () => {
             const {result} = renderHook(() =>
                 useBannerPosition({
                     position: 'top',
-                    includeBookmarkBar: false,
-                    includeChannelBanner: false,
                     customTopOffset: 0,
                     customBottomOffset: 0,
                     threadScreen: true,
@@ -102,50 +94,12 @@ describe('useBannerPosition', () => {
             expect(result.current.positionStyle).toEqual({top: 52});
         });
 
-        it('includes bookmark bar height when specified', () => {
-            jest.mocked(Device.useIsTablet).mockReturnValue(false);
-
-            const {result} = renderHook(() =>
-                useBannerPosition({
-                    position: 'top',
-                    includeBookmarkBar: true,
-                    includeChannelBanner: false,
-                    customTopOffset: 0,
-                    customBottomOffset: 0,
-                    threadScreen: false,
-                }),
-            );
-
-            // safeAreaTop(44) + phoneHeader(56) + bookmarkBar(40) + basePadding(8) = 148
-            expect(result.current.positionStyle).toEqual({top: 148});
-        });
-
-        it('includes channel banner height when specified', () => {
-            jest.mocked(Device.useIsTablet).mockReturnValue(false);
-
-            const {result} = renderHook(() =>
-                useBannerPosition({
-                    position: 'top',
-                    includeBookmarkBar: false,
-                    includeChannelBanner: true,
-                    customTopOffset: 0,
-                    customBottomOffset: 0,
-                    threadScreen: false,
-                }),
-            );
-
-            // safeAreaTop(44) + phoneHeader(56) + channelBanner(60) + basePadding(8) = 168
-            expect(result.current.positionStyle).toEqual({top: 168});
-        });
-
         it('adds custom top offset', () => {
             jest.mocked(Device.useIsTablet).mockReturnValue(false);
 
             const {result} = renderHook(() =>
                 useBannerPosition({
                     position: 'top',
-                    includeBookmarkBar: false,
-                    includeChannelBanner: false,
                     customTopOffset: 25,
                     customBottomOffset: 0,
                     threadScreen: false,
@@ -156,22 +110,20 @@ describe('useBannerPosition', () => {
             expect(result.current.positionStyle).toEqual({top: 133});
         });
 
-        it('calculates complex top position with all options', () => {
+        it('calculates complex top position with tablet and custom offset', () => {
             jest.mocked(Device.useIsTablet).mockReturnValue(true);
 
             const {result} = renderHook(() =>
                 useBannerPosition({
                     position: 'top',
-                    includeBookmarkBar: true,
-                    includeChannelBanner: true,
                     customTopOffset: 15,
                     customBottomOffset: 0,
                     threadScreen: false,
                 }),
             );
 
-            // safeAreaTop(44) + tabletHeader(64) + bookmarkBar(40) + channelBanner(60) + customOffset(15) + basePadding(8) = 231
-            expect(result.current.positionStyle).toEqual({top: 231});
+            // safeAreaTop(44) + tabletHeader(64) + customOffset(15) + basePadding(8) = 131
+            expect(result.current.positionStyle).toEqual({top: 131});
         });
     });
 });

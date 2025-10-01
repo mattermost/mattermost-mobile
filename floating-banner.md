@@ -114,7 +114,7 @@ flowchart TD
 ```mermaid
 graph LR
     subgraph "Banner Component Features"
-        POS[Position Calculation<br/>• Safe Area<br/>• Header Heights<br/>• Custom Offsets]
+        POS[Position Calculation<br/>• Safe Area<br/>• Header Heights (top only)<br/>• Custom Offsets<br/>• Bottom Positioning]
         ANIM[Animations<br/>• Fade In/Out<br/>• Slide Transitions<br/>• Keyboard Adjustments]
         GEST[Gesture Handling<br/>• Swipe to Dismiss<br/>• Threshold Detection<br/>• Spring Back]
         STYLE[Styling<br/>• Absolute Positioning<br/>• Z-Index Management<br/>• Responsive Layout]
@@ -259,7 +259,7 @@ private showDisconnectedBanner() {
         title: 'No Connection',
         message: 'Check your internet connection',
         type: 'error',
-        position: 'top',
+        position: 'bottom',
         customComponent: (
             <ConnectionBanner 
                 isConnected={false}
@@ -293,34 +293,32 @@ BannerManager.showBanner({
 
 ## Configuration & Positioning
 
+> **Current Implementation Note**: The system is currently optimized for `position="bottom"` banners. Top positioning is supported but primarily used for header height calculations in edge cases.
+
 ### Position Calculation
 
 The Banner component calculates positions based on:
 
 ```typescript
-// Top position calculation
+// Top position calculation (when position="top")
 let topOffset = safeAreaInsets.top + customTopOffset;
 
-// Add header heights
+// Add header heights for top positioning
 if (isTablet && !threadScreen) {
     topOffset += TABLET_HEADER_HEIGHT;
 } else if (!isTablet && !threadScreen) {
     topOffset += DEFAULT_HEADER_HEIGHT;
 }
 
-// Add optional UI element heights
-if (includeBookmarkBar) topOffset += BOOKMARKS_BAR_HEIGHT;
-if (includeChannelBanner) topOffset += CHANNEL_BANNER_HEIGHT;
+// Additional spacing for visual separation
+topOffset += 8;
 
-// Bottom position calculation  
-const baseBottomOffset = isTablet ? 
-    (BOTTOM_OFFSET_PHONE + TABLET_EXTRA_BOTTOM_OFFSET) : 
-    BOTTOM_OFFSET_PHONE;
+// Bottom position calculation (primary use case)
+// Simple bottom offset with custom adjustments
+const bottomOffset = customBottomOffset;
 
-// Keyboard adjustment (iOS only)
-const adjustedBottom = Platform.OS === 'ios' ? 
-    baseBottomOffset + keyboardHeight : 
-    baseBottomOffset;
+// Keyboard adjustment handled by FloatingBanner component
+// for bottom-positioned banners on iOS
 ```
 
 ### Stacking Behavior

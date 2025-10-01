@@ -4,15 +4,13 @@
 import {useMemo} from 'react';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import {BOOKMARKS_BAR_HEIGHT, CHANNEL_BANNER_HEIGHT, DEFAULT_HEADER_HEIGHT, TABLET_HEADER_HEIGHT} from '@constants/view';
+import {DEFAULT_HEADER_HEIGHT, TABLET_HEADER_HEIGHT} from '@constants/view';
 import {useIsTablet} from '@hooks/device';
 
 import type {BannerPosition} from '../Banner';
 
 interface UseBannerPositionProps {
     position: BannerPosition;
-    includeBookmarkBar: boolean;
-    includeChannelBanner: boolean;
     customTopOffset: number;
     customBottomOffset: number;
     threadScreen: boolean;
@@ -20,8 +18,6 @@ interface UseBannerPositionProps {
 
 export const useBannerPosition = ({
     position,
-    includeBookmarkBar,
-    includeChannelBanner,
     customTopOffset,
     customBottomOffset,
     threadScreen,
@@ -47,14 +43,6 @@ export const useBannerPosition = ({
             topOffset += DEFAULT_HEADER_HEIGHT;
         }
 
-        if (includeBookmarkBar) {
-            topOffset += BOOKMARKS_BAR_HEIGHT;
-        }
-
-        if (includeChannelBanner) {
-            topOffset += CHANNEL_BANNER_HEIGHT;
-        }
-
         topOffset += 8;
 
         return {
@@ -65,8 +53,6 @@ export const useBannerPosition = ({
         insets.top,
         isTablet,
         threadScreen,
-        includeBookmarkBar,
-        includeChannelBanner,
         customTopOffset,
         customBottomOffset,
     ]);

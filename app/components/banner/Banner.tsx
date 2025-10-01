@@ -38,20 +38,6 @@ export interface BannerProps {
     position?: BannerPosition;
 
     /**
-     * Include bookmark bar height in top offset calculation
-     * Useful when banner should appear below the bookmark bar
-     * @default false
-     */
-    includeBookmarkBar?: boolean;
-
-    /**
-     * Include channel banner height in top offset calculation
-     * Useful when banner should appear below channel-specific banners
-     * @default false
-     */
-    includeChannelBanner?: boolean;
-
-    /**
      * Additional offset from the top in pixels
      * Added to the calculated safe area and header offsets
      * @default 0
@@ -130,8 +116,8 @@ const styles = StyleSheet.create({
  * @example
  * ```tsx
  * <Banner
- *   position="top"
- *   includeBookmarkBar
+ *   position="bottom"
+ *   customBottomOffset={20}
  *   visible={showBanner}
  *   dismissible={true}
  *   onDismiss={() => console.log('Banner dismissed!')}
@@ -143,8 +129,6 @@ const styles = StyleSheet.create({
 const Banner: React.FC<BannerProps> = ({
     children,
     position = 'top',
-    includeBookmarkBar = false,
-    includeChannelBanner = false,
     customTopOffset = 0,
     customBottomOffset = 0,
     visible = true,
@@ -158,8 +142,6 @@ const Banner: React.FC<BannerProps> = ({
 }) => {
     const {positionStyle} = useBannerPosition({
         position,
-        includeBookmarkBar,
-        includeChannelBanner,
         customTopOffset,
         customBottomOffset,
         threadScreen,

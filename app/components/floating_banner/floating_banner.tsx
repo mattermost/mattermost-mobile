@@ -8,15 +8,16 @@ import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
 import Banner from '@components/banner/Banner';
 import BannerItem from '@components/banner/banner_item';
+import {
+    FLOATING_BANNER_BOTTOM_OFFSET_PHONE_IOS,
+    FLOATING_BANNER_BOTTOM_OFFSET_PHONE_ANDROID,
+    FLOATING_BANNER_BOTTOM_OFFSET_WITH_KEYBOARD_IOS,
+    FLOATING_BANNER_BOTTOM_OFFSET_WITH_KEYBOARD_ANDROID,
+    FLOATING_BANNER_TABLET_EXTRA_BOTTOM_OFFSET,
+    FLOATING_BANNER_STACK_SPACING,
+    FLOATING_BANNER_EXTRA_OFFSET,
+} from '@constants/view';
 import {useIsTablet, useKeyboardHeight} from '@hooks/device';
-
-const BOTTOM_OFFSET_PHONE_IOS = 105;
-const BOTTOM_OFFSET_PHONE_ANDROID = 90;
-const BOTTOM_OFFSET_WITH_KEYBOARD_IOS = 70;
-const BOTTOM_OFFSET_WITH_KEYBOARD_ANDROID = 80;
-const TABLET_EXTRA_BOTTOM_OFFSET = 60;
-const BANNER_STACK_SPACING = 60;
-const BOTTOM_BANNER_EXTRA_OFFSET = 8;
 
 import type {BannerConfig} from './types';
 
@@ -48,8 +49,8 @@ const BannerSection: React.FC<BannerSectionProps> = ({
 
     const isTop = position === 'top';
     const testID = isTop ? 'floating-banner-top-container' : 'floating-banner-bottom-container';
-    const baseBottomOffset = Platform.OS === 'android' ? BOTTOM_OFFSET_PHONE_ANDROID : BOTTOM_OFFSET_PHONE_IOS;
-    const bottomOffset = isTablet ? (baseBottomOffset + TABLET_EXTRA_BOTTOM_OFFSET) : baseBottomOffset;
+    const baseBottomOffset = Platform.OS === 'android' ? FLOATING_BANNER_BOTTOM_OFFSET_PHONE_ANDROID : FLOATING_BANNER_BOTTOM_OFFSET_PHONE_IOS;
+    const bottomOffset = isTablet ? (baseBottomOffset + FLOATING_BANNER_TABLET_EXTRA_BOTTOM_OFFSET) : baseBottomOffset;
     const containerStyle = isTop ? [styles.containerBase, styles.topContainer] : [
         styles.containerBase,
         styles.bottomContainer,
@@ -61,10 +62,10 @@ const BannerSection: React.FC<BannerSectionProps> = ({
         }
 
         if (Platform.OS === 'android') {
-            return {bottom: withTiming(BOTTOM_OFFSET_WITH_KEYBOARD_ANDROID, {duration: 250})};
+            return {bottom: withTiming(FLOATING_BANNER_BOTTOM_OFFSET_WITH_KEYBOARD_ANDROID, {duration: 250})};
         }
 
-        return {bottom: withTiming((keyboardHeight > 0 ? BOTTOM_OFFSET_WITH_KEYBOARD_IOS : bottomOffset) + keyboardHeight, {duration: 250})};
+        return {bottom: withTiming((keyboardHeight > 0 ? FLOATING_BANNER_BOTTOM_OFFSET_WITH_KEYBOARD_IOS : bottomOffset) + keyboardHeight, {duration: 250})};
     }, [keyboardHeight, isTop, bottomOffset]);
 
     return (
@@ -75,7 +76,7 @@ const BannerSection: React.FC<BannerSectionProps> = ({
             <GestureHandlerRootView style={styles.gestureHandler}>
                 {sectionBanners.map((banner, index) => {
                     const {id, dismissible = true, customComponent} = banner;
-                    const offsetProps = isTop ? {customTopOffset: index * BANNER_STACK_SPACING} : {customBottomOffset: (index * BANNER_STACK_SPACING) + BOTTOM_BANNER_EXTRA_OFFSET};
+                    const offsetProps = isTop ? {customTopOffset: index * FLOATING_BANNER_STACK_SPACING} : {customBottomOffset: (index * FLOATING_BANNER_STACK_SPACING) + FLOATING_BANNER_EXTRA_OFFSET};
 
                     return (
                         <Banner
@@ -166,11 +167,3 @@ const styles = StyleSheet.create({
 });
 
 export default FloatingBanner;
-
-export const testExports = {
-    BOTTOM_OFFSET_PHONE_IOS,
-    BOTTOM_OFFSET_PHONE_ANDROID,
-    TABLET_EXTRA_BOTTOM_OFFSET,
-    BOTTOM_OFFSET_WITH_KEYBOARD_IOS,
-    BOTTOM_OFFSET_WITH_KEYBOARD_ANDROID,
-};

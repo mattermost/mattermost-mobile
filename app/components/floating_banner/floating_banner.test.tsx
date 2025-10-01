@@ -5,15 +5,20 @@ import {render, fireEvent, screen} from '@testing-library/react-native';
 import React from 'react';
 import {Text} from 'react-native';
 
+import {
+    FLOATING_BANNER_BOTTOM_OFFSET_PHONE_IOS,
+    FLOATING_BANNER_TABLET_EXTRA_BOTTOM_OFFSET,
+    FLOATING_BANNER_BOTTOM_OFFSET_WITH_KEYBOARD_IOS,
+    FLOATING_BANNER_BOTTOM_OFFSET_WITH_KEYBOARD_ANDROID,
+} from '@constants/view';
 import * as Device from '@hooks/device';
 
-import FloatingBanner, {testExports} from './floating_banner';
+import FloatingBanner from './floating_banner';
 
 import type {BannerConfig} from './types';
 
 jest.mock('@hooks/device');
 
-// Mock react-native-reanimated
 jest.mock('react-native-reanimated', () => {
     const {View} = require('react-native');
     const ReactLib = require('react');
@@ -33,7 +38,6 @@ jest.mock('react-native-reanimated', () => {
     };
 });
 
-// Mock the dependencies
 jest.mock('@components/banner/Banner', () => {
     const mockView = require('react-native').View;
     const mockText = require('react-native').Text;
@@ -110,7 +114,6 @@ describe('FloatingBanner', () => {
         jest.clearAllMocks();
         mockOverlayOnDismiss.mockClear();
 
-        // Default to phone behavior unless a test overrides
         jest.mocked(Device.useIsTablet).mockReturnValue(false);
         jest.mocked(Device.useKeyboardHeight).mockReturnValue(0);
     });
@@ -127,7 +130,6 @@ describe('FloatingBanner', () => {
             renderFloatingBanner([banner]);
 
             const bannerElement = screen.getByTestId('banner');
-            expect(bannerElement).toBeTruthy();
             expect(bannerElement.props.position).toBe('top');
             expect(bannerElement.props.visible).toBe(true);
             expect(bannerElement.props.customTopOffset).toBe(0);
@@ -176,7 +178,6 @@ describe('FloatingBanner', () => {
             renderFloatingBanner([banner]);
 
             const bannerItem = screen.getByTestId('banner-item');
-            expect(bannerItem).toBeTruthy();
             expect(bannerItem.props['data-banner-id']).toBe('test-banner-1');
         });
 
@@ -185,7 +186,6 @@ describe('FloatingBanner', () => {
             renderFloatingBanner([banner]);
 
             const bannerItem = screen.getByTestId('banner-item');
-            expect(bannerItem).toBeTruthy();
             expect(bannerItem.props['data-banner-id']).toBe('test-banner-1');
         });
 
@@ -194,7 +194,7 @@ describe('FloatingBanner', () => {
             const banner = createMockBanner({customComponent});
             renderFloatingBanner([banner]);
 
-            expect(screen.getByTestId('custom-content')).toBeTruthy();
+            expect(screen.getByTestId('custom-content')).toBeDefined();
             expect(screen.queryByTestId('banner-item')).toBeNull();
         });
 
@@ -203,7 +203,7 @@ describe('FloatingBanner', () => {
             const banner = createMockBanner({title: undefined, message: undefined, customComponent});
             renderFloatingBanner([banner]);
 
-            expect(screen.getByTestId('custom-no-text')).toBeTruthy();
+            expect(screen.getByTestId('custom-no-text')).toBeDefined();
             expect(screen.queryByTestId('banner-item')).toBeNull();
         });
 
@@ -212,7 +212,7 @@ describe('FloatingBanner', () => {
             const banner = createMockBanner({id: 'bottom-custom', position: 'bottom', customComponent, dismissible: false});
             renderFloatingBanner([banner]);
 
-            expect(screen.getByTestId('custom-content-bottom')).toBeTruthy();
+            expect(screen.getByTestId('custom-content-bottom')).toBeDefined();
             const bannerElement = screen.getByTestId('banner');
             expect(bannerElement.props.position).toBe('bottom');
             expect(bannerElement.props.dismissible).toBe(false);
@@ -297,23 +297,19 @@ describe('FloatingBanner', () => {
             const bannerElements = screen.getAllByTestId('banner');
             expect(bannerElements).toHaveLength(3);
 
-            // Check first banner (info - top)
             expect(bannerElements[0].props.position).toBe('top');
             expect(bannerElements[0].props.dismissible).toBe(true);
             expect(bannerElements[0].props.customTopOffset).toBe(0);
 
-            // Check second banner (custom - top, rendered after info)
             expect(bannerElements[1].props.position).toBe('top');
             expect(bannerElements[1].props.customTopOffset).toBe(60);
 
-            // Check third banner (error - bottom)
             expect(bannerElements[2].props.position).toBe('bottom');
             expect(bannerElements[2].props.dismissible).toBe(false);
             expect(bannerElements[2].props.customBottomOffset).toBe(8);
 
-            // Verify content types
-            expect(screen.getByTestId('custom-banner')).toBeTruthy();
-            expect(screen.getAllByTestId('banner-item')).toHaveLength(2); // Only first two have BannerItem
+            expect(screen.getByTestId('custom-banner')).toBeDefined();
+            expect(screen.getAllByTestId('banner-item')).toHaveLength(2);
         });
     });
 
@@ -341,13 +337,7 @@ describe('FloatingBanner', () => {
             renderFloatingBanner(banners);
 
             const container = screen.getByTestId('floating-banner-bottom-container');
-            const styleProp = container.props.style as Array<Record<string, unknown>>;
-            const containerStyle = styleProp.find((style) =>
-                typeof style === 'object' && style !== null && 'bottom' in style,
-            ) as {bottom: number};
-
-            const {BOTTOM_OFFSET_PHONE_IOS, TABLET_EXTRA_BOTTOM_OFFSET} = testExports;
-            expect(containerStyle.bottom).toBe(BOTTOM_OFFSET_PHONE_IOS + TABLET_EXTRA_BOTTOM_OFFSET);
+            expect(container.props.style[1].bottom).toBe(FLOATING_BANNER_BOTTOM_OFFSET_PHONE_IOS + FLOATING_BANNER_TABLET_EXTRA_BOTTOM_OFFSET);
         });
     });
 
@@ -362,15 +352,7 @@ describe('FloatingBanner', () => {
             renderFloatingBanner(banners);
 
             const container = screen.getByTestId('floating-banner-bottom-container');
-            const styleProp = container.props.style as Array<Record<string, unknown>>;
-
-            // Find the animated style (should contain bottom property)
-            const animatedStyle = styleProp.find((style) =>
-                typeof style === 'object' && style !== null && 'bottom' in style,
-            ) as {bottom: number};
-
-            const {BOTTOM_OFFSET_WITH_KEYBOARD_IOS} = testExports;
-            expect(animatedStyle.bottom).toBe(BOTTOM_OFFSET_WITH_KEYBOARD_IOS + keyboardHeight);
+            expect(container.props.style[1].bottom).toBe(FLOATING_BANNER_BOTTOM_OFFSET_WITH_KEYBOARD_IOS + keyboardHeight);
         });
 
         it('should adjust bottom banner position on tablet when keyboard is open', () => {
@@ -384,16 +366,8 @@ describe('FloatingBanner', () => {
             renderFloatingBanner(banners);
 
             const container = screen.getByTestId('floating-banner-bottom-container');
-            const styleProp = container.props.style as Array<Record<string, unknown>>;
-
-            // Find the animated style (should contain bottom property)
-            const animatedStyle = styleProp.find((style) =>
-                typeof style === 'object' && style !== null && 'bottom' in style,
-            ) as {bottom: number};
-
-            const {BOTTOM_OFFSET_WITH_KEYBOARD_IOS} = testExports;
-            const expectedBottom = BOTTOM_OFFSET_WITH_KEYBOARD_IOS + keyboardHeight;
-            expect(animatedStyle.bottom).toBe(expectedBottom);
+            const expectedBottom = FLOATING_BANNER_BOTTOM_OFFSET_WITH_KEYBOARD_IOS + keyboardHeight;
+            expect(container.props.style[1].bottom).toBe(expectedBottom);
         });
 
         it('should not adjust top banner position when keyboard is open', () => {
@@ -408,11 +382,10 @@ describe('FloatingBanner', () => {
             const container = screen.getByTestId('floating-banner-top-container');
             const styleProp = container.props.style as Array<Record<string, unknown>>;
 
-            // Top banners should not have animated styles with bottom positioning
             const hasBottomStyle = styleProp.some((style) =>
                 typeof style === 'object' && style !== null && 'bottom' in style,
             );
-            expect(hasBottomStyle).toBe(false);
+            expect(hasBottomStyle).toBeFalsy();
         });
 
         it('should handle zero keyboard height correctly', () => {
@@ -424,15 +397,46 @@ describe('FloatingBanner', () => {
             renderFloatingBanner(banners);
 
             const container = screen.getByTestId('floating-banner-bottom-container');
-            const styleProp = container.props.style as Array<Record<string, unknown>>;
+            expect(container.props.style[1].bottom).toBe(FLOATING_BANNER_BOTTOM_OFFSET_PHONE_IOS);
+        });
 
-            // Find the animated style (should contain bottom property)
-            const animatedStyle = styleProp.find((style) =>
-                typeof style === 'object' && style !== null && 'bottom' in style,
-            ) as {bottom: number};
+        it('should use Android-specific keyboard offset on Android platform', () => {
+            const {Platform} = require('react-native');
+            Platform.OS = 'android';
 
-            const {BOTTOM_OFFSET_PHONE_IOS} = testExports;
-            expect(animatedStyle.bottom).toBe(BOTTOM_OFFSET_PHONE_IOS);
+            const keyboardHeight = 250;
+            jest.mocked(Device.useKeyboardHeight).mockReturnValue(keyboardHeight);
+
+            const banners = [
+                createMockBanner({id: 'android-bottom-banner', position: 'bottom'}),
+            ];
+            renderFloatingBanner(banners);
+
+            const container = screen.getByTestId('floating-banner-bottom-container');
+            expect(container.props.style[1].bottom).toBe(FLOATING_BANNER_BOTTOM_OFFSET_WITH_KEYBOARD_ANDROID);
+        });
+
+        it('should render BannerItem when customComponent is falsy', () => {
+            const banner = createMockBanner({customComponent: null});
+            renderFloatingBanner([banner]);
+
+            const bannerItem = screen.getByTestId('banner-item');
+            expect(bannerItem.props['data-banner-id']).toBe('test-banner-1');
+            expect(screen.queryByTestId('custom-content')).toBeNull();
+        });
+
+        it('should apply Android tablet-specific bottom offset', () => {
+            const {Platform} = require('react-native');
+            Platform.OS = 'android';
+            jest.mocked(Device.useIsTablet).mockReturnValue(true);
+
+            const banners = [
+                createMockBanner({id: 'android-tablet-banner', position: 'bottom'}),
+            ];
+            renderFloatingBanner(banners);
+
+            const container = screen.getByTestId('floating-banner-bottom-container');
+            expect(container.props.style[1].bottom).toBe(FLOATING_BANNER_BOTTOM_OFFSET_WITH_KEYBOARD_ANDROID);
         });
     });
 });
