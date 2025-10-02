@@ -77,7 +77,7 @@ static SendReplyCompletionHandlerIMP originalSendReplyCompletionHandlerImplement
   if (rootId == nil) {
     rootId = [parsedResponse valueForKeyPath:@"notification.post_id"];
   }
-
+  
   NSDictionary *post = @{
     @"message": message,
     @"channel_id": channelId,
@@ -99,7 +99,7 @@ static SendReplyCompletionHandlerIMP originalSendReplyCompletionHandlerImplement
   [request setValue:@"application/json; charset=utf-8" forHTTPHeaderField:@"Content-Type"];
   
   // Add preauth secret header if available
-  if (preauthSecret != nil && ![preauthSecret isEqualToString:@""]) {
+  if (preauthSecret != nil && ![preauthSecret isKindOfClass:[NSNull class]] && ![preauthSecret isEqualToString:@""]) {
     [request setValue:preauthSecret forHTTPHeaderField:@"X-Mattermost-Preauth-Secret"];
   }
   
