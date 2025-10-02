@@ -77,7 +77,7 @@ static SendReplyCompletionHandlerIMP originalSendReplyCompletionHandlerImplement
   if (rootId == nil) {
     rootId = [parsedResponse valueForKeyPath:@"notification.post_id"];
   }
-  
+
   NSDictionary *post = @{
     @"message": message,
     @"channel_id": channelId,
