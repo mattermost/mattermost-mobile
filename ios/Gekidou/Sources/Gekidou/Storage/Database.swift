@@ -68,6 +68,7 @@ public class Database: NSObject {
     internal var preferenceTable = Table("Preference")
     internal var categoryTable = Table("Category")
     internal var categoryChannelTable = Table("CategoryChannel")
+    internal var draftTable = Table("Draft")
     
     @objc public static let `default` = Database()
     
