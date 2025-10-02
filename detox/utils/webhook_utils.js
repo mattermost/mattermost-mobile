@@ -179,6 +179,7 @@ function getSimpleDialog(triggerId, webhookBaseUrl) {
         url: `${webhookBaseUrl}/dialog_submit`,
         dialog: {
             callback_id: 'somecallbackid',
+            title: 'Title for Dialog Test without elements',
             icon_url:
                 'http://www.mattermost.org/wp-content/uploads/2016/04/icon.png',
             submit_label: 'Submit Test',
@@ -266,5 +267,4 @@ module.exports = {
     getSimpleDialog,
     getUserAndChannelDialog,
     getBooleanDialog,
-    getTextFieldsDialog,
 };
