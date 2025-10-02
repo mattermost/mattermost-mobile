@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {ChannelListScreen, ServerScreen} from '@support/ui/screen';
-import {isAndroid, retryWithReload, timeouts, wait} from '@support/utils';
+import {isAndroid, retryWithReload, timeouts} from '@support/utils';
 import {expect} from 'detox';
 
 class LoginScreen {
@@ -41,10 +41,8 @@ class LoginScreen {
     signinButtonDisabled = element(by.id(this.testID.signinButtonDisabled));
 
     toBeVisible = async () => {
-        await wait(timeouts.FOUR_SEC);
         await waitFor(this.loginScreen).toExist().withTimeout(timeouts.TEN_SEC);
         await waitFor(this.usernameInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
-
         return this.loginScreen;
     };
 

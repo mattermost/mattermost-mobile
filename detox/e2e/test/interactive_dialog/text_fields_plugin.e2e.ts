@@ -8,9 +8,7 @@
 // *******************************************************************
 
 import {
-    Command,
     Setup,
-    Webhook,
 } from '@support/server_api';
 import {
     serverOneUrl,
@@ -26,34 +24,16 @@ import {
 import {wait} from '@support/utils';
 import {expect} from 'detox';
 
-describe('Interactive Dialog - Text Fields', () => {
+describe('Interactive Dialog - Text Fields (Plugin)', () => {
     const serverOneDisplayName = 'Server 1';
-    const webhookBaseUrl = 'http://localhost:3000'; // Webhook test server
     const channelsCategory = 'channels';
     let testChannel: any;
-    let testTeam: any;
     let testUser: any;
 
     beforeAll(async () => {
-        // # Ensure webhook server is running
-        await Webhook.requireWebhookServer(webhookBaseUrl);
-
-        const {channel, team, user} = await Setup.apiInit(siteOneUrl);
+        const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
-        testTeam = team;
         testUser = user;
-
-        // # Create slash command for text fields dialog testing
-        const command = {
-            team_id: testTeam.id,
-            trigger: 'textfields',
-            url: `${webhookBaseUrl}/text_fields_dialog_request`,
-            method: 'P',
-            username: 'testbot',
-            display_name: 'Text Fields Dialog Command',
-            description: 'Test command for text fields dialog e2e tests',
-        };
-        await Command.apiCreateCommand(siteOneUrl, command);
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -66,16 +46,33 @@ describe('Interactive Dialog - Text Fields', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
     });
 
-    it('MM-T4201 should fill and submit all text field types', async () => {
-        // # Execute slash command to trigger text fields dialog
-        await ChannelScreen.postMessage('/textfields');
-        await wait(1000);
+    afterEach(async () => {
+        // # Clean up any open dialogs between tests
+        try {
+            await InteractiveDialogScreen.cancel();
+        } catch {
+            // No dialog to cancel
+        }
+
+        // # Ensure we're back in the channel for the next test
+        try {
+            await ChannelScreen.open(channelsCategory, testChannel.name);
+        } catch {
+            // Already in channel
+        }
+        await wait(500);
+    });
+
+    it('MM-T4201 should fill and submit all text field types (Plugin)', async () => {
+        // # Execute plugin command to trigger text fields dialog
+        await ChannelScreen.postMessage('/dialog textfields');
+        await wait(500);
 
         // * Verify interactive dialog appears
         await InteractiveDialogScreen.toBeVisible();
         await expect(InteractiveDialogScreen.interactiveDialogScreen).toExist();
 
-        // # Fill all text field types
+        // # Fill all text field types (only required_text is required)
         await InteractiveDialogScreen.fillTextElement('text_field', 'Regular text input');
         await InteractiveDialogScreen.fillTextElement('required_text', 'Required field value');
         await InteractiveDialogScreen.fillTextElement('email_field', 'test@example.com');
@@ -86,50 +83,31 @@ describe('Interactive Dialog - Text Fields', () => {
         // # Submit the dialog with all fields filled
         await InteractiveDialogScreen.submit();
 
+        // # Wait for submission to process
+        await wait(500);
+
         // * Verify dialog is dismissed after submission
-        await expect(InteractiveDialogScreen.interactiveDialogScreen).not.toExist();
-
-        // # Verify submitted values by checking the channel message
-        await wait(1000);
-
-        // Expected values based on what we filled in the form
-        const expectedValues = [
-            'text_field: Regular text input',
-            'required_text: Required field value',
-            'email_field: test@example.com',
-            'number_field: 42',
-            'password_field: secret123',
-            'textarea_field: This is a multiline', // Simplified - just check start of textarea content
-        ];
-
-        // Verify expected values appear in the channel messages
-        if (expectedValues[0]) {
+        try {
+            await expect(InteractiveDialogScreen.interactiveDialogScreen).not.toExist();
+        } catch (dialogStillOpen) {
+            // Dialog may stay open, try to cancel to clean up
             try {
-                await waitFor(element(by.text(expectedValues[0]))).toExist().withTimeout(3000);
-            } catch (verificationError) {
-                // First value not found
+                await InteractiveDialogScreen.cancel();
+            } catch (cancelError) {
+                // Ignore cancel errors
             }
+            throw dialogStillOpen; // Re-throw to fail the test
         }
-        if (expectedValues[1]) {
-            try {
-                await waitFor(element(by.text(expectedValues[1]))).toExist().withTimeout(3000);
-            } catch (verificationError) {
-                // Second value not found
-            }
-        }
-        if (expectedValues[2]) {
-            try {
-                await waitFor(element(by.text(expectedValues[2]))).toExist().withTimeout(3000);
-            } catch (verificationError) {
-                // Third value not found
-            }
-        }
+
+        // # Verify submission response is posted to channel
+        await wait(500);
+        await waitFor(element(by.text('Dialog Submitted:'))).toExist().withTimeout(1000);
     });
 
-    it('MM-T4202 should validate required text field', async () => {
-        // # Execute slash command to trigger text fields dialog
-        await ChannelScreen.postMessage('/textfields');
-        await wait(1000);
+    it('MM-T4202 should validate required text field (Plugin)', async () => {
+        // # Execute plugin command to trigger text fields dialog
+        await ChannelScreen.postMessage('/dialog textfields');
+        await wait(500);
 
         // * Verify interactive dialog appears
         await InteractiveDialogScreen.toBeVisible();
@@ -142,7 +120,7 @@ describe('Interactive Dialog - Text Fields', () => {
         // # Try to submit without required field - should fail or show validation
         try {
             await InteractiveDialogScreen.submit();
-            await wait(1000);
+            await wait(500);
 
             // Check if dialog is still visible (validation failed)
             const isStillVisible = await InteractiveDialogScreen.interactiveDialogScreen.getAttributes().then(() => true).catch(() => false);
@@ -151,27 +129,37 @@ describe('Interactive Dialog - Text Fields', () => {
                 // # Now fill the required field and submit successfully
                 await InteractiveDialogScreen.fillTextElement('required_text', 'Now filled');
                 await InteractiveDialogScreen.submit();
+                await wait(500);
             }
         } catch (submitError) {
             // # Fill required field and try again
             await InteractiveDialogScreen.fillTextElement('required_text', 'Required value');
             await InteractiveDialogScreen.submit();
+            await wait(500);
         }
 
         // * Verify dialog is eventually dismissed
-        await wait(1000);
         try {
             await expect(InteractiveDialogScreen.interactiveDialogScreen).not.toExist();
         } catch (stillVisibleError) {
             // If dialog is still visible, cancel it to clean up
-            await InteractiveDialogScreen.cancel();
+            try {
+                await InteractiveDialogScreen.cancel();
+            } catch (cancelError) {
+                // Ignore cancel errors
+            }
+            throw stillVisibleError; // Re-throw to fail the test
         }
+
+        // # Verify submission response is posted to channel
+        await wait(500);
+        await waitFor(element(by.text('Dialog Submitted:'))).toExist().withTimeout(1000);
     });
 
-    it('MM-T4203 should handle different text input subtypes', async () => {
-        // # Execute slash command to trigger text fields dialog
-        await ChannelScreen.postMessage('/textfields');
-        await wait(1000);
+    it('MM-T4203 should handle different text input subtypes (Plugin)', async () => {
+        // # Execute plugin command to trigger text fields dialog
+        await ChannelScreen.postMessage('/dialog textfields');
+        await wait(500);
 
         // * Verify interactive dialog appears
         await InteractiveDialogScreen.toBeVisible();
@@ -187,7 +175,24 @@ describe('Interactive Dialog - Text Fields', () => {
         // # Submit the dialog
         await InteractiveDialogScreen.submit();
 
+        // # Wait for submission to process
+        await wait(500);
+
         // * Verify dialog is dismissed after submission
-        await expect(InteractiveDialogScreen.interactiveDialogScreen).not.toExist();
+        try {
+            await expect(InteractiveDialogScreen.interactiveDialogScreen).not.toExist();
+        } catch (dialogStillOpen) {
+            // Dialog may stay open, try to cancel to clean up
+            try {
+                await InteractiveDialogScreen.cancel();
+            } catch (cancelError) {
+                // Ignore cancel errors
+            }
+            throw dialogStillOpen; // Re-throw to fail the test
+        }
+
+        // # Verify submission response is posted to channel
+        await wait(500);
+        await waitFor(element(by.text('Dialog Submitted:'))).toExist().withTimeout(1000);
     });
 });
