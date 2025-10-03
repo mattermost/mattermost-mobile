@@ -70,3 +70,7 @@ export function isDueSoon(item: PlaybookChecklistItemModel | PlaybookChecklistIt
 
     return dueDate < Date.now() + toMilliseconds({hours: 12});
 }
+
+export function isOutstanding(item: PlaybookChecklistItemModel | PlaybookChecklistItem): boolean {
+    return item.state === '' || item.state === 'in_progress';
+}

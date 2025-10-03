@@ -32,7 +32,7 @@ describe('SelectDate', () => {
     function getBaseProps(): ComponentProps<typeof SelectDate> {
         const mockOnSave = jest.fn();
 
-        const mockComponentId: AvailableScreens = 'SelectDate';
+        const mockComponentId: AvailableScreens = 'PlaybooksSelectDate';
         const mockCurrentUserTimezone: UserTimezone = {
             automaticTimezone: 'UTC',
             manualTimezone: '',

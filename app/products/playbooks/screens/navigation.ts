@@ -26,6 +26,11 @@ export async function goToPlaybookRun(intl: IntlShape, playbookRunId: string, pl
     goToScreen(Screens.PLAYBOOK_RUN, title, {playbookRunId, playbookRun}, {});
 }
 
+export async function goToPostUpdate(intl: IntlShape, playbookRunId: string) {
+    const title = intl.formatMessage({id: 'playbooks.post_update.title', defaultMessage: 'Post update'});
+    goToScreen(Screens.PLAYBOOK_POST_UPDATE, title, {playbookRunId}, {});
+}
+
 function getSubtitleOptions(theme: Theme, runName: string): RNNOptions {
     return {
         topBar: {
