@@ -10,13 +10,14 @@ import os.log
 
 extension ShareExtension {
     public func uploadFiles(serverUrl: String, channelId: String, message: String,
-                            files: [String], completionHandler: @escaping () -> Void) -> String? {
+                            files: [String], completionHandler: @escaping () -> Void, isDraft: Bool = false) -> String? {
         let id = "mattermost-share-upload-\(UUID().uuidString)"
 
         createUploadSessionData(
             id: id, serverUrl: serverUrl,
             channelId: channelId, message: message,
-            files: files
+            files: files,
+            isDraft: isDraft
         )
 
         guard let credentials = try? Keychain.default.getCredentials(for: serverUrl),
@@ -105,8 +106,14 @@ extension ShareExtension {
             return
         }
 
-        self.removeUploadSessionData(id: id)
         self.deleteUploadedFiles(files: data.files)
+        
+        if data.isDraft {
+            self.saveMessageAsDraftForSession(withId: id, completionHandler: completionHandler)
+            return
+        }
+        
+        self.removeUploadSessionData(id: id)
 
         if let serverUrl = data.serverUrl,
             let channelId = data.channelId {
@@ -135,6 +142,71 @@ extension ShareExtension {
                         handler()
                     }
                 })
+        }
+    }
+    
+    func saveMessageAsDraftForSession(withId id: String, completionHandler: (() -> Void)? = nil) {
+        guard let data = getUploadSessionData(id: id)
+        else {
+            os_log(
+                OSLogType.default,
+                "Mattermost BackgroundSession: saveMessageAsDraftForSession failed to get session data for identifier=%{public}@",
+                id
+            )
+            return
+        }
+        
+        self.removeUploadSessionData(id: id)
+        
+        guard let serverUrl = data.serverUrl,
+              let channelId = data.channelId else { return }
+        
+        do {
+            let filesArray = data.fileIds.compactMap { fileId in
+                data.filesInfo[fileId] as? [String: Any]
+            }
+
+            if let existingDraft = try Database.default.getDraft(serverUrl: serverUrl, channelId: channelId, rootId: "") {
+                if (existingDraft.message == data.message) {
+                    completionHandler?()
+                    return
+                }
+
+                let updatedDraft = Draft(
+                    id: existingDraft.id,
+                    channelId: channelId,
+                    rootId: existingDraft.rootId,
+                    message: data.message,
+                    files: filesArray,
+                    metadata: existingDraft.metadata,
+                    updateAt: Date().timeIntervalSince1970
+                )
+                try Database.default.insertDraft(updatedDraft, serverUrl: serverUrl)
+            } else {
+                guard !data.message.isEmpty || !data.fileIds.isEmpty else {
+                    completionHandler?()
+                    return
+                }
+                
+                let newDraft = Draft(
+                    id: id,
+                    channelId: channelId,
+                    rootId: "",
+                    message: data.message,
+                    files: filesArray,
+                    metadata: "{}",
+                    updateAt: Date().timeIntervalSince1970
+                )
+                try Database.default.insertDraft(newDraft, serverUrl: serverUrl)
+            }
+            completionHandler?()
+        } catch {
+            os_log(
+                OSLogType.default,
+                "Mattermost BackgroundSession: saveMessageAsDraftForSession failed to save draft for identifier=%{public}@",
+                id,
+                error.localizedDescription
+            )
         }
     }
 }
