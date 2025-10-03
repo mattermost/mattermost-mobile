@@ -32,9 +32,9 @@ type Props = {
     keyboardOverlap?: number;
 
     /**
-     * A handler function that will select or deselect a user when clicked on.
+     * A handler function that will trigger when the button is pressed.
      */
-    onPress: (selectedId?: {[id: string]: boolean}) => void;
+    onPress: () => void;
 
     /**
      * A handler function that will deselect a user when clicked on.
@@ -42,7 +42,7 @@ type Props = {
     onRemove: (id: string) => void;
 
     /**
-     * An object mapping user ids to a falsey value indicating whether or not they have been selected.
+     * A set of the selected user ids.
      */
     selectedIds: Set<string>;
 

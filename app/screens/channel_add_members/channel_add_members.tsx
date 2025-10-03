@@ -163,7 +163,7 @@ export default function ChannelAddMembers({
             return;
         }
 
-        const idsToUse = Object.keys(selectedIds);
+        const idsToUse = Array.from(selectedIds);
         if (!idsToUse.length) {
             return;
         }
