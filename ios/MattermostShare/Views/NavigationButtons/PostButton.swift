@@ -52,7 +52,7 @@ struct PostButton: View {
             FontIcon.text(.compassIcons(code: .pen), fontsize: 24, color: Color.theme.linkColor)
             Text(
               NSLocalizedString("share_extension.save_draft",
-                value: "Save as a draft",
+                value: "Save as draft",
                 comment: "")
             )
             .font(Font.custom("Metropolis-SemiBold", size: 14))

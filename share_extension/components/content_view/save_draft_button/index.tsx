@@ -75,7 +75,7 @@ const SaveDraftButton = ({theme}: Props) => {
                 style={styles.draftIcon}
             />
             <Text style={styles.buttonText}>
-                {intl.formatMessage({id: 'share_extension.save_draft', defaultMessage: 'Save as a draft'})}
+                {intl.formatMessage({id: 'share_extension.save_draft', defaultMessage: 'Save as draft'})}
             </Text>
         </TouchableWithFeedback>
     );
