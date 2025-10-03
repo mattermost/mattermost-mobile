@@ -8,7 +8,6 @@ import Animated from 'react-native-reanimated';
 
 import {useBannerAnimation} from './hooks/useBannerAnimation';
 import {useBannerGesture} from './hooks/useBannerGesture';
-import {useBannerPosition} from './hooks/useBannerPosition';
 
 /**
  * Position where the banner should appear on screen
@@ -38,20 +37,6 @@ export interface BannerProps {
     position?: BannerPosition;
 
     /**
-     * Additional offset from the top in pixels
-     * Added to the calculated safe area and header offsets
-     * @default 0
-     */
-    customTopOffset?: number;
-
-    /**
-     * Additional offset from the bottom in pixels
-     * Only used when position is 'bottom'
-     * @default 0
-     */
-    customBottomOffset?: number;
-
-    /**
      * Controls banner visibility with fade animation
      * @default true
      */
@@ -72,13 +57,6 @@ export interface BannerProps {
      * Custom styles applied to the outer container
      */
     containerStyle?: ViewStyle;
-
-    /**
-     * Whether the banner is displayed on a thread screen
-     * Affects header height calculations (thread screens don't have main headers)
-     * @default false
-     */
-    threadScreen?: boolean;
 
     /**
      * Whether the banner can be dismissed by swiping
@@ -129,24 +107,14 @@ const styles = StyleSheet.create({
 const Banner: React.FC<BannerProps> = ({
     children,
     position = 'top',
-    customTopOffset = 0,
-    customBottomOffset = 0,
     visible = true,
     animationDuration = 300,
     style,
     containerStyle,
-    threadScreen = false,
     dismissible = false,
     onDismiss,
     swipeThreshold = 100,
 }) => {
-    const {positionStyle} = useBannerPosition({
-        position,
-        customTopOffset,
-        customBottomOffset,
-        threadScreen,
-    });
-
     const {opacity, translateX, isDismissed, animatedStyle} = useBannerAnimation({
         visible,
         position,
@@ -167,7 +135,6 @@ const Banner: React.FC<BannerProps> = ({
             testID='banner-animated-view'
             style={[
                 styles.wrapper,
-                positionStyle,
                 animatedStyle,
                 style,
             ]}

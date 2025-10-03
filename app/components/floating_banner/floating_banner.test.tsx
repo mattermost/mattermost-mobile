@@ -130,10 +130,7 @@ describe('FloatingBanner', () => {
             renderFloatingBanner([banner]);
 
             const bannerElement = screen.getByTestId('banner');
-            expect(bannerElement.props.position).toBe('top');
             expect(bannerElement.props.visible).toBe(true);
-            expect(bannerElement.props.customTopOffset).toBe(0);
-            expect(bannerElement.props.customBottomOffset).toBeUndefined();
             expect(bannerElement.props.dismissible).toBe(true);
         });
 
@@ -148,8 +145,8 @@ describe('FloatingBanner', () => {
             const bannerElements = screen.getAllByTestId('banner');
             expect(bannerElements).toHaveLength(3);
 
-            bannerElements.forEach((element, index) => {
-                expect(element.props.customTopOffset).toBe(index * 60);
+            bannerElements.forEach((element) => {
+                expect(element.props.visible).toBe(true);
             });
         });
 
@@ -158,8 +155,7 @@ describe('FloatingBanner', () => {
             renderFloatingBanner([banner]);
 
             const bannerElement = screen.getByTestId('banner');
-
-            expect(bannerElement.props.position).toBe('bottom');
+            expect(bannerElement.props.visible).toBe(true);
         });
 
         it('should handle non-dismissible banners', () => {
@@ -214,7 +210,6 @@ describe('FloatingBanner', () => {
 
             expect(screen.getByTestId('custom-content-bottom')).toBeDefined();
             const bannerElement = screen.getByTestId('banner');
-            expect(bannerElement.props.position).toBe('bottom');
             expect(bannerElement.props.dismissible).toBe(false);
         });
     });
@@ -297,16 +292,9 @@ describe('FloatingBanner', () => {
             const bannerElements = screen.getAllByTestId('banner');
             expect(bannerElements).toHaveLength(3);
 
-            expect(bannerElements[0].props.position).toBe('top');
             expect(bannerElements[0].props.dismissible).toBe(true);
-            expect(bannerElements[0].props.customTopOffset).toBe(0);
-
-            expect(bannerElements[1].props.position).toBe('top');
-            expect(bannerElements[1].props.customTopOffset).toBe(60);
-
-            expect(bannerElements[2].props.position).toBe('bottom');
+            expect(bannerElements[1].props.dismissible).toBe(true);
             expect(bannerElements[2].props.dismissible).toBe(false);
-            expect(bannerElements[2].props.customBottomOffset).toBe(8);
 
             expect(screen.getByTestId('custom-banner')).toBeDefined();
             expect(screen.getAllByTestId('banner-item')).toHaveLength(2);
@@ -323,9 +311,8 @@ describe('FloatingBanner', () => {
 
             const bannerElements = screen.getAllByTestId('banner');
             expect(bannerElements).toHaveLength(2);
-            expect(bannerElements[0].props.position).toBe('top');
-            expect(bannerElements[1].props.position).toBe('top');
-            expect(bannerElements[1].props.customTopOffset).toBe(60);
+            expect(bannerElements[0].props.visible).toBe(true);
+            expect(bannerElements[1].props.visible).toBe(true);
         });
 
         it('applies tablet-specific bottom offset', () => {
