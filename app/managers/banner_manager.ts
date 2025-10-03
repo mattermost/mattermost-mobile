@@ -105,6 +105,13 @@ class BannerManagerSingleton {
         try {
             if (!this.activeBanners.length) {
                 if (this.overlayVisible) {
+                    Navigation.updateProps(FLOATING_BANNER_OVERLAY_ID, {
+                        banners: [],
+                        onDismiss: () => {
+                            // No-op: no banners to dismiss
+                        },
+                    });
+
                     await new Promise<void>((resolve) => {
                         this.dismissOverlayResolve = resolve;
                         this.dismissOverlayTimer = setTimeout(() => {
@@ -145,7 +152,6 @@ class BannerManagerSingleton {
             });
 
             if (this.overlayVisible) {
-                // TODO: add Navigation.updateProps in @screens/navigation.ts
                 Navigation.updateProps(FLOATING_BANNER_OVERLAY_ID, {
                     banners: bannersWithDismiss,
                     onDismiss: handleDismiss,
