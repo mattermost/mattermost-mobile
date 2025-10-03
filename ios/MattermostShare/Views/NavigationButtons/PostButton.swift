@@ -58,7 +58,6 @@ struct PostButton: View {
             .font(Font.custom("Metropolis-SemiBold", size: 14))
             .foregroundColor(Color.theme.linkColor)
           }
-          .padding(.leading, 15)
           .padding(.vertical, 10)
         }
       } else {
