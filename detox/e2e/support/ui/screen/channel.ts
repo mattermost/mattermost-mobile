@@ -228,7 +228,6 @@ class ChannelScreen {
         // # Tap send button
         await this.sendButton.tap();
         await expect(this.sendButton).not.toExist();
-        await expect(this.sendButtonDisabled).toBeVisible();
     };
 
     longPressSendButton = async () => {

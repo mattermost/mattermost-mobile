@@ -33,6 +33,7 @@ const prepackagedPlugins = new Set([
     'com.mattermost.nps',
     'com.mattermost.welcomebot',
     'zoom',
+    'com.mattermost.demo-plugin',
 ]);
 
 /**
