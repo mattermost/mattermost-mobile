@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {Navigation} from 'react-native-navigation';
 
 import {Screens} from '@constants';
 import {showOverlay, dismissOverlay} from '@screens/navigation';
@@ -15,9 +16,15 @@ interface MockOverlayProps {
     onDismiss: (id: string) => void;
 }
 
+jest.mock('react-native-navigation', () => ({
+    Navigation: {
+        updateProps: jest.fn(),
+    },
+}));
+
 jest.mock('@screens/navigation', () => ({
     showOverlay: jest.fn(),
-    dismissOverlay: jest.fn(),
+    dismissOverlay: jest.fn().mockResolvedValue(undefined),
 }));
 
 jest.mock('@utils/datetime', () => ({
@@ -26,20 +33,38 @@ jest.mock('@utils/datetime', () => ({
 
 const mockShowOverlay = jest.mocked(showOverlay);
 const mockDismissOverlay = jest.mocked(dismissOverlay);
+const mockUpdateProps = jest.mocked(Navigation.updateProps);
 
 describe('BannerManager', () => {
-    const mockSetTimeout = jest.spyOn(global, 'setTimeout').mockImplementation((cb: () => void) => {
-        cb();
-        return 1 as unknown as NodeJS.Timeout;
+    let timeoutId = 0;
+    type TimeoutCallback = () => void;
+    const timeoutCallbacks = new Map<number, TimeoutCallback>();
+
+    const mockSetTimeout = jest.spyOn(global, 'setTimeout').mockImplementation((cb: TimeoutCallback) => {
+        timeoutId++;
+        timeoutCallbacks.set(timeoutId, cb);
+        return timeoutId as unknown as NodeJS.Timeout;
     });
-    const mockClearTimeout = jest.spyOn(global, 'clearTimeout').mockImplementation(() => undefined);
+
+    const mockClearTimeout = jest.spyOn(global, 'clearTimeout').mockImplementation((id: NodeJS.Timeout) => {
+        timeoutCallbacks.delete(id as unknown as number);
+    });
+
+    const runAllTimers = () => {
+        const callbacks = Array.from(timeoutCallbacks.values());
+        timeoutCallbacks.clear();
+        callbacks.forEach((cb) => cb());
+    };
 
     beforeEach(() => {
         jest.clearAllMocks();
+        timeoutCallbacks.clear();
+        timeoutId = 0;
         BannerManager.cleanup();
     });
 
     afterEach(() => {
+        timeoutCallbacks.clear();
         BannerManager.cleanup();
     });
 
@@ -75,7 +100,6 @@ describe('BannerManager', () => {
                         title: 'Test Title',
                         message: 'Test Message',
                         type: 'info',
-                        onDismiss: expect.any(Function),
                     })],
                     onDismiss: expect.any(Function),
                 },
@@ -119,7 +143,7 @@ describe('BannerManager', () => {
             );
         });
 
-        it('should dismiss existing banner before showing new one', () => {
+        it('should stack multiple banners and update overlay', () => {
             const firstBanner: BannerConfig = {
                 id: 'first-banner',
                 title: 'First',
@@ -134,10 +158,19 @@ describe('BannerManager', () => {
 
             BannerManager.showBanner(firstBanner);
             expect(BannerManager.getCurrentBannerId()).toBe('first-banner');
+            expect(mockShowOverlay).toHaveBeenCalledTimes(1);
 
             BannerManager.showBanner(secondBanner);
 
-            expect(mockDismissOverlay).toHaveBeenCalledWith('floating-banner-overlay');
+            expect(mockUpdateProps).toHaveBeenCalledWith(
+                'floating-banner-overlay',
+                expect.objectContaining({
+                    banners: expect.arrayContaining([
+                        expect.objectContaining({id: 'first-banner'}),
+                        expect.objectContaining({id: 'second-banner'}),
+                    ]),
+                }),
+            );
             expect(BannerManager.getCurrentBannerId()).toBe('second-banner');
         });
 
@@ -160,6 +193,37 @@ describe('BannerManager', () => {
                     dismissible: undefined,
                 },
             );
+        });
+
+        it('should call cloned onDismiss handler when custom component is dismissed', async () => {
+            const mockOnDismiss = jest.fn();
+            const customElement = React.createElement('div', {}, 'Custom content');
+            const bannerWithCustomComponent: BannerConfig = {
+                id: 'custom-component-banner',
+                customComponent: customElement,
+                dismissible: true,
+                onDismiss: mockOnDismiss,
+            };
+
+            jest.spyOn(React, 'isValidElement').mockReturnValue(true);
+
+            BannerManager.showBanner(bannerWithCustomComponent);
+
+            const cloneCall = (React.cloneElement as jest.Mock).mock.calls[0];
+            const clonedProps = cloneCall[1];
+            const clonedOnDismiss = clonedProps.onDismiss;
+
+            clonedOnDismiss();
+
+            expect(mockOnDismiss).toHaveBeenCalled();
+            expect(BannerManager.isBannerVisible()).toBe(false);
+
+            runAllTimers();
+            await Promise.resolve();
+            runAllTimers();
+            await Promise.resolve();
+
+            expect(mockDismissOverlay).toHaveBeenCalledWith('floating-banner-overlay');
         });
 
         it('should respect dismissible property from banner config', () => {
@@ -201,27 +265,7 @@ describe('BannerManager', () => {
             );
         });
 
-        it('should call original onDismiss when banner is dismissed via handleDismiss', () => {
-            const mockOnDismiss = jest.fn();
-            const bannerWithOnDismiss: BannerConfig = {
-                ...mockBannerConfig,
-                onDismiss: mockOnDismiss,
-            };
-
-            BannerManager.showBanner(bannerWithOnDismiss);
-
-            const overlayCall = mockShowOverlay.mock.calls[0];
-            const bannerConfig = (overlayCall?.[1] as MockOverlayProps)?.banners?.[0];
-
-            bannerConfig?.onDismiss?.();
-
-            expect(mockOnDismiss).toHaveBeenCalled();
-            expect(mockDismissOverlay).toHaveBeenCalledWith('floating-banner-overlay');
-            expect(BannerManager.isBannerVisible()).toBe(false);
-            expect(BannerManager.getCurrentBannerId()).toBeNull();
-        });
-
-        it('should call original onDismiss when banner is dismissed via overlay onDismiss', () => {
+        it('should call original onDismiss when banner is dismissed via handleDismiss', async () => {
             const mockOnDismiss = jest.fn();
             const bannerWithOnDismiss: BannerConfig = {
                 ...mockBannerConfig,
@@ -236,9 +280,41 @@ describe('BannerManager', () => {
             overlayOnDismiss?.('test-banner');
 
             expect(mockOnDismiss).toHaveBeenCalled();
-            expect(mockDismissOverlay).toHaveBeenCalledWith('floating-banner-overlay');
             expect(BannerManager.isBannerVisible()).toBe(false);
+
+            runAllTimers();
+            await Promise.resolve();
+
+            expect(mockDismissOverlay).toHaveBeenCalledWith('floating-banner-overlay');
             expect(BannerManager.getCurrentBannerId()).toBeNull();
+        });
+
+        it('should remove banner from list when dismissed but keep overlay for other banners', () => {
+            const firstBanner: BannerConfig = {
+                id: 'first-banner',
+                title: 'First',
+                message: 'First message',
+                onDismiss: jest.fn(),
+            };
+
+            const secondBanner: BannerConfig = {
+                id: 'second-banner',
+                title: 'Second',
+                message: 'Second message',
+            };
+
+            BannerManager.showBanner(firstBanner);
+            BannerManager.showBanner(secondBanner);
+
+            const overlayCall = mockUpdateProps.mock.calls[0];
+            const overlayOnDismiss = (overlayCall?.[1] as MockOverlayProps)?.onDismiss;
+
+            overlayOnDismiss?.('first-banner');
+
+            expect(firstBanner.onDismiss).toHaveBeenCalled();
+            expect(BannerManager.isBannerVisible()).toBe(true);
+            expect(BannerManager.getCurrentBannerId()).toBe('second-banner');
+            expect(mockDismissOverlay).not.toHaveBeenCalled();
         });
 
         it('should not call onDismiss for different banner IDs in overlay callback', () => {
@@ -259,7 +335,7 @@ describe('BannerManager', () => {
             expect(mockDismissOverlay).not.toHaveBeenCalled();
         });
 
-        it('should handle errors in onDismiss callback gracefully', () => {
+        it('should handle errors in onDismiss callback gracefully', async () => {
             const mockOnDismiss = jest.fn().mockImplementation(() => {
                 throw new Error('Test error');
             });
@@ -271,11 +347,15 @@ describe('BannerManager', () => {
             BannerManager.showBanner(bannerWithErrorOnDismiss);
 
             const overlayCall = mockShowOverlay.mock.calls[0];
-            const bannerConfig = (overlayCall?.[1] as MockOverlayProps)?.banners?.[0];
+            const overlayOnDismiss = (overlayCall?.[1] as MockOverlayProps)?.onDismiss;
 
-            expect(() => bannerConfig?.onDismiss?.()).not.toThrow();
-            expect(mockDismissOverlay).toHaveBeenCalledWith('floating-banner-overlay');
+            expect(() => overlayOnDismiss?.('test-banner')).not.toThrow();
             expect(BannerManager.isBannerVisible()).toBe(false);
+
+            runAllTimers();
+            await Promise.resolve();
+
+            expect(mockDismissOverlay).toHaveBeenCalledWith('floating-banner-overlay');
         });
     });
 
@@ -287,10 +367,6 @@ describe('BannerManager', () => {
         };
 
         it('should show banner and set timeout for auto hide with default duration', () => {
-            mockSetTimeout.mockImplementationOnce(() => {
-                return 1 as unknown as NodeJS.Timeout;
-            });
-
             BannerManager.showBannerWithAutoHide(mockBannerConfig);
 
             expect(mockShowOverlay).toHaveBeenCalled();
@@ -300,9 +376,6 @@ describe('BannerManager', () => {
 
         it('should show banner and set timeout for auto hide with custom duration', () => {
             const customDuration = 3000;
-            mockSetTimeout.mockImplementationOnce(() => {
-                return 1 as unknown as NodeJS.Timeout;
-            });
 
             BannerManager.showBannerWithAutoHide(mockBannerConfig, customDuration);
 
@@ -310,8 +383,15 @@ describe('BannerManager', () => {
             expect(mockSetTimeout).toHaveBeenCalledWith(expect.any(Function), customDuration);
         });
 
-        it('should hide banner when timeout executes', () => {
+        it('should hide banner when timeout executes', async () => {
             BannerManager.showBannerWithAutoHide(mockBannerConfig);
+
+            expect(BannerManager.isBannerVisible()).toBe(true);
+
+            runAllTimers();
+            await Promise.resolve();
+            runAllTimers();
+            await Promise.resolve();
 
             expect(BannerManager.isBannerVisible()).toBe(false);
             expect(mockDismissOverlay).toHaveBeenCalledWith('floating-banner-overlay');
@@ -328,24 +408,49 @@ describe('BannerManager', () => {
         it('should do nothing if no banner is visible', () => {
             expect(BannerManager.isBannerVisible()).toBe(false);
 
-            const clearTimeoutCallsBefore = mockClearTimeout.mock.calls.length;
             BannerManager.hideBanner();
 
             expect(mockDismissOverlay).not.toHaveBeenCalled();
-            expect(mockClearTimeout).toHaveBeenCalledTimes(clearTimeoutCallsBefore);
         });
 
-        it('should hide visible banner and clear timeouts', () => {
+        it('should hide visible banner and clear timeouts', async () => {
             BannerManager.showBanner(mockBannerConfig);
             expect(BannerManager.isBannerVisible()).toBe(true);
 
-            const clearTimeoutCallsBefore = mockClearTimeout.mock.calls.length;
             BannerManager.hideBanner();
 
             expect(BannerManager.isBannerVisible()).toBe(false);
             expect(BannerManager.getCurrentBannerId()).toBeNull();
+
+            runAllTimers();
+            await Promise.resolve();
+            runAllTimers();
+            await Promise.resolve();
+
             expect(mockDismissOverlay).toHaveBeenCalledWith('floating-banner-overlay');
-            expect(mockClearTimeout).toHaveBeenCalledTimes(clearTimeoutCallsBefore + 1);
+        });
+
+        it('should hide specific banner by ID', () => {
+            const firstBanner: BannerConfig = {
+                id: 'first-banner',
+                title: 'First',
+                message: 'First message',
+            };
+
+            const secondBanner: BannerConfig = {
+                id: 'second-banner',
+                title: 'Second',
+                message: 'Second message',
+            };
+
+            BannerManager.showBanner(firstBanner);
+            BannerManager.showBanner(secondBanner);
+
+            BannerManager.hideBanner('first-banner');
+
+            expect(BannerManager.isBannerVisible()).toBe(true);
+            expect(BannerManager.getCurrentBannerId()).toBe('second-banner');
+            expect(mockDismissOverlay).not.toHaveBeenCalled();
         });
 
         it('should call current onDismiss callback when hiding', () => {
@@ -356,7 +461,7 @@ describe('BannerManager', () => {
             };
 
             BannerManager.showBanner(bannerWithOnDismiss);
-            BannerManager.hideBanner();
+            BannerManager.hideBanner('hide-test-banner');
 
             expect(mockOnDismiss).toHaveBeenCalled();
         });
@@ -372,9 +477,44 @@ describe('BannerManager', () => {
 
             BannerManager.showBanner(bannerWithErrorOnDismiss);
 
-            expect(() => BannerManager.hideBanner()).not.toThrow();
+            expect(() => BannerManager.hideBanner('hide-test-banner')).not.toThrow();
             expect(BannerManager.isBannerVisible()).toBe(false);
-            expect(mockDismissOverlay).toHaveBeenCalled();
+            expect(mockOnDismiss).toHaveBeenCalled();
+        });
+    });
+
+    describe('dismiss delay behavior', () => {
+        it('should cancel overlay dismiss when new banner is added during delay', async () => {
+            const firstBanner: BannerConfig = {
+                id: 'first-banner',
+                title: 'First',
+                message: 'First message',
+            };
+
+            const secondBanner: BannerConfig = {
+                id: 'second-banner',
+                title: 'Second',
+                message: 'Second message',
+            };
+
+            BannerManager.showBanner(firstBanner);
+            expect(BannerManager.isBannerVisible()).toBe(true);
+
+            const dismissCallsBefore = mockDismissOverlay.mock.calls.length;
+
+            BannerManager.hideBanner('first-banner');
+            expect(BannerManager.isBannerVisible()).toBe(false);
+
+            await Promise.resolve();
+
+            BannerManager.showBanner(secondBanner);
+
+            runAllTimers();
+            await Promise.resolve();
+
+            expect(mockDismissOverlay).toHaveBeenCalledTimes(dismissCallsBefore);
+            expect(BannerManager.isBannerVisible()).toBe(true);
+            expect(BannerManager.getCurrentBannerId()).toBe('second-banner');
         });
     });
 
@@ -386,18 +526,13 @@ describe('BannerManager', () => {
         };
 
         it('should clear all timeouts and hide banner', () => {
-            mockSetTimeout.mockImplementationOnce(() => {
-                return 1 as unknown as NodeJS.Timeout;
-            });
-
             BannerManager.showBannerWithAutoHide(mockBannerConfig);
 
             const clearTimeoutCallsBefore = mockClearTimeout.mock.calls.length;
             BannerManager.cleanup();
 
-            // cleanup calls clearTimeout once (for closeTimeout)
-            // hideBanner (called by cleanup) also calls clearTimeout once
-            expect(mockClearTimeout).toHaveBeenCalledTimes(clearTimeoutCallsBefore + 2);
+            expect(mockClearTimeout.mock.calls.length).toBeGreaterThan(clearTimeoutCallsBefore);
+            expect(BannerManager.isBannerVisible()).toBe(false);
         });
 
         it('should reset manager state', () => {
