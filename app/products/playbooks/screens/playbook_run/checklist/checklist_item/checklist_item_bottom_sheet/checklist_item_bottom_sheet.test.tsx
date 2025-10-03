@@ -2,21 +2,21 @@
 // See LICENSE.txt for license information.
 
 import {BottomSheetScrollView} from '@gorhom/bottom-sheet';
-import {act, fireEvent} from '@testing-library/react-native';
+import {act, fireEvent, waitFor} from '@testing-library/react-native';
 import React, {type ComponentProps} from 'react';
 import {ScrollView} from 'react-native';
 
 import OptionBox from '@components/option_box';
 import OptionItem from '@components/option_item';
 import {useIsTablet} from '@hooks/device';
-import {setChecklistItemCommand} from '@playbooks/actions/remote/checklist';
-import {dismissBottomSheet, goToScreen, openUserProfileModal} from '@screens/navigation';
+import {setAssignee, setChecklistItemCommand, setDueDate} from '@playbooks/actions/remote/checklist';
+import {goToEditCommand, goToSelectDate, goToSelectUser} from '@playbooks/screens/navigation';
+import {dismissBottomSheet, openUserProfileModal} from '@screens/navigation';
 import {renderWithIntl} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
+import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 
 import ChecklistItemBottomSheet from './checklist_item_bottom_sheet';
-
-import type EditCommand from '@playbooks/screens/edit_command';
 
 jest.mock('@hooks/device', () => ({
     useIsTablet: jest.fn(),
@@ -33,11 +33,15 @@ jest.mocked(OptionBox).mockImplementation((props) => React.createElement('Option
 jest.mock('@components/option_item');
 jest.mocked(OptionItem).mockImplementation((props) => React.createElement('OptionItem', props));
 
+jest.mock('@playbooks/screens/navigation');
 jest.mock('@playbooks/actions/remote/checklist');
 
 jest.mock('@context/server', () => ({
     useServerUrl: jest.fn().mockReturnValue('server-url'),
 }));
+
+jest.mock('@playbooks/screens/navigation');
+jest.mock('@utils/snack_bar');
 
 describe('ChecklistItemBottomSheet', () => {
     const mockOnCheck = jest.fn();
@@ -75,6 +79,7 @@ describe('ChecklistItemBottomSheet', () => {
     function getBaseProps(): ComponentProps<typeof ChecklistItemBottomSheet> {
         return {
             runId: 'run-1',
+            runName: 'Run 1',
             checklistNumber: 1,
             itemNumber: 1,
             channelId: 'channel-1',
@@ -85,6 +90,8 @@ describe('ChecklistItemBottomSheet', () => {
             onRunCommand: mockOnRunCommand,
             teammateNameDisplay: mockTeammateNameDisplay,
             isDisabled: false,
+            currentUserTimezone: {useAutomaticTimezone: false, automaticTimezone: '', manualTimezone: 'America/New_York'},
+            participantIds: ['user-1', 'user-2'],
         };
     }
 
@@ -283,7 +290,7 @@ describe('ChecklistItemBottomSheet', () => {
         const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
 
         const dueDateItem = getByTestId('checklist_item.due_date');
-        expect(dueDateItem.props.info).toBe('Saturday, January 1 at 12:00 AM');
+        expect(dueDateItem.props.info).toBe('Saturday, January 1 at 07:00 PM');
 
         jest.useRealTimers();
     });
@@ -321,6 +328,21 @@ describe('ChecklistItemBottomSheet', () => {
         expect(commandItem).toHaveProp('action', expect.any(Function));
     });
 
+    it('set date is disabled when isDisabled is true', () => {
+        const props = getBaseProps();
+        props.isDisabled = true;
+        const {getByTestId, rerender} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
+        let dueDateItem = getByTestId('checklist_item.due_date');
+        expect(dueDateItem).toHaveProp('type', 'none');
+        expect(dueDateItem).toHaveProp('action', undefined);
+
+        props.isDisabled = false;
+        rerender(<ChecklistItemBottomSheet {...props}/>);
+        dueDateItem = getByTestId('checklist_item.due_date');
+        expect(dueDateItem).toHaveProp('type', 'arrow');
+        expect(dueDateItem).toHaveProp('action', expect.any(Function));
+    });
+
     it('displays correct command information', () => {
         const props = getBaseProps();
         props.item = TestHelper.fakePlaybookChecklistItemModel({
@@ -345,6 +367,27 @@ describe('ChecklistItemBottomSheet', () => {
         expect(commandItem.props.info).toBe('None');
     });
 
+    it('user profile option item is disabled when isDisabled is true', () => {
+        const props = getBaseProps();
+        props.isDisabled = true;
+        props.item = TestHelper.fakePlaybookChecklistItemModel({
+            ...props.item,
+            assigneeId: 'user-1',
+        });
+        const {getByTestId, rerender} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
+
+        let assigneeItem = getByTestId('checklist_item.assignee');
+        expect(assigneeItem).toHaveProp('type', 'none');
+        expect(assigneeItem).toHaveProp('action', undefined);
+
+        props.isDisabled = false;
+        rerender(<ChecklistItemBottomSheet {...props}/>);
+
+        assigneeItem = getByTestId('checklist_item.assignee');
+        expect(assigneeItem).toHaveProp('type', 'arrow');
+        expect(assigneeItem).toHaveProp('action', expect.any(Function));
+    });
+
     it('opens the command modal when the command is clicked', async () => {
         const props = getBaseProps();
         props.checklistNumber = 2;
@@ -356,17 +399,16 @@ describe('ChecklistItemBottomSheet', () => {
             commandItem.props.action();
         });
 
-        expect(goToScreen).toHaveBeenCalledWith(
-            'PlaybookEditCommand',
-            'Slash command',
-            {
-                savedCommand: 'test command',
-                updateCommand: expect.any(Function),
-                channelId: 'channel-1',
-            },
+        expect(goToEditCommand).toHaveBeenCalledWith(
+            expect.anything(),
+            expect.anything(),
+            'Run 1',
+            'test command',
+            'channel-1',
+            expect.any(Function),
         );
 
-        const updateCommand = (jest.mocked(goToScreen).mock.calls[0][2] as ComponentProps<typeof EditCommand>).updateCommand;
+        const updateCommand = jest.mocked(goToEditCommand).mock.calls[0][5];
         await act(async () => {
             updateCommand('new command');
         });
@@ -379,6 +421,49 @@ describe('ChecklistItemBottomSheet', () => {
             4,
             'new command',
         );
+    });
+
+    it('opens the set date modal when the due date is clicked', async () => {
+        const props = getBaseProps();
+        props.checklistNumber = 2;
+        props.itemNumber = 4;
+        props.item = TestHelper.fakePlaybookChecklistItemModel({
+            ...props.item,
+            dueDate: 1640995200000, // 2022-01-01
+        });
+        const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
+        const dueDateItem = getByTestId('checklist_item.due_date');
+        act(() => {
+            dueDateItem.props.action();
+        });
+        expect(goToSelectDate).toHaveBeenCalledWith(
+            expect.anything(),
+            expect.anything(),
+            'Run 1',
+            expect.any(Function),
+            1640995200000,
+        );
+
+        const setDate = jest.mocked(goToSelectDate).mock.calls[0][3];
+        await act(async () => {
+            setDate(1672531200000);
+        });
+        expect(setDueDate).toHaveBeenCalledWith(
+            'server-url',
+            'run-1',
+            'item-1',
+            2,
+            4,
+            1672531200000,
+        );
+    });
+
+    it('does not open the set date modal when the due date is clicked and isDisabled is true', async () => {
+        const props = getBaseProps();
+        props.isDisabled = true;
+        const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
+        const dueDateItem = getByTestId('checklist_item.due_date');
+        expect(dueDateItem.props.action).toBeUndefined();
     });
 
     it('handles user profile modal opening correctly', async () => {
@@ -402,13 +487,102 @@ describe('ChecklistItemBottomSheet', () => {
         );
     });
 
+    it('opens the select assigneed screen when the assignee option item is pressed', async () => {
+        const props = getBaseProps();
+        props.checklistNumber = 2;
+        props.itemNumber = 4;
+        const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
+
+        const assigneeItem = getByTestId('checklist_item.assignee');
+        const onPress = assigneeItem.props.action;
+
+        await act(async () => {
+            onPress('user-1');
+        });
+
+        expect(goToSelectUser).toHaveBeenCalledWith(
+            expect.anything(),
+            'Run 1',
+            'Assignee',
+            ['user-1', 'user-2'],
+            'user-1',
+            expect.any(Function),
+            expect.any(Function),
+        );
+
+        const handleSelect = jest.mocked(goToSelectUser).mock.calls[0][5];
+        const handleRemove = jest.mocked(goToSelectUser).mock.calls[0][6];
+
+        await act(async () => {
+            handleSelect(TestHelper.fakeUser({id: 'user-1'}));
+        });
+
+        expect(setAssignee).toHaveBeenCalledWith(
+            'server-url',
+            'run-1',
+            'item-1',
+            2,
+            4,
+            'user-1',
+        );
+
+        jest.mocked(setAssignee).mockClear();
+
+        await act(async () => {
+            handleRemove?.();
+        });
+
+        expect(setAssignee).toHaveBeenCalledWith(
+            'server-url',
+            'run-1',
+            'item-1',
+            2,
+            4,
+            '',
+        );
+    });
+
+    it('handles set assignee error', async () => {
+        const props = getBaseProps();
+        jest.mocked(setAssignee).mockResolvedValue({error: 'error'});
+        const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
+
+        const assigneeItem = getByTestId('checklist_item.assignee');
+        const onPress = assigneeItem.props.action;
+
+        await act(async () => {
+            onPress('user-1');
+        });
+
+        const handleSelect = jest.mocked(goToSelectUser).mock.calls[0][5];
+        const handleRemove = jest.mocked(goToSelectUser).mock.calls[0][6];
+
+        await act(async () => {
+            handleSelect(TestHelper.fakeUser({id: 'user-1'}));
+        });
+
+        await waitFor(() => {
+            expect(showPlaybookErrorSnackbar).toHaveBeenCalled();
+        });
+
+        jest.mocked(showPlaybookErrorSnackbar).mockClear();
+
+        await act(async () => {
+            handleRemove?.();
+        });
+
+        await waitFor(() => {
+            expect(showPlaybookErrorSnackbar).toHaveBeenCalled();
+        });
+    });
+
     it('displays correct assignee label and icon', () => {
         const props = getBaseProps();
         const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
 
         const assigneeItem = getByTestId('checklist_item.assignee');
         expect(assigneeItem.props.label).toBe('Assignee');
-        expect(assigneeItem.props.icon).toBe('account-multiple-plus-outline');
+        expect(assigneeItem.props.icon).toBe('account-plus-outline');
     });
 
     it('displays correct due date label and icon', () => {

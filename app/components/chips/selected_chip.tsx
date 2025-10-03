@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useMemo} from 'react';
 
 import BaseChip from './base_chip';
 
@@ -18,15 +18,12 @@ export default function SelectedChip({
     onRemove,
     testID,
 }: SelectedChipProps) {
-    const onPress = useCallback(() => {
-        onRemove(id);
-    }, [onRemove, id]);
+    const action = useMemo(() => ({icon: 'remove' as const, onPress: () => onRemove(id)}), [id, onRemove]);
 
     return (
         <BaseChip
             testID={testID}
-            onPress={onPress}
-            showRemoveOption={true}
+            action={action}
             showAnimation={true}
             label={text}
         />

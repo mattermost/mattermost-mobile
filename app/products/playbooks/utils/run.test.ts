@@ -3,7 +3,7 @@
 
 import TestHelper from '@test/test_helper';
 
-import {getRunScheduledTimestamp, isRunFinished, getMaxRunUpdateAt, isOverdue, isDueSoon} from './run';
+import {getRunScheduledTimestamp, isRunFinished, getMaxRunUpdateAt, isOverdue, isDueSoon, isPending} from './run';
 
 describe('run utils', () => {
     describe('getRunScheduledTimestamp', () => {
@@ -105,6 +105,10 @@ describe('run utils', () => {
             });
 
             expect(isRunFinished(run)).toBe(true);
+        });
+
+        it('should return true for undefined run', () => {
+            expect(isRunFinished(undefined)).toBe(true);
         });
     });
 
@@ -306,6 +310,62 @@ describe('run utils', () => {
             });
 
             expect(isDueSoon(item)).toBe(true);
+        });
+    });
+    describe('isPending', () => {
+        it('should return true for open items', () => {
+            const item = TestHelper.fakePlaybookChecklistItem('checklist-id', {
+                due_date: Date.now() + (2 * 60 * 60 * 1000), // 2 hours from now
+                state: '',
+            });
+
+            expect(isPending(item)).toBe(true);
+        });
+
+        it('should return true for in_progress items', () => {
+            const item = TestHelper.fakePlaybookChecklistItem('checklist-id', {
+                due_date: Date.now() + (2 * 60 * 60 * 1000), // 2 hours from now
+                state: 'in_progress',
+            });
+
+            expect(isPending(item)).toBe(true);
+        });
+
+        it('should return false for closed items', () => {
+            const item = TestHelper.fakePlaybookChecklistItem('checklist-id', {
+                due_date: Date.now() + (2 * 60 * 60 * 1000),
+                state: 'closed',
+            });
+
+            expect(isPending(item)).toBe(false);
+        });
+
+        it('should return true for items with no due date', () => {
+            const item = TestHelper.fakePlaybookChecklistItem('checklist-id', {
+                due_date: 0,
+                state: '',
+            });
+
+            expect(isPending(item)).toBe(true);
+        });
+
+        it('should return true for items with due date in the past', () => {
+            const item = TestHelper.fakePlaybookChecklistItem('checklist-id', {
+                due_date: Date.now() - (60 * 60 * 1000), // 1 hour ago
+                state: '',
+            });
+
+            expect(isPending(item)).toBe(true);
+        });
+
+        it('should handle database model with different property name', () => {
+            const item = TestHelper.fakePlaybookChecklistItemModel({
+                id: 'checklist-id',
+                dueDate: Date.now() + (2 * 60 * 60 * 1000),
+                state: '',
+            });
+
+            expect(isPending(item)).toBe(true);
         });
     });
 });

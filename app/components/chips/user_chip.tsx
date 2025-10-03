@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
+import React, {useMemo} from 'react';
 import {useIntl} from 'react-intl';
 
 import ProfilePicture from '@components/profile_picture';
@@ -13,10 +13,13 @@ import type UserModel from '@typings/database/models/servers/user';
 
 type SelectedChipProps = {
     user: UserModel | UserProfile;
-    onPress: (id: string) => void;
+    onPress?: (id: string) => void;
     testID?: string;
     teammateNameDisplay: string;
-    showRemoveOption?: boolean;
+    action?: {
+        icon: 'remove' | 'downArrow';
+        onPress?: (id: string) => void;
+    };
     showAnimation?: boolean;
 }
 
@@ -25,14 +28,25 @@ export default function UserChip({
     user,
     teammateNameDisplay,
     onPress: receivedOnPress,
-    showRemoveOption,
+    action: receivedAction,
     showAnimation,
 }: SelectedChipProps) {
     const intl = useIntl();
 
-    const onPress = useCallback(() => {
-        receivedOnPress(user.id);
+    const onPress = useMemo(() => {
+        if (!receivedOnPress) {
+            return undefined;
+        }
+        return () => receivedOnPress(user.id);
     }, [receivedOnPress, user.id]);
+
+    const action = useMemo(() => {
+        if (!receivedAction) {
+            return undefined;
+        }
+        const onActionPress = receivedAction.onPress ? (() => receivedAction.onPress?.(user.id)) : undefined;
+        return {icon: receivedAction.icon, onPress: onActionPress};
+    }, [receivedAction, user.id]);
 
     const name = displayUsername(user, intl.locale, teammateNameDisplay);
     const picture = useMemo(() => (
@@ -49,7 +63,7 @@ export default function UserChip({
         <BaseChip
             testID={testID}
             onPress={onPress}
-            showRemoveOption={showRemoveOption}
+            action={action}
             showAnimation={showAnimation}
             label={name}
             prefix={picture}

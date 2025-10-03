@@ -9,11 +9,7 @@ import React, {
     useCallback,
 } from 'react';
 import {
-    type LayoutChangeEvent,
-    type NativeSyntheticEvent,
-    type TargetedEvent,
     TextInput,
-    type TextInputFocusEventData,
     type TextInputProps,
 } from 'react-native';
 
@@ -50,14 +46,7 @@ type Ref = {
 }
 
 type Props = {
-    editable?: boolean;
-    error?: string;
     label: string;
-    onBlur?: (event: NativeSyntheticEvent<TargetedEvent>) => void;
-    onFocus?: (e: NativeSyntheticEvent<TargetedEvent>) => void;
-    onLayout?: (e: LayoutChangeEvent) => void;
-    placeholder?: string;
-    showErrorIcon?: boolean;
     testID?: string;
     theme: Theme;
     chipsValues?: string[];
@@ -76,21 +65,14 @@ const FloatingTextChipsInput = forwardRef<Ref, Props>(({
     chipsValues,
     onChipRemove,
     theme,
-    editable = true,
-    error,
     label = '',
-    onBlur,
-    onFocus,
-    onLayout,
-    placeholder,
-    showErrorIcon = true,
     testID,
     ...textInputProps
 }, ref) => {
     const hasValues = textInputValue.length > 0 || (chipsValues?.length ?? 0) > 0;
 
     const [focused, setIsFocused] = useState(false);
-    const focusedLabel = Boolean(focused || hasValues || placeholder);
+    const focusedLabel = focused || hasValues;
 
     const inputRef = useRef<TextInput>(null);
 
@@ -103,17 +85,13 @@ const FloatingTextChipsInput = forwardRef<Ref, Props>(({
         isFocused: () => inputRef.current?.isFocused() || false,
     }), [inputRef]);
 
-    const onTextInputBlur = useCallback((e: NativeSyntheticEvent<TextInputFocusEventData>) => {
+    const onTextInputBlur = useCallback(() => {
         setIsFocused(false);
+    }, []);
 
-        onBlur?.(e);
-    }, [onBlur]);
-
-    const onTextInputFocus = useCallback((e: NativeSyntheticEvent<TextInputFocusEventData>) => {
+    const onTextInputFocus = useCallback(() => {
         setIsFocused(true);
-
-        onFocus?.(e);
-    }, [onFocus]);
+    }, []);
 
     const focus = useCallback(() => {
         inputRef.current?.focus();
@@ -122,18 +100,15 @@ const FloatingTextChipsInput = forwardRef<Ref, Props>(({
     const height = CHIP_HEIGHT * 2.5;
     return (
         <FloatingInputContainer
-            hasValue={Boolean(hasValues || placeholder)}
+            hasValue={hasValues}
             defaultHeight={height}
             canGrow={true}
-            onLayout={onLayout}
             label={label}
-            error={error}
-            hideErrorIcon={showErrorIcon}
             theme={theme}
             focus={focus}
             focused={focused}
             focusedLabel={focusedLabel}
-            editable={editable}
+            editable={true}
             testID={testID || 'floating-text-chips-input'}
             wrapChildren={true}
         >
@@ -150,10 +125,9 @@ const FloatingTextChipsInput = forwardRef<Ref, Props>(({
                 {...textInputProps}
                 ref={inputRef}
                 testID={testID}
-                placeholder={placeholder}
                 placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.64)}
                 underlineColorAndroid='transparent'
-                editable={editable}
+                editable={true}
                 multiline={false}
                 style={styles.input}
                 onFocus={onTextInputFocus}

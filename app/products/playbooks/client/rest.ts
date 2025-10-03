@@ -11,15 +11,19 @@ export interface ClientPlaybooksMix {
     fetchPlaybookRuns: (params: FetchPlaybookRunsParams, groupLabel?: RequestGroupLabel) => Promise<FetchPlaybookRunsReturn>;
     fetchPlaybookRun: (id: string, groupLabel?: RequestGroupLabel) => Promise<PlaybookRun>;
     fetchPlaybookRunMetadata: (id: string) => Promise<PlaybookRunMetadata>;
+    setOwner: (playbookRunId: string, ownerId: string) => Promise<void>;
 
     // Run Management
     // finishRun: (playbookRunId: string) => Promise<any>;
+    finishRun: (playbookRunId: string) => Promise<void>;
     postStatusUpdate: (playbookRunID: string, payload: PostStatusUpdatePayload, ids: PostStatusUpdateIds) => Promise<void>;
 
     // Checklist Management
     setChecklistItemState: (playbookRunID: string, checklistNum: number, itemNum: number, newState: ChecklistItemState) => Promise<void>;
     skipChecklistItem: (playbookRunID: string, checklistNum: number, itemNum: number) => Promise<void>;
     restoreChecklistItem: (playbookRunID: string, checklistNum: number, itemNum: number) => Promise<void>;
+    setAssignee: (playbookRunId: string, checklistNum: number, itemNum: number, assigneeId?: string) => Promise<void>;
+    setDueDate: (playbookRunId: string, checklistNum: number, itemNum: number, date?: number) => Promise<void>;
 
     // skipChecklist: (playbookRunID: string, checklistNum: number) => Promise<void>;
 
@@ -71,17 +75,21 @@ const ClientPlaybooks = <TBase extends Constructor<ClientBase>>(superclass: TBas
         );
     };
 
+    setOwner = async (playbookRunId: string, ownerId: string) => {
+        const data = await this.doFetch(
+            `${this.getPlaybookRunRoute(playbookRunId)}/owner`,
+            {method: 'post', body: {owner_id: ownerId}},
+        );
+        return data;
+    };
+
     // Run Management
-    // finishRun = async (playbookRunId: string) => {
-    //     try {
-    //         return await this.doFetch(
-    //             `${this.getPlaybookRunRoute(playbookRunId)}/finish`,
-    //             {method: 'put'},
-    //         );
-    //     } catch (error) {
-    //         return {error};
-    //     }
-    // };
+    finishRun = async (playbookRunId: string) => {
+        return this.doFetch(
+            `${this.getPlaybookRunRoute(playbookRunId)}/finish`,
+            {method: 'put', body: {/* okhttp requires put methods to have a body */}},
+        );
+    };
 
     postStatusUpdate = async (playbookRunID: string, payload: PostStatusUpdatePayload, ids: PostStatusUpdateIds) => {
         const body = {
@@ -105,14 +113,10 @@ const ClientPlaybooks = <TBase extends Constructor<ClientBase>>(superclass: TBas
 
     // Checklist Management
     setChecklistItemState = async (playbookRunID: string, checklistNum: number, itemNum: number, newState: ChecklistItemState) => {
-        try {
-            return await this.doFetch(
-                `${this.getPlaybookRunRoute(playbookRunID)}/checklists/${checklistNum}/item/${itemNum}/state`,
-                {method: 'put', body: {new_state: newState}},
-            );
-        } catch (error) {
-            return {error};
-        }
+        await this.doFetch(
+            `${this.getPlaybookRunRoute(playbookRunID)}/checklists/${checklistNum}/item/${itemNum}/state`,
+            {method: 'put', body: {new_state: newState}},
+        );
     };
 
     skipChecklistItem = async (playbookRunID: string, checklistNum: number, itemNum: number) => {
@@ -135,6 +139,20 @@ const ClientPlaybooks = <TBase extends Constructor<ClientBase>>(superclass: TBas
     //         {method: 'put', body: ''},
     //     );
     // };
+
+    setAssignee = async (playbookRunId: string, checklistNum: number, itemNum: number, assigneeId?: string) => {
+        await this.doFetch(
+            `${this.getPlaybookRunRoute(playbookRunId)}/checklists/${checklistNum}/item/${itemNum}/assignee`,
+            {method: 'put', body: {assignee_id: assigneeId}},
+        );
+    };
+
+    setDueDate = async (playbookRunId: string, checklistNum: number, itemNum: number, date?: number) => {
+        await this.doFetch(
+            `${this.getPlaybookRunRoute(playbookRunId)}/checklists/${checklistNum}/item/${itemNum}/duedate`,
+            {method: 'put', body: {due_date: date}},
+        );
+    };
 
     // Slash Commands
     runChecklistItemSlashCommand = async (playbookRunId: string, checklistNumber: number, itemNumber: number) => {

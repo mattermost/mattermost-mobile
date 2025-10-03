@@ -9,18 +9,20 @@ import {useDebounce} from '@hooks/utils';
 import {filterProfilesMatchingTerm} from '@utils/user';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
+import type {SectionListData} from 'react-native';
 
 type Props = {
     currentUserId: string;
     tutorialWatched: boolean;
     handleSelectProfile: (user: UserProfile) => void;
     term: string;
-    selectedIds: {[id: string]: UserProfile};
+    selectedIds: Set<string>;
     fetchFunction: (page: number) => Promise<UserProfile[]>;
     searchFunction: (term: string) => Promise<UserProfile[]>;
     createFilter: (exactMatches: UserProfile[], term: string) => ((p: UserProfile) => boolean);
     testID: string;
     location: AvailableScreens;
+    customSection?: (profiles: UserProfile[]) => Array<SectionListData<UserProfile>>;
 }
 
 export default function ServerUserList({
@@ -34,6 +36,7 @@ export default function ServerUserList({
     createFilter,
     testID,
     location,
+    customSection,
 }: Props) {
     const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
     const next = useRef(true);
@@ -132,6 +135,7 @@ export default function ServerUserList({
             tutorialWatched={tutorialWatched}
             includeUserMargin={true}
             location={location}
+            customSection={customSection}
         />
     );
 }

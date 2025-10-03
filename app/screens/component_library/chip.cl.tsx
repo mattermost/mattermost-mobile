@@ -8,23 +8,38 @@ import BaseChip from '@components/chips/base_chip';
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
 
-import {useBooleanProp, useStringProp} from './hooks';
+import {useBooleanProp, useDropdownProp, useStringProp} from './hooks';
 import {buildComponent} from './utils';
 
 const propPossibilities = {};
 
 const onPress = () => Alert.alert('Button pressed!');
+const onActionPress = () => Alert.alert('Action pressed!');
 
 const ChipComponentLibrary = () => {
     const theme = useTheme();
     const [label, labelSelector] = useStringProp('label', 'Chip text', false);
-    const [showRemoveOption, showRemoveOptionSelector] = useBooleanProp('showRemoveOption', false);
+    const [actionIcon, actionIconPossibilities, actionIconSelector] = useDropdownProp('actionIcon', 'remove', ['remove', 'downArrow'], true);
     const [hasPrefix, hasPrefixSelector] = useBooleanProp('hasPrefix', false);
 
+    const actionPossibilities = useMemo(() => {
+        if (!actionIconPossibilities) {
+            return undefined;
+        }
+        return {
+            action: actionIconPossibilities.actionIcon.map((iconName) => ({
+                icon: iconName,
+                onPress: onActionPress,
+            })),
+        };
+    }, [actionIconPossibilities]);
+
     const components = useMemo(
-        () => buildComponent(BaseChip, propPossibilities, [], [
+        () => buildComponent(BaseChip, propPossibilities, [
+            actionPossibilities,
+        ], [
             label,
-            showRemoveOption,
+            actionIcon,
             {
                 onPress,
                 prefix: hasPrefix.hasPrefix ? (
@@ -39,13 +54,13 @@ const ChipComponentLibrary = () => {
                 theme,
             },
         ]),
-        [label, showRemoveOption, hasPrefix.hasPrefix, theme],
+        [actionPossibilities, label, actionIcon, hasPrefix.hasPrefix, theme],
     );
 
     return (
         <>
             {labelSelector}
-            {showRemoveOptionSelector}
+            {actionIconSelector}
             {hasPrefixSelector}
             <View style={{flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 16}}>{components}</View>
         </>

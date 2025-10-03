@@ -207,12 +207,16 @@ describe('Helpers', () => {
     describe('getRoundedTime', () => {
         test('should round time to nearest interval', () => {
             const time = moment('2024-06-01T12:34:00Z');
-            const result = getRoundedTime(time);
-            expect(result.minute() % 30).toBe(0); // Assuming CUSTOM_STATUS_TIME_PICKER_INTERVALS_IN_MINUTES is 15
+            const result = getRoundedTime(time, 3);
+            expect(result.minute() % 3).toBe(0);
 
             const time2 = moment('2024-06-01T12:00:00Z');
-            const result2 = getRoundedTime(time2);
-            expect(result2.minute() % 30).toBe(0);
+            const result2 = getRoundedTime(time2, 7);
+            expect(result2.minute() % 7).toBe(0);
+
+            const time3 = moment('2024-06-01T12:34:00Z');
+            const result3 = getRoundedTime(time3, 11);
+            expect(result3.minute() % 11).toBe(0);
         });
     });
 

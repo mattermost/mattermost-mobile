@@ -11,6 +11,7 @@ import BaseChip from './base_chip';
 
 describe('BaseChip', () => {
     const onPressMock = jest.fn();
+    const onActionPressMock = jest.fn();
 
     afterEach(() => {
         jest.clearAllMocks();
@@ -28,58 +29,86 @@ describe('BaseChip', () => {
         expect(getByText('Test Label')).toBeTruthy();
     });
 
-    it('should render with the X button when showRemoveOption is true', () => {
+    it('should render with the X button when action is remove', () => {
         const {getByTestId} = renderWithIntlAndTheme(
             <BaseChip
                 onPress={onPressMock}
                 label='Test Label'
                 testID='base_chip'
-                showRemoveOption={true}
+                action={{icon: 'remove'}}
             />,
         );
 
-        expect(getByTestId('base_chip.remove.button')).toBeTruthy();
+        expect(getByTestId('base_chip.remove.icon')).toBeTruthy();
     });
 
-    it('should not render the X button when showRemoveOption is false', () => {
+    it('should render with the chevron down button when action is downArrow', () => {
+        const {getByTestId} = renderWithIntlAndTheme(
+            <BaseChip
+                onPress={onPressMock}
+                label='Test Label'
+                testID='base_chip'
+                action={{icon: 'downArrow'}}
+            />,
+        );
+
+        expect(getByTestId('base_chip.downArrow.icon')).toBeTruthy();
+    });
+
+    it('should not render the action button when action is undefined', () => {
         const {queryByTestId} = renderWithIntlAndTheme(
             <BaseChip
                 onPress={onPressMock}
                 label='Test Label'
                 testID='base_chip'
-                showRemoveOption={false}
             />,
         );
 
-        expect(queryByTestId('base_chip.remove.button')).toBeNull();
+        expect(queryByTestId('base_chip.remove.icon')).toBeNull();
+        expect(queryByTestId('base_chip.downArrow.icon')).toBeNull();
     });
 
-    it('should call onPress when the X button is pressed', () => {
+    it('should call onPressMock when the action button is pressed', () => {
         const {getByTestId} = renderWithIntlAndTheme(
             <BaseChip
                 onPress={onPressMock}
                 label='Test Label'
                 testID='base_chip'
-                showRemoveOption={true}
+                action={{icon: 'remove', onPress: onActionPressMock}}
             />,
         );
 
         fireEvent.press(getByTestId('base_chip.remove.button'));
-        expect(onPressMock).toHaveBeenCalledTimes(1);
+        expect(onPressMock).not.toHaveBeenCalled();
+        expect(onActionPressMock).toHaveBeenCalledTimes(1);
     });
 
-    it('should call onPress when the chip is pressed without X button', () => {
+    it('should call onPress when the chip is pressed without action button', () => {
         const {getByTestId} = renderWithIntlAndTheme(
             <BaseChip
                 onPress={onPressMock}
                 label='Test Label'
                 testID='base_chip'
-                showRemoveOption={false}
             />,
         );
 
         fireEvent.press(getByTestId('base_chip.chip_button'));
         expect(onPressMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('should call onPress when the chip is pressed and we have an action button', () => {
+        const {getByTestId} = renderWithIntlAndTheme(
+            <BaseChip
+                onPress={onPressMock}
+                label='Test Label'
+                testID='base_chip'
+                action={{icon: 'remove', onPress: onActionPressMock}}
+            />,
+        );
+
+        fireEvent.press(getByTestId('base_chip.chip_button'));
+        expect(onPressMock).toHaveBeenCalledTimes(1);
+        expect(onActionPressMock).not.toHaveBeenCalled();
     });
 
     it('should handle animations when showAnimation is true', () => {

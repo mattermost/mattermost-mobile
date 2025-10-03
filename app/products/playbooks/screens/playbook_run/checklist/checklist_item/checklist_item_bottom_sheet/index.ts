@@ -4,7 +4,8 @@
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of as of$, switchMap} from 'rxjs';
 
-import {observeUser} from '@queries/servers/user';
+import {observeParticipantsIdsFromPlaybookModel, observePlaybookRunById} from '@playbooks/database/queries/run';
+import {observeCurrentUser, observeUser} from '@queries/servers/user';
 
 import ChecklistItemBottomSheet, {BOTTOM_SHEET_HEIGHT} from './checklist_item_bottom_sheet';
 
@@ -13,9 +14,11 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 
 type OwnProps = {
     item: PlaybookChecklistItemModel | PlaybookChecklistItem;
+    runId: string;
 } & WithDatabaseArgs;
 
-const enhanced = withObservables(['item'], ({item, database}: OwnProps) => {
+const enhanced = withObservables(['item', 'runId'], ({item, runId, database}: OwnProps) => {
+    const currentUserTimezone = observeCurrentUser(database).pipe(switchMap((u) => of$(u?.timezone)));
     if ('observe' in item) {
         const observedItem = item.observe();
 
@@ -33,6 +36,13 @@ const enhanced = withObservables(['item'], ({item, database}: OwnProps) => {
         return {
             item: observedItem,
             assignee,
+            currentUserTimezone,
+            participantIds: observePlaybookRunById(database, runId).pipe(
+                switchMap((run) => observeParticipantsIdsFromPlaybookModel(run, true)),
+            ),
+            runName: observePlaybookRunById(database, runId).pipe(
+                switchMap((run) => of$(run?.name || '')),
+            ),
         };
     }
 
@@ -41,6 +51,9 @@ const enhanced = withObservables(['item'], ({item, database}: OwnProps) => {
     return {
         item: of$(item),
         assignee,
+        currentUserTimezone,
+        participantIds: of$([]),
+        runName: of$(''),
     };
 });
 

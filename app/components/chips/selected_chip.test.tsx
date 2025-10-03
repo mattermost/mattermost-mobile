@@ -32,10 +32,10 @@ describe('SelectedChip', () => {
 
         const baseChip = getByTestId('selected-chip');
         expect(baseChip.props.label).toBe('Test Chip');
-        expect(baseChip.props.showRemoveOption).toBe(true);
+        expect(baseChip.props.action).toEqual({icon: 'remove', onPress: expect.any(Function)});
         expect(baseChip.props.showAnimation).toBe(true);
         expect(baseChip.props.prefix).toBeUndefined();
-        baseChip.props.onPress();
+        baseChip.props.action.onPress();
         expect(mockOnRemove).toHaveBeenCalledTimes(1);
         expect(mockOnRemove).toHaveBeenCalledWith('test-id');
     });

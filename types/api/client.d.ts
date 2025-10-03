@@ -27,5 +27,6 @@ interface ClientErrorProps {
     url: string;
     server_error_id?: string;
     status_code?: number;
+    headers?: Record<string, string>;
     message: string;
 }

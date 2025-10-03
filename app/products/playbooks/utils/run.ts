@@ -23,7 +23,10 @@ export function getRunScheduledTimestamp(run: PlaybookRunModel | PlaybookRun): n
     return timestamp;
 }
 
-export function isRunFinished(run: PlaybookRunModel | PlaybookRun): boolean {
+export function isRunFinished(run?: PlaybookRunModel | PlaybookRun): boolean {
+    if (!run) {
+        return true;
+    }
     const currentStatus = 'currentStatus' in run ? run.currentStatus : run.current_status;
     return currentStatus === 'Finished';
 }
@@ -38,13 +41,17 @@ export function getMaxRunUpdateAt(runs: PlaybookRun[]): number {
     return max;
 }
 
+export function isPending(item: PlaybookChecklistItemModel | PlaybookChecklistItem): boolean {
+    return item.state === '' || item.state === 'in_progress';
+}
+
 export function isOverdue(item: PlaybookChecklistItemModel | PlaybookChecklistItem): boolean {
     const dueDate = 'dueDate' in item ? item.dueDate : item.due_date;
     if (dueDate <= 0) {
         return false;
     }
 
-    if (item.state !== '' && item.state !== 'in_progress') {
+    if (!isPending(item)) {
         return false;
     }
 
@@ -57,7 +64,7 @@ export function isDueSoon(item: PlaybookChecklistItemModel | PlaybookChecklistIt
         return false;
     }
 
-    if (item.state !== '' && item.state !== 'in_progress') {
+    if (!isPending(item)) {
         return false;
     }
 

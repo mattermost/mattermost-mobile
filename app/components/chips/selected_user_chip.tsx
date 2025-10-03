@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useMemo} from 'react';
 
 import UserChip from './user_chip';
 
@@ -20,11 +20,11 @@ export default function SelectedUserChip({
     teammateNameDisplay,
     onPress,
 }: SelectedChipProps) {
+    const action = useMemo(() => ({icon: 'remove' as const, onPress}), [onPress]);
     return (
         <UserChip
             testID={testID}
-            onPress={onPress}
-            showRemoveOption={true}
+            action={action}
             showAnimation={true}
             teammateNameDisplay={teammateNameDisplay}
             user={user}

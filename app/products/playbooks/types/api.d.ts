@@ -3,6 +3,8 @@
 
 type ChecklistItemState = '' | 'in_progress' | 'closed' | 'skipped';
 
+type ConditionAction = '' | 'hidden';
+
 const PlaybookRunStatus = {
     InProgress: 'InProgress',
     Finished: 'Finished',
@@ -30,6 +32,8 @@ type PlaybookChecklistItem = {
     command_last_run: number;
     due_date: number;
     task_actions?: TaskAction[];
+    condition_action?: ConditionAction;
+    condition_reason?: string;
     completed_at: number;
     update_at: number;
 }

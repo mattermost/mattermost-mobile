@@ -14,6 +14,10 @@ export function loadPlaybooksScreen(screenName: string | number) {
             return withServerDatabase(require('@playbooks/screens/edit_command').default);
         case Screens.PLAYBOOK_POST_UPDATE:
             return withServerDatabase(require('@playbooks/screens/post_update').default);
+        case Screens.PLAYBOOK_SELECT_USER:
+            return withServerDatabase(require('@playbooks/screens/select_user').default);
+        case Screens.PLAYBOOKS_SELECT_DATE:
+            return withServerDatabase(require('@playbooks/screens/select_date').default);
         default:
             return undefined;
     }

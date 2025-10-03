@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {Platform, Text, TouchableOpacity} from 'react-native';
+import {Platform, Text, TouchableOpacity, View} from 'react-native';
 import Animated, {FadeIn, FadeOut} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
@@ -17,7 +17,10 @@ import {CHIP_HEIGHT} from './constants';
 type SelectedChipProps = {
     onPress?: () => void;
     testID?: string;
-    showRemoveOption?: boolean;
+    action?: {
+        icon: 'remove' | 'downArrow';
+        onPress?: () => void;
+    };
     showAnimation?: boolean;
     label: string;
     prefix?: JSX.Element;
@@ -70,7 +73,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 export default function BaseChip({
     testID,
     onPress,
-    showRemoveOption,
+    action,
     showAnimation,
     label,
     prefix,
@@ -78,6 +81,9 @@ export default function BaseChip({
     type = 'normal',
     boldText = false,
 }: SelectedChipProps) {
+    const actionIcon = action?.icon;
+    const actionOnPress = action?.onPress;
+
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
     const dimensions = useWindowDimensions();
@@ -85,7 +91,7 @@ export default function BaseChip({
         // We set the max width to 70% of the screen width to make sure
         // text like names get ellipsized correctly.
         const textMaxWidth = maxWidth || dimensions.width * 0.70;
-        const marginRight = showRemoveOption ? undefined : 7;
+        const marginRight = actionIcon ? undefined : 7;
         const marginLeft = prefix ? 5 : 7;
         return [
             style.text,
@@ -94,7 +100,7 @@ export default function BaseChip({
             type === 'danger' && style.dangerText,
             boldText && style.boldText,
         ];
-    }, [maxWidth, dimensions.width, showRemoveOption, prefix, style.text, style.linkText, style.dangerText, style.boldText, type, boldText]);
+    }, [maxWidth, dimensions.width, actionIcon, prefix, style.text, style.linkText, style.dangerText, style.boldText, type, boldText]);
     const containerStyle = useMemo(() => {
         return [
             style.container,
@@ -116,31 +122,51 @@ export default function BaseChip({
     );
 
     let content = chipContent;
-    if (showRemoveOption) {
-        content = (
-            <>
-                {chipContent}
+    if (actionIcon) {
+        const iconName = actionIcon === 'remove' ? 'close-circle' : 'chevron-down';
+        let icon = (
+            <CompassIcon
+                name={iconName}
+                size={16}
+                color={changeOpacity(theme.centerChannelColor, 0.64)}
+                testID={`${testID}.${actionIcon}.icon`}
+            />
+        );
+
+        if (actionOnPress) {
+            icon = (
                 <TouchableOpacity
                     style={style.remove}
-                    onPress={onPress}
-                    testID={`${testID}.remove.button`}
+                    onPress={actionOnPress}
+                    testID={`${testID}.${actionIcon}.button`}
                 >
-                    <CompassIcon
-                        name='close-circle'
-                        size={16}
-                        color={changeOpacity(theme.centerChannelColor, 0.32)}
-                    />
+                    {icon}
                 </TouchableOpacity>
+            );
+        } else {
+            icon = (
+                <View style={style.remove}>
+                    {icon}
+                </View>
+            );
+        }
+
+        content = (
+            <>
+                {content}
+                {icon}
             </>
         );
-    } else if (onPress) {
+    }
+
+    if (onPress) {
         content = (
             <TouchableOpacity
                 style={style.chipContent}
                 onPress={onPress}
                 testID={`${testID}.chip_button`}
             >
-                {chipContent}
+                {content}
             </TouchableOpacity>
         );
     }

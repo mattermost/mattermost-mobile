@@ -304,6 +304,7 @@ export default function ChannelInfoForm({
                         {!displayHeaderOnly && (
                             <>
                                 <FloatingTextInput
+                                    blurOnSubmit={false}
                                     disableFullscreenUI={true}
                                     enablesReturnKeyAutomatically={true}
                                     label={labelDisplayName}
