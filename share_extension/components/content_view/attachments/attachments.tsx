@@ -79,7 +79,7 @@ const Attachments = ({canUploadFiles, maxFileCount, maxFileSize, theme}: Props) 
         }
 
         return undefined;
-    }, [canUploadFiles, maxFileCount, maxFileSize, files, intl.locale]);
+    }, [canUploadFiles, maxFileCount, maxFileSize, files, intl]);
 
     const attachmentsContainerStyle = useMemo(() => [
         styles.container,
