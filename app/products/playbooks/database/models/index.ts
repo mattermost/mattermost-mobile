@@ -4,3 +4,5 @@
 export {default as PlaybookRunModel} from './playbook_run';
 export {default as PlaybookChecklistModel} from './playbook_checklist';
 export {default as PlaybookChecklistItemModel} from './playbook_checklist_item';
+export {default as PlaybookRunAttributeModel} from './playbook_run_attribute';
+export {default as PlaybookRunAttributeValueModel} from './playbook_run_attribute_value';

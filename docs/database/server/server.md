@@ -1,4 +1,4 @@
-# Server Database - Schema Version 13
+# Server Database - Schema Version 14
 # Please bump the version by 1, any time the schema changes.
 # Also, include the migration plan under app/database/migration/server,
 # update all models, relationships and types.
@@ -229,6 +229,26 @@ order number
 completed_at number
 synced string NULL INDEX # optional field for sync status
 last_sync_at number NULL # optional field for last sync timestamp
+
+PlaybookRunAttribute
+-
+id PK string # server-generated
+group_id string
+name string
+type string
+target_id string
+target_type string
+create_at number
+update_at number
+delete_at number
+attrs string NULL # stringified JSON
+
+PlaybookRunAttributeValue
+-
+id PK string # composition ID PlaybookRun.id-PlaybookRunAttribute.id
+attribute_id string INDEX FK >- PlaybookRunAttribute.id
+run_id string INDEX FK >- PlaybookRun.id
+value string
 
 Post
 -

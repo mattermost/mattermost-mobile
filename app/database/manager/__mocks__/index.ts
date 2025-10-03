@@ -22,7 +22,7 @@ import AppDataOperator from '@database/operator/app_data_operator';
 import ServerDataOperator from '@database/operator/server_data_operator';
 import {schema as appSchema} from '@database/schema/app';
 import {serverSchema} from '@database/schema/server';
-import {PlaybookRunModel, PlaybookChecklistModel, PlaybookChecklistItemModel} from '@playbooks/database/models';
+import {PlaybookRunModel, PlaybookChecklistModel, PlaybookChecklistItemModel, PlaybookRunAttributeModel, PlaybookRunAttributeValueModel} from '@playbooks/database/models';
 import {deleteIOSDatabase} from '@utils/mattermost_managed';
 import {urlSafeBase64Encode} from '@utils/security';
 import {removeProtocol} from '@utils/url';
@@ -54,7 +54,7 @@ class DatabaseManagerSingleton {
             PostModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, ReactionModel, RoleModel,
             ScheduledPostModel, SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,
             ThreadModel, ThreadParticipantModel, ThreadInTeamModel, TeamThreadsSyncModel, UserModel,
-            PlaybookRunModel, PlaybookChecklistModel, PlaybookChecklistItemModel,
+            PlaybookRunModel, PlaybookChecklistModel, PlaybookChecklistItemModel, PlaybookRunAttributeModel, PlaybookRunAttributeValueModel,
         ];
         this.databaseDirectory = '';
     }
