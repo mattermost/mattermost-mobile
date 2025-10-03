@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useRef, useState} from 'react';
+import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {TouchableWithoutFeedback, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 
@@ -59,6 +59,7 @@ const AttachmentImage = ({imageUrl, imageMetadata, layoutWidth, location, postId
     const isTablet = useIsTablet();
     const {height, width} = calculateDimensions(imageMetadata.height, imageMetadata.width, layoutWidth || getViewPortWidth(false, isTablet, true));
     const style = getStyleSheet(theme);
+    const progressiveImageStyle = useMemo(() => ({width, height}), [width, height]);
 
     const onError = useCallback(() => {
         setError(true);
@@ -109,7 +110,8 @@ const AttachmentImage = ({imageUrl, imageMetadata, layoutWidth, location, postId
                             imageUri={imageUrl}
                             onError={onError}
                             contentFit='contain'
-                            style={{height, width}}
+                            style={progressiveImageStyle}
+                            theme={theme}
                         />
                     </Animated.View>
                 </TouchableWithoutFeedback>

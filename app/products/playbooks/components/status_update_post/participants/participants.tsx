@@ -19,7 +19,6 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import type {UserModel} from '@database/models/server';
-import type {MarkdownTextStyles} from '@typings/global/markdown';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
@@ -27,7 +26,6 @@ type Props = {
     users: UserModel[];
     location: AvailableScreens;
     baseTextStyle: StyleProp<TextStyle>;
-    textStyles: MarkdownTextStyles;
 }
 
 const USER_ROW_HEIGHT = 40;
@@ -50,7 +48,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const Participants = ({baseTextStyle, participantIds, users, location, textStyles}: Props) => {
+const Participants = ({baseTextStyle, participantIds, users, location}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const isTablet = useIsTablet();
@@ -117,7 +115,6 @@ const Participants = ({baseTextStyle, participantIds, users, location, textStyle
             <Markdown
                 baseTextStyle={baseTextStyle}
                 value={participants}
-                textStyles={textStyles}
                 theme={theme}
                 location={location}
             />

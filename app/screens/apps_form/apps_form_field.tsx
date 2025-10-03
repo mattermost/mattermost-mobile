@@ -12,7 +12,6 @@ import {Screens, View as ViewConstants} from '@constants';
 import {AppFieldTypes, SelectableAppFieldTypes} from '@constants/apps';
 import {useTheme} from '@context/theme';
 import {selectKeyboardType} from '@utils/integrations';
-import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 const TEXT_DEFAULT_MAX_LENGTH = 150;
@@ -81,7 +80,7 @@ function AppsFormField({
 
     const handleChange = useCallback((newValue: string | boolean) => {
         onChange(name, newValue);
-    }, [name]);
+    }, [name, onChange]);
 
     const handleSelect = useCallback((newValue: SelectedDialogOption) => {
         if (!newValue) {
@@ -217,11 +216,8 @@ function AppsFormField({
                 >
                     <Markdown
                         value={field.description}
-                        mentionKeys={[]}
                         disableAtMentions={true}
                         location={Screens.APPS_FORM}
-                        blockStyles={getMarkdownBlockStyles(theme)}
-                        textStyles={getMarkdownTextStyles(theme)}
                         baseTextStyle={style.markdownFieldText}
                         theme={theme}
                     />

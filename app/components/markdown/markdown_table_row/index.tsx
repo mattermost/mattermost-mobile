@@ -4,13 +4,13 @@
 import React, {type ReactElement, type ReactNode} from 'react';
 import {type StyleProp, View, type ViewStyle} from 'react-native';
 
-import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 export type MarkdownTableRowProps = {
     isFirstRow: boolean;
     isLastRow: boolean;
     children: ReactNode;
+    theme: Theme;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
@@ -29,8 +29,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const MarkdownTableRow = ({isFirstRow, isLastRow, children}: MarkdownTableRowProps) => {
-    const theme = useTheme();
+const MarkdownTableRow = ({isFirstRow, isLastRow, children, theme}: MarkdownTableRowProps) => {
     const style = getStyleSheet(theme);
 
     const rowStyle: StyleProp<ViewStyle> = [style.row];

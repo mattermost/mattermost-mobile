@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useState} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {type LayoutChangeEvent, type StyleProp, View, type ViewStyle} from 'react-native';
 
 import Files from '@components/files';
@@ -105,7 +105,7 @@ const Body = ({
     const isReplyPost = Boolean(post.rootId && (!isEphemeral || !hasBeenDeleted) && location !== THREAD);
     const hasContent = Boolean((post.metadata?.embeds?.length || (appsEnabled && nBindings)) || nAttachments);
 
-    const replyBarStyle = useCallback((): StyleProp<ViewStyle>|undefined => {
+    const replyBarStyle = useMemo<StyleProp<ViewStyle>|undefined>(() => {
         if (!isReplyPost || (isCRTEnabled && location === Screens.PERMALINK)) {
             return undefined;
         }
@@ -125,7 +125,7 @@ const Body = ({
         }
 
         return barStyle;
-    }, []);
+    }, [highlightReplyBar, isCRTEnabled, isFirstReply, isLastReply, isReplyPost, location, style]);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         if (location === Screens.SAVED_MESSAGES) {
@@ -233,7 +233,7 @@ const Body = ({
             style={style.messageContainerWithReplyBar}
             onLayout={onLayout}
         >
-            <View style={replyBarStyle()}/>
+            <View style={replyBarStyle}/>
             {body}
             {isFailed &&
             <Failed

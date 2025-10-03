@@ -126,6 +126,7 @@ const ImageFile = ({
             tintDefaultSource={!file.localPath && !failed}
             onError={handleError}
             contentFit={contentFit}
+            theme={theme}
             {...imageProps}
         />
     );
