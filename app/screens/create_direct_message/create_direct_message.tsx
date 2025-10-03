@@ -152,14 +152,14 @@ export default function CreateDirectMessage({
         return !result.error;
     }, [intl, serverUrl]);
 
-    const startConversation = useCallback(async (selectedId?: {[id: string]: boolean}) => {
+    const startConversation = useCallback(async (selectedId?: string) => {
         if (startingConversation) {
             return;
         }
 
         setStartingConversation(true);
 
-        const idsToUse = selectedId ? Object.keys(selectedId) : Object.keys(selectedIds);
+        const idsToUse = selectedId ? [selectedId] : Array.from(selectedIds);
         let success;
         if (idsToUse.length === 0) {
             success = false;
@@ -178,11 +178,7 @@ export default function CreateDirectMessage({
 
     const handleSelectProfile = useCallback((user: UserProfile) => {
         if (user.id === currentUserId) {
-            const selectedId = {
-                [currentUserId]: true,
-            };
-
-            startConversation(selectedId);
+            startConversation(currentUserId);
         } else {
             clearSearch();
             setSelectedIds((current) => {
