@@ -161,7 +161,7 @@ export default function SelectedUsers({
 
     const usersChipsHeight = useSharedValue(0);
     const [isVisible, setIsVisible] = useState(false);
-    const numberSelectedIds = Object.keys(selectedIds).length;
+    const numberSelectedIds = selectedIds.size;
 
     const users = useMemo(() => {
         const u = [];
