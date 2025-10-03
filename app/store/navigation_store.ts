@@ -5,9 +5,12 @@ import {BehaviorSubject} from 'rxjs';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
+const OVERLAY_EXCEPTIONS = new Set(['floating-banner-overlay']);
+
 class NavigationStoreSingleton {
     private screensInStack: AvailableScreens[] = [];
     private modalsInStack: AvailableScreens[] = [];
+    private overlaysInStack: string[] = [];
     private visibleTab = 'Home';
     private tosOpen = false;
 
@@ -20,6 +23,7 @@ class NavigationStoreSingleton {
     reset = () => {
         this.screensInStack = [];
         this.modalsInStack = [];
+        this.overlaysInStack = [];
         this.visibleTab = 'Home';
         this.tosOpen = false;
         this.subject.next(undefined);
@@ -83,6 +87,28 @@ class NavigationStoreSingleton {
         if (index > -1) {
             this.modalsInStack.splice(index, 1);
         }
+    };
+
+    addOverlayToStack = (overlayId: string) => {
+        this.removeOverlayFromStack(overlayId);
+        this.overlaysInStack.unshift(overlayId);
+    };
+
+    removeOverlayFromStack = (overlayId: string) => {
+        const index = this.overlaysInStack.indexOf(overlayId);
+        if (index > -1) {
+            this.overlaysInStack.splice(index, 1);
+        }
+    };
+
+    getOverlaysInStack = () => this.overlaysInStack;
+
+    removeAllOverlaysFromStack = () => {
+        this.overlaysInStack = [];
+    };
+
+    getAllOverlaysOtherThanExceptions = () => {
+        return this.overlaysInStack.filter((overlayId) => !OVERLAY_EXCEPTIONS.has(overlayId));
     };
 
     setToSOpen = (open: boolean) => {

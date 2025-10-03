@@ -113,6 +113,77 @@ describe('NavigationStore', () => {
         });
     });
 
+    describe('overlay management', () => {
+        it('should add and remove overlays correctly', () => {
+            NavigationStore.addOverlayToStack('test-overlay');
+            NavigationStore.addOverlayToStack('another-overlay');
+
+            expect(NavigationStore.getOverlaysInStack()).toEqual(['another-overlay', 'test-overlay']);
+        });
+
+        it('should handle duplicate overlay additions', () => {
+            NavigationStore.addOverlayToStack('test-overlay');
+            NavigationStore.addOverlayToStack('test-overlay');
+
+            expect(NavigationStore.getOverlaysInStack()).toEqual(['test-overlay']);
+        });
+
+        it('should remove specific overlays from stack', () => {
+            NavigationStore.addOverlayToStack('overlay1');
+            NavigationStore.addOverlayToStack('overlay2');
+            NavigationStore.addOverlayToStack('overlay3');
+
+            NavigationStore.removeOverlayFromStack('overlay2');
+
+            expect(NavigationStore.getOverlaysInStack()).toEqual(['overlay3', 'overlay1']);
+        });
+
+        it('should return overlays other than exceptions', () => {
+            NavigationStore.addOverlayToStack('regular-overlay');
+            NavigationStore.addOverlayToStack('floating-banner-overlay');
+            NavigationStore.addOverlayToStack('another-overlay');
+
+            const overlaysToRemove = NavigationStore.getAllOverlaysOtherThanExceptions();
+
+            expect(overlaysToRemove).toEqual(['another-overlay', 'regular-overlay']);
+            expect(overlaysToRemove).not.toContain('floating-banner-overlay');
+        });
+
+        it('should return empty array when only exception overlays exist', () => {
+            NavigationStore.addOverlayToStack('floating-banner-overlay');
+
+            const overlaysToRemove = NavigationStore.getAllOverlaysOtherThanExceptions();
+
+            expect(overlaysToRemove).toEqual([]);
+        });
+
+        it('should return all overlays when no exceptions exist in stack', () => {
+            NavigationStore.addOverlayToStack('overlay1');
+            NavigationStore.addOverlayToStack('overlay2');
+
+            const overlaysToRemove = NavigationStore.getAllOverlaysOtherThanExceptions();
+
+            expect(overlaysToRemove).toEqual(['overlay2', 'overlay1']);
+        });
+
+        it('should handle empty overlay stack gracefully when getting overlays to remove', () => {
+            const overlaysToRemove = NavigationStore.getAllOverlaysOtherThanExceptions();
+            expect(overlaysToRemove).toEqual([]);
+            expect(NavigationStore.getOverlaysInStack()).toEqual([]);
+        });
+
+        it('should maintain overlay order when filtering', () => {
+            NavigationStore.addOverlayToStack('first-overlay');
+            NavigationStore.addOverlayToStack('floating-banner-overlay');
+            NavigationStore.addOverlayToStack('second-overlay');
+            NavigationStore.addOverlayToStack('third-overlay');
+
+            const overlaysToRemove = NavigationStore.getAllOverlaysOtherThanExceptions();
+
+            expect(overlaysToRemove).toEqual(['third-overlay', 'second-overlay', 'first-overlay']);
+        });
+    });
+
     describe('screen loading and visibility', () => {
         it('should handle waitUntilScreenHasLoaded', async () => {
             const promise = NavigationStore.waitUntilScreenHasLoaded(Screens.ABOUT);
