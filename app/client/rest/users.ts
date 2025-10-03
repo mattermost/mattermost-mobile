@@ -46,6 +46,7 @@ export interface ClientUsersMix {
     updateCustomStatus: (customStatus: UserCustomStatus) => Promise<{status: string}>;
     unsetCustomStatus: () => Promise<{status: string}>;
     removeRecentCustomStatus: (customStatus: UserCustomStatus) => Promise<{status: string}>;
+    exchangeSsoLoginCode: (loginCode: string, codeVerifier: string, state: string) => Promise<{token: string; csrf: string}>;
 }
 
 const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
@@ -394,6 +395,24 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
             `${this.getUserRoute('me')}/status/custom/recent/delete`,
             {method: 'post', body: customStatus},
         );
+    };
+
+    exchangeSsoLoginCode = async (loginCode: string, codeVerifier: string, state: string) => {
+        const body = {
+            login_code: loginCode,
+            code_verifier: codeVerifier,
+            state,
+        };
+
+        // Intentionally no-cache
+        const resp = await this.doFetch(
+            `${this.getUsersRoute()}/login/sso/code-exchange`,
+            {method: 'post', body, headers: {'Cache-Control': 'no-store'}},
+            false,
+        );
+
+        // Expected shape: { token: string, csrf: string }
+        return resp?.data || resp;
     };
 };
 

@@ -18,7 +18,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import Autocomplete from '@components/autocomplete';
 import ErrorText from '@components/error_text';
-import FloatingTextInput from '@components/floating_text_input_label';
+import FloatingTextInput from '@components/floating_input/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import OptionItem from '@components/option_item';
@@ -30,7 +30,6 @@ import {useInputPropagation} from '@hooks/input';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
-    getKeyboardAppearanceFromTheme,
 } from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -185,6 +184,9 @@ export default function ChannelInfoForm({
         if (!keyboardVisible && keyboardHeight) {
             setKeyBoardVisible(true);
         }
+
+        // We only want to change the visibility when the height changes
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [keyboardHeight]);
 
     const onHeaderAutocompleteChange = useCallback((value: string) => {
@@ -302,8 +304,6 @@ export default function ChannelInfoForm({
                         {!displayHeaderOnly && (
                             <>
                                 <FloatingTextInput
-                                    autoCorrect={false}
-                                    autoCapitalize={'none'}
                                     blurOnSubmit={false}
                                     disableFullscreenUI={true}
                                     enablesReturnKeyAutomatically={true}
@@ -311,10 +311,7 @@ export default function ChannelInfoForm({
                                     placeholder={placeholderDisplayName}
                                     onChangeText={onDisplayNameChange}
                                     maxLength={Channel.MAX_CHANNEL_NAME_LENGTH}
-                                    keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                                     returnKeyType='next'
-                                    showErrorIcon={false}
-                                    spellCheck={false}
                                     testID='channel_info_form.display_name.input'
                                     value={displayName}
                                     ref={nameInput}
@@ -325,18 +322,13 @@ export default function ChannelInfoForm({
                                     onLayout={onLayoutPurpose}
                                 >
                                     <FloatingTextInput
-                                        autoCorrect={false}
-                                        autoCapitalize={'none'}
                                         blurOnSubmit={false}
                                         disableFullscreenUI={true}
                                         enablesReturnKeyAutomatically={true}
                                         label={labelPurpose}
                                         placeholder={placeholderPurpose}
                                         onChangeText={onPurposeChange}
-                                        keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                                         returnKeyType='next'
-                                        showErrorIcon={false}
-                                        spellCheck={false}
                                         testID='channel_info_form.purpose.input'
                                         value={purpose}
                                         ref={purposeInput}
@@ -353,8 +345,6 @@ export default function ChannelInfoForm({
                         )}
                         <View>
                             <FloatingTextInput
-                                autoCorrect={false}
-                                autoCapitalize={'none'}
                                 blurOnSubmit={false}
                                 disableFullscreenUI={true}
                                 enablesReturnKeyAutomatically={true}
@@ -362,10 +352,7 @@ export default function ChannelInfoForm({
                                 placeholder={placeholderHeader}
                                 onChangeText={onHeaderInputChange}
                                 multiline={true}
-                                keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                                 returnKeyType='next'
-                                showErrorIcon={false}
-                                spellCheck={false}
                                 testID='channel_info_form.header.input'
                                 value={header}
                                 ref={headerInput}

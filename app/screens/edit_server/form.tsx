@@ -8,7 +8,7 @@ import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-nati
 
 import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
-import FloatingTextInput, {type FloatingTextInputRef} from '@components/floating_text_input_label';
+import FloatingTextInput, {type FloatingTextInputRef} from '@components/floating_input/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import {useIsTablet} from '@hooks/device';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -219,7 +219,7 @@ const EditServerForm = ({
                 keyboardAwareRef.current?.scrollToPosition(0, 0);
             }
         }
-    }, [onFocus, isTablet, keyboardAwareRef]);
+    }, [isTablet, keyboardAwareRef, onFocus]);
 
     const saveButtonTestId = buttonDisabled ? 'edit_server_form.save.button.disabled' : 'edit_server_form.save.button';
 
@@ -227,8 +227,7 @@ const EditServerForm = ({
         <View style={styles.formContainer}>
             <View style={[styles.fullWidth, displayNameError?.length ? styles.error : undefined]}>
                 <FloatingTextInput
-                    autoCorrect={false}
-                    autoCapitalize={'none'}
+                    rawInput={true}
                     enablesReturnKeyAutomatically={true}
                     error={displayNameError}
                     label={formatMessage({
@@ -241,7 +240,6 @@ const EditServerForm = ({
                     onSubmitEditing={onDisplayNameSubmit}
                     ref={displayNameRef}
                     returnKeyType={showAdvancedOptions || preauthSecretError ? 'next' : 'done'}
-                    spellCheck={false}
                     testID='edit_server_form.server_display_name.input'
                     theme={theme}
                     value={displayName}
@@ -281,8 +279,7 @@ const EditServerForm = ({
                     {showAdvancedOptions && (
                         <>
                             <FloatingTextInput
-                                autoCorrect={false}
-                                autoCapitalize={'none'}
+                                rawInput={true}
                                 enablesReturnKeyAutomatically={true}
                                 endAdornment={preauthSecretEndAdornment}
                                 error={preauthSecretError}
@@ -293,7 +290,6 @@ const EditServerForm = ({
                                 ref={preauthSecretRef}
                                 returnKeyType='done'
                                 secureTextEntry={!isPreauthSecretVisible}
-                                spellCheck={false}
                                 testID='edit_server_form.preauth_secret.input'
                                 theme={theme}
                                 value={preauthSecret}
