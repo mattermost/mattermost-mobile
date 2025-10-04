@@ -5,18 +5,22 @@ import React from 'react';
 import {StyleSheet, Platform} from 'react-native';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import Banner from '@components/banner/Banner';
 import BannerItem from '@components/banner/banner_item';
+import {
+    FLOATING_BANNER_BOTTOM_OFFSET_PHONE_IOS,
+    FLOATING_BANNER_BOTTOM_OFFSET_PHONE_ANDROID,
+    FLOATING_BANNER_BOTTOM_OFFSET_WITH_KEYBOARD_IOS,
+    FLOATING_BANNER_BOTTOM_OFFSET_WITH_KEYBOARD_ANDROID,
+    FLOATING_BANNER_TABLET_EXTRA_BOTTOM_OFFSET,
+    CHANNEL_BANNER_HEIGHT,
+    DEFAULT_HEADER_HEIGHT,
+    TABLET_HEADER_HEIGHT,
+    BANNER_SPACING,
+} from '@constants/view';
 import {useIsTablet, useKeyboardHeight} from '@hooks/device';
-
-const BOTTOM_OFFSET_PHONE_IOS = 105;
-const BOTTOM_OFFSET_PHONE_ANDROID = 90;
-const BOTTOM_OFFSET_WITH_KEYBOARD_IOS = 70;
-const BOTTOM_OFFSET_WITH_KEYBOARD_ANDROID = 80;
-const TABLET_EXTRA_BOTTOM_OFFSET = 60;
-const BANNER_STACK_SPACING = 60;
-const BOTTOM_BANNER_EXTRA_OFFSET = 8;
 
 import type {BannerConfig} from './types';
 
@@ -25,10 +29,131 @@ type FloatingBannerProps = {
     onDismiss: (id: string) => void;
 };
 
-const FloatingBanner: React.FC<FloatingBannerProps> = ({banners, onDismiss}) => {
+type BannerSectionProps = {
+    sectionBanners: BannerConfig[];
+    position: 'top' | 'bottom';
+    executeBannerAction: (banner: BannerConfig) => void;
+    dismissBanner: (banner: BannerConfig) => void;
+};
+
+type AnimatedBannerItemProps = {
+    banner: BannerConfig;
+    index: number;
+    isTop: boolean;
+    isTablet: boolean;
+    insets: {top: number; bottom: number; left: number; right: number};
+    executeBannerAction: (banner: BannerConfig) => void;
+    dismissBanner: (banner: BannerConfig) => void;
+};
+
+const AnimatedBannerItem: React.FC<AnimatedBannerItemProps> = ({
+    banner,
+    index,
+    isTop,
+    isTablet,
+    insets,
+    executeBannerAction,
+    dismissBanner,
+}) => {
+    const {id, dismissible = true, customComponent} = banner;
+
+    let baseOffset = BANNER_SPACING;
+    if (isTop) {
+        baseOffset += insets.top;
+
+        if (isTablet) {
+            baseOffset += TABLET_HEADER_HEIGHT;
+        } else {
+            baseOffset += DEFAULT_HEADER_HEIGHT;
+        }
+    }
+
+    const stackOffset = baseOffset + (index * (CHANNEL_BANNER_HEIGHT + BANNER_SPACING));
+
+    const animatedPositionStyle = useAnimatedStyle(() => {
+        return isTop ? {top: withTiming(stackOffset, {duration: 250})} : {bottom: withTiming(stackOffset, {duration: 250})};
+    }, [stackOffset, isTop]);
+
+    return (
+        <Animated.View
+            key={id}
+            style={[
+                isTop ? styles.topBannerContainer : styles.bottomBannerContainer,
+                animatedPositionStyle,
+            ]}
+        >
+            <Banner
+                visible={true}
+                dismissible={dismissible}
+                onDismiss={() => dismissBanner(banner)}
+                style={styles.relativePosition}
+            >
+                {customComponent || (
+                    <BannerItem
+                        banner={banner}
+                        onPress={executeBannerAction}
+                        onDismiss={dismissBanner}
+                    />
+                )}
+            </Banner>
+        </Animated.View>
+    );
+};
+
+const BannerSection: React.FC<BannerSectionProps> = ({
+    sectionBanners,
+    position,
+    executeBannerAction,
+    dismissBanner,
+}) => {
     const isTablet = useIsTablet();
     const keyboardHeight = useKeyboardHeight();
+    const insets = useSafeAreaInsets();
+    const isTop = position === 'top';
+    const testID = isTop ? 'floating-banner-top-container' : 'floating-banner-bottom-container';
+    const baseBottomOffset = Platform.OS === 'android' ? FLOATING_BANNER_BOTTOM_OFFSET_PHONE_ANDROID : FLOATING_BANNER_BOTTOM_OFFSET_PHONE_IOS;
+    const bottomOffset = isTablet ? (baseBottomOffset + FLOATING_BANNER_TABLET_EXTRA_BOTTOM_OFFSET) : baseBottomOffset;
+    const containerStyle = isTop ? [styles.containerBase, styles.topContainer] : [
+        styles.containerBase,
+        styles.bottomContainer,
+    ];
 
+    const animatedStyle = useAnimatedStyle(() => {
+        if (isTop) {
+            return {};
+        }
+
+        if (Platform.OS === 'android') {
+            return {bottom: withTiming(FLOATING_BANNER_BOTTOM_OFFSET_WITH_KEYBOARD_ANDROID, {duration: 250})};
+        }
+
+        return {bottom: withTiming((keyboardHeight > 0 ? FLOATING_BANNER_BOTTOM_OFFSET_WITH_KEYBOARD_IOS : bottomOffset) + keyboardHeight, {duration: 250})};
+    }, [keyboardHeight, isTop, bottomOffset]);
+
+    return (
+        <Animated.View
+            testID={testID}
+            style={[containerStyle, animatedStyle]}
+        >
+            <GestureHandlerRootView style={styles.gestureHandler}>
+                {sectionBanners.map((banner, index) => (
+                    <AnimatedBannerItem
+                        key={banner.id}
+                        banner={banner}
+                        index={index}
+                        isTop={isTop}
+                        isTablet={isTablet}
+                        insets={insets}
+                        executeBannerAction={executeBannerAction}
+                        dismissBanner={dismissBanner}
+                    />
+                ))}
+            </GestureHandlerRootView>
+        </Animated.View>
+    );
+};
+
+const FloatingBanner: React.FC<FloatingBannerProps> = ({banners, onDismiss}) => {
     const executeBannerAction = (banner: BannerConfig) => {
         if (banner.onPress) {
             banner.onPress();
@@ -46,78 +171,23 @@ const FloatingBanner: React.FC<FloatingBannerProps> = ({banners, onDismiss}) => 
         return null;
     }
 
-    // Separate banners by position to handle safe area correctly
     const topBanners = banners.filter((banner) => (banner.position || 'top') === 'top');
     const bottomBanners = banners.filter((banner) => banner.position === 'bottom');
 
-    const renderSection = (
-        sectionBanners: BannerConfig[],
-        position: 'top' | 'bottom',
-    ) => {
-        if (!sectionBanners.length) {
-            return null;
-        }
-
-        const isTop = position === 'top';
-        const testID = isTop ? 'floating-banner-top-container' : 'floating-banner-bottom-container';
-        const baseBottomOffset = Platform.OS === 'android' ? BOTTOM_OFFSET_PHONE_ANDROID : BOTTOM_OFFSET_PHONE_IOS;
-        const bottomOffset = isTablet ? (baseBottomOffset + TABLET_EXTRA_BOTTOM_OFFSET) : baseBottomOffset;
-        const containerStyle = isTop ? [styles.containerBase, styles.topContainer] : [
-            styles.containerBase,
-            styles.bottomContainer,
-        ];
-
-        const animatedStyle = useAnimatedStyle(() => {
-            if (isTop) {
-                return {};
-            }
-
-            if (Platform.OS === 'android') {
-                return {bottom: withTiming(BOTTOM_OFFSET_WITH_KEYBOARD_ANDROID, {duration: 250})};
-            }
-
-            return {bottom: withTiming((keyboardHeight > 0 ? BOTTOM_OFFSET_WITH_KEYBOARD_IOS : bottomOffset) + keyboardHeight, {duration: 250})};
-        }, [keyboardHeight, isTop, bottomOffset]);
-
-        return (
-            <Animated.View
-                testID={testID}
-                style={[containerStyle, animatedStyle]}
-            >
-                <GestureHandlerRootView style={styles.gestureHandler}>
-                    {sectionBanners.map((banner, index) => {
-                        const {id, dismissible = true, customComponent} = banner;
-                        const offsetProps = isTop ? {customTopOffset: index * BANNER_STACK_SPACING} : {customBottomOffset: (index * BANNER_STACK_SPACING) + BOTTOM_BANNER_EXTRA_OFFSET};
-
-                        return (
-                            <Banner
-                                key={id}
-                                position={position}
-                                visible={true}
-                                {...offsetProps}
-                                dismissible={dismissible}
-                                onDismiss={() => dismissBanner(banner)}
-                            >
-                                {customComponent || (
-
-                                    <BannerItem
-                                        banner={banner}
-                                        onPress={executeBannerAction}
-                                        onDismiss={dismissBanner}
-                                    />
-                                )}
-                            </Banner>
-                        );
-                    })}
-                </GestureHandlerRootView>
-            </Animated.View>
-        );
-    };
-
     return (
         <>
-            {renderSection(topBanners, 'top')}
-            {renderSection(bottomBanners, 'bottom')}
+            <BannerSection
+                sectionBanners={topBanners}
+                position='top'
+                executeBannerAction={executeBannerAction}
+                dismissBanner={dismissBanner}
+            />
+            <BannerSection
+                sectionBanners={bottomBanners}
+                position='bottom'
+                executeBannerAction={executeBannerAction}
+                dismissBanner={dismissBanner}
+            />
         </>
     );
 };
@@ -138,6 +208,31 @@ const styles = StyleSheet.create({
     bottomContainer: {
         paddingBottom: 8,
     },
+    bottomStack: {
+        flexDirection: 'column-reverse',
+    },
+    bottomBannerWrapper: {
+        width: '100%',
+        alignItems: 'center',
+    },
+    topBannerContainer: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        width: '100%',
+        alignItems: 'center',
+    },
+    bottomBannerContainer: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        width: '100%',
+        alignItems: 'center',
+    },
+    relativePosition: {
+        position: 'relative',
+        top: 0,
+    },
     gestureHandler: {
         width: '100%',
         alignItems: 'center',
@@ -145,11 +240,3 @@ const styles = StyleSheet.create({
 });
 
 export default FloatingBanner;
-
-export const testExports = {
-    BOTTOM_OFFSET_PHONE_IOS,
-    BOTTOM_OFFSET_PHONE_ANDROID,
-    TABLET_EXTRA_BOTTOM_OFFSET,
-    BOTTOM_OFFSET_WITH_KEYBOARD_IOS,
-    BOTTOM_OFFSET_WITH_KEYBOARD_ANDROID,
-};

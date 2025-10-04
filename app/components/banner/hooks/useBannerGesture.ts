@@ -58,7 +58,7 @@ export const useBannerGesture = ({
                     translateX.value = withTiming(0, {duration: 200});
                 }
             });
-    }, [dismissible, onDismiss, translateX, swipeThreshold, isDismissed, opacity, startX]);
+    }, [dismissible, onDismiss, swipeThreshold]); // eslint-disable-line react-hooks/exhaustive-deps -- translateX, opacity, isDismissed, startX are shared values and stable references
 
     return {swipeGesture};
 };

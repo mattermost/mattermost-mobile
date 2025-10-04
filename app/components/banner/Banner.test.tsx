@@ -7,11 +7,6 @@ import {Text} from 'react-native';
 
 import Banner from './Banner';
 
-// Mock the hooks - we test them separately
-jest.mock('./hooks/useBannerPosition', () => ({
-    useBannerPosition: () => ({positionStyle: {}}),
-}));
-
 jest.mock('./hooks/useBannerAnimation', () => ({
     useBannerAnimation: () => ({
         opacity: {value: 1},
