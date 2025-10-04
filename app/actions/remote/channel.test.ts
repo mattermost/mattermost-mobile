@@ -28,7 +28,7 @@ import {
     joinChannelIfNeeded,
     markChannelAsRead,
     unsetActiveChannelOnServer,
-    switchToChannelByName,
+    joinIfNeededAndSwitchToChannel,
     goToNPSChannel,
     fetchMissingDirectChannelsInfo,
     fetchDirectChannelsInfo,
@@ -434,14 +434,14 @@ describe('channel', () => {
     });
 
     it('switchToChannelByName - handle not found database', async () => {
-        const {error} = await switchToChannelByName('foo', '', '', () => {}, intl);
+        const {error} = await joinIfNeededAndSwitchToChannel('foo', {}, {}, () => {}, intl);
         expect(error).toBeDefined();
     });
 
     it('switchToChannelByName - base case', async () => {
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user.id}, {id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
 
-        const result = await switchToChannelByName(serverUrl, 'channelname', 'teamname', () => {}, intl);
+        const result = await joinIfNeededAndSwitchToChannel(serverUrl, {name: 'channelname'}, {name: 'teamname'}, () => {}, intl);
         expect(result).toBeDefined();
         expect(result).not.toHaveProperty('error');
     });
@@ -449,7 +449,7 @@ describe('channel', () => {
     it('switchToChannelByName - team redirect', async () => {
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user.id}, {id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
 
-        const result = await switchToChannelByName(serverUrl, 'channelname', DeepLink.Redirect, () => {}, intl);
+        const result = await joinIfNeededAndSwitchToChannel(serverUrl, {name: 'channelname'}, {name: DeepLink.Redirect}, () => {}, intl);
         expect(result).toBeDefined();
         expect(result).not.toHaveProperty('error');
     });
