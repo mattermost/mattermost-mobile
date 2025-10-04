@@ -705,10 +705,10 @@ npm test -- app/managers/banner_manager.test.ts --coverage --collectCoverageFrom
 **FloatingBanner Test Suite** (`app/components/floating_banner/floating_banner.test.tsx`):
 
 ```
-Statements   : 100% ( 37/37 )
-Branches     : 96.77% ( 30/31 )
-Functions    : 100% ( 9/9 )
-Lines        : 100% ( 35/35 )
+Statements   : 100% ( 46/46 )
+Branches     : 100% ( 35/35 )
+Functions    : 100% ( 11/11 )
+Lines        : 100% ( 44/44 )
 ```
 
 Run coverage with:

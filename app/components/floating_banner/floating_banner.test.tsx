@@ -166,6 +166,15 @@ describe('FloatingBanner', () => {
 
             expect(bannerElement.props.dismissible).toBe(false);
         });
+
+        it('should handle banner with dismissible undefined (defaults to true)', () => {
+            const banner = createMockBanner();
+            delete banner.dismissible;
+            renderFloatingBanner([banner]);
+
+            const bannerElement = screen.getByTestId('banner');
+            expect(bannerElement.props.dismissible).toBe(true);
+        });
     });
 
     describe('content rendering', () => {
@@ -325,6 +334,19 @@ describe('FloatingBanner', () => {
 
             const container = screen.getByTestId('floating-banner-bottom-container');
             expect(container.props.style[1].bottom).toBe(FLOATING_BANNER_BOTTOM_OFFSET_PHONE_IOS + FLOATING_BANNER_TABLET_EXTRA_BOTTOM_OFFSET);
+        });
+
+        it('applies tablet-specific top offset with tablet header height', () => {
+            jest.mocked(Device.useIsTablet).mockReturnValue(true);
+
+            const banners = [
+                createMockBanner({id: 'top-tablet-banner', position: 'top'}),
+            ];
+            renderFloatingBanner(banners);
+
+            const bannerElements = screen.getAllByTestId('banner');
+            expect(bannerElements).toHaveLength(1);
+            expect(bannerElements[0].props.visible).toBe(true);
         });
     });
 
