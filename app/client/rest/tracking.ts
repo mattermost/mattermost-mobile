@@ -4,9 +4,10 @@
 import {defineMessage} from 'react-intl';
 import {DeviceEventEmitter, Platform} from 'react-native';
 
-import {CollectNetworkMetrics} from '@assets/config.json';
+import {CollectNetworkMetrics, MonitorNetworkPerformance} from '@assets/config.json';
 import {Events} from '@constants';
 import {setServerCredentials} from '@init/credentials';
+import NetworkPerformanceManager from '@managers/network_performance_manager';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {NetworkRequestMetrics} from '@managers/performance_metrics_manager/constant';
 import {isErrorWithStatusCode} from '@utils/errors';
@@ -129,6 +130,27 @@ export default class ClientTracking {
         }
         group.totalSize += metrics?.size ?? 0;
         group.totalCompressedSize += metrics?.compressedSize ?? 0;
+    }
+
+    startNetworkPerformanceTracking(url: string): string | undefined {
+        if (!MonitorNetworkPerformance) {
+            return undefined;
+        }
+        return NetworkPerformanceManager.startRequestTracking(this.apiClient.baseUrl, url);
+    }
+
+    completeNetworkPerformanceTracking(requestId: string | undefined, url: string, metrics: ClientResponseMetrics | undefined) {
+        if (!MonitorNetworkPerformance || !requestId || !metrics) {
+            return;
+        }
+        NetworkPerformanceManager.completeRequestTracking(this.apiClient.baseUrl, requestId, metrics);
+    }
+
+    cancelNetworkPerformanceTracking(requestId: string | undefined) {
+        if (!MonitorNetworkPerformance || !requestId) {
+            return;
+        }
+        NetworkPerformanceManager.cancelRequestTracking(this.apiClient.baseUrl, requestId);
     }
 
     getAverageLatency(groupLabel: RequestGroupLabel): number {
@@ -383,10 +405,13 @@ export default class ClientTracking {
             this.incrementRequestCount(groupLabel);
         }
 
+        const performanceRequestId = this.startNetworkPerformanceTracking(url);
+
         let response: ClientResponse;
         try {
             response = await request!(url, this.buildRequestOptions(options));
         } catch (error) {
+            this.cancelNetworkPerformanceTracking(performanceRequestId);
             const response_error = error as ClientError;
             const status_code = isErrorWithStatusCode(error) ? error.status_code : undefined;
             throw new ClientError(this.apiClient.baseUrl, {
@@ -397,7 +422,7 @@ export default class ClientTracking {
                 }),
                 url,
                 details: response_error,
-                headers: response_error.headers ? response_error.headers : undefined,
+                headers: response_error.headers? response_error.headers : undefined,
                 status_code,
             });
         } finally {
@@ -409,6 +434,7 @@ export default class ClientTracking {
         if (groupLabel && CollectNetworkMetrics) {
             this.trackRequest(groupLabel, url, response.metrics);
         }
+        this.completeNetworkPerformanceTracking(performanceRequestId, url, response.metrics);
         const serverVersion = semverFromServerVersion(
             headers[ClientConstants.HEADER_X_VERSION_ID] || headers[ClientConstants.HEADER_X_VERSION_ID.toLowerCase()],
         );
@@ -435,7 +461,6 @@ export default class ClientTracking {
             server_error_id: response.data?.id as string,
             status_code: response.code,
             url,
-            headers,
         });
     };
 }
