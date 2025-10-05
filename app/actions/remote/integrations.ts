@@ -3,7 +3,7 @@
 //
 
 import DatabaseManager from '@database/manager';
-import IntegrationsMananger from '@managers/integrations_manager';
+import IntegrationsManager from '@managers/integrations_manager';
 import NetworkManager from '@managers/network_manager';
 import {getCurrentChannelId, getCurrentTeamId} from '@queries/servers/system';
 import {getFullErrorMessage} from '@utils/errors';
@@ -33,7 +33,7 @@ export const postActionWithCookie = async (serverUrl: string, postId: string, ac
 
         const data = await client.doPostActionWithCookie(postId, actionId, actionCookie, selectedOption);
         if (data?.trigger_id) {
-            IntegrationsMananger.getManager(serverUrl)?.setTriggerId(data.trigger_id);
+            IntegrationsManager.getManager(serverUrl)?.setTriggerId(data.trigger_id);
         }
 
         return {data};
