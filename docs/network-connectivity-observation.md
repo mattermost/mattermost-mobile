@@ -489,49 +489,112 @@ updateState(websocketState, netInfo, appState) {
 
 ## Configuration
 
-### Config Flags
+### User Preference
 
-#### `assets/base/config.json`
-```json
-{
-  "CollectNetworkMetrics": false,
-  "MonitorNetworkPerformance": true
-}
+**Low Connectivity Monitor** (User Setting):
+- Accessible in: Settings → Advanced Settings → Experimental Features
+- Controls real-time performance monitoring and banner display
+- Enables early detection and network performance tracking
+- **Independent** from `CollectNetworkMetrics`
+- Stored in app-level database via `GLOBAL_IDENTIFIERS.LOW_CONNECTIVITY_MONITOR`
+- Default: **Enabled** (true)
+- Observable via `observeLowConnectivityMonitor()` from `@queries/app/global`
+
+#### Implementation Details
+
+**Actions** (`app/actions/app/global.ts`):
+```typescript
+export const storeLowConnectivityMonitor = async (enabled: boolean) => {
+  return storeGlobal(GLOBAL_IDENTIFIERS.LOW_CONNECTIVITY_MONITOR, enabled, false);
+};
 ```
 
-**`CollectNetworkMetrics`** (Existing):
-- Controls telemetry/analytics collection
-- Used by `PerformanceMetricsManager`
-- Tracks request groups, parallel requests, etc.
-
-**`MonitorNetworkPerformance`** (New):
-- Controls real-time performance monitoring
-- Used by `NetworkPerformanceManager`
-- Enables early detection and banner display
-- **Independent** from `CollectNetworkMetrics`
+**Queries** (`app/queries/app/global.ts`):
+```typescript
+export const observeLowConnectivityMonitor = () => {
+  const query = queryGlobalValue(GLOBAL_IDENTIFIERS.LOW_CONNECTIVITY_MONITOR);
+  if (!query) {
+    return of$(true);  // Default to enabled
+  }
+  return query.observe().pipe(
+    switchMap((result) => (result.length ? result[0].observe() : of$(true))),
+    switchMap((v) => {
+      if (typeof v === 'boolean') {
+        return of$(v);
+      }
+      return of$(v?.value ?? true);
+    }),
+  );
+};
+```
 
 ### Integration in ClientTracking
 
 ```typescript
-// Network metrics collection (existing)
+class ClientTracking {
+  private lowConnectivityMonitorEnabled = true;
+
+  constructor(apiClient: APIClientInterface) {
+    this.apiClient = apiClient;
+    
+    // Subscribe to user preference changes
+    observeLowConnectivityMonitor().subscribe((enabled) => {
+      this.lowConnectivityMonitorEnabled = enabled;
+    });
+  }
+
+  startNetworkPerformanceTracking(url: string): string | undefined {
+    if (!this.lowConnectivityMonitorEnabled) {
+      return undefined;
+    }
+    return NetworkPerformanceManager.startRequestTracking(this.apiClient.baseUrl, url);
+  }
+
+  completeNetworkPerformanceTracking(
+    requestId: string | undefined,
+    url: string,
+    metrics: ClientResponseMetrics | undefined
+  ) {
+    if (!this.lowConnectivityMonitorEnabled || !requestId || !metrics) {
+      return;
+    }
+    NetworkPerformanceManager.completeRequestTracking(this.apiClient.baseUrl, requestId, metrics);
+  }
+
+  cancelNetworkPerformanceTracking(requestId: string | undefined) {
+    if (!this.lowConnectivityMonitorEnabled || !requestId) {
+      return;
+    }
+    NetworkPerformanceManager.cancelRequestTracking(this.apiClient.baseUrl, requestId);
+  }
+}
+```
+
+**Network metrics collection** (existing - for telemetry):
+```typescript
 if (groupLabel && CollectNetworkMetrics) {
   this.incrementRequestCount(groupLabel);
   this.trackRequest(groupLabel, url, response.metrics);
   this.decrementRequestCount(groupLabel);
 }
-
-// Performance monitoring (new)
-if (MonitorNetworkPerformance) {
-  const requestId = NetworkPerformanceManager.startRequestTracking(baseUrl, url);
-  
-  try {
-    response = await request(url, options);
-    NetworkPerformanceManager.completeRequestTracking(baseUrl, requestId, response.metrics);
-  } catch (error) {
-    NetworkPerformanceManager.cancelRequestTracking(baseUrl, requestId);
-  }
-}
 ```
+
+### Network Manager Configuration
+
+**Metrics Collection** (`app/managers/network_manager.ts`):
+```typescript
+const config = {
+  sessionConfiguration: {
+    timeoutIntervalForRequest: managedConfig?.timeout ? parseInt(managedConfig.timeout, 10) : this.DEFAULT_CONFIG.sessionConfiguration?.timeoutIntervalForRequest,
+    timeoutIntervalForResource: managedConfig?.timeoutVPN ? parseInt(managedConfig.timeoutVPN, 10) : this.DEFAULT_CONFIG.sessionConfiguration?.timeoutIntervalForResource,
+    waitsForConnectivity: managedConfig?.useVPN === 'true',
+    collectMetrics: true,  // Always enabled to support Low Connectivity Monitor
+  },
+  headers,
+};
+```
+
+**Note**: `collectMetrics` is now always set to `true` to ensure network metrics are available for the Low Connectivity Monitor. The actual usage of these metrics is controlled dynamically by the user's Low Connectivity Monitor preference in `ClientTracking`.
 
 ---
 
