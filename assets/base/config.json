@@ -29,6 +29,7 @@
 
     "ExperimentalNormalizeMarkdownLinks": false,
     "CustomRequestHeaders": {},
-    "CollectNetworkMetrics": false,
-    "MonitorNetworkPerformance": true
+    "CollectNetworkMetrics": false
 }
+
+
