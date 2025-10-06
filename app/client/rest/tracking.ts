@@ -422,7 +422,7 @@ export default class ClientTracking {
                 }),
                 url,
                 details: response_error,
-                headers: response_error.headers? response_error.headers : undefined,
+                headers: response_error.headers ? response_error.headers : undefined,
                 status_code,
             });
         } finally {

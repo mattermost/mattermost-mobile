@@ -9,6 +9,8 @@ const {
     shouldShowConnectingBanner,
     shouldShowPerformanceBanner,
     shouldShowReconnectionBanner,
+    RECONNECTION_BANNER_DURATION,
+    PERFORMANCE_BANNER_DURATION,
 } = testExports;
 
 // Define constants locally for testing
@@ -525,7 +527,7 @@ describe('NetworkConnectivityManager', () => {
             manager.updatePerformanceState('normal');
             expect(mockBannerManager.showBannerWithAutoHide).toHaveBeenCalledWith(
                 expect.objectContaining({id: 'connectivity'}),
-                3000,
+                RECONNECTION_BANNER_DURATION,
             );
         });
 
@@ -575,5 +577,96 @@ describe('NetworkConnectivityManager', () => {
             manager.updateState('connected', {isInternetReachable: true}, 'active');
         });
 
+    });
+
+    describe('banner priority order', () => {
+        beforeEach(() => {
+            manager.setServerConnectionStatus(true, 'https://test.server.com');
+            setupConnectedState(manager);
+        });
+
+        it('should prioritize disconnected over performance', () => {
+            manager.updatePerformanceState('slow');
+            mockBannerManager.showBanner.mockClear();
+            mockBannerManager.showBannerWithAutoHide.mockClear();
+
+            manager.updateState('not_connected', {isInternetReachable: true}, 'active');
+
+            expect(mockBannerManager.showBanner).toHaveBeenCalledWith(
+                expect.objectContaining({id: 'connectivity'}),
+            );
+        });
+
+        it('should prioritize disconnected over connecting', () => {
+            manager.updateState('connecting', {isInternetReachable: true}, 'active');
+            mockBannerManager.showBanner.mockClear();
+
+            manager.updateState('not_connected', {isInternetReachable: true}, 'active');
+
+            expect(mockBannerManager.showBanner).toHaveBeenCalledWith(
+                expect.objectContaining({id: 'connectivity'}),
+            );
+        });
+
+        it('should prioritize performance over connecting', () => {
+            manager.updatePerformanceState('slow');
+            mockBannerManager.showBannerWithAutoHide.mockClear();
+
+            manager.updateState('connecting', {isInternetReachable: true}, 'active');
+
+            expect(mockBannerManager.showBannerWithAutoHide).toHaveBeenCalledWith(
+                expect.objectContaining({id: 'performance'}),
+                PERFORMANCE_BANNER_DURATION,
+            );
+        });
+
+        it('should prioritize connecting over reconnection', () => {
+            manager.updatePerformanceState('normal');
+            manager.updateState('not_connected', {isInternetReachable: true}, 'active');
+            mockBannerManager.showBanner.mockClear();
+            mockBannerManager.showBannerWithAutoHide.mockClear();
+
+            manager.updateState('connecting', {isInternetReachable: true}, 'active');
+
+            expect(mockBannerManager.showBanner).toHaveBeenCalledWith(
+                expect.objectContaining({id: 'connectivity'}),
+            );
+        });
+
+        it('should show reconnection banner only when connected after disconnect', () => {
+            manager.updatePerformanceState('normal');
+            manager.updateState('not_connected', {isInternetReachable: true}, 'active');
+            mockBannerManager.showBannerWithAutoHide.mockClear();
+
+            manager.updateState('connected', {isInternetReachable: true}, 'active');
+
+            expect(mockBannerManager.showBannerWithAutoHide).toHaveBeenCalledWith(
+                expect.objectContaining({id: 'connectivity'}),
+                RECONNECTION_BANNER_DURATION,
+            );
+        });
+
+        it('should hide banner when connected and no performance issues', () => {
+            manager.updatePerformanceState('normal');
+            manager.updateState('not_connected', {isInternetReachable: true}, 'active');
+            manager.updateState('connected', {isInternetReachable: true}, 'active');
+            mockBannerManager.hideBanner.mockClear();
+
+            manager.updateState('connected', {isInternetReachable: true}, 'active');
+
+            expect(mockBannerManager.hideBanner).toHaveBeenCalled();
+        });
+
+        it('should handle all conditions simultaneously and show highest priority', () => {
+            manager.updatePerformanceState('slow');
+            mockBannerManager.showBanner.mockClear();
+            mockBannerManager.showBannerWithAutoHide.mockClear();
+
+            manager.updateState('not_connected', {isInternetReachable: true}, 'active');
+
+            expect(mockBannerManager.showBanner).toHaveBeenCalledWith(
+                expect.objectContaining({id: 'connectivity'}),
+            );
+        });
     });
 });
