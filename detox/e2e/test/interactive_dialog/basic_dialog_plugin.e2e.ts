@@ -8,7 +8,11 @@
 // *******************************************************************
 
 import {
+    DemoPlugin,
+    Plugin,
     Setup,
+    System,
+    User,
 } from '@support/server_api';
 import {
     serverOneUrl,
@@ -34,6 +38,31 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
         testUser = user;
+
+        // # Login as admin for configuration API calls
+        await User.apiAdminLogin(siteOneUrl);
+
+        // # Check plugin upload is enabled
+        await System.shouldHavePluginUploadEnabled(siteOneUrl);
+
+        // # Configure server for tests
+        await System.apiUpdateConfig(siteOneUrl, {
+            ServiceSettings: {
+                EnableGifPicker: true,
+            },
+            FileSettings: {
+                EnablePublicLink: true,
+            },
+        });
+
+        // # Upload and enable demo plugin
+        const latestUrl = await DemoPlugin.getLatestDownloadUrl();
+        await Plugin.apiUploadAndEnablePlugin({
+            baseUrl: siteOneUrl,
+            url: latestUrl,
+            id: DemoPlugin.id,
+            force: true,
+        });
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);

@@ -33,8 +33,37 @@ const prepackagedPlugins = new Set([
     'com.mattermost.nps',
     'com.mattermost.welcomebot',
     'zoom',
-    'com.mattermost.demo-plugin',
 ]);
+
+/**
+ * Get the latest release version from GitHub releases
+ * @param {string} repo - GitHub repository in format 'owner/repo'
+ * @return {Promise<string>} returns latest version string without 'v' prefix
+ */
+export const apiGetLatestPluginVersion = async (repo: string): Promise<string> => {
+    try {
+        const response = await client.get(`https://api.github.com/repos/${repo}/releases/latest`);
+        const tagName = response.data.tag_name;
+
+        // Remove 'v' prefix if present (e.g., 'v0.10.2' -> '0.10.2')
+        return tagName.startsWith('v') ? tagName.substring(1) : tagName;
+    } catch (err) {
+        // Fallback to hardcoded version if API fails
+        return '0.10.2';
+    }
+};
+
+// Demo Plugin Constants
+export const DemoPlugin = {
+    id: 'com.mattermost.demo-plugin',
+    repo: 'mattermost/mattermost-plugin-demo',
+
+    // Get download URL for latest version
+    async getLatestDownloadUrl() {
+        const latestVersion = await apiGetLatestPluginVersion(this.repo);
+        return `https://github.com/${this.repo}/releases/download/v${latestVersion}/com.mattermost.demo-plugin-${latestVersion}.tar.gz`;
+    },
+} as const;
 
 /**
  * Disable non-prepackaged plugins.
@@ -147,14 +176,137 @@ export const apiUploadPlugin = async (baseUrl: string, filename: string): Promis
     }
 };
 
+/**
+ * Get plugin status - whether it's installed and/or active.
+ * @param {string} baseUrl - the base server URL
+ * @param {string} pluginId - the plugin ID
+ * @param {string} version - the expected plugin version
+ * @return {Object} returns {isInstalled, isActive, plugin} on success or {error, status} on error
+ */
+export const apiGetPluginStatus = async (baseUrl: string, pluginId: string, version?: string): Promise<any> => {
+    try {
+        const {plugins} = await apiGetAllPlugins(baseUrl);
+        if (!plugins) {
+            return {isInstalled: false, isActive: false};
+        }
+
+        // Check if plugin is installed (in either active or inactive list)
+        let plugin = plugins.active?.find((p: any) => p.id === pluginId);
+        if (plugin) {
+            const isVersionMatch = !version || plugin.version === version;
+            return {
+                isInstalled: true,
+                isActive: true,
+                plugin,
+                isVersionMatch,
+            };
+        }
+
+        plugin = plugins.inactive?.find((p: any) => p.id === pluginId);
+        if (plugin) {
+            const isVersionMatch = !version || plugin.version === version;
+            return {
+                isInstalled: true,
+                isActive: false,
+                plugin,
+                isVersionMatch,
+            };
+        }
+
+        return {isInstalled: false, isActive: false};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
+ * Upload and enable plugin, handling various states.
+ * @param {Object} options - configuration object
+ * @param {string} options.baseUrl - the base server URL
+ * @param {string} options.filename - filename if uploading from file
+ * @param {string} options.url - URL if installing from URL
+ * @param {string} options.id - the plugin ID
+ * @param {string} options.version - expected plugin version
+ * @param {boolean} options.force - whether to force install if already exists
+ * @return {Object} returns plugin data on success or {error, status} on error
+ */
+export const apiUploadAndEnablePlugin = async (options: {
+    baseUrl: string;
+    filename?: string;
+    url?: string;
+    id: string;
+    version?: string;
+    force?: boolean;
+}): Promise<any> => {
+    const {baseUrl, filename, url, id, version, force = false} = options;
+
+    try {
+        // Check current plugin status
+        const statusResult = await apiGetPluginStatus(baseUrl, id, version);
+        if (statusResult.error) {
+            return statusResult;
+        }
+
+        // If already active with correct version, return early
+        if (statusResult.isActive && (!version || statusResult.isVersionMatch)) {
+            return {plugin: statusResult.plugin, message: 'Plugin is already active'};
+        }
+
+        // If installed but inactive, just enable it
+        if (statusResult.isInstalled && (!version || statusResult.isVersionMatch)) {
+            const enableResult = await apiEnablePluginById(baseUrl, id);
+            if (enableResult.error) {
+                return enableResult;
+            }
+            return {plugin: statusResult.plugin, message: 'Plugin was inactive, now enabled'};
+        }
+
+        // Plugin needs to be installed
+        let installResult;
+        if (url) {
+            installResult = await apiInstallPluginFromUrl(baseUrl, url, force);
+        } else if (filename) {
+            installResult = await apiUploadPlugin(baseUrl, filename);
+        } else {
+            return {error: 'Either filename or url must be provided', status: 400};
+        }
+
+        if (installResult.error) {
+            return installResult;
+        }
+
+        // Wait a moment for installation to complete
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        // Enable the newly installed plugin
+        const enableResult = await apiEnablePluginById(baseUrl, id);
+        if (enableResult.error) {
+            return enableResult;
+        }
+
+        // Wait a moment for enablement to complete
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        return {
+            plugin: installResult.plugin,
+            message: 'Plugin uploaded and enabled successfully',
+        };
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
 export const Plugin = {
     apiDisableNonPrepackagedPlugins,
     apiDisablePluginById,
     apiEnablePluginById,
     apiGetAllPlugins,
+    apiGetLatestPluginVersion,
+    apiGetPluginStatus,
     apiInstallPluginFromUrl,
     apiRemovePluginById,
     apiUploadPlugin,
+    apiUploadAndEnablePlugin,
 };
 
 export default Plugin;
