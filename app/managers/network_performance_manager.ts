@@ -236,6 +236,10 @@ class NetworkPerformanceManagerSingleton {
     };
 
     private recordRequestOutcome = (serverUrl: string, outcome: RequestOutcome) => {
+        if (!this.performanceSubjects[serverUrl]) {
+            return;
+        }
+
         if (!this.requestOutcomes[serverUrl]) {
             this.requestOutcomes[serverUrl] = [];
         }

@@ -134,6 +134,8 @@ describe('NetworkPerformanceManager', () => {
 
     describe('request tracking lifecycle', () => {
         it('should start and complete request tracking', () => {
+            performanceManager.observePerformanceState(serverUrl);
+
             const url = '/api/v4/users/me';
             const metrics = createMockMetrics(500, 1000, 500);
 
@@ -149,6 +151,8 @@ describe('NetworkPerformanceManager', () => {
         });
 
         it('should track slow requests correctly', () => {
+            performanceManager.observePerformanceState(serverUrl);
+
             const url = '/api/v4/posts';
             const slowMetrics = createMockMetrics(3000, 1000, 500);
 
@@ -248,6 +252,8 @@ describe('NetworkPerformanceManager', () => {
 
     describe('outcome statistics', () => {
         it('should provide accurate request outcome statistics', () => {
+            performanceManager.observePerformanceState(serverUrl);
+
             for (let i = 0; i < 20; i++) {
                 const requestId = performanceManager.startRequestTracking(serverUrl, `/api/request-${i}`);
                 const metrics = createMockMetrics(i < 15 ? 3000 : 500, 1000, 500);
@@ -262,6 +268,8 @@ describe('NetworkPerformanceManager', () => {
         });
 
         it('should limit outcome window size', () => {
+            performanceManager.observePerformanceState(serverUrl);
+
             for (let i = 0; i < REQUEST_OUTCOME_WINDOW_SIZE + 10; i++) {
                 const requestId = performanceManager.startRequestTracking(serverUrl, `/api/request-${i}`);
                 const metrics = createMockMetrics(500, 1000, 500);
@@ -276,6 +284,9 @@ describe('NetworkPerformanceManager', () => {
     describe('server management', () => {
         it('should handle multiple servers independently', () => {
             const serverUrl2 = 'https://test-server-2.com';
+
+            performanceManager.observePerformanceState(serverUrl);
+            performanceManager.observePerformanceState(serverUrl2);
 
             for (let i = 0; i < 10; i++) {
                 const requestId = performanceManager.startRequestTracking(serverUrl, `/api/request-${i}`);
@@ -308,6 +319,43 @@ describe('NetworkPerformanceManager', () => {
             const stats = performanceManager.getRequestOutcomeStats(serverUrl);
             expect(stats.totalRequests).toBe(0);
         });
+
+        it('should not recreate storage when request completes after server removal', () => {
+            performanceManager.observePerformanceState(serverUrl);
+
+            const requestId = performanceManager.startRequestTracking(serverUrl, '/api/test');
+
+            performanceManager.removeServer(serverUrl);
+
+            const metrics = createMockMetrics(3000, 1000, 500);
+            performanceManager.completeRequestTracking(serverUrl, requestId, metrics);
+
+            const stats = performanceManager.getRequestOutcomeStats(serverUrl);
+            expect(stats.totalRequests).toBe(0);
+
+            const state = performanceManager.getCurrentPerformanceState(serverUrl);
+            expect(state).toBe('normal');
+        });
+
+        it('should not recreate storage when early detection timer fires after server removal', () => {
+            jest.useFakeTimers();
+
+            performanceManager.observePerformanceState(serverUrl);
+
+            performanceManager.startRequestTracking(serverUrl, '/api/test');
+
+            performanceManager.removeServer(serverUrl);
+
+            jest.advanceTimersByTime(2000);
+
+            const stats = performanceManager.getRequestOutcomeStats(serverUrl);
+            expect(stats.totalRequests).toBe(0);
+
+            const state = performanceManager.getCurrentPerformanceState(serverUrl);
+            expect(state).toBe('normal');
+
+            jest.useRealTimers();
+        });
     });
 
     describe('observable behavior', () => {
@@ -336,6 +384,8 @@ describe('NetworkPerformanceManager', () => {
         });
 
         it('should log when performance state degrades from normal to slow', () => {
+            performanceManager.observePerformanceState(serverUrl);
+
             for (let i = 0; i < 10; i++) {
                 const requestId = performanceManager.startRequestTracking(serverUrl, `/api/request-${i}`);
                 const metrics = createMockMetrics(i < 8 ? 3000 : 500, 1000, 500);
@@ -368,6 +418,8 @@ describe('NetworkPerformanceManager', () => {
         });
 
         it('should log with correct details when performance degrades', () => {
+            performanceManager.observePerformanceState(serverUrl);
+
             for (let i = 0; i < MINIMUM_REQUESTS_FOR_INITIAL_DETECTION; i++) {
                 const requestId = performanceManager.startRequestTracking(serverUrl, `/api/request-${i}`);
                 const metrics = createMockMetrics(3000, 1000, 500);
