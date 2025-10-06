@@ -4,12 +4,16 @@
 import React from 'react';
 
 import ConnectionBanner from '@components/connection_banner/connection_banner';
+import {toMilliseconds} from '@utils/datetime';
 import {getIntlShape} from '@utils/general';
 
 import {BannerManager} from './banner_manager';
 
 import type {NetworkPerformanceState} from './network_performance_manager';
 import type {BannerConfig} from '@components/floating_banner/types';
+
+const RECONNECTION_BANNER_DURATION = toMilliseconds({seconds: 3});
+const PERFORMANCE_BANNER_DURATION = toMilliseconds({seconds: 10});
 
 function getConnectionMessageText(
     websocketState: WebsocketConnectedState,
@@ -113,6 +117,8 @@ class NetworkConnectivityManagerSingleton {
 
     private createConnectivityBannerConfig(message: string, isConnected: boolean): BannerConfig {
         return {
+
+            // Implement id as part of banner namespace described in this ticket: https://mattermost.atlassian.net/browse/MM-66104
             id: 'connectivity',
             dismissible: true,
             customComponent: React.createElement(ConnectionBanner, {
@@ -212,23 +218,28 @@ class NetworkConnectivityManagerSingleton {
             return;
         }
 
+        // Banner priority order (highest to lowest)
+        // 1. Disconnected - critical connection loss
         if (this.handleDisconnectedState()) {
             return;
         }
 
+        // 2. Performance - slow network warning
         if (this.handlePerformanceState()) {
             return;
         }
 
+        // 3. Connecting - attempting to reconnect
         if (this.handleConnectingState()) {
             return;
         }
 
+        // 4. Reconnection - successful reconnection (auto-hide)
         if (this.handleReconnectionState()) {
             return;
         }
 
-        this.handleConnectedState();
+        BannerManager.hideBanner();
     }
 
     private handleDisconnectedState(): boolean {
@@ -249,7 +260,7 @@ class NetworkConnectivityManagerSingleton {
 
     private handlePerformanceState(): boolean {
         if (shouldShowPerformanceBanner(this.currentPerformanceState, this.performanceSuppressedUntilNormal)) {
-            this.showPerformance(10000);
+            this.showPerformance(PERFORMANCE_BANNER_DURATION);
             return true;
         }
         return false;
@@ -261,14 +272,10 @@ class NetworkConnectivityManagerSingleton {
             this.previousWebsocketState,
             this.isOnAppStart,
         )) {
-            this.showConnectivity(true, 3000);
+            this.showConnectivity(true, RECONNECTION_BANNER_DURATION);
             return true;
         }
         return false;
-    }
-
-    private handleConnectedState(): void {
-        BannerManager.hideBanner();
     }
 }
 
@@ -284,4 +291,6 @@ export const testExports = {
     shouldShowConnectingBanner,
     shouldShowPerformanceBanner,
     shouldShowReconnectionBanner,
+    RECONNECTION_BANNER_DURATION,
+    PERFORMANCE_BANNER_DURATION,
 };
