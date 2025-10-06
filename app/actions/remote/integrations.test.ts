@@ -116,7 +116,7 @@ describe('integrations', () => {
         const actionId = 'action';
         const selectedOption = 'option';
 
-        it('should call postActionWithCookie with empty acctionCookie and a selectedOption', async () => {
+        it('should call postActionWithCookie with empty actionCookie and a selectedOption', async () => {
 
             jest.mocked(NetworkManager.getClient).mockImplementationOnce(() => mockClient);
             jest.mocked(mockClient.doPostActionWithCookie).mockImplementationOnce(() => ({trigger_id: 'trigger_id'}));
@@ -125,7 +125,7 @@ describe('integrations', () => {
             const result = await integrations.selectAttachmentMenuAction(serverUrl, postId, actionId, selectedOption);
 
             // TODO: improve test mocking integrations.postActionWithCookie
-            await expect(result).toHaveProperty('data');
+            expect(result).toHaveProperty('data');
             expect(mockClient.doPostActionWithCookie).toHaveBeenCalledWith(postId, actionId, emptyActionCookie, selectedOption);
         });
 
