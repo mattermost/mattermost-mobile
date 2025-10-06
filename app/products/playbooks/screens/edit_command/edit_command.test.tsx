@@ -40,7 +40,7 @@ describe('EditCommand', () => {
 
     function getBaseProps(): ComponentProps<typeof EditCommand> {
         return {
-            componentId: 'EditCommand' as const,
+            componentId: 'PlaybookEditCommand',
             savedCommand: '/test command',
             updateCommand: jest.fn(),
             channelId: 'channel-123',
@@ -58,13 +58,13 @@ describe('EditCommand', () => {
         expect(editCommandForm.props.channelId).toBe(props.channelId);
     });
 
-    it('renders correctly without saved command', () => {
+    it('renders correctly without saved command, adding a slash automatically', () => {
         const props = getBaseProps();
         props.savedCommand = undefined;
         const {getByTestId} = renderWithEverything(<EditCommand {...props}/>, {database});
 
         const editCommandForm = getByTestId('edit-command-form');
-        expect(editCommandForm.props.command).toBe('');
+        expect(editCommandForm.props.command).toBe('/');
     });
 
     it('sets up navigation buttons correctly', () => {

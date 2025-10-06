@@ -8,6 +8,7 @@ import {fetchIsPlaybooksEnabled} from '@playbooks/database/queries/version';
 import {getCurrentChannelId} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
+import {isTablet} from '@utils/helpers';
 import {logDebug} from '@utils/log';
 
 export async function handlePlaybookReconnect(serverUrl: string) {
@@ -27,14 +28,24 @@ export async function handlePlaybookReconnect(serverUrl: string) {
         logDebug('Error updating playbooks version on reconnect', updateResult.error);
     }
 
-    if (NavigationStore.getScreensInStack().includes(Screens.CHANNEL)) {
-        const isPlaybooksEnabled = await fetchIsPlaybooksEnabled(database);
-        if (isPlaybooksEnabled) {
-            const currentChannelId = await getCurrentChannelId(database);
-            const fetchResult = await fetchPlaybookRunsForChannel(serverUrl, currentChannelId);
-            if (fetchResult.error) {
-                logDebug('Error fetching playbook runs on reconnect', fetchResult.error);
-            }
-        }
+    const isChannelScreenMounted = NavigationStore.getScreensInStack().includes(Screens.CHANNEL);
+    const isTabletDevice = isTablet();
+    if (!isChannelScreenMounted && !isTabletDevice) {
+        return;
+    }
+
+    const isPlaybooksEnabled = await fetchIsPlaybooksEnabled(database);
+    if (!isPlaybooksEnabled) {
+        return;
+    }
+
+    const currentChannelId = await getCurrentChannelId(database);
+    if (!currentChannelId) {
+        return;
+    }
+
+    const fetchResult = await fetchPlaybookRunsForChannel(serverUrl, currentChannelId);
+    if (fetchResult.error) {
+        logDebug('Error fetching playbook runs on reconnect', fetchResult.error);
     }
 }

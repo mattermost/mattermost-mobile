@@ -99,7 +99,7 @@ static SendReplyCompletionHandlerIMP originalSendReplyCompletionHandlerImplement
   [request setValue:@"application/json; charset=utf-8" forHTTPHeaderField:@"Content-Type"];
   
   // Add preauth secret header if available
-  if (preauthSecret != nil && ![preauthSecret isEqualToString:@""]) {
+  if ([preauthSecret isKindOfClass:NSString.class] && [(NSString *)preauthSecret length] > 0) {
     [request setValue:preauthSecret forHTTPHeaderField:@"X-Mattermost-Preauth-Secret"];
   }
   

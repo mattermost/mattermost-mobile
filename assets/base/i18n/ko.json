@@ -670,6 +670,7 @@
   "mobile.managed.not_secured.android": "Mattermost를 사용하려면 이 장치를 화면 잠금으로 보호해야 합니다.",
   "mobile.managed.not_secured.android.vendor": "{vendor}를 이용하려면 이 기기는 스크린 잠금 장치로 고정해야 합니다.",
   "mobile.managed.not_secured.ios": "Matttermost를 사용하려면 이 장치를 암호로 보호해야 합니다.\n\n설정 > Face ID 및 암호.",
+  "mobile.managed.not_secured.ios.vendor": "이 장치는 {vendor}를 사용하려면 생체 인식 또는 비밀번호로 보호되어야 합니다.\n\n설정 > Face ID 및 암호로 이동하세요.",
   "mobile.managed.secured_by": "{vendor}에 의해 보호됨",
   "mobile.managed.settings": "설정으로 이동",
   "mobile.managed.switch_server": "서버 변경",

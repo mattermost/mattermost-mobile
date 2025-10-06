@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 /* eslint-disable no-await-in-loop, no-console */
 
+import {ClaudePromptHandler} from '@support/pilot/ClaudePromptHandler';
 import {Plugin, System, User} from '@support/server_api';
 import {siteOneUrl} from '@support/test_config';
 
@@ -82,7 +83,22 @@ export async function launchAppWithRetry(): Promise<void> {
     throw new Error(`Failed to launch app after ${MAX_RETRY_ATTEMPTS} attempts. Last error: ${(lastError as Error).message}`);
 }
 
+/**
+ * Initialize ClaudePromptHandler if ANTHROPIC_API_KEY is set
+ * @returns {Promise<void>}
+ */
+async function initializeClaudePromptHandler(): Promise<void> {
+    if (process.env.ANTHROPIC_API_KEY) {
+        const promptHandler = new ClaudePromptHandler(process.env.ANTHROPIC_API_KEY);
+        pilot.init(promptHandler);
+    } else {
+        console.info('To use ClaudePromptHandler, please set the ANTHROPIC_API_KEY environment variable.');
+    }
+}
+
 beforeAll(async () => {
+    await initializeClaudePromptHandler();
+
     // Login as sysadmin and reset server configuration
     await System.apiCheckSystemHealth(siteOneUrl);
     await User.apiAdminLogin(siteOneUrl);

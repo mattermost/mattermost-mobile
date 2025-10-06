@@ -41,13 +41,17 @@ export function getMaxRunUpdateAt(runs: PlaybookRun[]): number {
     return max;
 }
 
+export function isPending(item: PlaybookChecklistItemModel | PlaybookChecklistItem): boolean {
+    return item.state === '' || item.state === 'in_progress';
+}
+
 export function isOverdue(item: PlaybookChecklistItemModel | PlaybookChecklistItem): boolean {
     const dueDate = 'dueDate' in item ? item.dueDate : item.due_date;
     if (dueDate <= 0) {
         return false;
     }
 
-    if (item.state !== '' && item.state !== 'in_progress') {
+    if (!isPending(item)) {
         return false;
     }
 
@@ -60,7 +64,7 @@ export function isDueSoon(item: PlaybookChecklistItemModel | PlaybookChecklistIt
         return false;
     }
 
-    if (item.state !== '' && item.state !== 'in_progress') {
+    if (!isPending(item)) {
         return false;
     }
 
