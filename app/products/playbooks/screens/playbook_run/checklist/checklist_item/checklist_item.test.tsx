@@ -424,4 +424,127 @@ describe('ChecklistItem', () => {
             expect(runChecklistItem).toHaveBeenCalledWith(serverUrl, props.playbookRunId, props.checklistNumber, props.itemNumber);
         });
     });
+
+    describe('condition icon', () => {
+        it('should not show condition icon when no condition fields are set', () => {
+            const props = getBaseProps();
+            const item = TestHelper.fakePlaybookChecklistItemModel({
+                conditionReason: '',
+                conditionAction: '',
+            });
+            props.item = item;
+
+            const {queryByTestId} = renderWithIntl(<ChecklistItem {...props}/>);
+
+            expect(queryByTestId('checklist_item.condition_icon')).toBeNull();
+        });
+
+        it('should show condition icon when conditionReason is set', () => {
+            const props = getBaseProps();
+            const item = TestHelper.fakePlaybookChecklistItemModel({
+                conditionReason: 'Some condition reason',
+                conditionAction: '',
+            });
+            props.item = item;
+
+            const {getByTestId} = renderWithIntl(<ChecklistItem {...props}/>);
+
+            const icon = getByTestId('checklist_item.condition_icon');
+            expect(icon).toBeVisible();
+            expect(icon.props.name).toBe('source-branch');
+            expect(icon.props.size).toBe(16);
+        });
+
+        it('should show condition icon when conditionAction is shown_because_modified', () => {
+            const props = getBaseProps();
+            const item = TestHelper.fakePlaybookChecklistItemModel({
+                conditionReason: '',
+                conditionAction: 'shown_because_modified',
+            });
+            props.item = item;
+
+            const {getByTestId} = renderWithIntl(<ChecklistItem {...props}/>);
+
+            const icon = getByTestId('checklist_item.condition_icon');
+            expect(icon).toBeVisible();
+            expect(icon.props.name).toBe('source-branch');
+            expect(icon.props.size).toBe(16);
+        });
+
+        it('should show condition icon with error color for shown_because_modified', () => {
+            const props = getBaseProps();
+            const item = TestHelper.fakePlaybookChecklistItemModel({
+                conditionReason: '',
+                conditionAction: 'shown_because_modified',
+            });
+            props.item = item;
+
+            const {getByTestId} = renderWithIntl(<ChecklistItem {...props}/>);
+
+            const icon = getByTestId('checklist_item.condition_icon');
+            expect(icon).toBeVisible();
+            expect(icon.props.color).toBe(Preferences.THEMES.denim.errorTextColor);
+        });
+
+        it('should show condition icon with normal color when conditionReason is set but not shown_because_modified', () => {
+            const props = getBaseProps();
+            const item = TestHelper.fakePlaybookChecklistItemModel({
+                conditionReason: 'Some condition reason',
+                conditionAction: '',
+            });
+            props.item = item;
+
+            const {getByTestId} = renderWithIntl(<ChecklistItem {...props}/>);
+
+            const icon = getByTestId('checklist_item.condition_icon');
+            expect(icon).toBeVisible();
+
+            // Normal color should be theme.centerChannelColor with 0.56 opacity
+            // Since we can't easily check the opacity, we just verify it's not the error color
+            expect(icon.props.color).not.toBe(Preferences.THEMES.denim.errorTextColor);
+        });
+
+        it('should not show condition icon when conditionAction is hidden', () => {
+            const props = getBaseProps();
+            const item = TestHelper.fakePlaybookChecklistItemModel({
+                conditionReason: '',
+                conditionAction: 'hidden',
+            });
+            props.item = item;
+
+            const {queryByTestId} = renderWithIntl(<ChecklistItem {...props}/>);
+
+            expect(queryByTestId('checklist_item.condition_icon')).toBeNull();
+        });
+
+        it('should handle API format (snake_case) condition fields', () => {
+            const props = getBaseProps();
+            const item = TestHelper.fakePlaybookChecklistItem('checklist-id', {
+                condition_reason: 'Some condition reason',
+                condition_action: '',
+            });
+            props.item = item;
+
+            const {getByTestId} = renderWithIntl(<ChecklistItem {...props}/>);
+
+            const icon = getByTestId('checklist_item.condition_icon');
+            expect(icon).toBeVisible();
+            expect(icon.props.name).toBe('source-branch');
+        });
+
+        it('should show error color for API format shown_because_modified', () => {
+            const props = getBaseProps();
+            const item = TestHelper.fakePlaybookChecklistItem('checklist-id', {
+                condition_reason: '',
+                condition_action: 'shown_because_modified',
+            });
+            props.item = item;
+
+            const {getByTestId} = renderWithIntl(<ChecklistItem {...props}/>);
+
+            const icon = getByTestId('checklist_item.condition_icon');
+            expect(icon).toBeVisible();
+            expect(icon.props.color).toBe(Preferences.THEMES.denim.errorTextColor);
+        });
+    });
 });

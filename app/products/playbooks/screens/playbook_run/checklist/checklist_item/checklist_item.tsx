@@ -68,6 +68,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     skippedText: {
         textDecorationLine: 'line-through',
     },
+    conditionIcon: {
+        marginLeft: 8,
+    },
+    titleRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
 }));
 
 type Props = {
@@ -103,6 +110,15 @@ const ChecklistItem = ({
 
     const [isChecking, setIsChecking] = useState(false);
     const [isExecuting, setIsExecuting] = useState(false);
+
+    // Extract condition fields
+    const conditionReason = 'conditionReason' in item ? item.conditionReason : item.condition_reason || '';
+    const conditionAction = 'conditionAction' in item ? item.conditionAction : item.condition_action || '';
+
+    // Determine icon display and color
+    const showConditionIcon = conditionReason !== '' || conditionAction === 'shown_because_modified';
+    const isErrorState = conditionAction === 'shown_because_modified';
+    const iconColor = isErrorState ? theme.errorTextColor : changeOpacity(theme.centerChannelColor, 0.56);
 
     const checked = item.state === 'closed';
     const skipped = item.state === 'skipped';
@@ -246,7 +262,18 @@ const ChecklistItem = ({
             <View style={styles.itemDetails}>
                 <PressableOpacity onPress={onPress}>
                     <View style={styles.itemDetailsTexts}>
-                        <Text style={[styles.itemTitle, skipped && styles.skippedText]}>{item.title}</Text>
+                        <View style={styles.titleRow}>
+                            <Text style={[styles.itemTitle, skipped && styles.skippedText]}>{item.title}</Text>
+                            {showConditionIcon && (
+                                <CompassIcon
+                                    name='source-branch'
+                                    size={16}
+                                    color={iconColor}
+                                    style={styles.conditionIcon}
+                                    testID='checklist_item.condition_icon'
+                                />
+                            )}
+                        </View>
                         {Boolean(item.description) && (
                             <Text style={[styles.itemDescription, skipped && styles.skippedText]}>{item.description}</Text>
                         )}
