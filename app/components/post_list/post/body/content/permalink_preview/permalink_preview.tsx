@@ -18,7 +18,6 @@ import {useTheme} from '@context/theme';
 import {useUserLocale} from '@context/user_locale';
 import {useIsTablet, useWindowDimensions} from '@hooks/device';
 import {usePreventDoubleTap} from '@hooks/utils';
-import {getMarkdownTextStyles, getMarkdownBlockStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {displayUsername, getUserTimezone} from '@utils/user';
@@ -29,12 +28,10 @@ import PermalinkFiles from './permalink_files';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
-import type {UserMentionKey} from '@typings/global/markdown';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 const MAX_PERMALINK_PREVIEW_CHARACTERS = 150;
 const EDITED_INDICATOR_CONTEXT = ['paragraph'];
-const EMPTY_MENTION_KEYS: UserMentionKey[] = [];
 const MIN_PERMALINK_WIDTH = 340;
 const TABLET_PADDING_OFFSET = 40;
 
@@ -154,8 +151,6 @@ const PermalinkPreview = ({
     }, [dimensions.width, dimensions.height, isTablet]);
 
     const maxPermalinkHeight = Math.round(dimensions.height * 0.5);
-    const textStyles = getMarkdownTextStyles(theme);
-    const blockStyles = getMarkdownBlockStyles(theme);
 
     const userId = embedData?.post?.user_id;
 
@@ -221,6 +216,10 @@ const PermalinkPreview = ({
         setShowGradient(height >= maxPermalinkHeight);
     }, [maxPermalinkHeight]);
 
+    // We need to memoize this value because it is actually a getter that returns a new list
+    // on every render. We need to trust that changes in the currentUser will trigger the recalculation.
+    const mentionKeys = useMemo(() => currentUser?.mentionKeys ?? undefined, [currentUser]);
+
     if (!post) {
         return null;
     }
@@ -264,13 +263,11 @@ const PermalinkPreview = ({
                     <View style={styles.messageContainer}>
                         <Markdown
                             baseTextStyle={styles.messageText}
-                            blockStyles={blockStyles}
                             channelId={embedData.channel_id}
                             location={location}
                             theme={theme}
-                            textStyles={textStyles}
                             value={truncatedMessage}
-                            mentionKeys={currentUser?.mentionKeys ?? EMPTY_MENTION_KEYS}
+                            mentionKeys={mentionKeys}
                         />
                         {isEdited ? (
                             <EditedIndicator

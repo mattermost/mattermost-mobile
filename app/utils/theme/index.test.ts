@@ -10,7 +10,6 @@ import NavigationStore from '@store/navigation_store';
 import {
     blendColors,
     changeOpacity,
-    concatStyles,
     getComponents,
     getKeyboardAppearanceFromTheme,
     hexToHue,
@@ -113,15 +112,6 @@ describe('changeOpacity', () => {
         const opacity = 0.5;
         const result = changeOpacity(color, opacity);
         expect(result).toBe('rgba(255,0,0,0.5)');
-    });
-});
-
-describe('concatStyles', () => {
-    it('should concatenate styles', () => {
-        const style1 = {backgroundColor: 'red'} as any;
-        const style2 = {color: 'blue'} as any;
-        const result = concatStyles(style1, style2);
-        expect(result).toEqual([style1, style2]);
     });
 });
 

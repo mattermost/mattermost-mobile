@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Platform, type TextStyle} from 'react-native';
+import {Platform, StyleSheet, type TextStyle} from 'react-native';
 
 import {Preferences} from '@constants';
 
@@ -136,15 +136,15 @@ describe('Utility functions', () => {
         });
 
         it('should apply a single context style', () => {
-            expect(computeTextStyle(textStyles, baseStyle, ['bold'])).toEqual([baseStyle, textStyles.bold]);
+            expect(StyleSheet.flatten(computeTextStyle(textStyles, baseStyle, ['bold']))).toEqual({...baseStyle, ...textStyles.bold});
         });
 
         it('should apply multiple context styles', () => {
-            expect(computeTextStyle(textStyles, baseStyle, ['bold', 'italic'])).toEqual([baseStyle, textStyles.bold, textStyles.italic]);
+            expect(StyleSheet.flatten(computeTextStyle(textStyles, baseStyle, ['bold', 'italic']))).toEqual({...baseStyle, ...textStyles.bold, ...textStyles.italic});
         });
 
         it('should ignore undefined styles', () => {
-            expect(computeTextStyle(textStyles, baseStyle, ['bold', 'unknown'])).toEqual([baseStyle, textStyles.bold]);
+            expect(StyleSheet.flatten(computeTextStyle(textStyles, baseStyle, ['bold', 'unknown']))).toEqual({...baseStyle, ...textStyles.bold});
         });
 
         it('should handle multiple undefined styles', () => {

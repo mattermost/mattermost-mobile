@@ -10,7 +10,6 @@ import {type GestureResponderEvent, type StyleProp, StyleSheet, Text, type TextS
 import {fetchUserOrGroupsByMentionsInBatch} from '@actions/remote/user';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {useServerUrl} from '@context/server';
-import {useTheme} from '@context/theme';
 import GroupModel from '@database/models/server/group';
 import {useMemoMentionedGroup, useMemoMentionedUser} from '@hooks/markdown';
 import {bottomSheet, dismissBottomSheet, openUserProfileModal} from '@screens/navigation';
@@ -30,12 +29,12 @@ type AtMentionProps = {
     mentionKeys?: Array<{key: string }>;
     mentionName: string;
     mentionStyle: StyleProp<TextStyle>;
-    onPostPress?: (e: GestureResponderEvent) => void;
     teammateNameDisplay: string;
     textStyle?: StyleProp<TextStyle>;
     users: UserModelType[];
     groups: GroupModel[];
     groupMemberships: GroupMembershipModel[];
+    theme: Theme;
 }
 
 const style = StyleSheet.create({
@@ -51,16 +50,15 @@ const AtMention = ({
     mentionName,
     mentionKeys,
     mentionStyle,
-    onPostPress,
     teammateNameDisplay,
     textStyle,
     users,
     groups,
     groupMemberships,
+    theme,
 }: AtMentionProps) => {
     const intl = useIntl();
     const managedConfig = useManagedConfig<ManagedConfig>();
-    const theme = useTheme();
     const serverUrl = useServerUrl();
 
     const user = useMemoMentionedUser(users, mentionName);
@@ -88,6 +86,9 @@ const AtMention = ({
         if (!user?.username && !group?.name) {
             fetchUserOrGroupsByMentionsInBatch(serverUrl, mentionName);
         }
+
+        // Only fetch the user or group on mount
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const openUserProfile = () => {
@@ -192,7 +193,7 @@ const AtMention = ({
 
     if (canPress) {
         onLongPress = handleLongPress;
-        onPress = (isSearchResult ? onPostPress : openUserProfile);
+        onPress = (isSearchResult ? undefined : openUserProfile);
     }
 
     if (suffix) {

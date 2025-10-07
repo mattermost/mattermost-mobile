@@ -80,51 +80,6 @@ const VideoFile = ({
         return undefined;
     }, [dimensions.height, dimensions.width, video.height, video.width, wrapperWidth, isSingleImage]);
 
-    const getThumbnail = async () => {
-        const data = {...file};
-        try {
-            const exists = data.mini_preview ? await fileExists(data.mini_preview) : false;
-            if (!data.mini_preview || !exists) {
-                const videoUrl = buildFileUrl(serverUrl, data.id!);
-                if (videoUrl) {
-                    const cred = await getServerCredentials(serverUrl);
-                    const headers: Record<string, string> = {};
-                    if (cred?.token) {
-                        headers.Authorization = `Bearer ${cred.token}`;
-                    }
-                    const {uri, height, width} = await getThumbnailAsync(data.localPath || videoUrl, {time: 1000, headers});
-                    data.mini_preview = uri;
-                    data.height = height;
-                    data.width = width;
-                    updateLocalFile(serverUrl, data);
-                    if (mounted.current) {
-                        setVideo(data);
-                        setFailed(false);
-                    }
-                }
-            }
-        } catch (error) {
-            data.mini_preview = buildFilePreviewUrl(serverUrl, data.id!);
-            if (mounted.current) {
-                setVideo(data);
-            }
-        } finally {
-            if (!data.width) {
-                data.height = wrapperWidth;
-                data.width = wrapperWidth;
-            }
-            const {width: tw, height: th} = calculateDimensions(
-                data.height,
-                data.width,
-                dimensions.width - 60, // size of the gallery header probably best to set that as a constant
-                dimensions.height,
-            );
-            data.height = th;
-            data.width = tw;
-            updateFileForGallery?.(index, data);
-        }
-    };
-
     const handleError = useCallback(() => {
         setFailed(true);
     }, []);
@@ -137,9 +92,59 @@ const VideoFile = ({
     }, []);
 
     useEffect(() => {
-        if (inViewPort) {
-            getThumbnail();
+        if (!inViewPort) {
+            return;
         }
+
+        const getThumbnail = async () => {
+            const data = {...file};
+            try {
+                const exists = data.mini_preview ? await fileExists(data.mini_preview) : false;
+                if (!data.mini_preview || !exists) {
+                    const videoUrl = buildFileUrl(serverUrl, data.id!);
+                    if (videoUrl) {
+                        const cred = await getServerCredentials(serverUrl);
+                        const headers: Record<string, string> = {};
+                        if (cred?.token) {
+                            headers.Authorization = `Bearer ${cred.token}`;
+                        }
+                        const {uri, height, width} = await getThumbnailAsync(data.localPath || videoUrl, {time: 1000, headers});
+                        data.mini_preview = uri;
+                        data.height = height;
+                        data.width = width;
+                        updateLocalFile(serverUrl, data);
+                        if (mounted.current) {
+                            setVideo(data);
+                            setFailed(false);
+                        }
+                    }
+                }
+            } catch (error) {
+                data.mini_preview = buildFilePreviewUrl(serverUrl, data.id!);
+                if (mounted.current) {
+                    setVideo(data);
+                }
+            } finally {
+                if (!data.width) {
+                    data.height = wrapperWidth;
+                    data.width = wrapperWidth;
+                }
+                const {width: tw, height: th} = calculateDimensions(
+                    data.height,
+                    data.width,
+                    dimensions.width - 60, // size of the gallery header probably best to set that as a constant
+                    dimensions.height,
+                );
+                data.height = th;
+                data.width = tw;
+                updateFileForGallery?.(index, data);
+            }
+        };
+
+        getThumbnail();
+
+        // Only get the thumbnail when the file changes or the file gets into the viewport
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [file, inViewPort]);
 
     const imageProps = () => {
@@ -158,6 +163,7 @@ const VideoFile = ({
             style={[isSingleImage ? null : style.imagePreview, imageDimensions]}
             onError={handleError}
             contentFit={contentFit}
+            theme={theme}
             {...imageProps()}
         />
     );

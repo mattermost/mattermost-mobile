@@ -10,7 +10,6 @@ import {Keyboard, StyleSheet, Text, type TextStyle, TouchableOpacity, View} from
 import FormattedText from '@components/formatted_text';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {Screens} from '@constants';
-import {useTheme} from '@context/theme';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {bottomSheet, dismissBottomSheet, goToScreen} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
@@ -23,6 +22,7 @@ type MarkdownCodeBlockProps = {
     language: string;
     content: string;
     textStyle: TextStyle;
+    theme: Theme;
 };
 
 const MAX_LINES = 4;
@@ -66,10 +66,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const MarkdownCodeBlock = ({language = '', content, textStyle}: MarkdownCodeBlockProps) => {
+const MarkdownCodeBlock = ({language = '', content, textStyle, theme}: MarkdownCodeBlockProps) => {
     const intl = useIntl();
     const managedConfig = useManagedConfig<ManagedConfig>();
-    const theme = useTheme();
     const style = getStyleSheet(theme);
     const SyntaxHighlighter = useMemo(() => {
         if (!syntaxHighlighter) {
