@@ -45,9 +45,7 @@ jest.mock('@utils/log', () => ({
 }));
 
 beforeAll(() => {
-
-    // @ts-ignore
-    NetworkManager.getClient = jest.fn();
+    jest.spyOn(NetworkManager, 'getClient').mockImplementation(jest.fn());
 });
 
 function assertError(result: unknown, logMessage: string) {
