@@ -1,24 +1,20 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import GenericClient from '@mattermost/react-native-network-client';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {defineMessage, useIntl} from 'react-intl';
+import {useIntl} from 'react-intl';
 import {Platform, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-import * as ClientConstants from '@client/rest/constants';
-import {PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
+import {doPing} from '@actions/remote/general';
 import DatabaseManager from '@database/manager';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {getServerCredentials, setServerCredentials} from '@init/credentials';
 import NetworkManager from '@managers/network_manager';
 import SecurityManager from '@managers/security_manager';
-import {getDeviceToken} from '@queries/app/global';
 import {getServerByDisplayName} from '@queries/app/servers';
-import {getPushVerificationStatus} from '@queries/servers/system';
 import Background from '@screens/background';
 import {dismissModal} from '@screens/navigation';
 import {getErrorMessage} from '@utils/errors';
@@ -51,88 +47,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         justifyContent: 'center',
     },
 }));
-
-// Custom ping function for edit server validation using GenericClient
-// This avoids pollution from existing NetworkManager clients
-const doCustomPing = async (serverUrl: string, verifyPushProxy: boolean, timeoutInterval = 5000, preauthSecret?: string) => {
-    const certificateError = defineMessage({
-        id: 'mobile.server_requires_client_certificate',
-        defaultMessage: 'Server requires client certificate for authentication.',
-    });
-
-    const pingError = defineMessage({
-        id: 'mobile.server_ping_failed',
-        defaultMessage: 'Cannot connect to the server.',
-    });
-
-    // Get device ID for push proxy verification (inline implementation)
-    const getDeviceIdForPing = async (checkDeviceId: boolean) => {
-        if (!checkDeviceId) {
-            return undefined;
-        }
-
-        const serverDatabase = DatabaseManager.serverDatabases?.[serverUrl]?.database;
-        if (serverDatabase) {
-            const status = await getPushVerificationStatus(serverDatabase);
-            if (status === PUSH_PROXY_STATUS_VERIFIED) {
-                return undefined;
-            }
-        }
-
-        return getDeviceToken();
-    };
-
-    const deviceId = await getDeviceIdForPing(verifyPushProxy);
-
-    // Use GenericClient directly to avoid cached preauth headers
-    const headers = {
-        ...(preauthSecret !== undefined && {[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET]: preauthSecret}),
-    };
-
-    const pingUrl = `${serverUrl}/api/v4/system/ping?device_id=${deviceId || ''}`;
-
-    try {
-        const response = await GenericClient.get(pingUrl, {
-            headers,
-            timeoutInterval,
-        });
-
-        if (response.code === 401) {
-            return {error: {intl: certificateError}};
-        }
-
-        if (!response.ok) {
-            if (response.code === 403 && response.headers?.['x-reject-reason'] === 'pre-auth') {
-                return {error: {intl: pingError}, isPreauthError: true};
-            }
-            return {error: {intl: pingError}};
-        }
-
-        // Handle push proxy verification if needed
-        if (verifyPushProxy) {
-            let canReceiveNotifications = response?.data?.CanReceiveNotifications;
-
-            // Already verified or old server
-            if (deviceId === undefined || canReceiveNotifications === null) {
-                canReceiveNotifications = 'OK'; // PUSH_PROXY_RESPONSE_VERIFIED equivalent
-            }
-
-            return {canReceiveNotifications};
-        }
-
-        return {};
-    } catch (error) {
-        // Check if this is a 403 with pre-auth header
-        const errorObj = error as {status_code?: number; headers?: Record<string, string>};
-        if (errorObj.status_code === 403) {
-            if (errorObj.headers?.['x-reject-reason'] === 'pre-auth') {
-                return {error: {intl: pingError}, isPreauthError: true};
-            }
-        }
-
-        return {error: {intl: pingError}};
-    }
-};
 
 const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) => {
     const intl = useIntl();
@@ -195,8 +109,8 @@ const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) =>
                 return false;
             }
 
-            // Then try ping request - use custom ping with generic client to avoid client pollution
-            const result = await doCustomPing(headRequest.url, true, undefined, secretForValidation);
+            // Then try ping request - use doPing without client to avoid client pollution
+            const result = await doPing(headRequest.url, true, undefined, secretForValidation);
             if (result.error) {
                 if (result.isPreauthError) {
                     setPreauthSecretError(formatMessage({
