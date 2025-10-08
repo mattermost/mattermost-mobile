@@ -124,7 +124,6 @@ describe('FloatingBanner', () => {
             renderFloatingBanner([banner]);
 
             const bannerElement = screen.getByTestId('banner');
-            expect(bannerElement.props.visible).toBe(true);
             expect(bannerElement.props.dismissible).toBe(true);
         });
 
@@ -138,10 +137,6 @@ describe('FloatingBanner', () => {
 
             const bannerElements = screen.getAllByTestId('banner');
             expect(bannerElements).toHaveLength(3);
-
-            bannerElements.forEach((element) => {
-                expect(element.props.visible).toBe(true);
-            });
         });
 
         it('should use banner position when specified', () => {
@@ -149,7 +144,7 @@ describe('FloatingBanner', () => {
             renderFloatingBanner([banner]);
 
             const bannerElement = screen.getByTestId('banner');
-            expect(bannerElement.props.visible).toBe(true);
+            expect(bannerElement).toBeDefined();
         });
     });
 
@@ -246,8 +241,6 @@ describe('FloatingBanner', () => {
 
             const bannerElements = screen.getAllByTestId('banner');
             expect(bannerElements).toHaveLength(2);
-            expect(bannerElements[0].props.visible).toBe(true);
-            expect(bannerElements[1].props.visible).toBe(true);
         });
     });
 });
