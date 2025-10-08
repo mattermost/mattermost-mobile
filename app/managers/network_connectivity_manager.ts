@@ -10,7 +10,7 @@ import {getIntlShape} from '@utils/general';
 import {BannerManager} from './banner_manager';
 
 import type {NetworkPerformanceState} from './network_performance_manager';
-import type {BannerConfig} from '@components/floating_banner/types';
+import type {FloatingBannerConfig} from '@components/floating_banner/types';
 
 const RECONNECTION_BANNER_DURATION = toMilliseconds({seconds: 3});
 const PERFORMANCE_BANNER_DURATION = toMilliseconds({seconds: 10});
@@ -115,7 +115,7 @@ class NetworkConnectivityManagerSingleton {
         BannerManager.showBannerWithAutoHide(bannerConfig, durationMs);
     }
 
-    private createConnectivityBannerConfig(message: string, isConnected: boolean): BannerConfig {
+    private createConnectivityBannerConfig(message: string, isConnected: boolean): FloatingBannerConfig {
         return {
 
             // Implement id as part of banner namespace described in this ticket: https://mattermost.atlassian.net/browse/MM-66104
@@ -133,7 +133,7 @@ class NetworkConnectivityManagerSingleton {
         };
     }
 
-    private createPerformanceBannerConfig(message: string): BannerConfig {
+    private createPerformanceBannerConfig(message: string): FloatingBannerConfig {
         return {
             id: 'performance',
             dismissible: true,
