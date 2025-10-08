@@ -163,7 +163,6 @@ describe('BannerSection', () => {
 
             const bannerElements = screen.getAllByTestId('banner');
             expect(bannerElements).toHaveLength(1);
-            expect(bannerElements[0].props.visible).toBe(true);
         });
     });
 

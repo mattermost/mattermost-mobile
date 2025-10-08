@@ -74,17 +74,8 @@ jest.mock('@components/banner/banner_item', () => {
     };
 });
 
-jest.mock('react-native-safe-area-context', () => ({
-    useSafeAreaInsets: jest.fn(() => ({
-        top: 44,
-        bottom: 34,
-        left: 0,
-        right: 0,
-    })),
-}));
-
-jest.mock('@hooks/device', () => ({
-    useIsTablet: jest.fn(() => false),
+jest.mock('@hooks/header', () => ({
+    useDefaultHeaderHeight: jest.fn(() => 64),
 }));
 
 describe('AnimatedBannerItem', () => {
@@ -126,7 +117,6 @@ describe('AnimatedBannerItem', () => {
             renderAnimatedBannerItem(banner);
 
             const bannerElement = screen.getByTestId('banner');
-            expect(bannerElement.props.visible).toBe(true);
             expect(bannerElement.props.dismissible).toBe(true);
         });
 
@@ -222,8 +212,8 @@ describe('AnimatedBannerItem', () => {
         });
 
         it('should render on tablet with top position', () => {
-            const Device = require('@hooks/device');
-            jest.mocked(Device.useIsTablet).mockReturnValue(true);
+            const Header = require('@hooks/header');
+            jest.mocked(Header.useDefaultHeaderHeight).mockReturnValue(80);
 
             const banner = createMockBanner();
             renderAnimatedBannerItem(banner, 0, true);
@@ -232,8 +222,8 @@ describe('AnimatedBannerItem', () => {
         });
 
         it('should render on tablet with bottom position', () => {
-            const Device = require('@hooks/device');
-            jest.mocked(Device.useIsTablet).mockReturnValue(true);
+            const Header = require('@hooks/header');
+            jest.mocked(Header.useDefaultHeaderHeight).mockReturnValue(80);
 
             const banner = createMockBanner();
             renderAnimatedBannerItem(banner, 0, false);
