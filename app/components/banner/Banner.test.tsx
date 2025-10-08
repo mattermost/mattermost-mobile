@@ -6,19 +6,9 @@ import React from 'react';
 import {Text} from 'react-native';
 
 import Banner from './Banner';
+import {useBanner} from './hooks/useBanner';
 
-jest.mock('./hooks/useBannerAnimation', () => ({
-    useBannerAnimation: () => ({
-        opacity: {value: 1},
-        translateX: {value: 0},
-        isDismissed: {value: false},
-        animatedStyle: {},
-    }),
-}));
-
-jest.mock('./hooks/useBannerGesture', () => ({
-    useBannerGesture: () => ({swipeGesture: {}}),
-}));
+jest.mock('./hooks/useBanner');
 
 jest.mock('react-native-reanimated', () => {
     const {View} = require('react-native');
@@ -38,8 +28,17 @@ jest.mock('react-native-gesture-handler', () => {
 });
 
 describe('Banner', () => {
+    const mockUseBanner = jest.mocked(useBanner);
+
     beforeEach(() => {
         jest.clearAllMocks();
+        mockUseBanner.mockReturnValue({
+            animatedStyle: {
+                opacity: 1,
+                transform: [{translateY: 0}, {translateX: 0}],
+            },
+            swipeGesture: {} as unknown as ReturnType<typeof useBanner>['swipeGesture'],
+        });
     });
 
     it('renders children and animated view', () => {
@@ -73,5 +72,42 @@ describe('Banner', () => {
 
         expect(screen.getByTestId('gesture-detector')).toBeTruthy();
         expect(screen.getByTestId('banner-content')).toBeTruthy();
+    });
+
+    it('passes correct props to useBanner hook', () => {
+        const onDismiss = jest.fn();
+
+        render(
+            <Banner
+                animationDuration={300}
+                dismissible={true}
+                onDismiss={onDismiss}
+                swipeThreshold={150}
+            >
+                <Text testID='banner-content'>{'Test Content'}</Text>
+            </Banner>,
+        );
+
+        expect(mockUseBanner).toHaveBeenCalledWith({
+            animationDuration: 300,
+            dismissible: true,
+            swipeThreshold: 150,
+            onDismiss,
+        });
+    });
+
+    it('uses default prop values when not provided', () => {
+        render(
+            <Banner>
+                <Text testID='banner-content'>{'Test Content'}</Text>
+            </Banner>,
+        );
+
+        expect(mockUseBanner).toHaveBeenCalledWith({
+            animationDuration: 250,
+            dismissible: false,
+            swipeThreshold: 100,
+            onDismiss: undefined,
+        });
     });
 });

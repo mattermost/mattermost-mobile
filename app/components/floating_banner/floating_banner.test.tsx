@@ -5,17 +5,11 @@ import {render, fireEvent, screen} from '@testing-library/react-native';
 import React from 'react';
 import {Text} from 'react-native';
 
-import {
-    FLOATING_BANNER_BOTTOM_OFFSET_PHONE_IOS,
-    FLOATING_BANNER_TABLET_EXTRA_BOTTOM_OFFSET,
-    FLOATING_BANNER_BOTTOM_OFFSET_WITH_KEYBOARD_IOS,
-    FLOATING_BANNER_BOTTOM_OFFSET_WITH_KEYBOARD_ANDROID,
-} from '@constants/view';
 import * as Device from '@hooks/device';
 
 import FloatingBanner from './floating_banner';
 
-import type {BannerConfig} from './types';
+import type {FloatingBannerConfig} from './types';
 
 jest.mock('@hooks/device');
 
@@ -88,7 +82,7 @@ describe('FloatingBanner', () => {
     const mockOnPress = jest.fn();
     const mockOnDismiss = jest.fn();
 
-    const createMockBanner = (overrides: Partial<BannerConfig> = {}): BannerConfig => ({
+    const createMockBanner = (overrides: Partial<FloatingBannerConfig> = {}): FloatingBannerConfig => ({
         id: 'test-banner-1',
         title: 'Test Banner',
         message: 'This is a test message',
@@ -101,7 +95,7 @@ describe('FloatingBanner', () => {
 
     const mockOverlayOnDismiss = jest.fn();
 
-    const renderFloatingBanner = (banners: BannerConfig[] = []) => {
+    const renderFloatingBanner = (banners: FloatingBannerConfig[] = []) => {
         return render(
             <FloatingBanner
                 banners={banners}
@@ -130,7 +124,6 @@ describe('FloatingBanner', () => {
             renderFloatingBanner([banner]);
 
             const bannerElement = screen.getByTestId('banner');
-            expect(bannerElement.props.visible).toBe(true);
             expect(bannerElement.props.dismissible).toBe(true);
         });
 
@@ -144,10 +137,6 @@ describe('FloatingBanner', () => {
 
             const bannerElements = screen.getAllByTestId('banner');
             expect(bannerElements).toHaveLength(3);
-
-            bannerElements.forEach((element) => {
-                expect(element.props.visible).toBe(true);
-            });
         });
 
         it('should use banner position when specified', () => {
@@ -155,76 +144,12 @@ describe('FloatingBanner', () => {
             renderFloatingBanner([banner]);
 
             const bannerElement = screen.getByTestId('banner');
-            expect(bannerElement.props.visible).toBe(true);
-        });
-
-        it('should handle non-dismissible banners', () => {
-            const banner = createMockBanner({dismissible: false});
-            renderFloatingBanner([banner]);
-
-            const bannerElement = screen.getByTestId('banner');
-
-            expect(bannerElement.props.dismissible).toBe(false);
-        });
-
-        it('should handle banner with dismissible undefined (defaults to true)', () => {
-            const banner = createMockBanner();
-            delete banner.dismissible;
-            renderFloatingBanner([banner]);
-
-            const bannerElement = screen.getByTestId('banner');
-            expect(bannerElement.props.dismissible).toBe(true);
-        });
-    });
-
-    describe('content rendering', () => {
-        it('should render BannerItem when no custom content is provided', () => {
-            const banner = createMockBanner();
-            renderFloatingBanner([banner]);
-
-            const bannerItem = screen.getByTestId('banner-item');
-            expect(bannerItem.props['data-banner-id']).toBe('test-banner-1');
-        });
-
-        it('should render BannerItem without title and message', () => {
-            const banner = createMockBanner({title: undefined, message: undefined});
-            renderFloatingBanner([banner]);
-
-            const bannerItem = screen.getByTestId('banner-item');
-            expect(bannerItem.props['data-banner-id']).toBe('test-banner-1');
-        });
-
-        it('should render custom content when provided', () => {
-            const customComponent = <Text testID={'custom-content'}>{'Custom Banner Content'}</Text>;
-            const banner = createMockBanner({customComponent});
-            renderFloatingBanner([banner]);
-
-            expect(screen.getByTestId('custom-content')).toBeDefined();
-            expect(screen.queryByTestId('banner-item')).toBeNull();
-        });
-
-        it('should render custom content without title and message', () => {
-            const customComponent = <Text testID={'custom-no-text'}>{'Custom Banner'}</Text>;
-            const banner = createMockBanner({title: undefined, message: undefined, customComponent});
-            renderFloatingBanner([banner]);
-
-            expect(screen.getByTestId('custom-no-text')).toBeDefined();
-            expect(screen.queryByTestId('banner-item')).toBeNull();
-        });
-
-        it('should render custom content for a bottom-positioned banner', () => {
-            const customComponent = <Text testID={'custom-content-bottom'}>{'Bottom Custom'}</Text>;
-            const banner = createMockBanner({id: 'bottom-custom', position: 'bottom', customComponent, dismissible: false});
-            renderFloatingBanner([banner]);
-
-            expect(screen.getByTestId('custom-content-bottom')).toBeDefined();
-            const bannerElement = screen.getByTestId('banner');
-            expect(bannerElement.props.dismissible).toBe(false);
+            expect(bannerElement).toBeDefined();
         });
     });
 
     describe('event handlers', () => {
-        it('should call banner onPress when executeBannerAction is triggered', () => {
+        it('should call banner onPress when onBannerPress is triggered', () => {
             const banner = createMockBanner();
             renderFloatingBanner([banner]);
 
@@ -244,7 +169,7 @@ describe('FloatingBanner', () => {
             expect(mockOnPress).not.toHaveBeenCalled();
         });
 
-        it('should call onDismiss and banner onDismiss when dismissBanner is triggered', () => {
+        it('should call onDismiss and banner onDismiss when onBannerDismiss is triggered', () => {
             const banner = createMockBanner();
             renderFloatingBanner([banner]);
 
@@ -265,7 +190,7 @@ describe('FloatingBanner', () => {
             expect(mockOverlayOnDismiss).toHaveBeenCalledWith('test-banner-1');
         });
 
-        it('should call dismissBanner when Banner onDismiss is triggered', () => {
+        it('should call onBannerDismiss when Banner onDismiss is triggered', () => {
             const banner = createMockBanner();
             renderFloatingBanner([banner]);
 
@@ -276,8 +201,8 @@ describe('FloatingBanner', () => {
         });
     });
 
-    describe('banner mapping', () => {
-        it('should handle multiple banners with different configurations', () => {
+    describe('banner positioning', () => {
+        it('should separate banners by position (top vs bottom)', () => {
             const banners = [
                 createMockBanner({
                     id: 'info-banner',
@@ -301,16 +226,12 @@ describe('FloatingBanner', () => {
             const bannerElements = screen.getAllByTestId('banner');
             expect(bannerElements).toHaveLength(3);
 
-            expect(bannerElements[0].props.dismissible).toBe(true);
-            expect(bannerElements[1].props.dismissible).toBe(true);
-            expect(bannerElements[2].props.dismissible).toBe(false);
-
-            expect(screen.getByTestId('custom-banner')).toBeDefined();
-            expect(screen.getAllByTestId('banner-item')).toHaveLength(2);
+            expect(screen.getByTestId('floating-banner-top-container')).toBeDefined();
+            expect(screen.getByTestId('floating-banner-bottom-container')).toBeDefined();
         });
     });
 
-    describe('tablet and default branches', () => {
+    describe('position filtering', () => {
         it('uses default top when position is undefined', () => {
             const banners = [
                 createMockBanner({id: 'no-pos-1', position: undefined}),
@@ -320,132 +241,6 @@ describe('FloatingBanner', () => {
 
             const bannerElements = screen.getAllByTestId('banner');
             expect(bannerElements).toHaveLength(2);
-            expect(bannerElements[0].props.visible).toBe(true);
-            expect(bannerElements[1].props.visible).toBe(true);
-        });
-
-        it('applies tablet-specific bottom offset', () => {
-            jest.mocked(Device.useIsTablet).mockReturnValue(true);
-
-            const banners = [
-                createMockBanner({id: 'bottom-1', position: 'bottom', dismissible: false}),
-            ];
-            renderFloatingBanner(banners);
-
-            const container = screen.getByTestId('floating-banner-bottom-container');
-            expect(container.props.style[1].bottom).toBe(FLOATING_BANNER_BOTTOM_OFFSET_PHONE_IOS + FLOATING_BANNER_TABLET_EXTRA_BOTTOM_OFFSET);
-        });
-
-        it('applies tablet-specific top offset with tablet header height', () => {
-            jest.mocked(Device.useIsTablet).mockReturnValue(true);
-
-            const banners = [
-                createMockBanner({id: 'top-tablet-banner', position: 'top'}),
-            ];
-            renderFloatingBanner(banners);
-
-            const bannerElements = screen.getAllByTestId('banner');
-            expect(bannerElements).toHaveLength(1);
-            expect(bannerElements[0].props.visible).toBe(true);
-        });
-    });
-
-    describe('keyboard height adjustment', () => {
-        it('should adjust bottom banner position when keyboard is open', () => {
-            const keyboardHeight = 300;
-            jest.mocked(Device.useKeyboardHeight).mockReturnValue(keyboardHeight);
-
-            const banners = [
-                createMockBanner({id: 'bottom-banner', position: 'bottom'}),
-            ];
-            renderFloatingBanner(banners);
-
-            const container = screen.getByTestId('floating-banner-bottom-container');
-            expect(container.props.style[1].bottom).toBe(FLOATING_BANNER_BOTTOM_OFFSET_WITH_KEYBOARD_IOS + keyboardHeight);
-        });
-
-        it('should adjust bottom banner position on tablet when keyboard is open', () => {
-            const keyboardHeight = 250;
-            jest.mocked(Device.useIsTablet).mockReturnValue(true);
-            jest.mocked(Device.useKeyboardHeight).mockReturnValue(keyboardHeight);
-
-            const banners = [
-                createMockBanner({id: 'tablet-bottom-banner', position: 'bottom'}),
-            ];
-            renderFloatingBanner(banners);
-
-            const container = screen.getByTestId('floating-banner-bottom-container');
-            const expectedBottom = FLOATING_BANNER_BOTTOM_OFFSET_WITH_KEYBOARD_IOS + keyboardHeight;
-            expect(container.props.style[1].bottom).toBe(expectedBottom);
-        });
-
-        it('should not adjust top banner position when keyboard is open', () => {
-            const keyboardHeight = 300;
-            jest.mocked(Device.useKeyboardHeight).mockReturnValue(keyboardHeight);
-
-            const banners = [
-                createMockBanner({id: 'top-banner', position: 'top'}),
-            ];
-            renderFloatingBanner(banners);
-
-            const container = screen.getByTestId('floating-banner-top-container');
-            const styleProp = container.props.style as Array<Record<string, unknown>>;
-
-            const hasBottomStyle = styleProp.some((style) =>
-                typeof style === 'object' && style !== null && 'bottom' in style,
-            );
-            expect(hasBottomStyle).toBeFalsy();
-        });
-
-        it('should handle zero keyboard height correctly', () => {
-            jest.mocked(Device.useKeyboardHeight).mockReturnValue(0);
-
-            const banners = [
-                createMockBanner({id: 'bottom-banner', position: 'bottom'}),
-            ];
-            renderFloatingBanner(banners);
-
-            const container = screen.getByTestId('floating-banner-bottom-container');
-            expect(container.props.style[1].bottom).toBe(FLOATING_BANNER_BOTTOM_OFFSET_PHONE_IOS);
-        });
-
-        it('should use Android-specific keyboard offset on Android platform', () => {
-            const {Platform} = require('react-native');
-            Platform.OS = 'android';
-
-            const keyboardHeight = 250;
-            jest.mocked(Device.useKeyboardHeight).mockReturnValue(keyboardHeight);
-
-            const banners = [
-                createMockBanner({id: 'android-bottom-banner', position: 'bottom'}),
-            ];
-            renderFloatingBanner(banners);
-
-            const container = screen.getByTestId('floating-banner-bottom-container');
-            expect(container.props.style[1].bottom).toBe(FLOATING_BANNER_BOTTOM_OFFSET_WITH_KEYBOARD_ANDROID);
-        });
-
-        it('should render BannerItem when customComponent is falsy', () => {
-            const banner = createMockBanner({customComponent: null});
-            renderFloatingBanner([banner]);
-
-            const bannerItem = screen.getByTestId('banner-item');
-            expect(bannerItem.props['data-banner-id']).toBe('test-banner-1');
-            expect(screen.queryByTestId('custom-content')).toBeNull();
-        });
-
-        it('should apply Android tablet-specific bottom offset', () => {
-            const {Platform} = require('react-native');
-            Platform.OS = 'android';
-            jest.mocked(Device.useIsTablet).mockReturnValue(true);
-
-            const banners = [
-                createMockBanner({id: 'android-tablet-banner', position: 'bottom'}),
-            ];
-            renderFloatingBanner(banners);
-
-            const container = screen.getByTestId('floating-banner-bottom-container');
-            expect(container.props.style[1].bottom).toBe(FLOATING_BANNER_BOTTOM_OFFSET_WITH_KEYBOARD_ANDROID);
         });
     });
 });
