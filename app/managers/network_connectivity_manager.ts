@@ -14,6 +14,7 @@ import type {FloatingBannerConfig} from '@components/floating_banner/types';
 
 const RECONNECTION_BANNER_DURATION = toMilliseconds({seconds: 3});
 const PERFORMANCE_BANNER_DURATION = toMilliseconds({seconds: 10});
+const NETWORK_STATUS_BANNER_ID = 'network-status';
 
 function getConnectionMessageText(
     websocketState: WebsocketConnectedState,
@@ -117,9 +118,7 @@ class NetworkConnectivityManagerSingleton {
 
     private createConnectivityBannerConfig(message: string, isConnected: boolean): FloatingBannerConfig {
         return {
-
-            // Implement id as part of banner namespace described in this ticket: https://mattermost.atlassian.net/browse/MM-66104
-            id: 'connectivity',
+            id: NETWORK_STATUS_BANNER_ID,
             dismissible: true,
             customComponent: React.createElement(ConnectionBanner, {
                 isConnected,
@@ -135,7 +134,7 @@ class NetworkConnectivityManagerSingleton {
 
     private createPerformanceBannerConfig(message: string): FloatingBannerConfig {
         return {
-            id: 'performance',
+            id: NETWORK_STATUS_BANNER_ID,
             dismissible: true,
             onDismiss: () => {
                 this.performanceSuppressedUntilNormal = true;
@@ -293,4 +292,5 @@ export const testExports = {
     shouldShowReconnectionBanner,
     RECONNECTION_BANNER_DURATION,
     PERFORMANCE_BANNER_DURATION,
+    NETWORK_STATUS_BANNER_ID,
 };
