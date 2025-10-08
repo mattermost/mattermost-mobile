@@ -183,7 +183,6 @@ extension ShareExtension {
         let draftData: [String: Any] = [
             "channelId": channelId,
             "message": data.message,
-            "fileIds": data.fileIds,
             "files": filesArray
         ]
         
