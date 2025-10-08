@@ -5,10 +5,10 @@ import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Text} from 'react-native';
 
-import {updateDraftMessage} from '@actions/local/draft';
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {usePreventDoubleTap} from '@hooks/utils';
+import {getServerCredentials} from '@init/credentials';
 import {useShareExtensionState} from '@share/state';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -43,25 +43,39 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 const SaveDraftButton = ({theme}: Props) => {
     const intl = useIntl();
     const {
-        closeExtension, channelId, linkPreviewUrl, message, serverUrl,
+        closeExtension, channelId, files,
+        linkPreviewUrl, message, serverUrl, userId,
     } = useShareExtensionState();
     const styles = getStyleSheet(theme);
 
     const onPress = usePreventDoubleTap(useCallback(async () => {
-        if (serverUrl && channelId && message?.length) {
-            let text = message || '';
-            if (linkPreviewUrl) {
-                if (text) {
-                    text = `${text}\n\n${linkPreviewUrl}`;
-                } else {
-                    text = linkPreviewUrl;
-                }
-            }
-
-            await updateDraftMessage(serverUrl, channelId, '', text);
-            closeExtension(null);
+        if (!serverUrl || !channelId || !userId) {
+            return;
         }
-    }, [serverUrl, channelId, message, linkPreviewUrl, closeExtension]));
+
+        let text = message || '';
+        if (linkPreviewUrl) {
+            if (text) {
+                text = `${text}\n\n${linkPreviewUrl}`;
+            } else {
+                text = linkPreviewUrl;
+            }
+        }
+
+        const credentials = await getServerCredentials(serverUrl);
+        if (credentials?.token) {
+            closeExtension({
+                serverUrl,
+                token: credentials.token,
+                channelId,
+                files,
+                message: text,
+                userId,
+                preauthSecret: credentials.preauthSecret,
+                isDraft: true,
+            });
+        }
+    }, [channelId, closeExtension, files, linkPreviewUrl, message, serverUrl, userId]));
 
     return (
         <TouchableWithFeedback
