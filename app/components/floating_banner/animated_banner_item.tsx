@@ -8,33 +8,20 @@ import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import Banner from '@components/banner/Banner';
 import BannerItem from '@components/banner/banner_item';
 import {
-    CHANNEL_BANNER_HEIGHT,
     BANNER_SPACING,
 } from '@constants/view';
-import {useDefaultHeaderHeight} from '@hooks/header';
 
 import type {FloatingBannerConfig} from './types';
 
 type AnimatedBannerItemProps = {
     banner: FloatingBannerConfig;
     index: number;
-    isTop: boolean;
     onBannerPress: (banner: FloatingBannerConfig) => void;
     onBannerDismiss: (banner: FloatingBannerConfig) => void;
 };
 
 const styles = StyleSheet.create({
-    topBannerContainer: {
-        position: 'absolute',
-        left: 0,
-        right: 0,
-        width: '100%',
-        alignItems: 'center',
-    },
-    bottomBannerContainer: {
-        position: 'absolute',
-        left: 0,
-        right: 0,
+    bannerContainer: {
         width: '100%',
         alignItems: 'center',
     },
@@ -47,27 +34,23 @@ const styles = StyleSheet.create({
 const AnimatedBannerItem: React.FC<AnimatedBannerItemProps> = ({
     banner,
     index,
-    isTop,
     onBannerPress,
     onBannerDismiss,
 }) => {
     const {id, dismissible = true, customComponent} = banner;
-    const headerHeight = useDefaultHeaderHeight();
-
-    const baseOffset = isTop ? headerHeight + BANNER_SPACING : BANNER_SPACING;
-    const stackOffset = baseOffset + (index * (CHANNEL_BANNER_HEIGHT + BANNER_SPACING));
 
     const handleDismiss = () => onBannerDismiss(banner);
 
     const animatedPositionStyle = useAnimatedStyle(() => {
-        return isTop ? {top: withTiming(stackOffset, {duration: 250})} : {bottom: withTiming(stackOffset, {duration: 250})};
-    }, [stackOffset, isTop]);
+        const spacing = index > 0 ? BANNER_SPACING : 0;
+        return {marginTop: withTiming(spacing, {duration: 250})};
+    }, [index]);
 
     return (
         <Animated.View
             key={id}
             style={[
-                isTop ? styles.topBannerContainer : styles.bottomBannerContainer,
+                styles.bannerContainer,
                 animatedPositionStyle,
             ]}
         >

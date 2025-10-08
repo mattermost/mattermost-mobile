@@ -2,6 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {StyleSheet} from 'react-native';
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
 
 import FloatingBanner from '@components/floating_banner/floating_banner';
 
@@ -12,8 +14,19 @@ type FloatingBannerScreenProps = {
     onDismiss: (id: string) => void;
 };
 
+const styles = StyleSheet.create({
+    gestureRoot: {
+        ...StyleSheet.absoluteFillObject,
+        pointerEvents: 'box-none',
+    },
+});
+
 const FloatingBannerScreen: React.FC<FloatingBannerScreenProps> = (props) => {
-    return <FloatingBanner {...props}/>;
+    return (
+        <GestureHandlerRootView style={styles.gestureRoot}>
+            <FloatingBanner {...props}/>
+        </GestureHandlerRootView>
+    );
 };
 
 export default FloatingBannerScreen;
