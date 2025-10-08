@@ -5,7 +5,11 @@ import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.ReadableMap
+import com.facebook.react.bridge.WritableNativeMap
+import com.facebook.react.module.annotations.ReactModule
+import com.facebook.react.modules.core.DeviceEventManagerModule
 
+@ReactModule(name = MattermostShareImpl.NAME)
 class MattermostShareModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
     private val implementation = MattermostShareImpl(reactContext)
 
@@ -28,4 +32,11 @@ class MattermostShareModule(reactContext: ReactApplicationContext) : ReactContex
     fun getSharedData(promise: Promise?) {
         implementation.getSharedData(promise)
     }
+
+    fun sendDraftUpdate(draft: WritableNativeMap) {
+        reactApplicationContext
+            .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+            .emit("onDraftUpdated", draft)
+    }
+
 }

@@ -25,6 +25,7 @@ export type ShareExtensionDataToSend = {
   token: string;
   userId: string;
   preauthSecret?: string;
+  isDraft?: boolean;
 }
 
 export type DraftUpdatePayload = {
