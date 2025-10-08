@@ -5,6 +5,7 @@ import React, {useCallback, useMemo, type ComponentProps} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {View, Text} from 'react-native';
 
+import CompassIcon from '@components/compass_icon';
 import MenuDivider from '@components/menu_divider';
 import OptionBox from '@components/option_box';
 import OptionItem, {ITEM_HEIGHT} from '@components/option_item';
@@ -110,6 +111,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     flex: {
         flex: 1,
     },
+    conditionSection: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+        paddingTop: 0,
+    },
+    conditionText: {
+        ...typography('Body', 100, 'Regular'),
+        color: changeOpacity(theme.centerChannelColor, 0.72),
+        flex: 1,
+    },
 }));
 
 type Props = {
@@ -127,6 +139,9 @@ type Props = {
     isDisabled: boolean;
     currentUserTimezone: UserTimezone | null | undefined;
     participantIds: string[];
+    conditionReason: string;
+    showConditionIcon: boolean;
+    conditionIconColor: string;
 };
 
 const ChecklistItemBottomSheet = ({
@@ -144,6 +159,9 @@ const ChecklistItemBottomSheet = ({
     isDisabled,
     currentUserTimezone,
     participantIds,
+    conditionReason,
+    showConditionIcon,
+    conditionIconColor,
 }: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -315,6 +333,22 @@ const ChecklistItemBottomSheet = ({
             <MenuDivider/>
             {!isDisabled && renderActionButtons()}
             {renderTaskDetails()}
+            {showConditionIcon && (
+                <View style={styles.conditionSection}>
+                    <CompassIcon
+                        name='source-branch'
+                        size={16}
+                        color={conditionIconColor}
+                        testID='checklist_item_bottom_sheet.condition_icon'
+                    />
+                    <Text
+                        style={styles.conditionText}
+                        testID='checklist_item_bottom_sheet.condition_reason'
+                    >
+                        {conditionReason}
+                    </Text>
+                </View>
+            )}
         </View>
     );
 };

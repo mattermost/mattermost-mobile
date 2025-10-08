@@ -92,6 +92,9 @@ describe('ChecklistItemBottomSheet', () => {
             isDisabled: false,
             currentUserTimezone: {useAutomaticTimezone: false, automaticTimezone: '', manualTimezone: 'America/New_York'},
             participantIds: ['user-1', 'user-2'],
+            conditionReason: '',
+            showConditionIcon: false,
+            conditionIconColor: '#000000',
         };
     }
 
@@ -635,5 +638,82 @@ describe('ChecklistItemBottomSheet', () => {
         const {queryByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
 
         expect(queryByTestId('checklist_item.run_command_button')).toBeNull();
+    });
+
+    describe('condition display', () => {
+        it('should not render condition section when showConditionIcon is false', () => {
+            const props = getBaseProps();
+            props.showConditionIcon = false;
+            const {queryByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
+
+            expect(queryByTestId('checklist_item_bottom_sheet.condition_icon')).toBeNull();
+            expect(queryByTestId('checklist_item_bottom_sheet.condition_reason')).toBeNull();
+        });
+
+        it('should render icon and reason when showConditionIcon is true', () => {
+            const props = getBaseProps();
+            props.showConditionIcon = true;
+            props.conditionReason = 'This item was shown because of a modification';
+            const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
+
+            const icon = getByTestId('checklist_item_bottom_sheet.condition_icon');
+            const reasonText = getByTestId('checklist_item_bottom_sheet.condition_reason');
+
+            expect(icon).toBeVisible();
+            expect(reasonText).toBeVisible();
+        });
+
+        it('should use the correct icon color (normal color)', () => {
+            const props = getBaseProps();
+            props.showConditionIcon = true;
+            props.conditionReason = 'Some condition reason';
+            props.conditionIconColor = '#rgba(0, 0, 0, 0.56)';
+            const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
+
+            const icon = getByTestId('checklist_item_bottom_sheet.condition_icon');
+            expect(icon.props.color).toBe('#rgba(0, 0, 0, 0.56)');
+        });
+
+        it('should use the correct icon color (error color)', () => {
+            const props = getBaseProps();
+            props.showConditionIcon = true;
+            props.conditionReason = '';
+            props.conditionIconColor = '#d24b4e';
+            const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
+
+            const icon = getByTestId('checklist_item_bottom_sheet.condition_icon');
+            expect(icon.props.color).toBe('#d24b4e');
+        });
+
+        it('should display the correct reason text', () => {
+            const props = getBaseProps();
+            props.showConditionIcon = true;
+            props.conditionReason = 'This is a test condition reason explaining why the icon appears';
+            const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
+
+            const reasonText = getByTestId('checklist_item_bottom_sheet.condition_reason');
+            expect(reasonText.props.children).toBe('This is a test condition reason explaining why the icon appears');
+        });
+
+        it('should have correct testIDs for accessibility', () => {
+            const props = getBaseProps();
+            props.showConditionIcon = true;
+            props.conditionReason = 'Condition reason';
+            const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
+
+            expect(getByTestId('checklist_item_bottom_sheet.condition_icon')).toBeDefined();
+            expect(getByTestId('checklist_item_bottom_sheet.condition_reason')).toBeDefined();
+        });
+
+        it('should use source-branch icon', () => {
+            const props = getBaseProps();
+            props.showConditionIcon = true;
+            props.conditionReason = 'Condition reason';
+            const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
+
+            const icon = getByTestId('checklist_item_bottom_sheet.condition_icon');
+            expect(icon.props.name).toBe('source-branch');
+            expect(icon.props.size).toBe(16);
+        });
     });
 });

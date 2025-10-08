@@ -228,6 +228,9 @@ const ChecklistItem = ({
             onRunCommand={executeCommand}
             teammateNameDisplay={teammateNameDisplay}
             isDisabled={isDisabled}
+            conditionReason={conditionReason}
+            showConditionIcon={showConditionIcon}
+            conditionIconColor={iconColor}
         />
     ), [
         playbookRunId,
@@ -240,6 +243,9 @@ const ChecklistItem = ({
         executeCommand,
         teammateNameDisplay,
         isDisabled,
+        conditionReason,
+        showConditionIcon,
+        iconColor,
     ]);
 
     const onPress = useCallback(() => {
