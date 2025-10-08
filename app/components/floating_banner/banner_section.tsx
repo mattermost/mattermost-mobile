@@ -3,7 +3,6 @@
 
 import React from 'react';
 import {StyleSheet, Platform} from 'react-native';
-import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
 import {
@@ -42,10 +41,6 @@ const styles = StyleSheet.create({
     bottomContainer: {
         paddingBottom: 8,
     },
-    gestureHandler: {
-        width: '100%',
-        alignItems: 'center',
-    },
 });
 
 const BannerSection: React.FC<BannerSectionProps> = ({
@@ -82,18 +77,15 @@ const BannerSection: React.FC<BannerSectionProps> = ({
             testID={testID}
             style={[containerStyle, animatedStyle]}
         >
-            <GestureHandlerRootView style={styles.gestureHandler}>
-                {sectionBanners.map((banner, index) => (
-                    <AnimatedBannerItem
-                        key={banner.id}
-                        banner={banner}
-                        index={index}
-                        isTop={isTop}
-                        onBannerPress={onBannerPress}
-                        onBannerDismiss={onBannerDismiss}
-                    />
-                ))}
-            </GestureHandlerRootView>
+            {sectionBanners.map((banner, index) => (
+                <AnimatedBannerItem
+                    key={banner.id}
+                    banner={banner}
+                    index={index}
+                    onBannerPress={onBannerPress}
+                    onBannerDismiss={onBannerDismiss}
+                />
+            ))}
         </Animated.View>
     );
 };

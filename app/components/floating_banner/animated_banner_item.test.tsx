@@ -94,13 +94,11 @@ describe('AnimatedBannerItem', () => {
     const renderAnimatedBannerItem = (
         banner: FloatingBannerConfig,
         index: number = 0,
-        isTop: boolean = true,
     ) => {
         return render(
             <AnimatedBannerItem
                 banner={banner}
                 index={index}
-                isTop={isTop}
                 onBannerPress={mockOnBannerPress}
                 onBannerDismiss={mockOnBannerDismiss}
             />,
@@ -199,41 +197,35 @@ describe('AnimatedBannerItem', () => {
     describe('positioning', () => {
         it('should render for top position', () => {
             const banner = createMockBanner();
-            renderAnimatedBannerItem(banner, 0, true);
+            renderAnimatedBannerItem(banner, 0);
 
             expect(screen.getByTestId('banner')).toBeDefined();
         });
 
         it('should render for bottom position', () => {
             const banner = createMockBanner();
-            renderAnimatedBannerItem(banner, 0, false);
+            renderAnimatedBannerItem(banner, 0);
 
             expect(screen.getByTestId('banner')).toBeDefined();
         });
 
         it('should render on tablet with top position', () => {
-            const Header = require('@hooks/header');
-            jest.mocked(Header.useDefaultHeaderHeight).mockReturnValue(80);
-
             const banner = createMockBanner();
-            renderAnimatedBannerItem(banner, 0, true);
+            renderAnimatedBannerItem(banner, 0);
 
             expect(screen.getByTestId('banner')).toBeDefined();
         });
 
         it('should render on tablet with bottom position', () => {
-            const Header = require('@hooks/header');
-            jest.mocked(Header.useDefaultHeaderHeight).mockReturnValue(80);
-
             const banner = createMockBanner();
-            renderAnimatedBannerItem(banner, 0, false);
+            renderAnimatedBannerItem(banner, 0);
 
             expect(screen.getByTestId('banner')).toBeDefined();
         });
 
         it('should render at different index positions', () => {
             const banner = createMockBanner();
-            renderAnimatedBannerItem(banner, 2, true);
+            renderAnimatedBannerItem(banner, 2);
 
             expect(screen.getByTestId('banner')).toBeDefined();
         });
@@ -243,7 +235,7 @@ describe('AnimatedBannerItem', () => {
         it('should render custom content for a bottom-positioned banner', () => {
             const customComponent = <Text testID={'custom-content-bottom'}>{'Bottom Custom'}</Text>;
             const banner = createMockBanner({customComponent, dismissible: false});
-            renderAnimatedBannerItem(banner, 0, false);
+            renderAnimatedBannerItem(banner, 0);
 
             expect(screen.getByTestId('custom-content-bottom')).toBeDefined();
             const bannerElement = screen.getByTestId('banner');
