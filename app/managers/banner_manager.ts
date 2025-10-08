@@ -137,7 +137,7 @@ class BannerManagerSingleton {
             };
 
             // Clone banners and add dismiss handlers
-            const bannersWithDismiss = this.activeBanners.map((banner) => {
+            const bannersWithDismissProps = this.activeBanners.map((banner) => {
                 if (banner.customComponent && React.isValidElement(banner.customComponent)) {
                     const props: Partial<Record<string, unknown>> = {
                         onDismiss: () => handleDismiss(banner.id),
@@ -153,14 +153,14 @@ class BannerManagerSingleton {
 
             if (this.overlayVisible) {
                 Navigation.updateProps(FLOATING_BANNER_OVERLAY_ID, {
-                    banners: bannersWithDismiss,
+                    banners: bannersWithDismissProps,
                     onDismiss: handleDismiss,
                 });
             } else {
                 showOverlay(
                     Screens.FLOATING_BANNER,
                     {
-                        banners: bannersWithDismiss,
+                        banners: bannersWithDismissProps,
                         onDismiss: handleDismiss,
                     },
                     {
