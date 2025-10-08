@@ -8,7 +8,7 @@ import {Screens} from '@constants';
 import {showOverlay, dismissOverlay} from '@screens/navigation';
 import {toMilliseconds} from '@utils/datetime';
 
-import type {BannerConfig} from '@components/floating_banner/types';
+import type {FloatingBannerConfig} from '@components/floating_banner/types';
 
 const FLOATING_BANNER_OVERLAY_ID = 'floating-banner-overlay';
 const TIME_TO_CLOSE = toMilliseconds({seconds: 5});
@@ -21,7 +21,7 @@ enum UpdateState {
 }
 
 class BannerManagerSingleton {
-    private activeBanners: BannerConfig[] = [];
+    private activeBanners: FloatingBannerConfig[] = [];
     private overlayVisible = false;
     private autoHideTimers: Map<string, NodeJS.Timeout> = new Map();
     private updateState: UpdateState = UpdateState.IDLE;
@@ -137,7 +137,7 @@ class BannerManagerSingleton {
             };
 
             // Clone banners and add dismiss handlers
-            const bannersWithDismiss = this.activeBanners.map((banner) => {
+            const bannersWithDismissProps = this.activeBanners.map((banner) => {
                 if (banner.customComponent && React.isValidElement(banner.customComponent)) {
                     const props: Partial<Record<string, unknown>> = {
                         onDismiss: () => handleDismiss(banner.id),
@@ -153,14 +153,14 @@ class BannerManagerSingleton {
 
             if (this.overlayVisible) {
                 Navigation.updateProps(FLOATING_BANNER_OVERLAY_ID, {
-                    banners: bannersWithDismiss,
+                    banners: bannersWithDismissProps,
                     onDismiss: handleDismiss,
                 });
             } else {
                 showOverlay(
                     Screens.FLOATING_BANNER,
                     {
-                        banners: bannersWithDismiss,
+                        banners: bannersWithDismissProps,
                         onDismiss: handleDismiss,
                     },
                     {
@@ -183,7 +183,7 @@ class BannerManagerSingleton {
         }
     }
 
-    showBanner(bannerConfig: BannerConfig) {
+    showBanner(bannerConfig: FloatingBannerConfig) {
         this.removeBannerFromList(bannerConfig.id);
 
         this.activeBanners.push(bannerConfig);
@@ -191,7 +191,7 @@ class BannerManagerSingleton {
         this.updateOverlay();
     }
 
-    showBannerWithAutoHide(bannerConfig: BannerConfig, durationMs: number = TIME_TO_CLOSE) {
+    showBannerWithAutoHide(bannerConfig: FloatingBannerConfig, durationMs: number = TIME_TO_CLOSE) {
         this.showBanner(bannerConfig);
 
         const timer = setTimeout(() => {

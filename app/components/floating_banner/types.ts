@@ -3,7 +3,7 @@
 
 import type {ReactNode} from 'react';
 
-export interface BannerConfig {
+export interface FloatingBannerConfig {
     id: string;
     title?: string;
     message?: string;
