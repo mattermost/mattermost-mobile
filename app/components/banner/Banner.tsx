@@ -2,101 +2,31 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {View, StyleSheet, type ViewStyle, type StyleProp} from 'react-native';
+import {StyleSheet} from 'react-native';
 import {GestureDetector} from 'react-native-gesture-handler';
 import Animated from 'react-native-reanimated';
 
-import {useBannerAnimation} from './hooks/useBannerAnimation';
-import {useBannerGesture} from './hooks/useBannerGesture';
+import {useBanner} from './hooks/useBanner';
 
-/**
- * Position where the banner should appear on screen
- */
-export type BannerPosition = 'top' | 'bottom';
+import type {BannerProps} from './types';
 
-/**
- * Predefined placement contexts for common screen types
- */
-export type BannerPlacement = 'channel' | 'thread' | 'channels_list' | 'custom';
-
-/**
- * Props for the Banner component
- *
- * A flexible banner component that positions itself absolutely on screen
- * with smart offset calculations based on existing UI elements.
- */
-export interface BannerProps {
-
-    /** The content to display inside the banner */
-    children: React.ReactNode;
-
-    /**
-     * Position of the banner on screen
-     * @default 'top'
-     */
-    position?: BannerPosition;
-
-    /**
-     * Controls banner visibility with fade animation
-     * @default true
-     */
-    visible?: boolean;
-
-    /**
-     * Duration of fade animation in milliseconds
-     * @default 300
-     */
-    animationDuration?: number;
-
-    /**
-     * Custom styles applied to the banner content
-     */
-    style?: StyleProp<ViewStyle>;
-
-    /**
-     * Custom styles applied to the outer container
-     */
-    containerStyle?: ViewStyle;
-
-    /**
-     * Whether the banner can be dismissed by swiping
-     * @default false
-     */
-    dismissible?: boolean;
-
-    /**
-     * Callback called when banner is dismissed via swipe
-     */
-    onDismiss?: () => void;
-
-    /**
-     * Swipe threshold to trigger dismiss (in pixels)
-     * @default 100
-     */
-    swipeThreshold?: number;
-}
+export type {BannerProps};
 
 const styles = StyleSheet.create({
     wrapper: {
         width: '100%',
         gap: 8,
     },
-    container: {
-    },
 });
 
 /**
  * Banner - A flexible banner component
  *
- * Renders content in an absolutely positioned container with smart offset calculations
- * based on safe areas, headers, and other UI elements. Supports fade and slide animations.
+ * Renders content with fade and slide animations. Supports swipe-to-dismiss functionality.
  *
  * @example
  * ```tsx
  * <Banner
- *   position="bottom"
- *   customBottomOffset={20}
- *   visible={showBanner}
  *   dismissible={true}
  *   onDismiss={() => console.log('Banner dismissed!')}
  * >
@@ -106,28 +36,17 @@ const styles = StyleSheet.create({
  */
 const Banner: React.FC<BannerProps> = ({
     children,
-    position = 'top',
-    visible = true,
-    animationDuration = 300,
+    animationDuration = 250,
     style,
-    containerStyle,
     dismissible = false,
     onDismiss,
     swipeThreshold = 100,
 }) => {
-    const {opacity, translateX, isDismissed, animatedStyle} = useBannerAnimation({
-        visible,
-        position,
+    const {animatedStyle, swipeGesture} = useBanner({
         animationDuration,
-    });
-
-    const {swipeGesture} = useBannerGesture({
         dismissible,
         swipeThreshold,
         onDismiss,
-        translateX,
-        opacity,
-        isDismissed,
     });
 
     const bannerContent = (
@@ -139,9 +58,7 @@ const Banner: React.FC<BannerProps> = ({
                 style,
             ]}
         >
-            <View style={[styles.container, containerStyle]}>
-                {children}
-            </View>
+            {children}
         </Animated.View>
     );
 
