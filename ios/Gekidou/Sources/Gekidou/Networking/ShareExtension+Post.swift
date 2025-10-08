@@ -20,6 +20,10 @@ extension ShareExtension {
             isDraft: isDraft
         )
 
+        if isDraft {
+            self.saveMessageAsDraftForSession(withId: id)
+        }
+
         guard let credentials = try? Keychain.default.getCredentials(for: serverUrl),
               let token = credentials.token else {return "Could not retrieve the session token from the KeyChain"}
 
@@ -110,6 +114,7 @@ extension ShareExtension {
         
         if data.isDraft {
             self.saveMessageAsDraftForSession(withId: id, completionHandler: completionHandler)
+            self.removeUploadSessionData(id: id)
             return
         }
         
@@ -144,7 +149,7 @@ extension ShareExtension {
                 })
         }
     }
-    
+
     func saveMessageAsDraftForSession(withId id: String, completionHandler: (() -> Void)? = nil) {
         guard let data = getUploadSessionData(id: id)
         else {
@@ -155,17 +160,49 @@ extension ShareExtension {
             )
             return
         }
-        
-        self.removeUploadSessionData(id: id)
-        
+
         guard let serverUrl = data.serverUrl,
               let channelId = data.channelId else { return }
         
-        do {
-            let filesArray = data.fileIds.compactMap { fileId in
-                data.filesInfo[fileId] as? [String: Any]
-            }
+        let isRunning = (Gekidou.Preferences.default.object(forKey: "ApplicationIsRunning") as? String) == "true"
+        let filesArray = data.fileIds.compactMap { fileId in
+            data.filesInfo[fileId] as? [String: Any]
+        }
 
+        if isRunning {
+            handleDraftWhileAppRunning(channelId: channelId, data: data, filesArray: filesArray, completionHandler: completionHandler)
+        } else {
+            handleDraftInBackground(id: id, serverUrl: serverUrl, channelId: channelId, data: data, filesArray: filesArray, completionHandler: completionHandler)
+        }
+    }
+
+    private func handleDraftWhileAppRunning(channelId: String,
+                                            data: UploadSessionData,
+                                            filesArray: [[String: Any]],
+                                            completionHandler: (() -> Void)?) {
+        let draftData: [String: Any] = [
+            "channelId": channelId,
+            "message": data.message,
+            "fileIds": data.fileIds,
+            "files": filesArray
+        ]
+        
+        Preferences.default.set(draftData, forKey: "ShareExtensionDraftUpdate")
+        CFNotificationCenterPostNotification(
+            CFNotificationCenterGetDarwinNotifyCenter(),
+            CFNotificationName("share.extension.draftUploadFinished" as CFString),
+            nil, nil, true
+        )
+        completionHandler?()
+    }
+
+    private func handleDraftInBackground(id: String,
+                                         serverUrl: String,
+                                         channelId: String,
+                                         data: UploadSessionData,
+                                         filesArray: [[String: Any]],
+                                         completionHandler: (() -> Void)?) {
+        do {
             if let existingDraft = try Database.default.getDraft(serverUrl: serverUrl, channelId: channelId, rootId: "") {
                 if (existingDraft.message == data.message) {
                     completionHandler?()
