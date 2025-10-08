@@ -164,12 +164,12 @@ extension ShareExtension {
         guard let serverUrl = data.serverUrl,
               let channelId = data.channelId else { return }
         
-        let isRunning = (Gekidou.Preferences.default.object(forKey: "ApplicationIsRunning") as? String) == "true"
+        let isAppRunning = (Gekidou.Preferences.default.object(forKey: "ApplicationIsRunning") as? String) == "true"
         let filesArray = data.fileIds.compactMap { fileId in
             data.filesInfo[fileId] as? [String: Any]
         }
 
-        if isRunning {
+        if isAppRunning {
             handleDraftWhileAppRunning(channelId: channelId, data: data, filesArray: filesArray, completionHandler: completionHandler)
         } else {
             handleDraftInBackground(id: id, serverUrl: serverUrl, channelId: channelId, data: data, filesArray: filesArray, completionHandler: completionHandler)
@@ -190,7 +190,7 @@ extension ShareExtension {
         Preferences.default.set(draftData, forKey: "ShareExtensionDraftUpdate")
         CFNotificationCenterPostNotification(
             CFNotificationCenterGetDarwinNotifyCenter(),
-            CFNotificationName("share.extension.draftUploadFinished" as CFString),
+            CFNotificationName("share.extension.draftUpdate" as CFString),
             nil, nil, true
         )
         completionHandler?()
