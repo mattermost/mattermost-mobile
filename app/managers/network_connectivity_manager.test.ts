@@ -9,8 +9,6 @@ const {
     shouldShowConnectingBanner,
     shouldShowPerformanceBanner,
     shouldShowReconnectionBanner,
-    RECONNECTION_BANNER_DURATION,
-    PERFORMANCE_BANNER_DURATION,
 } = testExports;
 
 // Define constants locally for testing
@@ -525,10 +523,8 @@ describe('NetworkConnectivityManager', () => {
             mockBannerManager.showBannerWithAutoHide.mockClear();
 
             manager.updatePerformanceState('normal');
-            expect(mockBannerManager.showBannerWithAutoHide).toHaveBeenCalledWith(
-                expect.objectContaining({id: 'connectivity'}),
-                RECONNECTION_BANNER_DURATION,
-            );
+            const reconnectionBannerCall = mockBannerManager.showBannerWithAutoHide.mock.calls[0][0];
+            expect((reconnectionBannerCall.customComponent as any).props.message).toBe('Connection restored');
         });
 
         it('should not hide banner if it is not a performance banner', () => {
@@ -556,7 +552,8 @@ describe('NetworkConnectivityManager', () => {
             manager.updateState('connected', {isInternetReachable: true}, 'active');
 
             manager.updatePerformanceState('slow');
-            expect(mockBannerManager.showBannerWithAutoHide).toHaveBeenCalled();
+            const performanceBannerCall = mockBannerManager.showBannerWithAutoHide.mock.calls[0][0];
+            expect((performanceBannerCall.customComponent as any).props.message).toBe('Limited network connection');
 
             mockBannerManager.showBanner.mockClear();
             mockBannerManager.showBannerWithAutoHide.mockClear();
@@ -570,9 +567,8 @@ describe('NetworkConnectivityManager', () => {
 
             manager.updateState('not_connected', {isInternetReachable: true}, 'active');
 
-            expect(mockBannerManager.showBanner).toHaveBeenCalledWith(
-                expect.objectContaining({id: 'connectivity'}),
-            );
+            const disconnectBannerCall = mockBannerManager.showBanner.mock.calls[0][0];
+            expect((disconnectBannerCall.customComponent as any).props.message).toBe('The server is not reachable');
 
             manager.updateState('connected', {isInternetReachable: true}, 'active');
         });
@@ -592,9 +588,8 @@ describe('NetworkConnectivityManager', () => {
 
             manager.updateState('not_connected', {isInternetReachable: true}, 'active');
 
-            expect(mockBannerManager.showBanner).toHaveBeenCalledWith(
-                expect.objectContaining({id: 'connectivity'}),
-            );
+            const disconnectBannerCall = mockBannerManager.showBanner.mock.calls[0][0];
+            expect((disconnectBannerCall.customComponent as any).props.message).toBe('The server is not reachable');
         });
 
         it('should prioritize disconnected over connecting', () => {
@@ -603,9 +598,8 @@ describe('NetworkConnectivityManager', () => {
 
             manager.updateState('not_connected', {isInternetReachable: true}, 'active');
 
-            expect(mockBannerManager.showBanner).toHaveBeenCalledWith(
-                expect.objectContaining({id: 'connectivity'}),
-            );
+            const disconnectBannerCall = mockBannerManager.showBanner.mock.calls[0][0];
+            expect((disconnectBannerCall.customComponent as any).props.message).toBe('The server is not reachable');
         });
 
         it('should prioritize performance over connecting', () => {
@@ -614,10 +608,8 @@ describe('NetworkConnectivityManager', () => {
 
             manager.updateState('connecting', {isInternetReachable: true}, 'active');
 
-            expect(mockBannerManager.showBannerWithAutoHide).toHaveBeenCalledWith(
-                expect.objectContaining({id: 'performance'}),
-                PERFORMANCE_BANNER_DURATION,
-            );
+            const performanceBannerCall = mockBannerManager.showBannerWithAutoHide.mock.calls[0][0];
+            expect((performanceBannerCall.customComponent as any).props.message).toBe('Limited network connection');
         });
 
         it('should prioritize connecting over reconnection', () => {
@@ -628,9 +620,8 @@ describe('NetworkConnectivityManager', () => {
 
             manager.updateState('connecting', {isInternetReachable: true}, 'active');
 
-            expect(mockBannerManager.showBanner).toHaveBeenCalledWith(
-                expect.objectContaining({id: 'connectivity'}),
-            );
+            const connectingBannerCall = mockBannerManager.showBanner.mock.calls[0][0];
+            expect((connectingBannerCall.customComponent as any).props.message).toBe('Connecting...');
         });
 
         it('should show reconnection banner only when connected after disconnect', () => {
@@ -640,10 +631,8 @@ describe('NetworkConnectivityManager', () => {
 
             manager.updateState('connected', {isInternetReachable: true}, 'active');
 
-            expect(mockBannerManager.showBannerWithAutoHide).toHaveBeenCalledWith(
-                expect.objectContaining({id: 'connectivity'}),
-                RECONNECTION_BANNER_DURATION,
-            );
+            const reconnectionBannerCall = mockBannerManager.showBannerWithAutoHide.mock.calls[0][0];
+            expect((reconnectionBannerCall.customComponent as any).props.message).toBe('Connection restored');
         });
 
         it('should hide banner when connected and no performance issues', () => {
@@ -664,9 +653,8 @@ describe('NetworkConnectivityManager', () => {
 
             manager.updateState('not_connected', {isInternetReachable: true}, 'active');
 
-            expect(mockBannerManager.showBanner).toHaveBeenCalledWith(
-                expect.objectContaining({id: 'connectivity'}),
-            );
+            const disconnectBannerCall = mockBannerManager.showBanner.mock.calls[0][0];
+            expect((disconnectBannerCall.customComponent as any).props.message).toBe('The server is not reachable');
         });
     });
 });
