@@ -1,5 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+/* eslint-disable max-lines */
 
 import {BottomSheetScrollView} from '@gorhom/bottom-sheet';
 import {act, fireEvent, waitFor} from '@testing-library/react-native';
@@ -647,19 +648,25 @@ describe('ChecklistItemBottomSheet', () => {
             const {queryByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
 
             expect(queryByTestId('checklist_item_bottom_sheet.condition_icon')).toBeNull();
+            expect(queryByTestId('checklist_item_bottom_sheet.condition_header')).toBeNull();
+            expect(queryByTestId('checklist_item_bottom_sheet.condition_explanation')).toBeNull();
             expect(queryByTestId('checklist_item_bottom_sheet.condition_reason')).toBeNull();
         });
 
-        it('should render icon and reason when showConditionIcon is true', () => {
+        it('should render icon and all text elements when showConditionIcon is true', () => {
             const props = getBaseProps();
             props.showConditionIcon = true;
-            props.conditionReason = 'This item was shown because of a modification';
+            props.conditionReason = 'Incident Type: Malware';
             const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
 
             const icon = getByTestId('checklist_item_bottom_sheet.condition_icon');
+            const header = getByTestId('checklist_item_bottom_sheet.condition_header');
+            const explanation = getByTestId('checklist_item_bottom_sheet.condition_explanation');
             const reasonText = getByTestId('checklist_item_bottom_sheet.condition_reason');
 
             expect(icon).toBeVisible();
+            expect(header).toBeVisible();
+            expect(explanation).toBeVisible();
             expect(reasonText).toBeVisible();
         });
 
@@ -685,14 +692,19 @@ describe('ChecklistItemBottomSheet', () => {
             expect(icon.props.color).toBe('#d24b4e');
         });
 
-        it('should display the correct reason text', () => {
+        it('should display the correct text structure', () => {
             const props = getBaseProps();
             props.showConditionIcon = true;
-            props.conditionReason = 'This is a test condition reason explaining why the icon appears';
+            props.conditionReason = 'Incident Type: Malware';
             const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
 
+            const header = getByTestId('checklist_item_bottom_sheet.condition_header');
+            const explanation = getByTestId('checklist_item_bottom_sheet.condition_explanation');
             const reasonText = getByTestId('checklist_item_bottom_sheet.condition_reason');
-            expect(reasonText.props.children).toBe('This is a test condition reason explaining why the icon appears');
+
+            expect(header.props.children).toBe('Task rendered conditionally');
+            expect(explanation.props.children).toBe('This task was rendered conditionally based on');
+            expect(reasonText.props.children).toBe('Incident Type: Malware');
         });
 
         it('should have correct testIDs for accessibility', () => {
@@ -702,10 +714,12 @@ describe('ChecklistItemBottomSheet', () => {
             const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
 
             expect(getByTestId('checklist_item_bottom_sheet.condition_icon')).toBeDefined();
+            expect(getByTestId('checklist_item_bottom_sheet.condition_header')).toBeDefined();
+            expect(getByTestId('checklist_item_bottom_sheet.condition_explanation')).toBeDefined();
             expect(getByTestId('checklist_item_bottom_sheet.condition_reason')).toBeDefined();
         });
 
-        it('should use source-branch icon', () => {
+        it('should use source-branch icon with size 24', () => {
             const props = getBaseProps();
             props.showConditionIcon = true;
             props.conditionReason = 'Condition reason';
@@ -713,7 +727,7 @@ describe('ChecklistItemBottomSheet', () => {
 
             const icon = getByTestId('checklist_item_bottom_sheet.condition_icon');
             expect(icon.props.name).toBe('source-branch');
-            expect(icon.props.size).toBe(16);
+            expect(icon.props.size).toBe(24);
         });
     });
 });

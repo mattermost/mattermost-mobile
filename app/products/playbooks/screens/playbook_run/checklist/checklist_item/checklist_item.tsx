@@ -249,7 +249,7 @@ const ChecklistItem = ({
     ]);
 
     const onPress = useCallback(() => {
-        const initialHeight = BOTTOM_SHEET_HEIGHT.base + (isDisabled ? 0 : BOTTOM_SHEET_HEIGHT.actionButtons);
+        const initialHeight = BOTTOM_SHEET_HEIGHT.base + (isDisabled ? 0 : BOTTOM_SHEET_HEIGHT.actionButtons) + (showConditionIcon ? BOTTOM_SHEET_HEIGHT.conditionSection : 0);
         bottomSheet({
             title: intl.formatMessage({id: 'playbook_run.checklist.taskDetails', defaultMessage: 'Task Details'}),
             renderContent: renderBottomSheet,
@@ -258,7 +258,7 @@ const ChecklistItem = ({
             closeButtonId: 'close-checklist-item',
             scrollable: true,
         });
-    }, [intl, isDisabled, renderBottomSheet, theme]);
+    }, [intl, isDisabled, renderBottomSheet, theme, showConditionIcon]);
 
     return (
         <View style={styles.checklistItem}>
@@ -275,7 +275,7 @@ const ChecklistItem = ({
                                     name='source-branch'
                                     size={16}
                                     color={iconColor}
-                                    style={styles.conditionIcon}
+                                    style={[styles.conditionIcon, {transform: [{rotate: '90deg'}]}]}
                                     testID='checklist_item.condition_icon'
                                 />
                             )}

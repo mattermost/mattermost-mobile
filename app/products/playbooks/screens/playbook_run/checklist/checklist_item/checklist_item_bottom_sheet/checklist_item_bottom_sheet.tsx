@@ -3,7 +3,7 @@
 
 import React, {useCallback, useMemo, type ComponentProps} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
-import {View, Text} from 'react-native';
+import {View, Text, Platform} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import MenuDivider from '@components/menu_divider';
@@ -66,6 +66,14 @@ const messages = defineMessages({
         id: 'playbooks.checklist_item.none',
         defaultMessage: 'None',
     },
+    taskRenderedConditionally: {
+        id: 'playbooks.checklist_item.task_rendered_conditionally',
+        defaultMessage: 'Task rendered conditionally',
+    },
+    taskRenderedConditionallyExplanation: {
+        id: 'playbooks.checklist_item.task_rendered_conditionally_explanation',
+        defaultMessage: 'This task was rendered conditionally based on',
+    },
 });
 
 const ACTION_BUTTON_HEIGHT = 62;
@@ -79,6 +87,7 @@ const BODY_LINES_COUNT = 3;
 export const BOTTOM_SHEET_HEIGHT = {
     base: (N_OPTIONS * ITEM_HEIGHT) + (OPTIONS_GAP * (N_OPTIONS - 1)) + (SCROLL_CONTENT_GAP * 2) + TITLE_LINE_HEIGHT + (BODY_LINE_HEIGHT * BODY_LINES_COUNT),
     actionButtons: ACTION_BUTTON_HEIGHT + SCROLL_CONTENT_GAP,
+    conditionSection: (BODY_LINE_HEIGHT * 2) + SCROLL_CONTENT_GAP + (OPTIONS_GAP * (Platform.OS === 'android' ? 2 : 1)),
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
@@ -113,14 +122,24 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     },
     conditionSection: {
         flexDirection: 'row',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         gap: 12,
-        paddingTop: 0,
     },
-    conditionText: {
-        ...typography('Body', 100, 'Regular'),
-        color: changeOpacity(theme.centerChannelColor, 0.72),
+    conditionTextContainer: {
         flex: 1,
+        gap: 4,
+    },
+    conditionHeader: {
+        ...typography('Body', 200, 'SemiBold'),
+        color: theme.centerChannelColor,
+    },
+    conditionExplanation: {
+        ...typography('Body', 75, 'Regular'),
+        color: changeOpacity(theme.centerChannelColor, 0.72),
+    },
+    conditionReason: {
+        ...typography('Body', 75, 'SemiBold'),
+        color: changeOpacity(theme.centerChannelColor, 0.72),
     },
 }));
 
@@ -310,6 +329,41 @@ const ChecklistItemBottomSheet = ({
         </View>
     );
 
+    const renderConditionSection = () => (
+        <>
+            <MenuDivider/>
+            <View style={styles.conditionSection}>
+                <CompassIcon
+                    name='source-branch'
+                    size={24}
+                    color={conditionIconColor}
+                    style={{transform: [{rotate: '90deg'}]}}
+                    testID='checklist_item_bottom_sheet.condition_icon'
+                />
+                <View style={styles.conditionTextContainer}>
+                    <Text
+                        style={styles.conditionHeader}
+                        testID='checklist_item_bottom_sheet.condition_header'
+                    >
+                        {intl.formatMessage(messages.taskRenderedConditionally)}
+                    </Text>
+                    <Text
+                        style={styles.conditionExplanation}
+                        testID='checklist_item_bottom_sheet.condition_explanation'
+                    >
+                        {intl.formatMessage(messages.taskRenderedConditionallyExplanation)}
+                    </Text>
+                    <Text
+                        style={styles.conditionReason}
+                        testID='checklist_item_bottom_sheet.condition_reason'
+                    >
+                        {conditionReason}
+                    </Text>
+                </View>
+            </View>
+        </>
+    );
+
     return (
         <View
             style={styles.container}
@@ -333,22 +387,7 @@ const ChecklistItemBottomSheet = ({
             <MenuDivider/>
             {!isDisabled && renderActionButtons()}
             {renderTaskDetails()}
-            {showConditionIcon && (
-                <View style={styles.conditionSection}>
-                    <CompassIcon
-                        name='source-branch'
-                        size={16}
-                        color={conditionIconColor}
-                        testID='checklist_item_bottom_sheet.condition_icon'
-                    />
-                    <Text
-                        style={styles.conditionText}
-                        testID='checklist_item_bottom_sheet.condition_reason'
-                    >
-                        {conditionReason}
-                    </Text>
-                </View>
-            )}
+            {showConditionIcon && renderConditionSection()}
         </View>
     );
 };
