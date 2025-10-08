@@ -12,7 +12,7 @@ public struct Draft: Codable {
     public init(
         id: String,
         channelId: String,
-        rootId: String ,
+        rootId: String,
         message: String,
         files: [[String: Any]],
         metadata: String,
