@@ -1,0 +1,174 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 6.2 effective-5.10 (swiftlang-6.2.0.19.9 clang-1700.3.19.1)
+// swift-module-flags: -target arm64-apple-ios17.0-simulator -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -enable-experimental-feature DebugDescriptionMacro -enable-bare-slash-regex -module-name IntuneMAMSwiftStub
+// swift-module-flags-ignorable:  -formal-cxx-interoperability-mode=off -interface-compiler-version 6.2
+import AppleArchive
+import Darwin
+import Dispatch
+import Foundation
+import GroupActivities
+import ImagePlayground
+import Swift
+import SwiftUI
+import System
+import UIKit
+import VisionKit
+import _Concurrency
+import _GroupActivities_UIKit
+import _StringProcessing
+import _SwiftConcurrencyShims
+#if compiler(>=5.3) && $NonescapableTypes
+public func cmarRealUIApplicationMain(_ argc: Swift.Int32, _ argv: Swift.UnsafeMutablePointer<Swift.UnsafeMutablePointer<Swift.Int8>?>, _ principalClassName: Swift.String?, _ delegateClassName: Swift.String?) -> Swift.Int32
+#endif
+@available(iOS 14.0, *)
+extension SwiftUI.App {
+  @_Concurrency.MainActor @preconcurrency public static func cmarRealSwiftUIMain()
+}
+@available(iOS 14.0, *)
+extension AppleArchive.ArchiveByteStream {
+  #if compiler(>=5.3) && $NonescapableTypes
+  public static func cmarRealFileStream(path: System.FilePath, mode: System.FileDescriptor.AccessMode, options: System.FileDescriptor.OpenOptions, permissions: System.FilePermissions) -> AppleArchive.ArchiveByteStream?
+  #endif
+  public static func cmarRealWithFileStream<E>(path: System.FilePath, mode: System.FileDescriptor.AccessMode, options: System.FileDescriptor.OpenOptions, permissions: System.FilePermissions, _ body: (AppleArchive.ArchiveByteStream) throws -> E) throws -> E
+}
+@available(iOS 14.0, *)
+extension AppleArchive.ArchiveStream {
+  #if compiler(>=5.3) && $NonescapableTypes
+  public static func cmarRealExtractStream(extractingTo directory: System.FilePath, selectUsing filter: AppleArchive.ArchiveHeader.EntryFilter? = nil, flags: AppleArchive.ArchiveFlags = [], threadCount: Swift.Int = 0) -> AppleArchive.ArchiveStream?
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  public static func cmarRealWithExtractStream<E>(extractingTo directory: System.FilePath, selectUsing filter: AppleArchive.ArchiveHeader.EntryFilter? = nil, flags: AppleArchive.ArchiveFlags = [], threadCount: Swift.Int = 0, _ body: (AppleArchive.ArchiveStream) throws -> E) throws -> E
+  #endif
+}
+extension Dispatch.DispatchQueue {
+  #if compiler(>=5.3) && $NonescapableTypes
+  public func cmarRealDispatchQueueAsync(group: Dispatch.DispatchGroup? = nil, qos: Dispatch.DispatchQoS = .unspecified, flags: Dispatch.DispatchWorkItemFlags = [], execute work: @escaping @convention(block) () -> Swift.Void)
+  #endif
+  public func cmarRealDispatchQueueSync<T>(execute work: () throws -> T) rethrows -> T
+  public func cmarRealDispatchQueueSync<T>(flags: Dispatch.DispatchWorkItemFlags, execute work: () throws -> T) rethrows -> T
+  public func cmarRealDispatchQueueAsyncAfter(deadline: Dispatch.DispatchTime, qos: Dispatch.DispatchQoS = .unspecified, flags: Dispatch.DispatchWorkItemFlags = [], execute work: @escaping @convention(block) () -> Swift.Void)
+  public func cmarRealDispatchQueueAsyncAfter(wallDeadline: Dispatch.DispatchWallTime, qos: Dispatch.DispatchQoS = .unspecified, flags: Dispatch.DispatchWorkItemFlags = [], execute work: @escaping @convention(block) () -> Swift.Void)
+  public class func cmarRealDispatchQueueConcurrentPerform(iterations: Swift.Int, execute work: (Swift.Int) -> Swift.Void)
+  @available(iOS 17.0, *)
+  public func cmarRealDispatchQueueAsyncAfterUnsafe(deadline: Dispatch.DispatchTime, qos: Dispatch.DispatchQoS = .unspecified, flags: Dispatch.DispatchWorkItemFlags = [], execute work: @escaping @convention(block) () -> Swift.Void)
+  @available(iOS 17.0, *)
+  public func cmarRealDispatchQueueAsyncAfterUnsafe(wallDeadline: Dispatch.DispatchWallTime, qos: Dispatch.DispatchQoS = .unspecified, flags: Dispatch.DispatchWorkItemFlags = [], execute work: @escaping @convention(block) () -> Swift.Void)
+  #if compiler(>=5.3) && $NonescapableTypes
+  @available(iOS 17.0, *)
+  public func cmarRealDispatchQueueAsyncUnsafe(group: Dispatch.DispatchGroup? = nil, qos: Dispatch.DispatchQoS = .unspecified, flags: Dispatch.DispatchWorkItemFlags = [], execute work: @escaping @convention(block) () -> Swift.Void)
+  #endif
+  public func cmarRealDispatchQueueAsyncAndWait(execute work: @escaping @convention(block) () -> Swift.Void)
+}
+extension Dispatch.DispatchGroup {
+  public func cmarRealDispatchGroupNotify(qos: Dispatch.DispatchQoS = .unspecified, flags: Dispatch.DispatchWorkItemFlags = [], queue: Dispatch.DispatchQueue, execute work: @escaping @convention(block) () -> ())
+}
+extension Dispatch.DispatchWorkItem {
+  public func cmarRealDispatchWorkItemNotify(qos: Dispatch.DispatchQoS = .unspecified, flags: Dispatch.DispatchWorkItemFlags = [], queue: Dispatch.DispatchQueue, execute: @escaping @convention(block) () -> Swift.Void)
+  convenience public init(cmarRealQoS: Dispatch.DispatchQoS, cmarRealFlags: Dispatch.DispatchWorkItemFlags, cmarRealBlock: @escaping @convention(block) () -> Swift.Void)
+  convenience public init(cmarRealFlags: Dispatch.DispatchWorkItemFlags, cmarRealBlock: @escaping @convention(block) () -> Swift.Void)
+}
+@available(iOS 18.1, *)
+extension ImagePlayground.ImagePlaygroundViewController {
+  @_Concurrency.MainActor @preconcurrency public func cmarRealImagePlaygroundViewControllerConceptsSetter(_ concepts: [ImagePlayground.ImagePlaygroundConcept])
+  @_Concurrency.MainActor @preconcurrency public func cmarRealImagePlaygroundViewControllerSourceImageSetter(_ sourceImage: UIKit.UIImage)
+  #if compiler(>=5.3) && $NonescapableTypes
+  @_Concurrency.MainActor @preconcurrency public func cmarRealImagePlaygroundViewControllerDelegateSetter(_ delegate: (any ImagePlayground.ImagePlaygroundViewController.Delegate)?)
+  #endif
+}
+@available(iOS 18.1, *)
+extension SwiftUICore.View {
+  #if compiler(>=5.3) && $NonescapableTypes
+  @_Concurrency.MainActor @preconcurrency public func cmarRealImagePlaygroundSheetWithConceptsAndSourceImage(isPresented: SwiftUICore.Binding<Swift.Bool>, concepts: [ImagePlayground.ImagePlaygroundConcept] = [], sourceImage: SwiftUICore.Image? = nil, onCompletion: @escaping (Foundation.URL) -> Swift.Void, onCancellation: (() -> Swift.Void)? = nil) -> IntuneMAMSwiftStub.ImagePlaygroundSheetWrapper<some SwiftUICore.View>
+  
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  @_Concurrency.MainActor @preconcurrency public func cmarRealImagePlaygroundSheetWithConceptsAndSourceImageURL(isPresented: SwiftUICore.Binding<Swift.Bool>, concepts: [ImagePlayground.ImagePlaygroundConcept] = [], sourceImageURL: Foundation.URL, onCompletion: @escaping (Foundation.URL) -> Swift.Void, onCancellation: (() -> Swift.Void)? = nil) -> IntuneMAMSwiftStub.ImagePlaygroundSheetWrapper<some SwiftUICore.View>
+  
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  @_Concurrency.MainActor @preconcurrency public func cmarRealImagePlaygroundSheetWithConceptAndSourceImageURL(isPresented: SwiftUICore.Binding<Swift.Bool>, concept: Swift.String, sourceImageURL: Foundation.URL, onCompletion: @escaping (Foundation.URL) -> Swift.Void, onCancellation: (() -> Swift.Void)? = nil) -> IntuneMAMSwiftStub.ImagePlaygroundSheetWrapper<some SwiftUICore.View>
+  
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  @_Concurrency.MainActor @preconcurrency public func cmarRealImagePlaygroundSheetWithConceptAndSourceImage(isPresented: SwiftUICore.Binding<Swift.Bool>, concept: Swift.String, sourceImage: SwiftUICore.Image? = nil, onCompletion: @escaping (Foundation.URL) -> Swift.Void, onCancellation: (() -> Swift.Void)? = nil) -> IntuneMAMSwiftStub.ImagePlaygroundSheetWrapper<some SwiftUICore.View>
+  
+  #endif
+}
+public struct ImagePlaygroundSheetWrapper<T> {
+  public var sheet: T
+  public init(sheet: T)
+}
+@available(iOS 16.0, *)
+extension VisionKit.DataScannerViewController {
+  @_Concurrency.MainActor public class func cmarRealDataScannerIsSupported() -> Swift.Bool
+}
+@available(iOS 16.0, *)
+extension VisionKit.ImageAnalysisInteraction {
+  @_Concurrency.MainActor convenience public init(cmarRealImageAnalysisInteractionInit: Swift.Bool)
+  @_Concurrency.MainActor convenience public init(cmarRealImageAnalysisInteractionInitDelegate: any VisionKit.ImageAnalysisInteractionDelegate)
+  @_Concurrency.MainActor final public func cmarRealPreferredInteractionTypes(_ types: VisionKit.ImageAnalysisInteraction.InteractionTypes)
+  @_Concurrency.MainActor final public func cmarRealAllowLongPressForDataDetectorsInTextMode(_ allow: Swift.Bool)
+}
+extension UIKit.UIMenu {
+  #if compiler(>=5.3) && $NonescapableTypes
+  @available(iOS 16.0, *)
+  @_Concurrency.MainActor @preconcurrency convenience public init(cmarRealTitle: Swift.String, cmarRealSubtitle: Swift.String?, cmarRealImage: UIKit.UIImage?, cmarRealIdentifier: UIKit.UIMenu.Identifier?, cmarRealOptions: UIKit.UIMenu.Options, cmarRealPreferredElementSize: UIKit.UIMenu.ElementSize, cmarRealChildren: [UIKit.UIMenuElement])
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  @available(iOS 15.0, *)
+  @_Concurrency.MainActor @preconcurrency convenience public init(cmarRealTitle: Swift.String, cmarRealSubtitle: Swift.String?, cmarRealImage: UIKit.UIImage?, cmarRealIdentifier: UIKit.UIMenu.Identifier?, cmarRealOptions: UIKit.UIMenu.Options, cmarRealChildren: [UIKit.UIMenuElement])
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  @_Concurrency.MainActor @preconcurrency convenience public init(cmarRealTitle: Swift.String, cmarRealImage: UIKit.UIImage?, cmarRealIdentifier: UIKit.UIMenu.Identifier?, cmarRealOptions: UIKit.UIMenu.Options, cmarRealChildren: [UIKit.UIMenuElement])
+  #endif
+}
+extension Swift.StringProtocol {
+  public func cmarRealStringWrite<T>(toFile path: T, atomically useAuxiliaryFile: Swift.Bool, encoding enc: Swift.String.Encoding) throws where T : Swift.StringProtocol
+  public func cmarRealStringWrite(to url: Foundation.URL, atomically useAuxiliaryFile: Swift.Bool, encoding enc: Swift.String.Encoding) throws
+}
+@available(iOS 14.0, *)
+extension System.FileDescriptor {
+  #if compiler(>=5.3) && $NonescapableTypes
+  public static func cmarRealOpen(_ path: Swift.UnsafePointer<Swift.CChar>, _ mode: System.FileDescriptor.AccessMode, options: System.FileDescriptor.OpenOptions, permissions: System.FilePermissions?, retryOnInterrupt: Swift.Bool) throws -> System.FileDescriptor
+  #endif
+}
+extension Foundation.URL {
+  public static func cmarRealURLWriteBookmarkData(_ data: Foundation.Data, to url: Foundation.URL) throws
+  public mutating func cmarRealSetResourceValues(_ values: Foundation.URLResourceValues) throws
+}
+@available(iOS 15.0, *)
+extension GroupActivities.GroupActivity {
+  public func cmarRealActivateGroupActivities() async throws -> Swift.Bool
+  public func cmarRealPrepareForActivation() async -> GroupActivities.GroupActivityActivationResult
+}
+@available(iOS 15.4, *)
+extension _GroupActivities_UIKit.GroupActivitySharingController {
+  @_Concurrency.MainActor convenience public init<ActivityType>(cmarRealActivity: ActivityType) throws where ActivityType : GroupActivities.GroupActivity
+  @_Concurrency.MainActor convenience public init<ActivityType>(cmarRealPreparationHandler: @escaping () async throws -> ActivityType) where ActivityType : GroupActivities.GroupActivity
+}
+@_hasMissingDesignatedInitializers public class DarwinStubs {
+  public static func cmarRealOpen(_ path: Swift.UnsafePointer<Swift.CChar>, _ oflag: Swift.Int32) -> Swift.Int32
+  public static func cmarRealOpen(_ path: Swift.UnsafePointer<Swift.CChar>, _ oflag: Swift.Int32, _ mode: _DarwinFoundation2.mode_t) -> Swift.Int32
+  public static func cmarRealOpenat(_ fd: Swift.Int32, _ path: Swift.UnsafePointer<Swift.CChar>, _ oflag: Swift.Int32) -> Swift.Int32
+  public static func cmarRealOpenat(_ fd: Swift.Int32, _ path: Swift.UnsafePointer<Swift.CChar>, _ oflag: Swift.Int32, _ mode: _DarwinFoundation2.mode_t) -> Swift.Int32
+  @objc deinit
+}
+@available(iOS 14.0.0, *)
+extension SwiftUICore.View {
+  #if compiler(>=5.3) && $NonescapableTypes
+  @_Concurrency.MainActor @preconcurrency public func cmarRealWidgetURL(_ url: Foundation.URL?) -> some SwiftUICore.View
+  
+  #endif
+}
+@available(iOS 14.0.0, *)
+extension SwiftUI.Link where Label == SwiftUICore.Text {
+  @_Concurrency.MainActor @preconcurrency public init(_ titleKey: SwiftUICore.LocalizedStringKey, cmarRealURL: Foundation.URL)
+  @_Concurrency.MainActor @preconcurrency public init<S>(_ title: S, cmarRealURL: Foundation.URL) where S : Swift.StringProtocol
+}
+@available(iOS 14.0.0, *)
+extension SwiftUI.Link {
+  @_Concurrency.MainActor @preconcurrency public init(_ cmarRealURL: Foundation.URL, @SwiftUICore.ViewBuilder cmarRealLabel: () -> Label)
+}
+extension Foundation.Data {
+  public func cmarRealDataWrite(to url: Foundation.URL, options: Foundation.Data.WritingOptions = []) throws
+}

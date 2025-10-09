@@ -12,6 +12,11 @@
 #import "Mattermost-Swift.h"
 #import <os/log.h>
 
+//#import <IntuneMAMSwift/IntuneMAM.h>
+//#import <IntuneMAMSwift/IntuneMAM-Swift.h>
+#import <IntuneMAMSwift/IntuneMAMEnrollmentManager.h>
+
+
 @implementation AppDelegate
 
 @synthesize orientationLock;
@@ -38,6 +43,10 @@ NSString* const NOTIFICATION_TEST_ACTION = @"test";
       NSLog(@"Failed to configure TurboLog: %@", error.localizedDescription);
     }
   [TurboLog writeWithLogLevel:TurboLogLevelInfo message:@[@"Configured turbolog"]];
+  
+  // Initialize InTune MAM SDK
+  [[IntuneMAMEnrollmentManager instance] loginAndEnrollAccount:nil];
+  
   OrientationManager.shared.delegate = self;
   
   // Clear keychain on first run in case of reinstallation

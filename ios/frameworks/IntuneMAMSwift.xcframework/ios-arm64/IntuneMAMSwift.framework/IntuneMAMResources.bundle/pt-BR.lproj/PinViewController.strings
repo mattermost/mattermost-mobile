@@ -1,0 +1,24 @@
+
+/* Class = "IBUILabel"; text = "PIN Text"; ObjectID = "Ehz-WT-9A9"; */
+"Ehz-WT-9A9.text" = "Texto do PIN";
+
+/* Class = "IBUITextField"; accessibilityLabel = "pin digit 2"; ObjectID = "Haq-qL-nzm"; */
+"Haq-qL-nzm.accessibilityLabel" = "dígito 2 do pin";
+
+/* Class = "IBUITextField"; accessibilityLabel = "pin digit 3"; ObjectID = "PHN-wI-PGJ"; */
+"PHN-wI-PGJ.accessibilityLabel" = "dígito 3 do pin";
+
+/* Class = "IBUIButton"; normalTitle = "Forgot your PIN?"; ObjectID = "SaW-PY-sB6"; */
+"SaW-PY-sB6.normalTitle" = "Esqueceu seu PIN?";
+
+/* Class = "IBUITextField"; accessibilityLabel = "pin digit 4"; ObjectID = "VWH-Xv-yTw"; */
+"VWH-Xv-yTw.accessibilityLabel" = "dígito 4 do pin";
+
+/* Class = "IBUILabel"; text = "Error Text"; ObjectID = "aRQ-lV-tCk"; */
+"aRQ-lV-tCk.text" = "Texto de Erro";
+
+/* Class = "IBUITextField"; accessibilityLabel = "pin digit 1"; ObjectID = "mMy-gW-3gK"; */
+"mMy-gW-3gK.accessibilityLabel" = "dígito 1 do pin";
+
+/* Class = "IBUILabel"; text = "Managed by your company"; ObjectID = "vl7-ew-oH0"; */
+"vl7-ew-oH0.text" = "Gerenciado pela sua empresa";

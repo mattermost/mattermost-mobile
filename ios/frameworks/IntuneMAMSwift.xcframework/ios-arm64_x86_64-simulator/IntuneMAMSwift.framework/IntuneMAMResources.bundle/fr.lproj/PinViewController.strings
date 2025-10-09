@@ -1,0 +1,24 @@
+
+/* Class = "IBUILabel"; text = "PIN Text"; ObjectID = "Ehz-WT-9A9"; */
+"Ehz-WT-9A9.text" = "Texte du code confidentiel";
+
+/* Class = "IBUITextField"; accessibilityLabel = "pin digit 2"; ObjectID = "Haq-qL-nzm"; */
+"Haq-qL-nzm.accessibilityLabel" = "code confidentiel chiffre 2";
+
+/* Class = "IBUITextField"; accessibilityLabel = "pin digit 3"; ObjectID = "PHN-wI-PGJ"; */
+"PHN-wI-PGJ.accessibilityLabel" = "code confidentiel chiffre 3";
+
+/* Class = "IBUIButton"; normalTitle = "Forgot your PIN?"; ObjectID = "SaW-PY-sB6"; */
+"SaW-PY-sB6.normalTitle" = "Code confidentiel oublié ?";
+
+/* Class = "IBUITextField"; accessibilityLabel = "pin digit 4"; ObjectID = "VWH-Xv-yTw"; */
+"VWH-Xv-yTw.accessibilityLabel" = "code confidentiel chiffre 4";
+
+/* Class = "IBUILabel"; text = "Error Text"; ObjectID = "aRQ-lV-tCk"; */
+"aRQ-lV-tCk.text" = "Texte de l'erreur";
+
+/* Class = "IBUITextField"; accessibilityLabel = "pin digit 1"; ObjectID = "mMy-gW-3gK"; */
+"mMy-gW-3gK.accessibilityLabel" = "code confidentiel chiffre 1";
+
+/* Class = "IBUILabel"; text = "Managed by your company"; ObjectID = "vl7-ew-oH0"; */
+"vl7-ew-oH0.text" = "Géré par votre entreprise";
