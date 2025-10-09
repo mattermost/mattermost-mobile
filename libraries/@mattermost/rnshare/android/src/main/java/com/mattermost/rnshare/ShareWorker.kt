@@ -105,7 +105,7 @@ class ShareWorker(private val context: Context, workerParameters: WorkerParamete
             val postData = buildPostObject(jsonObject)
 
             if (isDraft) {
-                enqueueDraftWorker(postData)
+                enqueueDraftWorker(serverUrl, postData)
             }
             if (files != null && files.length() > 0) {
                 setForegroundAsync(createForegroundInfo())
@@ -216,7 +216,7 @@ class ShareWorker(private val context: Context, workerParameters: WorkerParamete
 
                         return if (isDraft) {
                             postData.put("file_infos", fileInfoArray)
-                            enqueueDraftWorker(postData)
+                            enqueueDraftWorker(serverUrl, postData)
                         } else {
                             post(serverUrl, token, preauthSecret, postData)
                         }
@@ -233,10 +233,11 @@ class ShareWorker(private val context: Context, workerParameters: WorkerParamete
         }
     }
 
-    private fun enqueueDraftWorker(postData: JSONObject): Result {
+    private fun enqueueDraftWorker(serverUrl: String, postData: JSONObject): Result {
         val packageName = context.applicationContext.packageName
         val inputDataDraft = Data.Builder()
             .putString("draft_data", postData.toString())
+            .putString("serverUrl", serverUrl)
             .build()
         val draftWorkerClass = Class.forName("$packageName.DraftWorker")
             .asSubclass(ListenableWorker::class.java)
