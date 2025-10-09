@@ -39,4 +39,13 @@ class MattermostShareModule(reactContext: ReactApplicationContext) : ReactContex
             .emit("onDraftUpdated", draft)
     }
 
+    @ReactMethod
+    fun addListener(eventName: String) {
+        //No-op: Required for RN  built-in emitters
+    }
+
+    @ReactMethod
+    fun removeListeners(count: Int) {
+        //No-op: Required for RN  built-in emitters
+    }
 }

@@ -27,4 +27,14 @@ class MattermostShareModule(private val reactContext: ReactApplicationContext) :
             .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
             .emit("onDraftUpdated", draft)
     }
+
+    @com.facebook.react.bridge.ReactMethod
+    fun addListener(eventName: String) {
+        //No-op: Required for RN  built-in emitters
+    }
+
+    @com.facebook.react.bridge.ReactMethod
+    fun removeListeners(count: Int) {
+        //No-op: Required for RN  built-in emitters
+    }
 }

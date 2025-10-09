@@ -18,4 +18,12 @@ public class MattermostShare: RCTEventEmitter {
     @objc public func sendDraftUpdate(_ draft: [String: Any]) {
         sendEvent(withName: "onDraftUpdated", body: draft)
     }
+    
+    @objc override public func addListener(_ eventName: String!) {
+        //No-op: Required for RN  built-in emitters
+    }
+    
+    @objc override public func removeListeners(_ count: Double) {
+        //No-op: Required for RN  built-in emitters
+    }
 }
