@@ -70,6 +70,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     },
     conditionIcon: {
         marginHorizontal: 2,
+        alignSelf: 'flex-start',
+        marginTop: 4,
         transform: [{rotate: '90deg'}],
     },
     titleRow: {
