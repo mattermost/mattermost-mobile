@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import os.log
 
 public struct ServerCredentials {
     public let token: String?
@@ -137,7 +136,7 @@ public class Keychain: NSObject {
             return nil
         }
         
-        guard let appGroupId = Bundle.main.infoDictionary!["AppGroupIdentifier"] as? String else { return nil}
+        guard let appGroupId = Bundle.main.object(forInfoDictionaryKey: "AppGroupIdentifier") as? String else { return nil }
         
         // Use the shared cookie storage for the app group since the CSRF token
         // is set from the main app, and not the other extensions.

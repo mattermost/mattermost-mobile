@@ -102,10 +102,11 @@ public class Network: NSObject {
                 request.addValue(preauthSecret, forHTTPHeaderField: GekidouConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET)
             }
             if let csrfToken = credentials.csrfToken {
-                if method.lowercased() != "get" {
+                if method.caseInsensitiveCompare("get") != .orderedSame {
                     request.addValue(csrfToken, forHTTPHeaderField: GekidouConstants.HEADER_X_CSRF_TOKEN)
                 }
             }
+        }
         
         return request as URLRequest
     }
@@ -115,10 +116,11 @@ public class Network: NSObject {
     }
 
     internal func ensureCSRFCookieIsShared(serverUrl: String) {
-        let cookies = HTTPCookieStorage.shared.cookies(for: URL(string: serverUrl)!) ?? []
+        guard let url = URL(string: serverUrl) else {return}
+        let cookies = HTTPCookieStorage.shared.cookies(for: url) ?? []
         for cookie in cookies {
             if cookie.name == "MMCSRF" {
-                guard let appGroupId = Bundle.main.infoDictionary!["AppGroupIdentifier"] as? String else { return }
+                guard let appGroupId = Bundle.main.object(forInfoDictionaryKey: "AppGroupIdentifier") as? String else { return }
                 HTTPCookieStorage.sharedCookieStorage(forGroupContainerIdentifier: appGroupId).setCookie(cookie)
             }
         }
