@@ -1,16 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Text} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {usePreventDoubleTap} from '@hooks/utils';
-import {getServerCredentials} from '@init/credentials';
-import {useShareExtensionState} from '@share/state';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {useShareExtensionSubmit} from '@share/hooks/use_share_extension_submit';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 type Props = {
@@ -42,53 +41,33 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 
 const SaveDraftButton = ({theme}: Props) => {
     const intl = useIntl();
-    const {
-        closeExtension, channelId, files,
-        linkPreviewUrl, message, serverUrl, userId,
-    } = useShareExtensionState();
     const styles = getStyleSheet(theme);
+    const {submit, disabled} = useShareExtensionSubmit();
+    const onPress = usePreventDoubleTap(() => submit({isDraft: true}));
 
-    const onPress = usePreventDoubleTap(useCallback(async () => {
-        if (!serverUrl || !channelId || !userId) {
-            return;
-        }
+    const iconStyle = useMemo(() => {
+        const iconColor = changeOpacity(styles.draftIcon.color, disabled ? 0.5 : 1);
+        return [styles.draftIcon, {color: iconColor}];
+    }, [styles.draftIcon, disabled]);
 
-        let text = message || '';
-        if (linkPreviewUrl) {
-            if (text) {
-                text = `${text}\n\n${linkPreviewUrl}`;
-            } else {
-                text = linkPreviewUrl;
-            }
-        }
-
-        const credentials = await getServerCredentials(serverUrl);
-        if (credentials?.token) {
-            closeExtension({
-                serverUrl,
-                token: credentials.token,
-                channelId,
-                files,
-                message: text,
-                userId,
-                preauthSecret: credentials.preauthSecret,
-                isDraft: true,
-            });
-        }
-    }, [channelId, closeExtension, files, linkPreviewUrl, message, serverUrl, userId]));
+    const buttonTextStyle = useMemo(() => {
+        const textColor = changeOpacity(styles.buttonText.color, disabled ? 0.5 : 1);
+        return [styles.buttonText, {color: textColor}];
+    }, [styles.buttonText, disabled]);
 
     return (
         <TouchableWithFeedback
             onPress={onPress}
-            type={'opacity'}
+            type='opacity'
             hitSlop={hitSlop}
             style={styles.buttonContainer}
+            disabled={disabled}
         >
             <CompassIcon
                 name='pencil-outline'
-                style={styles.draftIcon}
+                style={iconStyle}
             />
-            <Text style={styles.buttonText}>
+            <Text style={buttonTextStyle}>
                 {intl.formatMessage({id: 'share_extension.save_draft', defaultMessage: 'Save as draft'})}
             </Text>
         </TouchableWithFeedback>
