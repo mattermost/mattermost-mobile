@@ -101,7 +101,11 @@ public class Network: NSObject {
             if let preauthSecret = credentials.preauthSecret {
                 request.addValue(preauthSecret, forHTTPHeaderField: GekidouConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET)
             }
-        }
+            if let csrfToken = credentials.csrfToken {
+                if method.lowercased() != "get" {
+                    request.addValue(csrfToken, forHTTPHeaderField: GekidouConstants.HEADER_X_CSRF_TOKEN)
+                }
+            }
         
         return request as URLRequest
     }
@@ -109,11 +113,22 @@ public class Network: NSObject {
     internal func request(_ url: URL, usingMethod method: String, forServerUrl serverUrl: String, completionHandler: @escaping ResponseHandler) {
         return request(url, withMethod: method, withBody: nil, andHeaders: nil, forServerUrl: serverUrl, completionHandler: completionHandler)
     }
+
+    internal func ensureCSRFCookieIsShared(serverUrl: String) {
+        let cookies = HTTPCookieStorage.shared.cookies(for: URL(string: serverUrl)!) ?? []
+        for cookie in cookies {
+            if cookie.name == "MMCSRF" {
+                guard let appGroupId = Bundle.main.infoDictionary!["AppGroupIdentifier"] as? String else { return }
+                HTTPCookieStorage.sharedCookieStorage(forGroupContainerIdentifier: appGroupId).setCookie(cookie)
+            }
+        }
+    }
     
     internal func request(_ url: URL, withMethod method: String, withBody body: Data?, andHeaders headers: [String:String]?, forServerUrl serverUrl: String, completionHandler: @escaping ResponseHandler) {
         let urlRequest = buildURLRequest(for: url, usingMethod: method, withBody: body, andHeaders: headers, forServerUrl: serverUrl)
         
         let task = session!.dataTask(with: urlRequest) { data, response, error in
+            self.ensureCSRFCookieIsShared(serverUrl: serverUrl)
             completionHandler(data, response, error)
         }
         

@@ -97,14 +97,18 @@ class ShareWorker(private val context: Context, workerParameters: WorkerParamete
                 val secret = jsonObject.getString("preauthSecret")
                 if (secret.isNotEmpty()) secret else null
             } else null
+            val csrfToken = if (jsonObject.has("csrfToken") && !jsonObject.isNull("csrfToken")) {
+                val token = jsonObject.getString("csrfToken")
+                if (token.isNotEmpty()) token else null
+            } else null
             val postData = buildPostObject(jsonObject)
 
             if (files != null && files.length() > 0) {
                 setForegroundAsync(createForegroundInfo())
-                return uploadFiles(serverUrl, token, preauthSecret, files, postData)
+                return uploadFiles(serverUrl, token, preauthSecret, csrfToken, files, postData)
             } else {
                 try {
-                    return post(serverUrl, token, preauthSecret, postData)
+                    return post(serverUrl, token, preauthSecret, csrfToken, postData)
                 } catch (e: IOException) {
                     Log.e(MattermostShareImpl.NAME, "Error sending the post", e)
                     return Result.failure()
@@ -131,7 +135,7 @@ class ShareWorker(private val context: Context, workerParameters: WorkerParamete
     }
 
     @Throws(IOException::class)
-    private fun post(serverUrl: String, token: String, preauthSecret: String?, postData: JSONObject): Result {
+    private fun post(serverUrl: String, token: String, preauthSecret: String?, csrfToken: String?, postData: JSONObject): Result {
         val body = postData.toString().toRequestBody(jsonType)
         val requestBuilder = Request.Builder()
                 .header("Authorization", "BEARER $token")
@@ -142,6 +146,10 @@ class ShareWorker(private val context: Context, workerParameters: WorkerParamete
             requestBuilder.header(HEADER_X_MATTERMOST_PREAUTH_SECRET, preauthSecret)
         }
 
+        if (csrfToken != null) {
+            requestBuilder.header("X-CSRF-Token", csrfToken)
+        }
+
         val request = requestBuilder.build()
 
         val response = okHttpClient.newCall(request).execute()
@@ -150,7 +158,7 @@ class ShareWorker(private val context: Context, workerParameters: WorkerParamete
         return Result.success()
     }
 
-    private fun uploadFiles(serverUrl: String, token: String, preauthSecret: String?, files: JSONArray, postData: JSONObject): Result {
+    private fun uploadFiles(serverUrl: String, token: String, preauthSecret: String?, csrfToken: String?, files: JSONArray, postData: JSONObject): Result {
         try {
             val builder = MultipartBody.Builder()
                     .setType(MultipartBody.FORM)
@@ -178,6 +186,10 @@ class ShareWorker(private val context: Context, workerParameters: WorkerParamete
                 requestBuilder.header(HEADER_X_MATTERMOST_PREAUTH_SECRET, preauthSecret)
             }
 
+            if (csrfToken != null) {
+                requestBuilder.header("X-CSRF-Token", csrfToken)
+            }
+
             val request = requestBuilder.build()
 
             try {
@@ -196,7 +208,7 @@ class ShareWorker(private val context: Context, workerParameters: WorkerParamete
                             fileIds.put(fileInfo.getString("id"))
                         }
                         postData.put("file_ids", fileIds)
-                        return post(serverUrl, token, preauthSecret, postData)
+                        return post(serverUrl, token, preauthSecret, csrfToken, postData)
                     }
                     return Result.failure()
                 }

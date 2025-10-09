@@ -21,7 +21,7 @@ public class ReceiptDelivery {
     public static Bundle send(final String ackId, final String serverUrl, final String postId, final String type, final boolean isIdLoaded) {
         TurboLog.Companion.i("ReactNative", String.format("Send receipt delivery ACK=%s TYPE=%s to URL=%s with ID-LOADED=%s", ackId, type, serverUrl, isIdLoaded));
         WritableMap options = Arguments.createMap();
-        WritableMap headers = Arguments.createMap();
+        WritableMap headers = HeadersHelper.INSTANCE.getHeadersWithCredentials(serverUrl, true);
         WritableMap body = Arguments.createMap();
         headers.putString("Content-Type", "application/json");
         options.putMap("headers", headers);
