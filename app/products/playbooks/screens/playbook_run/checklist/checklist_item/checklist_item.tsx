@@ -30,7 +30,7 @@ import type UserModel from '@typings/database/models/servers/user';
 const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     checklistItem: {
         flexDirection: 'row',
-        gap: 12,
+        gap: 6,
     },
     itemDetails: {
         gap: 8,
@@ -69,11 +69,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         textDecorationLine: 'line-through',
     },
     conditionIcon: {
-        marginLeft: 8,
+        marginHorizontal: 2,
+        transform: [{rotate: '90deg'}],
     },
     titleRow: {
         flexDirection: 'row',
-        alignItems: 'center',
+        alignItems: 'flex-start',
+        marginLeft: 2,
     },
 }));
 
@@ -265,20 +267,20 @@ const ChecklistItem = ({
             <View style={styles.checkboxContainer}>
                 {checkbox}
             </View>
+            {showConditionIcon && (
+                <CompassIcon
+                    name='source-branch'
+                    size={16}
+                    color={iconColor}
+                    style={[styles.conditionIcon]}
+                    testID='checklist_item.condition_icon'
+                />
+            )}
             <View style={styles.itemDetails}>
                 <PressableOpacity onPress={onPress}>
                     <View style={styles.itemDetailsTexts}>
                         <View style={styles.titleRow}>
                             <Text style={[styles.itemTitle, skipped && styles.skippedText]}>{item.title}</Text>
-                            {showConditionIcon && (
-                                <CompassIcon
-                                    name='source-branch'
-                                    size={16}
-                                    color={iconColor}
-                                    style={[styles.conditionIcon, {transform: [{rotate: '90deg'}]}]}
-                                    testID='checklist_item.condition_icon'
-                                />
-                            )}
                         </View>
                         {Boolean(item.description) && (
                             <Text style={[styles.itemDescription, skipped && styles.skippedText]}>{item.description}</Text>
