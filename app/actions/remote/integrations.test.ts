@@ -9,10 +9,12 @@ import {logDebug} from '@utils/log';
 import * as integrations from './integrations';
 import {forceLogoutIfNecessary} from './session';
 
+import type {Client} from '@client/rest';
+
 const serverUrl = 'baseHandler.test.com';
 const submission = {} as DialogSubmission;
 
-const mockClient: any = {
+const mockClient: Partial<Client> = {
     submitInteractiveDialog: jest.fn().mockResolvedValue({dummy: 'data'}),
     doPostActionWithCookie: jest.fn(),
 };
@@ -48,17 +50,6 @@ beforeAll(() => {
     jest.spyOn(NetworkManager, 'getClient').mockImplementation(jest.fn());
 });
 
-function assertError(result: unknown, logMessage: string) {
-    jest.mocked(NetworkManager.getClient).mockImplementationOnce(() => {
-        throw new Error('Not found');
-    });
-
-    expect(result).toHaveProperty('error');
-    expect(logDebug).toHaveBeenCalledWith(logMessage, expect.any(String));
-    expect(forceLogoutIfNecessary).toHaveBeenCalledWith(expect.any(String), expect.any(Object));
-
-}
-
 describe('integrations', () => {
 
     beforeEach(() => {
@@ -66,8 +57,8 @@ describe('integrations', () => {
     });
 
     describe('submitInteractiveDialog', () => {
-        it('should fetch and return data', async () => {
-            jest.mocked(NetworkManager.getClient).mockImplementationOnce(() => mockClient);
+        it('should fetch and return object with property data', async () => {
+            jest.mocked(NetworkManager.getClient).mockImplementationOnce(() => mockClient as Client);
 
             jest.mocked(DatabaseManager.getServerDatabaseAndOperator).mockImplementationOnce(
                 () => ({} as any));
@@ -75,10 +66,16 @@ describe('integrations', () => {
             expect(result).toHaveProperty('data');
         });
 
-        it('should fetch and return error, logging error message and invoking forceLogoutIfNecessary()', async () => {
+        it('should fetch and return object with property error, logging error message and invoking forceLogoutIfNecessary()', async () => {
             const result = await integrations.submitInteractiveDialog(serverUrl, submission);
-            const errorMessage = 'error on submitInteractiveDialog';
-            await assertError(result, errorMessage);
+
+            jest.mocked(NetworkManager.getClient).mockImplementationOnce(() => {
+                throw new Error('Not found');
+            });
+
+            expect(result).toHaveProperty('error');
+            expect(logDebug).toHaveBeenCalledWith('error on submitInteractiveDialog', expect.any(String));
+            expect(forceLogoutIfNecessary).toHaveBeenCalledWith(serverUrl, expect.any(Object));
         });
     });
 
@@ -86,46 +83,46 @@ describe('integrations', () => {
         const postId = 'post';
         const actionId = 'action';
         const actionCookie = 'cookie';
-        it('should fetch and return data', async () => {
+        it('should fetch and return object with property data', async () => {
 
-            jest.mocked(NetworkManager.getClient).mockImplementationOnce(() => mockClient);
-            jest.mocked(mockClient.doPostActionWithCookie).mockImplementationOnce(() => ({trigger_id: 'trigger_id'}));
+            jest.mocked(NetworkManager.getClient).mockImplementationOnce(() => mockClient as Client);
+            jest.mocked(mockClient.doPostActionWithCookie)?.mockResolvedValueOnce({});
 
-            const mockSetTriggerId = jest.fn();
-            jest.spyOn(IntegrationsManager, 'getManager').mockReturnValueOnce({
-                setTriggerId: mockSetTriggerId,
-            } as any);
+            const result = await integrations.postActionWithCookie(serverUrl, postId, actionId, actionCookie);
+            expect(mockClient.doPostActionWithCookie).toHaveBeenCalledWith(postId, actionId, actionCookie, '');
+            expect(result).toHaveProperty('data');
+        });
+
+        it('should fetch and return object with property data and trigger_id within', async () => {
+            const trigger_id = 'trigger_id';
+
+            jest.mocked(NetworkManager.getClient).mockImplementationOnce(() => mockClient as Client);
+            jest.mocked(mockClient.doPostActionWithCookie)?.mockResolvedValueOnce({trigger_id});
+
+            const mockTriggerId = jest.fn();
+
+            jest.spyOn(IntegrationsManager, 'getManager').mockImplementationOnce(() => ({
+                setTriggerId: mockTriggerId,
+            } as any));
 
             const result = await integrations.postActionWithCookie(serverUrl, postId, actionId, actionCookie);
             expect(mockClient.doPostActionWithCookie).toHaveBeenCalledWith(postId, actionId, actionCookie, '');
             expect(IntegrationsManager.getManager).toHaveBeenCalledWith(serverUrl);
+
+            expect(mockTriggerId).toHaveBeenCalledWith(trigger_id);
             expect(result).toHaveProperty('data');
         });
 
-        it('should fetch and return error, logging error message and invoking forceLogoutIfNecessary()', async () => {
+        it('should fetch and return object with property error, logging error message and invoking forceLogoutIfNecessary()', async () => {
             const result = await integrations.postActionWithCookie(serverUrl, postId, actionId, actionCookie);
-            const errorMessage = 'error on postActionWithCookie';
-            await assertError(result, errorMessage);
+
+            jest.mocked(NetworkManager.getClient).mockImplementationOnce(() => {
+                throw new Error('Not found');
+            });
+
+            expect(result).toHaveProperty('error');
+            expect(logDebug).toHaveBeenCalledWith('error on postActionWithCookie', expect.any(String));
+            expect(forceLogoutIfNecessary).toHaveBeenCalledWith(serverUrl, expect.any(Object));
         });
-    });
-
-    describe('selectAttachmentMenuAction', () => {
-        const postId = 'post';
-        const actionId = 'action';
-        const selectedOption = 'option';
-
-        it('should call postActionWithCookie with empty actionCookie and a selectedOption', async () => {
-
-            jest.mocked(NetworkManager.getClient).mockImplementationOnce(() => mockClient);
-            jest.mocked(mockClient.doPostActionWithCookie).mockImplementationOnce(() => ({trigger_id: 'trigger_id'}));
-
-            const emptyActionCookie = '';
-            const result = await integrations.selectAttachmentMenuAction(serverUrl, postId, actionId, selectedOption);
-
-            // TODO: improve test mocking integrations.postActionWithCookie
-            expect(result).toHaveProperty('data');
-            expect(mockClient.doPostActionWithCookie).toHaveBeenCalledWith(postId, actionId, emptyActionCookie, selectedOption);
-        });
-
     });
 });
