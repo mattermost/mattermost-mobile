@@ -35,6 +35,11 @@ jest.mock('expo-application', () => {
 
 jest.mock('expo-crypto', () => ({
     randomUUID: jest.fn(() => '12345678-1234-1234-1234-1234567890ab'),
+    getRandomValues: jest.fn((arr: Uint8Array) => {
+        // deterministic non-zero bytes for tests
+        arr.fill(0x7b);
+        return arr;
+    }),
 }));
 
 jest.mock('expo-device', () => {
@@ -375,6 +380,7 @@ jest.mock('react-native-notifications', () => {
         Notifications: {
             registerRemoteNotifications: jest.fn(),
             addEventListener: jest.fn(),
+            isRegisteredForRemoteNotifications: jest.fn(),
             setDeliveredNotifications: jest.fn((notifications) => {
                 deliveredNotifications = notifications;
             }),

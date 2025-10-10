@@ -16,7 +16,7 @@ export interface ClientPlaybooksMix {
     setOwner: (playbookRunId: string, ownerId: string) => Promise<void>;
 
     // Run Management
-    // finishRun: (playbookRunId: string) => Promise<any>;
+    finishRun: (playbookRunId: string) => Promise<void>;
     createPlaybookRun: (playbook_id: string, owner_user_id: string, team_id: string, name: string, description: string, channel_id?: string, create_public_run?: boolean) => Promise<PlaybookRun>;
 
     // Checklist Management
@@ -89,16 +89,12 @@ const ClientPlaybooks = <TBase extends Constructor<ClientBase>>(superclass: TBas
     };
 
     // Run Management
-    // finishRun = async (playbookRunId: string) => {
-    //     try {
-    //         return await this.doFetch(
-    //             `${this.getPlaybookRunRoute(playbookRunId)}/finish`,
-    //             {method: 'put'},
-    //         );
-    //     } catch (error) {
-    //         return {error};
-    //     }
-    // };
+    finishRun = async (playbookRunId: string) => {
+        return this.doFetch(
+            `${this.getPlaybookRunRoute(playbookRunId)}/finish`,
+            {method: 'put', body: {/* okhttp requires put methods to have a body */}},
+        );
+    };
 
     createPlaybookRun = async (
         playbook_id: string,
