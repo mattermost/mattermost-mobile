@@ -141,6 +141,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         ...typography('Body', 75, 'SemiBold'),
         color: changeOpacity(theme.centerChannelColor, 0.72),
     },
+    conditionIcon: {
+        transform: [{rotate: '90deg'}],
+    },
 }));
 
 type Props = {
@@ -337,7 +340,7 @@ const ChecklistItemBottomSheet = ({
                     name='source-branch'
                     size={24}
                     color={conditionIconColor}
-                    style={{transform: [{rotate: '90deg'}]}}
+                    style={styles.conditionIcon}
                     testID='checklist_item_bottom_sheet.condition_icon'
                 />
                 <View style={styles.conditionTextContainer}>

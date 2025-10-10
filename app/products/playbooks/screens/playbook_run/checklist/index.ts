@@ -42,7 +42,7 @@ const filterVisibleItems = (items: PlaybookChecklistItemModel[]) => {
 const enhanced = withObservables(['checklist'], ({checklist}: OwnProps) => {
     if ('observe' in checklist) {
         const observedChecklist = checklist.observe();
-        const items = checklist.items.observeWithColumns(['state', 'condition_action', 'completed_at']);
+        const items = checklist.items.observeWithColumns(['state', 'condition_action', 'state_modified']);
         const filteredAndSortedItems = combineLatest([observedChecklist, items]).pipe(
             switchMap(([cl, i]) => {
                 // Filter out hidden incomplete items

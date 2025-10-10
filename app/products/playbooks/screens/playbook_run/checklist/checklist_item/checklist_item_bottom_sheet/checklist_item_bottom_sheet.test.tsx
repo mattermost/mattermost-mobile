@@ -9,6 +9,7 @@ import {ScrollView} from 'react-native';
 
 import OptionBox from '@components/option_box';
 import OptionItem from '@components/option_item';
+import {Preferences} from '@constants';
 import {useIsTablet} from '@hooks/device';
 import {setAssignee, setChecklistItemCommand, setDueDate} from '@playbooks/actions/remote/checklist';
 import {goToEditCommand, goToSelectDate, goToSelectUser} from '@playbooks/screens/navigation';
@@ -674,22 +675,22 @@ describe('ChecklistItemBottomSheet', () => {
             const props = getBaseProps();
             props.showConditionIcon = true;
             props.conditionReason = 'Some condition reason';
-            props.conditionIconColor = '#rgba(0, 0, 0, 0.56)';
+            props.conditionIconColor = Preferences.THEMES.denim.centerChannelColor;
             const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
 
             const icon = getByTestId('checklist_item_bottom_sheet.condition_icon');
-            expect(icon.props.color).toBe('#rgba(0, 0, 0, 0.56)');
+            expect(icon.props.color).toBe(Preferences.THEMES.denim.centerChannelColor);
         });
 
         it('should use the correct icon color (error color)', () => {
             const props = getBaseProps();
             props.showConditionIcon = true;
             props.conditionReason = '';
-            props.conditionIconColor = '#d24b4e';
+            props.conditionIconColor = Preferences.THEMES.denim.errorTextColor;
             const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
 
             const icon = getByTestId('checklist_item_bottom_sheet.condition_icon');
-            expect(icon.props.color).toBe('#d24b4e');
+            expect(icon.props.color).toBe(Preferences.THEMES.denim.errorTextColor);
         });
 
         it('should display the correct text structure', () => {

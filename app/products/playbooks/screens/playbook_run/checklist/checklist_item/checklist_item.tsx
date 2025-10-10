@@ -275,7 +275,7 @@ const ChecklistItem = ({
                         name='source-branch'
                         size={16}
                         color={iconColor}
-                        style={[styles.conditionIcon]}
+                        style={styles.conditionIcon}
                         testID='checklist_item.condition_icon'
                     />
                 </PressableOpacity>

@@ -5,7 +5,7 @@ import React, {type ComponentProps} from 'react';
 
 import DatabaseManager from '@database/manager';
 import {getChecklistProgress} from '@playbooks/utils/progress';
-import {renderWithEverything, waitFor} from '@test/intl-test-helper';
+import {renderWithEverything, waitFor, act} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
 import ChecklistComponent from './checklist';
@@ -287,9 +287,11 @@ describe('Checklist', () => {
             // Update first visible item to be hidden
             const items = await props.checklist.items.fetch();
             const itemToHide = items.find((i) => i.id === initialFirstItemId);
-            await database.write(async () => {
-                await itemToHide?.update((item) => {
-                    item.conditionAction = 'hidden';
+            await act(async () => {
+                database.write(async () => {
+                    await itemToHide?.update((item) => {
+                        item.conditionAction = 'hidden';
+                    });
                 });
             });
 
@@ -338,11 +340,13 @@ describe('Checklist', () => {
             const hiddenItem = items.find((i) => i.id !== visibleItemId);
             expect(hiddenItem).toBeDefined();
 
-            await database.write(async () => {
-                await hiddenItem?.update((item) => {
-                    item.completedAt = Date.now();
-                    item.conditionAction = 'shown_because_modified';
-                    item.state = 'closed';
+            await act(async () => {
+                database.write(async () => {
+                    await hiddenItem?.update((item) => {
+                        item.completedAt = Date.now();
+                        item.conditionAction = 'shown_because_modified';
+                        item.state = 'closed';
+                    });
                 });
             });
 

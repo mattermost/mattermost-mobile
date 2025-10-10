@@ -15,9 +15,6 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 type OwnProps = {
     item: PlaybookChecklistItemModel | PlaybookChecklistItem;
     runId: string;
-    conditionReason: string;
-    showConditionIcon: boolean;
-    conditionIconColor: string;
 } & WithDatabaseArgs;
 
 const enhanced = withObservables(['item', 'runId'], ({item, runId, database}: OwnProps) => {
