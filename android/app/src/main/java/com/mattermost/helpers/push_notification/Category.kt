@@ -3,6 +3,7 @@ package com.mattermost.helpers.push_notification
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
+import com.mattermost.helpers.HeadersHelper
 import com.mattermost.helpers.PushNotificationDataRunnable
 import com.mattermost.helpers.database_extension.findByColumns
 import com.mattermost.helpers.database_extension.queryCurrentUserId
@@ -12,7 +13,9 @@ import com.nozbe.watermelondb.WMDatabase
 suspend fun PushNotificationDataRunnable.Companion.fetchMyTeamCategories(db: WMDatabase, serverUrl: String, teamId: String): ReadableMap? {
     return try {
         val userId = queryCurrentUserId(db)
-        val categories = fetch(serverUrl, "/api/v4/users/$userId/teams/$teamId/channels/categories")
+        val options = Arguments.createMap()
+        options.putMap("headers", HeadersHelper.getHeadersWithCredentials(serverUrl, false))
+        val categories = fetch(serverUrl, "/api/v4/users/$userId/teams/$teamId/channels/categories", options)
         categories?.getMap("data")
     } catch (e: Exception) {
         e.printStackTrace()
