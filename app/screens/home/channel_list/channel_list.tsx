@@ -12,7 +12,6 @@ import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area
 import {refetchCurrentUser} from '@actions/remote/user';
 import FloatingCallContainer from '@calls/components/floating_call_container';
 import AnnouncementBanner from '@components/announcement_banner';
-import ConnectionBanner from '@components/connection_banner';
 import TeamSidebar from '@components/team_sidebar';
 import {Navigation as NavigationConstants, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
@@ -157,7 +156,7 @@ const ChannelListScreen = (props: ChannelProps) => {
         if (!props.hasCurrentUser || !props.currentUserId) {
             refetchCurrentUser(serverUrl, props.currentUserId);
         }
-    }, [props.currentUserId, props.hasCurrentUser]);
+    }, [props.currentUserId, props.hasCurrentUser, serverUrl]);
 
     // Init the rate app. Only run the effect on the first render if ToS is not open
     useEffect(() => {
@@ -168,12 +167,12 @@ const ChannelListScreen = (props: ChannelProps) => {
         if (!NavigationStore.isToSOpen()) {
             tryRunAppReview(props.launchType, props.coldStart);
         }
-    }, []);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps -- initial render only.
 
     useEffect(() => {
         PerformanceMetricsManager.finishLoad('HOME', serverUrl);
         PerformanceMetricsManager.measureTimeToInteraction();
-    }, []);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps -- initial render only.
 
     return (
         <>
@@ -183,7 +182,6 @@ const ChannelListScreen = (props: ChannelProps) => {
                 edges={edges}
                 testID='channel_list.screen'
             >
-                <ConnectionBanner/>
                 {props.isLicensed &&
                     <AnnouncementBanner/>
                 }

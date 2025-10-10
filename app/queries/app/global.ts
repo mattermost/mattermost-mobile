@@ -100,3 +100,19 @@ export const observeTutorialWatched = (tutorial: string) => {
         switchMap((v) => of$(Boolean(v))),
     );
 };
+
+export const observeLowConnectivityMonitor = () => {
+    const query = queryGlobalValue(GLOBAL_IDENTIFIERS.LOW_CONNECTIVITY_MONITOR);
+    if (!query) {
+        return of$(true);
+    }
+    return query.observe().pipe(
+        switchMap((result) => (result.length ? result[0].observe() : of$(true))),
+        switchMap((v) => {
+            if (typeof v === 'boolean') {
+                return of$(v);
+            }
+            return of$(v?.value ?? true);
+        }),
+    );
+};
