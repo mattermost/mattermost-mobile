@@ -13,6 +13,13 @@ import type {FloatingBannerConfig} from './types';
 
 jest.mock('@hooks/device');
 
+jest.mock('@hooks/useBannerGestureRootPosition', () => ({
+    useBannerGestureRootPosition: jest.fn(() => ({
+        height: 40,
+        top: 0,
+    })),
+}));
+
 jest.mock('react-native-reanimated', () => {
     const {View} = require('react-native');
     const ReactLib = require('react');

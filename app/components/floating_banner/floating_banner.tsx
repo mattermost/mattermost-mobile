@@ -13,6 +13,10 @@ type FloatingBannerProps = {
 };
 
 const FloatingBanner: React.FC<FloatingBannerProps> = ({banners, onDismiss}) => {
+    if (!banners || !banners.length) {
+        return null;
+    }
+
     const onBannerPress = (banner: FloatingBannerConfig) => {
         if (banner.onPress) {
             banner.onPress();
@@ -25,10 +29,6 @@ const FloatingBanner: React.FC<FloatingBannerProps> = ({banners, onDismiss}) => 
             banner.onDismiss();
         }
     };
-
-    if (!banners || !banners.length) {
-        return null;
-    }
 
     const topBanners = banners.filter((banner) => (banner.position || 'top') === 'top');
     const bottomBanners = banners.filter((banner) => banner.position === 'bottom');
