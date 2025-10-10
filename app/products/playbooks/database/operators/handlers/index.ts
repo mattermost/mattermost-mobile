@@ -8,7 +8,7 @@ import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
 import {logWarning} from '@utils/log';
 
 import {shouldHandlePlaybookChecklistItemRecord, shouldHandlePlaybookChecklistRecord, shouldUpdatePlaybookRunRecord} from '../comparators';
-import {transformPlaybookChecklistItemRecord, transformPlaybookChecklistRecord, transformPlaybookRunRecord} from '../transformers';
+import {transformPlaybookChecklistItemRecord, transformPlaybookChecklistRecord, transformPlaybookRunRecord, transformPlaybookRunAttributeRecord, transformPlaybookRunAttributeValueRecord} from '../transformers';
 
 import type ServerDataOperatorBase from '@database/operator/server_data_operator/handlers';
 import type PlaybookChecklistModel from '@playbooks/types/database/models/playbook_checklist';
@@ -34,12 +34,24 @@ type HandlePlaybookChecklistItemArgs = {
     items?: PartialChecklistItem[];
 }
 
-const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM} = PLAYBOOK_TABLES;
+type HandlePlaybookRunAttributeArgs = {
+    prepareRecordsOnly: boolean;
+    attributes?: PartialPlaybookRunAttribute[];
+}
+
+type HandlePlaybookRunAttributeValueArgs = {
+    prepareRecordsOnly: boolean;
+    attributeValues?: PartialPlaybookRunAttributeValue[];
+}
+
+const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM, PLAYBOOK_RUN_ATTRIBUTE, PLAYBOOK_RUN_ATTRIBUTE_VALUE} = PLAYBOOK_TABLES;
 
 export interface PlaybookHandlerMix {
     handlePlaybookRun: (args: HandlePlaybookRunArgs) => Promise<Model[]>;
     handlePlaybookChecklist: (args: HandlePlaybookChecklistArgs) => Promise<Model[]>;
     handlePlaybookChecklistItem: (args: HandlePlaybookChecklistItemArgs) => Promise<PlaybookChecklistItemModel[]>;
+    handlePlaybookRunAttribute: (args: HandlePlaybookRunAttributeArgs) => Promise<Model[]>;
+    handlePlaybookRunAttributeValue: (args: HandlePlaybookRunAttributeValueArgs) => Promise<Model[]>;
 }
 
 const PlaybookHandler = <TBase extends Constructor<ServerDataOperatorBase>>(superclass: TBase) => class extends superclass {
@@ -273,6 +285,58 @@ const PlaybookHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supe
         }
 
         return records;
+    };
+
+    /**
+     * Handles the playbook run attribute records.
+     * @param {HandlePlaybookRunAttributeArgs} args - The arguments for handling playbook run attribute records.
+     * @param {boolean} args.prepareRecordsOnly - If true, only prepares the records without saving them.
+     * @param {PlaybookRunAttribute[]} [args.attributes] - The playbook run attribute records to handle.
+     * @returns {Promise<Model[]>} - A promise that resolves to an array of handled playbook run attribute records.
+     */
+    handlePlaybookRunAttribute = async ({attributes, prepareRecordsOnly = true}: HandlePlaybookRunAttributeArgs): Promise<Model[]> => {
+        if (!attributes?.length) {
+            logWarning(
+                'An empty or undefined "attributes" array has been passed to the handlePlaybookRunAttribute method',
+            );
+            return [];
+        }
+
+        const createOrUpdateRawValues = getUniqueRawsBy({raws: attributes, key: 'id'});
+
+        return this.handleRecords({
+            fieldName: 'id',
+            transformer: transformPlaybookRunAttributeRecord,
+            createOrUpdateRawValues,
+            tableName: PLAYBOOK_RUN_ATTRIBUTE,
+            prepareRecordsOnly,
+        }, 'handlePlaybookRunAttribute');
+    };
+
+    /**
+     * Handles the playbook run attribute value records.
+     * @param {HandlePlaybookRunAttributeValueArgs} args - The arguments for handling playbook run attribute value records.
+     * @param {boolean} args.prepareRecordsOnly - If true, only prepares the records without saving them.
+     * @param {PlaybookRunAttributeValue[]} [args.attributeValues] - The playbook run attribute value records to handle.
+     * @returns {Promise<Model[]>} - A promise that resolves to an array of handled playbook run attribute value records.
+     */
+    handlePlaybookRunAttributeValue = async ({attributeValues, prepareRecordsOnly = true}: HandlePlaybookRunAttributeValueArgs): Promise<Model[]> => {
+        if (!attributeValues?.length) {
+            logWarning(
+                'An empty or undefined "attributeValues" array has been passed to the handlePlaybookRunAttributeValue method',
+            );
+            return [];
+        }
+
+        const createOrUpdateRawValues = getUniqueRawsBy({raws: attributeValues, key: 'id'});
+
+        return this.handleRecords({
+            fieldName: 'id',
+            transformer: transformPlaybookRunAttributeValueRecord,
+            createOrUpdateRawValues,
+            tableName: PLAYBOOK_RUN_ATTRIBUTE_VALUE,
+            prepareRecordsOnly,
+        }, 'handlePlaybookRunAttributeValue');
     };
 };
 
