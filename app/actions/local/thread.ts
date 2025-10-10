@@ -13,7 +13,7 @@ import {getCurrentTeamId, getCurrentUserId, prepareCommonSystemValues, type Prep
 import {addChannelToTeamHistory, addTeamToTeamHistory} from '@queries/servers/team';
 import {getThreadById, prepareThreadsFromReceivedPosts, queryThreadsInTeam} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
-import {dismissAllModals, dismissAllModalsAndPopToRoot, dismissAllOverlays, goToScreen} from '@screens/navigation';
+import {dismissAllModals, dismissAllModalsAndPopToRoot, dismissAllOverlaysWithExceptions, goToScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
@@ -95,7 +95,7 @@ export const switchToThread = async (serverUrl: string, rootId: string, isFromNo
         if (isFromNotification) {
             if (currentThreadId && currentThreadId === rootId && NavigationStore.getScreensInStack().includes(Screens.THREAD)) {
                 await dismissAllModals();
-                await dismissAllOverlays();
+                await dismissAllOverlaysWithExceptions();
                 return {};
             }
 
