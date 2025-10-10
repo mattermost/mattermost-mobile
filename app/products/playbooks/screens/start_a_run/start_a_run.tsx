@@ -3,12 +3,12 @@
 
 import React, {useState, useCallback, useEffect} from 'react';
 import {useIntl, type IntlShape} from 'react-intl';
-import {ScrollView} from 'react-native';
+import {ScrollView, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-import AutocompleteSelector from '@components/autocomplete_selector';
 import CompassIcon from '@components/compass_icon';
-import FloatingTextInput from '@components/floating_text_input_label';
+import FloatingAutocompleteSelector from '@components/floating_input/floating_autocomplete_selector';
+import FloatingTextInput from '@components/floating_input/floating_text_input_label';
 import OptionItem from '@components/option_item';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -20,7 +20,6 @@ import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 import {makeStyleSheetFromTheme} from '@utils/theme';
-import {typography} from '@utils/typography';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 import type {OptionsTopBarButton} from 'react-native-navigation';
@@ -41,56 +40,20 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flex: 1,
             backgroundColor: theme.centerChannelBg,
         },
-        header: {
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            paddingHorizontal: 20,
-            paddingVertical: 16,
-            backgroundColor: theme.buttonBg,
-        },
-        headerLeft: {
-            flexDirection: 'row',
-            alignItems: 'center',
-        },
-        backButton: {
-            marginRight: 16,
-        },
-        headerTitle: {
-            color: theme.buttonColor,
-            ...typography('Heading', 400, 'SemiBold'),
-        },
-        headerSubtitle: {
-            color: theme.buttonColor,
-            ...typography('Body', 100, 'Regular'),
-            marginTop: 2,
-        },
-        headerAction: {
-            color: theme.buttonColor,
-            ...typography('Body', 200, 'SemiBold'),
-        },
         content: {
             flex: 1,
             paddingHorizontal: 20,
             paddingVertical: 24,
         },
-        formSection: {
-            marginBottom: 24,
-        },
-        sectionTitle: {
-            color: theme.centerChannelColor,
-            ...typography('Body', 200, 'SemiBold'),
-            marginBottom: 12,
-        },
-        channelSection: {
-            marginTop: 8,
-        },
-        channelOption: {
-            marginBottom: 16,
+        contentContainer: {
+            gap: 16,
         },
         channelInput: {
-            marginTop: 12,
             marginLeft: 40, // Align with radio button text
+        },
+        channelTypeSelectorSection: {
+            gap: 16,
+            marginLeft: 40,
         },
     };
 });
@@ -214,7 +177,10 @@ function StartARun({
 
     return (
         <SafeAreaView style={styles.container}>
-            <ScrollView style={styles.content}>
+            <ScrollView
+                style={styles.content}
+                contentContainerStyle={styles.contentContainer}
+            >
                 <FloatingTextInput
                     label={intl.formatMessage({
                         id: 'playbooks.start_run.run_name_label',
@@ -257,13 +223,18 @@ function StartARun({
                     testID='start_run.existing_channel_option'
                 />
                 {channelOption === 'existing' && (
-                    <AutocompleteSelector
-                        dataSource='channels'
-                        location={componentId}
-                        selected={channelId}
-                        onSelected={onChannelSelected}
-                        testID='start_run.existing_channel_selector'
-                    />
+                    <View style={styles.channelInput}>
+                        <FloatingAutocompleteSelector
+                            label={intl.formatMessage({
+                                id: 'playbooks.start_run.channel_label',
+                                defaultMessage: 'Channel',
+                            })}
+                            dataSource='channels'
+                            selected={channelId}
+                            onSelected={onChannelSelected}
+                            testID='start_run.existing_channel_selector'
+                        />
+                    </View>
                 )}
                 <OptionItem
                     label={intl.formatMessage({
@@ -276,7 +247,7 @@ function StartARun({
                     testID='start_run.new_channel_option'
                 />
                 {channelOption === 'new' && (
-                    <>
+                    <View style={styles.channelTypeSelectorSection}>
                         <OptionItem
                             label={intl.formatMessage({
                                 id: 'playbooks.start_run.create_new_channel.public_channel',
@@ -297,7 +268,7 @@ function StartARun({
                             action={privateChannelOptionAction}
                             testID='start_run.new_channel_private_option'
                         />
-                    </>
+                    </View>
                 )}
             </ScrollView>
         </SafeAreaView>

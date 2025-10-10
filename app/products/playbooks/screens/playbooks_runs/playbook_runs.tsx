@@ -46,6 +46,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => ({
         borderBottomWidth: 1,
         borderBottomColor: changeOpacity(theme.centerChannelColor, 0.12),
     },
+    startANewRunButtonContainer: {
+        padding: 20,
+    },
 }));
 
 const ItemSeparator = () => {
@@ -136,6 +139,10 @@ const PlaybookRuns = ({
         );
     }, []);
 
+    const startANewRun = useCallback(() => {
+        goToSelectPlaybook(intl, theme);
+    }, [intl, theme]);
+
     let content = (<EmptyState tab={activeTab}/>);
     if (!isEmpty) {
         content = (
@@ -148,13 +155,15 @@ const PlaybookRuns = ({
                     estimatedItemSize={CARD_HEIGHT}
                     ListFooterComponent={footerComponent}
                 />
-                <Button
-                    emphasis='tertiary'
-                    onPress={() => goToSelectPlaybook(intl, theme)}
-                    text={intl.formatMessage({id: 'playbooks.runs.start_a_new_run', defaultMessage: 'Start a new run'})}
-                    size='lg'
-                    theme={theme}
-                />
+                <View style={styles.startANewRunButtonContainer}>
+                    <Button
+                        emphasis='tertiary'
+                        onPress={startANewRun}
+                        text={intl.formatMessage({id: 'playbooks.runs.start_a_new_run', defaultMessage: 'Start a new run'})}
+                        size='lg'
+                        theme={theme}
+                    />
+                </View>
             </>
         );
     }

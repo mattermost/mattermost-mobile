@@ -11,7 +11,9 @@ import EditCommand from './edit_command';
 import PlaybookRun from './playbook_run';
 import PlaybookRuns from './playbooks_runs';
 import SelectDate from './select_date';
+import SelectPlaybook from './select_playbook';
 import SelectUser from './select_user';
+import StartARun from './start_a_run';
 
 import {loadPlaybooksScreen} from '.';
 
@@ -51,6 +53,18 @@ jest.mock('@playbooks/screens/select_date', () => ({
     default: jest.fn(),
 }));
 jest.mocked(SelectDate).mockImplementation((props) => <Text {...props}>{Screens.PLAYBOOKS_SELECT_DATE}</Text>);
+
+jest.mock('@playbooks/screens/start_a_run', () => ({
+    __esModule: true,
+    default: jest.fn(),
+}));
+jest.mocked(StartARun).mockImplementation((props) => <Text {...props}>{Screens.PLAYBOOKS_START_A_RUN}</Text>);
+
+jest.mock('@playbooks/screens/select_playbook', () => ({
+    __esModule: true,
+    default: jest.fn(),
+}));
+jest.mocked(SelectPlaybook).mockImplementation((props) => <Text {...props}>{Screens.PLAYBOOKS_SELECT_PLAYBOOK}</Text>);
 
 describe('Screen Registration', () => {
     beforeEach(() => {
