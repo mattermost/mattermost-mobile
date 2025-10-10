@@ -270,13 +270,15 @@ const ChecklistItem = ({
                 {checkbox}
             </View>
             {showConditionIcon && (
-                <CompassIcon
-                    name='source-branch'
-                    size={16}
-                    color={iconColor}
-                    style={[styles.conditionIcon]}
-                    testID='checklist_item.condition_icon'
-                />
+                <PressableOpacity onPress={onPress}>
+                    <CompassIcon
+                        name='source-branch'
+                        size={16}
+                        color={iconColor}
+                        style={[styles.conditionIcon]}
+                        testID='checklist_item.condition_icon'
+                    />
+                </PressableOpacity>
             )}
             <View style={styles.itemDetails}>
                 <PressableOpacity onPress={onPress}>
