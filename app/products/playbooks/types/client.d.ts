@@ -35,3 +35,15 @@ type FetchPlaybookRunsParams = {
     channel_id?: string;
     since?: number;
 }
+
+type PostStatusUpdatePayload = {
+    message: string;
+    reminder?: number;
+    finishRun: boolean;
+};
+
+type PostStatusUpdateIds = {
+    user_id: string;
+    channel_id: string;
+    team_id: string;
+};
