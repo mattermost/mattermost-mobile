@@ -1,36 +1,37 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
-import {StyleSheet, Platform} from 'react-native';
-import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
+import React, {useMemo} from 'react';
+import {StyleSheet} from 'react-native';
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
+import Animated, {useAnimatedStyle} from 'react-native-reanimated';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {
-    FLOATING_BANNER_BOTTOM_OFFSET_PHONE_IOS,
-    FLOATING_BANNER_BOTTOM_OFFSET_PHONE_ANDROID,
-    FLOATING_BANNER_BOTTOM_OFFSET_WITH_KEYBOARD_IOS,
-    FLOATING_BANNER_BOTTOM_OFFSET_WITH_KEYBOARD_ANDROID,
-    FLOATING_BANNER_TABLET_EXTRA_BOTTOM_OFFSET,
+    BANNER_SPACING,
 } from '@constants/view';
-import {useIsTablet, useKeyboardHeight} from '@hooks/device';
+import {useBannerGestureRootPosition} from '@hooks/useBannerGestureRootPosition';
 
 import AnimatedBannerItem from './animated_banner_item';
 
-import type {FloatingBannerConfig} from './types';
+import type {FloatingBannerConfig, FloatingBannerPosition} from './types';
 
 type BannerSectionProps = {
     sectionBanners: FloatingBannerConfig[];
-    position: 'top' | 'bottom';
+    position: FloatingBannerPosition;
     onBannerPress: (banner: FloatingBannerConfig) => void;
     onBannerDismiss: (banner: FloatingBannerConfig) => void;
 };
 
+const BANNER_HEIGHT = 40;
+
 const styles = StyleSheet.create({
-    containerBase: {
+    gestureRoot: {
         position: 'absolute',
-        left: 0,
-        right: 0,
-        zIndex: 9999,
+        width: '100%',
+    },
+    containerBase: {
+        width: '100%',
         paddingHorizontal: 16,
         alignItems: 'center',
     },
@@ -49,44 +50,58 @@ const BannerSection: React.FC<BannerSectionProps> = ({
     onBannerPress,
     onBannerDismiss,
 }) => {
-    const isTablet = useIsTablet();
-    const keyboardHeight = useKeyboardHeight();
+    if (!sectionBanners.length) {
+        return null;
+    }
+
+    const insets = useSafeAreaInsets();
     const isTop = position === 'top';
     const testID = isTop ? 'floating-banner-top-container' : 'floating-banner-bottom-container';
-    const baseBottomOffset = Platform.OS === 'android' ? FLOATING_BANNER_BOTTOM_OFFSET_PHONE_ANDROID : FLOATING_BANNER_BOTTOM_OFFSET_PHONE_IOS;
-    const bottomOffset = isTablet ? (baseBottomOffset + FLOATING_BANNER_TABLET_EXTRA_BOTTOM_OFFSET) : baseBottomOffset;
-    const containerStyle = isTop ? [styles.containerBase, styles.topContainer] : [
-        styles.containerBase,
-        styles.bottomContainer,
-    ];
+
+    const containerStyle = isTop ? styles.topContainer :styles.bottomContainer;
 
     const animatedStyle = useAnimatedStyle(() => {
         if (isTop) {
-            return {};
+            return {paddingTop: insets.top + 8};
         }
 
-        if (Platform.OS === 'android') {
-            return {bottom: withTiming(FLOATING_BANNER_BOTTOM_OFFSET_WITH_KEYBOARD_ANDROID, {duration: 250})};
-        }
+        return {};
+    }, [isTop, insets.top]);
 
-        return {bottom: withTiming((keyboardHeight > 0 ? FLOATING_BANNER_BOTTOM_OFFSET_WITH_KEYBOARD_IOS : bottomOffset) + keyboardHeight, {duration: 250})};
-    }, [keyboardHeight, isTop, bottomOffset]);
+    // Limitation: Assumes all banners have the same fixed height (BANNER_HEIGHT).
+    // If banners have different heights, the gesture area may not align perfectly.
+    // Future improvement: Measure actual banner heights using onLayout for dynamic sizing.
+    const containerHeight = useMemo(() => {
+        const numBanners = sectionBanners.length;
+        const spacing = (numBanners - 1) * BANNER_SPACING;
+        return (BANNER_HEIGHT * numBanners) + spacing;
+    }, [sectionBanners.length]);
+
+    const gestureRootStyle = useBannerGestureRootPosition({
+        position,
+        containerHeight,
+    });
 
     return (
-        <Animated.View
-            testID={testID}
-            style={[containerStyle, animatedStyle]}
+        <GestureHandlerRootView
+            style={[styles.gestureRoot, gestureRootStyle]}
+            pointerEvents='box-none'
         >
-            {sectionBanners.map((banner, index) => (
-                <AnimatedBannerItem
-                    key={banner.id}
-                    banner={banner}
-                    index={index}
-                    onBannerPress={onBannerPress}
-                    onBannerDismiss={onBannerDismiss}
-                />
-            ))}
-        </Animated.View>
+            <Animated.View
+                testID={testID}
+                style={[styles.containerBase, containerStyle, animatedStyle]}
+            >
+                {sectionBanners.map((banner, index) => (
+                    <AnimatedBannerItem
+                        key={banner.id}
+                        banner={banner}
+                        index={index}
+                        onBannerPress={onBannerPress}
+                        onBannerDismiss={onBannerDismiss}
+                    />
+                ))}
+            </Animated.View>
+        </GestureHandlerRootView>
     );
 };
 

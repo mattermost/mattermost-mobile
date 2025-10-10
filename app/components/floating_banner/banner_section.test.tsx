@@ -4,19 +4,26 @@
 import {render, screen} from '@testing-library/react-native';
 import React from 'react';
 
-import {
-    FLOATING_BANNER_BOTTOM_OFFSET_PHONE_IOS,
-    FLOATING_BANNER_TABLET_EXTRA_BOTTOM_OFFSET,
-    FLOATING_BANNER_BOTTOM_OFFSET_WITH_KEYBOARD_IOS,
-    FLOATING_BANNER_BOTTOM_OFFSET_WITH_KEYBOARD_ANDROID,
-} from '@constants/view';
 import * as Device from '@hooks/device';
+import {useBannerGestureRootPosition} from '@hooks/useBannerGestureRootPosition';
 
 import BannerSection from './banner_section';
 
 import type {FloatingBannerConfig} from './types';
 
-jest.mock('@hooks/device');
+jest.mock('@hooks/device', () => ({
+    useIsTablet: jest.fn(),
+    useKeyboardHeight: jest.fn(),
+    useWindowDimensions: jest.fn(() => ({width: 375, height: 812})),
+}));
+
+jest.mock('@hooks/useBannerGestureRootPosition', () => ({
+    useBannerGestureRootPosition: jest.fn(),
+}));
+
+jest.mock('react-native-safe-area-context', () => ({
+    useSafeAreaInsets: jest.fn(() => ({top: 44, bottom: 0, left: 0, right: 0})),
+}));
 
 jest.mock('react-native-reanimated', () => {
     const {View} = require('react-native');
@@ -114,9 +121,20 @@ describe('BannerSection', () => {
         jest.clearAllMocks();
         jest.mocked(Device.useIsTablet).mockReturnValue(false);
         jest.mocked(Device.useKeyboardHeight).mockReturnValue(0);
+        jest.mocked(useBannerGestureRootPosition).mockReturnValue({
+            height: 40,
+            top: 0,
+        });
     });
 
     describe('rendering', () => {
+        it('should return null when no banners are provided', () => {
+            renderBannerSection([], 'top');
+
+            expect(screen.queryByTestId('floating-banner-top-container')).toBeNull();
+            expect(screen.queryByTestId('floating-banner-bottom-container')).toBeNull();
+        });
+
         it('should render top container with correct testID', () => {
             const banners = [createMockBanner()];
             renderBannerSection(banners, 'top');
@@ -143,106 +161,5 @@ describe('BannerSection', () => {
             expect(bannerElements).toHaveLength(3);
         });
     });
-
-    describe('tablet and positioning', () => {
-        it('should apply tablet-specific bottom offset', () => {
-            jest.mocked(Device.useIsTablet).mockReturnValue(true);
-
-            const banners = [createMockBanner({id: 'bottom-1'})];
-            renderBannerSection(banners, 'bottom');
-
-            const container = screen.getByTestId('floating-banner-bottom-container');
-            expect(container.props.style[1].bottom).toBe(FLOATING_BANNER_BOTTOM_OFFSET_PHONE_IOS + FLOATING_BANNER_TABLET_EXTRA_BOTTOM_OFFSET);
-        });
-
-        it('should apply tablet-specific top positioning', () => {
-            jest.mocked(Device.useIsTablet).mockReturnValue(true);
-
-            const banners = [createMockBanner({id: 'top-tablet-banner'})];
-            renderBannerSection(banners, 'top');
-
-            const bannerElements = screen.getAllByTestId('banner');
-            expect(bannerElements).toHaveLength(1);
-        });
-    });
-
-    describe('keyboard height adjustment', () => {
-        it('should adjust bottom banner position when keyboard is open on iOS', () => {
-            const keyboardHeight = 300;
-            jest.mocked(Device.useKeyboardHeight).mockReturnValue(keyboardHeight);
-
-            const banners = [createMockBanner({id: 'bottom-banner'})];
-            renderBannerSection(banners, 'bottom');
-
-            const container = screen.getByTestId('floating-banner-bottom-container');
-            expect(container.props.style[1].bottom).toBe(FLOATING_BANNER_BOTTOM_OFFSET_WITH_KEYBOARD_IOS + keyboardHeight);
-        });
-
-        it('should adjust bottom banner position on tablet when keyboard is open', () => {
-            const keyboardHeight = 250;
-            jest.mocked(Device.useIsTablet).mockReturnValue(true);
-            jest.mocked(Device.useKeyboardHeight).mockReturnValue(keyboardHeight);
-
-            const banners = [createMockBanner({id: 'tablet-bottom-banner'})];
-            renderBannerSection(banners, 'bottom');
-
-            const container = screen.getByTestId('floating-banner-bottom-container');
-            const expectedBottom = FLOATING_BANNER_BOTTOM_OFFSET_WITH_KEYBOARD_IOS + keyboardHeight;
-            expect(container.props.style[1].bottom).toBe(expectedBottom);
-        });
-
-        it('should not adjust top banner position when keyboard is open', () => {
-            const keyboardHeight = 300;
-            jest.mocked(Device.useKeyboardHeight).mockReturnValue(keyboardHeight);
-
-            const banners = [createMockBanner({id: 'top-banner'})];
-            renderBannerSection(banners, 'top');
-
-            const container = screen.getByTestId('floating-banner-top-container');
-            const styleProp = container.props.style as Array<Record<string, unknown>>;
-
-            const hasBottomStyle = styleProp.some((style) =>
-                typeof style === 'object' && style !== null && 'bottom' in style,
-            );
-            expect(hasBottomStyle).toBeFalsy();
-        });
-
-        it('should handle zero keyboard height correctly', () => {
-            jest.mocked(Device.useKeyboardHeight).mockReturnValue(0);
-
-            const banners = [createMockBanner({id: 'bottom-banner'})];
-            renderBannerSection(banners, 'bottom');
-
-            const container = screen.getByTestId('floating-banner-bottom-container');
-            expect(container.props.style[1].bottom).toBe(FLOATING_BANNER_BOTTOM_OFFSET_PHONE_IOS);
-        });
-
-        it('should use Android-specific keyboard offset on Android platform', () => {
-            const {Platform} = require('react-native');
-            Platform.OS = 'android';
-
-            const keyboardHeight = 250;
-            jest.mocked(Device.useKeyboardHeight).mockReturnValue(keyboardHeight);
-
-            const banners = [createMockBanner({id: 'android-bottom-banner'})];
-            renderBannerSection(banners, 'bottom');
-
-            const container = screen.getByTestId('floating-banner-bottom-container');
-            expect(container.props.style[1].bottom).toBe(FLOATING_BANNER_BOTTOM_OFFSET_WITH_KEYBOARD_ANDROID);
-        });
-
-        it('should apply Android tablet-specific bottom offset', () => {
-            const {Platform} = require('react-native');
-            Platform.OS = 'android';
-            jest.mocked(Device.useIsTablet).mockReturnValue(true);
-
-            const banners = [createMockBanner({id: 'android-tablet-banner'})];
-            renderBannerSection(banners, 'bottom');
-
-            const container = screen.getByTestId('floating-banner-bottom-container');
-            expect(container.props.style[1].bottom).toBe(FLOATING_BANNER_BOTTOM_OFFSET_WITH_KEYBOARD_ANDROID);
-        });
-    });
-
 });
 

@@ -14,38 +14,74 @@ const FLOATING_BANNER_OVERLAY_ID = 'floating-banner-overlay';
 const TIME_TO_CLOSE = toMilliseconds({seconds: 5});
 const OVERLAY_DISMISS_DELAY = toMilliseconds({seconds: 2});
 
-enum UpdateState {
-    IDLE = 'idle',
-    IN_PROGRESS = 'in-progress',
-    IN_PROGRESS_PENDING = 'in-progress-pending',
-}
-
+/**
+ * BannerManager - Singleton for managing floating banner overlays
+ *
+ * This manager handles displaying banners at the top or bottom of the screen using
+ * React Native Navigation overlays. It supports stacking multiple banners and manages
+ * their lifecycle including auto-hide timers and user dismissals.
+ *
+ * **Architecture:**
+ * - Uses a single overlay component that renders separate top and bottom banner sections
+ * - Each section (top/bottom) has its own GestureHandlerRootView for independent gesture handling
+ * - Supports both top and bottom positioned banners simultaneously without blocking screen interaction
+ * - Employs a promise-chain queue to handle rapid successive banner updates
+ * - Implements a 2-second delay before dismissing the overlay when the last banner is removed
+ *
+ * **Android Gesture Handling Limitation:**
+ * On Android, when both top AND bottom banners are displayed simultaneously, only ONE of the
+ * GestureHandlerRootView instances can properly register touch events. This is a known limitation
+ * with React Native Gesture Handler on Android when multiple gesture root views exist in overlays.
+ *
+ * **Current Behavior:**
+ * - iOS: Top and bottom banners work correctly together with independent gesture handling
+ * - Android: If both top and bottom banners appear simultaneously, gestures may not work on one section
+ *
+ * **Workaround (Not Yet Implemented):**
+ * To fully support Android, the implementation should:
+ * 1. Detect when both top and bottom banners exist on Android
+ * 2. Prioritize showing banners from one position (e.g., top takes precedence)
+ * 3. Queue banners from the other position until the primary position is clear
+ *
+ * **Previous iOS-Only Solution:**
+ * The implementation creates TWO separate GestureHandlerRootView instances - one for top
+ * banners and one for bottom banners. Each is positioned and sized only for its banner content
+ * using `useBannerGestureRootPosition` hook. On iOS this allows:
+ * - Top and bottom banners to coexist without blocking the middle of the screen
+ * - User interactions with app content between the banners
+ * - Each banner section to handle gestures independently
+ * - `pointerEvents='box-none'` on each GestureHandlerRootView allows touches to pass through
+ *   non-banner areas to the content underneath
+ *
+ * @example
+ * // Show a simple banner
+ * BannerManager.showBanner({
+ *   id: 'network-error',
+ *   title: 'Connection Lost',
+ *   message: 'Reconnecting...',
+ *   type: 'error',
+ *   position: 'top'
+ * });
+ *
+ * @example
+ * // Show multiple banners (they will stack)
+ * BannerManager.showBanner({id: 'banner1', position: 'top', ...});
+ * BannerManager.showBanner({id: 'banner2', position: 'bottom', ...});
+ *
+ * @example
+ * // Show with auto-hide
+ * BannerManager.showBannerWithAutoHide({
+ *   id: 'success',
+ *   message: 'Changes saved',
+ *   type: 'success'
+ * }, 3000);
+ */
 class BannerManagerSingleton {
     private activeBanners: FloatingBannerConfig[] = [];
     private overlayVisible = false;
     private autoHideTimers: Map<string, NodeJS.Timeout> = new Map();
-    private updateState: UpdateState = UpdateState.IDLE;
+    private updateQueue: Promise<void> = Promise.resolve();
     private dismissOverlayTimer: NodeJS.Timeout | null = null;
-
-    /**
-     * Function to manually complete the 2-second overlay dismiss delay.
-     *
-     * Why the delay: When the last banner is removed, we wait 2 seconds before
-     * dismissing the overlay. This prevents repeatedly dismissing and recreating
-     * the overlay when banners are being rapidly replaced (e.g., connection status
-     * changing from "disconnected" → "reconnecting" → "connected"). Without the
-     * delay, the overlay would flicker as it's dismissed and immediately recreated.
-     *
-     * The problem: If a new banner IS added during those 2 seconds, we need to
-     * cancel the dismiss and show the new banner instead.
-     *
-     * The solution: We store the Promise's resolve function so we can call it early
-     * when cancelling, allowing the queued banner update to process immediately
-     * instead of being stuck waiting for the 2-second timeout.
-     *
-     * Without this, adding a banner during the delay would cause a deadlock where
-     * the queue never processes the new banner.
-     */
     private dismissOverlayResolve: (() => void) | null = null;
 
     private clearBannerTimer(bannerId: string) {
@@ -94,15 +130,8 @@ class BannerManagerSingleton {
         }
     }
 
-    private async updateOverlay() {
-        if (this.updateState !== UpdateState.IDLE) {
-            this.updateState = UpdateState.IN_PROGRESS_PENDING;
-            return;
-        }
-
-        this.updateState = UpdateState.IN_PROGRESS;
-
-        try {
+    private updateOverlay() {
+        this.updateQueue = this.updateQueue.then(async () => {
             if (!this.activeBanners.length) {
                 if (this.overlayVisible) {
                     Navigation.updateProps(FLOATING_BANNER_OVERLAY_ID, {
@@ -136,7 +165,6 @@ class BannerManagerSingleton {
                 this.updateOverlay();
             };
 
-            // Clone banners and add dismiss handlers
             const bannersWithDismissProps = this.activeBanners.map((banner) => {
                 if (banner.customComponent && React.isValidElement(banner.customComponent)) {
                     const props: Partial<Record<string, unknown>> = {
@@ -172,15 +200,7 @@ class BannerManagerSingleton {
                 );
                 this.overlayVisible = true;
             }
-        } finally {
-            // @ts-expect-error - updateState can become IN_PROGRESS_PENDING during async await
-            const hasPendingUpdate: boolean = this.updateState === UpdateState.IN_PROGRESS_PENDING;
-            this.updateState = UpdateState.IDLE;
-
-            if (hasPendingUpdate) {
-                this.updateOverlay();
-            }
-        }
+        });
     }
 
     showBanner(bannerConfig: FloatingBannerConfig) {
@@ -201,14 +221,26 @@ class BannerManagerSingleton {
         this.autoHideTimers.set(bannerConfig.id, timer);
     }
 
-    hideBanner(bannerId?: string) {
-        if (bannerId) {
-            this.removeBannerFromList(bannerId);
-        } else {
-            this.clearAllTimers();
-            this.activeBanners = [];
-        }
+    /**
+     * Hides a specific banner by ID.
+     *
+     * @param bannerId - Required banner ID to hide. This ensures explicit control and prevents
+     *                   accidental dismissal of banners from other systems.
+     *
+     * @example
+     * BannerManager.hideBanner('network-error');
+     *
+     * @remarks
+     * If you need to clear all banners, use {@link hideAllBanners} instead.
+     */
+    hideBanner(bannerId: string) {
+        this.removeBannerFromList(bannerId);
+        this.updateOverlay();
+    }
 
+    hideAllBanners() {
+        this.clearAllTimers();
+        this.activeBanners = [];
         this.updateOverlay();
     }
 
