@@ -7,7 +7,7 @@ import {of as of$} from 'rxjs';
 import DatabaseManager from '@database/manager';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {fetchPlaybookRunsPageForParticipant} from '@playbooks/actions/remote/runs';
-import {fireEvent, renderWithEverything, waitFor} from '@test/intl-test-helper';
+import {fireEvent, renderWithEverything, waitFor, waitForElementToBeRemoved} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
 import ParticipantPlaybooks from './participant_playbooks';
@@ -87,9 +87,7 @@ describe('ParticipantPlaybooks', () => {
             resolvePromise!({runs: [], hasMore: false});
         });
 
-        await waitFor(() => {
-            expect(queryByTestId('loading')).toBeFalsy();
-        });
+        await waitForElementToBeRemoved(() => queryByTestId('loading'));
     });
 
     it('renders empty state when no runs available', async () => {
@@ -98,9 +96,7 @@ describe('ParticipantPlaybooks', () => {
 
         const {queryByTestId, getByText} = renderWithEverything(<ParticipantPlaybooks {...props}/>, {database, serverUrl});
 
-        await waitFor(() => {
-            expect(queryByTestId('loading')).toBeFalsy();
-        });
+        await waitForElementToBeRemoved(() => queryByTestId('loading'));
 
         // Should show empty state instead of loading
         expect(getByText('No in progress runs')).toBeVisible();
@@ -112,9 +108,7 @@ describe('ParticipantPlaybooks', () => {
 
         const {queryByTestId, getByText} = renderWithEverything(<ParticipantPlaybooks {...props}/>, {database, serverUrl});
 
-        await waitFor(() => {
-            expect(queryByTestId('loading')).toBeFalsy();
-        });
+        await waitForElementToBeRemoved(() => queryByTestId('loading'));
 
         // Should show empty state instead of loading
         expect(getByText('No in progress runs')).toBeVisible();
@@ -127,9 +121,7 @@ describe('ParticipantPlaybooks', () => {
 
         const {queryByTestId, getByText} = renderWithEverything(<ParticipantPlaybooks {...props}/>, {database, serverUrl});
 
-        await waitFor(() => {
-            expect(queryByTestId('loading')).toBeFalsy();
-        });
+        await waitForElementToBeRemoved(() => queryByTestId('loading'));
 
         expect(getByText('Test Run 0')).toBeVisible();
         expect(queryByTestId('Test Run 1')).not.toBeVisible();
@@ -167,9 +159,7 @@ describe('ParticipantPlaybooks', () => {
 
         const {queryByTestId, getByTestId} = renderWithEverything(<ParticipantPlaybooks {...props}/>, {database, serverUrl});
 
-        await waitFor(() => {
-            expect(queryByTestId('loading')).toBeFalsy();
-        });
+        await waitForElementToBeRemoved(() => queryByTestId('loading'));
 
         expect(fetchPlaybookRunsPageForParticipant).toHaveBeenCalledWith('server-url', 'test-user-id', 0);
 
@@ -193,9 +183,7 @@ describe('ParticipantPlaybooks', () => {
 
         const {queryByTestId, getByTestId} = renderWithEverything(<ParticipantPlaybooks {...props}/>, {database, serverUrl});
 
-        await waitFor(() => {
-            expect(queryByTestId('loading')).toBeFalsy();
-        });
+        await waitForElementToBeRemoved(() => queryByTestId('loading'));
 
         expect(fetchPlaybookRunsPageForParticipant).toHaveBeenCalledWith('server-url', 'test-user-id', 0);
 
@@ -226,9 +214,7 @@ describe('ParticipantPlaybooks', () => {
 
         const {getByText, queryByTestId} = renderWithEverything(<ParticipantPlaybooks {...props}/>, {database, serverUrl});
 
-        await waitFor(() => {
-            expect(queryByTestId('loading')).toBeFalsy();
-        });
+        await waitForElementToBeRemoved(() => queryByTestId('loading'));
 
         expect(getByText(/Showing cached data only/)).toBeVisible();
     });
@@ -244,9 +230,7 @@ describe('ParticipantPlaybooks', () => {
 
         const {queryByText, queryByTestId} = renderWithEverything(<ParticipantPlaybooks {...props}/>, {database, serverUrl});
 
-        await waitFor(() => {
-            expect(queryByTestId('loading')).toBeFalsy();
-        });
+        await waitForElementToBeRemoved(() => queryByTestId('loading'));
 
         expect(queryByText(/Showing cached data only/)).not.toBeVisible();
     });
