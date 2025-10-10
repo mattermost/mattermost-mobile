@@ -160,7 +160,7 @@ class NetworkConnectivityManagerSingleton {
         this.currentServerUrl = serverUrl;
 
         if (!connected) {
-            BannerManager.hideBanner();
+            BannerManager.hideBanner(NETWORK_STATUS_BANNER_ID);
             this.websocketState = null;
             this.previousWebsocketState = null;
         }
@@ -213,7 +213,7 @@ class NetworkConnectivityManagerSingleton {
 
     private updateBanner() {
         if (!this.currentServerUrl || this.appState === 'background') {
-            BannerManager.hideBanner();
+            BannerManager.hideBanner(NETWORK_STATUS_BANNER_ID);
             return;
         }
 
@@ -238,7 +238,7 @@ class NetworkConnectivityManagerSingleton {
             return;
         }
 
-        BannerManager.hideBanner();
+        BannerManager.hideBanner(NETWORK_STATUS_BANNER_ID);
     }
 
     private handleDisconnectedState(): boolean {
