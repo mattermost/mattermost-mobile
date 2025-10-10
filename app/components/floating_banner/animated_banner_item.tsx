@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
-import {StyleSheet} from 'react-native';
-import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
+import React, {useCallback, useEffect, useRef} from 'react';
+import {StyleSheet, View} from 'react-native';
+import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import Banner from '@components/banner/Banner';
 import BannerItem from '@components/banner/banner_item';
@@ -25,9 +25,8 @@ const styles = StyleSheet.create({
         width: '100%',
         alignItems: 'center',
     },
-    relativePosition: {
-        position: 'relative',
-        top: 0,
+    animatedBannerWrapper: {
+        width: '100%',
     },
 });
 
@@ -37,37 +36,50 @@ const AnimatedBannerItem: React.FC<AnimatedBannerItemProps> = ({
     onBannerPress,
     onBannerDismiss,
 }) => {
-    const {id, dismissible = true, customComponent} = banner;
+    const {dismissible = true, customComponent} = banner;
 
-    const handleDismiss = () => onBannerDismiss(banner);
+    const opacity = useSharedValue(0);
+    const translateY = useSharedValue(20);
+    const hasAnimated = useRef(false);
 
-    const animatedPositionStyle = useAnimatedStyle(() => {
-        const spacing = index > 0 ? BANNER_SPACING : 0;
-        return {marginTop: withTiming(spacing, {duration: 250})};
-    }, [index]);
+    const handleDismiss = useCallback(() => onBannerDismiss(banner), [banner, onBannerDismiss]);
+
+    useEffect(() => {
+        if (hasAnimated.current) {
+            return;
+        }
+        hasAnimated.current = true;
+        opacity.value = withTiming(1, {duration: 250});
+        translateY.value = withTiming(0, {duration: 250});
+    }, [opacity, translateY]);
+
+    const animatedStyle = useAnimatedStyle(() => ({
+        opacity: opacity.value,
+        transform: [{translateY: translateY.value}],
+    }));
 
     return (
-        <Animated.View
-            key={id}
+        <View
             style={[
                 styles.bannerContainer,
-                animatedPositionStyle,
+                {marginTop: index > 0 ? BANNER_SPACING : 0},
             ]}
         >
-            <Banner
-                dismissible={dismissible}
-                onDismiss={handleDismiss}
-                style={styles.relativePosition}
-            >
-                {customComponent || (
-                    <BannerItem
-                        banner={banner}
-                        onPress={onBannerPress}
-                        onDismiss={onBannerDismiss}
-                    />
-                )}
-            </Banner>
-        </Animated.View>
+            <Animated.View style={[styles.animatedBannerWrapper, animatedStyle]}>
+                <Banner
+                    dismissible={dismissible}
+                    onDismiss={handleDismiss}
+                >
+                    {customComponent || (
+                        <BannerItem
+                            banner={banner}
+                            onPress={onBannerPress}
+                            onDismiss={onBannerDismiss}
+                        />
+                    )}
+                </Banner>
+            </Animated.View>
+        </View>
     );
 };
 
