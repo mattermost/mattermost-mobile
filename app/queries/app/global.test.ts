@@ -7,6 +7,8 @@ import DatabaseManager from '@database/manager';
 
 import {observeLowConnectivityMonitor} from './global';
 
+import type {AppDatabase} from '@typings/database/database';
+
 jest.mock('@database/manager', () => ({
     getAppDatabaseAndOperator: jest.fn(),
 }));
@@ -23,9 +25,10 @@ describe('observeLowConnectivityMonitor', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-        (DatabaseManager.getAppDatabaseAndOperator as jest.Mock).mockReturnValue({
+        jest.mocked(DatabaseManager.getAppDatabaseAndOperator).mockReturnValue({
             database: mockDatabase,
-        });
+            operator: {},
+        } as unknown as AppDatabase);
     });
 
     it('should return observable that defaults to true when no database record exists', (done) => {
@@ -115,7 +118,7 @@ describe('observeLowConnectivityMonitor', () => {
     });
 
     it('should default to true when query returns null', (done) => {
-        (DatabaseManager.getAppDatabaseAndOperator as jest.Mock).mockImplementation(() => {
+        jest.mocked(DatabaseManager.getAppDatabaseAndOperator).mockImplementation(() => {
             throw new Error('Database not found');
         });
 
