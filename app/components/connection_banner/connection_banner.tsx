@@ -1,202 +1,112 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useNetInfo} from '@react-native-community/netinfo';
-import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {useIntl} from 'react-intl';
-import {
-    Text,
-    View,
-} from 'react-native';
-import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import React from 'react';
+import {Text, View, Pressable} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import {ANNOUNCEMENT_BAR_HEIGHT} from '@constants/view';
 import {useTheme} from '@context/theme';
-import {useAppState} from '@hooks/device';
-import useDidUpdate from '@hooks/did_update';
-import {toMilliseconds} from '@utils/datetime';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 type Props = {
-    websocketState: WebsocketConnectedState;
+    isConnected: boolean;
+    message: string;
+    dismissible?: boolean;
+    onDismiss?: () => void;
 }
 
 const getStyle = makeStyleSheetFromTheme((theme: Theme) => {
-    const bannerContainer = {
-        flex: 1,
-        paddingHorizontal: 10,
-        overflow: 'hidden' as const,
-        flexDirection: 'row' as const,
-        alignItems: 'center' as const,
-        marginHorizontal: 8,
-        borderRadius: 7,
-    };
     return {
-        background: {
-            backgroundColor: theme.sidebarBg,
-            zIndex: 1,
+        container: {
+            flexDirection: 'row' as const,
+            alignItems: 'center' as const,
+            paddingHorizontal: 12,
+            paddingVertical: 6,
+            borderRadius: 8,
+            height: 40,
+            shadowColor: theme.centerChannelColor,
+            shadowOffset: {
+                width: 0,
+                height: 2,
+            },
+            shadowOpacity: 0.1,
+            shadowRadius: 4,
+            elevation: 4,
         },
-        bannerContainerNotConnected: {
-            ...bannerContainer,
+        containerNotConnected: {
             backgroundColor: theme.centerChannelColor,
         },
-        bannerContainerConnected: {
-            ...bannerContainer,
+        containerConnected: {
             backgroundColor: theme.onlineIndicator,
         },
-        wrapper: {
-            flexDirection: 'row',
+        content: {
             flex: 1,
-            overflow: 'hidden',
+            flexDirection: 'row' as const,
+            alignItems: 'center' as const,
+            justifyContent: 'center' as const,
         },
-        bannerTextContainer: {
-            flex: 1,
-            flexGrow: 1,
-            marginRight: 5,
-            textAlign: 'center',
-            color: theme.centerChannelBg,
-        },
-        bannerText: {
+        text: {
             ...typography('Body', 100, 'SemiBold'),
+            color: theme.centerChannelBg,
+            textAlign: 'center' as const,
+        },
+        icon: {
+            marginRight: 8,
+        },
+        dismissButton: {
+            marginLeft: 8,
+            padding: 4,
+        },
+        dismissPressed: {
+            opacity: 0.5,
         },
     };
 });
 
-const clearTimeoutRef = (ref: React.MutableRefObject<NodeJS.Timeout | null | undefined>) => {
-    if (ref.current) {
-        clearTimeout(ref.current);
-        ref.current = null;
-    }
-};
-
-const TIME_TO_OPEN = toMilliseconds({seconds: 3});
-const TIME_TO_CLOSE = toMilliseconds({seconds: 1});
-
-const ConnectionBanner = ({
-    websocketState,
-}: Props) => {
-    const intl = useIntl();
-    const closeTimeout = useRef<NodeJS.Timeout | null>();
-    const openTimeout = useRef<NodeJS.Timeout | null>();
-    const height = useSharedValue(0);
+const ConnectionBanner: React.FC<Props> = ({isConnected, message, dismissible = false, onDismiss}) => {
     const theme = useTheme();
-    const [visible, setVisible] = useState(false);
     const style = getStyle(theme);
-    const appState = useAppState();
-    const netInfo = useNetInfo();
-
-    const isConnected = websocketState === 'connected';
-
-    const openCallback = useCallback(() => {
-        setVisible(true);
-        clearTimeoutRef(openTimeout);
-    }, []);
-
-    const closeCallback = useCallback(() => {
-        setVisible(false);
-        clearTimeoutRef(closeTimeout);
-    }, []);
-
-    useEffect(() => {
-        if (websocketState === 'connecting') {
-            openCallback();
-        } else if (!isConnected) {
-            openTimeout.current = setTimeout(openCallback, TIME_TO_OPEN);
-        }
-        return () => {
-            clearTimeoutRef(openTimeout);
-            clearTimeoutRef(closeTimeout);
-        };
-    }, []);
-
-    useDidUpdate(() => {
-        if (isConnected) {
-            if (visible) {
-                if (!closeTimeout.current) {
-                    closeTimeout.current = setTimeout(closeCallback, TIME_TO_CLOSE);
-                }
-            } else {
-                clearTimeoutRef(openTimeout);
-            }
-        } else if (visible) {
-            clearTimeoutRef(closeTimeout);
-        } else if (appState === 'active') {
-            setVisible(true);
-        }
-    }, [isConnected]);
-
-    useDidUpdate(() => {
-        if (appState === 'active') {
-            if (!isConnected && !visible) {
-                if (!openTimeout.current) {
-                    openTimeout.current = setTimeout(openCallback, TIME_TO_OPEN);
-                }
-            }
-            if (isConnected && visible) {
-                if (!closeTimeout.current) {
-                    closeTimeout.current = setTimeout(closeCallback, TIME_TO_CLOSE);
-                }
-            }
-        } else {
-            setVisible(false);
-            clearTimeoutRef(openTimeout);
-            clearTimeoutRef(closeTimeout);
-        }
-    }, [appState === 'active']);
-
-    useEffect(() => {
-        height.value = withTiming(visible ? ANNOUNCEMENT_BAR_HEIGHT : 0, {
-            duration: 200,
-        });
-    }, [height, visible]);
-
-    const bannerStyle = useAnimatedStyle(() => ({
-        height: height.value,
-    }));
-
-    let text;
-    if (isConnected) {
-        text = intl.formatMessage({id: 'connection_banner.connected', defaultMessage: 'Connection restored'});
-    } else if (websocketState === 'connecting') {
-        text = intl.formatMessage({id: 'connection_banner.connecting', defaultMessage: 'Connecting...'});
-    } else if (netInfo.isInternetReachable) {
-        text = intl.formatMessage({id: 'connection_banner.not_reachable', defaultMessage: 'The server is not reachable'});
-    } else {
-        text = intl.formatMessage({id: 'connection_banner.not_connected', defaultMessage: 'No internet connection'});
-    }
 
     return (
-        <Animated.View
-            style={[style.background, bannerStyle]}
+        <View
+            style={[
+                style.container,
+                isConnected ? style.containerConnected : style.containerNotConnected,
+            ]}
         >
-            <View
-                style={isConnected ? style.bannerContainerConnected : style.bannerContainerNotConnected}
-            >
-                {visible &&
-                <View
-                    style={style.wrapper}
+            <View style={style.content}>
+                <CompassIcon
+                    color={theme.centerChannelBg}
+                    name={isConnected ? 'check' : 'information-outline'}
+                    size={16}
+                    style={style.icon}
+                />
+                <Text
+                    style={style.text}
+                    ellipsizeMode='tail'
+                    numberOfLines={1}
                 >
-                    <Text
-                        style={style.bannerTextContainer}
-                        ellipsizeMode='tail'
-                        numberOfLines={1}
-                    >
-                        <CompassIcon
-                            color={theme.centerChannelBg}
-                            name={isConnected ? 'check' : 'information-outline'}
-                            size={18}
-                        />
-                        {'  '}
-                        <Text style={style.bannerText}>
-                            {text}
-                        </Text>
-                    </Text>
-                </View>
-                }
+                    {message}
+                </Text>
             </View>
-        </Animated.View>
+
+            {dismissible && onDismiss && (
+                <Pressable
+                    style={({pressed}) => [
+                        style.dismissButton,
+                        pressed && style.dismissPressed,
+                    ]}
+                    onPress={onDismiss}
+                >
+                    <CompassIcon
+                        name={'close'}
+                        size={14}
+                        color={changeOpacity(theme.centerChannelBg, 0.7)}
+                    />
+                </Pressable>
+            )}
+        </View>
     );
 };
 
