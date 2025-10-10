@@ -48,15 +48,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         actionContainer: {
             flexDirection: 'row',
-            alignItems: 'center',
+            alignItems: 'flex-start',
             justifyContent: 'flex-end',
+            marginTop: 2,
         },
         container: {
             flexDirection: 'row',
-            alignItems: 'center',
+            alignItems: 'flex-start',
             minHeight: ITEM_HEIGHT,
             gap: 12,
             justifyContent: 'space-between',
+            paddingVertical: 12,
         },
         destructive: {
             color: theme.dndIndicator,

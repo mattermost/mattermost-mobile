@@ -921,15 +921,14 @@ describe('ClientTracking', () => {
         };
 
         beforeEach(() => {
-            LocalConfig.MonitorNetworkPerformance = true;
+            client.lowConnectivityMonitorEnabled = true;
         });
 
         afterEach(() => {
-            LocalConfig.MonitorNetworkPerformance = false;
             jest.clearAllMocks();
         });
 
-        it('should call full tracking lifecycle when MonitorNetworkPerformance is enabled', async () => {
+        it('should call full tracking lifecycle when Low Connectivity Monitor is enabled', async () => {
             const mockMetrics = createMockMetrics();
             apiClientMock.get.mockResolvedValue(mockSuccessResponse(mockMetrics));
 
@@ -939,8 +938,8 @@ describe('ClientTracking', () => {
             expect(mockedNPM.completeRequestTracking).toHaveBeenCalledWith('https://example.com', 'mock-request-id-123', mockMetrics);
         });
 
-        it('should not call tracking methods when MonitorNetworkPerformance is disabled', async () => {
-            LocalConfig.MonitorNetworkPerformance = false;
+        it('should not call tracking methods when Low Connectivity Monitor is disabled', async () => {
+            client.lowConnectivityMonitorEnabled = false;
             apiClientMock.get.mockResolvedValue(mockSuccessResponse());
 
             await client.doFetchWithTracking('https://example.com/api', requestOptions);
@@ -1009,8 +1008,8 @@ describe('ClientTracking', () => {
             expect(mockedNPM.completeRequestTracking).not.toHaveBeenCalled();
         });
 
-        it('should not call cancelRequestTracking when MonitorNetworkPerformance is disabled and request fails', async () => {
-            LocalConfig.MonitorNetworkPerformance = false;
+        it('should not call cancelRequestTracking when Low Connectivity Monitor is disabled and request fails', async () => {
+            client.lowConnectivityMonitorEnabled = false;
             apiClientMock.get.mockRejectedValue(new Error('Request failed'));
 
             await expect(client.doFetchWithTracking('https://example.com/api', requestOptions)).rejects.toThrow('Received invalid response from the server.');

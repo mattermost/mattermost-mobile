@@ -4,12 +4,13 @@
 import {defineMessage} from 'react-intl';
 import {DeviceEventEmitter, Platform} from 'react-native';
 
-import {CollectNetworkMetrics, MonitorNetworkPerformance} from '@assets/config.json';
+import {CollectNetworkMetrics} from '@assets/config.json';
 import {Events} from '@constants';
 import {setServerCredentials} from '@init/credentials';
 import NetworkPerformanceManager from '@managers/network_performance_manager';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {NetworkRequestMetrics} from '@managers/performance_metrics_manager/constant';
+import {observeLowConnectivityMonitor} from '@queries/app/global';
 import {isErrorWithStatusCode} from '@utils/errors';
 import {getFormattedFileSize} from '@utils/file';
 import {logDebug, logInfo} from '@utils/log';
@@ -68,9 +69,14 @@ export default class ClientTracking {
     enableLogging = false;
 
     requestGroups: Map<string, GroupData> = new Map();
+    lowConnectivityMonitorEnabled = true;
 
     constructor(apiClient: APIClientInterface) {
         this.apiClient = apiClient;
+
+        observeLowConnectivityMonitor().subscribe((enabled) => {
+            this.lowConnectivityMonitorEnabled = enabled;
+        });
     }
 
     setClientCredentials(bearerToken: string, preauthSecret?: string) {
@@ -133,21 +139,21 @@ export default class ClientTracking {
     }
 
     startNetworkPerformanceTracking(url: string): string | undefined {
-        if (!MonitorNetworkPerformance) {
+        if (!this.lowConnectivityMonitorEnabled) {
             return undefined;
         }
         return NetworkPerformanceManager.startRequestTracking(this.apiClient.baseUrl, url);
     }
 
     completeNetworkPerformanceTracking(requestId: string | undefined, url: string, metrics: ClientResponseMetrics | undefined) {
-        if (!MonitorNetworkPerformance || !requestId || !metrics) {
+        if (!this.lowConnectivityMonitorEnabled || !requestId || !metrics) {
             return;
         }
         NetworkPerformanceManager.completeRequestTracking(this.apiClient.baseUrl, requestId, metrics);
     }
 
     cancelNetworkPerformanceTracking(requestId: string | undefined) {
-        if (!MonitorNetworkPerformance || !requestId) {
+        if (!this.lowConnectivityMonitorEnabled || !requestId) {
             return;
         }
         NetworkPerformanceManager.cancelRequestTracking(this.apiClient.baseUrl, requestId);
