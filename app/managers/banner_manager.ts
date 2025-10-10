@@ -11,7 +11,7 @@ import {toMilliseconds} from '@utils/datetime';
 import type {FloatingBannerConfig} from '@components/floating_banner/types';
 
 const FLOATING_BANNER_OVERLAY_ID = 'floating-banner-overlay';
-const TIME_TO_CLOSE = toMilliseconds({seconds: 5});
+const BANNER_DEFAULT_TIME_TO_HIDE = toMilliseconds({seconds: 5});
 const OVERLAY_DISMISS_DELAY = toMilliseconds({seconds: 2});
 
 /**
@@ -211,7 +211,7 @@ class BannerManagerSingleton {
         this.updateOverlay();
     }
 
-    showBannerWithAutoHide(bannerConfig: FloatingBannerConfig, durationMs: number = TIME_TO_CLOSE) {
+    showBannerWithAutoHide(bannerConfig: FloatingBannerConfig, durationMs: number = BANNER_DEFAULT_TIME_TO_HIDE) {
         this.showBanner(bannerConfig);
 
         const timer = setTimeout(() => {
@@ -254,13 +254,6 @@ class BannerManagerSingleton {
         }
     }
 
-    getCurrentBannerId(): string | null {
-        return this.isBannerVisible() ? this.activeBanners[this.activeBanners.length - 1].id : null;
-    }
-
-    isBannerVisible(): boolean {
-        return Boolean(this.activeBanners.length);
-    }
 }
 
 export const BannerManager = new BannerManagerSingleton();
