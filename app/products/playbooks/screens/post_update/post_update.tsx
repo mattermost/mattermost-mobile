@@ -134,9 +134,11 @@ const PostUpdate = ({
                 }
                 calculatedDefaultMessage = runRes.run?.reminder_message_template ?? '';
                 const lastStatusPostMetadata = runRes.run?.status_posts?.slice().reverse().find((post) => !post.delete_at);
-                const lastStatusPost = (await getPosts(serverUrl, [lastStatusPostMetadata?.id ?? '']))[0];
-                if (lastStatusPost) {
-                    calculatedDefaultMessage = lastStatusPost.message;
+                if (lastStatusPostMetadata?.id) {
+                    const lastStatusPost = (await getPosts(serverUrl, [lastStatusPostMetadata?.id ?? '']))[0];
+                    if (lastStatusPost) {
+                        calculatedDefaultMessage = lastStatusPost.message;
+                    }
                 }
             }
 
