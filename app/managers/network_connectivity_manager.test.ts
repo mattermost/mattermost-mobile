@@ -291,11 +291,37 @@ describe('NetworkConnectivityManager', () => {
         });
     });
 
+    describe('null state handling', () => {
+        it('should return status unknown when websocketState is null', () => {
+            manager.setServerConnectionStatus(true, 'https://test.server.com');
+            (manager as any).websocketState = null;
+            (manager as any).netInfo = {isInternetReachable: true};
+
+            const message = (manager as any).getConnectionMessage();
+
+            expect(message).toBe('Connection status unknown');
+        });
+
+        it('should return status unknown when netInfo is null', () => {
+            manager.setServerConnectionStatus(true, 'https://test.server.com');
+            (manager as any).websocketState = 'connected';
+            (manager as any).netInfo = null;
+
+            const message = (manager as any).getConnectionMessage();
+
+            expect(message).toBe('Connection status unknown');
+        });
+    });
+
     describe('pure functions', () => {
         const {getConnectionMessageText, isReconnection} = testExports;
 
         describe('getConnectionMessageText', () => {
             const mockFormatMessage = jest.fn((descriptor) => descriptor.defaultMessage);
+
+            beforeEach(() => {
+                mockFormatMessage.mockClear();
+            });
 
             it('should return connected message when websocket is connected', () => {
                 const result = getConnectionMessageText('connected', true, mockFormatMessage);
@@ -510,6 +536,37 @@ describe('NetworkConnectivityManager', () => {
             manager.updatePerformanceState('slow');
 
             expect(mockBannerManager.showBannerWithAutoHide).toHaveBeenCalled();
+        });
+
+        it('should suppress performance banner until normal when banner is manually dismissed', () => {
+            manager.updateState('connected', {isInternetReachable: true}, 'active');
+            manager.updateState('connected', {isInternetReachable: true}, 'active');
+
+            mockBannerManager.showBannerWithAutoHide.mockClear();
+            manager.updatePerformanceState('slow');
+
+            expect(mockBannerManager.showBannerWithAutoHide).toHaveBeenCalled();
+            const performanceBannerConfig = mockBannerManager.showBannerWithAutoHide.mock.calls[0][0];
+            expect((performanceBannerConfig.customComponent as any).props.message).toBe('Limited network connection');
+
+            const onDismiss = performanceBannerConfig.onDismiss;
+            onDismiss!();
+
+            mockBannerManager.showBannerWithAutoHide.mockClear();
+            mockBannerManager.showBanner.mockClear();
+
+            manager.updatePerformanceState('slow');
+            expect(mockBannerManager.showBannerWithAutoHide).not.toHaveBeenCalled();
+            expect(mockBannerManager.showBanner).not.toHaveBeenCalled();
+        });
+
+        it('should reset performance suppression when performance returns to normal after manual dismiss', () => {
+            (manager as any).performanceSuppressedUntilNormal = true;
+            expect((manager as any).performanceSuppressedUntilNormal).toBe(true);
+
+            manager.updatePerformanceState('normal');
+
+            expect((manager as any).performanceSuppressedUntilNormal).toBe(false);
         });
 
         it('should show reconnection banner when performance returns to normal', () => {

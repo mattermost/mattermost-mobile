@@ -89,7 +89,7 @@ class NetworkConnectivityManagerSingleton {
 
     private getConnectionMessage(): string {
         if (!this.websocketState || !this.netInfo) {
-            return 'Connection status unknown';
+            return this.intl.formatMessage({id: 'connection_banner.status_unknown', defaultMessage: 'Connection status unknown'});
         }
 
         return getConnectionMessageText(this.websocketState, this.netInfo.isInternetReachable, this.intl.formatMessage);
