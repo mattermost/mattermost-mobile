@@ -124,15 +124,17 @@ const AdvancedSettings = ({
                         testID='advanced_settings.component_library.option'
                         type='none'
                     />
-                    <SettingSeparator/>
+                    {/* <SettingSeparator/> */}
                 </TouchableOpacity>
             )}
             <SettingBlock
                 headerText={defineMessage({
                     id: 'settings.advanced.experimental_features',
-                    defaultMessage: 'Experimental Features',
+                    defaultMessage: 'EXPERIMENTAL FEATURES',
                 })}
             >
+                <SettingSeparator/>
+
                 <SettingOption
                     action={onToggleLowConnectivityMonitor}
                     label={intl.formatMessage({id: 'settings.advanced.low_connectivity_monitor', defaultMessage: 'Low Connectivity Monitor'})}
