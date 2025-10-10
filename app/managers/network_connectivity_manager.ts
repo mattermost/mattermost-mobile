@@ -89,7 +89,7 @@ class NetworkConnectivityManagerSingleton {
 
     private getConnectionMessage(): string {
         if (!this.websocketState || !this.netInfo) {
-            return 'Connection status unknown';
+            return this.intl.formatMessage({id: 'connection_banner.status_unknown', defaultMessage: 'Connection status unknown'});
         }
 
         return getConnectionMessageText(this.websocketState, this.netInfo.isInternetReachable, this.intl.formatMessage);
@@ -160,7 +160,7 @@ class NetworkConnectivityManagerSingleton {
         this.currentServerUrl = serverUrl;
 
         if (!connected) {
-            BannerManager.hideBanner();
+            BannerManager.hideBanner(NETWORK_STATUS_BANNER_ID);
             this.websocketState = null;
             this.previousWebsocketState = null;
         }
@@ -213,7 +213,7 @@ class NetworkConnectivityManagerSingleton {
 
     private updateBanner() {
         if (!this.currentServerUrl || this.appState === 'background') {
-            BannerManager.hideBanner();
+            BannerManager.hideBanner(NETWORK_STATUS_BANNER_ID);
             return;
         }
 
@@ -238,7 +238,7 @@ class NetworkConnectivityManagerSingleton {
             return;
         }
 
-        BannerManager.hideBanner();
+        BannerManager.hideBanner(NETWORK_STATUS_BANNER_ID);
     }
 
     private handleDisconnectedState(): boolean {

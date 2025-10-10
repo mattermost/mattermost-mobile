@@ -405,7 +405,10 @@ shouldShowDisconnectedBanner(
 - **Shows**: When disconnected after initial connection
 - **Hides**: On first connection (app start)
 - **Duration**: Persistent until state changes
-- **Message**: "The server is not reachable" or "Unable to connect to network"
+- **Messages** (internationalized):
+  - "The server is not reachable" (`connection_banner.not_reachable`) - when internet is reachable but server is not
+  - "Unable to connect to network" (`connection_banner.not_connected`) - when internet is not reachable
+  - "Connection status unknown" (`connection_banner.status_unknown`) - when websocketState or netInfo is null
 
 #### Performance Banner
 ```typescript
@@ -419,7 +422,7 @@ shouldShowPerformanceBanner(
 - **Shows**: When performance degrades to 'slow'
 - **Suppression**: User can dismiss; suppressed until performance returns to 'normal'
 - **Duration**: Auto-hide after 10 seconds
-- **Message**: "Limited network connection"
+- **Message**: "Limited network connection" (`connection_banner.limited_network_connection`)
 
 #### Connecting Banner
 ```typescript
@@ -433,7 +436,7 @@ shouldShowConnectingBanner(
 - **Shows**: When reconnecting after initial connection
 - **Hides**: During first connection
 - **Duration**: Persistent until state changes
-- **Message**: "Connecting..."
+- **Message**: "Connecting..." (`connection_banner.connecting`)
 
 #### Reconnection Banner
 ```typescript
@@ -450,7 +453,37 @@ shouldShowReconnectionBanner(
 - **Shows**: When connection restored after being disconnected/connecting
 - **Hides**: On first connection
 - **Duration**: Auto-hide after 3 seconds
-- **Message**: "Connection restored"
+- **Message**: "Connection restored" (`connection_banner.connected`)
+
+### Message Internationalization
+
+All banner messages are internationalized using `formatMessage()` for proper localization:
+
+```typescript
+private getConnectionMessage(): string {
+  // Guard against uninitialized state
+  if (!this.websocketState || !this.netInfo) {
+    return this.intl.formatMessage({
+      id: 'connection_banner.status_unknown', 
+      defaultMessage: 'Connection status unknown'
+    });
+  }
+
+  return getConnectionMessageText(
+    this.websocketState, 
+    this.netInfo.isInternetReachable, 
+    this.intl.formatMessage
+  );
+}
+```
+
+**Message Keys**:
+- `connection_banner.status_unknown` - When websocketState or netInfo is null
+- `connection_banner.connected` - Connection restored
+- `connection_banner.connecting` - Connecting...
+- `connection_banner.not_reachable` - Server not reachable (but internet is)
+- `connection_banner.not_connected` - Unable to connect to network
+- `connection_banner.limited_network_connection` - Performance degraded
 
 ### Suppression Mechanisms
 
