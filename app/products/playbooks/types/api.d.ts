@@ -3,7 +3,7 @@
 
 type ChecklistItemState = '' | 'in_progress' | 'closed' | 'skipped';
 
-type ConditionAction = '' | 'hidden';
+type ConditionAction = '' | 'hidden' | 'shown_because_modified';
 
 const PlaybookRunStatus = {
     InProgress: 'InProgress',

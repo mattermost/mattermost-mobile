@@ -1000,6 +1000,8 @@
   "playbooks.checklist_item.run_command": "Run command",
   "playbooks.checklist_item.skip": "Skip",
   "playbooks.checklist_item.skipped": "Skipped",
+  "playbooks.checklist_item.task_rendered_conditionally": "Task rendered conditionally",
+  "playbooks.checklist_item.task_rendered_conditionally_explanation": "This task was rendered conditionally based on",
   "playbooks.due_date.date_at_time": "{date} at {time}",
   "playbooks.due_date.none": "None",
   "playbooks.edit_command.label": "Command",

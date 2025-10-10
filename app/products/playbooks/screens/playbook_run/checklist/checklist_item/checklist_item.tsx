@@ -30,7 +30,7 @@ import type UserModel from '@typings/database/models/servers/user';
 const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     checklistItem: {
         flexDirection: 'row',
-        gap: 12,
+        gap: 6,
     },
     itemDetails: {
         gap: 8,
@@ -68,6 +68,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     skippedText: {
         textDecorationLine: 'line-through',
     },
+    conditionIcon: {
+        marginHorizontal: 2,
+        alignSelf: 'flex-start',
+        marginTop: 4,
+        transform: [{rotate: '90deg'}],
+    },
+    titleRow: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        marginLeft: 2,
+    },
 }));
 
 type Props = {
@@ -103,6 +114,15 @@ const ChecklistItem = ({
 
     const [isChecking, setIsChecking] = useState(false);
     const [isExecuting, setIsExecuting] = useState(false);
+
+    // Extract condition fields
+    const conditionReason = 'conditionReason' in item ? item.conditionReason : item.condition_reason || '';
+    const conditionAction = 'conditionAction' in item ? item.conditionAction : item.condition_action || '';
+
+    // Determine icon display and color
+    const showConditionIcon = conditionReason !== '' || conditionAction === 'shown_because_modified';
+    const isErrorState = conditionAction === 'shown_because_modified';
+    const iconColor = isErrorState ? theme.errorTextColor : changeOpacity(theme.centerChannelColor, 0.56);
 
     const checked = item.state === 'closed';
     const skipped = item.state === 'skipped';
@@ -212,6 +232,9 @@ const ChecklistItem = ({
             onRunCommand={executeCommand}
             teammateNameDisplay={teammateNameDisplay}
             isDisabled={isDisabled}
+            conditionReason={conditionReason}
+            showConditionIcon={showConditionIcon}
+            conditionIconColor={iconColor}
         />
     ), [
         playbookRunId,
@@ -224,10 +247,13 @@ const ChecklistItem = ({
         executeCommand,
         teammateNameDisplay,
         isDisabled,
+        conditionReason,
+        showConditionIcon,
+        iconColor,
     ]);
 
     const onPress = useCallback(() => {
-        const initialHeight = BOTTOM_SHEET_HEIGHT.base + (isDisabled ? 0 : BOTTOM_SHEET_HEIGHT.actionButtons);
+        const initialHeight = BOTTOM_SHEET_HEIGHT.base + (isDisabled ? 0 : BOTTOM_SHEET_HEIGHT.actionButtons) + (showConditionIcon ? BOTTOM_SHEET_HEIGHT.conditionSection : 0);
         bottomSheet({
             title: intl.formatMessage({id: 'playbook_run.checklist.taskDetails', defaultMessage: 'Task Details'}),
             renderContent: renderBottomSheet,
@@ -236,17 +262,30 @@ const ChecklistItem = ({
             closeButtonId: 'close-checklist-item',
             scrollable: true,
         });
-    }, [intl, isDisabled, renderBottomSheet, theme]);
+    }, [intl, isDisabled, renderBottomSheet, theme, showConditionIcon]);
 
     return (
         <View style={styles.checklistItem}>
             <View style={styles.checkboxContainer}>
                 {checkbox}
             </View>
+            {showConditionIcon && (
+                <PressableOpacity onPress={onPress}>
+                    <CompassIcon
+                        name='source-branch'
+                        size={16}
+                        color={iconColor}
+                        style={styles.conditionIcon}
+                        testID='checklist_item.condition_icon'
+                    />
+                </PressableOpacity>
+            )}
             <View style={styles.itemDetails}>
                 <PressableOpacity onPress={onPress}>
                     <View style={styles.itemDetailsTexts}>
-                        <Text style={[styles.itemTitle, skipped && styles.skippedText]}>{item.title}</Text>
+                        <View style={styles.titleRow}>
+                            <Text style={[styles.itemTitle, skipped && styles.skippedText]}>{item.title}</Text>
+                        </View>
                         {Boolean(item.description) && (
                             <Text style={[styles.itemDescription, skipped && styles.skippedText]}>{item.description}</Text>
                         )}

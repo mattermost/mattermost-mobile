@@ -43,6 +43,9 @@ describe('ChecklistItemBottomSheet Enhanced Component', () => {
             onRunCommand: jest.fn(),
             teammateNameDisplay: General.TEAMMATE_NAME_DISPLAY.SHOW_USERNAME,
             isDisabled: false,
+            conditionReason: '',
+            showConditionIcon: false,
+            conditionIconColor: '#000000',
         };
     }
 
