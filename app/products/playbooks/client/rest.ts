@@ -7,6 +7,9 @@ import type ClientBase from '@client/rest/base';
 
 export interface ClientPlaybooksMix {
 
+    // Playbooks
+    fetchPlaybooks: (params: FetchPlaybooksParams) => Promise<FetchPlaybooksReturn>;
+
     // Playbook Runs
     fetchPlaybookRuns: (params: FetchPlaybookRunsParams, groupLabel?: RequestGroupLabel) => Promise<FetchPlaybookRunsReturn>;
     fetchPlaybookRun: (id: string, groupLabel?: RequestGroupLabel) => Promise<PlaybookRun>;
@@ -14,6 +17,7 @@ export interface ClientPlaybooksMix {
 
     // Run Management
     finishRun: (playbookRunId: string) => Promise<void>;
+    createPlaybookRun: (playbook_id: string, owner_user_id: string, team_id: string, name: string, description: string, channel_id?: string, create_public_run?: boolean) => Promise<PlaybookRun>;
 
     // Checklist Management
     setChecklistItemState: (playbookRunID: string, checklistNum: number, itemNum: number, newState: ChecklistItemState) => Promise<void>;
@@ -42,6 +46,17 @@ const ClientPlaybooks = <TBase extends Constructor<ClientBase>>(superclass: TBas
     getPlaybookRunRoute = (runId: string) => {
         return `${this.getPlaybookRunsRoute()}/${runId}`;
     };
+
+    // Playbooks
+    fetchPlaybooks(params: FetchPlaybooksParams) {
+        const queryParams = buildQueryString({
+            ...params,
+        });
+        return this.doFetch(
+            `${this.getPlaybooksRoute()}/playbooks${queryParams}`,
+            {method: 'get'},
+        );
+    }
 
     // Playbook Runs
     fetchPlaybookRuns = async (params: FetchPlaybookRunsParams, groupLabel?: RequestGroupLabel) => {
@@ -79,6 +94,30 @@ const ClientPlaybooks = <TBase extends Constructor<ClientBase>>(superclass: TBas
             `${this.getPlaybookRunRoute(playbookRunId)}/finish`,
             {method: 'put', body: {/* okhttp requires put methods to have a body */}},
         );
+    };
+
+    createPlaybookRun = async (
+        playbook_id: string,
+        owner_user_id: string,
+        team_id: string,
+        name: string,
+        description: string,
+        channel_id?: string,
+        create_public_run?: boolean,
+    ) => {
+        const data = await this.doFetch(`${this.getPlaybookRunsRoute()}`, {
+            method: 'post',
+            body: {
+                owner_user_id,
+                team_id,
+                name,
+                description,
+                playbook_id,
+                channel_id,
+                create_public_run,
+            },
+        });
+        return data;
     };
 
     // Checklist Management
