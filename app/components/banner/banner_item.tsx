@@ -14,6 +14,11 @@ export interface BannerItemConfig {
     title?: string;
     message?: string;
     type?: 'info' | 'success' | 'warning' | 'error';
+
+    /**
+     * Whether the banner can be dismissed
+     * @default true
+     */
     dismissible?: boolean;
     onPress?: () => void;
 }
