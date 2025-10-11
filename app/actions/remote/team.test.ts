@@ -16,6 +16,7 @@ import {
     sendEmailInvitesToTeam,
     fetchMyTeams,
     fetchMyTeam,
+    fetchTeamById,
     fetchAllTeams,
     fetchTeamsForComponent,
     updateCanJoinTeams,
@@ -249,6 +250,14 @@ describe('teams', () => {
         expect(result).toBeDefined();
         expect(result.teams).toBeDefined();
         expect(result.memberships).toBeDefined();
+    });
+
+    it('fetchTeamById - base case', async () => {
+        const result = await fetchTeamById(serverUrl, teamId);
+        expect(result).toBeDefined();
+        expect(result.team).toBeDefined();
+        expect(result.team?.id).toBe(teamId);
+        expect(mockClient.getTeam).toHaveBeenCalledWith(teamId);
     });
 
     it('fetchAllTeams - base case', async () => {

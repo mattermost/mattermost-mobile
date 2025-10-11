@@ -135,3 +135,23 @@ export const finishRun = async (serverUrl: string, playbookRunId: string) => {
         return {error};
     }
 };
+
+export const fetchPlaybookRunsPageForParticipant = async (serverUrl: string, participantId: string, page = 0) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+
+        const {items: runs, has_more} = await client.fetchPlaybookRuns({
+            page,
+            per_page: PER_PAGE_DEFAULT,
+            participant_id: participantId,
+            sort: 'create_at',
+            direction: 'desc',
+        });
+
+        return {runs, hasMore: has_more};
+    } catch (error) {
+        logDebug('error on fetchPlaybookRunsPageForParticipant', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};

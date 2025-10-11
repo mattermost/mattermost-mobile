@@ -10,7 +10,7 @@ import {getLastPlaybookRunsFetchAt} from '@playbooks/database/queries/run';
 import EphemeralStore from '@store/ephemeral_store';
 import TestHelper from '@test/test_helper';
 
-import {fetchPlaybookRunsForChannel, fetchFinishedRunsForChannel, setOwner, finishRun} from './runs';
+import {fetchPlaybookRunsForChannel, fetchFinishedRunsForChannel, fetchPlaybookRunsPageForParticipant, setOwner, finishRun} from './runs';
 
 const serverUrl = 'baseHandler.test.com';
 const channelId = 'channel-id-1';
@@ -318,5 +318,100 @@ describe('finishRun', () => {
         expect(result.error).toBeUndefined();
         expect(result.data).toBe(true);
         expect(mockClient.finishRun).toHaveBeenCalledWith('');
+    });
+});
+
+describe('fetchPlaybookRunsPageForParticipant', () => {
+    const participantId = 'participant-id-1';
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
+    it('should fetch single page of playbook runs for participant successfully', async () => {
+        const mockRuns = [mockPlaybookRun, mockPlaybookRun2];
+        mockClient.fetchPlaybookRuns.mockResolvedValue({
+            items: mockRuns,
+            has_more: false,
+        });
+
+        const result = await fetchPlaybookRunsPageForParticipant(serverUrl, participantId);
+
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.runs).toEqual(mockRuns);
+        expect(result.hasMore).toBe(false);
+        expect(mockClient.fetchPlaybookRuns).toHaveBeenCalledWith({
+            page: 0,
+            per_page: PER_PAGE_DEFAULT,
+            participant_id: participantId,
+            sort: 'create_at',
+            direction: 'desc',
+        });
+    });
+
+    it('should handle pagination with has_more = true', async () => {
+        const mockRuns = [mockPlaybookRun];
+        mockClient.fetchPlaybookRuns.mockResolvedValue({
+            items: mockRuns,
+            has_more: true,
+        });
+
+        const result = await fetchPlaybookRunsPageForParticipant(serverUrl, participantId, 2);
+
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.runs).toEqual(mockRuns);
+        expect(result.hasMore).toBe(true);
+        expect(mockClient.fetchPlaybookRuns).toHaveBeenCalledWith({
+            page: 2,
+            per_page: PER_PAGE_DEFAULT,
+            participant_id: participantId,
+            sort: 'create_at',
+            direction: 'desc',
+        });
+    });
+
+    it('should handle network error', async () => {
+        mockClient.fetchPlaybookRuns.mockRejectedValue(new Error('Network error'));
+
+        const result = await fetchPlaybookRunsPageForParticipant(serverUrl, participantId);
+
+        expect(result).toBeDefined();
+        expect(result.error).toBeDefined();
+        expect(result.runs).toBeUndefined();
+        expect(result.hasMore).toBeUndefined();
+    });
+
+    it('should handle empty results', async () => {
+        mockClient.fetchPlaybookRuns.mockResolvedValue({
+            items: [],
+            has_more: false,
+        });
+
+        const result = await fetchPlaybookRunsPageForParticipant(serverUrl, participantId);
+
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.runs).toEqual([]);
+        expect(result.hasMore).toBe(false);
+    });
+
+    it('should default to page 0 when no page is provided', async () => {
+        const mockRuns = [mockPlaybookRun];
+        mockClient.fetchPlaybookRuns.mockResolvedValue({
+            items: mockRuns,
+            has_more: false,
+        });
+
+        await fetchPlaybookRunsPageForParticipant(serverUrl, participantId);
+
+        expect(mockClient.fetchPlaybookRuns).toHaveBeenCalledWith({
+            page: 0,
+            per_page: PER_PAGE_DEFAULT,
+            participant_id: participantId,
+            sort: 'create_at',
+            direction: 'desc',
+        });
     });
 });

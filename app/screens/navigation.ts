@@ -592,13 +592,13 @@ export async function dismissAllModalsAndPopToScreen(screenId: AvailableScreens,
         try {
             await Navigation.popTo(screenId, mergeOptions);
             if (Object.keys(passProps).length > 0) {
-                await Navigation.updateProps(screenId, passProps);
+                Navigation.updateProps(screenId, passProps);
             }
         } catch {
             // catch in case there is nothing to pop
         }
     } else {
-        goToScreen(screenId, title, passProps, options);
+        await goToScreen(screenId, title, passProps, options);
     }
 }
 

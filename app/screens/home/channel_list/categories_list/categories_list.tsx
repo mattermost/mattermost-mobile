@@ -12,6 +12,7 @@ import {CHANNEL, DRAFT, THREAD} from '@constants/screens';
 import {TABLET_SIDEBAR_WIDTH, TEAM_SIDEBAR_WIDTH} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import PlaybooksButton from '@playbooks/components/playbooks_button';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import Categories from './categories';
@@ -124,6 +125,12 @@ const CategoriesList = ({
         return null;
     }, [activeScreen, draftsCount, isTablet, scheduledPostCount, scheduledPostHasError, scheduledPostsEnabled]);
 
+    const playbooksButtonComponent = useMemo(() => {
+        return (
+            <PlaybooksButton/>
+        );
+    }, []);
+
     const content = useMemo(() => {
         if (!hasChannels) {
             return (<LoadChannelsError/>);
@@ -134,10 +141,11 @@ const CategoriesList = ({
                 <SubHeader/>
                 {threadButtonComponent}
                 {draftsButtonComponent}
+                {playbooksButtonComponent}
                 <Categories/>
             </>
         );
-    }, [draftsButtonComponent, hasChannels, threadButtonComponent]);
+    }, [draftsButtonComponent, hasChannels, playbooksButtonComponent, threadButtonComponent]);
 
     return (
         <Animated.View style={[styles.container, tabletStyle]}>

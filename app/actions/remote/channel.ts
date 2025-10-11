@@ -19,7 +19,7 @@ import {getActiveServer} from '@queries/app/servers';
 import {prepareMyChannelsForTeam, getChannelById, getChannelByName, getMyChannel, getChannelInfo, queryMyChannelSettingsByIds, getMembersCountByChannelsId, deleteChannelMembership, queryChannelsById} from '@queries/servers/channel';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {getCommonSystemValues, getConfig, getCurrentChannelId, getCurrentTeamId, getCurrentUserId, getLicense, setCurrentChannelId, setCurrentTeamAndChannelId} from '@queries/servers/system';
-import {getNthLastChannelFromTeam, getMyTeamById, getTeamByName, queryMyTeams, removeChannelFromTeamHistory} from '@queries/servers/team';
+import {getNthLastChannelFromTeam, getMyTeamById, getTeamByName, queryMyTeams, removeChannelFromTeamHistory, getTeamById} from '@queries/servers/team';
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
 import {dismissAllModalsAndPopToRoot} from '@screens/navigation';
@@ -38,7 +38,7 @@ import {fetchPostsForChannel} from './post';
 import {openChannelIfNeeded, savePreference} from './preference';
 import {fetchRolesIfNeeded} from './role';
 import {forceLogoutIfNecessary} from './session';
-import {addCurrentUserToTeam, fetchTeamByName, removeCurrentUserFromTeam} from './team';
+import {addCurrentUserToTeam, fetchTeamById, fetchTeamByName, removeCurrentUserFromTeam} from './team';
 import {fetchProfilesInChannel, fetchProfilesInGroupChannels, fetchProfilesPerChannels, fetchUsersByIds, updateUsersNoLongerVisible} from './user';
 
 import type {Model} from '@nozbe/watermelondb';
@@ -763,16 +763,25 @@ export async function unsetActiveChannelOnServer(serverUrl: string) {
     }
 }
 
-export async function switchToChannelByName(serverUrl: string, channelName: string, teamName: string, errorHandler: (intl: IntlShape) => void, intl: IntlShape) {
-    const onError = (joinedTeam: boolean, teamId?: string) => {
+export async function joinIfNeededAndSwitchToChannel(
+    serverUrl: string,
+    channelInfo: {id?: string; name?: string},
+    teamInfo: {id?: string; name?: string} | undefined,
+    errorHandler: (intl: IntlShape) => void,
+    intl: IntlShape,
+) {
+    const onError = (joinedTeam: boolean, teamIdToRemove?: string) => {
         errorHandler(intl);
-        if (joinedTeam && teamId) {
-            removeCurrentUserFromTeam(serverUrl, teamId, false);
+        if (joinedTeam && teamIdToRemove) {
+            removeCurrentUserFromTeam(serverUrl, teamIdToRemove, false);
         }
     };
 
     let joinedTeam = false;
-    let teamId = '';
+    let teamId = teamInfo?.id || '';
+    let channelId = channelInfo?.id || '';
+    const channelName = channelInfo?.name || '';
+    const teamName = teamInfo?.name || '';
 
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -780,12 +789,14 @@ export async function switchToChannelByName(serverUrl: string, channelName: stri
         if (teamName === DeepLink.Redirect) {
             teamId = await getCurrentTeamId(database);
         } else {
-            const team = await getTeamByName(database, teamName);
-            const isTeamMember = team ? await getMyTeamById(database, team.id) : false;
-            teamId = team?.id || '';
+            const team = teamId ? await getTeamById(database, teamId) : await getTeamByName(database, teamName);
+            const isTeamMember = team ? Boolean(await getMyTeamById(database, team.id)) : false;
+            if (!teamId) {
+                teamId = team?.id || '';
+            }
 
             if (!isTeamMember) {
-                const fetchRequest = await fetchTeamByName(serverUrl, teamName);
+                const fetchRequest = teamId ? await fetchTeamById(serverUrl, teamId) : await fetchTeamByName(serverUrl, teamName);
                 if (!fetchRequest.team) {
                     onError(joinedTeam);
                     return {error: fetchRequest.error || 'no team received'};
@@ -800,11 +811,14 @@ export async function switchToChannelByName(serverUrl: string, channelName: stri
             }
         }
 
-        const channel = await getChannelByName(database, teamId, channelName);
+        const channel = channelId ? await getChannelById(database, channelId) : await getChannelByName(database, teamId, channelName);
         const isChannelMember = channel ? await getMyChannel(database, channel.id) : false;
-        let channelId = channel?.id || '';
+        if (!channelId) {
+            channelId = channel?.id || '';
+        }
+
         if (!isChannelMember) {
-            const fetchRequest = await fetchChannelByName(serverUrl, teamId, channelName, true);
+            const fetchRequest = channelId ? await fetchChannelById(serverUrl, channelId) : await fetchChannelByName(serverUrl, teamId, channelName, true);
             if (!fetchRequest.channel) {
                 onError(joinedTeam, teamId);
                 return {error: fetchRequest.error || 'cannot fetch channel'};
@@ -818,7 +832,7 @@ export async function switchToChannelByName(serverUrl: string, channelName: stri
             }
 
             logInfo('joining channel', fetchRequest.channel.display_name, fetchRequest.channel.id);
-            const joinRequest = await joinChannel(serverUrl, teamId, undefined, channelName, false);
+            const joinRequest = await joinChannel(serverUrl, teamId, channelId, channelName, false);
             if (!joinRequest.channel) {
                 onError(joinedTeam, teamId);
                 return {error: joinRequest.error || 'no channel returned from join'};
@@ -827,7 +841,7 @@ export async function switchToChannelByName(serverUrl: string, channelName: stri
             channelId = fetchRequest.channel.id;
         }
 
-        switchToChannelById(serverUrl, channelId, teamId);
+        await switchToChannelById(serverUrl, channelId, teamId);
         return {};
     } catch (error) {
         onError(joinedTeam, teamId);

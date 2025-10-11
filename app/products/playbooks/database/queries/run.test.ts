@@ -9,6 +9,7 @@ import TestHelper from '@test/test_helper';
 
 import {
     queryPlaybookRunsPerChannel,
+    queryPlaybookRunsByParticipant,
     getPlaybookRunById,
     observePlaybookRunById,
     observePlaybookRunProgress,
@@ -623,6 +624,87 @@ describe('Playbook Run Queries', () => {
             result.subscribe({next: subscriptionNext});
 
             expect(subscriptionNext).toHaveBeenCalledWith([]);
+        });
+    });
+
+    describe('queryPlaybookRunsByParticipant', () => {
+        it('should query playbook runs by participant ID', async () => {
+            const participantId = 'participant-id-1';
+            const mockRuns = TestHelper.createPlaybookRuns(2, 0, 0).map((run, index) => ({
+                ...run,
+                participant_ids: [participantId, 'other-participant'],
+                id: `run-${index}`,
+            }));
+
+            await operator.handlePlaybookRun({
+                runs: mockRuns,
+                prepareRecordsOnly: false,
+                removeAssociatedRecords: false,
+            });
+
+            const result = queryPlaybookRunsByParticipant(operator.database, participantId);
+            const fetchedRuns = await result.fetch();
+
+            expect(fetchedRuns.length).toBe(2);
+            const runIds = fetchedRuns.map((run) => run.id);
+            expect(runIds).toContain(mockRuns[0].id);
+            expect(runIds).toContain(mockRuns[1].id);
+
+            // Verify the runs are sorted by create_at desc
+            expect(fetchedRuns[0].createAt).toBeGreaterThanOrEqual(fetchedRuns[1].createAt);
+        });
+
+        it('should return empty array when no runs match participant ID', async () => {
+            const participantId = 'participant-id-1';
+            const nonMatchingParticipantId = 'other-participant';
+            const mockRuns = TestHelper.createPlaybookRuns(1, 0, 0).map((run) => ({
+                ...run,
+                participant_ids: [nonMatchingParticipantId],
+            }));
+
+            await operator.handlePlaybookRun({
+                runs: mockRuns,
+                prepareRecordsOnly: false,
+                removeAssociatedRecords: false,
+            });
+
+            const result = queryPlaybookRunsByParticipant(operator.database, participantId);
+            const fetchedRuns = await result.fetch();
+
+            expect(fetchedRuns.length).toBe(0);
+        });
+
+        it('should handle JSON array participant_ids properly', async () => {
+            const participantId = 'user123';
+            const mockRuns = TestHelper.createPlaybookRuns(3, 0, 0).map((run, index) => ({
+                ...run,
+                participant_ids: (() => {
+                    if (index === 0) {
+                        return [participantId];
+                    }
+                    if (index === 1) {
+                        return ['other', participantId, 'another'];
+                    }
+                    return ['different'];
+                })(),
+                id: `run-${index}`,
+            }));
+
+            await operator.handlePlaybookRun({
+                runs: mockRuns,
+                prepareRecordsOnly: false,
+                removeAssociatedRecords: false,
+            });
+
+            const result = queryPlaybookRunsByParticipant(operator.database, participantId);
+            const fetchedRuns = await result.fetch();
+
+            // Should only return the first two runs (index 0 and 1)
+            expect(fetchedRuns.length).toBe(2);
+            const runIds = fetchedRuns.map((run) => run.id);
+            expect(runIds).toContain(mockRuns[0].id);
+            expect(runIds).toContain(mockRuns[1].id);
+            expect(runIds).not.toContain(mockRuns[2].id);
         });
     });
 });

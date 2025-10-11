@@ -21,7 +21,7 @@ import {getCurrentUser, queryUsersById} from '@queries/servers/user';
 import {dismissAllModalsAndPopToRoot, dismissAllModalsAndPopToScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {isTablet} from '@utils/helpers';
-import {logError, logInfo} from '@utils/log';
+import {logDebug, logError, logInfo} from '@utils/log';
 import {displayGroupMessageName, displayUsername, getUserIdFromChannelName} from '@utils/user';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -88,14 +88,16 @@ export async function switchToChannel(serverUrl: string, channelId: string, team
                 }
 
                 if (isTabletDevice) {
-                    dismissAllModalsAndPopToRoot();
+                    await dismissAllModalsAndPopToRoot();
                     DeviceEventEmitter.emit(NavigationConstants.NAVIGATION_HOME, Screens.CHANNEL);
                 } else {
-                    dismissAllModalsAndPopToScreen(Screens.CHANNEL, '', undefined, {topBar: {visible: false}});
+                    await dismissAllModalsAndPopToScreen(Screens.CHANNEL, '', undefined, {topBar: {visible: false}});
                 }
 
                 logInfo('channel switch to', channel?.displayName, channelId, (Date.now() - dt), 'ms');
             }
+        } else {
+            logDebug('failed to navigate to channel because there was no membership, channel id: ', channelId);
         }
 
         return {models};
