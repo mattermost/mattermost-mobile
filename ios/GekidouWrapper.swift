@@ -14,7 +14,9 @@ import react_native_emm
   @objc public static let `default` = GekidouWrapper()
 
   override init() {
+    super.init()
     ScreenCaptureManager.startTrackingScreens()
+    registerDraftUpdateObserver()
   }
 
   @objc func postNotificationReceipt(_ userInfo: [AnyHashable:Any]) {
@@ -50,5 +52,26 @@ import react_native_emm
     }
 
     return nil
+  }
+  
+  private func registerDraftUpdateObserver() {
+    CFNotificationCenterAddObserver(
+        CFNotificationCenterGetDarwinNotifyCenter(),
+        nil,
+        { _, _, _, _, _ in
+            if let payload = Preferences.default.object(forKey: "ShareExtensionDraftUpdate") as? [String: Any] {
+              DispatchQueue.main.async {
+                if let bridge = RCTBridge.current(),
+                   let module = bridge.module(for: MattermostShare.self) as? MattermostShare {
+                  module.sendDraftUpdate(payload)
+                }
+              }
+              Preferences.default.removeObject(forKey: "ShareExtensionDraftUpdate")
+            }
+        },
+        "share.extension.draftUpdate" as CFString,
+        nil,
+        .deliverImmediately
+    )
   }
 }

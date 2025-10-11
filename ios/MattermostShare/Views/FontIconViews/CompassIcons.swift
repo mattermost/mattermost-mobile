@@ -29,4 +29,5 @@ public enum CompassIconsCode: String, CaseIterable {
   case patchFile = "\u{e909}"
   case zipFile = "\u{e90a}"
   case codeFile = "\u{e90b}"
+  case pen = "\u{f0cb6}"
 }
