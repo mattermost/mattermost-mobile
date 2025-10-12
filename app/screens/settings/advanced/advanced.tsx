@@ -130,7 +130,7 @@ const AdvancedSettings = ({
             <SettingBlock
                 headerText={defineMessage({
                     id: 'settings.advanced.experimental_features',
-                    defaultMessage: 'EXPERIMENTAL FEATURES',
+                    defaultMessage: 'Experimental Features',
                 })}
             >
                 <SettingSeparator/>
