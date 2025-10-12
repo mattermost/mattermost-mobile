@@ -418,3 +418,25 @@ describe('setAssignee', () => {
         await expect(client.setAssignee(playbookRunId, checklistNum, itemNum, assigneeId)).rejects.toThrow('Network error');
     });
 });
+
+describe('finishRun', () => {
+    test('should call doFetch with correct url and options', async () => {
+        const playbookRunId = 'run123';
+        const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunId}/finish`;
+        const expectedOptions = {body: {}, method: 'put'};
+
+        jest.mocked(client.doFetch).mockResolvedValue(undefined);
+
+        await client.finishRun(playbookRunId);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+    });
+
+    test('should handle error when finishing run', async () => {
+        const playbookRunId = 'run123';
+
+        jest.mocked(client.doFetch).mockRejectedValue(new Error('Network error'));
+
+        await expect(client.finishRun(playbookRunId)).rejects.toThrow('Network error');
+    });
+});

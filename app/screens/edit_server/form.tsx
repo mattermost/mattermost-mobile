@@ -6,7 +6,7 @@ import {defineMessages, useIntl} from 'react-intl';
 import {Keyboard, Platform, useWindowDimensions, View} from 'react-native';
 
 import Button from '@components/button';
-import FloatingTextInput, {type FloatingTextInputRef} from '@components/floating_text_input_label';
+import FloatingTextInput, {type FloatingTextInputRef} from '@components/floating_input/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import {useIsTablet} from '@hooks/device';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -120,7 +120,7 @@ const EditServerForm = ({
                 keyboardAwareRef.current?.scrollToPosition(0, 0);
             }
         }
-    }, [onFocus]);
+    }, [isTablet, keyboardAwareRef, onFocus]);
 
     const saveButtonTestId = buttonDisabled ? 'edit_server_form.save.button.disabled' : 'edit_server_form.save.button';
 
@@ -128,8 +128,7 @@ const EditServerForm = ({
         <View style={styles.formContainer}>
             <View style={[styles.fullWidth, displayNameError?.length ? styles.error : undefined]}>
                 <FloatingTextInput
-                    autoCorrect={false}
-                    autoCapitalize={'none'}
+                    rawInput={true}
                     enablesReturnKeyAutomatically={true}
                     error={displayNameError}
                     label={formatMessage({
@@ -142,7 +141,6 @@ const EditServerForm = ({
                     onSubmitEditing={onUpdate}
                     ref={displayNameRef}
                     returnKeyType='done'
-                    spellCheck={false}
                     testID='edit_server_form.server_display_name.input'
                     theme={theme}
                     value={displayName}

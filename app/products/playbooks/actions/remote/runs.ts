@@ -123,3 +123,15 @@ export const setOwner = async (serverUrl: string, playbookRunId: string, ownerId
         return {error};
     }
 };
+
+export const finishRun = async (serverUrl: string, playbookRunId: string) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        await client.finishRun(playbookRunId);
+        return {data: true};
+    } catch (error) {
+        logDebug('error on finishRun', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
