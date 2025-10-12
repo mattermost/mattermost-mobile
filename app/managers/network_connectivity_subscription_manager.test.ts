@@ -283,6 +283,32 @@ describe('NetworkConnectivitySubscriptionManager', () => {
             expect(mockWebsocketManager.observeWebsocketState).toHaveBeenCalledWith('https://test.com');
         });
 
+        it('should call updateState when websocket state changes', async () => {
+            let websocketCallback: ((state: string) => void) | undefined;
+            mockWebsocketManager.observeWebsocketState.mockReturnValue({
+                subscribe: jest.fn((callback: (state: string) => void) => {
+                    websocketCallback = callback;
+                    return mockWebsocketSubscription;
+                }),
+            } as any); // eslint-disable-line @typescript-eslint/no-explicit-any
+
+            const mockServers: MockServer[] = [{url: 'https://test.com', lastActiveAt: 1000}];
+
+            startNetworkConnectivitySubscriptions();
+
+            const serversCallback = mockSubscribeActiveServers.mock.calls[0][0];
+            await serversCallback(mockServers as any); // eslint-disable-line @typescript-eslint/no-explicit-any
+
+            expect(websocketCallback).toBeDefined();
+            websocketCallback!('connected');
+
+            expect(mockNetworkConnectivityManager.updateState).toHaveBeenCalledWith(
+                'connected',
+                {isInternetReachable: null},
+                'active',
+            );
+        });
+
         it('should unsubscribe from previous websocket subscription when servers change', async () => {
             const mockServers1: MockServer[] = [{url: 'https://server1.com', lastActiveAt: 1000}];
             const mockServers2: MockServer[] = [{url: 'https://server2.com', lastActiveAt: 2000}];
@@ -297,6 +323,115 @@ describe('NetworkConnectivitySubscriptionManager', () => {
             await serversCallback(mockServers2 as any); // eslint-disable-line @typescript-eslint/no-explicit-any
             expect(mockWebsocketSubscription.unsubscribe).toHaveBeenCalled();
             expect(mockWebsocketManager.observeWebsocketState).toHaveBeenCalledWith('https://server2.com');
+        });
+    });
+
+    describe('performance subscription handling', () => {
+        it('should subscribe to performance state changes', async () => {
+            const mockServers: MockServer[] = [{url: 'https://test.com', lastActiveAt: 1000}];
+
+            startNetworkConnectivitySubscriptions();
+
+            const serversCallback = mockSubscribeActiveServers.mock.calls[0][0];
+            await serversCallback(mockServers as any); // eslint-disable-line @typescript-eslint/no-explicit-any
+
+            expect(mockNetworkPerformanceManager.observePerformanceState).toHaveBeenCalledWith('https://test.com');
+        });
+
+        it('should call updatePerformanceState when performance state changes', async () => {
+            let performanceCallback: ((state: string) => void) | undefined;
+            mockNetworkPerformanceManager.observePerformanceState.mockReturnValue({
+                subscribe: jest.fn((callback: (state: string) => void) => {
+                    performanceCallback = callback;
+                    return mockPerformanceSubscription;
+                }),
+            } as any); // eslint-disable-line @typescript-eslint/no-explicit-any
+
+            const mockServers: MockServer[] = [{url: 'https://test.com', lastActiveAt: 1000}];
+
+            startNetworkConnectivitySubscriptions();
+
+            const serversCallback = mockSubscribeActiveServers.mock.calls[0][0];
+            await serversCallback(mockServers as any); // eslint-disable-line @typescript-eslint/no-explicit-any
+
+            expect(performanceCallback).toBeDefined();
+            performanceCallback!('slow');
+
+            expect(mockNetworkConnectivityManager.updatePerformanceState).toHaveBeenCalledWith('slow');
+        });
+    });
+
+    describe('edge cases', () => {
+        it('should find most recent server when first server is more recent', async () => {
+            const mockServers: MockServer[] = [
+                {url: 'https://server1.com', lastActiveAt: 2000},
+                {url: 'https://server2.com', lastActiveAt: 1000},
+            ];
+
+            startNetworkConnectivitySubscriptions();
+
+            const serversCallback = mockSubscribeActiveServers.mock.calls[0][0];
+            await serversCallback(mockServers as any); // eslint-disable-line @typescript-eslint/no-explicit-any
+
+            expect(mockNetworkConnectivityManager.setServerConnectionStatus).toHaveBeenCalledWith(true, 'https://server1.com');
+            expect(mockWebsocketManager.observeWebsocketState).toHaveBeenCalledWith('https://server1.com');
+        });
+
+        it('should reinitialize when app becomes active after subscriptions were cleared', () => {
+            const mockAppStateListener = {remove: jest.fn()};
+            const mockNetInfoUnsubscriber = jest.fn();
+            const mockActiveServersUnsubscriber = {unsubscribe: jest.fn()};
+
+            mockAppState.addEventListener.mockReturnValue(mockAppStateListener as any); // eslint-disable-line @typescript-eslint/no-explicit-any
+            mockNetInfo.addEventListener.mockReturnValue(mockNetInfoUnsubscriber);
+            mockSubscribeActiveServers.mockReturnValue(mockActiveServersUnsubscriber as any); // eslint-disable-line @typescript-eslint/no-explicit-any
+
+            startNetworkConnectivitySubscriptions();
+
+            const appStateCallback = mockAppState.addEventListener.mock.calls[0][1];
+
+            mockNetInfo.addEventListener.mockClear();
+            mockSubscribeActiveServers.mockClear();
+
+            appStateCallback('background');
+
+            expect(mockNetInfoUnsubscriber).toHaveBeenCalled();
+            expect(mockActiveServersUnsubscriber.unsubscribe).toHaveBeenCalled();
+
+            mockNetInfo.addEventListener.mockClear();
+            mockSubscribeActiveServers.mockClear();
+
+            appStateCallback('active');
+
+            expect(mockNetInfo.addEventListener).toHaveBeenCalled();
+            expect(mockSubscribeActiveServers).toHaveBeenCalled();
+        });
+
+        it('should not reinitialize when transitioning to active if subscriptions exist', async () => {
+            startNetworkConnectivitySubscriptions();
+
+            const appStateCallback = mockAppState.addEventListener.mock.calls[0][1];
+            const serversCallback = mockSubscribeActiveServers.mock.calls[0][0];
+
+            await serversCallback([{url: 'https://test.com', lastActiveAt: 1000}] as any); // eslint-disable-line @typescript-eslint/no-explicit-any
+
+            mockNetInfo.addEventListener.mockClear();
+            mockSubscribeActiveServers.mockClear();
+
+            appStateCallback('active');
+
+            expect(mockNetInfo.addEventListener).not.toHaveBeenCalled();
+            expect(mockSubscribeActiveServers).not.toHaveBeenCalled();
+        });
+
+        it('should handle netInfo with undefined isInternetReachable', () => {
+            startNetworkConnectivitySubscriptions();
+
+            const netInfoCallback = mockNetInfo.addEventListener.mock.calls[0][0];
+            const mockNetInfoState = {} as MockNetInfoState;
+            netInfoCallback(mockNetInfoState as any); // eslint-disable-line @typescript-eslint/no-explicit-any
+
+            expect(mockNetInfo.addEventListener).toHaveBeenCalledWith(expect.any(Function));
         });
     });
 
