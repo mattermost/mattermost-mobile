@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useCallback, useMemo} from 'react';
 
 import BannerSection from './banner_section';
 
@@ -17,21 +17,28 @@ const FloatingBanner: React.FC<FloatingBannerProps> = ({banners, onDismiss}) => 
         return null;
     }
 
-    const onBannerPress = (banner: FloatingBannerConfig) => {
+    const onBannerPress = useCallback((banner: FloatingBannerConfig) => {
         if (banner.onPress) {
             banner.onPress();
         }
-    };
+    }, []);
 
-    const onBannerDismiss = (banner: FloatingBannerConfig) => {
+    const onBannerDismiss = useCallback((banner: FloatingBannerConfig) => {
         onDismiss(banner.id);
         if (banner.onDismiss) {
             banner.onDismiss();
         }
-    };
+    }, [onDismiss]);
 
-    const topBanners = banners.filter((banner) => (banner.position || 'top') === 'top');
-    const bottomBanners = banners.filter((banner) => banner.position === 'bottom');
+    const topBanners = useMemo(
+        () => banners.filter((banner) => (banner.position || 'top') === 'top'),
+        [banners],
+    );
+
+    const bottomBanners = useMemo(
+        () => banners.filter((banner) => banner.position === 'bottom'),
+        [banners],
+    );
 
     return (
         <>
