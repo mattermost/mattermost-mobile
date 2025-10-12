@@ -920,15 +920,11 @@ describe('ClientTracking', () => {
             groupLabel: 'Cold Start' as RequestGroupLabel,
         };
 
-        beforeEach(() => {
-            client.lowConnectivityMonitorEnabled = true;
-        });
-
         afterEach(() => {
             jest.clearAllMocks();
         });
 
-        it('should call full tracking lifecycle when Low Connectivity Monitor is enabled', async () => {
+        it('should call full tracking lifecycle', async () => {
             const mockMetrics = createMockMetrics();
             apiClientMock.get.mockResolvedValue(mockSuccessResponse(mockMetrics));
 
@@ -936,16 +932,6 @@ describe('ClientTracking', () => {
 
             expect(mockedNPM.startRequestTracking).toHaveBeenCalledWith('https://example.com', 'https://example.com/api');
             expect(mockedNPM.completeRequestTracking).toHaveBeenCalledWith('https://example.com', 'mock-request-id-123', mockMetrics);
-        });
-
-        it('should not call tracking methods when Low Connectivity Monitor is disabled', async () => {
-            client.lowConnectivityMonitorEnabled = false;
-            apiClientMock.get.mockResolvedValue(mockSuccessResponse());
-
-            await client.doFetchWithTracking('https://example.com/api', requestOptions);
-
-            expect(mockedNPM.startRequestTracking).not.toHaveBeenCalled();
-            expect(mockedNPM.completeRequestTracking).not.toHaveBeenCalled();
         });
 
         it('should not call completeRequestTracking when response.metrics is undefined', async () => {
@@ -1005,17 +991,6 @@ describe('ClientTracking', () => {
 
             expect(mockedNPM.startRequestTracking).toHaveBeenCalledWith('https://example.com', 'https://example.com/api');
             expect(mockedNPM.cancelRequestTracking).toHaveBeenCalledWith('https://example.com', 'mock-request-id-123');
-            expect(mockedNPM.completeRequestTracking).not.toHaveBeenCalled();
-        });
-
-        it('should not call cancelRequestTracking when Low Connectivity Monitor is disabled and request fails', async () => {
-            client.lowConnectivityMonitorEnabled = false;
-            apiClientMock.get.mockRejectedValue(new Error('Request failed'));
-
-            await expect(client.doFetchWithTracking('https://example.com/api', requestOptions)).rejects.toThrow('Received invalid response from the server.');
-
-            expect(mockedNPM.startRequestTracking).not.toHaveBeenCalled();
-            expect(mockedNPM.cancelRequestTracking).not.toHaveBeenCalled();
             expect(mockedNPM.completeRequestTracking).not.toHaveBeenCalled();
         });
     });
