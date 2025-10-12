@@ -3,14 +3,16 @@
 
 import type {ReactNode} from 'react';
 
-export interface BannerConfig {
+export type FloatingBannerPosition = 'top' | 'bottom';
+
+export interface FloatingBannerConfig {
     id: string;
     title?: string;
     message?: string;
     type?: 'info' | 'success' | 'warning' | 'error';
     dismissible?: boolean;
     autoHideDuration?: number;
-    position?: 'top' | 'bottom';
+    position?: FloatingBannerPosition;
     onPress?: () => void;
     onDismiss?: () => void;
     customComponent?: ReactNode;

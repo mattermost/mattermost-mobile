@@ -10,10 +10,11 @@ import {getIntlShape} from '@utils/general';
 import {BannerManager} from './banner_manager';
 
 import type {NetworkPerformanceState} from './network_performance_manager';
-import type {BannerConfig} from '@components/floating_banner/types';
+import type {FloatingBannerConfig} from '@components/floating_banner/types';
 
 const RECONNECTION_BANNER_DURATION = toMilliseconds({seconds: 3});
 const PERFORMANCE_BANNER_DURATION = toMilliseconds({seconds: 10});
+const NETWORK_STATUS_BANNER_ID = 'network-status';
 
 function getConnectionMessageText(
     websocketState: WebsocketConnectedState,
@@ -88,7 +89,7 @@ class NetworkConnectivityManagerSingleton {
 
     private getConnectionMessage(): string {
         if (!this.websocketState || !this.netInfo) {
-            return 'Connection status unknown';
+            return this.intl.formatMessage({id: 'connection_banner.status_unknown', defaultMessage: 'Connection status unknown'});
         }
 
         return getConnectionMessageText(this.websocketState, this.netInfo.isInternetReachable, this.intl.formatMessage);
@@ -115,11 +116,9 @@ class NetworkConnectivityManagerSingleton {
         BannerManager.showBannerWithAutoHide(bannerConfig, durationMs);
     }
 
-    private createConnectivityBannerConfig(message: string, isConnected: boolean): BannerConfig {
+    private createConnectivityBannerConfig(message: string, isConnected: boolean): FloatingBannerConfig {
         return {
-
-            // Implement id as part of banner namespace described in this ticket: https://mattermost.atlassian.net/browse/MM-66104
-            id: 'connectivity',
+            id: NETWORK_STATUS_BANNER_ID,
             dismissible: true,
             customComponent: React.createElement(ConnectionBanner, {
                 isConnected,
@@ -133,9 +132,9 @@ class NetworkConnectivityManagerSingleton {
         };
     }
 
-    private createPerformanceBannerConfig(message: string): BannerConfig {
+    private createPerformanceBannerConfig(message: string): FloatingBannerConfig {
         return {
-            id: 'performance',
+            id: NETWORK_STATUS_BANNER_ID,
             dismissible: true,
             onDismiss: () => {
                 this.performanceSuppressedUntilNormal = true;
@@ -161,7 +160,7 @@ class NetworkConnectivityManagerSingleton {
         this.currentServerUrl = serverUrl;
 
         if (!connected) {
-            BannerManager.hideBanner();
+            BannerManager.hideBanner(NETWORK_STATUS_BANNER_ID);
             this.websocketState = null;
             this.previousWebsocketState = null;
         }
@@ -214,7 +213,7 @@ class NetworkConnectivityManagerSingleton {
 
     private updateBanner() {
         if (!this.currentServerUrl || this.appState === 'background') {
-            BannerManager.hideBanner();
+            BannerManager.hideBanner(NETWORK_STATUS_BANNER_ID);
             return;
         }
 
@@ -239,7 +238,7 @@ class NetworkConnectivityManagerSingleton {
             return;
         }
 
-        BannerManager.hideBanner();
+        BannerManager.hideBanner(NETWORK_STATUS_BANNER_ID);
     }
 
     private handleDisconnectedState(): boolean {
@@ -293,4 +292,5 @@ export const testExports = {
     shouldShowReconnectionBanner,
     RECONNECTION_BANNER_DURATION,
     PERFORMANCE_BANNER_DURATION,
+    NETWORK_STATUS_BANNER_ID,
 };

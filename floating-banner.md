@@ -64,10 +64,10 @@ stateDiagram-v2
     Hidden --> Showing: showBanner()
     
     Showing --> AutoHiding: showBannerWithAutoHide()
-    Showing --> Hidden: hideBanner() / User Dismiss
+    Showing --> Hidden: hideBanner(bannerId) / User Dismiss
     
     AutoHiding --> Hidden: Timeout Expires
-    AutoHiding --> Hidden: hideBanner() / User Dismiss
+    AutoHiding --> Hidden: hideBanner(bannerId) / User Dismiss
     
     Hidden --> [*]: cleanup()
     Showing --> [*]: cleanup()
@@ -77,15 +77,21 @@ stateDiagram-v2
 **Key Features**:
 - Singleton pattern with support for multiple stacked banners in a single overlay
 - Per-banner auto-hide timers for independent timeout management
-- Concurrent update queue system to prevent race conditions
+- **Promise-chain queue system** to prevent race conditions (replaces previous UpdateState enum)
 - 2-second overlay dismiss delay to prevent flickering during rapid banner changes
 - Overlay system integration with `Navigation.updateProps` for efficient updates
 - Error handling for dismiss callbacks
 - State tracking (active banners array, overlay visibility, individual timers)
+- **Required `bannerId` parameter** for `hideBanner()` to prevent accidental cross-system interference
+
+**Android Limitation**:
+- On Android, when both top AND bottom banners are displayed simultaneously, only ONE GestureHandlerRootView can properly register touch events
+- iOS works correctly with simultaneous top/bottom banners
+- Workaround not yet implemented - future enhancement may add banner position prioritization on Android
 
 ### 2. FloatingBanner Component
 
-**Purpose**: Main rendering component that handles multiple banners and positioning
+**Purpose**: Main rendering component that splits banners by position and delegates to BannerSection
 
 ```mermaid
 flowchart TD
@@ -96,37 +102,56 @@ flowchart TD
     SPLIT --> TOP[Top Banners]
     SPLIT --> BOTTOM[Bottom Banners]
     
-    TOP --> RTOP[renderSection 'top']
-    BOTTOM --> RBOTTOM[renderSection 'bottom']
+    TOP --> BSTOP[BannerSection 'top']
+    BOTTOM --> BSBOTTOM[BannerSection 'bottom']
     
-    RTOP --> BTOP[Banner Components<br/>with top positioning]
-    RBOTTOM --> BBOTTOM[Banner Components<br/>with bottom positioning]
+    BSTOP --> GHRTOP[GestureHandlerRootView<br/>positioned at top]
+    BSBOTTOM --> GHRBOTTOM[GestureHandlerRootView<br/>positioned at bottom]
     
-    BTOP --> CONTENT[Banner Content]
-    BBOTTOM --> CONTENT
+    GHRTOP --> ABTOP[AnimatedBannerItem<br/>Components]
+    GHRBOTTOM --> ABBOTTOM[AnimatedBannerItem<br/>Components]
+    
+    ABTOP --> CONTENT[Banner Content]
+    ABBOTTOM --> CONTENT
     
     CONTENT --> BI[BannerItem]
     CONTENT --> CUSTOM[Custom Content]
 ```
 
-### 3. Banner Component
+### 3. BannerSection Component
 
-**Purpose**: Individual banner container with positioning, animations, and gestures
+**Purpose**: Positions and sizes the GestureHandlerRootView for a banner section (top or bottom)
+
+**Key Features**:
+- Creates a `GestureHandlerRootView` for each section (top/bottom)
+- Uses `useBannerGestureRootPosition` hook for platform-specific positioning
+- Calculates container height based on number of banners
+- Applies safe area insets for top banners
+- Handles keyboard adjustments (iOS only)
+- Returns `null` when no banners in section
 
 ```mermaid
 graph LR
-    subgraph "Banner Component Features"
-        POS["Position Calculation<br/>• Safe Area<br/>• Header Heights (top only)<br/>• Custom Offsets<br/>• Bottom Positioning"]
-        ANIM["Animations<br/>• Fade In/Out<br/>• Slide Transitions<br/>• Keyboard Adjustments"]
-        GEST["Gesture Handling<br/>• Swipe to Dismiss<br/>• Threshold Detection<br/>• Spring Back"]
-        STYLE["Styling<br/>• Absolute Positioning<br/>• Z-Index Management<br/>• Responsive Layout"]
+    subgraph "BannerSection Features"
+        POS["Position Calculation<br/>• useBannerGestureRootPosition hook<br/>• Container height calculation<br/>• Safe area insets (top only)<br/>• Keyboard-aware (iOS)"]
+        GESTURE["Gesture Root<br/>• GestureHandlerRootView<br/>• pointerEvents='box-none'<br/>• Positioned absolutely"]
+        RENDER["Banner Rendering<br/>• AnimatedBannerItem per banner<br/>• Swipe to dismiss gestures<br/>• Stacked with spacing"]
     end
     
-    POS --> RENDER["Rendered Banner"]
-    ANIM --> RENDER
-    GEST --> RENDER
-    STYLE --> RENDER
+    POS --> GESTURE
+    GESTURE --> RENDER
 ```
+
+### 4. useBannerGestureRootPosition Hook
+
+**Purpose**: Calculates positioning and sizing for GestureHandlerRootView based on platform, device type, and keyboard state
+
+**Key Features**:
+- Platform-specific bottom offsets (Android vs iOS)
+- Tablet-specific width constraints (96% of available width after sidebar)
+- Keyboard-aware positioning (iOS dynamically adjusts, Android uses fixed offset)
+- Memoized for performance
+- Exports `BANNER_TABLET_WIDTH_PERCENTAGE` constant via `testExports`
 
 ## Data Flow
 
@@ -226,8 +251,11 @@ class BannerManager {
     // Show banner with auto-hide (per-banner timer)
     showBannerWithAutoHide(config: BannerConfig, durationMs?: number): void;
     
-    // Hide specific banner by ID, or all banners if no ID provided
-    hideBanner(bannerId?: string): void;
+    // Hide specific banner by ID (required to prevent accidental cross-system interference)
+    hideBanner(bannerId: string): void;
+    
+    // Hide all banners at once
+    hideAllBanners(): void;
     
     // Clean up all timeouts and state
     cleanup(): void;
@@ -243,19 +271,15 @@ class BannerManager {
 ### Internal State Management
 
 ```typescript
-private activeBanners: BannerConfig[] = [];                    // Array of active banners
-private overlayVisible = false;                                 // Tracks overlay state
+private activeBanners: FloatingBannerConfig[] = [];           // Array of active banners
+private overlayVisible = false;                                // Tracks overlay state
 private autoHideTimers: Map<string, NodeJS.Timeout> = new Map(); // Per-banner timers
-private updateState: UpdateState = UpdateState.IDLE;            // Queue state
-private dismissOverlayTimer: NodeJS.Timeout | null = null;      // 2s dismiss delay
-private dismissOverlayResolve: (() => void) | null = null;      // Delay cancellation
-
-enum UpdateState {
-    IDLE = 'idle',
-    IN_PROGRESS = 'in-progress',
-    IN_PROGRESS_PENDING = 'in-progress-pending',
-}
+private updateQueue: Promise<void> = Promise.resolve();        // Promise-chain queue
+private dismissOverlayTimer: NodeJS.Timeout | null = null;     // 2s dismiss delay
+private dismissOverlayResolve: (() => void) | null = null;     // Delay cancellation
 ```
+
+**Note**: The previous `UpdateState` enum has been replaced with a promise-chain queue system for better handling of concurrent updates.
 
 ## Usage Patterns
 
@@ -346,11 +370,11 @@ BannerManager.showBanner({
 ### 5. Hiding Specific Banners
 
 ```typescript
-// Hide a specific banner by ID
+// Hide a specific banner by ID (required parameter)
 BannerManager.hideBanner('banner-1');
 
-// Hide all banners
-BannerManager.hideBanner();
+// Hide all banners at once
+BannerManager.hideAllBanners();
 
 // Check if any banner is visible
 if (BannerManager.isBannerVisible()) {
@@ -360,35 +384,43 @@ if (BannerManager.isBannerVisible()) {
 
 ## Configuration & Positioning
 
-### Wrapper-Based Positioning System
+### GestureHandlerRootView Positioning System
 
-The system uses a **wrapper-based architecture** where positioning is handled entirely by absolutely positioned `Animated.View` wrappers in the `FloatingBanner` component.
+The system uses a **two-level positioning architecture**:
 
-The `Banner` component no longer handles positioning - all position calculations (safe areas, headers, keyboard, stacking) are handled in `FloatingBanner`'s `AnimatedBannerItem` component:
+1. **BannerSection Level**: Creates a `GestureHandlerRootView` for each position (top/bottom) and positions it using the `useBannerGestureRootPosition` hook
+2. **AnimatedBannerItem Level**: Individual banners within each section are positioned using absolutely positioned `Animated.View` wrappers
 
 ```typescript
-// Both top and bottom start with base spacing
-let baseOffset = BANNER_SPACING; // 8px from @constants/view
+// BannerSection calculates container height
+const containerHeight = useMemo(() => {
+    const numBanners = sectionBanners.length;
+    const spacing = (numBanners - 1) * BANNER_SPACING;
+    return (BANNER_HEIGHT * numBanners) + spacing;
+}, [sectionBanners.length]);
 
-// Top banners add safe area and header heights
-if (isTop) {
-    baseOffset += insets.top;
-    
-    if (isTablet) {
-        baseOffset += TABLET_HEADER_HEIGHT;
-    } else {
-        baseOffset += DEFAULT_HEADER_HEIGHT;
-    }
-}
-// Bottom banners use just BANNER_SPACING (keyboard handled by BannerSection)
+// useBannerGestureRootPosition returns positioning for the GestureHandlerRootView
+const gestureRootStyle = useBannerGestureRootPosition({
+    position,
+    containerHeight,
+});
+// Returns: {height, top: 0} for top or {height, bottom: offset} for bottom
+// Plus tablet-specific: {maxWidth, alignSelf: 'center'}
+```
 
-// Calculate final stacked position for current banner
-const stackOffset = baseOffset + (index * (CHANNEL_BANNER_HEIGHT + BANNER_SPACING));
+### AnimatedBannerItem Stacking
+
+Within each `BannerSection`, banners stack with `AnimatedBannerItem` wrappers:
+
+```typescript
+// Each banner gets an absolutely positioned wrapper
+// Top banners stack from top: insets.top + (index * (BANNER_HEIGHT + BANNER_SPACING))
+// Bottom banners stack from bottom: 0 + (index * (BANNER_HEIGHT + BANNER_SPACING))
 ```
 
 ### Stacking Behavior
 
-Multiple banners stack with consistent 8px spacing, handled entirely by the wrapper system in `FloatingBanner`.
+Multiple banners stack with consistent 8px spacing (`BANNER_SPACING` constant), managed by `AnimatedBannerItem` components in `FloatingBanner`.
 
 ### Constants
 
@@ -404,9 +436,9 @@ const FLOATING_BANNER_BOTTOM_OFFSET_WITH_KEYBOARD_IOS = 70;
 const FLOATING_BANNER_BOTTOM_OFFSET_WITH_KEYBOARD_ANDROID = 80;
 const FLOATING_BANNER_TABLET_EXTRA_BOTTOM_OFFSET = 60;
 
-// Header heights (from @constants/view)
-const DEFAULT_HEADER_HEIGHT = Platform.select({android: 56, default: 44});
-const TABLET_HEADER_HEIGHT = 44;
+// Tablet layout (from useBannerGestureRootPosition hook)
+const BANNER_TABLET_WIDTH_PERCENTAGE = 96;  // Tablets use 96% of available width
+const TABLET_SIDEBAR_WIDTH = 320;           // From @constants/view
 
 // BannerManager timing (from @managers/banner_manager)
 const TIME_TO_CLOSE = 5000;                // Default auto-hide duration (ms)
@@ -567,27 +599,34 @@ private removeBannerFromList(bannerId: string) {
 ### Concurrent Update Management
 
 ```typescript
-// Queue system prevents race conditions
-private async updateOverlay() {
-    if (this.updateState !== UpdateState.IDLE) {
-        this.updateState = UpdateState.IN_PROGRESS_PENDING;
-        return;
-    }
-    
-    this.updateState = UpdateState.IN_PROGRESS;
-    
-    try {
-        // Update overlay logic...
-    } finally {
-        const hasPendingUpdate = this.updateState === UpdateState.IN_PROGRESS_PENDING;
-        this.updateState = UpdateState.IDLE;
-        
-        if (hasPendingUpdate) {
-            this.updateOverlay(); // Process queued update
+// Promise-chain queue prevents race conditions
+private updateOverlay() {
+    this.updateQueue = this.updateQueue.then(async () => {
+        // All updates execute sequentially in order
+        if (!this.activeBanners.length) {
+            // Handle empty banner list...
+            return;
         }
-    }
+        
+        // Update overlay with current banners...
+        if (this.overlayVisible) {
+            Navigation.updateProps(FLOATING_BANNER_OVERLAY_ID, {
+                banners: bannersWithDismissProps,
+                onDismiss: handleDismiss,
+            });
+        } else {
+            showOverlay(/* ... */);
+            this.overlayVisible = true;
+        }
+    });
 }
 ```
+
+**Benefits of Promise-Chain Queue**:
+- Simpler implementation than state machine
+- Automatic sequential execution
+- Each update waits for previous one to complete
+- No risk of race conditions when showing/hiding rapidly
 
 ### Dismiss Delay Cancellation
 
@@ -665,26 +704,38 @@ The system includes comprehensive tests with **100% code coverage** covering:
    - Singleton pattern verification
    - Multiple banner stacking and management
    - Per-banner auto-hide timers
-   - Concurrent update queue system
+   - **Promise-chain queue system** for concurrent updates
    - 2-second overlay dismiss delay
    - Dismiss delay cancellation when new banners added
    - Error handling in callbacks
    - State management (activeBanners, overlayVisible)
    - Custom component cloning and dismiss handlers
-   - Specific banner removal by ID
+   - **Required `bannerId` parameter** for `hideBanner()`
+   - `hideAllBanners()` functionality
 
-2. **FloatingBanner Tests**:
+2. **BannerSection Tests** (5 tests):
+   - Empty banners edge case (returns null)
+   - Top/bottom container rendering with correct testIDs
+   - Multiple banner rendering
+   - Base padding application
+
+3. **useBannerGestureRootPosition Hook Tests** (13 tests):
+   - Top position on phone and tablet
+   - Bottom position on iOS (with/without keyboard, phone/tablet)
+   - Bottom position on Android (ignores keyboard)
+   - Container height variations
+   - Memoization behavior
+
+4. **FloatingBanner Tests**:
    - Banner rendering and positioning
    - Event handling
    - Custom content rendering
-   - Keyboard adjustments
-   - Tablet-specific behavior
+   - Banner section delegation
 
-3. **Banner Tests**:
+5. **AnimatedBannerItem Tests**:
+   - Stacking animations
+   - Swipe to dismiss gestures
    - Position calculations
-   - Animation behavior
-   - Gesture handling
-   - Dismiss functionality
 
 ### Test Coverage
 
@@ -714,6 +765,34 @@ Lines        : 100% ( 44/44 )
 Run coverage with:
 ```bash
 npm test -- app/components/floating_banner/floating_banner.test.tsx --coverage --collectCoverageFrom="app/components/floating_banner/floating_banner.tsx"
+```
+
+**BannerSection Test Suite** (`app/components/floating_banner/banner_section.test.tsx`):
+
+```
+Statements   : 100% ( 20/20 )
+Branches     : 100% ( 8/8 )
+Functions    : 100% ( 4/4 )
+Lines        : 100% ( 20/20 )
+```
+
+Run coverage with:
+```bash
+npm test -- app/components/floating_banner/banner_section.test.tsx --coverage --collectCoverageFrom="app/components/floating_banner/banner_section.tsx"
+```
+
+**useBannerGestureRootPosition Test Suite** (`app/hooks/useBannerGestureRootPosition.test.ts`):
+
+```
+All tests passing (13 tests)
+Platform-specific behavior verified (iOS/Android)
+Tablet and phone layouts tested
+Keyboard handling verified
+```
+
+Run tests with:
+```bash
+npm test -- app/hooks/useBannerGestureRootPosition.test.ts
 ```
 
 **Banner Test Suite** (`app/components/banner/Banner.test.tsx`):
@@ -1002,35 +1081,55 @@ BannerManager.showBannerWithAutoHide({
 
 ## Recent Improvements
 
-### Code Quality & Simplification (Latest Updates)
+### Major Architecture Updates (Current Release)
+
+**1. New `BannerSection` Component & `useBannerGestureRootPosition` Hook**
+- ✅ Created `BannerSection` component to manage `GestureHandlerRootView` positioning
+- ✅ Extracted positioning logic into `useBannerGestureRootPosition` hook
+- ✅ Proper separation of concerns: positioning vs rendering
+- ✅ Platform-specific handling (iOS keyboard-aware, Android fixed offsets)
+- ✅ Tablet-specific width constraints (96% of available width)
+- ✅ **100% test coverage** for both components (5 tests + 13 tests)
+
+**2. Promise-Chain Queue System**
+- ✅ Replaced `UpdateState` enum with promise-chain queue
+- ✅ Simpler implementation: `this.updateQueue = this.updateQueue.then(async () => {...})`
+- ✅ Automatic sequential execution prevents race conditions
+- ✅ No complex state machine logic needed
+- ✅ Better handling of rapid banner show/hide operations
+
+**3. Required `bannerId` Parameter for `hideBanner()`**
+- ✅ Changed from `hideBanner(bannerId?: string)` to `hideBanner(bannerId: string)`
+- ✅ Prevents accidental cross-system interference
+- ✅ Forces explicit banner management
+- ✅ Added `hideAllBanners()` method for clearing all banners
+- ✅ Updated all tests to pass specific `bannerId`
+
+**4. Android Gesture Limitation Documentation**
+- ✅ Accurately documented Android limitation with multiple `GestureHandlerRootView` instances
+- ✅ Clarified that iOS works correctly, Android may have gesture issues when both top/bottom banners exist
+- ✅ Documented potential workaround (not yet implemented)
+- ✅ Transparent about current behavior for future developers
+
+**5. Test Architecture Improvements**
+- ✅ Separated component tests from positioning logic tests
+- ✅ `banner_section.test.tsx` focuses on component behavior (5 tests)
+- ✅ `useBannerGestureRootPosition.test.ts` focuses on positioning calculations (13 tests)
+- ✅ Removed implementation detail tests (e.g., testing mock behavior)
+- ✅ Used `testExports` pattern for sharing constants with tests
+- ✅ All tests follow "test behavior, not implementation" principle
+
+### Previous Code Quality & Simplification
 
 **1. Removed `useBannerPosition` Hook**
 - ✅ Eliminated unnecessary abstraction layer
 - ✅ Hook was only returning `{top: 0}` or `{bottom: 0}` with no actual positioning logic
-- ✅ All positioning now handled by wrapper components in `FloatingBanner`
-- ✅ Reduced test suite from 6 tests to 0 (hook no longer needed)
+- ✅ All positioning now handled by `useBannerGestureRootPosition` hook
 
-**2. Removed Unused Banner Props**
-- ✅ Removed `customTopOffset` prop (not used in wrapper-based system)
-- ✅ Removed `customBottomOffset` prop (not used in wrapper-based system)
-- ✅ Removed `threadScreen` prop (header calculations moved to FloatingBanner)
-- ✅ Cleaner API surface with fewer confusing options
-
-**3. Moved Constants to Centralized Location**
+**2. Moved Constants to Centralized Location**
 - ✅ Created `BANNER_SPACING = 8` constant in `@constants/view`
 - ✅ All view-related measurements now in one discoverable location
-- ✅ Easier to maintain and modify spacing across the app
-
-**4. Simplified Offset Calculation Logic**
-- ✅ Changed from `let baseOffset = 0; if (isTop) {...} else {baseOffset = BANNER_SPACING}`
-- ✅ To: `let baseOffset = BANNER_SPACING; if (isTop) {baseOffset += ...}`
-- ✅ Eliminated redundant `else` block
-- ✅ More readable and maintainable code
-
-**5. Banner Content Inlining**
-- ✅ Removed intermediate `bannerContent` variable
-- ✅ Directly use `customComponent || <BannerItem>` in JSX
-- ✅ Simpler component structure
+- ✅ `BANNER_TABLET_WIDTH_PERCENTAGE` exported via `testExports` from hook
 
 ### Architecture Achievements
 
@@ -1049,14 +1148,18 @@ This comprehensive floating banner system provides:
 ### Test Results Summary
 
 ```
-Banner Component:          3/3 tests passing
-BannerItem Component:     27/27 tests passing
-FloatingBanner Component: 25/25 tests passing
-BannerManager:            31/31 tests passing
-─────────────────────────────────────────────
-Total:                    86/86 tests passing ✅
+BannerManager:                    31/31 tests passing
+BannerSection:                     5/5 tests passing
+useBannerGestureRootPosition:    13/13 tests passing
+FloatingBanner Component:        25/25 tests passing
+Banner Component:                 3/3 tests passing
+BannerItem Component:            27/27 tests passing
+──────────────────────────────────────────────────────
+Total:                          104/104 tests passing ✅
 ```
+
+**Coverage**: 100% across all core components
 
 ---
 
-**Last Updated**: After comprehensive refactoring to remove unused abstractions, centralize constants, and simplify positioning logic while maintaining 100% test coverage and all existing functionality.
+**Last Updated**: After major architecture refactoring introducing `BannerSection` component, `useBannerGestureRootPosition` hook, promise-chain queue system, required `bannerId` parameter, Android limitation documentation, and comprehensive test suite improvements while maintaining 100% test coverage.

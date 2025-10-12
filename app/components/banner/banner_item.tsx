@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useCallback} from 'react';
 import {View, Text, Pressable, StyleSheet} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
@@ -14,6 +14,11 @@ export interface BannerItemConfig {
     title?: string;
     message?: string;
     type?: 'info' | 'success' | 'warning' | 'error';
+
+    /**
+     * Whether the banner can be dismissed
+     * @default true
+     */
     dismissible?: boolean;
     onPress?: () => void;
 }
@@ -118,20 +123,20 @@ const BannerItem: React.FC<BannerItemProps> = ({banner, onPress, onDismiss}) => 
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
-    const handlePress = () => {
+    const handlePress = useCallback(() => {
         if (banner.onPress) {
             banner.onPress();
         }
         if (onPress) {
             onPress(banner);
         }
-    };
+    }, [banner, onPress]);
 
-    const handleDismiss = () => {
+    const handleDismiss = useCallback(() => {
         if (onDismiss) {
             onDismiss(banner);
         }
-    };
+    }, [banner, onDismiss]);
 
     return (
         <Pressable
