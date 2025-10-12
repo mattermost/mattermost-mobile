@@ -4,7 +4,7 @@
 import {defineMessage} from 'react-intl';
 import {DeviceEventEmitter, Platform} from 'react-native';
 
-import {CollectNetworkMetrics} from '@assets/config.json';
+import {CollectNetworkMetrics, MonitorNetworkPerformance} from '@assets/config.json';
 import {Events} from '@constants';
 import {setServerCredentials} from '@init/credentials';
 import NetworkPerformanceManager from '@managers/network_performance_manager';

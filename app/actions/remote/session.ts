@@ -19,6 +19,7 @@ import EphemeralStore from '@store/ephemeral_store';
 import {getFullErrorMessage, isErrorWithStatusCode, isErrorWithUrl} from '@utils/errors';
 import {logWarning, logError, logDebug} from '@utils/log';
 import {scheduleExpiredNotification} from '@utils/notification';
+import {type SAMLChallenge} from '@utils/saml_challenge';
 import {getCSRFFromCookie} from '@utils/security';
 
 import {loginEntry} from './entry';
@@ -332,6 +333,51 @@ export const ssoLogin = async (serverUrl: string, serverDisplayName: string, ser
         });
     } catch (error) {
         logDebug('error on ssoLogin', getFullErrorMessage(error));
+        return {error, failed: true};
+    }
+
+    try {
+        await addPushProxyVerificationStateFromLogin(serverUrl);
+        const {error} = await loginEntry({serverUrl});
+        await DatabaseManager.setActiveServerDatabase(serverUrl);
+        return {error, failed: false};
+    } catch (error) {
+        return {error, failed: false};
+    }
+};
+
+export const ssoLoginWithCodeExchange = async (serverUrl: string, serverDisplayName: string, serverIdentifier: string, loginCode: string, samlChallenge: Pick<SAMLChallenge, 'codeVerifier' | 'state'>, preauthSecret?: string): Promise<LoginActionResponse> => {
+    const database = DatabaseManager.appDatabase?.database;
+    if (!database) {
+        return {error: 'App database not found', failed: true};
+    }
+
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const {token, csrf} = await client.exchangeSsoLoginCode(loginCode, samlChallenge.codeVerifier, samlChallenge.state);
+
+        client.setClientCredentials(token, preauthSecret);
+        client.setCSRFToken(csrf);
+
+        const server = await DatabaseManager.createServerDatabase({
+            config: {
+                dbName: serverUrl,
+                serverUrl,
+                identifier: serverIdentifier,
+                displayName: serverDisplayName,
+            },
+        });
+        const user = await client.getMe();
+        await server?.operator.handleUsers({users: [user], prepareRecordsOnly: false});
+        await server?.operator.handleSystem({
+            systems: [{
+                id: Database.SYSTEM_IDENTIFIERS.CURRENT_USER_ID,
+                value: user.id,
+            }],
+            prepareRecordsOnly: false,
+        });
+    } catch (error) {
+        logDebug('error on ssoLoginWithCodeExchange', getFullErrorMessage(error));
         return {error, failed: true};
     }
 

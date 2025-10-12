@@ -30,15 +30,24 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         android: blendColors(theme.centerChannelBg, theme.centerChannelColor, 0.3),
     });
 
+    const baseTextStyle: TextStyle = {
+        color: editedColor,
+        opacity: editedOpacity,
+        fontStyle: 'italic',
+        lineHeight: undefined, // Use natural line height to avoid shrinking the parent layout.
+    };
+
     return {
         editedIndicatorText: {
-            color: editedColor,
-            opacity: editedOpacity,
-            fontStyle: 'italic',
             ...typography('Body', 25, 'Regular'),
+            ...baseTextStyle,
         },
         editedText: {
             ...typography('Body', 100, 'Regular'),
+            ...baseTextStyle,
+        },
+        icon: {
+            color: editedColor,
         },
     };
 });
@@ -69,7 +78,7 @@ const EditedIndicator = ({
             <CompassIcon
                 name='pencil-outline'
                 size={iconSize}
-                color={theme.centerChannelColor}
+                color={style.icon.color}
             />
             <FormattedText
                 id='post_message_view.edited'

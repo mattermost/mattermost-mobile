@@ -13,7 +13,7 @@ import {getIsCRTEnabled, observeThreadMentionCount, queryThreads, observeUnreads
 
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 
-const {SERVER: {CHANNEL, MY_CHANNEL}} = MM_TABLES;
+const {SERVER: {CHANNEL, MY_CHANNEL, MY_CHANNEL_SETTINGS}} = MM_TABLES;
 
 export type UnreadObserverArgs = {
     myChannels: MyChannelModel[];
@@ -57,7 +57,10 @@ export const subscribeMentionsByServer = (serverUrl: string, observer: ServerUnr
     if (server?.database) {
         subscription = server.database.
             get<MyChannelModel>(MY_CHANNEL).
-            query(Q.on(CHANNEL, Q.where('delete_at', Q.eq(0)))).
+            query(
+                Q.on(CHANNEL, Q.where('delete_at', Q.eq(0))),
+                Q.on(MY_CHANNEL_SETTINGS, Q.where('notify_props', Q.notLike('%"mark_unread":"mention"%'))),
+            ).
             observeWithColumns(['mentions_count']).
             pipe(
                 combineLatestWith(observeThreadMentionCount(server.database, {includeDmGm: true})),
