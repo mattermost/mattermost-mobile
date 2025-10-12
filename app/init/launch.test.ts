@@ -53,7 +53,15 @@ jest.mock('@database/manager', () => ({
     serverDatabases: {},
 }));
 jest.mock('@init/credentials');
-jest.mock('@queries/app/global');
+jest.mock('@queries/app/global', () => {
+    const {of: mockOf} = require('rxjs');
+    return {
+        getLastViewedChannelIdAndServer: jest.fn(),
+        getOnboardingViewed: jest.fn(),
+        getLastViewedThreadIdAndServer: jest.fn(),
+        observeLowConnectivityMonitor: jest.fn(() => mockOf(true)),
+    };
+});
 jest.mock('@queries/app/servers');
 jest.mock('@queries/servers/post');
 jest.mock('@queries/servers/preference');
