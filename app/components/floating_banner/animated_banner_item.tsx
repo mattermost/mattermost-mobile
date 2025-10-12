@@ -51,7 +51,7 @@ const AnimatedBannerItem: React.FC<AnimatedBannerItemProps> = ({
         hasAnimated.current = true;
         opacity.value = withTiming(1, {duration: 250});
         translateY.value = withTiming(0, {duration: 250});
-    }, [opacity, translateY]);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps -- opacity and translateY are sharedValue(s)
 
     const animatedStyle = useAnimatedStyle(() => ({
         opacity: opacity.value,
