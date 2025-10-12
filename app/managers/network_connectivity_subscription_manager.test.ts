@@ -47,6 +47,7 @@ jest.mock('./network_connectivity_manager', () => ({
     updateState: jest.fn(),
     updatePerformanceState: jest.fn(),
     shutdown: jest.fn(),
+    reset: jest.fn(),
 }));
 jest.mock('./websocket_manager', () => ({
     observeWebsocketState: jest.fn(),

@@ -61,9 +61,9 @@ function shouldShowConnectingBanner(
 
 function shouldShowPerformanceBanner(
     performanceState: NetworkPerformanceState | null,
-    performanceSuppressed: boolean,
+    suppressPerformanceBanner: boolean,
 ): boolean {
-    return performanceState === 'slow' && !performanceSuppressed;
+    return performanceState === 'slow' && !suppressPerformanceBanner;
 }
 
 function shouldShowReconnectionBanner(
@@ -84,8 +84,7 @@ class NetworkConnectivityManagerSingleton {
     private appState: string | null = null;
     private readonly intl = getIntlShape();
     private currentPerformanceState: NetworkPerformanceState | null = null;
-
-    private performanceSuppressedUntilNormal = false;
+    private suppressSlowPerformanceBanner = false;
 
     private getConnectionMessage(): string {
         if (!this.websocketState || !this.netInfo) {
@@ -137,7 +136,7 @@ class NetworkConnectivityManagerSingleton {
             id: NETWORK_STATUS_BANNER_ID,
             dismissible: true,
             onDismiss: () => {
-                this.performanceSuppressedUntilNormal = true;
+                this.suppressSlowPerformanceBanner = true;
             },
             customComponent: React.createElement(ConnectionBanner, {
                 isConnected: false,
@@ -186,19 +185,32 @@ class NetworkConnectivityManagerSingleton {
     updatePerformanceState(
         performanceState: NetworkPerformanceState,
     ) {
+        const wasSlowPerformance = this.currentPerformanceState === 'slow';
         this.currentPerformanceState = performanceState;
 
-        if (this.performanceSuppressedUntilNormal && performanceState === 'normal') {
-            this.performanceSuppressedUntilNormal = false;
-        }
+        // Performance state changes require special handling to avoid showing reconnection banners.
+        // We can't always call updateBanner() like updateState() does, because it would re-evaluate
+        // all banner conditions (including reconnection) when only performance has changed.
 
-        this.updateBanner();
+        // Show slow performance banner (suppression check here prevents unnecessary updateBanner calls.
+        // suppressSlowPerformanceBanner also checks suppression for calls coming from updateState).
+
+        if (performanceState === 'slow' && !this.suppressSlowPerformanceBanner) {
+            this.updateBanner();
+        } else if (wasSlowPerformance && performanceState === 'normal') {
+            BannerManager.hideBanner(NETWORK_STATUS_BANNER_ID);
+        }
+    }
+
+    reset() {
+        this.suppressSlowPerformanceBanner = false;
     }
 
     cleanup() {
         BannerManager.cleanup();
         this.previousWebsocketState = null;
         this.isOnAppStart = true;
+        this.reset();
     }
 
     shutdown() {
@@ -208,7 +220,6 @@ class NetworkConnectivityManagerSingleton {
         this.netInfo = null;
         this.appState = null;
         this.currentPerformanceState = null;
-        this.performanceSuppressedUntilNormal = false;
     }
 
     private updateBanner() {
@@ -258,7 +269,7 @@ class NetworkConnectivityManagerSingleton {
     }
 
     private handlePerformanceState(): boolean {
-        if (shouldShowPerformanceBanner(this.currentPerformanceState, this.performanceSuppressedUntilNormal)) {
+        if (shouldShowPerformanceBanner(this.currentPerformanceState, this.suppressSlowPerformanceBanner)) {
             this.showPerformance(PERFORMANCE_BANNER_DURATION);
             return true;
         }

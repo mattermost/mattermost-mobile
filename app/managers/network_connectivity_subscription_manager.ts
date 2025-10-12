@@ -80,6 +80,7 @@ class NetworkConnectivitySubscriptionManagerSingleton {
                 this.init();
             }
         } else if (previousAppState === 'active') {
+            NetworkConnectivityManager.reset();
             this.stop();
         }
     };
