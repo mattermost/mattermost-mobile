@@ -449,7 +449,7 @@ describe('AdvancedSettings', () => {
             renderWithIntlAndTheme(<AdvancedSettings {...defaultProps}/>);
 
             await waitFor(() => {
-                expect(screen.getByText('EXPERIMENTAL FEATURES')).toBeTruthy();
+                expect(screen.getByText('Experimental Features')).toBeTruthy();
             });
         });
 
