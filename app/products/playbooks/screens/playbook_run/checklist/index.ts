@@ -30,13 +30,24 @@ const getIds = (items: PlaybookChecklistItemModel[]) => {
     return items.map((i) => i.id);
 };
 
+const filterVisibleItems = (items: PlaybookChecklistItemModel[]) => {
+    return items.filter((item) => {
+        if (item.conditionAction === 'hidden' && !item.completedAt) {
+            return false;
+        }
+        return true;
+    });
+};
+
 const enhanced = withObservables(['checklist'], ({checklist}: OwnProps) => {
     if ('observe' in checklist) {
         const observedChecklist = checklist.observe();
-        const items = checklist.items.observeWithColumns(['state']);
-        const sortedItems = combineLatest([observedChecklist, items]).pipe(
+        const items = checklist.items.observeWithColumns(['state', 'condition_action', 'state_modified']);
+        const filteredAndSortedItems = combineLatest([observedChecklist, items]).pipe(
             switchMap(([cl, i]) => {
-                return of$(sortItems(cl, i));
+                // Filter out hidden incomplete items
+                const visibleItems = filterVisibleItems(i);
+                return of$(sortItems(cl, visibleItems));
             }),
             distinctUntilChanged((a, b) => areItemsOrdersEqual(getIds(a), getIds(b))),
         );
@@ -47,14 +58,22 @@ const enhanced = withObservables(['checklist'], ({checklist}: OwnProps) => {
 
         return {
             checklist: observedChecklist,
-            items: sortedItems,
+            items: filteredAndSortedItems,
             checklistProgress,
         };
     }
 
+    // Filter visible items for non-model checklist
+    const visibleItems = checklist.items.filter((item) => {
+        if (item.condition_action === 'hidden' && !item.completed_at) {
+            return false;
+        }
+        return true;
+    });
+
     return {
         checklist: of$(checklist),
-        items: of$(checklist.items),
+        items: of$(visibleItems),
         checklistProgress: of$(getChecklistProgress(checklist.items)),
     };
 });
