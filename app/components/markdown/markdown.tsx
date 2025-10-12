@@ -119,6 +119,27 @@ const getExtraPropsForNode = (node: any) => {
     return extraProps;
 };
 
+const renderHashtagWithStyles = (
+    context: string[],
+    hashtag: string,
+    textStyles: MarkdownTextStyles,
+    baseTextStyle: StyleProp<TextStyle>,
+) => {
+    const computedStyle = computeTextStyle(textStyles, baseTextStyle, context);
+    const linkStyle = [computedStyle, textStyles.link];
+    const headingIndex = context.findIndex((c) => c.includes('heading'));
+    if (headingIndex > -1) {
+        linkStyle.push(textStyles[context[headingIndex]]);
+    }
+
+    return (
+        <Hashtag
+            hashtag={hashtag}
+            linkStyle={linkStyle}
+        />
+    );
+};
+
 const Markdown = ({
     baseTextStyle,
     channelId,
@@ -332,19 +353,8 @@ const Markdown = ({
             return renderText({context, literal: `#${hashtag}`});
         }
 
-        const linkStyle = [textStyles.link];
-        const headingIndex = context.findIndex((c) => c.includes('heading'));
-        if (headingIndex > -1) {
-            linkStyle.push(textStyles[context[headingIndex]]);
-        }
-
-        return (
-            <Hashtag
-                hashtag={hashtag}
-                linkStyle={linkStyle}
-            />
-        );
-    }, [disableHashtags, isUnsafeLinksPost, renderText, textStyles]);
+        return renderHashtagWithStyles(context, hashtag, textStyles, baseTextStyle);
+    }, [baseTextStyle, disableHashtags, isUnsafeLinksPost, renderText, textStyles]);
 
     const renderHeading = useCallback(({children, level}: {children: ReactElement; level: string}) => {
         if (disableHeading) {
@@ -724,6 +734,10 @@ const Markdown = ({
     }, [highlightKeys, isEdited, mentionKeys, parser, renderer, searchPatterns, style.errorMessage, value]);
 
     return output;
+};
+
+export const testExports = {
+    renderHashtagWithStyles,
 };
 
 export default Markdown;

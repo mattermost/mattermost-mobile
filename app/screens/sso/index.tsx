@@ -6,7 +6,7 @@ import {StyleSheet, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-import {ssoLogin} from '@actions/remote/session';
+import {ssoLogin, ssoLoginWithCodeExchange} from '@actions/remote/session';
 import {Screens, Sso} from '@constants';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
@@ -98,6 +98,15 @@ const SSO = ({
         goToHome(result.error);
     };
 
+    const doSSOCodeExchange = async (loginCode: string, samlChallenge: {codeVerifier: string; state: string}) => {
+        const result: LoginActionResponse = await ssoLoginWithCodeExchange(serverUrl!, serverDisplayName, config.DiagnosticId!, loginCode, samlChallenge, serverPreauthSecret);
+        if (result?.error && result.failed) {
+            onLoadEndError(result.error);
+            return;
+        }
+        goToHome(result.error);
+    };
+
     const goToHome = (error?: unknown) => {
         const hasError = launchError || Boolean(error);
         resetToHome({extra, launchError: hasError, launchType, serverUrl});
@@ -126,6 +135,7 @@ const SSO = ({
 
     const props = {
         doSSOLogin,
+        doSSOCodeExchange,
         loginError,
         loginUrl,
         setLoginError,

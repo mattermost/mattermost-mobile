@@ -5,7 +5,7 @@ import React, {type ComponentProps} from 'react';
 import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
-import FloatingTextInput from '@components/floating_text_input_label';
+import FloatingTextInput from '@components/floating_input/floating_text_input_label';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 

@@ -10,7 +10,7 @@ import {getLastPlaybookRunsFetchAt} from '@playbooks/database/queries/run';
 import EphemeralStore from '@store/ephemeral_store';
 import TestHelper from '@test/test_helper';
 
-import {fetchPlaybookRunsForChannel, fetchFinishedRunsForChannel, setOwner} from './runs';
+import {fetchPlaybookRunsForChannel, fetchFinishedRunsForChannel, setOwner, finishRun} from './runs';
 
 const serverUrl = 'baseHandler.test.com';
 const channelId = 'channel-id-1';
@@ -21,6 +21,7 @@ const mockPlaybookRun2 = TestHelper.fakePlaybookRun({channel_id: channelId});
 const mockClient = {
     fetchPlaybookRuns: jest.fn(),
     setOwner: jest.fn(),
+    finishRun: jest.fn(),
 };
 
 jest.mock('@playbooks/database/queries/run');
@@ -269,5 +270,53 @@ describe('setOwner', () => {
         expect(result.data).toBe(true);
         expect(mockClient.setOwner).toHaveBeenCalledWith('', '');
         expect(localSetOwner).toHaveBeenCalledWith(serverUrl, '', '');
+    });
+});
+
+describe('finishRun', () => {
+    const playbookRunId = 'run-123';
+
+    it('should finish run successfully', async () => {
+        mockClient.finishRun = jest.fn().mockResolvedValueOnce(undefined);
+
+        const result = await finishRun(serverUrl, playbookRunId);
+
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.data).toBe(true);
+        expect(mockClient.finishRun).toHaveBeenCalledWith(playbookRunId);
+    });
+
+    it('should handle client error', async () => {
+        const clientError = new Error('Client error');
+        mockClient.finishRun = jest.fn().mockRejectedValueOnce(clientError);
+
+        const result = await finishRun(serverUrl, playbookRunId);
+
+        expect(result).toBeDefined();
+        expect(result.error).toBeDefined();
+        expect(result.data).toBeUndefined();
+        expect(mockClient.finishRun).toHaveBeenCalledWith(playbookRunId);
+    });
+
+    it('should handle network manager error', async () => {
+        jest.spyOn(NetworkManager, 'getClient').mockImplementationOnce(throwFunc);
+
+        const result = await finishRun(serverUrl, playbookRunId);
+
+        expect(result).toBeDefined();
+        expect(result.error).toBeDefined();
+        expect(result.data).toBeUndefined();
+    });
+
+    it('should handle empty string parameter', async () => {
+        mockClient.finishRun = jest.fn().mockResolvedValueOnce(undefined);
+
+        const result = await finishRun(serverUrl, '');
+
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.data).toBe(true);
+        expect(mockClient.finishRun).toHaveBeenCalledWith('');
     });
 });

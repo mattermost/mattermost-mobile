@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import qs from 'querystringify';
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Linking, Platform, View} from 'react-native';
 import urlParse from 'url-parse';
@@ -10,6 +10,7 @@ import urlParse from 'url-parse';
 import {Sso} from '@constants';
 import {isErrorWithMessage} from '@utils/errors';
 import {isBetaApp} from '@utils/general';
+import {createSamlChallenge} from '@utils/saml_challenge';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {tryOpenURL} from '@utils/url';
@@ -20,6 +21,7 @@ import AuthSuccess from './components/auth_success';
 
 interface SSOWithRedirectURLProps {
     doSSOLogin: (bearerToken: string, csrfToken: string) => void;
+    doSSOCodeExchange: (loginCode: string, samlChallenge: {codeVerifier: string; state: string}) => void;
     loginError: string;
     loginUrl: string;
     setLoginError: (value: string) => void;
@@ -57,7 +59,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const SSOAuthenticationWithExternalBrowser = ({doSSOLogin, loginError, loginUrl, setLoginError, theme}: SSOWithRedirectURLProps) => {
+const SSOAuthenticationWithExternalBrowser = ({doSSOLogin, doSSOCodeExchange, loginError, loginUrl, setLoginError, theme}: SSOWithRedirectURLProps) => {
     const [error, setError] = useState<string>('');
     const [loginSuccess, setLoginSuccess] = useState(false);
     const style = getStyleSheet(theme);
@@ -68,7 +70,8 @@ const SSOAuthenticationWithExternalBrowser = ({doSSOLogin, loginError, loginUrl,
     }
 
     const redirectUrl = customUrlScheme + 'callback';
-    const init = (resetErrors = true) => {
+    const samlChallenge = useMemo(() => createSamlChallenge(), []);
+    const init = useCallback((resetErrors = true) => {
         setLoginSuccess(false);
         if (resetErrors !== false) {
             setError('');
@@ -78,6 +81,9 @@ const SSOAuthenticationWithExternalBrowser = ({doSSOLogin, loginError, loginUrl,
         const query: Record<string, string> = {
             ...parsedUrl.query,
             redirect_to: redirectUrl,
+            state: samlChallenge.state,
+            code_challenge: samlChallenge.codeChallenge,
+            code_challenge_method: samlChallenge.method,
         };
         parsedUrl.set('query', qs.stringify(query));
         const url = parsedUrl.toString();
@@ -101,12 +107,19 @@ const SSOAuthenticationWithExternalBrowser = ({doSSOLogin, loginError, loginUrl,
         };
 
         tryOpenURL(url, onError);
-    };
+    }, [intl, loginUrl, redirectUrl, samlChallenge, setLoginError]);
 
     useEffect(() => {
+        const startedRef = {current: false};
         const onURLChange = ({url}: { url: string }) => {
             if (url && url.startsWith(redirectUrl)) {
                 const parsedUrl = urlParse(url, true);
+                const loginCode = parsedUrl.query?.login_code as string | undefined;
+                if (loginCode) {
+                    setLoginSuccess(true);
+                    doSSOCodeExchange(loginCode, {codeVerifier: samlChallenge.codeVerifier, state: samlChallenge.state});
+                    return;
+                }
                 const bearerToken = parsedUrl.query?.MMAUTHTOKEN;
                 const csrfToken = parsedUrl.query?.MMCSRF;
                 if (bearerToken && csrfToken) {
@@ -126,13 +139,16 @@ const SSOAuthenticationWithExternalBrowser = ({doSSOLogin, loginError, loginUrl,
         const listener = Linking.addEventListener('url', onURLChange);
 
         const timeout = setTimeout(() => {
-            init(false);
+            if (!startedRef.current) {
+                startedRef.current = true;
+                init(false);
+            }
         }, 1000);
         return () => {
             listener.remove();
             clearTimeout(timeout);
         };
-    }, []);
+    }, [doSSOCodeExchange, doSSOLogin, init, intl, samlChallenge, redirectUrl]);
 
     let content;
     if (loginSuccess) {
