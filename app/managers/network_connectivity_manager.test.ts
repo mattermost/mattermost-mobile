@@ -105,7 +105,7 @@ describe('NetworkConnectivityManager', () => {
             expect((manager as any).netInfo).toBeNull();
             expect((manager as any).appState).toBeNull();
             expect((manager as any).currentPerformanceState).toBeNull();
-            expect((manager as any).performanceSuppressedUntilNormal).toBe(false);
+            expect((manager as any).suppressSlowPerformanceBanner).toBe(false);
             expect((manager as any).isOnAppStart).toBe(true);
         });
 
@@ -560,16 +560,16 @@ describe('NetworkConnectivityManager', () => {
             expect(mockBannerManager.showBanner).not.toHaveBeenCalled();
         });
 
-        it('should reset performance suppression when performance returns to normal after manual dismiss', () => {
-            (manager as any).performanceSuppressedUntilNormal = true;
-            expect((manager as any).performanceSuppressedUntilNormal).toBe(true);
+        it('should reset suppression when reset is called', () => {
+            (manager as any).suppressSlowPerformanceBanner = true;
+            expect((manager as any).suppressSlowPerformanceBanner).toBe(true);
 
-            manager.updatePerformanceState('normal');
+            manager.reset();
 
-            expect((manager as any).performanceSuppressedUntilNormal).toBe(false);
+            expect((manager as any).suppressSlowPerformanceBanner).toBe(false);
         });
 
-        it('should show reconnection banner when performance returns to normal', () => {
+        it('should hide banner when performance returns to normal', () => {
             setupConnectedState(manager);
 
             manager.updatePerformanceState('slow');
@@ -580,8 +580,8 @@ describe('NetworkConnectivityManager', () => {
             mockBannerManager.showBannerWithAutoHide.mockClear();
 
             manager.updatePerformanceState('normal');
-            const reconnectionBannerCall = mockBannerManager.showBannerWithAutoHide.mock.calls[0][0];
-            expect((reconnectionBannerCall.customComponent as any).props.message).toBe('Connection restored');
+            expect(mockBannerManager.hideBanner).toHaveBeenCalled();
+            expect(mockBannerManager.showBannerWithAutoHide).not.toHaveBeenCalled();
         });
 
         it('should not hide banner if it is not a performance banner', () => {

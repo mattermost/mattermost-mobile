@@ -1,6 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable max-lines */
+
+import {of as of$} from 'rxjs';
+
 import {testExports} from './network_performance_manager';
 
 import type {ClientResponseMetrics} from '@mattermost/react-native-network-client';
@@ -18,10 +22,18 @@ jest.mock('react-native', () => ({
     },
 }));
 
+jest.mock('@queries/app/global', () => {
+    const {of: mockOf} = require('rxjs');
+    return {
+        observeLowConnectivityMonitor: jest.fn(() => mockOf(true)),
+    };
+});
+
 const {
     NetworkPerformanceManagerSingleton,
     REQUEST_OUTCOME_WINDOW_SIZE,
     MINIMUM_REQUESTS_FOR_INITIAL_DETECTION,
+    MINIMUM_REQUESTS_FOR_SUBSEQUENT_DETECTION,
     calculatePerformanceStateFromOutcomes,
 } = testExports;
 
@@ -43,13 +55,13 @@ const createMockMetrics = (latency: number, size: number, compressedSize: number
 describe('Pure Functions', () => {
     describe('calculatePerformanceStateFromOutcomes', () => {
         describe('initial detection', () => {
-            it('should return normal when not enough requests for initial detection', () => {
+            it('should return current state when not enough requests for initial detection', () => {
                 const outcomes = [
                     {timestamp: Date.now(), isSlow: true, wasEarlyDetection: false},
                     {timestamp: Date.now(), isSlow: true, wasEarlyDetection: false},
                 ];
 
-                const state = calculatePerformanceStateFromOutcomes(outcomes, true);
+                const state = calculatePerformanceStateFromOutcomes(outcomes, true, 'normal');
                 expect(state).toBe('normal');
             });
 
@@ -60,7 +72,7 @@ describe('Pure Functions', () => {
                     wasEarlyDetection: false,
                 }));
 
-                const state = calculatePerformanceStateFromOutcomes(outcomes, true);
+                const state = calculatePerformanceStateFromOutcomes(outcomes, true, 'normal');
                 expect(state).toBe('slow');
             });
 
@@ -71,21 +83,24 @@ describe('Pure Functions', () => {
                     wasEarlyDetection: false,
                 }));
 
-                const state = calculatePerformanceStateFromOutcomes(outcomes, true);
+                const state = calculatePerformanceStateFromOutcomes(outcomes, true, 'normal');
                 expect(state).toBe('normal');
             });
         });
 
         describe('subsequent detection', () => {
-            it('should return slow even with fewer requests than subsequent threshold', () => {
+            it('should return current state with fewer requests than subsequent threshold', () => {
                 const outcomes = Array.from({length: 6}, (_, i) => ({
                     timestamp: Date.now(),
                     isSlow: i < 5, // 5 out of 6 = 83%
                     wasEarlyDetection: false,
                 }));
 
-                const state = calculatePerformanceStateFromOutcomes(outcomes, false);
-                expect(state).toBe('slow');
+                const slowState = calculatePerformanceStateFromOutcomes(outcomes, false, 'slow');
+                expect(slowState).toBe('slow');
+
+                const normalState = calculatePerformanceStateFromOutcomes(outcomes, false, 'normal');
+                expect(normalState).toBe('normal');
             });
 
             it('should return normal when slow percentage is below threshold', () => {
@@ -95,7 +110,7 @@ describe('Pure Functions', () => {
                     wasEarlyDetection: false,
                 }));
 
-                const state = calculatePerformanceStateFromOutcomes(outcomes, false);
+                const state = calculatePerformanceStateFromOutcomes(outcomes, false, 'slow');
                 expect(state).toBe('normal');
             });
 
@@ -106,7 +121,7 @@ describe('Pure Functions', () => {
                     wasEarlyDetection: false,
                 }));
 
-                const state = calculatePerformanceStateFromOutcomes(outcomes, false);
+                const state = calculatePerformanceStateFromOutcomes(outcomes, false, 'normal');
                 expect(state).toBe('slow');
             });
 
@@ -117,7 +132,7 @@ describe('Pure Functions', () => {
                     wasEarlyDetection: false,
                 }));
 
-                const state = calculatePerformanceStateFromOutcomes(outcomes, false);
+                const state = calculatePerformanceStateFromOutcomes(outcomes, false, 'normal');
                 expect(state).toBe('slow');
             });
         });
@@ -127,9 +142,15 @@ describe('Pure Functions', () => {
 describe('NetworkPerformanceManager', () => {
     let performanceManager: InstanceType<typeof NetworkPerformanceManagerSingleton>;
     const serverUrl = 'https://test-server.com';
+    const {observeLowConnectivityMonitor} = require('@queries/app/global');
 
     beforeEach(() => {
+        observeLowConnectivityMonitor.mockReturnValue(of$(true));
         performanceManager = new NetworkPerformanceManagerSingleton();
+    });
+
+    afterEach(() => {
+        jest.clearAllMocks();
     });
 
     describe('request tracking lifecycle', () => {
@@ -154,7 +175,7 @@ describe('NetworkPerformanceManager', () => {
             performanceManager.observePerformanceState(serverUrl);
 
             const url = '/api/v4/posts';
-            const slowMetrics = createMockMetrics(3000, 1000, 500);
+            const slowMetrics = createMockMetrics(1000, 1000, 500);
 
             const requestId = performanceManager.startRequestTracking(serverUrl, url);
             performanceManager.completeRequestTracking(serverUrl, requestId, slowMetrics);
@@ -179,13 +200,13 @@ describe('NetworkPerformanceManager', () => {
     describe('performance state calculation', () => {
         it('should return normal when slow percentage is below threshold', () => {
             const states: string[] = [];
-            const subscription = performanceManager.observePerformanceState(serverUrl).subscribe((state) => {
+            const subscription = performanceManager.observePerformanceState(serverUrl).subscribe((state: string) => {
                 states.push(state);
             });
 
             for (let i = 0; i < 10; i++) {
                 const requestId = performanceManager.startRequestTracking(serverUrl, `/api/request-${i}`);
-                const metrics = createMockMetrics(i < 3 ? 3000 : 500, 1000, 500);
+                const metrics = createMockMetrics(i < 3 ? 1000 : 500, 1000, 500);
                 performanceManager.completeRequestTracking(serverUrl, requestId, metrics);
             }
 
@@ -195,13 +216,13 @@ describe('NetworkPerformanceManager', () => {
 
         it('should return slow when slow percentage meets threshold', () => {
             const states: string[] = [];
-            const subscription = performanceManager.observePerformanceState(serverUrl).subscribe((state) => {
+            const subscription = performanceManager.observePerformanceState(serverUrl).subscribe((state: string) => {
                 states.push(state);
             });
 
             for (let i = 0; i < 10; i++) {
                 const requestId = performanceManager.startRequestTracking(serverUrl, `/api/request-${i}`);
-                const metrics = createMockMetrics(i < 7 ? 3000 : 500, 1000, 500);
+                const metrics = createMockMetrics(i < 7 ? 1000 : 500, 1000, 500);
                 performanceManager.completeRequestTracking(serverUrl, requestId, metrics);
             }
 
@@ -211,13 +232,13 @@ describe('NetworkPerformanceManager', () => {
 
         it('should use initial detection threshold for first slow detection', () => {
             const states: string[] = [];
-            const subscription = performanceManager.observePerformanceState(serverUrl).subscribe((state) => {
+            const subscription = performanceManager.observePerformanceState(serverUrl).subscribe((state: string) => {
                 states.push(state);
             });
 
             for (let i = 0; i < MINIMUM_REQUESTS_FOR_INITIAL_DETECTION; i++) {
                 const requestId = performanceManager.startRequestTracking(serverUrl, `/api/request-${i}`);
-                const metrics = createMockMetrics(i < 3 ? 3000 : 500, 1000, 500); // 3 out of 4 = 75%
+                const metrics = createMockMetrics(i < 3 ? 1000 : 500, 1000, 500); // 3 out of 4 = 75%
                 performanceManager.completeRequestTracking(serverUrl, requestId, metrics);
             }
 
@@ -225,28 +246,28 @@ describe('NetworkPerformanceManager', () => {
             expect(states).toEqual(['normal', 'slow']);
         });
 
-        it('should not return to normal when switching from initial to subsequent detection', () => {
+        it('should require minimum requests for subsequent detection after initial phase', () => {
             const states: string[] = [];
-            const subscription = performanceManager.observePerformanceState(serverUrl).subscribe((state) => {
+            const subscription = performanceManager.observePerformanceState(serverUrl).subscribe((state: string) => {
                 states.push(state);
             });
 
             for (let i = 0; i < MINIMUM_REQUESTS_FOR_INITIAL_DETECTION; i++) {
                 const requestId = performanceManager.startRequestTracking(serverUrl, `/api/request-${i}`);
-                const metrics = createMockMetrics(i < 3 ? 3000 : 500, 1000, 500);
+                const metrics = createMockMetrics(1000, 1000, 500);
                 performanceManager.completeRequestTracking(serverUrl, requestId, metrics);
             }
 
-            for (let i = 0; i < 4; i++) {
+            for (let i = 0; i < MINIMUM_REQUESTS_FOR_SUBSEQUENT_DETECTION; i++) {
                 const requestId = performanceManager.startRequestTracking(serverUrl, `/api/request-extra-${i}`);
-                const metrics = createMockMetrics(i < 3 ? 3000 : 500, 1000, 500); // 3 more slow out of 4
+                const metrics = createMockMetrics(i < 7 ? 1000 : 500, 1000, 500);
                 performanceManager.completeRequestTracking(serverUrl, requestId, metrics);
             }
 
             subscription.unsubscribe();
 
-            expect(states.filter((s) => s === 'normal')).toHaveLength(1);
-            expect(states).toEqual(['normal', 'slow']);
+            expect(states[0]).toBe('normal');
+            expect(states).toContain('slow');
         });
     });
 
@@ -254,16 +275,16 @@ describe('NetworkPerformanceManager', () => {
         it('should provide accurate request outcome statistics', () => {
             performanceManager.observePerformanceState(serverUrl);
 
-            for (let i = 0; i < 20; i++) {
+            for (let i = 0; i < REQUEST_OUTCOME_WINDOW_SIZE; i++) {
                 const requestId = performanceManager.startRequestTracking(serverUrl, `/api/request-${i}`);
-                const metrics = createMockMetrics(i < 15 ? 3000 : 500, 1000, 500);
+                const metrics = createMockMetrics(i < 7 ? 1000 : 500, 1000, 500);
                 performanceManager.completeRequestTracking(serverUrl, requestId, metrics);
             }
 
             const stats = performanceManager.getRequestOutcomeStats(serverUrl);
-            expect(stats.totalRequests).toBe(20);
-            expect(stats.slowRequests).toBe(15);
-            expect(stats.slowPercentage).toBe(0.75);
+            expect(stats.totalRequests).toBe(REQUEST_OUTCOME_WINDOW_SIZE);
+            expect(stats.slowRequests).toBe(7);
+            expect(stats.slowPercentage).toBeCloseTo(7 / REQUEST_OUTCOME_WINDOW_SIZE);
             expect(stats.earlyDetectionCount).toBe(0);
         });
 
@@ -296,7 +317,7 @@ describe('NetworkPerformanceManager', () => {
 
             for (let i = 0; i < 10; i++) {
                 const requestId = performanceManager.startRequestTracking(serverUrl2, `/api/request-${i}`);
-                const metrics = createMockMetrics(i < 8 ? 3000 : 500, 1000, 500);
+                const metrics = createMockMetrics(i < 8 ? 1000 : 500, 1000, 500);
                 performanceManager.completeRequestTracking(serverUrl2, requestId, metrics);
             }
 
@@ -327,7 +348,7 @@ describe('NetworkPerformanceManager', () => {
 
             performanceManager.removeServer(serverUrl);
 
-            const metrics = createMockMetrics(3000, 1000, 500);
+            const metrics = createMockMetrics(1000, 1000, 500);
             performanceManager.completeRequestTracking(serverUrl, requestId, metrics);
 
             const stats = performanceManager.getRequestOutcomeStats(serverUrl);
@@ -361,13 +382,13 @@ describe('NetworkPerformanceManager', () => {
     describe('observable behavior', () => {
         it('should emit state changes when performance changes', () => {
             const states: string[] = [];
-            const subscription = performanceManager.observePerformanceState(serverUrl).subscribe((state) => {
+            const subscription = performanceManager.observePerformanceState(serverUrl).subscribe((state: string) => {
                 states.push(state);
             });
 
-            for (let i = 0; i < 10; i++) {
+            for (let i = 0; i < MINIMUM_REQUESTS_FOR_INITIAL_DETECTION; i++) {
                 const requestId = performanceManager.startRequestTracking(serverUrl, `/api/request-${i}`);
-                const metrics = createMockMetrics(i < 8 ? 3000 : 500, 1000, 500);
+                const metrics = createMockMetrics(1000, 1000, 500);
                 performanceManager.completeRequestTracking(serverUrl, requestId, metrics);
             }
 
@@ -388,7 +409,7 @@ describe('NetworkPerformanceManager', () => {
 
             for (let i = 0; i < 10; i++) {
                 const requestId = performanceManager.startRequestTracking(serverUrl, `/api/request-${i}`);
-                const metrics = createMockMetrics(i < 8 ? 3000 : 500, 1000, 500);
+                const metrics = createMockMetrics(i < 8 ? 1000 : 500, 1000, 500);
                 performanceManager.completeRequestTracking(serverUrl, requestId, metrics);
             }
 
@@ -422,7 +443,7 @@ describe('NetworkPerformanceManager', () => {
 
             for (let i = 0; i < MINIMUM_REQUESTS_FOR_INITIAL_DETECTION; i++) {
                 const requestId = performanceManager.startRequestTracking(serverUrl, `/api/request-${i}`);
-                const metrics = createMockMetrics(3000, 1000, 500);
+                const metrics = createMockMetrics(1000, 1000, 500);
                 performanceManager.completeRequestTracking(serverUrl, requestId, metrics);
             }
 
@@ -444,10 +465,12 @@ describe('NetworkPerformanceManager', () => {
             );
         });
 
-        it('should not log when performance recovers from slow to normal', () => {
+        it('should log when performance recovers from slow to normal', () => {
+            performanceManager.observePerformanceState(serverUrl);
+
             for (let i = 0; i < MINIMUM_REQUESTS_FOR_INITIAL_DETECTION; i++) {
                 const requestId = performanceManager.startRequestTracking(serverUrl, `/api/request-${i}`);
-                const metrics = createMockMetrics(3000, 1000, 500);
+                const metrics = createMockMetrics(1000, 1000, 500);
                 performanceManager.completeRequestTracking(serverUrl, requestId, metrics);
             }
 
@@ -458,8 +481,21 @@ describe('NetworkPerformanceManager', () => {
                 performanceManager.completeRequestTracking(serverUrl, requestId, metrics);
             }
 
-            expect(logDebug).not.toHaveBeenCalled();
+            expect(logDebug).toHaveBeenCalledWith(
+                `Network performance improved for ${serverUrl}: slow -> normal`,
+                expect.objectContaining({
+                    totalRequests: expect.any(Number),
+                    slowRequests: expect.any(Number),
+                    slowPercentage: expect.any(String),
+                    earlyDetectionCount: expect.any(Number),
+                    lastOutcome: expect.objectContaining({
+                        isSlow: expect.any(Boolean),
+                        wasEarlyDetection: expect.any(Boolean),
+                    }),
+                }),
+            );
         });
+
     });
 
     describe('AppState monitoring', () => {
@@ -493,13 +529,13 @@ describe('NetworkPerformanceManager', () => {
 
         it('should reset performance state to normal when app becomes inactive', () => {
             const states: string[] = [];
-            const subscription = performanceManager.observePerformanceState(serverUrl).subscribe((state) => {
+            const subscription = performanceManager.observePerformanceState(serverUrl).subscribe((state: string) => {
                 states.push(state);
             });
 
             for (let i = 0; i < 10; i++) {
                 const requestId = performanceManager.startRequestTracking(serverUrl, `/api/request-${i}`);
-                const metrics = createMockMetrics(i < 8 ? 3000 : 500, 1000, 500);
+                const metrics = createMockMetrics(i < 8 ? 1000 : 500, 1000, 500);
                 performanceManager.completeRequestTracking(serverUrl, requestId, metrics);
             }
 
@@ -531,6 +567,160 @@ describe('NetworkPerformanceManager', () => {
             manager.destroy();
 
             expect(mockRemove).toHaveBeenCalled();
+        });
+    });
+
+    describe('Low Connectivity Monitor Integration', () => {
+        it('should subscribe to observeLowConnectivityMonitor on construction', () => {
+            expect(observeLowConnectivityMonitor).toHaveBeenCalled();
+        });
+
+        it('should emit performance state changes when monitoring is enabled', () => {
+            const states: string[] = [];
+            const subscription = performanceManager.observePerformanceState(serverUrl).subscribe((state: string) => {
+                states.push(state);
+            });
+
+            for (let i = 0; i < MINIMUM_REQUESTS_FOR_INITIAL_DETECTION; i++) {
+                const requestId = performanceManager.startRequestTracking(serverUrl, `/api/request-${i}`);
+                const metrics = createMockMetrics(1000, 1000, 500);
+                performanceManager.completeRequestTracking(serverUrl, requestId, metrics);
+            }
+
+            subscription.unsubscribe();
+            expect(states).toEqual(['normal', 'slow']);
+        });
+
+        it('should not emit performance state changes when monitoring is disabled', () => {
+            observeLowConnectivityMonitor.mockReturnValue(of$(false));
+            const disabledManager = new NetworkPerformanceManagerSingleton();
+
+            const states: string[] = [];
+            const subscription = disabledManager.observePerformanceState(serverUrl).subscribe((state: string) => {
+                states.push(state);
+            });
+
+            for (let i = 0; i < 10; i++) {
+                const requestId = disabledManager.startRequestTracking(serverUrl, `/api/request-${i}`);
+                const metrics = createMockMetrics(i < 8 ? 1000 : 500, 1000, 500);
+                disabledManager.completeRequestTracking(serverUrl, requestId, metrics);
+            }
+
+            subscription.unsubscribe();
+            expect(states).toEqual([]);
+
+            disabledManager.destroy();
+        });
+
+        it('should still track requests and log when monitoring is disabled', () => {
+            const {logDebug} = require('@utils/log');
+            logDebug.mockClear();
+
+            observeLowConnectivityMonitor.mockReturnValue(of$(false));
+            const disabledManager = new NetworkPerformanceManagerSingleton();
+
+            disabledManager.observePerformanceState(serverUrl);
+
+            for (let i = 0; i < 10; i++) {
+                const requestId = disabledManager.startRequestTracking(serverUrl, `/api/request-${i}`);
+                const metrics = createMockMetrics(i < 8 ? 1000 : 500, 1000, 500);
+                disabledManager.completeRequestTracking(serverUrl, requestId, metrics);
+            }
+
+            const stats = disabledManager.getRequestOutcomeStats(serverUrl);
+            expect(stats.totalRequests).toBe(10);
+            expect(stats.slowRequests).toBe(8);
+
+            expect(logDebug).toHaveBeenCalledWith(
+                `Network performance degraded for ${serverUrl}: normal -> slow`,
+                expect.any(Object),
+            );
+
+            disabledManager.destroy();
+        });
+
+        it('should clean up monitor subscription on destroy', () => {
+            const mockUnsubscribe = jest.fn();
+            observeLowConnectivityMonitor.mockReturnValue({
+                subscribe: jest.fn(() => ({
+                    unsubscribe: mockUnsubscribe,
+                })),
+            });
+
+            const manager = new NetworkPerformanceManagerSingleton();
+            manager.destroy();
+
+            expect(mockUnsubscribe).toHaveBeenCalled();
+        });
+
+        it('should handle monitor state changing from enabled to disabled', () => {
+            const {BehaviorSubject} = require('rxjs');
+            const monitorSubject = new BehaviorSubject(true);
+            observeLowConnectivityMonitor.mockReturnValue(monitorSubject.asObservable());
+
+            const dynamicManager = new NetworkPerformanceManagerSingleton();
+
+            const states: string[] = [];
+            const subscription = dynamicManager.observePerformanceState(serverUrl).subscribe((state: string) => {
+                states.push(state);
+            });
+
+            for (let i = 0; i < MINIMUM_REQUESTS_FOR_INITIAL_DETECTION; i++) {
+                const requestId = dynamicManager.startRequestTracking(serverUrl, `/api/request-${i}`);
+                const metrics = createMockMetrics(1000, 1000, 500);
+                dynamicManager.completeRequestTracking(serverUrl, requestId, metrics);
+            }
+
+            expect(states).toEqual(['normal', 'slow']);
+
+            monitorSubject.next(false);
+
+            states.length = 0;
+
+            for (let i = 0; i < 5; i++) {
+                const requestId = dynamicManager.startRequestTracking(serverUrl, `/api/request-extra-${i}`);
+                const metrics = createMockMetrics(500, 1000, 500);
+                dynamicManager.completeRequestTracking(serverUrl, requestId, metrics);
+            }
+
+            expect(states).toEqual([]);
+
+            subscription.unsubscribe();
+            dynamicManager.destroy();
+        });
+
+        it('should handle monitor state changing from disabled to enabled', () => {
+            const {BehaviorSubject} = require('rxjs');
+            const monitorSubject = new BehaviorSubject(false);
+            observeLowConnectivityMonitor.mockReturnValue(monitorSubject.asObservable());
+
+            const dynamicManager = new NetworkPerformanceManagerSingleton();
+
+            const states: string[] = [];
+            const subscription = dynamicManager.observePerformanceState(serverUrl).subscribe((state: string) => {
+                states.push(state);
+            });
+
+            for (let i = 0; i < 5; i++) {
+                const requestId = dynamicManager.startRequestTracking(serverUrl, `/api/request-${i}`);
+                const metrics = createMockMetrics(i < 4 ? 1000 : 500, 1000, 500);
+                dynamicManager.completeRequestTracking(serverUrl, requestId, metrics);
+            }
+
+            expect(states).toEqual([]);
+
+            monitorSubject.next(true);
+
+            for (let i = 5; i < 10; i++) {
+                const requestId = dynamicManager.startRequestTracking(serverUrl, `/api/request-${i}`);
+                const metrics = createMockMetrics(500, 1000, 500);
+                dynamicManager.completeRequestTracking(serverUrl, requestId, metrics);
+            }
+
+            expect(states.length).toBeGreaterThan(0);
+
+            subscription.unsubscribe();
+            dynamicManager.destroy();
         });
     });
 });
