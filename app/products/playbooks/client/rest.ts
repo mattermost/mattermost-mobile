@@ -10,10 +10,13 @@ export interface ClientPlaybooksMix {
     // Playbook Runs
     fetchPlaybookRuns: (params: FetchPlaybookRunsParams, groupLabel?: RequestGroupLabel) => Promise<FetchPlaybookRunsReturn>;
     fetchPlaybookRun: (id: string, groupLabel?: RequestGroupLabel) => Promise<PlaybookRun>;
+    fetchPlaybookRunMetadata: (id: string) => Promise<PlaybookRunMetadata>;
     setOwner: (playbookRunId: string, ownerId: string) => Promise<void>;
 
     // Run Management
+    // finishRun: (playbookRunId: string) => Promise<any>;
     finishRun: (playbookRunId: string) => Promise<void>;
+    postStatusUpdate: (playbookRunID: string, payload: PostStatusUpdatePayload, ids: PostStatusUpdateIds) => Promise<void>;
 
     // Checklist Management
     setChecklistItemState: (playbookRunID: string, checklistNum: number, itemNum: number, newState: ChecklistItemState) => Promise<void>;
@@ -65,6 +68,13 @@ const ClientPlaybooks = <TBase extends Constructor<ClientBase>>(superclass: TBas
         );
     };
 
+    fetchPlaybookRunMetadata = async (id: string) => {
+        return this.doFetch(
+            `${this.getPlaybookRunRoute(id)}/metadata`,
+            {method: 'get'},
+        );
+    };
+
     setOwner = async (playbookRunId: string, ownerId: string) => {
         const data = await this.doFetch(
             `${this.getPlaybookRunRoute(playbookRunId)}/owner`,
@@ -78,6 +88,26 @@ const ClientPlaybooks = <TBase extends Constructor<ClientBase>>(superclass: TBas
         return this.doFetch(
             `${this.getPlaybookRunRoute(playbookRunId)}/finish`,
             {method: 'put', body: {/* okhttp requires put methods to have a body */}},
+        );
+    };
+
+    postStatusUpdate = async (playbookRunID: string, payload: PostStatusUpdatePayload, ids: PostStatusUpdateIds) => {
+        const body = {
+            type: 'dialog_submission',
+            callback_id: '',
+            state: '',
+            cancelled: false,
+            ...ids,
+            submission: {
+                message: payload.message,
+                reminder: payload.reminder?.toFixed() ?? '',
+                finish_run: payload.finishRun,
+            },
+        };
+
+        await this.doFetch(
+            `${this.getPlaybookRunRoute(playbookRunID)}/update-status-dialog`,
+            {method: 'post', body},
         );
     };
 
