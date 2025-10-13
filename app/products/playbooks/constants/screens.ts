@@ -8,6 +8,8 @@ export const PLAYBOOK_EDIT_COMMAND = 'PlaybookEditCommand';
 export const PLAYBOOK_POST_UPDATE = 'PlaybookPostUpdate';
 export const PLAYBOOK_SELECT_USER = 'PlaybookSelectUser';
 export const PLAYBOOKS_SELECT_DATE = 'PlaybooksSelectDate';
+export const PLAYBOOKS_SELECT_PLAYBOOK = 'PlaybooksSelectPlaybook';
+export const PLAYBOOKS_START_A_RUN = 'PlaybooksStartARun';
 
 export default {
     PLAYBOOKS_RUNS,
@@ -17,4 +19,6 @@ export default {
     PLAYBOOK_POST_UPDATE,
     PLAYBOOK_SELECT_USER,
     PLAYBOOKS_SELECT_DATE,
+    PLAYBOOKS_SELECT_PLAYBOOK,
+    PLAYBOOKS_START_A_RUN,
 } as const;

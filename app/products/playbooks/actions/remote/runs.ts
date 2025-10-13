@@ -136,6 +136,27 @@ export const setOwner = async (serverUrl: string, playbookRunId: string, ownerId
     }
 };
 
+export const createPlaybookRun = async (
+    serverUrl: string,
+    playbook_id: string,
+    owner_user_id: string,
+    team_id: string,
+    name: string,
+    description: string,
+    channel_id?: string,
+    create_public_run?: boolean,
+) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const run = await client.createPlaybookRun(playbook_id, owner_user_id, team_id, name, description, channel_id, create_public_run);
+        return {data: run};
+    } catch (error) {
+        logDebug('error on createPlaybookRun', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
 export const postStatusUpdate = async (serverUrl: string, playbookRunID: string, payload: PostStatusUpdatePayload, ids: PostStatusUpdateIds) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
