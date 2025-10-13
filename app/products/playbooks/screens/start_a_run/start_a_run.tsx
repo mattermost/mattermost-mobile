@@ -106,7 +106,7 @@ function StartARun({
     });
     const [channelOption, setChannelOption] = useState<ChannelOption>('existing');
     const [channelId, setChannelId] = useState<string | undefined>(undefined);
-    const [creatPublicChannel, setCreatPublicChannel] = useState(false);
+    const [createPublicChannel, setCreatePublicChannel] = useState(false);
 
     const canSave = Boolean(runName.trim());
 
@@ -115,7 +115,7 @@ function StartARun({
             return;
         }
 
-        const res = await createPlaybookRun(serverUrl, playbook.id, currentUserId, currentTeamId, runName.trim(), runDescription.trim(), channelId, channelOption === 'new' ? creatPublicChannel : undefined);
+        const res = await createPlaybookRun(serverUrl, playbook.id, currentUserId, currentTeamId, runName.trim(), runDescription.trim(), channelId, channelOption === 'new' ? createPublicChannel : undefined);
         if (res.error || !res.data) {
             logDebug('error on createPlaybookRun', getFullErrorMessage(res.error));
             showPlaybookErrorSnackbar();
@@ -123,7 +123,7 @@ function StartARun({
         }
         await popTopScreen(componentId);
         onRunCreated(res.data);
-    }, [runName, serverUrl, playbook.id, currentUserId, currentTeamId, runDescription, channelId, channelOption, creatPublicChannel, componentId, onRunCreated]);
+    }, [runName, serverUrl, playbook.id, currentUserId, currentTeamId, runDescription, channelId, channelOption, createPublicChannel, componentId, onRunCreated]);
 
     useEffect(() => {
         async function asyncWrapper() {
@@ -157,10 +157,10 @@ function StartARun({
         setChannelOption('new');
     }, []);
     const publicChannelOptionAction = useCallback(() => {
-        setCreatPublicChannel(true);
+        setCreatePublicChannel(true);
     }, []);
     const privateChannelOptionAction = useCallback(() => {
-        setCreatPublicChannel(false);
+        setCreatePublicChannel(false);
     }, []);
 
     const onChannelSelected = useCallback((value: SelectedDialogOption) => {
@@ -256,7 +256,7 @@ function StartARun({
                                 defaultMessage: 'Public channel',
                             })}
                             type='radio'
-                            selected={creatPublicChannel}
+                            selected={createPublicChannel}
                             action={publicChannelOptionAction}
                             testID='start_run.new_channel_public_option'
                         />
@@ -266,7 +266,7 @@ function StartARun({
                                 defaultMessage: 'Private channel',
                             })}
                             type='radio'
-                            selected={!creatPublicChannel}
+                            selected={!createPublicChannel}
                             action={privateChannelOptionAction}
                             testID='start_run.new_channel_private_option'
                         />
