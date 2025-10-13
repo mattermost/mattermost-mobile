@@ -3,7 +3,7 @@
 
 type ChecklistItemState = '' | 'in_progress' | 'closed' | 'skipped';
 
-type ConditionAction = '' | 'hidden';
+type ConditionAction = '' | 'hidden' | 'shown_because_modified';
 
 const PlaybookRunStatus = {
     InProgress: 'InProgress',
@@ -70,6 +70,26 @@ type TimelineEvent = {
 }
 
 type PlaybookRunStatusType = typeof PlaybookRunStatus[keyof typeof PlaybookRunStatus];
+
+type PlaybookRunAttribute = {
+    id: string;
+    group_id: string;
+    name: string;
+    type: string;
+    target_id: string;
+    target_type: string;
+    create_at: number;
+    update_at: number;
+    delete_at: number;
+    attrs?: string;
+}
+
+type PlaybookRunAttributeValue = {
+    id: string;
+    attribute_id: string;
+    run_id: string;
+    value: string;
+}
 
 type PlaybookRun = {
     id: string;
