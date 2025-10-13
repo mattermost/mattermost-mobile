@@ -6,6 +6,7 @@ import {useIntl} from 'react-intl';
 import {View, Text, TouchableOpacity} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
+import {getFriendlyDate} from '@components/friendly_date';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -57,27 +58,12 @@ const PlaybookRow = ({playbook, onPress, testID}: Props) => {
             });
         }
 
-        const now = Date.now();
-        const diff = now - lastRunAt;
-        const hours = Math.floor(diff / (1000 * 60 * 60));
-        const days = Math.floor(hours / 24);
+        const formattedTime = getFriendlyDate(intl, lastRunAt);
 
-        if (days > 0) {
-            return intl.formatMessage({
-                id: 'playbooks.row.days_ago',
-                defaultMessage: 'Last used {days} {days, plural, one {day} other {days}} ago',
-            }, {days});
-        }
-        if (hours > 0) {
-            return intl.formatMessage({
-                id: 'playbooks.row.hours_ago',
-                defaultMessage: 'Last used {hours} {hours, plural, one {hour} other {hours}} ago',
-            }, {hours});
-        }
         return intl.formatMessage({
-            id: 'playbooks.row.just_now',
-            defaultMessage: 'Last used just now',
-        });
+            id: 'playbooks.row.last_used',
+            defaultMessage: 'Last used {time}',
+        }, {time: formattedTime});
     };
 
     const formatRunsInProgress = (activeRuns: number) => {

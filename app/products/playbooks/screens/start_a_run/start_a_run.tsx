@@ -166,10 +166,12 @@ function StartARun({
     const onChannelSelected = useCallback((value: SelectedDialogOption) => {
         if (Array.isArray(value)) {
             // Multiselect case, should never happen
+            logDebug('on channel selected returned an array, this should never happen', value);
             return;
         }
         if (!value) {
             // Undefined case, should never happen
+            logDebug('on channel selected returned undefined, this should never happen');
             return;
         }
         setChannelId(value.value);
