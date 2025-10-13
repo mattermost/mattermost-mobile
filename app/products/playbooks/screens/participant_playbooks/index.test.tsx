@@ -32,7 +32,7 @@ describe('ParticipantPlaybooks Index', () => {
     let database: Database;
     let operator: ServerDataOperator;
 
-    const componentId = 'ParticipantPlaybooks';
+    const componentId = 'ParticipantPlaybooks' as const;
 
     beforeEach(async () => {
         await DatabaseManager.init([serverUrl]);
