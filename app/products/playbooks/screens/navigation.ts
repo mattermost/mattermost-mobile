@@ -1,10 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {joinIfNeededAndSwitchToChannel} from '@actions/remote/channel';
 import {Screens} from '@constants';
 import {getThemeFromState, goToScreen} from '@screens/navigation';
+import {errorBadChannel} from '@utils/draft';
+import {logDebug} from '@utils/log';
 import {changeOpacity} from '@utils/theme';
 
+import type PlaybookRunModel from '@playbooks/types/database/models/playbook_run';
 import type {IntlShape} from 'react-intl';
 import type {Options as RNNOptions} from 'react-native-navigation';
 
@@ -21,9 +25,35 @@ export function goToPlaybookRuns(intl: IntlShape, channelId: string, channelName
     });
 }
 
+export function goToParticipantPlaybooks(intl: IntlShape) {
+    const title = intl.formatMessage({id: 'playbooks.participant_playbooks.title', defaultMessage: 'Playbook runs'});
+    goToScreen(Screens.PARTICIPANT_PLAYBOOKS, title, {}, {});
+}
+
 export async function goToPlaybookRun(intl: IntlShape, playbookRunId: string, playbookRun?: PlaybookRun) {
     const title = intl.formatMessage({id: 'playbooks.playbook_run.title', defaultMessage: 'Playbook run'});
     goToScreen(Screens.PLAYBOOK_RUN, title, {playbookRunId, playbookRun}, {});
+}
+
+export async function goToPlaybookRunWithChannelSwitch(intl: IntlShape, serverUrl: string, playbookRun: PlaybookRun | PlaybookRunModel) {
+    const channelId = 'channelId' in playbookRun ? playbookRun.channelId : playbookRun.channel_id;
+    const teamId = 'teamId' in playbookRun ? playbookRun.teamId : playbookRun.team_id;
+
+    // First switch to the channel
+    const result = await joinIfNeededAndSwitchToChannel(serverUrl, {id: channelId}, {id: teamId}, errorBadChannel, intl);
+    if (result.error) {
+        logDebug('Failed to switch to channel', result.error);
+        return;
+    }
+
+    // Then navigate to the playbook run
+    const title = intl.formatMessage({id: 'playbooks.playbook_run.title', defaultMessage: 'Playbook run'});
+    goToScreen(Screens.PLAYBOOK_RUN, title, {playbookRunId: playbookRun.id}, {});
+}
+
+export async function goToPostUpdate(intl: IntlShape, playbookRunId: string) {
+    const title = intl.formatMessage({id: 'playbooks.post_update.title', defaultMessage: 'Post update'});
+    goToScreen(Screens.PLAYBOOK_POST_UPDATE, title, {playbookRunId}, {});
 }
 
 function getSubtitleOptions(theme: Theme, runName: string): RNNOptions {

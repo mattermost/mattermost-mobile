@@ -52,3 +52,15 @@ type FetchPlaybooksReturn = {
     has_more: boolean;
     items: Playbook[];
 }
+
+type PostStatusUpdatePayload = {
+    message: string;
+    reminder?: number;
+    finishRun: boolean;
+};
+
+type PostStatusUpdateIds = {
+    user_id: string;
+    channel_id: string;
+    team_id: string;
+};

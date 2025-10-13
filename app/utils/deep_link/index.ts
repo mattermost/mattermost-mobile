@@ -7,7 +7,7 @@ import {Alert} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import urlParse from 'url-parse';
 
-import {makeDirectChannel, switchToChannelByName} from '@actions/remote/channel';
+import {joinIfNeededAndSwitchToChannel, makeDirectChannel} from '@actions/remote/channel';
 import {showPermalink} from '@actions/remote/permalink';
 import {fetchUsersByUsernames} from '@actions/remote/user';
 import {DeepLink, Launch, Screens} from '@constants';
@@ -77,7 +77,7 @@ export async function handleDeepLink(deepLink: DeepLinkWithData, intlShape?: Int
         switch (deepLink.type) {
             case DeepLink.Channel: {
                 const deepLinkData = deepLink.data as DeepLinkChannel;
-                switchToChannelByName(existingServerUrl, deepLinkData.channelName, deepLinkData.teamName, errorBadChannel, intl);
+                joinIfNeededAndSwitchToChannel(existingServerUrl, {name: deepLinkData.channelName}, {name: deepLinkData.teamName}, errorBadChannel, intl);
                 break;
             }
             case DeepLink.DirectMessage: {
@@ -100,7 +100,7 @@ export async function handleDeepLink(deepLink: DeepLinkWithData, intlShape?: Int
             }
             case DeepLink.GroupMessage: {
                 const deepLinkData = deepLink.data as DeepLinkGM;
-                switchToChannelByName(existingServerUrl, deepLinkData.channelName, deepLinkData.teamName, errorBadChannel, intl);
+                joinIfNeededAndSwitchToChannel(existingServerUrl, {name: deepLinkData.channelName}, {name: deepLinkData.teamName}, errorBadChannel, intl);
                 break;
             }
             case DeepLink.Permalink: {

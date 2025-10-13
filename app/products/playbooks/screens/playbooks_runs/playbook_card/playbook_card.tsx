@@ -9,9 +9,11 @@ import {CHIP_HEIGHT} from '@components/chips/constants';
 import UserChip from '@components/chips/user_chip';
 import FriendlyDate from '@components/friendly_date';
 import UserAvatarsStack from '@components/user_avatars_stack';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import ProgressBar from '@playbooks/components/progress_bar';
-import {goToPlaybookRun} from '@playbooks/screens/navigation';
+import PlaybookScreens from '@playbooks/constants/screens';
+import {goToPlaybookRun, goToPlaybookRunWithChannelSwitch} from '@playbooks/screens/navigation';
 import {isRunFinished} from '@playbooks/utils/run';
 import {openUserProfileModal} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -89,13 +91,19 @@ const PlaybookCard = ({
     const lastUpdateAt = 'updateAt' in run ? run.updateAt : run.update_at;
 
     const intl = useIntl();
+    const serverUrl = useServerUrl();
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
     const finished = isRunFinished(run);
 
     const onCardPress = useCallback(() => {
-        goToPlaybookRun(intl, run.id, 'observe' in run ? undefined : run);
-    }, [intl, run]);
+        // If we're coming from the participant playbooks screen, we need to switch to the channel first
+        if (location === PlaybookScreens.PARTICIPANT_PLAYBOOKS) {
+            goToPlaybookRunWithChannelSwitch(intl, serverUrl, run as PlaybookRun);
+        } else {
+            goToPlaybookRun(intl, run.id, 'observe' in run ? undefined : run);
+        }
+    }, [intl, serverUrl, run, location]);
 
     const onUserChipPress = useCallback((userId: string) => {
         openUserProfileModal(intl, theme, {

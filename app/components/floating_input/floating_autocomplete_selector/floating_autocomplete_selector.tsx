@@ -6,7 +6,6 @@ import {type IntlShape, useIntl} from 'react-intl';
 import {Text, View, type StyleProp, type TextStyle, type ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Screens, View as ViewConstants} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -48,6 +47,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flexDirection: 'row',
             justifyContent: 'space-between',
             alignItems: 'center',
+            flex: 1,
         },
         dropdownPlaceholder: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
@@ -178,14 +178,14 @@ function AutoCompleteSelector({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const touchableStyle = useMemo(() => {
-        const res: StyleProp<ViewStyle> = [{flex: 1}];
+    const inputStyle = useMemo(() => {
+        const res: StyleProp<ViewStyle> = [style.input];
         if (disabled) {
             res.push(style.disabled);
         }
 
         return res;
-    }, [disabled, style.disabled]);
+    }, [disabled, style.disabled, style.input]);
 
     const dropdownTextStyle = useMemo(() => {
         const res: StyleProp<TextStyle> = [style.dropdownText];
@@ -204,30 +204,24 @@ function AutoCompleteSelector({
             error={errorText}
             hideErrorIcon={true}
             theme={theme}
+            focus={goToSelectorScreen}
             focused={false}
             focusedLabel={focusedLabel}
             editable={!disabled}
             testID={testID}
         >
-            <TouchableWithFeedback
-                disabled={disabled}
-                onPress={goToSelectorScreen}
-                style={touchableStyle}
-                type='opacity'
-            >
-                <View style={style.input}>
-                    <Text
-                        numberOfLines={1}
-                        style={dropdownTextStyle}
-                    >
-                        {itemText || placeholder}
-                    </Text>
-                    <CompassIcon
-                        name='chevron-down'
-                        color={changeOpacity(theme.centerChannelColor, 0.5)}
-                    />
-                </View>
-            </TouchableWithFeedback>
+            <View style={inputStyle}>
+                <Text
+                    numberOfLines={1}
+                    style={dropdownTextStyle}
+                >
+                    {itemText || placeholder}
+                </Text>
+                <CompassIcon
+                    name='chevron-down'
+                    color={changeOpacity(theme.centerChannelColor, 0.5)}
+                />
+            </View>
         </FloatingInputContainer>
     );
 }

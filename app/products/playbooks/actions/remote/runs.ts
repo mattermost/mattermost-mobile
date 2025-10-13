@@ -89,7 +89,7 @@ export const fetchFinishedRunsForChannel = async (serverUrl: string, channelId: 
     }
 };
 
-export const fetchPlaybookRun = async (serverUrl: string, runId: string, fetchOnly = false): Promise<PlaybookRunsRequest> => {
+export const fetchPlaybookRun = async (serverUrl: string, runId: string, fetchOnly = false) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
         const run = await client.fetchPlaybookRun(runId);
@@ -102,9 +102,21 @@ export const fetchPlaybookRun = async (serverUrl: string, runId: string, fetchOn
             }
         }
 
-        return {runs: [run]};
+        return {run};
     } catch (error) {
         logDebug('error on fetchPlaybookRun', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
+export const fetchPlaybookRunMetadata = async (serverUrl: string, runId: string) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const metadata = await client.fetchPlaybookRunMetadata(runId);
+        return {metadata};
+    } catch (error) {
+        logDebug('error on fetchPlaybookRunMetadata', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
@@ -145,6 +157,16 @@ export const createPlaybookRun = async (
     }
 };
 
+export const postStatusUpdate = async (serverUrl: string, playbookRunID: string, payload: PostStatusUpdatePayload, ids: PostStatusUpdateIds) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        await client.postStatusUpdate(playbookRunID, payload, ids);
+    } catch (error) {
+        logDebug('error on postStatusUpdate', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+    }
+};
+
 export const finishRun = async (serverUrl: string, playbookRunId: string) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
@@ -152,6 +174,26 @@ export const finishRun = async (serverUrl: string, playbookRunId: string) => {
         return {data: true};
     } catch (error) {
         logDebug('error on finishRun', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
+export const fetchPlaybookRunsPageForParticipant = async (serverUrl: string, participantId: string, page = 0) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+
+        const {items: runs, has_more} = await client.fetchPlaybookRuns({
+            page,
+            per_page: PER_PAGE_DEFAULT,
+            participant_id: participantId,
+            sort: 'create_at',
+            direction: 'desc',
+        });
+
+        return {runs, hasMore: has_more};
+    } catch (error) {
+        logDebug('error on fetchPlaybookRunsPageForParticipant', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
