@@ -3,7 +3,7 @@
 /*eslint-disable */
 import React, {useCallback, useEffect, useImperativeHandle, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Dimensions, StyleSheet} from 'react-native';
+import {Dimensions, StyleSheet, Image} from 'react-native';
 
 import LocalConfig from '@assets/config.json';
 import ServerIcon from '@components/server_icon';
@@ -158,9 +158,15 @@ const Servers = React.forwardRef<ServersRef>((_, ref) => {
         };
     }, []);
 
-    // Hide server icon when AutoSelectServerUrl is enabled
+    // Show app logo when AutoSelectServerUrl is enabled
     if (LocalConfig.AutoSelectServerUrl) {
-        return null;
+        return (
+            <Image
+                source={require('@assets/images/daakiaDlogoCircle.png')}
+                style={[styles.icon, {width: 32, height: 32, borderRadius: 16}]}
+                testID={'channel_list.app_logo'}
+            />
+        );
     }
 
     return (
