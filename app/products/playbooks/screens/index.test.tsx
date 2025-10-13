@@ -11,6 +11,7 @@ import EditCommand from './edit_command';
 import ParticipantPlaybooks from './participant_playbooks';
 import PlaybookRun from './playbook_run';
 import PlaybookRuns from './playbooks_runs';
+import PostUpdate from './post_update';
 import SelectDate from './select_date';
 import SelectUser from './select_user';
 
@@ -58,6 +59,12 @@ jest.mock('@playbooks/screens/participant_playbooks', () => ({
     default: jest.fn(),
 }));
 jest.mocked(ParticipantPlaybooks).mockImplementation((props) => <Text {...props}>{Screens.PARTICIPANT_PLAYBOOKS}</Text>);
+
+jest.mock('@playbooks/screens/post_update', () => ({
+    __esModule: true,
+    default: jest.fn(),
+}));
+jest.mocked(PostUpdate).mockImplementation((props) => <Text {...props}>{Screens.PLAYBOOK_POST_UPDATE}</Text>);
 
 describe('Screen Registration', () => {
     beforeEach(() => {

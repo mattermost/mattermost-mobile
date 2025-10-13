@@ -23,6 +23,8 @@ import type {Model, Query, Relation} from '@nozbe/watermelondb';
 import type PlaybookChecklistModel from '@playbooks/types/database/models/playbook_checklist';
 import type PlaybookChecklistItemModel from '@playbooks/types/database/models/playbook_checklist_item';
 import type PlaybookRunModel from '@playbooks/types/database/models/playbook_run';
+import type PlaybookRunAttributeModel from '@playbooks/types/database/models/playbook_run_attribute';
+import type PlaybookRunAttributeValueModel from '@playbooks/types/database/models/playbook_run_attribute_value';
 import type CategoryChannelModel from '@typings/database/models/servers/category_channel';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type ChannelBookmarkModel from '@typings/database/models/servers/channel_bookmark';
@@ -1067,7 +1069,7 @@ class TestHelperSingleton {
         };
     };
 
-    createPlaybookItem =(prefix: string, index: number): PlaybookChecklistItem => ({
+    createPlaybookItem = (prefix: string, index: number): PlaybookChecklistItem => ({
         id: `${prefix}-item_${index}`,
         title: `Item ${index + 1} of Checklist ${prefix}`,
         description: 'Item description',
@@ -1083,6 +1085,26 @@ class TestHelperSingleton {
         condition_action: '',
         condition_reason: '',
         update_at: 0,
+    });
+
+    createPlaybookRunAttribute = (prefix: string, index: number): PlaybookRunAttribute => ({
+        id: `${prefix}-attribute_${index}`,
+        group_id: 'group_1',
+        name: `Attribute ${index + 1}`,
+        type: 'text',
+        target_id: `${prefix}`,
+        target_type: 'playbook_run',
+        create_at: Date.now(),
+        update_at: Date.now(),
+        delete_at: 0,
+        attrs: '',
+    });
+
+    createPlaybookRunAttributeValue = (attributeId: string, runId: string, index: number): PlaybookRunAttributeValue => ({
+        id: `${runId}-${attributeId}-value_${index}`,
+        attribute_id: attributeId,
+        run_id: runId,
+        value: `Value ${index + 1}`,
     });
 
     createPlaybookChecklist = (prefix: string, itemsCount: number, index: number): PlaybookChecklist => {
@@ -1152,6 +1174,7 @@ class TestHelperSingleton {
                 checklists,
                 update_at: Date.now() + i,
                 items_order: checklists.map((checklist) => checklist.id),
+                status_update_broadcast_channels_enabled: false,
             });
         }
         return playbookRuns;
@@ -1259,6 +1282,60 @@ class TestHelperSingleton {
             conditionReason: '',
             checklist: this.fakeRelation(),
             updateAt: 0,
+            ...overwrite,
+        };
+    };
+
+    fakePlaybookRunAttribute = (overwrite: Partial<PlaybookRunAttribute> = {}): PlaybookRunAttribute => {
+        return {
+            id: this.generateId(),
+            group_id: this.generateId(),
+            name: 'Test Attribute',
+            type: 'text',
+            target_id: this.generateId(),
+            target_type: 'playbook_run',
+            create_at: Date.now(),
+            update_at: Date.now(),
+            delete_at: 0,
+            attrs: '',
+            ...overwrite,
+        };
+    };
+
+    fakePlaybookRunAttributeValue = (attributeId: string, runId: string, overwrite: Partial<PlaybookRunAttributeValue> = {}): PlaybookRunAttributeValue => {
+        return {
+            id: this.generateId(),
+            attribute_id: attributeId,
+            run_id: runId,
+            value: 'Test Value',
+            ...overwrite,
+        };
+    };
+
+    fakePlaybookRunAttributeModel = (overwrite: Partial<PlaybookRunAttributeModel> = {}): PlaybookRunAttributeModel => {
+        return {
+            ...this.fakeModel(),
+            groupId: this.generateId(),
+            name: 'Test Attribute',
+            type: 'text',
+            targetId: this.generateId(),
+            targetType: 'playbook_run',
+            createAt: Date.now(),
+            updateAt: Date.now(),
+            deleteAt: 0,
+            attrs: '',
+            ...overwrite,
+        };
+    };
+
+    fakePlaybookRunAttributeValueModel = (overwrite: Partial<PlaybookRunAttributeValueModel> = {}): PlaybookRunAttributeValueModel => {
+        return {
+            ...this.fakeModel(),
+            attributeId: this.generateId(),
+            runId: this.generateId(),
+            value: 'Test Value',
+            attribute: this.fakeRelation(),
+            run: this.fakeRelation(),
             ...overwrite,
         };
     };

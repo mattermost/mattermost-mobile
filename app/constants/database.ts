@@ -84,9 +84,10 @@ export const GLOBAL_IDENTIFIERS = {
     DONT_ASK_FOR_REVIEW: 'dontAskForReview',
     FIRST_LAUNCH: 'firstLaunch',
     LAST_ASK_FOR_REVIEW: 'lastAskForReview',
-    ONBOARDING: 'onboarding',
     LAST_VIEWED_CHANNEL: 'lastViewedChannel',
     LAST_VIEWED_THREAD: 'lastViewedThread',
+    LOW_CONNECTIVITY_MONITOR: 'lowConnectivityMonitor',
+    ONBOARDING: 'onboarding',
     PUSH_DISABLED_ACK: 'pushDisabledAck',
 };
 

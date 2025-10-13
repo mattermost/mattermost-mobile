@@ -5,6 +5,7 @@ export const PLAYBOOKS_RUNS = 'PlaybookRuns';
 export const PARTICIPANT_PLAYBOOKS = 'ParticipantPlaybooks';
 export const PLAYBOOK_RUN = 'PlaybookRun';
 export const PLAYBOOK_EDIT_COMMAND = 'PlaybookEditCommand';
+export const PLAYBOOK_POST_UPDATE = 'PlaybookPostUpdate';
 export const PLAYBOOK_SELECT_USER = 'PlaybookSelectUser';
 export const PLAYBOOKS_SELECT_DATE = 'PlaybooksSelectDate';
 
@@ -13,6 +14,7 @@ export default {
     PARTICIPANT_PLAYBOOKS,
     PLAYBOOK_RUN,
     PLAYBOOK_EDIT_COMMAND,
+    PLAYBOOK_POST_UPDATE,
     PLAYBOOK_SELECT_USER,
     PLAYBOOKS_SELECT_DATE,
-};
+} as const;

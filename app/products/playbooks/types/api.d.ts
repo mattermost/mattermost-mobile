@@ -3,7 +3,7 @@
 
 type ChecklistItemState = '' | 'in_progress' | 'closed' | 'skipped';
 
-type ConditionAction = '' | 'hidden';
+type ConditionAction = '' | 'hidden' | 'shown_because_modified';
 
 const PlaybookRunStatus = {
     InProgress: 'InProgress',
@@ -54,6 +54,7 @@ type RunMetricData = {
 type StatusPost = {
     id: string;
     create_at: number;
+    delete_at: number;
 }
 
 type TimelineEvent = {
@@ -70,6 +71,26 @@ type TimelineEvent = {
 }
 
 type PlaybookRunStatusType = typeof PlaybookRunStatus[keyof typeof PlaybookRunStatus];
+
+type PlaybookRunAttribute = {
+    id: string;
+    group_id: string;
+    name: string;
+    type: string;
+    target_id: string;
+    target_type: string;
+    create_at: number;
+    update_at: number;
+    delete_at: number;
+    attrs?: string;
+}
+
+type PlaybookRunAttributeValue = {
+    id: string;
+    attribute_id: string;
+    run_id: string;
+    value: string;
+}
 
 type PlaybookRun = {
     id: string;
@@ -115,4 +136,14 @@ type PlaybookRun = {
     metrics_data: RunMetricData[];
     update_at: number;
     items_order: string[];
+    status_update_broadcast_channels_enabled: boolean;
+}
+
+type PlaybookRunMetadata = {
+    channel_name: string;
+    channel_display_name: string;
+    team_name: string;
+    num_participants: number;
+    total_posts: number;
+    followers: string[];
 }

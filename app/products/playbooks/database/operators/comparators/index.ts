@@ -14,5 +14,16 @@ export const shouldHandlePlaybookChecklistRecord = (existingRecord: PlaybookChec
 };
 
 export const shouldHandlePlaybookChecklistItemRecord = (existingRecord: PlaybookChecklistItemModel, raw: PartialChecklistItem): boolean => {
-    return Boolean(existingRecord.updateAt !== raw.update_at);
+    // Check if update_at has changed (primary check)
+    if (existingRecord.updateAt !== raw.update_at) {
+        return true;
+    }
+
+    // Check if condition fields have changed (allows updates without update_at change)
+    const conditionActionChanged = raw.condition_action !== undefined &&
+        existingRecord.conditionAction !== raw.condition_action;
+    const conditionReasonChanged = raw.condition_reason !== undefined &&
+        existingRecord.conditionReason !== raw.condition_reason;
+
+    return Boolean(conditionActionChanged || conditionReasonChanged);
 };
