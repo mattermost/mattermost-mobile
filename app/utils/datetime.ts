@@ -27,10 +27,15 @@ export function isYesterday(date: Date): boolean {
 }
 
 export function toMilliseconds({days, hours, minutes, seconds}: {days?: number; hours?: number; minutes?: number; seconds?: number}) {
+    const totalSeconds = toSeconds({days, hours, minutes, seconds});
+    return totalSeconds * 1000;
+}
+
+export function toSeconds({days, hours, minutes, seconds}: {days?: number; hours?: number; minutes?: number; seconds?: number}) {
     const totalHours = ((days || 0) * 24) + (hours || 0);
     const totalMinutes = (totalHours * 60) + (minutes || 0);
     const totalSeconds = (totalMinutes * 60) + (seconds || 0);
-    return totalSeconds * 1000;
+    return totalSeconds;
 }
 
 export function getReadableTimestamp(timestamp: number, timeZone: string, isMilitaryTime: boolean, currentUserLocale: string): string {

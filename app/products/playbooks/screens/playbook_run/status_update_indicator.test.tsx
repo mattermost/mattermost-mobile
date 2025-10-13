@@ -32,6 +32,8 @@ describe('StatusUpdateIndicator', () => {
             <StatusUpdateIndicator
                 isFinished={false}
                 timestamp={futureTimestamp}
+                isParticipant={true}
+                playbookRunId='run-id'
             />,
         );
 
@@ -48,6 +50,8 @@ describe('StatusUpdateIndicator', () => {
             <StatusUpdateIndicator
                 isFinished={false}
                 timestamp={pastTimestamp}
+                isParticipant={true}
+                playbookRunId='run-id'
             />,
         );
 
@@ -64,6 +68,8 @@ describe('StatusUpdateIndicator', () => {
             <StatusUpdateIndicator
                 isFinished={true}
                 timestamp={pastTimestamp}
+                isParticipant={true}
+                playbookRunId='run-id'
             />,
         );
 
