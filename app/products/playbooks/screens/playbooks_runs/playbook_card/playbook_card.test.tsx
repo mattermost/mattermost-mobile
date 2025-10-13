@@ -7,7 +7,7 @@ import React, {type ComponentProps} from 'react';
 import UserChip from '@components/chips/user_chip';
 import UserAvatarsStack from '@components/user_avatars_stack';
 import ProgressBar from '@playbooks/components/progress_bar';
-import {goToPlaybookRun} from '@playbooks/screens/navigation';
+import {goToPlaybookRun, goToPlaybookRunWithChannelSwitch} from '@playbooks/screens/navigation';
 import {openUserProfileModal} from '@screens/navigation';
 import {renderWithIntl} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
@@ -88,7 +88,7 @@ describe('PlaybookCard', () => {
         );
     });
 
-    it('navigates to playbook run on press', () => {
+    it('navigates to playbook run on press for regular location', () => {
         const props = getBaseProps();
         const {getByText} = renderWithIntl(<PlaybookCard {...props}/>);
 
@@ -101,6 +101,24 @@ describe('PlaybookCard', () => {
             props.run.id,
             undefined,
         );
+        expect(goToPlaybookRunWithChannelSwitch).not.toHaveBeenCalled();
+    });
+
+    it('navigates to playbook run with channel switch when location is PARTICIPANT_PLAYBOOKS', () => {
+        const props = getBaseProps();
+        props.location = 'ParticipantPlaybooks';
+        const {getByText} = renderWithIntl(<PlaybookCard {...props}/>);
+
+        act(() => {
+            fireEvent.press(getByText('Test Playbook Run'));
+        });
+
+        expect(goToPlaybookRunWithChannelSwitch).toHaveBeenCalledWith(
+            expect.anything(),
+            expect.anything(), // serverUrl
+            props.run,
+        );
+        expect(goToPlaybookRun).not.toHaveBeenCalled();
     });
 
     it('shows finished state when run is complete', () => {
