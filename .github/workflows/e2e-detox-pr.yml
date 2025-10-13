@@ -51,7 +51,7 @@ jobs:
       - update-initial-status-ios
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - name: Prepare iOS Build
         uses: ./.github/actions/prepare-ios-build
@@ -87,7 +87,7 @@ jobs:
           rm -rf ~/.npm/_cacache
 
       - name: Checkout Repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - name: Prepare Android Build
         uses: ./.github/actions/prepare-android-build
@@ -178,7 +178,7 @@ jobs:
       - run-ios-tests-on-pr
     steps:
       - name: e2e/remove-label-from-pr
-        uses: actions/github-script@e7aeb8c663f696059ebb5f9ab1425ed2ef511bdb # v7.0.1
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v7.0.1
         continue-on-error: true # Label might have been removed manually
         with:
           script: |
@@ -200,7 +200,7 @@ jobs:
       - run-android-tests-on-pr
     steps:
       - name: e2e/remove-label-from-pr
-        uses: actions/github-script@e7aeb8c663f696059ebb5f9ab1425ed2ef511bdb # v7.0.1
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v7.0.1
         continue-on-error: true # Label might have been removed manually
         with:
           script: |
