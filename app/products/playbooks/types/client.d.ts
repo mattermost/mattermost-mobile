@@ -36,6 +36,23 @@ type FetchPlaybookRunsParams = {
     since?: number;
 }
 
+type FetchPlaybooksParams = {
+    team_id: string;
+    page?: number;
+    per_page?: number;
+    sort?: 'title' | 'stages' | 'steps' | 'runs' | 'last_run_at' | 'active_runs';
+    direction?: 'asc' | 'desc';
+    search_term?: string;
+    with_archived?: boolean;
+}
+
+type FetchPlaybooksReturn = {
+    total_count: number;
+    page_count: number;
+    has_more: boolean;
+    items: Playbook[];
+}
+
 type PostStatusUpdatePayload = {
     message: string;
     reminder?: number;
