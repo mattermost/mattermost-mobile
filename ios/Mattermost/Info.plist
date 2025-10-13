@@ -28,11 +28,11 @@
 	<array>
 		<dict>
 			<key>CFBundleURLName</key>
-			<string>com.mattermost</string>
+			<string>com.daakia</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>mattermost</string>
-				<string>mmauthbeta</string>
+				<string>daakia</string>
+				<string>daakia-dev</string>
 			</array>
 		</dict>
 	</array>

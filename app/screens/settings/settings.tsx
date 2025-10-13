@@ -55,7 +55,7 @@ const Settings = ({componentId, helpLink, showHelp, siteName}: SettingsProps) =>
         setButtons(componentId, {
             leftButtons: [closeButton],
         });
-    }, []);
+    }, [componentId, closeButton]);
 
     useAndroidHardwareBackHandler(componentId, close);
     useNavButtonPressed(CLOSE_BUTTON_ID, componentId, close, []);
@@ -111,13 +111,19 @@ const Settings = ({componentId, helpLink, showHelp, siteName}: SettingsProps) =>
                 optionName='advanced_settings'
                 testID='settings.advanced_settings.option'
             />
-            <SettingItem
-                icon='information-outline'
-                label={intl.formatMessage({id: 'settings.about', defaultMessage: 'About {appTitle}'}, {appTitle: serverName})}
-                onPress={goToAbout}
-                optionName='about'
-                testID='settings.about.option'
-            />
+            {/**
+             * About button hidden per request. To re-enable, remove the comment
+             * and restore the goToAbout handler above.
+             */}
+            {false && (
+                <SettingItem
+                    icon='information-outline'
+                    label={intl.formatMessage({id: 'settings.about', defaultMessage: 'About {appTitle}'}, {appTitle: serverName})}
+                    onPress={goToAbout}
+                    optionName='about'
+                    testID='settings.about.option'
+                />
+            )}
             {Platform.OS === 'android' && <MenuDivider/>}
             {showHelp &&
                 <SettingItem
@@ -128,7 +134,12 @@ const Settings = ({componentId, helpLink, showHelp, siteName}: SettingsProps) =>
                     type='link'
                 />
             }
-            <ReportProblem/>
+            {/**
+             * Report a problem button hidden per request. To re-enable, remove the wrapper.
+             */}
+            {false && (
+                <ReportProblem/>
+            )}
         </SettingContainer>
     );
 };

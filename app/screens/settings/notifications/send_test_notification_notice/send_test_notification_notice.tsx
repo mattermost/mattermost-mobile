@@ -1,6 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-
+/*eslint-disable */
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {StyleSheet, View} from 'react-native';
@@ -9,10 +9,12 @@ import {sendTestNotification} from '@actions/remote/notifications';
 import SectionNotice from '@components/section_notice';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
-import {useExternalLink} from '@hooks/use_external_link';
+
+// import {useExternalLink} from '@hooks/use_external_link';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {logError} from '@utils/log';
-import {tryOpenURL} from '@utils/url';
+
+// import {tryOpenURL} from '@utils/url';
 
 const TIME_TO_IDLE = 3000;
 
@@ -35,9 +37,9 @@ const styles = StyleSheet.create({
 
 const SendTestNotificationNotice = ({
     serverVersion,
-    userId,
-    isCloud,
-    telemetryId,
+    userId: _userId,
+    isCloud: _isCloud,
+    telemetryId: _telemetryId,
 }: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
@@ -45,15 +47,15 @@ const SendTestNotificationNotice = ({
     const isSending = useRef(false);
     const timeout = useRef<NodeJS.Timeout>();
 
-    const [href] = useExternalLink({
-        userId,
-        isCloud,
-        telemetryId,
-    }, 'https://mattermost.com/pl/troubleshoot-notifications');
+    // const [href] = useExternalLink({
+    //     userId: _userId,
+    //     isCloud: _isCloud,
+    //     telemetryId: _telemetryId,
+    // }, 'https://mattermost.com/pl/troubleshoot-notifications');
 
-    const onGoToNotificationDocumentation = useCallback(() => {
-        tryOpenURL(href);
-    }, [href]);
+    // const onGoToNotificationDocumentation = useCallback(() => {
+    //     tryOpenURL(href);
+    // }, [href]);
 
     const onSendTestNotificationClick = useCallback(async () => {
         if (isSending.current) {
@@ -109,13 +111,13 @@ const SendTestNotificationNotice = ({
         };
     }, [buttonState, intl, onSendTestNotificationClick]);
 
-    const secondaryButton = useMemo(() => {
-        return {
-            onClick: onGoToNotificationDocumentation,
-            text: intl.formatMessage({id: 'user_settings.notifications.test_notification.go_to_docs', defaultMessage: 'Troubleshooting docs'}),
-            trailingIcon: 'open-in-new',
-        };
-    }, [intl, onGoToNotificationDocumentation]);
+    // const secondaryButton = useMemo(() => {
+    //     return {
+    //         onClick: onGoToNotificationDocumentation,
+    //         text: intl.formatMessage({id: 'user_settings.notifications.test_notification.go_to_docs', defaultMessage: 'Troubleshooting docs'}),
+    //         trailingIcon: 'open-in-new',
+    //     };
+    // }, [intl, onGoToNotificationDocumentation]);
 
     if (!isMinimumServerVersion(serverVersion, 10, 3)) {
         return null;
@@ -130,7 +132,8 @@ const SendTestNotificationNotice = ({
                 })}
                 title={intl.formatMessage({id: 'user_settings.notifications.test_notification.title', defaultMessage: 'Troubleshooting notifications'})}
                 primaryButton={primaryButton}
-                secondaryButton={secondaryButton}
+
+                // secondaryButton={secondaryButton
                 type='hint'
                 location={Screens.SETTINGS_NOTIFICATION_PUSH}
             />

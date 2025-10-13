@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-
+/*eslint-disable */
 import React, {useCallback, useEffect, useImperativeHandle, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Dimensions, StyleSheet} from 'react-native';
+import {Dimensions, StyleSheet, Image} from 'react-native';
 
+import LocalConfig from '@assets/config.json';
 import ServerIcon from '@components/server_icon';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -156,6 +157,17 @@ const Servers = React.forwardRef<ServersRef>((_, ref) => {
             subscriptions.clear();
         };
     }, []);
+
+    // Show app logo when AutoSelectServerUrl is enabled
+    if (LocalConfig.AutoSelectServerUrl) {
+        return (
+            <Image
+                source={require('../../../../../assets/base/images/daakiaDlogoCircle.png')}
+                style={[styles.icon, {width: 32, height: 32, borderRadius: 16}]}
+                testID={'channel_list.app_logo'}
+            />
+        );
+    }
 
     return (
         <ServerIcon

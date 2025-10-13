@@ -6,11 +6,14 @@ import {useIntl} from 'react-intl';
 import {Navigation} from 'react-native-navigation';
 
 import {logout} from '@actions/remote/session';
+import LocalConfig from '@assets/config.json';
 import OptionItem from '@components/option_item';
 import {Screens} from '@constants';
 import {useServerDisplayName, useServerUrl} from '@context/server';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {alertServerLogout} from '@utils/server';
+
+import {daakiaLogout} from '../../../../../../actions/remote/daakia_logout';
 
 const LogOut = () => {
     const intl = useIntl();
@@ -19,7 +22,10 @@ const LogOut = () => {
 
     const onLogout = usePreventDoubleTap(useCallback(() => {
         Navigation.updateProps(Screens.HOME, {extra: undefined});
-        alertServerLogout(serverDisplayName, () => logout(serverUrl, intl), intl);
+
+        const logoutFunction = LocalConfig.AutoSelectServerUrl && LocalConfig.DefaultServerUrl ? () => daakiaLogout(serverUrl) : () => logout(serverUrl, intl);
+
+        alertServerLogout(serverDisplayName, logoutFunction, intl);
     }, [serverDisplayName, serverUrl, intl]));
 
     return (

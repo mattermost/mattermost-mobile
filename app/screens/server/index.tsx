@@ -1,5 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+/*eslint-disable */
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
@@ -14,6 +15,7 @@ import {doPing} from '@actions/remote/general';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import LocalConfig from '@assets/config.json';
 import AppVersion from '@components/app_version';
+import Loading from '@components/loading';
 import {Screens, Launch, DeepLink} from '@constants';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {useScreenTransitionAnimation} from '@hooks/screen_transition_animation';
@@ -68,6 +70,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         flexGrow: 1,
         justifyContent: 'center',
     },
+    loadingContainer: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    loadingText: {
+        marginTop: 20,
+        fontSize: 16,
+        textAlign: 'center',
+    },
 }));
 
 const AnimatedSafeArea = Animated.createAnimatedComponent(SafeAreaView);
@@ -88,6 +100,7 @@ const Server = ({
     const managedConfig = useManagedConfig<ManagedConfig>();
     const keyboardAwareRef = useRef<KeyboardAwareScrollView>(null);
     const [connecting, setConnecting] = useState(false);
+    const [isAutoConnecting, setIsAutoConnecting] = useState(false);
     const [displayName, setDisplayName] = useState<string>('');
     const [buttonDisabled, setButtonDisabled] = useState(true);
     const [preauthSecret, setPreauthSecret] = useState<string>('');
@@ -143,6 +156,7 @@ const Server = ({
 
         if (serverUrl && serverName && autoconnect) {
             // If no other servers are allowed or the local config for AutoSelectServerUrl is set, attempt to connect
+            setIsAutoConnecting(true);
             handleConnect(managedConfig?.serverUrl || LocalConfig.DefaultServerUrl);
         }
     }, [managedConfig?.allowOtherServers, managedConfig?.serverUrl, managedConfig?.serverName, defaultServerUrl]);
@@ -158,7 +172,8 @@ const Server = ({
     useEffect(() => {
         const listener = {
             componentDidAppear: () => {
-                if (url) {
+                // Don't invalidate client during auto-connect as it cancels the ping
+                if (url && !isAutoConnecting) {
                     NetworkManager.invalidateClient(url);
                 }
             },
@@ -166,7 +181,7 @@ const Server = ({
         const unsubscribe = Navigation.events().registerComponentListener(listener, componentId);
 
         return () => unsubscribe.remove();
-    }, [componentId, url]);
+    }, [componentId, url, isAutoConnecting]);
 
     useEffect(() => {
         const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -203,6 +218,7 @@ const Server = ({
             serverUrl,
             ssoOptions,
             theme,
+            preventBackNavigation: LocalConfig.AutoSelectServerUrl && LocalConfig.DefaultServerUrl,
         };
 
         const redirectSSO = !hasLoginForm && numberSSOs === 1;
@@ -218,7 +234,19 @@ const Server = ({
             passProps.launchType = Launch.Normal;
         }
 
-        goToScreen(screen, '', passProps, loginAnimationOptions());
+        // Hide back button if auto-connecting to default server
+        const navigationOptions = LocalConfig.AutoSelectServerUrl && LocalConfig.DefaultServerUrl ? 
+            {
+                ...loginAnimationOptions(),
+                topBar: {
+                    ...loginAnimationOptions().topBar,
+                    backButton: {
+                        visible: false,
+                    },
+                },
+            } : loginAnimationOptions();
+        
+        goToScreen(screen, '', passProps, navigationOptions);
         setConnecting(false);
         setButtonDisabled(false);
         setUrl(serverUrl);
@@ -405,50 +433,62 @@ const Server = ({
                 key={'server_content'}
                 style={[styles.flex, animatedStyles]}
             >
-                <KeyboardAwareScrollView
-                    bounces={false}
-                    contentContainerStyle={styles.scrollContainer}
-                    enableAutomaticScroll={false}
-                    enableOnAndroid={false}
-                    enableResetScrollToCoords={true}
-                    extraScrollHeight={20}
-                    keyboardDismissMode='on-drag'
-                    keyboardShouldPersistTaps='handled'
-                    ref={keyboardAwareRef}
-                    scrollToOverflowEnabled={true}
-                    style={styles.flex}
-                >
-                    <ServerHeader
-                        additionalServer={additionalServer}
-                        theme={theme}
-                    />
-                    <ServerForm
-                        autoFocus={additionalServer}
-                        buttonDisabled={buttonDisabled}
-                        connecting={connecting}
-                        displayName={displayName}
-                        displayNameError={displayNameError}
-                        disableServerUrl={disableServerUrl}
-                        handleConnect={handleConnect}
-                        handleDisplayNameTextChanged={handleDisplayNameTextChanged}
-                        handlePreauthSecretTextChanged={handlePreauthSecretTextChanged}
-                        handleUrlTextChanged={handleUrlTextChanged}
-                        keyboardAwareRef={keyboardAwareRef}
-                        preauthSecret={preauthSecret}
-                        preauthSecretError={preauthSecretError}
+                {LocalConfig.AutoSelectServerUrl && LocalConfig.DefaultServerUrl && isAutoConnecting ? (
+                    <View style={styles.loadingContainer}>
+                        <Loading
+                            size='large'
+                            themeColor='centerChannelColor'
+                            footerText={`Connecting to ${LocalConfig.DefaultServerName || 'Daakia'}...`}
+                            footerTextStyles={{...styles.loadingText, color: theme.centerChannelColor}}
+                            testID='server.loading'
+                        />
+                    </View>
+                ) : (
+                    <KeyboardAwareScrollView
+                        bounces={false}
+                        contentContainerStyle={styles.scrollContainer}
+                        enableAutomaticScroll={false}
+                        enableOnAndroid={false}
+                        enableResetScrollToCoords={true}
+                        extraScrollHeight={20}
+                        keyboardDismissMode='on-drag'
+                        keyboardShouldPersistTaps='handled'
+                        ref={keyboardAwareRef}
+                        scrollToOverflowEnabled={true}
+                        style={styles.flex}
+                    >
+                        <ServerHeader
+                            additionalServer={additionalServer}
+                            theme={theme}
+                        />
+                        <ServerForm
+                            autoFocus={additionalServer}
+                            buttonDisabled={buttonDisabled}
+                            connecting={connecting}
+                            displayName={displayName}
+                            displayNameError={displayNameError}
+                            disableServerUrl={disableServerUrl}
+                            handleConnect={handleConnect}
+                            handleDisplayNameTextChanged={handleDisplayNameTextChanged}
+                            handlePreauthSecretTextChanged={handlePreauthSecretTextChanged}
+                            handleUrlTextChanged={handleUrlTextChanged}
+                            keyboardAwareRef={keyboardAwareRef}
+                            preauthSecret={preauthSecret}
+                            preauthSecretError={preauthSecretError}
                         setShowAdvancedOptions={setShowAdvancedOptions}
                         showAdvancedOptions={showAdvancedOptions}
                         theme={theme}
-                        url={url}
-                        urlError={urlError}
-                    />
-                    <View style={styles.appVersionContainer}>
-                        <AppVersion
-                            textStyle={styles.appInfo}
-                            isWrapped={false}
+                            url={url}
+                            urlError={urlError}
                         />
-                    </View>
-                </KeyboardAwareScrollView>
+                        <View style={styles.appVersionContainer}>
+                            <AppVersion
+                                textStyle={styles.appInfo}
+                                isWrapped={false}
+                            />
+                        </View>
+                    </KeyboardAwareScrollView>
+                )}
             </AnimatedSafeArea>
         </View>
     );
