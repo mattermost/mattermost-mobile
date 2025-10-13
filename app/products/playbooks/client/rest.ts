@@ -47,15 +47,11 @@ const ClientPlaybooks = <TBase extends Constructor<ClientBase>>(superclass: TBas
     fetchPlaybookRuns = async (params: FetchPlaybookRunsParams, groupLabel?: RequestGroupLabel) => {
         const queryParams = buildQueryString(params);
 
-        try {
-            const data = await this.doFetch(
-                `${this.getPlaybookRunsRoute()}${queryParams}`,
-                {method: 'get', groupLabel},
-            );
-            return data || {items: [], total_count: 0, page_count: 0, has_more: false};
-        } catch (error) {
-            return {items: [], total_count: 0, page_count: 0, has_more: false};
-        }
+        const data = await this.doFetch(
+            `${this.getPlaybookRunsRoute()}${queryParams}`,
+            {method: 'get', groupLabel},
+        );
+        return data || {items: [], total_count: 0, page_count: 0, has_more: false};
     };
 
     fetchPlaybookRun = async (id: string, groupLabel?: RequestGroupLabel) => {

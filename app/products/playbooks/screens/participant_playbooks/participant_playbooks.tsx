@@ -99,7 +99,7 @@ const ParticipantPlaybooks = ({
     const [hasError, setHasError] = useState(false);
     const [hasMore, setHasMore] = useState(false);
     const [currentPage, setCurrentPage] = useState(0);
-    const [showCachedWarning, setShowCachedWarning] = useState(true);
+    const [showCachedWarning, setShowCachedWarning] = useState(false);
 
     const close = useCallback(() => {
         popTopScreen(componentId);
