@@ -20,5 +20,13 @@
   "alert.push_proxy_unknown.title": "لا يمكن استلام اشعارات من الخادم",
   "alert.removed_from_channel.description": "لقد تمت إذالتك من القناة {displayName}.",
   "alert.removed_from_channel.title": "تمت إذالته من القناة",
-  "alert.removed_from_team.description": "تمت إذالتك من الفريق {displayName}."
+  "alert.removed_from_team.description": "تمت إذالتك من الفريق {displayName}.",
+  "onboarding.calls": "مكالمات صوتية واضحة",
+  "onboarding.calls_description": "عندما لا تكون الكتابة سريعة بما فيه الكفاية، انتقل من الدردشة القائمة على القنوات إلى المكالمات الصوتية الآمنة بنقرة واحدة.",
+  "onboarding.integrations": "تكاملات قوية",
+  "onboarding.integrations_description": "اربط أدواتك المفضلة وبسط سير العمل مع التكاملات الذكية التي تعزز الإنتاجية وتقلل من تبديل السياق.",
+  "onboarding.realtime_collaboration": "اتصل وتعاون فوراً",
+  "onboarding.realtime_collaboration_description": "ابق منتجاً مع المراسلة الفورية ومشاركة الملفات والقنوات المنظمة التي تحافظ على تناسق فريقك وتركيزه.",
+  "onboarding.welcome": "مرحباً بك في دقيقة شات",
+  "onboaring.welcome_description": "اختبر التواصل السلس للفريق مع الأمان على مستوى المؤسسات وأدوات التعاون القوية المصممة للفرق الحديثة."
 }

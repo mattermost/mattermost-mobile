@@ -24,6 +24,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     image: {
         justifyContent: 'center',
         maxHeight: 180,
+        marginTop: 48,
     },
     title: {
         color: theme.centerChannelColor,
@@ -89,7 +90,7 @@ const SlideItem = ({theme, item, scrollX, index, lastSlideIndex}: Props) => {
             initialElementsOpacity.value = withTiming(1, {duration: 1000});
             setFirstLoad(false);
         }
-    }, []);
+    }, [index, initialImagePosition, initialTitlePosition, initialDescriptionPosition, initialElementsOpacity]);
 
     const translateFirstImageOnLoad = useAnimatedStyle(() => {
         return {
@@ -180,17 +181,6 @@ const SlideItem = ({theme, item, scrollX, index, lastSlideIndex}: Props) => {
 
     return (
         <View style={[styles.itemContainer, {width}]}>
-            <Animated.View
-                style={[
-                    styles.image,
-                    translateImage,
-                    opacity,
-                    translateFirstImageOnLoad,
-                    (index === FIRST_SLIDE && firstLoad ? styles.firstSlideInitialPosition : undefined),
-                ]}
-            >
-                {item.image}
-            </Animated.View>
             <View>
                 <Animated.Text
                     style={[
@@ -218,6 +208,17 @@ const SlideItem = ({theme, item, scrollX, index, lastSlideIndex}: Props) => {
                     {item.description}
                 </Animated.Text>
             </View>
+            <Animated.View
+                style={[
+                    styles.image,
+                    translateImage,
+                    opacity,
+                    translateFirstImageOnLoad,
+                    (index === FIRST_SLIDE && firstLoad ? styles.firstSlideInitialPosition : undefined),
+                ]}
+            >
+                {item.image}
+            </Animated.View>
         </View>
     );
 };
