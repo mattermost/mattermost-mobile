@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {Platform, useWindowDimensions, View, type LayoutChangeEvent} from 'react-native';
+import {Platform, useWindowDimensions, View, type LayoutChangeEvent, ImageBackground, Appearance} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {Navigation} from 'react-native-navigation';
 import Animated from 'react-native-reanimated';
@@ -18,7 +18,6 @@ import {useScreenTransitionAnimation} from '@hooks/screen_transition_animation';
 import {usePreventDoubleTap} from '@hooks/utils';
 import NetworkManager from '@managers/network_manager';
 import SecurityManager from '@managers/security_manager';
-import Background from '@screens/background';
 import {dismissModal, goToScreen, loginAnimationOptions, popTopScreen} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -193,7 +192,11 @@ const LoginOptions = ({
             testID='login.screen'
             nativeID={SecurityManager.getShieldScreenId(componentId, false, true)}
         >
-            <Background theme={theme}/>
+            <ImageBackground
+                source={Appearance.getColorScheme() === 'dark' ? require('../../assets/darkbackground.png') : require('../../assets/lightbackground.png')}
+                style={{position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0.2}}
+                resizeMode='cover'
+            />
             <AnimatedSafeArea style={[styles.container, animatedStyles]}>
                 <KeyboardAwareScrollView
                     bounces={true}

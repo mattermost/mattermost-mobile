@@ -38,7 +38,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         ...typography('Heading', 1000, 'SemiBold'),
     },
     fontFirstTitle: {
-        ...typography('Heading', 1200, 'SemiBold'),
+        ...typography('Heading', 1000, 'SemiBold'),
         paddingTop: 48,
         letterSpacing: -1,
     },
