@@ -116,3 +116,31 @@ export async function goToSelectDate(
         selectedDate,
     }, options);
 }
+
+export async function goToSelectPlaybook(
+    intl: IntlShape,
+    theme: Theme,
+) {
+    const title = intl.formatMessage({id: 'playbooks.select_playbook.title', defaultMessage: 'Start a run'});
+    goToScreen(Screens.PLAYBOOKS_SELECT_PLAYBOOK, title, {}, {
+        topBar: {
+            subtitle: {
+                text: intl.formatMessage({id: 'playbooks.select_playbook.subtitle', defaultMessage: 'Select a playbook'}),
+                color: changeOpacity(theme.sidebarText, 0.72),
+            },
+        },
+    });
+}
+
+export async function goToStartARun(intl: IntlShape, theme: Theme, playbook: Playbook, onRunCreated: (run: PlaybookRun) => void) {
+    const title = intl.formatMessage({id: 'playbooks.start_a_run.title', defaultMessage: 'Start a run'});
+    const subtitle = playbook.title;
+    goToScreen(Screens.PLAYBOOKS_START_A_RUN, title, {playbook, onRunCreated}, {
+        topBar: {
+            subtitle: {
+                text: subtitle,
+                color: changeOpacity(theme.sidebarText, 0.72),
+            },
+        },
+    });
+}

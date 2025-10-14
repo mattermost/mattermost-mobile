@@ -172,7 +172,11 @@ function AutoCompleteSelector({
         Promise.all(namePromises).then((names) => {
             setItemText(names.join(', '));
         });
-    }, [dataSource, teammateNameDisplay, intl, options, selected, serverUrl]);
+
+        // We want to run this only in the first render, since it is only for the default value.
+        // Future changes in the selected value will update the itemText accordingly.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const inputStyle = useMemo(() => {
         const res: StyleProp<ViewStyle> = [style.input];
