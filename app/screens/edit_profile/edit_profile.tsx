@@ -140,6 +140,11 @@ const EditProfile = ({
                 }));
             }
 
+            // Skip fetching from server if custom attributes are disabled
+            if (!enableCustomAttributes) {
+                return;
+            }
+
             // Then fetch from server for latest data
             const reqTime = Date.now();
             lastRequest.current = reqTime;

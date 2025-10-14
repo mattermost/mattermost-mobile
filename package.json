@@ -1,9 +1,9 @@
 {
-  "name": "mattermost-mobile",
+  "name": "daakia-chat",
   "version": "2.33.0",
-  "description": "Mattermost Mobile with React Native",
-  "repository": "git@github.com:mattermost/mattermost-mobile.git",
-  "author": "Mattermost, Inc.",
+  "description": "Daakia Chat with React Native",
+  "repository": "git@github.com:Daakia-Org/mattermost-mobile.git",
+  "author": "Daakia, Inc.",
   "license": "Apache 2.0",
   "private": true,
   "engines": {

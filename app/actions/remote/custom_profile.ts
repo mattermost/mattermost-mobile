@@ -35,7 +35,14 @@ export const fetchCustomProfileAttributes = async (serverUrl: string, userId: st
             ]);
 
         } catch (err) {
-            logError('error on fetchCustomProfileAttributes get fields and attr values', getFullErrorMessage(err));
+            const msg = getFullErrorMessage(err) || '';
+
+            // If the server/license does not support Custom Profile Attributes, silently skip without logging
+
+            if (msg.includes('does not support Custom Profile Attributes')) {
+                return {attributes, error: undefined};
+            }
+            logError('error on fetchCustomProfileAttributes get fields and attr values', msg);
             return {attributes, error: err};
         }
 
