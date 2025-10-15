@@ -3,8 +3,7 @@
 
 import React from 'react';
 
-import CompassIcon from '@components/compass_icon';
-import {View as ViewConstants} from '@constants';
+import DaakiaAvatar from '@components/daakia_components/daakia_avatar';
 
 type Props = {
     theme: Theme;
@@ -12,11 +11,7 @@ type Props = {
 
 const SystemAvatar = ({theme}: Props) => {
     return (
-        <CompassIcon
-            name='mattermost'
-            color={theme.centerChannelColor}
-            size={ViewConstants.PROFILE_PICTURE_SIZE}
-        />
+        <DaakiaAvatar theme={theme}/>
     );
 };
 
