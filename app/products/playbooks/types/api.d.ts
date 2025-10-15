@@ -72,7 +72,7 @@ type TimelineEvent = {
 
 type PlaybookRunStatusType = typeof PlaybookRunStatus[keyof typeof PlaybookRunStatus];
 
-type PlaybookRunAttribute = {
+type PlaybookRunPropertyField = {
     id: string;
     group_id: string;
     name: string;
@@ -85,10 +85,11 @@ type PlaybookRunAttribute = {
     attrs?: string;
 }
 
-type PlaybookRunAttributeValue = {
+type PlaybookRunPropertyValue = {
     id: string;
-    attribute_id: string;
-    run_id: string;
+    field_id: string;
+    target_id: string;
+    update_at: number;
     value: string;
 }
 

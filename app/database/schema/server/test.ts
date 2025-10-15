@@ -52,7 +52,7 @@ const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM, PLAYBOOK_RUN_A
 describe('*** Test schema for SERVER database ***', () => {
     it('=> The SERVER SCHEMA should strictly match', () => {
         expect(serverSchema).toEqual({
-            version: 14,
+            version: 15,
             unsafeSql: undefined,
             tables: {
                 [CATEGORY]: {
@@ -586,11 +586,13 @@ describe('*** Test schema for SERVER database ***', () => {
                         attribute_id: {name: 'attribute_id', type: 'string', isIndexed: true},
                         run_id: {name: 'run_id', type: 'string', isIndexed: true},
                         value: {name: 'value', type: 'string'},
+                        update_at: {name: 'update_at', type: 'number'},
                     },
                     columnArray: [
                         {name: 'attribute_id', type: 'string', isIndexed: true},
                         {name: 'run_id', type: 'string', isIndexed: true},
                         {name: 'value', type: 'string'},
+                        {name: 'update_at', type: 'number'},
                     ],
                 },
                 [POSTS_IN_THREAD]: {

@@ -8,12 +8,12 @@ import {createTestConnection} from '@database/operator/utils/create_test_connect
 import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
 import {PlaybookRunModel} from '@playbooks/database/models';
 
-import {transformPlaybookChecklistItemRecord, transformPlaybookChecklistRecord, transformPlaybookRunRecord, transformPlaybookRunAttributeRecord, transformPlaybookRunAttributeValueRecord} from '.';
+import {transformPlaybookChecklistItemRecord, transformPlaybookChecklistRecord, transformPlaybookRunRecord, transformPlaybookRunPropertyFieldRecord, transformPlaybookRunPropertyValueRecord} from '.';
 
 import type PlaybookChecklistModel from '@playbooks/types/database/models/playbook_checklist';
 import type PlaybookChecklistItemModel from '@playbooks/types/database/models/playbook_checklist_item';
-import type PlaybookRunAttributeModel from '@playbooks/types/database/models/playbook_run_attribute';
-import type PlaybookRunAttributeValueModel from '@playbooks/types/database/models/playbook_run_attribute_value';
+import type PlaybookRunPropertyFieldModel from '@playbooks/types/database/models/playbook_run_attribute';
+import type PlaybookRunPropertyValueModel from '@playbooks/types/database/models/playbook_run_attribute_value';
 
 const {PLAYBOOK_RUN, PLAYBOOK_RUN_ATTRIBUTE, PLAYBOOK_RUN_ATTRIBUTE_VALUE} = PLAYBOOK_TABLES;
 
@@ -778,13 +778,13 @@ describe('*** PLAYBOOK_CHECKLIST_ITEM Prepare Records Test ***', () => {
 });
 
 describe('*** PLAYBOOK_RUN_ATTRIBUTE Prepare Records Test ***', () => {
-    it('=> transformPlaybookRunAttributeRecord: should return a record of type PlaybookRunAttribute for CREATE action', async () => {
+    it('=> transformPlaybookRunPropertyFieldRecord: should return a record of type PlaybookRunAttribute for CREATE action', async () => {
         expect.assertions(3);
 
         const database = await createTestConnection({databaseName: 'playbook_run_attribute_prepare_records', setActive: true});
         expect(database).toBeTruthy();
 
-        const preparedRecord = await transformPlaybookRunAttributeRecord({
+        const preparedRecord = await transformPlaybookRunPropertyFieldRecord({
             action: OperationType.CREATE,
             database: database!,
             value: {
@@ -808,15 +808,15 @@ describe('*** PLAYBOOK_RUN_ATTRIBUTE Prepare Records Test ***', () => {
         expect(preparedRecord!.collection.table).toBe(PLAYBOOK_RUN_ATTRIBUTE);
     });
 
-    it('=> transformPlaybookRunAttributeRecord: should return a record of type PlaybookRunAttribute for UPDATE action', async () => {
+    it('=> transformPlaybookRunPropertyFieldRecord: should return a record of type PlaybookRunAttribute for UPDATE action', async () => {
         expect.assertions(4);
 
         const database = await createTestConnection({databaseName: 'playbook_run_attribute_prepare_records', setActive: true});
         expect(database).toBeTruthy();
 
-        let existingRecord: PlaybookRunAttributeModel | undefined;
+        let existingRecord: PlaybookRunPropertyFieldModel | undefined;
         await database!.write(async () => {
-            existingRecord = await database!.get<PlaybookRunAttributeModel>(PLAYBOOK_RUN_ATTRIBUTE).create((record) => {
+            existingRecord = await database!.get<PlaybookRunPropertyFieldModel>(PLAYBOOK_RUN_ATTRIBUTE).create((record) => {
                 record._raw.id = 'attribute_2';
                 record.groupId = 'group_2';
                 record.name = 'Existing Attribute';
@@ -830,7 +830,7 @@ describe('*** PLAYBOOK_RUN_ATTRIBUTE Prepare Records Test ***', () => {
             });
         });
 
-        const preparedRecord = await transformPlaybookRunAttributeRecord({
+        const preparedRecord = await transformPlaybookRunPropertyFieldRecord({
             action: OperationType.UPDATE,
             database: database!,
             value: {
@@ -859,14 +859,14 @@ describe('*** PLAYBOOK_RUN_ATTRIBUTE Prepare Records Test ***', () => {
         expect(preparedRecord!.collection.table).toBe(PLAYBOOK_RUN_ATTRIBUTE);
     });
 
-    it('=> transformPlaybookRunAttributeRecord: should throw an error for non-create action without an existing record', async () => {
+    it('=> transformPlaybookRunPropertyFieldRecord: should throw an error for non-create action without an existing record', async () => {
         expect.assertions(2);
 
         const database = await createTestConnection({databaseName: 'playbook_run_attribute_prepare_records', setActive: true});
         expect(database).toBeTruthy();
 
         await expect(
-            transformPlaybookRunAttributeRecord({
+            transformPlaybookRunPropertyFieldRecord({
                 action: OperationType.UPDATE,
                 database: database!,
                 value: {
@@ -887,13 +887,13 @@ describe('*** PLAYBOOK_RUN_ATTRIBUTE Prepare Records Test ***', () => {
         ).rejects.toThrow('Record not found for non create action');
     });
 
-    it('=> transformPlaybookRunAttributeRecord: should keep most of the data if the partial attribute is empty', async () => {
+    it('=> transformPlaybookRunPropertyFieldRecord: should keep most of the data if the partial attribute is empty', async () => {
         const database = await createTestConnection({databaseName: 'playbook_run_attribute_prepare_records', setActive: true});
         expect(database).toBeTruthy();
 
-        let existingRecord: PlaybookRunAttributeModel | undefined;
+        let existingRecord: PlaybookRunPropertyFieldModel | undefined;
         await database!.write(async () => {
-            existingRecord = await database!.get<PlaybookRunAttributeModel>(PLAYBOOK_RUN_ATTRIBUTE).create((record) => {
+            existingRecord = await database!.get<PlaybookRunPropertyFieldModel>(PLAYBOOK_RUN_ATTRIBUTE).create((record) => {
                 record._raw.id = 'attribute_2';
                 record.groupId = 'group_2';
                 record.name = 'Existing Attribute';
@@ -907,14 +907,21 @@ describe('*** PLAYBOOK_RUN_ATTRIBUTE Prepare Records Test ***', () => {
             });
         });
 
-        const preparedRecord = await transformPlaybookRunAttributeRecord({
+        const preparedRecord = await transformPlaybookRunPropertyFieldRecord({
             action: OperationType.UPDATE,
             database: database!,
             value: {
                 record: existingRecord,
                 raw: {
                     id: 'attribute_2',
+                    group_id: 'group_2',
+                    name: 'Existing Attribute',
+                    type: 'text',
+                    target_id: 'target_2',
+                    target_type: 'playbook_run',
+                    create_at: 1620000000000,
                     update_at: 1620000004000,
+                    delete_at: 0,
                 },
             },
         });
@@ -937,21 +944,22 @@ describe('*** PLAYBOOK_RUN_ATTRIBUTE Prepare Records Test ***', () => {
 });
 
 describe('*** PLAYBOOK_RUN_ATTRIBUTE_VALUE Prepare Records Test ***', () => {
-    it('=> transformPlaybookRunAttributeValueRecord: should return a record of type PlaybookRunAttributeValue for CREATE action', async () => {
+    it('=> transformPlaybookRunPropertyValueRecord: should return a record of type PlaybookRunAttributeValue for CREATE action', async () => {
         expect.assertions(3);
 
         const database = await createTestConnection({databaseName: 'playbook_run_attribute_value_prepare_records', setActive: true});
         expect(database).toBeTruthy();
 
-        const preparedRecord = await transformPlaybookRunAttributeValueRecord({
+        const preparedRecord = await transformPlaybookRunPropertyValueRecord({
             action: OperationType.CREATE,
             database: database!,
             value: {
                 record: undefined,
                 raw: {
                     id: 'attribute_value_1',
-                    attribute_id: 'attribute_1',
-                    run_id: 'playbook_run_1',
+                    field_id: 'attribute_1', // API field name
+                    target_id: 'playbook_run_1', // API field name
+                    update_at: 1620000001000,
                     value: 'Test Value',
                 },
             },
@@ -961,31 +969,33 @@ describe('*** PLAYBOOK_RUN_ATTRIBUTE_VALUE Prepare Records Test ***', () => {
         expect(preparedRecord!.collection.table).toBe(PLAYBOOK_RUN_ATTRIBUTE_VALUE);
     });
 
-    it('=> transformPlaybookRunAttributeValueRecord: should return a record of type PlaybookRunAttributeValue for UPDATE action', async () => {
+    it('=> transformPlaybookRunPropertyValueRecord: should return a record of type PlaybookRunAttributeValue for UPDATE action', async () => {
         expect.assertions(4);
 
         const database = await createTestConnection({databaseName: 'playbook_run_attribute_value_prepare_records', setActive: true});
         expect(database).toBeTruthy();
 
-        let existingRecord: PlaybookRunAttributeValueModel | undefined;
+        let existingRecord: PlaybookRunPropertyValueModel | undefined;
         await database!.write(async () => {
-            existingRecord = await database!.get<PlaybookRunAttributeValueModel>(PLAYBOOK_RUN_ATTRIBUTE_VALUE).create((record) => {
+            existingRecord = await database!.get<PlaybookRunPropertyValueModel>(PLAYBOOK_RUN_ATTRIBUTE_VALUE).create((record) => {
                 record._raw.id = 'attribute_value_2';
                 record.attributeId = 'attribute_2';
                 record.runId = 'playbook_run_2';
                 record.value = 'Existing Value';
+                record.updateAt = 1620000001000;
             });
         });
 
-        const preparedRecord = await transformPlaybookRunAttributeValueRecord({
+        const preparedRecord = await transformPlaybookRunPropertyValueRecord({
             action: OperationType.UPDATE,
             database: database!,
             value: {
                 record: existingRecord,
                 raw: {
                     id: 'attribute_value_2',
-                    attribute_id: 'attribute_2',
-                    run_id: 'playbook_run_2',
+                    field_id: 'attribute_2', // API field name
+                    target_id: 'playbook_run_2', // API field name
+                    update_at: 1620000002000,
                     value: 'Updated Value',
                 },
             },
@@ -1000,22 +1010,23 @@ describe('*** PLAYBOOK_RUN_ATTRIBUTE_VALUE Prepare Records Test ***', () => {
         expect(preparedRecord!.collection.table).toBe(PLAYBOOK_RUN_ATTRIBUTE_VALUE);
     });
 
-    it('=> transformPlaybookRunAttributeValueRecord: should throw an error for non-create action without an existing record', async () => {
+    it('=> transformPlaybookRunPropertyValueRecord: should throw an error for non-create action without an existing record', async () => {
         expect.assertions(2);
 
         const database = await createTestConnection({databaseName: 'playbook_run_attribute_value_prepare_records', setActive: true});
         expect(database).toBeTruthy();
 
         await expect(
-            transformPlaybookRunAttributeValueRecord({
+            transformPlaybookRunPropertyValueRecord({
                 action: OperationType.UPDATE,
                 database: database!,
                 value: {
                     record: undefined,
                     raw: {
                         id: 'attribute_value_3',
-                        attribute_id: 'attribute_3',
-                        run_id: 'playbook_run_3',
+                        field_id: 'attribute_3', // API field name
+                        target_id: 'playbook_run_3', // API field name
+                        update_at: 1620000001000,
                         value: 'Invalid Value',
                     },
                 },
@@ -1023,29 +1034,32 @@ describe('*** PLAYBOOK_RUN_ATTRIBUTE_VALUE Prepare Records Test ***', () => {
         ).rejects.toThrow('Record not found for non create action');
     });
 
-    it('=> transformPlaybookRunAttributeValueRecord: should keep most of the data if the partial attribute value is empty', async () => {
+    it('=> transformPlaybookRunPropertyValueRecord: should keep most of the data if the partial attribute value is empty', async () => {
         const database = await createTestConnection({databaseName: 'playbook_run_attribute_value_prepare_records', setActive: true});
         expect(database).toBeTruthy();
 
-        let existingRecord: PlaybookRunAttributeValueModel | undefined;
+        let existingRecord: PlaybookRunPropertyValueModel | undefined;
         await database!.write(async () => {
-            existingRecord = await database!.get<PlaybookRunAttributeValueModel>(PLAYBOOK_RUN_ATTRIBUTE_VALUE).create((record) => {
+            existingRecord = await database!.get<PlaybookRunPropertyValueModel>(PLAYBOOK_RUN_ATTRIBUTE_VALUE).create((record) => {
                 record._raw.id = 'attribute_value_2';
                 record.attributeId = 'attribute_2';
                 record.runId = 'playbook_run_2';
                 record.value = 'Existing Value';
+                record.updateAt = 1620000000000;
             });
         });
 
-        const preparedRecord = await transformPlaybookRunAttributeValueRecord({
+        const preparedRecord = await transformPlaybookRunPropertyValueRecord({
             action: OperationType.UPDATE,
             database: database!,
             value: {
                 record: existingRecord,
                 raw: {
                     id: 'attribute_value_2',
-                    run_id: 'playbook_run_2',
-                    attribute_id: 'attribute_2',
+                    field_id: 'attribute_2', // API field name
+                    target_id: 'playbook_run_2', // API field name
+                    update_at: 1620000001000,
+                    value: 'Existing Value',
                 },
             },
         });
@@ -1058,5 +1072,6 @@ describe('*** PLAYBOOK_RUN_ATTRIBUTE_VALUE Prepare Records Test ***', () => {
         expect(preparedRecord.attributeId).toBe('attribute_2');
         expect(preparedRecord.runId).toBe('playbook_run_2');
         expect(preparedRecord.value).toBe('Existing Value');
+        expect(preparedRecord.updateAt).toBe(1620000001000);
     });
 });
