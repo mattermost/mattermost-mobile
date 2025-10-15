@@ -1,16 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Q} from '@nozbe/watermelondb';
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {combineLatest, of as of$, Observable} from 'rxjs';
-import {switchMap, combineLatestWith} from 'rxjs/operators';
+import {switchMap, combineLatestWith, map} from 'rxjs/operators';
 
 import {General, Preferences} from '@constants';
 import {DMS_CATEGORY, FAVORITES_CATEGORY} from '@constants/categories';
 import {getPreferenceValue} from '@helpers/api/preference';
 import {queryCategoriesByTeamIds} from '@queries/servers/categories';
 import {observeNotifyPropsByChannels} from '@queries/servers/channel';
-import {getRecentPostsInChannel} from '@queries/servers/post';
 import {queryPreferencesByCategoryAndName, querySidebarPreferences} from '@queries/servers/preference';
 import {observeConfigBooleanValue, observeCurrentChannelId, observeCurrentUserId, observeLastUnreadChannelId} from '@queries/servers/system';
 import {observeDeactivatedUsers} from '@queries/servers/user';
@@ -227,30 +227,34 @@ const enhanced = withObservables(['currentTeamId', 'filterType'], ({currentTeamI
     );
 
     const lastPosts = allChannelsWithMyChannel.pipe(
-        switchMap(async (channelsWithMyChannel) => {
-            const postsMap = new Map<string, PostModel>();
-            const channelsWithPosts = (channelsWithMyChannel as ChannelWithMyChannel[]).filter((cwm) => cwm.myChannel.lastPostAt > 0);
+        switchMap((channelsWithMyChannel) => {
+            const channels = (channelsWithMyChannel as ChannelWithMyChannel[]).filter((cwm) => cwm.myChannel.lastPostAt > 0);
+            if (!channels.length) {
+                return of$(new Map<string, PostModel>());
+            }
 
-            const postPromises = channelsWithPosts.map(async (cwm) => {
-                try {
-                    const posts = await getRecentPostsInChannel(database, cwm.channel.id);
-                    if (posts.length > 0) {
-                        return {channelId: cwm.channel.id, post: posts[0]};
+            const ids = channels.map((c) => c.channel.id);
+            const perChannelLatestPost$ = ids.map((id) =>
+                database.get<PostModel>('Post').query(
+                    Q.where('channel_id', id),
+                    Q.sortBy('create_at', Q.desc),
+                    Q.take(1),
+                ).observe(),
+            );
+
+            return combineLatest(perChannelLatestPost$).pipe(
+                map((results) => {
+                    const latestByChannel = new Map<string, PostModel>();
+                    for (let i = 0; i < results.length; i++) {
+                        const arr = results[i];
+                        const p = arr[0];
+                        if (p) {
+                            latestByChannel.set(ids[i], p);
+                        }
                     }
-                } catch (error) {
-                    // Ignore errors for individual channels
-                }
-                return null;
-            });
-
-            const results = await Promise.all(postPromises);
-            results.forEach((result) => {
-                if (result) {
-                    postsMap.set(result.channelId, result.post);
-                }
-            });
-
-            return postsMap;
+                    return latestByChannel;
+                }),
+            );
         }),
     );
 
