@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {defineMessage, useIntl} from 'react-intl';
 import {type StyleProp, Text, type TextStyle} from 'react-native';
 
@@ -87,7 +87,10 @@ const ChannelMention = ({
 }: ChannelMentionProps) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
-    const channel = getChannelFromChannelName(channelName, channels, channelMentions, team.name);
+    const channel = useMemo(
+        () => getChannelFromChannelName(channelName, channels, channelMentions, team.name),
+        [channelMentions, channelName, channels, team.name],
+    );
 
     const handlePress = usePreventDoubleTap(useCallback((async () => {
         let c = channel;

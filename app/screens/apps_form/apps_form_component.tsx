@@ -19,7 +19,6 @@ import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import SecurityManager from '@managers/security_manager';
 import {filterEmptyOptions} from '@utils/apps';
 import {checkDialogElementForError, checkIfErrorsMatchElements} from '@utils/integrations';
-import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {secureGetFromRecord} from '@utils/types';
 
@@ -158,7 +157,7 @@ function AppsFormComponent({
         base.showAsAction = 'always';
         base.color = theme.sidebarHeaderTextColor;
         return base;
-    }, [theme.sidebarHeaderTextColor, Boolean(submitButtons), submitting, intl]);
+    }, [submitButtons, intl, submitting, theme.sidebarHeaderTextColor]);
 
     useEffect(() => {
         setButtons(componentId, {
@@ -396,8 +395,6 @@ function AppsFormComponent({
                     <View style={style.errorContainer} >
                         <Markdown
                             baseTextStyle={style.errorLabel}
-                            textStyles={getMarkdownTextStyles(theme)}
-                            blockStyles={getMarkdownBlockStyles(theme)}
                             location={Screens.APPS_FORM}
                             disableAtMentions={true}
                             value={error}

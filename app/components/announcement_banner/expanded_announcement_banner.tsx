@@ -16,7 +16,6 @@ import {useTheme} from '@context/theme';
 import {useBottomSheetListsFix} from '@hooks/bottom_sheet_lists_fix';
 import {useIsTablet} from '@hooks/device';
 import {dismissBottomSheet} from '@screens/navigation';
-import {getMarkdownTextStyles, getMarkdownBlockStyles} from '@utils/markdown';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -97,9 +96,7 @@ const ExpandedAnnouncementBanner = ({
             >
                 <Markdown
                     baseTextStyle={style.baseTextStyle}
-                    blockStyles={getMarkdownBlockStyles(theme)}
                     disableGallery={true}
-                    textStyles={getMarkdownTextStyles(theme)}
                     value={bannerText}
                     theme={theme}
                     location={Screens.BOTTOM_SHEET}

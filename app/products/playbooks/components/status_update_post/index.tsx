@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect} from 'react';
+import React, {useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
@@ -9,7 +9,6 @@ import {fetchUsersByIds} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
 import Markdown from '@components/markdown';
 import {useServerUrl} from '@context/server';
-import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -88,8 +87,6 @@ const StatusUpdatePost = ({location, post, theme}: Props) => {
     const {authorUsername, numTasks, numTasksChecked, participantIds, playbookRunId, runName} = post.props as StatusUpdatePostProps;
     const serverUrl = useServerUrl();
     const style = getStyleSheet(theme);
-    const blockStyles = getMarkdownBlockStyles(theme);
-    const textStyles = getMarkdownTextStyles(theme);
     const intl = useIntl();
 
     useEffect(() => {
@@ -108,26 +105,26 @@ const StatusUpdatePost = ({location, post, theme}: Props) => {
         defaultMessage: '**{numTasksChecked, number}** of **{numTasks, number}** {numTasks, plural, =1 {task} other {tasks}} checked',
     }, {numTasksChecked, numTasks});
 
+    const mentionKeys = useMemo(() => {
+        return authorUsername ? [{key: authorUsername, caseSensitive: false}] : [];
+    }, [authorUsername]);
+
     return (
         <View style={style.messageContainer}>
             <Markdown
                 baseTextStyle={style.message}
-                blockStyles={blockStyles}
                 channelId={post.channelId}
                 postId={post.id}
-                textStyles={textStyles}
                 value={updatePosted}
-                mentionKeys={authorUsername ? [{key: authorUsername, caseSensitive: false}] : []}
+                mentionKeys={mentionKeys}
                 theme={theme}
                 location={location}
             />
             <View style={style.updateContainer}>
                 <Markdown
                     baseTextStyle={style.message}
-                    blockStyles={blockStyles}
                     channelId={post.channelId}
                     postId={post.id}
-                    textStyles={textStyles}
                     value={post.message}
                     theme={theme}
                     location={location}
@@ -144,7 +141,6 @@ const StatusUpdatePost = ({location, post, theme}: Props) => {
                         <Markdown
                             baseTextStyle={style.detailsText}
                             value={tasks}
-                            textStyles={textStyles}
                             theme={theme}
                             location={location}
                         />
@@ -158,7 +154,6 @@ const StatusUpdatePost = ({location, post, theme}: Props) => {
                         participantIds={participantIds}
                         location={location}
                         baseTextStyle={style.detailsText}
-                        textStyles={textStyles}
                     />
                 </View>
             </View>

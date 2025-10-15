@@ -88,6 +88,9 @@ const ImagePreview = ({expandedLink, isReplyPost, layoutWidth, link, location, m
         if (!isImageLink(link) && expandedLink === undefined) {
             getRedirectLocation(serverUrl, link);
         }
+
+        // Only check if we need to get the redirect location when the link changes
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [link]);
 
     useDidUpdate(() => {
@@ -102,6 +105,9 @@ const ImagePreview = ({expandedLink, isReplyPost, layoutWidth, link, location, m
         if (expandedLink && expandedLink !== imageUrl) {
             setImageUrl(expandedLink);
         }
+
+        // Only re-set the image url when the expanded link changes
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [expandedLink]);
 
     if (error || !isValidUrl(expandedLink || link) || isGifTooLarge(imageProps)) {
@@ -128,6 +134,7 @@ const ImagePreview = ({expandedLink, isReplyPost, layoutWidth, link, location, m
                             onError={onError}
                             contentFit='contain'
                             style={[style.image, {width: dimensions.width, height: dimensions.height}]}
+                            theme={theme}
                         />
                     </Animated.View>
                 </TouchableWithoutFeedback>
