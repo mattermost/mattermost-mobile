@@ -41,6 +41,7 @@ export const GLOBAL_DRAFTS = 'GlobalDrafts';
 export const GLOBAL_DRAFTS_AND_SCHEDULED_POSTS = 'GlobalDraftsAndScheduledPosts';
 export const GLOBAL_THREADS = 'GlobalThreads';
 export const HOME = 'Home';
+export const HOME_DAAKIA = 'HomeDaakia';
 export const INTEGRATION_SELECTOR = 'IntegrationSelector';
 export const INTERACTIVE_DIALOG = 'InteractiveDialog';
 export const INVITE = 'Invite';
@@ -129,6 +130,7 @@ export default {
     GLOBAL_DRAFTS_AND_SCHEDULED_POSTS,
     GLOBAL_THREADS,
     HOME,
+    HOME_DAAKIA,
     INTEGRATION_SELECTOR,
     INTERACTIVE_DIALOG,
     INVITE,

@@ -4,9 +4,12 @@
 import React, {useCallback, useEffect, useImperativeHandle, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Dimensions, StyleSheet, Image, View} from 'react-native';
+import {useNavigation} from '@react-navigation/native';
 
 import LocalConfig from '@assets/config.json';
+import CompassIcon from '@components/compass_icon';
 import ServerIcon from '@components/server_icon';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {subscribeAllServers} from '@database/subscription/servers';
@@ -158,19 +161,27 @@ const Servers = React.forwardRef<ServersRef>((_, ref) => {
         };
     }, []);
 
-    // Show app logo when AutoSelectServerUrl is enabled
+    const navigation = useNavigation();
+
+    const onClosePress = useCallback(() => {
+        (navigation as any).navigate('HomeDaakia');
+    }, [navigation]);
+
+    // Show close icon when AutoSelectServerUrl is enabled
     if (LocalConfig.AutoSelectServerUrl) {
-        const isLightTheme = theme.centerChannelBg === '#ffffff' || theme.centerChannelBg === '#FFFFFF';
-        const backgroundColor = isLightTheme ? 'transparent' : '#FFFFFF';
-        
         return (
-            <View style={[styles.icon, {backgroundColor, borderRadius: 20}]}>
-                <Image
-                    source={require('../../../../../assets/base/images/daakiaDlogoCircle.png')}
-                    style={{width: 28, height: 28, borderRadius: 14}}
-                    testID={'channel_list.app_logo'}
+            <TouchableWithFeedback
+                onPress={onClosePress}
+                style={[styles.icon, {backgroundColor: theme.sidebarBg, borderRadius: 20}]}
+                testID={'channel_list.close_button'}
+                type='opacity'
+            >
+                <CompassIcon
+                    name='close'
+                    size={24}
+                    color={theme.sidebarText}
                 />
-            </View>
+            </TouchableWithFeedback>
         );
     }
 
