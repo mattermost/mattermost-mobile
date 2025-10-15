@@ -588,11 +588,13 @@ describe('*** Test schema for SERVER database ***', () => {
                         attribute_id: {name: 'attribute_id', type: 'string', isIndexed: true},
                         run_id: {name: 'run_id', type: 'string', isIndexed: true},
                         value: {name: 'value', type: 'string'},
+                        update_at: {name: 'update_at', type: 'number'},
                     },
                     columnArray: [
                         {name: 'attribute_id', type: 'string', isIndexed: true},
                         {name: 'run_id', type: 'string', isIndexed: true},
                         {name: 'value', type: 'string'},
+                        {name: 'update_at', type: 'number'},
                     ],
                 },
                 [POSTS_IN_THREAD]: {
