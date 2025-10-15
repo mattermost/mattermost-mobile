@@ -88,3 +88,10 @@ export const observeParticipantsIdsFromPlaybookModel = (runModel: PlaybookRunMod
         }),
     );
 };
+
+export const queryPlaybookRunsByParticipant = (database: Database, participantId: string) => {
+    return database.get<PlaybookRunModel>(PLAYBOOK_RUN).query(
+        Q.where('participant_ids', Q.like(`%"${participantId}"%`)),
+        Q.sortBy('create_at', 'desc'),
+    );
+};

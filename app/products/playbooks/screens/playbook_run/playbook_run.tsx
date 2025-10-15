@@ -334,6 +334,8 @@ export default function PlaybookRun({
                         <StatusUpdateIndicator
                             isFinished={isFinished}
                             timestamp={getRunScheduledTimestamp(playbookRun)}
+                            isParticipant={isParticipant}
+                            playbookRunId={playbookRun.id}
                         />
                     </View>
                     <View style={styles.tasksContainer}>
