@@ -116,7 +116,7 @@ function TabBar({state, descriptors, navigation, theme}: BottomTabBarProps & {th
         });
 
         return () => listner.remove();
-    }, [state]);
+    }, [state, navigation]);
 
     const transform = useAnimatedStyle(() => {
         const translateX = withTiming(state.index * tabWidth, {duration: 150});
