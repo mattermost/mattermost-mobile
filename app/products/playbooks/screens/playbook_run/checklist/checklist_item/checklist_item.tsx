@@ -69,15 +69,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         textDecorationLine: 'line-through',
     },
     conditionIcon: {
-        marginHorizontal: 2,
-        alignSelf: 'flex-start',
-        marginTop: 4,
+        marginLeft: 4,
+        marginBottom: 2,
+        alignSelf: 'flex-end',
         transform: [{rotate: '90deg'}],
     },
     titleRow: {
         flexDirection: 'row',
         alignItems: 'flex-start',
         marginLeft: 2,
+        gap: 2,
     },
 }));
 
@@ -269,22 +270,20 @@ const ChecklistItem = ({
             <View style={styles.checkboxContainer}>
                 {checkbox}
             </View>
-            {showConditionIcon && (
-                <PressableOpacity onPress={onPress}>
-                    <CompassIcon
-                        name='source-branch'
-                        size={16}
-                        color={iconColor}
-                        style={styles.conditionIcon}
-                        testID='checklist_item.condition_icon'
-                    />
-                </PressableOpacity>
-            )}
             <View style={styles.itemDetails}>
                 <PressableOpacity onPress={onPress}>
                     <View style={styles.itemDetailsTexts}>
                         <View style={styles.titleRow}>
                             <Text style={[styles.itemTitle, skipped && styles.skippedText]}>{item.title}</Text>
+                            {showConditionIcon && (
+                                <CompassIcon
+                                    name='source-branch'
+                                    size={16}
+                                    color={iconColor}
+                                    style={styles.conditionIcon}
+                                    testID='checklist_item.condition_icon'
+                                />
+                            )}
                         </View>
                         {Boolean(item.description) && (
                             <Text style={[styles.itemDescription, skipped && styles.skippedText]}>{item.description}</Text>

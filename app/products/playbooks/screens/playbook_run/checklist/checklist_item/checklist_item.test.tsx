@@ -436,6 +436,7 @@ describe('ChecklistItem', () => {
 
             const {queryByTestId} = renderWithIntl(<ChecklistItem {...props}/>);
 
+            // Icon should not be rendered at all when condition fields are not set
             expect(queryByTestId('checklist_item.condition_icon')).toBeNull();
         });
 
@@ -449,6 +450,7 @@ describe('ChecklistItem', () => {
 
             const {getByTestId} = renderWithIntl(<ChecklistItem {...props}/>);
 
+            // Icon should be rendered at the end of the title row
             const icon = getByTestId('checklist_item.condition_icon');
             expect(icon).toBeVisible();
             expect(icon.props.name).toBe('source-branch');
@@ -465,6 +467,7 @@ describe('ChecklistItem', () => {
 
             const {getByTestId} = renderWithIntl(<ChecklistItem {...props}/>);
 
+            // Icon should be rendered at the end of the title row
             const icon = getByTestId('checklist_item.condition_icon');
             expect(icon).toBeVisible();
             expect(icon.props.name).toBe('source-branch');
@@ -481,6 +484,7 @@ describe('ChecklistItem', () => {
 
             const {getByTestId} = renderWithIntl(<ChecklistItem {...props}/>);
 
+            // Icon should be rendered at the end of the title row with error color
             const icon = getByTestId('checklist_item.condition_icon');
             expect(icon).toBeVisible();
             expect(icon.props.color).toBe(Preferences.THEMES.denim.errorTextColor);
@@ -496,6 +500,7 @@ describe('ChecklistItem', () => {
 
             const {getByTestId} = renderWithIntl(<ChecklistItem {...props}/>);
 
+            // Icon should be rendered at the end of the title row with normal color
             const icon = getByTestId('checklist_item.condition_icon');
             expect(icon).toBeVisible();
 
@@ -514,6 +519,7 @@ describe('ChecklistItem', () => {
 
             const {queryByTestId} = renderWithIntl(<ChecklistItem {...props}/>);
 
+            // Icon should not be rendered when conditionAction is hidden
             expect(queryByTestId('checklist_item.condition_icon')).toBeNull();
         });
 
@@ -527,6 +533,7 @@ describe('ChecklistItem', () => {
 
             const {getByTestId} = renderWithIntl(<ChecklistItem {...props}/>);
 
+            // Icon should be rendered at the end of the title row for API format items
             const icon = getByTestId('checklist_item.condition_icon');
             expect(icon).toBeVisible();
             expect(icon.props.name).toBe('source-branch');
@@ -542,6 +549,7 @@ describe('ChecklistItem', () => {
 
             const {getByTestId} = renderWithIntl(<ChecklistItem {...props}/>);
 
+            // Icon should be rendered at the end of the title row with error color for API format
             const icon = getByTestId('checklist_item.condition_icon');
             expect(icon).toBeVisible();
             expect(icon.props.color).toBe(Preferences.THEMES.denim.errorTextColor);
