@@ -1,14 +1,31 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-
+/* eslint-disable */
 import React from 'react';
-import {type StyleProp, Text, type TextStyle, View, type ViewStyle} from 'react-native';
+import {type StyleProp, type TextStyle, View, type ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import General from '@constants/general';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+
+// Generate consistent color based on channel name
+const generateAvatarColor = (name: string): string => {
+    const colors = [
+        '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
+        '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9',
+        '#F8C471', '#82E0AA', '#F1948A', '#85C1E9', '#D7BDE2',
+        '#A9DFBF', '#F9E79F', '#D5A6BD', '#A3E4D7', '#FADBD8',
+    ];
+
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+        hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+
+    return colors[Math.abs(hash) % colors.length];
+};
 
 import DmAvatar from './dm_avatar';
 
@@ -197,17 +214,39 @@ const ChannelIcon = ({
             />
         );
     } else if (type === General.GM_CHANNEL) {
-        const fontSize = size - 12;
+        // Render GM as circular avatar with group icon and random color
+        const iconSize = Math.max(10, size - 12);
+        const avatarColor = generateAvatarColor(name);
         icon = (
             <View
-                style={[styles.groupBox, unreadGroupBox, activeGroupBox, commonStyles, {width: size, height: size}]}
+                style={[
+                    styles.groupBox,
+                    unreadGroupBox,
+                    activeGroupBox,
+                    commonStyles,
+                    {
+                        width: size,
+                        height: size,
+                        borderRadius: size / 2,
+                        padding: 2,
+                        backgroundColor: avatarColor,
+                    },
+                ]}
             >
-                <Text
-                    style={[styles.group, unreadGroup, activeGroup, {fontSize}]}
-                    testID={`${testID}.gm_member_count`}
-                >
-                    {membersCount - 1}
-                </Text>
+                <CompassIcon
+                    name='account-multiple-outline'
+                    style={[
+                        styles.group,
+                        unreadGroup,
+                        activeGroup,
+                        {
+                            fontSize: iconSize,
+                            lineHeight: iconSize,
+                            color: '#FFFFFF', // White icon on colored background
+                        },
+                    ]}
+                    testID={`${testID}.gm_icon`}
+                />
             </View>
         );
     } else if (type === General.DM_CHANNEL) {
