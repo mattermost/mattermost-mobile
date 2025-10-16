@@ -25,7 +25,7 @@ import {alertChannelArchived, alertChannelRemove, alertTeamRemove} from '@utils/
 import {notificationError} from '@utils/notification';
 
 import Account from './account';
-// import ChannelList from './channel_list';
+import ChannelList from './channel_list';
 import HomeDaakia from './home_daakia';
 import RecentMentions from './recent_mentions';
 import SavedMessages from './saved_messages';
@@ -175,18 +175,18 @@ export function HomeScreen(props: HomeProps) {
                             theme={theme}
                         />)}
                 >
-                    <Tab.Screen
-                        name={Screens.HOME_DAAKIA}
-                        component={HomeDaakia}
-                        options={{tabBarButtonTestID: 'tab_bar.home_daakia.tab', freezeOnBlur: true, lazy: true}}
-                    />
-                    {/* <Tab.Screen
-                        name={Screens.HOME}
-                        options={{tabBarButtonTestID: 'tab_bar.home.tab', freezeOnBlur: true}}
-                    >
-                        {() => <ChannelList {...props}/>}
-                    </Tab.Screen> */}
-                    <Tab.Screen
+                <Tab.Screen
+                    name={Screens.HOME_DAAKIA}
+                    component={HomeDaakia}
+                    options={{tabBarButtonTestID: 'tab_bar.home_daakia.tab', freezeOnBlur: true, lazy: true}}
+                />
+                <Tab.Screen
+                    name={Screens.HOME}
+                    options={{tabBarButtonTestID: 'tab_bar.home.tab', freezeOnBlur: true}}
+                >
+                    {() => <ChannelList {...props}/>}
+                </Tab.Screen>
+                <Tab.Screen
                         name={Screens.SEARCH}
                         component={Search}
                         options={{tabBarButtonTestID: 'tab_bar.search.tab', freezeOnBlur: true, lazy: true}}

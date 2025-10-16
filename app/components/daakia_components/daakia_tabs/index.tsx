@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {View, Text, ScrollView} from 'react-native';
+import {View, Text} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
@@ -28,27 +28,31 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         backgroundColor: theme.sidebarBg,
     },
-    scrollView: {
+    tabsContainer: {
         ...HOME_PADDING,
-        paddingVertical: 8,
+        paddingVertical: 6,
+        flexDirection: 'row',
     },
     tab: {
+        flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 16,
-        paddingVertical: 10,
-        marginRight: 4,
-        borderRadius: 20,
+        justifyContent: 'center',
+        paddingHorizontal: 4,
+        paddingVertical: 8,
+        marginHorizontal: 1,
         position: 'relative',
+        borderBottomWidth: 1,
+        borderBottomColor: 'transparent',
     },
     activeTab: {
-        backgroundColor: changeOpacity(theme.sidebarText, 0.16),
+        borderBottomColor: theme.sidebarText,
     },
     iconContainer: {
-        marginRight: 6,
+        marginRight: 4,
     },
     icon: {
-        fontSize: 20,
+        fontSize: 16,
     },
     activeIcon: {
         color: theme.sidebarText,
@@ -58,7 +62,7 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     tabText: {
         ...typography('Body', 100, 'SemiBold'),
-        fontSize: 14,
+        fontSize: 12,
     },
     activeTabText: {
         color: theme.sidebarText,
@@ -83,11 +87,7 @@ const DaakiaTabs = ({tabs, activeTab, onTabPress}: Props) => {
 
     return (
         <View style={styles.container}>
-            <ScrollView
-                horizontal={true}
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.scrollView}
-            >
+            <View style={styles.tabsContainer}>
                 {tabs.map((tab) => {
                     const isActive = activeTab === tab.id;
                     return (
@@ -123,7 +123,7 @@ const DaakiaTabs = ({tabs, activeTab, onTabPress}: Props) => {
                         </TouchableWithFeedback>
                     );
                 })}
-            </ScrollView>
+            </View>
         </View>
     );
 };

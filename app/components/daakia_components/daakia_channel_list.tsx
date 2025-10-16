@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {DeviceEventEmitter, FlatList, StyleSheet, View} from 'react-native';
 
 import {switchToChannelById} from '@actions/remote/channel';
@@ -20,7 +20,6 @@ import type PostModel from '@typings/database/models/servers/post';
 type Props = {
     allChannels: ChannelModel[];
     unreadIds: Set<string>;
-    unreadsOnTop: boolean;
     currentUserId: string;
     lastPosts?: Map<string, PostModel>;
     locale: string;
@@ -40,7 +39,6 @@ const styles = StyleSheet.create({
 const DaakiaChannelList = ({
     allChannels,
     unreadIds,
-    unreadsOnTop,
     currentUserId,
     lastPosts,
     locale,
@@ -55,14 +53,8 @@ const DaakiaChannelList = ({
         switchToChannelById(serverUrl, channel.id);
     }, [serverUrl]);
 
-    const channelsToShow = useMemo(() => {
-        if (unreadsOnTop) {
-            const unreadChannels = allChannels.filter((c) => unreadIds.has(c.id));
-            const readChannels = allChannels.filter((c) => !unreadIds.has(c.id));
-            return [...unreadChannels, ...readChannels];
-        }
-        return allChannels;
-    }, [allChannels, unreadIds, unreadsOnTop]);
+    // Sorting is now handled in the observable chain, just use allChannels directly
+    const channelsToShow = allChannels;
 
     const renderChannelItem = useCallback(({item}: {item: ChannelModel}) => {
         return (
@@ -111,6 +103,9 @@ const DaakiaChannelList = ({
             style={styles.container}
             showsVerticalScrollIndicator={false}
             initialNumToRender={20}
+
+            // @ts-expect-error strictMode not included in the types
+            strictMode={true}
         />
     );
 };
