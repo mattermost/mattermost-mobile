@@ -15,6 +15,8 @@ import {switchMap, combineLatestWith, map, distinctUntilChanged} from 'rxjs/oper
 import {switchToGlobalDrafts} from '@actions/local/draft';
 import {switchToGlobalThreads} from '@actions/local/thread';
 import {fetchPostsForChannel} from '@actions/remote/post';
+import FloatingCallContainer from '@calls/components/floating_call_container';
+import {observeIncomingCalls} from '@calls/state';
 import CompassIcon from '@components/compass_icon';
 import DaakiaChannelList from '@components/daakia_components/daakia_channel_list';
 import DaakiaHeader from '@components/daakia_components/daakia_header';
@@ -138,6 +140,10 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
         backgroundColor: theme.buttonBg,
         marginLeft: 6,
     },
+    floatingCallWrapper: {
+        zIndex: 1000,
+        elevation: 1000, // For Android
+    },
 }));
 
 type ThreadsUnread = {unreads: boolean; mentions: number};
@@ -154,6 +160,7 @@ type HomeDaakiaProps = {
     currentUserId: string;
     favoriteChannelIds: Set<string>;
     draftsCount?: number;
+    showIncomingCalls: boolean;
 };
 
 const HomeDaakia = ({
@@ -168,6 +175,7 @@ const HomeDaakia = ({
     currentUserId,
     favoriteChannelIds,
     draftsCount,
+    showIncomingCalls,
 }: HomeDaakiaProps) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -405,6 +413,15 @@ const HomeDaakia = ({
                                 />
                             )}
                         </Animated.View>
+                        {/* Floating Call Container for incoming calls */}
+                        {showIncomingCalls &&
+                            <View style={styles.floatingCallWrapper}>
+                                <FloatingCallContainer
+                                    showIncomingCalls={showIncomingCalls}
+                                    channelsScreen={true}
+                                />
+                            </View>
+                        }
                     </>
                 )}
             </SafeAreaView>
@@ -609,6 +626,11 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     );
     /* eslint-enable max-nested-callbacks */
 
+    const showIncomingCalls = observeIncomingCalls().pipe(
+        switchMap((ics) => of$(ics.incomingCalls.length > 0)),
+        distinctUntilChanged(),
+    );
+
     return {
         currentTeamId,
         currentUserId,
@@ -626,6 +648,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         unreadIds: channelListData.pipe(map((data) => data.unreadIds)),
         lastPosts: channelListData.pipe(map((data) => data.lastPosts)),
         favoriteChannelIds: channelListData.pipe(map((data) => data.favoriteChannelIds)),
+        showIncomingCalls,
     };
 });
 
