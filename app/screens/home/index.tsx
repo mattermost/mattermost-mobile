@@ -180,12 +180,12 @@ export function HomeScreen(props: HomeProps) {
                     component={HomeDaakia}
                     options={{tabBarButtonTestID: 'tab_bar.home_daakia.tab', freezeOnBlur: true, lazy: true}}
                 />
-                <Tab.Screen
+                {/* <Tab.Screen
                     name={Screens.HOME}
                     options={{tabBarButtonTestID: 'tab_bar.home.tab', freezeOnBlur: true}}
                 >
                     {() => <ChannelList {...props}/>}
-                </Tab.Screen>
+                </Tab.Screen> */}
                 <Tab.Screen
                         name={Screens.SEARCH}
                         component={Search}
