@@ -5,10 +5,13 @@ import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import React from 'react';
 import {Text, TouchableOpacity, View} from 'react-native';
 import {of as of$} from 'rxjs';
-import {map} from 'rxjs/operators';
+import {distinctUntilChanged, map, switchMap} from 'rxjs/operators';
 
+import {observeChannelsWithCalls} from '@calls/state';
 import ChannelIcon from '@components/channel_icon';
+import CompassIcon from '@components/compass_icon';
 import {General} from '@constants';
+import {withServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
@@ -34,6 +37,7 @@ type Props = {
     lastPostSender?: UserModel;
     locale: string;
     teammateDisplayNameSetting: string;
+    hasCall: boolean;
 };
 
 const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -95,9 +99,17 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
         ...typography('Body', 200, 'SemiBold'),
         color: theme.buttonBg,
     },
+    hasCall: {
+        textAlign: 'right',
+        marginRight: 8,
+    },
+    filler: {
+        flex: 1,
+        marginRight: 8,
+    },
 }));
 
-const DaakiaChannelItem = ({channel, isUnread, onPress, currentUserId, lastPost, isMilitaryTime, lastPostSender, locale, teammateDisplayNameSetting}: Props) => {
+const DaakiaChannelItem = ({channel, isUnread, onPress, currentUserId, lastPost, isMilitaryTime, lastPostSender, locale, teammateDisplayNameSetting, hasCall}: Props) => {
     const theme = useTheme();
     const styles = getStyles(theme);
 
@@ -194,6 +206,15 @@ const DaakiaChannelItem = ({channel, isUnread, onPress, currentUserId, lastPost,
                     >
                         {displayName}
                     </Text>
+                    <View style={styles.filler}/>
+                    {hasCall &&
+                        <CompassIcon
+                            name='phone-in-talk'
+                            size={16}
+                            color={theme.centerChannelColor}
+                            style={styles.hasCall}
+                        />
+                    }
                     <View
                         style={{
                             flexDirection: 'row',
@@ -219,7 +240,7 @@ const DaakiaChannelItem = ({channel, isUnread, onPress, currentUserId, lastPost,
     );
 };
 
-const enhanced = withObservables(['lastPost'], ({database, lastPost}: WithDatabaseArgs & {lastPost?: PostModel}) => {
+const enhanced = withObservables(['lastPost', 'channel'], ({database, lastPost, channel, serverUrl}: WithDatabaseArgs & {lastPost?: PostModel; channel: ChannelModel; serverUrl: string}) => {
     const preferences = queryDisplayNamePreferences(database).observeWithColumns(['value']);
     const isMilitaryTime = preferences.pipe(
         map((prefs) => getDisplayNamePreferenceAsBool(prefs, 'use_military_time')),
@@ -231,11 +252,17 @@ const enhanced = withObservables(['lastPost'], ({database, lastPost}: WithDataba
 
     const lastPostSender = lastPost?.userId ? observeUser(database, lastPost.userId) : of$(undefined);
 
+    const hasCall = observeChannelsWithCalls(serverUrl || '').pipe(
+        switchMap((calls) => of$(Boolean(calls[channel.id]))),
+        distinctUntilChanged(),
+    );
+
     return {
         isMilitaryTime,
         lastPostSender,
         teammateDisplayNameSetting,
+        hasCall,
     };
 });
 
-export default withDatabase(enhanced(DaakiaChannelItem));
+export default withDatabase(withServerUrl(enhanced(DaakiaChannelItem)));

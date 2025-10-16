@@ -65,9 +65,10 @@ const DaakiaChannelList = ({
                 currentUserId={currentUserId}
                 lastPost={lastPosts?.get(item.id)}
                 locale={locale}
+                serverUrl={serverUrl}
             />
         );
-    }, [unreadIds, onChannelSwitch, currentUserId, lastPosts, locale]);
+    }, [unreadIds, onChannelSwitch, currentUserId, lastPosts, locale, serverUrl]);
 
     useEffect(() => {
         const t = setTimeout(() => {
