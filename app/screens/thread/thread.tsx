@@ -3,8 +3,8 @@
 
 import {uniqueId} from 'lodash';
 import React, {useCallback, useEffect, useState} from 'react';
-import {type LayoutChangeEvent, StyleSheet, View} from 'react-native';
-import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
+import {type LayoutChangeEvent, Platform, StyleSheet, View} from 'react-native';
+import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {storeLastViewedThreadIdAndServer, removeLastViewedThreadIdAndServer} from '@actions/app/global';
 import FloatingCallContainer from '@calls/components/floating_call_container';
@@ -53,6 +53,7 @@ const Thread = ({
     showIncomingCalls,
     scheduledPostCount,
 }: ThreadProps) => {
+    const insets = useSafeAreaInsets();
     const [containerHeight, setContainerHeight] = useState(0);
 
     const close = useCallback(() => {
@@ -61,6 +62,7 @@ const Thread = ({
 
     useAndroidHardwareBackHandler(componentId, close);
 
+    const bottomPadding = Platform.OS === 'android' ? insets.bottom : 0;
     useEffect(() => {
         if (isCRTEnabled && rootId) {
             const id = `${componentId}-${rootId}-${uniqueId()}`;
@@ -96,7 +98,7 @@ const Thread = ({
             }
             setButtons(componentId, {rightButtons: []});
         };
-    }, [rootId]);
+    }, [componentId, isCRTEnabled, rootId]);
 
     useDidUpdate(() => {
         if (!rootPost) {
@@ -137,14 +139,16 @@ const Thread = ({
                             />
                         }
                     </>
-                    <PostDraft
-                        channelId={rootPost!.channelId}
-                        rootId={rootId}
-                        testID='thread.post_draft'
-                        containerHeight={containerHeight}
-                        isChannelScreen={false}
-                        location={Screens.THREAD}
-                    />
+                    <View style={{paddingBottom: bottomPadding}}>
+                        <PostDraft
+                            channelId={rootPost!.channelId}
+                            rootId={rootId}
+                            testID='thread.post_draft'
+                            containerHeight={containerHeight}
+                            isChannelScreen={false}
+                            location={Screens.THREAD}
+                        />
+                    </View>
                 </ExtraKeyboardProvider>
                 }
                 {showFloatingCallContainer &&
