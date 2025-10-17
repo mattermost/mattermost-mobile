@@ -53,6 +53,7 @@
     "deep-equal": "2.2.3",
     "deepmerge": "4.3.1",
     "emoji-regex": "10.4.0",
+    "events": "3.3.0",
     "expo": "52.0.44",
     "expo-application": "6.0.2",
     "expo-crypto": "14.0.2",
