@@ -65,6 +65,7 @@ static SendReplyCompletionHandlerIMP originalSendReplyCompletionHandlerImplement
   NSDictionary *credentials = [[Keychain default] getCredentialsObjcFor:serverUrl];
   NSString *sessionToken = [credentials objectForKey:@"token"];
   NSString *preauthSecret = [credentials objectForKey:@"preauthSecret"];
+  NSString *csrfToken = [credentials objectForKey:@"csrfToken"];
   if (sessionToken == nil) {
     [self handleReplyFailure:@"" completionHandler:notificationCompletionHandler];
     return;
@@ -101,6 +102,10 @@ static SendReplyCompletionHandlerIMP originalSendReplyCompletionHandlerImplement
   // Add preauth secret header if available
   if ([preauthSecret isKindOfClass:NSString.class] && [(NSString *)preauthSecret length] > 0) {
     [request setValue:preauthSecret forHTTPHeaderField:@"X-Mattermost-Preauth-Secret"];
+  }
+
+  if ([csrfToken isKindOfClass:NSString.class] && [(NSString *)csrfToken length] > 0) {
+    [request setValue:csrfToken forHTTPHeaderField:@"X-CSRF-Token"];
   }
   
   [request setHTTPBody:postData];

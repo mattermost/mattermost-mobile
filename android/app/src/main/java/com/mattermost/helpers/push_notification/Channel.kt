@@ -3,6 +3,7 @@ package com.mattermost.helpers.push_notification
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
+import com.mattermost.helpers.HeadersHelper
 import com.mattermost.helpers.PushNotificationDataRunnable
 import com.mattermost.helpers.database_extension.findChannel
 import com.mattermost.helpers.database_extension.getCurrentUserLocale
@@ -13,7 +14,9 @@ import java.text.Collator
 import java.util.Locale
 
 suspend fun PushNotificationDataRunnable.Companion.fetchMyChannel(db: WMDatabase, serverUrl: String, channelId: String, isCRTEnabled: Boolean): Triple<ReadableMap?, ReadableMap?, ReadableArray?> {
-    val channel = fetch(serverUrl, "/api/v4/channels/$channelId")
+    val options = Arguments.createMap()
+    options.putMap("headers", HeadersHelper.getHeadersWithCredentials(serverUrl, false))
+    val channel = fetch(serverUrl, "/api/v4/channels/$channelId", options)
     var channelData = channel?.getMap("data")
     val myChannelData = channelData?.let { fetchMyChannelData(serverUrl, channelId, isCRTEnabled, it) }
     val channelType = channelData?.getString("type")
@@ -59,7 +62,9 @@ suspend fun PushNotificationDataRunnable.Companion.fetchMyChannel(db: WMDatabase
 
 private suspend fun PushNotificationDataRunnable.Companion.fetchMyChannelData(serverUrl: String, channelId: String, isCRTEnabled: Boolean, channelData: ReadableMap): ReadableMap? {
     try {
-        val myChannel = fetch(serverUrl, "/api/v4/channels/$channelId/members/me")
+        val options = Arguments.createMap()
+        options.putMap("headers", HeadersHelper.getHeadersWithCredentials(serverUrl, false))
+        val myChannel = fetch(serverUrl, "/api/v4/channels/$channelId/members/me", options)
         val myChannelData = myChannel?.getMap("data")
         if (myChannelData != null) {
             val data = Arguments.createMap()
@@ -111,7 +116,9 @@ private suspend fun PushNotificationDataRunnable.Companion.fetchMyChannelData(se
 private suspend fun PushNotificationDataRunnable.Companion.fetchProfileInChannel(db: WMDatabase, serverUrl: String, channelId: String): ReadableArray? {
     return try {
         val currentUserId = queryCurrentUserId(db)
-        val profilesInChannel = fetch(serverUrl, "/api/v4/users?in_channel=${channelId}&page=0&per_page=8&sort=")
+        val options = Arguments.createMap()
+        options.putMap("headers", HeadersHelper.getHeadersWithCredentials(serverUrl, false))
+        val profilesInChannel = fetch(serverUrl, "/api/v4/users?in_channel=${channelId}&page=0&per_page=8&sort=", options)
         val profilesArray = profilesInChannel?.getArray("data")
         val result = Arguments.createArray()
         if (profilesArray != null) {

@@ -9,9 +9,9 @@ import java.io.IOException
 
 import kotlin.coroutines.suspendCoroutine
 
-internal suspend fun PushNotificationDataRunnable.Companion.fetch(serverUrl: String, endpoint: String): ReadableMap? {
+internal suspend fun PushNotificationDataRunnable.Companion.fetch(serverUrl: String, endpoint: String, options: ReadableMap?): ReadableMap? {
     return suspendCoroutine { cont ->
-        Network.get(serverUrl, endpoint, null, object : ResolvePromise() {
+        Network.get(serverUrl, endpoint, options, object : ResolvePromise() {
             override fun resolve(value: Any?) {
                 val response = value as ReadableMap?
                 if (response != null && !response.getBoolean("ok")) {
