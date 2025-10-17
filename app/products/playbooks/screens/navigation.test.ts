@@ -1,16 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {joinIfNeededAndSwitchToChannel} from '@actions/remote/channel';
 import {Preferences, Screens} from '@constants';
 import {goToScreen} from '@screens/navigation';
 import TestHelper from '@test/test_helper';
 import {changeOpacity} from '@utils/theme';
 
-import {goToPlaybookRuns, goToPlaybookRun, goToEditCommand, goToSelectUser, goToSelectDate} from './navigation';
+import {goToPlaybookRuns, goToPlaybookRun, goToParticipantPlaybooks, goToPlaybookRunWithChannelSwitch, goToEditCommand, goToSelectUser, goToSelectDate} from './navigation';
 
 jest.mock('@screens/navigation', () => ({
     goToScreen: jest.fn(),
     getThemeFromState: jest.fn(() => require('@constants').Preferences.THEMES.denim),
+}));
+
+jest.mock('@actions/remote/channel', () => ({
+    joinIfNeededAndSwitchToChannel: jest.fn(),
 }));
 
 describe('Playbooks Navigation', () => {
@@ -181,6 +186,57 @@ describe('Playbooks Navigation', () => {
                         },
                     },
                 },
+            );
+        });
+    });
+
+    describe('goToParticipantPlaybooks', () => {
+        it('should navigate to participant playbooks screen with correct parameters', () => {
+            goToParticipantPlaybooks(mockIntl);
+
+            expect(mockIntl.formatMessage).toHaveBeenCalledWith({
+                id: 'playbooks.participant_playbooks.title',
+                defaultMessage: 'Playbook runs',
+            });
+            expect(goToScreen).toHaveBeenCalledWith(
+                Screens.PARTICIPANT_PLAYBOOKS,
+                'Playbook runs',
+                {},
+                {},
+            );
+        });
+    });
+
+    describe('goToPlaybookRunWithChannelSwitch', () => {
+        it('should switch to channel first and then navigate to playbook run', async () => {
+            const serverUrl = 'https://test.server.com';
+            const mockPlaybookRun = TestHelper.fakePlaybookRun({
+                id: 'run-id-1',
+                channel_id: 'channel-id-1',
+                team_id: 'team-id-1',
+            });
+
+            jest.mocked(joinIfNeededAndSwitchToChannel).mockResolvedValue({});
+
+            await goToPlaybookRunWithChannelSwitch(mockIntl, serverUrl, mockPlaybookRun);
+
+            expect(joinIfNeededAndSwitchToChannel).toHaveBeenCalledWith(
+                serverUrl,
+                {id: mockPlaybookRun.channel_id},
+                {id: mockPlaybookRun.team_id},
+                expect.any(Function),
+                mockIntl,
+            );
+
+            expect(mockIntl.formatMessage).toHaveBeenCalledWith({
+                id: 'playbooks.playbook_run.title',
+                defaultMessage: 'Playbook run',
+            });
+            expect(goToScreen).toHaveBeenCalledWith(
+                Screens.PLAYBOOK_RUN,
+                'Playbook run',
+                {playbookRunId: mockPlaybookRun.id},
+                {},
             );
         });
     });
