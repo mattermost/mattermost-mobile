@@ -68,6 +68,10 @@ const FileInfo = ({disabled, file, channelName, showDate, onPress}: FileInfoProp
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
+    if (!file) {
+        return null;
+    }
+
     return (
         <View style={style.attachmentContainer}>
             <TouchableOpacity
