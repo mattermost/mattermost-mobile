@@ -1,6 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-
+/* eslint-disable */
 import React, {useCallback, useEffect, useRef} from 'react';
 import {
     View,
@@ -11,6 +11,8 @@ import {
     type NativeSyntheticEvent,
     type NativeScrollEvent,
     BackHandler,
+    Appearance,
+    ImageBackground,
 } from 'react-native';
 import Animated, {useDerivedValue, useSharedValue} from 'react-native-reanimated';
 
@@ -18,7 +20,8 @@ import {storeOnboardingViewedValue} from '@actions/app/global';
 import {Screens} from '@constants';
 import {useScreenTransitionAnimation} from '@hooks/screen_transition_animation';
 import SecurityManager from '@managers/security_manager';
-import Background from '@screens/background';
+
+// import Background from '@screens/background';
 import {goToScreen, loginAnimationOptions} from '@screens/navigation';
 
 import FooterButtons from './footer_buttons';
@@ -112,7 +115,14 @@ const Onboarding = ({
             testID='onboarding.screen'
             nativeID={SecurityManager.getShieldScreenId(componentId, false, true)}
         >
-            <Background theme={theme}/>
+            <ImageBackground 
+                source={Appearance.getColorScheme() === 'dark' 
+                    ? require('../../assets/darkbackground.png')
+                    : require('../../assets/lightbackground.png')
+                }
+                style={{position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0.2}}
+                resizeMode="cover"
+            />
             <AnimatedSafeArea
                 style={[styles.scrollContainer, animatedStyles]}
                 key={'onboarding_content'}

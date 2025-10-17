@@ -72,7 +72,7 @@ function SavedMessages({appsEnabled, posts, currentTimezone, customEmojiNames}: 
     useEffect(() => {
         opacity.value = isFocused ? 1 : 0;
         translateX.value = isFocused ? 0 : translateSide;
-    }, [isFocused]);
+    }, [isFocused, opacity, translateX, translateSide]);
 
     useEffect(() => {
         if (isFocused) {
@@ -85,7 +85,7 @@ function SavedMessages({appsEnabled, posts, currentTimezone, customEmojiNames}: 
 
     const {scrollPaddingTop, scrollRef, scrollValue, onScroll, headerHeight} = useCollapsibleHeader<Animated.FlatList<string>>(true, onSnap);
     const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
-    const data = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, currentTimezone, false).reverse(), [posts]);
+    const data = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, currentTimezone, false).reverse(), [posts, currentTimezone]);
 
     const animated = useAnimatedStyle(() => {
         return {
@@ -159,7 +159,7 @@ function SavedMessages({appsEnabled, posts, currentTimezone, customEmojiNames}: 
             default:
                 return null;
         }
-    }, [appsEnabled, currentTimezone, customEmojiNames, theme]);
+    }, [appsEnabled, currentTimezone, customEmojiNames]);
 
     return (
         <Freeze freeze={!isFocused}>
@@ -177,7 +177,7 @@ function SavedMessages({appsEnabled, posts, currentTimezone, customEmojiNames}: 
                         hasSearch={false}
                         scrollValue={scrollValue}
                     />
-                    <Animated.View style={[styles.flex, animated]}>
+                    <Animated.View style={[styles.flex, {backgroundColor: theme.centerChannelBg}, animated]}>
                         <Animated.View style={top}>
                             <RoundedHeaderContext/>
                         </Animated.View>

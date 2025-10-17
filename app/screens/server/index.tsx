@@ -5,7 +5,7 @@
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {defineMessage, useIntl} from 'react-intl';
-import {Alert, BackHandler, View} from 'react-native';
+import {Alert, BackHandler, View, ImageBackground, Appearance} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {Navigation} from 'react-native-navigation';
 import Animated from 'react-native-reanimated';
@@ -428,7 +428,11 @@ const Server = ({
             testID='server.screen'
             nativeID={SecurityManager.getShieldScreenId(componentId, false, true)}
         >
-            <Background theme={theme}/>
+            <ImageBackground 
+                source={Appearance.getColorScheme() === 'dark' ? require('../../assets/darkbackground.png') : require('../../assets/lightbackground.png')}
+                style={{position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0.2}}
+                resizeMode="cover"
+            />
             <AnimatedSafeArea
                 key={'server_content'}
                 style={[styles.flex, animatedStyles]}

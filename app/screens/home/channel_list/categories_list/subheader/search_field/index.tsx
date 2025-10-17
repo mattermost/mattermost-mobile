@@ -13,6 +13,10 @@ import {findChannels} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+type Props = {
+    compact?: boolean;
+}
+
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         flexDirection: 'row',
@@ -35,9 +39,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginTop: 1,
         ...typography('Body', 200),
     },
+    compactContainer: {
+        marginVertical: 8,
+    },
 }));
 
-const SearchField = () => {
+const SearchField = ({compact}: Props) => {
     const theme = useTheme();
     const intl = useIntl();
     const styles = getStyleSheet(theme);
@@ -51,7 +58,7 @@ const SearchField = () => {
 
     return (
         <TouchableHighlight
-            style={styles.container}
+            style={[styles.container, compact && styles.compactContainer]}
             onPress={onPress}
             underlayColor={changeOpacity(theme.sidebarText, 0.32)}
             testID='channel_list_subheader.search_field.button'

@@ -14,6 +14,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Account from './account';
 import Home from './home';
+import HomeDaakia from './home_daakia';
 import Mentions from './mentions';
 import SavedMessages from './saved_messages';
 import Search from './search';
@@ -62,6 +63,7 @@ const shadowOffset: [x: number | string, y: number | string] = [0, -0.5];
 const TabComponents: Record<string, any> = {
     Account,
     Home,
+    HomeDaakia,
     Mentions,
     SavedMessages,
     Search,
@@ -89,7 +91,7 @@ function TabBar({state, descriptors, navigation, theme}: BottomTabBarProps & {th
         });
 
         return () => listner.remove();
-    });
+    }, [navigation]);
 
     useEffect(() => {
         const listner = DeviceEventEmitter.addListener(NavigationConstants.NAVIGATE_TO_TAB, ({screen, params = {}}: {screen: string; params: any}) => {
@@ -114,7 +116,7 @@ function TabBar({state, descriptors, navigation, theme}: BottomTabBarProps & {th
         });
 
         return () => listner.remove();
-    }, [state]);
+    }, [state, navigation]);
 
     const transform = useAnimatedStyle(() => {
         const translateX = withTiming(state.index * tabWidth, {duration: 150});

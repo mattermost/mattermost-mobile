@@ -71,7 +71,7 @@ const RecentMentionsScreen = ({appsEnabled, customEmojiNames, mentions, currentT
     useEffect(() => {
         opacity.value = isFocused ? 1 : 0;
         translateX.value = isFocused ? 0 : translateSide;
-    }, [isFocused]);
+    }, [isFocused, opacity, translateX, translateSide]);
 
     useEffect(() => {
         if (isFocused) {
@@ -84,7 +84,7 @@ const RecentMentionsScreen = ({appsEnabled, customEmojiNames, mentions, currentT
 
     const {scrollPaddingTop, scrollRef, scrollValue, onScroll, headerHeight} = useCollapsibleHeader<Animated.FlatList<string>>(true, onSnap);
     const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
-    const posts = useMemo(() => selectOrderedPosts(mentions, 0, false, '', '', false, currentTimezone, false).reverse(), [mentions]);
+    const posts = useMemo(() => selectOrderedPosts(mentions, 0, false, '', '', false, currentTimezone, false).reverse(), [mentions, currentTimezone]);
 
     const animated = useAnimatedStyle(() => {
         return {
@@ -131,7 +131,7 @@ const RecentMentionsScreen = ({appsEnabled, customEmojiNames, mentions, currentT
                 <EmptyState/>
             )}
         </View>
-    ), [loading, theme, paddingTop]);
+    ), [loading, theme]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<PostListItem | PostListOtherItem>) => {
         switch (item.type) {
@@ -157,7 +157,7 @@ const RecentMentionsScreen = ({appsEnabled, customEmojiNames, mentions, currentT
             default:
                 return null;
         }
-    }, [appsEnabled, customEmojiNames]);
+    }, [appsEnabled, customEmojiNames, currentTimezone]);
 
     return (
         <Freeze freeze={!isFocused}>
@@ -175,7 +175,7 @@ const RecentMentionsScreen = ({appsEnabled, customEmojiNames, mentions, currentT
                         hasSearch={false}
                         scrollValue={scrollValue}
                     />
-                    <Animated.View style={[styles.flex, animated]}>
+                    <Animated.View style={[styles.flex, {backgroundColor: theme.centerChannelBg}, animated]}>
                         <Animated.View style={top}>
                             <RoundedHeaderContext/>
                         </Animated.View>

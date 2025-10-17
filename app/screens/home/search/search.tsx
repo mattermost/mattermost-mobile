@@ -438,7 +438,7 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
                     ref={searchRef}
                 />
                 <KeyboardAvoidingView
-                    style={styles.flex}
+                    style={[styles.flex, {backgroundColor: theme.centerChannelBg}]}
                     behavior={Platform.OS === 'ios' ? 'padding' : undefined}
                 >
                     <Animated.View style={animated}>
