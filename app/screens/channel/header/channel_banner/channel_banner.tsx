@@ -75,7 +75,8 @@ export function ChannelBanner({bannerInfo, isTopItem}: Props) {
     }), [bannerInfo?.background_color, defaultHeight, style.container]);
 
     const markdownTextStyle = useMemo(() => {
-        const textStyle = getMarkdownTextStyles(theme);
+        // We do a shallow copy to avoid mutating the original object.
+        const textStyle = {...getMarkdownTextStyles(theme)};
 
         // channel banner colors are theme independent.
         // If we let the link color being set by the theme, it will be unreadable in some cases.
