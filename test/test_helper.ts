@@ -1174,6 +1174,7 @@ class TestHelperSingleton {
                 checklists,
                 update_at: Date.now() + i,
                 items_order: checklists.map((checklist) => checklist.id),
+                status_update_broadcast_channels_enabled: false,
             });
         }
         return playbookRuns;

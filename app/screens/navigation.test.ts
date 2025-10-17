@@ -356,15 +356,15 @@ describe('dismissAllModalsAndPopToRoot', () => {
     });
 
     it('should call dismissAllModals, dismissAllOverlaysWithExceptions, and popToRoot in sequence', async () => {
-        NavigationStore.addModalToStack('modal1');
-        NavigationStore.addScreenToStack('screen1');
+        NavigationStore.addModalToStack('AppForm');
+        NavigationStore.addScreenToStack('Home');
 
         await navigationModule.dismissAllModalsAndPopToRoot();
 
         expect(Navigation.dismissModal).toHaveBeenCalledTimes(1);
-        expect(Navigation.dismissModal).toHaveBeenCalledWith('modal1', {animations: {dismissModal: {enabled: false}}});
+        expect(Navigation.dismissModal).toHaveBeenCalledWith('AppForm', {animations: {dismissModal: {enabled: false}}});
         expect(Navigation.popToRoot).toHaveBeenCalledTimes(1);
-        expect(Navigation.popToRoot).toHaveBeenCalledWith('screen1');
+        expect(Navigation.popToRoot).toHaveBeenCalledWith('Home');
     });
 
     it('should dismiss non-exception overlays via dismissAllOverlaysWithExceptions', async () => {
@@ -384,28 +384,28 @@ describe('dismissAllModalsAndPopToRoot', () => {
 
     it('should handle empty overlay stack gracefully', async () => {
         expect(NavigationStore.getOverlaysInStack()).toEqual([]);
-        NavigationStore.addScreenToStack('screen1');
+        NavigationStore.addScreenToStack('Home');
 
         await navigationModule.dismissAllModalsAndPopToRoot();
 
         expect(Navigation.dismissModal).not.toHaveBeenCalled();
         expect(Navigation.dismissOverlay).not.toHaveBeenCalled();
         expect(Navigation.popToRoot).toHaveBeenCalledTimes(1);
-        expect(Navigation.popToRoot).toHaveBeenCalledWith('screen1');
+        expect(Navigation.popToRoot).toHaveBeenCalledWith('Home');
     });
 
     it('should continue with popToRoot even if overlay dismissal fails', async () => {
         (Navigation.dismissOverlay as jest.Mock).mockRejectedValueOnce(new Error('Dismiss failed'));
 
         NavigationStore.addOverlayToStack('overlay1');
-        NavigationStore.addScreenToStack('screen1');
+        NavigationStore.addScreenToStack('Home');
 
         await expect(navigationModule.dismissAllModalsAndPopToRoot()).resolves.not.toThrow();
 
         expect(Navigation.dismissModal).not.toHaveBeenCalled();
         expect(Navigation.dismissOverlay).toHaveBeenCalledWith('overlay1');
         expect(Navigation.popToRoot).toHaveBeenCalledTimes(1);
-        expect(Navigation.popToRoot).toHaveBeenCalledWith('screen1');
+        expect(Navigation.popToRoot).toHaveBeenCalledWith('Home');
     });
 });
 
