@@ -123,11 +123,11 @@ android {
 
     signingConfigs {
         release {
-            if (project.hasProperty('DAAKIA_RELEASE_STORE_FILE')) {
-                storeFile file(DAAKIA_RELEASE_STORE_FILE)
-                storePassword DAAKIA_RELEASE_PASSWORD
-                keyAlias DAAKIA_RELEASE_KEY_ALIAS
-                keyPassword DAAKIA_RELEASE_PASSWORD
+            if (project.hasProperty('MATTERMOST_RELEASE_STORE_FILE')) {
+                storeFile file(MATTERMOST_RELEASE_STORE_FILE)
+                storePassword MATTERMOST_RELEASE_PASSWORD
+                keyAlias MATTERMOST_RELEASE_KEY_ALIAS
+                keyPassword MATTERMOST_RELEASE_PASSWORD
             }
         }
         debug {
@@ -146,7 +146,7 @@ android {
         }
     }
     buildTypes {
-        def useReleaseKey = project.hasProperty('DAAKIA_RELEASE_STORE_FILE')
+        def useReleaseKey = project.hasProperty('MATTERMOST_RELEASE_STORE_FILE')
         release {
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
