@@ -63,11 +63,11 @@ jest.mocked(File).mockImplementation((props) => (
         <Text testID={`${props.file.id}-enableSecureFilePreview`}>{String(props.enableSecureFilePreview)}</Text>
         <TouchableOpacity
             testID={`${props.file.id}-onPress`}
-            onPress={() => props.onPress(props.index)}
+            onPress={() => props.onPress?.(props.index)}
         />
         <TouchableOpacity
             testID={`${props.file.id}-updateFileForGallery`}
-            onPress={() => props.updateFileForGallery(props.index, {...props.file, uri: 'updated'})}
+            onPress={() => props.updateFileForGallery?.(props.index, {...props.file, uri: 'updated'})}
         />
     </View>
 ));
