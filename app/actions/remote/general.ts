@@ -35,12 +35,17 @@ async function getDeviceIdForPing(serverUrl: string, checkDeviceId: boolean) {
 }
 
 // Default timeout interval for ping is 5 seconds
-export const doPing = async (serverUrl: string, verifyPushProxy: boolean, timeoutInterval = 5000, preauthSecret?: string) => {
-    let client: Client;
-    try {
-        client = await NetworkManager.createClient(serverUrl, undefined, preauthSecret);
-    } catch (error) {
-        return {error};
+export const doPing = async (serverUrl: string, verifyPushProxy: boolean, timeoutInterval = 5000, preauthSecret?: string, client?: Client) => {
+    let pingClient: Client;
+
+    if (client) {
+        pingClient = client;
+    } else {
+        try {
+            pingClient = await NetworkManager.createClient(serverUrl, undefined, preauthSecret);
+        } catch (error) {
+            return {error};
+        }
     }
 
     const certificateError = defineMessage({
@@ -57,7 +62,7 @@ export const doPing = async (serverUrl: string, verifyPushProxy: boolean, timeou
 
     let response: ClientResponse;
     try {
-        response = await client.ping(deviceId, timeoutInterval);
+        response = await pingClient.ping(deviceId, timeoutInterval);
 
         if (response.code === 401) {
             // Don't invalidate the client since we want to eventually
@@ -67,7 +72,9 @@ export const doPing = async (serverUrl: string, verifyPushProxy: boolean, timeou
         }
 
         if (!response.ok) {
-            NetworkManager.invalidateClient(serverUrl);
+            if (!client) {
+                NetworkManager.invalidateClient(serverUrl);
+            }
             if (response.code === 403 && response.headers?.['x-reject-reason'] === 'pre-auth') {
                 return {error: {intl: pingError}, isPreauthError: true};
             }
@@ -82,7 +89,9 @@ export const doPing = async (serverUrl: string, verifyPushProxy: boolean, timeou
             }
         }
 
-        NetworkManager.invalidateClient(serverUrl);
+        if (!client) {
+            NetworkManager.invalidateClient(serverUrl);
+        }
         return {error: {intl: pingError}};
     }
 
