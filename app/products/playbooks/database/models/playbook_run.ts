@@ -51,8 +51,11 @@ export default class PlaybookRunModel extends Model implements PlaybookRunModelI
         [PLAYBOOK_CHECKLIST]: {type: 'has_many', foreignKey: 'run_id'},
     };
 
-    /** playbook_id : The id of the playbook this run belongs to */
+    /** playbook_id : The id of the playbook this run belongs to (empty string if it is a channel checklist) */
     @field('playbook_id') playbookId!: string;
+
+    /** type : The type of run ('playbook' or 'channelChecklist') */
+    @field('type') type!: string;
 
     /** name : Name of the playbook run */
     @field('name') name!: string;

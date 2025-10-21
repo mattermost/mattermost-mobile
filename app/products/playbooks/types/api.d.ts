@@ -108,7 +108,8 @@ type PlaybookRun = {
     create_at: number;
     end_at: number;
     post_id?: string;
-    playbook_id: string;
+    playbook_id?: string;
+    type?: 'playbook' | 'channelChecklist';
     current_status: PlaybookRunStatusType;
     last_status_update_at: number;
     reminder_post_id?: string;

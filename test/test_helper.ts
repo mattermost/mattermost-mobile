@@ -1211,6 +1211,7 @@ class TestHelperSingleton {
         return {
             ...this.fakeModel(),
             playbookId: this.generateId(),
+            type: 'playbook',
             postId: null,
             ownerUserId: this.basicUser?.id || '',
             teamId: this.basicTeam?.id || '',
