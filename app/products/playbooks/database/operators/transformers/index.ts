@@ -33,7 +33,7 @@ export const transformPlaybookRunRecord = ({action, database, value}: Transforme
     const fieldsMapper = (run: PlaybookRunModel) => {
         run._raw.id = isCreateAction ? (raw?.id ?? run.id) : run.id;
         run.playbookId = raw.playbook_id ?? record?.playbookId ?? '';
-        run.type = raw.type ?? record?.type ?? (run.id ? 'playbook' : 'channelChecklist');
+        run.type = raw.type ?? record?.type ?? (run.playbookId ? 'playbook' : 'channelChecklist');
         run.postId = raw.post_id ?? record?.postId ?? null;
         run.ownerUserId = raw.owner_user_id ?? record?.ownerUserId ?? '';
         run.teamId = raw.team_id ?? record?.teamId ?? '';

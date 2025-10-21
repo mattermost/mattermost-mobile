@@ -15,9 +15,7 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 
 function getPlaybookIdsFromRuns(runs: PlaybookRunModel[]) {
     return runs.reduce((acc, run) => {
-        if (run.playbookId) {
-            acc.add(run.playbookId);
-        }
+        acc.add(run.playbookId);
         return acc;
     }, new Set<string>());
 }
