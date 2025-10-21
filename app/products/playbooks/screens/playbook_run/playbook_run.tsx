@@ -87,6 +87,10 @@ const messages = defineMessages({
         id: 'playbooks.playbook_run.finish_run_button',
         defaultMessage: 'Finish Run',
     },
+    finishChannelChecklistButton: {
+        id: 'playbooks.playbook_run.finish_channel_checklist_button',
+        defaultMessage: 'Finish Channel Checklist',
+    },
 });
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
@@ -188,6 +192,7 @@ export default function PlaybookRun({
     const isFinished = isRunFinished(playbookRun);
     const readOnly = isFinished || !isParticipant;
 
+    const finishRunMessage = playbookRun?.type === 'channelCheckList' ? messages.finishChannelChecklistButton : messages.finishRunButton;
     const containerStyle = useMemo(() => {
         return [
             styles.container,
@@ -334,12 +339,14 @@ export default function PlaybookRun({
                                 )}
                             </View>
                         )}
-                        <StatusUpdateIndicator
-                            isFinished={isFinished}
-                            timestamp={getRunScheduledTimestamp(playbookRun)}
-                            isParticipant={isParticipant}
-                            playbookRunId={playbookRun.id}
-                        />
+                        {playbookRun.type !== 'channelChecklist' && (
+                            <StatusUpdateIndicator
+                                isFinished={isFinished}
+                                timestamp={getRunScheduledTimestamp(playbookRun)}
+                                isParticipant={isParticipant}
+                                playbookRunId={playbookRun.id}
+                            />
+                        )}
                     </View>
                     <View style={styles.tasksContainer}>
                         <View style={styles.tasksHeaderContainer}>
@@ -363,7 +370,7 @@ export default function PlaybookRun({
                     </View>
                     {!readOnly && (
                         <Button
-                            text={intl.formatMessage(messages.finishRunButton)}
+                            text={intl.formatMessage(finishRunMessage)}
                             onPress={handleFinishRun}
                             theme={theme}
                             size='lg'
