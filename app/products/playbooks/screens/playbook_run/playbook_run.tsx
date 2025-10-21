@@ -71,9 +71,17 @@ const messages = defineMessages({
         id: 'playbooks.playbook_run.finish_run_dialog_title',
         defaultMessage: 'Finish Run',
     },
+    finishChecklistDialogTitle: {
+        id: 'playbooks.playbook_run.finish_checklist_dialog_title',
+        defaultMessage: 'Finish Channel Checklist',
+    },
     finishRunDialogDescription: {
         id: 'playbooks.playbook_run.finish_run_dialog_description',
         defaultMessage: 'There are {pendingCount} {pendingCount, plural, =1 {task} other {tasks}} pending.\n\nAre you sure you want to finish the run for all participants?',
+    },
+    finishChecklistDialogDescription: {
+        id: 'playbooks.playbook_run.finish_checklist_dialog_description',
+        defaultMessage: 'There are {pendingCount} {pendingCount, plural, =1 {task} other {tasks}} pending.\n\nAre you sure you want to mark this as finished?',
     },
     finishRunDialogCancel: {
         id: 'playbooks.playbook_run.finish_run_dialog_cancel',
@@ -192,7 +200,11 @@ export default function PlaybookRun({
     const isFinished = isRunFinished(playbookRun);
     const readOnly = isFinished || !isParticipant;
 
-    const finishRunMessage = playbookRun?.type === 'channelCheckList' ? messages.finishChannelChecklistButton : messages.finishRunButton;
+    const playbookRunType = useMemo(() => playbookRun?.type || 'playbook', [playbookRun]);
+    const finishRunMessage = useMemo(() => (playbookRunType === 'channelChecklist' ? messages.finishChannelChecklistButton : messages.finishRunButton), [playbookRunType]);
+    const finishDialogTitle = useMemo(() => (playbookRunType === 'channelChecklist' ? messages.finishChecklistDialogTitle : messages.finishRunDialogTitle), [playbookRunType]);
+    const finishDialogDescription = useMemo(() => (playbookRunType === 'channelChecklist' ? messages.finishChecklistDialogDescription : messages.finishRunDialogDescription), [playbookRunType]);
+
     const containerStyle = useMemo(() => {
         return [
             styles.container,
@@ -244,8 +256,8 @@ export default function PlaybookRun({
         }
 
         Alert.alert(
-            intl.formatMessage(messages.finishRunDialogTitle),
-            intl.formatMessage(messages.finishRunDialogDescription, {pendingCount}),
+            intl.formatMessage(finishDialogTitle),
+            intl.formatMessage(finishDialogDescription, {pendingCount}),
             [
                 {
                     text: intl.formatMessage(messages.finishRunDialogCancel),
@@ -263,7 +275,7 @@ export default function PlaybookRun({
                 },
             ],
         );
-    }, [intl, pendingCount, playbookRun, serverUrl]);
+    }, [intl, pendingCount, playbookRun, serverUrl, finishDialogTitle, finishDialogDescription]);
 
     const ownerAction = useMemo(() => {
         if (readOnly) {
@@ -339,7 +351,7 @@ export default function PlaybookRun({
                                 )}
                             </View>
                         )}
-                        {playbookRun.type !== 'channelChecklist' && (
+                        {playbookRunType !== 'channelChecklist' && (
                             <StatusUpdateIndicator
                                 isFinished={isFinished}
                                 timestamp={getRunScheduledTimestamp(playbookRun)}
