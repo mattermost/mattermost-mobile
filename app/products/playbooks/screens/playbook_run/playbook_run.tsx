@@ -3,25 +3,27 @@
 
 import React, {useCallback, useMemo} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
-import {View, Text, ScrollView, Alert} from 'react-native';
+import {View, Text, ScrollView, Alert, TouchableOpacity} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import Button from '@components/button';
 import UserChip from '@components/chips/user_chip';
+import CompassIcon from '@components/compass_icon';
 import Markdown from '@components/markdown';
 import Tag from '@components/tag';
 import UserAvatarsStack from '@components/user_avatars_stack';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import {finishRun, setOwner} from '@playbooks/actions/remote/runs';
+import {finishRun, setOwner, renamePlaybookRun} from '@playbooks/actions/remote/runs';
+import {PLAYBOOK_RUN_TYPES} from '@playbooks/constants/playbook_run';
 import {getRunScheduledTimestamp, isRunFinished} from '@playbooks/utils/run';
 import {openUserProfileModal, popTopScreen} from '@screens/navigation';
 import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import {goToSelectUser} from '../navigation';
+import {goToSelectUser, goToRenamePlaybookRun} from '../navigation';
 
 import ChecklistList from './checklist_list';
 import ErrorState from './error_state';
@@ -52,11 +54,11 @@ const messages = defineMessages({
     },
     participantsTitle: {
         id: 'playbooks.playbook_run.participants_title',
-        defaultMessage: 'Run Participants',
+        defaultMessage: 'Participants',
     },
     runDetails: {
         id: 'playbooks.playbook_run.run_details',
-        defaultMessage: 'Run details',
+        defaultMessage: 'Checklist details',
     },
     overdue: {
         id: 'playbooks.playbook_run.overdue',
@@ -68,11 +70,11 @@ const messages = defineMessages({
     },
     finishRunDialogTitle: {
         id: 'playbooks.playbook_run.finish_run_dialog_title',
-        defaultMessage: 'Finish Run',
+        defaultMessage: 'Finish',
     },
     finishRunDialogDescription: {
         id: 'playbooks.playbook_run.finish_run_dialog_description',
-        defaultMessage: 'There are {pendingCount} {pendingCount, plural, =1 {task} other {tasks}} pending.\n\nAre you sure you want to finish the run for all participants?',
+        defaultMessage: 'There are {pendingCount} {pendingCount, plural, =1 {task} other {tasks}} pending.\n\nAre you sure you want to finish the checklist for all participants?',
     },
     finishRunDialogCancel: {
         id: 'playbooks.playbook_run.finish_run_dialog_cancel',
@@ -84,7 +86,7 @@ const messages = defineMessages({
     },
     finishRunButton: {
         id: 'playbooks.playbook_run.finish_run_button',
-        defaultMessage: 'Finish Run',
+        defaultMessage: 'Finish',
     },
 });
 
@@ -100,9 +102,20 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         gap: 10,
         alignItems: 'flex-start',
     },
+    titleRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
     title: {
         ...typography('Heading', 400, 'SemiBold'),
         color: theme.centerChannelColor,
+        flex: 1,
+    },
+    editIcon: {
+        fontSize: 18,
+        color: changeOpacity(theme.centerChannelColor, 0.56),
+        paddingHorizontal: 4,
     },
     infoText: {
         ...typography('Body', 100, 'Regular'),
@@ -186,6 +199,8 @@ export default function PlaybookRun({
     const isFinished = isRunFinished(playbookRun);
     const readOnly = isFinished || !isParticipant;
 
+    const playbookRunType = useMemo(() => playbookRun?.type || 'playbook', [playbookRun]);
+
     const containerStyle = useMemo(() => {
         return [
             styles.container,
@@ -230,6 +245,25 @@ export default function PlaybookRun({
             handleSelectOwner,
         );
     }, [handleSelectOwner, intl, owner, participants, playbookRun?.name, theme]);
+
+    const handleRename = useCallback(async (newName: string) => {
+        if (!playbookRun) {
+            return;
+        }
+
+        const res = await renamePlaybookRun(serverUrl, playbookRun.id, newName);
+        if (res.error) {
+            showPlaybookErrorSnackbar();
+        }
+    }, [playbookRun, serverUrl]);
+
+    const handleEditPress = useCallback(() => {
+        if (!playbookRun) {
+            return;
+        }
+
+        goToRenamePlaybookRun(intl, theme, playbookRun.name, handleRename);
+    }, [intl, theme, playbookRun, handleRename]);
 
     const handleFinishRun = useCallback(() => {
         if (!playbookRun) {
@@ -279,7 +313,15 @@ export default function PlaybookRun({
                 <ScrollView contentContainerStyle={styles.scrollView}>
                     <View style={styles.intro}>
                         <View style={styles.titleAndDescription}>
-                            <Text style={styles.title}>{playbookRun.name}</Text>
+                            <View style={styles.titleRow}>
+                                <Text style={styles.title}>{playbookRun.name}</Text>
+                                <TouchableOpacity onPress={handleEditPress}>
+                                    <CompassIcon
+                                        name='pencil-outline'
+                                        style={styles.editIcon}
+                                    />
+                                </TouchableOpacity>
+                            </View>
                             {isFinished && (
                                 <Tag
                                     message={messages.finished}
@@ -330,12 +372,14 @@ export default function PlaybookRun({
                                 )}
                             </View>
                         )}
-                        <StatusUpdateIndicator
-                            isFinished={isFinished}
-                            timestamp={getRunScheduledTimestamp(playbookRun)}
-                            isParticipant={isParticipant}
-                            playbookRunId={playbookRun.id}
-                        />
+                        {playbookRunType !== PLAYBOOK_RUN_TYPES.ChannelChecklistType && (
+                            <StatusUpdateIndicator
+                                isFinished={isFinished}
+                                timestamp={getRunScheduledTimestamp(playbookRun)}
+                                isParticipant={isParticipant}
+                                playbookRunId={playbookRun.id}
+                            />
+                        )}
                     </View>
                     <View style={styles.tasksContainer}>
                         <View style={styles.tasksHeaderContainer}>
@@ -353,6 +397,7 @@ export default function PlaybookRun({
                             checklists={checklists}
                             channelId={channelId}
                             playbookRunId={playbookRun.id}
+                            playbookRunName={playbookRun.name}
                             isFinished={isRunFinished(playbookRun)}
                             isParticipant={isParticipant}
                         />

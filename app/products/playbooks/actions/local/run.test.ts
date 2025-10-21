@@ -80,7 +80,7 @@ describe('setOwner', () => {
 
         const {data, error} = await setOwner(serverUrl, nonExistentRunId, newOwnerId);
 
-        expect(error).toBe('Run not found');
+        expect(error).toBe('Checklist not found');
         expect(data).toBeUndefined();
     });
 

@@ -33,11 +33,11 @@ describe('Playbooks Navigation', () => {
 
             expect(mockIntl.formatMessage).toHaveBeenCalledWith({
                 id: 'playbooks.playbooks_runs.title',
-                defaultMessage: 'Playbook runs',
+                defaultMessage: 'Playbook checklists',
             });
             expect(goToScreen).toHaveBeenCalledWith(
                 Screens.PLAYBOOKS_RUNS,
-                'Playbook runs',
+                'Playbook checklists',
                 {channelId},
                 expect.objectContaining({
                     topBar: expect.objectContaining({
@@ -59,11 +59,11 @@ describe('Playbooks Navigation', () => {
 
             expect(mockIntl.formatMessage).toHaveBeenCalledWith({
                 id: 'playbooks.playbook_run.title',
-                defaultMessage: 'Playbook run',
+                defaultMessage: 'Playbook checklist',
             });
             expect(goToScreen).toHaveBeenCalledWith(
                 Screens.PLAYBOOK_RUN,
-                'Playbook run',
+                'Playbook checklist',
                 {playbookRunId},
                 {},
             );
@@ -273,11 +273,11 @@ describe('Playbooks Navigation', () => {
 
             expect(mockIntl.formatMessage).toHaveBeenCalledWith({
                 id: 'playbooks.participant_playbooks.title',
-                defaultMessage: 'Playbook runs',
+                defaultMessage: 'Playbook checklists',
             });
             expect(goToScreen).toHaveBeenCalledWith(
                 Screens.PARTICIPANT_PLAYBOOKS,
-                'Playbook runs',
+                'Playbook checklists',
                 {},
                 {},
             );
@@ -307,11 +307,11 @@ describe('Playbooks Navigation', () => {
 
             expect(mockIntl.formatMessage).toHaveBeenCalledWith({
                 id: 'playbooks.playbook_run.title',
-                defaultMessage: 'Playbook run',
+                defaultMessage: 'Playbook checklist',
             });
             expect(goToScreen).toHaveBeenCalledWith(
                 Screens.PLAYBOOK_RUN,
-                'Playbook run',
+                'Playbook checklist',
                 {playbookRunId: mockPlaybookRun.id},
                 {},
             );
