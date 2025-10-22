@@ -3,7 +3,7 @@
 
 import deepEqual from 'deep-equal';
 import merge from 'deepmerge';
-import {StatusBar, StyleSheet} from 'react-native';
+import {Appearance, Platform, StatusBar, StyleSheet, type ColorSchemeName, type StatusBarStyle} from 'react-native';
 import tinyColor from 'tinycolor2';
 
 import {Preferences} from '@constants';
@@ -16,6 +16,60 @@ import type {NamedStyles} from '@typings/global/styles';
 import type {Options} from 'react-native-navigation';
 
 const rgbPattern = /^rgba?\((\d+),(\d+),(\d+)(?:,([\d.]+))?\)$/;
+const ANDROID_SYSTEM_STATUS_BAR_API = 36;
+
+type NavigationStatusBarStyle = 'light' | 'dark';
+
+type ComputedStatusBarStyles = {
+    barStyle: StatusBarStyle;
+    navigationStyle: NavigationStatusBarStyle;
+};
+
+type StatusBarComputationOptions = {
+    forceSystemScheme?: boolean;
+    systemScheme?: ColorSchemeName;
+};
+
+function getAndroidVersion(): number {
+    const version = Platform.Version;
+    if (typeof version === 'string') {
+        const parsed = parseInt(version, 10);
+        return Number.isNaN(parsed) ? 0 : parsed;
+    }
+
+    return typeof version === 'number' ? version : 0;
+}
+
+function shouldFollowSystemStatusBarScheme(): boolean {
+    if (Platform.OS !== 'android') {
+        return false;
+    }
+
+    return getAndroidVersion() >= ANDROID_SYSTEM_STATUS_BAR_API;
+}
+
+export function getStatusBarStylesFromColor(color: string, options: StatusBarComputationOptions = {}): ComputedStatusBarStyles {
+    let useLightContent = tinyColor(color).isDark();
+
+    const followSystemScheme = options.forceSystemScheme ?? shouldFollowSystemStatusBarScheme();
+    if (followSystemScheme) {
+        const systemScheme = options.systemScheme ?? Appearance.getColorScheme();
+        if (systemScheme === 'light') {
+            useLightContent = false;
+        } else if (systemScheme === 'dark') {
+            useLightContent = true;
+        }
+    }
+
+    return {
+        barStyle: useLightContent ? 'light-content' : 'dark-content',
+        navigationStyle: useLightContent ? 'light' : 'dark',
+    };
+}
+
+export function getStatusBarStyles(theme: Theme, statusBarColor?: string): ComputedStatusBarStyles {
+    return getStatusBarStylesFromColor(statusBarColor || theme.sidebarBg);
+}
 
 export function getComponents(inColor: string): {red: number; green: number; blue: number; alpha: number} {
     let color = inColor;
@@ -82,7 +136,8 @@ export function concatStyles<T>(...styles: T[]) {
 }
 
 export function setNavigatorStyles(componentId: string, theme: Theme, additionalOptions: Options = {}, statusBarColor?: string) {
-    const isDark = tinyColor(statusBarColor || theme.sidebarBg).isDark();
+    const statusBarStyles = getStatusBarStyles(theme, statusBarColor);
+    const backgroundColor = statusBarColor || theme.sidebarBg;
     const options: Options = {
         topBar: {
             title: {
@@ -95,8 +150,8 @@ export function setNavigatorStyles(componentId: string, theme: Theme, additional
             rightButtonColor: theme.sidebarHeaderTextColor,
         },
         statusBar: {
-            backgroundColor: theme.sidebarBg,
-            style: isDark ? 'light' : 'dark',
+            backgroundColor,
+            style: statusBarStyles.navigationStyle,
         },
     };
 
@@ -123,7 +178,7 @@ export function setNavigatorStyles(componentId: string, theme: Theme, additional
             color: theme.sidebarHeaderTextColor,
         };
     }
-    StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
+    StatusBar.setBarStyle(statusBarStyles.barStyle);
 
     const mergeOptions = merge(options, additionalOptions);
 

@@ -13,6 +13,7 @@ import {
     concatStyles,
     getComponents,
     getKeyboardAppearanceFromTheme,
+    getStatusBarStylesFromColor,
     hexToHue,
     makeStyleSheetFromTheme,
     setNavigationStackStyles,
@@ -122,6 +123,20 @@ describe('concatStyles', () => {
         const style2 = {color: 'blue'} as any;
         const result = concatStyles(style1, style2);
         expect(result).toEqual([style1, style2]);
+    });
+});
+
+describe('getStatusBarStylesFromColor', () => {
+    it('should use light content for dark backgrounds by default', () => {
+        const result = getStatusBarStylesFromColor('#000000');
+        expect(result.barStyle).toBe('light-content');
+        expect(result.navigationStyle).toBe('light');
+    });
+
+    it('should follow the provided system scheme when forced', () => {
+        const result = getStatusBarStylesFromColor('#000000', {forceSystemScheme: true, systemScheme: 'light'});
+        expect(result.barStyle).toBe('dark-content');
+        expect(result.navigationStyle).toBe('dark');
     });
 });
 

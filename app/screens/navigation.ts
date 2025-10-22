@@ -6,7 +6,6 @@
 import merge from 'deepmerge';
 import {Appearance, DeviceEventEmitter, StatusBar, Platform, Alert, type EmitterSubscription, Keyboard} from 'react-native';
 import {type ComponentWillAppearEvent, type ImageResource, type LayoutOrientation, Navigation, type Options, OptionsModalPresentationStyle, type OptionsTopBarButton, type ScreenPoppedEvent, type EventSubscription} from 'react-native-navigation';
-import tinyColor from 'tinycolor2';
 
 import CompassIcon from '@components/compass_icon';
 import {Events, Screens, Launch} from '@constants';
@@ -17,7 +16,7 @@ import NavigationStore from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
 import {logError} from '@utils/log';
 import {appearanceControlledScreens, mergeNavigationOptions} from '@utils/navigation';
-import {changeOpacity, setNavigatorStyles} from '@utils/theme';
+import {changeOpacity, getStatusBarStyles, setNavigatorStyles} from '@utils/theme';
 
 import type {BottomSheetFooterProps} from '@gorhom/bottom-sheet';
 import type {default as UserProfileScreen} from '@screens/user_profile';
@@ -286,8 +285,8 @@ export function openToS() {
 
 export function resetToHome(passProps: LaunchProps = {launchType: Launch.Normal}) {
     const theme = getThemeFromState();
-    const isDark = tinyColor(theme.sidebarBg).isDark();
-    StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
+    const statusBarStyles = getStatusBarStyles(theme);
+    StatusBar.setBarStyle(statusBarStyles.barStyle);
 
     if (!passProps.coldStart && (passProps.launchType === Launch.AddServer || passProps.launchType === Launch.AddServerFromDeepLink)) {
         dismissModal({componentId: Screens.SERVER});
@@ -313,6 +312,7 @@ export function resetToHome(passProps: LaunchProps = {launchType: Launch.Normal}
                     statusBar: {
                         visible: true,
                         backgroundColor: theme.sidebarBg,
+                        style: statusBarStyles.navigationStyle,
                     },
                     topBar: {
                         visible: false,
@@ -337,8 +337,8 @@ export function resetToHome(passProps: LaunchProps = {launchType: Launch.Normal}
 
 export function resetToSelectServer(passProps: LaunchProps) {
     const theme = getDefaultThemeByAppearance();
-    const isDark = tinyColor(theme.sidebarBg).isDark();
-    StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
+    const statusBarStyles = getStatusBarStyles(theme);
+    StatusBar.setBarStyle(statusBarStyles.barStyle);
 
     const children = [{
         component: {
@@ -356,6 +356,7 @@ export function resetToSelectServer(passProps: LaunchProps) {
                 statusBar: {
                     visible: true,
                     backgroundColor: theme.sidebarBg,
+                    style: statusBarStyles.navigationStyle,
                 },
                 topBar: {
                     backButton: {
@@ -383,8 +384,8 @@ export function resetToSelectServer(passProps: LaunchProps) {
 
 export function resetToOnboarding(passProps: LaunchProps) {
     const theme = getDefaultThemeByAppearance();
-    const isDark = tinyColor(theme.sidebarBg).isDark();
-    StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
+    const statusBarStyles = getStatusBarStyles(theme);
+    StatusBar.setBarStyle(statusBarStyles.barStyle);
 
     const children = [{
         component: {
@@ -402,6 +403,7 @@ export function resetToOnboarding(passProps: LaunchProps) {
                 statusBar: {
                     visible: true,
                     backgroundColor: theme.sidebarBg,
+                    style: statusBarStyles.navigationStyle,
                 },
                 topBar: {
                     backButton: {
@@ -429,8 +431,8 @@ export function resetToOnboarding(passProps: LaunchProps) {
 
 export function resetToTeams() {
     const theme = getThemeFromState();
-    const isDark = tinyColor(theme.sidebarBg).isDark();
-    StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
+    const statusBarStyles = getStatusBarStyles(theme);
+    StatusBar.setBarStyle(statusBarStyles.barStyle);
 
     return Navigation.setRoot({
         root: {
@@ -446,6 +448,7 @@ export function resetToTeams() {
                             statusBar: {
                                 visible: true,
                                 backgroundColor: theme.sidebarBg,
+                                style: statusBarStyles.navigationStyle,
                             },
                             topBar: {
                                 visible: false,
@@ -472,7 +475,7 @@ export function goToScreen(name: AvailableScreens, title: string, passProps = {}
     }
 
     const theme = getThemeFromState();
-    const isDark = tinyColor(theme.sidebarBg).isDark();
+    const statusBarStyles = getStatusBarStyles(theme);
     const componentId = NavigationStore.getVisibleScreen();
     if (!componentId) {
         logError('Trying to go to screen without any screen on the navigation store');
@@ -489,7 +492,7 @@ export function goToScreen(name: AvailableScreens, title: string, passProps = {}
             right: {enabled: false},
         },
         statusBar: {
-            style: isDark ? 'light' : 'dark',
+            style: statusBarStyles.navigationStyle,
             backgroundColor: theme.sidebarBg,
         },
         topBar: {
@@ -608,6 +611,7 @@ export function showModal(name: AvailableScreens, title: string, passProps = {},
     }
 
     const theme = getThemeFromState();
+    const statusBarStyles = getStatusBarStyles(theme);
     const modalPresentationStyle: OptionsModalPresentationStyle = Platform.OS === 'ios' ? OptionsModalPresentationStyle.pageSheet : OptionsModalPresentationStyle.none;
     const defaultOptions: Options = {
         modalPresentationStyle,
@@ -617,6 +621,7 @@ export function showModal(name: AvailableScreens, title: string, passProps = {},
         statusBar: {
             visible: true,
             backgroundColor: theme.sidebarBg,
+            style: statusBarStyles.navigationStyle,
         },
         topBar: {
             animate: true,
@@ -944,4 +949,3 @@ export async function openUserProfileModal(
     Keyboard.dismiss();
     openAsBottomSheet({screen, title, theme, closeButtonId, props: {...props}});
 }
-

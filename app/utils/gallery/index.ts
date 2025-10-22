@@ -11,6 +11,7 @@ import {Events, Screens} from '@constants';
 import {allOrientations, showOverlay} from '@screens/navigation';
 import {isImage, isVideo} from '@utils/file';
 import {generateId} from '@utils/general';
+import {getStatusBarStylesFromColor} from '@utils/theme';
 
 import type {GalleryItemType, GalleryManagerSharedValues} from '@typings/screens/gallery';
 
@@ -153,6 +154,7 @@ export function openGalleryAtIndex(galleryIdentifier: string, initialIndex: numb
     const layout: OptionsLayout = {
         orientation: allOrientations,
     };
+    const statusBarStyles = getStatusBarStylesFromColor('#000');
     const options: Options = {
         layout,
         topBar: {
@@ -163,7 +165,7 @@ export function openGalleryAtIndex(galleryIdentifier: string, initialIndex: numb
         },
         statusBar: {
             backgroundColor: '#000',
-            style: 'light',
+            style: statusBarStyles.navigationStyle,
         },
         animations: {
             showModal: {
