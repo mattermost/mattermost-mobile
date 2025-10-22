@@ -78,7 +78,7 @@ type Props = {
     owner?: UserModel;
 };
 
-const bottomSheetTitleMessage = defineMessage({id: 'playbook.participants', defaultMessage: 'Run Participants'});
+const bottomSheetTitleMessage = defineMessage({id: 'playbook.participants', defaultMessage: 'Participants'});
 
 const PlaybookCard = ({
     run,

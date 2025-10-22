@@ -15,7 +15,7 @@ export async function handlePlaybookRuns(serverUrl: string, runs: PlaybookRun[],
         });
         return {data};
     } catch (error) {
-        logError('failed to handle playbook runs', error);
+        logError('failed to handle playbook checklist', error);
         return {error};
     }
 }
@@ -25,7 +25,7 @@ export async function setOwner(serverUrl: string, playbookRunId: string, ownerId
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const run = await getPlaybookRunById(database, playbookRunId);
         if (!run) {
-            return {error: 'Run not found'};
+            return {error: 'Checklist not found'};
         }
 
         await database.write(async () => {

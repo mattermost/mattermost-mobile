@@ -14,7 +14,7 @@ import type {Options as RNNOptions} from 'react-native-navigation';
 
 export function goToPlaybookRuns(intl: IntlShape, channelId: string, channelName: string) {
     const theme = getThemeFromState();
-    const title = intl.formatMessage({id: 'playbooks.playbooks_runs.title', defaultMessage: 'Playbook runs'});
+    const title = intl.formatMessage({id: 'playbooks.playbooks_runs.title', defaultMessage: 'Playbook checklists'});
     goToScreen(Screens.PLAYBOOKS_RUNS, title, {channelId}, {
         topBar: {
             subtitle: {
@@ -26,12 +26,12 @@ export function goToPlaybookRuns(intl: IntlShape, channelId: string, channelName
 }
 
 export function goToParticipantPlaybooks(intl: IntlShape) {
-    const title = intl.formatMessage({id: 'playbooks.participant_playbooks.title', defaultMessage: 'Playbook runs'});
+    const title = intl.formatMessage({id: 'playbooks.participant_playbooks.title', defaultMessage: 'Playbook checklists'});
     goToScreen(Screens.PARTICIPANT_PLAYBOOKS, title, {}, {});
 }
 
 export async function goToPlaybookRun(intl: IntlShape, playbookRunId: string, playbookRun?: PlaybookRun) {
-    const title = intl.formatMessage({id: 'playbooks.playbook_run.title', defaultMessage: 'Playbook run'});
+    const title = intl.formatMessage({id: 'playbooks.playbook_run.title', defaultMessage: 'Playbook checklist'});
     goToScreen(Screens.PLAYBOOK_RUN, title, {playbookRunId, playbookRun}, {});
 }
 
@@ -47,7 +47,7 @@ export async function goToPlaybookRunWithChannelSwitch(intl: IntlShape, serverUr
     }
 
     // Then navigate to the playbook run
-    const title = intl.formatMessage({id: 'playbooks.playbook_run.title', defaultMessage: 'Playbook run'});
+    const title = intl.formatMessage({id: 'playbooks.playbook_run.title', defaultMessage: 'Playbook checklist'});
     goToScreen(Screens.PLAYBOOK_RUN, title, {playbookRunId: playbookRun.id}, {});
 }
 
@@ -121,7 +121,7 @@ export async function goToSelectPlaybook(
     intl: IntlShape,
     theme: Theme,
 ) {
-    const title = intl.formatMessage({id: 'playbooks.select_playbook.title', defaultMessage: 'Start a run'});
+    const title = intl.formatMessage({id: 'playbooks.select_playbook.title', defaultMessage: 'New'});
     goToScreen(Screens.PLAYBOOKS_SELECT_PLAYBOOK, title, {}, {
         topBar: {
             subtitle: {
@@ -133,7 +133,7 @@ export async function goToSelectPlaybook(
 }
 
 export async function goToStartARun(intl: IntlShape, theme: Theme, playbook: Playbook, onRunCreated: (run: PlaybookRun) => void) {
-    const title = intl.formatMessage({id: 'playbooks.start_a_run.title', defaultMessage: 'Start a run'});
+    const title = intl.formatMessage({id: 'playbooks.start_a_run.title', defaultMessage: 'New'});
     const subtitle = playbook.title;
     goToScreen(Screens.PLAYBOOKS_START_A_RUN, title, {playbook, onRunCreated}, {
         topBar: {

@@ -75,7 +75,7 @@ const PlaybooksButton = () => {
                 />
                 <FormattedText
                     id='playbooks.home_button.title'
-                    defaultMessage='Playbook runs'
+                    defaultMessage='Playbook checklists'
                     style={textStyle}
                 />
             </View>

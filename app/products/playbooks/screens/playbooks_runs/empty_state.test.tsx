@@ -12,8 +12,8 @@ describe('EmptyState', () => {
         );
 
         // Verify correct title and description are shown
-        expect(getByText('No in progress runs')).toBeTruthy();
-        expect(getByText('When a run starts in this channel, you’ll see it here.')).toBeTruthy();
+        expect(getByText('Nothing in progress')).toBeTruthy();
+        expect(getByText('When a checklist starts in this channel, you’ll see it here.')).toBeTruthy();
     });
 
     it('renders finished empty state correctly', () => {
@@ -22,7 +22,7 @@ describe('EmptyState', () => {
         );
 
         // Verify correct title and description are shown
-        expect(getByText('No finished runs')).toBeTruthy();
-        expect(getByText('When a run in this channel finishes, you’ll see it here.')).toBeTruthy();
+        expect(getByText('Nothing finished')).toBeTruthy();
+        expect(getByText('When a checklist in this channel finishes, you’ll see it here.')).toBeTruthy();
     });
 });

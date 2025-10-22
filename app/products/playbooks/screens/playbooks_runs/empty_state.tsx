@@ -40,19 +40,19 @@ const getStylesFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
 const messages = defineMessages({
     inProgressTitle: {
         id: 'playbooks.runs.in_progress.title',
-        defaultMessage: 'No in progress runs',
+        defaultMessage: 'Nothing in progress',
     },
     finishedTitle: {
         id: 'playbooks.runs.finished.title',
-        defaultMessage: 'No finished runs',
+        defaultMessage: 'Nothing finished',
     },
     inProgressDescription: {
         id: 'playbooks.runs.in_progress.description',
-        defaultMessage: 'When a run starts in this channel, you’ll see it here.',
+        defaultMessage: 'When a checklist starts in this channel, you’ll see it here.',
     },
     finishedDescription: {
         id: 'playbooks.runs.finished.description',
-        defaultMessage: 'When a run in this channel finishes, you’ll see it here.',
+        defaultMessage: 'When a checklist in this channel finishes, you’ll see it here.',
     },
 });
 

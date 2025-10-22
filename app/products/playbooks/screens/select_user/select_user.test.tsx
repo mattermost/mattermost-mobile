@@ -288,7 +288,7 @@ describe('SelectUser', () => {
         const sections = customSection(profiles);
 
         expect(sections).toHaveLength(2);
-        expect(sections[0].id).toBe('RUN PARTICIPANTS');
+        expect(sections[0].id).toBe('PARTICIPANTS');
         expect(sections[0].data).toContain(participantUser);
         expect(sections[1].id).toBe('NOT PARTICIPATING');
         expect(sections[1].data).toContain(nonParticipantUser);
