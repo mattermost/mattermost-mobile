@@ -60,7 +60,7 @@ const messages = defineMessages({
     },
     cachedWarningMessage: {
         id: 'playbooks.participant_playbooks.cached_warning_message',
-        defaultMessage: 'Showing cached data only. Some playbook runs or updates may be missing from this list.',
+        defaultMessage: 'Showing cached data only. Some information may be missing from this list.',
     },
     tabInProgress: {
         id: 'playbooks.participant_playbooks.tab_in_progress',

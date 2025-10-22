@@ -186,11 +186,11 @@ function StartARun({
                 <FloatingTextInput
                     label={intl.formatMessage({
                         id: 'playbooks.start_run.run_name_label',
-                        defaultMessage: 'Run name',
+                        defaultMessage: 'Name',
                     })}
                     placeholder={intl.formatMessage({
                         id: 'playbooks.start_run.run_name_placeholder',
-                        defaultMessage: 'Add a name for your run',
+                        defaultMessage: 'Add a name',
                     })}
                     value={runName}
                     onChangeText={setRunName}
@@ -198,13 +198,13 @@ function StartARun({
                     testID='start_run.run_name_input'
                     error={runName.trim() ? undefined : intl.formatMessage({
                         id: 'playbooks.start_run.run_name_error',
-                        defaultMessage: 'Please add a name for this run',
+                        defaultMessage: 'Please add a name',
                     })}
                 />
                 <FloatingTextInput
                     label={intl.formatMessage({
                         id: 'playbooks.start_run.run_description_label',
-                        defaultMessage: 'Run description',
+                        defaultMessage: 'Description',
                     })}
                     value={runDescription}
                     onChangeText={setRunDescription}

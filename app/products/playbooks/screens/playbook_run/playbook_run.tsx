@@ -53,11 +53,11 @@ const messages = defineMessages({
     },
     participantsTitle: {
         id: 'playbooks.playbook_run.participants_title',
-        defaultMessage: 'Run Participants',
+        defaultMessage: 'Participants',
     },
     runDetails: {
         id: 'playbooks.playbook_run.run_details',
-        defaultMessage: 'Run details',
+        defaultMessage: 'Checklist details',
     },
     overdue: {
         id: 'playbooks.playbook_run.overdue',
@@ -69,19 +69,11 @@ const messages = defineMessages({
     },
     finishRunDialogTitle: {
         id: 'playbooks.playbook_run.finish_run_dialog_title',
-        defaultMessage: 'Finish Run',
-    },
-    finishChecklistDialogTitle: {
-        id: 'playbooks.playbook_run.finish_checklist_dialog_title',
-        defaultMessage: 'Finish Channel Checklist',
+        defaultMessage: 'Finish',
     },
     finishRunDialogDescription: {
         id: 'playbooks.playbook_run.finish_run_dialog_description',
-        defaultMessage: 'There are {pendingCount} {pendingCount, plural, =1 {task} other {tasks}} pending.\n\nAre you sure you want to finish the run for all participants?',
-    },
-    finishChecklistDialogDescription: {
-        id: 'playbooks.playbook_run.finish_checklist_dialog_description',
-        defaultMessage: 'There are {pendingCount} {pendingCount, plural, =1 {task} other {tasks}} pending.\n\nAre you sure you want to mark this as finished?',
+        defaultMessage: 'There are {pendingCount} {pendingCount, plural, =1 {task} other {tasks}} pending.\n\nAre you sure you want to finish the checklist for all participants?',
     },
     finishRunDialogCancel: {
         id: 'playbooks.playbook_run.finish_run_dialog_cancel',
@@ -93,11 +85,7 @@ const messages = defineMessages({
     },
     finishRunButton: {
         id: 'playbooks.playbook_run.finish_run_button',
-        defaultMessage: 'Finish Run',
-    },
-    finishChannelChecklistButton: {
-        id: 'playbooks.playbook_run.finish_channel_checklist_button',
-        defaultMessage: 'Finish Channel Checklist',
+        defaultMessage: 'Finish Checklist',
     },
 });
 
@@ -201,9 +189,6 @@ export default function PlaybookRun({
     const readOnly = isFinished || !isParticipant;
 
     const playbookRunType = useMemo(() => playbookRun?.type || 'playbook', [playbookRun]);
-    const finishRunMessage = useMemo(() => (playbookRunType === PlaybookRunTypes.ChannelChecklistType ? messages.finishChannelChecklistButton : messages.finishRunButton), [playbookRunType]);
-    const finishDialogTitle = useMemo(() => (playbookRunType === PlaybookRunTypes.ChannelChecklistType ? messages.finishChecklistDialogTitle : messages.finishRunDialogTitle), [playbookRunType]);
-    const finishDialogDescription = useMemo(() => (playbookRunType === PlaybookRunTypes.ChannelChecklistType ? messages.finishChecklistDialogDescription : messages.finishRunDialogDescription), [playbookRunType]);
 
     const containerStyle = useMemo(() => {
         return [
@@ -256,8 +241,8 @@ export default function PlaybookRun({
         }
 
         Alert.alert(
-            intl.formatMessage(finishDialogTitle),
-            intl.formatMessage(finishDialogDescription, {pendingCount}),
+            intl.formatMessage(messages.finishRunDialogTitle),
+            intl.formatMessage(messages.finishRunDialogDescription, {pendingCount}),
             [
                 {
                     text: intl.formatMessage(messages.finishRunDialogCancel),
@@ -275,7 +260,7 @@ export default function PlaybookRun({
                 },
             ],
         );
-    }, [intl, pendingCount, playbookRun, serverUrl, finishDialogTitle, finishDialogDescription]);
+    }, [intl, pendingCount, playbookRun, serverUrl]);
 
     const ownerAction = useMemo(() => {
         if (readOnly) {
@@ -382,7 +367,7 @@ export default function PlaybookRun({
                     </View>
                     {!readOnly && (
                         <Button
-                            text={intl.formatMessage(finishRunMessage)}
+                            text={intl.formatMessage(messages.finishRunButton)}
                             onPress={handleFinishRun}
                             theme={theme}
                             size='lg'

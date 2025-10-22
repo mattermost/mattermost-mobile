@@ -190,7 +190,7 @@ describe('PlaybookRun', () => {
         const userAvatarsStack = getByTestId('user-avatars-stack');
         expect(userAvatarsStack.props.users).toBe(props.participants);
         expect(userAvatarsStack.props.location).toBe('PlaybookRun');
-        expect(userAvatarsStack.props.bottomSheetTitle.defaultMessage).toBe('Run Participants');
+        expect(userAvatarsStack.props.bottomSheetTitle.defaultMessage).toBe('Participants');
 
         props.owner = undefined;
         rerender(<PlaybookRun {...props}/>);
