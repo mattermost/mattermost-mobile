@@ -154,6 +154,7 @@ class ChannelScreen {
 
     open = async (categoryKey: string, channelName: string) => {
         // # Open channel screen
+        await waitFor(ChannelListScreen.getChannelItemDisplayName(categoryKey, channelName)).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelListScreen.getChannelItemDisplayName(categoryKey, channelName).tap();
         try {
             await this.scheduledPostTooltipCloseButton.tap();
