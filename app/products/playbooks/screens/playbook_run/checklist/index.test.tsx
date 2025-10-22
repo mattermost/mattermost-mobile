@@ -63,6 +63,7 @@ describe('Checklist', () => {
                 checklistNumber: 0,
                 channelId: 'channel-id',
                 playbookRunId: 'run-id',
+                playbookRunName: 'Test Run',
                 isFinished: false,
                 isParticipant: true,
             };
@@ -181,6 +182,7 @@ describe('Checklist', () => {
                 checklistNumber: 0,
                 channelId: 'channel-id',
                 playbookRunId: 'run-id',
+                playbookRunName: 'Test Run',
                 isFinished: false,
                 isParticipant: true,
             };
@@ -240,6 +242,7 @@ describe('Checklist', () => {
                 checklistNumber: 0,
                 channelId: 'channel-id',
                 playbookRunId: 'run-id',
+                playbookRunName: 'Test Run',
                 isFinished: false,
                 isParticipant: true,
             };
@@ -271,6 +274,7 @@ describe('Checklist', () => {
                 checklistNumber: 0,
                 channelId: 'channel-id',
                 playbookRunId: 'run-id',
+                playbookRunName: 'Test Run',
                 isFinished: false,
                 isParticipant: true,
             };
@@ -323,6 +327,7 @@ describe('Checklist', () => {
                 checklistNumber: 0,
                 channelId: 'channel-id',
                 playbookRunId: 'run-id',
+                playbookRunName: 'Test Run',
                 isFinished: false,
                 isParticipant: true,
             };

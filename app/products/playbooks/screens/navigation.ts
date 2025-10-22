@@ -84,6 +84,21 @@ export async function goToEditCommand(
     }, options);
 }
 
+export async function goToRenameChecklist(
+    intl: IntlShape,
+    theme: Theme,
+    runName: string,
+    currentTitle: string,
+    onSave: (newTitle: string) => void,
+) {
+    const title = intl.formatMessage({id: 'playbooks.checklist.rename.title', defaultMessage: 'Rename checklist'});
+    const options = getSubtitleOptions(theme, runName);
+    goToScreen(Screens.PLAYBOOK_RENAME_CHECKLIST, title, {
+        currentTitle,
+        onSave,
+    }, options);
+}
+
 export async function goToSelectUser(
     theme: Theme,
     runName: string,

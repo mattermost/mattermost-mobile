@@ -362,6 +362,7 @@ export default function PlaybookRun({
                             checklists={checklists}
                             channelId={channelId}
                             playbookRunId={playbookRun.id}
+                            playbookRunName={playbookRun.name}
                             isFinished={isRunFinished(playbookRun)}
                             isParticipant={isParticipant}
                         />

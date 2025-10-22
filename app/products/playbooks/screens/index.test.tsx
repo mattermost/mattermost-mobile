@@ -10,6 +10,7 @@ import {render} from '@test/intl-test-helper';
 import EditCommand from './edit_command';
 import ParticipantPlaybooks from './participant_playbooks';
 import PlaybookRun from './playbook_run';
+import RenameChecklistBottomSheet from './playbook_run/checklist/rename_checklist_bottom_sheet';
 import PlaybookRuns from './playbooks_runs';
 import PostUpdate from './post_update';
 import SelectDate from './select_date';
@@ -78,6 +79,13 @@ jest.mock('@playbooks/screens/post_update', () => ({
     __esModule: true,
     default: jest.fn(),
 }));
+
+jest.mock('@playbooks/screens/playbook_run/checklist/rename_checklist_bottom_sheet', () => ({
+    __esModule: true,
+    default: jest.fn(),
+}));
+jest.mocked(RenameChecklistBottomSheet).mockImplementation((props) => <Text {...props}>{Screens.PLAYBOOK_RENAME_CHECKLIST}</Text>);
+
 jest.mocked(PostUpdate).mockImplementation((props) => <Text {...props}>{Screens.PLAYBOOK_POST_UPDATE}</Text>);
 
 describe('Screen Registration', () => {

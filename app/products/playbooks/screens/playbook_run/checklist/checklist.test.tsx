@@ -47,6 +47,7 @@ describe('Checklist', () => {
             items: mockItems,
             channelId: 'channel-id-1',
             playbookRunId: 'run-id-1',
+            playbookRunName: 'Test Run',
             isFinished: false,
             isParticipant: true,
             checklistProgress: {

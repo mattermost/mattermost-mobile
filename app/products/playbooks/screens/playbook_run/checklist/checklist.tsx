@@ -2,12 +2,16 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo, useState} from 'react';
+import {useIntl} from 'react-intl';
 import {View, Text, TouchableOpacity, type LayoutChangeEvent, useWindowDimensions, StyleSheet} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {renameChecklist} from '@playbooks/actions/remote/checklist';
 import ProgressBar from '@playbooks/components/progress_bar';
+import {goToRenameChecklist} from '@playbooks/screens/navigation';
 import {getChecklistProgress} from '@playbooks/utils/progress';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -36,6 +40,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     chevron: {
         fontSize: 18,
         color: changeOpacity(theme.centerChannelColor, 0.56),
+    },
+    editIconContainer: {
+        alignItems: 'flex-end',
+    },
+    editIcon: {
+        fontSize: 18,
+        color: changeOpacity(theme.centerChannelColor, 0.56),
+        paddingHorizontal: 4,
     },
     progressText: {
         ...typography('Body', 100, 'Regular'),
@@ -72,6 +84,7 @@ type Props = {
     items: Array<PlaybookChecklistItemModel | PlaybookChecklistItem>;
     channelId: string;
     playbookRunId: string;
+    playbookRunName: string;
     isFinished: boolean;
     isParticipant: boolean;
     checklistProgress: ReturnType<typeof getChecklistProgress>;
@@ -83,6 +96,7 @@ const Checklist = ({
     items,
     channelId,
     playbookRunId,
+    playbookRunName,
     isFinished,
     isParticipant,
     checklistProgress: {
@@ -93,6 +107,8 @@ const Checklist = ({
     },
 }: Props) => {
     const [expanded, setExpanded] = useState(true);
+    const intl = useIntl();
+    const serverUrl = useServerUrl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const height = useSharedValue(0);
@@ -101,6 +117,15 @@ const Checklist = ({
     const toggleExpanded = useCallback(() => {
         setExpanded((prev) => !prev);
     }, []);
+
+    const handleRename = useCallback((newTitle: string) => {
+        renameChecklist(serverUrl, playbookRunId, checklist.id, checklistNumber, newTitle);
+    }, [serverUrl, playbookRunId, checklist.id, checklistNumber]);
+
+    const handleEditPress = useCallback((e: any) => {
+        e.stopPropagation();
+        goToRenameChecklist(intl, theme, playbookRunName, checklist.title, handleRename);
+    }, [intl, theme, playbookRunName, checklist.title, handleRename]);
 
     const animatedStyle = useAnimatedStyle(() => {
         return {
@@ -146,6 +171,12 @@ const Checklist = ({
                         </Text>
                     </View>
                     <Text style={styles.progressText}>{`${completed} / ${totalNumber} done`}</Text>
+                    <TouchableOpacity onPress={handleEditPress}>
+                        <CompassIcon
+                            name='pencil-outline'
+                            style={styles.editIcon}
+                        />
+                    </TouchableOpacity>
                 </View>
                 <ProgressBar
                     progress={progress}

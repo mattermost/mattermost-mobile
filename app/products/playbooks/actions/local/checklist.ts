@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import DatabaseManager from '@database/manager';
+import {getPlaybookChecklistById} from '@playbooks/database/queries/checklist';
 import {getPlaybookChecklistItemById} from '@playbooks/database/queries/item';
 import {logError} from '@utils/log';
 
@@ -85,6 +86,27 @@ export async function setDueDate(serverUrl: string, itemId: string, date?: numbe
         return {data: true};
     } catch (error) {
         logError('failed to set due date', error);
+        return {error};
+    }
+}
+
+export async function renameChecklist(serverUrl: string, checklistId: string, title: string) {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const checklist = await getPlaybookChecklistById(database, checklistId);
+        if (!checklist) {
+            return {error: `Checklist not found: ${checklistId}`};
+        }
+
+        await database.write(async () => {
+            checklist.update((c) => {
+                c.title = title;
+            });
+        });
+
+        return {data: true};
+    } catch (error) {
+        logError('failed to rename checklist', error);
         return {error};
     }
 }

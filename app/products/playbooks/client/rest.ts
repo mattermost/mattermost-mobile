@@ -14,6 +14,7 @@ export interface ClientPlaybooksMix {
     fetchPlaybookRuns: (params: FetchPlaybookRunsParams, groupLabel?: RequestGroupLabel) => Promise<FetchPlaybookRunsReturn>;
     fetchPlaybookRun: (id: string, groupLabel?: RequestGroupLabel) => Promise<PlaybookRun>;
     fetchPlaybookRunMetadata: (id: string) => Promise<PlaybookRunMetadata>;
+    patchPlaybookRun: (playbookRunId: string, updates: Partial<PlaybookRun>) => Promise<void>;
     setOwner: (playbookRunId: string, ownerId: string) => Promise<void>;
 
     // Run Management
@@ -82,6 +83,13 @@ const ClientPlaybooks = <TBase extends Constructor<ClientBase>>(superclass: TBas
         return this.doFetch(
             `${this.getPlaybookRunRoute(id)}/metadata`,
             {method: 'get'},
+        );
+    };
+
+    patchPlaybookRun = async (playbookRunId: string, updates: Partial<PlaybookRun>) => {
+        await this.doFetch(
+            `${this.getPlaybookRunRoute(playbookRunId)}`,
+            {method: 'patch', body: updates},
         );
     };
 
