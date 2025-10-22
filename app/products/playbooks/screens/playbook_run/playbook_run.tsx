@@ -201,9 +201,9 @@ export default function PlaybookRun({
     const readOnly = isFinished || !isParticipant;
 
     const playbookRunType = useMemo(() => playbookRun?.type || 'playbook', [playbookRun]);
-    const finishRunMessage = useMemo(() => (playbookRunType === 'channelChecklist' ? messages.finishChannelChecklistButton : messages.finishRunButton), [playbookRunType]);
-    const finishDialogTitle = useMemo(() => (playbookRunType === 'channelChecklist' ? messages.finishChecklistDialogTitle : messages.finishRunDialogTitle), [playbookRunType]);
-    const finishDialogDescription = useMemo(() => (playbookRunType === 'channelChecklist' ? messages.finishChecklistDialogDescription : messages.finishRunDialogDescription), [playbookRunType]);
+    const finishRunMessage = useMemo(() => (playbookRunType === PlaybookRunTypes.ChannelChecklistType ? messages.finishChannelChecklistButton : messages.finishRunButton), [playbookRunType]);
+    const finishDialogTitle = useMemo(() => (playbookRunType === PlaybookRunTypes.ChannelChecklistType ? messages.finishChecklistDialogTitle : messages.finishRunDialogTitle), [playbookRunType]);
+    const finishDialogDescription = useMemo(() => (playbookRunType === PlaybookRunTypes.ChannelChecklistType ? messages.finishChecklistDialogDescription : messages.finishRunDialogDescription), [playbookRunType]);
 
     const containerStyle = useMemo(() => {
         return [
@@ -351,7 +351,7 @@ export default function PlaybookRun({
                                 )}
                             </View>
                         )}
-                        {playbookRunType !== 'channelChecklist' && (
+                        {playbookRunType !== PlaybookRunTypes.ChannelChecklistType && (
                             <StatusUpdateIndicator
                                 isFinished={isFinished}
                                 timestamp={getRunScheduledTimestamp(playbookRun)}

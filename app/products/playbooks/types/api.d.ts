@@ -92,6 +92,13 @@ type PlaybookRunAttributeValue = {
     value: string;
 }
 
+const PlaybookRunTypes = {
+    PlaybookType: 'playbook' as const,
+    ChannelChecklistType: 'channelChecklist' as const,
+} as const;
+
+type PlaybookRunType = typeof PlaybookRunTypes[keyof typeof PlaybookRunTypes];
+
 type PlaybookRun = {
     id: string;
     name: string;
@@ -109,7 +116,7 @@ type PlaybookRun = {
     end_at: number;
     post_id?: string;
     playbook_id?: string;
-    type?: 'playbook' | 'channelChecklist';
+    type?: PlaybookRunType;
     current_status: PlaybookRunStatusType;
     last_status_update_at: number;
     reminder_post_id?: string;
