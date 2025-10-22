@@ -86,7 +86,7 @@ const messages = defineMessages({
     },
     finishRunButton: {
         id: 'playbooks.playbook_run.finish_run_button',
-        defaultMessage: 'Finish Checklist',
+        defaultMessage: 'Finish',
     },
 });
 

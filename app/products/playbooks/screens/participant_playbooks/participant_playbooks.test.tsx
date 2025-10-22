@@ -99,7 +99,7 @@ describe('ParticipantPlaybooks', () => {
         await waitForElementToBeRemoved(() => queryByTestId('loading'));
 
         // Should show empty state instead of loading
-        expect(getByText('No in progress runs')).toBeVisible();
+        expect(getByText('Nothing in progress')).toBeVisible();
     });
 
     it('renders error state when fetch fails', async () => {
@@ -111,7 +111,7 @@ describe('ParticipantPlaybooks', () => {
         await waitForElementToBeRemoved(() => queryByTestId('loading'));
 
         // Should show empty state instead of loading
-        expect(getByText('No in progress runs')).toBeVisible();
+        expect(getByText('Nothing in progress')).toBeVisible();
     });
 
     it('renders playbook runs when data is loaded', async () => {

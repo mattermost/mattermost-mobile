@@ -225,7 +225,7 @@ const PostUpdate = ({
                         style: 'cancel',
                     },
                     {
-                        text: intl.formatMessage({id: 'playbooks.post_update.confirm.confirm', defaultMessage: 'Finish checklist'}),
+                        text: intl.formatMessage({id: 'playbooks.post_update.confirm.confirm', defaultMessage: 'Finish'}),
                         onPress: onConfirm,
                     },
                 ],
