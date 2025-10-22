@@ -7,7 +7,7 @@ import React, {useCallback, useEffect, useMemo, useRef, useState, type RefObject
 import {defineMessages, useIntl} from 'react-intl';
 import {Keyboard, TextInput, TouchableOpacity, View} from 'react-native';
 
-import {login} from '@actions/remote/session';
+import {getUserLoginType, login} from '@actions/remote/session';
 import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
 import FloatingTextInput from '@components/floating_input/floating_text_input_label';
@@ -17,6 +17,7 @@ import {useAvoidKeyboard} from '@hooks/device';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {goToScreen, loginAnimationOptions, resetToHome} from '@screens/navigation';
 import {getFullErrorMessage, getServerError, isErrorWithMessage, isServerError} from '@utils/errors';
+import {logDebug} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
 
@@ -29,10 +30,27 @@ interface LoginProps extends LaunchProps {
     keyboardAwareRef: RefObject<KeyboardAwareScrollView>;
     serverDisplayName: string;
     theme: Theme;
+    setEasyLoginLinkSent: (linkSent: boolean) => void;
 }
 
 export const MFA_EXPECTED_ERRORS = ['mfa.validate_token.authenticate.app_error', 'ent.mfa.validate_token.authenticate.app_error'];
 const hitSlop = {top: 8, right: 8, bottom: 8, left: 8};
+
+function getButtonDisabled(loginId: string, password: string, userLoginType: string, passwordlessEnabled: boolean) {
+    if (!loginId) {
+        return true;
+    }
+
+    if (passwordlessEnabled && (userLoginType === 'passwordless' || userLoginType === '')) {
+        return false;
+    }
+
+    if (!password) {
+        return true;
+    }
+
+    return false;
+}
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -79,7 +97,7 @@ const isMFAError = (loginError: unknown): boolean => {
     return false;
 };
 
-const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchError, launchType, license, serverUrl, theme}: LoginProps) => {
+const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchError, launchType, license, serverUrl, theme, setEasyLoginLinkSent}: LoginProps) => {
     const styles = getStyleSheet(theme);
     const loginRef = useRef<TextInput>(null);
     const passwordRef = useRef<TextInput>(null);
@@ -89,11 +107,13 @@ const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchEr
     const [error, setError] = useState<string | undefined>();
     const [loginId, setLoginId] = useState<string>('');
     const [password, setPassword] = useState<string>('');
-    const [buttonDisabled, setButtonDisabled] = useState(true);
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const emailEnabled = config.EnableSignInWithEmail === 'true';
     const usernameEnabled = config.EnableSignInWithUsername === 'true';
     const ldapEnabled = license.IsLicensed === 'true' && config.EnableLdap === 'true' && license.LDAP === 'true';
+
+    const [userLoginType, setUserLoginType] = useState<string>('');
+    const passwordlessEnabled = config.AllowPasswordlessInvites === 'true';
 
     useAvoidKeyboard(keyboardAwareRef);
 
@@ -105,6 +125,22 @@ const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchEr
     const goToMfa = useCallback(() => {
         goToScreen(MFA, '', {goToHome, loginId, password, config, serverDisplayName, license, serverUrl, theme}, loginAnimationOptions());
     }, [config, goToHome, license, loginId, password, serverDisplayName, serverUrl, theme]);
+
+    const checkUserLoginType = useCallback(async () => {
+        if (!serverUrl) {
+            setUserLoginType('');
+            logDebug('error on checkUserLoginType', 'serverUrl is required');
+            setError(intl.formatMessage({id: 'login.passwordless.request.error', defaultMessage: 'Failed to check user login type'}));
+            return '';
+        }
+        const response = await getUserLoginType(serverUrl, loginId);
+        if (response?.error) {
+            logDebug('error on checkUserLoginType', getFullErrorMessage(response?.error));
+            setError(intl.formatMessage({id: 'login.passwordless.request.error', defaultMessage: 'Failed to check user login type'}));
+        }
+        setUserLoginType(response.user_login_type ?? '');
+        return (response.user_login_type ?? '');
+    }, [serverUrl, loginId, intl]);
 
     const getLoginErrorMessage = useCallback((loginError: unknown) => {
         if (isServerError(loginError)) {
@@ -190,10 +226,18 @@ const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchEr
         passwordRef?.current?.focus();
     }, []);
 
-    const onLogin = useCallback(() => {
+    const onLogin = useCallback(async () => {
         Keyboard.dismiss();
+        if (passwordlessEnabled && userLoginType === '') {
+            const receivedUserLoginType = await checkUserLoginType();
+            if (receivedUserLoginType === 'easy') {
+                setEasyLoginLinkSent(true);
+            }
+            return;
+        }
+
         preSignIn();
-    }, [preSignIn]);
+    }, [checkUserLoginType, passwordlessEnabled, preSignIn, setEasyLoginLinkSent, userLoginType]);
 
     const onLoginChange = useCallback((text: string) => {
         setLoginId(text);
@@ -238,13 +282,21 @@ const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchEr
         setEmmUsernameIfAvailable();
     }, [managedConfig?.username]);
 
-    useEffect(() => {
-        if (loginId && password) {
-            setButtonDisabled(false);
+    const onIdInputSubmitting = useCallback(() => {
+        if (!passwordlessEnabled || (userLoginType !== 'passwordless')) {
+            focusPassword();
             return;
         }
-        setButtonDisabled(true);
-    }, [loginId, password]);
+
+        onLogin();
+    }, [focusPassword, onLogin, passwordlessEnabled, userLoginType]);
+
+    const buttonDisabled = getButtonDisabled(loginId, password, userLoginType, passwordlessEnabled);
+    const showPasswordInput = !passwordlessEnabled || (userLoginType !== 'passwordless' && userLoginType !== '');
+    let userInputError = error;
+    if (showPasswordInput) {
+        userInputError = error ? ' ' : '';
+    }
 
     const proceedButton = (
         <View style={styles.loginButtonContainer}>
@@ -282,11 +334,11 @@ const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchEr
                 autoComplete='email'
                 disableFullscreenUI={true}
                 enablesReturnKeyAutomatically={true}
-                error={error ? ' ' : ''}
+                error={userInputError}
                 keyboardType='email-address'
                 label={createLoginPlaceholder()}
                 onChangeText={onLoginChange}
-                onSubmitEditing={focusPassword}
+                onSubmitEditing={onIdInputSubmitting}
                 ref={loginRef}
                 returnKeyType='next'
                 hideErrorIcon={true}
@@ -294,38 +346,42 @@ const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchEr
                 theme={theme}
                 value={loginId}
             />
-            <FloatingTextInput
-                rawInput={true}
-                blurOnSubmit={false}
-                autoComplete='current-password'
-                disableFullscreenUI={true}
-                enablesReturnKeyAutomatically={true}
-                error={error}
-                keyboardType={isPasswordVisible ? 'visible-password' : 'default'}
-                label={intl.formatMessage({id: 'login.password', defaultMessage: 'Password'})}
-                onChangeText={onPasswordChange}
-                onSubmitEditing={onLogin}
-                ref={passwordRef}
-                returnKeyType='join'
-                secureTextEntry={!isPasswordVisible}
-                testID='login_form.password.input'
-                theme={theme}
-                value={password}
-                endAdornment={endAdornment}
-            />
-
-            {(emailEnabled || usernameEnabled) && config.PasswordEnableForgotLink !== 'false' && (
-                <RNEButton
-                    onPress={onPressForgotPassword}
-                    buttonStyle={styles.forgotPasswordBtn}
-                    testID='login_form.forgot_password.button'
-                >
-                    <FormattedText
-                        id='login.forgot'
-                        defaultMessage='Forgot your password?'
-                        style={styles.forgotPasswordTxt}
+            {showPasswordInput && (
+                <>
+                    <FloatingTextInput
+                        rawInput={true}
+                        blurOnSubmit={false}
+                        autoComplete='current-password'
+                        disableFullscreenUI={true}
+                        enablesReturnKeyAutomatically={true}
+                        error={error}
+                        keyboardType={isPasswordVisible ? 'visible-password' : 'default'}
+                        label={intl.formatMessage({id: 'login.password', defaultMessage: 'Password'})}
+                        onChangeText={onPasswordChange}
+                        onSubmitEditing={onLogin}
+                        ref={passwordRef}
+                        returnKeyType='join'
+                        secureTextEntry={!isPasswordVisible}
+                        testID='login_form.password.input'
+                        theme={theme}
+                        value={password}
+                        endAdornment={endAdornment}
                     />
-                </RNEButton>
+
+                    {(emailEnabled || usernameEnabled) && config.PasswordEnableForgotLink !== 'false' && (
+                        <RNEButton
+                            onPress={onPressForgotPassword}
+                            buttonStyle={styles.forgotPasswordBtn}
+                            testID='login_form.forgot_password.button'
+                        >
+                            <FormattedText
+                                id='login.forgot'
+                                defaultMessage='Forgot your password?'
+                                style={styles.forgotPasswordTxt}
+                            />
+                        </RNEButton>
+                    )}
+                </>
             )}
             {proceedButton}
         </View>

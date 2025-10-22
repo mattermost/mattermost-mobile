@@ -47,6 +47,7 @@ export interface ClientUsersMix {
     unsetCustomStatus: () => Promise<{status: string}>;
     removeRecentCustomStatus: (customStatus: UserCustomStatus) => Promise<{status: string}>;
     exchangeSsoLoginCode: (loginCode: string, codeVerifier: string, state: string) => Promise<{token: string; csrf: string}>;
+    getUserLoginType: (loginId: string) => Promise<{user_login_type: string}>;
 }
 
 const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
@@ -169,6 +170,13 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         );
 
         return response;
+    };
+
+    getUserLoginType = async (loginId: string) => {
+        return this.doFetch(
+            `${this.getUsersRoute()}/login_type`,
+            {method: 'post', body: {login_id: loginId}},
+        );
     };
 
     getProfiles = async (page = 0, perPage = PER_PAGE_DEFAULT, options = {}) => {

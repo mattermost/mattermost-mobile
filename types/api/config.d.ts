@@ -8,6 +8,7 @@ interface ClientConfig {
     AllowEditPost: string;
     AllowedThemes: string;
     AllowDownloadLogs: string;
+    AllowPasswordlessInvites: string;
     AndroidAppDownloadLink: string;
     AndroidLatestVersion: string;
     AndroidMinVersion: string;
