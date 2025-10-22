@@ -15,6 +15,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {finishRun, setOwner} from '@playbooks/actions/remote/runs';
+import {PLAYBOOK_RUN_TYPES} from '@playbooks/constants/playbook_run';
 import {getRunScheduledTimestamp, isRunFinished} from '@playbooks/utils/run';
 import {openUserProfileModal, popTopScreen} from '@screens/navigation';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
@@ -336,7 +337,7 @@ export default function PlaybookRun({
                                 )}
                             </View>
                         )}
-                        {playbookRunType !== PlaybookRunTypes.ChannelChecklistType && (
+                        {playbookRunType !== PLAYBOOK_RUN_TYPES.ChannelChecklistType && (
                             <StatusUpdateIndicator
                                 isFinished={isFinished}
                                 timestamp={getRunScheduledTimestamp(playbookRun)}

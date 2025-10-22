@@ -24,7 +24,7 @@ declare class PlaybookRunModel extends Model {
     playbookId: string;
 
     // The type of run ('playbook' or 'channelChecklist')
-    type: string;
+    type: PlaybookRunType;
 
     // ID of the post that created the run (nullable)
     postId: string | null;

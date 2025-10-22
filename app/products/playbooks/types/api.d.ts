@@ -92,12 +92,7 @@ type PlaybookRunAttributeValue = {
     value: string;
 }
 
-const PlaybookRunTypes = {
-    PlaybookType: 'playbook' as const,
-    ChannelChecklistType: 'channelChecklist' as const,
-} as const;
-
-type PlaybookRunType = typeof PlaybookRunTypes[keyof typeof PlaybookRunTypes];
+type PlaybookRunType = typeof PLAYBOOK_RUN_TYPES[keyof typeof PLAYBOOK_RUN_TYPES];
 
 type PlaybookRun = {
     id: string;
