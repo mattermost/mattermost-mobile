@@ -180,3 +180,20 @@ export const renameChecklist = async (
         return {error};
     }
 };
+
+export const addChecklistItem = async (
+    serverUrl: string,
+    playbookRunId: string,
+    checklistNumber: number,
+    title: string,
+) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        await client.addChecklistItem(playbookRunId, checklistNumber, title);
+        return {data: true};
+    } catch (error) {
+        logDebug('error on addChecklistItem', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};

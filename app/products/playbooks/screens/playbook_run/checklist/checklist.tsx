@@ -9,9 +9,9 @@ import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-nati
 import CompassIcon from '@components/compass_icon';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {renameChecklist} from '@playbooks/actions/remote/checklist';
+import {renameChecklist, addChecklistItem} from '@playbooks/actions/remote/checklist';
 import ProgressBar from '@playbooks/components/progress_bar';
-import {goToRenameChecklist} from '@playbooks/screens/navigation';
+import {goToRenameChecklist, goToAddChecklistItem} from '@playbooks/screens/navigation';
 import {getChecklistProgress} from '@playbooks/utils/progress';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -76,6 +76,22 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     titleContainer: {
         flexShrink: 1,
     },
+    addButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        gap: 6,
+    },
+    addButtonText: {
+        ...typography('Body', 100, 'SemiBold'),
+        color: changeOpacity(theme.centerChannelColor, 0.64),
+    },
+    addButtonIcon: {
+        fontSize: 18,
+        color: changeOpacity(theme.centerChannelColor, 0.64),
+    },
 }));
 
 type Props = {
@@ -126,6 +142,14 @@ const Checklist = ({
         e.stopPropagation();
         goToRenameChecklist(intl, theme, playbookRunName, checklist.title, handleRename);
     }, [intl, theme, playbookRunName, checklist.title, handleRename]);
+
+    const handleAddItem = useCallback((title: string) => {
+        addChecklistItem(serverUrl, playbookRunId, checklistNumber, title);
+    }, [serverUrl, playbookRunId, checklistNumber]);
+
+    const handleAddPress = useCallback(() => {
+        goToAddChecklistItem(intl, theme, playbookRunName, handleAddItem);
+    }, [intl, theme, playbookRunName, handleAddItem]);
 
     const animatedStyle = useAnimatedStyle(() => {
         return {
@@ -198,6 +222,21 @@ const Checklist = ({
                         isDisabled={isFinished || !isParticipant}
                     />
                 ))}
+                {!isFinished && isParticipant && (
+                    <TouchableOpacity
+                        style={styles.addButton}
+                        onPress={handleAddPress}
+                        testID='add-checklist-item-button'
+                    >
+                        <CompassIcon
+                            name='plus'
+                            style={styles.addButtonIcon}
+                        />
+                        <Text style={styles.addButtonText}>
+                            {intl.formatMessage({id: 'playbooks.checklist_item.add.button', defaultMessage: 'New'})}
+                        </Text>
+                    </TouchableOpacity>
+                )}
             </Animated.View>
             {/* This is a hack to get the height of the checklist items */}
             <View
@@ -215,6 +254,17 @@ const Checklist = ({
                         isDisabled={isFinished || !isParticipant}
                     />
                 ))}
+                {!isFinished && isParticipant && (
+                    <View style={styles.addButton}>
+                        <CompassIcon
+                            name='plus'
+                            style={styles.addButtonIcon}
+                        />
+                        <Text style={styles.addButtonText}>
+                            {intl.formatMessage({id: 'playbooks.checklist_item.add.button', defaultMessage: 'New'})}
+                        </Text>
+                    </View>
+                )}
             </View>
         </View>
     );

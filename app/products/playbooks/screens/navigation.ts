@@ -99,6 +99,19 @@ export async function goToRenameChecklist(
     }, options);
 }
 
+export async function goToAddChecklistItem(
+    intl: IntlShape,
+    theme: Theme,
+    runName: string,
+    onSave: (title: string) => void,
+) {
+    const title = intl.formatMessage({id: 'playbooks.checklist_item.add.title', defaultMessage: 'New Task'});
+    const options = getSubtitleOptions(theme, runName);
+    goToScreen(Screens.PLAYBOOK_ADD_CHECKLIST_ITEM, title, {
+        onSave,
+    }, options);
+}
+
 export async function goToRenamePlaybookRun(
     intl: IntlShape,
     theme: Theme,
