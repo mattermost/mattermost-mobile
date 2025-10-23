@@ -10,6 +10,7 @@ describe('Quick Actions', () => {
     const baseProps: Parameters<typeof QuickActions>[0] = {
         canUploadFiles: true,
         fileCount: 0,
+        isAIEnabled: true,
         isPostPriorityEnabled: true,
         canShowPostPriority: true,
         canShowSlashCommands: true,

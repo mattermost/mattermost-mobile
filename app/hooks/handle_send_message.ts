@@ -86,7 +86,7 @@ export const useHandleSendMessage = ({
             return false;
         }
 
-        const messageLength = value.trim().length;
+        const messageLength = value ? value.trim().length : 0;
 
         if (messageLength > maxMessageLength) {
             return false;
@@ -181,7 +181,7 @@ export const useHandleSendMessage = ({
     }, [intl, channelTimezoneCount, doSubmitMessage]);
 
     const sendCommand = useCallback(async () => {
-        if (value.trim().startsWith('/call')) {
+        if (value && value.trim().startsWith('/call')) {
             const {handled, error} = await handleCallsSlashCommand(value.trim(), serverUrl, channelId, channelType ?? '', rootId, currentUserId, intl);
             if (handled) {
                 setSendingMessage(false);
@@ -221,17 +221,17 @@ export const useHandleSendMessage = ({
 
         clearDraft();
 
-        if (data?.goto_location && !value.startsWith('/leave')) {
+        if (data?.goto_location && value && !value.startsWith('/leave')) {
             handleGotoLocation(serverUrl, intl, data.goto_location);
         }
     }, [value, userIsOutOfOffice, serverUrl, intl, channelId, rootId, clearDraft, channelType, currentUserId]);
 
     const sendMessage = useCallback(async (schedulingInfo?: SchedulingInfo) => {
         const notificationsToChannel = enableConfirmNotificationsToChannel && useChannelMentions;
-        const toAllOrChannel = DraftUtils.textContainsAtAllAtChannel(value);
-        const toHere = DraftUtils.textContainsAtHere(value);
+        const toAllOrChannel = value ? DraftUtils.textContainsAtAllAtChannel(value) : false;
+        const toHere = value ? DraftUtils.textContainsAtHere(value) : false;
 
-        if (value.indexOf('/') === 0 && !schedulingInfo) {
+        if (value && value.indexOf('/') === 0 && !schedulingInfo) {
             // Don't execute slash command when scheduling message
             sendCommand();
         } else if (notificationsToChannel && membersCount > NOTIFY_ALL_MEMBERS && (toAllOrChannel || toHere)) {
