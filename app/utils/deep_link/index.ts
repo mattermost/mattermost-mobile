@@ -8,39 +8,98 @@ import {Navigation} from 'react-native-navigation';
 import urlParse from 'url-parse';
 
 import {joinIfNeededAndSwitchToChannel, makeDirectChannel} from '@actions/remote/channel';
+import {loginEntry} from '@actions/remote/entry';
 import {showPermalink} from '@actions/remote/permalink';
+import {addPushProxyVerificationStateFromLogin} from '@actions/remote/session';
 import {fetchUsersByUsernames} from '@actions/remote/user';
-import {DeepLink, Launch, Screens} from '@constants';
+import {Database, DeepLink, Launch, Screens} from '@constants';
 import DeepLinkType from '@constants/deep_linking';
 import {getDefaultThemeByAppearance} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE} from '@i18n';
+import NetworkManager from '@managers/network_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {fetchPlaybookRun} from '@playbooks/actions/remote/runs';
 import {getPlaybookRunById} from '@playbooks/database/queries/run';
 import {fetchIsPlaybooksEnabled} from '@playbooks/database/queries/version';
 import {goToPlaybookRun} from '@playbooks/screens/navigation';
+import {getDeviceToken} from '@queries/app/global';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {getCurrentUser, queryUsersByUsername} from '@queries/servers/user';
-import {dismissAllModalsAndPopToRoot} from '@screens/navigation';
+import {dismissAllModalsAndPopToRoot, resetToHome} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 import {alertErrorWithFallback, errorBadChannel, errorUnkownUser} from '@utils/draft';
 import {getIntlShape} from '@utils/general';
-import {logError} from '@utils/log';
+import {logDebug, logError} from '@utils/log';
 import {escapeRegex} from '@utils/markdown';
+import {getCSRFFromCookie} from '@utils/security';
 import {addNewServer} from '@utils/server';
-import {removeProtocol, stripTrailingSlashes} from '@utils/url';
+import {getServerUrlAfterRedirect, removeProtocol, stripTrailingSlashes} from '@utils/url';
 import {
     TEAM_NAME_PATH_PATTERN,
     IDENTIFIER_PATH_PATTERN,
     ID_PATH_PATTERN,
+    TOKEN_PATH_PATTERN,
 } from '@utils/url/path';
 
 import type {DeepLinkChannel, DeepLinkDM, DeepLinkGM, DeepLinkPermalink, DeepLinkPlaybookRuns, DeepLinkWithData, LaunchProps} from '@typings/launch';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 const deepLinkScreens: AvailableScreens[] = [Screens.HOME, Screens.CHANNEL, Screens.GLOBAL_THREADS, Screens.THREAD];
+
+const easyLogin = async (serverUrl: string, token: string): Promise<LoginActionResponse> => {
+    const {url: serverUrlToUse, error: serverUrlError} = await getServerUrlAfterRedirect(serverUrl);
+    if (serverUrlError || !serverUrlToUse) {
+        return {error: serverUrlError || 'empty server url', failed: true};
+    }
+
+    const database = DatabaseManager.appDatabase?.database;
+    if (!database) {
+        return {error: 'App database not found', failed: true};
+    }
+
+    try {
+        const client = await NetworkManager.createClient(serverUrlToUse, undefined);
+        const config = await client.getClientConfigOld();
+        const deviceId = await getDeviceToken();
+        const serverDisplayName = config.SiteName;
+
+        const user = await client.loginByEasyLogin(token, deviceId);
+
+        const server = await DatabaseManager.createServerDatabase({
+            config: {
+                dbName: serverUrlToUse,
+                serverUrl: serverUrlToUse,
+                identifier: config.DiagnosticId,
+                displayName: serverDisplayName,
+            },
+        });
+
+        await server?.operator.handleUsers({users: [user], prepareRecordsOnly: false});
+        await server?.operator.handleSystem({
+            systems: [{
+                id: Database.SYSTEM_IDENTIFIERS.CURRENT_USER_ID,
+                value: user.id,
+            }],
+            prepareRecordsOnly: false,
+        });
+        const csrfToken = await getCSRFFromCookie(serverUrlToUse);
+        client.setCSRFToken(csrfToken);
+    } catch (error) {
+        return {error, failed: true};
+    }
+
+    try {
+        await addPushProxyVerificationStateFromLogin(serverUrlToUse);
+        const {error} = await loginEntry({serverUrl: serverUrlToUse});
+        await DatabaseManager.setActiveServerDatabase(serverUrlToUse);
+        await resetToHome();
+        return {error, failed: false};
+    } catch (error) {
+        return {error, failed: false};
+    }
+};
 
 export async function handleDeepLink(deepLink: DeepLinkWithData, intlShape?: IntlShape, location?: string) {
     try {
@@ -54,6 +113,15 @@ export async function handleDeepLink(deepLink: DeepLinkWithData, intlShape?: Int
         // After checking the server for http & https then we add it
         if (!existingServerUrl) {
             const theme = EphemeralStore.theme || getDefaultThemeByAppearance();
+
+            if (deepLink.type === DeepLink.EasyLogin && 'token' in deepLink.data) {
+                const result = await easyLogin(deepLink.data.serverUrl, deepLink.data.token);
+                if (result.error) {
+                    logDebug('Failed to do easy login', result.error);
+                    return {error: true};
+                }
+                return {error: false};
+            }
             if (NavigationStore.getVisibleScreen() === Screens.SERVER) {
                 Navigation.updateProps(Screens.SERVER, {serverUrl: deepLink.data.serverUrl});
             } else if (!NavigationStore.getScreensInStack().includes(Screens.SERVER)) {
@@ -167,6 +235,16 @@ export async function handleDeepLink(deepLink: DeepLinkWithData, intlShape?: Int
                 }
                 break;
             }
+            case DeepLink.EasyLogin: {
+                Alert.alert(
+                    intl.formatMessage({id: 'easy_login.error.title', defaultMessage: 'Already logged in'}),
+                    intl.formatMessage({id: 'easy_login.error.description', defaultMessage: 'You are already logged in to this server. Log out and follow the link again.'}),
+                    [{
+                        text: intl.formatMessage({id: 'easy_login.error.ok', defaultMessage: 'OK'}),
+                    }],
+                );
+                break;
+            }
         }
         return {error: false};
     } catch (error) {
@@ -209,6 +287,14 @@ export const matchPlaybookRunsDeeplink = match<PlaybookRunsPathParams>(PLAYBOOK_
 
 const PLAYBOOK_RUNS_RETROSPECTIVE = '*serverUrl/playbooks/runs/:playbookRunId/retrospective';
 export const matchPlaybookRunsRetrospectiveDeeplink = match<PlaybookRunsPathParams>(PLAYBOOK_RUNS_RETROSPECTIVE);
+
+type EasyLoginPathParams = {
+    serverUrl: string[];
+    token: string;
+};
+
+const EASY_LOGIN_PATH = '*serverUrl/login/sso/easy';
+export const matchEasyLoginDeeplink = match<EasyLoginPathParams>(EASY_LOGIN_PATH);
 
 type PermalinkPathParams = {
     serverUrl: string[];
@@ -290,9 +376,17 @@ function isValidId(id: string): boolean {
     return regex.test(id);
 }
 
+function isValidToken(token?: string): boolean {
+    if (!token) {
+        return false;
+    }
+    const regex = new RegExp(`^${TOKEN_PATH_PATTERN}$`);
+    return regex.test(token);
+}
+
 export function parseDeepLink(deepLinkUrl: string, asServer = false): DeepLinkWithData {
     try {
-        const parsedUrl = urlParse(deepLinkUrl);
+        const parsedUrl = urlParse(deepLinkUrl, true);
         const urlWithoutQuery = stripTrailingSlashes(parsedUrl.protocol + '//' + parsedUrl.host + parsedUrl.pathname);
         const url = removeProtocol(urlWithoutQuery);
 
@@ -335,6 +429,16 @@ export function parseDeepLink(deepLinkUrl: string, asServer = false): DeepLinkWi
         if (playbooksRunsMatch && isValidId(playbooksRunsMatch.params.playbookRunId)) {
             const {params: {serverUrl, playbookRunId}} = playbooksRunsMatch;
             return {type: DeepLink.PlaybookRuns, url: deepLinkUrl, data: {serverUrl: serverUrl.join('/'), playbookRunId}};
+        }
+
+        const easyLoginMatch = matchEasyLoginDeeplink(url);
+        if (easyLoginMatch) {
+            const token = parsedUrl.query.t;
+            const {params: {serverUrl}} = easyLoginMatch;
+            if (!isValidToken(token)) {
+                return {type: DeepLink.Invalid, url: deepLinkUrl};
+            }
+            return {type: DeepLink.EasyLogin, url: deepLinkUrl, data: {serverUrl: serverUrl.join('/'), token}};
         }
 
         if (asServer) {

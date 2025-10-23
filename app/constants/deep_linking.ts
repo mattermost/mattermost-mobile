@@ -12,6 +12,7 @@ const DeepLinkType = {
     PlaybookRunsRetrospective: 'playbook_runs_retrospective',
     Redirect: '_redirect',
     Server: 'server',
+    EasyLogin: 'easy_login',
 } as const;
 
 export default DeepLinkType;

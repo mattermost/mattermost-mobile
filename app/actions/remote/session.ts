@@ -437,8 +437,7 @@ export async function findSession(serverUrl: string, sessions: Session[]) {
 export const getUserLoginType = async (serverUrl: string, loginId: string) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        const response = await client.getUserLoginType(loginId);
-        return {user_login_type: response.user_login_type};
+        return await client.getUserLoginType(loginId);
     } catch (error) {
         logDebug('error on getUserLoginType', getFullErrorMessage(error));
         return {error};

@@ -8,7 +8,6 @@ interface ClientConfig {
     AllowEditPost: string;
     AllowedThemes: string;
     AllowDownloadLogs: string;
-    AllowPasswordlessInvites: string;
     AndroidAppDownloadLink: string;
     AndroidLatestVersion: string;
     AndroidMinVersion: string;
@@ -63,6 +62,7 @@ interface ClientConfig {
     EnableEmailBatching: string;
     EnableEmailInvitations: string;
     EnableEmojiPicker: string;
+    EnableEasyLogin: string;
     EnableFileAttachments: string;
     EnableGifPicker: string;
     EnableGuestAccounts: string;

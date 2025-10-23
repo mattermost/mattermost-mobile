@@ -36,12 +36,12 @@ interface LoginProps extends LaunchProps {
 export const MFA_EXPECTED_ERRORS = ['mfa.validate_token.authenticate.app_error', 'ent.mfa.validate_token.authenticate.app_error'];
 const hitSlop = {top: 8, right: 8, bottom: 8, left: 8};
 
-function getButtonDisabled(loginId: string, password: string, userLoginType: string, passwordlessEnabled: boolean) {
+function getButtonDisabled(loginId: string, password: string, userLoginType: '' | 'easy_login' | undefined, passwordlessEnabled: boolean) {
     if (!loginId) {
         return true;
     }
 
-    if (passwordlessEnabled && (userLoginType === 'passwordless' || userLoginType === '')) {
+    if (passwordlessEnabled && (userLoginType === 'easy_login' || userLoginType === undefined)) {
         return false;
     }
 
@@ -112,8 +112,8 @@ const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchEr
     const usernameEnabled = config.EnableSignInWithUsername === 'true';
     const ldapEnabled = license.IsLicensed === 'true' && config.EnableLdap === 'true' && license.LDAP === 'true';
 
-    const [userLoginType, setUserLoginType] = useState<string>('');
-    const passwordlessEnabled = config.AllowPasswordlessInvites === 'true';
+    const [userLoginType, setUserLoginType] = useState<'' | 'easy_login' | undefined>(undefined);
+    const passwordlessEnabled = config.EnableEasyLogin === 'true';
 
     useAvoidKeyboard(keyboardAwareRef);
 
@@ -134,12 +134,13 @@ const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchEr
             return '';
         }
         const response = await getUserLoginType(serverUrl, loginId);
-        if (response?.error) {
+        if ('error' in response) {
             logDebug('error on checkUserLoginType', getFullErrorMessage(response?.error));
             setError(intl.formatMessage({id: 'login.passwordless.request.error', defaultMessage: 'Failed to check user login type'}));
+            return '';
         }
-        setUserLoginType(response.user_login_type ?? '');
-        return (response.user_login_type ?? '');
+        setUserLoginType(response.auth_service);
+        return (response.auth_service);
     }, [serverUrl, loginId, intl]);
 
     const getLoginErrorMessage = useCallback((loginError: unknown) => {
@@ -228,9 +229,9 @@ const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchEr
 
     const onLogin = useCallback(async () => {
         Keyboard.dismiss();
-        if (passwordlessEnabled && userLoginType === '') {
+        if (passwordlessEnabled && userLoginType === undefined) {
             const receivedUserLoginType = await checkUserLoginType();
-            if (receivedUserLoginType === 'easy') {
+            if (receivedUserLoginType === 'easy_login') {
                 setEasyLoginLinkSent(true);
             }
             return;
@@ -244,7 +245,11 @@ const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchEr
         if (error) {
             setError(undefined);
         }
-    }, [error]);
+        if (userLoginType !== undefined) {
+            setPassword('');
+            setUserLoginType(undefined);
+        }
+    }, [error, userLoginType]);
 
     const onPasswordChange = useCallback((text: string) => {
         setPassword(text);
@@ -283,7 +288,7 @@ const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchEr
     }, [managedConfig?.username]);
 
     const onIdInputSubmitting = useCallback(() => {
-        if (!passwordlessEnabled || (userLoginType !== 'passwordless')) {
+        if (!passwordlessEnabled || (userLoginType !== 'easy_login')) {
             focusPassword();
             return;
         }
@@ -292,7 +297,7 @@ const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchEr
     }, [focusPassword, onLogin, passwordlessEnabled, userLoginType]);
 
     const buttonDisabled = getButtonDisabled(loginId, password, userLoginType, passwordlessEnabled);
-    const showPasswordInput = !passwordlessEnabled || (userLoginType !== 'passwordless' && userLoginType !== '');
+    const showPasswordInput = !passwordlessEnabled || (userLoginType !== 'easy_login' && userLoginType !== undefined);
     let userInputError = error;
     if (showPasswordInput) {
         userInputError = error ? ' ' : '';
@@ -366,6 +371,7 @@ const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchEr
                         theme={theme}
                         value={password}
                         endAdornment={endAdornment}
+                        autoFocus={passwordlessEnabled}
                     />
 
                     {(emailEnabled || usernameEnabled) && config.PasswordEnableForgotLink !== 'false' && (
