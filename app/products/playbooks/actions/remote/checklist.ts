@@ -161,26 +161,15 @@ export const setDueDate = async (
 export const renameChecklist = async (
     serverUrl: string,
     playbookRunId: string,
-    checklistId: string,
     checklistNumber: number,
+    checklistId: string,
     newTitle: string,
 ) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
 
-        // Fetch current playbook run to get the checklists
-        const playbookRun = await client.fetchPlaybookRun(playbookRunId);
-
-        // Update the specific checklist title
-        const updatedChecklists = playbookRun.checklists.map((checklist, index) => {
-            if (index === checklistNumber) {
-                return {...checklist, title: newTitle};
-            }
-            return checklist;
-        });
-
         // Patch the playbook run with updated checklists
-        await client.patchPlaybookRun(playbookRunId, {checklists: updatedChecklists});
+        await client.renameChecklist(playbookRunId, checklistNumber, newTitle);
 
         // Update local database
         await localRenameChecklist(serverUrl, checklistId, newTitle);

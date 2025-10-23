@@ -40,3 +40,24 @@ export async function setOwner(serverUrl: string, playbookRunId: string, ownerId
         return {error};
     }
 }
+
+export async function renamePlaybookRun(serverUrl: string, playbookRunId: string, name: string) {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const run = await getPlaybookRunById(database, playbookRunId);
+        if (!run) {
+            return {error: `Playbook run not found: ${playbookRunId}`};
+        }
+
+        await database.write(async () => {
+            run.update((r) => {
+                r.name = name;
+            });
+        });
+
+        return {data: true};
+    } catch (error) {
+        logError('failed to rename playbook run', error);
+        return {error};
+    }
+}

@@ -99,6 +99,19 @@ export async function goToRenameChecklist(
     }, options);
 }
 
+export async function goToRenamePlaybookRun(
+    intl: IntlShape,
+    theme: Theme,
+    currentTitle: string,
+    onSave: (newTitle: string) => void,
+) {
+    const title = intl.formatMessage({id: 'playbooks.playbook_run.rename.title', defaultMessage: 'Rename playbook run'});
+    goToScreen(Screens.PLAYBOOK_RENAME_RUN, title, {
+        currentTitle,
+        onSave,
+    });
+}
+
 export async function goToSelectUser(
     theme: Theme,
     runName: string,

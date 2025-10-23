@@ -119,7 +119,7 @@ const Checklist = ({
     }, []);
 
     const handleRename = useCallback((newTitle: string) => {
-        renameChecklist(serverUrl, playbookRunId, checklist.id, checklistNumber, newTitle);
+        renameChecklist(serverUrl, playbookRunId, checklistNumber, checklist.id, newTitle);
     }, [serverUrl, playbookRunId, checklist.id, checklistNumber]);
 
     const handleEditPress = useCallback((e: any) => {

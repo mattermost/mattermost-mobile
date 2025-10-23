@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {buildQueryString} from '@utils/helpers';
+import {logInfo} from '@utils/log';
 
 import type ClientBase from '@client/rest/base';
 
@@ -29,7 +30,7 @@ export interface ClientPlaybooksMix {
     setAssignee: (playbookRunId: string, checklistNum: number, itemNum: number, assigneeId?: string) => Promise<void>;
     setDueDate: (playbookRunId: string, checklistNum: number, itemNum: number, date?: number) => Promise<void>;
 
-    // skipChecklist: (playbookRunID: string, checklistNum: number) => Promise<void>;
+    renameChecklist: (playbookRunId: string, checklistNumber: number, newName: string) => Promise<void>;
 
     // Slash Commands
     runChecklistItemSlashCommand: (playbookRunId: string, checklistNumber: number, itemNumber: number) => Promise<{trigger_id: string}>;
@@ -87,9 +88,18 @@ const ClientPlaybooks = <TBase extends Constructor<ClientBase>>(superclass: TBas
     };
 
     patchPlaybookRun = async (playbookRunId: string, updates: Partial<PlaybookRun>) => {
+        logInfo('patchPlaybookRun', {playbookRunId, updates});
         await this.doFetch(
             `${this.getPlaybookRunRoute(playbookRunId)}`,
             {method: 'patch', body: updates},
+        );
+    };
+
+    renameChecklist = async (playbookRunId: string, checklistNumber: number, newName: string) => {
+        logInfo('renameChecklist', {playbookRunId, checklistNumber, newName});
+        await this.doFetch(
+            `${this.getPlaybookRunRoute(playbookRunId)}/checklists/${checklistNumber}/rename`,
+            {method: 'put', body: {title: newName}},
         );
     };
 
