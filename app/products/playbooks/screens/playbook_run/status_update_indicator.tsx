@@ -68,7 +68,7 @@ const messages = defineMessages({
     },
     finished: {
         id: 'playbooks.playbook_run.status_update_finished',
-        defaultMessage: 'Run finished {time}',
+        defaultMessage: 'Finished at {time}',
     },
     update: {
         id: 'playbooks.playbook_run.status_update',

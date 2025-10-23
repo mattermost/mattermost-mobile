@@ -38,7 +38,7 @@ const getStylesFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
 const messages = defineMessages({
     title: {
         id: 'playbooks.playbook_run.error.title',
-        defaultMessage: 'Unable to fetch run details',
+        defaultMessage: 'Unable to fetch details',
     },
     description: {
         id: 'playbooks.playbook_run.error.description',

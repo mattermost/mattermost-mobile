@@ -16,6 +16,7 @@ import {Ringtone} from '@constants/calls';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import DatabaseManager from '@database/manager';
+import {PLAYBOOK_RUN_TYPES} from '@playbooks/constants/playbook_run';
 import {prepareCommonSystemValues} from '@queries/servers/system';
 
 import type {APIClientInterface} from '@mattermost/react-native-network-client';
@@ -1175,6 +1176,7 @@ class TestHelperSingleton {
                 update_at: Date.now() + i,
                 items_order: checklists.map((checklist) => checklist.id),
                 status_update_broadcast_channels_enabled: false,
+                type: PLAYBOOK_RUN_TYPES.PlaybookType,
             });
         }
         return playbookRuns;

@@ -159,7 +159,7 @@ const PlaybookRuns = ({
                     <Button
                         emphasis='tertiary'
                         onPress={startANewRun}
-                        text={intl.formatMessage({id: 'playbooks.runs.start_a_new_run', defaultMessage: 'Start a new run'})}
+                        text={intl.formatMessage({id: 'playbooks.runs.start_a_new_run', defaultMessage: 'New'})}
                         size='lg'
                         theme={theme}
                     />

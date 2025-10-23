@@ -17,7 +17,7 @@ export type HeaderRightButton = {
     buttonType?: 'native' | 'opacity' | 'highlight';
     color?: string;
     iconName: string;
-    count?: number;
+    count?: number | string;
     onPress: () => void;
     rippleRadius?: number;
     testID?: string;

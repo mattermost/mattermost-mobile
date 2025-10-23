@@ -12,6 +12,7 @@ type Props = {
     checklists: Array<PlaybookChecklistModel | PlaybookChecklist>;
     channelId: string;
     playbookRunId: string;
+    playbookRunName: string;
     isFinished: boolean;
     isParticipant: boolean;
 }
@@ -26,6 +27,7 @@ const ChecklistList = ({
     checklists,
     channelId,
     playbookRunId,
+    playbookRunName,
     isFinished,
     isParticipant,
 }: Props) => {
@@ -37,6 +39,7 @@ const ChecklistList = ({
                     checklist={checklist}
                     channelId={channelId}
                     playbookRunId={playbookRunId}
+                    playbookRunName={playbookRunName}
                     checklistNumber={index}
                     isFinished={isFinished}
                     isParticipant={isParticipant}

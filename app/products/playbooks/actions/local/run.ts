@@ -15,7 +15,7 @@ export async function handlePlaybookRuns(serverUrl: string, runs: PlaybookRun[],
         });
         return {data};
     } catch (error) {
-        logError('failed to handle playbook runs', error);
+        logError('failed to handle playbook checklist', error);
         return {error};
     }
 }
@@ -25,7 +25,7 @@ export async function setOwner(serverUrl: string, playbookRunId: string, ownerId
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const run = await getPlaybookRunById(database, playbookRunId);
         if (!run) {
-            return {error: 'Run not found'};
+            return {error: 'Checklist not found'};
         }
 
         await database.write(async () => {
@@ -37,6 +37,27 @@ export async function setOwner(serverUrl: string, playbookRunId: string, ownerId
         return {data: true};
     } catch (error) {
         logError('failed to set owner', error);
+        return {error};
+    }
+}
+
+export async function renamePlaybookRun(serverUrl: string, playbookRunId: string, name: string) {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const run = await getPlaybookRunById(database, playbookRunId);
+        if (!run) {
+            return {error: `Playbook run not found: ${playbookRunId}`};
+        }
+
+        await database.write(async () => {
+            run.update((r) => {
+                r.name = name;
+            });
+        });
+
+        return {data: true};
+    } catch (error) {
+        logError('failed to rename playbook run', error);
         return {error};
     }
 }
