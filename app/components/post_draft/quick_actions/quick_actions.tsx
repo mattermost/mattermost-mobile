@@ -108,7 +108,7 @@ export default function QuickActions({
                 testID={cameraActionTestID}
                 {...uploadProps}
             />
-            {isAIEnabled && value && value.trim().length > 0 && (
+            {isAIEnabled && (
                 <AIRewriteAction
                     testID={aiRewriteActionTestID}
                     value={value}

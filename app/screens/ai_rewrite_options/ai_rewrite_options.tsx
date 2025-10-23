@@ -44,6 +44,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         borderBottomWidth: 1,
         borderBottomColor: changeOpacity(theme.centerChannelColor, 0.08),
     },
+    customPromptContainerGeneration: {
+        paddingHorizontal: 20,
+        paddingVertical: 20,
+        borderBottomWidth: 1,
+        borderBottomColor: changeOpacity(theme.centerChannelColor, 0.08),
+    },
     customPromptInput: {
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
         borderRadius: 4,
@@ -113,6 +119,7 @@ const AIRewriteOptions = ({
     const [errorMessage, setErrorMessage] = useState<string>('');
     const [customPrompt, setCustomPrompt] = useState('');
     const currentPromiseRef = useRef<Promise<string> | null>(null);
+    const textInputRef = useRef<TextInput>(null);
 
     const closeBottomSheet = useCallback(async () => {
         try {
@@ -141,10 +148,12 @@ const AIRewriteOptions = ({
             return;
         }
 
-        // Safety check - ensure we have a message to rewrite
-        if (!originalMessage || !originalMessage.trim()) {
-            logWarning('AI rewrite called with empty message');
-            closeBottomSheet();
+        // Determine if we're generating new content or editing existing content
+        const isGenerating = !originalMessage || !originalMessage.trim();
+
+        // For content generation, we need a custom prompt
+        if (isGenerating && (!prompt || !prompt.trim())) {
+            logWarning('AI content generation called without prompt');
             return;
         }
 
@@ -158,7 +167,10 @@ const AIRewriteOptions = ({
 
         try {
             const client = NetworkManager.getClient(serverUrl);
-            const rewritePromise = client.getAIRewrittenMessage(originalMessage, action, prompt);
+
+            // For generation, pass empty string as message and use prompt; for editing, use original message
+            const messageToProcess = isGenerating ? '' : originalMessage;
+            const rewritePromise = client.getAIRewrittenMessage(messageToProcess, action, prompt);
             currentPromiseRef.current = rewritePromise;
 
             // Race between API call and timeout
@@ -228,6 +240,21 @@ const AIRewriteOptions = ({
         }
     }, [isProcessing, originalMessage, serverUrl, updateValue, closeBottomSheet, intl]);
 
+    // Determine if we're in generation mode (empty original message)
+    const isGeneratingContent = !originalMessage || !originalMessage.trim();
+
+    // Auto-focus the text input when in generation mode
+    useEffect(() => {
+        if (isGeneratingContent) {
+            // Small delay to ensure the bottom sheet has finished animating
+            const timer = setTimeout(() => {
+                textInputRef.current?.focus();
+            }, 300);
+            return () => clearTimeout(timer);
+        }
+        return undefined;
+    }, [isGeneratingContent]);
+
     const handleCustomPromptSubmit = useCallback(() => {
         if (customPrompt && customPrompt.trim()) {
             handleRewrite('custom', customPrompt);
@@ -261,7 +288,10 @@ const AIRewriteOptions = ({
     const snapPoints = useMemo(() => {
         const paddingBottom = 10;
         const bottomSheetAdjust = Platform.select({ios: 5, default: 20});
-        const COMPONENT_HEIGHT = CUSTOM_PROMPT_INPUT_HEIGHT + OPTIONS_PADDING + bottomSheetSnapPoint(6, ITEM_HEIGHT) + paddingBottom + bottomSheetAdjust;
+
+        // Use the same height for both generation and editing modes
+        const optionsHeight = OPTIONS_PADDING + bottomSheetSnapPoint(6, ITEM_HEIGHT);
+        const COMPONENT_HEIGHT = CUSTOM_PROMPT_INPUT_HEIGHT + optionsHeight + paddingBottom + bottomSheetAdjust;
 
         return [1, COMPONENT_HEIGHT];
     }, []);
@@ -279,8 +309,8 @@ const AIRewriteOptions = ({
                                 />
                                 <Text style={styles.loadingText}>
                                     {intl.formatMessage({
-                                        id: 'ai_rewrite.processing',
-                                        defaultMessage: 'AI is rewriting...',
+                                        id: isGeneratingContent ? 'ai_rewrite.generating' : 'ai_rewrite.processing',
+                                        defaultMessage: isGeneratingContent ? 'AI is generating...' : 'AI is rewriting...',
                                     })}
                                 </Text>
                             </>
@@ -313,12 +343,13 @@ const AIRewriteOptions = ({
                 </View>
             )}
 
-            <View style={styles.customPromptContainer}>
+            <View style={isGeneratingContent ? styles.customPromptContainerGeneration : styles.customPromptContainer}>
                 <TextInput
+                    ref={textInputRef}
                     style={styles.customPromptInput}
                     placeholder={intl.formatMessage({
-                        id: 'ai_rewrite.custom_prompt',
-                        defaultMessage: 'Ask AI to edit message...',
+                        id: isGeneratingContent ? 'ai_rewrite.generate_prompt' : 'ai_rewrite.custom_prompt',
+                        defaultMessage: isGeneratingContent ? 'Ask agents to create a message' : 'Ask AI to edit message...',
                     })}
                     placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                     value={customPrompt}
@@ -331,18 +362,20 @@ const AIRewriteOptions = ({
                 />
             </View>
 
-            <View style={styles.optionsContainer}>
-                {options.map((option) => (
-                    <OptionItem
-                        key={option.action}
-                        label={intl.formatMessage({id: option.labelId, defaultMessage: option.defaultLabel})}
-                        icon={option.icon}
-                        action={() => handleRewrite(option.action)}
-                        type='default'
-                        testID={`ai_rewrite.option.${option.action}`}
-                    />
-                ))}
-            </View>
+            {!isGeneratingContent && (
+                <View style={styles.optionsContainer}>
+                    {options.map((option) => (
+                        <OptionItem
+                            key={option.action}
+                            label={intl.formatMessage({id: option.labelId, defaultMessage: option.defaultLabel})}
+                            icon={option.icon}
+                            action={() => handleRewrite(option.action)}
+                            type='default'
+                            testID={`ai_rewrite.option.${option.action}`}
+                        />
+                    ))}
+                </View>
+            )}
         </View>
     );
 
@@ -353,6 +386,7 @@ const AIRewriteOptions = ({
             componentId={Screens.AI_REWRITE_OPTIONS}
             initialSnapIndex={1}
             snapPoints={snapPoints}
+            scrollable={true}
             testID='ai_rewrite_options'
         />
     );
