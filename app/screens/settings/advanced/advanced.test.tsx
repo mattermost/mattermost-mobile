@@ -35,7 +35,7 @@ const mockGoToScreen = goToScreen as jest.Mock;
 
 describe('AdvancedSettings', () => {
     const defaultProps = {
-        componentId: 'advanced-settings-screen' as const,
+        componentId: 'SettingsAdvanced' as const,
         isDevMode: false,
         lowConnectivityMonitorEnabled: false,
     };
