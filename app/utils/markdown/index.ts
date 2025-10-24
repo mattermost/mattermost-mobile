@@ -53,42 +53,42 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme: Theme) => {
             ...typography('Heading', 700),
         },
         heading1Text: {
-            paddingTop: 12,
+            paddingTop: Platform.OS==='ios'?3:12,
             paddingBottom: 6,
         },
         heading2: {
             ...typography('Heading', 600),
         },
         heading2Text: {
-            paddingTop: 12,
+            paddingTop: Platform.OS==='ios'?3:12,
             paddingBottom: 6,
         },
         heading3: {
             ...typography('Heading', 500),
         },
         heading3Text: {
-            paddingTop: 12,
+            paddingTop: Platform.OS==='ios'?3:12,
             paddingBottom: 6,
         },
         heading4: {
             ...typography('Heading', 400),
         },
         heading4Text: {
-            paddingTop: 12,
+            paddingTop: Platform.OS==='ios'?3:12,
             paddingBottom: 6,
         },
         heading5: {
             ...typography('Heading', 300),
         },
         heading5Text: {
-            paddingTop: 12,
+            paddingTop: Platform.OS==='ios'?3:12,
             paddingBottom: 6,
         },
         heading6: {
             ...typography('Heading', 200),
         },
         heading6Text: {
-            paddingTop: 12,
+            paddingTop: Platform.OS==='ios'?3:12,
             paddingBottom: 6,
         },
         code: {
