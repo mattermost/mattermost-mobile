@@ -204,4 +204,65 @@ describe('SearchScreen', () => {
             expect.any(String),
         );
     });
+
+    it('does not restore searchTerm after clearing when navigated with hashtag', async () => {
+        const mockNavigation = {
+            getState: () => ({
+                index: 0,
+                routes: [{params: {searchTerm: '#hashtag'}}],
+            }),
+        };
+
+        jest.spyOn(require('@react-navigation/native'), 'useNavigation').mockReturnValue(mockNavigation);
+
+        const {getByTestId} = renderWithEverything(
+            <SearchScreen {...baseProps}/>,
+            {database},
+        );
+
+        await waitFor(() => {
+            const searchInput = getByTestId('navigation.header.search_bar.search.input');
+            expect(searchInput.props.value).toBe('#hashtag');
+        });
+
+        const searchInput = getByTestId('navigation.header.search_bar.search.input');
+        const clearButton = getByTestId('navigation.header.search_bar.search.clear.button');
+
+        act(() => {
+            fireEvent.press(clearButton);
+        });
+
+        await waitFor(() => {
+            expect(searchInput.props.value).toBe('');
+        });
+    });
+
+    it('populates searchTerm when navigating to screen with hashtag', async () => {
+        const mockNavigation = {
+            getState: () => ({
+                index: 0,
+                routes: [{params: {searchTerm: '#newtag'}}],
+            }),
+        };
+
+        jest.spyOn(require('@react-navigation/native'), 'useNavigation').mockReturnValue(mockNavigation);
+
+        const {getByTestId} = renderWithEverything(
+            <SearchScreen {...baseProps}/>,
+            {database},
+        );
+
+        await waitFor(() => {
+            const searchInput = getByTestId('navigation.header.search_bar.search.input');
+            expect(searchInput.props.value).toBe('#newtag');
+        });
+
+        await waitFor(() => {
+            expect(searchPosts).toHaveBeenCalledWith(
+                expect.any(String),
+                'team1',
+                expect.objectContaining({terms: '#newtag'}),
+            );
+        });
+    });
 });

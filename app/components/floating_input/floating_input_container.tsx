@@ -189,7 +189,7 @@ const FloatingInputContainer = ({
             paddingHorizontal: focusedLabel || inputText ? 4 : 0,
             color,
         };
-    });
+    }, [styles, theme, focusedLabel, hasValue, shouldShowError, positions]);
 
     return (
         <TouchableWithoutFeedback

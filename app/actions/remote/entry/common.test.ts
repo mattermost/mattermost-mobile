@@ -31,7 +31,13 @@ jest.mock('@actions/remote/user');
 jest.mock('@actions/remote/post');
 jest.mock('@actions/remote/groups');
 jest.mock('@actions/remote/thread');
-jest.mock('@queries/app/global');
+jest.mock('@queries/app/global', () => {
+    const {of: mockOf} = require('rxjs');
+    return {
+        getDeviceToken: jest.fn(),
+        observeLowConnectivityMonitor: jest.fn(() => mockOf(true)),
+    };
+});
 jest.mock('@queries/servers/system');
 jest.mock('@queries/servers/entry');
 jest.mock('@queries/servers/system', () => {
