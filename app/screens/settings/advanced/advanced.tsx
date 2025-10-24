@@ -2,9 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useState} from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessage, useIntl} from 'react-intl';
 import {Alert, TouchableOpacity} from 'react-native';
 
+import {storeLowConnectivityMonitor} from '@actions/app/global';
+import SettingBlock from '@components/settings/block';
 import SettingContainer from '@components/settings/container';
 import SettingOption from '@components/settings/option';
 import SettingSeparator from '@components/settings/separator';
@@ -23,15 +25,18 @@ const EMPTY_FILES: FileInfo[] = [];
 type AdvancedSettingsProps = {
     componentId: AvailableScreens;
     isDevMode: boolean;
+    lowConnectivityMonitorEnabled: boolean;
 };
 const AdvancedSettings = ({
     componentId,
     isDevMode,
+    lowConnectivityMonitorEnabled,
 }: AdvancedSettingsProps) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const [dataSize, setDataSize] = useState<number | undefined>(0);
     const [files, setFiles] = useState<FileInfo[]>(EMPTY_FILES);
+    const [isLowConnectivityMonitorEnabled, setIsLowConnectivityMonitorEnabled] = useState(lowConnectivityMonitorEnabled);
 
     const getAllCachedFiles = useCallback(async () => {
         const {totalSize = 0, files: cachedFiles} = await getAllFilesInCachesDirectory(serverUrl);
@@ -76,9 +81,14 @@ const AdvancedSettings = ({
         goToScreen(screen, title);
     }, [intl]);
 
+    const onToggleLowConnectivityMonitor = useCallback(async (value: boolean) => {
+        setIsLowConnectivityMonitorEnabled(value);
+        await storeLowConnectivityMonitor(value);
+    }, []);
+
     useEffect(() => {
         getAllCachedFiles();
-    }, []);
+    }, [getAllCachedFiles]);
 
     const close = useCallback(() => {
         popTopScreen(componentId);
@@ -114,9 +124,30 @@ const AdvancedSettings = ({
                         testID='advanced_settings.component_library.option'
                         type='none'
                     />
-                    <SettingSeparator/>
+                    {/* <SettingSeparator/> */}
                 </TouchableOpacity>
             )}
+            <SettingBlock
+                headerText={defineMessage({
+                    id: 'settings.advanced.experimental_features',
+                    defaultMessage: 'Experimental Features',
+                })}
+            >
+                <SettingSeparator/>
+
+                <SettingOption
+                    action={onToggleLowConnectivityMonitor}
+                    label={intl.formatMessage({id: 'settings.advanced.low_connectivity_monitor', defaultMessage: 'Low Connectivity Monitor'})}
+                    description={intl.formatMessage({
+                        id: 'settings.advanced.low_connectivity_monitor.description',
+                        defaultMessage: 'Display banners when network connectivity or performance issues are detected',
+                    })}
+                    selected={isLowConnectivityMonitorEnabled}
+                    testID='advanced_settings.low_connectivity_monitor.option'
+                    type='toggle'
+                />
+                <SettingSeparator/>
+            </SettingBlock>
         </SettingContainer>
     );
 };

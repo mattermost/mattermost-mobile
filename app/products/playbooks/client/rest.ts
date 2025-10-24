@@ -7,13 +7,19 @@ import type ClientBase from '@client/rest/base';
 
 export interface ClientPlaybooksMix {
 
+    // Playbooks
+    fetchPlaybooks: (params: FetchPlaybooksParams) => Promise<FetchPlaybooksReturn>;
+
     // Playbook Runs
     fetchPlaybookRuns: (params: FetchPlaybookRunsParams, groupLabel?: RequestGroupLabel) => Promise<FetchPlaybookRunsReturn>;
     fetchPlaybookRun: (id: string, groupLabel?: RequestGroupLabel) => Promise<PlaybookRun>;
+    fetchPlaybookRunMetadata: (id: string) => Promise<PlaybookRunMetadata>;
     setOwner: (playbookRunId: string, ownerId: string) => Promise<void>;
 
     // Run Management
     finishRun: (playbookRunId: string) => Promise<void>;
+    createPlaybookRun: (playbook_id: string, owner_user_id: string, team_id: string, name: string, description: string, channel_id?: string, create_public_run?: boolean) => Promise<PlaybookRun>;
+    postStatusUpdate: (playbookRunID: string, payload: PostStatusUpdatePayload, ids: PostStatusUpdateIds) => Promise<void>;
 
     // Checklist Management
     setChecklistItemState: (playbookRunID: string, checklistNum: number, itemNum: number, newState: ChecklistItemState) => Promise<void>;
@@ -43,25 +49,39 @@ const ClientPlaybooks = <TBase extends Constructor<ClientBase>>(superclass: TBas
         return `${this.getPlaybookRunsRoute()}/${runId}`;
     };
 
+    // Playbooks
+    fetchPlaybooks(params: FetchPlaybooksParams) {
+        const queryParams = buildQueryString({
+            ...params,
+        });
+        return this.doFetch(
+            `${this.getPlaybooksRoute()}/playbooks${queryParams}`,
+            {method: 'get'},
+        );
+    }
+
     // Playbook Runs
     fetchPlaybookRuns = async (params: FetchPlaybookRunsParams, groupLabel?: RequestGroupLabel) => {
         const queryParams = buildQueryString(params);
 
-        try {
-            const data = await this.doFetch(
-                `${this.getPlaybookRunsRoute()}${queryParams}`,
-                {method: 'get', groupLabel},
-            );
-            return data || {items: [], total_count: 0, page_count: 0, has_more: false};
-        } catch (error) {
-            return {items: [], total_count: 0, page_count: 0, has_more: false};
-        }
+        const data = await this.doFetch(
+            `${this.getPlaybookRunsRoute()}${queryParams}`,
+            {method: 'get', groupLabel},
+        );
+        return data || {items: [], total_count: 0, page_count: 0, has_more: false};
     };
 
     fetchPlaybookRun = async (id: string, groupLabel?: RequestGroupLabel) => {
         return this.doFetch(
             `${this.getPlaybookRunRoute(id)}`,
             {method: 'get', groupLabel},
+        );
+    };
+
+    fetchPlaybookRunMetadata = async (id: string) => {
+        return this.doFetch(
+            `${this.getPlaybookRunRoute(id)}/metadata`,
+            {method: 'get'},
         );
     };
 
@@ -78,6 +98,50 @@ const ClientPlaybooks = <TBase extends Constructor<ClientBase>>(superclass: TBas
         return this.doFetch(
             `${this.getPlaybookRunRoute(playbookRunId)}/finish`,
             {method: 'put', body: {/* okhttp requires put methods to have a body */}},
+        );
+    };
+
+    createPlaybookRun = async (
+        playbook_id: string,
+        owner_user_id: string,
+        team_id: string,
+        name: string,
+        description: string,
+        channel_id?: string,
+        create_public_run?: boolean,
+    ) => {
+        const data = await this.doFetch(`${this.getPlaybookRunsRoute()}`, {
+            method: 'post',
+            body: {
+                owner_user_id,
+                team_id,
+                name,
+                description,
+                playbook_id,
+                channel_id,
+                create_public_run,
+            },
+        });
+        return data;
+    };
+
+    postStatusUpdate = async (playbookRunID: string, payload: PostStatusUpdatePayload, ids: PostStatusUpdateIds) => {
+        const body = {
+            type: 'dialog_submission',
+            callback_id: '',
+            state: '',
+            cancelled: false,
+            ...ids,
+            submission: {
+                message: payload.message,
+                reminder: payload.reminder?.toFixed() ?? '',
+                finish_run: payload.finishRun,
+            },
+        };
+
+        await this.doFetch(
+            `${this.getPlaybookRunRoute(playbookRunID)}/update-status-dialog`,
+            {method: 'post', body},
         );
     };
 

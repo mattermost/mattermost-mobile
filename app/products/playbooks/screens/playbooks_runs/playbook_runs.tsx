@@ -3,9 +3,10 @@
 
 import {FlashList, type ListRenderItem} from '@shopify/flash-list';
 import React, {useCallback, useMemo, useState} from 'react';
-import {defineMessage} from 'react-intl';
+import {defineMessage, useIntl} from 'react-intl';
 import {StyleSheet, View} from 'react-native';
 
+import Button from '@components/button';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
@@ -14,6 +15,8 @@ import Tabs from '@hooks/use_tabs/tabs';
 import {isRunFinished} from '@playbooks/utils/run';
 import {popTopScreen} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
+import {goToSelectPlaybook} from '../navigation';
 
 import EmptyState from './empty_state';
 import PlaybookCard, {CARD_HEIGHT} from './playbook_card';
@@ -43,6 +46,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => ({
         borderBottomWidth: 1,
         borderBottomColor: changeOpacity(theme.centerChannelColor, 0.12),
     },
+    startANewRunButtonContainer: {
+        padding: 20,
+    },
 }));
 
 const ItemSeparator = () => {
@@ -71,6 +77,7 @@ const PlaybookRuns = ({
     allRuns,
     componentId,
 }: Props) => {
+    const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
 
@@ -132,17 +139,32 @@ const PlaybookRuns = ({
         );
     }, []);
 
+    const startANewRun = useCallback(() => {
+        goToSelectPlaybook(intl, theme);
+    }, [intl, theme]);
+
     let content = (<EmptyState tab={activeTab}/>);
     if (!isEmpty) {
         content = (
-            <FlashList
-                data={data}
-                renderItem={renderItem}
-                contentContainerStyle={styles.container}
-                ItemSeparatorComponent={ItemSeparator}
-                estimatedItemSize={CARD_HEIGHT}
-                ListFooterComponent={footerComponent}
-            />
+            <>
+                <FlashList
+                    data={data}
+                    renderItem={renderItem}
+                    contentContainerStyle={styles.container}
+                    ItemSeparatorComponent={ItemSeparator}
+                    estimatedItemSize={CARD_HEIGHT}
+                    ListFooterComponent={footerComponent}
+                />
+                <View style={styles.startANewRunButtonContainer}>
+                    <Button
+                        emphasis='tertiary'
+                        onPress={startANewRun}
+                        text={intl.formatMessage({id: 'playbooks.runs.start_a_new_run', defaultMessage: 'Start a new run'})}
+                        size='lg'
+                        theme={theme}
+                    />
+                </View>
+            </>
         );
     }
 
