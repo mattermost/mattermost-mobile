@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {Text, View, type DimensionValue} from 'react-native';
+import {Platform, Text, View, type DimensionValue} from 'react-native';
 
 import ErrorBoundary from '@components/markdown/error_boundary';
 import MathView from '@components/math_view';
@@ -23,7 +23,8 @@ type MathViewErrorProps = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         mathStyle: {
-            marginVertical: 3,
+            marginVertical: Platform.OS==='android'? 0 : 1.5,
+            alignItems:'center',
             color: theme.centerChannelColor,
         },
         viewStyle: {
