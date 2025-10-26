@@ -3,7 +3,7 @@
 
 import {uniqueId} from 'lodash';
 import React, {useCallback, useEffect, useState} from 'react';
-import {type LayoutChangeEvent, Platform, StyleSheet, View} from 'react-native';
+import {type LayoutChangeEvent, StyleSheet, View} from 'react-native';
 import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {storeLastViewedThreadIdAndServer, removeLastViewedThreadIdAndServer} from '@actions/app/global';
@@ -62,7 +62,7 @@ const Thread = ({
 
     useAndroidHardwareBackHandler(componentId, close);
 
-    const bottomPadding = Platform.OS === 'android' ? insets.bottom : 0;
+    const bottomPadding = insets.bottom;
     useEffect(() => {
         if (isCRTEnabled && rootId) {
             const id = `${componentId}-${rootId}-${uniqueId()}`;

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useState} from 'react';
-import {type LayoutChangeEvent, Platform, StyleSheet, View} from 'react-native';
+import {type LayoutChangeEvent, StyleSheet, View} from 'react-native';
 import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {storeLastViewedChannelIdAndServer, removeLastViewedChannelIdAndServer} from '@actions/app/global';
@@ -87,7 +87,7 @@ const Channel = ({
     useAndroidHardwareBackHandler(componentId, handleBack);
 
     const marginTop = defaultHeight + (isTablet ? 0 : -insets.top);
-    const bottomPadding = Platform.OS === 'android' ? insets.bottom : 0;
+    const bottomPadding = insets.bottom;
     useEffect(() => {
         // This is done so that the header renders
         // and the screen does not look totally blank
