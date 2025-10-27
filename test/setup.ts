@@ -26,8 +26,8 @@ jest.mock('expo-application', () => {
     return {
         nativeApplicationVersion: '0.0.0',
         nativeBuildVersion: '0',
-        applicationName: 'Daakia Chat',
-        applicationId: 'com.daakia.chat',
+        applicationName: 'Mattermost',
+        applicationId: 'com.mattermost.rnbeta',
     };
 });
 
@@ -45,7 +45,7 @@ jest.mock('expo-device', () => {
         deviceName: 'Device',
         osName: 'Test',
         osVersion: '0.0.0',
-        applicationId: 'com.daakia.chat',
+        applicationId: 'com.mattermost.rnbeta',
         isRootedExperimentalAsync: jest.fn().mockResolvedValue(false),
     };
 });

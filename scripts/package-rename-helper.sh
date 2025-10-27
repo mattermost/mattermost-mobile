@@ -106,3 +106,7 @@ echo -e "${RED}WARNING:${NC} Changing package names creates a NEW app!"
 echo -e "Users will need to reinstall and will lose local data."
 echo ""
 
+
+
+
+

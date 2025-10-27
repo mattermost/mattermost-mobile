@@ -48,11 +48,11 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-import static com.mattermost.helpers.database_extension.GeneralKt.getDatabaseForServer;
-import static com.mattermost.helpers.database_extension.GeneralKt.getDeviceToken;
-import static com.mattermost.helpers.database_extension.SystemKt.queryConfigServerVersion;
-import static com.mattermost.helpers.database_extension.SystemKt.queryConfigSigningKey;
-import static com.mattermost.helpers.database_extension.UserKt.getLastPictureUpdate;
+import static com.daakia.helpers.database_extension.GeneralKt.getDatabaseForServer;
+import static com.daakia.helpers.database_extension.GeneralKt.getDeviceToken;
+import static com.daakia.helpers.database_extension.SystemKt.queryConfigServerVersion;
+import static com.daakia.helpers.database_extension.SystemKt.queryConfigSigningKey;
+import static com.daakia.helpers.database_extension.UserKt.getLastPictureUpdate;
 
 public class CustomPushNotificationHelper {
     public static final String CHANNEL_HIGH_IMPORTANCE_ID = "channel_01";
