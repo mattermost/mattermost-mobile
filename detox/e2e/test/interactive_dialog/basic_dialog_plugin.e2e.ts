@@ -53,7 +53,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
             FileSettings: {
                 EnablePublicLink: true,
             },
-          FeatureFlags: {
+            FeatureFlags: {
                 InteractiveDialogAppsForm: true,
             },
         });
