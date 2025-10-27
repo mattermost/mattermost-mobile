@@ -275,6 +275,14 @@ export const isImage = (file?: FileInfo | FileModel) => {
         return true;
     }
 
+    const allowedImageExtensions = ['png', 'jpg', 'jpeg', 'bmp', 'tiff', 'svg', 'xcf', 'gif'];
+
+    const fileExt = (file.extension || file.name.split('.').pop() || '').toLowerCase();
+
+    if (!allowedImageExtensions.includes(fileExt)) {
+        return false;
+    }
+
     let mimeType = 'mime_type' in file ? file.mime_type : file.mimeType;
     if (!mimeType) {
         mimeType = lookupMimeType(file.extension) || lookupMimeType(file.name);
