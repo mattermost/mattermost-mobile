@@ -540,8 +540,8 @@ export function goToScreen(name: AvailableScreens, title: string, passProps = {}
         statusBar: {
             style: edgeToEdge.isDark ? 'light' : 'dark',
             backgroundColor: theme.sidebarBg,
-            drawBehind: edgeToEdge.drawBehind,
-            translucent: edgeToEdge.translucent,
+            drawBehind: edgeToEdge.drawBehind ?? false,
+            translucent: edgeToEdge.translucent ?? false,
         },
         topBar: {
             animate: true,

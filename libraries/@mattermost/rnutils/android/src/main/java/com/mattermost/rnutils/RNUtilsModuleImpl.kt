@@ -258,7 +258,7 @@ class RNUtilsModuleImpl(private val reactContext: ReactApplicationContext): Life
                     }
                 }
             } catch (e: Exception) {
-                android.util.Log.e("RNUtils", "Error setting navigation bar colorHex: $colorHex", e)
+                android.util.Log.e("RNUtils", "Error setting navigation bar color: $colorHex", e)
             }
         }
     }
