@@ -23,7 +23,7 @@ type MathViewErrorProps = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         mathStyle: {
-            marginVertical: Platform.OS==='android'? 0 : 1.5,
+            marginVertical: Platform.select({ios: 1.5, default: 0}),
             alignItems: 'center',
             color: theme.centerChannelColor,
         },
