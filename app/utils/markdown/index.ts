@@ -35,7 +35,6 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme: Theme) => {
     const codeFont = getCodeFont();
     const platformHeadingPadding = Platform.select({ios: 3, default: 12});
 
-
     return {
         emph: {
             fontFamily: 'OpenSans-Italic',
