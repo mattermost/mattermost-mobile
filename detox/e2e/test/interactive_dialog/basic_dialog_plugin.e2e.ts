@@ -53,6 +53,9 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
             FileSettings: {
                 EnablePublicLink: true,
             },
+          FeatureFlags: {
+                InteractiveDialogAppsForm: true,
+            },
         });
 
         // # Upload and enable demo plugin
