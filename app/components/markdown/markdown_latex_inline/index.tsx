@@ -24,7 +24,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         mathStyle: {
             marginVertical: Platform.OS==='android'? 0 : 1.5,
-            alignItems:'center',
+            alignItems: 'center',
             color: theme.centerChannelColor,
         },
         viewStyle: {
