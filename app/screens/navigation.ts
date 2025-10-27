@@ -307,11 +307,12 @@ function edgeToEdgeHack(screen: AvailableScreens, theme: Theme) {
 
     if (Platform.OS === 'android') {
         if (Platform.Version >= 34) {
-            setTimeout(() => {
-                setNavigationBarColor(screen, theme);
-
-                // Wait 100ms to ensure the color is applied after navigation changes
-            }, 100);
+            const listener = Navigation.events().registerComponentDidAppearListener((event) => {
+                if (event.componentName === screen) {
+                    setNavigationBarColor(screen, theme);
+                    listener.remove();
+                }
+            });
         }
 
         if (Platform.Version >= 36) {
