@@ -7,7 +7,7 @@ import {useIsFocused, useNavigation} from '@react-navigation/native';
 import React, {useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View, TouchableOpacity, Text, DeviceEventEmitter} from 'react-native';
-import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
+import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {combineLatest, of as of$, Observable} from 'rxjs';
 import {switchMap, combineLatestWith, map, distinctUntilChanged} from 'rxjs/operators';
@@ -314,12 +314,25 @@ const HomeDaakia = ({
         {id: 'drafts', title: 'Drafts', icon: 'send-outline', hasUnread: (typeof draftsCount === 'number' ? draftsCount > 0 : false)},
     ];
 
+    const isFocusedValue = useSharedValue(isFocused);
+    const stateIndexValue = useSharedValue(stateIndex || 0);
+
+    React.useEffect(() => {
+        isFocusedValue.value = isFocused;
+    }, [isFocused, isFocusedValue]);
+
+    React.useEffect(() => {
+        stateIndexValue.value = stateIndex || 0;
+    }, [stateIndex, stateIndexValue]);
+
     const top = useAnimatedStyle(() => {
+        'worklet';
         return {height: insets.top, backgroundColor: theme.sidebarBg};
     }, [theme, insets.top]);
 
     const bodyAnimated = useAnimatedStyle(() => {
-        if (isFocused) {
+        'worklet';
+        if (isFocusedValue.value) {
             return {
                 opacity: withTiming(1, {duration: 150}),
                 transform: [{translateX: withTiming(0, {duration: 150})}],
@@ -328,9 +341,9 @@ const HomeDaakia = ({
 
         return {
             opacity: withTiming(0, {duration: 150}),
-            transform: [{translateX: withTiming((stateIndex || 0) > homeDaakiaScreenIndex ? -25 : 25, {duration: 150})}],
+            transform: [{translateX: withTiming(stateIndexValue.value > homeDaakiaScreenIndex ? -25 : 25, {duration: 150})}],
         };
-    }, [isFocused, stateIndex]);
+    });
 
     return (
         <>
