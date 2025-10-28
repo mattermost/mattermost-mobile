@@ -1,11 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Text, TouchableHighlight, View} from 'react-native';
 
 import {switchToChannelById} from '@actions/remote/channel';
+import {fetchPostThread} from '@actions/remote/post';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import File from '@components/files/file';
 import FormattedText from '@components/formatted_text';
@@ -197,6 +198,12 @@ const Thread = ({author, channel, location, post, teammateNameDisplay, testID, t
             );
         }
     }
+
+    useEffect(() => {
+        if (serverUrl && post?.id && (!filesInfo || filesInfo.length === 0)) {
+            fetchPostThread(serverUrl, post.id, undefined, false);
+        }
+    }, [serverUrl, post?.id, filesInfo]);
 
     let name;
     let postBody;

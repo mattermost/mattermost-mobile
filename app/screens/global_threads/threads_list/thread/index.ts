@@ -17,17 +17,17 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 import type FileModel from '@typings/database/models/servers/file';
 import type ThreadModel from '@typings/database/models/servers/thread';
 
+const validateFiles = (fs: FileModel[], userId: string) => from$(filesLocalPathValidation(fs, userId));
+
 const enhanced = withObservables([], ({database, thread}: WithDatabaseArgs & {thread: ThreadModel}) => {
     const post = observePost(database, thread.id);
-
-    const validateFiles = (fs: FileModel[], userId: string) => from$(filesLocalPathValidation(fs, userId));
-
     const filesInfo = post.pipe(
         switchMap((p) => {
             if (!p) {
                 return of$(null);
             }
             return queryFilesForPost(database, p.id).observeWithColumns(['local_path']).pipe(
+                // eslint-disable-next-line max-nested-callbacks
                 switchMap((fs) => validateFiles(fs, p.userId)),
             );
         }),
