@@ -25,7 +25,6 @@ import Loading from '@components/loading';
 import {Events, General, Permissions, Preferences} from '@constants';
 import {DMS_CATEGORY, FAVORITES_CATEGORY} from '@constants/categories';
 import {DRAFT} from '@constants/screens';
-import {HOME_PADDING} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {queryCategoriesByTeamIds} from '@queries/servers/categories';
@@ -37,7 +36,6 @@ import {observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/syste
 import {observeCurrentTeam} from '@queries/servers/team';
 import {observeUnreadsAndMentions} from '@queries/servers/thread';
 import {observeCurrentUser, observeDeactivatedUsers} from '@queries/servers/user';
-import SearchField from '@screens/home/channel_list/categories_list/subheader/search_field';
 import {type ChannelWithMyChannel, filterArchivedChannels, filterAutoclosedDMs, filterManuallyClosedDms, getUnreadIds, sortChannels} from '@utils/categories';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -92,10 +90,6 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
         backgroundColor: theme.centerChannelBg,
         borderTopLeftRadius: 12,
         borderTopRightRadius: 12,
-    },
-    searchContainer: {
-        flexDirection: 'row',
-        ...HOME_PADDING,
     },
     loadingView: {
         alignItems: 'center',
@@ -356,9 +350,6 @@ const HomeDaakia = ({
                             onMenuPress={handleMenuPress}
                             showMenu={false}
                         />
-                        <Animated.View style={styles.searchContainer}>
-                            <SearchField compact={true}/>
-                        </Animated.View>
                         <DaakiaTabs
                             tabs={tabs}
                             activeTab={activeFilters.has('unread') ? '' : activeTab}
