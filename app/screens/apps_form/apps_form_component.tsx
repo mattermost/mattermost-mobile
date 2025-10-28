@@ -220,30 +220,12 @@ function AppsFormComponent({
                 setErrors(fieldErrors);
             } else if (!hasHeaderError) {
                 hasHeaderError = true;
-                const errorFields = Object.keys(fieldErrors);
-                const availableFields = elements.map((e) => e.name).filter(Boolean);
 
-                // Provide detailed context about field mismatch
-                if (errorFields.length === 1) {
-                    const field = errorFields[0];
-                    setError(intl.formatMessage({
-                        id: 'apps.error.responses.unknown_field_error',
-                        defaultMessage: 'Server returned an error for field "{field}" which is not found in this form. Available fields: {availableFields}. Error: {error}',
-                    }, {
-                        field,
-                        availableFields: availableFields.join(', '),
-                        error: fieldErrors[field],
-                    }));
-                } else {
-                    setError(intl.formatMessage({
-                        id: 'apps.error.responses.multiple_unknown_fields_error',
-                        defaultMessage: 'Server returned errors for {errorCount} fields not found in this form. Error fields: {errorFields}. Available fields: {availableFields}',
-                    }, {
-                        errorCount: errorFields.length,
-                        errorFields: errorFields.join(', '),
-                        availableFields: availableFields.join(', '),
-                    }));
-                }
+                // Don't expose field names or error details to prevent form structure enumeration
+                setError(intl.formatMessage({
+                    id: 'apps.error.responses.unknown_field_error',
+                    defaultMessage: 'An error occurred with a form field. Please contact the app developer.',
+                }));
             }
         }
 

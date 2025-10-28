@@ -110,10 +110,11 @@ export class InteractiveDialogAdapter {
                             defaultMessage: 'Submission failed due to form validation. Please check your inputs and try again.',
                         });
                     } else {
+                        // Don't expose internal error details for security
                         userFriendlyMessage = intl.formatMessage({
-                            id: DialogErrorMessages.SUBMISSION_FAILED_WITH_DETAILS,
-                            defaultMessage: 'Submission failed: {error}',
-                        }, {error: error.message});
+                            id: DialogErrorMessages.SUBMISSION_FAILED,
+                            defaultMessage: 'Submission failed. Please try again.',
+                        });
                     }
                 } else {
                     userFriendlyMessage = intl.formatMessage({
