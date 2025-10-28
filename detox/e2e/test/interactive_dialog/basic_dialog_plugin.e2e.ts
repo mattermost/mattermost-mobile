@@ -60,12 +60,26 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
         // # Upload and enable demo plugin
         const latestUrl = await DemoPlugin.getLatestDownloadUrl();
-        await Plugin.apiUploadAndEnablePlugin({
+        const pluginResult = await Plugin.apiUploadAndEnablePlugin({
             baseUrl: siteOneUrl,
             url: latestUrl,
             id: DemoPlugin.id,
             force: true,
         });
+
+        // # Verify plugin installation succeeded
+        if (pluginResult.error) {
+            throw new Error(`Failed to install demo plugin: ${pluginResult.error} (status: ${pluginResult.status})`);
+        }
+
+        // # Wait for plugin to be fully initialized
+        await wait(2000);
+
+        // # Verify plugin is actually active
+        const statusCheck = await Plugin.apiGetPluginStatus(siteOneUrl, DemoPlugin.id);
+        if (!statusCheck.isActive) {
+            throw new Error(`Demo plugin is not active after installation. Installed: ${statusCheck.isInstalled}, Active: ${statusCheck.isActive}`);
+        }
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -79,6 +93,14 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     afterEach(async () => {
+        // # Dismiss any error alerts that might be blocking the UI
+        try {
+            await element(by.text('OK')).tap();
+            await wait(300);
+        } catch {
+            // No alert to dismiss
+        }
+
         // # Clean up any open dialogs between tests
         try {
             await InteractiveDialogScreen.cancel();
