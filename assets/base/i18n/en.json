@@ -72,7 +72,6 @@
   "apps.error.parser.unexpected_state": "Unreachable: Unexpected state in matchBinding: `{state}`.",
   "apps.error.parser.unexpected_whitespace": "Unreachable: Unexpected whitespace.",
   "apps.error.responses.form.no_form": "Response type is `form`, but no valid form was included in the response.",
-  "apps.error.responses.multiple_unknown_fields_error": "Server returned errors for {errorCount} fields not found in this form. Error fields: {errorFields}. Available fields: {availableFields}",
   "apps.error.responses.navigate.no_url": "Response type is `navigate`, but no url was included in response.",
   "apps.error.responses.unexpected_error": "Received an unexpected error.",
   "apps.error.responses.unexpected_type": "App response type was not expected. Response type: {type}",

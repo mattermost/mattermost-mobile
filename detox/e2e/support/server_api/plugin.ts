@@ -240,18 +240,6 @@ export const apiUploadAndEnablePlugin = async (options: {
 }): Promise<any> => {
     const {baseUrl, filename, url, id, version, force = false} = options;
 
-    // Validate plugin download URL to prevent SSRF
-    // Note: baseUrl comes from test config (trusted source) so no validation needed
-    if (url) {
-        const allowedPluginSources = [
-            'https://github.com/mattermost/',
-            'https://github.com/mattermost-community/',
-        ];
-        if (!allowedPluginSources.some((allowed) => url.startsWith(allowed))) {
-            return {error: 'Invalid plugin URL: must be from github.com/mattermost/ or github.com/mattermost-community/', status: 400};
-        }
-    }
-
     try {
         // Check current plugin status
         const statusResult = await apiGetPluginStatus(baseUrl, id, version);
@@ -276,6 +264,14 @@ export const apiUploadAndEnablePlugin = async (options: {
         // Plugin needs to be installed
         let installResult;
         if (url) {
+            // Validate plugin download URL to prevent SSRF
+            const allowedPluginSources = [
+                'https://github.com/mattermost/',
+                'https://github.com/mattermost-community/',
+            ];
+            if (!allowedPluginSources.some((allowed) => url.startsWith(allowed))) {
+                return {error: 'Invalid plugin URL', status: 400};
+            }
             installResult = await apiInstallPluginFromUrl(baseUrl, url, force);
         } else if (filename) {
             installResult = await apiUploadPlugin(baseUrl, filename);

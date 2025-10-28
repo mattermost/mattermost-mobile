@@ -337,7 +337,7 @@ describe('InteractiveDialogAdapter', () => {
             expect(result).toEqual({
                 error: {
                     type: AppCallResponseTypes.ERROR,
-                    text: 'Submission failed: Unexpected error',
+                    text: 'Submission failed. Please try again.',
                     data: {
                         errors: {},
                     },
