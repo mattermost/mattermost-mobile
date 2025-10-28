@@ -16,6 +16,7 @@ type PreHeaderProps = {
     isPinned: boolean;
     skipSavedHeader?: boolean;
     skipPinnedHeader?: boolean;
+    alignRight?: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -23,6 +24,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         container: {
             flex: 1,
             flexDirection: 'row',
+            height: 15,
+            marginRight: 10,
+            marginTop: 10,
+        },
+        containerRight: {
+            flex: 1,
+            flexDirection: 'row-reverse',
             height: 15,
             marginRight: 10,
             marginTop: 10,
@@ -53,6 +61,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             fontSize: 13,
             lineHeight: 15,
         },
+        textRight: {
+            color: theme.linkColor,
+            fontSize: 13,
+            lineHeight: 15,
+            textAlign: 'right',
+        },
     };
 });
 
@@ -71,7 +85,7 @@ const messages = defineMessages({
     },
 });
 
-const PreHeader = ({isConsecutivePost, isSaved, isPinned, skipSavedHeader, skipPinnedHeader}: PreHeaderProps) => {
+const PreHeader = ({isConsecutivePost, isSaved, isPinned, skipSavedHeader, skipPinnedHeader, alignRight}: PreHeaderProps) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const isPinnedAndSaved = isPinned && isSaved && !skipSavedHeader && !skipPinnedHeader;
@@ -89,8 +103,11 @@ const PreHeader = ({isConsecutivePost, isSaved, isPinned, skipSavedHeader, skipP
         return null;
     }
 
+    const containerStyle = alignRight ? style.containerRight : style.container;
+    const textStyle = alignRight ? style.textRight : style.text;
+
     return (
-        <View style={[style.container, (isConsecutivePost && style.consecutive)]}>
+        <View style={[containerStyle, (isConsecutivePost && style.consecutive)]}>
             <View style={style.iconsContainer}>
                 {isPinned && !skipPinnedHeader &&
                 <CompassIcon
@@ -113,7 +130,7 @@ const PreHeader = ({isConsecutivePost, isSaved, isPinned, skipSavedHeader, skipP
             <View style={style.rightColumn}>
                 <FormattedText
                     {...text}
-                    style={style.text}
+                    style={textStyle}
                     testID='post_pre_header.text'
                 />
             </View>
