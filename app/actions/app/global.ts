@@ -101,3 +101,7 @@ export const removePushDisabledInServerAcknowledged = async (serverUrl: string) 
 export const storeLowConnectivityMonitor = async (enabled: boolean) => {
     return storeGlobal(GLOBAL_IDENTIFIERS.LOW_CONNECTIVITY_MONITOR, enabled, false);
 };
+
+export const storeModernChatEnabled = async (enabled: boolean) => {
+    return storeGlobal(GLOBAL_IDENTIFIERS.MODERN_CHAT, enabled, false);
+};

@@ -192,6 +192,12 @@ export const DisplayOptionConfig: Record<string, SettingConfigDetails> = {
         icon: 'palette-outline',
         testID: messages.theme.id,
     },
+    modern_chat: {
+        defaultMessage: 'Modern Chat',
+        i18nId: 'mobile.display_settings.modern_chat',
+        icon: 'message-text-outline',
+        testID: 'mobile.display_settings.modern_chat',
+    },
     timezone: {
         defaultMessage: messages.timezone.defaultMessage,
         i18nId: messages.timezone.id,

@@ -116,3 +116,19 @@ export const observeLowConnectivityMonitor = () => {
         }),
     );
 };
+
+export const observeModernChatEnabled = () => {
+    const query = queryGlobalValue(GLOBAL_IDENTIFIERS.MODERN_CHAT);
+    if (!query) {
+        return of$(false);
+    }
+    return query.observe().pipe(
+        switchMap((result) => (result.length ? result[0].observe() : of$(false))),
+        switchMap((v) => {
+            if (typeof v === 'boolean') {
+                return of$(v);
+            }
+            return of$(v?.value ?? false);
+        }),
+    );
+};
