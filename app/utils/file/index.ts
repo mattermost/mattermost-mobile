@@ -66,6 +66,8 @@ const SUPPORTED_DOCS_FORMAT = Platform.select({
     ],
 });
 
+const SUPPORTED_IMAGE_FORMAT = ['png', 'jpg', 'jpeg', 'bmp', 'tiff', 'svg', 'xcf', 'gif'];
+
 const SUPPORTED_VIDEO_FORMAT = Platform.select({
     ios: ['video/mp4', 'video/x-m4v', 'video/quicktime'],
     android: ['video/3gpp', 'video/x-matroska', 'video/mp4', 'video/webm', 'video/quicktime'],
@@ -266,6 +268,11 @@ export const isGif = (file?: FileInfo | FileModel) => {
     return mime === 'image/gif';
 };
 
+export function extractExtension(filename: string) {
+    const ext = filename.split('.').pop() || '';
+    return ext.startsWith('.') ? ext.slice(1).toLowerCase() : ext.toLowerCase();
+}
+
 export const isImage = (file?: FileInfo | FileModel) => {
     if (!file) {
         return false;
@@ -275,11 +282,9 @@ export const isImage = (file?: FileInfo | FileModel) => {
         return true;
     }
 
-    const allowedImageExtensions = ['png', 'jpg', 'jpeg', 'bmp', 'tiff', 'svg', 'xcf', 'gif'];
+    const fileExt = extractExtension(file.extension || file.name);
 
-    const fileExt = (file.extension || file.name.split('.').pop() || '').toLowerCase();
-
-    if (!allowedImageExtensions.includes(fileExt)) {
+    if (!SUPPORTED_IMAGE_FORMAT.includes(fileExt)) {
         return false;
     }
 
