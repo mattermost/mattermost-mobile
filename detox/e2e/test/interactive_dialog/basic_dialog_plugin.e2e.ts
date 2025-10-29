@@ -35,6 +35,20 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     let testUser: any;
 
     beforeAll(async () => {
+        // Log environment info for debugging CI vs local differences
+        // eslint-disable-next-line no-console
+        console.log('=== Test Environment Info ===');
+        // eslint-disable-next-line no-console
+        console.log(`Platform: ${process.platform}`);
+        // eslint-disable-next-line no-console
+        console.log(`Architecture: ${process.arch}`);
+        // eslint-disable-next-line no-console
+        console.log(`Node version: ${process.version}`);
+        // eslint-disable-next-line no-console
+        console.log(`Test server: ${siteOneUrl}`);
+        // eslint-disable-next-line no-console
+        console.log('=============================');
+
         const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
         testUser = user;
@@ -69,6 +83,15 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
         // # Verify plugin installation succeeded
         if (pluginResult.error) {
+            // Check if this is a Cloudflare timeout (CI infrastructure issue)
+            if (pluginResult.status === 524) {
+                throw new Error(
+                    'Plugin installation failed due to Cloudflare timeout (Error 524). ' +
+                    'This is a known CI infrastructure limitation when the test server downloads plugins from GitHub. ' +
+                    'To fix: Either (1) pre-download plugin in CI workflow to detox/e2e/support/fixtures/ and use filename instead of url, ' +
+                    'or (2) use a test server without Cloudflare proxy.',
+                );
+            }
             throw new Error(`Failed to install demo plugin: ${pluginResult.error} (status: ${pluginResult.status})`);
         }
 

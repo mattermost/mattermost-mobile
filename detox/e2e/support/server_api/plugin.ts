@@ -58,10 +58,10 @@ export const DemoPlugin = {
     id: 'com.mattermost.demo-plugin',
     repo: 'mattermost/mattermost-plugin-demo',
 
-    // Get download URL for latest version
+    // Get download URL for latest version (linux-amd64 for CI compatibility)
     async getLatestDownloadUrl() {
         const latestVersion = await apiGetLatestPluginVersion(this.repo);
-        return `https://github.com/${this.repo}/releases/download/v${latestVersion}/mattermost-plugin-demo-v${latestVersion}.tar.gz`;
+        return `https://github.com/${this.repo}/releases/download/v${latestVersion}/mattermost-plugin-demo-v${latestVersion}-linux-amd64.tar.gz`;
     },
 } as const;
 
