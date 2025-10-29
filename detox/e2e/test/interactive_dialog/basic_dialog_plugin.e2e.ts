@@ -73,13 +73,31 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         });
 
         // # Upload and enable demo plugin
+        const latestVersion = await Plugin.apiGetLatestPluginVersion(DemoPlugin.repo);
         const latestUrl = await DemoPlugin.getLatestDownloadUrl();
+
+        // # Check current plugin status before installation
+        const preInstallStatus = await Plugin.apiGetPluginStatus(siteOneUrl, DemoPlugin.id);
+
+        // eslint-disable-next-line no-console
+        console.log('=== Plugin Installation Debug ===');
+        // eslint-disable-next-line no-console
+        console.log(`Target version: ${latestVersion}`);
+        // eslint-disable-next-line no-console
+        console.log(`Download URL: ${latestUrl}`);
+        // eslint-disable-next-line no-console
+        console.log(`Current status: installed=${preInstallStatus.isInstalled}, active=${preInstallStatus.isActive}, version=${preInstallStatus.plugin?.version || 'none'}`);
+
         const pluginResult = await Plugin.apiUploadAndEnablePlugin({
             baseUrl: siteOneUrl,
             url: latestUrl,
             id: DemoPlugin.id,
+            version: latestVersion,
             force: true,
         });
+
+        // eslint-disable-next-line no-console
+        console.log(`Installation result: ${pluginResult.message || 'success'}`);
 
         // # Verify plugin installation succeeded
         if (pluginResult.error) {
@@ -99,9 +117,18 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await wait(2000);
 
         // # Verify plugin is actually active
-        const statusCheck = await Plugin.apiGetPluginStatus(siteOneUrl, DemoPlugin.id);
+        const statusCheck = await Plugin.apiGetPluginStatus(siteOneUrl, DemoPlugin.id, latestVersion);
+        // eslint-disable-next-line no-console
+        console.log(`Final status: installed=${statusCheck.isInstalled}, active=${statusCheck.isActive}, version=${statusCheck.plugin?.version || 'unknown'}, versionMatch=${statusCheck.isVersionMatch}`);
+        // eslint-disable-next-line no-console
+        console.log('================================');
+
         if (!statusCheck.isActive) {
             throw new Error(`Demo plugin is not active after installation. Installed: ${statusCheck.isInstalled}, Active: ${statusCheck.isActive}`);
+        }
+
+        if (!statusCheck.isVersionMatch) {
+            throw new Error(`Demo plugin version mismatch. Expected: ${latestVersion}, Got: ${statusCheck.plugin?.version}`);
         }
 
         // # Log in to server

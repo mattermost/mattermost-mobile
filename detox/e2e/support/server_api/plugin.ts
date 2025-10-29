@@ -248,17 +248,30 @@ export const apiUploadAndEnablePlugin = async (options: {
         }
 
         // If already active with correct version, return early
-        if (statusResult.isActive && (!version || statusResult.isVersionMatch)) {
-            return {plugin: statusResult.plugin, message: 'Plugin is already active'};
+        if (statusResult.isActive && version && statusResult.isVersionMatch) {
+            return {plugin: statusResult.plugin, message: 'Plugin is already active with correct version'};
         }
 
-        // If installed but inactive, just enable it
-        if (statusResult.isInstalled && (!version || statusResult.isVersionMatch)) {
+        // If installed but inactive with correct version, just enable it
+        if (statusResult.isInstalled && version && statusResult.isVersionMatch && !statusResult.isActive) {
             const enableResult = await apiEnablePluginById(baseUrl, id);
             if (enableResult.error) {
                 return enableResult;
             }
-            return {plugin: statusResult.plugin, message: 'Plugin was inactive, now enabled'};
+            return {plugin: statusResult.plugin, message: 'Plugin was inactive with correct version, now enabled'};
+        }
+
+        // If installed with wrong version (or no version specified), remove it first
+        let removedVersion = null;
+        if (statusResult.isInstalled && (!statusResult.isVersionMatch || !version)) {
+            removedVersion = statusResult.plugin?.version || 'unknown';
+            const removeResult = await apiRemovePluginById(baseUrl, id);
+            if (removeResult.error) {
+                return removeResult;
+            }
+
+            // Wait for removal to complete
+            await new Promise((resolve) => setTimeout(resolve, 1000));
         }
 
         // Plugin needs to be installed
@@ -295,9 +308,13 @@ export const apiUploadAndEnablePlugin = async (options: {
         // Wait a moment for enablement to complete
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
+        const message = removedVersion
+            ? `Removed old plugin version ${removedVersion} and installed version ${version || installResult.plugin?.version || 'unknown'}`
+            : 'Plugin uploaded and enabled successfully';
+
         return {
             plugin: installResult.plugin,
-            message: 'Plugin uploaded and enabled successfully',
+            message,
         };
     } catch (err) {
         return getResponseFromError(err);
