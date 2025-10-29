@@ -38,11 +38,30 @@ public struct AckNotification: Codable {
             isIdLoaded = false
         }
         receivedAt = Date().millisecondsSince1970
-        
+
         if let decodedIdentifier = try? container.decode(String.self, forKey: .server_id) {
-            serverUrl = try Database.default.getServerUrlForServer(decodedIdentifier)
+            if let url = try? Database.default.getServerUrlForServer(decodedIdentifier) {
+                serverUrl = url
+            } else {
+                GekidouLogger.shared.log(.error, "Gekidou AckNotification: Failed to get server URL for server ID %{public}@", decodedIdentifier)
+                throw DecodingError.dataCorruptedError(
+                    forKey: .server_id,
+                    in: container,
+                    debugDescription: "Failed to retrieve server URL for server ID: \(decodedIdentifier)"
+                )
+            }
         } else {
-            serverUrl = try Database.default.getOnlyServerUrl()
+            if let url = try? Database.default.getOnlyServerUrl() {
+                serverUrl = url
+            } else {
+                GekidouLogger.shared.log(.error, "Gekidou AckNotification: Failed to get only server URL - no servers configured")
+                throw DecodingError.dataCorrupted(
+                    DecodingError.Context(
+                        codingPath: decoder.codingPath,
+                        debugDescription: "Failed to retrieve server URL - no servers configured"
+                    )
+                )
+            }
         }
     }
     
