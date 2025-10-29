@@ -3,6 +3,7 @@ package com.mattermost.rnbeta
 import android.content.res.Configuration
 import android.os.Bundle
 import android.view.KeyEvent
+import androidx.core.view.WindowCompat
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint
 import com.facebook.react.defaults.DefaultReactActivityDelegate
@@ -37,6 +38,7 @@ class MainActivity : NavigationActivity() {
         setHWKeyboardConnected()
         lastOrientation = this.resources.configuration.orientation
         foldableObserver.onCreate()
+        WindowCompat.setDecorFitsSystemWindows(window, false)
     }
 
     override fun onStart() {
