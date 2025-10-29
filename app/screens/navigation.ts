@@ -3,8 +3,9 @@
 
 /* eslint-disable max-lines */
 
+import RNUtils from '@mattermost/rnutils';
 import merge from 'deepmerge';
-import {Appearance, DeviceEventEmitter, StatusBar, Platform, Alert, type EmitterSubscription, Keyboard} from 'react-native';
+import {Appearance, DeviceEventEmitter, Platform, Alert, type EmitterSubscription, Keyboard, StatusBar} from 'react-native';
 import {type ComponentWillAppearEvent, type ImageResource, type LayoutOrientation, Navigation, type Options, OptionsModalPresentationStyle, type OptionsTopBarButton, type ScreenPoppedEvent, type EventSubscription} from 'react-native-navigation';
 import tinyColor from 'tinycolor2';
 
@@ -35,6 +36,23 @@ let subscriptions: Array<EmitterSubscription | EventSubscription> | undefined;
 
 export const allOrientations: LayoutOrientation[] = ['sensor', 'sensorLandscape', 'sensorPortrait', 'landscape', 'portrait'];
 export const portraitOrientation: LayoutOrientation[] = ['portrait'];
+
+const loginFlowScreens = new Set<AvailableScreens>([
+    Screens.ONBOARDING,
+    Screens.SERVER,
+    Screens.LOGIN,
+    Screens.SSO,
+    Screens.MFA,
+    Screens.FORGOT_PASSWORD,
+]);
+
+function setNavigationBarColor(screen: AvailableScreens, th?: Theme) {
+    if (Platform.OS === 'android' && Platform.Version >= 34) {
+        const theme = th || getThemeFromState();
+        const color = loginFlowScreens.has(screen) ? theme.sidebarBg : theme.centerChannelBg;
+        RNUtils.setNavigationBarColor(color, tinyColor(color).isLight());
+    }
+}
 
 export function registerNavigationListeners() {
     subscriptions?.forEach((v) => v.remove());
@@ -88,14 +106,19 @@ function onCommandListener(name: string, params: any) {
         }
     }
 
-    if (NavigationStore.getVisibleScreen() === Screens.HOME) {
+    const screen = NavigationStore.getVisibleScreen();
+    if (screen === Screens.HOME) {
         DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, true);
     }
+
+    setNavigationBarColor(screen);
 }
 
 function onPoppedListener({componentId}: ScreenPoppedEvent) {
     // screen pop does not trigger registerCommandListener, but does trigger screenPoppedListener
-    NavigationStore.removeScreenFromStack(componentId as AvailableScreens);
+    const screen = componentId as AvailableScreens;
+    NavigationStore.removeScreenFromStack(screen);
+    setNavigationBarColor(screen);
 }
 
 function onScreenWillAppear(event: ComponentWillAppearEvent) {
@@ -279,6 +302,32 @@ function isScreenRegistered(screen: AvailableScreens) {
     return true;
 }
 
+function edgeToEdgeHack(screen: AvailableScreens, theme: Theme) {
+    const isDark = tinyColor(theme.sidebarBg).isDark();
+
+    if (Platform.OS === 'android') {
+        if (Platform.Version >= 34) {
+            const listener = Navigation.events().registerComponentDidAppearListener((event) => {
+                if (event.componentName === screen) {
+                    setNavigationBarColor(screen, theme);
+                    listener.remove();
+                }
+            });
+        }
+
+        if (Platform.Version >= 36) {
+            return {
+                drawBehind: true,
+                translucent: false,
+                isDark,
+            };
+        }
+    }
+
+    StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
+    return {isDark};
+}
+
 export function openToS() {
     NavigationStore.setToSOpen(true);
     return showOverlay(Screens.TERMS_OF_SERVICE, {}, {overlay: {interceptTouchOutside: true}});
@@ -286,8 +335,7 @@ export function openToS() {
 
 export function resetToHome(passProps: LaunchProps = {launchType: Launch.Normal}) {
     const theme = getThemeFromState();
-    const isDark = tinyColor(theme.sidebarBg).isDark();
-    StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
+    const edgeToEdge = edgeToEdgeHack(Screens.HOME, theme);
 
     if (!passProps.coldStart && (passProps.launchType === Launch.AddServer || passProps.launchType === Launch.AddServerFromDeepLink)) {
         dismissModal({componentId: Screens.SERVER});
@@ -313,6 +361,7 @@ export function resetToHome(passProps: LaunchProps = {launchType: Launch.Normal}
                     statusBar: {
                         visible: true,
                         backgroundColor: theme.sidebarBg,
+                        ...edgeToEdge,
                     },
                     topBar: {
                         visible: false,
@@ -337,8 +386,7 @@ export function resetToHome(passProps: LaunchProps = {launchType: Launch.Normal}
 
 export function resetToSelectServer(passProps: LaunchProps) {
     const theme = getDefaultThemeByAppearance();
-    const isDark = tinyColor(theme.sidebarBg).isDark();
-    StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
+    const edgeToEdge = edgeToEdgeHack(Screens.SERVER, theme);
 
     const children = [{
         component: {
@@ -356,6 +404,7 @@ export function resetToSelectServer(passProps: LaunchProps) {
                 statusBar: {
                     visible: true,
                     backgroundColor: theme.sidebarBg,
+                    ...edgeToEdge,
                 },
                 topBar: {
                     backButton: {
@@ -383,8 +432,7 @@ export function resetToSelectServer(passProps: LaunchProps) {
 
 export function resetToOnboarding(passProps: LaunchProps) {
     const theme = getDefaultThemeByAppearance();
-    const isDark = tinyColor(theme.sidebarBg).isDark();
-    StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
+    const edgeToEdge = edgeToEdgeHack(Screens.ONBOARDING, theme);
 
     const children = [{
         component: {
@@ -402,6 +450,7 @@ export function resetToOnboarding(passProps: LaunchProps) {
                 statusBar: {
                     visible: true,
                     backgroundColor: theme.sidebarBg,
+                    ...edgeToEdge,
                 },
                 topBar: {
                     backButton: {
@@ -429,8 +478,7 @@ export function resetToOnboarding(passProps: LaunchProps) {
 
 export function resetToTeams() {
     const theme = getThemeFromState();
-    const isDark = tinyColor(theme.sidebarBg).isDark();
-    StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
+    const edgeToEdge = edgeToEdgeHack(Screens.SELECT_TEAM, theme);
 
     return Navigation.setRoot({
         root: {
@@ -446,6 +494,7 @@ export function resetToTeams() {
                             statusBar: {
                                 visible: true,
                                 backgroundColor: theme.sidebarBg,
+                                ...edgeToEdge,
                             },
                             topBar: {
                                 visible: false,
@@ -472,7 +521,7 @@ export function goToScreen(name: AvailableScreens, title: string, passProps = {}
     }
 
     const theme = getThemeFromState();
-    const isDark = tinyColor(theme.sidebarBg).isDark();
+    const edgeToEdge = edgeToEdgeHack(name, theme);
     const componentId = NavigationStore.getVisibleScreen();
     if (!componentId) {
         logError('Trying to go to screen without any screen on the navigation store');
@@ -489,8 +538,10 @@ export function goToScreen(name: AvailableScreens, title: string, passProps = {}
             right: {enabled: false},
         },
         statusBar: {
-            style: isDark ? 'light' : 'dark',
+            style: edgeToEdge.isDark ? 'light' : 'dark',
             backgroundColor: theme.sidebarBg,
+            drawBehind: edgeToEdge.drawBehind ?? false,
+            translucent: edgeToEdge.translucent ?? false,
         },
         topBar: {
             animate: true,
@@ -608,6 +659,7 @@ export function showModal(name: AvailableScreens, title: string, passProps = {},
     }
 
     const theme = getThemeFromState();
+    const edgeToEdge = edgeToEdgeHack(name, theme);
     const modalPresentationStyle: OptionsModalPresentationStyle = Platform.OS === 'ios' ? OptionsModalPresentationStyle.pageSheet : OptionsModalPresentationStyle.none;
     const defaultOptions: Options = {
         modalPresentationStyle,
@@ -617,6 +669,7 @@ export function showModal(name: AvailableScreens, title: string, passProps = {},
         statusBar: {
             visible: true,
             backgroundColor: theme.sidebarBg,
+            ...edgeToEdge,
         },
         topBar: {
             animate: true,
