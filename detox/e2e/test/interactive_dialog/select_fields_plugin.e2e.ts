@@ -8,7 +8,6 @@
 // *******************************************************************
 
 import {
-    DemoPlugin,
     Plugin,
     Setup,
     System,
@@ -57,11 +56,8 @@ describe('Interactive Dialog - Select Fields (Plugin)', () => {
         });
 
         // # Upload and enable demo plugin
-        const latestUrl = await DemoPlugin.getLatestDownloadUrl();
         await Plugin.apiUploadAndEnablePlugin({
             baseUrl: siteOneUrl,
-            url: latestUrl,
-            id: DemoPlugin.id,
             force: true,
         });
 

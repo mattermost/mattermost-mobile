@@ -58,10 +58,10 @@ export const DemoPlugin = {
     id: 'com.mattermost.demo-plugin',
     repo: 'mattermost/mattermost-plugin-demo',
 
-    // Get download URL for latest version (linux-arm64 to test server architecture)
+    // Get download URL for latest version (linux-amd64 for CI compatibility)
     async getLatestDownloadUrl() {
         const latestVersion = await apiGetLatestPluginVersion(this.repo);
-        return `https://github.com/${this.repo}/releases/download/v${latestVersion}/mattermost-plugin-demo-v${latestVersion}-linux-arm64.tar.gz`;
+        return `https://github.com/${this.repo}/releases/download/v${latestVersion}/mattermost-plugin-demo-v${latestVersion}-linux-amd64.tar.gz`;
     },
 } as const;
 
@@ -220,25 +220,21 @@ export const apiGetPluginStatus = async (baseUrl: string, pluginId: string, vers
 };
 
 /**
- * Upload and enable plugin, handling various states.
+ * Upload and enable demo plugin, handling various states.
+ * Uses DemoPlugin.getLatestDownloadUrl() internally to avoid SSRF concerns.
  * @param {Object} options - configuration object
  * @param {string} options.baseUrl - the base server URL
- * @param {string} options.filename - filename if uploading from file
- * @param {string} options.url - URL if installing from URL
- * @param {string} options.id - the plugin ID
  * @param {string} options.version - expected plugin version
  * @param {boolean} options.force - whether to force install if already exists
  * @return {Object} returns plugin data on success or {error, status} on error
  */
 export const apiUploadAndEnablePlugin = async (options: {
     baseUrl: string;
-    filename?: string;
-    url?: string;
-    id: string;
     version?: string;
     force?: boolean;
 }): Promise<any> => {
-    const {baseUrl, filename, url, id, version, force = false} = options;
+    const {baseUrl, version, force = false} = options;
+    const id = DemoPlugin.id;
 
     try {
         // Check current plugin status
@@ -274,23 +270,9 @@ export const apiUploadAndEnablePlugin = async (options: {
             await new Promise((resolve) => setTimeout(resolve, 1000));
         }
 
-        // Plugin needs to be installed
-        let installResult;
-        if (url) {
-            // Validate plugin download URL to prevent SSRF
-            const allowedPluginSources = [
-                'https://github.com/mattermost/',
-                'https://github.com/mattermost-community/',
-            ];
-            if (!allowedPluginSources.some((allowed) => url.startsWith(allowed))) {
-                return {error: 'Invalid plugin URL', status: 400};
-            }
-            installResult = await apiInstallPluginFromUrl(baseUrl, url, force);
-        } else if (filename) {
-            installResult = await apiUploadPlugin(baseUrl, filename);
-        } else {
-            return {error: 'Either filename or url must be provided', status: 400};
-        }
+        // Plugin needs to be installed - get URL from DemoPlugin
+        const url = await DemoPlugin.getLatestDownloadUrl();
+        const installResult = await apiInstallPluginFromUrl(baseUrl, url, force);
 
         if (installResult.error) {
             return installResult;
@@ -301,12 +283,31 @@ export const apiUploadAndEnablePlugin = async (options: {
 
         // Enable the newly installed plugin
         const enableResult = await apiEnablePluginById(baseUrl, id);
+
+        // Log the enable API response for debugging
+        // eslint-disable-next-line no-console
+        console.log('Enable plugin API response:', {
+            status: enableResult.status,
+            statusText: enableResult.statusText,
+            data: enableResult.data,
+            error: enableResult.error,
+        });
+
         if (enableResult.error) {
             return enableResult;
         }
 
         // Wait a moment for enablement to complete
         await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        // Check plugin status immediately after enable to verify it activated
+        const enableStatusCheck = await apiGetPluginStatus(baseUrl, id);
+        // eslint-disable-next-line no-console
+        console.log('Plugin status immediately after enable:', {
+            isInstalled: enableStatusCheck.isInstalled,
+            isActive: enableStatusCheck.isActive,
+            version: enableStatusCheck.plugin?.version,
+        });
 
         const message = removedVersion
             ? `Removed old plugin version ${removedVersion} and installed version ${version || installResult.plugin?.version || 'unknown'}`

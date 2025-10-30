@@ -90,8 +90,6 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
         const pluginResult = await Plugin.apiUploadAndEnablePlugin({
             baseUrl: siteOneUrl,
-            url: latestUrl,
-            id: DemoPlugin.id,
             version: latestVersion,
             force: true,
         });
