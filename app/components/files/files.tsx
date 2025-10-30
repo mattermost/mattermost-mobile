@@ -21,6 +21,7 @@ type FilesProps = {
     enableSecureFilePreview: boolean;
     failed?: boolean;
     filesInfo: FileInfo[];
+    isMyPost?: boolean;
     layoutWidth?: number;
     location: string;
     isReplyPost: boolean;
@@ -60,6 +61,7 @@ const Files = ({
     filesInfo,
     isReplyPost,
     layoutWidth,
+    isMyPost,
     location,
     postId,
     postProps,
@@ -105,6 +107,9 @@ const Files = ({
                 nonVisibleImagesCount = moreImagesCount;
             }
 
+            const isSingleImageInRow = isImageRow && items.length === 1;
+            const singleImageStyle: StyleProp<ViewStyle> = isSingleImageInRow && isMyPost ? {marginLeft: 'auto'} : undefined;
+
             if (idx !== 0 && includeGutter) {
                 container = containerWithGutter;
             }
@@ -112,11 +117,10 @@ const Files = ({
                 (isImageRow) || // Remove marginTop for all images in image row
                 (!isImageRow && idx === 0 && imageAttachments.length === 0) // Remove marginTop for first non-image only if no images present
             );
-            return (
+            const item = (
                 <View
-                    style={[container, styles.marginTop, shouldRemoveMarginTop && {marginTop: 0}]}
+                    style={[container, styles.marginTop, shouldRemoveMarginTop && {marginTop: 0}, singleImageStyle]}
                     testID={`${file.id}-file-container`}
-                    key={file.id}
                 >
                     <File
                         galleryIdentifier={galleryIdentifier}
@@ -134,6 +138,7 @@ const Files = ({
                     />
                 </View>
             );
+            return React.cloneElement(item, {key: file.id});
         });
     };
 
@@ -155,6 +160,7 @@ const Files = ({
                 style={[
                     styles.row,
                     {width: portraitPostWidth},
+                    isMyPost && {marginLeft: 'auto'},
                     isPermalinkPreview && {marginTop: 0},
                 ]}
                 testID='image-row'

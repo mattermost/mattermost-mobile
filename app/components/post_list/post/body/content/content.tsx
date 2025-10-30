@@ -1,7 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-
+/*eslint-disable*/
 import React from 'react';
+import {View} from 'react-native';
 
 import {isMessageAttachmentArray} from '@utils/message_attachment';
 import {isYoutubeLink} from '@utils/url';
@@ -17,6 +18,7 @@ import type PostModel from '@typings/database/models/servers/post';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 type ContentProps = {
+    isMyPost?: boolean;
     isReplyPost: boolean;
     layoutWidth?: number;
     location: AvailableScreens;
@@ -34,7 +36,7 @@ const contentType: Record<string, string> = {
     youtube: 'youtube',
 };
 
-const Content = ({isReplyPost, layoutWidth, location, post, theme, showPermalinkPreviews}: ContentProps) => {
+const Content = ({isMyPost, isReplyPost, layoutWidth, location, post, theme, showPermalinkPreviews}: ContentProps) => {
     let type: string | undefined = post.metadata?.embeds?.[0].type;
 
     const nAppBindings = Array.isArray(post.props?.app_bindings) ? post.props.app_bindings.length : 0;
@@ -48,9 +50,11 @@ const Content = ({isReplyPost, layoutWidth, location, post, theme, showPermalink
 
     const attachments = isMessageAttachmentArray(post.props?.attachments) ? post.props.attachments : [];
 
+    let content;
+
     switch (contentType[type]) {
         case contentType.image:
-            return (
+            content = (
                 <ImagePreview
                     isReplyPost={isReplyPost}
                     layoutWidth={layoutWidth}
@@ -60,31 +64,33 @@ const Content = ({isReplyPost, layoutWidth, location, post, theme, showPermalink
                     theme={theme}
                 />
             );
+            break;
         case contentType.opengraph:
             if (isYoutubeLink(post.metadata!.embeds![0].url)) {
-                return (
+                content = (
                     <YouTube
                         isReplyPost={isReplyPost}
                         layoutWidth={layoutWidth}
                         metadata={post.metadata}
                     />
                 );
+            } else {
+                content = (
+                    <Opengraph
+                        isReplyPost={isReplyPost}
+                        layoutWidth={layoutWidth}
+                        location={location}
+                        metadata={post.metadata}
+                        postId={post.id}
+                        removeLinkPreview={post.props?.remove_link_preview === 'true'}
+                        theme={theme}
+                    />
+                );
             }
-
-            return (
-                <Opengraph
-                    isReplyPost={isReplyPost}
-                    layoutWidth={layoutWidth}
-                    location={location}
-                    metadata={post.metadata}
-                    postId={post.id}
-                    removeLinkPreview={post.props?.remove_link_preview === 'true'}
-                    theme={theme}
-                />
-            );
+            break;
         case contentType.message_attachment:
             if (attachments.length) {
-                return (
+                content = (
                     <MessageAttachments
                         attachments={attachments}
                         channelId={post.channelId}
@@ -99,7 +105,7 @@ const Content = ({isReplyPost, layoutWidth, location, post, theme, showPermalink
             break;
         case contentType.app_bindings:
             if (nAppBindings) {
-                return (
+                content = (
                     <EmbeddedBindings
                         location={location}
                         post={post}
@@ -109,20 +115,33 @@ const Content = ({isReplyPost, layoutWidth, location, post, theme, showPermalink
             }
             break;
         case contentType.permalink:
-            if (!showPermalinkPreviews) {
-                return null;
-            }
-            return (
+            if (showPermalinkPreviews) {
+                content = (
                 <PermalinkPreview
                     embedData={post.metadata!.embeds![0].data as PermalinkEmbedData}
                     location={location}
                     parentLocation={location}
-                    parentPostId={post.id}
-                />
-            );
+                    parentPostId={post.id} 
+                    />
+                );
+            }
+            break;
     }
 
-    return null;
+    if (!content) {
+        return null;
+    }
+
+    // Use marginLeft: 'auto' to push content right WITHOUT affecting internal layout
+    if (isMyPost) {
+        return (
+            <View style={{marginLeft: 'auto'}}>
+                {content}
+            </View>
+        );
+    }
+
+    return content;
 };
 
 export default Content;

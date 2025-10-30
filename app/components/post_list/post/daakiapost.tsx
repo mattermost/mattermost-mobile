@@ -368,16 +368,20 @@ const DaakiaPost = ({
         );
     } else if (isCallsPost && !hasBeenDeleted) {
         body = (
-            <CallsCustomMessage
-                serverUrl={serverUrl}
-                post={post}
+            <>
+                <View style={{height: 5}}/>
+                <CallsCustomMessage
+                    serverUrl={serverUrl}
+                    post={post}
 
-                // Note: the below are provided by the index, but typescript seems to be having problems.
-                otherParticipants={false}
-                isAdmin={false}
-                isHost={false}
-                joiningChannelId={null}
-            />
+                    // Note: the below are provided by the index, but typescript seems to be having problems.
+                    otherParticipants={false}
+                    isAdmin={false}
+                    isHost={false}
+                    joiningChannelId={null}
+                />
+                <View style={{height: 5}}/>
+            </>
         );
     } else {
         body = (
@@ -392,6 +396,7 @@ const DaakiaPost = ({
                 isFirstReply={isFirstReply}
                 isJumboEmoji={isJumboEmoji}
                 isLastReply={isLastReply}
+                isMyPost={isMyPost}
                 isPendingOrFailed={isPendingOrFailed}
                 isPostAcknowledgementEnabled={isPostAcknowledgementEnabled}
                 isPostAddChannelMember={isPostAddChannelMember}
