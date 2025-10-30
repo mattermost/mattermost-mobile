@@ -33,9 +33,10 @@ import {observeDraftCount} from '@queries/servers/drafts';
 import {queryPreferencesByCategoryAndName, querySidebarPreferences} from '@queries/servers/preference';
 import {observePermissionForTeam} from '@queries/servers/role';
 import {observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
-import {observeCurrentTeam} from '@queries/servers/team';
+import {observeCurrentTeam, queryMyTeams} from '@queries/servers/team';
 import {observeUnreadsAndMentions} from '@queries/servers/thread';
 import {observeCurrentUser, observeDeactivatedUsers} from '@queries/servers/user';
+import {resetToTeams} from '@screens/navigation';
 import {type ChannelWithMyChannel, filterArchivedChannels, filterAutoclosedDMs, filterManuallyClosedDms, getUnreadIds, sortChannels} from '@utils/categories';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -155,6 +156,7 @@ type HomeDaakiaProps = {
     favoriteChannelIds: Set<string>;
     draftsCount?: number;
     showIncomingCalls: boolean;
+    nTeams: number;
 };
 
 const HomeDaakia = ({
@@ -170,6 +172,7 @@ const HomeDaakia = ({
     favoriteChannelIds,
     draftsCount,
     showIncomingCalls,
+    nTeams,
 }: HomeDaakiaProps) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -181,6 +184,13 @@ const HomeDaakia = ({
     const [activeTab, setActiveTab] = useState<'all' | 'dms' | 'channels' | 'favorites'>('all');
     const [activeFilters, setActiveFilters] = useState<Set<string>>(new Set());
     const [isLoadingData, setIsLoadingData] = useState(false);
+
+    // Redirect if user has no teams
+    useEffect(() => {
+        if (isFocused && nTeams === 0) {
+            resetToTeams();
+        }
+    }, [isFocused, nTeams]);
 
     // Check if database is empty and fetch all posts if needed
     useEffect(() => {
@@ -260,6 +270,22 @@ const HomeDaakia = ({
     };
 
     // (pull-to-refresh removed)
+
+    // Show loading while redirecting if no teams
+    if (nTeams === 0) {
+        return (
+            <SafeAreaView
+                style={styles.container}
+                edges={['bottom', 'left', 'right']}
+            >
+                <Loading
+                    size='large'
+                    themeColor='centerChannelColor'
+                    testID='home_daakia.checking_teams'
+                />
+            </SafeAreaView>
+        );
+    }
 
     // Filter channels based on active tab (done in component, not observable)
     const filteredChannels = React.useMemo(() => {
@@ -635,6 +661,12 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         distinctUntilChanged(),
     );
 
+    const myTeams = queryMyTeams(database).observe();
+    const nTeams = myTeams.pipe(
+        map((teams) => teams.length),
+        distinctUntilChanged(),
+    );
+
     return {
         currentTeamId,
         currentUserId,
@@ -653,6 +685,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         lastPosts: channelListData.pipe(map((data) => data.lastPosts)),
         favoriteChannelIds: channelListData.pipe(map((data) => data.favoriteChannelIds)),
         showIncomingCalls,
+        nTeams,
     };
 });
 
