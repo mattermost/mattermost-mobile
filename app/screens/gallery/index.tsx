@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import RNUtils from '@mattermost/rnutils';
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {DeviceEventEmitter, Platform, View} from 'react-native';
 
 import {Events} from '@constants';
