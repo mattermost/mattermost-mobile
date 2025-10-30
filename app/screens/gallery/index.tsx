@@ -3,7 +3,7 @@
 
 import RNUtils from '@mattermost/rnutils';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {DeviceEventEmitter, Platform, StyleSheet, View} from 'react-native';
+import {DeviceEventEmitter, Platform, View} from 'react-native';
 
 import {Events} from '@constants';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
@@ -28,12 +28,6 @@ type Props = {
     items: GalleryItemType[];
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
-});
-
 const GalleryScreen = ({componentId, galleryIdentifier, hideActions, initialIndex, items}: Props) => {
     const dim = useWindowDimensions();
     const isTablet = useIsTablet();
@@ -41,13 +35,7 @@ const GalleryScreen = ({componentId, galleryIdentifier, hideActions, initialInde
     const {headerAndFooterHidden, hideHeaderAndFooter, headerStyles, footerStyles} = useGalleryControls();
     const galleryRef = useRef<GalleryRef>(null);
 
-    const containerStyle = useMemo(() => {
-        if (Platform.OS === 'ios') {
-            return dim;
-        }
-
-        return styles.container;
-    }, [dim]);
+    const containerStyle = useMemo(() => dim, [dim]);
 
     const onClose = useCallback(() => {
         // We keep the un freeze here as we want
@@ -80,6 +68,10 @@ const GalleryScreen = ({componentId, galleryIdentifier, hideActions, initialInde
         const listener = DeviceEventEmitter.addListener(Events.CLOSE_GALLERY, () => {
             onClose();
         });
+
+        if (Platform.OS === 'android' && Platform.Version >= 34) {
+            RNUtils.setNavigationBarColor('black', true);
+        }
 
         return () => {
             listener.remove();
