@@ -35,7 +35,7 @@ const GalleryScreen = ({componentId, galleryIdentifier, hideActions, initialInde
     const {headerAndFooterHidden, hideHeaderAndFooter, headerStyles, footerStyles} = useGalleryControls();
     const galleryRef = useRef<GalleryRef>(null);
 
-    const containerStyle = useMemo(() => dim, [dim]);
+    const containerStyle = dim;
 
     const onClose = useCallback(() => {
         // We keep the un freeze here as we want
