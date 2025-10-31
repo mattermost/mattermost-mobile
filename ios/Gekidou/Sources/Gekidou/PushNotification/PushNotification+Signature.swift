@@ -39,10 +39,7 @@ extension PushNotification {
             }
 
             let parts = version.components(separatedBy: ".");
-            guard parts.count >= 3,
-                  parts.indices.contains(0),
-                  parts.indices.contains(1),
-                  parts.indices.contains(2)
+            guard parts.count >= 3
             else {
                 GekidouLogger.shared.log(.info, "Gekidou PushNotification: Signature verification: Invalid server version format")
                 return false
