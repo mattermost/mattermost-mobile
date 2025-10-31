@@ -5,6 +5,7 @@ import com.facebook.react.bridge.NoSuchKeyException
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.WritableNativeArray
+import com.mattermost.helpers.HeadersHelper
 import com.mattermost.helpers.PushNotificationDataRunnable
 import com.mattermost.helpers.ReadableArrayUtils
 import com.mattermost.helpers.ReadableMapUtils
@@ -12,8 +13,8 @@ import com.mattermost.helpers.database_extension.*
 import com.nozbe.watermelondb.WMDatabase
 
 internal suspend fun PushNotificationDataRunnable.Companion.fetchPosts(
-        db: WMDatabase, serverUrl: String, channelId: String, isCRTEnabled: Boolean,
-        rootId: String?, loadedProfiles: ReadableArray?
+    db: WMDatabase, serverUrl: String, channelId: String, isCRTEnabled: Boolean,
+    rootId: String?, loadedProfiles: ReadableArray?
 ): ReadableMap? {
     return try {
         val regex = Regex("""\B@(([a-z\d-._]*[a-z\d_])[.-]*)""", setOf(RegexOption.IGNORE_CASE))
@@ -39,7 +40,9 @@ internal suspend fun PushNotificationDataRunnable.Companion.fetchPosts(
             "/api/v4/channels/$channelId/posts$queryParams$additionalParams"
         }
 
-        val postsResponse = fetch(serverUrl, endpoint)
+        val options = Arguments.createMap()
+        options.putMap("headers", HeadersHelper.getHeadersWithCredentials(serverUrl, false))
+        val postsResponse = fetch(serverUrl, endpoint, options)
         val postData = postsResponse?.getMap("data")
         val results = Arguments.createMap()
 

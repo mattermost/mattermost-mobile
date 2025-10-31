@@ -66,7 +66,7 @@ public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
             return;
         }
 
-        WritableMap headers = Arguments.createMap();
+        WritableMap headers = HeadersHelper.INSTANCE.getHeadersWithCredentials(serverUrl, true);
         headers.putString("Content-Type", "application/json");
 
         WritableMap body = Arguments.createMap();

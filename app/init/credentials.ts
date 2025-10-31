@@ -5,6 +5,7 @@ import {Platform} from 'react-native';
 import * as KeyChain from 'react-native-keychain';
 
 import DatabaseManager from '@database/manager';
+import NetworkManager from '@managers/network_manager';
 import {logWarning} from '@utils/log';
 import {getIOSAppGroupDetails} from '@utils/mattermost_managed';
 
@@ -124,11 +125,20 @@ export const getServerCredentials = async (serverUrl: string): Promise<ServerCre
             preauthSecret = undefined;
         }
 
+        let csrfToken: string | undefined;
+        try {
+            const client = NetworkManager.getClient(serverUrl);
+            csrfToken = client.csrfToken;
+        } catch (e) {
+            // CSRF token is optional, so ignore errors
+        }
+
         return {
             serverUrl,
             userId,
             token,
             preauthSecret,
+            csrfToken,
         };
     } catch (e) {
         return null;

@@ -10,6 +10,7 @@ import Foundation
 public struct ServerCredentials {
     public let token: String?
     public let preauthSecret: String?
+    public let csrfToken: String?
 }
 
 enum KeychainError: Error {
@@ -84,7 +85,8 @@ public class Keychain: NSObject {
         guard let credentials = try? getCredentials(for: serverUrl) else { return nil }
         return [
             "token": credentials.token as Any,
-            "preauthSecret": credentials.preauthSecret as Any
+            "preauthSecret": credentials.preauthSecret as Any,
+            "csrfToken": credentials.csrfToken as Any
         ]
     }
 
@@ -92,8 +94,9 @@ public class Keychain: NSObject {
         // Get main token from serverUrl key
         let token = try getMainToken(for: serverUrl)
         let preauthSecret = try? getPreauthSecret(for: serverUrl)
+        let csrfToken = try? getCsrfToken(for: serverUrl)
 
-        return ServerCredentials(token: token, preauthSecret: preauthSecret)
+        return ServerCredentials(token: token, preauthSecret: preauthSecret, csrfToken: csrfToken)
     }
 
     private func getMainToken(for serverUrl: String) throws -> String? {
@@ -125,6 +128,26 @@ public class Keychain: NSObject {
             return preauthSecret
         }
 
+        return nil
+    }
+
+    private func getCsrfToken(for serverUrl: String) throws -> String? {
+        guard let url = URL(string: serverUrl) else {
+            return nil
+        }
+        
+        guard let appGroupId = Bundle.main.object(forInfoDictionaryKey: "AppGroupIdentifier") as? String else { return nil }
+        
+        // Use the shared cookie storage for the app group since the CSRF token
+        // is set from the main app, and not the other extensions.
+        let cookies = HTTPCookieStorage.sharedCookieStorage(forGroupContainerIdentifier: appGroupId).cookies(for: url) ?? []
+        
+        for cookie in cookies {
+            if cookie.name == "MMCSRF" {
+                return cookie.value
+            }
+        }
+        
         return nil
     }
 

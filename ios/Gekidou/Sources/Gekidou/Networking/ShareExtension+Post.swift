@@ -45,6 +45,10 @@ extension ShareExtension {
                             uploadRequest.addValue(preauthSecret, forHTTPHeaderField: GekidouConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET)
                         }
 
+                        if let csrfToken = credentials.csrfToken {
+                            uploadRequest.addValue(csrfToken, forHTTPHeaderField: GekidouConstants.HEADER_X_CSRF_TOKEN)
+                        }
+
                         if let task = backgroundSession?.uploadTask(with: uploadRequest, fromFile: fileUrl) {
                             os_log(
                                 OSLogType.default,
