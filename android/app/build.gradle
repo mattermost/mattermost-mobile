@@ -121,6 +121,17 @@ android {
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
 
+    packagingOptions {
+        // Add these lines to handle 16KB page size issue
+        jniLibs {
+            useLegacyPackaging = true
+        }
+
+        // Exclude problematic libraries if needed
+        exclude "lib/x86_64/libandroidlame.so"
+        exclude "lib/x86_64/libucrop.so"
+    }
+
     signingConfigs {
         release {
             if (project.hasProperty('MATTERMOST_RELEASE_STORE_FILE')) {
