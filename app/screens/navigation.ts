@@ -54,6 +54,12 @@ function setNavigationBarColor(screen: AvailableScreens, th?: Theme) {
     }
 }
 
+function showBottomTabsIfNeeded(screen: AvailableScreens) {
+    if (screen === Screens.HOME) {
+        DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, true);
+    }
+}
+
 export function registerNavigationListeners() {
     subscriptions?.forEach((v) => v.remove());
     subscriptions = [
@@ -107,10 +113,7 @@ function onCommandListener(name: string, params: any) {
     }
 
     const screen = NavigationStore.getVisibleScreen();
-    if (screen === Screens.HOME) {
-        DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, true);
-    }
-
+    showBottomTabsIfNeeded(screen);
     setNavigationBarColor(screen);
 }
 
@@ -118,13 +121,15 @@ function onPoppedListener({componentId}: ScreenPoppedEvent) {
     // screen pop does not trigger registerCommandListener, but does trigger screenPoppedListener
     const screen = componentId as AvailableScreens;
     NavigationStore.removeScreenFromStack(screen);
+
+    // If we pop to home, we need to show the tab bar
+    showBottomTabsIfNeeded(NavigationStore.getVisibleScreen());
+
     setNavigationBarColor(screen);
 }
 
 function onScreenWillAppear(event: ComponentWillAppearEvent) {
-    if (event.componentId === Screens.HOME) {
-        DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, true);
-    }
+    showBottomTabsIfNeeded(event.componentId as AvailableScreens);
 }
 
 export const loginAnimationOptions = () => {
