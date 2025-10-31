@@ -149,7 +149,7 @@ extension PushNotification {
         }
 
         let tokenParts = storedDeviceToken.components(separatedBy: ":")
-        guard tokenParts.count == 2, tokenParts.indices.contains(1) else {
+        guard tokenParts.count == 2 else {
             GekidouLogger.shared.log(.info, "Gekidou PushNotification: Signature verification: Wrong stored device token format (expected 2 parts, got %{public}d)", tokenParts.count)
             return false
         }
