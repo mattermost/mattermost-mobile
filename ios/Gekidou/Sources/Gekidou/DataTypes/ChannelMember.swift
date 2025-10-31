@@ -50,8 +50,8 @@ public struct ChannelMember: Codable {
         mentionCountRoot = values.decodeIfPresent(forKey: .mentionCountRoot, defaultValue: 0)
         msgCount = values.decodeIfPresent(forKey: .msgCount, defaultValue: 0)
         msgCountRoot = values.decodeIfPresent(forKey: .msgCountRoot, defaultValue: 0)
-        let propsData = try? values.decode([String:Any].self, forKey: .notifyProps)
-        notifyProps = Database.default.json(from: propsData) ?? "{}"
+        let propsDict = try? values.decode([String:Any].self, forKey: .notifyProps)
+        notifyProps = Database.default.json(from: propsDict) ?? "{}"
         roles = values.decodeIfPresent(forKey: .roles, defaultValue: "")
         schemeAdmin = values.decodeIfPresent(forKey: .schemeAdmin, defaultValue: false)
         schemeGuest = values.decodeIfPresent(forKey: .schemeGuest, defaultValue: false)
