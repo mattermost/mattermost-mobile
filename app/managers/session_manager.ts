@@ -13,10 +13,7 @@ import {resetMomentLocale} from '@i18n';
 import {getAllServerCredentials, removeServerCredentials} from '@init/credentials';
 import {relaunchApp} from '@init/launch';
 import PushNotifications from '@init/push_notifications';
-import NetworkConnectivityManager from '@managers/network_connectivity_manager';
-import NetworkConnectivitySubscriptionManager from '@managers/network_connectivity_subscription_manager';
 import NetworkManager from '@managers/network_manager';
-import NetworkPerformanceManager from '@managers/network_performance_manager';
 import SecurityManager from '@managers/security_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getAllServers, getServerDisplayName} from '@queries/app/servers';
@@ -120,10 +117,7 @@ export class SessionManagerSingleton {
         PushNotifications.removeServerNotifications(serverUrl);
         SecurityManager.removeServer(serverUrl);
 
-        NetworkConnectivityManager.setServerConnectionStatus(false, serverUrl);
         NetworkManager.invalidateClient(serverUrl);
-        NetworkConnectivitySubscriptionManager.stop();
-        NetworkPerformanceManager.removeServer(serverUrl);
         WebsocketManager.invalidateClient(serverUrl);
 
         if (removeServer) {

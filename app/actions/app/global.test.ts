@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {Tutorial} from '@constants';
-import {GLOBAL_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {
     getDeviceToken,
@@ -34,7 +33,6 @@ import {
     removePushDisabledInServerAcknowledged,
     storeScheduledPostTutorial,
     storeScheduledPostsListTutorial,
-    storeLowConnectivityMonitor,
 } from './global';
 
 const serverUrl = 'server.test.com';
@@ -204,18 +202,5 @@ describe('/app/actions/app/global', () => {
         await storeScheduledPostsListTutorial();
         records = await queryGlobalValue(Tutorial.SCHEDULED_POSTS_LIST)?.fetch();
         expect(records?.[0]?.value).toBe(true);
-    });
-
-    test('storeLowConnectivityMonitor', async () => {
-        let records = await queryGlobalValue(GLOBAL_IDENTIFIERS.LOW_CONNECTIVITY_MONITOR)?.fetch();
-        expect(records?.[0]?.value).toBeUndefined();
-
-        await storeLowConnectivityMonitor(true);
-        records = await queryGlobalValue(GLOBAL_IDENTIFIERS.LOW_CONNECTIVITY_MONITOR)?.fetch();
-        expect(records?.[0]?.value).toBe(true);
-
-        await storeLowConnectivityMonitor(false);
-        records = await queryGlobalValue(GLOBAL_IDENTIFIERS.LOW_CONNECTIVITY_MONITOR)?.fetch();
-        expect(records?.[0]?.value).toBe(false);
     });
 });
