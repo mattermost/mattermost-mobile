@@ -1,0 +1,64 @@
+diff --git a/node_modules/@mattermost/react-native-network-client/android/src/main/java/com/mattermost/networkclient/Extensions.kt b/node_modules/@mattermost/react-native-network-client/android/src/main/java/com/mattermost/networkclient/Extensions.kt
+index 82378cf..21ac054 100644
+--- a/node_modules/@mattermost/react-native-network-client/android/src/main/java/com/mattermost/networkclient/Extensions.kt
++++ b/node_modules/@mattermost/react-native-network-client/android/src/main/java/com/mattermost/networkclient/Extensions.kt
+@@ -131,7 +131,7 @@ fun Response.toDownloadMap(path: String): WritableMap {
+  *
+  * @param headers ReadableMap of headers from the App
+  */
+-fun Request.Builder.applyHeaders(headers: Map<String, Any>?): Request.Builder {
++fun Request.Builder.applyHeaders(headers: Map<String, Any?>?): Request.Builder {
+     if (headers != null){
+         for ((k, v) in headers) {
+             this.removeHeader(k)
+diff --git a/node_modules/@mattermost/react-native-network-client/android/src/main/java/com/mattermost/networkclient/NetworkClient.kt b/node_modules/@mattermost/react-native-network-client/android/src/main/java/com/mattermost/networkclient/NetworkClient.kt
+index 19a835d..b196baf 100644
+--- a/node_modules/@mattermost/react-native-network-client/android/src/main/java/com/mattermost/networkclient/NetworkClient.kt
++++ b/node_modules/@mattermost/react-native-network-client/android/src/main/java/com/mattermost/networkclient/NetworkClient.kt
+@@ -48,7 +48,7 @@ internal class NetworkClient(private val context: Context, private val baseUrl:
+     private var okHttpClient: OkHttpClient
+     private var webSocketUri: URI? = null
+ 
+-    var clientHeaders: HashMap<String, String> = hashMapOf()
++    var clientHeaders: HashMap<String, Any?> = hashMapOf()
+     var clientRetryInterceptor: Interceptor? = null
+     lateinit var clientTimeoutInterceptor: TimeoutInterceptor
+     val requestRetryInterceptors: HashMap<Request, Interceptor> = hashMapOf()
+@@ -300,7 +300,7 @@ internal class NetworkClient(private val context: Context, private val baseUrl:
+ 
+     fun buildUploadCall(endpoint: String, filePath: String, taskId: String, options: ReadableMap?): Call {
+         var method = "POST"
+-        var requestHeaders: Map<String, Any>? = null
++        var requestHeaders: Map<String, Any?>? = null
+         var multipartOptions: ReadableMap? = null
+         var skipBytes: Long = 0
+ 
+@@ -344,7 +344,7 @@ internal class NetworkClient(private val context: Context, private val baseUrl:
+ 
+     fun buildDownloadCall(endpoint: String, taskId: String, options: ReadableMap?): Call {
+         var method = "GET"
+-        var requestHeaders: Map<String, Any>? = null
++        var requestHeaders: Map<String, Any?>? = null
+ 
+         if (options != null) {
+             if (options.hasKey("method")) {
+@@ -388,8 +388,8 @@ internal class NetworkClient(private val context: Context, private val baseUrl:
+         KeyStoreHelper.deleteClientCertificates(p12Alias)
+     }
+ 
+-    private fun prepareRequestHeaders(options: ReadableMap?): Map<String, Any>? {
+-        var requestHeaders: Map<String, Any>? = null
++    private fun prepareRequestHeaders(options: ReadableMap?): Map<String, Any?>? {
++        var requestHeaders: Map<String, Any?>? = null
+ 
+         if (options != null) {
+             if (options.hasKey("headers")) {
+@@ -439,7 +439,7 @@ internal class NetworkClient(private val context: Context, private val baseUrl:
+         return requestBody
+     }
+ 
+-    private fun buildRequest(method: String, endpoint: String, headers: Map<String, Any>?, body: RequestBody?): Request {
++    private fun buildRequest(method: String, endpoint: String, headers: Map<String, Any?>?, body: RequestBody?): Request {
+         return Request.Builder()
+                 .url(composeEndpointUrl(endpoint))
+                 .applyHeaders(clientHeaders)
