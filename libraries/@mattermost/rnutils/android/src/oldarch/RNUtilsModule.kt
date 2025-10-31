@@ -1,5 +1,6 @@
 package com.mattermost.rnutils
 
+import com.facebook.react.bridge.LifecycleEventListener
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
@@ -114,5 +115,10 @@ class RNUtilsModule(context: ReactApplicationContext) :
     fun createZipFile(paths: ReadableArray, promise: Promise?) {
         val pathList = paths.toArrayList().map { it.toString() }
         implementation.createZipFile(pathList, promise)
+    }
+
+    @ReactMethod
+    fun setNavigationBarColor(colorHex: String, lightIcons: Boolean) {
+        implementation.setNavigationBarColor(colorHex, lightIcons)
     }
 }
