@@ -170,4 +170,34 @@ describe('components/categories_list', () => {
         );
         expect(wrapper.queryByText('Drafts')).not.toBeTruthy();
     });
+
+    it('should not render channel list with Playbooks menu if playbooks feature is disabled', () => {
+        const wrapper = renderWithEverything(
+            <CategoriesList
+                moreThanOneTeam={false}
+                hasChannels={true}
+                draftsCount={0}
+                scheduledPostCount={0}
+                scheduledPostHasError={false}
+                playbooksEnabled={false}
+            />,
+            {database},
+        );
+        expect(wrapper.queryByText('Playbook runs')).not.toBeTruthy();
+    });
+
+    it('should render channel list with Playbooks menu if playbooks feature is enabled', () => {
+        const wrapper = renderWithEverything(
+            <CategoriesList
+                moreThanOneTeam={false}
+                hasChannels={true}
+                draftsCount={0}
+                scheduledPostCount={0}
+                scheduledPostHasError={false}
+                playbooksEnabled={true}
+            />,
+            {database},
+        );
+        expect(wrapper.getByText('Playbook runs')).toBeTruthy();
+    });
 });
