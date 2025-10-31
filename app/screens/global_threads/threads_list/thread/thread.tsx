@@ -1,15 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Text, TouchableHighlight, View} from 'react-native';
 
 import {switchToChannelById} from '@actions/remote/channel';
+import {fetchPostThread} from '@actions/remote/post';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
+import File from '@components/files/file';
 import FormattedText from '@components/formatted_text';
 import FriendlyDate from '@components/friendly_date';
-import RemoveMarkdown from '@components/remove_markdown';
+import Markdown from '@components/markdown';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
@@ -38,6 +40,7 @@ type Props = {
     teammateNameDisplay: string;
     testID: string;
     thread: ThreadModel;
+    filesInfo: FileInfo[];
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -121,10 +124,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             alignSelf: 'center',
             color: theme.buttonColor,
         },
+        threadText: {
+            overflow: 'hidden',
+            maxHeight: 40,
+        },
     };
 });
 
-const Thread = ({author, channel, location, post, teammateNameDisplay, testID, thread}: Props) => {
+const Thread = ({author, channel, location, post, teammateNameDisplay, testID, thread, filesInfo}: Props) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
     const theme = useTheme();
@@ -192,6 +199,12 @@ const Thread = ({author, channel, location, post, teammateNameDisplay, testID, t
         }
     }
 
+    useEffect(() => {
+        if (serverUrl && post?.id && (!filesInfo || filesInfo.length === 0)) {
+            fetchPostThread(serverUrl, post.id, undefined, false);
+        }
+    }, [serverUrl, post?.id, filesInfo]);
+
     let name;
     let postBody;
     if (!post || post.deleteAt > 0) {
@@ -216,18 +229,32 @@ const Thread = ({author, channel, location, post, teammateNameDisplay, testID, t
         );
         if (post?.message) {
             postBody = (
-                <Text numberOfLines={2}>
-                    <RemoveMarkdown
-                        enableCodeSpan={true}
-                        enableEmoji={true}
-                        enableChannelLink={true}
-                        enableHardBreak={true}
-                        enableSoftBreak={true}
-                        textStyle={textStyles}
-                        baseStyle={styles.message}
-                        value={post.message.substring(0, 100)} // This substring helps to avoid ANR's
-                    />
-                </Text>
+                <>
+                    <View style={styles.threadText}>
+                        <Markdown
+                            theme={theme}
+                            baseTextStyle={styles.message}
+                            textStyles={textStyles}
+                            value={post.message}
+                            location={location}
+                            imagesMetadata={post.metadata?.images}
+                        />
+                    </View>
+                </>
+            );
+        } else {
+            postBody = (
+                <File
+                    canDownloadFiles={true}
+                    enableSecureFilePreview={false}
+                    file={filesInfo[0]}
+                    galleryIdentifier='file-card'
+                    isPressDisabled={true}
+                    index={0}
+                    inViewPort={true}
+                    nonVisibleImagesCount={0}
+                    asCard={true}
+                />
             );
         }
     }
