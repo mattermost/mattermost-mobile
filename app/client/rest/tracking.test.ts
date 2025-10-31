@@ -920,11 +920,16 @@ describe('ClientTracking', () => {
             groupLabel: 'Cold Start' as RequestGroupLabel,
         };
 
+        beforeEach(() => {
+            LocalConfig.MonitorNetworkPerformance = true;
+        });
+
         afterEach(() => {
+            LocalConfig.MonitorNetworkPerformance = false;
             jest.clearAllMocks();
         });
 
-        it('should call full tracking lifecycle', async () => {
+        it('should call full tracking lifecycle when MonitorNetworkPerformance is enabled', async () => {
             const mockMetrics = createMockMetrics();
             apiClientMock.get.mockResolvedValue(mockSuccessResponse(mockMetrics));
 
@@ -932,6 +937,16 @@ describe('ClientTracking', () => {
 
             expect(mockedNPM.startRequestTracking).toHaveBeenCalledWith('https://example.com', 'https://example.com/api');
             expect(mockedNPM.completeRequestTracking).toHaveBeenCalledWith('https://example.com', 'mock-request-id-123', mockMetrics);
+        });
+
+        it('should not call tracking methods when MonitorNetworkPerformance is disabled', async () => {
+            LocalConfig.MonitorNetworkPerformance = false;
+            apiClientMock.get.mockResolvedValue(mockSuccessResponse());
+
+            await client.doFetchWithTracking('https://example.com/api', requestOptions);
+
+            expect(mockedNPM.startRequestTracking).not.toHaveBeenCalled();
+            expect(mockedNPM.completeRequestTracking).not.toHaveBeenCalled();
         });
 
         it('should not call completeRequestTracking when response.metrics is undefined', async () => {
@@ -991,6 +1006,17 @@ describe('ClientTracking', () => {
 
             expect(mockedNPM.startRequestTracking).toHaveBeenCalledWith('https://example.com', 'https://example.com/api');
             expect(mockedNPM.cancelRequestTracking).toHaveBeenCalledWith('https://example.com', 'mock-request-id-123');
+            expect(mockedNPM.completeRequestTracking).not.toHaveBeenCalled();
+        });
+
+        it('should not call cancelRequestTracking when MonitorNetworkPerformance is disabled and request fails', async () => {
+            LocalConfig.MonitorNetworkPerformance = false;
+            apiClientMock.get.mockRejectedValue(new Error('Request failed'));
+
+            await expect(client.doFetchWithTracking('https://example.com/api', requestOptions)).rejects.toThrow('Received invalid response from the server.');
+
+            expect(mockedNPM.startRequestTracking).not.toHaveBeenCalled();
+            expect(mockedNPM.cancelRequestTracking).not.toHaveBeenCalled();
             expect(mockedNPM.completeRequestTracking).not.toHaveBeenCalled();
         });
     });

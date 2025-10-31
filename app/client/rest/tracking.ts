@@ -4,7 +4,7 @@
 import {defineMessage} from 'react-intl';
 import {DeviceEventEmitter, Platform} from 'react-native';
 
-import {CollectNetworkMetrics} from '@assets/config.json';
+import {CollectNetworkMetrics, MonitorNetworkPerformance} from '@assets/config.json';
 import {Events} from '@constants';
 import {setServerCredentials} from '@init/credentials';
 import NetworkPerformanceManager from '@managers/network_performance_manager';
@@ -133,18 +133,21 @@ export default class ClientTracking {
     }
 
     startNetworkPerformanceTracking(url: string): string | undefined {
+        if (!MonitorNetworkPerformance) {
+            return undefined;
+        }
         return NetworkPerformanceManager.startRequestTracking(this.apiClient.baseUrl, url);
     }
 
     completeNetworkPerformanceTracking(requestId: string | undefined, url: string, metrics: ClientResponseMetrics | undefined) {
-        if (!requestId || !metrics) {
+        if (!MonitorNetworkPerformance || !requestId || !metrics) {
             return;
         }
         NetworkPerformanceManager.completeRequestTracking(this.apiClient.baseUrl, requestId, metrics);
     }
 
     cancelNetworkPerformanceTracking(requestId: string | undefined) {
-        if (!requestId) {
+        if (!MonitorNetworkPerformance || !requestId) {
             return;
         }
         NetworkPerformanceManager.cancelRequestTracking(this.apiClient.baseUrl, requestId);
