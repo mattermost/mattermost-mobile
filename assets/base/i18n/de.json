@@ -1053,7 +1053,7 @@
   "playbooks.post_update.confirm.message": "Bist du sicher, dass du den Durchlauf {runName} für alle Teilnehmer beenden möchtest?",
   "playbooks.post_update.confirm.message.with_tasks": "Es gibt {outstanding, plural, =1 {eine ausstehende Aufgabe} other {# ausstehende Aufgaben}}. Bist du sicher, dass du den Durchlauf {runName} beenden willst?",
   "playbooks.post_update.confirm.title": "Beenden des Durchlaufs bestätigen",
-  "playbooks.post_update.intro": "Diese Aktualisierung für den Lauf <Bold>{runName}</Bold> wird an {hasChannels, select, true {<Bold>{broadcastChannelCount, plural, =1 {einen Kanal} other {{broadcastChannelCount, number} Kanäle}}</Bold>} other {}}{hasFollowersAndChannels, select, true { und } other {}}{hasFollowers, select, true {<Bold>{followersChannelCount, plural, =1 {eine direkte Nachricht} other {{followersChannelCount, number} direkte Nachrichten}</Bold>} other {}}.",
+  "playbooks.post_update.intro": "Diese Aktualisierung für den Lauf <Bold>{runName}</Bold> wird an {hasChannels, select, true {<Bold>{broadcastChannelCount, plural, =1 {einen Kanal} other {{broadcastChannelCount, number} Kanäle}}</Bold>} other {}}{hasFollowersAndChannels, select, true { und } other {}}{hasFollowers, select, true {<Bold>{followersChannelCount, plural, =1 {eine direkte Nachricht} other {{followersChannelCount, number} direkte Nachrichten}}</Bold>} other {}}.",
   "playbooks.post_update.intro.no_followers_or_broadcast_channels": "Diese Aktualisierung wird auf der Übersichtsseite gespeichert.",
   "playbooks.post_update.label": "Nachricht aktualisieren",
   "playbooks.post_update.label.also_mark_run_as_finished": "Markiere den Durchlauf auch als beendet",
