@@ -11,10 +11,11 @@ import {Screens, Sso} from '@constants';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {useScreenTransitionAnimation} from '@hooks/screen_transition_animation';
+import {launchToHome} from '@init/launch';
 import NetworkManager from '@managers/network_manager';
 import SecurityManager from '@managers/security_manager';
 import Background from '@screens/background';
-import {dismissModal, popTopScreen, resetToHome} from '@screens/navigation';
+import {dismissModal, popTopScreen} from '@screens/navigation';
 import {getFullErrorMessage, isErrorWithUrl} from '@utils/errors';
 import {logWarning} from '@utils/log';
 
@@ -89,13 +90,18 @@ const SSO = ({
         setLoginError(errorMessage);
     };
 
+    const goToHome = async (error?: unknown) => {
+        const hasError = launchError || Boolean(error);
+        await launchToHome({extra, launchError: hasError, launchType, serverUrl});
+    };
+
     const doSSOLogin = async (bearerToken: string, csrfToken: string) => {
         const result: LoginActionResponse = await ssoLogin(serverUrl!, serverDisplayName, config.DiagnosticId!, bearerToken, csrfToken, serverPreauthSecret);
         if (result?.error && result.failed) {
             onLoadEndError(result.error);
             return;
         }
-        goToHome(result.error);
+        await goToHome(result.error);
     };
 
     const doSSOCodeExchange = async (loginCode: string, samlChallenge: {codeVerifier: string; state: string}) => {
@@ -104,12 +110,7 @@ const SSO = ({
             onLoadEndError(result.error);
             return;
         }
-        goToHome(result.error);
-    };
-
-    const goToHome = (error?: unknown) => {
-        const hasError = launchError || Boolean(error);
-        resetToHome({extra, launchError: hasError, launchType, serverUrl});
+        await goToHome(result.error);
     };
 
     const dismiss = useCallback(() => {

@@ -15,7 +15,8 @@ import FormattedText from '@components/formatted_text';
 import {FORGOT_PASSWORD, MFA} from '@constants/screens';
 import {useAvoidKeyboard} from '@hooks/device';
 import {usePreventDoubleTap} from '@hooks/utils';
-import {goToScreen, loginAnimationOptions, resetToHome} from '@screens/navigation';
+import {launchToHome} from '@init/launch';
+import {goToScreen, loginAnimationOptions} from '@screens/navigation';
 import {getFullErrorMessage, getServerError, isErrorWithMessage, isServerError} from '@utils/errors';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
@@ -97,9 +98,9 @@ const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchEr
 
     useAvoidKeyboard(keyboardAwareRef);
 
-    const goToHome = useCallback((loginError?: unknown) => {
+    const goToHome = useCallback(async (loginError?: unknown) => {
         const hasError = launchError || Boolean(loginError);
-        resetToHome({extra, launchError: hasError, launchType, serverUrl});
+        await launchToHome({extra, launchError: hasError, launchType, serverUrl});
     }, [extra, launchError, launchType, serverUrl]);
 
     const goToMfa = useCallback(() => {
@@ -142,7 +143,7 @@ const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchEr
     const signIn = useCallback(async () => {
         const result: LoginActionResponse = await login(serverUrl!, {serverDisplayName, loginId: loginId.toLowerCase(), password, config, license});
         if (checkLoginResponse(result)) {
-            goToHome(result.error);
+            await goToHome(result.error);
         }
     }, [checkLoginResponse, config, goToHome, license, loginId, password, serverDisplayName, serverUrl]);
 

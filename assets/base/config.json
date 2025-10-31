@@ -1,6 +1,6 @@
 {
-    "AuthUrlScheme": "daakiaauth://",
-    "AuthUrlSchemeDev": "daakiaauth-dev://",
+    "AuthUrlScheme": "daakia://",
+    "AuthUrlSchemeDev": "daakia-dev://",
     "DefaultServerUrl": "https://chat.daakia.ai",
     "DefaultServerName": "Daakia",
     "TestServerUrl": "http://localhost:8065",
