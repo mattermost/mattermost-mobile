@@ -33,6 +33,7 @@ export function getCodeFont() {
 
 export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme: Theme) => {
     const codeFont = getCodeFont();
+    const platformHeadingPadding = Platform.select({ios: 3, default: 12});
 
     return {
         emph: {
@@ -53,42 +54,42 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme: Theme) => {
             ...typography('Heading', 700),
         },
         heading1Text: {
-            paddingTop: 12,
+            paddingTop: platformHeadingPadding,
             paddingBottom: 6,
         },
         heading2: {
             ...typography('Heading', 600),
         },
         heading2Text: {
-            paddingTop: 12,
+            paddingTop: platformHeadingPadding,
             paddingBottom: 6,
         },
         heading3: {
             ...typography('Heading', 500),
         },
         heading3Text: {
-            paddingTop: 12,
+            paddingTop: platformHeadingPadding,
             paddingBottom: 6,
         },
         heading4: {
             ...typography('Heading', 400),
         },
         heading4Text: {
-            paddingTop: 12,
+            paddingTop: platformHeadingPadding,
             paddingBottom: 6,
         },
         heading5: {
             ...typography('Heading', 300),
         },
         heading5Text: {
-            paddingTop: 12,
+            paddingTop: platformHeadingPadding,
             paddingBottom: 6,
         },
         heading6: {
             ...typography('Heading', 200),
         },
         heading6Text: {
-            paddingTop: 12,
+            paddingTop: platformHeadingPadding,
             paddingBottom: 6,
         },
         code: {
