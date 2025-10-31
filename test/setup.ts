@@ -262,8 +262,6 @@ jest.doMock('react-native', () => {
         addListener: jest.fn(() => ({
             remove: jest.fn(),
         })),
-        isVisible: jest.fn(() => false),
-        metrics: jest.fn(() => null),
     };
 
     return Object.setPrototypeOf({
