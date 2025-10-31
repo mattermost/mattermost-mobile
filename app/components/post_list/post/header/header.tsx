@@ -30,6 +30,7 @@ type HeaderProps = {
     commentCount: number;
     currentUser?: UserModel;
     enablePostUsernameOverride: boolean;
+    hideDisplayName?: boolean;
     isAutoResponse: boolean;
     isCRTEnabled?: boolean;
     isCustomStatusEnabled: boolean;
@@ -77,7 +78,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const Header = (props: HeaderProps) => {
     const {
-        author, commentCount = 0, currentUser, enablePostUsernameOverride, isAutoResponse, isCRTEnabled, isCustomStatusEnabled,
+        author, commentCount = 0, currentUser, enablePostUsernameOverride, hideDisplayName, isAutoResponse, isCRTEnabled, isCustomStatusEnabled,
         isEphemeral, isMilitaryTime, isPendingOrFailed, isSystemPost, isWebHook,
         location, post, rootPostAuthor, showPostPriority, shouldRenderReplyButton, teammateNameDisplay, hideGuestTags,
     } = props;
@@ -100,6 +101,7 @@ const Header = (props: HeaderProps) => {
         <>
             <View style={[style.container, pendingPostStyle]}>
                 <View style={style.wrapper}>
+                    {!hideDisplayName &&
                     <HeaderDisplayName
                         channelId={post.channelId}
                         commentCount={commentCount}
@@ -114,6 +116,7 @@ const Header = (props: HeaderProps) => {
                         showCustomStatusEmoji={showCustomStatusEmoji}
                         customStatus={customStatus!}
                     />
+                    }
                     {(!isSystemPost || isAutoResponse) &&
                     <HeaderTag
                         isAutoResponder={isAutoResponse}

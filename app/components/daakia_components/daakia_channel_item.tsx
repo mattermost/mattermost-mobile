@@ -43,9 +43,14 @@ type Props = {
 const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         flexDirection: 'row',
-        padding: 16,
-        borderBottomWidth: 0.5,
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        borderBottomWidth: 1,
         borderBottomColor: changeOpacity(theme.centerChannelColor, 0.08),
+        backgroundColor: theme.centerChannelBg,
+    },
+    containerActive: {
+        backgroundColor: changeOpacity(theme.buttonBg, 0.08),
     },
     avatar: {
         marginRight: 12,
@@ -55,45 +60,59 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
     content: {
         flex: 1,
         justifyContent: 'center',
+        minHeight: 0,
     },
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 4,
+        marginBottom: 3,
     },
     name: {
         ...typography('Body', 200, 'Regular'),
         color: theme.centerChannelColor,
+        flexShrink: 1,
     },
     nameUnread: {
         ...typography('Body', 200, 'SemiBold'),
+        color: theme.centerChannelColor,
     },
     time: {
-        ...typography('Body', 75),
-        color: changeOpacity(theme.centerChannelColor, 0.64),
+        ...typography('Body', 75, 'Regular'),
+        color: changeOpacity(theme.centerChannelColor, 0.56),
+        marginLeft: 4,
     },
     lastMessage: {
-        ...typography('Body', 100),
-        color: changeOpacity(theme.centerChannelColor, 0.64),
+        ...typography('Body', 100, 'Regular'),
+        color: changeOpacity(theme.centerChannelColor, 0.56),
+        lineHeight: 18,
     },
     unreadBadge: {
         width: 8,
         height: 8,
         borderRadius: 4,
         backgroundColor: theme.buttonBg,
-        marginLeft: 8,
+        marginLeft: 6,
+        alignSelf: 'center',
+    },
+    unreadIndicator: {
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        bottom: 0,
+        width: 3,
+        backgroundColor: theme.buttonBg,
     },
     channelAvatar: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: changeOpacity(theme.buttonBg, 0.16),
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        backgroundColor: changeOpacity(theme.buttonBg, 0.12),
         justifyContent: 'center',
         alignItems: 'center',
     },
     channelAvatarUnread: {
-        backgroundColor: changeOpacity(theme.buttonBg, 0.24),
+        backgroundColor: changeOpacity(theme.buttonBg, 0.16),
     },
     channelInitials: {
         ...typography('Body', 200, 'SemiBold'),
@@ -106,6 +125,11 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
     filler: {
         flex: 1,
         marginRight: 8,
+        minWidth: 8,
+    },
+    row: {
+        flexDirection: 'row',
+        alignItems: 'center',
     },
 }));
 
@@ -175,16 +199,18 @@ const DaakiaChannelItem = ({channel, isUnread, onPress, currentUserId, lastPost,
 
     return (
         <TouchableOpacity
-            style={styles.container}
+            style={[styles.container, isUnread && styles.containerActive]}
             onPress={() => onPress(channel)}
+            activeOpacity={0.7}
             testID={`daakia_channel_item.${channel.id}`}
         >
+            {isUnread && <View style={styles.unreadIndicator}/>}
             <View style={styles.avatar}>
                 {channelType === 'D' || channelType === 'G' ? (
                     <ChannelIcon
                         name={channel.name}
                         shared={channel.shared}
-                        size={40}
+                        size={48}
                         type={channelType}
                         isUnread={isUnread}
                         isOnCenterBg={true}
@@ -215,13 +241,7 @@ const DaakiaChannelItem = ({channel, isUnread, onPress, currentUserId, lastPost,
                             style={styles.hasCall}
                         />
                     }
-                    <View
-                        style={{
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                        }}
-                    >
+                    <View style={styles.row}>
                         <Text style={styles.time}>
                             {getTimeDisplay()}
                         </Text>

@@ -53,7 +53,7 @@ const DmAvatar = ({
         if (authorId && !author) {
             fetchUserByIdBatched(serverUrl, authorId);
         }
-    }, []);
+    }, [authorId, author, serverUrl]);
     if (author?.deleteAt) {
         return (
             <CompassIcon
@@ -64,12 +64,15 @@ const DmAvatar = ({
         );
     }
 
+    // Scale status size proportionally with avatar size (approximately 25% of avatar size)
+    const statusSize = Math.max(10, Math.ceil(size * 0.35));
+
     return (
         <ProfilePicture
             author={author}
             size={size}
             showStatus={true}
-            statusSize={12}
+            statusSize={statusSize}
             statusStyle={[styles.status, isOnCenterBg && styles.statusOnCenterBg]}
             containerStyle={style}
         />

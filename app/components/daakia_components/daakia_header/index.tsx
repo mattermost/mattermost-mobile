@@ -11,7 +11,7 @@ import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useTheme} from '@context/theme';
 import PlusMenu from '@screens/home/channel_list/categories_list/header/plus_menu';
 import {SEPARATOR_HEIGHT} from '@screens/home/channel_list/categories_list/header/plus_menu/separator';
-import {bottomSheet} from '@screens/navigation';
+import {bottomSheet, findChannels} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -44,6 +44,10 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
         flexDirection: 'column',
         flex: 1,
     },
+    titleRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
     menuButton: {
         backgroundColor: 'transparent',
         height: 40,
@@ -60,6 +64,7 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
     title: {
         color: theme.sidebarText,
         ...typography('Heading', 700),
+        flex: 1,
     },
     label: {
         color: theme.sidebarText,
@@ -67,10 +72,6 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
         opacity: 0.64,
         marginBottom: 2,
         textTransform: 'uppercase',
-    },
-    rightSection: {
-        flexDirection: 'row',
-        alignItems: 'center',
     },
     plusButton: {
         backgroundColor: changeOpacity(theme.sidebarText, 0.12),
@@ -80,8 +81,23 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
         justifyContent: 'center',
         alignItems: 'center',
         alignSelf: 'center',
+        marginLeft: 8,
     },
     plusIcon: {
+        color: theme.sidebarText,
+        fontSize: 18,
+    },
+    searchButton: {
+        backgroundColor: changeOpacity(theme.sidebarText, 0.12),
+        height: 36,
+        width: 36,
+        borderRadius: 18,
+        justifyContent: 'center',
+        alignItems: 'center',
+        alignSelf: 'center',
+        marginLeft: 8,
+    },
+    searchIcon: {
         color: theme.sidebarText,
         fontSize: 18,
     },
@@ -124,6 +140,13 @@ const DaakiaHeader = ({title, label, onMenuPress, canCreateChannels, canJoinChan
         });
     }, [intl, theme, canCreateChannels, canInvitePeople, canJoinChannels]);
 
+    const onSearchPress = useCallback(() => {
+        findChannels(
+            intl.formatMessage({id: 'find_channels.title', defaultMessage: 'Find Channels'}),
+            theme,
+        );
+    }, [intl, theme]);
+
     return (
         <View style={styles.container}>
             <View style={styles.leftSection}>
@@ -149,26 +172,36 @@ const DaakiaHeader = ({title, label, onMenuPress, canCreateChannels, canJoinChan
                             {label}
                         </Text>
                     )}
-                    <Text
-                        numberOfLines={1}
-                        ellipsizeMode='tail'
-                        style={styles.title}
-                    >
-                        {title}
-                    </Text>
+                    <View style={styles.titleRow}>
+                        <Text
+                            numberOfLines={1}
+                            ellipsizeMode='tail'
+                            style={styles.title}
+                        >
+                            {title}
+                        </Text>
+                        <TouchableWithFeedback
+                            onPress={onSearchPress}
+                            style={styles.searchButton}
+                            type='opacity'
+                        >
+                            <CompassIcon
+                                style={styles.searchIcon}
+                                name='magnify'
+                            />
+                        </TouchableWithFeedback>
+                        <TouchableWithFeedback
+                            onPress={onPlusPress}
+                            style={styles.plusButton}
+                            type='opacity'
+                        >
+                            <CompassIcon
+                                style={styles.plusIcon}
+                                name='plus'
+                            />
+                        </TouchableWithFeedback>
+                    </View>
                 </View>
-            </View>
-            <View style={styles.rightSection}>
-                <TouchableWithFeedback
-                    onPress={onPlusPress}
-                    style={styles.plusButton}
-                    type='opacity'
-                >
-                    <CompassIcon
-                        style={styles.plusIcon}
-                        name='plus'
-                    />
-                </TouchableWithFeedback>
             </View>
         </View>
     );

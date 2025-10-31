@@ -192,8 +192,8 @@ lane :configure do
   end
 
   # Configure the auth schemes
-  auth_scheme = ENV['APP_AUTH_SCHEME'].to_s.empty? ? 'mmauth' : ENV['APP_AUTH_SCHEME']
-  auth_scheme_dev = ENV['APP_AUTH_SCHEME_BETA'].to_s.empty? ? 'mmauthbeta' : ENV['APP_AUTH_SCHEME_BETA']
+  auth_scheme = ENV['APP_AUTH_SCHEME'].to_s.empty? ? 'daakia' : ENV['APP_AUTH_SCHEME']
+  auth_scheme_dev = ENV['APP_AUTH_SCHEME_BETA'].to_s.empty? ? 'daakia-dev' : ENV['APP_AUTH_SCHEME_BETA']
   json["AuthUrlScheme"] = auth_scheme.end_with?('://') ? auth_scheme : "#{auth_scheme}://"
   json["AuthUrlSchemeDev"] = auth_scheme_dev.end_with?('://') ? auth_scheme_dev : "#{auth_scheme_dev}://"
 
@@ -397,10 +397,10 @@ platform :ios do
   lane :unsigned do
     UI.success('Building unsigned iOS app')
 
-    ENV['APP_NAME'] = 'Mattermost'
+    ENV['APP_NAME'] = 'Daakia Chat'
     ENV['REPLACE_ASSETS'] = 'true'
     ENV['BUILD_FOR_RELEASE'] = 'true'
-    ENV['APP_SCHEME'] = 'mattermost'
+    ENV['APP_SCHEME'] = 'daakia'
 
     update_identifiers
     replace_assets
@@ -431,7 +431,7 @@ platform :ios do
 
   lane :update_identifiers do
     # Set the name for the app and share extension
-    app_name =  ENV['APP_NAME'] || 'Mattermost Beta'
+    app_name =  ENV['APP_NAME'] || 'Daakia Chat'
     update_info_plist(
         xcodeproj: './ios/Mattermost.xcodeproj',
         plist_path: 'Mattermost/Info.plist',
@@ -445,7 +445,7 @@ platform :ios do
     )
 
     # Set the notification service extension bundle identifier
-    notification_bundle_id = ENV['NOTIFICATION_SERVICE_IDENTIFIER'] || 'com.mattermost.rnbeta.NotificationService'
+    notification_bundle_id = ENV['NOTIFICATION_SERVICE_IDENTIFIER'] || 'com.daakia.chat.NotificationService'
     update_app_identifier(
         xcodeproj: './ios/Mattermost.xcodeproj',
         plist_path: 'NotificationService/Info.plist',
@@ -459,7 +459,7 @@ platform :ios do
     )
 
     # Set the share extension bundle identifier
-    extension_bundle_id = ENV['EXTENSION_APP_IDENTIFIER'] || 'com.mattermost.rnbeta.MattermostShare'
+    extension_bundle_id = ENV['EXTENSION_APP_IDENTIFIER'] || 'com.daakia.chat.DaakiaShare'
     update_app_identifier(
         xcodeproj: './ios/Mattermost.xcodeproj',
         plist_path: 'MattermostShare/Info.plist',
@@ -473,7 +473,7 @@ platform :ios do
     )
 
     # Set the app bundle id
-    app_bundle_id = ENV['MAIN_APP_IDENTIFIER'] || 'com.mattermost.rnbeta'
+    app_bundle_id = ENV['MAIN_APP_IDENTIFIER'] || 'com.daakia.chat'
     update_app_identifier(
         xcodeproj: './ios/Mattermost.xcodeproj',
         plist_path: 'Mattermost/Info.plist',
@@ -487,14 +487,14 @@ platform :ios do
     )
 
     # Set the deep link prefix
-    app_scheme = ENV['APP_SCHEME'] || 'mattermost'
+    app_scheme = ENV['APP_SCHEME'] || 'daakia'
     app_auth_scheme = get_auth_scheme
     UI.success "Update auth scheme to #{app_auth_scheme} #{ENV['BETA_BUILD']} authScheme #{ENV['APP_AUTH_SCHEME']} beta #{ENV['APP_AUTH_SCHEME_BETA']}"
     update_info_plist(
         xcodeproj: './ios/Mattermost.xcodeproj',
         plist_path: 'Mattermost/Info.plist',
         block: proc do |plist|
-          urlScheme = plist["CFBundleURLTypes"].find{|scheme| scheme["CFBundleURLName"] == "com.mattermost"}
+          urlScheme = plist["CFBundleURLTypes"].find{|scheme| scheme["CFBundleURLName"] == "com.daakia"}
           urlScheme[:CFBundleURLSchemes] = [app_scheme, app_auth_scheme]
         end
     )
@@ -508,14 +508,14 @@ platform :ios do
     end
 
     # Set the ICloud container
-    icloud_container = ENV['IOS_ICLOUD_CONTAINER'] || 'iCloud.com.mattermost.rnbeta'
+    icloud_container = ENV['IOS_ICLOUD_CONTAINER'] || 'iCloud.com.daakia.chat'
     update_icloud_container_identifiers(
         entitlements_file: './ios/Mattermost/Mattermost.entitlements',
         icloud_container_identifiers: [icloud_container]
     )
 
     # Set the app group id to share data between the app and the extension
-    app_group_id = ENV['IOS_APP_GROUP'] || 'group.com.mattermost.rnbeta'
+    app_group_id = ENV['IOS_APP_GROUP'] || 'group.com.daakia.chat'
     update_app_group_identifiers(
         entitlements_file: './ios/Mattermost/Mattermost.entitlements',
         app_group_identifiers: [app_group_id]
@@ -660,7 +660,7 @@ platform :ios do
   end
 
   def build_ios
-    app_name =  ENV['APP_NAME'] || 'Mattermost Beta'
+    app_name =  ENV['APP_NAME'] || 'Daakia Chat'
     app_name_sub = app_name.gsub(" ", "_")
     config_mode = ENV['BUILD_FOR_RELEASE'] == 'true' ? 'Release' : 'Debug'
     method = ENV['IOS_BUILD_EXPORT_METHOD'].nil? || ENV['IOS_BUILD_EXPORT_METHOD'].empty? ? 'ad-hoc' : ENV['IOS_BUILD_EXPORT_METHOD']
@@ -691,10 +691,10 @@ platform :ios do
     root_dir = Dir[File.expand_path('..')].first
     ios_build_dir = "#{root_dir}/ios/Build/Products"
 
-    ENV['APP_NAME'] = 'Mattermost'
+    ENV['APP_NAME'] = 'Daakia Chat'
     ENV['REPLACE_ASSETS'] = 'true'
     ENV['BUILD_FOR_RELEASE'] = 'true'
-    ENV['APP_SCHEME'] = 'mattermost'
+    ENV['APP_SCHEME'] = 'daakia'
 
     update_identifiers
     replace_assets
@@ -940,9 +940,9 @@ end
 
 def get_auth_scheme
   if ENV['BETA_BUILD'] == 'true'
-    ENV['APP_AUTH_SCHEME_BETA'].to_s.empty? ? 'mmauthbeta' : ENV['APP_AUTH_SCHEME_BETA']
+    ENV['APP_AUTH_SCHEME_BETA'].to_s.empty? ? 'daakia-dev' : ENV['APP_AUTH_SCHEME_BETA']
   else
-    ENV['APP_AUTH_SCHEME'].to_s.empty? ? 'mmauth' : ENV['APP_AUTH_SCHEME']
+    ENV['APP_AUTH_SCHEME'].to_s.empty? ? 'daakia' : ENV['APP_AUTH_SCHEME']
   end
 end
 

@@ -172,6 +172,22 @@ export const launchApp = async (props: LaunchProps) => {
 export const launchToHome = async (props: LaunchProps) => {
     let openPushNotification = false;
 
+    // Check teams first to avoid unnecessary WebSocket connections
+    let nTeams = 0;
+    if (props.serverUrl) {
+        const database = DatabaseManager.serverDatabases[props.serverUrl]?.database;
+        if (database) {
+            nTeams = await queryMyTeams(database).fetchCount();
+        }
+    }
+
+    // Early exit if no teams - redirect to Select Team screen
+    if (nTeams === 0) {
+        logInfo('Launch app in Select Teams screen');
+        return resetToTeams();
+    }
+
+    // Only proceed with appEntry if user has teams
     switch (props.launchType) {
         case Launch.DeepLink: {
             appEntry(props.serverUrl!);
@@ -208,21 +224,8 @@ export const launchToHome = async (props: LaunchProps) => {
             break;
     }
 
-    let nTeams = 0;
-    if (props.serverUrl) {
-        const database = DatabaseManager.serverDatabases[props.serverUrl]?.database;
-        if (database) {
-            nTeams = await queryMyTeams(database).fetchCount();
-        }
-    }
-
-    if (nTeams) {
-        logInfo('Launch app in Home screen');
-        return resetToHome(props);
-    }
-
-    logInfo('Launch app in Select Teams screen');
-    return resetToTeams();
+    logInfo('Launch app in Home screen');
+    return resetToHome(props);
 };
 
 export const relaunchApp = (props: LaunchProps) => {

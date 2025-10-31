@@ -43,12 +43,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             borderRadius: 4,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
             flexDirection: 'row',
-            height: 32,
-            marginBottom: 12,
-            marginRight: 6,
-            paddingVertical: 4,
-            paddingHorizontal: 6,
-            width: 36,
+            height: 24,
+            marginBottom: 4,
+            marginRight: 4,
+            paddingVertical: 2,
+            paddingHorizontal: 4,
+            width: 30,
         },
     };
 });
@@ -156,7 +156,7 @@ const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, 
             >
                 <CompassIcon
                     name='emoticon-plus-outline'
-                    size={24}
+                    size={16}
                     style={styles.addReaction}
                 />
             </TouchableOpacity>

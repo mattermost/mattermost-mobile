@@ -1,7 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Image} from 'expo-image';
+import {Platform} from 'react-native';
+
 import {Launch} from '@constants';
+import DatabaseManager from '@database/manager';
 import {removeServerCredentials} from '@init/credentials';
 import {relaunchApp} from '@init/launch';
 import PushNotifications from '@init/push_notifications';
@@ -9,6 +13,7 @@ import NetworkManager from '@managers/network_manager';
 import SecurityManager from '@managers/security_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getFullErrorMessage} from '@utils/errors';
+import {deleteFileCache, deleteFileCacheByDir} from '@utils/file';
 import {logWarning} from '@utils/log';
 
 export const daakiaLogout = async (serverUrl: string) => {
@@ -26,6 +31,18 @@ export const daakiaLogout = async (serverUrl: string) => {
     SecurityManager.removeServer(serverUrl);
     NetworkManager.invalidateClient(serverUrl);
     WebsocketManager.invalidateClient(serverUrl);
+
+    // Clear the database to remove all user data
+    await DatabaseManager.deleteServerDatabase(serverUrl);
+
+    // Clear caches
+    Image.clearDiskCache();
+    deleteFileCache(serverUrl);
+    deleteFileCacheByDir('mmPasteInput');
+    deleteFileCacheByDir('thumbnails');
+    if (Platform.OS === 'android') {
+        deleteFileCacheByDir('image_cache');
+    }
 
     // Restart app - will auto-connect to Daakia
     relaunchApp({launchType: Launch.Normal});

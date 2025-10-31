@@ -36,6 +36,7 @@ type BodyProps = {
     isFirstReply?: boolean;
     isJumboEmoji: boolean;
     isLastReply?: boolean;
+    isMyPost?: boolean;
     isPendingOrFailed: boolean;
     isPostAcknowledgementEnabled?: boolean;
     isPostAddChannelMember: boolean;
@@ -53,7 +54,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flexDirection: 'row',
             flexWrap: 'wrap',
             alignContent: 'flex-start',
-            marginTop: 12,
+            marginTop: 5,
         },
         messageBody: {
             paddingVertical: 2,
@@ -88,7 +89,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const Body = ({
     appsEnabled, hasFiles, hasReactions, highlight, highlightReplyBar,
-    isCRTEnabled, isEphemeral, isFirstReply, isJumboEmoji, isLastReply, isPendingOrFailed, isPostAcknowledgementEnabled, isPostAddChannelMember,
+    isCRTEnabled, isEphemeral, isFirstReply, isJumboEmoji, isLastReply, isMyPost, isPendingOrFailed, isPostAcknowledgementEnabled, isPostAddChannelMember,
     location, post, searchPatterns, showAddReaction, theme,
 }: BodyProps) => {
     const style = getStyleSheet(theme);
@@ -170,6 +171,7 @@ const Body = ({
             <Message
                 highlight={highlight}
                 isEdited={isEdited}
+                isMyPost={isMyPost}
                 isPendingOrFailed={isPendingOrFailed}
                 isReplyPost={isReplyPost}
                 layoutWidth={layoutWidth}
@@ -189,6 +191,7 @@ const Body = ({
                 {message}
                 {hasContent &&
                 <Content
+                    isMyPost={isMyPost}
                     isReplyPost={isReplyPost}
                     layoutWidth={layoutWidth}
                     location={location}
@@ -198,6 +201,7 @@ const Body = ({
                 }
                 {hasFiles &&
                 <Files
+                    isMyPost={isMyPost}
                     failed={isFailed}
                     layoutWidth={layoutWidth}
                     location={location}
@@ -206,7 +210,12 @@ const Body = ({
                 />
                 }
                 {(acknowledgementsVisible || reactionsVisible) && (
-                    <View style={style.ackAndReactionsContainer}>
+                    <View
+                        style={[
+                            style.ackAndReactionsContainer,
+                            isMyPost && {marginLeft: 'auto', alignItems: 'flex-end'},
+                        ]}
+                    >
                         {acknowledgementsVisible && (
                             <Acknowledgements
                                 hasReactions={hasReactions}
@@ -216,11 +225,13 @@ const Body = ({
                             />
                         )}
                         {reactionsVisible && (
-                            <Reactions
-                                location={location}
-                                post={post}
-                                theme={theme}
-                            />
+                            <View style={{flexDirection: isMyPost ? 'row-reverse' : 'row'}}>
+                                <Reactions
+                                    location={location}
+                                    post={post}
+                                    theme={theme}
+                                />
+                            </View>
                         )}
                     </View>
                 )}
@@ -235,12 +246,14 @@ const Body = ({
         >
             <View style={replyBarStyle()}/>
             {body}
-            {isFailed &&
-            <Failed
-                post={post}
-                theme={theme}
-            />
-            }
+            {isFailed && (
+                <View style={isMyPost ? {marginLeft: 'auto', alignItems: 'flex-end'} : undefined}>
+                    <Failed
+                        post={post}
+                        theme={theme}
+                    />
+                </View>
+            )}
         </View>
     );
 };

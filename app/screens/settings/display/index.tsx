@@ -7,6 +7,7 @@ import {switchMap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
+import {observeModernChatEnabled} from '@queries/app/global';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {observeAllowedThemesKeys, observeConfigBooleanValue} from '@queries/servers/system';
 import {observeCRTUserPreferenceDisplay, observeIsCRTEnabled} from '@queries/servers/thread';
@@ -30,6 +31,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         isThemeSwitchingEnabled,
         isCRTEnabled: observeIsCRTEnabled(database),
         isCRTSwitchEnabled: observeCRTUserPreferenceDisplay(database),
+        isModernChatEnabled: observeModernChatEnabled(),
         hasMilitaryTimeFormat: queryDisplayNamePreferences(database).
             observeWithColumns(['value']).pipe(
                 switchMap(

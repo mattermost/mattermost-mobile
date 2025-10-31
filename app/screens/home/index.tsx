@@ -9,6 +9,10 @@ import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Platform, StyleSheet, View} from 'react-native';
 import {enableFreeze, enableScreens} from 'react-native-screens';
 
+import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
+import {of as of$} from 'rxjs';
+import {distinctUntilChanged, switchMap} from 'rxjs/operators';
+
 import {initializeSecurityManager} from '@actions/app/server';
 import {autoUpdateTimezone} from '@actions/remote/user';
 import ServerVersion from '@components/server_version';
@@ -17,12 +21,15 @@ import {useTheme} from '@context/theme';
 import {useAppState} from '@hooks/device';
 import SecurityManager from '@managers/security_manager';
 import {getAllServers} from '@queries/app/servers';
-import {findChannels, popToRoot} from '@screens/navigation';
+import {queryMyTeams} from '@queries/servers/team';
+import {findChannels, popToRoot, resetToTeams} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
 import {alertInvalidDeepLink, parseAndHandleDeepLink} from '@utils/deep_link';
 import {logError} from '@utils/log';
 import {alertChannelArchived, alertChannelRemove, alertTeamRemove} from '@utils/navigation';
 import {notificationError} from '@utils/notification';
+
+import type {WithDatabaseArgs} from '@typings/database/database';
 
 import Account from './account';
 import ChannelList from './channel_list';
@@ -43,6 +50,7 @@ enableFreeze(true);
 
 type HomeProps = LaunchProps & {
     componentId: string;
+    hasTeams: boolean;
 };
 
 const Tab = createBottomTabNavigator();
@@ -68,6 +76,13 @@ export function HomeScreen(props: HomeProps) {
     const theme = useTheme();
     const intl = useIntl();
     const appState = useAppState();
+
+    // Redirect to Join Team screen if user has no teams
+    useEffect(() => {
+        if (!props.hasTeams) {
+            resetToTeams();
+        }
+    }, [props.hasTeams]);
 
     useEffect(() => {
         initializeSecurityManager();
@@ -213,4 +228,15 @@ export function HomeScreen(props: HomeProps) {
     );
 }
 
-export default HomeScreen;
+const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
+    const teamsCount = queryMyTeams(database).observeCount(false);
+    
+    return {
+        hasTeams: teamsCount.pipe(
+            switchMap((v) => of$(v > 0)),
+            distinctUntilChanged(),
+        ),
+    };
+});
+
+export default withDatabase(enhanced(HomeScreen));

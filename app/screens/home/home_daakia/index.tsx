@@ -7,7 +7,7 @@ import {useIsFocused, useNavigation} from '@react-navigation/native';
 import React, {useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View, TouchableOpacity, Text, DeviceEventEmitter} from 'react-native';
-import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
+import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {combineLatest, of as of$, Observable} from 'rxjs';
 import {switchMap, combineLatestWith, map, distinctUntilChanged} from 'rxjs/operators';
@@ -25,7 +25,6 @@ import Loading from '@components/loading';
 import {Events, General, Permissions, Preferences} from '@constants';
 import {DMS_CATEGORY, FAVORITES_CATEGORY} from '@constants/categories';
 import {DRAFT} from '@constants/screens';
-import {HOME_PADDING} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {queryCategoriesByTeamIds} from '@queries/servers/categories';
@@ -34,10 +33,10 @@ import {observeDraftCount} from '@queries/servers/drafts';
 import {queryPreferencesByCategoryAndName, querySidebarPreferences} from '@queries/servers/preference';
 import {observePermissionForTeam} from '@queries/servers/role';
 import {observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
-import {observeCurrentTeam} from '@queries/servers/team';
+import {observeCurrentTeam, queryMyTeams} from '@queries/servers/team';
 import {observeUnreadsAndMentions} from '@queries/servers/thread';
 import {observeCurrentUser, observeDeactivatedUsers} from '@queries/servers/user';
-import SearchField from '@screens/home/channel_list/categories_list/subheader/search_field';
+import {resetToTeams} from '@screens/navigation';
 import {type ChannelWithMyChannel, filterArchivedChannels, filterAutoclosedDMs, filterManuallyClosedDms, getUnreadIds, sortChannels} from '@utils/categories';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -92,10 +91,6 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
         backgroundColor: theme.centerChannelBg,
         borderTopLeftRadius: 12,
         borderTopRightRadius: 12,
-    },
-    searchContainer: {
-        flexDirection: 'row',
-        ...HOME_PADDING,
     },
     loadingView: {
         alignItems: 'center',
@@ -161,6 +156,7 @@ type HomeDaakiaProps = {
     favoriteChannelIds: Set<string>;
     draftsCount?: number;
     showIncomingCalls: boolean;
+    nTeams: number;
 };
 
 const HomeDaakia = ({
@@ -176,6 +172,7 @@ const HomeDaakia = ({
     favoriteChannelIds,
     draftsCount,
     showIncomingCalls,
+    nTeams,
 }: HomeDaakiaProps) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -187,6 +184,13 @@ const HomeDaakia = ({
     const [activeTab, setActiveTab] = useState<'all' | 'dms' | 'channels' | 'favorites'>('all');
     const [activeFilters, setActiveFilters] = useState<Set<string>>(new Set());
     const [isLoadingData, setIsLoadingData] = useState(false);
+
+    // Redirect if user has no teams
+    useEffect(() => {
+        if (isFocused && nTeams === 0) {
+            resetToTeams();
+        }
+    }, [isFocused, nTeams]);
 
     // Check if database is empty and fetch all posts if needed
     useEffect(() => {
@@ -267,6 +271,22 @@ const HomeDaakia = ({
 
     // (pull-to-refresh removed)
 
+    // Show loading while redirecting if no teams
+    if (nTeams === 0) {
+        return (
+            <SafeAreaView
+                style={styles.container}
+                edges={['bottom', 'left', 'right']}
+            >
+                <Loading
+                    size='large'
+                    themeColor='centerChannelColor'
+                    testID='home_daakia.checking_teams'
+                />
+            </SafeAreaView>
+        );
+    }
+
     // Filter channels based on active tab (done in component, not observable)
     const filteredChannels = React.useMemo(() => {
         const isDM = (type: string) => type === General.DM_CHANNEL || type === General.GM_CHANNEL;
@@ -320,12 +340,25 @@ const HomeDaakia = ({
         {id: 'drafts', title: 'Drafts', icon: 'send-outline', hasUnread: (typeof draftsCount === 'number' ? draftsCount > 0 : false)},
     ];
 
+    const isFocusedValue = useSharedValue(isFocused);
+    const stateIndexValue = useSharedValue(stateIndex || 0);
+
+    React.useEffect(() => {
+        isFocusedValue.value = isFocused;
+    }, [isFocused, isFocusedValue]);
+
+    React.useEffect(() => {
+        stateIndexValue.value = stateIndex || 0;
+    }, [stateIndex, stateIndexValue]);
+
     const top = useAnimatedStyle(() => {
+        'worklet';
         return {height: insets.top, backgroundColor: theme.sidebarBg};
     }, [theme, insets.top]);
 
     const bodyAnimated = useAnimatedStyle(() => {
-        if (isFocused) {
+        'worklet';
+        if (isFocusedValue.value) {
             return {
                 opacity: withTiming(1, {duration: 150}),
                 transform: [{translateX: withTiming(0, {duration: 150})}],
@@ -334,9 +367,9 @@ const HomeDaakia = ({
 
         return {
             opacity: withTiming(0, {duration: 150}),
-            transform: [{translateX: withTiming((stateIndex || 0) > homeDaakiaScreenIndex ? -25 : 25, {duration: 150})}],
+            transform: [{translateX: withTiming(stateIndexValue.value > homeDaakiaScreenIndex ? -25 : 25, {duration: 150})}],
         };
-    }, [isFocused, stateIndex]);
+    });
 
     return (
         <>
@@ -356,9 +389,6 @@ const HomeDaakia = ({
                             onMenuPress={handleMenuPress}
                             showMenu={false}
                         />
-                        <Animated.View style={styles.searchContainer}>
-                            <SearchField compact={true}/>
-                        </Animated.View>
                         <DaakiaTabs
                             tabs={tabs}
                             activeTab={activeFilters.has('unread') ? '' : activeTab}
@@ -631,6 +661,12 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         distinctUntilChanged(),
     );
 
+    const myTeams = queryMyTeams(database).observe();
+    const nTeams = myTeams.pipe(
+        map((teams) => teams.length),
+        distinctUntilChanged(),
+    );
+
     return {
         currentTeamId,
         currentUserId,
@@ -649,6 +685,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         lastPosts: channelListData.pipe(map((data) => data.lastPosts)),
         favoriteChannelIds: channelListData.pipe(map((data) => data.favoriteChannelIds)),
         showIncomingCalls,
+        nTeams,
     };
 });
 

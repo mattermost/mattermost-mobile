@@ -50,16 +50,28 @@ const TIMEZONE_FORMAT = [
     }),
 ];
 
+const MODERN_CHAT_FORMAT = [
+    defineMessage({
+        id: 'display_settings.modern_chat.on',
+        defaultMessage: 'On',
+    }),
+    defineMessage({
+        id: 'display_settings.modern_chat.off',
+        defaultMessage: 'Off',
+    }),
+];
+
 type DisplayProps = {
     componentId: AvailableScreens;
     currentUser?: UserModel;
     hasMilitaryTimeFormat: boolean;
     isCRTEnabled: boolean;
     isCRTSwitchEnabled: boolean;
+    isModernChatEnabled: boolean;
     isThemeSwitchingEnabled: boolean;
 }
 
-const Display = ({componentId, currentUser, hasMilitaryTimeFormat, isCRTEnabled, isCRTSwitchEnabled, isThemeSwitchingEnabled}: DisplayProps) => {
+const Display = ({componentId, currentUser, hasMilitaryTimeFormat, isCRTEnabled, isCRTSwitchEnabled, isModernChatEnabled, isThemeSwitchingEnabled}: DisplayProps) => {
     const intl = useIntl();
     const theme = useTheme();
     const timezone = useMemo(() => getUserTimezoneProps(currentUser), [currentUser?.timezone]);
@@ -85,6 +97,12 @@ const Display = ({componentId, currentUser, hasMilitaryTimeFormat, isCRTEnabled,
     const goToCRTSettings = usePreventDoubleTap(useCallback(() => {
         const screen = Screens.SETTINGS_DISPLAY_CRT;
         const title = intl.formatMessage({id: 'display_settings.crt', defaultMessage: 'Collapsed Reply Threads'});
+        gotoSettingsScreen(screen, title);
+    }, [intl]));
+
+    const goToModernChatSettings = usePreventDoubleTap(useCallback(() => {
+        const screen = Screens.SETTINGS_DISPLAY_MODERN_CHAT;
+        const title = intl.formatMessage({id: 'display_settings.modern_chat', defaultMessage: 'Modern Chat'});
         gotoSettingsScreen(screen, title);
     }, [intl]));
 
@@ -115,6 +133,12 @@ const Display = ({componentId, currentUser, hasMilitaryTimeFormat, isCRTEnabled,
                 onPress={goToTimezoneSettings}
                 info={intl.formatMessage(timezone.useAutomaticTimezone ? TIMEZONE_FORMAT[0] : TIMEZONE_FORMAT[1])}
                 testID='display_settings.timezone.option'
+            />
+            <SettingItem
+                optionName='modern_chat'
+                onPress={goToModernChatSettings}
+                info={intl.formatMessage(isModernChatEnabled ? MODERN_CHAT_FORMAT[0] : MODERN_CHAT_FORMAT[1])}
+                testID='display_settings.modern_chat.option'
             />
             {isCRTSwitchEnabled && (
                 <SettingItem
