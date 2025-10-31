@@ -140,8 +140,8 @@ const PlaybookRuns = ({
     }, []);
 
     const startANewRun = useCallback(() => {
-        goToSelectPlaybook(intl, theme);
-    }, [intl, theme]);
+        goToSelectPlaybook(intl, theme, channelId);
+    }, [intl, theme, channelId]);
 
     let content = (<EmptyState tab={activeTab}/>);
     if (!isEmpty) {

@@ -281,6 +281,7 @@ const PostUpdate = ({
                 onChangeText={onChangeText}
                 theme={theme}
                 multiline={true}
+                multilineInputHeight={300}
             />
             <FloatingAutocompleteSelector
                 options={dialogOptions}

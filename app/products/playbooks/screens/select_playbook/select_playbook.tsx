@@ -39,6 +39,7 @@ export type Props = {
     currentUserId: string;
     componentId: AvailableScreens;
     playbooksUsedInChannel: Set<string>;
+    channelId?: string;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -81,6 +82,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flex: 0,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.1),
         },
+        sectionHeaderContainer: {
+            backgroundColor: theme.centerChannelBg,
+            paddingVertical: 8,
+        },
         sectionHeader: {
             color: changeOpacity(theme.centerChannelColor, 0.56),
             ...typography('Body', 75, 'SemiBold'),
@@ -96,6 +101,7 @@ function SelectPlaybook({
     currentUserId,
     componentId,
     playbooksUsedInChannel,
+    channelId,
 }: Props) {
     const serverUrl = useServerUrl();
     const theme = useTheme();
@@ -214,8 +220,8 @@ function SelectPlaybook({
     }, [intl, serverUrl]);
 
     const onPress = useCallback((playbook: Playbook) => {
-        goToStartARun(intl, theme, playbook, onRunCreated);
-    }, [intl, onRunCreated, theme]);
+        goToStartARun(intl, theme, playbook, onRunCreated, channelId);
+    }, [intl, onRunCreated, theme, channelId]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<Playbook>) => {
         return (
@@ -242,9 +248,11 @@ function SelectPlaybook({
 
     const renderSectionHeader = useCallback(({section}: {section: SectionListData<Playbook, DefaultSectionT>}) => {
         return (
-            <Text style={style.sectionHeader}>{section.title}</Text>
+            <View style={style.sectionHeaderContainer}>
+                <Text style={style.sectionHeader}>{section.title}</Text>
+            </View>
         );
-    }, [style.sectionHeader]);
+    }, [style]);
 
     const sections: Array<SectionListData<Playbook, DefaultSectionT>> = useMemo(() => {
         type PlaybookSections = {
