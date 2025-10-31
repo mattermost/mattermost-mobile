@@ -7,7 +7,6 @@ import {defineMessages, useIntl} from 'react-intl';
 import {View} from 'react-native';
 
 import Loading from '@components/loading';
-import MenuDivider from '@components/menu_divider';
 import SectionNotice from '@components/section_notice';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -82,6 +81,14 @@ const tabs: Array<TabDefinition<TabsNames>> = [
         name: messages.tabFinished,
     },
 ];
+
+const itemSeparatorStyle = {
+    height: 12,
+};
+
+const ItemSeparator = () => {
+    return <View style={itemSeparatorStyle}/>;
+};
 
 const ParticipantPlaybooks = ({
     currentUserId,
@@ -202,7 +209,7 @@ const ParticipantPlaybooks = ({
                 data={data}
                 renderItem={renderItem}
                 contentContainerStyle={styles.container}
-                ItemSeparatorComponent={MenuDivider}
+                ItemSeparatorComponent={ItemSeparator}
                 estimatedItemSize={CARD_HEIGHT}
                 onEndReached={loadMore}
                 onEndReachedThreshold={0.1}

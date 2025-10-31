@@ -219,6 +219,7 @@ function AutoCompleteSelector({
                 </Text>
                 <CompassIcon
                     name='chevron-down'
+                    size={20}
                     color={changeOpacity(theme.centerChannelColor, 0.5)}
                 />
             </View>

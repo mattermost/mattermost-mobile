@@ -9,14 +9,13 @@ describe('getLabelPositions', () => {
             paddingTop: 10,
             paddingBottom: 10,
             height: 50,
-            fontSize: 14,
             padding: 20,
         };
         const labelStyle = {fontSize: 15};
         const smallLabelStyle = {fontSize: 11};
 
         const result = getLabelPositions(style, labelStyle, smallLabelStyle);
-        expect(result).toEqual([24.4, -6.5]);
+        expect(result).toEqual([25, -6.5]);
     });
 
     test('should return correct positions when label and smallLabels styles are missing', () => {
@@ -24,14 +23,13 @@ describe('getLabelPositions', () => {
             paddingTop: 15,
             paddingBottom: 15,
             height: 50,
-            fontSize: 14,
             padding: 25,
         };
         const labelStyle = {};
         const smallLabelStyle = {};
 
         const result = getLabelPositions(style, labelStyle, smallLabelStyle);
-        expect(result).toEqual([23.8, -6.5]);
+        expect(result).toEqual([23.2, -6.5]);
     });
 
     test('should return correct positions when all values are empty are provided', () => {
@@ -49,7 +47,6 @@ describe('getLabelPositions', () => {
             paddingTop: 0,
             paddingBottom: 0,
             height: 0,
-            fontSize: 0,
             padding: 0,
         };
         const labelStyle = {fontSize: 0};
