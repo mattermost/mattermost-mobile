@@ -64,6 +64,7 @@ describe('Search - Pinned Messages', () => {
         await PinnedMessagesScreen.open();
 
         // * Verify basic elements on pinned messages screen
+        await waitFor(element(by.text('No pinned messages yet'))).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         await expect(PinnedMessagesScreen.emptyTitle).toHaveText('No pinned messages yet');
         await expect(PinnedMessagesScreen.emptyParagraph).toHaveText('To pin important messages, long-press on a message and choose Pin To Channel. Pinned messages will be visible to everyone in this channel.');
 
@@ -98,6 +99,7 @@ describe('Search - Pinned Messages', () => {
 
         // # Tap on post and jump to recent messages
         await pinnedMessagesPostListPostItem.tap();
+        await waitFor(PermalinkScreen.jumpToRecentMessagesButton).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         await PermalinkScreen.jumpToRecentMessages();
 
         // * Verify on channel screen and pinned message is displayed
