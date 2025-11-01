@@ -2,49 +2,45 @@
 // See LICENSE.txt for license information.
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
-import {of as of$} from 'rxjs';
 import {switchMap, combineLatestWith} from 'rxjs/operators';
 
-import {Preferences} from '@constants';
-import {getPreferenceValue} from '@helpers/api/preference';
-import {queryCategoriesByTeamIds} from '@queries/servers/categories';
-import {querySidebarPreferences} from '@queries/servers/preference';
-import {observeConfigBooleanValue, observeCurrentTeamId, observeOnlyUnreads} from '@queries/servers/system';
+import {DEFAULT_LOCALE} from '@i18n';
+import {observeCurrentTeamId, observeOnlyUnreads} from '@queries/servers/system';
+import {observeCurrentUser} from '@queries/servers/user';
 
 import Categories from './categories';
+import {observeFlattenedCategories} from './utils/observe_flattened_categories';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type PreferenceModel from '@typings/database/models/servers/preference';
 
-const enhanced = withObservables(
-    [],
-    ({database}: WithDatabaseArgs) => {
-        const currentTeamId = observeCurrentTeamId(database);
-        const categories = currentTeamId.pipe(switchMap((ctid) => queryCategoriesByTeamIds(database, [ctid]).observeWithColumns(['sort_order'])));
+type Props = WithDatabaseArgs & {
+    isTablet: boolean;
+};
 
-        const unreadsOnTopUserPreference = querySidebarPreferences(database, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS).
-            observeWithColumns(['value']).
-            pipe(
-                switchMap((prefs: PreferenceModel[]) => of$(getPreferenceValue<string>(prefs, Preferences.CATEGORIES.SIDEBAR_SETTINGS, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS))),
+const enhanced = withObservables(['isTablet'], ({database, isTablet}: Props) => {
+    const currentTeamId = observeCurrentTeamId(database);
+    const currentUser = observeCurrentUser(database);
+    const onlyUnreads = observeOnlyUnreads(database);
+
+    const flattenedItems = currentUser.pipe(
+        combineLatestWith(onlyUnreads, currentTeamId),
+        switchMap(([user, isOnlyUnreads, teamId]) => {
+            return observeFlattenedCategories(
+                database,
+                user?.id || '',
+                user?.locale || DEFAULT_LOCALE,
+                isTablet,
+                isOnlyUnreads,
+                teamId,
             );
+        }),
+    );
 
-        const unreadsOnTopServerPreference = observeConfigBooleanValue(database, 'ExperimentalGroupUnreadChannels');
-
-        const unreadsOnTop = unreadsOnTopServerPreference.pipe(
-            combineLatestWith(unreadsOnTopUserPreference),
-            switchMap(([s, u]) => {
-                if (!u) {
-                    return of$(s);
-                }
-
-                return of$(u !== 'false');
-            }),
-        );
-        return {
-            categories,
-            onlyUnreads: observeOnlyUnreads(database),
-            unreadsOnTop,
-        };
-    });
+    return {
+        flattenedItems,
+        onlyUnreads,
+        currentTeamId,
+    };
+});
 
 export default withDatabase(enhanced(Categories));

@@ -142,10 +142,10 @@ const CategoriesList = ({
                 {threadButtonComponent}
                 {draftsButtonComponent}
                 {playbooksButtonComponent}
-                <Categories/>
+                <Categories isTablet={isTablet}/>
             </>
         );
-    }, [draftsButtonComponent, hasChannels, playbooksButtonComponent, threadButtonComponent]);
+    }, [draftsButtonComponent, hasChannels, isTablet, playbooksButtonComponent, threadButtonComponent]);
 
     return (
         <Animated.View style={[styles.container, tabletStyle]}>
