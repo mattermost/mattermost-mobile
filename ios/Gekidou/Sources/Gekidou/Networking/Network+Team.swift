@@ -5,11 +5,17 @@ extension Network {
         let group = DispatchGroup()
         var team: Team? = nil
         var myTeam: TeamMember? = nil
-        
+        var shouldCallCompletion = true
+
         if !Database.default.queryTeamExists(withId: teamId, forServerUrl: serverUrl) {
             group.enter()
-            
-            let url = buildApiUrl(serverUrl, "/teams/\(teamId)")
+
+            guard let url = buildApiUrl(serverUrl, "/teams/\(teamId)") else {
+                group.leave()
+                shouldCallCompletion = false
+                completionHandler(nil, nil)
+                return
+            }
             request(url, usingMethod: "GET", forServerUrl: serverUrl) { data, response, error in
                 if let data = data {
                     team = try? JSONDecoder().decode(Team.self, from: data)
@@ -17,10 +23,15 @@ extension Network {
                 group.leave()
             }
         }
-        
+
         if !Database.default.queryMyTeamExists(withId: teamId, forServerUrl: serverUrl) {
             group.enter()
-            let url = buildApiUrl(serverUrl, "/teams/\(teamId)/members/me")
+            guard let url = buildApiUrl(serverUrl, "/teams/\(teamId)/members/me") else {
+                group.leave()
+                shouldCallCompletion = false
+                completionHandler(nil, nil)
+                return
+            }
             request(url, usingMethod: "GET", forServerUrl: serverUrl) { data, response, error in
                 if let data = data {
                     myTeam = try? JSONDecoder().decode(TeamMember.self, from: data)
@@ -28,9 +39,12 @@ extension Network {
                 group.leave()
             }
         }
-        
-        group.notify(queue: .main) {
-            completionHandler(team, myTeam)
+
+        if shouldCallCompletion {
+            // Use background queue for notification extension (not .main)
+            group.notify(queue: DispatchQueue.global(qos: .default)) {
+                completionHandler(team, myTeam)
+            }
         }
     }
 }

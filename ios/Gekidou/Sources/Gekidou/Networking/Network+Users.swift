@@ -49,30 +49,42 @@ extension Network {
 
     public func fetchUsers(byIds userIds: [String], forServerUrl serverUrl: String, completionHandler: @escaping ResponseHandler) {
         let endpoint = "/users/ids"
-        let url = buildApiUrl(serverUrl, endpoint)
+        guard let url = buildApiUrl(serverUrl, endpoint) else {
+            completionHandler(nil, nil, nil)
+            return
+        }
         let data = try? JSONSerialization.data(withJSONObject: userIds, options: [])
-        
+
         return request(url, withMethod: "POST", withBody: data, andHeaders: nil, forServerUrl: serverUrl, completionHandler: completionHandler)
     }
     
     public func fetchUsers(byUsernames usernames: [String], forServerUrl serverUrl: String, completionHandler: @escaping ResponseHandler) {
         let endpoint = "/users/usernames"
-        let url = buildApiUrl(serverUrl, endpoint)
+        guard let url = buildApiUrl(serverUrl, endpoint) else {
+            completionHandler(nil, nil, nil)
+            return
+        }
         let data = try? JSONSerialization.data(withJSONObject: usernames, options: [])
-        
+
         return request(url, withMethod: "POST", withBody: data, andHeaders: nil, forServerUrl: serverUrl, completionHandler: completionHandler)
     }
     
     public func fetchProfiles(inChannelId channelId: String, forServerUrl serverUrl: String, completionHandler: @escaping ResponseHandler) {
         let endpoint = "/users?in_channel=\(channelId)&page=0&per_page=8&sort="
-        let url = buildApiUrl(serverUrl, endpoint)
+        guard let url = buildApiUrl(serverUrl, endpoint) else {
+            completionHandler(nil, nil, nil)
+            return
+        }
         request(url, usingMethod: "GET", forServerUrl: serverUrl, completionHandler: completionHandler)
     }
     
     public func fetchUserProfilePicture(userId: String, lastUpdateAt: Double, forServerUrl serverUrl: String, completionHandler: @escaping ResponseHandler) {
         let endpoint = "/users/\(userId)/image?lastPictureUpdate=\(Int64(lastUpdateAt))"
-        let url = buildApiUrl(serverUrl, endpoint)
-        
+        guard let url = buildApiUrl(serverUrl, endpoint) else {
+            completionHandler(nil, nil, nil)
+            return
+        }
+
         return request(url, usingMethod: "GET", forServerUrl: serverUrl, completionHandler: completionHandler)
     }
 }
