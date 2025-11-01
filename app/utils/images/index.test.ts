@@ -197,6 +197,46 @@ describe('calculateDimensions', () => {
         expect(result.width).toBe(300);
         expect(result.height).toBe(300);
     });
+
+    it('should constrain portrait image width when scaling to viewport height would cause overflow', () => {
+        // Portrait image 380×800, viewport 400×900
+        // Without fix: height=900, width=900×(380/800)=427.5 (OVERFLOW!)
+        // With fix: should scale based on width instead
+        const result = calculateDimensions(800, 380, 400, 900, true);
+        expect(result.width).toBeLessThanOrEqual(400);
+        expect(result.height).toBeLessThanOrEqual(900);
+
+        // Should constrain to width: 400w, height=400×(800/380)≈842
+        expect(result.width).toBe(400);
+        expect(result.height).toBeCloseTo(842.1, 0);
+    });
+
+    it('should constrain landscape image height when scaling to viewport width would cause overflow', () => {
+        // Landscape image 800×380, viewport 900×400
+        // Without fix: width=900, height=900×(380/800)=427.5 (OVERFLOW!)
+        // With fix: should scale based on height instead
+        const result = calculateDimensions(380, 800, 900, 400, true);
+        expect(result.width).toBeLessThanOrEqual(900);
+        expect(result.height).toBeLessThanOrEqual(400);
+
+        // Should constrain to height: 400h, width=400×(800/380)≈842
+        expect(result.height).toBe(400);
+        expect(result.width).toBeCloseTo(842.1, 0);
+    });
+
+    it('should handle extreme portrait aspect ratio with matchViewPort', () => {
+        // Very tall portrait image 200×1000 (1:5 ratio), viewport 300×600
+        // Would try to fit to height: 600h, width=600×(200/1000)=120 (OK)
+        // But if viewport is narrower: 100×600
+        // Would try: 600h, width=600×(200/1000)=120 (OVERFLOW!)
+        const result = calculateDimensions(1000, 200, 100, 600, true);
+        expect(result.width).toBeLessThanOrEqual(100);
+        expect(result.height).toBeLessThanOrEqual(600);
+
+        // Should constrain to width: 100w, height=100×(1000/200)=500
+        expect(result.width).toBe(100);
+        expect(result.height).toBe(500);
+    });
 });
 
 describe('getViewPortWidth', () => {
