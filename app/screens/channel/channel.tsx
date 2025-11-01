@@ -87,6 +87,7 @@ const Channel = ({
     useAndroidHardwareBackHandler(componentId, handleBack);
 
     const marginTop = defaultHeight + (isTablet ? 0 : -insets.top);
+    const bottomPadding = insets.bottom;
     useEffect(() => {
         // This is done so that the header renders
         // and the screen does not look totally blank
@@ -147,14 +148,16 @@ const Channel = ({
                             <ScheduledPostIndicator scheduledPostCount={scheduledPostCount}/>
                         }
                     </>
-                    <PostDraft
-                        channelId={channelId}
-                        testID='channel.post_draft'
-                        containerHeight={containerHeight}
-                        isChannelScreen={true}
-                        canShowPostPriority={true}
-                        location={Screens.CHANNEL}
-                    />
+                    <View style={{paddingBottom: bottomPadding}}>
+                        <PostDraft
+                            channelId={channelId}
+                            testID='channel.post_draft'
+                            containerHeight={containerHeight}
+                            isChannelScreen={true}
+                            canShowPostPriority={true}
+                            location={Screens.CHANNEL}
+                        />
+                    </View>
                 </ExtraKeyboardProvider>
                 }
                 {showFloatingCallContainer && shouldRender &&
