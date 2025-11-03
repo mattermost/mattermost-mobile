@@ -51,7 +51,7 @@ export const fetchPlaybookRunsForChannel = async (serverUrl: string, channelId: 
 
         if (!fetchOnly) {
             const result = await handlePlaybookRuns(serverUrl, allRuns, false, true);
-            if (result && result.error) {
+            if (result.error) {
                 throw result.error;
             }
 
@@ -161,9 +161,11 @@ export const postStatusUpdate = async (serverUrl: string, playbookRunID: string,
     try {
         const client = NetworkManager.getClient(serverUrl);
         await client.postStatusUpdate(playbookRunID, payload, ids);
+        return undefined;
     } catch (error) {
         logDebug('error on postStatusUpdate', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
+        return error;
     }
 };
 

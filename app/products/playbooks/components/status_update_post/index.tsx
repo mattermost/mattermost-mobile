@@ -9,12 +9,14 @@ import {fetchUsersByIds} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
 import Markdown from '@components/markdown';
 import {useServerUrl} from '@context/server';
+import {isPostStatusUpdateProps} from '@playbooks/utils/types';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import Participants from './participants';
 
+import type {PostStatusUpdateProps} from '@playbooks/types/post';
 import type PostModel from '@typings/database/models/servers/post';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
@@ -22,15 +24,6 @@ type Props = {
     location: AvailableScreens;
     post: PostModel;
     theme: Theme;
-};
-
-type StatusUpdatePostProps = {
-    authorUsername: string;
-    numTasks: number;
-    numTasksChecked: number;
-    participantIds: string[];
-    playbookRunId: string;
-    runName: string;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -85,7 +78,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const StatusUpdatePost = ({location, post, theme}: Props) => {
-    const {authorUsername, numTasks, numTasksChecked, participantIds, playbookRunId, runName} = post.props as StatusUpdatePostProps;
+    let statusUpdateProps: PostStatusUpdateProps | undefined;
+
+    if (isPostStatusUpdateProps(post.props)) {
+        statusUpdateProps = post.props;
+    }
+
     const serverUrl = useServerUrl();
     const style = getStyleSheet(theme);
     const blockStyles = getMarkdownBlockStyles(theme);
@@ -93,12 +91,32 @@ const StatusUpdatePost = ({location, post, theme}: Props) => {
     const intl = useIntl();
 
     useEffect(() => {
-        fetchUsersByIds(serverUrl, participantIds);
+        if (statusUpdateProps) {
+            fetchUsersByIds(serverUrl, statusUpdateProps.participantIds);
+        }
 
         // Only do this on mount
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    if (!statusUpdateProps) {
+        return (
+            <View style={style.messageContainer}>
+                <Markdown
+                    baseTextStyle={style.message}
+                    blockStyles={blockStyles}
+                    channelId={post.channelId}
+                    postId={post.id}
+                    textStyles={textStyles}
+                    value={intl.formatMessage({id: 'playbooks.status_update_post.invalid_status_update_props', defaultMessage: 'Playbooks status update post with invalid properties'})}
+                    theme={theme}
+                    location={location}
+                />
+            </View>
+        );
+    }
+
+    const {authorUsername, numTasks, numTasksChecked, participantIds, playbookRunId, runName} = statusUpdateProps;
     const updatePosted = intl.formatMessage({
         id: 'playbooks.status_update_post.update',
         defaultMessage: '@{authorUsername} posted an update for [{runName}]({link})',
@@ -117,7 +135,6 @@ const StatusUpdatePost = ({location, post, theme}: Props) => {
                 postId={post.id}
                 textStyles={textStyles}
                 value={updatePosted}
-                mentionKeys={authorUsername ? [{key: authorUsername, caseSensitive: false}] : []}
                 theme={theme}
                 location={location}
             />

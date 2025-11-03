@@ -94,13 +94,13 @@ function StartARun({
 
     const [runName, setRunName] = useState(() => {
         if (playbook?.channel_mode === 'create_new_channel') {
-            return playbook.channel_name_template || '';
+            return playbook.channel_name_template;
         }
         return '';
     });
     const [runDescription, setRunDescription] = useState(() => {
         if (playbook?.run_summary_template_enabled) {
-            return playbook.run_summary_template || '';
+            return playbook.run_summary_template;
         }
         return '';
     });
@@ -111,10 +111,6 @@ function StartARun({
     const canSave = Boolean(runName.trim());
 
     const handleStartRun = useCallback(async () => {
-        if (!runName.trim()) {
-            return;
-        }
-
         const res = await createPlaybookRun(serverUrl, playbook.id, currentUserId, currentTeamId, runName.trim(), runDescription.trim(), channelId, channelOption === 'new' ? createPublicChannel : undefined);
         if (res.error || !res.data) {
             logDebug('error on createPlaybookRun', getFullErrorMessage(res.error));

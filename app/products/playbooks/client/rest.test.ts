@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable max-lines */
+
 import TestHelper from '@test/test_helper';
 import {buildQueryString} from '@utils/helpers';
 
@@ -60,6 +62,82 @@ describe('fetchPlaybookRuns', () => {
         jest.mocked(client.doFetch).mockRejectedValue(new Error('Network error'));
 
         expect(client.fetchPlaybookRuns(params)).rejects.toThrow('Network error');
+    });
+});
+
+describe('fetchPlaybookRun', () => {
+    test('should fetch playbook run with id and groupLabel', async () => {
+        const id = 'run123';
+        const groupLabel: RequestGroupLabel = 'Cold Start';
+        const expectedUrl = `/plugins/playbooks/api/v0/runs/${id}`;
+        const expectedOptions = {method: 'get', groupLabel};
+        const mockResponse = TestHelper.fakePlaybookRun({
+            id,
+            name: 'Test Run',
+        });
+
+        jest.mocked(client.doFetch).mockResolvedValue(mockResponse);
+
+        const result = await client.fetchPlaybookRun(id, groupLabel);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+        expect(result).toEqual(mockResponse);
+    });
+
+    test('should fetch playbook run with id only', async () => {
+        const id = 'run123';
+        const expectedUrl = `/plugins/playbooks/api/v0/runs/${id}`;
+        const expectedOptions = {method: 'get', groupLabel: undefined};
+        const mockResponse = TestHelper.fakePlaybookRun({
+            id,
+            name: 'Test Run',
+        });
+
+        jest.mocked(client.doFetch).mockResolvedValue(mockResponse);
+
+        const result = await client.fetchPlaybookRun(id);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+        expect(result).toEqual(mockResponse);
+    });
+
+    test('should handle error when fetching playbook run', async () => {
+        const id = 'run123';
+
+        jest.mocked(client.doFetch).mockRejectedValue(new Error('Network error'));
+
+        await expect(client.fetchPlaybookRun(id)).rejects.toThrow('Network error');
+    });
+});
+
+describe('fetchPlaybookRunMetadata', () => {
+    test('should fetch playbook run metadata successfully', async () => {
+        const id = 'run123';
+        const expectedUrl = `/plugins/playbooks/api/v0/runs/${id}/metadata`;
+        const expectedOptions = {method: 'get'};
+        const mockResponse = TestHelper.fakePlaybookRunMetadata({
+            channel_name: 'test-channel',
+            channel_display_name: 'Test Channel',
+            team_name: 'test-team',
+            num_participants: 3,
+            total_posts: 5,
+            followers: ['user1', 'user2'],
+        });
+
+        jest.mocked(client.doFetch).mockResolvedValue(mockResponse);
+
+        const result = await client.fetchPlaybookRunMetadata(id);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+        expect(result).toEqual(mockResponse);
+    });
+
+    test('should handle error when fetching playbook run metadata', async () => {
+        const id = 'run123';
+
+        jest.mocked(client.doFetch).mockRejectedValue(new Error('Network error'));
+
+        await expect(client.fetchPlaybookRunMetadata(id)).rejects.toThrow('Network error');
     });
 });
 
@@ -435,5 +513,492 @@ describe('finishRun', () => {
         jest.mocked(client.doFetch).mockRejectedValue(new Error('Network error'));
 
         await expect(client.finishRun(playbookRunId)).rejects.toThrow('Network error');
+    });
+});
+
+describe('postStatusUpdate', () => {
+    test('should post status update successfully', async () => {
+        const playbookRunID = 'run123';
+        const payload: PostStatusUpdatePayload = {
+            message: 'Status update message',
+            reminder: 3600,
+            finishRun: false,
+        };
+        const ids: PostStatusUpdateIds = {
+            user_id: 'user123',
+            channel_id: 'channel123',
+            team_id: 'team123',
+        };
+        const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunID}/update-status-dialog`;
+        const expectedBody = {
+            type: 'dialog_submission',
+            callback_id: '',
+            state: '',
+            cancelled: false,
+            ...ids,
+            submission: {
+                message: payload.message,
+                reminder: payload.reminder?.toFixed() ?? '',
+                finish_run: payload.finishRun,
+            },
+        };
+        const expectedOptions = {method: 'post', body: expectedBody};
+
+        jest.mocked(client.doFetch).mockResolvedValue(undefined);
+
+        await client.postStatusUpdate(playbookRunID, payload, ids);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+    });
+
+    test('should post status update with finishRun true', async () => {
+        const playbookRunID = 'run123';
+        const payload: PostStatusUpdatePayload = {
+            message: 'Finishing run',
+            finishRun: true,
+        };
+        const ids: PostStatusUpdateIds = {
+            user_id: 'user123',
+            channel_id: 'channel123',
+            team_id: 'team123',
+        };
+        const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunID}/update-status-dialog`;
+        const expectedBody = {
+            type: 'dialog_submission',
+            callback_id: '',
+            state: '',
+            cancelled: false,
+            ...ids,
+            submission: {
+                message: payload.message,
+                reminder: '',
+                finish_run: true,
+            },
+        };
+        const expectedOptions = {method: 'post', body: expectedBody};
+
+        jest.mocked(client.doFetch).mockResolvedValue(undefined);
+
+        await client.postStatusUpdate(playbookRunID, payload, ids);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+    });
+
+    test('should post status update with reminder', async () => {
+        const playbookRunID = 'run123';
+        const payload: PostStatusUpdatePayload = {
+            message: 'Status update with reminder',
+            reminder: 7200,
+            finishRun: false,
+        };
+        const ids: PostStatusUpdateIds = {
+            user_id: 'user123',
+            channel_id: 'channel123',
+            team_id: 'team123',
+        };
+        const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunID}/update-status-dialog`;
+        const expectedBody = {
+            type: 'dialog_submission',
+            callback_id: '',
+            state: '',
+            cancelled: false,
+            ...ids,
+            submission: {
+                message: payload.message,
+                reminder: '7200',
+                finish_run: false,
+            },
+        };
+        const expectedOptions = {method: 'post', body: expectedBody};
+
+        jest.mocked(client.doFetch).mockResolvedValue(undefined);
+
+        await client.postStatusUpdate(playbookRunID, payload, ids);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+    });
+
+    test('should post status update with empty message', async () => {
+        const playbookRunID = 'run123';
+        const payload: PostStatusUpdatePayload = {
+            message: '',
+            finishRun: false,
+        };
+        const ids: PostStatusUpdateIds = {
+            user_id: 'user123',
+            channel_id: 'channel123',
+            team_id: 'team123',
+        };
+        const expectedUrl = `/plugins/playbooks/api/v0/runs/${playbookRunID}/update-status-dialog`;
+        const expectedBody = {
+            type: 'dialog_submission',
+            callback_id: '',
+            state: '',
+            cancelled: false,
+            ...ids,
+            submission: {
+                message: '',
+                reminder: '',
+                finish_run: false,
+            },
+        };
+        const expectedOptions = {method: 'post', body: expectedBody};
+
+        jest.mocked(client.doFetch).mockResolvedValue(undefined);
+
+        await client.postStatusUpdate(playbookRunID, payload, ids);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+    });
+
+    test('should handle error when posting status update', async () => {
+        const playbookRunID = 'run123';
+        const payload: PostStatusUpdatePayload = {
+            message: 'Status update',
+            finishRun: false,
+        };
+        const ids: PostStatusUpdateIds = {
+            user_id: 'user123',
+            channel_id: 'channel123',
+            team_id: 'team123',
+        };
+
+        jest.mocked(client.doFetch).mockRejectedValue(new Error('Network error'));
+
+        await expect(client.postStatusUpdate(playbookRunID, payload, ids)).rejects.toThrow('Network error');
+    });
+});
+
+describe('fetchPlaybooks', () => {
+    test('should fetch playbooks with basic params', async () => {
+        const params: FetchPlaybooksParams = {team_id: 'team1'};
+        const queryParams = buildQueryString(params);
+        const expectedUrl = `/plugins/playbooks/api/v0/playbooks${queryParams}`;
+        const expectedOptions = {method: 'get'};
+        const mockResponse: FetchPlaybooksReturn = {
+            total_count: 2,
+            page_count: 1,
+            has_more: false,
+            items: [],
+        };
+
+        jest.mocked(client.doFetch).mockResolvedValue(mockResponse);
+
+        const result = await client.fetchPlaybooks(params);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+        expect(result).toEqual(mockResponse);
+    });
+
+    test('should fetch playbooks with all params', async () => {
+        const params: FetchPlaybooksParams = {
+            team_id: 'team1',
+            page: 1,
+            per_page: 20,
+            sort: 'title',
+            direction: 'asc',
+            search_term: 'test search',
+            with_archived: true,
+        };
+        const queryParams = buildQueryString(params);
+        const expectedUrl = `/plugins/playbooks/api/v0/playbooks${queryParams}`;
+        const expectedOptions = {method: 'get'};
+        const mockResponse: FetchPlaybooksReturn = {
+            total_count: 5,
+            page_count: 1,
+            has_more: false,
+            items: [],
+        };
+
+        jest.mocked(client.doFetch).mockResolvedValue(mockResponse);
+
+        const result = await client.fetchPlaybooks(params);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+        expect(result).toEqual(mockResponse);
+    });
+
+    test('should fetch playbooks with optional params only', async () => {
+        const params: FetchPlaybooksParams = {
+            team_id: 'team1',
+            page: 0,
+            per_page: 10,
+            sort: 'last_run_at',
+            direction: 'desc',
+        };
+        const queryParams = buildQueryString(params);
+        const expectedUrl = `/plugins/playbooks/api/v0/playbooks${queryParams}`;
+        const expectedOptions = {method: 'get'};
+        const mockResponse: FetchPlaybooksReturn = {
+            total_count: 3,
+            page_count: 1,
+            has_more: false,
+            items: [],
+        };
+
+        jest.mocked(client.doFetch).mockResolvedValue(mockResponse);
+
+        const result = await client.fetchPlaybooks(params);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+        expect(result).toEqual(mockResponse);
+    });
+
+    test('should handle error when fetching playbooks', async () => {
+        const params: FetchPlaybooksParams = {team_id: 'team1'};
+
+        jest.mocked(client.doFetch).mockRejectedValue(new Error('Network error'));
+
+        await expect(client.fetchPlaybooks(params)).rejects.toThrow('Network error');
+    });
+
+    test('should fetch playbooks with search_term and with_archived', async () => {
+        const params: FetchPlaybooksParams = {
+            team_id: 'team1',
+            search_term: 'incident',
+            with_archived: false,
+        };
+        const queryParams = buildQueryString(params);
+        const expectedUrl = `/plugins/playbooks/api/v0/playbooks${queryParams}`;
+        const expectedOptions = {method: 'get'};
+        const mockResponse: FetchPlaybooksReturn = {
+            total_count: 1,
+            page_count: 1,
+            has_more: false,
+            items: [],
+        };
+
+        jest.mocked(client.doFetch).mockResolvedValue(mockResponse);
+
+        const result = await client.fetchPlaybooks(params);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+        expect(result).toEqual(mockResponse);
+    });
+});
+
+describe('createPlaybookRun', () => {
+    test('should create playbook run with all required params', async () => {
+        const playbook_id = 'playbook123';
+        const owner_user_id = 'user123';
+        const team_id = 'team123';
+        const name = 'Test Run';
+        const description = 'Test Description';
+        const expectedUrl = '/plugins/playbooks/api/v0/runs';
+        const expectedOptions = {
+            method: 'post',
+            body: {
+                owner_user_id,
+                team_id,
+                name,
+                description,
+                playbook_id,
+                channel_id: undefined,
+                create_public_run: undefined,
+            },
+        };
+        const mockResponse = TestHelper.fakePlaybookRun({
+            id: 'run123',
+            name,
+            description,
+            playbook_id,
+            owner_user_id,
+            team_id,
+        });
+
+        jest.mocked(client.doFetch).mockResolvedValue(mockResponse);
+
+        const result = await client.createPlaybookRun(
+            playbook_id,
+            owner_user_id,
+            team_id,
+            name,
+            description,
+        );
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+        expect(result).toEqual(mockResponse);
+    });
+
+    test('should create playbook run with all params including optional', async () => {
+        const playbook_id = 'playbook123';
+        const owner_user_id = 'user123';
+        const team_id = 'team123';
+        const name = 'Test Run';
+        const description = 'Test Description';
+        const channel_id = 'channel123';
+        const create_public_run = true;
+        const expectedUrl = '/plugins/playbooks/api/v0/runs';
+        const expectedOptions = {
+            method: 'post',
+            body: {
+                owner_user_id,
+                team_id,
+                name,
+                description,
+                playbook_id,
+                channel_id,
+                create_public_run,
+            },
+        };
+        const mockResponse = {
+            id: 'run123',
+            name,
+            description,
+            playbook_id,
+            owner_user_id,
+            team_id,
+            channel_id,
+            create_public_run,
+        };
+
+        jest.mocked(client.doFetch).mockResolvedValue(mockResponse);
+
+        const result = await client.createPlaybookRun(
+            playbook_id,
+            owner_user_id,
+            team_id,
+            name,
+            description,
+            channel_id,
+            create_public_run,
+        );
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+        expect(result).toEqual(mockResponse);
+    });
+
+    test('should create playbook run with channel_id only', async () => {
+        const playbook_id = 'playbook123';
+        const owner_user_id = 'user123';
+        const team_id = 'team123';
+        const name = 'Test Run';
+        const description = 'Test Description';
+        const channel_id = 'channel123';
+        const expectedUrl = '/plugins/playbooks/api/v0/runs';
+        const expectedOptions = {
+            method: 'post',
+            body: {
+                owner_user_id,
+                team_id,
+                name,
+                description,
+                playbook_id,
+                channel_id,
+                create_public_run: undefined,
+            },
+        };
+        const mockResponse = {
+            id: 'run123',
+            name,
+            playbook_id,
+        };
+
+        jest.mocked(client.doFetch).mockResolvedValue(mockResponse);
+
+        const result = await client.createPlaybookRun(
+            playbook_id,
+            owner_user_id,
+            team_id,
+            name,
+            description,
+            channel_id,
+        );
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+        expect(result).toEqual(mockResponse);
+    });
+
+    test('should create playbook run with create_public_run only', async () => {
+        const playbook_id = 'playbook123';
+        const owner_user_id = 'user123';
+        const team_id = 'team123';
+        const name = 'Test Run';
+        const description = 'Test Description';
+        const create_public_run = false;
+        const expectedUrl = '/plugins/playbooks/api/v0/runs';
+        const expectedOptions = {
+            method: 'post',
+            body: {
+                owner_user_id,
+                team_id,
+                name,
+                description,
+                playbook_id,
+                channel_id: undefined,
+                create_public_run,
+            },
+        };
+        const mockResponse = {
+            id: 'run123',
+            name,
+            playbook_id,
+        };
+
+        jest.mocked(client.doFetch).mockResolvedValue(mockResponse);
+
+        const result = await client.createPlaybookRun(
+            playbook_id,
+            owner_user_id,
+            team_id,
+            name,
+            description,
+            undefined,
+            create_public_run,
+        );
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+        expect(result).toEqual(mockResponse);
+    });
+
+    test('should handle error when creating playbook run', async () => {
+        const playbook_id = 'playbook123';
+        const owner_user_id = 'user123';
+        const team_id = 'team123';
+        const name = 'Test Run';
+        const description = 'Test Description';
+
+        jest.mocked(client.doFetch).mockRejectedValue(new Error('Network error'));
+
+        await expect(
+            client.createPlaybookRun(playbook_id, owner_user_id, team_id, name, description),
+        ).rejects.toThrow('Network error');
+    });
+
+    test('should create playbook run with empty strings', async () => {
+        const playbook_id = '';
+        const owner_user_id = '';
+        const team_id = '';
+        const name = '';
+        const description = '';
+        const expectedUrl = '/plugins/playbooks/api/v0/runs';
+        const expectedOptions = {
+            method: 'post',
+            body: {
+                owner_user_id,
+                team_id,
+                name,
+                description,
+                playbook_id,
+                channel_id: undefined,
+                create_public_run: undefined,
+            },
+        };
+        const mockResponse = {
+            id: 'run123',
+        };
+
+        jest.mocked(client.doFetch).mockResolvedValue(mockResponse);
+
+        const result = await client.createPlaybookRun(
+            playbook_id,
+            owner_user_id,
+            team_id,
+            name,
+            description,
+        );
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+        expect(result).toEqual(mockResponse);
     });
 });
