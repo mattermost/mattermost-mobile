@@ -55,7 +55,9 @@ class InteractiveDialogScreen {
         }
 
         // Try AppsForm pattern first (for DialogRouter)
-        const appsFormElement = element(by.id(`AppFormElement.${elementName}`));
+        const appsFormElement = element(by.id(`AppFormElement.${elementName}.input`));
+        await waitFor(appsFormElement).toBeVisible().withTimeout(timeouts.TWO_SEC);
+
         try {
             await expect(appsFormElement).toExist();
             await appsFormElement.typeText(value);

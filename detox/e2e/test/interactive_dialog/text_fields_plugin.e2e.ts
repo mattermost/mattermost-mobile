@@ -178,7 +178,7 @@ describe('Interactive Dialog - Text Fields (Plugin)', () => {
 
         // # Verify submission response is posted to channel
         await wait(500);
-        await waitFor(element(by.text('Dialog Submitted:'))).toExist().withTimeout(1000);
+        await expect(element(by.text('Dialog Submitted:')).atIndex(1)).toBeVisible();
     });
 
     it('MM-T4203 should handle different text input subtypes (Plugin)', async () => {
@@ -218,6 +218,6 @@ describe('Interactive Dialog - Text Fields (Plugin)', () => {
 
         // # Verify submission response is posted to channel
         await wait(500);
-        await waitFor(element(by.text('Dialog Submitted:'))).toExist().withTimeout(1000);
+        await expect(element(by.text('Dialog Submitted:')).atIndex(2)).toBeVisible();
     });
 });

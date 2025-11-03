@@ -185,6 +185,6 @@ describe('Interactive Dialog - Boolean Fields (Plugin)', () => {
 
         // # Verify submission response is posted to channel
         await wait(500);
-        await waitFor(element(by.text('Dialog Submitted:'))).toExist().withTimeout(1000);
+        await expect(element(by.text('Dialog Submitted:')).atIndex(1)).toBeVisible();
     });
 });

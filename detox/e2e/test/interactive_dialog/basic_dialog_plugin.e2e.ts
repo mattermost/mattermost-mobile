@@ -253,7 +253,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
         // # Verify submission response is posted to channel
         await wait(500);
-        await waitFor(element(by.text('Dialog Submitted:'))).toExist().withTimeout(1000);
+        await expect(element(by.text('Dialog Submitted:')).atIndex(1)).toBeVisible();
     });
 
     it('MM-T4104 should handle server error on dialog submission (Plugin)', async () => {
@@ -274,6 +274,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         // # Submit the dialog - this should trigger server error
         await InteractiveDialogScreen.submit();
         await wait(500);
+        await expect(element(by.text('some error'))).toBeVisible();
 
         // * Verify dialog is still visible (server error should keep dialog open)
         await expect(InteractiveDialogScreen.interactiveDialogScreen).toExist();
