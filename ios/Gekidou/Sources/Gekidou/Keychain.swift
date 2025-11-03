@@ -57,27 +57,30 @@ public class Keychain: NSObject {
     public func getClientIdentityAndCertificate(for host: String) throws -> (SecIdentity, SecCertificate)? {
         let query = try buildIdentityQuery(for: host)
 
-        var result: AnyObject?
-        let identityStatus = SecItemCopyMatching(query as CFDictionary, &result)
-        guard identityStatus == errSecSuccess else {
-            if identityStatus == errSecItemNotFound {
+        var item: CFTypeRef?
+        let status = SecItemCopyMatching(query as CFDictionary, &item)
+        guard status == errSecSuccess else {
+            if status == errSecItemNotFound {
                 throw KeychainError.IdentityNotFound
             }
-
-            throw KeychainError.FailedSecItemCopyMatching(identityStatus)
+            throw KeychainError.FailedSecItemCopyMatching(status)
         }
-
-        let identity = result as! SecIdentity
+        
+        guard let obj = item, CFGetTypeID(obj) == SecIdentityGetTypeID() else {
+            throw KeychainError.IdentityNotFound
+        }
+        let identity = obj as! SecIdentity  // safe after the type-ID check
+        
         var certificate: SecCertificate?
-        let certificateStatus = SecIdentityCopyCertificate(identity, &certificate)
-        guard certificateStatus == errSecSuccess else {
-            throw KeychainError.FailedSecIdentityCopyCertificate(certificateStatus)
+        let certStatus = SecIdentityCopyCertificate(identity, &certificate)
+        guard certStatus == errSecSuccess else {
+            throw KeychainError.FailedSecIdentityCopyCertificate(certStatus)
         }
-        guard certificate != nil else {
+        guard let cert = certificate else {
             throw KeychainError.CertificateForIdentityNotFound
         }
 
-        return (identity, certificate!)
+        return (identity, cert)
     }
 
     @objc public func getCredentialsObjc(for serverUrl: String) -> NSDictionary? {
@@ -103,9 +106,9 @@ public class Keychain: NSObject {
 
         var result: AnyObject?
         let status = SecItemCopyMatching(attributes as CFDictionary, &result)
-        let data = result as? Data
-        if status == errSecSuccess && data != nil {
-            let token = String(data: data!, encoding: .utf8)
+        if status == errSecSuccess,
+           let data = result as? Data,
+           let token = String(data: data, encoding: .utf8) {
             return token
         }
 
@@ -119,9 +122,9 @@ public class Keychain: NSObject {
 
         var result: AnyObject?
         let status = SecItemCopyMatching(attributes as CFDictionary, &result)
-        let data = result as? Data
-        if status == errSecSuccess && data != nil {
-            let preauthSecret = String(data: data!, encoding: .utf8)
+        if status == errSecSuccess,
+           let data = result as? Data,
+           let preauthSecret = String(data: data, encoding: .utf8) {
             return preauthSecret
         }
 
@@ -152,7 +155,7 @@ public class Keychain: NSObject {
             kSecAttrServer: serverUrlData
         ]
 
-        if let accessGroup = Bundle.main.object(forInfoDictionaryKey: "AppGroupIdentifier") as! String? {
+        if let accessGroup = Bundle.main.object(forInfoDictionaryKey: "AppGroupIdentifier") as? String {
             attributes[kSecAttrAccessGroup] = accessGroup
         }
 
@@ -174,7 +177,7 @@ public class Keychain: NSObject {
             kSecAttrAccount: accountData
         ]
 
-        if let accessGroup = Bundle.main.object(forInfoDictionaryKey: "AppGroupIdentifier") as! String? {
+        if let accessGroup = Bundle.main.object(forInfoDictionaryKey: "AppGroupIdentifier") as? String {
             attributes[kSecAttrAccessGroup] = accessGroup
         }
 

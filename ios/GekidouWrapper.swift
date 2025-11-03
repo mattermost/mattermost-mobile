@@ -9,12 +9,31 @@
 import Foundation
 import Gekidou
 import react_native_emm
+import TurboLogIOSNative
 
 @objc class GekidouWrapper: NSObject {
   @objc public static let `default` = GekidouWrapper()
 
   override init() {
     ScreenCaptureManager.startTrackingScreens()
+  }
+
+  @objc func configureTurboLogForGekidou() {
+    GekidouLogger.shared.setLogHandler { level, message in
+      let turboLevel: TurboLogIOSNative.TurboLogLevel
+      switch level {
+      case .debug:
+        turboLevel = .debug
+      case .info:
+        turboLevel = .info
+      case .warning:
+        turboLevel = .warning
+      case .error:
+        turboLevel = .error
+      }
+
+      TurboLogIOSNative.TurboLogger.write(level: turboLevel, message: message)
+    }
   }
 
   @objc func postNotificationReceipt(_ userInfo: [AnyHashable:Any]) {
