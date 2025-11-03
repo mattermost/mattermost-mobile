@@ -21,9 +21,9 @@ import UIKit
     guard let serverUrl = try? Gekidou.Database.default.getServerUrlForServer(serverId)
     else { return }
     
-    if !skipThreadNotification && channelId != nil {
-      removeChannelNotifications(serverUrl: serverUrl, channelId: channelId!)
-      try? Gekidou.Database.default.resetMyChannelMentions(serverUrl, channelId!)
+    if !skipThreadNotification, let channelId = channelId {
+      removeChannelNotifications(serverUrl: serverUrl, channelId: channelId)
+      try? Gekidou.Database.default.resetMyChannelMentions(serverUrl, channelId)
     } else if !rootId.isEmpty {
       removeThreadNotifications(serverUrl: serverUrl, threadId: rootId)
       try? Gekidou.Database.default.resetThreadMentions(serverUrl, rootId)

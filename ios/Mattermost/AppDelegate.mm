@@ -38,6 +38,10 @@ NSString* const NOTIFICATION_TEST_ACTION = @"test";
       NSLog(@"Failed to configure TurboLog: %@", error.localizedDescription);
     }
   [TurboLog writeWithLogLevel:TurboLogLevelInfo message:@[@"Configured turbolog"]];
+
+  // Configure Gekidou to use TurboLog via wrapper
+  [[GekidouWrapper default] configureTurboLogForGekidou];
+
   OrientationManager.shared.delegate = self;
   
   // Clear keychain on first run in case of reinstallation
@@ -111,11 +115,21 @@ NSString* const NOTIFICATION_TEST_ACTION = @"test";
   if (state != UIApplicationStateActive) {
     [[GekidouWrapper default] fetchDataForPushNotification:userInfo withContentHandler:^(NSData * _Nullable data) {
       NSMutableDictionary *notification = [userInfo mutableCopy];
-      NSError *jsonError;
+      if (notification == nil) {
+        [TurboLog writeWithLogLevel:TurboLogLevelError message:@[@"Mattermost AppDelegate: Failed to copy userInfo dictionary"]];
+        completionHandler(UIBackgroundFetchResultFailed);
+        return;
+      }
+
       if (data != nil) {
+        NSError *jsonError = nil;
         id json = [NSJSONSerialization JSONObjectWithData:data options:NULL error:&jsonError];
-        if (!jsonError) {
+        if (jsonError) {
+          [TurboLog writeWithLogLevel:TurboLogLevelError message:@[@"Mattermost AppDelegate: JSON serialization error", jsonError.localizedDescription]];
+        } else if (json != nil) {
           [notification setObject:json forKey:@"data"];
+        } else {
+          [TurboLog writeWithLogLevel:TurboLogLevelWarning message:@[@"Mattermost AppDelegate: JSON serialization returned nil without error"]];
         }
       }
       [RNNotifications didReceiveBackgroundNotification:notification withCompletionHandler:completionHandler];

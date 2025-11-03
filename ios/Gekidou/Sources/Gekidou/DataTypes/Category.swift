@@ -44,9 +44,9 @@ public struct Category: Codable {
     
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CategoryKeys.self)
-        id = try values.decode(String.self, forKey: .id)
-        teamId = try values.decode(String.self, forKey: .teamId)
-        userId = try values.decode(String.self, forKey: .userId)
+        id = values.decodeIfPresent(forKey: .id, defaultValue: "")
+        teamId = values.decodeIfPresent(forKey: .teamId, defaultValue: "")
+        userId = values.decodeIfPresent(forKey: .userId, defaultValue: "")
         channelIds = values.decodeIfPresent(forKey: .channelIds, defaultValue: [String]())
         collapsed = false
         displayName = values.decodeIfPresent(forKey: .displayName, defaultValue: "")
@@ -86,9 +86,9 @@ public struct CategoryChannel: Codable {
     
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CategoryChannelKeys.self)
-        id = try values.decode(String.self, forKey: .id)
-        channelId = try values.decode(String.self, forKey: .channelId)
-        categoryId = try values.decode(String.self, forKey: .categoryId)
+        id = values.decodeIfPresent(forKey: .id, defaultValue: "")
+        channelId = values.decodeIfPresent(forKey: .channelId, defaultValue: "")
+        categoryId = values.decodeIfPresent(forKey: .categoryId, defaultValue: "")
         sortOrder = values.decodeIfPresent(forKey: .sortOrder, defaultValue: 0)
     }
     
