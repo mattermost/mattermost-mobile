@@ -63,19 +63,19 @@ const ItemSeparator = () => {
 
 const messages = defineMessages({
     cachedWarningTitle: {
-        id: 'playbooks.participant_playbooks.cached_warning_title',
+        id: 'playbooks.run_list.cached_warning_title',
         defaultMessage: 'Cannot reach the server',
     },
     cachedWarningMessage: {
-        id: 'playbooks.participant_playbooks.cached_warning_message',
+        id: 'playbooks.run_list.cached_warning_message',
         defaultMessage: 'Showing cached data only. Some playbook runs or updates may be missing from this list.',
     },
     tabInProgress: {
-        id: 'playbooks.participant_playbooks.tab_in_progress',
+        id: 'playbooks.run_list.tab_in_progress',
         defaultMessage: 'In Progress',
     },
     tabFinished: {
-        id: 'playbooks.participant_playbooks.tab_finished',
+        id: 'playbooks.run_list.tab_finished',
         defaultMessage: 'Finished',
     },
 });
