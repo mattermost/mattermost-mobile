@@ -191,7 +191,12 @@ function SelectPlaybook({
     }, []);
 
     const renderNoResults = useCallback((): JSX.Element | null => {
-        if (searching || (loading && page.current === -1)) {
+        if (loading && page.current === -1) {
+            // Already handled by the loading component
+            return null;
+        }
+
+        if (searching) {
             return (
                 <Loading
                     color={theme.buttonBg}

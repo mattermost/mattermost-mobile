@@ -1,9 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {type ComponentProps, useCallback, useEffect, useMemo, useState} from 'react';
+import {type ComponentProps, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {FormattedMessage, useIntl} from 'react-intl';
-import {Alert, Keyboard, Text, View} from 'react-native';
+import {Alert, Keyboard, Text} from 'react-native';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 import {getPosts} from '@actions/local/post';
 import FloatingAutocompleteSelector from '@components/floating_input/floating_autocomplete_selector';
@@ -13,7 +14,9 @@ import OptionItem from '@components/option_item';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {useAvoidKeyboard} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import SecurityManager from '@managers/security_manager';
 import {fetchPlaybookRun, fetchPlaybookRunMetadata, postStatusUpdate} from '@playbooks/actions/remote/runs';
 import {buildNavigationButton, popTopScreen, setButtons} from '@screens/navigation';
 import {toSeconds} from '@utils/datetime';
@@ -35,7 +38,6 @@ type Props = {
 
 const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
-        flex: 1,
         padding: 20,
         gap: 12,
     },
@@ -45,6 +47,9 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     introMessageBold: {
         ...typography('Body', 200, 'SemiBold'),
+    },
+    flex: {
+        flex: 1,
     },
 }));
 
@@ -83,6 +88,9 @@ const PostUpdate = ({
     const [nextUpdate, setNextUpdate] = useState<NextUpdateValues>('15_minutes');
     const [alsoMarkRunAsFinished, setAlsoMarkRunAsFinished] = useState(false);
     const [canSave, setCanSave] = useState(false);
+
+    const keyboardAwareRef = useRef<KeyboardAwareScrollView>(null);
+    useAvoidKeyboard(keyboardAwareRef);
 
     const [followersCount, setFollowersCount] = useState<number>(0);
     const [broadcastChannelCount, setBroadcastChannelCount] = useState<number>(0);
@@ -272,7 +280,12 @@ const PostUpdate = ({
     }
 
     return (
-        <View style={styles.container}>
+        <KeyboardAwareScrollView
+            contentContainerStyle={styles.container}
+            ref={keyboardAwareRef}
+            nativeID={SecurityManager.getShieldScreenId(componentId, false, true)}
+            style={styles.flex}
+        >
             <Text style={styles.introMessage}>{introMessage}</Text>
             <FloatingTextInput
                 label={intl.formatMessage({id: 'playbooks.post_update.label', defaultMessage: 'Update message'})}
@@ -297,7 +310,7 @@ const PostUpdate = ({
                 selected={alsoMarkRunAsFinished}
                 type='toggle'
             />
-        </View>
+        </KeyboardAwareScrollView>
     );
 };
 

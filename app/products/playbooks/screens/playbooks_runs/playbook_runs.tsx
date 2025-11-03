@@ -162,6 +162,7 @@ const PlaybookRuns = ({
                         text={intl.formatMessage({id: 'playbooks.runs.start_a_new_run', defaultMessage: 'Start a new run'})}
                         size='lg'
                         theme={theme}
+                        iconName='play-outline'
                     />
                 </View>
             </>
