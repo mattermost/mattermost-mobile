@@ -3,7 +3,7 @@
 
 /* eslint-disable max-lines */
 
-import merge from "deepmerge";
+import merge from 'deepmerge';
 import {
     Appearance,
     DeviceEventEmitter,
@@ -12,7 +12,7 @@ import {
     Alert,
     type EmitterSubscription,
     Keyboard,
-} from "react-native";
+} from 'react-native';
 import {
     type ComponentWillAppearEvent,
     type ImageResource,
@@ -23,29 +23,29 @@ import {
     type OptionsTopBarButton,
     type ScreenPoppedEvent,
     type EventSubscription,
-} from "react-native-navigation";
-import tinyColor from "tinycolor2";
+} from 'react-native-navigation';
+import tinyColor from 'tinycolor2';
 
-import CompassIcon from "@components/compass_icon";
-import { Events, Screens, Launch } from "@constants";
-import { NOT_READY } from "@constants/screens";
-import { getDefaultThemeByAppearance } from "@context/theme";
-import EphemeralStore from "@store/ephemeral_store";
-import NavigationStore from "@store/navigation_store";
-import { isTablet } from "@utils/helpers";
-import { logError } from "@utils/log";
+import CompassIcon from '@components/compass_icon';
+import {Events, Screens, Launch} from '@constants';
+import {NOT_READY} from '@constants/screens';
+import {getDefaultThemeByAppearance} from '@context/theme';
+import EphemeralStore from '@store/ephemeral_store';
+import NavigationStore from '@store/navigation_store';
+import {isTablet} from '@utils/helpers';
+import {logError} from '@utils/log';
 import {
     appearanceControlledScreens,
     mergeNavigationOptions,
-} from "@utils/navigation";
-import { changeOpacity, setNavigatorStyles } from "@utils/theme";
+} from '@utils/navigation';
+import {changeOpacity, setNavigatorStyles} from '@utils/theme';
 
-import type { BottomSheetFooterProps } from "@gorhom/bottom-sheet";
-import type { default as UserProfileScreen } from "@screens/user_profile";
-import type { LaunchProps } from "@typings/launch";
-import type { AvailableScreens, NavButtons } from "@typings/screens/navigation";
-import type { ComponentProps } from "react";
-import type { IntlShape } from "react-intl";
+import type {BottomSheetFooterProps} from '@gorhom/bottom-sheet';
+import type {default as UserProfileScreen} from '@screens/user_profile';
+import type {LaunchProps} from '@typings/launch';
+import type {AvailableScreens, NavButtons} from '@typings/screens/navigation';
+import type {ComponentProps} from 'react';
+import type {IntlShape} from 'react-intl';
 
 const alpha = {
     from: 0,
@@ -55,13 +55,13 @@ const alpha = {
 let subscriptions: Array<EmitterSubscription | EventSubscription> | undefined;
 
 export const allOrientations: LayoutOrientation[] = [
-    "sensor",
-    "sensorLandscape",
-    "sensorPortrait",
-    "landscape",
-    "portrait",
+    'sensor',
+    'sensorLandscape',
+    'sensorPortrait',
+    'landscape',
+    'portrait',
 ];
-export const portraitOrientation: LayoutOrientation[] = ["portrait"];
+export const portraitOrientation: LayoutOrientation[] = ['portrait'];
 
 export function registerNavigationListeners() {
     subscriptions?.forEach((v) => v.remove());
@@ -85,33 +85,33 @@ export function registerNavigationListeners() {
 
 function onCommandListener(name: string, params: any) {
     switch (name) {
-        case "setRoot":
+        case 'setRoot':
             NavigationStore.clearScreensFromStack();
             NavigationStore.addScreenToStack(params.layout.root.children[0].id);
             break;
-        case "push":
+        case 'push':
             NavigationStore.addScreenToStack(params.layout.id);
             break;
-        case "showModal":
+        case 'showModal':
             NavigationStore.addModalToStack(params.layout.children[0].id);
             break;
-        case "popToRoot":
+        case 'popToRoot':
             NavigationStore.clearScreensFromStack();
             NavigationStore.addScreenToStack(Screens.HOME);
             break;
-        case "popTo":
+        case 'popTo':
             NavigationStore.popTo(params.componentId);
             break;
-        case "dismissModal":
+        case 'dismissModal':
             NavigationStore.removeModalFromStack(params.componentId);
             break;
-        case "showOverlay":
+        case 'showOverlay':
             NavigationStore.addOverlayToStack(params?.layout?.id);
             break;
-        case "dismissOverlay":
+        case 'dismissOverlay':
             NavigationStore.removeOverlayFromStack(params?.componentId);
             break;
-        case "dismissAllOverlays": {
+        case 'dismissAllOverlays': {
             NavigationStore.removeAllOverlaysFromStack();
             break;
         }
@@ -122,7 +122,7 @@ function onCommandListener(name: string, params: any) {
     }
 }
 
-function onPoppedListener({ componentId }: ScreenPoppedEvent) {
+function onPoppedListener({componentId}: ScreenPoppedEvent) {
     // screen pop does not trigger registerCommandListener, but does trigger screenPoppedListener
     NavigationStore.removeScreenFromStack(componentId as AvailableScreens);
 }
@@ -148,9 +148,10 @@ export const loginAnimationOptions = () => {
             noBorder: true,
             elevation: 0,
             background: {
-                color: "transparent",
+                color: 'transparent',
             },
             backButton: {
+
                 // color: changeOpacity(theme.centerChannelColor, 0.56),
                 visible: true,
             },
@@ -190,11 +191,11 @@ export const bottomSheetModalOptions = (
 ): Options => {
     if (closeButtonId) {
         const closeButton = CompassIcon.getImageSourceSync(
-            "close",
+            'close',
             24,
             theme.centerChannelColor,
         );
-        const closeButtonTestId = `${closeButtonId.replace("close-", "close.").replace(/-/g, "_")}.button`;
+        const closeButtonTestId = `${closeButtonId.replace('close-', 'close.').replace(/-/g, '_')}.button`;
         return {
             modalPresentationStyle: OptionsModalPresentationStyle.formSheet,
             topBar: {
@@ -258,17 +259,17 @@ Navigation.setDefaultOptions({
     },
     topBar: {
         title: {
-            fontFamily: "Metropolis-SemiBold",
+            fontFamily: 'Metropolis-SemiBold',
             fontSize: 18,
-            fontWeight: "600",
+            fontWeight: '600',
         },
         backButton: {
             enableMenu: false,
         },
         subtitle: {
-            fontFamily: "OpenSans",
+            fontFamily: 'OpenSans',
             fontSize: 12,
-            fontWeight: "400",
+            fontWeight: '400',
         },
     },
 });
@@ -283,7 +284,7 @@ Appearance.addChangeListener(() => {
     ) {
         for (const screen of screens) {
             if (appearanceControlledScreens.has(screen)) {
-                Navigation.updateProps(screen, { theme });
+                Navigation.updateProps(screen, {theme});
                 setNavigatorStyles(
                     screen,
                     theme,
@@ -320,8 +321,8 @@ function isScreenRegistered(screen: AvailableScreens) {
         NOT_READY.includes(screen) || !Object.values(Screens).includes(screen);
     if (notImplemented) {
         Alert.alert(
-            "Temporary error " + screen,
-            "The functionality you are trying to use has not been implemented yet",
+            'Temporary error ' + screen,
+            'The functionality you are trying to use has not been implemented yet',
         );
         return false;
     }
@@ -334,33 +335,33 @@ export function openToS() {
     return showOverlay(
         Screens.TERMS_OF_SERVICE,
         {},
-        { overlay: { interceptTouchOutside: true } },
+        {overlay: {interceptTouchOutside: true}},
     );
 }
 
 export function resetToHome(
-    passProps: LaunchProps = { launchType: Launch.Normal },
+    passProps: LaunchProps = {launchType: Launch.Normal},
 ) {
     const theme = getThemeFromState();
     const isDark = tinyColor(theme.sidebarBg).isDark();
-    StatusBar.setBarStyle(isDark ? "light-content" : "dark-content");
+    StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
 
     if (
         !passProps.coldStart &&
         (passProps.launchType === Launch.AddServer ||
             passProps.launchType === Launch.AddServerFromDeepLink)
     ) {
-        dismissModal({ componentId: Screens.SERVER });
-        dismissModal({ componentId: Screens.LOGIN });
-        dismissModal({ componentId: Screens.SSO });
-        dismissModal({ componentId: Screens.BOTTOM_SHEET });
+        dismissModal({componentId: Screens.SERVER});
+        dismissModal({componentId: Screens.LOGIN});
+        dismissModal({componentId: Screens.SSO});
+        dismissModal({componentId: Screens.BOTTOM_SHEET});
         if (passProps.launchType === Launch.AddServerFromDeepLink) {
             Navigation.updateProps(Screens.HOME, {
                 launchType: Launch.DeepLink,
                 extra: passProps.extra,
             });
         }
-        return "";
+        return '';
     }
 
     const stack = {
@@ -396,14 +397,14 @@ export function resetToHome(
     };
 
     return Navigation.setRoot({
-        root: { stack },
+        root: {stack},
     });
 }
 
 export function resetToSelectServer(passProps: LaunchProps) {
     const theme = getDefaultThemeByAppearance();
     const isDark = tinyColor(theme.sidebarBg).isDark();
-    StatusBar.setBarStyle(isDark ? "light-content" : "dark-content");
+    StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
 
     const children = [
         {
@@ -426,7 +427,7 @@ export function resetToSelectServer(passProps: LaunchProps) {
                     topBar: {
                         backButton: {
                             color: theme.sidebarHeaderTextColor,
-                            title: "",
+                            title: '',
                         },
                         background: {
                             color: theme.sidebarBg,
@@ -451,7 +452,7 @@ export function resetToSelectServer(passProps: LaunchProps) {
 export function resetToOnboarding(passProps: LaunchProps) {
     const theme = getDefaultThemeByAppearance();
     const isDark = tinyColor(theme.sidebarBg).isDark();
-    StatusBar.setBarStyle(isDark ? "light-content" : "dark-content");
+    StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
 
     const children = [
         {
@@ -474,7 +475,7 @@ export function resetToOnboarding(passProps: LaunchProps) {
                     topBar: {
                         backButton: {
                             color: theme.sidebarHeaderTextColor,
-                            title: "",
+                            title: '',
                         },
                         background: {
                             color: theme.sidebarBg,
@@ -499,7 +500,7 @@ export function resetToOnboarding(passProps: LaunchProps) {
 export function resetToTeams() {
     const theme = getThemeFromState();
     const isDark = tinyColor(theme.sidebarBg).isDark();
-    StatusBar.setBarStyle(isDark ? "light-content" : "dark-content");
+    StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
 
     return Navigation.setRoot({
         root: {
@@ -545,7 +546,7 @@ export function goToScreen(
     options: Options = {},
 ) {
     if (!isScreenRegistered(name)) {
-        return "";
+        return '';
     }
 
     const theme = getThemeFromState();
@@ -553,9 +554,9 @@ export function goToScreen(
     const componentId = NavigationStore.getVisibleScreen();
     if (!componentId) {
         logError(
-            "Trying to go to screen without any screen on the navigation store",
+            'Trying to go to screen without any screen on the navigation store',
         );
-        return "";
+        return '';
     }
 
     const defaultOptions: Options = {
@@ -564,11 +565,11 @@ export function goToScreen(
         },
         popGesture: true,
         sideMenu: {
-            left: { enabled: false },
-            right: { enabled: false },
+            left: {enabled: false},
+            right: {enabled: false},
         },
         statusBar: {
-            style: isDark ? "light" : "dark",
+            style: isDark ? 'light' : 'dark',
             backgroundColor: theme.sidebarBg,
         },
         topBar: {
@@ -576,8 +577,8 @@ export function goToScreen(
             visible: true,
             backButton: {
                 color: theme.sidebarHeaderTextColor,
-                title: "",
-                testID: "screen.back.button",
+                title: '',
+                testID: 'screen.back.button',
             },
             background: {
                 color: theme.sidebarBg,
@@ -701,7 +702,7 @@ export function showModal(
 
     const theme = getThemeFromState();
     const modalPresentationStyle: OptionsModalPresentationStyle =
-        Platform.OS === "ios"
+        Platform.OS === 'ios'
             ? OptionsModalPresentationStyle.pageSheet
             : OptionsModalPresentationStyle.none;
     const defaultOptions: Options = {
@@ -718,7 +719,7 @@ export function showModal(
             visible: true,
             backButton: {
                 color: theme.sidebarHeaderTextColor,
-                title: "",
+                title: '',
             },
             background: {
                 color: theme.sidebarBg,
@@ -730,7 +731,7 @@ export function showModal(
             leftButtonColor: theme.sidebarHeaderTextColor,
             rightButtonColor: theme.sidebarHeaderTextColor,
         },
-        modal: { swipeToDismiss: false },
+        modal: {swipeToDismiss: false},
     };
 
     Navigation.showModal({
@@ -757,10 +758,10 @@ export function showModalOverCurrentContext(
     passProps = {},
     options: Options = {},
 ) {
-    const title = "";
+    const title = '';
     let animations;
     switch (Platform.OS) {
-        case "android":
+        case 'android':
             animations = {
                 showModal: {
                     waitForRender: false,
@@ -803,8 +804,8 @@ export function showModalOverCurrentContext(
         modalPresentationStyle:
             OptionsModalPresentationStyle.overCurrentContext,
         layout: {
-            backgroundColor: "transparent",
-            componentBackgroundColor: "transparent",
+            backgroundColor: 'transparent',
+            componentBackgroundColor: 'transparent',
         },
         topBar: {
             visible: false,
@@ -844,7 +845,7 @@ export async function dismissAllModals() {
         const modals = [...NavigationStore.getModalsInStack()];
         for await (const modal of modals) {
             await Navigation.dismissModal(modal, {
-                animations: { dismissModal: { enabled: false } },
+                animations: {dismissModal: {enabled: false}},
             });
         }
     } catch (error) {
@@ -860,18 +861,18 @@ export const buildNavigationButton = (
     text?: string,
 ): OptionsTopBarButton => ({
     fontSize: 16,
-    fontFamily: "OpenSans-SemiBold",
-    fontWeight: "600",
+    fontFamily: 'OpenSans-SemiBold',
+    fontWeight: '600',
     id,
     icon,
-    showAsAction: "always",
+    showAsAction: 'always',
     testID,
     text,
 });
 
 export function setButtons(
     componentId: AvailableScreens,
-    buttons: NavButtons = { leftButtons: [], rightButtons: [] },
+    buttons: NavButtons = {leftButtons: [], rightButtons: []},
 ) {
     const options = {
         topBar: {
@@ -894,8 +895,8 @@ export function showOverlay(
 
     const defaultOptions = {
         layout: {
-            backgroundColor: "transparent",
-            componentBackgroundColor: "transparent",
+            backgroundColor: 'transparent',
+            componentBackgroundColor: 'transparent',
         },
         overlay: {
             interceptTouchOutside: false,
@@ -1046,15 +1047,15 @@ export function openAsBottomSheet({
 }
 
 export const showAppForm = async (form: AppForm, context: AppContext) => {
-    const passProps = { form, context };
-    showModal(Screens.APPS_FORM, form.title || "", passProps);
+    const passProps = {form, context};
+    showModal(Screens.APPS_FORM, form.title || '', passProps);
 };
 
 export const showReviewOverlay = (hasAskedBefore: boolean) => {
     showOverlay(
         Screens.REVIEW_APP,
-        { hasAskedBefore },
-        { overlay: { interceptTouchOutside: true } },
+        {hasAskedBefore},
+        {overlay: {interceptTouchOutside: true}},
     );
 };
 
@@ -1062,15 +1063,15 @@ export const showShareFeedbackOverlay = () => {
     showOverlay(
         Screens.SHARE_FEEDBACK,
         {},
-        { overlay: { interceptTouchOutside: true } },
+        {overlay: {interceptTouchOutside: true}},
     );
 };
 
 export async function findChannels(title: string, theme: Theme) {
     const options: Options = {};
-    const closeButtonId = "close-find-channels";
+    const closeButtonId = 'close-find-channels';
     const closeButton = CompassIcon.getImageSourceSync(
-        "close",
+        'close',
         24,
         theme.sidebarHeaderTextColor,
     );
@@ -1079,18 +1080,18 @@ export async function findChannels(title: string, theme: Theme) {
             {
                 id: closeButtonId,
                 icon: closeButton,
-                testID: "close.find_channels.button",
+                testID: 'close.find_channels.button',
             },
         ],
     };
 
-    showModal(Screens.FIND_CHANNELS, title, { closeButtonId }, options);
+    showModal(Screens.FIND_CHANNELS, title, {closeButtonId}, options);
 }
 
 export async function openUserProfileModal(
     intl: IntlShape,
     theme: Theme,
-    props: Omit<ComponentProps<typeof UserProfileScreen>, "closeButtonId">,
+    props: Omit<ComponentProps<typeof UserProfileScreen>, 'closeButtonId'>,
     screenToDismiss?: AvailableScreens,
 ) {
     if (screenToDismiss) {
@@ -1098,10 +1099,10 @@ export async function openUserProfileModal(
     }
     const screen = Screens.USER_PROFILE;
     const title = intl.formatMessage({
-        id: "mobile.routes.user_profile",
-        defaultMessage: "Profile",
+        id: 'mobile.routes.user_profile',
+        defaultMessage: 'Profile',
     });
-    const closeButtonId = "close-user-profile";
+    const closeButtonId = 'close-user-profile';
 
     Keyboard.dismiss();
     openAsBottomSheet({
@@ -1109,6 +1110,6 @@ export async function openUserProfileModal(
         title,
         theme,
         closeButtonId,
-        props: { ...props },
+        props: {...props},
     });
 }

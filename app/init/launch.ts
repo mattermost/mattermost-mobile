@@ -1,57 +1,57 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import Emm from "@mattermost/react-native-emm";
+import Emm from '@mattermost/react-native-emm';
 import {
     Alert,
     AppState,
     DeviceEventEmitter,
     Linking,
     Platform,
-} from "react-native";
-import { Notifications } from "react-native-notifications";
+} from 'react-native';
+import {Notifications} from 'react-native-notifications';
 
-import { removePost } from "@actions/local/post";
-import { switchToChannelById } from "@actions/remote/channel";
+import {removePost} from '@actions/local/post';
+import {switchToChannelById} from '@actions/remote/channel';
 import {
     appEntry,
     pushNotificationEntry,
     upgradeEntry,
-} from "@actions/remote/entry";
-import { fetchAndSwitchToThread } from "@actions/remote/thread";
-import LocalConfig from "@assets/config.json";
-import { DeepLink, Events, Launch, PushNotification } from "@constants";
-import { PostTypes } from "@constants/post";
-import DatabaseManager from "@database/manager";
+} from '@actions/remote/entry';
+import {fetchAndSwitchToThread} from '@actions/remote/thread';
+import LocalConfig from '@assets/config.json';
+import {DeepLink, Events, Launch, PushNotification} from '@constants';
+import {PostTypes} from '@constants/post';
+import DatabaseManager from '@database/manager';
 import {
     getActiveServerUrl,
     getServerCredentials,
     removeServerCredentials,
-} from "@init/credentials";
-import PerformanceMetricsManager from "@managers/performance_metrics_manager";
+} from '@init/credentials';
+import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {
     getLastViewedChannelIdAndServer,
     getOnboardingViewed,
     getLastViewedThreadIdAndServer,
-} from "@queries/app/global";
-import { getAllServers } from "@queries/app/servers";
-import { queryPostsByType } from "@queries/servers/post";
-import { getThemeForCurrentTeam } from "@queries/servers/preference";
-import { getCurrentUserId } from "@queries/servers/system";
-import { queryMyTeams } from "@queries/servers/team";
+} from '@queries/app/global';
+import {getAllServers} from '@queries/app/servers';
+import {queryPostsByType} from '@queries/servers/post';
+import {getThemeForCurrentTeam} from '@queries/servers/preference';
+import {getCurrentUserId} from '@queries/servers/system';
+import {queryMyTeams} from '@queries/servers/team';
 import {
     resetToHome,
     resetToSelectServer,
     resetToTeams,
     resetToOnboarding,
-} from "@screens/navigation";
-import EphemeralStore from "@store/ephemeral_store";
-import { getLaunchPropsFromDeepLink } from "@utils/deep_link";
-import { logInfo } from "@utils/log";
-import { convertToNotificationData } from "@utils/notification";
-import { removeProtocol } from "@utils/url";
+} from '@screens/navigation';
+import EphemeralStore from '@store/ephemeral_store';
+import {getLaunchPropsFromDeepLink} from '@utils/deep_link';
+import {logInfo} from '@utils/log';
+import {convertToNotificationData} from '@utils/notification';
+import {removeProtocol} from '@utils/url';
 
-import type { DeepLinkWithData, LaunchProps } from "@typings/launch";
+import type {DeepLinkWithData, LaunchProps} from '@typings/launch';
 
 const initialNotificationTypes = [
     PushNotification.NOTIFICATION_TYPE.MESSAGE,
@@ -65,8 +65,8 @@ export const initialLaunch = async () => {
     }
 
     const notification = await Notifications.getInitialNotification();
-    let tapped = Platform.select({ android: true, ios: false })!;
-    if (Platform.OS === "ios" && notification) {
+    let tapped = Platform.select({android: true, ios: false})!;
+    if (Platform.OS === 'ios' && notification) {
         // when a notification is received on iOS, getInitialNotification, will return the notification
         // as the app will initialized cause we are using background fetch,
         // that does not necessarily mean that the app was opened cause of the notification was tapped.
@@ -90,9 +90,9 @@ export const initialLaunch = async () => {
     }
 
     const coldStart = notification
-        ? tapped || AppState.currentState === "active"
+        ? tapped || AppState.currentState === 'active'
         : true;
-    return launchApp({ launchType: Launch.Normal, coldStart });
+    return launchApp({launchType: Launch.Normal, coldStart});
 };
 
 const launchAppFromDeepLink = async (
@@ -152,7 +152,7 @@ export const launchApp = async (props: LaunchProps) => {
             );
             if (sessionExpiredNotification) {
                 DeviceEventEmitter.emit(Events.SESSION_EXPIRED, serverUrl);
-                return "";
+                return '';
             }
             break;
         }
@@ -189,11 +189,11 @@ export const launchApp = async (props: LaunchProps) => {
                 const result = await upgradeEntry(serverUrl);
                 if (result.error) {
                     Alert.alert(
-                        "Error Upgrading",
+                        'Error Upgrading',
                         `An error occurred while upgrading the app to the new version.\n\nDetails: ${result.error}\n\nThe app will now quit.`,
                         [
                             {
-                                text: "OK",
+                                text: 'OK',
                                 onPress: async () => {
                                     await DatabaseManager.destroyServerDatabase(
                                         serverUrl!,
@@ -204,11 +204,11 @@ export const launchApp = async (props: LaunchProps) => {
                             },
                         ],
                     );
-                    return "";
+                    return '';
                 }
             }
 
-            return launchToHome({ ...props, launchType, serverUrl });
+            return launchToHome({...props, launchType, serverUrl});
         }
     }
 
@@ -245,7 +245,7 @@ export const launchToHome = async (props: LaunchProps) => {
                 return pushNotificationEntry(
                     props.serverUrl!,
                     extra.payload!,
-                    "Notification",
+                    'Notification',
                 );
             }
 
@@ -263,7 +263,7 @@ export const launchToHome = async (props: LaunchProps) => {
                     lastViewedThread.server_url === props.serverUrl &&
                     lastViewedThread.thread_id
                 ) {
-                    PerformanceMetricsManager.setLoadTarget("THREAD");
+                    PerformanceMetricsManager.setLoadTarget('THREAD');
                     fetchAndSwitchToThread(
                         props.serverUrl!,
                         lastViewedThread.thread_id,
@@ -273,13 +273,13 @@ export const launchToHome = async (props: LaunchProps) => {
                     lastViewedChannel.server_url === props.serverUrl &&
                     lastViewedChannel.channel_id
                 ) {
-                    PerformanceMetricsManager.setLoadTarget("CHANNEL");
+                    PerformanceMetricsManager.setLoadTarget('CHANNEL');
                     switchToChannelById(
                         props.serverUrl!,
                         lastViewedChannel.channel_id,
                     );
                 } else {
-                    PerformanceMetricsManager.setLoadTarget("HOME");
+                    PerformanceMetricsManager.setLoadTarget('HOME');
                 }
 
                 appEntry(props.serverUrl!);
@@ -297,11 +297,11 @@ export const launchToHome = async (props: LaunchProps) => {
     }
 
     if (nTeams) {
-        logInfo("Launch app in Home screen");
+        logInfo('Launch app in Home screen');
         return resetToHome(props);
     }
 
-    logInfo("Launch app in Select Teams screen");
+    logInfo('Launch app in Select Teams screen');
     return resetToTeams();
 };
 
@@ -318,7 +318,7 @@ export const getLaunchPropsFromNotification = async (
         coldStart,
     };
 
-    const { payload } = notification;
+    const {payload} = notification;
     launchProps.extra = notification;
     let serverUrl: string | undefined;
 

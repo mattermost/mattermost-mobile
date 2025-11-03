@@ -10,7 +10,6 @@ import {
     Keyboard,
     Platform,
     Pressable,
-    StyleSheet,
     View,
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
@@ -21,12 +20,12 @@ import Animated, {
     withTiming,
 } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
-import CompassIcon from "@components/compass_icon";
 
 import { doPing } from "@actions/remote/general";
 import { fetchConfigAndLicense } from "@actions/remote/systems";
 import LocalConfig from "@assets/config.json";
 import AppVersion from "@components/app_version";
+import CompassIcon from "@components/compass_icon";
 import { Screens, Launch, DeepLink } from "@constants";
 import useNavButtonPressed from "@hooks/navigation_button_pressed";
 import { useScreenTransitionAnimation } from "@hooks/screen_transition_animation";
@@ -278,12 +277,10 @@ const Server = ({
             Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
 
         const keyboardShowListener = Keyboard.addListener(showEvent, () => {
-            console.log("Keyboard shown - animating back button to right");
             backButtonTranslateX.value = withTiming(400, { duration: 250 });
         });
 
         const keyboardHideListener = Keyboard.addListener(hideEvent, () => {
-            console.log("Keyboard hidden - animating back button to left");
             backButtonTranslateX.value = withTiming(0, { duration: 250 });
         });
 

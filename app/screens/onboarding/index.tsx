@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, { useCallback, useEffect, useRef } from "react";
+import React, {useCallback, useEffect, useRef} from 'react';
 import {
     View,
     useWindowDimensions,
@@ -11,26 +11,26 @@ import {
     type NativeSyntheticEvent,
     type NativeScrollEvent,
     BackHandler,
-} from "react-native";
+} from 'react-native';
 import Animated, {
     useDerivedValue,
     useSharedValue,
-} from "react-native-reanimated";
+} from 'react-native-reanimated';
 
-import { storeOnboardingViewedValue } from "@actions/app/global";
-import { Screens } from "@constants";
-import { useScreenTransitionAnimation } from "@hooks/screen_transition_animation";
-import SecurityManager from "@managers/security_manager";
-import Background from "@screens/background";
-import { goToScreen, loginAnimationOptions } from "@screens/navigation";
+import {storeOnboardingViewedValue} from '@actions/app/global';
+import {Screens} from '@constants';
+import {useScreenTransitionAnimation} from '@hooks/screen_transition_animation';
+import SecurityManager from '@managers/security_manager';
+import Background from '@screens/background';
+import {goToScreen, loginAnimationOptions} from '@screens/navigation';
 
-import FooterButtons from "./footer_buttons";
-import Paginator from "./paginator";
-import SlideItem from "./slide";
-import useSlidesData from "./slides_data";
+import FooterButtons from './footer_buttons';
+import Paginator from './paginator';
+import SlideItem from './slide';
+import useSlidesData from './slides_data';
 
-import type { LaunchProps } from "@typings/launch";
-import type { AvailableScreens } from "@typings/screens/navigation";
+import type {LaunchProps} from '@typings/launch';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 interface OnboardingProps extends LaunchProps {
     componentId: AvailableScreens;
@@ -40,22 +40,22 @@ interface OnboardingProps extends LaunchProps {
 const styles = StyleSheet.create({
     onBoardingContainer: {
         flex: 1,
-        alignItems: "center",
-        justifyContent: "center",
-        verticalAlign: "top",
+        alignItems: 'center',
+        justifyContent: 'center',
+        verticalAlign: 'top',
     },
     scrollContainer: {
         flex: 1,
-        alignItems: "center",
-        justifyContent: "center",
+        alignItems: 'center',
+        justifyContent: 'center',
     },
 });
 
 const AnimatedSafeArea = Animated.createAnimatedComponent(SafeAreaView);
 
-const Onboarding = ({ componentId, theme, ...props }: OnboardingProps) => {
-    const { width } = useWindowDimensions();
-    const { slidesData } = useSlidesData();
+const Onboarding = ({componentId, theme, ...props}: OnboardingProps) => {
+    const {width} = useWindowDimensions();
+    const {slidesData} = useSlidesData();
     const LAST_SLIDE_INDEX = slidesData.length - 1;
     const slidesRef = useRef<ScrollView>(null);
 
@@ -81,8 +81,8 @@ const Onboarding = ({ componentId, theme, ...props }: OnboardingProps) => {
 
         goToScreen(
             Screens.SERVER,
-            "",
-            { animated: true, theme, ...props },
+            '',
+            {animated: true, theme, ...props},
             loginAnimationOptions(),
         );
     }, []);
@@ -110,7 +110,7 @@ const Onboarding = ({ componentId, theme, ...props }: OnboardingProps) => {
 
     useEffect(() => {
         const listener = BackHandler.addEventListener(
-            "hardwareBackPress",
+            'hardwareBackPress',
             () => {
                 if (!currentIndex.value) {
                     return false;
@@ -127,17 +127,17 @@ const Onboarding = ({ componentId, theme, ...props }: OnboardingProps) => {
     return (
         <View
             style={styles.onBoardingContainer}
-            testID="onboarding.screen"
+            testID='onboarding.screen'
             nativeID={SecurityManager.getShieldScreenId(
                 componentId,
                 false,
                 true,
             )}
         >
-            <Background theme={theme} />
+            <Background theme={theme}/>
             <AnimatedSafeArea
                 style={[styles.scrollContainer, animatedStyles]}
-                key={"onboarding_content"}
+                key={'onboarding_content'}
             >
                 <ScrollView
                     scrollEventThrottle={16}
