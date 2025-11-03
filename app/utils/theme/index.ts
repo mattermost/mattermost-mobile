@@ -232,6 +232,7 @@ const themeTypeMap: ThemeTypeMap = {
     Quartz: 'quartz',
     Indigo: 'indigo',
     Onyx: 'onyx',
+    Daakia: 'daakia',
     custom: 'custom',
 };
 

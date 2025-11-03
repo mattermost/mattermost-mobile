@@ -381,7 +381,7 @@ const HomeDaakia = ({
                 {isFocused && (
                     <>
                         <DaakiaHeader
-                            label='Team'
+                            label='Org'
                             title={teamDisplayName || 'Daakia Home'}
                             canCreateChannels={canCreateChannels}
                             canJoinChannels={canJoinChannels}
