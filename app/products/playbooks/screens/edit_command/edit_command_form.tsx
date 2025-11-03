@@ -1,27 +1,23 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useState, useCallback} from 'react';
+import React, {useState, useCallback, useRef} from 'react';
 import {useIntl} from 'react-intl';
 import {
     type LayoutChangeEvent,
     View,
-    Platform,
     StyleSheet,
 } from 'react-native';
 import {SafeAreaView, type Edges} from 'react-native-safe-area-context';
 
 import Autocomplete from '@components/autocomplete';
-import FloatingTextInput from '@components/floating_text_input_label';
+import FloatingTextInput from '@components/floating_input/floating_text_input_label';
 import {useTheme} from '@context/theme';
 import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
-import {
-    getKeyboardAppearanceFromTheme,
-} from '@utils/theme';
+import {useKeyboardOverlap} from '@hooks/device';
 
-const BOTTOM_AUTOCOMPLETE_SEPARATION = Platform.select({ios: 10, default: 10});
+const BOTTOM_AUTOCOMPLETE_SEPARATION = 4;
 const LIST_PADDING = 32;
-const AUTOCOMPLETE_ADJUST = 5;
 
 const styles = StyleSheet.create({
     container: {
@@ -60,6 +56,9 @@ export default function EditCommandForm({
 
     const [commandFieldHeight, setCommandFieldHeight] = useState(0);
 
+    const mainView = useRef<View>(null);
+    const keyboardOverlap = useKeyboardOverlap(mainView, wrapperHeight);
+
     const labelCommand = formatMessage({id: 'playbooks.edit_command.label', defaultMessage: 'Command'});
     const placeholderCommand = formatMessage({id: 'playbooks.edit_command.placeholder', defaultMessage: 'Type a command here'});
 
@@ -70,14 +69,13 @@ export default function EditCommandForm({
         setWrapperHeight(e.nativeEvent.layout.height);
     }, []);
 
-    const spaceOnTop = LIST_PADDING - AUTOCOMPLETE_ADJUST;
-    const spaceOnBottom = (wrapperHeight) - (LIST_PADDING + commandFieldHeight + BOTTOM_AUTOCOMPLETE_SEPARATION);
+    const workingSpace = wrapperHeight - keyboardOverlap;
+    const spaceOnBottom = (workingSpace) - (LIST_PADDING + commandFieldHeight + (BOTTOM_AUTOCOMPLETE_SEPARATION * 2));
 
-    const bottomPosition = (LIST_PADDING + commandFieldHeight);
-    const topPosition = (wrapperHeight + AUTOCOMPLETE_ADJUST) - LIST_PADDING;
-    const autocompletePosition = spaceOnBottom > spaceOnTop ? bottomPosition : topPosition;
-    const autocompleteAvailableSpace = spaceOnBottom > spaceOnTop ? spaceOnBottom : spaceOnTop;
-    const growDown = spaceOnBottom > spaceOnTop;
+    const bottomPosition = (LIST_PADDING + commandFieldHeight + BOTTOM_AUTOCOMPLETE_SEPARATION);
+    const autocompletePosition = bottomPosition;
+    const autocompleteAvailableSpace = spaceOnBottom;
+    const growDown = true;
 
     const [animatedAutocompletePosition, animatedAutocompleteAvailableSpace] = useAutocompleteDefaultAnimatedValues(autocompletePosition, autocompleteAvailableSpace);
 
@@ -87,22 +85,21 @@ export default function EditCommandForm({
             style={styles.container}
             testID='playbooks.edit_command.form'
             onLayout={onLayoutWrapper}
+            ref={mainView}
         >
             <View style={styles.mainView}>
                 <FloatingTextInput
-                    autoCorrect={false}
-                    autoCapitalize={'none'}
+                    rawInput={true}
                     disableFullscreenUI={true}
                     label={labelCommand}
                     placeholder={placeholderCommand}
                     onChangeText={onCommandChange}
-                    keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                    showErrorIcon={false}
-                    spellCheck={false}
+                    hideErrorIcon={true}
                     testID='playbooks.edit_command.input'
                     value={command}
                     theme={theme}
                     onLayout={onLayoutCommand}
+                    autoFocus={true}
                 />
             </View>
             <Autocomplete
@@ -116,6 +113,8 @@ export default function EditCommandForm({
                 growDown={growDown}
                 channelId={channelId}
                 autocompleteProviders={autocompleteProviders}
+                useAllAvailableSpace={true}
+                horizontalPadding={20}
             />
         </SafeAreaView>
     );

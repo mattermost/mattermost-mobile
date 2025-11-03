@@ -1,5 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+/* eslint-disable max-lines */
 
 import {BottomSheetScrollView} from '@gorhom/bottom-sheet';
 import {act, fireEvent, waitFor} from '@testing-library/react-native';
@@ -8,17 +9,16 @@ import {ScrollView} from 'react-native';
 
 import OptionBox from '@components/option_box';
 import OptionItem from '@components/option_item';
+import {Preferences} from '@constants';
 import {useIsTablet} from '@hooks/device';
 import {setAssignee, setChecklistItemCommand, setDueDate} from '@playbooks/actions/remote/checklist';
-import {goToSelectDate, goToSelectUser} from '@playbooks/screens/navigation';
-import {dismissBottomSheet, goToScreen, openUserProfileModal} from '@screens/navigation';
+import {goToEditCommand, goToSelectDate, goToSelectUser} from '@playbooks/screens/navigation';
+import {dismissBottomSheet, openUserProfileModal} from '@screens/navigation';
 import {renderWithIntl} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 
 import ChecklistItemBottomSheet from './checklist_item_bottom_sheet';
-
-import type EditCommand from '@playbooks/screens/edit_command';
 
 jest.mock('@hooks/device', () => ({
     useIsTablet: jest.fn(),
@@ -81,6 +81,7 @@ describe('ChecklistItemBottomSheet', () => {
     function getBaseProps(): ComponentProps<typeof ChecklistItemBottomSheet> {
         return {
             runId: 'run-1',
+            runName: 'Run 1',
             checklistNumber: 1,
             itemNumber: 1,
             channelId: 'channel-1',
@@ -93,6 +94,9 @@ describe('ChecklistItemBottomSheet', () => {
             isDisabled: false,
             currentUserTimezone: {useAutomaticTimezone: false, automaticTimezone: '', manualTimezone: 'America/New_York'},
             participantIds: ['user-1', 'user-2'],
+            conditionReason: '',
+            showConditionIcon: false,
+            conditionIconColor: '#000000',
         };
     }
 
@@ -400,17 +404,16 @@ describe('ChecklistItemBottomSheet', () => {
             commandItem.props.action();
         });
 
-        expect(goToScreen).toHaveBeenCalledWith(
-            'PlaybookEditCommand',
-            'Slash command',
-            {
-                savedCommand: 'test command',
-                updateCommand: expect.any(Function),
-                channelId: 'channel-1',
-            },
+        expect(goToEditCommand).toHaveBeenCalledWith(
+            expect.anything(),
+            expect.anything(),
+            'Run 1',
+            'test command',
+            'channel-1',
+            expect.any(Function),
         );
 
-        const updateCommand = (jest.mocked(goToScreen).mock.calls[0][2] as ComponentProps<typeof EditCommand>).updateCommand;
+        const updateCommand = jest.mocked(goToEditCommand).mock.calls[0][5];
         await act(async () => {
             updateCommand('new command');
         });
@@ -440,11 +443,13 @@ describe('ChecklistItemBottomSheet', () => {
         });
         expect(goToSelectDate).toHaveBeenCalledWith(
             expect.anything(),
+            expect.anything(),
+            'Run 1',
             expect.any(Function),
             1640995200000,
         );
 
-        const setDate = jest.mocked(goToSelectDate).mock.calls[0][1];
+        const setDate = jest.mocked(goToSelectDate).mock.calls[0][3];
         await act(async () => {
             setDate(1672531200000);
         });
@@ -501,6 +506,8 @@ describe('ChecklistItemBottomSheet', () => {
         });
 
         expect(goToSelectUser).toHaveBeenCalledWith(
+            expect.anything(),
+            'Run 1',
             'Assignee',
             ['user-1', 'user-2'],
             'user-1',
@@ -508,8 +515,8 @@ describe('ChecklistItemBottomSheet', () => {
             expect.any(Function),
         );
 
-        const handleSelect = jest.mocked(goToSelectUser).mock.calls[0][3];
-        const handleRemove = jest.mocked(goToSelectUser).mock.calls[0][4];
+        const handleSelect = jest.mocked(goToSelectUser).mock.calls[0][5];
+        const handleRemove = jest.mocked(goToSelectUser).mock.calls[0][6];
 
         await act(async () => {
             handleSelect(TestHelper.fakeUser({id: 'user-1'}));
@@ -552,8 +559,8 @@ describe('ChecklistItemBottomSheet', () => {
             onPress('user-1');
         });
 
-        const handleSelect = jest.mocked(goToSelectUser).mock.calls[0][3];
-        const handleRemove = jest.mocked(goToSelectUser).mock.calls[0][4];
+        const handleSelect = jest.mocked(goToSelectUser).mock.calls[0][5];
+        const handleRemove = jest.mocked(goToSelectUser).mock.calls[0][6];
 
         await act(async () => {
             handleSelect(TestHelper.fakeUser({id: 'user-1'}));
@@ -633,5 +640,95 @@ describe('ChecklistItemBottomSheet', () => {
         const {queryByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
 
         expect(queryByTestId('checklist_item.run_command_button')).toBeNull();
+    });
+
+    describe('condition display', () => {
+        it('should not render condition section when showConditionIcon is false', () => {
+            const props = getBaseProps();
+            props.showConditionIcon = false;
+            const {queryByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
+
+            expect(queryByTestId('checklist_item_bottom_sheet.condition_icon')).toBeNull();
+            expect(queryByTestId('checklist_item_bottom_sheet.condition_header')).toBeNull();
+            expect(queryByTestId('checklist_item_bottom_sheet.condition_explanation')).toBeNull();
+            expect(queryByTestId('checklist_item_bottom_sheet.condition_reason')).toBeNull();
+        });
+
+        it('should render icon and all text elements when showConditionIcon is true', () => {
+            const props = getBaseProps();
+            props.showConditionIcon = true;
+            props.conditionReason = 'Incident Type: Malware';
+            const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
+
+            const icon = getByTestId('checklist_item_bottom_sheet.condition_icon');
+            const header = getByTestId('checklist_item_bottom_sheet.condition_header');
+            const explanation = getByTestId('checklist_item_bottom_sheet.condition_explanation');
+            const reasonText = getByTestId('checklist_item_bottom_sheet.condition_reason');
+
+            expect(icon).toBeVisible();
+            expect(header).toBeVisible();
+            expect(explanation).toBeVisible();
+            expect(reasonText).toBeVisible();
+        });
+
+        it('should use the correct icon color (normal color)', () => {
+            const props = getBaseProps();
+            props.showConditionIcon = true;
+            props.conditionReason = 'Some condition reason';
+            props.conditionIconColor = Preferences.THEMES.denim.centerChannelColor;
+            const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
+
+            const icon = getByTestId('checklist_item_bottom_sheet.condition_icon');
+            expect(icon.props.color).toBe(Preferences.THEMES.denim.centerChannelColor);
+        });
+
+        it('should use the correct icon color (error color)', () => {
+            const props = getBaseProps();
+            props.showConditionIcon = true;
+            props.conditionReason = '';
+            props.conditionIconColor = Preferences.THEMES.denim.errorTextColor;
+            const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
+
+            const icon = getByTestId('checklist_item_bottom_sheet.condition_icon');
+            expect(icon.props.color).toBe(Preferences.THEMES.denim.errorTextColor);
+        });
+
+        it('should display the correct text structure', () => {
+            const props = getBaseProps();
+            props.showConditionIcon = true;
+            props.conditionReason = 'Incident Type: Malware';
+            const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
+
+            const header = getByTestId('checklist_item_bottom_sheet.condition_header');
+            const explanation = getByTestId('checklist_item_bottom_sheet.condition_explanation');
+            const reasonText = getByTestId('checklist_item_bottom_sheet.condition_reason');
+
+            expect(header.props.children).toBe('Task rendered conditionally');
+            expect(explanation.props.children).toBe('This task was rendered conditionally based on');
+            expect(reasonText.props.children).toBe('Incident Type: Malware');
+        });
+
+        it('should have correct testIDs for accessibility', () => {
+            const props = getBaseProps();
+            props.showConditionIcon = true;
+            props.conditionReason = 'Condition reason';
+            const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
+
+            expect(getByTestId('checklist_item_bottom_sheet.condition_icon')).toBeDefined();
+            expect(getByTestId('checklist_item_bottom_sheet.condition_header')).toBeDefined();
+            expect(getByTestId('checklist_item_bottom_sheet.condition_explanation')).toBeDefined();
+            expect(getByTestId('checklist_item_bottom_sheet.condition_reason')).toBeDefined();
+        });
+
+        it('should use source-branch icon with size 24', () => {
+            const props = getBaseProps();
+            props.showConditionIcon = true;
+            props.conditionReason = 'Condition reason';
+            const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
+
+            const icon = getByTestId('checklist_item_bottom_sheet.condition_icon');
+            expect(icon.props.name).toBe('source-branch');
+            expect(icon.props.size).toBe(24);
+        });
     });
 });

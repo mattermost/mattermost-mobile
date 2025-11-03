@@ -1,4 +1,4 @@
-# Server Database - Schema Version 10
+# Server Database - Schema Version 14
 # Please bump the version by 1, any time the schema changes.
 # Also, include the migration plan under app/database/migration/server,
 # update all models, relationships and types.
@@ -223,10 +223,32 @@ command string
 command_last_run number
 due_date number
 task_actions string # stringified array of TaskAction
+condition_action string # condition action for the checklist item (values should be '' or 'hidden')
+condition_reason string # condition reason for the checklist item (default empty string meaning there is no condition affecting)
 order number
 completed_at number
 synced string NULL INDEX # optional field for sync status
 last_sync_at number NULL # optional field for last sync timestamp
+
+PlaybookRunAttribute
+-
+id PK string # server-generated
+group_id string
+name string
+type string
+target_id string
+target_type string
+create_at number
+update_at number
+delete_at number
+attrs string NULL # stringified JSON
+
+PlaybookRunAttributeValue
+-
+id PK string # composition ID PlaybookRun.id-PlaybookRunAttribute.id
+attribute_id string INDEX FK >- PlaybookRunAttribute.id
+run_id string INDEX FK >- PlaybookRun.id
+value string
 
 Post
 -

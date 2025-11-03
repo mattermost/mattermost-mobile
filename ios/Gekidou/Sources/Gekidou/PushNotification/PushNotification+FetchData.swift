@@ -1,5 +1,4 @@
 import Foundation
-import os.log
 import SQLite
 import UserNotifications
 
@@ -33,9 +32,9 @@ public struct PushNotificationData: Encodable {
 }
 
 extension PushNotification {
-    public func fetchDataForPushNotification(_ notification: [AnyHashable:Any], withContentHandler contentHander: @escaping ((_ data: PushNotificationData) -> Void)) {
+    public func fetchDataForPushNotification(_ notification: [AnyHashable:Any], withContentHandler contentHandler: @escaping ((_ data: PushNotificationData) -> Void)) {
         let operation = BlockOperation {
-            os_log(OSLogType.default, "Mattermost Notifications: Fetch notification data.")
+            GekidouLogger.shared.log(.info, "Gekidou PushNotification: Fetch notification data.")
             let fetchGroup = DispatchGroup()
             
             let teamId = notification["team_id"] as? String ?? ""
@@ -102,7 +101,19 @@ extension PushNotification {
                 fetchGroup.leave()
             }
             
-            fetchGroup.notify(queue: DispatchQueue.main) {
+            // Use background queue for notification extension - no UI updates needed
+            // Add timeout to prevent extension termination (iOS kills notification extension at 30s)
+            DispatchQueue.global(qos: .default).async {
+                let timeout: DispatchTime = .now() + .seconds(18) // 18 second timeout (leaves 12s buffer)
+                let result = fetchGroup.wait(timeout: timeout)
+
+                if result == .timedOut {
+                    GekidouLogger.shared.log(.error, "Gekidou PushNotification: Network fetch timeout after 18 seconds for server %{public}@", serverUrl)
+                    // Return partial data even on timeout
+                    contentHandler(notificationData)
+                    return
+                }
+
                 if isCRTEnabled && !rootId.isEmpty {
                     Network.default.fetchThread(byId: rootId, belongingToTeamId: teamId, forServerUrl: serverUrl) { thread in
                         if let thread = thread {
@@ -123,10 +134,10 @@ extension PushNotification {
                                 notificationData.threads?[index] = copy
                             }
                         }
-                        contentHander(notificationData);
+                        contentHandler(notificationData);
                     }
                 } else {
-                    contentHander(notificationData);
+                    contentHandler(notificationData);
                 }
             }
         }
@@ -147,31 +158,59 @@ extension PushNotification {
         let teamId = notification.userInfo["team_id"] as? String ?? ""
 
         fetchDataForPushNotification(notification.userInfo) { data in
-            if let db = try? Database.default.getDatabaseForServer(serverUrl) {
-                try? db.transaction {
+            guard let db = try? Database.default.getDatabaseForServer(serverUrl) else {
+                GekidouLogger.shared.log(.error, "Gekidou PushNotification: Failed to get database for server %{public}@", serverUrl)
+                notification.badge = Gekidou.Database.default.getTotalMentions() as NSNumber
+                contentHandler(notification)
+                return
+            }
+
+            do {
+                try db.transaction {
                     let receivingThreads = isCRTEnabled && !rootId.isEmpty
+
                     if let team = data.team {
-                        try? Database.default.insertTeam(db, team)
+                        do {
+                            try Database.default.insertTeam(db, team)
+                        } catch {
+                            GekidouLogger.shared.log(.error, "Gekidou PushNotification: Failed to insert team %{public}@ - %{public}@", team.id, String(describing: error))
+                        }
                     }
-                    
+
                     if let myTeam = data.myTeam {
-                        try? Database.default.insertMyTeam(db, myTeam)
+                        do {
+                            try Database.default.insertMyTeam(db, myTeam)
+                        } catch {
+                            GekidouLogger.shared.log(.error, "Gekidou PushNotification: Failed to insert myTeam %{public}@ - %{public}@", myTeam.id, String(describing: error))
+                        }
                     }
-                    
+
                     if let categories = data.categories {
-                        try? Database.default.insertCategoriesWithChannels(db, categories.categories)
+                        do {
+                            try Database.default.insertCategoriesWithChannels(db, categories.categories)
+                        } catch {
+                            GekidouLogger.shared.log(.error, "Gekidou PushNotification: Failed to insert categories - %{public}@", String(describing: error))
+                        }
                     }
-                    
+
                     if let categoryChannels = data.categoryChannels,
                        !categoryChannels.isEmpty {
-                        try? Database.default.insertChannelToDefaultCategory(db, categoryChannels)
+                        do {
+                            try Database.default.insertChannelToDefaultCategory(db, categoryChannels)
+                        } catch {
+                            GekidouLogger.shared.log(.error, "Gekidou PushNotification: Failed to insert category channels - %{public}@", String(describing: error))
+                        }
                     }
-                    
+
                     if let channel = data.channel,
                        !Database.default.queryChannelExists(withId: channel.id, forServerUrl: serverUrl) {
-                        try? Database.default.insertChannel(db, channel)
+                        do {
+                            try Database.default.insertChannel(db, channel)
+                        } catch {
+                            GekidouLogger.shared.log(.error, "Gekidou PushNotification: Failed to insert channel %{public}@ - %{public}@", channel.id, String(describing: error))
+                        }
                     }
-                    
+
                     if var myChannel = data.myChannel {
                         var lastFetchedAt: Double = 0
                         if let postResponse = data.posts, !receivingThreads {
@@ -186,21 +225,39 @@ extension PushNotification {
                             myChannel.internalMsgCount = channel.totalMsgCount - myChannel.msgCount
                             myChannel.internalMsgCountRoot = channel.totalMsgCountRoot - myChannel.msgCountRoot
                         }
-                        try? Database.default.insertOrUpdateMyChannel(db, myChannel, isCRTEnabled, lastFetchedAt, lastPostAt)
+                        do {
+                            try Database.default.insertOrUpdateMyChannel(db, myChannel, isCRTEnabled, lastFetchedAt, lastPostAt)
+                        } catch {
+                            GekidouLogger.shared.log(.error, "Gekidou PushNotification: Failed to insert/update myChannel %{public}@ - %{public}@", myChannel.id, String(describing: error))
+                        }
                     }
-                    
+
                     if let posts = data.posts {
-                        try? Database.default.handlePostData(db, posts, channelId, receivingThreads)
+                        do {
+                            try Database.default.handlePostData(db, posts, channelId, receivingThreads)
+                        } catch {
+                            GekidouLogger.shared.log(.error, "Gekidou PushNotification: Failed to handle post data for channel %{public}@ - %{public}@", channelId, String(describing: error))
+                        }
                     }
-                    
+
                     if let threads = data.threads {
-                        try? Database.default.handleThreads(db, threads, forTeamId: teamId)
+                        do {
+                            try Database.default.handleThreads(db, threads, forTeamId: teamId)
+                        } catch {
+                            GekidouLogger.shared.log(.error, "Gekidou PushNotification: Failed to handle threads for team %{public}@ - %{public}@", teamId, String(describing: error))
+                        }
                     }
-                    
+
                     if !data.users.isEmpty {
-                        try? Database.default.insertUsers(db, data.users)
+                        do {
+                            try Database.default.insertUsers(db, data.users)
+                        } catch {
+                            GekidouLogger.shared.log(.error, "Gekidou PushNotification: Failed to insert %d users - %{public}@", data.users.count, String(describing: error))
+                        }
                     }
                 }
+            } catch {
+                GekidouLogger.shared.log(.error, "Gekidou PushNotification: Database transaction failed for server %{public}@ - %{public}@", serverUrl, String(describing: error))
             }
             
             notification.badge = Gekidou.Database.default.getTotalMentions() as NSNumber

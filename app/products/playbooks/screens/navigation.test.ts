@@ -1,16 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {joinIfNeededAndSwitchToChannel} from '@actions/remote/channel';
 import {Preferences, Screens} from '@constants';
 import {goToScreen} from '@screens/navigation';
 import TestHelper from '@test/test_helper';
 import {changeOpacity} from '@utils/theme';
 
-import {goToPlaybookRuns, goToPlaybookRun, goToSelectUser, goToSelectDate} from './navigation';
+import {goToPlaybookRuns, goToPlaybookRun, goToParticipantPlaybooks, goToPlaybookRunWithChannelSwitch, goToEditCommand, goToSelectUser, goToSelectDate} from './navigation';
 
 jest.mock('@screens/navigation', () => ({
     goToScreen: jest.fn(),
     getThemeFromState: jest.fn(() => require('@constants').Preferences.THEMES.denim),
+}));
+
+jest.mock('@actions/remote/channel', () => ({
+    joinIfNeededAndSwitchToChannel: jest.fn(),
 }));
 
 describe('Playbooks Navigation', () => {
@@ -65,6 +70,38 @@ describe('Playbooks Navigation', () => {
         });
     });
 
+    describe('goToEditCommand', () => {
+        it('should navigate to edit command screen with correct parameters', async () => {
+            const command = 'test command';
+            const channelId = 'channel-id-1';
+            const updateCommand = jest.fn();
+
+            await goToEditCommand(mockIntl, Preferences.THEMES.denim, 'Run 1', command, channelId, updateCommand);
+
+            expect(mockIntl.formatMessage).toHaveBeenCalledWith({
+                id: 'playbooks.edit_command.title',
+                defaultMessage: 'Slash command',
+            });
+            expect(goToScreen).toHaveBeenCalledWith(
+                Screens.PLAYBOOK_EDIT_COMMAND,
+                'Slash command',
+                {
+                    savedCommand: command,
+                    updateCommand,
+                    channelId,
+                },
+                {
+                    topBar: {
+                        subtitle: {
+                            text: 'Run 1',
+                            color: changeOpacity(Preferences.THEMES.denim.sidebarHeaderTextColor, 0.72),
+                        },
+                    },
+                },
+            );
+        });
+    });
+
     describe('goToSelectUser', () => {
         it('should navigate to select user screen with correct parameters when handleRemove is provided', async () => {
             const title = 'Select User';
@@ -73,7 +110,7 @@ describe('Playbooks Navigation', () => {
             const handleSelect = jest.fn();
             const handleRemove = jest.fn();
 
-            await goToSelectUser(title, participantIds, selected, handleSelect, handleRemove);
+            await goToSelectUser(Preferences.THEMES.denim, 'Run 1', title, participantIds, selected, handleSelect, handleRemove);
 
             expect(goToScreen).toHaveBeenCalledWith(
                 Screens.PLAYBOOK_SELECT_USER,
@@ -84,7 +121,14 @@ describe('Playbooks Navigation', () => {
                     handleSelect,
                     handleRemove,
                 },
-                {},
+                {
+                    topBar: {
+                        subtitle: {
+                            text: 'Run 1',
+                            color: changeOpacity(Preferences.THEMES.denim.sidebarHeaderTextColor, 0.72),
+                        },
+                    },
+                },
             );
         });
     });
@@ -94,7 +138,7 @@ describe('Playbooks Navigation', () => {
             const onSave = jest.fn();
             const selectedDate = 1640995200000; // January 1, 2022
 
-            await goToSelectDate(mockIntl, onSave, selectedDate);
+            await goToSelectDate(mockIntl, Preferences.THEMES.denim, 'Run 1', onSave, selectedDate);
 
             expect(mockIntl.formatMessage).toHaveBeenCalledWith({
                 id: 'playbooks.select_date.title',
@@ -107,14 +151,21 @@ describe('Playbooks Navigation', () => {
                     onSave,
                     selectedDate,
                 },
-                {},
+                {
+                    topBar: {
+                        subtitle: {
+                            text: 'Run 1',
+                            color: changeOpacity(Preferences.THEMES.denim.sidebarHeaderTextColor, 0.72),
+                        },
+                    },
+                },
             );
         });
 
         it('should navigate to select date screen without selected date', async () => {
             const onSave = jest.fn();
 
-            await goToSelectDate(mockIntl, onSave, undefined);
+            await goToSelectDate(mockIntl, Preferences.THEMES.denim, 'Run 1', onSave, undefined);
 
             expect(mockIntl.formatMessage).toHaveBeenCalledWith({
                 id: 'playbooks.select_date.title',
@@ -127,6 +178,64 @@ describe('Playbooks Navigation', () => {
                     onSave,
                     selectedDate: undefined,
                 },
+                {
+                    topBar: {
+                        subtitle: {
+                            text: 'Run 1',
+                            color: changeOpacity(Preferences.THEMES.denim.sidebarHeaderTextColor, 0.72),
+                        },
+                    },
+                },
+            );
+        });
+    });
+
+    describe('goToParticipantPlaybooks', () => {
+        it('should navigate to participant playbooks screen with correct parameters', () => {
+            goToParticipantPlaybooks(mockIntl);
+
+            expect(mockIntl.formatMessage).toHaveBeenCalledWith({
+                id: 'playbooks.participant_playbooks.title',
+                defaultMessage: 'Playbook runs',
+            });
+            expect(goToScreen).toHaveBeenCalledWith(
+                Screens.PARTICIPANT_PLAYBOOKS,
+                'Playbook runs',
+                {},
+                {},
+            );
+        });
+    });
+
+    describe('goToPlaybookRunWithChannelSwitch', () => {
+        it('should switch to channel first and then navigate to playbook run', async () => {
+            const serverUrl = 'https://test.server.com';
+            const mockPlaybookRun = TestHelper.fakePlaybookRun({
+                id: 'run-id-1',
+                channel_id: 'channel-id-1',
+                team_id: 'team-id-1',
+            });
+
+            jest.mocked(joinIfNeededAndSwitchToChannel).mockResolvedValue({});
+
+            await goToPlaybookRunWithChannelSwitch(mockIntl, serverUrl, mockPlaybookRun);
+
+            expect(joinIfNeededAndSwitchToChannel).toHaveBeenCalledWith(
+                serverUrl,
+                {id: mockPlaybookRun.channel_id},
+                {id: mockPlaybookRun.team_id},
+                expect.any(Function),
+                mockIntl,
+            );
+
+            expect(mockIntl.formatMessage).toHaveBeenCalledWith({
+                id: 'playbooks.playbook_run.title',
+                defaultMessage: 'Playbook run',
+            });
+            expect(goToScreen).toHaveBeenCalledWith(
+                Screens.PLAYBOOK_RUN,
+                'Playbook run',
+                {playbookRunId: mockPlaybookRun.id},
                 {},
             );
         });

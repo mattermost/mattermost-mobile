@@ -139,6 +139,11 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.GENERIC_OVERLAY:
             screen = withServerDatabase(require('@screens/overlay').default);
             break;
+        case Screens.FLOATING_BANNER: {
+            const floatingBannerScreen = withServerDatabase(require('@screens/floating_banner').default);
+            Navigation.registerComponent(Screens.FLOATING_BANNER, () => withSafeAreaInsets(floatingBannerScreen));
+            return;
+        }
         case Screens.GLOBAL_DRAFTS:
             screen = withServerDatabase(require('@screens/global_drafts').default);
             break;

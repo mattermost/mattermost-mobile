@@ -43,6 +43,9 @@ describe('ChecklistItemBottomSheet Enhanced Component', () => {
             onRunCommand: jest.fn(),
             teammateNameDisplay: General.TEAMMATE_NAME_DISPLAY.SHOW_USERNAME,
             isDisabled: false,
+            conditionReason: '',
+            showConditionIcon: false,
+            conditionIconColor: '#000000',
         };
     }
 
@@ -84,7 +87,7 @@ describe('ChecklistItemBottomSheet Enhanced Component', () => {
     describe('with database model item', () => {
         it('should render enhanced component with database model item', async () => {
             const rawItem = TestHelper.fakePlaybookChecklistItem('checklist-id', {id: 'item-1', assignee_id: 'user-1'});
-            const rawRun = TestHelper.fakePlaybookRun({id: 'run-1', participant_ids: ['user-1', 'user-2']});
+            const rawRun = TestHelper.fakePlaybookRun({id: 'run-1', participant_ids: ['user-1', 'user-2'], name: 'Run 1'});
             await addRunToDatabase(rawRun);
             await addItemToDatabase(rawItem);
             await addUserToDatabase(TestHelper.fakeUser({id: 'user-1'}));
@@ -103,6 +106,7 @@ describe('ChecklistItemBottomSheet Enhanced Component', () => {
             expect(bottomSheet).toHaveProp('assignee', expect.objectContaining({id: 'user-1'}));
             expect(bottomSheet).toHaveProp('currentUserTimezone', expect.objectContaining({useAutomaticTimezone: false, manualTimezone: 'America/New_York', automaticTimezone: 'America/New_York'}));
             expect(bottomSheet).toHaveProp('participantIds', ['user-1', 'user-2']);
+            expect(bottomSheet).toHaveProp('runName', 'Run 1');
         });
 
         it('should handle missing run correctly', async () => {
@@ -120,6 +124,7 @@ describe('ChecklistItemBottomSheet Enhanced Component', () => {
             const bottomSheet = getByTestId('checklist_item_bottom_sheet');
             expect(bottomSheet).toBeTruthy();
             expect(bottomSheet).toHaveProp('participantIds', []);
+            expect(bottomSheet).toHaveProp('runName', '');
         });
 
         it('should handle assigneeId changes through observable', async () => {

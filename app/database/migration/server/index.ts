@@ -22,9 +22,48 @@ const {
     SCHEDULED_POST,
 } = MM_TABLES.SERVER;
 
-const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM} = PLAYBOOK_TABLES;
+const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM, PLAYBOOK_RUN_ATTRIBUTE, PLAYBOOK_RUN_ATTRIBUTE_VALUE} = PLAYBOOK_TABLES;
 
 export default schemaMigrations({migrations: [
+    {
+        toVersion: 14,
+        steps: [
+            createTable({
+                name: PLAYBOOK_RUN_ATTRIBUTE,
+                columns: [
+                    {name: 'group_id', type: 'string'},
+                    {name: 'name', type: 'string'},
+                    {name: 'type', type: 'string'},
+                    {name: 'target_id', type: 'string'},
+                    {name: 'target_type', type: 'string'},
+                    {name: 'create_at', type: 'number'},
+                    {name: 'update_at', type: 'number'},
+                    {name: 'delete_at', type: 'number'},
+                    {name: 'attrs', type: 'string', isOptional: true},
+                ],
+            }),
+            createTable({
+                name: PLAYBOOK_RUN_ATTRIBUTE_VALUE,
+                columns: [
+                    {name: 'attribute_id', type: 'string', isIndexed: true},
+                    {name: 'run_id', type: 'string', isIndexed: true},
+                    {name: 'value', type: 'string'},
+                ],
+            }),
+        ],
+    },
+    {
+        toVersion: 13,
+        steps: [
+            addColumns({
+                table: PLAYBOOK_CHECKLIST_ITEM,
+                columns: [
+                    {name: 'condition_action', type: 'string'},
+                    {name: 'condition_reason', type: 'string'},
+                ],
+            }),
+        ],
+    },
     {
         toVersion: 12,
         steps: [

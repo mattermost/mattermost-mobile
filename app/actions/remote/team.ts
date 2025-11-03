@@ -205,6 +205,18 @@ export async function fetchMyTeams(serverUrl: string, fetchOnly = false, groupLa
     }
 }
 
+export async function fetchTeamById(serverUrl: string, teamId: string) {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const team = await client.getTeam(teamId);
+        return {team};
+    } catch (error) {
+        logDebug('error on fetchTeamById', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+}
+
 export async function fetchMyTeam(serverUrl: string, teamId: string, fetchOnly = false, groupLabel?: RequestGroupLabel): Promise<MyTeamsRequest> {
     try {
         const client = NetworkManager.getClient(serverUrl);

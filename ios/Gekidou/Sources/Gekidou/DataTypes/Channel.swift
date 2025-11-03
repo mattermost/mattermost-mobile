@@ -49,7 +49,7 @@ public struct Channel: Codable {
     
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: ChannelKeys.self)
-        id  = try values.decode(String.self, forKey: .id)
+        id = values.decodeIfPresent(forKey: .id, defaultValue: "")
         creatorId = values.decodeIfPresent(forKey: .creatorId, defaultValue: "")
         createAt = values.decodeIfPresent(forKey: .createAt, defaultValue: 0)
         deleteAt = values.decodeIfPresent(forKey: .deleteAt, defaultValue: 0)

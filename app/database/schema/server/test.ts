@@ -47,12 +47,12 @@ const {
     USER,
 } = MM_TABLES.SERVER;
 
-const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM} = PLAYBOOK_TABLES;
+const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM, PLAYBOOK_RUN_ATTRIBUTE, PLAYBOOK_RUN_ATTRIBUTE_VALUE} = PLAYBOOK_TABLES;
 
 describe('*** Test schema for SERVER database ***', () => {
     it('=> The SERVER SCHEMA should strictly match', () => {
         expect(serverSchema).toEqual({
-            version: 12,
+            version: 14,
             unsafeSql: undefined,
             tables: {
                 [CATEGORY]: {
@@ -527,6 +527,8 @@ describe('*** Test schema for SERVER database ***', () => {
                         due_date: {name: 'due_date', type: 'number'},
                         completed_at: {name: 'completed_at', type: 'number'},
                         task_actions: {name: 'task_actions', type: 'string', isOptional: true}, // JSON string
+                        condition_action: {name: 'condition_action', type: 'string'},
+                        condition_reason: {name: 'condition_reason', type: 'string'},
                         sync: {name: 'sync', type: 'string', isIndexed: true, isOptional: true},
                         last_sync_at: {name: 'last_sync_at', type: 'number', isOptional: true},
                         update_at: {name: 'update_at', type: 'number'},
@@ -544,9 +546,51 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'due_date', type: 'number'},
                         {name: 'completed_at', type: 'number'},
                         {name: 'task_actions', type: 'string', isOptional: true}, // JSON string
+                        {name: 'condition_action', type: 'string'},
+                        {name: 'condition_reason', type: 'string'},
                         {name: 'sync', type: 'string', isIndexed: true, isOptional: true},
                         {name: 'last_sync_at', type: 'number', isOptional: true},
                         {name: 'update_at', type: 'number'},
+                    ],
+                },
+                [PLAYBOOK_RUN_ATTRIBUTE]: {
+                    name: PLAYBOOK_RUN_ATTRIBUTE,
+                    unsafeSql: undefined,
+                    columns: {
+                        group_id: {name: 'group_id', type: 'string'},
+                        name: {name: 'name', type: 'string'},
+                        type: {name: 'type', type: 'string'},
+                        target_id: {name: 'target_id', type: 'string'},
+                        target_type: {name: 'target_type', type: 'string'},
+                        create_at: {name: 'create_at', type: 'number'},
+                        update_at: {name: 'update_at', type: 'number'},
+                        delete_at: {name: 'delete_at', type: 'number'},
+                        attrs: {name: 'attrs', type: 'string', isOptional: true},
+                    },
+                    columnArray: [
+                        {name: 'group_id', type: 'string'},
+                        {name: 'name', type: 'string'},
+                        {name: 'type', type: 'string'},
+                        {name: 'target_id', type: 'string'},
+                        {name: 'target_type', type: 'string'},
+                        {name: 'create_at', type: 'number'},
+                        {name: 'update_at', type: 'number'},
+                        {name: 'delete_at', type: 'number'},
+                        {name: 'attrs', type: 'string', isOptional: true},
+                    ],
+                },
+                [PLAYBOOK_RUN_ATTRIBUTE_VALUE]: {
+                    name: PLAYBOOK_RUN_ATTRIBUTE_VALUE,
+                    unsafeSql: undefined,
+                    columns: {
+                        attribute_id: {name: 'attribute_id', type: 'string', isIndexed: true},
+                        run_id: {name: 'run_id', type: 'string', isIndexed: true},
+                        value: {name: 'value', type: 'string'},
+                    },
+                    columnArray: [
+                        {name: 'attribute_id', type: 'string', isIndexed: true},
+                        {name: 'run_id', type: 'string', isIndexed: true},
+                        {name: 'value', type: 'string'},
                     ],
                 },
                 [POSTS_IN_THREAD]: {

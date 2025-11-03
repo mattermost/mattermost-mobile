@@ -105,6 +105,8 @@ class NetworkManagerSingleton {
         try {
             const {client} = await getOrCreateAPIClient(serverUrl, config, this.clientErrorEventHandler);
             const csrfToken = await getCSRFFromCookie(serverUrl);
+
+            // Pass preauthSecret explicitly to constructor to match ClientBase behavior
             this.clients[serverUrl] = new Client(client, serverUrl, bearerToken, csrfToken, preauthSecret);
         } catch (error) {
             throw new ClientError(serverUrl, {
@@ -137,7 +139,7 @@ class NetworkManagerSingleton {
                 timeoutIntervalForRequest: managedConfig?.timeout ? parseInt(managedConfig.timeout, 10) : this.DEFAULT_CONFIG.sessionConfiguration?.timeoutIntervalForRequest,
                 timeoutIntervalForResource: managedConfig?.timeoutVPN ? parseInt(managedConfig.timeoutVPN, 10) : this.DEFAULT_CONFIG.sessionConfiguration?.timeoutIntervalForResource,
                 waitsForConnectivity: managedConfig?.useVPN === 'true',
-                collectMetrics: LocalConfig.CollectNetworkMetrics,
+                collectMetrics: true,
             },
             headers,
         };
