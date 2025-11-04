@@ -1246,7 +1246,7 @@
   "servers.default": "Výchozí Server",
   "servers.edit": "Upravit",
   "servers.login": "Přihlásit se",
-  "servers.logout": "Odhlásit Se",
+  "servers.logout": "Odhlásit",
   "servers.remove": "Odstranit",
   "settings.about": "O {appTitle}",
   "settings.about.app.version": "Verze Aplikace: {version} (Build {number})",
