@@ -49,9 +49,17 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 const deepLinkScreens: AvailableScreens[] = [Screens.HOME, Screens.CHANNEL, Screens.GLOBAL_THREADS, Screens.THREAD];
 
 const easyLogin = async (serverUrl: string, token: string): Promise<LoginActionResponse> => {
-    const {url: serverUrlToUse, error: serverUrlError} = await getServerUrlAfterRedirect(serverUrl);
-    if (serverUrlError || !serverUrlToUse) {
-        return {error: serverUrlError || 'empty server url', failed: true};
+    const httpsHeadRequest = await getServerUrlAfterRedirect(serverUrl);
+    let serverUrlToUse = httpsHeadRequest.url;
+    if (httpsHeadRequest.error || !httpsHeadRequest.url) {
+        // Retry with HTTP
+        const httpHeadRequest = await getServerUrlAfterRedirect(serverUrl, true);
+        if (httpHeadRequest.error || !httpHeadRequest.url) {
+            return {error: httpsHeadRequest.error || httpHeadRequest.error || 'empty server url', failed: true};
+        }
+        serverUrlToUse = httpHeadRequest.url;
+    } else {
+        serverUrlToUse = httpsHeadRequest.url;
     }
 
     const database = DatabaseManager.appDatabase?.database;
