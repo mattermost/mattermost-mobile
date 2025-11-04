@@ -161,11 +161,11 @@ export const postStatusUpdate = async (serverUrl: string, playbookRunID: string,
     try {
         const client = NetworkManager.getClient(serverUrl);
         await client.postStatusUpdate(playbookRunID, payload, ids);
-        return undefined;
+        return {data: true};
     } catch (error) {
         logDebug('error on postStatusUpdate', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
-        return error;
+        return {error};
     }
 };
 

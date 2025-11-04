@@ -683,7 +683,7 @@ describe('postStatusUpdate', () => {
         mockClient.postStatusUpdate.mockResolvedValueOnce(undefined);
 
         const result = await postStatusUpdate(serverUrl, playbookRunID, payload, ids);
-        expect(result).toBeUndefined();
+        expect(result.error).toBeUndefined();
 
         expect(mockClient.postStatusUpdate).toHaveBeenCalledWith(playbookRunID, payload, ids);
         expect(mockClient.postStatusUpdate).toHaveBeenCalledTimes(1);
@@ -697,7 +697,7 @@ describe('postStatusUpdate', () => {
         mockClient.postStatusUpdate.mockResolvedValueOnce(undefined);
 
         const result = await postStatusUpdate(serverUrl, playbookRunID, payloadWithoutReminder, ids);
-        expect(result).toBeUndefined();
+        expect(result.error).toBeUndefined();
 
         expect(mockClient.postStatusUpdate).toHaveBeenCalledWith(playbookRunID, payloadWithoutReminder, ids);
     });
@@ -707,8 +707,7 @@ describe('postStatusUpdate', () => {
         mockClient.postStatusUpdate.mockRejectedValueOnce(clientError);
 
         const result = await postStatusUpdate(serverUrl, playbookRunID, payload, ids);
-        expect(result).toBeDefined();
-        expect(result).toBe(clientError);
+        expect(result.error).toBe(clientError);
 
         expect(mockClient.postStatusUpdate).toHaveBeenCalledWith(playbookRunID, payload, ids);
     });
@@ -717,6 +716,6 @@ describe('postStatusUpdate', () => {
         jest.spyOn(NetworkManager, 'getClient').mockImplementationOnce(throwFunc);
 
         const result = await postStatusUpdate(serverUrl, playbookRunID, payload, ids);
-        expect(result).toBeDefined();
+        expect(result.error).toBeDefined();
     });
 });

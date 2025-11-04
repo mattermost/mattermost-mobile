@@ -125,7 +125,7 @@ describe('PostUpdate', () => {
         jest.mocked(fetchPlaybookRunMetadata).mockResolvedValue({metadata: mockMetadata});
         jest.mocked(fetchPlaybookRun).mockResolvedValue({run: mockRun});
         jest.mocked(getPosts).mockResolvedValue([mockPost]);
-        jest.mocked(postStatusUpdate).mockResolvedValue(undefined);
+        jest.mocked(postStatusUpdate).mockResolvedValue({data: true});
     });
 
     it('should render loading state initially', () => {
@@ -533,7 +533,7 @@ describe('PostUpdate', () => {
     it('should handle postStatusUpdate error', async () => {
         const props = getBaseProps();
         const {showPlaybookErrorSnackbar} = require('@utils/snack_bar');
-        jest.mocked(postStatusUpdate).mockResolvedValue({error: 'Error posting update'});
+        jest.mocked(postStatusUpdate).mockResolvedValue({error: new Error('Error posting update')});
 
         renderWithIntlAndTheme(<PostUpdate {...props}/>);
 

@@ -55,7 +55,6 @@ describe('Participants', () => {
             users: [user1, user2],
             location,
             baseTextStyle: {},
-            textStyles: {},
         };
     }
 

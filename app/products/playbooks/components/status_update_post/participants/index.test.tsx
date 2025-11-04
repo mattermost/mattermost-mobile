@@ -44,7 +44,6 @@ describe('EnhancedParticipants (withObservables and withDatabase)', () => {
             participantIds: ['user-1', 'user-2'],
             location: 'Channel',
             baseTextStyle: {},
-            textStyles: {},
         };
     }
 

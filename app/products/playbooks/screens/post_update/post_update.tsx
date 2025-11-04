@@ -210,7 +210,7 @@ const PostUpdate = ({
             logDebug('cannot post status update without a channel id');
             return;
         }
-        const error = await postStatusUpdate(serverUrl, playbookRunId, {message: updateMessage, reminder: valueToTimeMap[nextUpdate], finishRun: alsoMarkRunAsFinished}, {user_id: userId, channel_id: channelId, team_id: teamId});
+        const {error} = await postStatusUpdate(serverUrl, playbookRunId, {message: updateMessage, reminder: valueToTimeMap[nextUpdate], finishRun: alsoMarkRunAsFinished}, {user_id: userId, channel_id: channelId, team_id: teamId});
         if (error) {
             showPlaybookErrorSnackbar();
         }
