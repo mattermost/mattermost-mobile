@@ -10,7 +10,6 @@ import CompassIcon from '@components/compass_icon';
 import Markdown from '@components/markdown';
 import {useServerUrl} from '@context/server';
 import {isPostStatusUpdateProps} from '@playbooks/utils/types';
-import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -86,8 +85,6 @@ const StatusUpdatePost = ({location, post, theme}: Props) => {
 
     const serverUrl = useServerUrl();
     const style = getStyleSheet(theme);
-    const blockStyles = getMarkdownBlockStyles(theme);
-    const textStyles = getMarkdownTextStyles(theme);
     const intl = useIntl();
 
     useEffect(() => {
@@ -104,10 +101,8 @@ const StatusUpdatePost = ({location, post, theme}: Props) => {
             <View style={style.messageContainer}>
                 <Markdown
                     baseTextStyle={style.message}
-                    blockStyles={blockStyles}
                     channelId={post.channelId}
                     postId={post.id}
-                    textStyles={textStyles}
                     value={intl.formatMessage({id: 'playbooks.status_update_post.invalid_status_update_props', defaultMessage: 'Playbooks status update post with invalid properties'})}
                     theme={theme}
                     location={location}
@@ -130,10 +125,8 @@ const StatusUpdatePost = ({location, post, theme}: Props) => {
         <View style={style.messageContainer}>
             <Markdown
                 baseTextStyle={style.message}
-                blockStyles={blockStyles}
                 channelId={post.channelId}
                 postId={post.id}
-                textStyles={textStyles}
                 value={updatePosted}
                 theme={theme}
                 location={location}
@@ -141,10 +134,8 @@ const StatusUpdatePost = ({location, post, theme}: Props) => {
             <View style={style.updateContainer}>
                 <Markdown
                     baseTextStyle={style.message}
-                    blockStyles={blockStyles}
                     channelId={post.channelId}
                     postId={post.id}
-                    textStyles={textStyles}
                     value={post.message}
                     theme={theme}
                     location={location}
@@ -161,7 +152,6 @@ const StatusUpdatePost = ({location, post, theme}: Props) => {
                         <Markdown
                             baseTextStyle={style.detailsText}
                             value={tasks}
-                            textStyles={textStyles}
                             theme={theme}
                             location={location}
                         />
@@ -175,7 +165,6 @@ const StatusUpdatePost = ({location, post, theme}: Props) => {
                         participantIds={participantIds}
                         location={location}
                         baseTextStyle={style.detailsText}
-                        textStyles={textStyles}
                     />
                 </View>
             </View>
