@@ -35,6 +35,11 @@ export interface ClientPlaybooksMix {
     // Slash Commands
     runChecklistItemSlashCommand: (playbookRunId: string, checklistNumber: number, itemNumber: number) => Promise<{trigger_id: string}>;
     setChecklistItemCommand: (playbookRunID: string, checklistNum: number, itemNum: number, command: string) => Promise<void>;
+
+    // Property Fields
+    fetchRunPropertyFields: (runId: string, updatedSince?: number) => Promise<PlaybookRunPropertyField[]>;
+    fetchRunPropertyValues: (runId: string, updatedSince?: number) => Promise<PlaybookRunPropertyValue[]>;
+    setRunPropertyValue: (runId: string, fieldId: string, value: string) => Promise<PlaybookRunPropertyValue>;
 }
 
 const ClientPlaybooks = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
@@ -227,6 +232,33 @@ const ClientPlaybooks = <TBase extends Constructor<ClientBase>>(superclass: TBas
             {method: 'put', body: {command}},
         );
 
+        return data;
+    };
+
+    // Property Fields
+    fetchRunPropertyFields = async (runId: string, updatedSince?: number) => {
+        const queryParams = updatedSince ? buildQueryString({updated_since: updatedSince}) : '';
+        const data = await this.doFetch(
+            `${this.getPlaybookRunRoute(runId)}/property_fields${queryParams}`,
+            {method: 'get'},
+        );
+        return data || [];
+    };
+
+    fetchRunPropertyValues = async (runId: string, updatedSince?: number) => {
+        const queryParams = updatedSince ? buildQueryString({updated_since: updatedSince}) : '';
+        const data = await this.doFetch(
+            `${this.getPlaybookRunRoute(runId)}/property_values${queryParams}`,
+            {method: 'get'},
+        );
+        return data || [];
+    };
+
+    setRunPropertyValue = async (runId: string, fieldId: string, value: string) => {
+        const data = await this.doFetch(
+            `${this.getPlaybookRunRoute(runId)}/property_fields/${fieldId}/value`,
+            {method: 'put', body: {value}},
+        );
         return data;
     };
 };

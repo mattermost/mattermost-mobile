@@ -138,6 +138,8 @@ type PlaybookRun = {
     status_posts: StatusPost[];
     checklists: PlaybookChecklist[];
     metrics_data: RunMetricData[];
+    property_fields?: PlaybookRunPropertyField[];
+    property_values?: PlaybookRunPropertyValue[];
     update_at: number;
     items_order: string[];
     status_update_broadcast_channels_enabled: boolean;

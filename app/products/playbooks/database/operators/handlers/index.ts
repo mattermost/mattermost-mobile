@@ -157,6 +157,37 @@ const PlaybookHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supe
 
             const childRecords = await this.handlePlaybookChecklist({checklists, prepareRecordsOnly: true, processChildren});
             batchRecords.push(...childRecords);
+
+            // Process property_fields and property_values
+            const propertyFields = uniqueRaws.reduce<PartialPlaybookRunPropertyField[]>((res, raw) => {
+                if (raw.property_fields?.length) {
+                    res.push(...raw.property_fields);
+                }
+                return res;
+            }, []);
+
+            const propertyValues = uniqueRaws.reduce<PartialPlaybookRunPropertyValue[]>((res, raw) => {
+                if (raw.property_values?.length) {
+                    res.push(...raw.property_values);
+                }
+                return res;
+            }, []);
+
+            if (propertyFields.length) {
+                const propertyFieldRecords = await this.handlePlaybookRunPropertyField({
+                    propertyFields,
+                    prepareRecordsOnly: true,
+                });
+                batchRecords.push(...propertyFieldRecords);
+            }
+
+            if (propertyValues.length) {
+                const propertyValueRecords = await this.handlePlaybookRunPropertyValue({
+                    propertyValues,
+                    prepareRecordsOnly: true,
+                });
+                batchRecords.push(...propertyValueRecords);
+            }
         }
 
         if (batchRecords.length && !prepareRecordsOnly) {
