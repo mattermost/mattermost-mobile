@@ -140,8 +140,8 @@ const PlaybookRuns = ({
     }, []);
 
     const startANewRun = useCallback(() => {
-        goToSelectPlaybook(intl, theme);
-    }, [intl, theme]);
+        goToSelectPlaybook(intl, theme, channelId);
+    }, [intl, theme, channelId]);
 
     let content = (<EmptyState tab={activeTab}/>);
     if (!isEmpty) {
@@ -162,6 +162,7 @@ const PlaybookRuns = ({
                         text={intl.formatMessage({id: 'playbooks.runs.start_a_new_run', defaultMessage: 'Start a new run'})}
                         size='lg'
                         theme={theme}
+                        iconName='play-outline'
                     />
                 </View>
             </>
