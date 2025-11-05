@@ -25,7 +25,7 @@ public struct PostThread: Codable {
     
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: PostThreadKeys.self)
-        id = try values.decode(String.self, forKey: .id)
+        id = values.decodeIfPresent(forKey: .id, defaultValue: "")
         post = values.decodeIfPresent(forKey: .post, defaultValue: nil)
         participants = values.decodeIfPresent(forKey: .participants, defaultValue: [User]())
         lastReplyAt = values.decodeIfPresent(forKey: .lastReplyAt, defaultValue: 0)

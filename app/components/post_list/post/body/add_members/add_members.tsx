@@ -142,6 +142,7 @@ const AddMembers = ({channelType, currentUser, location, post, theme}: AddMember
                     location={location}
                     mentionName={names[0]}
                     mentionStyle={textStyles.mention}
+                    theme={theme}
                 />
             );
         } else if (names.length > 1) {
@@ -170,6 +171,7 @@ const AddMembers = ({channelType, currentUser, location, post, theme}: AddMember
                                     location={location}
                                     mentionStyle={textStyles.mention}
                                     mentionName={username}
+                                    theme={theme}
                                 />
                             );
                         }).reduce((acc: ReactNode[], el: ReactNode, idx: number, arr: ReactNode[]) => {

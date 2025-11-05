@@ -36,8 +36,8 @@ public struct User: Codable, Hashable {
     
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: UserKeys.self)
-        id = try values.decode(String.self, forKey: .id)
-        username = try values.decode(String.self, forKey: .username)
+        id = values.decodeIfPresent(forKey: .id, defaultValue: "")
+        username = values.decodeIfPresent(forKey: .username, defaultValue: "")
         authService = values.decodeIfPresent(forKey: .authService, defaultValue: "")
         updateAt = values.decodeIfPresent(forKey: .updateAt, defaultValue: 0)
         deleteAt = values.decodeIfPresent(forKey: .deleteAt, defaultValue: 0)
