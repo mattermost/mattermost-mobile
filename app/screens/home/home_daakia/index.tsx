@@ -18,6 +18,7 @@ import {fetchPostsForChannel} from '@actions/remote/post';
 import FloatingCallContainer from '@calls/components/floating_call_container';
 import {observeIncomingCalls} from '@calls/state';
 import CompassIcon from '@components/compass_icon';
+import ConnectionBanner from '@components/connection_banner';
 import DaakiaChannelList from '@components/daakia_components/daakia_channel_list';
 import DaakiaHeader from '@components/daakia_components/daakia_header';
 import DaakiaTabs from '@components/daakia_components/daakia_tabs';
@@ -378,6 +379,7 @@ const HomeDaakia = ({
                 style={styles.container}
                 edges={['bottom', 'left', 'right']}
             >
+                <ConnectionBanner/>
                 {isFocused && (
                     <>
                         <DaakiaHeader
