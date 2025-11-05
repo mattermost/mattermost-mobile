@@ -33,6 +33,7 @@ type Props = {
     loading?: boolean;
     fetching: boolean;
     showCachedWarning?: boolean;
+    channelId?: string;
 };
 
 const itemSeparatorStyle = StyleSheet.create({
@@ -100,6 +101,7 @@ const RunList = ({
     fetching,
     loading = false,
     showCachedWarning = false,
+    channelId,
 }: Props) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -145,8 +147,8 @@ const RunList = ({
     }, [componentId]);
 
     const startANewRun = useCallback(() => {
-        goToSelectPlaybook(intl, theme);
-    }, [intl, theme]);
+        goToSelectPlaybook(intl, theme, channelId);
+    }, [intl, theme, channelId]);
 
     let content;
     if (loading) {
@@ -192,6 +194,7 @@ const RunList = ({
                     text={intl.formatMessage({id: 'playbooks.runs.start_a_new_run', defaultMessage: 'Start a new run'})}
                     size='lg'
                     theme={theme}
+                    iconName='play-outline'
                 />
             </View>
         </>

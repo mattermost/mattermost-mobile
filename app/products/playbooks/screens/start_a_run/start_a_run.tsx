@@ -32,6 +32,7 @@ export type Props = {
     currentUserId: string;
     currentTeamId: string;
     onRunCreated: (run: PlaybookRun) => void;
+    channelId?: string;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -86,6 +87,7 @@ function StartARun({
     currentUserId,
     currentTeamId,
     onRunCreated,
+    channelId,
 }: Props) {
     const theme = useTheme();
     const intl = useIntl();
@@ -105,13 +107,13 @@ function StartARun({
         return '';
     });
     const [channelOption, setChannelOption] = useState<ChannelOption>('existing');
-    const [channelId, setChannelId] = useState<string | undefined>(undefined);
+    const [selectedChannelId, setSelectedChannelId] = useState<string | undefined>(channelId);
     const [createPublicChannel, setCreatePublicChannel] = useState(false);
 
     const canSave = Boolean(runName.trim());
 
     const handleStartRun = useCallback(async () => {
-        const res = await createPlaybookRun(serverUrl, playbook.id, currentUserId, currentTeamId, runName.trim(), runDescription.trim(), channelId, channelOption === 'new' ? createPublicChannel : undefined);
+        const res = await createPlaybookRun(serverUrl, playbook.id, currentUserId, currentTeamId, runName.trim(), runDescription.trim(), selectedChannelId, channelOption === 'new' ? createPublicChannel : undefined);
         if (res.error || !res.data) {
             logDebug('error on createPlaybookRun', getFullErrorMessage(res.error));
             showPlaybookErrorSnackbar();
@@ -119,7 +121,7 @@ function StartARun({
         }
         await popTopScreen(componentId);
         onRunCreated(res.data);
-    }, [runName, serverUrl, playbook.id, currentUserId, currentTeamId, runDescription, channelId, channelOption, createPublicChannel, componentId, onRunCreated]);
+    }, [runName, serverUrl, playbook.id, currentUserId, currentTeamId, runDescription, selectedChannelId, channelOption, createPublicChannel, componentId, onRunCreated]);
 
     useEffect(() => {
         async function asyncWrapper() {
@@ -170,7 +172,7 @@ function StartARun({
             logDebug('on channel selected returned undefined, this should never happen');
             return;
         }
-        setChannelId(value.value);
+        setSelectedChannelId(value.value);
     }, []);
 
     return (
@@ -228,7 +230,7 @@ function StartARun({
                                 defaultMessage: 'Channel',
                             })}
                             dataSource='channels'
-                            selected={channelId}
+                            selected={selectedChannelId}
                             onSelected={onChannelSelected}
                             testID='start_run.existing_channel_selector'
                         />

@@ -83,6 +83,7 @@ const PlaybookRuns = ({
             fetchMoreRuns={fetchFinishedRuns}
             showMoreButton={showMoreButton}
             fetching={fetching}
+            channelId={channelId}
         />
     );
 };
