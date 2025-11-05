@@ -9,7 +9,6 @@ import Markdown from '@components/markdown';
 import {isChannelMentions} from '@components/markdown/channel_mention/channel_mention';
 import {SEARCH} from '@constants/screens';
 import {useShowMoreAnimatedStyle} from '@hooks/show_more';
-import {getMarkdownTextStyles, getMarkdownBlockStyles} from '@utils/markdown';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -88,8 +87,6 @@ const Message = ({currentUser, isHighlightWithoutNotificationLicensed, highlight
     const maxHeight = Math.round((dimensions.height * 0.5) + SHOW_MORE_HEIGHT);
     const animatedStyle = useShowMoreAnimatedStyle(height, maxHeight, open);
     const style = getStyleSheet(theme);
-    const blockStyles = getMarkdownBlockStyles(theme);
-    const textStyles = getMarkdownTextStyles(theme);
 
     // Dynamic alignment for my posts
     const messageContainerStyle: StyleProp<ViewStyle> = isMyPost ? {alignItems: 'flex-end'} : undefined;
@@ -129,7 +126,6 @@ const Message = ({currentUser, isHighlightWithoutNotificationLicensed, highlight
                         >
                             <Markdown
                                 baseTextStyle={isMyPost ? style.messageMy : style.message}
-                                blockStyles={blockStyles}
                                 channelId={post.channelId}
                                 channelMentions={channelMentions}
                                 imagesMetadata={post.metadata?.images}
@@ -139,7 +135,6 @@ const Message = ({currentUser, isHighlightWithoutNotificationLicensed, highlight
                                 layoutWidth={layoutWidth}
                                 location={location}
                                 postId={post.id}
-                                textStyles={textStyles}
                                 value={post.message}
                                 mentionKeys={currentUser?.mentionKeys ?? EMPTY_MENTION_KEYS}
                                 highlightKeys={isHighlightWithoutNotificationLicensed ? (currentUser?.highlightKeys ?? EMPTY_HIGHLIGHT_KEYS) : EMPTY_HIGHLIGHT_KEYS}

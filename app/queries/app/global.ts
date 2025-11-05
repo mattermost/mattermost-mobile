@@ -101,22 +101,6 @@ export const observeTutorialWatched = (tutorial: string) => {
     );
 };
 
-export const observeLowConnectivityMonitor = () => {
-    const query = queryGlobalValue(GLOBAL_IDENTIFIERS.LOW_CONNECTIVITY_MONITOR);
-    if (!query) {
-        return of$(true);
-    }
-    return query.observe().pipe(
-        switchMap((result) => (result.length ? result[0].observe() : of$(true))),
-        switchMap((v) => {
-            if (typeof v === 'boolean') {
-                return of$(v);
-            }
-            return of$(v?.value ?? true);
-        }),
-    );
-};
-
 export const observeModernChatEnabled = () => {
     const query = queryGlobalValue(GLOBAL_IDENTIFIERS.MODERN_CHAT);
     if (!query) {
