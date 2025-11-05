@@ -941,6 +941,46 @@ describe('*** PLAYBOOK_RUN_ATTRIBUTE Prepare Records Test ***', () => {
         expect(preparedRecord.attrs).toBe('{"placeholder": "Original"}');
         expect(preparedRecord.updateAt).toBe(1620000004000);
     });
+
+    it('=> transformPlaybookRunPropertyFieldRecord: should serialize attrs object to string', async () => {
+        expect.assertions(3);
+
+        const database = await createTestConnection({databaseName: 'playbook_run_attribute_prepare_records', setActive: true});
+        expect(database).toBeTruthy();
+
+        const attrsObject = {
+            options: [{id: 'opt1', name: 'Option 1'}, {id: 'opt2', name: 'Option 2'}],
+            parent_id: 'parent123',
+            sort_order: 5,
+            value_type: 'select',
+            visibility: 'always' as const,
+        };
+
+        const preparedRecord = await transformPlaybookRunPropertyFieldRecord({
+            action: OperationType.CREATE,
+            database: database!,
+            value: {
+                record: undefined,
+                raw: {
+                    id: 'attribute_with_object',
+                    group_id: 'group_1',
+                    name: 'Select Attribute',
+                    type: 'select',
+                    target_id: 'target_1',
+                    target_type: 'playbook_run',
+                    create_at: 1620000000000,
+                    update_at: 1620000001000,
+                    delete_at: 0,
+                    attrs: attrsObject, // Pass as object (as API sends it)
+                },
+            },
+        });
+
+        expect(preparedRecord).toBeTruthy();
+
+        // Verify attrs was serialized to string
+        expect(preparedRecord!.attrs).toBe(JSON.stringify(attrsObject));
+    });
 });
 
 describe('*** PLAYBOOK_RUN_ATTRIBUTE_VALUE Prepare Records Test ***', () => {
