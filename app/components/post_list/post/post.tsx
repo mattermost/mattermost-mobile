@@ -24,6 +24,8 @@ import {hasJumboEmojiOnly} from '@utils/emoji/helpers';
 import {fromAutoResponder, isFromWebhook, isPostFailed, isPostPendingOrFailed, isSystemMessage} from '@utils/post';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+import LivekitCustomMessage from '../../../products/calls/components/livekit_custom_message';
+
 import Avatar from './avatar';
 import Body from './body';
 import Footer from './footer';
@@ -158,6 +160,7 @@ const Post = ({
     const isSystemPost = isSystemMessage(post);
     const isCallsPost = isCallsCustomMessage(post);
     const hasBeenDeleted = (post.deleteAt !== 0);
+    const isLivekitPost = Boolean(post.props?.meeting_url);
     const isWebHook = isFromWebhook(post);
     const hasSameRoot = useMemo(() => {
         if (isFirstReply) {
@@ -335,6 +338,31 @@ const Post = ({
         }
     }
 
+    // TEMP LOGS: dump post data to inspect plugin payloads and authors
+    // eslint-disable-next-line no-console
+    console.log('[POST_RENDER]', {
+        id: post.id,
+        channelId: post.channelId,
+        userId: post.userId,
+        type: post.type,
+        message: post.message,
+        props: post.props,
+        metadata: post.metadata,
+    });
+
+    // Example filter: plugin/webhook/app-originated posts
+    const hasAppId = Boolean(post.props && ('app_id' in post.props));
+    if (post.props?.from_webhook || post.props?.attachments || hasAppId) {
+        // eslint-disable-next-line no-console
+        console.log('[PLUGIN_POST]', {id: post.id, props: post.props, message: post.message});
+    }
+
+    // Example filter: by specific author userId (replace with Sumeet's userId to enable)
+    // if (post.userId === 'USER_ID_FOR_SUMEET') {
+    //     // eslint-disable-next-line no-console
+    //     console.log('[SUMEET_POST]', {id: post.id, type: post.type, props: post.props, message: post.message});
+    // }
+
     let body;
     if (isSystemPost && !isEphemeral && !isAutoResponder) {
         body = (
@@ -354,6 +382,12 @@ const Post = ({
                 isAdmin={false}
                 isHost={false}
                 joiningChannelId={null}
+            />
+        );
+    } else if (isLivekitPost && !hasBeenDeleted) {
+        body = (
+            <LivekitCustomMessage
+                post={post}
             />
         );
     } else {

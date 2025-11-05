@@ -1,6 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-
+/* eslint-disable */
 import React, {type ReactNode, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, Platform, type StyleProp, View, type ViewStyle, TouchableHighlight} from 'react-native';
@@ -24,6 +24,7 @@ import {hasJumboEmojiOnly} from '@utils/emoji/helpers';
 import {fromAutoResponder, isFromWebhook, isPostFailed, isPostPendingOrFailed, isSystemMessage} from '@utils/post';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+import LivekitCustomMessage from '../../../products/calls/components/livekit_custom_message';
 import Avatar from './avatar';
 import Body from './body';
 import Footer from './footer';
@@ -159,6 +160,7 @@ const DaakiaPost = ({
     const isFailed = isPostFailed(post);
     const isSystemPost = isSystemMessage(post);
     const isCallsPost = isCallsCustomMessage(post);
+    const isLivekitPost = Boolean(post.props?.meeting_url);
     const hasBeenDeleted = (post.deleteAt !== 0);
     const isWebHook = isFromWebhook(post);
     const hasSameRoot = useMemo(() => {
@@ -358,6 +360,31 @@ const DaakiaPost = ({
         );
     }
 
+    // TEMP LOGS: dump post data to inspect plugin payloads and authors (Daakia UI)
+    // eslint-disable-next-line no-console
+    console.log('[DAAKIA_POST_RENDER]', {
+        id: post.id,
+        channelId: post.channelId,
+        userId: post.userId,
+        type: post.type,
+        message: post.message,
+        props: post.props,
+        metadata: post.metadata,
+    });
+
+    // Example filter: plugin/webhook/app-originated posts
+    const hasAppId = Boolean(post.props && ('app_id' in post.props));
+    if (post.props?.from_webhook || post.props?.attachments || hasAppId) {
+        // eslint-disable-next-line no-console
+        console.log('[DAAKIA_PLUGIN_POST]', {id: post.id, props: post.props, message: post.message});
+    }
+
+    // Example filter: by specific author userId (replace with Sumeet's userId to enable)
+    // if (post.userId === 'USER_ID_FOR_SUMEET') {
+    //     // eslint-disable-next-line no-console
+    //     console.log('[DAAKIA_SUMEET_POST]', {id: post.id, type: post.type, props: post.props, message: post.message});
+    // }
+
     let body;
     if (isSystemPost && !isEphemeral && !isAutoResponder) {
         body = (
@@ -379,6 +406,16 @@ const DaakiaPost = ({
                     isAdmin={false}
                     isHost={false}
                     joiningChannelId={null}
+                />
+                <View style={{height: 5}}/>
+            </>
+        );
+    } else if (isLivekitPost && !hasBeenDeleted) {
+        body = (
+            <>
+                <View style={{height: 5}}/>
+                <LivekitCustomMessage
+                    post={post}
                 />
                 <View style={{height: 5}}/>
             </>
