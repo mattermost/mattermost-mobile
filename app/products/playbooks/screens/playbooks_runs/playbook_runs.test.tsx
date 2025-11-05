@@ -253,4 +253,16 @@ describe('PlaybookRuns', () => {
 
         expect(popTopScreen).toHaveBeenCalledWith('PlaybookRuns');
     });
+
+    it('passes down the channel id to the run list', () => {
+        const {getByTestId} = renderWithIntl(
+            <PlaybookRuns
+                allRuns={[inProgressRun]}
+                componentId={'PlaybookRuns'}
+                channelId={'channel-id-1'}
+            />,
+        );
+        const runList = getByTestId('run-list');
+        expect(runList).toHaveProp('channelId', 'channel-id-1');
+    });
 });

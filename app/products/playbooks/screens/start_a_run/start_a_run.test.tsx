@@ -748,5 +748,14 @@ describe('StartARun', () => {
             expect(channelSelector).toHaveProp('selected', 'valid-id');
         });
     });
+
+    it('should default to existing channel option when channel id is provided', () => {
+        const props = getBaseProps();
+        props.channelId = 'channel-id';
+        const {getByTestId} = renderWithIntlAndTheme(<StartARun {...props}/>);
+        expect(getByTestId('start_run.existing_channel_option')).toHaveProp('selected', true);
+        expect(getByTestId('start_run.new_channel_option')).toHaveProp('selected', false);
+        expect(getByTestId('start_run.existing_channel_selector')).toHaveProp('selected', 'channel-id');
+    });
 });
 

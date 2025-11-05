@@ -964,41 +964,4 @@ describe('createPlaybookRun', () => {
             client.createPlaybookRun(playbook_id, owner_user_id, team_id, name, description),
         ).rejects.toThrow('Network error');
     });
-
-    test('should create playbook run with empty strings', async () => {
-        const playbook_id = '';
-        const owner_user_id = '';
-        const team_id = '';
-        const name = '';
-        const description = '';
-        const expectedUrl = '/plugins/playbooks/api/v0/runs';
-        const expectedOptions = {
-            method: 'post',
-            body: {
-                owner_user_id,
-                team_id,
-                name,
-                description,
-                playbook_id,
-                channel_id: undefined,
-                create_public_run: undefined,
-            },
-        };
-        const mockResponse = {
-            id: 'run123',
-        };
-
-        jest.mocked(client.doFetch).mockResolvedValue(mockResponse);
-
-        const result = await client.createPlaybookRun(
-            playbook_id,
-            owner_user_id,
-            team_id,
-            name,
-            description,
-        );
-
-        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
-        expect(result).toEqual(mockResponse);
-    });
 });

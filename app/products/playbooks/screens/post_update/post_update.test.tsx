@@ -158,6 +158,7 @@ describe('PostUpdate', () => {
                 expect.objectContaining({value: '1_day', text: '1 day'}),
                 expect.objectContaining({value: '7_days', text: '7 days'}),
             ]));
+            expect(selector.props.options).toHaveLength(6);
 
             const toggle = getByTestId('playbooks.post_update.selector.also_mark_run_as_finished');
             expect(toggle).toHaveProp('label', 'Also mark the run as finished');
@@ -693,6 +694,21 @@ describe('PostUpdate', () => {
         await waitFor(() => {
             const input = getByTestId('FloatingTextInput');
             expect(input).toHaveProp('value', 'Valid post message');
+        });
+    });
+
+    it('should use the reminder template if it cannot fetch the post', async () => {
+        const props = getBaseProps();
+        const runWithStatusPosts = TestHelper.fakePlaybookRun({
+            id: 'playbook-run-id',
+            reminder_message_template: 'Reminder template',
+            status_posts: [{id: 'status-post-id', create_at: Date.now(), delete_at: 0}],
+        });
+        jest.mocked(fetchPlaybookRun).mockResolvedValue({run: runWithStatusPosts});
+        jest.mocked(getPosts).mockResolvedValue([]);
+        const {getByTestId} = renderWithIntlAndTheme(<PostUpdate {...props}/>);
+        await waitFor(() => {
+            expect(getByTestId('FloatingTextInput')).toHaveProp('value', 'Reminder template');
         });
     });
 

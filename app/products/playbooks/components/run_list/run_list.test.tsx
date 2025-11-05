@@ -5,6 +5,7 @@ import {act, fireEvent, waitFor} from '@testing-library/react-native';
 import React, {type ComponentProps} from 'react';
 
 import DatabaseManager from '@database/manager';
+import {goToSelectPlaybook} from '@playbooks/screens/navigation';
 import {renderWithEverything, renderWithIntlAndTheme} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -229,7 +230,6 @@ describe('RunList', () => {
     });
 
     it('calls goToSelectPlaybook when Start a new run button is pressed', () => {
-        const {goToSelectPlaybook} = require('@playbooks/screens/navigation');
         const props = getBaseProps();
         props.inProgressRuns = [inProgressRun];
         const {getByText} = renderWithIntlAndTheme(<RunList {...props}/>);
@@ -244,6 +244,7 @@ describe('RunList', () => {
                 formatMessage: expect.any(Function),
             }),
             expect.anything(),
+            undefined,
         );
     });
 
@@ -339,5 +340,18 @@ describe('RunList', () => {
             expect(fetchMoreRuns).toHaveBeenCalledWith('finished');
         });
     });
-});
 
+    it('calls goToSelectPlaybook with correct channelId when Start a new run button is pressed', () => {
+        const props = getBaseProps();
+        props.inProgressRuns = [inProgressRun];
+        props.channelId = 'channel-id-1';
+        const {getByText} = renderWithIntlAndTheme(<RunList {...props}/>);
+
+        act(() => {
+            fireEvent.press(getByText('Start a new run'));
+        });
+
+        expect(goToSelectPlaybook).toHaveBeenCalledTimes(1);
+        expect(goToSelectPlaybook).toHaveBeenCalledWith(expect.anything(), expect.anything(), 'channel-id-1');
+    });
+});

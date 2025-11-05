@@ -114,11 +114,7 @@ const RunList = ({
     }
     const [activeTab, tabsProps] = useTabs<RunListTabsNames>(initialTab, tabs);
 
-    let data: Array<PlaybookRunModel | PlaybookRun> = inProgressRuns;
-    if (activeTab === 'finished') {
-        data = finishedRuns;
-    }
-
+    const data = activeTab === 'in-progress' ? inProgressRuns : finishedRuns;
     const isEmpty = data.length === 0;
 
     const onShowMorePress = useCallback(() => {
