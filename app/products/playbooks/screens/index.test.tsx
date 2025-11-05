@@ -8,10 +8,14 @@ import Screens from '@playbooks/constants/screens';
 import {render} from '@test/intl-test-helper';
 
 import EditCommand from './edit_command';
+import ParticipantPlaybooks from './participant_playbooks';
 import PlaybookRun from './playbook_run';
 import PlaybookRuns from './playbooks_runs';
+import PostUpdate from './post_update';
 import SelectDate from './select_date';
+import SelectPlaybook from './select_playbook';
 import SelectUser from './select_user';
+import StartARun from './start_a_run';
 
 import {loadPlaybooksScreen} from '.';
 
@@ -51,6 +55,30 @@ jest.mock('@playbooks/screens/select_date', () => ({
     default: jest.fn(),
 }));
 jest.mocked(SelectDate).mockImplementation((props) => <Text {...props}>{Screens.PLAYBOOKS_SELECT_DATE}</Text>);
+
+jest.mock('@playbooks/screens/start_a_run', () => ({
+    __esModule: true,
+    default: jest.fn(),
+}));
+jest.mocked(StartARun).mockImplementation((props) => <Text {...props}>{Screens.PLAYBOOKS_START_A_RUN}</Text>);
+
+jest.mock('@playbooks/screens/select_playbook', () => ({
+    __esModule: true,
+    default: jest.fn(),
+}));
+jest.mocked(SelectPlaybook).mockImplementation((props) => <Text {...props}>{Screens.PLAYBOOKS_SELECT_PLAYBOOK}</Text>);
+
+jest.mock('@playbooks/screens/participant_playbooks', () => ({
+    __esModule: true,
+    default: jest.fn(),
+}));
+jest.mocked(ParticipantPlaybooks).mockImplementation((props) => <Text {...props}>{Screens.PARTICIPANT_PLAYBOOKS}</Text>);
+
+jest.mock('@playbooks/screens/post_update', () => ({
+    __esModule: true,
+    default: jest.fn(),
+}));
+jest.mocked(PostUpdate).mockImplementation((props) => <Text {...props}>{Screens.PLAYBOOK_POST_UPDATE}</Text>);
 
 describe('Screen Registration', () => {
     beforeEach(() => {

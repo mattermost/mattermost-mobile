@@ -123,7 +123,7 @@ const FloatingInputContainer = ({
     testID,
 }: Props) => {
     const styles = getStyleSheet(theme);
-    const positions = useMemo(() => getLabelPositions(styles.textInput, styles.label, styles.smallLabel), [styles]);
+    const positions = useMemo(() => getLabelPositions(styles.textInput, styles.bigLabel, styles.smallLabel), [styles]);
     const errorIcon = 'alert-outline';
     const shouldShowError = !focused && error;
 
@@ -189,7 +189,7 @@ const FloatingInputContainer = ({
             paddingHorizontal: focusedLabel || inputText ? 4 : 0,
             color,
         };
-    });
+    }, [styles, theme, focusedLabel, hasValue, shouldShowError, positions]);
 
     return (
         <TouchableWithoutFeedback

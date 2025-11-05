@@ -14,7 +14,6 @@ import {AppFieldTypes, SelectableAppFieldTypes} from '@constants/apps';
 import {useTheme} from '@context/theme';
 import {isAppSelectOption} from '@utils/dialog_utils';
 import {selectKeyboardType} from '@utils/integrations';
-import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 const TEXT_DEFAULT_MAX_LENGTH = 150;
@@ -85,7 +84,7 @@ const AppsFormField = React.memo<Props>(({
 
     const handleChange = useCallback((newValue: string | boolean) => {
         onChange(name, newValue);
-    }, [onChange, name]);
+    }, [name, onChange]);
 
     const handleSelect = useCallback((newValue: SelectedDialogOption) => {
         if (!newValue) {
@@ -240,11 +239,8 @@ const AppsFormField = React.memo<Props>(({
                 >
                     <Markdown
                         value={field.description}
-                        mentionKeys={[]}
                         disableAtMentions={true}
                         location={Screens.APPS_FORM}
-                        blockStyles={getMarkdownBlockStyles(theme)}
-                        textStyles={getMarkdownTextStyles(theme)}
                         baseTextStyle={style.markdownFieldText}
                         theme={theme}
                     />

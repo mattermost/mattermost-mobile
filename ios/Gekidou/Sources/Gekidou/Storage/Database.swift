@@ -72,11 +72,23 @@ public class Database: NSObject {
     @objc public static let `default` = Database()
     
     override private init() {
-        let appGroupId = Bundle.main.object(forInfoDictionaryKey: "AppGroupIdentifier") as! String
-        let sharedDirectory = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupId)!
+        guard let appGroupId = Bundle.main.object(forInfoDictionaryKey: "AppGroupIdentifier") as? String else {
+            GekidouLogger.shared.log(.error, "Gekidou Database: AppGroupIdentifier missing from Info.plist - database operations will fail")
+            DEFAULT_DB_PATH = ""
+            super.init()
+            return
+        }
+
+        guard let sharedDirectory = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupId) else {
+            GekidouLogger.shared.log(.error, "Gekidou Database: Failed to get shared container for app group %{public}@ - database operations will fail", appGroupId)
+            DEFAULT_DB_PATH = ""
+            super.init()
+            return
+        }
+
         let databaseUrl = sharedDirectory.appendingPathComponent("databases/\(DEFAULT_DB_NAME)")
-        
         DEFAULT_DB_PATH = databaseUrl.path
+        super.init()
     }
     
     @objc public func getOnlyServerUrlObjc() -> String {
@@ -93,42 +105,50 @@ public class Database: NSObject {
     }
     
     public func getOnlyServerUrl() throws -> String {
-        let db = try Connection(DEFAULT_DB_PATH)
-        let url = Expression<String>("url")
-        let identifier = Expression<String>("identifier")
-        let lastActiveAt = Expression<Int64>("last_active_at")
-        let query = serversTable.select(url).filter(lastActiveAt > 0 && identifier != "")
-        
-        var serverUrl: String?
-        for result in try db.prepare(query) {
-            if (serverUrl != nil) {
-                throw DatabaseError.MultipleServers
+        do {
+            let db = try Connection(DEFAULT_DB_PATH)
+            let url = Expression<String>("url")
+            let identifier = Expression<String>("identifier")
+            let lastActiveAt = Expression<Int64>("last_active_at")
+            let query = serversTable.select(url).filter(lastActiveAt > 0 && identifier != "")
+
+            var serverUrl: String?
+            for result in try db.prepare(query) {
+                if (serverUrl != nil) {
+                    throw DatabaseError.MultipleServers
+                }
+
+                serverUrl = try result.get(url)
             }
-            
-            serverUrl = try result.get(url)
+
+            if let serverUrl = serverUrl {
+                return serverUrl
+            }
+
+            throw DatabaseError.NoResults(query.expression.description)
+        } catch {
+            GekidouLogger.shared.log(.error, "Gekidou Database: Failed to get only server URL from %{public}@ - %{public}@", DEFAULT_DB_PATH, String(describing: error))
+            throw error
         }
-        
-        if (serverUrl != nil) {
-            return serverUrl!
-        }
-    
-        throw DatabaseError.NoResults(query.expression.description)
     }
-    
+
     public func getServerUrlForServer(_ id: String) throws -> String {
-        let db = try Connection(DEFAULT_DB_PATH)
-        let url = Expression<String>("url")
-        let identifier = Expression<String>("identifier")
-        let query = serversTable.select(url).filter(identifier == id)
-        
-        if let server = try db.pluck(query) {
-            let serverUrl: String? = try server.get(url)
-            if (serverUrl != nil) {
-                return serverUrl!
+        do {
+            let db = try Connection(DEFAULT_DB_PATH)
+            let url = Expression<String>("url")
+            let identifier = Expression<String>("identifier")
+            let query = serversTable.select(url).filter(identifier == id)
+
+            if let server = try db.pluck(query),
+               let serverUrl = try? server.get(url) {
+                return serverUrl
             }
+
+            throw DatabaseError.NoResults(query.expression.description)
+        } catch {
+            GekidouLogger.shared.log(.error, "Gekidou Database: Failed to get server URL for server %{public}@ from %{public}@ - %{public}@", id, DEFAULT_DB_PATH, String(describing: error))
+            throw error
         }
-    
-        throw DatabaseError.NoResults(query.expression.description)
     }
     
     public func getAllActiveDatabases<T: Codable>() -> [T] {

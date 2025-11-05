@@ -56,13 +56,10 @@ describe('fetchPlaybookRuns', () => {
 
     test('should return default response when doFetch throws error', async () => {
         const params = {team_id: 'team1', page: 0, per_page: 10};
-        const expectedResponse = {items: [], total_count: 0, page_count: 0, has_more: false};
 
         jest.mocked(client.doFetch).mockRejectedValue(new Error('Network error'));
 
-        const result = await client.fetchPlaybookRuns(params);
-
-        expect(result).toEqual(expectedResponse);
+        expect(client.fetchPlaybookRuns(params)).rejects.toThrow('Network error');
     });
 });
 

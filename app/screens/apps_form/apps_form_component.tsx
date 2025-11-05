@@ -21,7 +21,6 @@ import {filterEmptyOptions} from '@utils/apps';
 import {mapAppFieldTypeToDialogType, getDataSourceForAppFieldType} from '@utils/dialog_utils';
 import {checkDialogElementForError, checkIfErrorsMatchElements} from '@utils/integrations';
 import {logWarning} from '@utils/log';
-import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {secureGetFromRecord} from '@utils/types';
 
@@ -458,8 +457,6 @@ function AppsFormComponent({
                     <View style={style.errorContainer} >
                         <Markdown
                             baseTextStyle={style.errorLabel}
-                            textStyles={getMarkdownTextStyles(theme)}
-                            blockStyles={getMarkdownBlockStyles(theme)}
                             location={Screens.APPS_FORM}
                             disableAtMentions={true}
                             value={error}

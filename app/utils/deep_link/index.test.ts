@@ -5,7 +5,7 @@ import {createIntl} from 'react-intl';
 import {Alert} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
-import {makeDirectChannel, switchToChannelByName} from '@actions/remote/channel';
+import {joinIfNeededAndSwitchToChannel, makeDirectChannel} from '@actions/remote/channel';
 import {showPermalink} from '@actions/remote/permalink';
 import {fetchUsersByUsernames} from '@actions/remote/user';
 import {DeepLink, Launch, Preferences, Screens} from '@constants';
@@ -67,7 +67,7 @@ jest.mock('@utils/server', () => ({
 
 jest.mock('@actions/remote/channel', () => ({
     makeDirectChannel: jest.fn(),
-    switchToChannelByName: jest.fn(),
+    joinIfNeededAndSwitchToChannel: jest.fn(),
 }));
 
 jest.mock('@utils/draft', () => ({
@@ -167,7 +167,7 @@ describe('parseAndHandleDeepLink', () => {
         jest.mocked(DatabaseManager.searchUrl).mockReturnValueOnce('https://existingserver.com');
         jest.mocked(getActiveServerUrl).mockResolvedValueOnce('https://existingserver.com');
         const result = await parseAndHandleDeepLink('https://existingserver.com/team/channels/town-square', intl);
-        expect(switchToChannelByName).toHaveBeenCalledWith('https://existingserver.com', 'town-square', 'team', errorBadChannel, intl);
+        expect(joinIfNeededAndSwitchToChannel).toHaveBeenCalledWith('https://existingserver.com', {name: 'town-square'}, {name: 'team'}, errorBadChannel, intl);
         expect(result).toEqual({error: false});
     });
 
@@ -204,7 +204,7 @@ describe('parseAndHandleDeepLink', () => {
         jest.mocked(DatabaseManager.searchUrl).mockReturnValueOnce('https://existingserver.com');
         jest.mocked(getActiveServerUrl).mockResolvedValueOnce('https://existingserver.com');
         const result = await parseAndHandleDeepLink('https://existingserver.com/team/messages/7b35c77a645e1906e03a2c330f89203385db102f', intl);
-        expect(switchToChannelByName).toHaveBeenCalledWith('https://existingserver.com', '7b35c77a645e1906e03a2c330f89203385db102f', 'team', errorBadChannel, intl);
+        expect(joinIfNeededAndSwitchToChannel).toHaveBeenCalledWith('https://existingserver.com', {name: '7b35c77a645e1906e03a2c330f89203385db102f'}, {name: 'team'}, errorBadChannel, intl);
         expect(result).toEqual({error: false});
     });
 

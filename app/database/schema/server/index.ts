@@ -3,7 +3,7 @@
 
 import {type AppSchema, appSchema} from '@nozbe/watermelondb';
 
-import {PlaybookRunSchema, PlaybookChecklistSchema, PlaybookChecklistItemSchema} from '@playbooks/database/schema';
+import {PlaybookRunSchema, PlaybookChecklistSchema, PlaybookChecklistItemSchema, PlaybookRunAttributeSchema, PlaybookRunAttributeValueSchema} from '@playbooks/database/schema';
 
 import {
     CategorySchema,
@@ -45,7 +45,7 @@ import {
 } from './table_schemas';
 
 export const serverSchema: AppSchema = appSchema({
-    version: 13,
+    version: 14,
     tables: [
         CategorySchema,
         CategoryChannelSchema,
@@ -69,6 +69,8 @@ export const serverSchema: AppSchema = appSchema({
         PlaybookRunSchema,
         PlaybookChecklistSchema,
         PlaybookChecklistItemSchema,
+        PlaybookRunAttributeSchema,
+        PlaybookRunAttributeValueSchema,
         PostInThreadSchema,
         PostSchema,
         PostsInChannelSchema,
