@@ -89,7 +89,6 @@ export const GLOBAL_IDENTIFIERS = {
     LAST_VIEWED_THREAD: 'lastViewedThread',
     LOW_CONNECTIVITY_MONITOR: 'lowConnectivityMonitor',
     MODERN_CHAT: 'modernChat',
-    ONBOARDING: 'onboarding',
     PUSH_DISABLED_ACK: 'pushDisabledAck',
 };
 
