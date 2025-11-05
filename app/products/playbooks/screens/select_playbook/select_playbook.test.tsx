@@ -448,6 +448,7 @@ describe('SelectPlaybook', () => {
                 expect.any(Object), // theme
                 mockPlaybook,
                 expect.any(Function), // onRunCreated callback
+                undefined, // channelId
             );
         });
     });
