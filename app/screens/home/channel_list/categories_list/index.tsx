@@ -5,6 +5,7 @@ import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
+import {observeIsPlaybooksEnabled} from '@playbooks/database/queries/version';
 import {observeDraftCount} from '@queries/servers/drafts';
 import {observeScheduledPostEnabled, observeScheduledPostsForTeam} from '@queries/servers/scheduled_post';
 import {observeCurrentTeamId} from '@queries/servers/system';
@@ -27,6 +28,7 @@ const enchanced = withObservables([], ({database}: WithDatabaseArgs) => {
         switchMap((scheduledPosts) => of(hasScheduledPostError(scheduledPosts))),
     );
     const scheduledPostsEnabled = observeScheduledPostEnabled(database);
+    const playbooksEnabled = observeIsPlaybooksEnabled(database);
 
     return {
         lastChannelId,
@@ -34,6 +36,7 @@ const enchanced = withObservables([], ({database}: WithDatabaseArgs) => {
         scheduledPostCount,
         scheduledPostHasError,
         scheduledPostsEnabled,
+        playbooksEnabled,
     };
 });
 
