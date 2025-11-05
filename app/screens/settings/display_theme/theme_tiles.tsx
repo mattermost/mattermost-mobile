@@ -125,10 +125,30 @@ export const ThemeTiles = ({allowedThemeKeys, onThemeChange, selectedTheme}: The
     const theme = useTheme();
 
     const styles = getStyleSheet(theme);
+
+    // Filter to only show quartz, onyx, and daakia themes
+    const visibleThemes = allowedThemeKeys.filter((themeKey: ThemeKey) => {
+        return themeKey === 'quartz' || themeKey === 'onyx' || themeKey === 'daakia';
+    });
+
+    // Map theme keys to display names
+    const getThemeDisplayName = (themeKey: ThemeKey) => {
+        if (themeKey === 'quartz') {
+            return 'light';
+        }
+        if (themeKey === 'onyx') {
+            return 'dark';
+        }
+        if (themeKey === 'daakia') {
+            return 'daakia';
+        }
+        return themeKey;
+    };
+
     return (
         <View style={styles.tilesContainer}>
             {
-                allowedThemeKeys.map((themeKey: ThemeKey) => {
+                visibleThemes.map((themeKey: ThemeKey) => {
                     if (!Preferences.THEMES[themeKey] || !selectedTheme) {
                         return null;
                     }
@@ -138,7 +158,7 @@ export const ThemeTiles = ({allowedThemeKeys, onThemeChange, selectedTheme}: The
                             key={themeKey}
                             label={(
                                 <Text style={styles.label}>
-                                    {themeKey}
+                                    {getThemeDisplayName(themeKey)}
                                 </Text>
                             )}
                             action={onThemeChange}

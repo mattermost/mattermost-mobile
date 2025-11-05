@@ -5,6 +5,7 @@ import React, {useCallback, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, Platform, Text, View} from 'react-native';
 
+import {executeCommand} from '@actions/remote/command';
 import {getCallsConfig} from '@calls/state';
 import {CHANNEL_ACTIONS_OPTIONS_HEIGHT} from '@components/channel_actions/channel_actions';
 import CompassIcon from '@components/compass_icon';
@@ -16,11 +17,13 @@ import RoundedHeaderContext from '@components/rounded_header_context';
 import {General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import DatabaseManager from '@database/manager';
 import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {fetchPlaybookRunsForChannel} from '@playbooks/actions/remote/runs';
 import {goToPlaybookRun, goToPlaybookRuns} from '@playbooks/screens/navigation';
+import {getCurrentUser} from '@queries/servers/user';
 import {BOTTOM_SHEET_ANDROID_OFFSET} from '@screens/bottom_sheet';
 import ChannelBanner from '@screens/channel/header/channel_banner';
 import {bottomSheet, popTopScreen, showModal} from '@screens/navigation';
@@ -222,6 +225,24 @@ const ChannelHeader = ({
         goToPlaybookRuns(intl, channelId, displayName);
     }, [activeRunId, channelId, displayName, intl]);
 
+    const startDaakiaMeeting = useCallback(async () => {
+        try {
+            const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+            let topic = '';
+            if (database) {
+                const user = await getCurrentUser(database);
+                const firstName = (user?.firstName || user?.username || '').trim();
+                if (firstName) {
+                    topic = firstName;
+                }
+            }
+            const cmd = topic ? `/daakia "${topic}"` : '/daakia';
+            await executeCommand(serverUrl, intl, cmd, channelId);
+        } catch {
+            // no-op
+        }
+    }, [serverUrl, intl, channelId]);
+
     const rightButtons = useMemo(() => {
         const buttons: HeaderRightButton[] = [];
         if (playbooksActiveRuns && !isDMorGM) {
@@ -232,6 +253,14 @@ const ChannelHeader = ({
                 count: playbooksActiveRuns,
             });
         }
+
+        // Add Daakia Meeting quick start button
+        buttons.push({
+            iconName: 'phone-in-talk',
+            onPress: startDaakiaMeeting,
+            buttonType: 'opacity',
+            testID: 'channel_header.daakia_meeting.button',
+        });
 
         // {
         //     iconName: 'magnify',
@@ -250,7 +279,7 @@ const ChannelHeader = ({
         });
 
         return buttons;
-    }, [playbooksActiveRuns, isDMorGM, onChannelQuickAction, openPlaybooksRuns]);
+    }, [playbooksActiveRuns, isDMorGM, onChannelQuickAction, openPlaybooksRuns, startDaakiaMeeting]);
 
     let title = displayName;
     if (isOwnDirectMessage) {

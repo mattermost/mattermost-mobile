@@ -160,11 +160,13 @@ const Body = ({
         );
     } else if (isJumboEmoji) {
         message = (
-            <JumboEmoji
-                baseTextStyle={style.message}
-                isEdited={isEdited}
-                value={post.message}
-            />
+            <View style={isMyPost ? {alignItems: 'flex-end', width: '100%'} : {alignItems: 'flex-start', width: '100%'}}>
+                <JumboEmoji
+                    baseTextStyle={isMyPost ? {color: theme.buttonColor, fontSize: 15, lineHeight: 20} : style.message}
+                    isEdited={isEdited}
+                    value={post.message}
+                />
+            </View>
         );
     } else if (post.message.length || isEdited) { // isEdited is added to handle the case where the post is edited and the message is empty
         message = (

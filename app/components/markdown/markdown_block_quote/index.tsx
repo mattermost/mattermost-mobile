@@ -16,12 +16,17 @@ const style = StyleSheet.create({
     container: {
         alignItems: 'flex-start',
         flexDirection: 'row',
+        alignSelf: 'flex-start',
+        flexShrink: 1,
+        maxWidth: '100%',
     },
     childContainer: {
-        flex: 1,
+        flexShrink: 1,
+        minWidth: 0,
     },
     icon: {
         width: 23,
+        flexShrink: 0,
     },
 });
 
