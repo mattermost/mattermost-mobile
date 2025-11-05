@@ -44,7 +44,7 @@ public struct Team: Codable {
     
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: TeamKeys.self)
-        id  = try values.decode(String.self, forKey: .id)
+        id = values.decodeIfPresent(forKey: .id, defaultValue: "")
         allowOpenInvite = values.decodeIfPresent(forKey: .allowOpenInvite, defaultValue: true)
         allowedDomains = values.decodeIfPresent(forKey: .allowedDomains, defaultValue: "")
         cloudLimitsArchived = values.decodeIfPresent(forKey: .cloudLimitsArchived, defaultValue: false)

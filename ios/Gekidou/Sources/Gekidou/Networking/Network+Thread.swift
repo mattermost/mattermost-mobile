@@ -11,7 +11,10 @@ extension Network {
             completionHandler(nil)
             return
         }
-        let url = buildApiUrl(serverUrl, "/users/\(currentUserId)/teams/\(threadTeamId)/threads/\(threadId)")
+        guard let url = buildApiUrl(serverUrl, "/users/\(currentUserId)/teams/\(threadTeamId)/threads/\(threadId)") else {
+            completionHandler(nil)
+            return
+        }
         request(url, usingMethod: "GET", forServerUrl: serverUrl) {data, response, error in
             if let data = data {
                 thread = try? JSONDecoder().decode(PostThread.self, from: data)
