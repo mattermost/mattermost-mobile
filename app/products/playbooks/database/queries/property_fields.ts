@@ -21,6 +21,7 @@ const {PLAYBOOK_RUN_ATTRIBUTE, PLAYBOOK_RUN_ATTRIBUTE_VALUE} = PLAYBOOK_TABLES;
 export const observePlaybookRunPropertyFields = (database: Database, runId: string): Observable<PlaybookRunPropertyFieldModel[]> => {
     return database.get<PlaybookRunPropertyFieldModel>(PLAYBOOK_RUN_ATTRIBUTE).query(
         Q.where('target_id', runId),
+        Q.where('target_type', 'run'),
         Q.where('delete_at', 0),
     ).observeWithColumns(['update_at', 'delete_at']).pipe(
         distinctUntilChanged(),

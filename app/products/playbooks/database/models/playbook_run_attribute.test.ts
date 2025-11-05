@@ -24,7 +24,14 @@ const applyMockData = (attribute: PlaybookRunPropertyFieldModel, mockData: Playb
     attribute.updateAt = mockData.update_at;
     attribute.deleteAt = mockData.delete_at;
     if (includeAttrs) {
-        attribute.attrs = mockData.attrs || '{"placeholder": "Enter value"}';
+        // API can send attrs as string or object, DB expects string
+        if (!mockData.attrs) {
+            attribute.attrs = '{"placeholder": "Enter value"}';
+        } else if (typeof mockData.attrs === 'string') {
+            attribute.attrs = mockData.attrs;
+        } else {
+            attribute.attrs = JSON.stringify(mockData.attrs);
+        }
     }
 };
 

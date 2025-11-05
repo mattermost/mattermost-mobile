@@ -50,7 +50,11 @@ const applyAttributeData = (attribute: PlaybookRunPropertyFieldModel, mockData: 
     attribute.createAt = mockData.create_at;
     attribute.updateAt = mockData.update_at;
     attribute.deleteAt = mockData.delete_at;
-    attribute.attrs = mockData.attrs;
+
+    // API can send attrs as string or object, DB expects string
+    if (mockData.attrs) {
+        attribute.attrs = typeof mockData.attrs === 'string' ? mockData.attrs : JSON.stringify(mockData.attrs);
+    }
 };
 
 const applyAttributeValueData = (attributeValue: PlaybookRunPropertyValueModel, mockData: PlaybookRunPropertyValue) => {

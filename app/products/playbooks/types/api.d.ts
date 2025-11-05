@@ -82,7 +82,12 @@ type PlaybookRunPropertyField = {
     create_at: number;
     update_at: number;
     delete_at: number;
-    attrs?: string;
+    attrs?: string | {
+        options?: Array<{id: string; name: string}>;
+        parent_id?: string;
+        sort_order?: number;
+        value_type?: string;
+    };
 }
 
 type PlaybookRunPropertyValue = {

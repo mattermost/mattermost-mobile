@@ -170,7 +170,13 @@ export const transformPlaybookRunPropertyFieldRecord = ({action, database, value
         attribute.createAt = raw.create_at ?? record?.createAt ?? 0;
         attribute.updateAt = raw.update_at ?? record?.updateAt ?? 0;
         attribute.deleteAt = raw.delete_at ?? record?.deleteAt ?? 0;
-        attribute.attrs = raw.attrs ?? record?.attrs ?? '';
+
+        // API sends attrs as object, but DB expects string - serialize it
+        if (raw.attrs) {
+            attribute.attrs = typeof raw.attrs === 'string' ? raw.attrs : JSON.stringify(raw.attrs);
+        } else {
+            attribute.attrs = record?.attrs ?? '';
+        }
     };
 
     return prepareBaseRecord({
