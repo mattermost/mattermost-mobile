@@ -30,6 +30,20 @@ describe('progress utils', () => {
             expect(result.totalNumber).toBe(2);
         });
 
+        it('should handle database model items', () => {
+            const items = [
+                TestHelper.fakePlaybookChecklistItemModel({state: ''}),
+                TestHelper.fakePlaybookChecklistItemModel({state: 'in_progress'}),
+            ];
+
+            const result = getChecklistProgress(items);
+
+            expect(result.progress).toBe(0);
+            expect(result.skipped).toBe(false);
+            expect(result.completed).toBe(0);
+            expect(result.totalNumber).toBe(2);
+        });
+
         it('should return 100 progress for all completed items', () => {
             const items = [
                 TestHelper.fakePlaybookChecklistItem('checklist-id', {state: 'closed'}),

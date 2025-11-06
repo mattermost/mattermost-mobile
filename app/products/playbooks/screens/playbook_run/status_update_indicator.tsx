@@ -120,12 +120,8 @@ const StatusUpdateIndicator = ({
     }, [styles.icon, styles.overdueText, isFinished, timestamp]);
 
     const onUpdatePress = useCallback(async () => {
-        if (readOnly) {
-            return;
-        }
-
         await goToPostUpdate(intl, playbookRunId);
-    }, [intl, playbookRunId, readOnly]);
+    }, [intl, playbookRunId]);
 
     const icon = isFinished ? 'flag-checkered' : 'clock-outline';
     return (

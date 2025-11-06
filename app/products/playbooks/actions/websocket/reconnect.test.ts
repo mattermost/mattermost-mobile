@@ -10,6 +10,7 @@ import {getCurrentChannelId} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
+import {logDebug} from '@utils/log';
 
 import {handlePlaybookReconnect} from './reconnect';
 
@@ -103,6 +104,32 @@ describe('handlePlaybookReconnect', () => {
             expect(getCurrentChannelId).toHaveBeenCalled();
             expect(fetchPlaybookRunsForChannel).toHaveBeenCalledWith(serverUrl, mockCurrentChannelId);
             expect(fetchPlaybookRunsForChannel).toHaveBeenCalledTimes(1);
+        });
+
+        it('should handle error from fetchPlaybookRunsForChannel', async () => {
+            jest.spyOn(NavigationStore, 'getScreensInStack').mockReturnValue([Screens.CHANNEL]);
+            jest.mocked(fetchIsPlaybooksEnabled).mockResolvedValue(true);
+            const error = new Error('Fetch error');
+            jest.mocked(fetchPlaybookRunsForChannel).mockResolvedValueOnce({error});
+
+            await handlePlaybookReconnect(serverUrl);
+
+            expect(fetchPlaybookRunsForChannel).toHaveBeenCalledWith(serverUrl, mockCurrentChannelId);
+            expect(fetchPlaybookRunsForChannel).toHaveBeenCalledTimes(1);
+            expect(logDebug).toHaveBeenCalledWith('Error fetching playbook runs on reconnect', error);
+        });
+
+        it('should handle error from updatePlaybooksVersion', async () => {
+            jest.spyOn(NavigationStore, 'getScreensInStack').mockReturnValue([Screens.CHANNEL]);
+            jest.mocked(fetchIsPlaybooksEnabled).mockResolvedValue(true);
+            const error = new Error('Update error');
+            jest.mocked(updatePlaybooksVersion).mockResolvedValueOnce({error});
+
+            await handlePlaybookReconnect(serverUrl);
+
+            expect(updatePlaybooksVersion).toHaveBeenCalledWith(serverUrl);
+            expect(updatePlaybooksVersion).toHaveBeenCalledTimes(1);
+            expect(logDebug).toHaveBeenCalledWith('Error updating playbooks version on reconnect', error);
         });
     });
 

@@ -9,8 +9,9 @@ import UserAvatarsStack from '@components/user_avatars_stack';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import DatabaseManager from '@database/manager';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {finishRun, setOwner} from '@playbooks/actions/remote/runs';
-import {openUserProfileModal} from '@screens/navigation';
+import {openUserProfileModal, popTopScreen} from '@screens/navigation';
 import {fireEvent, renderWithEverything, waitFor} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
@@ -71,6 +72,8 @@ jest.mock('@playbooks/actions/remote/runs', () => ({
     setOwner: jest.fn(),
     finishRun: jest.fn(),
 }));
+
+jest.mock('@hooks/android_back_handler');
 
 describe('PlaybookRun', () => {
     let database: Database;
@@ -373,5 +376,17 @@ describe('PlaybookRun', () => {
         await waitFor(() => {
             expect(showPlaybookErrorSnackbar).toHaveBeenCalled();
         });
+    });
+
+    it('does android hardware back handler', () => {
+        const props = getBaseProps();
+        renderWithEverything(<PlaybookRun {...props}/>, {database});
+
+        expect(useAndroidHardwareBackHandler).toHaveBeenCalledWith(props.componentId, expect.any(Function));
+
+        const closeHandler = jest.mocked(useAndroidHardwareBackHandler).mock.calls[0][1];
+        closeHandler();
+
+        expect(popTopScreen).toHaveBeenCalled();
     });
 });
