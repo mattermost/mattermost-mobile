@@ -30,7 +30,7 @@ const PlaybookRuns = ({
     const [hasMore, setHasMore] = useState(true);
     const page = useRef(0);
 
-    const [fetchedFinishedRuns, setFetchedFinishedRuns] = useState<PlaybookRun[]>([]);
+    const [remoteFinishedRuns, setRemoteFinishedRuns] = useState<PlaybookRun[]>([]);
 
     const exit = useCallback(() => {
         popTopScreen(componentId);
@@ -38,7 +38,7 @@ const PlaybookRuns = ({
 
     useAndroidHardwareBackHandler(componentId, exit);
 
-    const [inProgressRuns, finishedRuns] = useMemo(() => {
+    const [inProgressRuns, localFinishedRuns] = useMemo(() => {
         const inProgress: PlaybookRunModel[] = [];
         const finished: PlaybookRunModel[] = [];
 
@@ -57,7 +57,7 @@ const PlaybookRuns = ({
         return tab === 'finished' && hasMore;
     }, [hasMore]);
 
-    const fetchFinishedRuns = useCallback(async (tab: RunListTabsNames) => {
+    const fetchMoreFinishedRuns = useCallback(async (tab: RunListTabsNames) => {
         if (fetching || tab !== 'finished') {
             return;
         }
@@ -71,7 +71,7 @@ const PlaybookRuns = ({
         setHasMore(has_more);
         page.current++;
         if (runs?.length) {
-            setFetchedFinishedRuns((prev) => [...prev, ...runs]);
+            setRemoteFinishedRuns((prev) => [...prev, ...runs]);
         }
     }, [channelId, fetching, serverUrl]);
 
@@ -79,8 +79,8 @@ const PlaybookRuns = ({
         <RunList
             componentId={componentId}
             inProgressRuns={inProgressRuns}
-            finishedRuns={fetchedFinishedRuns.length ? fetchedFinishedRuns : finishedRuns}
-            fetchMoreRuns={fetchFinishedRuns}
+            finishedRuns={remoteFinishedRuns.length ? remoteFinishedRuns : localFinishedRuns}
+            fetchMoreRuns={fetchMoreFinishedRuns}
             showMoreButton={showMoreButton}
             fetching={fetching}
             channelId={channelId}

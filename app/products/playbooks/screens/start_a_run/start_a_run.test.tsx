@@ -156,6 +156,8 @@ describe('StartARun', () => {
 
         const runDescriptionInput = getByTestId('start_run.run_description_input');
 
+        expect(runDescriptionInput).toHaveProp('value', '');
+
         await act(async () => {
             runDescriptionInput.props.onChangeText('New Description');
         });
@@ -167,7 +169,17 @@ describe('StartARun', () => {
 
     it('should show existing channel selector when existing option is selected', async () => {
         const props = getBaseProps();
-        const {getByTestId} = renderWithIntlAndTheme(<StartARun {...props}/>);
+        const {getByTestId, queryByTestId} = renderWithIntlAndTheme(<StartARun {...props}/>);
+
+        // Existing channel option is selected by default, so let's unmark it first
+        const newChannelOption = getByTestId('start_run.new_channel_option');
+        await act(async () => {
+            newChannelOption.props.action();
+        });
+
+        await waitFor(() => {
+            expect(queryByTestId('start_run.existing_channel_selector')).toBeNull();
+        });
 
         const existingOption = getByTestId('start_run.existing_channel_option');
 
@@ -180,9 +192,12 @@ describe('StartARun', () => {
         });
     });
 
-    it('should show new channel options when new channel option is selected', async () => {
+    it('should show private and public channel options when new channel option is selected', async () => {
         const props = getBaseProps();
-        const {getByTestId} = renderWithIntlAndTheme(<StartARun {...props}/>);
+        const {getByTestId, queryByTestId} = renderWithIntlAndTheme(<StartARun {...props}/>);
+
+        expect(queryByTestId('start_run.new_channel_public_option')).toBeNull();
+        expect(queryByTestId('start_run.new_channel_private_option')).toBeNull();
 
         const newChannelOption = getByTestId('start_run.new_channel_option');
 
