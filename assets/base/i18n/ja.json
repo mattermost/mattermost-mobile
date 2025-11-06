@@ -984,8 +984,6 @@
   "pinned_messages.empty.title": "ピン留めされた投稿がありません",
   "playbook.last_updated": "最終更新日 {date}",
   "playbook.participants": "実行の参加者",
-  "playbook.runs.finished": "完了",
-  "playbook.runs.in-progress": "進行中",
   "playbook_run.checklist.dueIn": "期限 {dueDate}",
   "playbook_run.checklist.rerunCommand": "{command} (再実行)",
   "playbook_run.checklist.taskDetails": "タスク詳細",
