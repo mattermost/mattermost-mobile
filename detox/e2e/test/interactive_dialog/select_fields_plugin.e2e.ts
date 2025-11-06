@@ -61,6 +61,9 @@ describe('Interactive Dialog - Select Fields (Plugin)', () => {
             force: true,
         });
 
+        // Give plugin time to register commands
+        await wait(3000);
+
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);

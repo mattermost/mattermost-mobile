@@ -94,6 +94,9 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
             force: true,
         });
 
+        // Give plugin time to register commands
+        await wait(3000);
+
         // eslint-disable-next-line no-console
         console.log(`Installation result: ${pluginResult.message || 'success'}`);
 
