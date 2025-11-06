@@ -48,6 +48,8 @@ export const useKeyboardAnimation = () => {
    */
     const isKeyboardOpening = useSharedValue(false);
 
+    const isKeyboardFullyOpen = useSharedValue(false);
+
     // ------------------------------------------------------------------
     // KEYBOARD EVENT HANDLERS
     // ------------------------------------------------------------------
@@ -98,6 +100,7 @@ export const useKeyboardAnimation = () => {
         onInteractive: (e) => {
             'worklet';
 
+            isKeyboardFullyOpen.value = false;
             progress.value = e.progress;
             if (progress.value === 1) {
                 height.value = Math.max(e.height, keyboardHeight.value);
@@ -128,10 +131,17 @@ export const useKeyboardAnimation = () => {
         onMove: (e) => {
             'worklet';
 
+            if (isKeyboardFullyOpen.value) {
+                return;
+            }
+
             progress.value = e.progress;
+            offset.value = e.height;
 
             if (progress.value === 1) {
+                isKeyboardFullyOpen.value = true;
                 height.value = Math.max(e.height, keyboardHeight.value);
+                offset.value = height.value;
                 return;
             }
 
@@ -159,9 +169,11 @@ export const useKeyboardAnimation = () => {
             if (e.progress === 1) {
                 height.value = keyboardHeight.value;
                 inset.value = keyboardHeight.value;
+                isKeyboardFullyOpen.value = true;
             } else {
                 height.value = e.height;
                 inset.value = e.height;
+                isKeyboardFullyOpen.value = false;
             }
             progress.value = e.progress;
             keyboardHeight.value = e.height;
