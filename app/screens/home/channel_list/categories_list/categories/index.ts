@@ -2,14 +2,14 @@
 // See LICENSE.txt for license information.
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
-import {switchMap, combineLatestWith} from 'rxjs/operators';
+import {switchMap, combineLatestWith, map} from 'rxjs/operators';
 
 import {DEFAULT_LOCALE} from '@i18n';
 import {observeCurrentTeamId, observeOnlyUnreads} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
 
 import Categories from './categories';
-import {observeFlattenedCategories} from './utils/observe_flattened_categories';
+import {observeFlattenedCategories} from './helpers/observe_flattened_categories';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
@@ -22,7 +22,7 @@ const enhanced = withObservables(['isTablet'], ({database, isTablet}: Props) => 
     const currentUser = observeCurrentUser(database);
     const onlyUnreads = observeOnlyUnreads(database);
 
-    const flattenedItems = currentUser.pipe(
+    const categoriesData = currentUser.pipe(
         combineLatestWith(onlyUnreads, currentTeamId),
         switchMap(([user, isOnlyUnreads, teamId]) => {
             return observeFlattenedCategories(
@@ -36,8 +36,12 @@ const enhanced = withObservables(['isTablet'], ({database, isTablet}: Props) => 
         }),
     );
 
+    const flattenedItems = categoriesData.pipe(map((data) => data.items));
+    const unreadChannelIds = categoriesData.pipe(map((data) => data.unreadChannelIds));
+
     return {
         flattenedItems,
+        unreadChannelIds,
         onlyUnreads,
         currentTeamId,
     };

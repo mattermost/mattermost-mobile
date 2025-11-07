@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {FlashList, type ListRenderItem} from '@shopify/flash-list';
+import {FlashList, type ListRenderItem, type ViewToken} from '@shopify/flash-list';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {DeviceEventEmitter, View, type LayoutChangeEvent} from 'react-native';
 
@@ -19,24 +19,30 @@ import {useTheme} from '@context/theme';
 import {useTeamSwitch} from '@hooks/team_switch';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {isDMorGM} from '@utils/channel';
+import {logDebug} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import Empty from './empty_unreads';
 import LoadCategoriesError from './error';
 import CategoryHeader from './header';
-import {keyExtractor, getItemType, type FlattenedItem} from './utils/flatten_categories';
+import {keyExtractor, getItemType, type FlattenedItem} from './helpers/flatten_categories';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 
 type Props = {
     flattenedItems: FlattenedItem[];
+    unreadChannelIds: Set<string>;
     onlyUnreads: boolean;
     isTablet: boolean;
 };
 
 const HEADER_HEIGHT = 44;
 const ESTIMATED_ITEM_SIZE = 42;
+const VIEWABILITY_CONFIG = {
+    itemVisiblePercentThreshold: 50,
+    minimumViewTime: 300,
+};
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     mainList: {
@@ -57,7 +63,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const Categories = ({flattenedItems, onlyUnreads, isTablet}: Props) => {
+const Categories = ({flattenedItems, unreadChannelIds, onlyUnreads, isTablet}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const listRef = useRef<FlashList<FlattenedItem>>(null);
@@ -66,6 +72,8 @@ const Categories = ({flattenedItems, onlyUnreads, isTablet}: Props) => {
     const [initialLoad, setInitialLoad] = useState(flattenedItems.length === 0);
     const [isChannelScreenActive, setChannelScreenActive] = useState(true);
     const [listHeight, setListHeight] = useState(0);
+    const [hasUnreadsAbove, setHasUnreadsAbove] = useState(false);
+    const [hasUnreadsBelow, setHasUnreadsBelow] = useState(false);
 
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.ACTIVE_SCREEN, (screen: string) => {
@@ -142,6 +150,55 @@ const Categories = ({flattenedItems, onlyUnreads, isTablet}: Props) => {
         setListHeight(height);
     }, []);
 
+    const onViewableItemsChanged = useCallback(({viewableItems}: {viewableItems: ViewToken[]}) => {
+        if (!viewableItems.length || !unreadChannelIds.size) {
+            setHasUnreadsAbove(false);
+            setHasUnreadsBelow(false);
+            return;
+        }
+
+        // Get indices of viewable items
+        const visibleIndices = viewableItems.
+            filter((item) => item.isViewable && item.index !== null).
+            map((item) => item.index as number);
+
+        if (!visibleIndices.length) {
+            return;
+        }
+
+        const firstVisible = Math.min(...visibleIndices);
+        const lastVisible = Math.max(...visibleIndices);
+
+        // Single pass: check channels above and below viewport
+        let hasUnreadsAboveViewport = false;
+        let hasUnreadsBelowViewport = false;
+
+        for (let i = 0; i < flattenedItems.length; i++) {
+            const item = flattenedItems[i];
+
+            if (item.type === 'channel' && unreadChannelIds.has(item.channelId)) {
+                if (i < firstVisible) {
+                    hasUnreadsAboveViewport = true;
+                } else if (i > lastVisible) {
+                    hasUnreadsBelowViewport = true;
+                }
+
+                // Early exit if we found both
+                if (hasUnreadsAboveViewport && hasUnreadsBelowViewport) {
+                    break;
+                }
+            }
+        }
+
+        setHasUnreadsAbove(hasUnreadsAboveViewport);
+        setHasUnreadsBelow(hasUnreadsBelowViewport);
+    }, [flattenedItems, unreadChannelIds]);
+
+    useEffect(() => {
+        // Once we add the components to show unreads above/below, this useEffect can be removed
+        logDebug('Unreads above viewport:', hasUnreadsAbove, ', below viewport:', hasUnreadsBelow);
+    }, [hasUnreadsAbove, hasUnreadsBelow]);
+
     useEffect(() => {
         const t = setTimeout(() => {
             setInitialLoad(false);
@@ -157,6 +214,12 @@ const Categories = ({flattenedItems, onlyUnreads, isTablet}: Props) => {
 
         PerformanceMetricsManager.endMetric('mobile_team_switch', serverUrl);
     }, [switchingTeam, serverUrl]);
+
+    useEffect(() => {
+        if (listRef.current) {
+            listRef.current.recomputeViewableItems();
+        }
+    }, []);
 
     const showEmptyState = onlyUnreads && flattenedItems.length === 0 && !isTablet;
 
@@ -191,6 +254,8 @@ const Categories = ({flattenedItems, onlyUnreads, isTablet}: Props) => {
                     showsVerticalScrollIndicator={false}
                     ListEmptyComponent={ListEmptyComponent}
                     onLayout={onListLayout}
+                    onViewableItemsChanged={onViewableItemsChanged}
+                    viewabilityConfig={VIEWABILITY_CONFIG}
                 />
             )}
             {(switchingTeam || initialLoad) && (

@@ -141,12 +141,17 @@ const observeCategoryData = (
     );
 };
 
+export type FlattenedCategoriesData = {
+    items: FlattenedItem[];
+    unreadChannelIds: Set<string>;
+};
+
 // Observable for onlyUnreads mode - flat list of unread channels sorted by lastPostAt
 const observeFlattenedUnreads = (
     database: Database,
     currentTeamId: string,
     isTablet: boolean,
-): Observable<FlattenedItem[]> => {
+): Observable<FlattenedCategoriesData> => {
     const getC = (lastUnreadChannelId: string) => getChannelById(database, lastUnreadChannelId);
 
     const lastUnread = isTablet ? observeLastUnreadChannelId(database).pipe(
@@ -177,7 +182,14 @@ const observeFlattenedUnreads = (
                     channel,
                 }));
 
-            return items;
+            const unreadChannelIds = new Set<string>();
+            for (const item of items) {
+                if (item.type === 'channel') {
+                    unreadChannelIds.add(item.channelId);
+                }
+            }
+
+            return {items, unreadChannelIds};
         }),
     );
 };
@@ -189,9 +201,9 @@ const observeFlattenedCategoriesNormal = (
     currentUserId: string,
     locale: string,
     isTablet: boolean,
-): Observable<FlattenedItem[]> => {
+): Observable<FlattenedCategoriesData> => {
     if (categories.length === 0) {
-        return of$([]);
+        return of$({items: [], unreadChannelIds: new Set<string>()});
     }
 
     const unreadsOnTop = querySidebarPreferences(database, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS).
@@ -206,7 +218,14 @@ const observeFlattenedCategoriesNormal = (
 
     return combineLatest([combineLatest(categoryDataObservables), unreadsOnTop]).pipe(
         map(([categoriesData, unreadsOnTopValue]) => {
+            // Collect all unread channel IDs and process categories in one pass
+            const unreadChannelIds = new Set<string>();
             const processedCategoriesData: CategoryData[] = categoriesData.map((catData) => {
+                // Add all unread channels from this category to the set
+                for (const channel of catData.allUnreadChannels) {
+                    unreadChannelIds.add(channel.id);
+                }
+
                 if (unreadsOnTopValue) {
                     return {
                         ...catData,
@@ -216,16 +235,17 @@ const observeFlattenedCategoriesNormal = (
                 return catData;
             });
 
-            return flattenCategories(processedCategoriesData, unreadsOnTopValue);
+            const items = flattenCategories(processedCategoriesData, unreadsOnTopValue);
+            return {items, unreadChannelIds};
         }),
         distinctUntilChanged((prev, curr) => {
-            if (prev.length !== curr.length) {
+            if (prev.items.length !== curr.items.length) {
                 return false;
             }
 
-            for (let i = 0; i < prev.length; i++) {
-                const prevItem = prev[i];
-                const currItem = curr[i];
+            for (let i = 0; i < prev.items.length; i++) {
+                const prevItem = prev.items[i];
+                const currItem = curr.items[i];
 
                 if (prevItem.type !== currItem.type) {
                     return false;
@@ -246,6 +266,17 @@ const observeFlattenedCategoriesNormal = (
                 }
             }
 
+            // Check if unread IDs changed
+            if (prev.unreadChannelIds.size !== curr.unreadChannelIds.size) {
+                return false;
+            }
+
+            for (const id of prev.unreadChannelIds) {
+                if (!curr.unreadChannelIds.has(id)) {
+                    return false;
+                }
+            }
+
             return true;
         }),
     );
@@ -263,7 +294,7 @@ export const observeFlattenedCategories = (
     isTablet: boolean,
     onlyUnreads: boolean,
     currentTeamId: string,
-): Observable<FlattenedItem[]> => {
+): Observable<FlattenedCategoriesData> => {
     if (onlyUnreads) {
         return observeFlattenedUnreads(database, currentTeamId, isTablet);
     }
