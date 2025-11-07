@@ -4,15 +4,15 @@
 import React, {memo, useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {TouchableOpacity, View} from 'react-native';
+import {Text} from 'react-native-gesture-handler';
 
-import FloatingTextInput from '@components/floating_input/floating_text_input_label';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {formatPropertyFieldOptionsForSelector, getPropertyValueDisplay} from '@playbooks/utils/property_fields';
 import {goToScreen} from '@screens/navigation';
-import {logError} from '@utils/log';
 import {makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 import {getSelectedOptionIds} from '@utils/user';
 
 import type PlaybookRunPropertyFieldModel from '@playbooks/database/models/playbook_run_attribute';
@@ -29,14 +29,25 @@ type PropertySelectFieldProps = {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
-        container: {
+        viewContainer: {
             marginVertical: 8,
-            paddingHorizontal: 20,
+            alignItems: 'center',
             width: '100%',
-            backgroundColor: theme.centerChannelBg,
+            flexDirection: 'row',
         },
-        tabletContainer: {
-            paddingHorizontal: 42,
+        labelContainer: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+        },
+        label: {
+            fontSize: 14,
+            ...typography('Body', 200, 'SemiBold'),
+            color: theme.centerChannelColor,
+        },
+        value: {
+            fontSize: 14,
+            color: theme.centerChannelColor,
         },
     };
 });
@@ -78,12 +89,10 @@ const PropertySelectField = ({
     const displayText = useMemo(() => {
         const text = getPropertyValueDisplay(propertyField, value);
         if (!text) {
-            return isMultiselect ?
-                intl.formatMessage({id: 'mobile.action_menu.select_multiple', defaultMessage: 'Select one or more options'}) :
-                intl.formatMessage({id: 'mobile.action_menu.select', defaultMessage: 'Select an option'});
+            return intl.formatMessage({id: 'playbooks.property_field.tap_to_select', defaultMessage: 'Tap to select'});
         }
         return text;
-    }, [propertyField, value, intl, isMultiselect]);
+    }, [propertyField, value, intl]);
 
     const handleSelect = useCallback((newSelection?: SelectedDialogOption) => {
         if (!newSelection) {
@@ -92,16 +101,11 @@ const PropertySelectField = ({
         }
 
         if (Array.isArray(newSelection)) {
-            // Multiselect: convert array of selections to JSON string of IDs
+            // Multiselect: send array of IDs as comma-separated string
+            // The client will convert to array before sending to server
             const selectedIds = newSelection.map((option) => option.value);
-            let stringifiedIds;
-            try {
-                stringifiedIds = JSON.stringify(selectedIds);
-            } catch (e) {
-                logError('Error serializing selected IDs', e);
-                stringifiedIds = '';
-            }
-            onValueChange(propertyField.id, stringifiedIds);
+            const commaSeparated = selectedIds.join(',');
+            onValueChange(propertyField.id, commaSeparated);
         } else {
             // Single select: store the option ID
             onValueChange(propertyField.id, newSelection.value);
@@ -123,30 +127,23 @@ const PropertySelectField = ({
         });
     }, [isDisabled, propertyField.name, options, handleSelect, selectedValue, isMultiselect]);
 
-    const containerStyle = useMemo(() => [
-        styles.container,
-        isTablet && styles.tabletContainer,
-    ], [isTablet, styles]);
+    const subContainer = [styles.viewContainer, {paddingHorizontal: isTablet ? 42 : 20}];
 
     // Always render as text that opens selector when tapped
     return (
-        <View style={containerStyle}>
+        <View
+            testID={testID}
+            style={subContainer}
+        >
             <TouchableOpacity
                 onPress={handlePress}
                 disabled={isDisabled}
-                testID={testID}
                 activeOpacity={0.8}
             >
-                <FloatingTextInput
-                    rawInput={true}
-                    disableFullscreenUI={true}
-                    editable={false}
-                    keyboardType='default'
-                    label={propertyField.name}
-                    testID={`${testID}.input`}
-                    theme={theme}
-                    value={displayText}
-                />
+                <View style={styles.labelContainer}>
+                    <Text style={styles.label}>{`${propertyField.name}: `}</Text>
+                    <Text style={styles.value}>{displayText}</Text>
+                </View>
             </TouchableOpacity>
         </View>
     );

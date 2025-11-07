@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {safeParseJSON} from '@utils/helpers';
+import {logWarning} from '@utils/log';
 import {getSelectedOptionIds} from '@utils/user';
 
 import type PlaybookRunPropertyFieldModel from '@playbooks/database/models/playbook_run_attribute';
@@ -99,6 +100,8 @@ export const getPropertyValueDisplay = (
         const names = selectedIds.map((id) => getOptionNameById(options, id));
         return names.join(', ');
     }
+
+    logWarning('Unknown playbook run propertyField type, will use raw value', propertyField.type);
 
     // Unknown type fallback
     return rawValue;

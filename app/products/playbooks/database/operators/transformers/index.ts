@@ -207,7 +207,18 @@ export const transformPlaybookRunPropertyValueRecord = ({action, database, value
         attribute._raw.id = isCreateAction ? (raw?.id ?? attribute.id) : record!.id;
         attribute.attributeId = raw.field_id ?? record?.attributeId ?? ''; // API field_id → DB attributeId
         attribute.runId = raw.target_id ?? record?.runId ?? ''; // API target_id → DB runId
-        attribute.value = raw.value ?? record?.value ?? '';
+
+        // Handle value: convert array to JSON string if needed (for multiselect fields)
+        let valueToStore = raw.value ?? record?.value ?? '';
+        if (Array.isArray(valueToStore)) {
+            try {
+                valueToStore = JSON.stringify(valueToStore);
+            } catch (e) {
+                // If JSON stringify fails, store empty string
+                valueToStore = '';
+            }
+        }
+        attribute.value = valueToStore;
         attribute.updateAt = raw.update_at ?? record?.updateAt ?? 0;
     };
 

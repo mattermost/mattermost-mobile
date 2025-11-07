@@ -255,9 +255,17 @@ const ClientPlaybooks = <TBase extends Constructor<ClientBase>>(superclass: TBas
     };
 
     setRunPropertyValue = async (runId: string, fieldId: string, value: string) => {
+        // Detect comma-separated list and convert to array for multiselect fields
+        let bodyValue: string | string[] = value;
+
+        // Check if it looks like comma-separated IDs (no spaces, all alphanumeric with commas)
+        if (value && value.includes(',') && !value.includes(' ') && !value.startsWith('[')) {
+            bodyValue = value.split(',');
+        }
+
         const data = await this.doFetch(
             `${this.getPlaybookRunRoute(runId)}/property_fields/${fieldId}/value`,
-            {method: 'put', body: {value}},
+            {method: 'put', body: {value: bodyValue}},
         );
         return data;
     };
