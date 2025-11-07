@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import os.log
 
 public typealias ResponseHandler = (_ data: Data?, _ response: URLResponse?, _ error: Error?) -> Void
 
@@ -16,25 +15,60 @@ public class Network: NSObject {
     internal let urlVersion = "/api/v4"
     internal var certificates: [String: [SecCertificate]] = [:]
 
+    // Track active network tasks for potential cancellation
+    private var activeTasks = NSMutableSet()
+    private let tasksLock = NSLock()
+
     @objc public static let `default` = Network()
-    
+
     override private init() {
         super.init()
-        
+
         loadPinnedCertificates()
-        
+
         queue.maxConcurrentOperationCount = 1
-        
+
         let config = URLSessionConfiguration.default
         config.httpAdditionalHeaders = ["X-Requested-With": "XMLHttpRequest"]
         config.allowsCellularAccess = true
         config.httpMaximumConnectionsPerHost = 10
-        
+        // Reduced timeouts for notification extension (iOS terminates extension at 30s)
+        config.timeoutIntervalForRequest = 15.0  // 15 second timeout per request
+        config.timeoutIntervalForResource = 20.0 // 20 second total timeout (well under 30s limit)
+
         self.session = URLSession.init(
             configuration: config,
             delegate: self,
             delegateQueue: nil
         )
+    }
+
+    // Cancel all active network requests (useful for extension termination)
+    @objc public func cancelAllRequests() {
+        tasksLock.lock()
+        defer { tasksLock.unlock() }
+
+        for task in activeTasks {
+            if let urlTask = task as? URLSessionTask {
+                urlTask.cancel()
+            }
+        }
+        activeTasks.removeAllObjects()
+    }
+
+    private func trackTask(_ task: URLSessionTask) {
+        tasksLock.lock()
+        defer { tasksLock.unlock() }
+        activeTasks.add(task)
+    }
+
+    private func untrackTask(withIdentifier identifier: Int) {
+        tasksLock.lock()
+        defer { tasksLock.unlock() }
+        if let tasks = activeTasks.allObjects as? [URLSessionTask],
+           let taskToRemove = tasks.first(where: { $0.taskIdentifier == identifier }) {
+            activeTasks.remove(taskToRemove)
+        }
     }
     
     internal func loadPinnedCertificates() {
@@ -55,25 +89,16 @@ public class Network: NSObject {
                         } else {
                             certificates[domain] = [certificate]
                         }
-                        os_log("Gekidou: loaded certificate %{public}@ for domain %{public}@",
-                               log: .default,
-                               type: .info,
-                               cert.lastPathComponent, domain
-                        )
+                        GekidouLogger.shared.log(.info, "Gekidou: loaded certificate %{public}@ for domain %{public}@", cert.lastPathComponent, domain)
                     }
                 }
         } catch {
-            os_log(
-                "Gekidou: Error loading pinned certificates -- %{public}@",
-                log: .default,
-                type: .error,
-                String(describing: error)
-            )
+            GekidouLogger.shared.log(.error, "Gekidou: Error loading pinned certificates -- %{public}@", String(describing: error))
         }
     }
     
-    internal func buildApiUrl(_ serverUrl: String, _ endpoint: String) -> URL {
-        return URL(string: "\(serverUrl)\(urlVersion)\(endpoint)")!
+    internal func buildApiUrl(_ serverUrl: String, _ endpoint: String) -> URL? {
+        return URL(string: "\(serverUrl)\(urlVersion)\(endpoint)")
     }
     
     internal func responseOK(_ response: URLResponse?) -> Bool {
@@ -111,12 +136,22 @@ public class Network: NSObject {
     }
     
     internal func request(_ url: URL, withMethod method: String, withBody body: Data?, andHeaders headers: [String:String]?, forServerUrl serverUrl: String, completionHandler: @escaping ResponseHandler) {
+        guard let session = session else {
+            GekidouLogger.shared.log(.error, "Gekidou Network: URLSession is nil, cannot make request")
+            completionHandler(nil, nil, NSError(domain: "GekidouNetwork", code: -1, userInfo: [NSLocalizedDescriptionKey: "URLSession not initialized"]))
+            return
+        }
+
         let urlRequest = buildURLRequest(for: url, usingMethod: method, withBody: body, andHeaders: headers, forServerUrl: serverUrl)
-        
-        let task = session!.dataTask(with: urlRequest) { data, response, error in
+
+        var taskId = 0
+        let task = session.dataTask(with: urlRequest) { [weak self] data, response, error in
+            defer { self?.untrackTask(withIdentifier: taskId) }
             completionHandler(data, response, error)
         }
-        
+        taskId = task.taskIdentifier
+        trackTask(task)
         task.resume()
+
     }
 }

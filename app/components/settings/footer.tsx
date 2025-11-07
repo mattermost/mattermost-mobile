@@ -6,7 +6,6 @@ import {View} from 'react-native';
 
 import Markdown from '@components/markdown';
 import {useTheme} from '@context/theme';
-import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -48,8 +47,6 @@ function Footer({
 }: Props) {
     const theme = useTheme();
     const style = getStyleSheet(theme);
-    const textStyles = getMarkdownTextStyles(theme);
-    const blockStyles = getMarkdownBlockStyles(theme);
 
     return (
         <>
@@ -57,10 +54,8 @@ function Footer({
                 <View style={style.helpTextContainer} >
                     <Markdown
                         baseTextStyle={style.helpText}
-                        textStyles={textStyles}
                         disableAtMentions={true}
                         location={location}
-                        blockStyles={blockStyles}
                         value={disabledText}
                         theme={theme}
                     />
@@ -70,8 +65,6 @@ function Footer({
                 <View style={style.helpTextContainer} >
                     <Markdown
                         baseTextStyle={style.helpText}
-                        textStyles={textStyles}
-                        blockStyles={blockStyles}
                         disableAtMentions={true}
                         location={location}
                         value={helpText}
@@ -83,8 +76,6 @@ function Footer({
                 <View style={style.errorTextContainer} >
                     <Markdown
                         baseTextStyle={style.errorText}
-                        textStyles={textStyles}
-                        blockStyles={blockStyles}
                         disableAtMentions={true}
                         location={location}
                         value={errorText}
