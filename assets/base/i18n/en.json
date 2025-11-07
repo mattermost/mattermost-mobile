@@ -272,7 +272,7 @@
   "combined_system_message.you": "You",
   "connection_banner.connected": "Connection restored",
   "connection_banner.connecting": "Connecting...",
-  "connection_banner.not_connected": "No internet connection",
+  "connection_banner.not_connected": "Unable to connect to network",
   "connection_banner.not_reachable": "The server is not reachable",
   "create_direct_message.title": "Create Direct Message",
   "create_post.deactivated": "You are viewing an archived channel with a deactivated user.",

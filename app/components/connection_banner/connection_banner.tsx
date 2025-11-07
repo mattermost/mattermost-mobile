@@ -109,7 +109,7 @@ const ConnectionBanner = ({
             clearTimeoutRef(openTimeout);
             clearTimeoutRef(closeTimeout);
         };
-    }, []);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps -- only run on mount
 
     useDidUpdate(() => {
         if (isConnected) {
@@ -164,7 +164,7 @@ const ConnectionBanner = ({
     } else if (netInfo.isInternetReachable) {
         text = intl.formatMessage({id: 'connection_banner.not_reachable', defaultMessage: 'The server is not reachable'});
     } else {
-        text = intl.formatMessage({id: 'connection_banner.not_connected', defaultMessage: 'No internet connection'});
+        text = intl.formatMessage({id: 'connection_banner.not_connected', defaultMessage: 'Unable to connect to network'});
     }
 
     return (
