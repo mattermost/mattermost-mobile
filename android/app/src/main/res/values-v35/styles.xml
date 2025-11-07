@@ -7,5 +7,14 @@
         <item name="android:editTextBackground">@drawable/rn_edit_text_material</item>
         <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>
 
+
+         <item name="android:navigationBarDividerColor">@android:color/transparent</item>
+
+        <!-- Avoid forced contrast paddings on some OEMs -->
+        <item name="android:enforceStatusBarContrast">false</item>
+        <item name="android:enforceNavigationBarContrast">false</item>
+
+        <!-- Support cutouts -->
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
     </style>
 </resources>

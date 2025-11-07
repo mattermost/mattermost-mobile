@@ -12,7 +12,6 @@ import {useDefaultHeaderHeight} from '@hooks/header';
 import {bottomSheet} from '@screens/navigation';
 import {getContrastingSimpleColor} from '@utils/general';
 import {bottomSheetSnapPoint} from '@utils/helpers';
-import {getMarkdownTextStyles} from '@utils/markdown';
 import {typography} from '@utils/typography';
 
 const BUTTON_HEIGHT = 48; // From /app/utils/buttonStyles.ts, lg button
@@ -74,21 +73,6 @@ export function ChannelBanner({bannerInfo, isTopItem}: Props) {
         zIndex: 1,
     }), [bannerInfo?.background_color, defaultHeight, style.container]);
 
-    const markdownTextStyle = useMemo(() => {
-        // We do a shallow copy to avoid mutating the original object.
-        const textStyle = {...getMarkdownTextStyles(theme)};
-
-        // channel banner colors are theme independent.
-        // If we let the link color being set by the theme, it will be unreadable in some cases.
-        // So we set the link color to the banner text color explicitly. This, with the controlled
-        // background color, ensures the banner text is always readable.
-        textStyle.link = {
-            ...textStyle.link,
-            color: bannerTextColor,
-        };
-        return textStyle;
-    }, [bannerTextColor, theme]);
-
     const handlePress = useCallback(() => {
         // set snap point based on text length, with a defined
         // minimum and maximum height for the text container
@@ -136,7 +120,6 @@ export function ChannelBanner({bannerInfo, isTopItem}: Props) {
                 >
                     <RemoveMarkdown
                         value={bannerInfo.text}
-                        textStyle={markdownTextStyle}
                         baseStyle={style.baseTextStyle}
                     />
                 </Text>
