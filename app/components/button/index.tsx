@@ -95,6 +95,7 @@ const Button = ({
     const loadingComponent = (
         <Loading
             color={txtStyleToUse.color}
+            testID={`${testID}-loader`}
         />
     );
 

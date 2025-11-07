@@ -6,7 +6,6 @@ import React, {type ReactNode, useEffect, useState} from 'react';
 import {type StyleProp, StyleSheet, View, type ViewStyle} from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const AnimatedImage = Animated.createAnimatedComponent(Image);
@@ -21,6 +20,7 @@ type Props = ProgressiveImageProps & {
     contentFit?: ImageContentFit;
     style?: StyleProp<ViewStyle>;
     tintDefaultSource?: boolean;
+    theme: Theme;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
@@ -38,11 +38,22 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 });
 
 const ProgressiveImage = ({
-    children, defaultSource, forwardRef, id, imageStyle, imageUri, inViewPort, isBackgroundImage,
-    onError, contentFit = 'contain', style = {}, thumbnailUri, tintDefaultSource,
+    children,
+    defaultSource,
+    forwardRef,
+    id,
+    imageStyle,
+    imageUri,
+    inViewPort,
+    isBackgroundImage,
+    onError,
+    contentFit = 'contain',
+    style = {},
+    thumbnailUri,
+    tintDefaultSource,
+    theme,
 }: Props) => {
     const [showHighResImage, setShowHighResImage] = useState(false);
-    const theme = useTheme();
     const styles = getStyleSheet(theme);
 
     useEffect(() => {

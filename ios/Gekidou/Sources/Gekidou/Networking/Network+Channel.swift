@@ -9,7 +9,10 @@ extension Network {
         var profiles: [User]? = nil
         
         group.enter()
-        let channelUrl = buildApiUrl(serverUrl, "/channels/\(channelId)")
+        guard let channelUrl = buildApiUrl(serverUrl, "/channels/\(channelId)") else {
+            completionHandler(nil, nil, nil)
+            return
+        }
         request(channelUrl, usingMethod: "GET", forServerUrl: serverUrl) { data, response, error in
             if let data = data {
                 tempChannel = try? JSONDecoder().decode(Channel.self, from: data)
@@ -18,7 +21,10 @@ extension Network {
         }
 
         group.enter()
-        let myChannelUrl = buildApiUrl(serverUrl, "/channels/\(channelId)/members/me")
+        guard let myChannelUrl = buildApiUrl(serverUrl, "/channels/\(channelId)/members/me") else {
+            completionHandler(nil, nil, nil)
+            return
+        }
         request(myChannelUrl, usingMethod: "GET", forServerUrl: serverUrl) { data, response, error in
             if let data = data {
                 myChannel = try? JSONDecoder().decode(ChannelMember.self, from: data)
@@ -26,33 +32,42 @@ extension Network {
             group.leave()
         }
         
-        group.notify(queue: .main) {
+        // Use background queue for notification extension - no UI updates needed
+        group.notify(queue: DispatchQueue.global(qos: .default)) {
             if let tempChannel = tempChannel,
                (tempChannel.type == "D" || tempChannel.type == "G")
                 && !Database.default.queryChannelExists(withId: channelId, forServerUrl: serverUrl) {
                 let displayNameSetting = Database.default.getTeammateDisplayNameSetting(serverUrl)
                 Network.default.fetchProfiles(inChannelId: channelId, forServerUrl: serverUrl) {[weak self] data, response, error in
-                    if let data = data,
-                       let currentUserId = try? Database.default.queryCurrentUserId(serverUrl),
-                       let users = try? JSONDecoder().decode([User].self, from: data) {
+                    guard let self = self else { return }
+                    guard let data = data else {
+                        if let error = error {
+                            GekidouLogger.shared.log(.error, "Gekidou Network: Failed to fetch profiles for channel %{public}@ - %{public}@", channelId, String(describing: error))
+                        }
+                        completionHandler(channel, myChannel, profiles)
+                        return
+                    }
+
+                    do {
+                        let currentUserId = try Database.default.queryCurrentUserId(serverUrl)
+                        let users = try JSONDecoder().decode([User].self, from: data)
                         if !users.isEmpty {
                             profiles = users.filter{ $0.id != currentUserId}
                             if tempChannel.type == "D",
                                let profiles = profiles,
-                               let user = profiles.first,
-                               let displayName = self?.displayUsername(user, displayNameSetting) {
+                               let user = profiles.first {
                                 var chan = tempChannel
-                                chan.displayName = displayName
+                                chan.displayName = self.displayUsername(user, displayNameSetting)
                                 channel = chan
                             } else if let profiles = profiles {
                                 let locale = Database.default.getCurrentUserLocale(serverUrl)
-                                if let displayName = self?.displayGroupMessageName(profiles, locale: locale, displayNameSetting: displayNameSetting) {
-                                    var chan = tempChannel
-                                    chan.displayName = displayName
-                                    channel = chan
-                                }
+                                var chan = tempChannel
+                                chan.displayName = self.displayGroupMessageName(profiles, locale: locale, displayNameSetting: displayNameSetting)
+                                channel = chan
                             }
                         }
+                    } catch {
+                        GekidouLogger.shared.log(.error, "Gekidou Network: Failed to decode profiles or query userId for channel %{public}@ on server %{public}@ - %{public}@", channelId, serverUrl, String(describing: error))
                     }
                     completionHandler(channel, myChannel, profiles)
                 }

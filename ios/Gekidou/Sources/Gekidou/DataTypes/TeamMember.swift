@@ -21,8 +21,8 @@ public struct TeamMember: Codable {
     
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: TeamMemberKeys.self)
-        id  = try values.decode(String.self, forKey: .id)
-        userId = try values.decode(String.self, forKey: .userId)
+        id = values.decodeIfPresent(forKey: .id, defaultValue: "")
+        userId = values.decodeIfPresent(forKey: .userId, defaultValue: "")
         explicitRoles = values.decodeIfPresent(forKey: .explicitRoles, defaultValue: "")
         roles = values.decodeIfPresent(forKey: .roles, defaultValue: "")
         schemeAdmin = values.decodeIfPresent(forKey: .schemeAdmin, defaultValue: false)
