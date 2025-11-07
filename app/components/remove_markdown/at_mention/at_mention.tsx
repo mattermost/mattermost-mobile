@@ -10,11 +10,9 @@ import GroupModel from '@database/models/server/group';
 import {useMemoMentionedGroup, useMemoMentionedUser} from '@hooks/markdown';
 import {displayUsername} from '@utils/user';
 
-import type {Database} from '@nozbe/watermelondb';
 import type UserModelType from '@typings/database/models/servers/user';
 
 type AtMentionProps = {
-    database: Database;
     mentionName: string;
     teammateNameDisplay: string;
     textStyle?: StyleProp<TextStyle>;
@@ -40,6 +38,9 @@ const AtMention = ({
         if (!user?.username && !group?.name) {
             fetchUserOrGroupsByMentionsInBatch(serverUrl, mentionName);
         }
+
+        // Only fetch the user or group on mount
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     let mention;

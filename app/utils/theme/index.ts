@@ -77,10 +77,6 @@ export function changeOpacity(oldColor: string, opacity: number): string {
     return `rgba(${red},${green},${blue},${alpha * opacity})`;
 }
 
-export function concatStyles<T>(...styles: T[]) {
-    return ([] as T[]).concat(...styles);
-}
-
 export function setNavigatorStyles(componentId: string, theme: Theme, additionalOptions: Options = {}, statusBarColor?: string) {
     const isDark = tinyColor(statusBarColor || theme.sidebarBg).isDark();
     const options: Options = {
