@@ -1,5 +1,4 @@
 import Foundation
-import os.log
 
 extension Network: URLSessionDelegate, URLSessionTaskDelegate {
     typealias ChallengeEvaluation = (disposition: URLSession.AuthChallengeDisposition, credential: URLCredential?, error: NetworkError?)
@@ -21,11 +20,7 @@ extension Network: URLSessionDelegate, URLSessionTaskDelegate {
         }
         
         if let error = evaluation.error {
-            os_log("Gekidou: %{public}@",
-                   log: .default,
-                   type: .error,
-                   error.localizedDescription
-            )
+            GekidouLogger.shared.log(.error, "Gekidou Network: %{public}@", error.localizedDescription)
         }
         
         completionHandler(evaluation.disposition, evaluation.credential)
@@ -66,11 +61,7 @@ extension Network: URLSessionDelegate, URLSessionTaskDelegate {
             
             return (.useCredential, URLCredential(trust: trust), nil)
         } catch {
-            os_log("Gekidou: %{public}@",
-                   log: .default,
-                   type: .error,
-                   error.localizedDescription
-            )
+            GekidouLogger.shared.log(.error, "Gekidou Network: %{public}@", error.localizedDescription)
             return (.cancelAuthenticationChallenge, nil, error as? NetworkError)
         }
     }

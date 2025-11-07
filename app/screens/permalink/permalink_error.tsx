@@ -11,7 +11,6 @@ import MessageNotViewable from '@components/illustrations/message_not_viewable';
 import Markdown from '@components/markdown';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
-import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -126,8 +125,6 @@ function PermalinkError({
                     disableChannelLink={true}
                     disableGallery={true}
                     disableHashtags={true}
-                    textStyles={getMarkdownTextStyles(theme)}
-                    blockStyles={getMarkdownBlockStyles(theme)}
                     location={Screens.PERMALINK}
                 />
             </View>

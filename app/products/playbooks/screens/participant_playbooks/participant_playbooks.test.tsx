@@ -7,7 +7,9 @@ import {of as of$} from 'rxjs';
 import DatabaseManager from '@database/manager';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {fetchPlaybookRunsPageForParticipant} from '@playbooks/actions/remote/runs';
-import {fireEvent, renderWithEverything, waitFor, waitForElementToBeRemoved} from '@test/intl-test-helper';
+import RunList from '@playbooks/components/run_list';
+import {popTopScreen} from '@screens/navigation';
+import {renderWithEverything, waitFor} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
 import ParticipantPlaybooks from './participant_playbooks';
@@ -16,6 +18,18 @@ import type {Database} from '@nozbe/watermelondb';
 
 jest.mock('@hooks/android_back_handler');
 jest.mock('@playbooks/actions/remote/runs');
+
+jest.mock('@playbooks/components/run_list', () => ({
+    __esModule: true,
+    default: jest.fn(),
+}));
+jest.mocked(RunList).mockImplementation(
+    (props) => React.createElement('RunList', {testID: 'run_list', ...props}),
+);
+
+jest.mock('@hooks/utils', () => ({
+    usePreventDoubleTap: (fn: () => void) => fn,
+}));
 
 type FetchPlaybookRunsPageForParticipantReturn = Awaited<ReturnType<typeof fetchPlaybookRunsPageForParticipant>>;
 
@@ -71,60 +85,71 @@ describe('ParticipantPlaybooks', () => {
         });
         jest.mocked(fetchPlaybookRunsPageForParticipant).mockReturnValue(pendingPromise);
 
-        const {getByTestId, queryByTestId} = renderWithEverything(<ParticipantPlaybooks {...props}/>, {database, serverUrl});
+        const {getByTestId} = renderWithEverything(<ParticipantPlaybooks {...props}/>, {database, serverUrl});
 
-        expect(getByTestId('loading')).toBeTruthy();
+        const runList = getByTestId('run_list');
+        expect(runList).toHaveProp('loading', true);
 
         // Check that fetch was called
         await waitFor(() => {
             expect(fetchPlaybookRunsPageForParticipant).toHaveBeenCalledWith('server-url', 'test-user-id', 0);
         });
 
-        expect(getByTestId('loading')).toBeTruthy();
+        expect(runList).toHaveProp('loading', true);
 
         // Resolve the promise
         act(() => {
             resolvePromise!({runs: [], hasMore: false});
         });
 
-        await waitForElementToBeRemoved(() => queryByTestId('loading'));
+        await waitFor(() => {
+            expect(runList).toHaveProp('loading', false);
+        });
     });
 
-    it('renders empty state when no runs available', async () => {
+    it('pass down empty runs when no runs available', async () => {
         const props = getBaseProps();
         jest.mocked(fetchPlaybookRunsPageForParticipant).mockResolvedValue({runs: [], hasMore: false});
 
-        const {queryByTestId, getByText} = renderWithEverything(<ParticipantPlaybooks {...props}/>, {database, serverUrl});
+        const {getByTestId} = renderWithEverything(<ParticipantPlaybooks {...props}/>, {database, serverUrl});
 
-        await waitForElementToBeRemoved(() => queryByTestId('loading'));
-
-        // Should show empty state instead of loading
-        expect(getByText('No in progress runs')).toBeVisible();
+        await waitFor(() => {
+            const runList = getByTestId('run_list');
+            expect(runList).toHaveProp('loading', false);
+            expect(runList).toHaveProp('inProgressRuns', []);
+            expect(runList).toHaveProp('finishedRuns', []);
+        });
     });
 
-    it('renders error state when fetch fails', async () => {
+    it('pass down empty runs when initial fetch fails and stop showing the show more button', async () => {
         const props = getBaseProps();
         jest.mocked(fetchPlaybookRunsPageForParticipant).mockResolvedValue({error: 'Network error'});
 
-        const {queryByTestId, getByText} = renderWithEverything(<ParticipantPlaybooks {...props}/>, {database, serverUrl});
+        const {getByTestId} = renderWithEverything(<ParticipantPlaybooks {...props}/>, {database, serverUrl});
 
-        await waitForElementToBeRemoved(() => queryByTestId('loading'));
-
-        // Should show empty state instead of loading
-        expect(getByText('No in progress runs')).toBeVisible();
+        await waitFor(() => {
+            const runList = getByTestId('run_list');
+            expect(runList).toHaveProp('loading', false);
+            expect(runList).toHaveProp('inProgressRuns', []);
+            expect(runList).toHaveProp('finishedRuns', []);
+            expect(runList.props.showMoreButton('finished')).toBe(false);
+            expect(runList.props.showMoreButton('in-progress')).toBe(false);
+        });
     });
 
-    it('renders playbook runs when data is loaded', async () => {
+    it('pass down in progress and finished runs when data is loaded', async () => {
         const props = getBaseProps();
         const runs = getMockRuns(1, 1);
         jest.mocked(fetchPlaybookRunsPageForParticipant).mockResolvedValue({runs, hasMore: false});
 
-        const {queryByTestId, getByText} = renderWithEverything(<ParticipantPlaybooks {...props}/>, {database, serverUrl});
+        const {getByTestId} = renderWithEverything(<ParticipantPlaybooks {...props}/>, {database, serverUrl});
 
-        await waitForElementToBeRemoved(() => queryByTestId('loading'));
-
-        expect(getByText('Test Run 0')).toBeVisible();
-        expect(queryByTestId('Test Run 1')).not.toBeVisible();
+        await waitFor(() => {
+            const runList = getByTestId('run_list');
+            expect(runList).toHaveProp('loading', false);
+            expect(runList).toHaveProp('inProgressRuns', [runs[0]]);
+            expect(runList).toHaveProp('finishedRuns', [runs[1]]);
+        });
     });
 
     it('does not fetch data when currentUserId is not provided', () => {
@@ -132,75 +157,127 @@ describe('ParticipantPlaybooks', () => {
         props.currentUserId = '';
         jest.mocked(fetchPlaybookRunsPageForParticipant).mockResolvedValue({runs: [], hasMore: false});
 
-        renderWithEverything(<ParticipantPlaybooks {...props}/>, {database, serverUrl});
+        const {getByTestId} = renderWithEverything(<ParticipantPlaybooks {...props}/>, {database, serverUrl});
+
+        const runList = getByTestId('run_list');
+        expect(runList).toHaveProp('componentId', props.componentId);
+        expect(runList).toHaveProp('inProgressRuns', []);
+        expect(runList).toHaveProp('finishedRuns', []);
 
         // Should not call the fetch function when no user ID
         expect(fetchPlaybookRunsPageForParticipant).not.toHaveBeenCalled();
     });
 
-    it('handles Android back button', () => {
-        const props = getBaseProps();
-        const {popTopScreen} = require('@screens/navigation');
-
-        renderWithEverything(<ParticipantPlaybooks {...props}/>, {database, serverUrl});
-
-        expect(useAndroidHardwareBackHandler).toHaveBeenCalledWith(props.componentId, expect.any(Function));
-
-        const closeHandler = jest.mocked(useAndroidHardwareBackHandler).mock.calls[0][1];
-        closeHandler();
-
-        expect(popTopScreen).toHaveBeenCalledWith(props.componentId);
-    });
-
-    it('handles pagination with hasMore=true', async () => {
+    it('shows the show more button when when we have more runs', async () => {
         const props = getBaseProps();
         const runs = getMockRuns(10, 0);
         jest.mocked(fetchPlaybookRunsPageForParticipant).mockResolvedValue({runs, hasMore: true});
 
-        const {queryByTestId, getByTestId} = renderWithEverything(<ParticipantPlaybooks {...props}/>, {database, serverUrl});
+        const {findByTestId} = renderWithEverything(<ParticipantPlaybooks {...props}/>, {database, serverUrl});
 
-        await waitForElementToBeRemoved(() => queryByTestId('loading'));
+        const runList = await findByTestId('run_list');
+        expect(runList).toHaveProp('showMoreButton', expect.any(Function));
 
-        expect(fetchPlaybookRunsPageForParticipant).toHaveBeenCalledWith('server-url', 'test-user-id', 0);
-
-        // Should set hasMore state to false when the API response indicates no more data
-        expect(fetchPlaybookRunsPageForParticipant).toHaveBeenCalledTimes(1);
-
-        const list = getByTestId('runs.list');
-
-        await act(async () => {
-            fireEvent(list, 'onEndReached');
-        });
-
-        expect(fetchPlaybookRunsPageForParticipant).toHaveBeenCalledWith('server-url', 'test-user-id', 1);
-        expect(fetchPlaybookRunsPageForParticipant).toHaveBeenCalledTimes(2);
+        const showMoreButton = runList.props.showMoreButton;
+        expect(showMoreButton('finished')).toBe(true);
+        expect(showMoreButton('in-progress')).toBe(true);
     });
 
-    it('handles pagination with hasMore=false', async () => {
+    it('does not show the show more button when we do not have more runs', async () => {
         const props = getBaseProps();
         const runs = getMockRuns(10, 0);
         jest.mocked(fetchPlaybookRunsPageForParticipant).mockResolvedValue({runs, hasMore: false});
 
-        const {queryByTestId, getByTestId} = renderWithEverything(<ParticipantPlaybooks {...props}/>, {database, serverUrl});
+        const {findByTestId} = renderWithEverything(<ParticipantPlaybooks {...props}/>, {database, serverUrl});
 
-        await waitForElementToBeRemoved(() => queryByTestId('loading'));
+        const runList = await findByTestId('run_list');
+        const showMoreButton = runList.props.showMoreButton;
+        expect(showMoreButton('finished')).toBe(false);
+        expect(showMoreButton('in-progress')).toBe(false);
+    });
+
+    it('handles pagination after several calls to fetchMoreRuns', async () => {
+        const props = getBaseProps();
+        const runs = getMockRuns(10, 0);
+        jest.mocked(fetchPlaybookRunsPageForParticipant).mockResolvedValue({runs, hasMore: true});
+
+        const {findByTestId} = renderWithEverything(<ParticipantPlaybooks {...props}/>, {database, serverUrl});
 
         expect(fetchPlaybookRunsPageForParticipant).toHaveBeenCalledWith('server-url', 'test-user-id', 0);
 
-        // Should set hasMore state to false when the API response indicates no more data
-        expect(fetchPlaybookRunsPageForParticipant).toHaveBeenCalledTimes(1);
-
-        const list = getByTestId('runs.list');
-
-        await act(async () => {
-            fireEvent(list, 'onEndReached');
+        const runList = await findByTestId('run_list');
+        act(() => {
+            const fetchMoreRuns = runList.props.fetchMoreRuns;
+            fetchMoreRuns('in-progress');
         });
 
-        expect(fetchPlaybookRunsPageForParticipant).toHaveBeenCalledTimes(1);
+        await waitFor(() => {
+            expect(fetchPlaybookRunsPageForParticipant).toHaveBeenCalledWith('server-url', 'test-user-id', 1);
+            expect(runList.props.inProgressRuns).toHaveLength(20);
+        });
+
+        act(() => {
+            const fetchMoreRuns = runList.props.fetchMoreRuns;
+            fetchMoreRuns('in-progress');
+        });
+
+        await waitFor(() => {
+            expect(fetchPlaybookRunsPageForParticipant).toHaveBeenCalledWith('server-url', 'test-user-id', 2);
+            expect(runList.props.inProgressRuns).toHaveLength(30);
+        });
+    });
+
+    it('gracefully handles error after load', async () => {
+        const props = getBaseProps();
+        const runs = getMockRuns(10, 0);
+        jest.mocked(fetchPlaybookRunsPageForParticipant).mockResolvedValue({runs, hasMore: true});
+
+        const {findByTestId} = renderWithEverything(<ParticipantPlaybooks {...props}/>, {database, serverUrl});
+        expect(fetchPlaybookRunsPageForParticipant).toHaveBeenCalledWith('server-url', 'test-user-id', 0);
+
+        jest.mocked(fetchPlaybookRunsPageForParticipant).mockResolvedValue({error: 'Network error'});
+        const runList = await findByTestId('run_list');
+        act(() => {
+            const fetchMoreRuns = runList.props.fetchMoreRuns;
+            fetchMoreRuns('in-progress');
+        });
+
+        await waitFor(() => {
+            expect(runList.props.fetching).toBe(false);
+            expect(fetchPlaybookRunsPageForParticipant).toHaveBeenCalledWith('server-url', 'test-user-id', 1);
+            expect(runList.props.inProgressRuns).toHaveLength(10);
+        });
+    });
+
+    it('set fetching while fetching more runs', async () => {
+        const props = getBaseProps();
+        const runs = getMockRuns(10, 0);
+        jest.mocked(fetchPlaybookRunsPageForParticipant).mockResolvedValue({runs, hasMore: true});
+
+        const {findByTestId} = renderWithEverything(<ParticipantPlaybooks {...props}/>, {database, serverUrl});
+        expect(fetchPlaybookRunsPageForParticipant).toHaveBeenCalledWith('server-url', 'test-user-id', 0);
+
+        const runList = await findByTestId('run_list');
+        act(() => {
+            const fetchMoreRuns = runList.props.fetchMoreRuns;
+            fetchMoreRuns('in-progress');
+        });
+
+        // Should set fetching as soon as we call fetchMoreRuns
+        await waitFor(() => {
+            expect(runList).toHaveProp('fetching', true);
+        });
+
+        // Wait for the results to be set
+        await waitFor(() => {
+            expect(runList.props.inProgressRuns).toHaveLength(20);
+        });
+
+        // Should set fetching to false when the results are set
+        expect(runList).toHaveProp('fetching', false);
     });
 
     it('should show cached warning when API fails and database has data', async () => {
-        // Mock API failure
         jest.mocked(fetchPlaybookRunsPageForParticipant).mockResolvedValue({
             error: 'Network error',
         });
@@ -212,11 +289,27 @@ describe('ParticipantPlaybooks', () => {
         const props = getBaseProps();
         props.cachedPlaybookRuns = [mockDatabaseRun];
 
-        const {getByText, queryByTestId} = renderWithEverything(<ParticipantPlaybooks {...props}/>, {database, serverUrl});
+        const {getByTestId} = renderWithEverything(<ParticipantPlaybooks {...props}/>, {database, serverUrl});
 
-        await waitForElementToBeRemoved(() => queryByTestId('loading'));
+        await waitFor(() => {
+            const runList = getByTestId('run_list');
+            expect(runList).toHaveProp('loading', false);
+            expect(runList).toHaveProp('showCachedWarning', true);
+            expect(runList).toHaveProp('inProgressRuns', [mockDatabaseRun]);
+        });
+    });
 
-        expect(getByText(/Showing cached data only/)).toBeVisible();
+    it('should not show cached warning if there are no cached runs', async () => {
+        const props = getBaseProps();
+        jest.mocked(fetchPlaybookRunsPageForParticipant).mockResolvedValue({error: 'Network error'});
+
+        const {getByTestId} = renderWithEverything(<ParticipantPlaybooks {...props}/>, {database, serverUrl});
+
+        await waitFor(() => {
+            const runList = getByTestId('run_list');
+            expect(runList).toHaveProp('loading', false);
+            expect(runList).toHaveProp('showCachedWarning', false);
+        });
     });
 
     it('should not show cached warning when API succeeds', async () => {
@@ -228,10 +321,48 @@ describe('ParticipantPlaybooks', () => {
             hasMore: false,
         });
 
-        const {queryByText, queryByTestId} = renderWithEverything(<ParticipantPlaybooks {...props}/>, {database, serverUrl});
+        const {getByTestId} = renderWithEverything(<ParticipantPlaybooks {...props}/>, {database, serverUrl});
 
-        await waitForElementToBeRemoved(() => queryByTestId('loading'));
+        await waitFor(() => {
+            const runList = getByTestId('run_list');
+            expect(runList).toHaveProp('loading', false);
+            expect(runList).toHaveProp('showCachedWarning', false);
+        });
+    });
 
-        expect(queryByText(/Showing cached data only/)).not.toBeVisible();
+    it('handles Android back button', async () => {
+        const props = getBaseProps();
+
+        renderWithEverything(<ParticipantPlaybooks {...props}/>, {database, serverUrl});
+
+        expect(useAndroidHardwareBackHandler).toHaveBeenCalledWith(props.componentId, expect.any(Function));
+
+        const closeHandler = jest.mocked(useAndroidHardwareBackHandler).mock.calls[0][1];
+        await act(async () => {
+            closeHandler();
+        });
+
+        expect(popTopScreen).toHaveBeenCalledWith(props.componentId);
+    });
+
+    it('should not load more if there are no more runs', async () => {
+        const props = getBaseProps();
+        const runs = getMockRuns(10, 0);
+        jest.mocked(fetchPlaybookRunsPageForParticipant).mockResolvedValue({runs, hasMore: false});
+
+        const {findByTestId} = renderWithEverything(<ParticipantPlaybooks {...props}/>, {database, serverUrl});
+        expect(fetchPlaybookRunsPageForParticipant).toHaveBeenCalledWith('server-url', 'test-user-id', 0);
+
+        const runList = await findByTestId('run_list');
+        act(() => {
+            const fetchMoreRuns = runList.props.fetchMoreRuns;
+            fetchMoreRuns('in-progress');
+        });
+
+        await waitFor(() => {
+            expect(fetchPlaybookRunsPageForParticipant).toHaveBeenCalledTimes(1);
+            expect(runList.props.fetching).toBe(false);
+            expect(runList.props.inProgressRuns).toHaveLength(10);
+        });
     });
 });

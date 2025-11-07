@@ -1,26 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {FlashList, type ListRenderItem} from '@shopify/flash-list';
-import React, {useCallback, useMemo, useState} from 'react';
-import {defineMessage, useIntl} from 'react-intl';
-import {StyleSheet, View} from 'react-native';
+import React, {useCallback, useMemo, useRef, useState} from 'react';
 
-import Button from '@components/button';
-import {Screens} from '@constants';
-import {useTheme} from '@context/theme';
+import {useServerUrl} from '@context/server';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import useTabs, {type TabDefinition} from '@hooks/use_tabs';
-import Tabs from '@hooks/use_tabs/tabs';
+import {fetchFinishedRunsForChannel} from '@playbooks/actions/remote/runs';
+import RunList, {type RunListTabsNames} from '@playbooks/components/run_list';
 import {isRunFinished} from '@playbooks/utils/run';
 import {popTopScreen} from '@screens/navigation';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-
-import {goToSelectPlaybook} from '../navigation';
-
-import EmptyState from './empty_state';
-import PlaybookCard, {CARD_HEIGHT} from './playbook_card';
-import ShowMoreButton from './show_more_button';
 
 import type PlaybookRunModel from '@playbooks/types/database/models/playbook_run';
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -31,61 +19,18 @@ type Props = {
     componentId: AvailableScreens;
 };
 
-type TabsNames = 'in-progress' | 'finished';
-
-const itemSeparatorStyle = StyleSheet.create({
-    itemSeparator: {
-        height: 12,
-    },
-});
-const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => ({
-    container: {
-        padding: 20,
-    },
-    tabContainer: {
-        borderBottomWidth: 1,
-        borderBottomColor: changeOpacity(theme.centerChannelColor, 0.12),
-    },
-    startANewRunButtonContainer: {
-        padding: 20,
-    },
-}));
-
-const ItemSeparator = () => {
-    return <View style={itemSeparatorStyle.itemSeparator}/>;
-};
-
-const tabs: Array<TabDefinition<TabsNames>> = [
-    {
-        id: 'in-progress',
-        name: defineMessage({
-            id: 'playbook.runs.in-progress',
-            defaultMessage: 'In Progress',
-        }),
-    },
-    {
-        id: 'finished',
-        name: defineMessage({
-            id: 'playbook.runs.finished',
-            defaultMessage: 'Finished',
-        }),
-    },
-];
-
 const PlaybookRuns = ({
     channelId,
     allRuns,
     componentId,
 }: Props) => {
-    const intl = useIntl();
-    const theme = useTheme();
-    const styles = getStyleFromTheme(theme);
+    const serverUrl = useServerUrl();
 
-    const [fetchedFinishedRuns, setFetchedFinishedRuns] = useState<PlaybookRun[]>([]);
+    const [fetching, setFetching] = useState(false);
+    const [hasMore, setHasMore] = useState(true);
+    const page = useRef(0);
 
-    const pushNewFinishedRuns = useCallback((runs: PlaybookRun[]) => {
-        setFetchedFinishedRuns((prev) => [...prev, ...runs]);
-    }, []);
+    const [remoteFinishedRuns, setRemoteFinishedRuns] = useState<PlaybookRun[]>([]);
 
     const exit = useCallback(() => {
         popTopScreen(componentId);
@@ -93,7 +38,7 @@ const PlaybookRuns = ({
 
     useAndroidHardwareBackHandler(componentId, exit);
 
-    const [inProgressRuns, finishedRuns] = useMemo(() => {
+    const [inProgressRuns, localFinishedRuns] = useMemo(() => {
         const inProgress: PlaybookRunModel[] = [];
         const finished: PlaybookRunModel[] = [];
 
@@ -108,73 +53,38 @@ const PlaybookRuns = ({
         return [inProgress, finished] as const;
     }, [allRuns]);
 
-    const initialTab: TabsNames = inProgressRuns.length ? 'in-progress' : 'finished';
-    const [activeTab, tabsProps] = useTabs<TabsNames>(initialTab, tabs);
+    const showMoreButton = useCallback((tab: RunListTabsNames) => {
+        return tab === 'finished' && hasMore;
+    }, [hasMore]);
 
-    let data: Array<PlaybookRunModel | PlaybookRun> = inProgressRuns;
-    if (activeTab === 'finished') {
-        if (fetchedFinishedRuns.length) {
-            data = fetchedFinishedRuns;
-        } else {
-            data = finishedRuns;
+    const fetchMoreFinishedRuns = useCallback(async (tab: RunListTabsNames) => {
+        if (fetching || tab !== 'finished') {
+            return;
         }
-    }
-
-    const isEmpty = data.length === 0;
-
-    const footerComponent = useMemo(() => (
-        <ShowMoreButton
-            channelId={channelId}
-            addMoreRuns={pushNewFinishedRuns}
-            visible={activeTab === 'finished'}
-        />
-    ), [channelId, pushNewFinishedRuns, activeTab]);
-
-    const renderItem: ListRenderItem<PlaybookRunModel> = useCallback(({item}) => {
-        return (
-            <PlaybookCard
-                run={item}
-                location={Screens.PLAYBOOKS_RUNS}
-            />
-        );
-    }, []);
-
-    const startANewRun = useCallback(() => {
-        goToSelectPlaybook(intl, theme);
-    }, [intl, theme]);
-
-    let content = (<EmptyState tab={activeTab}/>);
-    if (!isEmpty) {
-        content = (
-            <>
-                <FlashList
-                    data={data}
-                    renderItem={renderItem}
-                    contentContainerStyle={styles.container}
-                    ItemSeparatorComponent={ItemSeparator}
-                    estimatedItemSize={CARD_HEIGHT}
-                    ListFooterComponent={footerComponent}
-                />
-                <View style={styles.startANewRunButtonContainer}>
-                    <Button
-                        emphasis='tertiary'
-                        onPress={startANewRun}
-                        text={intl.formatMessage({id: 'playbooks.runs.start_a_new_run', defaultMessage: 'Start a new run'})}
-                        size='lg'
-                        theme={theme}
-                    />
-                </View>
-            </>
-        );
-    }
+        setFetching(true);
+        const {runs, has_more = false, error} = await fetchFinishedRunsForChannel(serverUrl, channelId, page.current);
+        setFetching(false);
+        if (error) {
+            setHasMore(false);
+            return;
+        }
+        setHasMore(has_more);
+        page.current++;
+        if (runs?.length) {
+            setRemoteFinishedRuns((prev) => [...prev, ...runs]);
+        }
+    }, [channelId, fetching, serverUrl]);
 
     return (
-        <>
-            <View style={styles.tabContainer}>
-                <Tabs {...tabsProps}/>
-            </View>
-            {content}
-        </>
+        <RunList
+            componentId={componentId}
+            inProgressRuns={inProgressRuns}
+            finishedRuns={remoteFinishedRuns.length ? remoteFinishedRuns : localFinishedRuns}
+            fetchMoreRuns={fetchMoreFinishedRuns}
+            showMoreButton={showMoreButton}
+            fetching={fetching}
+            channelId={channelId}
+        />
     );
 };
 

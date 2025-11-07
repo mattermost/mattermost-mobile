@@ -55,20 +55,23 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     overdueText: {
         color: theme.dndIndicator,
     },
+    bold: {
+        ...typography('Body', 300, 'SemiBold'),
+    },
 }));
 
 const messages = defineMessages({
     updateOverdue: {
         id: 'playbooks.playbook_run.status_update_overdue',
-        defaultMessage: 'Status update overdue {time}',
+        defaultMessage: 'Update overdue\n{time}',
     },
     updateDue: {
         id: 'playbooks.playbook_run.status_update_due',
-        defaultMessage: 'Status update due {time}',
+        defaultMessage: 'Update due\n{time}',
     },
     finished: {
         id: 'playbooks.playbook_run.status_update_finished',
-        defaultMessage: 'Run finished {time}',
+        defaultMessage: 'Run finished\n{time}',
     },
     update: {
         id: 'playbooks.playbook_run.status_update',
@@ -86,13 +89,20 @@ const StatusUpdateIndicator = ({
     const styles = getStyleSheet(theme);
     const intl = useIntl();
 
-    const values = {time: <FriendlyDate value={timestamp}/>};
+    const values = useMemo(() => ({time: (
+        <FriendlyDate
+            style={styles.bold}
+            value={timestamp}
+        />
+    )}), [timestamp, styles]);
+
     const readOnly = !isParticipant || isFinished;
+    const isOverdue = timestamp < Date.now();
 
     let message = messages.updateDue;
     if (isFinished) {
         message = messages.finished;
-    } else if (timestamp < Date.now()) {
+    } else if (isOverdue) {
         message = messages.updateOverdue;
     }
 
@@ -110,12 +120,8 @@ const StatusUpdateIndicator = ({
     }, [styles.icon, styles.overdueText, isFinished, timestamp]);
 
     const onUpdatePress = useCallback(async () => {
-        if (readOnly) {
-            return;
-        }
-
         await goToPostUpdate(intl, playbookRunId);
-    }, [intl, playbookRunId, readOnly]);
+    }, [intl, playbookRunId]);
 
     const icon = isFinished ? 'flag-checkered' : 'clock-outline';
     return (
@@ -137,6 +143,7 @@ const StatusUpdateIndicator = ({
                 theme={theme}
                 size='lg'
                 disabled={readOnly}
+                isDestructive={isOverdue && !isFinished}
             />
         </View>
     );

@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable react/no-multi-comp */
+
 import {setGenerator} from '@nozbe/watermelondb/utils/common/randomId';
 import * as ReactNative from 'react-native';
 import mockSafeAreaContext from 'react-native-safe-area-context/jest/mock';
@@ -262,8 +264,6 @@ jest.doMock('react-native', () => {
         addListener: jest.fn(() => ({
             remove: jest.fn(),
         })),
-        isVisible: jest.fn(() => false),
-        metrics: jest.fn(() => null),
     };
 
     return Object.setPrototypeOf({
@@ -342,23 +342,22 @@ jest.mock('react-native-navigation', () => {
     RNN.Navigation.setLazyComponentRegistrator = jest.fn();
     RNN.Navigation.setDefaultOptions = jest.fn();
     RNN.Navigation.registerComponent = jest.fn();
-
-    const mockSubscription = {remove: jest.fn()};
-    const createMockEvents = () => ({
-        registerAppLaunchedListener: jest.fn(() => mockSubscription),
-        registerComponentListener: jest.fn(() => mockSubscription),
-        bindComponent: jest.fn(() => mockSubscription),
-        registerNavigationButtonPressedListener: jest.fn(() => mockSubscription),
-        registerScreenPoppedListener: jest.fn(() => mockSubscription),
-        registerCommandListener: jest.fn(() => mockSubscription),
-        registerComponentWillAppearListener: jest.fn(() => mockSubscription),
-    });
-
     return {
         ...RNN,
         Navigation: {
             ...RNN.Navigation,
-            events: jest.fn(createMockEvents),
+            events: () => ({
+                registerAppLaunchedListener: jest.fn(),
+                registerComponentListener: jest.fn(() => {
+                    return {remove: jest.fn()};
+                }),
+                bindComponent: jest.fn(() => {
+                    return {remove: jest.fn()};
+                }),
+                registerNavigationButtonPressedListener: jest.fn(() => {
+                    return {remove: jest.fn()};
+                }),
+            }),
             setRoot: jest.fn(),
             pop: jest.fn(),
             push: jest.fn(),
@@ -368,8 +367,7 @@ jest.mock('react-native-navigation', () => {
             popToRoot: jest.fn(),
             mergeOptions: jest.fn(),
             showOverlay: jest.fn(),
-            dismissOverlay: jest.fn(() => Promise.resolve()),
-            dismissAllOverlays: jest.fn(() => Promise.resolve()),
+            dismissOverlay: jest.fn(),
             updateProps: jest.fn(),
         },
     };
@@ -397,7 +395,7 @@ jest.mock('react-native-notifications', () => {
             ios: {
                 getDeliveredNotifications: jest.fn().mockImplementation(() => Promise.resolve(deliveredNotifications)),
                 removeDeliveredNotifications: jest.fn((ids) => {
-
+                    // eslint-disable-next-line
                     // @ts-ignore
                     deliveredNotifications = deliveredNotifications.filter((n) => !ids.includes(n.identifier));
                 }),
