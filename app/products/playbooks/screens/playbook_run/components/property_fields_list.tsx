@@ -142,9 +142,12 @@ const PropertyFieldsListComponent = ({
             }
 
             if (propertyField.type === 'select' || propertyField.type === 'multiselect') {
+                // Include value's updateAt in key to force re-render when value changes
+                const selectKey = `${propertyField.id}-${value?.updateAt ?? 'no-value'}`;
                 return (
-                    <View key={propertyField.id}>
+                    <View key={selectKey}>
                         <PropertySelectField
+                            key={selectKey}
                             propertyField={propertyField}
                             value={value}
                             onValueChange={handleValueChange}
