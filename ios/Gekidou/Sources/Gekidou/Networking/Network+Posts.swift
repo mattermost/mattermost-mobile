@@ -21,7 +21,10 @@ extension Network {
                 let data = try JSONSerialization.data(withJSONObject: json, options: .prettyPrinted)
                 let headers = ["Content-Type": "application/json; charset=utf-8"]
                 let endpoint = "/posts"
-                let url = buildApiUrl(serverUrl, endpoint)
+                guard let url = buildApiUrl(serverUrl, endpoint) else {
+                    completionHandler(nil, nil, NSError(domain: "GekidouNetwork", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid server URL"]))
+                    return
+                }
                 request(
                     url,
                     withMethod: "POST",
@@ -32,7 +35,8 @@ extension Network {
                 )
             }
         } catch {
-            
+            GekidouLogger.shared.log(.error, "Gekidou Network: Failed to serialize post JSON for server %{public}@ - %{public}@", serverUrl, String(describing: error))
+            completionHandler(nil, nil, error)
         }
     }
     
@@ -46,25 +50,36 @@ extension Network {
         
         if receivingThreads {
             let since = rootId.isEmpty ? nil : Database.default.queryLastPostInThread(withRootId: rootId, forServerUrl: serverUrl)
-            let queryParams = since == nil ? "?perPage=60&fromCreateAt=0&direction=up" : "?fromCreateAt=\(Int64(since!))&direction=down"
+            let queryParams: String
+            if let sinceValue = since {
+                queryParams = "?fromCreateAt=\(Int64(sinceValue))&direction=down"
+            } else {
+                queryParams = "?perPage=60&fromCreateAt=0&direction=up"
+            }
             endpoint = "/posts/\(rootId)/thread\(queryParams)\(additionalParams)"
         } else {
             let since = Database.default.queryPostsSinceForChannel(withId: channelId, forServerUrl: serverUrl)
-            let queryParams = since == nil ? "?page=0&per_page=60" : "?since=\(Int64(since!))"
+            let queryParams: String
+            if let sinceValue = since {
+                queryParams = "?since=\(Int64(sinceValue))"
+            } else {
+                queryParams = "?page=0&per_page=60"
+            }
             endpoint = "/channels/\(channelId)/posts\(queryParams)\(additionalParams)"
         }
-        
-        let url = buildApiUrl(serverUrl, endpoint)
+
+        guard let url = buildApiUrl(serverUrl, endpoint) else {
+            completionHandler(nil, nil, nil)
+            return
+        }
         request(url, usingMethod: "GET", forServerUrl: serverUrl) {data, response, error in
             if let data = data {
                 postResponse = try? JSONDecoder().decode(PostResponse.self, from: data)
             }
 
-            DispatchQueue.main.async {
-                self.processPostsFetched(postResponse, andAlreadyLoadedProfilesIds: alreadyLoadedUserIds,
-                                         usingCRT: isCRTEnabled, forServerUrl: serverUrl,
-                                         completionHandler: completionHandler)
-            }
+            self.processPostsFetched(postResponse, andAlreadyLoadedProfilesIds: alreadyLoadedUserIds,
+                                     usingCRT: isCRTEnabled, forServerUrl: serverUrl,
+                                     completionHandler: completionHandler)
         }
     }
     

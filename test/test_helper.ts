@@ -1180,6 +1180,33 @@ class TestHelperSingleton {
         return playbookRuns;
     };
 
+    fakePlaybook = (overwrite: Partial<Playbook> = {}): Playbook => {
+        return {
+            id: this.generateId(),
+            title: 'Test Playbook',
+            description: 'Test Description',
+            team_id: this.basicTeam?.id || '',
+            create_public_playbook_run: false,
+            delete_at: 0,
+            run_summary_template_enabled: false,
+            run_summary_template: '',
+            channel_name_template: '',
+            channel_mode: '',
+            public: false,
+            default_owner_id: '',
+            default_owner_enabled: false,
+            num_stages: 0,
+            num_steps: 0,
+            num_runs: 0,
+            num_actions: 0,
+            last_run_at: 0,
+            members: [],
+            default_playbook_member_role: '',
+            active_runs: 0,
+            ...overwrite,
+        };
+    };
+
     fakePlaybookRun = (overwrite: Partial<PlaybookRun> = {}): PlaybookRun => {
         const run = this.createPlaybookRuns(1, 0, 0);
 
@@ -1203,6 +1230,18 @@ class TestHelperSingleton {
         return {
             checklist_id: checklistId,
             ...item,
+            ...overwrite,
+        };
+    };
+
+    fakePlaybookRunMetadata = (overwrite: Partial<PlaybookRunMetadata> = {}): PlaybookRunMetadata => {
+        return {
+            channel_name: 'channel-name',
+            channel_display_name: 'Channel Display Name',
+            team_name: 'team-name',
+            num_participants: 5,
+            total_posts: 10,
+            followers: ['user-id-1', 'user-id-2'],
             ...overwrite,
         };
     };

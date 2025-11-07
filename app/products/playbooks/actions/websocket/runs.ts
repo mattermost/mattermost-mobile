@@ -116,11 +116,12 @@ const handlePlaybookChecklistUpdated = async (serverUrl: string, checklistUpdate
     const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
     const models: Model[] = [];
-    const hasChecklistChangedFields = Object.keys(checklistUpdate.fields || {}).length > 0;
+    const fields = checklistUpdate.fields || {};
+    const hasChecklistChangedFields = Object.keys(fields).length > 0;
     if (hasChecklistChangedFields) {
         const checklistModels = await operator.handlePlaybookChecklist({
             checklists: [{
-                ...(checklistUpdate.fields || {}),
+                ...fields,
                 items_order: checklistUpdate.items_order,
                 items: undefined, // Remove the items from the update
                 id: checklistUpdate.id,
