@@ -179,7 +179,6 @@ export default function PlaybookRun({
 
     useAndroidHardwareBackHandler(componentId, () => {
         popTopScreen();
-        return true;
     });
 
     const isParticipant = participants.some((p) => p.id === currentUserId) || owner?.id === currentUserId;

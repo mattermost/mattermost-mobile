@@ -117,7 +117,7 @@ function SelectPlaybook({
     const [searchResults, setSearchResults] = useState<Playbook[]>([]);
 
     const page = useRef<number>(-1);
-    const next = useRef<boolean>(true);
+    const hasMore = useRef<boolean>(true);
 
     // Callbacks
     const clearSearch = useCallback(() => {
@@ -127,7 +127,7 @@ function SelectPlaybook({
     }, []);
 
     const loadMore = useCallback(async () => {
-        if (next.current && !loading) {
+        if (hasMore.current && !loading) {
             setLoading(true);
             const result = await fetchPlaybooks(serverUrl, {
                 team_id: currentTeamId,
@@ -139,7 +139,7 @@ function SelectPlaybook({
             }
 
             page.current++;
-            next.current = Boolean(result.data?.has_more);
+            hasMore.current = Boolean(result.data?.has_more);
             setLoading(false);
         }
     }, [loading, serverUrl, currentTeamId]);
@@ -166,6 +166,8 @@ function SelectPlaybook({
 
             if (result.data) {
                 setSearchResults(result.data.items);
+            } else {
+                setSearchResults(EMPTY_DATA);
             }
 
             setSearching(false);
@@ -247,6 +249,7 @@ function SelectPlaybook({
                 color={theme.buttonBg}
                 containerStyle={style.loadingContainer}
                 size='large'
+                testID='selector.loading'
             />
         );
     }, [loading, style.loadingContainer, theme.buttonBg]);
@@ -311,7 +314,6 @@ function SelectPlaybook({
             style={style.container}
         >
             <View
-                testID='integration_selector.screen'
                 style={style.searchBar}
             >
                 <SearchBar
@@ -331,8 +333,8 @@ function SelectPlaybook({
                     data={shownData}
                     renderItem={renderItem}
                     ListEmptyComponent={renderNoResults}
-                    onEndReached={loadMore}
                     ListFooterComponent={renderLoading}
+                    testID='selector.flat_list'
                 />
             )}
             {!term && (
@@ -343,6 +345,7 @@ function SelectPlaybook({
                     ListEmptyComponent={renderNoResults}
                     onEndReached={loadMore}
                     ListFooterComponent={renderLoading}
+                    testID='selector.section_list'
                 />
             )}
         </SafeAreaView>
