@@ -195,3 +195,4 @@ This fix ensures that when a GM is converted to a private channel, the mobile ap
 
 **Key Takeaway**: The mobile app requires a `MyChannel` record to display channels in the home screen, and this fix ensures that record is created during GM-to-private-channel conversion, just like it is when creating new channels.
 
+

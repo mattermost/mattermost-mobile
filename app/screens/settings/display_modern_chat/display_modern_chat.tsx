@@ -58,3 +58,4 @@ const DisplayModernChat = ({componentId, isModernChatEnabled}: Props) => {
 };
 
 export default DisplayModernChat;
+

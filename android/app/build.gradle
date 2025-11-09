@@ -115,8 +115,8 @@ android {
         applicationId "com.daakia.chat"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 684
-        versionName "2.34.1"
+        versionCode 685
+        versionName "2.34.2"
         testBuildType System.getProperty('testBuildType', 'debug')
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
