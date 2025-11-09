@@ -22,6 +22,7 @@ import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import SecurityManager from '@managers/security_manager';
 import {dismissModal, setButtons} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
+import {mergeNavigationOptions} from '@utils/navigation';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -274,6 +275,18 @@ export default function CreateDirectMessage({
     useEffect(() => {
         setShowToast(selectedCount >= General.MAX_USERS_IN_GM);
     }, [selectedCount]);
+
+    useEffect(() => {
+        const title = selectedCount > 1 ? intl.formatMessage({id: 'create_group.title', defaultMessage: 'Create Group'}) : intl.formatMessage({id: 'create_direct_message.title', defaultMessage: 'Create Direct Message'});
+
+        mergeNavigationOptions(componentId, {
+            topBar: {
+                title: {
+                    text: title,
+                },
+            },
+        });
+    }, [selectedCount, componentId, intl]);
 
     if (startingConversation) {
         return (

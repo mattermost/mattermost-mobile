@@ -16,7 +16,7 @@ import {persistentNotificationsConfirmation} from '@utils/post';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import PostInput from '../post_input';
-import QuickActions from '../quick_actions';
+import QuickActions from '../quick_actions/index';
 import SendAction from '../send_button';
 import Typing from '../typing';
 import Uploads from '../uploads';
@@ -71,10 +71,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
             justifyContent: 'space-between',
             alignItems: 'center',
+            paddingHorizontal: 8,
             paddingBottom: Platform.select({
-                ios: 1,
-                android: 2,
+                ios: 6,
+                android: 8,
             }),
+            paddingTop: 2,
         },
         inputContainer: {
             flex: 1,
@@ -83,21 +85,31 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         inputContentContainer: {
             alignItems: 'stretch',
             paddingTop: Platform.select({
-                ios: 7,
-                android: 0,
+                ios: 8,
+                android: 6,
             }),
+            paddingHorizontal: 4,
         },
         inputWrapper: {
             alignItems: 'flex-end',
             flexDirection: 'row',
             justifyContent: 'center',
-            paddingBottom: 2,
+            paddingTop: 6,
+            paddingBottom: Platform.select({
+                ios: 6,
+                android: 4,
+            }),
             backgroundColor: theme.centerChannelBg,
-            borderWidth: 1,
-            borderBottomWidth: 0,
-            borderColor: changeOpacity(theme.centerChannelColor, 0.20),
-            borderTopLeftRadius: 12,
-            borderTopRightRadius: 12,
+            borderTopWidth: 1,
+            borderTopColor: changeOpacity(theme.centerChannelColor, 0.24),
+            shadowColor: '#000',
+            shadowOffset: {
+                width: 0,
+                height: -2,
+            },
+            shadowOpacity: 0.05,
+            shadowRadius: 8,
+            elevation: 8,
         },
         postPriorityLabel: {
             marginLeft: 12,
@@ -254,6 +266,8 @@ function DraftInput({
                             updatePostPriority={updatePostPriority}
                             canShowPostPriority={canShowPostPriority}
                             focus={focus}
+                            cursorPosition={cursorPosition}
+                            updateCursorPosition={updateCursorPosition}
                         />
                         <SendAction
                             testID={sendActionTestID}

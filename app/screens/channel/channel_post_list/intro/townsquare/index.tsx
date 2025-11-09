@@ -1,6 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-
+/* eslint-disable */
 import React from 'react';
 import {Text, View} from 'react-native';
 
@@ -60,7 +60,6 @@ const TownSquare = ({channelId, displayName, roles, theme}: Props) => {
             />
             <IntroOptions
                 channelId={channelId}
-                header={hasPermission(roles, Permissions.MANAGE_PUBLIC_CHANNEL_PROPERTIES)}
                 canAddMembers={false}
             />
         </View>

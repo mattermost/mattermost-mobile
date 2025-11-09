@@ -25,7 +25,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         icon: {
             alignItems: 'center',
             justifyContent: 'center',
-            padding: 10,
+            padding: 8,
+            borderRadius: 8,
+            minWidth: 36,
+            minHeight: 36,
         },
     };
 });

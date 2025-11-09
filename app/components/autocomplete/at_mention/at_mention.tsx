@@ -239,7 +239,8 @@ const AtMention = ({
         if (useLocal) {
             newSections = makeSections(filteredLocalUsers, [], [], groups, showSpecialMentions, true, buildMemberSection);
         } else {
-            newSections = makeSections(teamMembers, usersInChannel, usersOutOfChannel, groups, showSpecialMentions, buildMemberSection);
+            // Only show users in channel, exclude users out of channel
+            newSections = makeSections(teamMembers, usersInChannel, [], groups, showSpecialMentions, buildMemberSection);
         }
         const nSections = newSections.length;
 

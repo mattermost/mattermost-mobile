@@ -9,12 +9,14 @@ import {distinctUntilChanged, map, switchMap} from 'rxjs/operators';
 
 import {observeChannelsWithCalls} from '@calls/state';
 import ChannelIcon from '@components/channel_icon';
+import CustomStatus from '@components/channel_item/custom_status';
 import CompassIcon from '@components/compass_icon';
 import {General} from '@constants';
 import {withServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
+import {observeCurrentUserId} from '@queries/servers/system';
 import {observeUser} from '@queries/servers/user';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getFormattedTime} from '@utils/time';
@@ -38,6 +40,7 @@ type Props = {
     locale: string;
     teammateDisplayNameSetting: string;
     hasCall: boolean;
+    teammateId?: string;
 };
 
 const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -131,9 +134,17 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
         flexDirection: 'row',
         alignItems: 'center',
     },
+    nameRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flexShrink: 1,
+    },
+    customStatus: {
+        marginLeft: 4,
+    },
 }));
 
-const DaakiaChannelItem = ({channel, isUnread, onPress, currentUserId, lastPost, isMilitaryTime, lastPostSender, locale, teammateDisplayNameSetting, hasCall}: Props) => {
+const DaakiaChannelItem = ({channel, isUnread, onPress, currentUserId, lastPost, isMilitaryTime, lastPostSender, locale, teammateDisplayNameSetting, hasCall, teammateId}: Props) => {
     const theme = useTheme();
     const styles = getStyles(theme);
 
@@ -141,7 +152,7 @@ const DaakiaChannelItem = ({channel, isUnread, onPress, currentUserId, lastPost,
     const channelType = channel.type || 'O';
 
     // Check if it's a DM with yourself (same logic as original)
-    const teammateId = (channelType === General.DM_CHANNEL) ? getUserIdFromChannelName(currentUserId, channel.name) : undefined;
+    // Note: teammateId is now passed as a prop from the observable
     const isOwnDirectMessage = (channelType === General.DM_CHANNEL) && currentUserId === teammateId;
 
     if (isOwnDirectMessage) {
@@ -226,12 +237,20 @@ const DaakiaChannelItem = ({channel, isUnread, onPress, currentUserId, lastPost,
 
             <View style={styles.content}>
                 <View style={styles.header}>
-                    <Text
-                        style={[styles.name, isUnread && styles.nameUnread]}
-                        numberOfLines={1}
-                    >
-                        {displayName}
-                    </Text>
+                    <View style={styles.nameRow}>
+                        <Text
+                            style={[styles.name, isUnread && styles.nameUnread]}
+                            numberOfLines={1}
+                        >
+                            {displayName}
+                        </Text>
+                        {teammateId && (
+                            <CustomStatus
+                                userId={teammateId}
+                                style={styles.customStatus}
+                            />
+                        )}
+                    </View>
                     <View style={styles.filler}/>
                     {hasCall &&
                         <CompassIcon
@@ -277,11 +296,22 @@ const enhanced = withObservables(['lastPost', 'channel'], ({database, lastPost, 
         distinctUntilChanged(),
     );
 
+    // Get teammateId for DMs to show custom status
+    const currentUserId = observeCurrentUserId(database);
+    const channelType = channel.type || 'O';
+    const teammateId = (channelType === General.DM_CHANNEL) ? currentUserId.pipe(
+        switchMap((userId) => {
+            const otherUserId = getUserIdFromChannelName(userId, channel.name);
+            return of$(otherUserId);
+        }),
+    ) : of$(undefined);
+
     return {
         isMilitaryTime,
         lastPostSender,
         teammateDisplayNameSetting,
         hasCall,
+        teammateId,
     };
 });
 
