@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
@@ -61,7 +61,7 @@ export const ConvertGMToChannelForm = ({
     const serverUrl = useServerUrl();
     const {formatList, formatMessage} = useIntl();
 
-    const [selectedTeam, setSelectedTeam] = useState<Team>(commonTeams[0]);
+    const [selectedTeam, setSelectedTeam] = useState<Team | undefined>(commonTeams?.[0]);
     const [newChannelName, setNewChannelName] = useState<string>('');
     const [errorMessage, setErrorMessage] = useState<string>('');
     const [channelNameErrorMessage, setChannelNameErrorMessage] = useState<string>('');
@@ -70,12 +70,25 @@ export const ConvertGMToChannelForm = ({
     const userDisplayNames = useMemo(() => profiles.map((profile) => displayUsername(profile, locale, teammateNameDisplay)), [profiles, teammateNameDisplay, locale]);
     const submitButtonEnabled = !conversionInProgress && selectedTeam && newChannelName.trim();
 
+    // Update selectedTeam when commonTeams changes
+    useEffect(() => {
+        if (commonTeams && commonTeams.length > 0 && !selectedTeam) {
+            setSelectedTeam(commonTeams[0]);
+        }
+    }, [commonTeams, selectedTeam]);
+
     const handleOnPress = usePreventDoubleTap(useCallback(async () => {
         if (!submitButtonEnabled) {
             return;
         }
 
         setConversionInProgress(true);
+
+        if (!selectedTeam) {
+            setErrorMessage(formatMessage({id: 'channel_info.convert_gm_to_channel.conversion_error', defaultMessage: 'Something went wrong. Failed to convert Group Message to Private Channel.'}));
+            setConversionInProgress(false);
+            return;
+        }
 
         const {updatedChannel, error} = await convertGroupMessageToPrivateChannel(serverUrl, channelId, selectedTeam.id, newChannelName);
         if (error) {
@@ -99,11 +112,13 @@ export const ConvertGMToChannelForm = ({
         }
 
         setErrorMessage('');
-        switchToChannelById(serverUrl, updatedChannel.id, selectedTeam.id);
+        if (selectedTeam) {
+            switchToChannelById(serverUrl, updatedChannel.id, selectedTeam.id);
+        }
         setConversionInProgress(false);
-    }, [submitButtonEnabled, serverUrl, channelId, selectedTeam.id, newChannelName, formatMessage]));
+    }, [submitButtonEnabled, serverUrl, channelId, selectedTeam, newChannelName, formatMessage]));
 
-    if (commonTeams.length === 0) {
+    if (!commonTeams || commonTeams.length === 0) {
         return (
             <NoCommonTeamForm containerStyles={styles.container}/>
         );
