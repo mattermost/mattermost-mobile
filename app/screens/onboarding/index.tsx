@@ -117,8 +117,8 @@ const Onboarding = ({
         >
             <ImageBackground 
                 source={Appearance.getColorScheme() === 'dark' 
-                    ? require('../../assets/darkbackground.png')
-                    : require('../../assets/lightbackground.png')
+                    ? require('../../../assets/base/images/darkbackground.png')
+                    : require('../../../assets/base/images/lightbackground.png')
                 }
                 style={{position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0.2}}
                 resizeMode="cover"
