@@ -32,7 +32,7 @@ import MarkdownTable from './markdown_table';
 import MarkdownTableCell, {type MarkdownTableCellProps} from './markdown_table_cell';
 import MarkdownTableImage from './markdown_table_image';
 import MarkdownTableRow, {type MarkdownTableRowProps} from './markdown_table_row';
-import {addListItemIndices, combineTextNodes, highlightMentions, highlightWithoutNotification, highlightSearchPatterns, parseTaskLists, pullOutImages} from './transform';
+import {addListItemIndices, combineTextNodes, highlightMentions, highlightWithoutNotification, highlightSearchPatterns, parseTaskLists, pullOutImages, transformMentionsInText} from './transform';
 
 import type {ChannelMentions} from './channel_mention/channel_mention';
 import type {
@@ -676,6 +676,10 @@ const Markdown = ({
             ast = addListItemIndices(ast);
             ast = pullOutImages(ast);
             ast = parseTaskLists(ast);
+
+            // Transform text nodes containing @mentions into at_mention nodes if not already parsed
+            ast = transformMentionsInText(ast);
+
             if (mentionKeys) {
                 ast = highlightMentions(ast, mentionKeys);
             }

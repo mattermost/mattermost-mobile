@@ -381,3 +381,150 @@ export function parseTaskLists(ast: Node) {
 
     return ast;
 }
+
+// Transform text nodes containing @mentions into at_mention nodes
+// This handles cases where the parser doesn't automatically parse mentions (e.g., UUID usernames)
+export function transformMentionsInText(ast: Node) {
+    const walker = ast.walker();
+    const mentionPattern = /@([a-z0-9.\-_]+)/gi;
+
+    let e;
+    while ((e = walker.next())) {
+        if (!e.entering) {
+            continue;
+        }
+
+        const node = e.node;
+
+        if (node.type === 'text' && node.literal) {
+            const literal = node.literal;
+            const parent = (node as any)._parent;
+
+            // Skip if inside code block, link, or image
+            if (parent && (parent.type === 'code' || parent.type === 'link' || parent.type === 'image')) {
+                continue;
+            }
+
+            // Skip if parent is null (shouldn't happen, but be safe)
+            if (!parent) {
+                continue;
+            }
+
+            // Find all mentions in this text node
+            const matches: Array<{index: number; length: number; mentionName: string}> = [];
+            const regex = new RegExp(mentionPattern);
+            let match;
+
+            while ((match = regex.exec(literal)) !== null) {
+                matches.push({
+                    index: match.index,
+                    length: match[0].length,
+                    mentionName: match[1],
+                });
+            }
+
+            if (matches.length === 0) {
+                continue;
+            }
+
+            // Process only the first match to avoid complexity with multiple matches
+            // Process from right to left to preserve indices
+            matches.reverse();
+            const {index, length, mentionName} = matches[0];
+
+            const beforeText = literal.substring(0, index);
+            const afterText = literal.substring(index + length);
+
+            // Create mention node
+            const mentionNode = new Node('at_mention') as any;
+            mentionNode.mentionName = mentionName;
+            const nodeAny = node as any;
+            const parentAny = parent as any;
+
+            // Update current node to be the text before mention
+            if (beforeText) {
+                node.literal = beforeText;
+            } else {
+                // If no text before, we need to replace the node
+                // Set up mention node in place of current node
+                mentionNode._parent = parentAny;
+                mentionNode._prev = nodeAny._prev;
+                mentionNode._next = nodeAny._next;
+
+                if (nodeAny._prev) {
+                    nodeAny._prev._next = mentionNode;
+                }
+                if (nodeAny._next) {
+                    nodeAny._next._prev = mentionNode;
+                }
+
+                if (parentAny._firstChild === node) {
+                    parentAny._firstChild = mentionNode;
+                }
+                if (parentAny._lastChild === node) {
+                    parentAny._lastChild = mentionNode;
+                }
+
+                // Create text node for text after mention if needed
+                if (afterText) {
+                    const afterNode = new Node('text') as any;
+                    afterNode.literal = afterText;
+                    afterNode._parent = parentAny;
+                    afterNode._prev = mentionNode;
+                    afterNode._next = mentionNode._next;
+                    mentionNode._next = afterNode;
+
+                    if (afterNode._next) {
+                        afterNode._next._prev = afterNode;
+                    }
+
+                    if (parentAny._lastChild === mentionNode) {
+                        parentAny._lastChild = afterNode;
+                    }
+                }
+
+                // Resume at the mention node to continue processing
+                walker.resumeAt(mentionNode, false);
+                continue;
+            }
+
+            // If there's text before, insert mention node after current node
+            mentionNode._parent = parentAny;
+            mentionNode._prev = node;
+            mentionNode._next = nodeAny._next;
+            nodeAny._next = mentionNode;
+
+            if (mentionNode._next) {
+                mentionNode._next._prev = mentionNode;
+            }
+
+            // Update parent's last child if needed
+            if (parentAny._lastChild === node) {
+                parentAny._lastChild = mentionNode;
+            }
+
+            // Create text node for text after mention if needed
+            if (afterText) {
+                const afterNode = new Node('text') as any;
+                afterNode.literal = afterText;
+                afterNode._parent = parentAny;
+                afterNode._prev = mentionNode;
+                afterNode._next = mentionNode._next;
+                mentionNode._next = afterNode;
+
+                if (afterNode._next) {
+                    afterNode._next._prev = afterNode;
+                }
+
+                if (parentAny._lastChild === mentionNode) {
+                    parentAny._lastChild = afterNode;
+                }
+            }
+
+            // Resume at the mention node to continue processing
+            walker.resumeAt(mentionNode, false);
+        }
+    }
+
+    return ast;
+}
