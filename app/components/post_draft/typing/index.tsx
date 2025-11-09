@@ -2,10 +2,9 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {DeviceEventEmitter} from 'react-native';
-import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import {DeviceEventEmitter, Text, View} from 'react-native';
+import Animated, {useAnimatedStyle, useSharedValue, withRepeat, withSequence, withTiming} from 'react-native-reanimated';
 
-import FormattedText from '@components/formatted_text';
 import {Events} from '@constants';
 import {TYPING_HEIGHT} from '@constants/post_draft';
 import {useTheme} from '@context/theme';
@@ -19,10 +18,52 @@ type Props = {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
+        container: {
+            paddingHorizontal: 16,
+            paddingTop: 8,
+            paddingBottom: 4,
+            alignItems: 'flex-start',
+        },
+        bubble: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
+            borderTopLeftRadius: 2,
+            borderTopRightRadius: 10,
+            borderBottomRightRadius: 10,
+            borderBottomLeftRadius: 2,
+            paddingVertical: 8,
+            paddingHorizontal: 12,
+            maxWidth: '85%',
+            alignSelf: 'flex-start',
+            minHeight: 32,
+            justifyContent: 'center',
+            shadowColor: '#000',
+            shadowOffset: {
+                width: 0,
+                height: 1,
+            },
+            shadowOpacity: 0.08,
+            shadowRadius: 2,
+            elevation: 2,
+        },
         typing: {
-            color: changeOpacity(theme.centerChannelColor, 0.7),
-            paddingHorizontal: 10,
-            ...typography('Body', 75),
+            color: changeOpacity(theme.centerChannelColor, 0.85),
+            ...typography('Body', 100),
+        },
+        dotsContainer: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginLeft: 4,
+        },
+        dot: {
+            width: 4,
+            height: 4,
+            borderRadius: 2,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.85),
+            marginHorizontal: 2,
+        },
+        animatedContainer: {
+            overflow: 'hidden',
+            backgroundColor: 'transparent',
         },
     };
 });
@@ -40,11 +81,59 @@ function Typing({
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
+    // Animated dots for typing indicator
+    const dot1Opacity = useSharedValue(0.3);
+    const dot2Opacity = useSharedValue(0.3);
+    const dot3Opacity = useSharedValue(0.3);
+
+    useEffect(() => {
+        // Animate dots in sequence
+        dot1Opacity.value = withRepeat(
+            withSequence(
+                withTiming(1, {duration: 400}),
+                withTiming(0.3, {duration: 400}),
+            ),
+            -1,
+            false,
+        );
+        dot2Opacity.value = withRepeat(
+            withSequence(
+                withTiming(0.3, {duration: 400}),
+                withTiming(1, {duration: 400}),
+                withTiming(0.3, {duration: 400}),
+            ),
+            -1,
+            false,
+        );
+        dot3Opacity.value = withRepeat(
+            withSequence(
+                withTiming(0.3, {duration: 400}),
+                withTiming(0.3, {duration: 400}),
+                withTiming(1, {duration: 400}),
+                withTiming(0.3, {duration: 400}),
+            ),
+            -1,
+            false,
+        );
+    }, [dot1Opacity, dot2Opacity, dot3Opacity]);
+
+    const dot1Style = useAnimatedStyle(() => ({
+        opacity: dot1Opacity.value,
+    }));
+
+    const dot2Style = useAnimatedStyle(() => ({
+        opacity: dot2Opacity.value,
+    }));
+
+    const dot3Style = useAnimatedStyle(() => ({
+        opacity: dot3Opacity.value,
+    }));
+
     // This moves the list of post up. This may be rethought by UX in https://mattermost.atlassian.net/browse/MM-39681
     const typingAnimatedStyle = useAnimatedStyle(() => {
         return {
             height: withTiming(typingHeight.value),
-            marginBottom: 4,
+            opacity: withTiming(typingHeight.value > 0 ? 1 : 0),
         };
     });
 
@@ -145,38 +234,53 @@ function Typing({
                 return null;
             case 1:
                 return (
-                    <FormattedText
-                        id='msg_typing.isTyping'
-                        defaultMessage='{user} is typing...'
-                        style={style.typing}
-                        ellipsizeMode='tail'
-                        numberOfLines={1}
-                        values={{
-                            user: nextTyping[0],
-                        }}
-                    />
+                    <View style={style.container}>
+                        <View style={style.bubble}>
+                            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                                <Text
+                                    style={style.typing}
+                                    ellipsizeMode='tail'
+                                    numberOfLines={1}
+                                >
+                                    {`${nextTyping[0]} is typing`}
+                                </Text>
+                                <View style={style.dotsContainer}>
+                                    <Animated.View style={[style.dot, dot1Style]}/>
+                                    <Animated.View style={[style.dot, dot2Style]}/>
+                                    <Animated.View style={[style.dot, dot3Style]}/>
+                                </View>
+                            </View>
+                        </View>
+                    </View>
                 );
             default: {
                 const last = nextTyping.pop();
                 return (
-                    <FormattedText
-                        id='msg_typing.areTyping'
-                        defaultMessage='{users} and {last} are typing...'
-                        style={style.typing}
-                        ellipsizeMode='tail'
-                        numberOfLines={1}
-                        values={{
-                            users: (nextTyping.join(', ')),
-                            last,
-                        }}
-                    />
+                    <View style={style.container}>
+                        <View style={style.bubble}>
+                            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                                <Text
+                                    style={style.typing}
+                                    ellipsizeMode='tail'
+                                    numberOfLines={1}
+                                >
+                                    {`${nextTyping.join(', ')} and ${last} are typing`}
+                                </Text>
+                                <View style={style.dotsContainer}>
+                                    <Animated.View style={[style.dot, dot1Style]}/>
+                                    <Animated.View style={[style.dot, dot2Style]}/>
+                                    <Animated.View style={[style.dot, dot3Style]}/>
+                                </View>
+                            </View>
+                        </View>
+                    </View>
                 );
             }
         }
     };
 
     return (
-        <Animated.View style={typingAnimatedStyle}>
+        <Animated.View style={[typingAnimatedStyle, style.animatedContainer]}>
             {renderTyping()}
         </Animated.View>
     );
