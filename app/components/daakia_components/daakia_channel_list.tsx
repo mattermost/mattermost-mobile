@@ -25,11 +25,6 @@ type Props = {
     locale: string;
 };
 
-const INITIAL_BATCH_TO_RENDER = 20;
-const MAX_TO_RENDER_PER_BATCH = 10;
-const SCROLL_EVENT_THROTTLE = 16;
-const ON_END_REACHED_THRESHOLD = 0.5;
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -60,11 +55,6 @@ const DaakiaChannelList = ({
 
     // Sorting is now handled in the observable chain, just use allChannels directly
     const channelsToShow = allChannels;
-    
-    // Smart loading: if total channels <= 30, render all at once. Otherwise, use batching
-    const totalChannels = channelsToShow.length;
-    const shouldRenderAll = totalChannels > 0 && totalChannels <= 30;
-    const initialRender = shouldRenderAll ? totalChannels : Math.min(INITIAL_BATCH_TO_RENDER, totalChannels);
 
     const renderChannelItem = useCallback(({item}: {item: ChannelModel}) => {
         return (
@@ -108,23 +98,12 @@ const DaakiaChannelList = ({
 
     return (
         <FlatList
-            key={shouldRenderAll ? 'render-all' : 'render-batch'}
             data={channelsToShow}
             renderItem={renderChannelItem}
             keyExtractor={(item) => item.id}
             style={styles.container}
             showsVerticalScrollIndicator={false}
-            initialNumToRender={initialRender}
-            maxToRenderPerBatch={shouldRenderAll ? totalChannels : MAX_TO_RENDER_PER_BATCH}
-            windowSize={shouldRenderAll ? 1 : 10}
-            updateCellsBatchingPeriod={50}
-            removeClippedSubviews={!shouldRenderAll}
-            scrollEventThrottle={SCROLL_EVENT_THROTTLE}
             keyboardShouldPersistTaps='handled'
-
-            // @ts-expect-error strictMode not included in the types
-
-            strictMode={true}
         />
     );
 };
