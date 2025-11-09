@@ -72,18 +72,18 @@ const showPasteFilesErrorDialog = (intl: IntlShape) => {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     input: {
         color: theme.centerChannelColor,
-        fontSize: 15,
-        lineHeight: 20,
-        paddingHorizontal: 12,
+        fontSize: 16,
+        lineHeight: 22,
+        paddingHorizontal: 16,
         paddingTop: Platform.select({
-            ios: 6,
-            android: 8,
+            ios: 8,
+            android: 10,
         }),
         paddingBottom: Platform.select({
-            ios: 6,
-            android: 2,
+            ios: 8,
+            android: 6,
         }),
-        minHeight: 30,
+        minHeight: 36,
     },
 }));
 

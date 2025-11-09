@@ -31,13 +31,15 @@ type Props = {
     updateCursorPosition: (position: number) => void;
 }
 
-export const QUICK_ACTIONS_HEIGHT = 44;
+export const QUICK_ACTIONS_HEIGHT = 40;
 
 const style = StyleSheet.create({
     quickActionsContainer: {
         display: 'flex',
         flexDirection: 'row',
         height: QUICK_ACTIONS_HEIGHT,
+        alignItems: 'center',
+        gap: 4,
     },
 });
 
