@@ -16,7 +16,7 @@ import {persistentNotificationsConfirmation} from '@utils/post';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import PostInput from '../post_input';
-import QuickActions from '../quick_actions';
+import QuickActions from '../quick_actions/index';
 import SendAction from '../send_button';
 import Typing from '../typing';
 import Uploads from '../uploads';
@@ -254,6 +254,8 @@ function DraftInput({
                             updatePostPriority={updatePostPriority}
                             canShowPostPriority={canShowPostPriority}
                             focus={focus}
+                            cursorPosition={cursorPosition}
+                            updateCursorPosition={updateCursorPosition}
                         />
                         <SendAction
                             testID={sendActionTestID}

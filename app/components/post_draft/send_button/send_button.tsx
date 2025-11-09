@@ -33,9 +33,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         sendButton: {
             backgroundColor: theme.buttonBg,
-            borderRadius: 4,
-            height: 32,
-            width: 80,
+            borderRadius: 20,
+            height: 40,
+            width: 40,
             alignItems: 'center',
             justifyContent: 'center',
         },
@@ -109,7 +109,7 @@ const SendButton: React.FC<Props> = ({
                 <View style={viewStyle}>
                     <CompassIcon
                         name='send'
-                        size={24}
+                        size={18}
                         color={buttonColor}
                     />
                 </View>

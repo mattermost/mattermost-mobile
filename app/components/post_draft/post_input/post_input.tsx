@@ -5,7 +5,7 @@ import {useHardwareKeyboardEvents} from '@mattermost/hardware-keyboard';
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import PasteableTextInput, {type PastedFile, type PasteInputRef} from '@mattermost/react-native-paste-input';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {defineMessage, type IntlShape, useIntl} from 'react-intl';
+import {type IntlShape, useIntl} from 'react-intl';
 import {
     Alert, AppState, type AppStateStatus, DeviceEventEmitter, type EmitterSubscription, Keyboard,
     type NativeSyntheticEvent, Platform, type TextInputSelectionChangeEventData,
@@ -67,17 +67,7 @@ const showPasteFilesErrorDialog = (intl: IntlShape) => {
     );
 };
 
-const getPlaceHolder = (rootId?: string) => {
-    let placeholder;
-
-    if (rootId) {
-        placeholder = defineMessage({id: 'create_post.thread_reply', defaultMessage: 'Reply to this thread...'});
-    } else {
-        placeholder = defineMessage({id: 'create_post.write', defaultMessage: 'Write to {channelDisplayName}'});
-    }
-
-    return placeholder;
-};
+// Removed getPlaceHolder function - using hardcoded text instead
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     input: {
@@ -99,7 +89,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 export default function PostInput({
     testID,
-    channelDisplayName,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    channelDisplayName, // Unused but provided by wrapper
     channelId,
     maxMessageLength,
     rootId,
@@ -338,7 +329,7 @@ export default function PostInput({
             onFocus={onFocus}
             onPaste={onPaste}
             onSelectionChange={handlePostDraftSelectionChanged}
-            placeholder={intl.formatMessage(getPlaceHolder(rootId), {channelDisplayName})}
+            placeholder='Type your message here'
             placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
             ref={inputRef}
             smartPunctuation='disable'

@@ -5,6 +5,7 @@ import React from 'react';
 import {StyleSheet, View} from 'react-native';
 
 import CameraAction from './camera_quick_action';
+import EmojiAction from './emoji_quick_action';
 import FileAction from './file_quick_action';
 import ImageAction from './image_quick_action';
 import InputAction from './input_quick_action';
@@ -26,6 +27,8 @@ type Props = {
     postPriority: PostPriority;
     updatePostPriority: (postPriority: PostPriority) => void;
     focus: () => void;
+    cursorPosition: number;
+    updateCursorPosition: (position: number) => void;
 }
 
 export const QUICK_ACTIONS_HEIGHT = 44;
@@ -52,12 +55,15 @@ export default function QuickActions({
     postPriority,
     updatePostPriority,
     focus,
+    cursorPosition,
+    updateCursorPosition,
 }: Props) {
     const atDisabled = value[value.length - 1] === '@';
     const slashDisabled = value.length > 0;
 
     const atInputActionTestID = `${testID}.at_input_action`;
     const slashInputActionTestID = `${testID}.slash_input_action`;
+    const emojiActionTestID = `${testID}.emoji_action`;
     const fileActionTestID = `${testID}.file_action`;
     const imageActionTestID = `${testID}.image_action`;
     const cameraActionTestID = `${testID}.camera_action`;
@@ -92,6 +98,14 @@ export default function QuickActions({
                     focus={focus}
                 />
             )}
+            <EmojiAction
+                testID={emojiActionTestID}
+                value={value}
+                updateValue={updateValue}
+                cursorPosition={cursorPosition}
+                updateCursorPosition={updateCursorPosition}
+                focus={focus}
+            />
             <FileAction
                 testID={fileActionTestID}
                 {...uploadProps}
