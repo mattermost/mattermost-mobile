@@ -9,7 +9,6 @@ import AddMembersBox from '@components/channel_actions/add_members_box';
 import CopyChannelLinkBox from '@components/channel_actions/copy_channel_link_box';
 import FavoriteBox from '@components/channel_actions/favorite_box';
 import MutedBox from '@components/channel_actions/mute_box';
-import SetHeaderBox from '@components/channel_actions/set_header_box';
 import {useServerUrl} from '@context/server';
 import {dismissBottomSheet} from '@screens/navigation';
 import {isTypeDMorGM} from '@utils/channel';
@@ -70,20 +69,15 @@ const ChannelActions = ({
                 showSnackBar={!inModal}
                 testID={testID}
             />
-            <View style={styles.separator}/>
-            {isDM &&
-                <SetHeaderBox
-                    channelId={channelId}
-                    inModal={inModal}
-                    testID={`${testID}.set_header.action`}
-                />
-            }
             {canManageMembers &&
-                <AddMembersBox
-                    channelId={channelId}
-                    inModal={inModal}
-                    testID={`${testID}.add_members.action`}
-                />
+                <>
+                    <View style={styles.separator}/>
+                    <AddMembersBox
+                        channelId={channelId}
+                        inModal={inModal}
+                        testID={`${testID}.add_members.action`}
+                    />
+                </>
             }
             {!isDM && !callsEnabled &&
                 <>

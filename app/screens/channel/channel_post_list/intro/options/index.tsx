@@ -7,11 +7,9 @@ import {StyleSheet, View} from 'react-native';
 import AddMembersBox from '@components/channel_actions/add_members_box';
 import FavoriteBox from '@components/channel_actions/favorite_box';
 import InfoBox from '@components/channel_actions/info_box';
-import SetHeaderBox from '@components/channel_actions/set_header_box';
 
 type Props = {
     channelId: string;
-    header?: boolean;
     favorite?: boolean;
     canAddMembers?: boolean;
 }
@@ -39,7 +37,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const IntroOptions = ({channelId, header, favorite, canAddMembers}: Props) => {
+const IntroOptions = ({channelId, favorite, canAddMembers}: Props) => {
     return (
         <View style={styles.container}>
             {canAddMembers &&
@@ -51,13 +49,6 @@ const IntroOptions = ({channelId, header, favorite, canAddMembers}: Props) => {
             />
             }
 
-            {header &&
-            <SetHeaderBox
-                channelId={channelId}
-                containerStyle={[styles.item, styles.margin]}
-                testID='channel_post_list.intro_options.set_header.action'
-            />
-            }
             {favorite &&
             <FavoriteBox
                 channelId={channelId}

@@ -213,7 +213,6 @@ const DirectChannel = ({
             {message}
             <IntroOptions
                 channelId={channel.id}
-                header={true}
                 favorite={true}
                 canAddMembers={false}
             />

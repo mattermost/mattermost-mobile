@@ -166,7 +166,6 @@ const PublicOrPrivateChannel = ({channel, creator, roles, theme}: Props) => {
             </Text>
             <IntroOptions
                 channelId={channel.id}
-                header={canSetHeader}
                 canAddMembers={canManagePeople}
             />
         </View>
