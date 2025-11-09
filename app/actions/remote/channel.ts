@@ -1418,6 +1418,17 @@ export const convertGroupMessageToPrivateChannel = async (serverUrl: string, cha
 
             const models: Model[] = [existingChannel];
 
+            // Update MyChannel record for the new team
+            const {currentUserId} = await getCommonSystemValues(database);
+            const member = await client.getChannelMember(channelId, currentUserId);
+            if (member) {
+                const myChannelModels = await prepareMyChannelsForTeam(operator, targetTeamId, [updatedChannel], [member]);
+                if (myChannelModels.length) {
+                    const resolvedMyChannelModels = await Promise.all(myChannelModels);
+                    models.push(...resolvedMyChannelModels.flat());
+                }
+            }
+
             const {models: categoryUpdateModels} = await handleConvertedGMCategories(serverUrl, channelId, targetTeamId, true);
             if (categoryUpdateModels) {
                 models.push(...categoryUpdateModels);
