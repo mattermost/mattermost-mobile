@@ -16,14 +16,17 @@ import {Events, Screens} from '@constants';
 import {NOTIFY_ALL_MEMBERS} from '@constants/post_draft';
 import {MESSAGE_TYPE, SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useServerUrl} from '@context/server';
+import DatabaseManager from '@database/manager';
 import DraftUploadManager from '@managers/draft_upload_manager';
+import {queryAllUsers, getTeammateNameDisplay, getCurrentUser} from '@queries/servers/user';
 import * as DraftUtils from '@utils/draft';
 import {isReactionMatch} from '@utils/emoji/helpers';
 import {getErrorMessage, getFullErrorMessage} from '@utils/errors';
+import {logError} from '@utils/log';
 import {scheduledPostFromPost} from '@utils/post';
 import {canPostDraftInChannelOrThread} from '@utils/scheduled_post';
 import {showSnackBar} from '@utils/snack_bar';
-import {confirmOutOfOfficeDisabled} from '@utils/user';
+import {confirmOutOfOfficeDisabled, displayUsername} from '@utils/user';
 
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 
@@ -108,11 +111,89 @@ export const useHandleSendMessage = ({
 
     const doSubmitMessage = useCallback(async (schedulingInfo?: SchedulingInfo) => {
         const postFiles = files.filter((f) => !f.failed);
+
+        // ============================================================================
+        // FEATURE: Display Name to Username Conversion for Mentions
+        // ============================================================================
+        // This section converts display names (e.g., "@John Doe") back to usernames
+        // (e.g., "@john.doe") before sending the post to the server.
+        //
+        // WHY: When "Teammate Name Display" is set to "Show first and last name",
+        //      users see full names in the text field when selecting mentions from
+        //      autocomplete. However, the server requires usernames for proper
+        //      mention parsing and notifications. This conversion ensures:
+        //      1. Users see friendly display names in the UI
+        //      2. Server receives correct usernames for processing
+        //      3. Notifications and mentions work correctly
+        //
+        // HOW IT WORKS:
+        // 1. Build a reverse mapping of display names -> usernames for all users
+        // 2. Only map users whose display name differs from username and contains spaces
+        // 3. Escape special regex characters in display names for safe pattern matching
+        // 4. Sort display names by length (longest first) to handle nested names
+        // 5. Replace @displayName patterns with @username in the message
+        //
+        // RELATED CHANGES:
+        // - at_mention_item/index.tsx: Modified to insert display names in text field
+        // - This file: Converts display names to usernames before server submission
+        // ============================================================================
+        let message = value;
+
+        try {
+            const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+            const users = await queryAllUsers(database).fetch();
+            const currentUser = await getCurrentUser(database);
+            const teammateNameDisplay = await getTeammateNameDisplay(database);
+            const locale = currentUser?.locale || intl.locale;
+
+            // Create a reverse mapping: display name -> username
+            // This map will be used to convert display names back to usernames
+            const displayNameToUsername = new Map<string, string>();
+
+            for (const user of users) {
+                const displayName = displayUsername(user, locale, teammateNameDisplay, false);
+
+                // Only map if display name is different from username and has spaces (full name)
+                // This ensures we only convert actual full names, not usernames that happen to match
+                if (displayName !== user.username && displayName.includes(' ')) {
+                    // Escape special regex characters in display name to prevent regex injection
+                    // Characters like . * + ? ^ $ { } ( ) | [ ] \ need to be escaped
+                    const escapedDisplayName = displayName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    displayNameToUsername.set(escapedDisplayName, user.username);
+                }
+            }
+
+            // Replace @displayName with @username in the message
+            if (displayNameToUsername.size > 0) {
+                // Sort by length (longest first) to handle cases where one display name contains another
+                // Example: "John Doe" and "John Doe Jr" - we want to match "John Doe Jr" first
+                const sortedDisplayNames = Array.from(displayNameToUsername.keys()).sort((a, b) => b.length - a.length);
+
+                for (const displayName of sortedDisplayNames) {
+                    const username = displayNameToUsername.get(displayName)!;
+
+                    // Match @displayName with word boundaries, handling spaces
+                    // Pattern: @displayName followed by whitespace, end of string, or non-word character
+                    // This ensures we match complete names, not partial matches
+                    const regex = new RegExp(`@${displayName}(?=\\s|$|[^\\w\\s-])`, 'g');
+                    message = message.replace(regex, `@${username}`);
+                }
+            }
+        } catch (error) {
+            // If conversion fails, use original message
+            // This ensures the message is still sent even if conversion fails
+            logError(error, 'Failed to convert display names to usernames');
+        }
+
+        // ============================================================================
+        // END OF DISPLAY NAME TO USERNAME CONVERSION
+        // ============================================================================
+
         const post = {
             user_id: currentUserId,
             channel_id: channelId,
             root_id: rootId,
-            message: value,
+            message, // ← Now uses converted message
         } as Post;
 
         if (!rootId && (

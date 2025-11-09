@@ -362,21 +362,21 @@ const DaakiaPost = ({
 
     // TEMP LOGS: dump post data to inspect plugin payloads and authors (Daakia UI)
     // eslint-disable-next-line no-console
-    console.log('[DAAKIA_POST_RENDER]', {
-        id: post.id,
-        channelId: post.channelId,
-        userId: post.userId,
-        type: post.type,
-        message: post.message,
-        props: post.props,
-        metadata: post.metadata,
-    });
+    // console.log('[DAAKIA_POST_RENDER]', {
+    //     id: post.id,
+    //     channelId: post.channelId,
+    //     userId: post.userId,
+    //     type: post.type,
+    //     message: post.message,
+    //     props: post.props,
+    //     metadata: post.metadata,
+    // });
 
     // Example filter: plugin/webhook/app-originated posts
     const hasAppId = Boolean(post.props && ('app_id' in post.props));
     if (post.props?.from_webhook || post.props?.attachments || hasAppId) {
         // eslint-disable-next-line no-console
-        console.log('[DAAKIA_PLUGIN_POST]', {id: post.id, props: post.props, message: post.message});
+        // console.log('[DAAKIA_PLUGIN_POST]', {id: post.id, props: post.props, message: post.message});
     }
 
     // Example filter: by specific author userId (replace with Sumeet's userId to enable)
