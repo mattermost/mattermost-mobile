@@ -201,9 +201,7 @@ const Markdown = ({
             styles = computeTextStyle(textStyles, baseTextStyle, context);
         }
 
-        if (context.includes('mention_highlight')) {
-            styles = [styles, {backgroundColor: theme.mentionHighlightBg}];
-        }
+        // Removed mention highlight background - mentions only use underline, same text color as post
 
         return (
             <Text
@@ -214,7 +212,7 @@ const Markdown = ({
                 {literal}
             </Text>
         );
-    }, [baseTextStyle, disableHeading, managedConfig.copyAndPasteProtection, textStyles, theme.mentionHighlightBg]);
+    }, [baseTextStyle, disableHeading, managedConfig.copyAndPasteProtection, textStyles]);
 
     const renderAtMention = useCallback(({context, mentionName}: MarkdownAtMentionRenderer) => {
         if (disableAtMentions) {

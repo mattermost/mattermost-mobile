@@ -90,7 +90,6 @@ const AtMention = ({
         }
 
         // Only fetch the user or group on mount
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const openUserProfile = () => {
@@ -199,7 +198,8 @@ const AtMention = ({
     }
 
     if (suffix) {
-        const suffixStyle = {...StyleSheet.flatten(styleText), color: theme.centerChannelColor};
+        // Suffix should use same color as base text (no special color)
+        const suffixStyle = StyleSheet.flatten(styleText);
         suffixElement = (
             <Text style={suffixStyle}>
                 {suffix}
@@ -208,11 +208,24 @@ const AtMention = ({
     }
 
     if (isMention) {
+        // Only apply underline, inherit text color from parent (same as post text)
         mentionTextStyle.push(mentionStyle);
+        // Ensure color matches the base text color (no special mention color)
+        if (styleText) {
+            const flattenedStyle = StyleSheet.flatten(styleText);
+            if (flattenedStyle?.color) {
+                mentionTextStyle.push({color: flattenedStyle.color});
+            }
+        }
     }
 
-    // Keep all functionality (highlighted detection) but only apply underline styling
-    // No background color or special text color - just underline from mentionStyle
+    // Add background color when current user is mentioned (highlighted)
+    if (highlighted) {
+        mentionTextStyle.push({
+            backgroundColor: theme.mentionHighlightBg,
+            color: theme.mentionHighlightLink,
+        });
+    }
 
     return (
         <Text
