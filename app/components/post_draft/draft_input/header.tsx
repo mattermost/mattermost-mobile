@@ -20,8 +20,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginLeft: 12,
-        gap: 7,
+        // Align with text field start: inputWrapper padding (8) + plus button (40) + gap (8)
+        marginLeft: 56,
+        gap: 4,
+        marginBottom: 4,
     },
     error: {
         color: PostPriorityColors.URGENT,
@@ -30,7 +32,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: theme.onlineIndicator,
     },
     paddingTopStyle: {
-        paddingTop: Platform.select({ios: 6, android: 8}),
+        paddingTop: Platform.select({ios: 2, android: 2}),
     },
 }));
 

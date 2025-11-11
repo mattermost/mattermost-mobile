@@ -16,7 +16,6 @@ type Props = {
     testID?: string;
     canUploadFiles: boolean;
     fileCount: number;
-    isPostPriorityEnabled: boolean;
     canShowPostPriority?: boolean;
     canShowSlashCommands?: boolean;
     maxFileCount: number;
@@ -49,7 +48,6 @@ export default function QuickActions({
     canUploadFiles,
     value,
     fileCount,
-    isPostPriorityEnabled,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     canShowSlashCommands = true, // Used in commented InputAction components
     canShowPostPriority,
@@ -123,7 +121,7 @@ export default function QuickActions({
                 testID={cameraActionTestID}
                 {...uploadProps}
             />
-            {isPostPriorityEnabled && canShowPostPriority && (
+            {canShowPostPriority && (
                 <PostPriorityAction
                     testID={postPriorityActionTestID}
                     postPriority={postPriority}

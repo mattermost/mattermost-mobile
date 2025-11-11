@@ -1,22 +1,32 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useRef} from 'react';
+import {useHardwareKeyboardEvents} from '@mattermost/hardware-keyboard';
+import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, type LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
+import {Keyboard, type LayoutChangeEvent, type NativeSyntheticEvent, Platform, ScrollView, type TextInputSelectionChangeEventData, View} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
+import CompassIcon from '@components/compass_icon';
+import DaakiaInput from '@components/daakia_components/daakia_input';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Screens} from '@constants';
+import {EMOJI_PICKER} from '@constants/screens';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {usePersistentNotificationProps} from '@hooks/persistent_notification_props';
 import {openAsBottomSheet} from '@screens/navigation';
+import {getEmojiByName} from '@utils/emoji/helpers';
 import {persistentNotificationsConfirmation} from '@utils/post';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import PostInput from '../post_input';
-import QuickActions from '../quick_actions/index';
+import CameraQuickAction from '../quick_actions/camera_quick_action';
+import EmojiQuickAction from '../quick_actions/emoji_quick_action';
+import FileQuickAction from '../quick_actions/file_quick_action';
+import ImageQuickAction from '../quick_actions/image_quick_action';
+import InputQuickAction from '../quick_actions/input_quick_action';
+import PostPriorityAction from '../quick_actions/post_priority_action';
 import SendAction from '../send_button';
 import Typing from '../typing';
 import Uploads from '../uploads';
@@ -41,13 +51,12 @@ export type Props = {
     persistentNotificationMaxRecipients: number;
 
     // Cursor Position Handler
-    updateCursorPosition: React.Dispatch<React.SetStateAction<number>>;
     cursorPosition: number;
+    updateCursorPosition: React.Dispatch<React.SetStateAction<number>>;
 
     // Send Handler
     sendMessage: (schedulingInfo?: SchedulingInfo) => Promise<void | {data?: boolean; error?: unknown}>;
     canSend: boolean;
-    maxMessageLength: number;
 
     // Draft Handler
     files: FileInfo[];
@@ -58,6 +67,8 @@ export type Props = {
     updatePostInputTop: (top: number) => void;
     setIsFocused: (isFocused: boolean) => void;
     scheduledPostsEnabled: boolean;
+    canUploadFiles?: boolean;
+    canShowSlashCommands?: boolean;
 }
 
 const SAFE_AREA_VIEW_EDGES: Edge[] = ['left', 'right'];
@@ -90,16 +101,44 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             }),
         },
         inputWrapper: {
-            alignItems: 'flex-end',
             flexDirection: 'row',
-            justifyContent: 'center',
-            paddingBottom: 2,
+            alignItems: 'center',
+            paddingHorizontal: 8,
+            paddingVertical: 8,
             backgroundColor: theme.centerChannelBg,
             borderWidth: 1,
             borderBottomWidth: 0,
             borderColor: changeOpacity(theme.centerChannelColor, 0.20),
             borderTopLeftRadius: 12,
             borderTopRightRadius: 12,
+        },
+        inputRow: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            flex: 1,
+            gap: 8,
+        },
+        plusButton: {
+            width: 40,
+            height: 40,
+            borderRadius: 20,
+            backgroundColor: theme.buttonBg,
+            alignItems: 'center',
+            justifyContent: 'center',
+        },
+        plusActionsContainer: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingHorizontal: 8,
+            paddingVertical: 8,
+            gap: 12,
+            backgroundColor: theme.centerChannelBg,
+        },
+        cameraButton: {
+            width: 40,
+            height: 40,
+            alignItems: 'center',
+            justifyContent: 'center',
         },
         postPriorityLabel: {
             marginLeft: 12,
@@ -119,7 +158,6 @@ function DraftInput({
     currentUserId,
     canShowPostPriority,
     files,
-    maxMessageLength,
     rootId = '',
     value,
     uploadFileError,
@@ -127,8 +165,6 @@ function DraftInput({
     canSend,
     updateValue,
     addFiles,
-    updateCursorPosition,
-    cursorPosition,
     updatePostInputTop,
     postPriority,
     updatePostPriority,
@@ -136,14 +172,23 @@ function DraftInput({
     persistentNotificationMaxRecipients,
     setIsFocused,
     scheduledPostsEnabled,
+    canUploadFiles = true,
+    canShowSlashCommands = true,
+    cursorPosition,
+    updateCursorPosition,
 }: Props) {
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const isTablet = useIsTablet();
+    const [showPlusActions, setShowPlusActions] = useState(false);
 
     const handleLayout = useCallback((e: LayoutChangeEvent) => {
         updatePostInputTop(e.nativeEvent.layout.height);
+    }, [updatePostInputTop]);
+
+    const togglePlusActions = useCallback(() => {
+        setShowPlusActions((prev) => !prev);
     }, []);
 
     const inputRef = useRef<PasteInputRef>();
@@ -151,9 +196,43 @@ function DraftInput({
         inputRef.current?.focus();
     }, []);
 
+    const handleEmojiPress = useCallback((emojiName: string) => {
+        const emojiData = getEmojiByName(emojiName, []);
+        let emojiChar: string;
+
+        if (emojiData?.image && emojiData.category !== 'custom') {
+            const codeArray: string[] = emojiData.image.split('-');
+            emojiChar = codeArray.reduce((acc, c) => {
+                return acc + String.fromCodePoint(parseInt(c, 16));
+            }, '');
+        } else {
+            emojiChar = `:${emojiName}:`;
+        }
+
+        const beforeCursor = value.substring(0, cursorPosition);
+        const afterCursor = value.substring(cursorPosition);
+        const newValue = `${beforeCursor}${emojiChar}${afterCursor}`;
+        const newCursorPosition = cursorPosition + emojiChar.length;
+
+        updateValue(newValue);
+        updateCursorPosition(newCursorPosition);
+        focus();
+    }, [value, cursorPosition, updateValue, updateCursorPosition, focus]);
+
+    const onEmojiButtonPress = useCallback(() => {
+        openAsBottomSheet({
+            closeButtonId: 'close-emoji-picker',
+            screen: EMOJI_PICKER,
+            theme,
+            title: intl.formatMessage({id: 'emoji_picker.default', defaultMessage: 'Emoji'}),
+            props: {
+                onEmojiPress: handleEmojiPress,
+            },
+        });
+    }, [theme, intl, handleEmojiPress]);
+
     // Render
     const postInputTestID = `${testID}.post.input`;
-    const quickActionsTestID = `${testID}.quick_actions`;
     const sendActionTestID = `${testID}.send_action`;
     const style = getStyleSheet(theme);
 
@@ -196,6 +275,29 @@ function DraftInput({
 
     const sendActionDisabled = !canSend || noMentionsError;
 
+    // Hardware keyboard: Enter to send, Shift+Enter for newline
+    const onHardwareEnter = useCallback(() => {
+        if (!sendActionDisabled) {
+            handleSendMessage();
+        }
+    }, [handleSendMessage, sendActionDisabled]);
+
+    const onHardwareShiftEnter = useCallback(() => {
+        let newValue: string;
+        updateValue((v) => {
+            newValue = v.substring(0, cursorPosition) + '\n' + v.substring(cursorPosition);
+            return newValue;
+        });
+        updateCursorPosition((pos) => pos + 1);
+    }, [cursorPosition, updateCursorPosition, updateValue]);
+
+    const hardwareEvents = useMemo(() => ({
+        onEnterPressed: onHardwareEnter,
+        onShiftEnterPressed: onHardwareShiftEnter,
+    }), [onHardwareEnter, onHardwareShiftEnter]);
+
+    useHardwareKeyboardEvents(hardwareEvents);
+
     return (
         <>
             <Typing
@@ -224,20 +326,64 @@ function DraftInput({
                         noMentionsError={noMentionsError}
                         postPriority={postPriority}
                     />
-                    <PostInput
-                        testID={postInputTestID}
-                        channelId={channelId}
-                        maxMessageLength={maxMessageLength}
-                        rootId={rootId}
-                        cursorPosition={cursorPosition}
-                        updateCursorPosition={updateCursorPosition}
-                        updateValue={updateValue}
-                        value={value}
-                        addFiles={addFiles}
-                        sendMessage={handleSendMessage}
-                        inputRef={inputRef}
-                        setIsFocused={setIsFocused}
-                    />
+                    <View style={style.inputRow}>
+                        {/* Plus Icon on Left */}
+                        <TouchableWithFeedback
+                            testID={`${testID}.plus_button`}
+                            onPress={togglePlusActions}
+                            style={style.plusButton}
+                            type='opacity'
+                        >
+                            <CompassIcon
+                                name={showPlusActions ? 'close' : 'plus'}
+                                color={theme.buttonColor}
+                                size={20}
+                            />
+                        </TouchableWithFeedback>
+
+                        {/* Text Field with Emoji Inside */}
+                        <View style={{flex: 1}}>
+                            <DaakiaInput
+                                testID={postInputTestID}
+                                value={value}
+                                onChangeText={(text: string) => {
+                                    updateValue(text);
+
+                                    // Update cursor position immediately when text changes
+                                    // This ensures @ mention autocomplete works correctly
+                                    updateCursorPosition(text.length);
+                                }}
+                                onSelectionChange={(e: NativeSyntheticEvent<TextInputSelectionChangeEventData>) => {
+                                    updateCursorPosition(e.nativeEvent.selection.end);
+                                }}
+                                placeholder='Type a message'
+                                inputRef={inputRef}
+                                onFocus={() => setIsFocused(true)}
+                                onBlur={() => setIsFocused(false)}
+                                onEmojiPress={onEmojiButtonPress}
+                            />
+                        </View>
+
+                        {/* Camera Icon or Send Button on Right - based on text input */}
+                        {value.trim().length > 0 ? (
+                            <SendAction
+                                testID={sendActionTestID}
+                                disabled={sendActionDisabled}
+                                sendMessage={handleSendMessage}
+                                showScheduledPostOptions={handleShowScheduledPostOptions}
+                                scheduledPostEnabled={scheduledPostsEnabled}
+                            />
+                        ) : (
+                            <CameraQuickAction
+                                testID={`${testID}.camera_action`}
+                                disabled={!canUploadFiles}
+                                fileCount={files.length}
+                                maxFileCount={10}
+                                maxFilesReached={files.length >= 10}
+                                onUploadFiles={addFiles}
+                            />
+                        )}
+                    </View>
                     <Uploads
                         currentUserId={currentUserId}
                         files={files}
@@ -245,28 +391,66 @@ function DraftInput({
                         channelId={channelId}
                         rootId={rootId}
                     />
-                    <View style={style.actionsContainer}>
-                        <QuickActions
-                            testID={quickActionsTestID}
-                            fileCount={files.length}
-                            addFiles={addFiles}
-                            updateValue={updateValue}
-                            value={value}
-                            postPriority={postPriority}
-                            updatePostPriority={updatePostPriority}
-                            canShowPostPriority={canShowPostPriority}
-                            focus={focus}
-                            cursorPosition={cursorPosition}
-                            updateCursorPosition={updateCursorPosition}
-                        />
-                        <SendAction
-                            testID={sendActionTestID}
-                            disabled={sendActionDisabled}
-                            sendMessage={handleSendMessage}
-                            showScheduledPostOptions={handleShowScheduledPostOptions}
-                            scheduledPostEnabled={scheduledPostsEnabled}
-                        />
-                    </View>
+                    {/* Plus Actions Row - Shows below text field when expanded */}
+                    {showPlusActions && (
+                        <View style={style.plusActionsContainer}>
+                            <InputQuickAction
+                                testID={`${testID}.at_input_action`}
+                                disabled={value[value.length - 1] === '@'}
+                                inputType='at'
+                                updateValue={updateValue}
+                                focus={focus}
+                            />
+                            {canShowSlashCommands && (
+                                <InputQuickAction
+                                    testID={`${testID}.slash_input_action`}
+                                    disabled={value.length > 0}
+                                    inputType='slash'
+                                    updateValue={updateValue}
+                                    focus={focus}
+                                />
+                            )}
+                            <EmojiQuickAction
+                                testID={`${testID}.emoji_action`}
+                                value={value}
+                                updateValue={updateValue}
+                                cursorPosition={cursorPosition}
+                                updateCursorPosition={updateCursorPosition}
+                                focus={focus}
+                            />
+                            <FileQuickAction
+                                testID={`${testID}.file_action`}
+                                disabled={!canUploadFiles}
+                                fileCount={files.length}
+                                maxFileCount={10}
+                                maxFilesReached={files.length >= 10}
+                                onUploadFiles={addFiles}
+                            />
+                            <ImageQuickAction
+                                testID={`${testID}.image_action`}
+                                disabled={!canUploadFiles}
+                                fileCount={files.length}
+                                maxFileCount={10}
+                                maxFilesReached={files.length >= 10}
+                                onUploadFiles={addFiles}
+                            />
+                            <CameraQuickAction
+                                testID={`${testID}.camera_action`}
+                                disabled={!canUploadFiles}
+                                fileCount={files.length}
+                                maxFileCount={10}
+                                maxFilesReached={files.length >= 10}
+                                onUploadFiles={addFiles}
+                            />
+                            {canShowPostPriority && (
+                                <PostPriorityAction
+                                    testID={`${testID}.post_priority_action`}
+                                    postPriority={postPriority}
+                                    updatePostPriority={updatePostPriority}
+                                />
+                            )}
+                        </View>
+                    )}
                 </ScrollView>
             </SafeAreaView>
         </>
