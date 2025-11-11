@@ -74,6 +74,32 @@ describe('PlaybookCard', () => {
         expect(progressBar.props.isActive).toBe(true);
     });
 
+    it('renders all components correctly with API items', () => {
+        const props = getBaseProps();
+        props.run = TestHelper.fakePlaybookRun({
+            name: 'Test Playbook Run',
+            update_at: Date.now() - 1000,
+            channel_id: 'test-channel-id',
+        });
+        const {getByTestId, getByText} = renderWithIntl(<PlaybookCard {...props}/>);
+        expect(getByText('Test Playbook Run')).toBeTruthy();
+        expect(getByText(/Last update/)).toBeTruthy();
+
+        const userChip = getByTestId('user-chip');
+        expect(userChip.props.user).toBe(props.owner);
+        expect(userChip.props.teammateNameDisplay).toBe('username');
+
+        const userAvatarsStack = getByTestId('user-avatars-stack');
+        expect(userAvatarsStack.props.users).toEqual(props.participants);
+        expect(userAvatarsStack.props.channelId).toBe(props.run.channel_id);
+        expect(userAvatarsStack.props.location).toBe(props.location);
+        expect(userAvatarsStack.props.bottomSheetTitle.defaultMessage).toBe('Run Participants');
+
+        const progressBar = getByTestId('progress-bar');
+        expect(progressBar.props.progress).toBe(50);
+        expect(progressBar.props.isActive).toBe(true);
+    });
+
     it('should open user profile modal on user chip press', () => {
         const props = getBaseProps();
         const {getByTestId} = renderWithIntl(<PlaybookCard {...props}/>);
@@ -100,6 +126,28 @@ describe('PlaybookCard', () => {
             expect.anything(),
             props.run.id,
             undefined,
+        );
+        expect(goToPlaybookRunWithChannelSwitch).not.toHaveBeenCalled();
+    });
+
+    it('navigates to playbook run on press for regular location with API items', () => {
+        const props = getBaseProps();
+        props.run = TestHelper.fakePlaybookRun({
+            id: 'test-run-id',
+            name: 'Test Playbook Run',
+            update_at: Date.now() - 1000,
+            channel_id: 'test-channel-id',
+        });
+        const {getByText} = renderWithIntl(<PlaybookCard {...props}/>);
+
+        act(() => {
+            fireEvent.press(getByText('Test Playbook Run'));
+        });
+
+        expect(goToPlaybookRun).toHaveBeenCalledWith(
+            expect.anything(),
+            props.run.id,
+            props.run,
         );
         expect(goToPlaybookRunWithChannelSwitch).not.toHaveBeenCalled();
     });

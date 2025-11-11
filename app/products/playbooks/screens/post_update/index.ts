@@ -18,7 +18,6 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 
 type OwnProps = {
     playbookRunId: string;
-    playbookRun?: PlaybookRun;
 } & WithDatabaseArgs;
 
 const getIds = (checklists: PlaybookChecklistModel[]) => {

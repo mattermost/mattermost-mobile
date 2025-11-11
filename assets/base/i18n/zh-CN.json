@@ -980,8 +980,6 @@
   "pinned_messages.empty.title": "目前没有被固定的消息",
   "playbook.last_updated": "上次更新于 {date}",
   "playbook.participants": "运行参与者",
-  "playbook.runs.finished": "已完成",
-  "playbook.runs.in-progress": "进行中",
   "playbook_run.checklist.dueIn": "{dueDate} 截止",
   "playbook_run.checklist.rerunCommand": "{command}（重新运行）",
   "playbook_run.checklist.taskDetails": "任务详情",

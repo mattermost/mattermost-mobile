@@ -344,4 +344,54 @@ describe('handlePlaybookRunUpdatedIncremental', () => {
         expect(spyHandlePlaybookChecklist).toHaveBeenCalled();
         expect(spyBatchRecords).toHaveBeenCalled();
     });
+
+    it('should handle updates with no checklist items', async () => {
+        await operator.handlePlaybookRun({
+            prepareRecordsOnly: false,
+            runs: mockPlaybookList,
+            processChildren: true,
+        });
+        clearSpies();
+
+        const update = createFakeUpdateFromRun(mockPlaybookRun);
+        update.changed_fields.checklists = undefined;
+
+        const msg = TestHelper.fakeWebsocketMessage({
+            data: {payload: JSON.stringify(update)},
+        });
+
+        jest.mocked(EphemeralStore.getChannelPlaybooksSynced).mockReturnValue(true);
+
+        await handlePlaybookRunUpdatedIncremental(serverUrl, msg);
+
+        expect(spyHandlePlaybookChecklist).not.toHaveBeenCalled();
+        expect(spyHandlePlaybookRun).toHaveBeenCalled();
+        expect(spyHandlePlaybookChecklistItem).not.toHaveBeenCalled();
+        expect(spyBatchRecords).toHaveBeenCalled();
+    });
+
+    it('should handle updates with no updates at all', async () => {
+        await operator.handlePlaybookRun({
+            prepareRecordsOnly: false,
+            runs: mockPlaybookList,
+            processChildren: true,
+        });
+        clearSpies();
+
+        const update = createFakeUpdateFromRun(mockPlaybookRun);
+        update.changed_fields = {};
+
+        const msg = TestHelper.fakeWebsocketMessage({
+            data: {payload: JSON.stringify(update)},
+        });
+
+        jest.mocked(EphemeralStore.getChannelPlaybooksSynced).mockReturnValue(true);
+
+        await handlePlaybookRunUpdatedIncremental(serverUrl, msg);
+
+        expect(spyHandlePlaybookChecklist).not.toHaveBeenCalled();
+        expect(spyHandlePlaybookRun).not.toHaveBeenCalled();
+        expect(spyHandlePlaybookChecklistItem).not.toHaveBeenCalled();
+        expect(spyBatchRecords).not.toHaveBeenCalled();
+    });
 });
