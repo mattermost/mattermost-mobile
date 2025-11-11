@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {memo, useCallback} from 'react';
+import {useIntl} from 'react-intl';
 import {TouchableOpacity, View} from 'react-native';
 import {Text} from 'react-native-gesture-handler';
 
@@ -57,6 +58,7 @@ const PropertyField = ({
     testID,
 }: PropertyFieldProps) => {
     const theme = useTheme();
+    const intl = useIntl();
     const isTablet = useIsTablet();
     const style = getStyleSheet(theme);
 
@@ -104,7 +106,7 @@ const PropertyField = ({
             >
                 <View style={style.labelContainer}>
                     <Text style={style.label}>{`${propertyField.name}: `}</Text>
-                    <Text style={style.value}>{currentValue || 'Tap to edit'}</Text>
+                    <Text style={style.value}>{currentValue || intl.formatMessage({id: 'playbooks.property_field.tap_to_edit', defaultMessage: 'Tap to edit'})}</Text>
                 </View>
             </TouchableOpacity>
         </View>

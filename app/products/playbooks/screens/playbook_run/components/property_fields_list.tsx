@@ -117,9 +117,7 @@ const PropertyFieldsListComponent = ({
     // Render property fields
     const renderPropertyFields = () => {
         if (sortedPropertyFields.length === 0) {
-            return (
-                <></>
-            );
+            return null;
         }
 
         return sortedPropertyFields.map((propertyField) => {
