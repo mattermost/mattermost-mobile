@@ -19,7 +19,7 @@ import {usePersistentNotificationProps} from '@hooks/persistent_notification_pro
 import {openAsBottomSheet} from '@screens/navigation';
 import {getEmojiByName} from '@utils/emoji/helpers';
 import {persistentNotificationsConfirmation} from '@utils/post';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import CameraQuickAction from '../quick_actions/camera_quick_action';
 import EmojiQuickAction from '../quick_actions/emoji_quick_action';
@@ -103,14 +103,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         inputWrapper: {
             flexDirection: 'row',
             alignItems: 'center',
-            paddingHorizontal: 8,
-            paddingVertical: 8,
+            paddingHorizontal: 10,
             backgroundColor: theme.centerChannelBg,
-            borderWidth: 1,
+            borderWidth: 0,
             borderBottomWidth: 0,
-            borderColor: changeOpacity(theme.centerChannelColor, 0.20),
-            borderTopLeftRadius: 12,
-            borderTopRightRadius: 12,
+
+            // borderColor: changeOpacity(theme.centerChannelColor, 0.20),
+
+            // borderTopLeftRadius: 12,
+            // borderTopRightRadius: 12,
         },
         inputRow: {
             flexDirection: 'row',
