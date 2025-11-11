@@ -15,19 +15,26 @@ import type {MessageDescriptor} from 'react-intl';
 const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         menuItemContainer: {
-            paddingVertical: 8,
-            paddingHorizontal: 16,
+            paddingVertical: 10,
+            paddingHorizontal: 8,
             flexDirection: 'row',
             gap: 4,
+            marginHorizontal: 2,
+            borderRadius: 8,
+            minHeight: 40,
+            alignItems: 'center',
+            justifyContent: 'center',
         },
         menuItemContainerSelected: {
-            backgroundColor: changeOpacity(theme.buttonBg, 0.08),
-            borderRadius: 4,
+            backgroundColor: changeOpacity(theme.buttonBg, 0.12),
+            borderRadius: 8,
         },
         menuItem: {
-            color: changeOpacity(theme.centerChannelColor, 0.56),
+            color: changeOpacity(theme.centerChannelColor, 0.7),
             alignSelf: 'center',
-            ...typography('Body', 200, 'SemiBold'),
+            ...typography('Body', 100, 'SemiBold'),
+            fontSize: 13,
+            letterSpacing: 0.2,
         },
         menuItemSelected: {
             color: theme.buttonBg,
@@ -37,9 +44,11 @@ const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme) => {
             width: 6,
             height: 6,
             borderRadius: 3,
-            backgroundColor: theme.sidebarTextActiveBorder,
-            right: 8,
-            top: 8,
+            backgroundColor: theme.mentionBg,
+            right: 6,
+            top: 6,
+            borderWidth: 1.5,
+            borderColor: theme.centerChannelBg,
         },
         badge: {
             position: undefined,

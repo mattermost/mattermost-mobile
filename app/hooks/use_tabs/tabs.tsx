@@ -21,7 +21,7 @@ const styles = StyleSheet.create({
         flexGrow: 1,
         flexDirection: 'row',
         paddingLeft: 12,
-        marginVertical: 12,
+        paddingVertical: 8,
         overflow: 'hidden',
     },
 });
