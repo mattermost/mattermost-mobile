@@ -32,6 +32,7 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 type Props = {
     appsEnabled: boolean;
     channelId: string;
+    channelType?: string;
     contentContainerStyle?: StyleProp<AnimatedStyle<ViewStyle>>;
     currentTimezone: string | null;
     currentUserId: string;
@@ -84,6 +85,7 @@ const styles = StyleSheet.create({
 const PostList = ({
     appsEnabled,
     channelId,
+    channelType,
     contentContainerStyle,
     currentTimezone,
     currentUserId,
@@ -309,6 +311,7 @@ const PostList = ({
                 const skipSaveddHeader = (location === Screens.THREAD && post.id === rootId);
                 const postProps = {
                     appsEnabled,
+                    channelType,
                     customEmojiNames,
                     isCRTEnabled,
                     isPostAcknowledgementEnabled,
@@ -338,7 +341,7 @@ const PostList = ({
                 );
             }
         }
-    }, [appsEnabled, currentTimezone, currentUsername, customEmojiNames, highlightPinnedOrSaved, highlightedId, isCRTEnabled, isModernChatEnabled, isPostAcknowledgementEnabled, location, rootId, shouldRenderReplyButton, shouldShowJoinLeaveMessages, testID, theme]);
+    }, [appsEnabled, channelType, currentTimezone, currentUsername, customEmojiNames, highlightPinnedOrSaved, highlightedId, isCRTEnabled, isModernChatEnabled, isPostAcknowledgementEnabled, location, rootId, shouldRenderReplyButton, shouldShowJoinLeaveMessages, testID, theme]);
 
     useEffect(() => {
         const t = setTimeout(() => {
@@ -373,6 +376,8 @@ const PostList = ({
                 ListFooterComponent={footer}
                 maintainVisibleContentPosition={SCROLL_POSITION_CONFIG}
                 maxToRenderPerBatch={10}
+                windowSize={10}
+                updateCellsBatchingPeriod={50}
                 nativeID={nativeID}
                 onEndReached={onEndReached}
                 onEndReachedThreshold={0.9}

@@ -110,6 +110,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flexDirection: 'column',
         },
         rightColumnPadding: {paddingBottom: 3},
+        systemBubble: {
+            paddingVertical: 8,
+            paddingHorizontal: 12,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
+            borderTopLeftRadius: 2,
+            borderTopRightRadius: 10,
+            borderBottomRightRadius: 10,
+            borderBottomLeftRadius: 2,
+            maxWidth: '84%',
+            alignSelf: 'flex-start',
+        },
     };
 });
 
@@ -155,14 +166,16 @@ const DaakiaPost = ({
     const theme = useTheme();
     const isTablet = useIsTablet();
     const styles = getStyleSheet(theme);
-    const isAutoResponder = fromAutoResponder(post);
-    const isPendingOrFailed = isPostPendingOrFailed(post);
-    const isFailed = isPostFailed(post);
-    const isSystemPost = isSystemMessage(post);
-    const isCallsPost = isCallsCustomMessage(post);
-    const isLivekitPost = Boolean(post.props?.meeting_url);
-    const hasBeenDeleted = (post.deleteAt !== 0);
-    const isWebHook = isFromWebhook(post);
+
+    // Memoize expensive boolean checks to avoid recalculating on every render
+    const isAutoResponder = useMemo(() => fromAutoResponder(post), [post]);
+    const isPendingOrFailed = useMemo(() => isPostPendingOrFailed(post), [post]);
+    const isFailed = useMemo(() => isPostFailed(post), [post]);
+    const isSystemPost = useMemo(() => isSystemMessage(post), [post]);
+    const isCallsPost = useMemo(() => isCallsCustomMessage(post), [post]);
+    const isLivekitPost = useMemo(() => Boolean(post.props?.meeting_url), [post.props?.meeting_url]);
+    const hasBeenDeleted = useMemo(() => (post.deleteAt !== 0), [post.deleteAt]);
+    const isWebHook = useMemo(() => isFromWebhook(post), [post]);
     const hasSameRoot = useMemo(() => {
         if (isFirstReply) {
             return false;
@@ -182,7 +195,7 @@ const DaakiaPost = ({
     }, [customEmojiNames, post.message]);
 
     // Check if this is the current user's post
-    const isMyPost = post.userId === currentUser?.id;
+    const isMyPost = useMemo(() => post.userId === currentUser?.id, [post.userId, currentUser?.id]);
 
     const handlePostPress = useCallback(() => {
         if ([Screens.SAVED_MESSAGES, Screens.MENTIONS, Screens.SEARCH, Screens.PINNED_MESSAGES].includes(location)) {
@@ -282,11 +295,21 @@ const DaakiaPost = ({
     const highlightSaved = isSaved && !skipSavedHeader;
     const hightlightPinned = post.isPinned && !skipPinnedHeader;
     const itemTestID = `${testID}.${post.id}`;
-    const rightColumnStyle: StyleProp<ViewStyle> = [styles.rightColumn, (Boolean(post.rootId) && isLastReply && styles.rightColumnPadding), isMyPost ? {alignItems: 'flex-end'} : {alignItems: 'flex-start'}];
+    
+    // Memoize style objects to avoid recreating on every render
+    const rightColumnStyle: StyleProp<ViewStyle> = useMemo(() => [
+        styles.rightColumn, 
+        (Boolean(post.rootId) && isLastReply && styles.rightColumnPadding), 
+        (isMyPost && !isSystemPost) ? {alignItems: 'flex-end'} : {alignItems: 'flex-start'}
+    ], [styles.rightColumn, post.rootId, isLastReply, styles.rightColumnPadding, isMyPost, isSystemPost]);
+    
     const pendingPostStyle: StyleProp<ViewStyle> | undefined = isPendingOrFailed ? styles.pendingPost : undefined;
 
-    // Dynamic container style based on who sent the message
-    const containerDynamicStyle: StyleProp<ViewStyle> = isMyPost ? {justifyContent: 'flex-end'} : {justifyContent: 'flex-start'};
+    // Memoize container style to avoid recreating on every render
+    const containerDynamicStyle: StyleProp<ViewStyle> = useMemo(() => 
+        (isMyPost && !isSystemPost) ? {justifyContent: 'flex-end'} : {justifyContent: 'flex-start'},
+        [isMyPost, isSystemPost]
+    );
 
     let highlightedStyle: StyleProp<ViewStyle>;
     if (highlight) {
@@ -302,7 +325,10 @@ const DaakiaPost = ({
     // If the post is a priority post:
     // 1. Show the priority label in channel screen
     // 2. Show the priority label in thread screen for the root post
-    const showPostPriority = Boolean(isPostPriorityEnabled && post.metadata?.priority?.priority) && (location !== Screens.THREAD || !post.rootId);
+    const showPostPriority = useMemo(() =>
+        Boolean(isPostPriorityEnabled && post.metadata?.priority?.priority) && (location !== Screens.THREAD || !post.rootId),
+        [isPostPriorityEnabled, post.metadata?.priority?.priority, location, post.rootId]
+    );
 
     const sameSequence = hasReplies ? (hasReplies && post.rootId) : !post.rootId;
 
@@ -310,6 +336,18 @@ const DaakiaPost = ({
     if (isDMChannel) {
         // Hide avatar in DM channels (both sides)
         postAvatar = null;
+    } else if (isSystemPost) {
+        // System posts always show SystemAvatar (regardless of isMyPost)
+        if (!showPostPriority && hasSameRoot && isConsecutivePost && sameSequence) {
+            consecutiveStyle = styles.consecutive;
+            postAvatar = <View style={styles.consecutivePostContainer}/>;
+        } else {
+            postAvatar = (
+                <View style={[styles.profilePictureContainer, pendingPostStyle]}>
+                    <SystemAvatar theme={theme}/>
+                </View>
+            );
+        }
     } else if (isMyPost) {
         // Hide avatar for my posts in O, P, G channels
         postAvatar = null;
@@ -319,7 +357,7 @@ const DaakiaPost = ({
     } else {
         postAvatar = (
             <View style={[styles.profilePictureContainer, pendingPostStyle]}>
-                {(isAutoResponder || isSystemPost) ? (
+                {isAutoResponder ? (
                     <SystemAvatar theme={theme}/>
                 ) : (
                     <Avatar
@@ -366,38 +404,19 @@ const DaakiaPost = ({
         );
     }
 
-    // TEMP LOGS: dump post data to inspect plugin payloads and authors (Daakia UI)
-    // eslint-disable-next-line no-console
-    // console.log('[DAAKIA_POST_RENDER]', {
-    //     id: post.id,
-    //     channelId: post.channelId,
-    //     userId: post.userId,
-    //     type: post.type,
-    //     message: post.message,
-    //     props: post.props,
-    //     metadata: post.metadata,
-    // });
-
     // Example filter: plugin/webhook/app-originated posts
-    const hasAppId = Boolean(post.props && ('app_id' in post.props));
-    if (post.props?.from_webhook || post.props?.attachments || hasAppId) {
-        // eslint-disable-next-line no-console
-        // console.log('[DAAKIA_PLUGIN_POST]', {id: post.id, props: post.props, message: post.message});
-    }
-
-    // Example filter: by specific author userId (replace with Sumeet's userId to enable)
-    // if (post.userId === 'USER_ID_FOR_SUMEET') {
-    //     // eslint-disable-next-line no-console
-    //     console.log('[DAAKIA_SUMEET_POST]', {id: post.id, type: post.type, props: post.props, message: post.message});
-    // }
+    const hasAppId = useMemo(() => Boolean(post.props && ('app_id' in post.props)), [post.props]);
 
     let body;
     if (isSystemPost && !isEphemeral && !isAutoResponder) {
+        // System posts use the same bubble style as "other posts" (left-side)
         body = (
-            <SystemMessage
-                location={location}
-                post={post}
-            />
+            <View style={styles.systemBubble}>
+                <SystemMessage
+                    location={location}
+                    post={post}
+                />
+            </View>
         );
     } else if (isCallsPost && !hasBeenDeleted) {
         body = (
@@ -496,13 +515,14 @@ const DaakiaPost = ({
                         alignRight={isMyPost}
                     />
                     <View style={[styles.container, containerDynamicStyle, consecutiveStyle]}>
-                        {isMyPost ? null : postAvatar}
+                        {/* System posts always on left (like "other posts"), regular posts left/right based on isMyPost */}
+                        {(isMyPost && !isSystemPost) ? null : postAvatar}
                         <View style={rightColumnStyle}>
                             {header}
                             {body}
                             {footer}
                         </View>
-                        {isMyPost ? postAvatar : null}
+                        {(isMyPost && !isSystemPost) ? postAvatar : null}
                     </View>
                 </>
             </TouchableHighlight>

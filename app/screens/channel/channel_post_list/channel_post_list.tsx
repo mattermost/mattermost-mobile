@@ -23,6 +23,7 @@ import type {AnimatedStyle} from 'react-native-reanimated';
 
 type Props = {
     channelId: string;
+    channelType?: string;
     contentContainerStyle?: StyleProp<AnimatedStyle<ViewStyle>>;
     isCRTEnabled: boolean;
     lastViewedAt: number;
@@ -38,7 +39,7 @@ const styles = StyleSheet.create({
 });
 
 const ChannelPostList = ({
-    channelId, contentContainerStyle, isCRTEnabled,
+    channelId, channelType, contentContainerStyle, isCRTEnabled,
     lastViewedAt, nativeID, posts, shouldShowJoinLeaveMessages,
 }: Props) => {
     const appState = useAppState();
@@ -117,6 +118,7 @@ const ChannelPostList = ({
     const postList = (
         <PostList
             channelId={channelId}
+            channelType={channelType}
             contentContainerStyle={[contentContainerStyle, !isCRTEnabled && styles.containerStyle]}
             isCRTEnabled={isCRTEnabled}
             footer={intro}

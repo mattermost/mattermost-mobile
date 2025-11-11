@@ -25,6 +25,7 @@ import type PostsInThreadModel from '@typings/database/models/servers/posts_in_t
 import type UserModel from '@typings/database/models/servers/user';
 
 type PropsInput = WithDatabaseArgs & {
+    channelType?: string;
     currentUser?: UserModel;
     isCRTEnabled?: boolean;
     nextPost: PostModel | undefined;
@@ -91,8 +92,8 @@ const withSystem = withObservables([], ({database}: WithDatabaseArgs) => ({
 }));
 
 const withDaakiaPost = withObservables(
-    ['currentUser', 'isCRTEnabled', 'post', 'previousPost', 'nextPost'],
-    ({currentUser, database, isCRTEnabled, post, previousPost, nextPost, location}: PropsInput) => {
+    ['currentUser', 'isCRTEnabled', 'post', 'previousPost', 'nextPost', 'channelType'],
+    ({currentUser, database, isCRTEnabled, post, previousPost, nextPost, location, channelType}: PropsInput) => {
         let isLastReply = of$(true);
         let isPostAddChannelMember = of$(false);
         const isOwner = currentUser?.id === post.userId;
@@ -140,10 +141,14 @@ const withDaakiaPost = withObservables(
             distinctUntilChanged(),
         );
 
-        const isDMChannel = observeChannel(database, post.channelId).pipe(
-            switchMap((channel) => of$(channel?.type === 'D')),
-            distinctUntilChanged(),
-        );
+        // Use channelType from props if available (passed from channel screen), otherwise query it
+        // This avoids querying the channel for every post when we're in a channel view
+        const isDMChannel = channelType !== undefined
+            ? of$(channelType === 'D')
+            : observeChannel(database, post.channelId).pipe(
+                switchMap((channel) => of$(channel?.type === 'D')),
+                distinctUntilChanged(),
+            );
 
         return {
             canDelete,

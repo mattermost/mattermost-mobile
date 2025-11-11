@@ -9,7 +9,7 @@ import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {getAdvanceSettingPreferenceAsBool} from '@helpers/api/preference';
-import {observeMyChannel} from '@queries/servers/channel';
+import {observeChannel, observeMyChannel} from '@queries/servers/channel';
 import {queryPostsBetween, queryPostsInChannel} from '@queries/servers/post';
 import {queryAdvanceSettingsPreferences} from '@queries/servers/preference';
 import {observeIsCRTEnabled} from '@queries/servers/thread';
@@ -22,8 +22,15 @@ const enhanced = withObservables(['channelId'], ({database, channelId}: {channel
     const isCRTEnabledObserver = observeIsCRTEnabled(database);
     const postsInChannelObserver = queryPostsInChannel(database, channelId).observeWithColumns(['earliest', 'latest']);
 
+    // Query channel type ONCE for the entire channel (not per post)
+    const channelType = observeChannel(database, channelId).pipe(
+        switchMap((channel) => of$(channel?.type)),
+        distinctUntilChanged(),
+    );
+
     return {
         isCRTEnabled: isCRTEnabledObserver,
+        channelType,
         lastViewedAt: observeMyChannel(database, channelId).pipe(
             switchMap((myChannel) => of$(myChannel?.viewedAt)),
             distinctUntilChanged(),
