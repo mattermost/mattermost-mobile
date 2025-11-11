@@ -21,7 +21,7 @@ import type PlaybookRunPropertyValueModel from '@playbooks/database/models/playb
 type PropertySelectFieldProps = {
     propertyField: PlaybookRunPropertyFieldModel;
     value?: PlaybookRunPropertyValueModel;
-    onValueChange: (fieldId: string, newValue: string) => void;
+    onValueChange: (fieldId: string, newValue: string, fieldType?: string) => void;
     isDisabled?: boolean;
     isMultiselect: boolean;
     testID: string;
@@ -31,14 +31,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         viewContainer: {
             marginVertical: 8,
-            alignItems: 'center',
             width: '100%',
             flexDirection: 'row',
         },
+        touchableContainer: {
+            flex: 1,
+        },
         labelContainer: {
             flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            alignItems: 'flex-start',
         },
         label: {
             fontSize: 14,
@@ -48,6 +50,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         value: {
             fontSize: 14,
             color: theme.centerChannelColor,
+            flexShrink: 1,
         },
     };
 });
@@ -96,21 +99,21 @@ const PropertySelectField = ({
 
     const handleSelect = useCallback((newSelection?: SelectedDialogOption) => {
         if (!newSelection) {
-            onValueChange(propertyField.id, '');
+            onValueChange(propertyField.id, '', propertyField.type);
             return;
         }
 
         if (Array.isArray(newSelection)) {
             // Multiselect: send array of IDs as comma-separated string
-            // The client will convert to array before sending to server
+            // The client will convert to array based on field type
             const selectedIds = newSelection.map((option) => option.value);
             const commaSeparated = selectedIds.join(',');
-            onValueChange(propertyField.id, commaSeparated);
+            onValueChange(propertyField.id, commaSeparated, propertyField.type);
         } else {
-            // Single select: store the option ID
-            onValueChange(propertyField.id, newSelection.value);
+            // Single select: store the option ID directly as string
+            onValueChange(propertyField.id, newSelection.value, propertyField.type);
         }
-    }, [propertyField.id, onValueChange]);
+    }, [propertyField.id, propertyField.type, onValueChange]);
 
     // Open selector screen when tapped
     const handlePress = useCallback(() => {
@@ -139,6 +142,7 @@ const PropertySelectField = ({
                 onPress={handlePress}
                 disabled={isDisabled}
                 activeOpacity={0.8}
+                style={styles.touchableContainer}
             >
                 <View style={styles.labelContainer}>
                     <Text style={styles.label}>{`${propertyField.name}: `}</Text>

@@ -100,13 +100,13 @@ const PropertyFieldsListComponent = ({
         return map;
     }, [propertyFieldsWithValues]);
 
-    const handleValueChange = useCallback(async (fieldId: string, newValue: string) => {
+    const handleValueChange = useCallback(async (fieldId: string, newValue: string, fieldType?: string) => {
         if (isReadOnly) {
             return;
         }
 
         setUpdatingFieldId(fieldId);
-        const result = await updatePlaybookRunPropertyValue(serverUrl, runId, fieldId, newValue);
+        const result = await updatePlaybookRunPropertyValue(serverUrl, runId, fieldId, newValue, fieldType);
         setUpdatingFieldId(null);
 
         if (result.error) {
