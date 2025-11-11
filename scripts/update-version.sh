@@ -26,15 +26,14 @@
 #   # Update both version and build
 #   ./scripts/update-version.sh 2.35.0 684
 #
-# WHAT IT UPDATES:
-#   - package.json (version)
-#   - package-lock.json (version)
-#   - android/app/build.gradle (versionName, versionCode)
-#   - ios/Mattermost/Info.plist (CFBundleShortVersionString, CFBundleVersion)
-#   - ios/MattermostShare/Info.plist (CFBundleShortVersionString, CFBundleVersion)
-#   - ios/NotificationService/Info.plist (CFBundleShortVersionString, CFBundleVersion)
-#   - ios/MattermostTests/Info.plist (CFBundleShortVersionString, CFBundleVersion)
-#   - ios/Mattermost.xcodeproj/project.pbxproj (MARKETING_VERSION, CURRENT_PROJECT_VERSION)
+# WHAT IT UPDATES (only REQUIRED files for builds):
+#   - android/app/build.gradle (versionName, versionCode) - REQUIRED for Android builds
+#   - ios/Mattermost/Info.plist (CFBundleShortVersionString, CFBundleVersion) - REQUIRED for iOS builds
+#
+# NOTE: package.json is NOT updated (it's just metadata, doesn't affect builds)
+# NOTE: package-lock.json is NOT updated (it's auto-generated and shouldn't be manually changed)
+# NOTE: iOS project.pbxproj is NOT updated (Xcode syncs it automatically from Info.plist)
+# NOTE: iOS extension Info.plist files are NOT updated (they inherit from main app)
 #
 # NOTES:
 #   - Version format must be X.Y.Z (e.g., 2.35.0)
@@ -301,35 +300,7 @@ if [ "$UPDATE_BUILD" = true ]; then
 fi
 echo ""
 
-# 1. Update package.json
-if [ "$UPDATE_VERSION" = true ]; then
-    log "Updating package.json..."
-    if [ -f "package.json" ]; then
-        if [[ "$OSTYPE" == "darwin"* ]]; then
-            sed -i '' "s/\"version\": \".*\"/\"version\": \"$VERSION_NUMBER\"/" package.json
-        else
-            sed -i "s/\"version\": \".*\"/\"version\": \"$VERSION_NUMBER\"/" package.json
-        fi
-        log "✓ Updated package.json"
-    else
-        warn "package.json not found"
-    fi
-    
-    # 2. Update package-lock.json
-    log "Updating package-lock.json..."
-    if [ -f "package-lock.json" ]; then
-        if [[ "$OSTYPE" == "darwin"* ]]; then
-            sed -i '' "s/\"version\": \".*\"/\"version\": \"$VERSION_NUMBER\"/" package-lock.json
-        else
-            sed -i "s/\"version\": \".*\"/\"version\": \"$VERSION_NUMBER\"/" package-lock.json
-        fi
-        log "✓ Updated package-lock.json"
-    else
-        warn "package-lock.json not found"
-    fi
-fi
-
-# 3. Update Android build.gradle
+# 1. Update Android build.gradle (REQUIRED for Android builds)
 log "Updating Android build.gradle..."
 if [ -f "android/app/build.gradle" ]; then
     if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -352,15 +323,12 @@ else
     warn "android/app/build.gradle not found"
 fi
 
-# 4. Update iOS Info.plist files
+# 2. Update iOS Info.plist (REQUIRED for iOS builds)
 if [ "$UPDATE_VERSION" = true ] || [ "$UPDATE_BUILD" = true ]; then
     log "Updating iOS Info.plist files..."
     
     IOS_INFO_PLIST_FILES=(
         "ios/Mattermost/Info.plist"
-        "ios/MattermostShare/Info.plist"
-        "ios/NotificationService/Info.plist"
-        "ios/MattermostTests/Info.plist"
     )
     
     for plist in "${IOS_INFO_PLIST_FILES[@]}"; do
@@ -413,30 +381,8 @@ if [ "$UPDATE_VERSION" = true ] || [ "$UPDATE_BUILD" = true ]; then
     done
 fi
 
-# 5. Update iOS Xcode project file (project.pbxproj)
-if [ "$UPDATE_VERSION" = true ] || [ "$UPDATE_BUILD" = true ]; then
-    log "Updating iOS Xcode project file..."
-    if [ -f "ios/Mattermost.xcodeproj/project.pbxproj" ]; then
-        if [[ "$OSTYPE" == "darwin"* ]]; then
-            if [ "$UPDATE_VERSION" = true ]; then
-                sed -i '' "s/MARKETING_VERSION = .*/MARKETING_VERSION = $VERSION_NUMBER;/" ios/Mattermost.xcodeproj/project.pbxproj
-            fi
-            if [ "$UPDATE_BUILD" = true ]; then
-                sed -i '' "s/CURRENT_PROJECT_VERSION = .*/CURRENT_PROJECT_VERSION = $BUILD_NUMBER;/" ios/Mattermost.xcodeproj/project.pbxproj
-            fi
-        else
-            if [ "$UPDATE_VERSION" = true ]; then
-                sed -i "s/MARKETING_VERSION = .*/MARKETING_VERSION = $VERSION_NUMBER;/" ios/Mattermost.xcodeproj/project.pbxproj
-            fi
-            if [ "$UPDATE_BUILD" = true ]; then
-                sed -i "s/CURRENT_PROJECT_VERSION = .*/CURRENT_PROJECT_VERSION = $BUILD_NUMBER;/" ios/Mattermost.xcodeproj/project.pbxproj
-            fi
-        fi
-        log "✓ Updated ios/Mattermost.xcodeproj/project.pbxproj"
-    else
-        warn "ios/Mattermost.xcodeproj/project.pbxproj not found"
-    fi
-fi
+# NOTE: iOS project.pbxproj is NOT updated - Xcode syncs MARKETING_VERSION and CURRENT_PROJECT_VERSION
+# automatically from Info.plist when you build the project
 
 echo ""
 log "✓ All version numbers updated successfully!"
@@ -451,16 +397,12 @@ fi
 echo ""
 log "Files updated:"
 if [ "$UPDATE_VERSION" = true ]; then
-    log "  ✓ package.json"
-    log "  ✓ package-lock.json"
     log "  ✓ android/app/build.gradle (versionName)"
-    log "  ✓ ios Info.plist files (CFBundleShortVersionString)"
-    log "  ✓ ios/Mattermost.xcodeproj/project.pbxproj (MARKETING_VERSION)"
+    log "  ✓ ios/Mattermost/Info.plist (CFBundleShortVersionString)"
 fi
 if [ "$UPDATE_BUILD" = true ]; then
     log "  ✓ android/app/build.gradle (versionCode)"
-    log "  ✓ ios Info.plist files (CFBundleVersion)"
-    log "  ✓ ios/Mattermost.xcodeproj/project.pbxproj (CURRENT_PROJECT_VERSION)"
+    log "  ✓ ios/Mattermost/Info.plist (CFBundleVersion)"
 fi
 echo ""
 log "Please verify the changes before committing!"
