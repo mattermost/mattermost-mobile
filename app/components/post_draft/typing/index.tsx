@@ -25,25 +25,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             alignItems: 'flex-start',
         },
         bubble: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
-            borderTopLeftRadius: 2,
-            borderTopRightRadius: 10,
-            borderBottomRightRadius: 10,
-            borderBottomLeftRadius: 2,
-            paddingVertical: 8,
-            paddingHorizontal: 12,
-            maxWidth: '85%',
-            alignSelf: 'flex-start',
-            minHeight: 32,
-            justifyContent: 'center',
-            shadowColor: '#000',
-            shadowOffset: {
-                width: 0,
-                height: 1,
-            },
-            shadowOpacity: 0.08,
-            shadowRadius: 2,
-            elevation: 2,
+
         },
         typing: {
             color: changeOpacity(theme.centerChannelColor, 0.85),
@@ -235,20 +217,18 @@ function Typing({
             case 1:
                 return (
                     <View style={style.container}>
-                        <View style={style.bubble}>
-                            <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                                <Text
-                                    style={style.typing}
-                                    ellipsizeMode='tail'
-                                    numberOfLines={1}
-                                >
-                                    {`${nextTyping[0]} is typing`}
-                                </Text>
-                                <View style={style.dotsContainer}>
-                                    <Animated.View style={[style.dot, dot1Style]}/>
-                                    <Animated.View style={[style.dot, dot2Style]}/>
-                                    <Animated.View style={[style.dot, dot3Style]}/>
-                                </View>
+                        <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                            <Text
+                                style={style.typing}
+                                ellipsizeMode='tail'
+                                numberOfLines={1}
+                            >
+                                {`${nextTyping[0]} is typing`}
+                            </Text>
+                            <View style={style.dotsContainer}>
+                                <Animated.View style={[style.dot, dot1Style]}/>
+                                <Animated.View style={[style.dot, dot2Style]}/>
+                                <Animated.View style={[style.dot, dot3Style]}/>
                             </View>
                         </View>
                     </View>
@@ -257,20 +237,18 @@ function Typing({
                 const last = nextTyping.pop();
                 return (
                     <View style={style.container}>
-                        <View style={style.bubble}>
-                            <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                                <Text
-                                    style={style.typing}
-                                    ellipsizeMode='tail'
-                                    numberOfLines={1}
-                                >
-                                    {`${nextTyping.join(', ')} and ${last} are typing`}
-                                </Text>
-                                <View style={style.dotsContainer}>
-                                    <Animated.View style={[style.dot, dot1Style]}/>
-                                    <Animated.View style={[style.dot, dot2Style]}/>
-                                    <Animated.View style={[style.dot, dot3Style]}/>
-                                </View>
+                        <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                            <Text
+                                style={style.typing}
+                                ellipsizeMode='tail'
+                                numberOfLines={1}
+                            >
+                                {`${nextTyping.join(', ')} and ${last} are typing`}
+                            </Text>
+                            <View style={style.dotsContainer}>
+                                <Animated.View style={[style.dot, dot1Style]}/>
+                                <Animated.View style={[style.dot, dot2Style]}/>
+                                <Animated.View style={[style.dot, dot3Style]}/>
                             </View>
                         </View>
                     </View>
