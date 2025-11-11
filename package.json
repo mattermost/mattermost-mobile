@@ -2,7 +2,7 @@
   "name": "daakia-chat",
   "version": "2.34.2",
   "description": "Daakia Chat with React Native",
-  "repository": "git@github.com:Daakia-Org/mattermost-mobile.git",
+  "repository": "git@github.com:Daakia-Org/daakia-mattermost-mobile.git",
   "author": "Daakia, Inc.",
   "license": "Apache 2.0",
   "private": true,
