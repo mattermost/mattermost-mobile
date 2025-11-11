@@ -54,7 +54,8 @@ export const fetchPlaybookRunPropertyFields = async (
  * @param serverUrl - The server URL
  * @param runId - The playbook run ID
  * @param fieldId - The property field ID
- * @param value - The new value (string for text/select, JSON array string for multiselect)
+ * @param value - The new value (string for text/select, comma-separated string for multiselect)
+ * @param fieldType - The type of the field ('text', 'select', 'multiselect')
  * @returns Promise with updated property value or error
  */
 export const updatePlaybookRunPropertyValue = async (
@@ -62,12 +63,13 @@ export const updatePlaybookRunPropertyValue = async (
     runId: string,
     fieldId: string,
     value: string,
+    fieldType?: string,
 ): Promise<{error?: unknown; propertyValue?: PlaybookRunPropertyValue}> => {
     try {
         const client = NetworkManager.getClient(serverUrl);
 
         // Update value on server
-        const propertyValue = await client.setRunPropertyValue(runId, fieldId, value);
+        const propertyValue = await client.setRunPropertyValue(runId, fieldId, value, fieldType);
 
         // Update local database
         const result = await handlePlaybookRunPropertyFields(

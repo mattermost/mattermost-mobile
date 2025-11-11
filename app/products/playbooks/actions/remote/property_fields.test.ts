@@ -188,7 +188,7 @@ describe('updatePlaybookRunPropertyValue', () => {
         expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
         expect(result.propertyValue).toEqual(updatedValue);
-        expect(mockClient.setRunPropertyValue).toHaveBeenCalledWith(runId, fieldId, value);
+        expect(mockClient.setRunPropertyValue).toHaveBeenCalledWith(runId, fieldId, value, undefined);
         expect(handlePlaybookRunPropertyFields).toHaveBeenCalledWith(
             serverUrl,
             [],
@@ -198,41 +198,58 @@ describe('updatePlaybookRunPropertyValue', () => {
 
     it('should update property value for text field', async () => {
         const textValue = 'Some text content';
+        const fieldType = 'text';
         const updatedValue = {...mockPropertyValue, value: textValue};
         mockClient.setRunPropertyValue.mockResolvedValueOnce(updatedValue);
 
-        const result = await updatePlaybookRunPropertyValue(serverUrl, runId, fieldId, textValue);
+        const result = await updatePlaybookRunPropertyValue(serverUrl, runId, fieldId, textValue, fieldType);
 
         expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
         expect(result.propertyValue).toEqual(updatedValue);
-        expect(mockClient.setRunPropertyValue).toHaveBeenCalledWith(runId, fieldId, textValue);
+        expect(mockClient.setRunPropertyValue).toHaveBeenCalledWith(runId, fieldId, textValue, fieldType);
     });
 
     it('should update property value for select field', async () => {
         const selectValue = 'option-id-123';
+        const fieldType = 'select';
         const updatedValue = {...mockPropertyValue, value: selectValue};
         mockClient.setRunPropertyValue.mockResolvedValueOnce(updatedValue);
 
-        const result = await updatePlaybookRunPropertyValue(serverUrl, runId, fieldId, selectValue);
+        const result = await updatePlaybookRunPropertyValue(serverUrl, runId, fieldId, selectValue, fieldType);
 
         expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
         expect(result.propertyValue).toEqual(updatedValue);
-        expect(mockClient.setRunPropertyValue).toHaveBeenCalledWith(runId, fieldId, selectValue);
+        expect(mockClient.setRunPropertyValue).toHaveBeenCalledWith(runId, fieldId, selectValue, fieldType);
     });
 
     it('should update property value for multiselect field', async () => {
-        const multiselectValue = '["option-id-1","option-id-2"]';
-        const updatedValue = {...mockPropertyValue, value: multiselectValue};
+        const multiselectValue = 'option-id-1,option-id-2';
+        const fieldType = 'multiselect';
+        const updatedValue = {...mockPropertyValue, value: '["option-id-1","option-id-2"]'};
         mockClient.setRunPropertyValue.mockResolvedValueOnce(updatedValue);
 
-        const result = await updatePlaybookRunPropertyValue(serverUrl, runId, fieldId, multiselectValue);
+        const result = await updatePlaybookRunPropertyValue(serverUrl, runId, fieldId, multiselectValue, fieldType);
 
         expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
         expect(result.propertyValue).toEqual(updatedValue);
-        expect(mockClient.setRunPropertyValue).toHaveBeenCalledWith(runId, fieldId, multiselectValue);
+        expect(mockClient.setRunPropertyValue).toHaveBeenCalledWith(runId, fieldId, multiselectValue, fieldType);
+    });
+
+    it('should update property value for multiselect field with empty value', async () => {
+        const emptyMultiselectValue = '';
+        const fieldType = 'multiselect';
+        const updatedValue = {...mockPropertyValue, value: '[]'};
+        mockClient.setRunPropertyValue.mockResolvedValueOnce(updatedValue);
+
+        const result = await updatePlaybookRunPropertyValue(serverUrl, runId, fieldId, emptyMultiselectValue, fieldType);
+
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.propertyValue).toEqual(updatedValue);
+        expect(mockClient.setRunPropertyValue).toHaveBeenCalledWith(runId, fieldId, emptyMultiselectValue, fieldType);
     });
 
     it('should update property value with empty string', async () => {
@@ -245,7 +262,7 @@ describe('updatePlaybookRunPropertyValue', () => {
         expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
         expect(result.propertyValue).toEqual(updatedValue);
-        expect(mockClient.setRunPropertyValue).toHaveBeenCalledWith(runId, fieldId, emptyValue);
+        expect(mockClient.setRunPropertyValue).toHaveBeenCalledWith(runId, fieldId, emptyValue, undefined);
     });
 
     it('should handle client error', async () => {
@@ -256,7 +273,7 @@ describe('updatePlaybookRunPropertyValue', () => {
         expect(result).toBeDefined();
         expect(result.error).toBeDefined();
         expect(result.propertyValue).toBeUndefined();
-        expect(mockClient.setRunPropertyValue).toHaveBeenCalledWith(runId, fieldId, value);
+        expect(mockClient.setRunPropertyValue).toHaveBeenCalledWith(runId, fieldId, value, undefined);
         expect(handlePlaybookRunPropertyFields).not.toHaveBeenCalled();
     });
 
@@ -281,7 +298,7 @@ describe('updatePlaybookRunPropertyValue', () => {
         expect(result).toBeDefined();
         expect(result.error).toBeDefined();
         expect(result.propertyValue).toBeUndefined();
-        expect(mockClient.setRunPropertyValue).toHaveBeenCalledWith(runId, fieldId, value);
+        expect(mockClient.setRunPropertyValue).toHaveBeenCalledWith(runId, fieldId, value, undefined);
         expect(handlePlaybookRunPropertyFields).toHaveBeenCalled();
     });
 });

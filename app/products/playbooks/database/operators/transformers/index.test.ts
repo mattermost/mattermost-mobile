@@ -1114,4 +1114,86 @@ describe('*** PLAYBOOK_RUN_ATTRIBUTE_VALUE Prepare Records Test ***', () => {
         expect(preparedRecord.value).toBe('Existing Value');
         expect(preparedRecord.updateAt).toBe(1620000001000);
     });
+
+    it('=> transformPlaybookRunPropertyValueRecord: should update to empty array when multiselect value is cleared', async () => {
+        const database = await createTestConnection({databaseName: 'playbook_run_attribute_value_empty_multiselect', setActive: true});
+        expect(database).toBeTruthy();
+
+        let existingRecord: PlaybookRunPropertyValueModel | undefined;
+        await database!.write(async () => {
+            existingRecord = await database!.get<PlaybookRunPropertyValueModel>(PLAYBOOK_RUN_ATTRIBUTE_VALUE).create((record) => {
+                record._raw.id = 'attribute_value_3';
+                record.attributeId = 'attribute_3';
+                record.runId = 'playbook_run_3';
+                record.value = '["option1","option2"]';
+                record.updateAt = 1620000000000;
+            });
+        });
+
+        const preparedRecord = await transformPlaybookRunPropertyValueRecord({
+            action: OperationType.UPDATE,
+            database: database!,
+            value: {
+                record: existingRecord,
+                raw: {
+                    id: 'attribute_value_3',
+                    field_id: 'attribute_3',
+                    target_id: 'playbook_run_3',
+                    update_at: 1620000001000,
+                    value: [] as any, // Server sends arrays for multiselect fields
+                },
+            },
+        });
+
+        await database?.write(async () => {
+            await database?.batch(preparedRecord);
+        });
+
+        expect(preparedRecord).toBeTruthy();
+        expect(preparedRecord.attributeId).toBe('attribute_3');
+        expect(preparedRecord.runId).toBe('playbook_run_3');
+        expect(preparedRecord.value).toBe('[]');
+        expect(preparedRecord.updateAt).toBe(1620000001000);
+    });
+
+    it('=> transformPlaybookRunPropertyValueRecord: should update to empty string when value is null', async () => {
+        const database = await createTestConnection({databaseName: 'playbook_run_attribute_value_null', setActive: true});
+        expect(database).toBeTruthy();
+
+        let existingRecord: PlaybookRunPropertyValueModel | undefined;
+        await database!.write(async () => {
+            existingRecord = await database!.get<PlaybookRunPropertyValueModel>(PLAYBOOK_RUN_ATTRIBUTE_VALUE).create((record) => {
+                record._raw.id = 'attribute_value_4';
+                record.attributeId = 'attribute_4';
+                record.runId = 'playbook_run_4';
+                record.value = 'Some Value';
+                record.updateAt = 1620000000000;
+            });
+        });
+
+        const preparedRecord = await transformPlaybookRunPropertyValueRecord({
+            action: OperationType.UPDATE,
+            database: database!,
+            value: {
+                record: existingRecord,
+                raw: {
+                    id: 'attribute_value_4',
+                    field_id: 'attribute_4',
+                    target_id: 'playbook_run_4',
+                    update_at: 1620000001000,
+                    value: null as any, // Server can send null to clear values
+                },
+            },
+        });
+
+        await database?.write(async () => {
+            await database?.batch(preparedRecord);
+        });
+
+        expect(preparedRecord).toBeTruthy();
+        expect(preparedRecord.attributeId).toBe('attribute_4');
+        expect(preparedRecord.runId).toBe('playbook_run_4');
+        expect(preparedRecord.value).toBe('');
+        expect(preparedRecord.updateAt).toBe(1620000001000);
+    });
 });

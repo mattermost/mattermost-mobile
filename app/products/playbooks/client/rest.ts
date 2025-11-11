@@ -39,7 +39,7 @@ export interface ClientPlaybooksMix {
     // Property Fields
     fetchRunPropertyFields: (runId: string, updatedSince?: number) => Promise<PlaybookRunPropertyField[]>;
     fetchRunPropertyValues: (runId: string, updatedSince?: number) => Promise<PlaybookRunPropertyValue[]>;
-    setRunPropertyValue: (runId: string, fieldId: string, value: string) => Promise<PlaybookRunPropertyValue>;
+    setRunPropertyValue: (runId: string, fieldId: string, value: string, fieldType?: string) => Promise<PlaybookRunPropertyValue>;
 }
 
 const ClientPlaybooks = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
@@ -254,13 +254,17 @@ const ClientPlaybooks = <TBase extends Constructor<ClientBase>>(superclass: TBas
         return data || [];
     };
 
-    setRunPropertyValue = async (runId: string, fieldId: string, value: string) => {
-        // Detect comma-separated list and convert to array for multiselect fields
+    setRunPropertyValue = async (runId: string, fieldId: string, value: string, fieldType?: string) => {
+        // Convert value to appropriate format based on field type
         let bodyValue: string | string[] = value;
 
-        // Check if it looks like comma-separated IDs (no spaces, all alphanumeric with commas)
-        if (value && value.includes(',') && !value.includes(' ') && !value.startsWith('[')) {
-            bodyValue = value.split(',');
+        if (fieldType === 'multiselect') {
+            // For multiselect fields, always convert to array (even if empty)
+            if (value) {
+                bodyValue = value.split(',').filter((id) => id.length > 0);
+            } else {
+                bodyValue = [];
+            }
         }
 
         const data = await this.doFetch(

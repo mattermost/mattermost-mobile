@@ -209,7 +209,10 @@ export const transformPlaybookRunPropertyValueRecord = ({action, database, value
         attribute.runId = raw.target_id ?? record?.runId ?? ''; // API target_id → DB runId
 
         // Handle value: convert array to JSON string if needed (for multiselect fields)
-        let valueToStore = raw.value ?? record?.value ?? '';
+        // Check if 'value' field is present in raw to distinguish between "not sent" and "sent as empty"
+        const hasValueField = raw && 'value' in raw;
+        let valueToStore = hasValueField ? (raw.value ?? '') : (record?.value ?? '');
+
         if (Array.isArray(valueToStore)) {
             try {
                 valueToStore = JSON.stringify(valueToStore);

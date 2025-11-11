@@ -1283,23 +1283,70 @@ describe('setRunPropertyValue', () => {
         expect(result).toEqual(mockResponse);
     });
 
-    test('should set property value for multiselect field', async () => {
+    test('should set property value for multiselect field with multiple values', async () => {
         const runId = 'run123';
         const fieldId = 'field3';
-        const value = '["opt1","opt2"]';
+        const value = 'opt1,opt2';
+        const fieldType = 'multiselect';
         const expectedUrl = '/plugins/playbooks/api/v0/runs/run123/property_fields/field3/value';
-        const expectedOptions = {method: 'put', body: {value}};
+        const expectedOptions = {method: 'put', body: {value: ['opt1', 'opt2']}};
         const mockResponse: PlaybookRunPropertyValue = {
             id: 'value3',
             field_id: fieldId,
             target_id: runId,
             update_at: 1234567890,
-            value,
+            value: '["opt1","opt2"]',
         };
 
         jest.mocked(client.doFetch).mockResolvedValue(mockResponse);
 
-        const result = await client.setRunPropertyValue(runId, fieldId, value);
+        const result = await client.setRunPropertyValue(runId, fieldId, value, fieldType);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+        expect(result).toEqual(mockResponse);
+    });
+
+    test('should set property value for multiselect field with single value', async () => {
+        const runId = 'run123';
+        const fieldId = 'field3';
+        const value = 'opt1';
+        const fieldType = 'multiselect';
+        const expectedUrl = '/plugins/playbooks/api/v0/runs/run123/property_fields/field3/value';
+        const expectedOptions = {method: 'put', body: {value: ['opt1']}};
+        const mockResponse: PlaybookRunPropertyValue = {
+            id: 'value3',
+            field_id: fieldId,
+            target_id: runId,
+            update_at: 1234567890,
+            value: '["opt1"]',
+        };
+
+        jest.mocked(client.doFetch).mockResolvedValue(mockResponse);
+
+        const result = await client.setRunPropertyValue(runId, fieldId, value, fieldType);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+        expect(result).toEqual(mockResponse);
+    });
+
+    test('should set property value for multiselect field with empty value', async () => {
+        const runId = 'run123';
+        const fieldId = 'field3';
+        const value = '';
+        const fieldType = 'multiselect';
+        const expectedUrl = '/plugins/playbooks/api/v0/runs/run123/property_fields/field3/value';
+        const expectedOptions = {method: 'put', body: {value: []}};
+        const mockResponse: PlaybookRunPropertyValue = {
+            id: 'value3',
+            field_id: fieldId,
+            target_id: runId,
+            update_at: 1234567890,
+            value: '[]',
+        };
+
+        jest.mocked(client.doFetch).mockResolvedValue(mockResponse);
+
+        const result = await client.setRunPropertyValue(runId, fieldId, value, fieldType);
 
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
         expect(result).toEqual(mockResponse);
