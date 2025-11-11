@@ -264,20 +264,15 @@ const HomeDaakia = ({
 
     const handleFilterPress = async (filterId: string) => {
         if (filterId === 'threads') {
-            // Emit event first for immediate feedback (like original)
-            DeviceEventEmitter.emit(Events.ACTIVE_SCREEN, THREAD);
-            // Then do DB operations (non-blocking)
             switchToGlobalThreads(serverUrl);
             return;
         }
 
         if (filterId === 'drafts') {
-            // Emit event first for immediate feedback
-            DeviceEventEmitter.emit(Events.ACTIVE_SCREEN, DRAFT);
-            // Then do DB operations (don't await - let it happen in background)
-            switchToGlobalDrafts(serverUrl).catch(() => {
-                // Ignore errors - navigation already happened
-            });
+            const {error} = await switchToGlobalDrafts(serverUrl);
+            if (!error) {
+                DeviceEventEmitter.emit(Events.ACTIVE_SCREEN, DRAFT);
+            }
             return;
         }
 
