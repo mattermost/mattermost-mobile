@@ -40,7 +40,7 @@ const getStylesFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
 const messages = defineMessages({
     inProgressTitle: {
         id: 'playbooks.runs.in_progress.title',
-        defaultMessage: 'Nothing in progress',
+        defaultMessage: 'No in progress checklists',
     },
     finishedTitle: {
         id: 'playbooks.runs.finished.title',
