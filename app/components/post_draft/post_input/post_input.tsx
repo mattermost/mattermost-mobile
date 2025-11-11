@@ -14,7 +14,6 @@ import {
 import {updateDraftMessage} from '@actions/local/draft';
 import {userTyping} from '@actions/websocket/users';
 import {Events, Screens} from '@constants';
-import {useExtraKeyboardContext} from '@context/extra_keyboard';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -122,7 +121,7 @@ export default function PostInput({
     const style = getStyleSheet(theme);
     const serverUrl = useServerUrl();
     const managedConfig = useManagedConfig<ManagedConfig>();
-    const keyboardContext = useExtraKeyboardContext();
+
     const [propagateValue, shouldProcessEvent] = useInputPropagation();
 
     const lastTypingEventSent = useRef(0);
@@ -147,7 +146,6 @@ export default function PostInput({
     };
 
     const onBlur = useCallback(() => {
-        keyboardContext?.registerTextInputBlur();
         handleDraftUpdate({
             serverUrl,
             channelId,
@@ -155,12 +153,11 @@ export default function PostInput({
             value,
         });
         setIsFocused(false);
-    }, [keyboardContext, serverUrl, channelId, rootId, value, setIsFocused]);
+    }, [serverUrl, channelId, rootId, value, setIsFocused]);
 
     const onFocus = useCallback(() => {
-        keyboardContext?.registerTextInputFocus();
         setIsFocused(true);
-    }, [setIsFocused, keyboardContext]);
+    }, [setIsFocused]);
 
     const checkMessageLength = useCallback((newValue: string) => {
         const valueLength = newValue.trim().length;
@@ -286,7 +283,7 @@ export default function PostInput({
             keyboardShowListener?.remove();
             keyboardHideListener?.remove();
         });
-    }, []);
+    }, [handleAndroidKeyboardHide, handleAndroidKeyboardShow]);
 
     useEffect(() => {
         const listener = AppState.addEventListener('change', onAppStateChange);
@@ -311,14 +308,14 @@ export default function PostInput({
             listener.remove();
             updateDraftMessage(serverUrl, channelId, rootId, lastNativeValue.current); // safe draft on unmount
         };
-    }, [updateValue, channelId, rootId]);
+    }, [updateValue, channelId, rootId, value, updateCursorPosition, propagateValue, inputRef, serverUrl]);
 
     useEffect(() => {
         if (value !== lastNativeValue.current) {
             propagateValue(value);
             lastNativeValue.current = value;
         }
-    }, [value]);
+    }, [propagateValue, value]);
 
     const events = useMemo(() => ({
         onEnterPressed: handleHardwareEnterPress,
@@ -349,6 +346,7 @@ export default function PostInput({
             textContentType='none'
             value={value}
             autoCapitalize='sentences'
+            nativeID={testID}
         />
     );
 }

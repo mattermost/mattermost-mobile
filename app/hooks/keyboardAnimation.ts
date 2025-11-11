@@ -4,7 +4,7 @@
 import {useKeyboardHandler} from 'react-native-keyboard-controller';
 import {useAnimatedScrollHandler, useSharedValue} from 'react-native-reanimated';
 
-export const useKeyboardAnimation = () => {
+export const useKeyboardAnimation = (postInputContainerHeight: number) => {
     /**
    * progress: Keyboard animation progress (0 = closed, 1 = fully open)
    * Used for: Tracking keyboard animation state
@@ -48,8 +48,6 @@ export const useKeyboardAnimation = () => {
    */
     const isKeyboardOpening = useSharedValue(false);
 
-    const isKeyboardFullyOpen = useSharedValue(false);
-
     // ------------------------------------------------------------------
     // KEYBOARD EVENT HANDLERS
     // ------------------------------------------------------------------
@@ -76,11 +74,19 @@ export const useKeyboardAnimation = () => {
         onStart: (e) => {
             'worklet'; // Mark this function to run on UI thread (60fps)
 
-            // Update progress (0-1 range)
+            // Ignore adjustment event from KeyboardGestureArea (fires after keyboard fully opens)
+            // After keyboard reaches full height, KeyboardGestureArea sends offset-adjusted event
+            // We use both offset prop AND manual animation, so this would cause flicker
+            // Example: keyboard opens at 346px → then adjustment event at 229px (346 - 117 offset)
+            if (parseInt(e.height.toString()) === keyboardHeight.value - postInputContainerHeight) {
+                return;
+            }
+
             progress.value = e.progress;
 
             // Store the exact keyboard height
             keyboardHeight.value = e.height;
+            height.value = e.height;
 
             // Determine if keyboard is opening or closing
             // Opening if new height is greater than current visual height
@@ -100,26 +106,9 @@ export const useKeyboardAnimation = () => {
         onInteractive: (e) => {
             'worklet';
 
-            isKeyboardFullyOpen.value = false;
-            progress.value = e.progress;
-            if (progress.value === 1) {
-                height.value = Math.max(e.height, keyboardHeight.value);
-                return;
-            }
-
-            // SMOOTH HEIGHT UPDATE LOGIC:
-            // Problem: If we directly set height.value = e.height, the input can jump
-            // Solution: Only allow height to increase when opening, decrease when closing
-            // This prevents sudden jumps when direction changes mid-gesture
-            if (isKeyboardOpening.value) {
-                // Opening: Only allow height to grow (prevents downward jumps)
-                if (e.height >= height.value) {
-                    height.value = Math.max(e.height, keyboardHeight.value);
-                }
-            } else {
-                height.value = Math.min(e.height, keyboardHeight.value);
-            }
-
+            height.value = e.height;
+            offset.value = e.height;
+            inset.value = e.height;
         },
 
         /**
@@ -131,56 +120,32 @@ export const useKeyboardAnimation = () => {
         onMove: (e) => {
             'worklet';
 
-            if (isKeyboardFullyOpen.value) {
+            // Ignore adjustment event from KeyboardGestureArea (fires after keyboard fully opens)
+            // After keyboard reaches full height, KeyboardGestureArea sends offset-adjusted event
+            // We use both offset prop AND manual animation, so this would cause flicker
+            // Example: keyboard opens at 346px → then adjustment event at 229px (346 - 117 offset)
+            if (parseInt(e.height.toString()) === keyboardHeight.value - postInputContainerHeight) {
                 return;
             }
 
-            progress.value = e.progress;
-            offset.value = e.height;
+            const absHeight = Math.abs(e.height); // Use Math.abs because programmatic dismiss (Keyboard.dismiss()) reports negative heights
 
-            if (progress.value === 1) {
-                isKeyboardFullyOpen.value = true;
-                height.value = Math.max(e.height, keyboardHeight.value);
-                offset.value = height.value;
-                return;
-            }
-
-            // Same smooth update logic as onInteractive
-            if (isKeyboardOpening.value) {
-                if (e.height >= height.value) {
-                    height.value = e.height;
-                }
-            } else {
-                height.value = e.height;
-            }
+            height.value = absHeight;
+            offset.value = absHeight;
+            inset.value = absHeight;
 
         },
 
-        /**
-        * onEnd: Called when keyboard animation completes
-        * This is where we set final values to ensure everything is in correct state
-        * If keyboard is fully closed, reset offset
-        *
-        * @param e - Event object with keyboard information
-        */
         onEnd: (e) => {
             'worklet';
 
-            if (e.progress === 1) {
-                height.value = keyboardHeight.value;
-                inset.value = keyboardHeight.value;
-                isKeyboardFullyOpen.value = true;
-            } else {
-                height.value = e.height;
-                inset.value = e.height;
-                isKeyboardFullyOpen.value = false;
+            if (progress.value === 1) {
+                height.value = Math.max(e.height, keyboardHeight.value);
             }
-            progress.value = e.progress;
-            keyboardHeight.value = e.height;
 
-            // Reset state flags
-            isKeyboardOpening.value = false;
-
+            if (progress.value === 0) {
+                height.value = Math.min(e.height, 0);
+            }
         },
     });
 
@@ -194,13 +159,9 @@ export const useKeyboardAnimation = () => {
    */
     const onScroll = useAnimatedScrollHandler({
         onScroll: (e) => {
-            // Only track scroll when not in custom view mode
-            // console.log('On scroll', e.contentOffset.y, inset.value);
-            scroll.value = e.contentOffset.y;
-
-            // console.log('On scroll', e.contentOffset.y, inset.value, scroll.value);
+            scroll.value = e.contentOffset.y + inset.value;
         },
     });
 
-    return {height, progress, onScroll, inset, offset, keyboardHeight, scroll};
+    return {height, onScroll, inset, offset, keyboardHeight, scroll};
 };

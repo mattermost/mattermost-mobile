@@ -3,17 +3,15 @@
 
 import {uniqueId} from 'lodash';
 import React, {useCallback, useEffect, useState} from 'react';
-import {type LayoutChangeEvent, StyleSheet, View} from 'react-native';
+import {type LayoutChangeEvent, StyleSheet} from 'react-native';
+import {KeyboardProvider} from 'react-native-keyboard-controller';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {storeLastViewedThreadIdAndServer, removeLastViewedThreadIdAndServer} from '@actions/app/global';
 import FloatingCallContainer from '@calls/components/floating_call_container';
 import FreezeScreen from '@components/freeze_screen';
-import PostDraft from '@components/post_draft';
 import RoundedHeaderContext from '@components/rounded_header_context';
-import ScheduledPostIndicator from '@components/scheduled_post_indicator';
 import {Screens} from '@constants';
-import {ExtraKeyboardProvider} from '@context/extra_keyboard';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useDidUpdate from '@hooks/did_update';
 import SecurityManager from '@managers/security_manager';
@@ -21,7 +19,7 @@ import {popTopScreen, setButtons} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 
-import ThreadPostList from './thread_post_list';
+import ThreadContent from './thread_content';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -96,7 +94,7 @@ const Thread = ({
             }
             setButtons(componentId, {rightButtons: []});
         };
-    }, [rootId]);
+    }, [rootId, componentId, isCRTEnabled]);
 
     useDidUpdate(() => {
         if (!rootPost) {
@@ -122,30 +120,14 @@ const Thread = ({
             >
                 <RoundedHeaderContext/>
                 {Boolean(rootPost) &&
-                <ExtraKeyboardProvider>
-                    <View style={styles.flex}>
-                        <ThreadPostList
-                            nativeID={rootId}
-                            rootPost={rootPost!}
-                        />
-                    </View>
-                    <>
-                        {scheduledPostCount > 0 &&
-                            <ScheduledPostIndicator
-                                isThread={true}
-                                scheduledPostCount={scheduledPostCount}
-                            />
-                        }
-                    </>
-                    <PostDraft
-                        channelId={rootPost!.channelId}
+                <KeyboardProvider>
+                    <ThreadContent
                         rootId={rootId}
-                        testID='thread.post_draft'
+                        rootPost={rootPost!}
+                        scheduledPostCount={scheduledPostCount}
                         containerHeight={containerHeight}
-                        isChannelScreen={false}
-                        location={Screens.THREAD}
                     />
-                </ExtraKeyboardProvider>
+                </KeyboardProvider>
                 }
                 {showFloatingCallContainer &&
                     <FloatingCallContainer

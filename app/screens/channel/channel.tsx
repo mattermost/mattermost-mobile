@@ -2,16 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useState} from 'react';
-import {type LayoutChangeEvent, StyleSheet, View} from 'react-native';
+import {type LayoutChangeEvent, StyleSheet} from 'react-native';
+import {KeyboardProvider} from 'react-native-keyboard-controller';
 import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {storeLastViewedChannelIdAndServer, removeLastViewedChannelIdAndServer} from '@actions/app/global';
 import FloatingCallContainer from '@calls/components/floating_call_container';
 import FreezeScreen from '@components/freeze_screen';
-import PostDraft from '@components/post_draft';
-import ScheduledPostIndicator from '@components/scheduled_post_indicator';
-import {Screens} from '@constants';
-import {ExtraKeyboardProvider} from '@context/extra_keyboard';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useChannelSwitch} from '@hooks/channel_switch';
 import {useIsTablet} from '@hooks/device';
@@ -21,7 +18,7 @@ import SecurityManager from '@managers/security_manager';
 import {popTopScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 
-import ChannelPostList from './channel_post_list';
+import ChannelContent from './channel_content';
 import ChannelHeader from './header';
 import useGMasDMNotice from './use_gm_as_dm_notice';
 
@@ -135,27 +132,14 @@ const Channel = ({
                     shouldRenderChannelBanner={includeChannelBanner}
                 />
                 {shouldRender &&
-                <ExtraKeyboardProvider>
-                    <View style={[styles.flex, {marginTop}]}>
-                        <ChannelPostList
-                            channelId={channelId}
-                            nativeID={channelId}
-                        />
-                    </View>
-                    <>
-                        {scheduledPostCount > 0 &&
-                            <ScheduledPostIndicator scheduledPostCount={scheduledPostCount}/>
-                        }
-                    </>
-                    <PostDraft
+                <KeyboardProvider>
+                    <ChannelContent
                         channelId={channelId}
-                        testID='channel.post_draft'
+                        marginTop={marginTop}
+                        scheduledPostCount={scheduledPostCount}
                         containerHeight={containerHeight}
-                        isChannelScreen={true}
-                        canShowPostPriority={true}
-                        location={Screens.CHANNEL}
                     />
-                </ExtraKeyboardProvider>
+                </KeyboardProvider>
                 }
                 {showFloatingCallContainer && shouldRender &&
                     <FloatingCallContainer

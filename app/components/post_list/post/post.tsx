@@ -14,7 +14,6 @@ import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';
 import {POST_TIME_TO_FAIL} from '@constants/post';
 import * as Screens from '@constants/screens';
-import {useHideExtraKeyboardIfNeeded} from '@context/extra_keyboard';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -201,7 +200,7 @@ const Post = ({
         isPendingOrFailed, isSystemPost, location, serverUrl, post,
     ]);
 
-    const handlePress = useHideExtraKeyboardIfNeeded(() => {
+    const handlePress = useCallback(() => {
         pressDetected.current = true;
 
         if (post) {
@@ -209,7 +208,7 @@ const Post = ({
         }
     }, [handlePostPress, post]);
 
-    const showPostOptions = useHideExtraKeyboardIfNeeded(() => {
+    const showPostOptions = useCallback(() => {
         if (!post) {
             return;
         }
@@ -251,7 +250,7 @@ const Post = ({
                 clearTimeout(t);
             }
         };
-    }, [post.id]);
+    }, [isFailed, post.id, post.pendingPostId, post.updateAt]);
 
     useEffect(() => {
         if (!isLastPost) {
@@ -264,7 +263,7 @@ const Post = ({
 
         PerformanceMetricsManager.finishLoad(location === 'Thread' ? 'THREAD' : 'CHANNEL', serverUrl);
         PerformanceMetricsManager.endMetric('mobile_channel_switch', serverUrl);
-    }, []);
+    }, [isLastPost, location, serverUrl]);
 
     const highlightSaved = isSaved && !skipSavedHeader;
     const hightlightPinned = post.isPinned && !skipPinnedHeader;
