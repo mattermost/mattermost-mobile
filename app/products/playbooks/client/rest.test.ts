@@ -848,6 +848,9 @@ describe('createPlaybookRun', () => {
             channel_id,
             create_public_run,
         };
+
+        jest.mocked(client.doFetch).mockResolvedValue(mockResponse);
+
         const result = await client.createPlaybookRun(
             playbook_id,
             owner_user_id,

@@ -5,6 +5,7 @@ import {OperationType} from '@constants/database';
 import {prepareBaseRecord} from '@database/operator/server_data_operator/transformers/index';
 import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
 import {PLAYBOOK_RUN_TYPES} from '@playbooks/constants/playbook_run';
+import {logError} from '@utils/log';
 
 import type PlaybookChecklistModel from '@playbooks/types/database/models/playbook_checklist';
 import type PlaybookChecklistItemModel from '@playbooks/types/database/models/playbook_checklist_item';
@@ -217,7 +218,8 @@ export const transformPlaybookRunPropertyValueRecord = ({action, database, value
             try {
                 valueToStore = JSON.stringify(valueToStore);
             } catch (e) {
-                // If JSON stringify fails, store empty string
+                // If JSON stringify fails, log the error and store empty string
+                logError('Failed to stringify value array in transformPlaybookRunPropertyValueRecord:', valueToStore);
                 valueToStore = '';
             }
         }
