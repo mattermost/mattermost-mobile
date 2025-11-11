@@ -35,7 +35,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
             map((user) => isSystemAdmin(user?.roles || '')),
             distinctUntilChanged(),
         ),
-        allowPasswordlessInvites: observeConfigValue(database, 'EnableEasyLogin'),
+        allowPasswordlessInvites: observeConfigValue(database, 'EnableGuestMagicLink'),
     };
 });
 

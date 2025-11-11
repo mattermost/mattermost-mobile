@@ -62,7 +62,7 @@ interface ClientConfig {
     EnableEmailBatching: string;
     EnableEmailInvitations: string;
     EnableEmojiPicker: string;
-    EnableEasyLogin: string;
+    EnableGuestMagicLink: string;
     EnableFileAttachments: string;
     EnableGifPicker: string;
     EnableGuestAccounts: string;

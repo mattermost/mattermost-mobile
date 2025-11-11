@@ -108,7 +108,7 @@ const LoginOptions = ({
     }, [ssoOptions]);
     const intl = useIntl();
 
-    const [easyLoginLinkSent, setEasyLoginLinkSent] = useState(false);
+    const [magicLinkSent, setMagicLinkSent] = useState(false);
 
     const description = useMemo(() => {
         if (hasLoginForm) {
@@ -206,15 +206,15 @@ const LoginOptions = ({
         );
     }
 
-    if (easyLoginLinkSent) {
+    if (magicLinkSent) {
         return (
             <View style={styles.linkSentContainer}>
                 <LinkSent/>
                 <Text style={styles.linkSentTitle}>
-                    {intl.formatMessage({id: 'login.passwordless.link.sent.title', defaultMessage: 'We sent you a link to login'})}
+                    {intl.formatMessage({id: 'login.magic_link.link.sent.title', defaultMessage: 'We sent you a link to login'})}
                 </Text>
                 <Text style={styles.linkSentDescription}>
-                    {intl.formatMessage({id: 'login.passwordless.link.sent.description', defaultMessage: 'Please check your email for the link to login. Your link will expire in 5 minutes.'})}
+                    {intl.formatMessage({id: 'login.magic_link.link.sent.description', defaultMessage: 'Please check your email for the link to login. Your link will expire in 5 minutes.'})}
                 </Text>
             </View>
         );
@@ -258,7 +258,7 @@ const LoginOptions = ({
                             theme={theme}
                             serverDisplayName={serverDisplayName}
                             serverUrl={serverUrl}
-                            setEasyLoginLinkSent={setEasyLoginLinkSent}
+                            setMagicLinkSent={setMagicLinkSent}
                         />
                         }
                         {optionsSeparator}

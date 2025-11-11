@@ -446,7 +446,7 @@ export const getUserLoginType = async (serverUrl: string, loginId: string) => {
     }
 };
 
-export const easyLogin = async (serverUrl: string, token: string): Promise<LoginActionResponse> => {
+export const magicLinkLogin = async (serverUrl: string, token: string): Promise<LoginActionResponse> => {
     const httpsHeadRequest = await getServerUrlAfterRedirect(serverUrl);
     let serverUrlToUse;
     if (httpsHeadRequest.error || !httpsHeadRequest.url) {
@@ -471,7 +471,7 @@ export const easyLogin = async (serverUrl: string, token: string): Promise<Login
         const deviceId = await getDeviceToken();
         const serverDisplayName = config.SiteName;
 
-        const user = await client.loginByEasyLogin(token, deviceId);
+        const user = await client.loginByMagicLinkLogin(token, deviceId);
 
         const server = await DatabaseManager.createServerDatabase({
             config: {

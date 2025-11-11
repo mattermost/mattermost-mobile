@@ -30,18 +30,22 @@ interface LoginProps extends LaunchProps {
     keyboardAwareRef: RefObject<KeyboardAwareScrollView>;
     serverDisplayName: string;
     theme: Theme;
-    setEasyLoginLinkSent: (linkSent: boolean) => void;
+    setMagicLinkSent: (linkSent: boolean) => void;
 }
 
 export const MFA_EXPECTED_ERRORS = ['mfa.validate_token.authenticate.app_error', 'ent.mfa.validate_token.authenticate.app_error'];
 const hitSlop = {top: 8, right: 8, bottom: 8, left: 8};
 
-function getButtonDisabled(loginId: string, password: string, userLoginType: '' | 'easy_login' | undefined, passwordlessEnabled: boolean) {
+function getButtonDisabled(loginId: string, password: string, userLoginType: LoginType | undefined, magicLinkEnabled: boolean) {
     if (!loginId) {
         return true;
     }
 
-    if (passwordlessEnabled && (userLoginType === 'easy_login' || userLoginType === undefined)) {
+    if (userLoginType === 'deactivated') {
+        return true;
+    }
+
+    if (magicLinkEnabled && (userLoginType === 'guest_magic_link' || userLoginType === undefined)) {
         return false;
     }
 
@@ -97,7 +101,18 @@ const isMFAError = (loginError: unknown): boolean => {
     return false;
 };
 
-const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchError, launchType, license, serverUrl, theme, setEasyLoginLinkSent}: LoginProps) => {
+const LoginForm = ({
+    config,
+    extra,
+    keyboardAwareRef,
+    serverDisplayName,
+    launchError,
+    launchType,
+    license,
+    serverUrl,
+    theme,
+    setMagicLinkSent,
+}: LoginProps) => {
     const styles = getStyleSheet(theme);
     const loginRef = useRef<TextInput>(null);
     const passwordRef = useRef<TextInput>(null);
@@ -112,8 +127,8 @@ const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchEr
     const usernameEnabled = config.EnableSignInWithUsername === 'true';
     const ldapEnabled = license.IsLicensed === 'true' && config.EnableLdap === 'true' && license.LDAP === 'true';
 
-    const [userLoginType, setUserLoginType] = useState<'' | 'easy_login' | undefined>(undefined);
-    const passwordlessEnabled = config.EnableEasyLogin === 'true';
+    const [userLoginType, setUserLoginType] = useState<LoginType | undefined>(undefined);
+    const magicLinkEnabled = config.EnableGuestMagicLink === 'true';
 
     useAvoidKeyboard(keyboardAwareRef);
 
@@ -130,13 +145,13 @@ const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchEr
         if (!serverUrl) {
             setUserLoginType('');
             logDebug('error on checkUserLoginType', 'serverUrl is required');
-            setError(intl.formatMessage({id: 'login.passwordless.request.error', defaultMessage: 'Failed to check user login type'}));
+            setError(intl.formatMessage({id: 'login.magic_link.request.error', defaultMessage: 'Failed to check user login type'}));
             return '';
         }
         const response = await getUserLoginType(serverUrl, loginId);
         if ('error' in response) {
             logDebug('error on checkUserLoginType', getFullErrorMessage(response?.error));
-            setError(intl.formatMessage({id: 'login.passwordless.request.error', defaultMessage: 'Failed to check user login type'}));
+            setError(intl.formatMessage({id: 'login.magic_link.request.error', defaultMessage: 'Failed to check user login type'}));
             return '';
         }
         setUserLoginType(response.auth_service);
@@ -229,16 +244,16 @@ const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchEr
 
     const onLogin = useCallback(async () => {
         Keyboard.dismiss();
-        if (passwordlessEnabled && userLoginType === undefined) {
+        if (magicLinkEnabled && userLoginType === undefined) {
             const receivedUserLoginType = await checkUserLoginType();
-            if (receivedUserLoginType === 'easy_login') {
-                setEasyLoginLinkSent(true);
+            if (receivedUserLoginType === 'guest_magic_link') {
+                setMagicLinkSent(true);
             }
             return;
         }
 
         preSignIn();
-    }, [checkUserLoginType, passwordlessEnabled, preSignIn, setEasyLoginLinkSent, userLoginType]);
+    }, [checkUserLoginType, magicLinkEnabled, preSignIn, setMagicLinkSent, userLoginType]);
 
     const onLoginChange = useCallback((text: string) => {
         setLoginId(text);
@@ -288,16 +303,16 @@ const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchEr
     }, [managedConfig?.username]);
 
     const onIdInputSubmitting = useCallback(() => {
-        if (!passwordlessEnabled || (userLoginType !== 'easy_login')) {
+        if (!magicLinkEnabled || (userLoginType !== 'guest_magic_link')) {
             focusPassword();
             return;
         }
 
         onLogin();
-    }, [focusPassword, onLogin, passwordlessEnabled, userLoginType]);
+    }, [focusPassword, onLogin, magicLinkEnabled, userLoginType]);
 
-    const buttonDisabled = getButtonDisabled(loginId, password, userLoginType, passwordlessEnabled);
-    const showPasswordInput = !passwordlessEnabled || (userLoginType !== 'easy_login' && userLoginType !== undefined);
+    const buttonDisabled = getButtonDisabled(loginId, password, userLoginType, magicLinkEnabled);
+    const showPasswordInput = !magicLinkEnabled || (userLoginType !== 'guest_magic_link' && userLoginType !== undefined);
     let userInputError = error;
     if (showPasswordInput) {
         userInputError = error ? ' ' : '';
@@ -371,7 +386,7 @@ const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchEr
                         theme={theme}
                         value={password}
                         endAdornment={endAdornment}
-                        autoFocus={passwordlessEnabled}
+                        autoFocus={magicLinkEnabled}
                     />
 
                     {(emailEnabled || usernameEnabled) && config.PasswordEnableForgotLink !== 'false' && (

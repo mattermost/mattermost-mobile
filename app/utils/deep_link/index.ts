@@ -9,7 +9,7 @@ import urlParse from 'url-parse';
 
 import {joinIfNeededAndSwitchToChannel, makeDirectChannel} from '@actions/remote/channel';
 import {showPermalink} from '@actions/remote/permalink';
-import {easyLogin} from '@actions/remote/session';
+import {magicLinkLogin} from '@actions/remote/session';
 import {fetchUsersByUsernames} from '@actions/remote/user';
 import {DeepLink, Launch, Screens} from '@constants';
 import DeepLinkType from '@constants/deep_linking';
@@ -57,10 +57,10 @@ export async function handleDeepLink(deepLink: DeepLinkWithData, intlShape?: Int
         if (!existingServerUrl) {
             const theme = EphemeralStore.theme || getDefaultThemeByAppearance();
 
-            if (deepLink.type === DeepLink.EasyLogin && 'token' in deepLink.data) {
-                const result = await easyLogin(deepLink.data.serverUrl, deepLink.data.token);
+            if (deepLink.type === DeepLink.MagicLink && 'token' in deepLink.data) {
+                const result = await magicLinkLogin(deepLink.data.serverUrl, deepLink.data.token);
                 if (result.error) {
-                    logDebug('Failed to do easy login', result.error);
+                    logDebug('Failed to do magic link login', result.error);
                     return {error: true};
                 }
                 return {error: false};
@@ -178,12 +178,12 @@ export async function handleDeepLink(deepLink: DeepLinkWithData, intlShape?: Int
                 }
                 break;
             }
-            case DeepLink.EasyLogin: {
+            case DeepLink.MagicLink: {
                 Alert.alert(
-                    intl.formatMessage({id: 'easy_login.error.title', defaultMessage: 'Already logged in'}),
-                    intl.formatMessage({id: 'easy_login.error.description', defaultMessage: 'You are already logged in to this server. Log out and follow the link again.'}),
+                    intl.formatMessage({id: 'magic_link.already_logged_in_error.title', defaultMessage: 'Already logged in'}),
+                    intl.formatMessage({id: 'magic_link.already_logged_in_error.description', defaultMessage: 'You are already logged in to this server. Log out and follow the link again.'}),
                     [{
-                        text: intl.formatMessage({id: 'easy_login.error.ok', defaultMessage: 'OK'}),
+                        text: intl.formatMessage({id: 'magic_link.already_logged_in_error.ok', defaultMessage: 'OK'}),
                     }],
                 );
                 break;
@@ -231,13 +231,13 @@ export const matchPlaybookRunsDeeplink = match<PlaybookRunsPathParams>(PLAYBOOK_
 const PLAYBOOK_RUNS_RETROSPECTIVE = '*serverUrl/playbooks/runs/:playbookRunId/retrospective';
 export const matchPlaybookRunsRetrospectiveDeeplink = match<PlaybookRunsPathParams>(PLAYBOOK_RUNS_RETROSPECTIVE);
 
-type EasyLoginPathParams = {
+type MagicLinkPathParams = {
     serverUrl: string[];
     token: string;
 };
 
-const EASY_LOGIN_PATH = '*serverUrl/login/sso/easy';
-export const matchEasyLoginDeeplink = match<EasyLoginPathParams>(EASY_LOGIN_PATH);
+const MAGIC_LINK_PATH = '*serverUrl/login/one_time_link';
+export const matchMagicLinkDeeplink = match<MagicLinkPathParams>(MAGIC_LINK_PATH);
 
 type PermalinkPathParams = {
     serverUrl: string[];
@@ -374,14 +374,14 @@ export function parseDeepLink(deepLinkUrl: string, asServer = false): DeepLinkWi
             return {type: DeepLink.PlaybookRuns, url: deepLinkUrl, data: {serverUrl: serverUrl.join('/'), playbookRunId}};
         }
 
-        const easyLoginMatch = matchEasyLoginDeeplink(url);
-        if (easyLoginMatch) {
+        const magicLinkMatch = matchMagicLinkDeeplink(url);
+        if (magicLinkMatch) {
             const token = parsedUrl.query.t;
-            const {params: {serverUrl}} = easyLoginMatch;
+            const {params: {serverUrl}} = magicLinkMatch;
             if (!isValidToken(token)) {
                 return {type: DeepLink.Invalid, url: deepLinkUrl};
             }
-            return {type: DeepLink.EasyLogin, url: deepLinkUrl, data: {serverUrl: serverUrl.join('/'), token}};
+            return {type: DeepLink.MagicLink, url: deepLinkUrl, data: {serverUrl: serverUrl.join('/'), token}};
         }
 
         if (asServer) {

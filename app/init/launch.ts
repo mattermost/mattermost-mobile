@@ -85,7 +85,7 @@ export const launchApp = async (props: LaunchProps) => {
                 const existingServer = DatabaseManager.searchUrl(extra.data!.serverUrl);
                 serverUrl = existingServer;
                 props.serverUrl = serverUrl || extra.data?.serverUrl;
-                if (extra.type === DeepLink.EasyLogin && extra.data && 'token' in extra.data) {
+                if (extra.type === DeepLink.MagicLink && extra.data && 'token' in extra.data) {
                     const result = await handleDeepLink(extra);
                     if (result.error) {
                         props.launchError = true;

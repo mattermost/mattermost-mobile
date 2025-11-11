@@ -19,7 +19,7 @@ export interface ClientUsersMix {
     setDefaultProfileImage: (userId: string) => Promise<any>;
     login: (loginId: string, password: string, token?: string, deviceId?: string, ldapOnly?: boolean) => Promise<UserProfile>;
     loginById: (id: string, password: string, token?: string, deviceId?: string) => Promise<UserProfile>;
-    loginByEasyLogin: (token: string, deviceId?: string) => Promise<UserProfile>;
+    loginByMagicLinkLogin: (token: string, deviceId?: string) => Promise<UserProfile>;
     logout: () => Promise<any>;
     getProfiles: (page?: number, perPage?: number, options?: Record<string, any>) => Promise<UserProfile[]>;
     getProfilesByIds: (userIds: string[], options?: Record<string, any>, groupLabel?: RequestGroupLabel) => Promise<UserProfile[]>;
@@ -48,7 +48,7 @@ export interface ClientUsersMix {
     unsetCustomStatus: () => Promise<{status: string}>;
     removeRecentCustomStatus: (customStatus: UserCustomStatus) => Promise<{status: string}>;
     exchangeSsoLoginCode: (loginCode: string, codeVerifier: string, state: string) => Promise<{token: string; csrf: string}>;
-    getUserLoginType: (loginId: string, deviceId?: string) => Promise<{auth_service: '' | 'easy_login'}>;
+    getUserLoginType: (loginId: string, deviceId?: string) => Promise<{auth_service: LoginType}>;
 }
 
 const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
@@ -164,9 +164,9 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         return resp?.data;
     };
 
-    loginByEasyLogin = async (token: string, deviceId = '') => {
+    loginByMagicLinkLogin = async (token: string, deviceId = '') => {
         const body = {
-            easy_login_token: token,
+            magic_link_token: token,
             device_id: deviceId,
         };
 
