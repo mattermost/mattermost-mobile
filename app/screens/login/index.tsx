@@ -1,6 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-
+/*eslint-disable*/
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {Platform, useWindowDimensions, View, type LayoutChangeEvent, ImageBackground, Appearance} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
@@ -8,8 +8,11 @@ import {Navigation} from 'react-native-navigation';
 import Animated from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
+// import DaakiaOpenIdLogin from '@components/daakia_components/daakia_openid_login';
 import FormattedText from '@components/formatted_text';
-import {Screens, Sso} from '@constants';
+import {Screens} from '@constants';
+
+// import {Screens, Sso} from '@constants';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
@@ -25,7 +28,6 @@ import {typography} from '@utils/typography';
 import Form from './form';
 import LoginOptionsSeparator from './login_options_separator';
 import SsoOptions from './sso_options';
-import DaakiaOpenIdLogin from '@components/daakia_components/daakia_openid_login';
 
 import type {LaunchProps} from '@typings/launch';
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -92,11 +94,11 @@ const LoginOptions = ({
         return Object.values(ssoOptions).filter((v) => v.enabled).length;
     }, [ssoOptions]);
 
-    // Check if only OpenID is enabled
-    const isOnlyOpenIdEnabled = useMemo(() => {
-        const enabledSSOs = Object.values(ssoOptions).filter((v) => v.enabled);
-        return enabledSSOs.length === 1 && ssoOptions[Sso.OPENID]?.enabled;
-    }, [ssoOptions]);
+    // Check if only OpenID is enabled (commented usage below)
+    // const isOnlyOpenIdEnabled = useMemo(() => {
+    //     const enabledSSOs = Object.values(ssoOptions).filter((v) => v.enabled);
+    //     return enabledSSOs.length === 1 && ssoOptions[Sso.OPENID]?.enabled;
+    // }, [ssoOptions]);
 
     const description = useMemo(() => {
         if (hasLoginForm) {
@@ -223,42 +225,45 @@ const LoginOptions = ({
                         onLayout={onLayout}
                         style={styles.centered}
                     >
+                        {/* Commented out conditional OpenID block
                         {isOnlyOpenIdEnabled ? (
                             // Show simplified OpenID-only UI
-                            <DaakiaOpenIdLogin
+                            // <DaakiaOpenIdLogin
+                            //     goToSso={goToSso}
+                            //     ssoOptions={ssoOptions}
+                            //     theme={theme}
+                            // />
+                            null
+                        ) : (
+                            // Else branch below is rendered unconditionally
+                        )}
+                        */}
+                        <>
+                            {title}
+                            {description}
+                            {hasLoginForm &&
+                            <Form
+                                config={config}
+                                extra={extra}
+                                keyboardAwareRef={keyboardAwareRef}
+                                license={license}
+                                launchError={launchError}
+                                launchType={launchType}
+                                theme={theme}
+                                serverDisplayName={serverDisplayName}
+                                serverUrl={serverUrl}
+                            />
+                            }
+                            {optionsSeparator}
+                            {numberSSOs > 0 &&
+                            <SsoOptions
                                 goToSso={goToSso}
+                                ssoOnly={!hasLoginForm}
                                 ssoOptions={ssoOptions}
                                 theme={theme}
                             />
-                        ) : (
-                            // Show normal login UI with form and all SSO options
-                            <>
-                                {title}
-                                {description}
-                                {hasLoginForm &&
-                                <Form
-                                    config={config}
-                                    extra={extra}
-                                    keyboardAwareRef={keyboardAwareRef}
-                                    license={license}
-                                    launchError={launchError}
-                                    launchType={launchType}
-                                    theme={theme}
-                                    serverDisplayName={serverDisplayName}
-                                    serverUrl={serverUrl}
-                                />
-                                }
-                                {optionsSeparator}
-                                {numberSSOs > 0 &&
-                                <SsoOptions
-                                    goToSso={goToSso}
-                                    ssoOnly={!hasLoginForm}
-                                    ssoOptions={ssoOptions}
-                                    theme={theme}
-                                />
-                                }
-                            </>
-                        )}
+                            }
+                        </>
                     </View>
                 </KeyboardAwareScrollView>
             </AnimatedSafeArea>

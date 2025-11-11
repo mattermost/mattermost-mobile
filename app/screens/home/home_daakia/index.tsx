@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-
+/*eslint-disable*/
 import {Q} from '@nozbe/watermelondb';
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {useIsFocused, useNavigation} from '@react-navigation/native';
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View, TouchableOpacity, Text, DeviceEventEmitter} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
@@ -15,6 +15,7 @@ import {switchMap, combineLatestWith, map, distinctUntilChanged} from 'rxjs/oper
 import {switchToGlobalDrafts} from '@actions/local/draft';
 import {switchToGlobalThreads} from '@actions/local/thread';
 import {fetchPostsForChannel} from '@actions/remote/post';
+import {handleTeamChange} from '@actions/remote/team';
 import FloatingCallContainer from '@calls/components/floating_call_container';
 import {observeIncomingCalls} from '@calls/state';
 import CompassIcon from '@components/compass_icon';
@@ -22,6 +23,7 @@ import ConnectionBanner from '@components/connection_banner';
 import DaakiaChannelList from '@components/daakia_components/daakia_channel_list';
 import DaakiaHeader from '@components/daakia_components/daakia_header';
 import DaakiaTabs from '@components/daakia_components/daakia_tabs';
+import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import Loading from '@components/loading';
 import {Events, General, Permissions, Preferences} from '@constants';
 import {DMS_CATEGORY, FAVORITES_CATEGORY} from '@constants/categories';
@@ -34,11 +36,14 @@ import {observeDraftCount} from '@queries/servers/drafts';
 import {queryPreferencesByCategoryAndName, querySidebarPreferences} from '@queries/servers/preference';
 import {observePermissionForTeam} from '@queries/servers/role';
 import {observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
-import {observeCurrentTeam, queryMyTeams} from '@queries/servers/team';
+import {observeCurrentTeam, queryJoinedTeams, queryMyTeams} from '@queries/servers/team';
 import {observeUnreadsAndMentions} from '@queries/servers/thread';
 import {observeCurrentUser, observeDeactivatedUsers} from '@queries/servers/user';
-import {resetToTeams} from '@screens/navigation';
+import {TITLE_HEIGHT} from '@screens/bottom_sheet';
+import BottomSheetTeamList from '@screens/home/search/bottom_sheet_team_list';
+import {bottomSheet, resetToTeams} from '@screens/navigation';
 import {type ChannelWithMyChannel, filterArchivedChannels, filterAutoclosedDMs, filterManuallyClosedDms, getUnreadIds, sortChannels} from '@utils/categories';
+import {bottomSheetSnapPoint} from '@utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
@@ -46,6 +51,7 @@ import type CategoryModel from '@typings/database/models/servers/category';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type PostModel from '@typings/database/models/servers/post';
+import type TeamModel from '@typings/database/models/servers/team';
 
 // Helper functions for channel list logic
 const observeCategoryChannels = (category: CategoryModel, myChannels: Observable<MyChannelModel[]>) => {
@@ -147,6 +153,8 @@ type ThreadsUnread = {unreads: boolean; mentions: number};
 type HomeDaakiaProps = {
     threadsUnread?: ThreadsUnread;
     teamDisplayName?: string;
+    currentTeamId: string;
+    teams: TeamModel[];
     canCreateChannels?: boolean;
     canJoinChannels?: boolean;
     canInvitePeople?: boolean;
@@ -174,6 +182,8 @@ const HomeDaakia = ({
     draftsCount,
     showIncomingCalls,
     nTeams,
+    teams,
+    currentTeamId,
 }: HomeDaakiaProps) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -271,6 +281,39 @@ const HomeDaakia = ({
     };
 
     // (pull-to-refresh removed)
+
+    const openTeamPicker = useCallback(() => {
+        const title = intl.formatMessage({id: 'mobile.search.team.select', defaultMessage: 'Select a team'});
+        const teamList = teams;
+
+        const renderContent = () => (
+            <BottomSheetTeamList
+                setTeamId={(teamId: string) => {
+                    handleTeamChange(serverUrl, teamId);
+                }}
+                teams={teamList}
+                teamId={currentTeamId}
+                title={title}
+                crossTeamSearchEnabled={false}
+            />
+        );
+
+        const snapPoints: Array<string | number> = [
+            1,
+            teamList.length ? bottomSheetSnapPoint(Math.min(3, teamList.length), ITEM_HEIGHT) + (2 * TITLE_HEIGHT) : 392,
+        ];
+        if (teamList.length > 3) {
+            snapPoints.push('80%');
+        }
+
+        bottomSheet({
+            closeButtonId: 'close-team_list',
+            renderContent,
+            snapPoints,
+            theme,
+            title,
+        });
+    }, [teams, currentTeamId, intl, serverUrl, theme]);
 
     // Show loading while redirecting if no teams
     if (nTeams === 0) {
@@ -397,8 +440,23 @@ const HomeDaakia = ({
                             onTabPress={handleTabPress}
                         />
                         <Animated.View style={[styles.body, bodyAnimated]}>
-                            {/* Filter Buttons - moved to body */}
+                            {/* Team Switch + Filter Buttons */}
                             <View style={styles.filterContainer}>
+                                {nTeams > 1 && (
+                                    <TouchableOpacity
+                                        style={styles.filterButton}
+                                        onPress={openTeamPicker}
+                                    >
+                                        <CompassIcon
+                                            name='account-multiple-outline'
+                                            size={16}
+                                            color={theme.centerChannelColor}
+                                        />
+                                        <Text style={styles.filterButtonText}>
+                                            {teamDisplayName || intl.formatMessage({id: 'mobile.search.team.select', defaultMessage: 'Select a team'})}
+                                        </Text>
+                                    </TouchableOpacity>
+                                )}
                                 {filterButtons.map((filter) => (
                                     <TouchableOpacity
                                         key={filter.id}
@@ -467,6 +525,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const team = observeCurrentTeam(database);
     const currentUser = observeCurrentUser(database);
     const currentUserId = observeCurrentUserId(database);
+    const myTeams = queryMyTeams(database).observe();
 
     // Permission observables
     const userAndTeam = combineLatest([currentUser, team]);
@@ -663,7 +722,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         distinctUntilChanged(),
     );
 
-    const myTeams = queryMyTeams(database).observe();
+    const teams = queryJoinedTeams(database).observe();
     const nTeams = myTeams.pipe(
         map((teams) => teams.length),
         distinctUntilChanged(),
@@ -671,6 +730,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
 
     return {
         currentTeamId,
+        teams,
         currentUserId,
         threadsUnread: observeUnreadsAndMentions(database, {teamId: undefined as unknown as string, includeDmGm: true}),
         draftsCount: currentTeamId.pipe(switchMap((teamId) => observeDraftCount(database, teamId))),

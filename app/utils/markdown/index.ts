@@ -94,15 +94,32 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme: Theme) => {
         },
         code: {
             alignSelf: 'center',
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.07),
+
+            // Higher opacity for better contrast in light theme bubbles
+            // Left bubble uses 0.08 opacity, so code at 0.2+ provides good contrast
+            // Works well in both light (darker code) and dark (lighter code) themes
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
+            borderRadius: 6,
+            borderColor: changeOpacity(theme.centerChannelColor, 0.3),
+            borderWidth: StyleSheet.hairlineWidth,
+            paddingHorizontal: 6,
+            paddingVertical: Platform.select({ios: 2, android: 1}),
             fontFamily: codeFont,
         },
         codeBlock: {
+
+            // Higher opacity for better contrast in light theme bubbles
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
+            borderRadius: 8,
+            borderColor: changeOpacity(theme.centerChannelColor, 0.3),
+            borderWidth: StyleSheet.hairlineWidth,
+            paddingHorizontal: 10,
+            paddingVertical: 8,
             fontFamily: codeFont,
         },
         mention: {
             fontFamily: 'OpenSans',
-            color: theme.linkColor,
+            textDecorationLine: 'underline',
         },
         error: {
             fontFamily: 'OpenSans',

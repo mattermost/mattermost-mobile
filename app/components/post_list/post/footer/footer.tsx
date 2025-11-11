@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
+import React, {type ReactNode, useCallback, useMemo} from 'react';
 import {defineMessage} from 'react-intl';
 import {TouchableOpacity, View, type ViewStyle} from 'react-native';
 
@@ -25,6 +25,8 @@ type Props = {
     participants: UserModel[];
     teamId?: string;
     thread: ThreadModel;
+    isMyPost?: boolean;
+    unreadDot?: ReactNode;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -44,14 +46,31 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             marginRight: 12,
             paddingVertical: 8,
         },
+        avatarsContainerRight: {
+            marginLeft: 12,
+            marginRight: 0,
+            paddingVertical: 8,
+        },
         replyIconContainer: {
             top: -1,
             marginRight: 5,
+        },
+        replyIconContainerRight: {
+            top: -1,
+            marginLeft: 5,
+            marginRight: 0,
         },
         replies: {
             alignSelf: 'center',
             color: changeOpacity(theme.centerChannelColor, 0.64),
             marginRight: 12,
+            ...typography('Heading', 75),
+        },
+        repliesRight: {
+            alignSelf: 'center',
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+            marginLeft: 12,
+            marginRight: 0,
             ...typography('Heading', 75),
         },
         notFollowingButtonContainer: {
@@ -77,12 +96,29 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             marginRight: 12,
             width: 1,
         },
+        followSeparatorRight: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.16),
+            height: 16,
+            marginLeft: 12,
+            marginRight: 0,
+            width: 1,
+        },
+        unreadDotContainer: {
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginLeft: 8,
+        },
+        unreadDotContainerRight: {
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginRight: 8,
+        },
     };
 });
 
 const bottomSheetTitleMessage = defineMessage({id: 'mobile.participants.header', defaultMessage: 'Thread Participants'});
 
-const Footer = ({channelId, location, participants, teamId, thread}: Props) => {
+const Footer = ({channelId, location, participants, teamId, thread, isMyPost = false, unreadDot}: Props) => {
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -98,7 +134,7 @@ const Footer = ({channelId, location, participants, teamId, thread}: Props) => {
     if (thread.replyCount) {
         repliesComponent = (
             <>
-                <View style={styles.replyIconContainer}>
+                <View style={isMyPost ? styles.replyIconContainerRight : styles.replyIconContainer}>
                     <CompassIcon
                         name='reply-outline'
                         size={18}
@@ -106,7 +142,7 @@ const Footer = ({channelId, location, participants, teamId, thread}: Props) => {
                     />
                 </View>
                 <FormattedText
-                    style={styles.replies}
+                    style={isMyPost ? styles.repliesRight : styles.replies}
                     testID='post_footer.reply_count'
                     id='threads.replies'
                     defaultMessage='{count} {count, plural, one {reply} other {replies}}'
@@ -134,7 +170,7 @@ const Footer = ({channelId, location, participants, teamId, thread}: Props) => {
     } else {
         followButton = (
             <>
-                <View style={styles.followSeparator}/>
+                <View style={isMyPost ? styles.followSeparatorRight : styles.followSeparator}/>
                 <TouchableOpacity
                     onPress={toggleFollow}
                     style={styles.notFollowingButtonContainer}
@@ -164,15 +200,37 @@ const Footer = ({channelId, location, participants, teamId, thread}: Props) => {
             <UserAvatarsStack
                 channelId={channelId}
                 location={location}
-                style={styles.avatarsContainer}
+                style={isMyPost ? styles.avatarsContainerRight : styles.avatarsContainer}
                 users={participantsList}
                 bottomSheetTitle={bottomSheetTitleMessage}
             />
         );
     }
 
+    if (isMyPost) {
+        // For my posts: Following, Replies, Avatars, UnreadDot (reversed order)
+        return (
+            <View style={styles.container}>
+                {followButton}
+                {repliesComponent}
+                {userAvatarsStack}
+                {unreadDot && (
+                    <View style={styles.unreadDotContainerRight}>
+                        {unreadDot}
+                    </View>
+                )}
+            </View>
+        );
+    }
+
+    // For other posts: UnreadDot, Avatars, Replies, Following (normal order)
     return (
         <View style={styles.container}>
+            {unreadDot && (
+                <View style={styles.unreadDotContainer}>
+                    {unreadDot}
+                </View>
+            )}
             {userAvatarsStack}
             {repliesComponent}
             {followButton}

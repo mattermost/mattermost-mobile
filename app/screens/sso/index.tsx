@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useState} from 'react';
-import {StyleSheet, View} from 'react-native';
+import {StyleSheet, View, ImageBackground, Appearance} from 'react-native';
 import Animated from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
@@ -14,7 +14,6 @@ import {useScreenTransitionAnimation} from '@hooks/screen_transition_animation';
 import {launchToHome} from '@init/launch';
 import NetworkManager from '@managers/network_manager';
 import SecurityManager from '@managers/security_manager';
-import Background from '@screens/background';
 import {dismissModal, popTopScreen} from '@screens/navigation';
 import {getFullErrorMessage, isErrorWithUrl} from '@utils/errors';
 import {logWarning} from '@utils/log';
@@ -163,7 +162,11 @@ const SSO = ({
             nativeID={SecurityManager.getShieldScreenId(componentId, false, true)}
             style={styles.flex}
         >
-            <Background theme={theme}/>
+            <ImageBackground
+                source={Appearance.getColorScheme() === 'dark' ? require('../../../assets/base/images/darkbackground.png') : require('../../../assets/base/images/lightbackground.png')}
+                style={{position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0.2}}
+                resizeMode='cover'
+            />
             <AnimatedSafeArea style={[styles.flex, animatedStyles]}>
                 {authentication}
             </AnimatedSafeArea>

@@ -13,6 +13,7 @@ import {useDefaultHeaderHeight} from '@hooks/header';
 
 import Archived from './archived';
 import DraftHandler from './draft_handler';
+import {QUICK_ACTIONS_HEIGHT} from './quick_actions/quick_actions';
 import ReadOnly from './read_only';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -66,7 +67,8 @@ function PostDraft({
         setCursorPosition(message.length);
     }, [channelId, rootId]);
 
-    const autocompletePosition = AUTOCOMPLETE_ADJUST + kbHeight + postInputTop;
+    // Add QUICK_ACTIONS_HEIGHT to push autocomplete up to align with text field start (not quick actions bar)
+    const autocompletePosition = AUTOCOMPLETE_ADJUST + kbHeight + postInputTop + QUICK_ACTIONS_HEIGHT;
     const autocompleteAvailableSpace = containerHeight - autocompletePosition - (isChannelScreen ? headerHeight : 0);
     const [animatedAutocompletePosition, animatedAutocompleteAvailableSpace] = useAutocompleteDefaultAnimatedValues(autocompletePosition, autocompleteAvailableSpace);
 

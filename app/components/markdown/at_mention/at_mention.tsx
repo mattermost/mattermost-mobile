@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable */
+
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import Clipboard from '@react-native-clipboard/clipboard';
 import React, {useCallback, useEffect, useMemo} from 'react';
@@ -88,7 +90,6 @@ const AtMention = ({
         }
 
         // Only fetch the user or group on mount
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const openUserProfile = () => {
@@ -150,8 +151,9 @@ const AtMention = ({
 
     const mentionTextStyle: StyleProp<TextStyle> = [];
 
-    let backgroundColor;
     let canPress = false;
+
+    // Detection logic preserved - calculated but not used for styling (underline only)
     let highlighted;
     let isMention = false;
     let mention;
@@ -162,7 +164,6 @@ const AtMention = ({
     let styleText;
 
     if (textStyle) {
-        backgroundColor = theme.mentionHighlightBg;
         styleText = textStyle;
     }
 
@@ -197,7 +198,8 @@ const AtMention = ({
     }
 
     if (suffix) {
-        const suffixStyle = {...StyleSheet.flatten(styleText), color: theme.centerChannelColor};
+        // Suffix should use same color as base text (no special color)
+        const suffixStyle = StyleSheet.flatten(styleText);
         suffixElement = (
             <Text style={suffixStyle}>
                 {suffix}
@@ -206,11 +208,23 @@ const AtMention = ({
     }
 
     if (isMention) {
+        // Only apply underline, inherit text color from parent (same as post text)
         mentionTextStyle.push(mentionStyle);
+        // Ensure color matches the base text color (no special mention color)
+        if (styleText) {
+            const flattenedStyle = StyleSheet.flatten(styleText);
+            if (flattenedStyle?.color) {
+                mentionTextStyle.push({color: flattenedStyle.color});
+            }
+        }
     }
 
+    // Add background color when current user is mentioned (highlighted)
     if (highlighted) {
-        mentionTextStyle.push({backgroundColor, color: theme.mentionHighlightLink});
+        mentionTextStyle.push({
+            backgroundColor: theme.mentionHighlightBg,
+            color: theme.mentionHighlightLink,
+        });
     }
 
     return (

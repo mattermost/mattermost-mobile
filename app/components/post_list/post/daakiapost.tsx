@@ -195,8 +195,13 @@ const DaakiaPost = ({
             removePost(serverUrl, post);
         } else if (isValidSystemMessage && !hasBeenDeleted && !isPendingOrFailed) {
             if ([Screens.CHANNEL, Screens.PERMALINK].includes(location)) {
-                const postRootId = post.rootId || post.id;
-                fetchAndSwitchToThread(serverUrl, postRootId);
+                // Only navigate to thread if post has a footer (replies or following)
+                const hasFooter = isCRTEnabled && thread && location !== Screens.THREAD && !(rootId && location === Screens.PERMALINK) && (thread.replyCount > 0 || thread.isFollowing);
+                
+                if (hasFooter) {
+                    const postRootId = post.rootId || post.id;
+                    fetchAndSwitchToThread(serverUrl, postRootId);
+                }
             }
         }
 
@@ -206,6 +211,7 @@ const DaakiaPost = ({
     }, [
         hasBeenDeleted, isAutoResponder, isEphemeral,
         isPendingOrFailed, isSystemPost, location, serverUrl, post,
+        isCRTEnabled, thread, rootId,
     ]);
 
     const handlePress = useHideExtraKeyboardIfNeeded(() => {
@@ -449,18 +455,20 @@ const DaakiaPost = ({
     let unreadDot;
     let footer;
     if (isCRTEnabled && thread && location !== Screens.THREAD && !(rootId && location === Screens.PERMALINK)) {
+        if (thread.unreadMentions || thread.unreadReplies) {
+            unreadDot = (
+                <UnreadDot isInFooter={true}/>
+            );
+        }
         if (thread.replyCount > 0 || thread.isFollowing) {
             footer = (
                 <Footer
                     channelId={post.channelId}
                     location={location}
                     thread={thread}
+                    isMyPost={isMyPost}
+                    unreadDot={unreadDot}
                 />
-            );
-        }
-        if (thread.unreadMentions || thread.unreadReplies) {
-            unreadDot = (
-                <UnreadDot/>
             );
         }
     }
@@ -495,7 +503,6 @@ const DaakiaPost = ({
                             {footer}
                         </View>
                         {isMyPost ? postAvatar : null}
-                        {unreadDot}
                     </View>
                 </>
             </TouchableHighlight>
