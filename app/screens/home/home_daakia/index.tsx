@@ -27,7 +27,7 @@ import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import Loading from '@components/loading';
 import {Events, General, Permissions, Preferences} from '@constants';
 import {DMS_CATEGORY, FAVORITES_CATEGORY} from '@constants/categories';
-import {DRAFT} from '@constants/screens';
+import {DRAFT, GLOBAL_THREADS, THREAD} from '@constants/screens';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {queryCategoriesByTeamIds} from '@queries/servers/categories';
@@ -44,7 +44,7 @@ import BottomSheetTeamList from '@screens/home/search/bottom_sheet_team_list';
 import {bottomSheet, resetToTeams} from '@screens/navigation';
 import {type ChannelWithMyChannel, filterArchivedChannels, filterAutoclosedDMs, filterManuallyClosedDms, getUnreadIds, sortChannels} from '@utils/categories';
 import {bottomSheetSnapPoint} from '@utils/helpers';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type CategoryModel from '@typings/database/models/servers/category';
@@ -107,40 +107,48 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
     filterContainer: {
         flexDirection: 'row',
         paddingHorizontal: 16,
-        paddingVertical: 8,
+        paddingVertical: 12,
         borderBottomWidth: 1,
-        borderBottomColor: theme.centerChannelColor + '10',
+        borderBottomColor: changeOpacity(theme.centerChannelColor, 0.08),
+        backgroundColor: theme.centerChannelBg,
+        flexWrap: 'wrap',
     },
     filterButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 12,
-        paddingVertical: 6,
+        paddingHorizontal: 14,
+        paddingVertical: 8,
         marginRight: 8,
-        borderRadius: 16,
-        backgroundColor: theme.centerChannelColor + '10',
-        borderWidth: 1,
+        marginBottom: 4,
+        borderRadius: 20,
+        backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
+        borderWidth: 1.5,
         borderColor: 'transparent',
+        minHeight: 36,
     },
     filterButtonActive: {
         backgroundColor: theme.buttonBg,
         borderColor: theme.buttonBg,
     },
     filterButtonText: {
-        marginLeft: 4,
-        fontSize: 12,
-        fontWeight: '500',
+        marginLeft: 6,
+        fontSize: 13,
+        fontWeight: '600',
         color: theme.centerChannelColor,
+        letterSpacing: 0.2,
     },
     filterButtonTextActive: {
         color: theme.buttonColor,
+        fontWeight: '700',
     },
     unreadDot: {
-        width: 8,
-        height: 8,
-        borderRadius: 4,
-        backgroundColor: theme.buttonBg,
+        width: 7,
+        height: 7,
+        borderRadius: 3.5,
+        backgroundColor: theme.mentionBg,
         marginLeft: 6,
+        borderWidth: 1.5,
+        borderColor: theme.centerChannelBg,
     },
     floatingCallWrapper: {
         zIndex: 1000,
@@ -256,15 +264,20 @@ const HomeDaakia = ({
 
     const handleFilterPress = async (filterId: string) => {
         if (filterId === 'threads') {
+            // Emit event first for immediate feedback (like original)
+            DeviceEventEmitter.emit(Events.ACTIVE_SCREEN, THREAD);
+            // Then do DB operations (non-blocking)
             switchToGlobalThreads(serverUrl);
             return;
         }
 
         if (filterId === 'drafts') {
-            const {error} = await switchToGlobalDrafts(serverUrl);
-            if (!error) {
-                DeviceEventEmitter.emit(Events.ACTIVE_SCREEN, DRAFT);
-            }
+            // Emit event first for immediate feedback
+            DeviceEventEmitter.emit(Events.ACTIVE_SCREEN, DRAFT);
+            // Then do DB operations (don't await - let it happen in background)
+            switchToGlobalDrafts(serverUrl).catch(() => {
+                // Ignore errors - navigation already happened
+            });
             return;
         }
 
@@ -468,7 +481,7 @@ const HomeDaakia = ({
                                     >
                                         <CompassIcon
                                             name={filter.icon}
-                                            size={16}
+                                            size={18}
                                             color={activeFilters.has(filter.id) ? theme.buttonColor : theme.centerChannelColor}
                                         />
                                         <Text
