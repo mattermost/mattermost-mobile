@@ -51,7 +51,6 @@ describe('property_fields utils', () => {
             parent_id: 'p',
             sort_order: 2,
             value_type: 'text',
-            visibility: 'when_set',
         });
     });
 
