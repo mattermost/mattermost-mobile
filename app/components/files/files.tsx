@@ -131,6 +131,7 @@ const Files = ({
                         index={attachmentIndex(file.id!)}
                         onPress={handlePreviewPress}
                         isSingleImage={isSingleImage}
+                        isMyPost={isMyPost}
                         nonVisibleImagesCount={nonVisibleImagesCount}
                         updateFileForGallery={updateFileForGallery}
                         wrapperWidth={layoutWidth || wrapperWidth}

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useRef} from 'react';
-import {View, TouchableWithoutFeedback} from 'react-native';
+import {View, TouchableWithoutFeedback, useWindowDimensions} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import TouchableWithFeedback from '@components/touchable_with_feedback';
@@ -30,6 +30,7 @@ type FileProps = {
     index: number;
     inViewPort: boolean;
     isSingleImage?: boolean;
+    isMyPost?: boolean;
     nonVisibleImagesCount: number;
     onPress: (index: number) => void;
     channelName?: string;
@@ -51,11 +52,20 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             borderColor: changeOpacity(theme.centerChannelColor, 0.24),
             borderRadius: 4,
         },
+        fileWrapperWithTopMargin: {
+            marginTop: 3, // Small top margin for attachment UI (title/button area)
+        },
         iconWrapper: {
             marginTop: 8,
             marginRight: 7,
             marginBottom: 8,
             marginLeft: 6,
+        },
+        iconWrapperMyPost: {
+            marginTop: 8,
+            marginRight: 7,
+            marginBottom: 8,
+            marginLeft: -10,
         },
         imageVideo: {
             height: 40,
@@ -79,6 +89,7 @@ const File = ({
     inViewPort = false,
     index,
     isSingleImage = false,
+    isMyPost = false,
     nonVisibleImagesCount = 0,
     onOptionsPress,
     onPress,
@@ -91,6 +102,11 @@ const File = ({
     const document = useRef<DocumentRef>(null);
     const theme = useTheme();
     const style = getStyleSheet(theme);
+    const dimensions = useWindowDimensions();
+
+    // Calculate maxWidth for attachment UI (slightly narrower than full width, but still touchable)
+    // Use 90% of available width, similar to message bubble but a bit wider
+    const attachmentMaxWidth = Math.round((wrapperWidth || dimensions.width) * 0.90);
 
     const handlePreviewPress = useCallback(() => {
         if (document.current) {
@@ -106,7 +122,7 @@ const File = ({
         onOptionsPress?.(file);
     }, [file, onOptionsPress]);
 
-    const renderCardWithImage = (fileIcon: JSX.Element) => {
+    const renderCardWithImage = (fileIcon: JSX.Element, addTopMargin = false) => {
         const fileInfo = (
             <FileInfo
                 disabled={isPressDisabled}
@@ -118,17 +134,44 @@ const File = ({
         );
 
         return (
-            <View style={[style.fileWrapper]}>
-                <View style={style.iconWrapper}>
-                    {fileIcon}
-                </View>
-                {fileInfo}
-                {onOptionsPress &&
-                <FileOptionsIcon
-                    onPress={handleOnOptionsPress}
-                    selected={optionSelected}
-                />
-                }
+            <View
+                style={[
+                    style.fileWrapper,
+                    addTopMargin && style.fileWrapperWithTopMargin,
+                    {maxWidth: attachmentMaxWidth}, // Limit width for attachment UI
+                    {alignSelf: isMyPost ? 'flex-end' : 'flex-start'}, // Align right for my posts, left for others
+                    isMyPost && {paddingLeft: 15}, // Add left padding for my posts
+                ]}
+            >
+                {isMyPost ? (
+                    <>
+                        {/* For my posts: flip the order (options -> info -> icon) */}
+                        {onOptionsPress &&
+                        <FileOptionsIcon
+                            onPress={handleOnOptionsPress}
+                            selected={optionSelected}
+                        />
+                        }
+                        {fileInfo}
+                        <View style={[style.iconWrapper, style.iconWrapperMyPost]}>
+                            {fileIcon}
+                        </View>
+                    </>
+                ) : (
+                    <>
+                        {/* For other posts: normal order (icon -> info -> options) */}
+                        <View style={style.iconWrapper}>
+                            {fileIcon}
+                        </View>
+                        {fileInfo}
+                        {onOptionsPress &&
+                        <FileOptionsIcon
+                            onPress={handleOnOptionsPress}
+                            selected={optionSelected}
+                        />
+                        }
+                    </>
+                )}
             </View>
         );
     };
@@ -200,7 +243,7 @@ const File = ({
         fileComponent = asCard ? renderCardWithImage(renderImageFile) : renderImageFile;
     } else if (isDocument(file)) {
         const renderDocumentFile = (
-            <View style={style.iconWrapper}>
+            <View style={[style.iconWrapper, isMyPost && style.iconWrapperMyPost]}>
                 <DocumentFile
                     ref={document}
                     canDownloadFiles={canDownloadFiles}
@@ -222,15 +265,40 @@ const File = ({
         );
 
         fileComponent = (
-            <View style={[style.fileWrapper]}>
-                {renderDocumentFile}
-                {fileInfo}
-                {onOptionsPress &&
-                <FileOptionsIcon
-                    onPress={handleOnOptionsPress}
-                    selected={optionSelected}
-                />
-                }
+            <View
+                style={[
+                    style.fileWrapper,
+                    style.fileWrapperWithTopMargin,
+                    {maxWidth: attachmentMaxWidth}, // Limit width for attachment UI
+                    {alignSelf: isMyPost ? 'flex-end' : 'flex-start'}, // Align right for my posts, left for others
+                    isMyPost && {paddingLeft: 15}, // Add left padding for my posts
+                ]}
+            >
+                {isMyPost ? (
+                    <>
+                        {/* For my posts: flip the order (options -> info -> document icon) */}
+                        {onOptionsPress &&
+                        <FileOptionsIcon
+                            onPress={handleOnOptionsPress}
+                            selected={optionSelected}
+                        />
+                        }
+                        {fileInfo}
+                        {renderDocumentFile}
+                    </>
+                ) : (
+                    <>
+                        {/* For other posts: normal order (document icon -> info -> options) */}
+                        {renderDocumentFile}
+                        {fileInfo}
+                        {onOptionsPress &&
+                        <FileOptionsIcon
+                            onPress={handleOnOptionsPress}
+                            selected={optionSelected}
+                        />
+                        }
+                    </>
+                )}
             </View>
         );
     } else if (isAudio(file)) {
@@ -246,7 +314,8 @@ const File = ({
 
         fileComponent = asCard ? renderCardWithImage(touchableWithPreview) : renderAudioFile;
     } else {
-        fileComponent = renderCardWithImage(touchableWithPreview);
+        // For other non-image files (like generic files), add top margin to the wrapper
+        fileComponent = renderCardWithImage(touchableWithPreview, true);
     }
     return fileComponent;
 };

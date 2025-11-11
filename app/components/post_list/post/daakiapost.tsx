@@ -199,8 +199,8 @@ const DaakiaPost = ({
                 const hasFooter = isCRTEnabled && thread && location !== Screens.THREAD && !(rootId && location === Screens.PERMALINK) && (thread.replyCount > 0 || thread.isFollowing);
                 
                 if (hasFooter) {
-                    const postRootId = post.rootId || post.id;
-                    fetchAndSwitchToThread(serverUrl, postRootId);
+                const postRootId = post.rootId || post.id;
+                fetchAndSwitchToThread(serverUrl, postRootId);
                 }
             }
         }

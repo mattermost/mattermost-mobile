@@ -168,7 +168,7 @@ const Body = ({
                 />
             </View>
         );
-    } else if (post.message.length || isEdited) { // isEdited is added to handle the case where the post is edited and the message is empty
+    } else if (post.message.trim().length > 0 || (isEdited && !hasFiles)) { // Hide empty bubble when files are present but no text
         message = (
             <Message
                 highlight={highlight}
@@ -188,8 +188,10 @@ const Body = ({
     const acknowledgementsVisible = isPostAcknowledgementEnabled && post.metadata?.priority?.requested_ack;
     const reactionsVisible = hasReactions && showAddReaction;
     if (!hasBeenDeleted) {
+        // Adjust padding when there's no message but files are present to match bottom spacing
+        const messageBodyStyle = !message && hasFiles ? [style.messageBody, {paddingTop: 0}] : style.messageBody;
         body = (
-            <View style={style.messageBody}>
+            <View style={messageBodyStyle}>
                 {message}
                 {hasContent &&
                 <Content
@@ -202,14 +204,16 @@ const Body = ({
                 />
                 }
                 {hasFiles &&
-                <Files
-                    isMyPost={isMyPost}
-                    failed={isFailed}
-                    layoutWidth={layoutWidth}
-                    location={location}
-                    post={post}
-                    isReplyPost={isReplyPost}
-                />
+                <View style={(message || hasContent) ? {marginTop: -8} : {marginTop: -13}}>
+                    <Files
+                        isMyPost={isMyPost}
+                        failed={isFailed}
+                        layoutWidth={layoutWidth}
+                        location={location}
+                        post={post}
+                        isReplyPost={isReplyPost}
+                    />
+                </View>
                 }
                 {(acknowledgementsVisible || reactionsVisible) && (
                     <View

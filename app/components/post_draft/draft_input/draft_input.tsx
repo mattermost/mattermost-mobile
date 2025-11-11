@@ -366,8 +366,8 @@ function DraftInput({
                             />
                         </View>
 
-                        {/* Camera Icon or Send Button on Right - based on text input */}
-                        {value.trim().length > 0 ? (
+                        {/* Camera Icon or Send Button on Right - based on text input or files */}
+                        {value.trim().length > 0 || files.length > 0 ? (
                             <SendAction
                                 testID={sendActionTestID}
                                 disabled={sendActionDisabled}
