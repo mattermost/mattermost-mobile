@@ -7,12 +7,18 @@ import {View} from 'react-native';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
+type UnreadDotProps = {
+    isInFooter?: boolean;
+};
+
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         badgeContainer: {
             position: 'absolute',
-            left: 21,
-            bottom: 9,
+            bottom: '20%',
+        },
+        badgeContainerFooter: {
+            paddingHorizontal: 8,
         },
         unreadDot: {
             width: 8,
@@ -20,18 +26,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             borderRadius: 4,
             backgroundColor: theme.sidebarTextActiveBorder,
             alignSelf: 'center',
-            top: -6,
-            left: 4,
         },
     };
 });
 
-const UnreadDot = () => {
+const UnreadDot = ({isInFooter = false}: UnreadDotProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     return (
         <View
-            style={styles.badgeContainer}
+            style={isInFooter ? styles.badgeContainerFooter : styles.badgeContainer}
             testID='post_unread_dot.badge'
         >
             <View style={styles.unreadDot}/>

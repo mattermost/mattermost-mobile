@@ -449,18 +449,20 @@ const DaakiaPost = ({
     let unreadDot;
     let footer;
     if (isCRTEnabled && thread && location !== Screens.THREAD && !(rootId && location === Screens.PERMALINK)) {
+        if (thread.unreadMentions || thread.unreadReplies) {
+            unreadDot = (
+                <UnreadDot isInFooter={true}/>
+            );
+        }
         if (thread.replyCount > 0 || thread.isFollowing) {
             footer = (
                 <Footer
                     channelId={post.channelId}
                     location={location}
                     thread={thread}
+                    isMyPost={isMyPost}
+                    unreadDot={unreadDot}
                 />
-            );
-        }
-        if (thread.unreadMentions || thread.unreadReplies) {
-            unreadDot = (
-                <UnreadDot/>
             );
         }
     }
@@ -495,7 +497,6 @@ const DaakiaPost = ({
                             {footer}
                         </View>
                         {isMyPost ? postAvatar : null}
-                        {unreadDot}
                     </View>
                 </>
             </TouchableHighlight>
