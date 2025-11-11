@@ -79,11 +79,11 @@ describe('Playbooks Navigation', () => {
 
             expect(mockIntl.formatMessage).toHaveBeenCalledWith({
                 id: 'playbooks.playbook_run.title',
-                defaultMessage: 'Playbook run',
+                defaultMessage: 'Playbook checklist',
             });
             expect(goToScreen).toHaveBeenCalledWith(
                 Screens.PLAYBOOK_RUN,
-                'Playbook run',
+                'Playbook checklist',
                 {playbookRunId, playbookRun},
                 {},
             );
@@ -339,11 +339,11 @@ describe('Playbooks Navigation', () => {
 
             expect(mockIntl.formatMessage).toHaveBeenCalledWith({
                 id: 'playbooks.playbook_run.title',
-                defaultMessage: 'Playbook run',
+                defaultMessage: 'Playbook checklist',
             });
             expect(goToScreen).toHaveBeenCalledWith(
                 Screens.PLAYBOOK_RUN,
-                'Playbook run',
+                'Playbook checklist',
                 {playbookRunId: mockPlaybookRunModel.id},
                 {},
             );
@@ -401,7 +401,7 @@ describe('Playbooks Navigation', () => {
 
             expect(goToScreen).toHaveBeenCalledWith(
                 Screens.PLAYBOOKS_SELECT_PLAYBOOK,
-                'Start a run',
+                'New',
                 {channelId},
                 {
                     topBar: {
@@ -419,7 +419,7 @@ describe('Playbooks Navigation', () => {
 
             expect(goToScreen).toHaveBeenCalledWith(
                 Screens.PLAYBOOKS_SELECT_PLAYBOOK,
-                'Start a run',
+                'New',
                 {channelId: undefined},
                 {
                     topBar: {
@@ -446,7 +446,7 @@ describe('Playbooks Navigation', () => {
 
             expect(goToScreen).toHaveBeenCalledWith(
                 Screens.PLAYBOOKS_START_A_RUN,
-                'Start a run',
+                'New',
                 {playbook, onRunCreated, channelId},
                 {
                     topBar: {
@@ -470,7 +470,7 @@ describe('Playbooks Navigation', () => {
 
             expect(goToScreen).toHaveBeenCalledWith(
                 Screens.PLAYBOOKS_START_A_RUN,
-                'Start a run',
+                'New',
                 {playbook, onRunCreated, channelId: undefined},
                 {
                     topBar: {
