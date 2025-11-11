@@ -680,26 +680,41 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
                         return of$(new Map<string, PostModel>());
                     }
 
-                    const ids = channels.map((c) => c.channel.id);
-                    const perChannelLatestPost$ = ids.map((id) =>
-                        database.get<PostModel>('Post').query(
-                            Q.where('channel_id', id),
-                            Q.sortBy('create_at', Q.desc),
-                            Q.take(1),
-                        ).observeWithColumns(['create_at', 'message', 'user_id', 'type']),
-                    );
+                    const channelIds = channels.map((c) => c.channel.id);
 
-                    return combineLatest(perChannelLatestPost$).pipe(
-                        map((results) => {
+                    // Single query - much more efficient than multiple queries!
+                    // Filters deleted posts and gets latest for all channels in one query
+                    return database.get<PostModel>('Post').query(
+                        Q.where('channel_id', Q.oneOf(channelIds)),
+                        Q.where('delete_at', Q.eq(0)), // Exclude deleted posts
+                        Q.sortBy('create_at', Q.desc),
+                    ).observeWithColumns(['channel_id', 'create_at', 'message', 'user_id', 'type', 'props', 'delete_at']).pipe(
+                        map((allPosts) => {
+                            // Group by channel - take latest non-deleted post for each
+                            // Posts are already sorted by create_at DESC, so first occurrence per channel is latest
                             const latestByChannel = new Map<string, PostModel>();
-                            for (let i = 0; i < results.length; i++) {
-                                const arr = results[i];
-                                const p = arr[0];
-                                if (p) {
-                                    latestByChannel.set(ids[i], p);
+                            const seenChannels = new Set<string>();
+
+                            for (const post of allPosts) {
+                                const channelId = post.channelId;
+                                if (!seenChannels.has(channelId)) {
+                                    latestByChannel.set(channelId, post);
+                                    seenChannels.add(channelId);
                                 }
                             }
+
                             return latestByChannel;
+                        }),
+                        distinctUntilChanged((prev, curr) => {
+                            // Only emit if posts actually changed
+                            if (prev.size !== curr.size) return false;
+                            for (const [id, post] of prev) {
+                                const currPost = curr.get(id);
+                                if (!currPost || currPost.id !== post.id || currPost.createAt !== post.createAt) {
+                                    return false;
+                                }
+                            }
+                            return true;
                         }),
                     );
                 }),

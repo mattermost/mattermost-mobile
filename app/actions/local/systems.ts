@@ -137,7 +137,14 @@ export async function dataRetentionCleanup(serverUrl: string) {
         }
 
         const isDataRetentionEnabled = await getIsDataRetentionEnabled(database);
-        const result = await (isDataRetentionEnabled ? dataRetentionPolicyCleanup(serverUrl) : dataRetentionWithoutPolicyCleanup(serverUrl));
+
+        // Only run cleanup if retention is explicitly enabled
+        // If disabled, keep posts forever (until app uninstall)
+        if (!isDataRetentionEnabled) {
+            return {error: undefined}; // Skip cleanup - keep all posts forever
+        }
+
+        const result = await dataRetentionPolicyCleanup(serverUrl);
 
         if (!result.error) {
             await updateLastDataRetentionRun(serverUrl);
@@ -218,6 +225,7 @@ async function dataRetentionPolicyCleanup(serverUrl: string) {
     }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function dataRetentionWithoutPolicyCleanup(serverUrl: string) {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
