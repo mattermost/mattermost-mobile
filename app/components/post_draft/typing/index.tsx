@@ -115,7 +115,7 @@ function Typing({
     const typingAnimatedStyle = useAnimatedStyle(() => {
         return {
             height: withTiming(typingHeight.value),
-            opacity: withTiming(typingHeight.value > 0 ? 1 : 0),
+            marginBottom: 4,
         };
     });
 
