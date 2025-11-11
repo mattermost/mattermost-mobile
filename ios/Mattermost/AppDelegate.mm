@@ -8,6 +8,8 @@
 #import <ReactNativeNavigation/ReactNativeNavigation.h>
 #import <UserNotifications/UserNotifications.h>
 #import <TurboLogIOSNative/TurboLog.h>
+#import <MSAL/MSAL.h>
+#import <mattermost_intune/IntuneAccess.h>
 
 #import "Mattermost-Swift.h"
 #import <os/log.h>
@@ -41,6 +43,13 @@ NSString* const NOTIFICATION_TEST_ACTION = @"test";
 
   // Configure Gekidou to use TurboLog via wrapper
   [[GekidouWrapper default] configureTurboLogForGekidou];
+  
+  // Initialize Intune MAM delegates BEFORE React Native
+  // This is required by the SDK to handle enrollment lifecycle and policy enforcement
+  [IntuneAccess initializeIntuneDelegates];
+
+  // Restore enrollments if needed (silent, non-blocking)
+  [IntuneAccess checkAndRestoreEnrollmentOnLaunch];
 
   OrientationManager.shared.delegate = self;
   
@@ -141,11 +150,36 @@ NSString* const NOTIFICATION_TEST_ACTION = @"test";
 
 // Required for deeplinking
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options{
+  // Try MSAL first for Intune MAM authentication
+  if ([self handleMSALURL:url]) {
+    return YES;
+  }
+
+  // Fallback to React Native deep linking
   return [RCTLinkingManager application:application openURL:url options:options];
 }
 
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
+  // Try MSAL first for Intune MAM authentication
+  if ([self handleMSALURL:url]) {
+    return YES;
+  }
+
+  // Fallback to React Native deep linking
   return [RCTLinkingManager application:application openURL:url sourceApplication:sourceApplication annotation:annotation];
+}
+
+// Helper method to handle MSAL URL schemes
+- (BOOL)handleMSALURL:(NSURL *)url {
+  NSString *urlString = url.absoluteString;
+  NSString *bundleId = [[NSBundle mainBundle] bundleIdentifier];
+  NSString *expectedPrefix = [NSString stringWithFormat:@"msauth.%@", bundleId];
+
+  if ([urlString hasPrefix:expectedPrefix]) {
+    [TurboLog writeWithLogLevel:TurboLogLevelInfo message:@[@"[Intune] MSAL URL handled"]];
+    return [MSALPublicClientApplication handleMSALResponse:url sourceApplication:nil];
+  }
+  return NO;
 }
 
 // Only if your app is using [Universal Links](https://developer.apple.com/library/prerelease/ios/documentation/General/Conceptual/AppSearch/UniversalLinks.html).

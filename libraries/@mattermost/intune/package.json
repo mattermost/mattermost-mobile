@@ -1,0 +1,14 @@
+{
+  "name": "@mattermost/intune",
+  "version": "0.0.0",
+  "description": "Intune MAM integration for Mattermost",
+  "main": "src/index",
+  "codegenConfig": {
+    "name": "RNIntuneSpec",
+    "type": "modules",
+    "jsSrcsDir": "src"
+  },
+  "author": "Mattermost, Inc.",
+  "license": "Apache 2.0",
+  "private": true
+}

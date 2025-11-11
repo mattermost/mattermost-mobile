@@ -123,3 +123,6 @@ libraries/**/**/.build
 # Android sounds
 android/app/src/main/res/raw/*
 .aider*
+
+# Intune Framework files
+libraries/@mattermost/intune/ios/Frameworks/*

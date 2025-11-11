@@ -93,6 +93,29 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - mattermost-intune (0.0.0):
+    - DoubleConversion
+    - Gekidou
+    - glog
+    - hermes-engine
+    - MSAL
+    - RCT-Folly (= 2024.10.14.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - mattermost-react-native-turbo-log (0.6.0):
     - DoubleConversion
     - glog
@@ -136,6 +159,9 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - MSAL (2.5.1):
+    - MSAL/app-lib (= 2.5.1)
+  - MSAL/app-lib (2.5.1)
   - OpenGraph (1.4.1)
   - RCT-Folly (2024.10.14.00):
     - boost
@@ -2268,8 +2294,10 @@ DEPENDENCIES:
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
   - "mattermost-hardware-keyboard (from `../node_modules/@mattermost/hardware-keyboard`)"
+  - "mattermost-intune (from `../node_modules/@mattermost/intune`)"
   - "mattermost-react-native-turbo-log (from `../node_modules/@mattermost/react-native-turbo-log`)"
   - "mattermost-rnutils (from `../node_modules/@mattermost/rnutils`)"
+  - MSAL (= 2.5.1)
   - OpenGraph (= 1.4.1)
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCT-Folly/Fabric (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
@@ -2381,6 +2409,7 @@ SPEC REPOS:
     - KituraContracts
     - LoggerAPI
     - Logging
+    - MSAL
     - OpenGraph
     - SDWebImage
     - SDWebImageSVGCoder
@@ -2435,6 +2464,8 @@ EXTERNAL SOURCES:
     :tag: hermes-2024-11-12-RNv0.76.2-5b4aa20c719830dcf5684832b89a6edb95ac3d64
   mattermost-hardware-keyboard:
     :path: "../node_modules/@mattermost/hardware-keyboard"
+  mattermost-intune:
+    :path: "../node_modules/@mattermost/intune"
   mattermost-react-native-turbo-log:
     :path: "../node_modules/@mattermost/react-native-turbo-log"
   mattermost-rnutils:
@@ -2665,8 +2696,10 @@ SPEC CHECKSUMS:
   LoggerAPI: ad9c4a6f1e32f518fdb43a1347ac14d765ab5e3d
   Logging: beeb016c9c80cf77042d62e83495816847ef108b
   mattermost-hardware-keyboard: a17b424a774fe564c6b90016ba0bc02e4b567a3e
+  mattermost-intune: 13d305ed5bb969ab58a1260c9eefd362164ad5d4
   mattermost-react-native-turbo-log: 833b9ef2a709979e67e69e37f21b75015a1c1cbc
   mattermost-rnutils: 32f4f7ad85e2e470259a0e1e5ae6cd4fee83e77e
+  MSAL: f5c8af86a9ef692ec3fbaa47e4abf2b1cefda494
   OpenGraph: 596722bb7f112d2dabcdb284cb817f01341a7540
   RCT-Folly: ea9d9256ba7f9322ef911169a9f696e5857b9e17
   RCTDeprecation: ebe712bb05077934b16c6bf25228bdec34b64f83
@@ -2771,6 +2804,6 @@ SPEC CHECKSUMS:
   WatermelonDB: 75e467adbaf2cb2809780fb3eda7ce4964e11778
   Yoga: 1259c7a8cbaccf7b4c3ddf8ee36ca11be9dee407
 
-PODFILE CHECKSUM: b795e43df583b16fbf1d5e9082bd1db1eea17206
+PODFILE CHECKSUM: 36e16d88614cd3ab56bbd6980a72deb5f086755f
 
 COCOAPODS: 1.16.1

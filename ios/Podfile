@@ -43,6 +43,7 @@ target 'Mattermost' do
   pod 'Gekidou', :path => '../ios/Gekidou'
   pod 'CocoaLumberjack', :modular_headers => true
   pod 'TurboLogIOSNative', :git => 'https://github.com/larkox/react-native-turbo-log-ios-native.git', :modular_headers => true
+  pod 'MSAL', '2.5.1', :modular_headers => true
 end
 
 target 'NotificationService' do
