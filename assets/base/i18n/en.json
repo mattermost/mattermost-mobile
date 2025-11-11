@@ -1082,6 +1082,7 @@
   "playbooks.post_update.placeholder": "Enter your update message",
   "playbooks.post_update.post.button": "Post",
   "playbooks.post_update.title": "Post update",
+  "playbooks.property_field.tap_to_select": "Tap to select",  
   "playbooks.retrospective_not_available.description": "Only Playbook Checklists are available on mobile. To fill the Run Retrospective, please use the desktop or web app.",
   "playbooks.retrospective_not_available.ok": "OK",
   "playbooks.retrospective_not_available.title": "Playbooks Retrospective not available",
