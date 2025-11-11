@@ -104,6 +104,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
             alignItems: 'center',
             paddingHorizontal: 10,
+            paddingVertical: 10,
             backgroundColor: theme.centerChannelBg,
             borderWidth: 0,
             borderBottomWidth: 0,
