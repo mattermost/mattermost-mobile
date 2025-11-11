@@ -150,6 +150,7 @@ const Files = ({
 
         const visibleImages = imageAttachments.slice(0, MAX_VISIBLE_ROW_IMAGES);
         const portraitPostWidth = layoutWidth || (getViewPortWidth(isReplyPost, isTablet) - 6);
+        const isSingleImageRow = visibleImages.length === 1;
 
         let nonVisibleImagesCount;
         if (imageAttachments.length > MAX_VISIBLE_ROW_IMAGES) {
@@ -160,8 +161,10 @@ const Files = ({
             <View
                 style={[
                     styles.row,
-                    {width: portraitPostWidth},
-                    isMyPost && {marginLeft: 'auto'},
+
+                    // For single images, don't force width - let it use natural aspect ratio
+                    isSingleImageRow ? {maxWidth: portraitPostWidth, alignSelf: isMyPost ? 'flex-end' : 'flex-start'} : {width: portraitPostWidth},
+                    isMyPost && !isSingleImageRow && {marginLeft: 'auto'},
                     isPermalinkPreview && {marginTop: 0},
                 ]}
                 testID='image-row'
