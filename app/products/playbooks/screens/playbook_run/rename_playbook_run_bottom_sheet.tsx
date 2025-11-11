@@ -83,7 +83,7 @@ const RenamePlaybookRunBottomSheet = ({
     useNavButtonPressed(SAVE_BUTTON_ID, componentId, handleSave, [handleSave]);
     useAndroidHardwareBackHandler(componentId, handleClose);
 
-    const label = formatMessage({id: 'playbooks.playbook_run.rename.label', defaultMessage: 'Run name'});
+    const label = formatMessage({id: 'playbooks.playbook_run.rename.label', defaultMessage: 'Checklist name'});
 
     return (
         <View
