@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {buildQueryString} from '@utils/helpers';
-import {logInfo} from '@utils/log';
 
 import type ClientBase from '@client/rest/base';
 
@@ -89,7 +88,6 @@ const ClientPlaybooks = <TBase extends Constructor<ClientBase>>(superclass: TBas
     };
 
     patchPlaybookRun = async (playbookRunId: string, updates: Partial<PlaybookRun>) => {
-        logInfo('patchPlaybookRun', {playbookRunId, updates});
         await this.doFetch(
             `${this.getPlaybookRunRoute(playbookRunId)}`,
             {method: 'patch', body: updates},
@@ -97,7 +95,6 @@ const ClientPlaybooks = <TBase extends Constructor<ClientBase>>(superclass: TBas
     };
 
     renameChecklist = async (playbookRunId: string, checklistNumber: number, newName: string) => {
-        logInfo('renameChecklist', {playbookRunId, checklistNumber, newName});
         await this.doFetch(
             `${this.getPlaybookRunRoute(playbookRunId)}/checklists/${checklistNumber}/rename`,
             {method: 'put', body: {title: newName}},
