@@ -47,9 +47,9 @@ public struct Post: Codable {
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: PostKeys.self)
         prevPostId = ""
-        id = try values.decode(String.self, forKey: .id)
-        channelId = try values.decode(String.self, forKey: .channelId)
-        userId = try values.decode(String.self, forKey: .userId)
+        id = values.decodeIfPresent(forKey: .id, defaultValue: "")
+        channelId = values.decodeIfPresent(forKey: .channelId, defaultValue: "")
+        userId = values.decodeIfPresent(forKey: .userId, defaultValue: "")
         createAt = values.decodeIfPresent(forKey: .createAt, defaultValue: 0)
         updateAt = values.decodeIfPresent(forKey: .updateAt, defaultValue: 0)
         deleteAt = values.decodeIfPresent(forKey: .deleteAt, defaultValue: 0)

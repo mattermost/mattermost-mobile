@@ -41,8 +41,8 @@ public struct ChannelMember: Codable {
     
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: ChannelMemberKeys.self)
-        id  = try values.decode(String.self, forKey: .id)
-        userId  = try values.decode(String.self, forKey: .userId)
+        id = values.decodeIfPresent(forKey: .id, defaultValue: "")
+        userId = values.decodeIfPresent(forKey: .userId, defaultValue: "")
         explicitRoles = values.decodeIfPresent(forKey: .explicitRoles, defaultValue: "")
         lastUpdateAt = values.decodeIfPresent(forKey: .lastUpdateAt, defaultValue: 0)
         lastViewedAt = values.decodeIfPresent(forKey: .lastViewedAt, defaultValue: 0)
@@ -50,8 +50,8 @@ public struct ChannelMember: Codable {
         mentionCountRoot = values.decodeIfPresent(forKey: .mentionCountRoot, defaultValue: 0)
         msgCount = values.decodeIfPresent(forKey: .msgCount, defaultValue: 0)
         msgCountRoot = values.decodeIfPresent(forKey: .msgCountRoot, defaultValue: 0)
-        let propsData = try values.decode([String:Any].self, forKey: .notifyProps)
-        notifyProps = Database.default.json(from: propsData) ?? "{}"
+        let propsDict = try? values.decode([String:Any].self, forKey: .notifyProps)
+        notifyProps = Database.default.json(from: propsDict) ?? "{}"
         roles = values.decodeIfPresent(forKey: .roles, defaultValue: "")
         schemeAdmin = values.decodeIfPresent(forKey: .schemeAdmin, defaultValue: false)
         schemeGuest = values.decodeIfPresent(forKey: .schemeGuest, defaultValue: false)

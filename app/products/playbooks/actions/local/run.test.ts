@@ -22,7 +22,7 @@ afterEach(async () => {
 
 describe('handlePlaybookRuns', () => {
     it('should handle not found database', async () => {
-        const {error} = await handlePlaybookRuns('foo', [], false, false);
+        const {error} = await handlePlaybookRuns('foo', []);
         expect(error).toBeDefined();
         expect((error as Error).message).toContain('foo database not found');
     });

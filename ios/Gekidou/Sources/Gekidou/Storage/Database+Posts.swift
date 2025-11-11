@@ -110,9 +110,10 @@ extension Database {
         let sortedAndNotDeletedPosts = sortedChainedPosts.filter({$0.deleteAt == 0})
 
         if (!receivingThreads) {
-            if !sortedAndNotDeletedPosts.isEmpty {
-                let earliest = sortedAndNotDeletedPosts.first!.createAt
-                let latest = sortedAndNotDeletedPosts.last!.createAt
+            if let first = sortedAndNotDeletedPosts.first,
+               let last = sortedAndNotDeletedPosts.last {
+                let earliest = first.createAt
+                let latest = last.createAt
                 try handlePostsInChannel(db, channelId, earliest, latest)
             }
         }
@@ -294,13 +295,40 @@ extension Database {
         
         return postsSetters
     }
-    
-    private func createPostMetadataSetters(from post: Post) -> MetadataSetters {
+
+    private func createReactionSetters(from reactions: [Any], postId: String) -> [[Setter]] {
         let id = Expression<String>("id")
         let userId = Expression<String>("user_id")
-        let postId = Expression<String>("post_id")
+        let postIdCol = Expression<String>("post_id")
         let emojiName = Expression<String>("emoji_name")
         let createAt = Expression<Double>("create_at")
+        let statusCol = Expression<String>("_status")
+
+        var reactionSetters = [[Setter]]()
+        for reaction in reactions {
+            if let r = reaction as? [String: Any],
+               let userIdValue = r["user_id"] as? String,
+               let postIdValue = r["post_id"] as? String,
+               let emojiNameValue = r["emoji_name"] as? String,
+               let createAtValue = r["create_at"] as? Double {
+                var reactionSetter = [Setter]()
+                reactionSetter.append(id <- generateId())
+                reactionSetter.append(userId <- userIdValue)
+                reactionSetter.append(postIdCol <- postIdValue)
+                reactionSetter.append(emojiName <- emojiNameValue)
+                reactionSetter.append(createAt <- createAtValue)
+                reactionSetter.append(statusCol <- "created")
+                reactionSetters.append(reactionSetter)
+            } else {
+                GekidouLogger.shared.log(.warning, "Gekidou Database: Skipping malformed reaction in post %{public}@", postId)
+            }
+        }
+        return reactionSetters
+    }
+
+    private func createFileSetters(from files: [Any], postId: String) -> [[Setter]] {
+        let id = Expression<String>("id")
+        let postIdCol = Expression<String>("post_id")
         let name = Expression<String>("name")
         let ext = Expression<String>("extension")
         let size = Expression<Double>("size")
@@ -310,82 +338,111 @@ extension Database {
         let localPath = Expression<String?>("local_path")
         let imageThumbnail = Expression<String?>("image_thumbnail")
         let statusCol = Expression<String>("_status")
-        
+
+        var fileSetters = [[Setter]]()
+        for file in files {
+            if let f = file as? [String: Any],
+               let idValue = f["id"] as? String,
+               let postIdValue = f["post_id"] as? String,
+               let nameValue = f["name"] as? String,
+               let extValue = f["extension"] as? String,
+               let sizeValue = f["size"] as? Double,
+               let mimeTypeValue = f["mime_type"] as? String {
+                var fileSetter = [Setter]()
+                fileSetter.append(id <- idValue)
+                fileSetter.append(postIdCol <- postIdValue)
+                fileSetter.append(name <- nameValue)
+                fileSetter.append(ext <- extValue)
+                fileSetter.append(size <- sizeValue)
+                fileSetter.append(mimeType <- mimeTypeValue)
+                fileSetter.append(width <- (f["width"] as? Double ?? 0))
+                fileSetter.append(height <- (f["height"] as? Double ?? 0))
+                fileSetter.append(localPath <- "")
+                fileSetter.append(imageThumbnail <- (f["mini_preview"] as? String ?? ""))
+                fileSetter.append(statusCol <- "created")
+                fileSetters.append(fileSetter)
+            } else {
+                GekidouLogger.shared.log(.warning, "Gekidou Database: Skipping malformed file in post %{public}@", postId)
+            }
+        }
+        return fileSetters
+    }
+
+    private func createEmojiSetters(from emojis: [Any], postId: String) -> [[Setter]] {
+        let id = Expression<String>("id")
+        let name = Expression<String>("name")
+        let statusCol = Expression<String>("_status")
+
+        var emojiSetters = [[Setter]]()
+        for emoji in emojis {
+            if let e = emoji as? [String: Any],
+               let idValue = e["id"] as? String,
+               let nameValue = e["name"] as? String {
+                var emojiSetter = [Setter]()
+                emojiSetter.append(id <- idValue)
+                emojiSetter.append(name <- nameValue)
+                emojiSetter.append(statusCol <- "created")
+                emojiSetters.append(emojiSetter)
+            } else {
+                GekidouLogger.shared.log(.warning, "Gekidou Database: Skipping malformed emoji in post %{public}@", postId)
+            }
+        }
+        return emojiSetters
+    }
+
+    private func createPostMetadataSetters(from post: Post) -> MetadataSetters {
         var metadataString = "{}"
         var reactionSetters = [[Setter]]()
         var fileSetters = [[Setter]]()
         var emojiSetters = [[Setter]]()
-        
-        let json = try? JSONSerialization.jsonObject(with: post.metadata.data(using: .utf8)!, options: [])
-        if var metadata = json as? [String: Any] {
-            // Reaction setters
-            if let reactions = metadata["reactions"] as? [Any] {
-                for reaction in reactions {
-                    if let r = reaction as? [String: Any] {
-                        var reactionSetter = [Setter]()
-                        reactionSetter.append(id <- generateId())
-                        reactionSetter.append(userId <- r["user_id"] as! String)
-                        reactionSetter.append(postId <- r["post_id"] as! String)
-                        reactionSetter.append(emojiName <- r["emoji_name"] as! String)
-                        reactionSetter.append(createAt <- r["create_at"] as! Double)
-                        reactionSetter.append(statusCol <- "created")
 
-                        reactionSetters.append(reactionSetter)
-                    }
-                }
+        guard let metadataData = post.metadata.data(using: .utf8) else {
+            GekidouLogger.shared.log(.error, "Gekidou Database: Failed to encode post metadata as UTF-8 for post %{public}@", post.id)
+            return MetadataSetters(metadata: metadataString, reactionSetters: reactionSetters, fileSetters: fileSetters, emojiSetters: emojiSetters)
+        }
+
+        do {
+            guard let json = try JSONSerialization.jsonObject(with: metadataData, options: []) as? [String: Any] else {
+                GekidouLogger.shared.log(.error, "Gekidou Database: Failed to decode post metadata JSON as dictionary for post %{public}@", post.id)
+                return MetadataSetters(metadata: metadataString, reactionSetters: reactionSetters, fileSetters: fileSetters, emojiSetters: emojiSetters)
+            }
+
+            var metadata = json
+
+            // Process reactions
+            if let reactions = metadata["reactions"] as? [Any] {
+                reactionSetters = createReactionSetters(from: reactions, postId: post.id)
                 metadata.removeValue(forKey: "reactions")
             }
 
-            // File setters
+            // Process files
             if let files = metadata["files"] as? [Any] {
-                for file in files {
-                    if let f = file as? [String: Any] {
-                        var fileSetter = [Setter]()
-                        fileSetter.append(id <- f["id"] as! String)
-                        fileSetter.append(postId <- f["post_id"] as! String)
-                        fileSetter.append(name <- f["name"] as! String)
-                        fileSetter.append(ext <- f["extension"] as! String)
-                        fileSetter.append(size <- f["size"] as! Double)
-                        fileSetter.append(mimeType <- f["mime_type"] as! String)
-                        fileSetter.append(width <- (f["width"] as? Double ?? 0))
-                        fileSetter.append(height <- (f["height"] as? Double ?? 0))
-                        fileSetter.append(localPath <- "")
-                        fileSetter.append(imageThumbnail <- (f["mini_preview"] as? String ?? ""))
-                        fileSetter.append(statusCol <- "created")
-
-                        fileSetters.append(fileSetter)
-                    }
-                }
-                
+                fileSetters = createFileSetters(from: files, postId: post.id)
                 metadata.removeValue(forKey: "files")
             }
 
-            // Emoji setters
+            // Process emojis
             if let emojis = metadata["emojis"] as? [Any] {
-                for emoji in emojis {
-                    if let e = emoji as? [String: Any] {
-                        var emojiSetter = [Setter]()
-                        emojiSetter.append(id <- e["id"] as! String)
-                        emojiSetter.append(name <- e["name"] as! String)
-                        emojiSetter.append(statusCol <- "created")
-
-                        emojiSetters.append(emojiSetter)
-                    }
-                }
-                
+                emojiSetters = createEmojiSetters(from: emojis, postId: post.id)
                 metadata.removeValue(forKey: "emojis")
             }
 
-            // Remaining Metadata
-            
-            let dataJSON = try! JSONSerialization.data(withJSONObject: metadata, options: [])
-            metadataString = String(data: dataJSON, encoding: String.Encoding.utf8)!
+            // Serialize remaining metadata
+            do {
+                let dataJSON = try JSONSerialization.data(withJSONObject: metadata, options: [])
+                if let metadataStringValue = String(data: dataJSON, encoding: String.Encoding.utf8) {
+                    metadataString = metadataStringValue
+                } else {
+                    GekidouLogger.shared.log(.error, "Gekidou Database: Failed to encode remaining metadata as UTF-8 string for post %{public}@", post.id)
+                }
+            } catch {
+                GekidouLogger.shared.log(.error, "Gekidou Database: Failed to serialize remaining metadata to JSON for post %{public}@ - %{public}@", post.id, String(describing: error))
+            }
+        } catch {
+            GekidouLogger.shared.log(.error, "Gekidou Database: Failed to parse post metadata JSON for post %{public}@ - %{public}@", post.id, String(describing: error))
         }
 
-        return MetadataSetters(metadata: metadataString,
-                               reactionSetters: reactionSetters,
-                               fileSetters: fileSetters,
-                               emojiSetters: emojiSetters)
+        return MetadataSetters(metadata: metadataString, reactionSetters: reactionSetters, fileSetters: fileSetters, emojiSetters: emojiSetters)
     }
     
     private func createPostsInThreadSetters(_ db: Connection, from posts: [Post]) throws -> [[Setter]] {

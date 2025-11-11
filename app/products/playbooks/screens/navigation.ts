@@ -120,9 +120,10 @@ export async function goToSelectDate(
 export async function goToSelectPlaybook(
     intl: IntlShape,
     theme: Theme,
+    channelId?: string,
 ) {
     const title = intl.formatMessage({id: 'playbooks.select_playbook.title', defaultMessage: 'Start a run'});
-    goToScreen(Screens.PLAYBOOKS_SELECT_PLAYBOOK, title, {}, {
+    goToScreen(Screens.PLAYBOOKS_SELECT_PLAYBOOK, title, {channelId}, {
         topBar: {
             subtitle: {
                 text: intl.formatMessage({id: 'playbooks.select_playbook.subtitle', defaultMessage: 'Select a playbook'}),
@@ -132,10 +133,10 @@ export async function goToSelectPlaybook(
     });
 }
 
-export async function goToStartARun(intl: IntlShape, theme: Theme, playbook: Playbook, onRunCreated: (run: PlaybookRun) => void) {
+export async function goToStartARun(intl: IntlShape, theme: Theme, playbook: Playbook, onRunCreated: (run: PlaybookRun) => void, channelId?: string) {
     const title = intl.formatMessage({id: 'playbooks.start_a_run.title', defaultMessage: 'Start a run'});
     const subtitle = playbook.title;
-    goToScreen(Screens.PLAYBOOKS_START_A_RUN, title, {playbook, onRunCreated}, {
+    goToScreen(Screens.PLAYBOOKS_START_A_RUN, title, {playbook, onRunCreated, channelId}, {
         topBar: {
             subtitle: {
                 text: subtitle,

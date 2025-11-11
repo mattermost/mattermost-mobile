@@ -37,7 +37,6 @@ export const FIND_CHANNELS = 'FindChannels';
 export const FORGOT_PASSWORD = 'ForgotPassword';
 export const GALLERY = 'Gallery';
 export const GENERIC_OVERLAY = 'GenericOverlay';
-export const FLOATING_BANNER = 'FloatingBanner';
 export const GLOBAL_DRAFTS = 'GlobalDrafts';
 export const GLOBAL_DRAFTS_AND_SCHEDULED_POSTS = 'GlobalDraftsAndScheduledPosts';
 export const GLOBAL_THREADS = 'GlobalThreads';
@@ -126,7 +125,6 @@ export default {
     FORGOT_PASSWORD,
     GALLERY,
     GENERIC_OVERLAY,
-    FLOATING_BANNER,
     GLOBAL_DRAFTS,
     GLOBAL_DRAFTS_AND_SCHEDULED_POSTS,
     GLOBAL_THREADS,
@@ -207,7 +205,6 @@ export const SCREENS_WITH_TRANSPARENT_BACKGROUND = new Set<string>([
     REVIEW_APP,
     SNACK_BAR,
     GENERIC_OVERLAY,
-    FLOATING_BANNER,
 ]);
 
 export const SCREENS_AS_BOTTOM_SHEET = new Set<string>([

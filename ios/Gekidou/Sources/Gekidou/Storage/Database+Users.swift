@@ -63,13 +63,15 @@ extension Database {
         var updateAt: Double?
         do {
             let db = try getDatabaseForServer(serverUrl)
-            
-            let stmtString = "SELECT * FROM User WHERE id='\(userId)'"
-            
-            let results: [User] = try db.prepareRowIterator(stmtString).map {try $0.decode()}
+
+            let idCol = Expression<String>("id")
+            let query = userTable.where(idCol == userId)
+
+            let results: [User] = try db.prepare(query).map {try $0.decode()}
             updateAt = results.first?.lastPictureUpdate
 
         } catch {
+            GekidouLogger.shared.log(.error, "Gekidou Database: Failed to get user last picture update for userId %{public}@, server %{public}@ - %{public}@", userId, serverUrl, String(describing: error))
             return nil
         }
 

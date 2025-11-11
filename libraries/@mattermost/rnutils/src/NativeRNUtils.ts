@@ -75,6 +75,9 @@ export interface Spec extends TurboModule {
     setSoftKeyboardToAdjustNothing(): void;
 
     createZipFile: (paths: string[]) => Promise<string>;
+
+    // Android only
+    setNavigationBarColor: (color: string, lightIcons: boolean) => void;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('RNUtils');

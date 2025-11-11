@@ -3,7 +3,7 @@
 
 import TestHelper from '@test/test_helper';
 
-import {getRunScheduledTimestamp, isRunFinished, getMaxRunUpdateAt, isOverdue, isDueSoon, isPending} from './run';
+import {getRunScheduledTimestamp, isRunFinished, getMaxRunUpdateAt, isOverdue, isDueSoon, isPending, isOutstanding} from './run';
 
 describe('run utils', () => {
     describe('getRunScheduledTimestamp', () => {
@@ -366,6 +366,49 @@ describe('run utils', () => {
             });
 
             expect(isPending(item)).toBe(true);
+        });
+    });
+
+    describe('isOutstanding', () => {
+        it('should return true for open items', () => {
+            const item = TestHelper.fakePlaybookChecklistItem('checklist-id', {
+                state: '',
+            });
+
+            expect(isOutstanding(item)).toBe(true);
+        });
+
+        it('should return true for in_progress items', () => {
+            const item = TestHelper.fakePlaybookChecklistItem('checklist-id', {
+                state: 'in_progress',
+            });
+
+            expect(isOutstanding(item)).toBe(true);
+        });
+
+        it('should return false for closed items', () => {
+            const item = TestHelper.fakePlaybookChecklistItem('checklist-id', {
+                state: 'closed',
+            });
+
+            expect(isOutstanding(item)).toBe(false);
+        });
+
+        it('should return false for skipped items', () => {
+            const item = TestHelper.fakePlaybookChecklistItem('checklist-id', {
+                state: 'skipped',
+            });
+
+            expect(isOutstanding(item)).toBe(false);
+        });
+
+        it('should handle database model with different property name', () => {
+            const item = TestHelper.fakePlaybookChecklistItemModel({
+                id: 'checklist-id',
+                state: '',
+            });
+
+            expect(isOutstanding(item)).toBe(true);
         });
     });
 });
