@@ -468,6 +468,7 @@
   "login_mfa.enterToken": "To complete the sign in process, please enter the code from your mobile device's authenticator app.",
   "login_mfa.token": "Enter MFA Token",
   "login_mfa.tokenReq": "Please enter an MFA token",
+  "login.deactivated": "This account is deactivated",
   "login.email": "Email",
   "login.forgot": "Forgot your password?",
   "login.invalid_credentials": "The email and password combination is incorrect",

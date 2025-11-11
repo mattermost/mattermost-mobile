@@ -249,11 +249,15 @@ const LoginForm = ({
             if (receivedUserLoginType === 'guest_magic_link') {
                 setMagicLinkSent(true);
             }
+            if (receivedUserLoginType === 'deactivated') {
+                setError(intl.formatMessage({id: 'login.deactivated', defaultMessage: 'This account is deactivated'}));
+                return;
+            }
             return;
         }
 
         preSignIn();
-    }, [checkUserLoginType, magicLinkEnabled, preSignIn, setMagicLinkSent, userLoginType]);
+    }, [checkUserLoginType, intl, magicLinkEnabled, preSignIn, setMagicLinkSent, userLoginType]);
 
     const onLoginChange = useCallback((text: string) => {
         setLoginId(text);
@@ -312,7 +316,7 @@ const LoginForm = ({
     }, [focusPassword, onLogin, magicLinkEnabled, userLoginType]);
 
     const buttonDisabled = getButtonDisabled(loginId, password, userLoginType, magicLinkEnabled);
-    const showPasswordInput = !magicLinkEnabled || (userLoginType !== 'guest_magic_link' && userLoginType !== undefined);
+    const showPasswordInput = !magicLinkEnabled || (userLoginType !== 'guest_magic_link' && userLoginType !== undefined && userLoginType !== 'deactivated');
     let userInputError = error;
     if (showPasswordInput) {
         userInputError = error ? ' ' : '';
