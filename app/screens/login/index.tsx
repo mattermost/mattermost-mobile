@@ -75,7 +75,7 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
         marginBottom: 12,
         ...typography('Body', 200, 'Regular'),
     },
-    linkSentcontainer: {
+    linkSentContainer: {
         flex: 1,
         justifyContent: 'center',
         paddingHorizontal: 24,
@@ -208,7 +208,7 @@ const LoginOptions = ({
 
     if (easyLoginLinkSent) {
         return (
-            <View style={styles.linkSentcontainer}>
+            <View style={styles.linkSentContainer}>
                 <LinkSent/>
                 <Text style={styles.linkSentTitle}>
                     {intl.formatMessage({id: 'login.passwordless.link.sent.title', defaultMessage: 'We sent you a link to login'})}

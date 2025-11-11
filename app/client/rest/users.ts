@@ -164,7 +164,7 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         return resp?.data;
     };
 
-    loginByEasyLogin = async (token: string, deviceId: string) => {
+    loginByEasyLogin = async (token: string, deviceId = '') => {
         const body = {
             easy_login_token: token,
             device_id: deviceId,

@@ -8,34 +8,30 @@ import {Navigation} from 'react-native-navigation';
 import urlParse from 'url-parse';
 
 import {joinIfNeededAndSwitchToChannel, makeDirectChannel} from '@actions/remote/channel';
-import {loginEntry} from '@actions/remote/entry';
 import {showPermalink} from '@actions/remote/permalink';
-import {addPushProxyVerificationStateFromLogin} from '@actions/remote/session';
+import {easyLogin} from '@actions/remote/session';
 import {fetchUsersByUsernames} from '@actions/remote/user';
-import {Database, DeepLink, Launch, Screens} from '@constants';
+import {DeepLink, Launch, Screens} from '@constants';
 import DeepLinkType from '@constants/deep_linking';
 import {getDefaultThemeByAppearance} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE} from '@i18n';
-import NetworkManager from '@managers/network_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {fetchPlaybookRun} from '@playbooks/actions/remote/runs';
 import {getPlaybookRunById} from '@playbooks/database/queries/run';
 import {fetchIsPlaybooksEnabled} from '@playbooks/database/queries/version';
 import {goToPlaybookRun} from '@playbooks/screens/navigation';
-import {getDeviceToken} from '@queries/app/global';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {getCurrentUser, queryUsersByUsername} from '@queries/servers/user';
-import {dismissAllModalsAndPopToRoot, resetToHome} from '@screens/navigation';
+import {dismissAllModalsAndPopToRoot} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 import {alertErrorWithFallback, errorBadChannel, errorUnkownUser} from '@utils/draft';
 import {getIntlShape} from '@utils/general';
 import {logDebug, logError} from '@utils/log';
 import {escapeRegex} from '@utils/markdown';
-import {getCSRFFromCookie} from '@utils/security';
 import {addNewServer} from '@utils/server';
-import {getServerUrlAfterRedirect, removeProtocol, stripTrailingSlashes} from '@utils/url';
+import {removeProtocol, stripTrailingSlashes} from '@utils/url';
 import {
     TEAM_NAME_PATH_PATTERN,
     IDENTIFIER_PATH_PATTERN,
@@ -47,67 +43,6 @@ import type {DeepLinkChannel, DeepLinkDM, DeepLinkGM, DeepLinkPermalink, DeepLin
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 const deepLinkScreens: AvailableScreens[] = [Screens.HOME, Screens.CHANNEL, Screens.GLOBAL_THREADS, Screens.THREAD];
-
-const easyLogin = async (serverUrl: string, token: string): Promise<LoginActionResponse> => {
-    const httpsHeadRequest = await getServerUrlAfterRedirect(serverUrl);
-    let serverUrlToUse = httpsHeadRequest.url;
-    if (httpsHeadRequest.error || !httpsHeadRequest.url) {
-        // Retry with HTTP
-        const httpHeadRequest = await getServerUrlAfterRedirect(serverUrl, true);
-        if (httpHeadRequest.error || !httpHeadRequest.url) {
-            return {error: httpsHeadRequest.error || httpHeadRequest.error || 'empty server url', failed: true};
-        }
-        serverUrlToUse = httpHeadRequest.url;
-    } else {
-        serverUrlToUse = httpsHeadRequest.url;
-    }
-
-    const database = DatabaseManager.appDatabase?.database;
-    if (!database) {
-        return {error: 'App database not found', failed: true};
-    }
-
-    try {
-        const client = await NetworkManager.createClient(serverUrlToUse, undefined);
-        const config = await client.getClientConfigOld();
-        const deviceId = await getDeviceToken();
-        const serverDisplayName = config.SiteName;
-
-        const user = await client.loginByEasyLogin(token, deviceId);
-
-        const server = await DatabaseManager.createServerDatabase({
-            config: {
-                dbName: serverUrlToUse,
-                serverUrl: serverUrlToUse,
-                identifier: config.DiagnosticId,
-                displayName: serverDisplayName,
-            },
-        });
-
-        await server?.operator.handleUsers({users: [user], prepareRecordsOnly: false});
-        await server?.operator.handleSystem({
-            systems: [{
-                id: Database.SYSTEM_IDENTIFIERS.CURRENT_USER_ID,
-                value: user.id,
-            }],
-            prepareRecordsOnly: false,
-        });
-        const csrfToken = await getCSRFFromCookie(serverUrlToUse);
-        client.setCSRFToken(csrfToken);
-    } catch (error) {
-        return {error, failed: true};
-    }
-
-    try {
-        await addPushProxyVerificationStateFromLogin(serverUrlToUse);
-        const {error} = await loginEntry({serverUrl: serverUrlToUse});
-        await DatabaseManager.setActiveServerDatabase(serverUrlToUse);
-        await resetToHome();
-        return {error, failed: false};
-    } catch (error) {
-        return {error, failed: false};
-    }
-};
 
 export async function handleDeepLink(deepLink: DeepLinkWithData, intlShape?: IntlShape, location?: string) {
     try {
