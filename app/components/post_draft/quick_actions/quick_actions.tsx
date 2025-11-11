@@ -8,8 +8,9 @@ import CameraAction from './camera_quick_action';
 import EmojiAction from './emoji_quick_action';
 import FileAction from './file_quick_action';
 import ImageAction from './image_quick_action';
-import InputAction from './input_quick_action';
 import PostPriorityAction from './post_priority_action';
+
+// import InputAction from './input_quick_action';
 
 type Props = {
     testID?: string;
@@ -49,7 +50,8 @@ export default function QuickActions({
     value,
     fileCount,
     isPostPriorityEnabled,
-    canShowSlashCommands = true,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    canShowSlashCommands = true, // Used in commented InputAction components
     canShowPostPriority,
     maxFileCount,
     updateValue,
@@ -60,11 +62,11 @@ export default function QuickActions({
     cursorPosition,
     updateCursorPosition,
 }: Props) {
-    const atDisabled = value[value.length - 1] === '@';
-    const slashDisabled = value.length > 0;
+    // const atDisabled = value[value.length - 1] === '@';
+    // const slashDisabled = value.length > 0;
 
-    const atInputActionTestID = `${testID}.at_input_action`;
-    const slashInputActionTestID = `${testID}.slash_input_action`;
+    // const atInputActionTestID = `${testID}.at_input_action`;
+    // const slashInputActionTestID = `${testID}.slash_input_action`;
     const emojiActionTestID = `${testID}.emoji_action`;
     const fileActionTestID = `${testID}.file_action`;
     const imageActionTestID = `${testID}.image_action`;
@@ -84,7 +86,8 @@ export default function QuickActions({
             testID={testID}
             style={style.quickActionsContainer}
         >
-            <InputAction
+            {/* @ and / icons hidden - functionality still works by typing @ or / manually */}
+            {/* <InputAction
                 testID={atInputActionTestID}
                 disabled={atDisabled}
                 inputType='at'
@@ -99,7 +102,7 @@ export default function QuickActions({
                     updateValue={updateValue}
                     focus={focus}
                 />
-            )}
+            )} */}
             <EmojiAction
                 testID={emojiActionTestID}
                 value={value}
