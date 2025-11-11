@@ -8,6 +8,7 @@ import {Navigation} from 'react-native-navigation';
 import Animated from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
+import DaakiaOpenIdLogin from '@components/daakia_components/daakia_openid_login';
 import FormattedText from '@components/formatted_text';
 import {Screens, Sso} from '@constants';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
@@ -25,7 +26,6 @@ import {typography} from '@utils/typography';
 import Form from './form';
 import LoginOptionsSeparator from './login_options_separator';
 import SsoOptions from './sso_options';
-import DaakiaOpenIdLogin from '@components/daakia_components/daakia_openid_login';
 
 import type {LaunchProps} from '@typings/launch';
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -224,6 +224,7 @@ const LoginOptions = ({
                         style={styles.centered}
                     >
                         {isOnlyOpenIdEnabled ? (
+
                             // Show simplified OpenID-only UI
                             <DaakiaOpenIdLogin
                                 goToSso={goToSso}
@@ -231,7 +232,7 @@ const LoginOptions = ({
                                 theme={theme}
                             />
                         ) : (
-                            // Show normal login UI with form and all SSO options
+
                             <>
                                 {title}
                                 {description}
