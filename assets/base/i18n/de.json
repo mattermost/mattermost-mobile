@@ -1036,7 +1036,7 @@
   "playbooks.playbook_run.status_update": "Aktualisierung senden",
   "playbooks.playbook_run.status_update_due": "Aktualisierung fällig\n{time}",
   "playbooks.playbook_run.status_update_finished": "Durchlauf beendet\n {time}",
-  "playbooks.playbook_run.status_update_overdue": "Aktualisierung überfällig\n{time}",
+  "playbooks.playbook_run.status_update_overdue": "Statusaktualisierung überfällig\n{time}",
   "playbooks.playbook_run.tasks": "Aufgaben",
   "playbooks.playbook_run.title": "Playbook Durchlauf",
   "playbooks.playbooks_runs.title": "Playbook Durchläufe",
