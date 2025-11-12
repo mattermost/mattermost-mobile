@@ -217,15 +217,20 @@ const AtMention = ({
                 mentionTextStyle.push({color: flattenedStyle.color});
             }
         }
+
+        // COMMENTED OUT: Yellow color for all mentions (same style for all)
+        // mentionTextStyle.push({
+        //     color: '#FFD700', // Yellow color for all mentions
+        // });
     }
 
-    // Add background color when current user is mentioned (highlighted)
-    if (highlighted) {
-        mentionTextStyle.push({
-            backgroundColor: theme.mentionHighlightBg,
-            color: theme.mentionHighlightLink,
-        });
-    }
+    // COMMENTED OUT: Add background color when current user is mentioned (highlighted)
+    // if (highlighted) {
+    //     mentionTextStyle.push({
+    //         backgroundColor: theme.mentionHighlightBg,
+    //         color: theme.mentionHighlightLink,
+    //     });
+    // }
 
     return (
         <Text
