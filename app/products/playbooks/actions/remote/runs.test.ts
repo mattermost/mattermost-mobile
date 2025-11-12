@@ -7,12 +7,12 @@ import {PER_PAGE_DEFAULT} from '@client/rest/constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {updateLastPlaybookRunsFetchAt} from '@playbooks/actions/local/channel';
-import {handlePlaybookRuns, setOwner as localSetOwner} from '@playbooks/actions/local/run';
+import {handlePlaybookRuns, setOwner as localSetOwner, renamePlaybookRun as localRenamePlaybookRun} from '@playbooks/actions/local/run';
 import {getLastPlaybookRunsFetchAt} from '@playbooks/database/queries/run';
 import EphemeralStore from '@store/ephemeral_store';
 import TestHelper from '@test/test_helper';
 
-import {fetchPlaybookRunsForChannel, fetchFinishedRunsForChannel, fetchPlaybookRunsPageForParticipant, setOwner, finishRun, createPlaybookRun, fetchPlaybookRun, fetchPlaybookRunMetadata, postStatusUpdate} from './runs';
+import {fetchPlaybookRunsForChannel, fetchFinishedRunsForChannel, fetchPlaybookRunsPageForParticipant, setOwner, finishRun, renamePlaybookRun, createPlaybookRun, fetchPlaybookRun, fetchPlaybookRunMetadata, postStatusUpdate} from './runs';
 
 const serverUrl = 'baseHandler.test.com';
 const channelId = 'channel-id-1';
@@ -28,6 +28,7 @@ const mockClient = {
     finishRun: jest.fn(),
     createPlaybookRun: jest.fn(),
     postStatusUpdate: jest.fn(),
+    patchPlaybookRun: jest.fn(),
 };
 
 jest.mock('@playbooks/database/queries/run');
@@ -530,7 +531,6 @@ describe('createPlaybookRun', () => {
         jest.spyOn(NetworkManager, 'getClient').mockImplementationOnce(throwFunc);
 
         const result = await createPlaybookRun(serverUrl, playbookId, ownerUserId, teamId, name, description);
-
         expect(result).toBeDefined();
         expect(result.error).toBeDefined();
         expect(result.data).toBeUndefined();
@@ -717,5 +717,53 @@ describe('postStatusUpdate', () => {
 
         const result = await postStatusUpdate(serverUrl, playbookRunID, payload, ids);
         expect(result.error).toBeDefined();
+
     });
 });
+
+describe('renamePlaybookRun', () => {
+    const playbookRunId = 'playbook-run-id-1';
+    const newName = 'New Run Name';
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+        jest.mocked(localRenamePlaybookRun).mockResolvedValue({data: true});
+    });
+
+    it('should handle client error', async () => {
+        jest.spyOn(NetworkManager, 'getClient').mockImplementationOnce(throwFunc);
+
+        const result = await renamePlaybookRun(serverUrl, playbookRunId, newName);
+
+        expect(result).toBeDefined();
+        expect(result.error).toBeDefined();
+        expect(result.data).toBeUndefined();
+        expect(localRenamePlaybookRun).not.toHaveBeenCalled();
+    });
+
+    it('should handle API exception', async () => {
+        const clientError = new Error('Client error');
+        mockClient.patchPlaybookRun.mockRejectedValueOnce(clientError);
+
+        const result = await renamePlaybookRun(serverUrl, playbookRunId, newName);
+        expect(result).toBeDefined();
+        expect(result.error).toBeDefined();
+        expect(result.data).toBeUndefined();
+        expect(mockClient.patchPlaybookRun).toHaveBeenCalledWith(playbookRunId, {name: newName});
+        expect(localRenamePlaybookRun).not.toHaveBeenCalled();
+    });
+
+    it('should rename playbook run successfully', async () => {
+        mockClient.patchPlaybookRun.mockResolvedValueOnce(undefined);
+
+        const result = await renamePlaybookRun(serverUrl, playbookRunId, newName);
+
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.data).toBe(true);
+        expect(mockClient.patchPlaybookRun).toHaveBeenCalledWith(playbookRunId, {name: newName});
+        expect(localRenamePlaybookRun).toHaveBeenCalledWith(serverUrl, playbookRunId, newName);
+
+    });
+});
+
