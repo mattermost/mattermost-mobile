@@ -10,6 +10,7 @@ import {safeParseJSONStringArray} from '@utils/helpers';
 
 import type {Query, Relation} from '@nozbe/watermelondb';
 import type PlaybookRunModelInterface from '@playbooks//types/database/models/playbook_run';
+import type {PlaybookRunType} from '@playbooks/constants/playbook_run';
 import type PlaybookChecklistModel from '@playbooks/types/database/models/playbook_checklist';
 import type {SyncStatus} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -51,8 +52,11 @@ export default class PlaybookRunModel extends Model implements PlaybookRunModelI
         [PLAYBOOK_CHECKLIST]: {type: 'has_many', foreignKey: 'run_id'},
     };
 
-    /** playbook_id : The id of the playbook this run belongs to */
+    /** playbook_id : The id of the playbook this run belongs to (empty string if it is a channel checklist) */
     @field('playbook_id') playbookId!: string;
+
+    /** type : The type of run ('playbook' or 'channelChecklist') */
+    @field('type') type!: PlaybookRunType;
 
     /** name : Name of the playbook run */
     @field('name') name!: string;

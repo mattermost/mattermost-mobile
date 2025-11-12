@@ -61,7 +61,7 @@ describe('StatusUpdateIndicator', () => {
             />,
         );
 
-        const text = getByText(/Update overdue/);
+        const text = getByText(/pdate overdue/);
         expect(text).toHaveStyle({color: Preferences.THEMES.denim.dndIndicator});
 
         const icon = getByTestId('compass-icon');
@@ -79,7 +79,7 @@ describe('StatusUpdateIndicator', () => {
             />,
         );
 
-        const text = getByText(/Run finished/);
+        const text = getByText(/Finished/);
         expect(text).toHaveStyle({color: changeOpacity(Preferences.THEMES.denim.centerChannelColor, 0.72)});
 
         const icon = getByTestId('compass-icon');

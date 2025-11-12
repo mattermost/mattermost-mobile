@@ -14,7 +14,7 @@ import type {Options as RNNOptions} from 'react-native-navigation';
 
 export function goToPlaybookRuns(intl: IntlShape, channelId: string, channelName: string) {
     const theme = getThemeFromState();
-    const title = intl.formatMessage({id: 'playbooks.playbooks_runs.title', defaultMessage: 'Playbook runs'});
+    const title = intl.formatMessage({id: 'playbooks.playbooks_runs.title', defaultMessage: 'Playbook checklists'});
     goToScreen(Screens.PLAYBOOKS_RUNS, title, {channelId}, {
         topBar: {
             subtitle: {
@@ -26,12 +26,12 @@ export function goToPlaybookRuns(intl: IntlShape, channelId: string, channelName
 }
 
 export function goToParticipantPlaybooks(intl: IntlShape) {
-    const title = intl.formatMessage({id: 'playbooks.participant_playbooks.title', defaultMessage: 'Playbook runs'});
+    const title = intl.formatMessage({id: 'playbooks.participant_playbooks.title', defaultMessage: 'Playbook checklists'});
     goToScreen(Screens.PARTICIPANT_PLAYBOOKS, title, {}, {});
 }
 
 export async function goToPlaybookRun(intl: IntlShape, playbookRunId: string, playbookRun?: PlaybookRun) {
-    const title = intl.formatMessage({id: 'playbooks.playbook_run.title', defaultMessage: 'Playbook run'});
+    const title = intl.formatMessage({id: 'playbooks.playbook_run.title', defaultMessage: 'Playbook checklist'});
     goToScreen(Screens.PLAYBOOK_RUN, title, {playbookRunId, playbookRun}, {});
 }
 
@@ -47,7 +47,7 @@ export async function goToPlaybookRunWithChannelSwitch(intl: IntlShape, serverUr
     }
 
     // Then navigate to the playbook run
-    const title = intl.formatMessage({id: 'playbooks.playbook_run.title', defaultMessage: 'Playbook run'});
+    const title = intl.formatMessage({id: 'playbooks.playbook_run.title', defaultMessage: 'Playbook checklist'});
     goToScreen(Screens.PLAYBOOK_RUN, title, {playbookRunId: playbookRun.id}, {});
 }
 
@@ -82,6 +82,47 @@ export async function goToEditCommand(
         updateCommand,
         channelId,
     }, options);
+}
+
+export async function goToRenameChecklist(
+    intl: IntlShape,
+    theme: Theme,
+    runName: string,
+    currentTitle: string,
+    onSave: (newTitle: string) => void,
+) {
+    const title = intl.formatMessage({id: 'playbooks.checklist.rename.title', defaultMessage: 'Rename checklist'});
+    const options = getSubtitleOptions(theme, runName);
+    goToScreen(Screens.PLAYBOOK_RENAME_CHECKLIST, title, {
+        currentTitle,
+        onSave,
+    }, options);
+}
+
+export async function goToAddChecklistItem(
+    intl: IntlShape,
+    theme: Theme,
+    runName: string,
+    onSave: (title: string) => void,
+) {
+    const title = intl.formatMessage({id: 'playbooks.checklist_item.add.title', defaultMessage: 'New Task'});
+    const options = getSubtitleOptions(theme, runName);
+    goToScreen(Screens.PLAYBOOK_ADD_CHECKLIST_ITEM, title, {
+        onSave,
+    }, options);
+}
+
+export async function goToRenamePlaybookRun(
+    intl: IntlShape,
+    theme: Theme,
+    currentTitle: string,
+    onSave: (newTitle: string) => void,
+) {
+    const title = intl.formatMessage({id: 'playbooks.playbook_run.rename.title', defaultMessage: 'Rename playbook run'});
+    goToScreen(Screens.PLAYBOOK_RENAME_RUN, title, {
+        currentTitle,
+        onSave,
+    });
 }
 
 export async function goToSelectUser(
@@ -122,7 +163,8 @@ export async function goToSelectPlaybook(
     theme: Theme,
     channelId?: string,
 ) {
-    const title = intl.formatMessage({id: 'playbooks.select_playbook.title', defaultMessage: 'Start a run'});
+
+    const title = intl.formatMessage({id: 'playbooks.select_playbook.title', defaultMessage: 'New'});
     goToScreen(Screens.PLAYBOOKS_SELECT_PLAYBOOK, title, {channelId}, {
         topBar: {
             subtitle: {
@@ -134,7 +176,7 @@ export async function goToSelectPlaybook(
 }
 
 export async function goToStartARun(intl: IntlShape, theme: Theme, playbook: Playbook, onRunCreated: (run: PlaybookRun) => void, channelId?: string) {
-    const title = intl.formatMessage({id: 'playbooks.start_a_run.title', defaultMessage: 'Start a run'});
+    const title = intl.formatMessage({id: 'playbooks.start_a_run.title', defaultMessage: 'New'});
     const subtitle = playbook.title;
     goToScreen(Screens.PLAYBOOKS_START_A_RUN, title, {playbook, onRunCreated, channelId}, {
         topBar: {
