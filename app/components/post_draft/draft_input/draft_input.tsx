@@ -136,6 +136,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             gap: 12,
             backgroundColor: theme.centerChannelBg,
         },
+        hiddenAction: {
+            width: 0,
+            height: 0,
+            opacity: 0,
+            overflow: 'hidden',
+        },
         cameraButton: {
             width: 40,
             height: 40,
@@ -396,13 +402,15 @@ function DraftInput({
                     {/* Plus Actions Row - Shows below text field when expanded */}
                     {showPlusActions && (
                         <View style={style.plusActionsContainer}>
-                            <InputQuickAction
-                                testID={`${testID}.at_input_action`}
-                                disabled={value[value.length - 1] === '@'}
-                                inputType='at'
-                                updateValue={updateValue}
-                                focus={focus}
-                            />
+                            <View style={style.hiddenAction}>
+                                <InputQuickAction
+                                    testID={`${testID}.at_input_action`}
+                                    disabled={value[value.length - 1] === '@'}
+                                    inputType='at'
+                                    updateValue={updateValue}
+                                    focus={focus}
+                                />
+                            </View>
                             {canShowSlashCommands && (
                                 <InputQuickAction
                                     testID={`${testID}.slash_input_action`}
@@ -412,14 +420,16 @@ function DraftInput({
                                     focus={focus}
                                 />
                             )}
-                            <EmojiQuickAction
-                                testID={`${testID}.emoji_action`}
-                                value={value}
-                                updateValue={updateValue}
-                                cursorPosition={cursorPosition}
-                                updateCursorPosition={updateCursorPosition}
-                                focus={focus}
-                            />
+                            <View style={style.hiddenAction}>
+                                <EmojiQuickAction
+                                    testID={`${testID}.emoji_action`}
+                                    value={value}
+                                    updateValue={updateValue}
+                                    cursorPosition={cursorPosition}
+                                    updateCursorPosition={updateCursorPosition}
+                                    focus={focus}
+                                />
+                            </View>
                             <FileQuickAction
                                 testID={`${testID}.file_action`}
                                 disabled={!canUploadFiles}
@@ -436,14 +446,16 @@ function DraftInput({
                                 maxFilesReached={files.length >= 10}
                                 onUploadFiles={addFiles}
                             />
-                            <CameraQuickAction
-                                testID={`${testID}.camera_action`}
-                                disabled={!canUploadFiles}
-                                fileCount={files.length}
-                                maxFileCount={10}
-                                maxFilesReached={files.length >= 10}
-                                onUploadFiles={addFiles}
-                            />
+                            <View style={style.hiddenAction}>
+                                <CameraQuickAction
+                                    testID={`${testID}.camera_action`}
+                                    disabled={!canUploadFiles}
+                                    fileCount={files.length}
+                                    maxFileCount={10}
+                                    maxFilesReached={files.length >= 10}
+                                    onUploadFiles={addFiles}
+                                />
+                            </View>
                             {canShowPostPriority && (
                                 <PostPriorityAction
                                     testID={`${testID}.post_priority_action`}
