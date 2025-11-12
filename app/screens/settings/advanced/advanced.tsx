@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, TouchableOpacity} from 'react-native';
+import {Alert, StyleSheet, TouchableOpacity, View} from 'react-native';
 
 import SettingContainer from '@components/settings/container';
 import SettingOption from '@components/settings/option';
@@ -105,20 +105,30 @@ const AdvancedSettings = ({
                 />
                 <SettingSeparator/>
             </TouchableOpacity>
-            {isDevMode && (
-                <TouchableOpacity
-                    onPress={onPressComponentLibrary}
-                >
-                    <SettingOption
-                        label={intl.formatMessage({id: 'settings.advanced.component_library', defaultMessage: 'Component library'})}
-                        testID='advanced_settings.component_library.option'
-                        type='none'
-                    />
-                    <SettingSeparator/>
-                </TouchableOpacity>
-            )}
+            <View style={styles.hidden}>
+                {isDevMode && (
+                    <TouchableOpacity
+                        onPress={onPressComponentLibrary}
+                    >
+                        <SettingOption
+                            label={intl.formatMessage({id: 'settings.advanced.component_library', defaultMessage: 'Component library'})}
+                            testID='advanced_settings.component_library.option'
+                            type='none'
+                        />
+                        <SettingSeparator/>
+                    </TouchableOpacity>
+                )}
+            </View>
         </SettingContainer>
     );
 };
+
+const styles = StyleSheet.create({
+    hidden: {
+        height: 0,
+        overflow: 'hidden',
+        opacity: 0,
+    },
+});
 
 export default AdvancedSettings;

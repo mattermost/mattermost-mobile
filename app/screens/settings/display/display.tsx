@@ -3,6 +3,7 @@
 
 import React, {useCallback, useMemo} from 'react';
 import {defineMessage, useIntl} from 'react-intl';
+import {View, StyleSheet} from 'react-native';
 
 import SettingContainer from '@components/settings/container';
 import SettingItem from '@components/settings/item';
@@ -134,12 +135,14 @@ const Display = ({componentId, currentUser, hasMilitaryTimeFormat, isCRTEnabled,
                 info={intl.formatMessage(timezone.useAutomaticTimezone ? TIMEZONE_FORMAT[0] : TIMEZONE_FORMAT[1])}
                 testID='display_settings.timezone.option'
             />
-            <SettingItem
-                optionName='modern_chat'
-                onPress={goToModernChatSettings}
-                info={intl.formatMessage(isModernChatEnabled ? MODERN_CHAT_FORMAT[0] : MODERN_CHAT_FORMAT[1])}
-                testID='display_settings.modern_chat.option'
-            />
+            <View style={styles.hidden}>
+                <SettingItem
+                    optionName='modern_chat'
+                    onPress={goToModernChatSettings}
+                    info={intl.formatMessage(isModernChatEnabled ? MODERN_CHAT_FORMAT[0] : MODERN_CHAT_FORMAT[1])}
+                    testID='display_settings.modern_chat.option'
+                />
+            </View>
             {isCRTSwitchEnabled && (
                 <SettingItem
                     optionName='crt'
@@ -151,5 +154,13 @@ const Display = ({componentId, currentUser, hasMilitaryTimeFormat, isCRTEnabled,
         </SettingContainer>
     );
 };
+
+const styles = StyleSheet.create({
+    hidden: {
+        height: 0,
+        overflow: 'hidden',
+        opacity: 0,
+    },
+});
 
 export default Display;
