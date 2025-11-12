@@ -1083,7 +1083,7 @@
   "playbooks.runs.finished.description": "When a checklist in this channel finishes, you’ll see it here.",
   "playbooks.runs.finished.title": "Nothing finished",
   "playbooks.runs.in_progress.description": "When a checklist starts in this channel, you’ll see it here.",
-  "playbooks.runs.in_progress.title": "No in progress checklists",
+  "playbooks.runs.in_progress.title": "Nothing in progress",
   "playbooks.runs.show_more": "Show More",
   "playbooks.runs.start_a_new_run": "New",
   "playbooks.select_date.title": "Due date",
