@@ -38,6 +38,9 @@ export const HOME_PADDING = {
     paddingRight: 20,
 };
 
+// Message bubble max width as percentage of screen/layout width
+export const MESSAGE_BUBBLE_MAX_WIDTH_PERCENT = 0.80;
+
 export default {
     BOTTOM_TAB_HEIGHT,
     BOTTOM_TAB_ICON_SIZE,
@@ -55,5 +58,6 @@ export default {
     LARGE_HEADER_TITLE_HEIGHT,
     SUBTITLE_HEIGHT,
     KEYBOARD_TRACKING_OFFSET,
+    MESSAGE_BUBBLE_MAX_WIDTH_PERCENT,
 };
 

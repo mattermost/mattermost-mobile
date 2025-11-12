@@ -143,12 +143,10 @@ const withDaakiaPost = withObservables(
 
         // Use channelType from props if available (passed from channel screen), otherwise query it
         // This avoids querying the channel for every post when we're in a channel view
-        const isDMChannel = channelType !== undefined
-            ? of$(channelType === 'D')
-            : observeChannel(database, post.channelId).pipe(
-                switchMap((channel) => of$(channel?.type === 'D')),
-                distinctUntilChanged(),
-            );
+        const isDMChannel = channelType === undefined ? observeChannel(database, post.channelId).pipe(
+            switchMap((channel) => of$(channel?.type === 'D')),
+            distinctUntilChanged(),
+        ) : of$(channelType === 'D');
 
         return {
             canDelete,

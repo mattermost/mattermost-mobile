@@ -14,6 +14,7 @@ import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';
 import {POST_TIME_TO_FAIL} from '@constants/post';
 import * as Screens from '@constants/screens';
+import {MESSAGE_BUBBLE_MAX_WIDTH_PERCENT} from '@constants/view';
 import {useHideExtraKeyboardIfNeeded} from '@context/extra_keyboard';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -118,7 +119,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             borderTopRightRadius: 10,
             borderBottomRightRadius: 10,
             borderBottomLeftRadius: 2,
-            maxWidth: '84%',
+            maxWidth: `${MESSAGE_BUBBLE_MAX_WIDTH_PERCENT * 100}%`,
             alignSelf: 'flex-start',
         },
     };
@@ -412,10 +413,10 @@ const DaakiaPost = ({
         // System posts use the same bubble style as "other posts" (left-side)
         body = (
             <View style={styles.systemBubble}>
-                <SystemMessage
-                    location={location}
-                    post={post}
-                />
+            <SystemMessage
+                location={location}
+                post={post}
+            />
             </View>
         );
     } else if (isCallsPost && !hasBeenDeleted) {

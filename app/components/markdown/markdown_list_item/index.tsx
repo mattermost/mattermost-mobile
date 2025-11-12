@@ -18,13 +18,17 @@ const style = StyleSheet.create({
     container: {
         flexDirection: 'row',
         alignItems: 'flex-start',
+        width: '90%', // Ensure container takes full width
     },
     bullet: {
         alignItems: 'flex-end',
         marginRight: 5,
+
+        flexShrink: 0, // Prevent bullet from shrinking
     },
     contents: {
         flex: 1,
+        minWidth: 0, // Critical: allows text to wrap properly in flex layouts
     },
 });
 

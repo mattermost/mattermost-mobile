@@ -8,6 +8,7 @@ import Animated from 'react-native-reanimated';
 import Markdown from '@components/markdown';
 import {isChannelMentions} from '@components/markdown/channel_mention/channel_mention';
 import {SEARCH} from '@constants/screens';
+import {MESSAGE_BUBBLE_MAX_WIDTH_PERCENT} from '@constants/view';
 import {useShowMoreAnimatedStyle} from '@hooks/show_more';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -120,7 +121,7 @@ const Message = ({currentUser, isHighlightWithoutNotificationLicensed, highlight
                             style={[
                                 style.bubble,
                                 isMyPost ? style.bubbleRight : style.bubbleLeft,
-                                {maxWidth: Math.round(((layoutWidth || dimensions.width) * 0.84))},
+                                {maxWidth: Math.round(((layoutWidth || dimensions.width) * MESSAGE_BUBBLE_MAX_WIDTH_PERCENT))},
                                 {alignSelf: isMyPost ? 'flex-end' : 'flex-start'},
                             ]}
                         >
