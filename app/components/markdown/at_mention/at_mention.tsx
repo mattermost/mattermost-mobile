@@ -208,29 +208,13 @@ const AtMention = ({
     }
 
     if (isMention) {
-        // Only apply underline, inherit text color from parent (same as post text)
+        // Apply underline and yellow color for all mentions (same style for all)
         mentionTextStyle.push(mentionStyle);
-        // Ensure color matches the base text color (no special mention color)
-        if (styleText) {
-            const flattenedStyle = StyleSheet.flatten(styleText);
-            if (flattenedStyle?.color) {
-                mentionTextStyle.push({color: flattenedStyle.color});
-            }
-        }
-
-        // COMMENTED OUT: Yellow color for all mentions (same style for all)
-        // mentionTextStyle.push({
-        //     color: '#FFD700', // Yellow color for all mentions
-        // });
+        // Use yellow color for all mentions (highlighted or not)
+        mentionTextStyle.push({
+            color: '#FFD700', // Yellow color for all mentions
+        });
     }
-
-    // COMMENTED OUT: Add background color when current user is mentioned (highlighted)
-    // if (highlighted) {
-    //     mentionTextStyle.push({
-    //         backgroundColor: theme.mentionHighlightBg,
-    //         color: theme.mentionHighlightLink,
-    //     });
-    // }
 
     return (
         <Text

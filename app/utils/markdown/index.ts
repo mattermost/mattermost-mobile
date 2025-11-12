@@ -129,17 +129,10 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme: Theme) => {
             fontFamily: 'OpenSans-Bold',
         },
         mention_highlight: {
-            color: theme.mentionHighlightLink,
-
-            // COMMENTED OUT: Yellow color for all mentions
-            // color: '#FFD700', // Yellow color for all mentions (same as AtMention component)
+            color: '#FFD700', // Yellow color for all mentions (same as AtMention component)
         },
         highlight_without_notification: {
-            backgroundColor: theme.mentionHighlightBg,
-            color: theme.mentionHighlightLink,
-
-            // COMMENTED OUT: Yellow color, no background
-            // color: '#FFD700', // Yellow color, no background
+            color: '#FFD700', // Yellow color, no background
         },
         search_highlight: {
             backgroundColor: theme.mentionHighlightBg,

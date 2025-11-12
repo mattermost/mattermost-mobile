@@ -17,7 +17,7 @@ import {useTheme} from '@context/theme';
 import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {observeCurrentUserId} from '@queries/servers/system';
-import {observeUser} from '@queries/servers/user';
+import {observeUser, queryUsersByUsername} from '@queries/servers/user';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getFormattedTime} from '@utils/time';
 import {getDeviceTimezone} from '@utils/timezone';
@@ -41,6 +41,7 @@ type Props = {
     teammateDisplayNameSetting: string;
     hasCall: boolean;
     teammateId?: string;
+    mentionUsersMap?: Map<string, UserModel>;
 };
 
 const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -144,7 +145,21 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const DaakiaChannelItem = ({channel, isUnread, onPress, currentUserId, lastPost, isMilitaryTime, lastPostSender, locale, teammateDisplayNameSetting, hasCall, teammateId}: Props) => {
+// Extract mentions from message text (e.g., "@username" -> "username")
+const extractMentions = (text: string): string[] => {
+    if (!text) {
+        return [];
+    }
+    const mentionPattern = /@([a-z0-9.\-_]+)/gi;
+    const matches = text.matchAll(mentionPattern);
+    const usernames = new Set<string>();
+    for (const match of matches) {
+        usernames.add(match[1].toLowerCase());
+    }
+    return Array.from(usernames);
+};
+
+const DaakiaChannelItem = ({channel, isUnread, onPress, currentUserId, lastPost, isMilitaryTime, lastPostSender, locale, teammateDisplayNameSetting, hasCall, teammateId, mentionUsersMap}: Props) => {
     const theme = useTheme();
     const styles = getStyles(theme);
 
@@ -171,6 +186,25 @@ const DaakiaChannelItem = ({channel, isUnread, onPress, currentUserId, lastPost,
         if (lastPost.message) {
             // Regular text message
             messageText = lastPost.message.replace(/\n/g, ' ').trim();
+
+            // Replace @username mentions with display names
+            if (mentionUsersMap && mentionUsersMap.size > 0) {
+                // Process mentions in reverse order to preserve indices
+                const mentionPattern = /@([a-z0-9.\-_]+)/gi;
+                const matches = Array.from(messageText.matchAll(mentionPattern));
+                matches.reverse();
+
+                for (const match of matches) {
+                    const username = match[1].toLowerCase();
+                    const user = mentionUsersMap.get(username);
+                    if (user) {
+                        const mentionDisplayName = displayUsername(user, locale, teammateDisplayNameSetting);
+                        const startIndex = match.index || 0;
+                        const endIndex = startIndex + match[0].length;
+                        messageText = messageText.substring(0, startIndex) + `@${mentionDisplayName}` + messageText.substring(endIndex);
+                    }
+                }
+            }
         } else if (lastPost.type && lastPost.type.startsWith('system_')) {
             // Only show "System message" if there's no message text
             messageText = 'System message';
@@ -306,12 +340,35 @@ const enhanced = withObservables(['lastPost', 'channel'], ({database, lastPost, 
         }),
     ) : of$(undefined);
 
+    // Extract mentions from last post message and query users
+    const getMentionUsersMap = (post: PostModel | undefined) => {
+        if (!post?.message) {
+            return of$(new Map<string, UserModel>());
+        }
+        const mentions = extractMentions(post.message);
+        if (mentions.length === 0) {
+            return of$(new Map<string, UserModel>());
+        }
+        return queryUsersByUsername(database, mentions).observe().pipe(
+            map((users) => {
+                const usersMap = new Map<string, UserModel>();
+                for (const user of users) {
+                    usersMap.set(user.username.toLowerCase(), user);
+                }
+                return usersMap;
+            }),
+        );
+    };
+
+    const mentionUsersMap = lastPost ? getMentionUsersMap(lastPost) : of$(new Map<string, UserModel>());
+
     return {
         isMilitaryTime,
         lastPostSender,
         teammateDisplayNameSetting,
         hasCall,
         teammateId,
+        mentionUsersMap,
     };
 });
 
