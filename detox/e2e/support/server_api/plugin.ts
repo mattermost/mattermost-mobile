@@ -50,7 +50,7 @@ export const apiGetLatestPluginVersion = async (repo: string): Promise<string> =
         return tagName.startsWith('v') ? tagName.substring(1) : tagName;
     } catch (err) {
         // Fallback to hardcoded version if API fails
-        return '0.10.2';
+        return '0.10.3';
     }
 };
 
@@ -310,7 +310,7 @@ export const apiUploadAndEnablePlugin = async (options: {
                 });
 
                 if (verifyStatus.isActive) {
-                    if (version && verifyStatus.isVersionMatch) {
+                    if (!version || (version && verifyStatus.isVersionMatch)) {
                         return {plugin: verifyStatus.plugin, message: 'Plugin was inactive with correct version, now enabled'};
                     }
 
