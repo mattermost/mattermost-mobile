@@ -147,6 +147,18 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
             ServiceSettings: {EnableGifPicker: true},
             FileSettings: {EnablePublicLink: true},
             FeatureFlags: {InteractiveDialogAppsForm: true},
+            PluginSettings: {
+                Enable: true,
+                AllowInsecureDownloadUrl: true,
+                EnableUploads: true,
+                PluginStates: {
+                    'com.mattermost.demo-plugin': {'Enable': true},
+                },
+                Plugins: {
+                    'com.mattermost.demo-plugin': {
+                        'enablementionuser': false,
+                    },
+                }},
         });
 
         const latestVersion = await Plugin.apiGetLatestPluginVersion(DemoPlugin.repo);
