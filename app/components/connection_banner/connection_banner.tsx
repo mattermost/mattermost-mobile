@@ -19,8 +19,11 @@ import {toMilliseconds} from '@utils/datetime';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import type {NetworkPerformanceState} from '@managers/network_performance_manager';
+
 type Props = {
     websocketState: WebsocketConnectedState;
+    networkPerformanceState: NetworkPerformanceState;
 }
 
 const getStyle = makeStyleSheetFromTheme((theme: Theme) => {
@@ -76,6 +79,7 @@ const TIME_TO_CLOSE = toMilliseconds({seconds: 1});
 
 const ConnectionBanner = ({
     websocketState,
+    networkPerformanceState,
 }: Props) => {
     const intl = useIntl();
     const closeTimeout = useRef<NodeJS.Timeout | null>();
@@ -159,6 +163,8 @@ const ConnectionBanner = ({
     let text;
     if (isConnected) {
         text = intl.formatMessage({id: 'connection_banner.connected', defaultMessage: 'Connection restored'});
+    } else if (networkPerformanceState === 'slow') {
+        text = intl.formatMessage({id: 'connection_banner.slow', defaultMessage: 'Limited network connection'});
     } else if (websocketState === 'connecting') {
         text = intl.formatMessage({id: 'connection_banner.connecting', defaultMessage: 'Connecting...'});
     } else if (netInfo.isInternetReachable) {
