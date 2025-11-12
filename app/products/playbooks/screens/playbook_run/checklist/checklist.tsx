@@ -74,7 +74,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         textDecorationLine: 'line-through',
     },
     titleContainer: {
-        flexShrink: 1,
+        flex: 1,
+    },
+    progressAndEditContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        marginLeft: 'auto',
     },
     addButton: {
         flexDirection: 'row',
@@ -194,13 +200,15 @@ const Checklist = ({
                             {checklist.title}
                         </Text>
                     </View>
-                    <Text style={styles.progressText}>{`${completed} / ${totalNumber} done`}</Text>
-                    <TouchableOpacity onPress={handleEditPress}>
-                        <CompassIcon
-                            name='pencil-outline'
-                            style={styles.editIcon}
-                        />
-                    </TouchableOpacity>
+                    <View style={styles.progressAndEditContainer}>
+                        <Text style={styles.progressText}>{`${completed} / ${totalNumber} done`}</Text>
+                        <TouchableOpacity onPress={handleEditPress}>
+                            <CompassIcon
+                                name='pencil-outline'
+                                style={styles.editIcon}
+                            />
+                        </TouchableOpacity>
+                    </View>
                 </View>
                 <ProgressBar
                     progress={progress}
