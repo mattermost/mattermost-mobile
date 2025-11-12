@@ -6,6 +6,7 @@ import {useManagedConfig} from '@mattermost/react-native-emm';
 import React, {useMemo} from 'react';
 import {ScrollView} from 'react-native';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import {CopyPermalinkOption, FollowThreadOption, ReplyOption, SaveOption} from '@components/common_post_options';
 import CopyTextOption from '@components/copy_text_option';
 import {ITEM_HEIGHT} from '@components/option_item';
@@ -23,6 +24,7 @@ import AppBindingsPostOptions from './options/app_bindings_post_option';
 import DeletePostOption from './options/delete_post_option';
 import EditOption from './options/edit_option';
 import MarkAsUnreadOption from './options/mark_unread_option';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import PinChannelOption from './options/pin_channel_option';
 import ReactionBar from './reaction_bar';
 
@@ -50,7 +52,9 @@ type PostOptionsProps = {
 };
 const PostOptions = ({
     canAddReaction, canDelete, canEdit,
-    canMarkAsUnread, canPin, canReply,
+    canMarkAsUnread,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    canPin, canReply,
     combinedPost, componentId, isSaved,
     sourceScreen, post, thread, bindings, serverUrl,
 }: PostOptionsProps) => {
@@ -76,8 +80,15 @@ const PostOptions = ({
     const snapPoints = useMemo(() => {
         const items: Array<string | number> = [1];
         const optionsCount = [
-            canCopyPermalink, canCopyText, canDelete, canEdit,
-            canMarkAsUnread, canPin, canReply, !isSystemPost, shouldRenderFollow,
+
+            // COMMENTED OUT: Hide copy link option
+            // canCopyPermalink,
+            canCopyText, canDelete, canEdit,
+            canMarkAsUnread,
+
+            // COMMENTED OUT: Hide pin option
+            // canPin,
+            canReply, !isSystemPost, shouldRenderFollow,
         ].reduce((acc, v) => {
             return v ? acc + 1 : acc;
         }, 0) + (shouldShowBindings ? 0.5 : 0);
@@ -90,9 +101,17 @@ const PostOptions = ({
 
         return items;
     }, [
-        canAddReaction, canCopyPermalink, canCopyText,
+        canAddReaction,
+
+        // COMMENTED OUT: Hide copy link option
+        // canCopyPermalink,
+        canCopyText,
         canDelete, canEdit, shouldRenderFollow, shouldShowBindings,
-        canMarkAsUnread, canPin, canReply, isSystemPost,
+        canMarkAsUnread,
+
+        // COMMENTED OUT: Hide pin option
+        // canPin,
+        canReply, isSystemPost,
     ]);
 
     const renderContent = () => {
@@ -127,13 +146,14 @@ const PostOptions = ({
                     sourceScreen={sourceScreen}
                 />
                 }
-                {canCopyPermalink &&
+                {/* COMMENTED OUT: Hide copy link option */}
+                {/* {canCopyPermalink &&
                 <CopyPermalinkOption
                     bottomSheetId={Screens.POST_OPTIONS}
                     post={post}
                     sourceScreen={sourceScreen}
                 />
-                }
+                } */}
                 {!isSystemPost &&
                 <SaveOption
                     bottomSheetId={Screens.POST_OPTIONS}
@@ -147,13 +167,14 @@ const PostOptions = ({
                     postMessage={post.messageSource || post.message}
                     sourceScreen={sourceScreen}
                 />}
-                {canPin &&
+                {/* COMMENTED OUT: Hide pin to channel option */}
+                {/* {canPin &&
                 <PinChannelOption
                     bottomSheetId={Screens.POST_OPTIONS}
                     isPostPinned={post.isPinned}
                     postId={post.id}
                 />
-                }
+                } */}
                 {canEdit &&
                 <EditOption
                     bottomSheetId={Screens.POST_OPTIONS}
