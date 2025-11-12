@@ -19,6 +19,7 @@ type MarkdownLinkProps = {
     children: ReactElement;
     experimentalNormalizeMarkdownLinks: string;
     href: string;
+    isMyPost?: boolean;
     siteURL: string;
     onLinkLongPress?: (url?: string) => void;
     theme: Theme;
@@ -54,7 +55,7 @@ const parseLinkLiteral = (literal: string) => {
     return parsed.href;
 };
 
-const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteURL, onLinkLongPress, theme}: MarkdownLinkProps) => {
+const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, isMyPost, siteURL, onLinkLongPress, theme}: MarkdownLinkProps) => {
     const intl = useIntl();
     const managedConfig = useManagedConfig<ManagedConfig>();
     const serverUrl = useServerUrl();
@@ -141,6 +142,7 @@ const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteU
         <Text
             onPress={handlePress}
             onLongPress={handleLongPress}
+            style={isMyPost ? {color: theme.buttonColor} : undefined}
             testID='markdown_link'
         >
             {renderedChildren}
