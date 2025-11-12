@@ -3,7 +3,7 @@
 
 import React, {type ReactNode, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, Platform, type StyleProp, View, type ViewStyle, TouchableHighlight} from 'react-native';
+import {Platform, type StyleProp, View, type ViewStyle, TouchableHighlight} from 'react-native';
 
 import {removePost} from '@actions/local/post';
 import {showPermalink} from '@actions/remote/permalink';
@@ -14,6 +14,7 @@ import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';
 import {POST_TIME_TO_FAIL} from '@constants/post';
 import * as Screens from '@constants/screens';
+import {useKeyboardAnimationContext} from '@context/keyboard_animation';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -150,6 +151,7 @@ const Post = ({
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const isTablet = useIsTablet();
+    const {blurAndDismissKeyboard} = useKeyboardAnimationContext();
     const styles = getStyleSheet(theme);
     const isAutoResponder = fromAutoResponder(post);
     const isPendingOrFailed = isPostPendingOrFailed(post);
@@ -176,7 +178,7 @@ const Post = ({
         return false;
     }, [customEmojiNames, post.message]);
 
-    const handlePostPress = useCallback(() => {
+    const handlePostPress = useCallback(async () => {
         if ([Screens.SAVED_MESSAGES, Screens.MENTIONS, Screens.SEARCH, Screens.PINNED_MESSAGES].includes(location)) {
             showPermalink(serverUrl, '', post.id);
             return;
@@ -187,6 +189,8 @@ const Post = ({
             removePost(serverUrl, post);
         } else if (isValidSystemMessage && !hasBeenDeleted && !isPendingOrFailed) {
             if ([Screens.CHANNEL, Screens.PERMALINK].includes(location)) {
+                await blurAndDismissKeyboard();
+
                 const postRootId = post.rootId || post.id;
                 fetchAndSwitchToThread(serverUrl, postRootId);
             }
@@ -196,7 +200,7 @@ const Post = ({
             pressDetected.current = false;
         }, 300);
     }, [
-        hasBeenDeleted, isAutoResponder, isEphemeral,
+        blurAndDismissKeyboard, hasBeenDeleted, isAutoResponder, isEphemeral,
         isPendingOrFailed, isSystemPost, location, serverUrl, post,
     ]);
 
@@ -208,7 +212,7 @@ const Post = ({
         }
     }, [handlePostPress, post]);
 
-    const showPostOptions = useCallback(() => {
+    const showPostOptions = useCallback(async () => {
         if (!post) {
             return;
         }
@@ -221,7 +225,7 @@ const Post = ({
             return;
         }
 
-        Keyboard.dismiss();
+        await blurAndDismissKeyboard();
         const passProps = {sourceScreen: location, post, showAddReaction, serverUrl};
         const title = isTablet ? intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}) : '';
 
@@ -232,11 +236,7 @@ const Post = ({
             title,
             props: passProps,
         });
-    }, [
-        canDelete, hasBeenDeleted, intl,
-        isEphemeral, isPendingOrFailed, isTablet, isSystemPost,
-        location, post, serverUrl, showAddReaction, theme,
-    ]);
+    }, [post, isSystemPost, canDelete, hasBeenDeleted, isPendingOrFailed, isEphemeral, blurAndDismissKeyboard, location, showAddReaction, serverUrl, isTablet, intl, theme]);
 
     const [, rerender] = useState(false);
     useEffect(() => {

@@ -1,18 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useRef, useState} from 'react';
+import {useCallback, useRef, useState} from 'react';
 import {FlatList} from 'react-native';
+import {KeyboardController} from 'react-native-keyboard-controller';
 import {useAnimatedStyle} from 'react-native-reanimated';
 
 import {useKeyboardAnimation} from './keyboardAnimation';
 import {useKeyboardScrollAdjustment} from './useKeyboardScrollAdjustment';
 
+import type {PasteInputRef} from '@mattermost/react-native-paste-input';
 import type PostModel from '@typings/database/models/servers/post';
 
 export const useKeyboardAwarePostDraft = () => {
     const [postInputContainerHeight, setPostInputContainerHeight] = useState(0);
     const listRef = useRef<FlatList<string | PostModel>>(null);
+    const inputRef = useRef<PasteInputRef>();
 
     const {
         height,
@@ -31,9 +34,26 @@ export const useKeyboardAwarePostDraft = () => {
         [],
     );
 
+    const blurInput = useCallback(() => {
+        inputRef.current?.blur();
+    }, []);
+
+    const focusInput = useCallback(() => {
+        inputRef.current?.focus();
+    }, []);
+
+    const blurAndDismissKeyboard = useCallback(async () => {
+        inset.value = 0;
+        offset.value = 0;
+        height.value = 0;
+        inputRef.current?.blur();
+        await KeyboardController.dismiss();
+    }, [height, inset, offset]);
+
     return {
         height,
         listRef,
+        inputRef,
         contentInset: inset,
         onScroll,
         postInputContainerHeight,
@@ -42,6 +62,9 @@ export const useKeyboardAwarePostDraft = () => {
         keyboardHeight: height,
         offset,
         scroll,
+        blurInput,
+        focusInput,
+        blurAndDismissKeyboard,
     };
 };
 

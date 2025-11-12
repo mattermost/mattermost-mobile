@@ -52,6 +52,7 @@ export const KeyboardAwarePostDraftContainer = ({
     const {
         height: keyboardCurrentHeight,
         listRef,
+        inputRef,
         contentInset,
         onScroll,
         postInputContainerHeight,
@@ -60,13 +61,16 @@ export const KeyboardAwarePostDraftContainer = ({
         keyboardHeight,
         offset,
         scroll,
+        blurInput,
+        focusInput,
+        blurAndDismissKeyboard,
     } = useKeyboardAwarePostDraft();
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         setPostInputContainerHeight(e.nativeEvent.layout.height);
     }, [setPostInputContainerHeight]);
 
-    // Prepare context value with all keyboard animation values
+    // Prepare context value with all keyboard animation values and input control functions
     const keyboardAnimationValue = {
         height: keyboardCurrentHeight,
         inset: contentInset,
@@ -75,6 +79,10 @@ export const KeyboardAwarePostDraftContainer = ({
         scroll,
         onScroll,
         postInputContainerHeight,
+        inputRef,
+        blurInput,
+        focusInput,
+        blurAndDismissKeyboard,
     };
 
     return (

@@ -3,6 +3,7 @@
 
 import React, {createContext, useContext, type ReactNode} from 'react';
 
+import type {PasteInputRef} from '@mattermost/react-native-paste-input';
 import type {SharedValue} from 'react-native-reanimated';
 
 interface KeyboardAnimationContextType {
@@ -13,6 +14,10 @@ interface KeyboardAnimationContextType {
     scroll: SharedValue<number>;
     onScroll: (event: unknown) => void;
     postInputContainerHeight: number;
+    inputRef: React.MutableRefObject<PasteInputRef | undefined>;
+    blurInput: () => void;
+    focusInput: () => void;
+    blurAndDismissKeyboard: () => Promise<void>;
 }
 
 const KeyboardAnimationContext = createContext<KeyboardAnimationContextType | null>(null);
