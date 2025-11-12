@@ -78,7 +78,7 @@ export const apiDisableNonPrepackagedPlugins = async (baseUrl: string): Promise<
         return;
     }
     plugins.active.forEach(async (plugin: any) => {
-        if (!prepackagedPlugins.has(plugin.id)) {
+        if (plugin.id !== DemoPlugin.id && !prepackagedPlugins.has(plugin.id)) {
             await apiDisablePluginById(baseUrl, plugin.id);
         }
     });
