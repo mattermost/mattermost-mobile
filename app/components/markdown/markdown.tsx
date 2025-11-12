@@ -61,6 +61,7 @@ type MarkdownProps = {
     highlightKeys?: HighlightWithoutNotificationKey[];
     imagesMetadata?: Record<string, PostImage | undefined>;
     isEdited?: boolean;
+    isMyPost?: boolean;
     isReplyPost?: boolean;
     isSearchResult?: boolean;
     layoutHeight?: number;
@@ -158,6 +159,7 @@ const Markdown = ({
     maxNodes,
     imagesMetadata,
     isEdited,
+    isMyPost,
     isReplyPost,
     isSearchResult,
     layoutHeight,
@@ -227,6 +229,7 @@ const Markdown = ({
                 disableAtChannelMentionHighlight={disableAtChannelMentionHighlight}
                 mentionStyle={[textStyles.mention, {fontSize, fontWeight, fontFamily}]}
                 textStyle={[computedStyles, style.atMentionOpacity]}
+                isMyPost={isMyPost}
                 isSearchResult={isSearchResult}
                 location={location}
                 mentionName={mentionName}
@@ -234,7 +237,7 @@ const Markdown = ({
                 theme={theme}
             />
         );
-    }, [baseTextStyle, channelId, disableAtChannelMentionHighlight, disableAtMentions, isSearchResult, location, mentionKeys, renderText, style.atMentionOpacity, textStyles, theme]);
+    }, [baseTextStyle, channelId, disableAtChannelMentionHighlight, disableAtMentions, isMyPost, isSearchResult, location, mentionKeys, renderText, style.atMentionOpacity, textStyles, theme]);
 
     const renderBlockQuote = useCallback(({children, ...otherProps}: any) => {
         if (disableBlockQuote) {

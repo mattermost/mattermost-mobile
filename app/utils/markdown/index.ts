@@ -119,7 +119,8 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme: Theme) => {
         },
         mention: {
             fontFamily: 'OpenSans',
-            textDecorationLine: 'underline',
+
+            // textDecorationLine: 'underline', // COMMENTED OUT: Remove underline from mentions
         },
         error: {
             fontFamily: 'OpenSans',
@@ -129,10 +130,16 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme: Theme) => {
             fontFamily: 'OpenSans-Bold',
         },
         mention_highlight: {
-            color: '#FFD700', // Yellow color for all mentions (same as AtMention component)
+
+            // Default to left side color (other posts) - #CC9900 (Darker yellow / Golden)
+            // Note: AtMention component uses dynamic colors based on isMyPost prop
+            color: '#CC9900',
         },
         highlight_without_notification: {
-            color: '#FFD700', // Yellow color, no background
+
+            // Default to left side color (other posts) - #CC9900 (Darker yellow / Golden)
+            // Note: AtMention component uses dynamic colors based on isMyPost prop
+            color: '#CC9900',
         },
         search_highlight: {
             backgroundColor: theme.mentionHighlightBg,

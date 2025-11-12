@@ -131,6 +131,7 @@ const Message = ({currentUser, isHighlightWithoutNotificationLicensed, highlight
                                 channelMentions={channelMentions}
                                 imagesMetadata={post.metadata?.images}
                                 isEdited={isEdited}
+                                isMyPost={isMyPost}
                                 isReplyPost={isReplyPost}
                                 isSearchResult={location === SEARCH}
                                 layoutWidth={layoutWidth}
