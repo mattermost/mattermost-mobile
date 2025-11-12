@@ -12,8 +12,14 @@ import {useKeyboardScrollAdjustment} from './useKeyboardScrollAdjustment';
 import type {PasteInputRef} from '@mattermost/react-native-paste-input';
 import type PostModel from '@typings/database/models/servers/post';
 
+/**
+ * Default height for post input container
+ * Empirically measured value for iOS to prevent content shifting on initial render
+ */
+const DEFAULT_POST_INPUT_HEIGHT = 91;
+
 export const useKeyboardAwarePostDraft = () => {
-    const [postInputContainerHeight, setPostInputContainerHeight] = useState(0);
+    const [postInputContainerHeight, setPostInputContainerHeight] = useState(DEFAULT_POST_INPUT_HEIGHT);
     const listRef = useRef<FlatList<string | PostModel>>(null);
     const inputRef = useRef<PasteInputRef>();
 
