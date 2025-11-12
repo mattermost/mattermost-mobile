@@ -7,6 +7,7 @@ import {Text, TouchableOpacity, View} from 'react-native';
 
 import ExpandedAnnouncementBanner from '@components/announcement_banner/expanded_announcement_banner';
 import RemoveMarkdown from '@components/remove_markdown';
+import {CHANNEL_BANNER_HEIGHT} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {bottomSheet} from '@screens/navigation';
@@ -30,7 +31,7 @@ const getStyleSheet = (bannerTextColor: string) => ({
         paddingBottom: 5,
         paddingLeft: 16,
         paddingRight: 16,
-        height: 32,
+        height: CHANNEL_BANNER_HEIGHT,
     },
     containerTopItem: {
         borderTopLeftRadius: 12,
