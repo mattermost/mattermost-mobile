@@ -50,10 +50,18 @@ start_adb_server() {
 
 start_emulator() {
     echo "Starting the emulator..."
-    local emulator_opts="-avd $AVD_NAME -no-snapshot -no-boot-anim -no-audio -gpu off -no-window"
-    
+    # local emulator_opts="-avd $AVD_NAME -no-snapshot -no-boot-anim -no-audio -gpu off -no-window"
+    local emulator_opts="-avd $AVD_NAME -no-snapshot -no-boot-anim -no-audio -no-window"
+
     if [[ "$CI" == "true" || "$(uname -s)" == "Linux" ]]; then
-        emulator $emulator_opts -gpu host -accel on -qemu -m 4096 &
+        emulator $emulator_opts \
+            -gpu swiftshader_indirect \
+            -accel off \
+            -quick-boot \
+            -no-snapshot-save \
+            -memory 4096 \
+            -verbose \
+            | grep -v "libunwind" &
     else
         emulator $emulator_opts -gpu guest -verbose -qemu -vnc :0
     fi
