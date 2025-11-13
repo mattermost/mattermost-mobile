@@ -4,6 +4,7 @@
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import React from 'react';
 
+import {withServerUrl} from '@context/server';
 import {observeIsAIEnabled} from '@queries/servers/ai';
 import {observeIsPostPriorityEnabled} from '@queries/servers/post';
 import {observeCanUploadFiles} from '@queries/servers/security';
@@ -13,16 +14,20 @@ import QuickActions from './quick_actions';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
+type EnhancedProps = WithDatabaseArgs & {
+    serverUrl: string;
+}
+
+const enhanced = withObservables([], ({database, serverUrl}: EnhancedProps) => {
     const canUploadFiles = observeCanUploadFiles(database);
     const maxFileCount = observeMaxFileCount(database);
 
     return {
         canUploadFiles,
-        isAIEnabled: observeIsAIEnabled(),
+        isAIEnabled: observeIsAIEnabled(serverUrl),
         isPostPriorityEnabled: observeIsPostPriorityEnabled(database),
         maxFileCount,
     };
 });
 
-export default React.memo(withDatabase(enhanced(QuickActions)));
+export default React.memo(withDatabase(withServerUrl(enhanced(QuickActions))));

@@ -2,22 +2,31 @@
 // See LICENSE.txt for license information.
 
 import type ClientBase from './base';
-import type {AIRewriteRequest, AIRewriteResponse} from '@typings/api/ai';
+import type {AIAgent, AIRewriteRequest, AIRewriteResponse} from '@typings/api/ai';
 
 export interface ClientAIMix {
-    getAIRewrittenMessage: (message: string, action?: string, customPrompt?: string) => Promise<string>;
+    getAIAgents: () => Promise<AIAgent[]>;
+    getAIRewrittenMessage: (message: string, action?: string, customPrompt?: string, agentId?: string) => Promise<string>;
 }
 
 const ClientAI = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
-    getAIRewrittenMessage = async (message: string, action?: string, customPrompt?: string): Promise<string> => {
+    getAIAgents = async (): Promise<AIAgent[]> => {
+        return this.doFetch(
+            `${this.urlVersion}/agents`,
+            {method: 'get'},
+        ) as unknown as Promise<AIAgent[]>;
+    };
+
+    getAIRewrittenMessage = async (message: string, action?: string, customPrompt?: string, agentId?: string): Promise<string> => {
         const body: AIRewriteRequest = {
+            agent_id: agentId,
             message,
             action,
             custom_prompt: customPrompt,
         };
 
         const response = await this.doFetch(
-            `${this.urlVersion}/ai/rewrite`,
+            `${this.urlVersion}/posts/rewrite`,
             {method: 'post', body},
             true,
         ) as AIRewriteResponse;

@@ -7,6 +7,8 @@ import {BehaviorSubject} from 'rxjs';
 import {Events} from '@constants';
 import {toMilliseconds} from '@utils/datetime';
 
+import type {AIAgent} from '@typings/api/ai';
+
 const TIME_TO_CLEAR_WEBSOCKET_ACTIONS = toMilliseconds({seconds: 30});
 
 class EphemeralStoreSingleton {
@@ -18,6 +20,7 @@ class EphemeralStoreSingleton {
 
     private pushProxyVerification: {[serverUrl: string]: string | undefined} = {};
     private canJoinOtherTeams: {[serverUrl: string]: BehaviorSubject<boolean>} = {};
+    private aiAgents: {[serverUrl: string]: BehaviorSubject<AIAgent[]>} = {};
 
     private loadingMessagesForChannel: {[serverUrl: string]: Set<string>} = {};
 
@@ -251,6 +254,26 @@ class EphemeralStoreSingleton {
 
     setCanJoinOtherTeams = (serverUrl: string, value: boolean) => {
         this.getCanJoinOtherTeamsSubject(serverUrl).next(value);
+    };
+
+    private getAIAgentsSubject = (serverUrl: string) => {
+        if (!this.aiAgents[serverUrl]) {
+            this.aiAgents[serverUrl] = new BehaviorSubject<AIAgent[]>([]);
+        }
+
+        return this.aiAgents[serverUrl];
+    };
+
+    observeAIAgents = (serverUrl: string) => {
+        return this.getAIAgentsSubject(serverUrl).asObservable();
+    };
+
+    setAIAgents = (serverUrl: string, agents: AIAgent[]) => {
+        this.getAIAgentsSubject(serverUrl).next(agents);
+    };
+
+    getAIAgents = (serverUrl: string) => {
+        return this.getAIAgentsSubject(serverUrl).getValue();
     };
 
     setNotificationTapped = (value: boolean) => {

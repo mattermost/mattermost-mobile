@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Platform, StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native';
+import {Keyboard, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import OptionItem, {ITEM_HEIGHT} from '@components/option_item';
@@ -11,17 +11,19 @@ import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {useIsTablet} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import NetworkManager from '@managers/network_manager';
 import BottomSheet from '@screens/bottom_sheet';
-import {dismissBottomSheet} from '@screens/navigation';
+import {dismissBottomSheet, openAsBottomSheet} from '@screens/navigation';
+import EphemeralStore from '@store/ephemeral_store';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {logWarning} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import AnimatedAIIcon from './animated_ai_icon';
 
-import type {AIRewriteAction} from '@typings/api/ai';
+import type {AIAgent, AIRewriteAction} from '@typings/api/ai';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
@@ -118,8 +120,41 @@ const AIRewriteOptions = ({
     const [isProcessing, setIsProcessing] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string>('');
     const [customPrompt, setCustomPrompt] = useState('');
+    const [agents, setAgents] = useState<AIAgent[]>([]);
+    const [selectedAgent, setSelectedAgent] = useState<AIAgent | null>(null);
+    const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
     const currentPromiseRef = useRef<Promise<string> | null>(null);
     const textInputRef = useRef<TextInput>(null);
+
+    // Get agents from EphemeralStore on mount and subscribe to changes
+    useEffect(() => {
+        const availableAgents = EphemeralStore.getAIAgents(serverUrl);
+        setAgents(availableAgents);
+
+        // Set default agent (first one)
+        if (availableAgents.length > 0) {
+            setSelectedAgent(availableAgents[0]);
+        }
+
+        const handleAgentsUpdate = (updatedAgents: AIAgent[]) => {
+            setAgents(updatedAgents);
+
+            // Auto-select first agent if none selected
+            if (updatedAgents.length > 0) {
+                setSelectedAgent((current) => current || updatedAgents[0]);
+            } else {
+                setErrorMessage(intl.formatMessage({
+                    id: 'ai_rewrite.no_agents_available',
+                    defaultMessage: 'AI features are not available on this server.',
+                }));
+            }
+        };
+
+        // Subscribe to agent updates
+        const subscription = EphemeralStore.observeAIAgents(serverUrl).subscribe(handleAgentsUpdate);
+
+        return () => subscription.unsubscribe();
+    }, [serverUrl, intl]);
 
     const closeBottomSheet = useCallback(async () => {
         try {
@@ -143,9 +178,31 @@ const AIRewriteOptions = ({
         };
     }, []);
 
+    // Track keyboard visibility
+    useEffect(() => {
+        const keyboardWillShowListener = Keyboard.addListener(
+            Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+            () => setIsKeyboardVisible(true),
+        );
+        const keyboardWillHideListener = Keyboard.addListener(
+            Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+            () => setIsKeyboardVisible(false),
+        );
+
+        return () => {
+            keyboardWillShowListener.remove();
+            keyboardWillHideListener.remove();
+        };
+    }, []);
+
     const handleRewrite = useCallback(async (action: AIRewriteAction, prompt?: string) => {
         if (isProcessing) {
             return;
+        }
+
+        // Only dismiss keyboard if it's actually visible to prevent unwanted animations
+        if (isKeyboardVisible) {
+            Keyboard.dismiss();
         }
 
         // Determine if we're generating new content or editing existing content
@@ -170,7 +227,8 @@ const AIRewriteOptions = ({
 
             // For generation, pass empty string as message and use prompt; for editing, use original message
             const messageToProcess = isGenerating ? '' : originalMessage;
-            const rewritePromise = client.getAIRewrittenMessage(messageToProcess, action, prompt);
+            const agentId = selectedAgent?.id;
+            const rewritePromise = client.getAIRewrittenMessage(messageToProcess, action, prompt, agentId);
             currentPromiseRef.current = rewritePromise;
 
             // Race between API call and timeout
@@ -238,7 +296,7 @@ const AIRewriteOptions = ({
                 currentPromiseRef.current = null;
             }
         }
-    }, [isProcessing, originalMessage, serverUrl, updateValue, closeBottomSheet, intl]);
+    }, [isProcessing, originalMessage, serverUrl, updateValue, closeBottomSheet, intl, selectedAgent, isKeyboardVisible]);
 
     // Determine if we're in generation mode (empty original message)
     const isGeneratingContent = !originalMessage || !originalMessage.trim();
@@ -256,10 +314,15 @@ const AIRewriteOptions = ({
     }, [isGeneratingContent]);
 
     const handleCustomPromptSubmit = useCallback(() => {
+        // Only dismiss keyboard if it's visible when user submits
+        if (isKeyboardVisible) {
+            Keyboard.dismiss();
+        }
+
         if (customPrompt && customPrompt.trim()) {
             handleRewrite('custom', customPrompt);
         }
-    }, [customPrompt, handleRewrite]);
+    }, [customPrompt, handleRewrite, isKeyboardVisible]);
 
     const handleDismissError = useCallback(async () => {
         setErrorMessage('');
@@ -276,6 +339,30 @@ const AIRewriteOptions = ({
         }
     }, [closeBottomSheet]);
 
+    const isTablet = useIsTablet();
+
+    const handleOpenAgentSelector = useCallback(() => {
+        const title = isTablet ? intl.formatMessage({
+            id: 'ai_rewrite.agent_selector_title',
+            defaultMessage: 'Select AI Agent',
+        }) : '';
+
+        openAsBottomSheet({
+            closeButtonId: 'close-agent-selector',
+            screen: Screens.AI_AGENT_SELECTOR,
+            theme,
+            title,
+            props: {
+                closeButtonId: 'close-agent-selector',
+                agents,
+                selectedAgentId: selectedAgent?.id || '',
+                onSelectAgent: (agent: AIAgent) => {
+                    setSelectedAgent(agent);
+                },
+            },
+        });
+    }, [theme, intl, agents, selectedAgent, isTablet]);
+
     const options: Array<{action: AIRewriteAction; labelId: string; defaultLabel: string; icon: string}> = [
         {action: 'shorten', labelId: 'ai_rewrite.shorten', defaultLabel: 'Shorten', icon: 'arrow-collapse'},
         {action: 'elaborate', labelId: 'ai_rewrite.elaborate', defaultLabel: 'Elaborate', icon: 'arrow-expand'},
@@ -289,12 +376,15 @@ const AIRewriteOptions = ({
         const paddingBottom = 10;
         const bottomSheetAdjust = Platform.select({ios: 5, default: 20});
 
+        // Add agent selector height if multiple agents available
+        const agentSelectorHeight = agents.length > 1 ? ITEM_HEIGHT : 0;
+
         // Use the same height for both generation and editing modes
         const optionsHeight = OPTIONS_PADDING + bottomSheetSnapPoint(6, ITEM_HEIGHT);
-        const COMPONENT_HEIGHT = CUSTOM_PROMPT_INPUT_HEIGHT + optionsHeight + paddingBottom + bottomSheetAdjust;
+        const COMPONENT_HEIGHT = agentSelectorHeight + CUSTOM_PROMPT_INPUT_HEIGHT + optionsHeight + paddingBottom + bottomSheetAdjust;
 
         return [1, COMPONENT_HEIGHT];
-    }, []);
+    }, [agents.length]);
 
     const renderContent = () => (
         <View style={styles.container}>
@@ -343,6 +433,22 @@ const AIRewriteOptions = ({
                 </View>
             )}
 
+            {agents.length > 1 && (
+                <OptionItem
+                    label={intl.formatMessage({
+                        id: 'ai_rewrite.select_agent',
+                        defaultMessage: 'Select agent',
+                    })}
+                    info={selectedAgent?.displayName || intl.formatMessage({
+                        id: 'ai_rewrite.no_agent_selected',
+                        defaultMessage: 'None',
+                    })}
+                    action={handleOpenAgentSelector}
+                    type='arrow'
+                    testID='ai_rewrite.select_agent'
+                />
+            )}
+
             <View style={isGeneratingContent ? styles.customPromptContainerGeneration : styles.customPromptContainer}>
                 <TextInput
                     ref={textInputRef}
@@ -387,6 +493,8 @@ const AIRewriteOptions = ({
             initialSnapIndex={1}
             snapPoints={snapPoints}
             scrollable={true}
+            keyboardBehavior='extend'
+            keyboardBlurBehavior='none'
             testID='ai_rewrite_options'
         />
     );
