@@ -6,7 +6,6 @@ on:
   pull_request:
     branches:
       - main
-      - feature/dialog-router-implementation # temp for dialog router testing
     types:
       - labeled
 
