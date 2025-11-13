@@ -3,7 +3,6 @@
 
 import React, {useCallback, useState} from 'react';
 import {LayoutAnimation} from 'react-native';
-import {useSharedValue} from 'react-native-reanimated';
 
 import {updateChannelNotifyProps} from '@actions/remote/channel';
 import SettingsContainer from '@components/settings/container';
@@ -16,8 +15,8 @@ import {isTypeDMorGM} from '@utils/channel';
 
 import {popTopScreen} from '../navigation';
 
-import MutedBanner, {MUTED_BANNER_HEIGHT} from './muted_banner';
-import NotifyAbout, {BLOCK_TITLE_HEIGHT} from './notify_about';
+import MutedBanner from './muted_banner';
+import NotifyAbout from './notify_about';
 import ResetToDefault from './reset';
 import ThreadReplies from './thread_replies';
 
@@ -51,7 +50,6 @@ const ChannelNotificationPreferences = ({
     const serverUrl = useServerUrl();
     const defaultNotificationReplies = defaultThreadReplies === 'all';
     const diffNotificationLevel = notifyLevel !== NotificationLevel.DEFAULT && notifyLevel !== defaultLevel;
-    const notifyTitleTop = useSharedValue((isMuted ? MUTED_BANNER_HEIGHT : 0) + BLOCK_TITLE_HEIGHT);
     const [notifyAbout, setNotifyAbout] = useState<NotificationLevel>(notifyLevel === NotificationLevel.DEFAULT ? defaultLevel : notifyLevel);
     const [threadReplies, setThreadReplies] = useState<boolean>((notifyThreadReplies || defaultThreadReplies) === 'all');
     const [resetDefaultVisible, setResetDefaultVisible] = useState(diffNotificationLevel || defaultNotificationReplies !== threadReplies);
@@ -105,18 +103,12 @@ const ChannelNotificationPreferences = ({
     return (
         <SettingsContainer testID='push_notification_settings'>
             {isMuted && <MutedBanner channelId={channelId}/>}
-            {resetDefaultVisible &&
-            <ResetToDefault
-                onPress={onResetPressed}
-                topPosition={notifyTitleTop}
-            />
-            }
             <NotifyAbout
                 defaultLevel={defaultLevel}
                 isMuted={isMuted}
                 notifyLevel={notifyAbout}
-                notifyTitleTop={notifyTitleTop}
                 onPress={onNotificationLevel}
+                rightHeaderComponent={resetDefaultVisible && <ResetToDefault onPress={onResetPressed}/>}
             />
             {showThreadReplies &&
             <ThreadReplies
