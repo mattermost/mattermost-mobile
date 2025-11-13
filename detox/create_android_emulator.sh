@@ -51,7 +51,7 @@ start_adb_server() {
 start_emulator() {
     echo "Starting the emulator..."
     local emulator_opts="-avd $AVD_NAME -no-snapshot -no-boot-anim -no-audio -gpu off -no-window"
-    
+
     if [[ "$CI" == "true" || "$(uname -s)" == "Linux" ]]; then
         emulator $emulator_opts -gpu host -accel on -qemu -m 4096 &
     else

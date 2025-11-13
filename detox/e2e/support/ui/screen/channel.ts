@@ -214,7 +214,7 @@ class ChannelScreen {
         // # Post message
         await this.postInput.tap();
         await this.postInput.clearText();
-        await this.postInput.replaceText(message);
+        await this.postInput.typeText(message);
         await this.tapSendButton();
     };
 
@@ -225,7 +225,8 @@ class ChannelScreen {
     };
 
     tapSendButton = async () => {
-        // # Tap send button
+        // # wait for Send button to be enabled
+        await waitFor(this.sendButton).toBeVisible().withTimeout(timeouts.TWO_SEC);
         await this.sendButton.tap();
         await expect(this.sendButton).not.toExist();
     };
