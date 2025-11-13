@@ -356,7 +356,7 @@ describe('checklist', () => {
 
         it('should handle local DB update failure', async () => {
             mockClient.renameChecklist.mockResolvedValueOnce({});
-            (localRenameChecklist as jest.Mock).mockRejectedValueOnce(new Error('DB error'));
+            jest.mocked(localRenameChecklist).mockResolvedValueOnce({error: 'DB error'});
 
             const result = await renameChecklist(serverUrl, playbookRunId, checklistNumber, checklistId, newTitle);
             expect(result).toBeDefined();
@@ -367,6 +367,7 @@ describe('checklist', () => {
 
         it('should rename checklist successfully', async () => {
             mockClient.renameChecklist.mockResolvedValueOnce({});
+            jest.mocked(localRenameChecklist).mockResolvedValueOnce({data: true});
 
             const result = await renameChecklist(serverUrl, playbookRunId, checklistNumber, checklistId, newTitle);
             expect(result).toBeDefined();
@@ -378,6 +379,7 @@ describe('checklist', () => {
 
         it('should rename checklist with empty title', async () => {
             mockClient.renameChecklist.mockResolvedValueOnce({});
+            jest.mocked(localRenameChecklist).mockResolvedValueOnce({data: true});
             const emptyTitle = '';
 
             const result = await renameChecklist(serverUrl, playbookRunId, checklistNumber, checklistId, emptyTitle);
