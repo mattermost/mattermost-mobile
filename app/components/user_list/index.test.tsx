@@ -112,7 +112,7 @@ describe('components/channel_list_row', () => {
     function getBaseProps(): ComponentProps<typeof UserList> {
         return {
             profiles: [],
-            testID: 'UserListRow',
+            testID: 'create_direct_message.user_list',
             currentUserId: '1',
             handleSelectProfile: jest.fn(),
             fetchMore: jest.fn(),
