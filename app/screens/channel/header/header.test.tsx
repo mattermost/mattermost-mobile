@@ -6,7 +6,7 @@ import React, {type ComponentProps} from 'react';
 import NavigationHeader from '@components/navigation_header';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
-import {fetchPlaybookRunsForChannel} from '@playbooks/actions/remote/runs';
+import {createPlaybookRun, fetchPlaybookRunsForChannel} from '@playbooks/actions/remote/runs';
 import {goToPlaybookRun, goToPlaybookRuns} from '@playbooks/screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {renderWithIntl, waitFor} from '@test/intl-test-helper';
@@ -38,6 +38,7 @@ describe('ChannelHeader', () => {
         return {
             channelId: 'channel-id',
             channelType: 'O',
+            currentUserId: 'current-user-id',
             displayName: 'Test Channel',
             teamId: 'team-id',
             hasPlaybookRuns: false,
@@ -60,17 +61,20 @@ describe('ChannelHeader', () => {
         jest.clearAllMocks();
     });
 
-    it('does not show playbook button when there are no active runs', () => {
+    it('shows playbook button with "+" when there are no active runs', () => {
         const props = getBaseProps();
         props.hasPlaybookRuns = false;
         props.playbooksActiveRuns = 0;
-        renderWithIntl(<ChannelHeader {...props}/>);
+        props.isPlaybooksEnabled = true;
 
-        const navHeader = jest.mocked(NavigationHeader).mock.calls[0][0];
-        expect(navHeader.rightButtons).toEqual(
+        const {getByTestId} = renderWithIntl(<ChannelHeader {...props}/>);
+
+        const navHeader = getByTestId('navigation-header');
+        expect(navHeader.props.rightButtons).toEqual(
             expect.arrayContaining([
-                expect.not.objectContaining({
+                expect.objectContaining({
                     iconName: 'product-playbooks',
+                    count: '+',
                 }),
             ]),
         );
@@ -166,6 +170,44 @@ describe('ChannelHeader', () => {
         playbookButton?.onPress();
         expect(goToPlaybookRuns).toHaveBeenCalledWith(expect.anything(), 'channel-id', 'Test Channel');
         expect(goToPlaybookRun).not.toHaveBeenCalled();
+    });
+
+    it('creates a new playbook run when clicking + button with no active runs', async () => {
+        const mockCreatedRun = {
+            id: 'new-run-id',
+            channel_id: 'channel-id',
+            name: 'Test Channel Checklist',
+        } as any;
+        jest.mocked(createPlaybookRun).mockResolvedValue({data: mockCreatedRun});
+        jest.mocked(fetchPlaybookRunsForChannel).mockResolvedValue({runs: [mockCreatedRun]});
+
+        const props = getBaseProps();
+        props.playbooksActiveRuns = 0;
+        props.hasPlaybookRuns = false;
+        props.displayName = 'Test Channel';
+
+        const {getByTestId} = renderWithIntl(<ChannelHeader {...props}/>);
+
+        const navHeader = getByTestId('navigation-header');
+        const playbookButton = (navHeader.props as ComponentProps<typeof NavigationHeader>).rightButtons?.find((button) => button.iconName === 'product-playbooks');
+        expect(playbookButton).toBeTruthy();
+        expect(playbookButton?.count).toBe('+');
+
+        playbookButton?.onPress();
+
+        await waitFor(() => {
+            expect(createPlaybookRun).toHaveBeenCalledWith(
+                serverUrl,
+                '', // empty playbook_id
+                'current-user-id',
+                'team-id',
+                'Test Channel Checklist',
+                '', // empty description
+                'channel-id',
+            );
+            expect(fetchPlaybookRunsForChannel).toHaveBeenCalledWith(serverUrl, 'channel-id');
+            expect(goToPlaybookRun).toHaveBeenCalledWith(expect.anything(), 'new-run-id');
+        });
     });
 
     it('should not fetch runs when playbooks are disabled', async () => {

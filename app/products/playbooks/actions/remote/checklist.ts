@@ -9,6 +9,7 @@ import {
     updateChecklistItem as localUpdateChecklistItem,
     setAssignee as localSetAssignee,
     setDueDate as localSetDueDate,
+    renameChecklist as localRenameChecklist,
 } from '@playbooks/actions/local/checklist';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
@@ -152,6 +153,46 @@ export const setDueDate = async (
         return {data: true};
     } catch (error) {
         logDebug('error on setDueDate', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
+export const renameChecklist = async (
+    serverUrl: string,
+    playbookRunId: string,
+    checklistNumber: number,
+    checklistId: string,
+    newTitle: string,
+) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+
+        // Patch the playbook run with updated checklists
+        await client.renameChecklist(playbookRunId, checklistNumber, newTitle);
+
+        // Update local database
+        await localRenameChecklist(serverUrl, checklistId, newTitle);
+        return {data: true};
+    } catch (error) {
+        logDebug('error on renameChecklist', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
+export const addChecklistItem = async (
+    serverUrl: string,
+    playbookRunId: string,
+    checklistNumber: number,
+    title: string,
+) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        await client.addChecklistItem(playbookRunId, checklistNumber, title);
+        return {data: true};
+    } catch (error) {
+        logDebug('error on addChecklistItem', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
