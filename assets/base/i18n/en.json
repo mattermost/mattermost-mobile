@@ -274,6 +274,7 @@
   "connection_banner.connecting": "Connecting...",
   "connection_banner.not_connected": "Unable to connect to network",
   "connection_banner.not_reachable": "The server is not reachable",
+  "connection_banner.slow": "Limited network connection",
   "create_direct_message.title": "Create Direct Message",
   "create_post.deactivated": "You are viewing an archived channel with a deactivated user.",
   "create_post.thread_reply": "Reply to this thread...",
