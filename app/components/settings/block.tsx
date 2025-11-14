@@ -54,6 +54,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontSize: 12,
             color: changeOpacity(theme.centerChannelColor, 0.5),
         },
+        rightHeader: {
+            flex: 1,
+        },
     };
 });
 
@@ -78,7 +81,7 @@ const SettingBlock = ({
                         style={[styles.header, headerStyles]}
                     />
                     {headerRight && (
-                        <View style={{flex: 1}}>
+                        <View style={styles.rightHeader}>
                             {headerRight}
                         </View>
                     )}

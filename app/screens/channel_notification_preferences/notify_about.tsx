@@ -15,8 +15,7 @@ type Props = {
     defaultLevel: NotificationLevel;
     notifyLevel: NotificationLevel;
     onPress: (level: NotificationLevel) => void;
-        rightHeaderComponent?: React.ReactNode;
-
+    rightHeaderComponent?: React.ReactNode;
 }
 
 type NotifPrefOptions = {

@@ -43,7 +43,7 @@ const ResetToDefault = ({onPress}: Props) => {
                     color={theme.linkColor}
                 />
                 <FormattedText
-                    id='channel_notification_preferences.reet_default'
+                    id='channel_notification_preferences.reset_default'
                     defaultMessage='Reset to default'
                     style={styles.text}
                 />
