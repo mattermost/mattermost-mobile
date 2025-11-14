@@ -441,7 +441,7 @@ export const getUserLoginType = async (serverUrl: string, loginId: string) => {
         const client = NetworkManager.getClient(serverUrl);
         return await client.getUserLoginType(loginId);
     } catch (error) {
-        logDebug('error on getUserLoginType', getFullErrorMessage(error));
+        logError('error on getUserLoginType', getFullErrorMessage(error));
         return {error};
     }
 };

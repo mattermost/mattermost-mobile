@@ -28,7 +28,7 @@ import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 import {alertErrorWithFallback, errorBadChannel, errorUnkownUser} from '@utils/draft';
 import {getIntlShape} from '@utils/general';
-import {logDebug, logError} from '@utils/log';
+import {logError} from '@utils/log';
 import {escapeRegex} from '@utils/markdown';
 import {addNewServer} from '@utils/server';
 import {removeProtocol, stripTrailingSlashes} from '@utils/url';
@@ -60,7 +60,7 @@ export async function handleDeepLink(deepLink: DeepLinkWithData, intlShape?: Int
             if (deepLink.type === DeepLink.MagicLink && 'token' in deepLink.data) {
                 const result = await magicLinkLogin(deepLink.data.serverUrl, deepLink.data.token);
                 if (result.error) {
-                    logDebug('Failed to do magic link login', result.error);
+                    logError('Failed to do magic link login', result.error);
                     return {error: true};
                 }
                 return {error: false};

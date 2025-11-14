@@ -17,7 +17,7 @@ import {useAvoidKeyboard} from '@hooks/device';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {goToScreen, loginAnimationOptions, resetToHome} from '@screens/navigation';
 import {getFullErrorMessage, getServerError, isErrorWithMessage, isServerError} from '@utils/errors';
-import {logDebug} from '@utils/log';
+import {logError} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
 
@@ -145,13 +145,13 @@ const LoginForm = ({
     const checkUserLoginType = useCallback(async () => {
         if (!serverUrl) {
             setUserLoginType('');
-            logDebug('error on checkUserLoginType', 'serverUrl is required');
+            logError('error on checkUserLoginType', 'serverUrl is required');
             setError(intl.formatMessage({id: 'login.magic_link.request.error', defaultMessage: 'Failed to check user login type'}));
             return '';
         }
         const response = await getUserLoginType(serverUrl, loginId);
         if ('error' in response) {
-            logDebug('error on checkUserLoginType', getFullErrorMessage(response?.error));
+            logError('error on checkUserLoginType', getFullErrorMessage(response?.error));
             setError(intl.formatMessage({id: 'login.magic_link.request.error', defaultMessage: 'Failed to check user login type'}));
             return '';
         }
@@ -322,6 +322,8 @@ const LoginForm = ({
     const showPasswordInput = !magicLinkEnabled || (userLoginType !== 'guest_magic_link' && userLoginType !== undefined && !isDeactivated);
     let userInputError = error;
     if (showPasswordInput) {
+        // error is passed to the password input box, so we use this
+        // hack to make the input box also show the error border
         userInputError = error ? ' ' : '';
     }
 
