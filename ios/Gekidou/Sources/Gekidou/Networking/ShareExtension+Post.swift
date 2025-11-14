@@ -10,14 +10,19 @@ import os.log
 
 extension ShareExtension {
     public func uploadFiles(serverUrl: String, channelId: String, message: String,
-                            files: [String], completionHandler: @escaping () -> Void) -> String? {
+                            files: [String], completionHandler: @escaping () -> Void, isDraft: Bool = false) -> String? {
         let id = "mattermost-share-upload-\(UUID().uuidString)"
 
         createUploadSessionData(
             id: id, serverUrl: serverUrl,
             channelId: channelId, message: message,
-            files: files
+            files: files,
+            isDraft: isDraft
         )
+
+        if isDraft {
+            self.saveMessageAsDraftForSession(withId: id)
+        }
 
         guard let credentials = try? Keychain.default.getCredentials(for: serverUrl),
               let token = credentials.token else {return "Could not retrieve the session token from the KeyChain"}
@@ -105,8 +110,15 @@ extension ShareExtension {
             return
         }
 
-        self.removeUploadSessionData(id: id)
         self.deleteUploadedFiles(files: data.files)
+        
+        if data.isDraft {
+            self.saveMessageAsDraftForSession(withId: id, completionHandler: completionHandler)
+            self.removeUploadSessionData(id: id)
+            return
+        }
+        
+        self.removeUploadSessionData(id: id)
 
         if let serverUrl = data.serverUrl,
             let channelId = data.channelId {
@@ -135,6 +147,102 @@ extension ShareExtension {
                         handler()
                     }
                 })
+        }
+    }
+
+    func saveMessageAsDraftForSession(withId id: String, completionHandler: (() -> Void)? = nil) {
+        guard let data = getUploadSessionData(id: id)
+        else {
+            os_log(
+                OSLogType.default,
+                "Mattermost BackgroundSession: saveMessageAsDraftForSession failed to get session data for identifier=%{public}@",
+                id
+            )
+            return
+        }
+
+        guard let serverUrl = data.serverUrl,
+              let channelId = data.channelId else { return }
+        
+        let isAppRunning = (Gekidou.Preferences.default.object(forKey: "ApplicationIsRunning") as? String) == "true"
+        let filesArray = data.fileIds.compactMap { fileId in
+            data.filesInfo[fileId] as? [String: Any]
+        }
+
+        if isAppRunning {
+            handleDraftWhileAppRunning(channelId: channelId, data: data, filesArray: filesArray, completionHandler: completionHandler)
+        } else {
+            handleDraftInBackground(id: id, serverUrl: serverUrl, channelId: channelId, data: data, filesArray: filesArray, completionHandler: completionHandler)
+        }
+    }
+
+    private func handleDraftWhileAppRunning(channelId: String,
+                                            data: UploadSessionData,
+                                            filesArray: [[String: Any]],
+                                            completionHandler: (() -> Void)?) {
+        let draftData: [String: Any] = [
+            "channelId": channelId,
+            "message": data.message,
+            "files": filesArray
+        ]
+        
+        Preferences.default.set(draftData, forKey: "ShareExtensionDraftUpdate")
+        CFNotificationCenterPostNotification(
+            CFNotificationCenterGetDarwinNotifyCenter(),
+            CFNotificationName("share.extension.draftUpdate" as CFString),
+            nil, nil, true
+        )
+        completionHandler?()
+    }
+
+    private func handleDraftInBackground(id: String,
+                                         serverUrl: String,
+                                         channelId: String,
+                                         data: UploadSessionData,
+                                         filesArray: [[String: Any]],
+                                         completionHandler: (() -> Void)?) {
+        do {
+            if let existingDraft = try Database.default.getDraft(serverUrl: serverUrl, channelId: channelId, rootId: "") {
+                if (existingDraft.message == data.message) {
+                    completionHandler?()
+                    return
+                }
+
+                let updatedDraft = Draft(
+                    id: existingDraft.id,
+                    channelId: channelId,
+                    rootId: existingDraft.rootId,
+                    message: data.message,
+                    files: filesArray,
+                    metadata: existingDraft.metadata,
+                    updateAt: Date().timeIntervalSince1970
+                )
+                try Database.default.insertDraft(updatedDraft, serverUrl: serverUrl)
+            } else {
+                guard !data.message.isEmpty || !data.fileIds.isEmpty else {
+                    completionHandler?()
+                    return
+                }
+                
+                let newDraft = Draft(
+                    id: id,
+                    channelId: channelId,
+                    rootId: "",
+                    message: data.message,
+                    files: filesArray,
+                    metadata: "{}",
+                    updateAt: Date().timeIntervalSince1970
+                )
+                try Database.default.insertDraft(newDraft, serverUrl: serverUrl)
+            }
+            completionHandler?()
+        } catch {
+            os_log(
+                OSLogType.default,
+                "Mattermost BackgroundSession: saveMessageAsDraftForSession failed to save draft for identifier=%{public}@",
+                id,
+                error.localizedDescription
+            )
         }
     }
 }

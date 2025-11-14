@@ -4,6 +4,7 @@
 import {CallsManager} from '@calls/calls_manager';
 import DatabaseManager from '@database/manager';
 import {getAllServerCredentials} from '@init/credentials';
+import DraftsUpdate from '@init/drafts_updates';
 import {initialLaunch} from '@init/launch';
 import ManagedApp from '@init/managed_app';
 import PushNotifications from '@init/push_notifications';
@@ -61,6 +62,7 @@ export async function start() {
     await initialize();
 
     PushNotifications.init(serverCredentials.length > 0);
+    DraftsUpdate.init();
 
     registerNavigationListeners();
     registerScreens();

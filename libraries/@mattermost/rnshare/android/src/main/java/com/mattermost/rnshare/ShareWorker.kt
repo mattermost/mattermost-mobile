@@ -6,7 +6,11 @@ import android.os.Build
 import android.util.Base64
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.work.Data
 import androidx.work.ForegroundInfo
+import androidx.work.ListenableWorker
+import androidx.work.OneTimeWorkRequest
+import androidx.work.WorkManager
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.mattermost.rnshare.helpers.RealPathUtil
@@ -87,6 +91,7 @@ class ShareWorker(private val context: Context, workerParameters: WorkerParamete
     override fun doWork(): Result {
         val jsonString = inputData.getString("json_data") ?: return Result.failure()
         val tempFolder = inputData.getString("tempFolder")
+        val isDraft = inputData.getBoolean("isDraft", false)
 
         try {
             val jsonObject = JSONObject(jsonString)
@@ -99,9 +104,15 @@ class ShareWorker(private val context: Context, workerParameters: WorkerParamete
             } else null
             val postData = buildPostObject(jsonObject)
 
+            if (isDraft) {
+                enqueueDraftWorker(serverUrl, postData)
+            }
             if (files != null && files.length() > 0) {
                 setForegroundAsync(createForegroundInfo())
-                return uploadFiles(serverUrl, token, preauthSecret, files, postData)
+                return uploadFiles(serverUrl, token, preauthSecret, files, postData, isDraft)
+            }
+            return if (isDraft) {
+                Result.success()
             } else {
                 try {
                     return post(serverUrl, token, preauthSecret, postData)
@@ -150,7 +161,13 @@ class ShareWorker(private val context: Context, workerParameters: WorkerParamete
         return Result.success()
     }
 
-    private fun uploadFiles(serverUrl: String, token: String, preauthSecret: String?, files: JSONArray, postData: JSONObject): Result {
+    private fun uploadFiles(serverUrl: String,
+                            token: String,
+                            preauthSecret: String?,
+                            files: JSONArray,
+                            postData: JSONObject,
+                            isDraft: Boolean
+    ): Result {
         try {
             val builder = MultipartBody.Builder()
                     .setType(MultipartBody.FORM)
@@ -196,7 +213,13 @@ class ShareWorker(private val context: Context, workerParameters: WorkerParamete
                             fileIds.put(fileInfo.getString("id"))
                         }
                         postData.put("file_ids", fileIds)
-                        return post(serverUrl, token, preauthSecret, postData)
+
+                        return if (isDraft) {
+                            postData.put("file_infos", fileInfoArray)
+                            enqueueDraftWorker(serverUrl, postData)
+                        } else {
+                            post(serverUrl, token, preauthSecret, postData)
+                        }
                     }
                     return Result.failure()
                 }
@@ -208,6 +231,22 @@ class ShareWorker(private val context: Context, workerParameters: WorkerParamete
             Log.e(MattermostShareImpl.NAME, "Failed to create the multipart body to upload the files", e)
             return Result.failure()
         }
+    }
+
+    private fun enqueueDraftWorker(serverUrl: String, postData: JSONObject): Result {
+        val packageName = context.applicationContext.packageName
+        val inputDataDraft = Data.Builder()
+            .putString("draft_data", postData.toString())
+            .putString("serverUrl", serverUrl)
+            .build()
+        val draftWorkerClass = Class.forName("$packageName.DraftWorker")
+            .asSubclass(ListenableWorker::class.java)
+        val draftWorkerRequest = OneTimeWorkRequest.Builder(draftWorkerClass)
+            .setInputData(inputDataDraft)
+            .build()
+
+        WorkManager.getInstance(context.applicationContext).enqueue(draftWorkerRequest)
+        return Result.success()
     }
 
     private fun createForegroundInfo(): ForegroundInfo {

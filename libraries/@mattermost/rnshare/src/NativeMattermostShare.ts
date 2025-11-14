@@ -25,6 +25,19 @@ export type ShareExtensionDataToSend = {
   token: string;
   userId: string;
   preauthSecret?: string;
+  isDraft?: boolean;
+}
+
+export type DraftUpdatePayload = {
+  channelId: string;
+  message: string;
+  files: Array<{
+    id?: string;
+    mime_type?: string;
+    extension?: string;
+    name?: string;
+    size?: Double;
+  }>;
 }
 
 export interface Spec extends TurboModule {
@@ -32,6 +45,7 @@ export interface Spec extends TurboModule {
   clear: () => void;
   close: (data: ShareExtensionDataToSend | null) => void;
   getSharedData: () => Promise<SharedItem[]>;
+  sendDraftUpdate?: (draft: DraftUpdatePayload) => void;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('MattermostShare');

@@ -5,7 +5,7 @@
 #import "ExpoModulesCore-Swift.h"
 #import <mattermost_rnutils-Swift.h>
 #import <mattermost_hardware_keyboard-Swift.h>
-
+#import <mattermost_rnshare-Swift.h>
 
 @interface AppDelegate : EXAppDelegateWrapper<OrientationLockable>
 
