@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useState, useMemo} from 'react';
+import {useIntl} from 'react-intl';
 import {
     Keyboard,
     Platform,
@@ -16,19 +17,22 @@ import Animated, {useAnimatedStyle, useDerivedValue} from 'react-native-reanimat
 
 import SelectedChip from '@components/chips/selected_chip';
 import SelectedUserChip from '@components/chips/selected_user_chip';
+import FloatingTextInput from '@components/floating_input/floating_text_input_label';
+import OptionItem from '@components/option_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import UserItem from '@components/user_item';
+import {Screens} from '@constants';
 import {MAX_LIST_HEIGHT, MAX_LIST_TABLET_DIFF} from '@constants/autocomplete';
 import {useTheme} from '@context/theme';
 import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
 import {useIsTablet} from '@hooks/device';
+import {goToScreen} from '@screens/navigation';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
 import SelectionSearchBar from './selection_search_bar';
 import SelectionTeamBar from './selection_team_bar';
-import TextItem, {TextItemType} from './text_item';
-
-import type {SearchResult} from './invite';
+import TextItem from './text_item';
+import {TextItemType, type SearchResult, type SendOptions} from './types';
 
 const AUTOCOMPLETE_ADJUST = 5;
 
@@ -88,18 +92,27 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         selectedItems: {
             display: 'flex',
-            flexGrowth: 1,
         },
         selectedItemsContainer: {
             alignItems: 'flex-start',
             flexDirection: 'row',
             flexWrap: 'wrap',
-            marginHorizontal: 20,
             marginVertical: 16,
+            gap: 8,
+        },
+        contentContainer: {
+            paddingHorizontal: 20,
+        },
+        optionsContainer: {
+            marginTop: 16,
             gap: 8,
         },
     };
 });
+
+function extractChannelId(channelId: Channel) {
+    return channelId.id;
+}
 
 type SelectionProps = {
     teamId: string;
@@ -115,10 +128,13 @@ type SelectionProps = {
     wrapperHeight: number;
     loading: boolean;
     testID: string;
+    sendOptions: SendOptions;
+    onSendOptionsChange: React.Dispatch<React.SetStateAction<SendOptions>>;
     onSearchChange: (text: string) => void;
     onSelectItem: (item: SearchResult) => void;
     onRemoveItem: (id: string) => void;
     onClose: () => Promise<void>;
+    canInviteGuests: boolean;
 }
 
 export default function Selection({
@@ -139,14 +155,25 @@ export default function Selection({
     onSelectItem,
     onRemoveItem,
     onClose,
+    sendOptions: {
+        inviteAsGuest,
+        includeCustomMessage,
+        customMessage,
+        selectedChannels,
+    },
+    onSendOptionsChange,
+    canInviteGuests,
 }: SelectionProps) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const dimensions = useWindowDimensions();
     const isTablet = useIsTablet();
+    const intl = useIntl();
 
     const [teamBarHeight, setTeamBarHeight] = useState(0);
     const [searchBarHeight, setSearchBarHeight] = useState(0);
+
+    const hasChannelsSelected = selectedChannels.length > 0;
 
     const onLayoutSelectionTeamBar = useCallback((e: LayoutChangeEvent) => {
         setTeamBarHeight(e.nativeEvent.layout.height);
@@ -156,9 +183,9 @@ export default function Selection({
         setSearchBarHeight(e.nativeEvent.layout.height);
     }, []);
 
-    const handleOnRemoveItem = (id: string) => {
+    const handleOnRemoveItem = useCallback((id: string) => {
         onRemoveItem(id);
-    };
+    }, [onRemoveItem]);
 
     const otherElementsSize = teamBarHeight + searchBarHeight;
     const workingSpace = wrapperHeight - keyboardOverlap;
@@ -198,7 +225,7 @@ export default function Selection({
         }
 
         return style;
-    }, [searchResults, styles, searchListContainerAnimatedStyle]);
+    }, [styles, searchListContainerAnimatedStyle]);
 
     const searchListFlatListStyle = useMemo(() => {
         const style = [];
@@ -210,7 +237,7 @@ export default function Selection({
         }
 
         return style;
-    }, [searchResults, styles, Boolean(term && !loading)]);
+    }, [loading, searchResults.length, styles, term]);
 
     const renderNoResults = useCallback(() => {
         if (!term || loading) {
@@ -251,9 +278,49 @@ export default function Selection({
                 onUserPress={onSelectItem}
             />
         );
-    }, [searchResults, onSelectItem]);
+    }, [theme.buttonBg, onSelectItem]);
 
-    const renderSelectedItems = useMemo(() => {
+    const goToSelectorScreen = useCallback((() => {
+        const screen = Screens.INTEGRATION_SELECTOR;
+        const title = intl.formatMessage({id: 'invite.selected_channels', defaultMessage: 'Selected channels'});
+
+        const handleSelectChannels = (channels: Channel[]) => {
+            onSendOptionsChange((options) => ({
+                ...options,
+                selectedChannels: channels.map(extractChannelId),
+            }));
+        };
+
+        goToScreen(screen, title, {
+            dataSource: 'channels',
+            handleSelect: handleSelectChannels,
+            selected: selectedChannels,
+            isMultiselect: true,
+        });
+    }), [intl, selectedChannels, onSendOptionsChange]);
+
+    const handleInviteAsGuestChange = useCallback(() => {
+        onSendOptionsChange((options) => ({
+            ...options,
+            inviteAsGuest: !options.inviteAsGuest,
+        }));
+    }, [onSendOptionsChange]);
+
+    const handleIncludeCustomMessageChange = useCallback(() => {
+        onSendOptionsChange((options) => ({
+            ...options,
+            includeCustomMessage: !options.includeCustomMessage,
+        }));
+    }, [onSendOptionsChange]);
+
+    const handleCustomMessageChange = useCallback((text: string) => {
+        onSendOptionsChange((options) => ({
+            ...options,
+            customMessage: text,
+        }));
+    }, [onSendOptionsChange]);
+
+    const renderSelectedItems = () => {
         const selectedItems = [];
 
         for (const id of Object.keys(selectedIds)) {
@@ -279,7 +346,7 @@ export default function Selection({
         }
 
         return selectedItems;
-    }, [selectedIds]);
+    };
 
     return (
         <View
@@ -295,20 +362,64 @@ export default function Selection({
                 onLayoutContainer={onLayoutSelectionTeamBar}
                 onClose={onClose}
             />
-            <SelectionSearchBar
-                term={term}
-                onSearchChange={onSearchChange}
-                onLayoutContainer={onLayoutSearchBar}
-            />
-            {Object.keys(selectedIds).length > 0 && (
-                <ScrollView
-                    style={styles.selectedItems}
-                    contentContainerStyle={styles.selectedItemsContainer}
-                    testID='invite.selected_items'
-                >
-                    {renderSelectedItems}
-                </ScrollView>
-            )}
+            <View style={styles.contentContainer}>
+                <SelectionSearchBar
+                    term={term}
+                    onSearchChange={onSearchChange}
+                    onLayoutContainer={onLayoutSearchBar}
+                />
+                {Object.keys(selectedIds).length > 0 && (
+                    <ScrollView
+                        style={styles.selectedItems}
+                        contentContainerStyle={styles.selectedItemsContainer}
+                        testID='invite.selected_items'
+                    >
+                        {renderSelectedItems()}
+                    </ScrollView>
+                )}
+                <View style={styles.optionsContainer}>
+                    {canInviteGuests && (
+                        <OptionItem
+                            label={intl.formatMessage({id: 'invite.invite_as_guest', defaultMessage: 'Invite as guest'})}
+                            description={intl.formatMessage({id: 'invite.invite_as_guest_description', defaultMessage: 'Guests are limited to selected channels'})}
+                            type='toggle'
+                            selected={inviteAsGuest}
+                            action={handleInviteAsGuestChange}
+                            testID='invite.invite_as_guest'
+                        />
+                    )}
+                    {inviteAsGuest && (
+                        <>
+                            <OptionItem
+                                label={intl.formatMessage({id: 'invite.selected_channels', defaultMessage: 'Selected channels'})}
+                                type='arrow'
+                                action={goToSelectorScreen}
+                                info={hasChannelsSelected ? intl.formatMessage({id: 'invite.selected_channels_count', defaultMessage: '{count} {count, plural, one{channel} other{channels}}'}, {count: selectedChannels.length}) : intl.formatMessage({id: 'invite.no_channels_selected', defaultMessage: 'Required for guests'})}
+                                isInfoDestructive={!hasChannelsSelected}
+                                testID='invite.selected_channels'
+                                icon={'globe'}
+                            />
+                            <OptionItem
+                                label={intl.formatMessage({id: 'invite.set_custom_message', defaultMessage: 'Set a custom message'})}
+                                type='toggle'
+                                selected={includeCustomMessage}
+                                action={handleIncludeCustomMessageChange}
+                                testID='invite.include_custom_message'
+                            />
+                            {includeCustomMessage && (
+                                <FloatingTextInput
+                                    label={intl.formatMessage({id: 'invite.custom_message', defaultMessage: 'Enter a custom message'})}
+                                    value={customMessage}
+                                    onChangeText={handleCustomMessageChange}
+                                    testID='invite.custom_message'
+                                    theme={theme}
+                                    multiline={true}
+                                />
+                            )}
+                        </>
+                    )}
+                </View>
+            </View>
             <Animated.View style={searchListContainerStyle}>
                 <FlatList
                     data={searchResults}

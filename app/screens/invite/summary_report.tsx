@@ -12,9 +12,8 @@ import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {secureGetFromRecord} from '@utils/types';
 import {typography} from '@utils/typography';
 
-import TextItem, {TextItemType} from './text_item';
-
-import type {SearchResult, InviteResult} from './invite';
+import TextItem from './text_item';
+import {type SearchResult, type InviteResult, TextItemType} from './types';
 
 const COLOR_SUCCESS = '#3db887';
 const COLOR_ERROR = '#d24b4e';
@@ -29,12 +28,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             borderRadius: 4,
             marginBottom: 16,
             paddingVertical: 8,
+            paddingHorizontal: 20,
         },
         title: {
             display: 'flex',
             flexDirection: 'row',
             alignItems: 'center',
-            paddingHorizontal: 20,
             paddingVertical: 12,
         },
         titleText: {
@@ -48,8 +47,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             paddingVertical: 12,
         },
         reason: {
-            paddingLeft: 56,
-            paddingRight: 20,
+            paddingLeft: 36,
             ...typography('Body', 75, 'Regular'),
             color: changeOpacity(theme.centerChannelColor, 0.64),
         },
@@ -114,12 +112,13 @@ export default function SummaryReport({
                     {message}
                 </Text>
             </View>
-            {invites.map(({userId, reason}) => {
-                const item = secureGetFromRecord(selectedIds, userId);
+            {invites.map(({userId, email, reason}) => {
+                const key = userId ?? email ?? '';
+                const item = secureGetFromRecord(selectedIds, key);
 
                 return (
                     <View
-                        key={userId}
+                        key={key}
                         style={styles.item}
                     >
                         {typeof item === 'string' ? (
