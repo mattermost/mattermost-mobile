@@ -36,12 +36,12 @@ interface LoginProps extends LaunchProps {
 export const MFA_EXPECTED_ERRORS = ['mfa.validate_token.authenticate.app_error', 'ent.mfa.validate_token.authenticate.app_error'];
 const hitSlop = {top: 8, right: 8, bottom: 8, left: 8};
 
-function getButtonDisabled(loginId: string, password: string, userLoginType: LoginType | undefined, magicLinkEnabled: boolean) {
+function getButtonDisabled(loginId: string, password: string, userLoginType: LoginType | undefined, isDeactivated: boolean, magicLinkEnabled: boolean) {
     if (!loginId) {
         return true;
     }
 
-    if (userLoginType === 'deactivated') {
+    if (isDeactivated) {
         return true;
     }
 
@@ -123,6 +123,7 @@ const LoginForm = ({
     const [loginId, setLoginId] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+    const [isDeactivated, setIsDeactivated] = useState(false);
     const emailEnabled = config.EnableSignInWithEmail === 'true';
     const usernameEnabled = config.EnableSignInWithUsername === 'true';
     const ldapEnabled = license.IsLicensed === 'true' && config.EnableLdap === 'true' && license.LDAP === 'true';
@@ -155,6 +156,7 @@ const LoginForm = ({
             return '';
         }
         setUserLoginType(response.auth_service);
+        setIsDeactivated(response.is_deactivated ?? false);
         return (response.auth_service);
     }, [serverUrl, loginId, intl]);
 
@@ -249,7 +251,7 @@ const LoginForm = ({
             if (receivedUserLoginType === 'guest_magic_link') {
                 setMagicLinkSent(true);
             }
-            if (receivedUserLoginType === 'deactivated') {
+            if (isDeactivated) {
                 setError(intl.formatMessage({id: 'login.deactivated', defaultMessage: 'This account is deactivated'}));
                 return;
             }
@@ -257,7 +259,7 @@ const LoginForm = ({
         }
 
         preSignIn();
-    }, [checkUserLoginType, intl, magicLinkEnabled, preSignIn, setMagicLinkSent, userLoginType]);
+    }, [checkUserLoginType, intl, isDeactivated, magicLinkEnabled, preSignIn, setMagicLinkSent, userLoginType]);
 
     const onLoginChange = useCallback((text: string) => {
         setLoginId(text);
@@ -267,6 +269,7 @@ const LoginForm = ({
         if (userLoginType !== undefined) {
             setPassword('');
             setUserLoginType(undefined);
+            setIsDeactivated(false);
         }
     }, [error, userLoginType]);
 
@@ -315,8 +318,8 @@ const LoginForm = ({
         onLogin();
     }, [focusPassword, onLogin, magicLinkEnabled, userLoginType]);
 
-    const buttonDisabled = getButtonDisabled(loginId, password, userLoginType, magicLinkEnabled);
-    const showPasswordInput = !magicLinkEnabled || (userLoginType !== 'guest_magic_link' && userLoginType !== undefined && userLoginType !== 'deactivated');
+    const buttonDisabled = getButtonDisabled(loginId, password, userLoginType, isDeactivated, magicLinkEnabled);
+    const showPasswordInput = !magicLinkEnabled || (userLoginType !== 'guest_magic_link' && userLoginType !== undefined && !isDeactivated);
     let userInputError = error;
     if (showPasswordInput) {
         userInputError = error ? ' ' : '';
