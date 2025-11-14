@@ -14,6 +14,7 @@ import {
     addUserToTeam,
     addUsersToTeam,
     sendEmailInvitesToTeam,
+    sendGuestEmailInvitesToTeam,
     fetchMyTeams,
     fetchMyTeam,
     fetchTeamById,
@@ -83,6 +84,7 @@ const mockClient = {
     addToTeam: jest.fn((id: string, userId: string) => ({id: userId + '-' + id, user_id: userId, team_id: id, roles: ''})),
     addUsersToTeamGracefully: jest.fn((id: string, userIds: string[]) => (userIds.map((userId) => ({member: {id: userId + '-' + id, user_id: userId, team_id: id, roles: ''}, error: undefined, user_id: userId})))),
     sendEmailInvitesToTeamGracefully: jest.fn((id: string, emails: string[]) => (emails.map((email) => ({email, error: undefined})))),
+    sendGuestEmailInvitesToTeamGracefully: jest.fn(() => Promise.resolve<TeamInviteWithError[]>([{email: 'guest1@example.com', error: {message: '', status_code: 0}}])),
     getRolesByNames: jest.fn((roles: string[]) => roles.map((r) => ({id: r, name: r} as Role))),
     getMyTeams: jest.fn(() => ([{id: teamId, name: 'team1'}])),
     getMyTeamMembers: jest.fn(() => ([{id: 'userid1-' + teamId, user_id: 'userid1', team_id: teamId, roles: ''}])),
@@ -220,6 +222,73 @@ describe('teamMember', () => {
         const result = await getTeamMembersByIds(serverUrl, teamId, ['userid1']);
         expect(result).toBeDefined();
         expect(result?.members).toBeDefined();
+    });
+});
+
+describe('sendGuestEmailInvitesToTeam', () => {
+    const emails = ['guest1@example.com', 'guest2@example.com'];
+    const channels = ['channel-id-1', 'channel-id-2'];
+    const message = 'Welcome to the team!';
+
+    const throwFunc = () => {
+        throw Error('error');
+    };
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
+    it('should send guest email invites successfully with all parameters', async () => {
+        const mockMembers: TeamInviteWithError[] = [
+            {email: 'guest1@example.com', error: {message: '', status_code: 0}},
+            {email: 'guest2@example.com', error: {message: '', status_code: 0}},
+        ];
+        mockClient.sendGuestEmailInvitesToTeamGracefully.mockResolvedValueOnce(mockMembers);
+
+        const result = await sendGuestEmailInvitesToTeam(serverUrl, teamId, emails, channels, message);
+
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.members).toEqual(mockMembers);
+        expect(mockClient.sendGuestEmailInvitesToTeamGracefully).toHaveBeenCalledWith(teamId, emails, channels, message);
+        expect(mockClient.sendGuestEmailInvitesToTeamGracefully).toHaveBeenCalledTimes(1);
+    });
+
+    it('should send guest email invites successfully without message parameter', async () => {
+        const mockMembers: TeamInviteWithError[] = [
+            {email: 'guest1@example.com', error: {message: '', status_code: 0}},
+        ];
+        mockClient.sendGuestEmailInvitesToTeamGracefully.mockResolvedValueOnce(mockMembers);
+
+        const result = await sendGuestEmailInvitesToTeam(serverUrl, teamId, ['guest1@example.com'], channels);
+
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.members).toEqual(mockMembers);
+        expect(mockClient.sendGuestEmailInvitesToTeamGracefully).toHaveBeenCalledWith(teamId, ['guest1@example.com'], channels, '');
+        expect(mockClient.sendGuestEmailInvitesToTeamGracefully).toHaveBeenCalledTimes(1);
+    });
+
+    it('should handle client error', async () => {
+        const clientError = new Error('Client error');
+        mockClient.sendGuestEmailInvitesToTeamGracefully.mockRejectedValueOnce(clientError);
+
+        const result = await sendGuestEmailInvitesToTeam(serverUrl, teamId, emails, channels, message);
+
+        expect(result).toBeDefined();
+        expect(result.error).toBeDefined();
+        expect(result.members).toBeUndefined();
+        expect(mockClient.sendGuestEmailInvitesToTeamGracefully).toHaveBeenCalledWith(teamId, emails, channels, message);
+    });
+
+    it('should handle network manager error', async () => {
+        jest.spyOn(NetworkManager, 'getClient').mockImplementationOnce(throwFunc);
+
+        const result = await sendGuestEmailInvitesToTeam(serverUrl, teamId, emails, channels, message);
+
+        expect(result).toBeDefined();
+        expect(result.error).toBeDefined();
+        expect(result.members).toBeUndefined();
     });
 });
 
