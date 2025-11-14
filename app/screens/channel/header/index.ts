@@ -111,6 +111,7 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: OwnProps
     return {
         canAddBookmarks,
         channelType,
+        currentUserId,
         customStatus,
         displayName,
         hasBookmarks,
