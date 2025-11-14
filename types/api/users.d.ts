@@ -162,3 +162,5 @@ type GetUsersOptions = {
 	channel_roles?: string;
 	team_roles?: string;
 };
+
+type LoginType = '' | 'guest_magic_link';
