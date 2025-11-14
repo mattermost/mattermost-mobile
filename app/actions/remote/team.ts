@@ -159,16 +159,16 @@ export async function sendEmailInvitesToTeam(serverUrl: string, teamId: string, 
     }
 }
 
-export async function sendGuestEmailInvitesToTeam(serverUrl: string, teamId: string, emails: string[], channels: string[], message = '') {
+export async function sendGuestEmailInvitesToTeam(serverUrl: string, teamId: string, emails: string[], channels: string[], message = ''): Promise<{members: TeamInviteWithError[]; error?: unknown}> {
     try {
         const client = NetworkManager.getClient(serverUrl);
         const members = await client.sendGuestEmailInvitesToTeamGracefully(teamId, emails, channels, message);
 
-        return {members};
+        return {members, error: undefined};
     } catch (error) {
         logDebug('error on sendGuestEmailInvitesToTeam', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
-        return {error};
+        return {members: [], error};
     }
 }
 
