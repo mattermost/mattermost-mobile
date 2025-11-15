@@ -56,6 +56,6 @@ internal suspend fun PushNotificationDataRunnable.Companion.fetchNeededUsers(ser
 
 internal fun PushNotificationDataRunnable.Companion.addUsersToList(users: ReadableArray, list: ArrayList<Any>) {
     for (i in 0 until users.size()) {
-        list.add(users.getMap(i))
+        users.getMap(i)?.let { list.add(it) }
     }
 }
