@@ -3,8 +3,8 @@
 
 import {FlatList} from '@stream-io/flat-list-mvcp';
 import React, {type ReactElement, useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {DeviceEventEmitter, type ListRenderItemInfo, Platform, type StyleProp, StyleSheet, type ViewStyle, type NativeSyntheticEvent, type NativeScrollEvent} from 'react-native';
-import Animated, {type AnimatedStyle} from 'react-native-reanimated';
+import {DeviceEventEmitter, type ListRenderItemInfo, Platform, type StyleProp, StyleSheet, type ViewStyle, type NativeSyntheticEvent, type NativeScrollEvent, Keyboard} from 'react-native';
+import Animated, {useAnimatedProps, type AnimatedStyle} from 'react-native-reanimated';
 
 import {removePost} from '@actions/local/post';
 import {fetchPosts, fetchPostThread} from '@actions/remote/post';
@@ -15,6 +15,7 @@ import Post from '@components/post_list/post';
 import ThreadOverview from '@components/post_list/thread_overview';
 import {Events, Screens} from '@constants';
 import {PostTypes} from '@constants/post';
+import {useKeyboardAnimationContext} from '@context/keyboard_animation';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {getDateForDateLine, preparePostList} from '@utils/post_list';
@@ -55,6 +56,7 @@ type Props = {
     testID: string;
     currentCallBarVisible?: boolean;
     savedPostIds: Set<string>;
+    listRef: React.RefObject<FlatList<string | PostModel>>;
 }
 
 type onScrollEndIndexListenerEvent = (endIndex: number) => void;
@@ -106,10 +108,17 @@ const PostList = ({
     showNewMessageLine = true,
     testID,
     savedPostIds,
+    listRef,
 }: Props) => {
     const firstIdInPosts = posts[0]?.id;
 
-    const listRef = useRef<FlatList<string | PostModel>>(null);
+    const {
+        inset: contentInset,
+        onScroll: onScrollProp,
+        postInputContainerHeight,
+        keyboardHeight,
+    } = useKeyboardAnimationContext();
+
     const onScrollEndIndexListener = useRef<onScrollEndIndexListenerEvent>();
     const onViewableItemsChangedListener = useRef<ViewableItemsChangedListenerEvent>();
     const scrolledToHighlighted = useRef(false);
@@ -128,9 +137,17 @@ const PostList = ({
 
     const isNewMessage = lastPostId ? firstIdInPosts !== lastPostId : false;
 
-    const scrollToEnd = useCallback(() => {
-        listRef.current?.scrollToOffset({offset: 0, animated: true});
-    }, []);
+    const scrollToEnd = useCallback((forceScrollToEnd = false) => {
+        const isKeyboardVisible = Keyboard.isVisible();
+
+        if (isKeyboardVisible && !forceScrollToEnd) {
+            return;
+        }
+
+        const targetOffset = (forceScrollToEnd && isKeyboardVisible) ? -keyboardHeight.value : 0;
+
+        listRef.current?.scrollToOffset({offset: targetOffset, animated: true});
+    }, [listRef, keyboardHeight]);
 
     useEffect(() => {
         const t = setTimeout(() => {
@@ -188,9 +205,9 @@ const PostList = ({
             viewOffset: applyOffset ? Platform.select({ios: -45, default: 0}) : 0,
             viewPosition: 1, // 0 is at bottom
         });
-    }, []);
+    }, [listRef]);
 
-    const onScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const internalOnScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
         const {y} = event.nativeEvent.contentOffset;
         const isThresholdReached = y > CONTENT_OFFSET_THRESHOLD;
 
@@ -250,6 +267,14 @@ const PostList = ({
 
         return removeListener;
     }, []);
+
+    useEffect(() => {
+        setTimeout(() => {
+            listRef.current?.scrollToOffset({
+                offset: 0,
+            });
+        }, 1000);
+    }, [listRef]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<PostListItem | PostListOtherItem>) => {
         switch (item.type) {
@@ -344,12 +369,36 @@ const PostList = ({
         }, 500);
 
         return () => clearTimeout(t);
-    }, [orderedPosts, highlightedId]);
+    }, [orderedPosts, highlightedId, listRef]);
+
+    // For inverted list: paddingTop in contentContainerStyle = visual bottom padding
+    const contentContainerStyleWithPadding = useMemo(() => {
+        return [
+            contentContainerStyle,
+            {paddingTop: postInputContainerHeight},
+        ];
+    }, [contentContainerStyle, postInputContainerHeight]);
+
+    // contentInset only for dynamic keyboard height
+    const animatedProps = useAnimatedProps(
+        () => {
+            // For inverted FlatList, contentInset.top applies to the visual bottom
+            return {
+                contentInset: {
+                    top: contentInset.value, // Only keyboard height (dynamic)
+                },
+            };
+        },
+        [contentInset],
+    );
 
     return (
         <>
             <Animated.FlatList
-                contentContainerStyle={contentContainerStyle}
+                animatedProps={animatedProps}
+                automaticallyAdjustContentInsets={false}
+                contentInsetAdjustmentBehavior='never'
+                contentContainerStyle={contentContainerStyleWithPadding}
                 data={orderedPosts}
                 keyboardDismissMode='interactive'
                 keyboardShouldPersistTaps='handled'
@@ -362,7 +411,8 @@ const PostList = ({
                 nativeID={nativeID}
                 onEndReached={onEndReached}
                 onEndReachedThreshold={0.9}
-                onScroll={onScroll}
+                onScroll={onScrollProp}
+                onMomentumScrollEnd={internalOnScroll}
                 onScrollToIndexFailed={onScrollToIndexFailed}
                 onViewableItemsChanged={onViewableItemsChanged}
                 ref={listRef}
