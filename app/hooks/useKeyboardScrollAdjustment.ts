@@ -10,11 +10,13 @@ import type {FlatList} from 'react-native';
 /**
  * Custom hook to handle automatic scrolling when keyboard opens
  * Keeps messages in the same relative position to the input container
+ * Only enabled on iOS - Android uses native keyboard handling
  */
 export const useKeyboardScrollAdjustment = (
     scrollViewRef: React.RefObject<FlatList<string | PostModel>>,
     scroll: SharedValue<number>,
     offset: SharedValue<number>,
+    enabled = true,
 ) => {
     // Callback to scroll the view (needs to be stable reference for runOnJS)
     const scrollToOffset = useCallback(
@@ -31,8 +33,10 @@ export const useKeyboardScrollAdjustment = (
     useAnimatedReaction(
         () => offset.value,
         (currentOffset) => {
-            runOnJS(scrollToOffset)(currentOffset, scroll.value);
+            if (enabled) {
+                runOnJS(scrollToOffset)(currentOffset, scroll.value);
+            }
         },
-        [offset],
+        [offset, enabled],
     );
 };

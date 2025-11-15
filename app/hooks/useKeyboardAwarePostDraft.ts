@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {useCallback, useRef, useState} from 'react';
-import {FlatList} from 'react-native';
+import {FlatList, Platform} from 'react-native';
 import {KeyboardController} from 'react-native-keyboard-controller';
 import {useAnimatedStyle} from 'react-native-reanimated';
 
@@ -18,6 +18,8 @@ import type PostModel from '@typings/database/models/servers/post';
  */
 const DEFAULT_POST_INPUT_HEIGHT = 91;
 
+const isIOS = Platform.OS === 'ios';
+
 export const useKeyboardAwarePostDraft = () => {
     const [postInputContainerHeight, setPostInputContainerHeight] = useState(DEFAULT_POST_INPUT_HEIGHT);
     const listRef = useRef<FlatList<string | PostModel>>(null);
@@ -29,13 +31,14 @@ export const useKeyboardAwarePostDraft = () => {
         offset,
         scroll,
         onScroll,
-    } = useKeyboardAnimation(postInputContainerHeight);
+    } = useKeyboardAnimation(postInputContainerHeight, isIOS);
 
-    useKeyboardScrollAdjustment(listRef, scroll, offset);
+    // Only apply scroll adjustment on iOS, Android uses native keyboard handling
+    useKeyboardScrollAdjustment(listRef, scroll, offset, isIOS);
 
     const inputContainerAnimatedStyle = useAnimatedStyle(
         () => ({
-            transform: [{translateY: -height.value}],
+            transform: [{translateY: isIOS ? -height.value : 0}],
         }),
         [],
     );

@@ -4,7 +4,7 @@
 import {useKeyboardHandler} from 'react-native-keyboard-controller';
 import {useAnimatedScrollHandler, useSharedValue} from 'react-native-reanimated';
 
-export const useKeyboardAnimation = (postInputContainerHeight: number) => {
+export const useKeyboardAnimation = (postInputContainerHeight: number, enableAnimation = true) => {
     /**
    * progress: Keyboard animation progress (0 = closed, 1 = fully open)
    * Used for: Tracking keyboard animation state
@@ -48,6 +48,12 @@ export const useKeyboardAnimation = (postInputContainerHeight: number) => {
    */
     const isKeyboardOpening = useSharedValue(false);
 
+    /**
+   * isKeyboardClosing: Tracks if keyboard is currently closing (detected in onInteractive)
+   * Used to prevent height jumps in onMove when user releases finger mid-swipe
+   */
+    const isKeyboardClosing = useSharedValue(false);
+
     // ------------------------------------------------------------------
     // KEYBOARD EVENT HANDLERS
     // ------------------------------------------------------------------
@@ -68,11 +74,16 @@ export const useKeyboardAnimation = (postInputContainerHeight: number) => {
     useKeyboardHandler({
 
         /**
-     * onStart: Called when keyboard animation starts
-     * @param e - Event object with keyboard information
-     */
+         * onStart: Called when keyboard animation starts
+         * @param e - Event object with keyboard information
+         */
         onStart: (e) => {
             'worklet'; // Mark this function to run on UI thread (60fps)
+
+            // On Android, use native keyboard behavior (no custom animations)
+            if (!enableAnimation) {
+                return;
+            }
 
             // Ignore adjustment event from KeyboardGestureArea (fires after keyboard fully opens)
             // After keyboard reaches full height, KeyboardGestureArea sends offset-adjusted event
@@ -98,13 +109,25 @@ export const useKeyboardAnimation = (postInputContainerHeight: number) => {
         },
 
         /**
-     * onInteractive: Called continuously while user drags keyboard interactively
-     * This provides smooth real-time updates as the user swipes
-     *
-     * @param e - Event object with keyboard information
-     */
+         * onInteractive: Called continuously while user drags keyboard interactively
+         * This provides smooth real-time updates as the user swipes
+         *
+         * @param e - Event object with keyboard information
+         */
         onInteractive: (e) => {
             'worklet';
+
+            // On Android, use native keyboard behavior (no custom animations)
+            if (!enableAnimation) {
+                return;
+            }
+
+            if (parseInt(e.height.toString()) === postInputContainerHeight) {
+                return;
+            }
+
+            // Track if keyboard is closing (height decreasing)
+            isKeyboardClosing.value = e.height < height.value;
 
             height.value = e.height;
             offset.value = e.height;
@@ -112,13 +135,27 @@ export const useKeyboardAnimation = (postInputContainerHeight: number) => {
         },
 
         /**
-     * onMove: Called continuously as keyboard animates (programmatic or gesture)
-     * Similar to onInteractive but for all keyboard movements
-     *
-     * @param e - Event object with keyboard information
-     */
+         * onMove: Called continuously as keyboard animates (programmatic or gesture)
+         * Similar to onInteractive but for all keyboard movements
+         *
+         * @param e - Event object with keyboard information
+         */
         onMove: (e) => {
             'worklet';
+
+            // On Android, use native keyboard behavior (no custom animations)
+            if (!enableAnimation) {
+                return;
+            }
+
+            // If keyboard is closing (detected in onInteractive), set height/offset/inset to 0
+            // This prevents the keyboard from jumping back up when user releases finger mid-swipe
+            if (isKeyboardClosing.value) {
+                height.value = 0;
+                offset.value = 0;
+                inset.value = 0;
+                return;
+            }
 
             // Ignore adjustment event from KeyboardGestureArea (fires after keyboard fully opens)
             // After keyboard reaches full height, KeyboardGestureArea sends offset-adjusted event
@@ -128,7 +165,7 @@ export const useKeyboardAnimation = (postInputContainerHeight: number) => {
                 return;
             }
 
-            const absHeight = Math.abs(e.height); // Use Math.abs because programmatic dismiss (Keyboard.dismiss()) reports negative heights
+            const absHeight = Math.abs(e.height); // Use Math.abs because programmatic dismiss (KeyboardController.dismiss()) reports negative heights
 
             height.value = absHeight;
             offset.value = absHeight;
@@ -138,6 +175,14 @@ export const useKeyboardAnimation = (postInputContainerHeight: number) => {
 
         onEnd: (e) => {
             'worklet';
+
+            // On Android, use native keyboard behavior (no custom animations)
+            if (!enableAnimation) {
+                return;
+            }
+
+            // Reset closing flag when animation ends
+            isKeyboardClosing.value = false;
 
             if (progress.value === 1) {
                 height.value = Math.max(e.height, keyboardHeight.value);
