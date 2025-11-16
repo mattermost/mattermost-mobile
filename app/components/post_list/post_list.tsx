@@ -57,7 +57,7 @@ type Props = {
     testID: string;
     currentCallBarVisible?: boolean;
     savedPostIds: Set<string>;
-    listRef: React.RefObject<FlatList<string | PostModel>>;
+    listRef?: React.RefObject<FlatList<string | PostModel>>;
 }
 
 type onScrollEndIndexListenerEvent = (endIndex: number) => void;
@@ -203,7 +203,7 @@ const PostList = ({
 
         const targetOffset = (forceScrollToEnd && keyboardVisible) ? -keyboardHeight.value : 0;
 
-        listRef.current?.scrollToOffset({offset: targetOffset, animated: true});
+        listRef?.current?.scrollToOffset({offset: targetOffset, animated: true});
     }, [listRef, keyboardHeight]);
 
     useEffect(() => {
@@ -256,7 +256,7 @@ const PostList = ({
     }, [disablePullToRefresh, location, channelId, rootId, posts, serverUrl]);
 
     const scrollToIndex = useCallback((index: number, animated = true, applyOffset = true) => {
-        listRef.current?.scrollToIndex({
+        listRef?.current?.scrollToIndex({
             animated,
             index,
             viewOffset: applyOffset ? Platform.select({ios: -45, default: 0}) : 0,
@@ -327,7 +327,7 @@ const PostList = ({
 
     useEffect(() => {
         setTimeout(() => {
-            listRef.current?.scrollToOffset({
+            listRef?.current?.scrollToOffset({
                 offset: 0,
             });
         }, 1000);
@@ -414,7 +414,7 @@ const PostList = ({
                 scrolledToHighlighted.current = true;
                 // eslint-disable-next-line max-nested-callbacks
                 const index = orderedPosts.findIndex((p) => p.type === 'post' && p.value.currentPost.id === highlightedId);
-                if (index >= 0 && listRef.current) {
+                if (index >= 0 && listRef?.current) {
                     listRef.current?.scrollToIndex({
                         animated: true,
                         index,

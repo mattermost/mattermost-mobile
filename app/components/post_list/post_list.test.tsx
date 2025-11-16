@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {act} from '@testing-library/react-native';
-import React, {type ComponentProps} from 'react';
-import {DeviceEventEmitter, Platform} from 'react-native';
+import React, {createRef, type ComponentProps} from 'react';
+import {DeviceEventEmitter, FlatList, Platform} from 'react-native';
 
 import * as localPostFunctions from '@actions/local/post';
 import * as postFunctions from '@actions/remote/post';
@@ -80,6 +80,7 @@ describe('components/post_list/PostList', () => {
         savedPostIds: new Set(),
         testID: 'post_list',
         shouldShowJoinLeaveMessages: false,
+        listRef: createRef<FlatList<string | PostModel>>(),
     };
 
     it('renders correctly with basic props', () => {
