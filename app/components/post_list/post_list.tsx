@@ -5,7 +5,7 @@ import {FlatList} from '@stream-io/flat-list-mvcp';
 import React, {type ReactElement, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {DeviceEventEmitter, type ListRenderItemInfo, Platform, type StyleProp, StyleSheet, type ViewStyle, type NativeSyntheticEvent, type NativeScrollEvent, Keyboard} from 'react-native';
 import {useKeyboardState} from 'react-native-keyboard-controller';
-import Animated, {KeyboardState, useAnimatedProps, type AnimatedStyle} from 'react-native-reanimated';
+import Animated, {KeyboardState, runOnJS, useAnimatedProps, useAnimatedReaction, useSharedValue, type AnimatedStyle} from 'react-native-reanimated';
 
 import {removePost} from '@actions/local/post';
 import {fetchPosts, fetchPostThread} from '@actions/remote/post';
@@ -114,14 +114,18 @@ const PostList = ({
     const firstIdInPosts = posts[0]?.id;
 
     const {
+        height: keyboardHeightValue,
         inset: contentInset,
         onScroll: onScrollProp,
         postInputContainerHeight,
         keyboardHeight,
+        isKeyboardFullyOpen,
+        isKeyboardFullyClosed,
     } = useKeyboardAnimationContext();
 
     // Track keyboard state to emit events for tab bar visibility
-    const isKeyboardVisible = useKeyboardState((state) => state.isVisible);
+    const keyboardState = useKeyboardState();
+    const isKeyboardVisible = keyboardState.isVisible;
     const prevKeyboardVisible = useRef<boolean>(false);
 
     const onScrollEndIndexListener = useRef<onScrollEndIndexListenerEvent>();
@@ -130,30 +134,56 @@ const PostList = ({
     const [refreshing, setRefreshing] = useState(false);
     const [showScrollToEndBtn, setShowScrollToEndBtn] = useState(false);
     const [lastPostId, setLastPostId] = useState<string | undefined>(firstIdInPosts);
+    const [progressViewOffset, setProgressViewOffset] = useState(postInputContainerHeight);
     const theme = useTheme();
     const serverUrl = useServerUrl();
 
     // Emit keyboard state changes for tab bar visibility control
     useEffect(() => {
         // Detect state transitions to emit OPENING/CLOSING states
-        let keyboardState: KeyboardState;
+        let keyboardStateValue: KeyboardState;
         if (isKeyboardVisible && !prevKeyboardVisible.current) {
             // Transitioning from closed to open = OPENING
-            keyboardState = KeyboardState.OPENING;
+            keyboardStateValue = KeyboardState.OPENING;
         } else if (!isKeyboardVisible && prevKeyboardVisible.current) {
             // Transitioning from open to closed = CLOSING
-            keyboardState = KeyboardState.CLOSING;
+            keyboardStateValue = KeyboardState.CLOSING;
         } else if (isKeyboardVisible) {
             // Already open = OPEN
-            keyboardState = KeyboardState.OPEN;
+            keyboardStateValue = KeyboardState.OPEN;
         } else {
             // Already closed = CLOSED
-            keyboardState = KeyboardState.CLOSED;
+            keyboardStateValue = KeyboardState.CLOSED;
         }
 
         prevKeyboardVisible.current = isKeyboardVisible;
-        DeviceEventEmitter.emit(Events.KEYBOARD_STATE_CHANGED, keyboardState);
+        DeviceEventEmitter.emit(Events.KEYBOARD_STATE_CHANGED, keyboardStateValue);
     }, [isKeyboardVisible]);
+
+    // Update progressViewOffset to position RefreshControl correctly when keyboard-aware props are applied.
+    // Only update when keyboard state changes (fully open ↔ fully closed) to prevent flickering during animation.
+    const prevIsFullyOpen = useSharedValue(false);
+    const prevIsFullyClosed = useSharedValue(true);
+    useAnimatedReaction(
+        () => ({
+            isFullyOpen: isKeyboardFullyOpen.value,
+            isFullyClosed: isKeyboardFullyClosed.value,
+            height: keyboardHeightValue.value,
+        }),
+        ({isFullyOpen, isFullyClosed, height}) => {
+            // Only update when state actually changes (transition detected)
+            const stateChanged = (prevIsFullyClosed.value !== isFullyClosed) || (prevIsFullyOpen.value !== isFullyOpen);
+
+            if (stateChanged && (isFullyOpen || isFullyClosed)) {
+                const offset = postInputContainerHeight + height;
+                runOnJS(setProgressViewOffset)(offset);
+            }
+            prevIsFullyOpen.value = isFullyOpen;
+            prevIsFullyClosed.value = isFullyClosed;
+        },
+        [postInputContainerHeight],
+    );
+
     const orderedPosts = useMemo(() => {
         return preparePostList(posts, lastViewedAt, showNewMessageLine, currentUserId, currentUsername, shouldShowJoinLeaveMessages, currentTimezone, location === Screens.THREAD, savedPostIds);
     }, [posts, lastViewedAt, showNewMessageLine, currentUserId, currentUsername, shouldShowJoinLeaveMessages, currentTimezone, location, savedPostIds]);
@@ -442,6 +472,7 @@ const PostList = ({
                 onMomentumScrollEnd={internalOnScroll}
                 onScrollToIndexFailed={onScrollToIndexFailed}
                 onViewableItemsChanged={onViewableItemsChanged}
+                progressViewOffset={progressViewOffset}
                 ref={listRef}
                 removeClippedSubviews={true}
                 renderItem={renderItem}

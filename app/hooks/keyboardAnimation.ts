@@ -49,10 +49,25 @@ export const useKeyboardAnimation = (postInputContainerHeight: number, enableAni
     const isKeyboardOpening = useSharedValue(false);
 
     /**
-   * isKeyboardClosing: Tracks if keyboard is currently closing (detected in onInteractive)
-   * Used to prevent height jumps in onMove when user releases finger mid-swipe
-   */
+     * isKeyboardClosing: Tracks if keyboard is currently closing (detected in onInteractive)
+     * Used to prevent height jumps in onMove when user releases finger mid-swipe
+     */
     const isKeyboardClosing = useSharedValue(false);
+
+    /**
+     * isKeyboardFullyOpen: True when keyboard is fully open (height > 0 and progress === 1)
+     */
+    const isKeyboardFullyOpen = useSharedValue(false);
+
+    /**
+     * isKeyboardFullyClosed: True when keyboard is fully closed (height === 0)
+     */
+    const isKeyboardFullyClosed = useSharedValue(true);
+
+    /**
+     * isKeyboardInTransition: True when keyboard is animating between open/closed states
+     */
+    const isKeyboardInTransition = useSharedValue(false);
 
     // ------------------------------------------------------------------
     // KEYBOARD EVENT HANDLERS
@@ -103,6 +118,11 @@ export const useKeyboardAnimation = (postInputContainerHeight: number, enableAni
             // Opening if new height is greater than current visual height
             isKeyboardOpening.value = e.height > height.value;
 
+            // Update keyboard state flags
+            isKeyboardFullyClosed.value = e.height === 0;
+            isKeyboardFullyOpen.value = e.height > 0 && e.progress === 1;
+            isKeyboardInTransition.value = e.height > 0 && e.progress < 1;
+
             // Update scroll view insets and offsets
             // inset: Adds bottom padding to scroll content
             inset.value = e.height;
@@ -132,6 +152,11 @@ export const useKeyboardAnimation = (postInputContainerHeight: number, enableAni
             height.value = e.height;
             offset.value = e.height;
             inset.value = e.height;
+
+            // Update keyboard state flags
+            isKeyboardFullyClosed.value = e.height === 0;
+            isKeyboardFullyOpen.value = e.height > 0 && e.progress === 1;
+            isKeyboardInTransition.value = e.height > 0 && e.progress < 1;
         },
 
         /**
@@ -171,6 +196,11 @@ export const useKeyboardAnimation = (postInputContainerHeight: number, enableAni
             offset.value = absHeight;
             inset.value = absHeight;
 
+            // Update keyboard state flags
+            isKeyboardFullyClosed.value = absHeight === 0;
+            isKeyboardFullyOpen.value = absHeight > 0 && e.progress === 1;
+            isKeyboardInTransition.value = absHeight > 0 && e.progress < 1;
+
         },
 
         onEnd: (e) => {
@@ -186,10 +216,16 @@ export const useKeyboardAnimation = (postInputContainerHeight: number, enableAni
 
             if (progress.value === 1) {
                 height.value = Math.max(e.height, keyboardHeight.value);
+                isKeyboardFullyOpen.value = true;
+                isKeyboardFullyClosed.value = false;
+                isKeyboardInTransition.value = false;
             }
 
             if (progress.value === 0) {
                 height.value = Math.min(e.height, 0);
+                isKeyboardFullyOpen.value = false;
+                isKeyboardFullyClosed.value = true;
+                isKeyboardInTransition.value = false;
             }
         },
     });
@@ -208,5 +244,15 @@ export const useKeyboardAnimation = (postInputContainerHeight: number, enableAni
         },
     });
 
-    return {height, onScroll, inset, offset, keyboardHeight, scroll};
+    return {
+        height,
+        onScroll,
+        inset,
+        offset,
+        keyboardHeight,
+        scroll,
+        isKeyboardFullyOpen,
+        isKeyboardFullyClosed,
+        isKeyboardInTransition,
+    };
 };

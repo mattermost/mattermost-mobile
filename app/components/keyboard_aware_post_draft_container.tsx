@@ -67,6 +67,9 @@ export const KeyboardAwarePostDraftContainer = ({
         blurInput,
         focusInput,
         blurAndDismissKeyboard,
+        isKeyboardFullyOpen,
+        isKeyboardFullyClosed,
+        isKeyboardInTransition,
     } = useKeyboardAwarePostDraft();
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
@@ -85,6 +88,9 @@ export const KeyboardAwarePostDraftContainer = ({
         blurInput,
         focusInput,
         blurAndDismissKeyboard,
+        isKeyboardFullyOpen,
+        isKeyboardFullyClosed,
+        isKeyboardInTransition,
     }), [
         keyboardCurrentHeight,
         contentInset,
@@ -97,6 +103,9 @@ export const KeyboardAwarePostDraftContainer = ({
         blurInput,
         focusInput,
         blurAndDismissKeyboard,
+        isKeyboardFullyOpen,
+        isKeyboardFullyClosed,
+        isKeyboardInTransition,
     ]);
 
     const wrapperProps = useMemo(() => {

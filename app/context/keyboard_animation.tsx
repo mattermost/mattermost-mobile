@@ -18,6 +18,9 @@ interface KeyboardAnimationContextType {
     blurInput: () => void;
     focusInput: () => void;
     blurAndDismissKeyboard: () => Promise<void>;
+    isKeyboardFullyOpen: SharedValue<boolean>;
+    isKeyboardFullyClosed: SharedValue<boolean>;
+    isKeyboardInTransition: SharedValue<boolean>;
 }
 
 const KeyboardAnimationContext = createContext<KeyboardAnimationContextType | null>(null);

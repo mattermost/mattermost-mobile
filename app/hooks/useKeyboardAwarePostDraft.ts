@@ -31,6 +31,9 @@ export const useKeyboardAwarePostDraft = () => {
         offset,
         scroll,
         onScroll,
+        isKeyboardFullyOpen,
+        isKeyboardFullyClosed,
+        isKeyboardInTransition,
     } = useKeyboardAnimation(postInputContainerHeight, isIOS);
 
     // Only apply scroll adjustment on iOS, Android uses native keyboard handling
@@ -74,6 +77,9 @@ export const useKeyboardAwarePostDraft = () => {
         blurInput,
         focusInput,
         blurAndDismissKeyboard,
+        isKeyboardFullyOpen,
+        isKeyboardFullyClosed,
+        isKeyboardInTransition,
     };
 };
 
