@@ -4,7 +4,8 @@
 import {FlatList} from '@stream-io/flat-list-mvcp';
 import React, {type ReactElement, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {DeviceEventEmitter, type ListRenderItemInfo, Platform, type StyleProp, StyleSheet, type ViewStyle, type NativeSyntheticEvent, type NativeScrollEvent, Keyboard} from 'react-native';
-import Animated, {useAnimatedProps, type AnimatedStyle} from 'react-native-reanimated';
+import {useKeyboardState} from 'react-native-keyboard-controller';
+import Animated, {KeyboardState, useAnimatedProps, type AnimatedStyle} from 'react-native-reanimated';
 
 import {removePost} from '@actions/local/post';
 import {fetchPosts, fetchPostThread} from '@actions/remote/post';
@@ -119,6 +120,10 @@ const PostList = ({
         keyboardHeight,
     } = useKeyboardAnimationContext();
 
+    // Track keyboard state to emit events for tab bar visibility
+    const isKeyboardVisible = useKeyboardState((state) => state.isVisible);
+    const prevKeyboardVisible = useRef<boolean>(false);
+
     const onScrollEndIndexListener = useRef<onScrollEndIndexListenerEvent>();
     const onViewableItemsChangedListener = useRef<ViewableItemsChangedListenerEvent>();
     const scrolledToHighlighted = useRef(false);
@@ -127,6 +132,28 @@ const PostList = ({
     const [lastPostId, setLastPostId] = useState<string | undefined>(firstIdInPosts);
     const theme = useTheme();
     const serverUrl = useServerUrl();
+
+    // Emit keyboard state changes for tab bar visibility control
+    useEffect(() => {
+        // Detect state transitions to emit OPENING/CLOSING states
+        let keyboardState: KeyboardState;
+        if (isKeyboardVisible && !prevKeyboardVisible.current) {
+            // Transitioning from closed to open = OPENING
+            keyboardState = KeyboardState.OPENING;
+        } else if (!isKeyboardVisible && prevKeyboardVisible.current) {
+            // Transitioning from open to closed = CLOSING
+            keyboardState = KeyboardState.CLOSING;
+        } else if (isKeyboardVisible) {
+            // Already open = OPEN
+            keyboardState = KeyboardState.OPEN;
+        } else {
+            // Already closed = CLOSED
+            keyboardState = KeyboardState.CLOSED;
+        }
+
+        prevKeyboardVisible.current = isKeyboardVisible;
+        DeviceEventEmitter.emit(Events.KEYBOARD_STATE_CHANGED, keyboardState);
+    }, [isKeyboardVisible]);
     const orderedPosts = useMemo(() => {
         return preparePostList(posts, lastViewedAt, showNewMessageLine, currentUserId, currentUsername, shouldShowJoinLeaveMessages, currentTimezone, location === Screens.THREAD, savedPostIds);
     }, [posts, lastViewedAt, showNewMessageLine, currentUserId, currentUsername, shouldShowJoinLeaveMessages, currentTimezone, location, savedPostIds]);
@@ -138,13 +165,13 @@ const PostList = ({
     const isNewMessage = lastPostId ? firstIdInPosts !== lastPostId : false;
 
     const scrollToEnd = useCallback((forceScrollToEnd = false) => {
-        const isKeyboardVisible = Keyboard.isVisible();
+        const keyboardVisible = Keyboard.isVisible();
 
-        if (isKeyboardVisible && !forceScrollToEnd) {
+        if (keyboardVisible && !forceScrollToEnd) {
             return;
         }
 
-        const targetOffset = (forceScrollToEnd && isKeyboardVisible) ? -keyboardHeight.value : 0;
+        const targetOffset = (forceScrollToEnd && keyboardVisible) ? -keyboardHeight.value : 0;
 
         listRef.current?.scrollToOffset({offset: targetOffset, animated: true});
     }, [listRef, keyboardHeight]);
