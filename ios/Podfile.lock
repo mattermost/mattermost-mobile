@@ -1496,6 +1496,27 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - react-native-keyboard-controller (1.19.3):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.10.14.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - react-native-netinfo (11.4.1):
     - React-Core
   - react-native-network-client (1.8.4):
@@ -2286,6 +2307,7 @@ DEPENDENCIES:
   - react-native-document-picker (from `../node_modules/react-native-document-picker`)
   - "react-native-emm (from `../node_modules/@mattermost/react-native-emm`)"
   - react-native-image-picker (from `../node_modules/react-native-image-picker`)
+  - react-native-keyboard-controller (from `../node_modules/react-native-keyboard-controller`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - "react-native-network-client (from `../node_modules/@mattermost/react-native-network-client`)"
   - react-native-notifications (from `../node_modules/react-native-notifications`)
@@ -2477,6 +2499,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@mattermost/react-native-emm"
   react-native-image-picker:
     :path: "../node_modules/react-native-image-picker"
+  react-native-keyboard-controller:
+    :path: "../node_modules/react-native-keyboard-controller"
   react-native-netinfo:
     :path: "../node_modules/@react-native-community/netinfo"
   react-native-network-client:
@@ -2662,6 +2686,7 @@ SPEC CHECKSUMS:
   react-native-document-picker: befd8fe34fcfc606ec7ee427ab21747fbdb6bc44
   react-native-emm: 983a347e31aef8a93cbc51b6cea08708dacada84
   react-native-image-picker: 32515318a4ecfbc864f5f94a1c67df1ce4b8d854
+  react-native-keyboard-controller: 42cea53b90cc38f16642982075183deb161c49d5
   react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187
   react-native-network-client: 0318a28947973601ce5783c78f997f0560ee6140
   react-native-notifications: 3bafa1237ae8a47569a84801f17d80242fe9f6a5

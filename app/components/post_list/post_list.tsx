@@ -3,8 +3,8 @@
 
 import {FlatList} from '@stream-io/flat-list-mvcp';
 import React, {type ReactElement, useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {DeviceEventEmitter, type ListRenderItemInfo, Platform, type StyleProp, StyleSheet, type ViewStyle, type NativeSyntheticEvent, type NativeScrollEvent, Keyboard} from 'react-native';
-import {useKeyboardState} from 'react-native-keyboard-controller';
+import {DeviceEventEmitter, type ListRenderItemInfo, Platform, type StyleProp, StyleSheet, type ViewStyle, type NativeSyntheticEvent, type NativeScrollEvent} from 'react-native';
+import {KeyboardController, useKeyboardState} from 'react-native-keyboard-controller';
 import Animated, {KeyboardState, runOnJS, useAnimatedProps, useAnimatedReaction, useSharedValue, type AnimatedStyle} from 'react-native-reanimated';
 
 import {removePost} from '@actions/local/post';
@@ -123,7 +123,6 @@ const PostList = ({
         isKeyboardFullyClosed,
     } = useKeyboardAnimationContext();
 
-    // Track keyboard state to emit events for tab bar visibility
     const keyboardState = useKeyboardState();
     const isKeyboardVisible = keyboardState.isVisible;
     const prevKeyboardVisible = useRef<boolean>(false);
@@ -195,7 +194,7 @@ const PostList = ({
     const isNewMessage = lastPostId ? firstIdInPosts !== lastPostId : false;
 
     const scrollToEnd = useCallback((forceScrollToEnd = false) => {
-        const keyboardVisible = Keyboard.isVisible();
+        const keyboardVisible = KeyboardController.isVisible();
 
         if (keyboardVisible && !forceScrollToEnd) {
             return;

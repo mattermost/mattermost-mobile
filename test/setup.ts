@@ -261,7 +261,6 @@ jest.doMock('react-native', () => {
     const Keyboard = {
         ...RNKeyboard,
         dismiss: jest.fn(),
-        isVisible: jest.fn(() => false),
         addListener: jest.fn(() => ({
             remove: jest.fn(),
         })),
@@ -319,6 +318,7 @@ jest.mock('react-native-keyboard-controller', () => {
         KeyboardProvider: ({children}: {children: React.ReactNode}) => children,
         KeyboardController: {
             dismiss: jest.fn(),
+            isVisible: jest.fn(() => false),
         },
         useKeyboardHandler: jest.fn(),
         useKeyboardState: jest.fn(() => ({

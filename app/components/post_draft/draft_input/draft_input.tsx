@@ -139,7 +139,6 @@ function DraftInput({
     const theme = useTheme();
     const isTablet = useIsTablet();
 
-    // Get inputRef and focus function from keyboard animation context
     const {inputRef, focusInput: focus} = useKeyboardAnimationContext();
 
     const handleLayout = useCallback((e: LayoutChangeEvent) => {
