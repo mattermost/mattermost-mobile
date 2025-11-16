@@ -371,7 +371,7 @@ describe('components/post_list/PostList', () => {
 
         // which causes the content offset to shift
         act(() => {
-            flatList.props.onScroll({
+            flatList.props.onMomentumScrollEnd({
                 nativeEvent: {
                     contentOffset: {y: 200},
                     ...unrelatedNativeEventsAttributes,
@@ -384,7 +384,7 @@ describe('components/post_list/PostList', () => {
 
         // if user post an image, scroll to bottom being called to push offset to 0, which causes the "New Messages" message to disappear
         act(() => {
-            flatList.props.onScroll({
+            flatList.props.onMomentumScrollEnd({
                 nativeEvent: {
                     contentOffset: {y: 0},
                     ...unrelatedNativeEventsAttributes,
