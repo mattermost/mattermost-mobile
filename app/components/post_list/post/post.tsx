@@ -332,6 +332,7 @@ const Post = ({
                     post={post}
                     showPostPriority={showPostPriority}
                     shouldRenderReplyButton={shouldRenderReplyButton}
+                    isUnrevealedBoRPost={isUnrevealedPost}
                 />
             );
         }
