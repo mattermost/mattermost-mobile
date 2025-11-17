@@ -83,7 +83,7 @@ describe('Messaging - Message Edit', () => {
         const postItemTestID = `channel.post_list.post.${post.id}`;
         const postItemMatcher = by.id(postItemTestID);
 
-        // Escape special characters in the message for regex this is for pencil icon
+        // Escape special characters in the message for regex
         const escapedMessage = updatedMessage.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
         // Match text that contains the updated message followed by "Edited" (with possible spacing/icon)
@@ -163,7 +163,7 @@ describe('Messaging - Message Edit', () => {
         const replyPostItemTestID = `thread.post_list.post.${replyPost.id}`;
         const replyPostItemMatcher = by.id(replyPostItemTestID);
 
-        // Escape special characters in the message for regex this is for pencil icon
+        // Escape special characters in the message for regex
         const escapedReplyMessage = updatedReplyMessage.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
         // Match text that contains the updated message followed by "Edited" (with possible spacing/icon)
