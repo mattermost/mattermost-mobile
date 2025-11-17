@@ -75,6 +75,7 @@ type PostMetadata = {
     images?: Dictionary<PostImage | undefined>;
     reactions?: Reaction[];
     priority?: PostPriority;
+    expire_at?: number;
 };
 
 type Post = {

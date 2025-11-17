@@ -1,0 +1,73 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+
+import React, {useEffect, useState} from 'react';
+import {Text, View} from 'react-native';
+
+import CompassIcon from '@components/compass_icon';
+import {useTheme} from '@context/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
+type Props = {
+    expiryTime: number; // timestamp in ms
+};
+
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+    container: {
+        display: 'flex',
+        flexDirection: 'row',
+        gap: 6,
+        backgroundColor: changeOpacity(theme.dndIndicator, 0.12),
+        paddingHorizontal: 5,
+        paddingVertical: 2,
+        borderRadius: 4,
+    },
+    text: {
+        fontSize: 12,
+        color: theme.dndIndicator,
+        fontWeight: 600,
+    },
+}));
+
+function formatTime(ms: number) {
+    const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    if (hours > 0) {
+        return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+}
+
+const ExpiryCountdown: React.FC<Props> = ({expiryTime}) => {
+    const theme = useTheme();
+    const style = getStyleSheet(theme);
+
+    const [remaining, setRemaining] = useState(() => Math.max(0, expiryTime - Date.now()));
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setRemaining(Math.max(0, expiryTime - Date.now()));
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [expiryTime]);
+
+    return (
+        <View style={style.container}>
+            <CompassIcon
+                name='fire'
+                size={16}
+                color={theme.dndIndicator}
+            />
+            <Text style={style.text}>
+                {formatTime(remaining)}
+            </Text>
+        </View>
+    );
+};
+
+export default ExpiryCountdown;
+

@@ -4,8 +4,10 @@
 import React from 'react';
 import {Text, View} from 'react-native';
 
+import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
+import ExpiryTimer from '@components/post_list/post/header/expiry_timer';
 import PostPriorityLabel from '@components/post_priority/post_priority_label';
 import {CHANNEL, THREAD} from '@constants/screens';
 import {useTheme} from '@context/theme';
@@ -24,7 +26,6 @@ import HeaderTag from './tag';
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
 import type {AvailableScreens} from '@typings/screens/navigation';
-import CompassIcon from "@components/compass_icon";
 
 type HeaderProps = {
     author?: UserModel;
@@ -47,6 +48,7 @@ type HeaderProps = {
     teammateNameDisplay: string;
     hideGuestTags: boolean;
     isUnrevealedBoRPost?: boolean;
+    borExpireAt?: number;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -82,7 +84,7 @@ const Header = (props: HeaderProps) => {
         author, commentCount = 0, currentUser, enablePostUsernameOverride, isAutoResponse, isCRTEnabled, isCustomStatusEnabled,
         isEphemeral, isMilitaryTime, isPendingOrFailed, isSystemPost, isWebHook,
         location, post, rootPostAuthor, showPostPriority, shouldRenderReplyButton, teammateNameDisplay, hideGuestTags,
-        isUnrevealedBoRPost,
+        isUnrevealedBoRPost, borExpireAt,
     } = props;
     const theme = useTheme();
     const style = getStyleSheet(theme);
@@ -136,6 +138,12 @@ const Header = (props: HeaderProps) => {
                             name='fire'
                             size={16}
                             color={theme.dndIndicator}
+                        />
+                    }
+                    {
+                        !isUnrevealedBoRPost && borExpireAt &&
+                        <ExpiryTimer
+                            expiryTime={borExpireAt}
                         />
                     }
                     {isEphemeral && (

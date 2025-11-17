@@ -11,6 +11,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     buttonBackgroundStyle: {
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
         height: 56,
+        marginBottom: 8,
     },
     buttonTextStyle: {
         color: changeOpacity(theme.centerChannelColor, 0.56),

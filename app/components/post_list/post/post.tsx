@@ -10,6 +10,7 @@ import {showPermalink} from '@actions/remote/permalink';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import CallsCustomMessage from '@calls/components/calls_custom_message';
 import {isCallsCustomMessage, isUnrevealedBoRPost} from '@calls/utils';
+import UnrevealedBurnOnReadPost from '@components/post_list/post/burn_on_read/unrevealed';
 import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';
 import {POST_TIME_TO_FAIL} from '@constants/post';
@@ -37,7 +38,6 @@ import type ThreadModel from '@typings/database/models/servers/thread';
 import type UserModel from '@typings/database/models/servers/user';
 import type {SearchPattern} from '@typings/global/markdown';
 import type {AvailableScreens} from '@typings/screens/navigation';
-import UnrevealedBurnOnReadPost from "@components/post_list/post/burn_on_read/unrevealed";
 
 type PostProps = {
     appsEnabled: boolean;
@@ -333,6 +333,7 @@ const Post = ({
                     showPostPriority={showPostPriority}
                     shouldRenderReplyButton={shouldRenderReplyButton}
                     isUnrevealedBoRPost={isUnrevealedPost}
+                    borExpireAt={post.metadata?.expire_at}
                 />
             );
         }
