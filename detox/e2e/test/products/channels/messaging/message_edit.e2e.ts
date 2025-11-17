@@ -25,8 +25,8 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId} from '@support/utils';
-import {expect} from 'detox';
+import {getRandomId, timeouts} from '@support/utils';
+import {by, element, expect, waitFor} from 'detox';
 
 describe('Messaging - Message Edit', () => {
     const serverOneDisplayName = 'Server 1';
@@ -75,10 +75,23 @@ describe('Messaging - Message Edit', () => {
         await EditPostScreen.messageInput.replaceText(updatedMessage);
         await EditPostScreen.saveButton.tap();
 
-        // * Verify post message is updated and displays edited indicator '(edited)'
-        const {postListPostItem: updatedPostListPostItem, postListPostItemEditedIndicator} = ChannelScreen.getPostListPostItem(post.id, updatedMessage);
+        await expect(EditPostScreen.editPostScreen).not.toBeVisible();
+
+        const {postListPostItem: updatedPostListPostItem} = ChannelScreen.getPostListPostItem(post.id);
         await expect(updatedPostListPostItem).toBeVisible();
-        await expect(postListPostItemEditedIndicator).toHaveText('Edited');
+
+        const postItemTestID = `channel.post_list.post.${post.id}`;
+        const postItemMatcher = by.id(postItemTestID);
+
+        // Escape special characters in the message for regex this is for pencil icon
+        const escapedMessage = updatedMessage.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+        // Match text that contains the updated message followed by "Edited" (with possible spacing/icon)
+        const completeTextPattern = new RegExp(`${escapedMessage}.*Edited`, 'i');
+        const completeTextMatcher = by.text(completeTextPattern).withAncestor(postItemMatcher);
+
+        // Wait for the text containing both message and "Edited" to be visible
+        await waitFor(element(completeTextMatcher)).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await ChannelScreen.back();
@@ -141,10 +154,24 @@ describe('Messaging - Message Edit', () => {
         await EditPostScreen.messageInput.replaceText(updatedReplyMessage);
         await EditPostScreen.saveButton.tap();
 
+        await expect(EditPostScreen.editPostScreen).not.toBeVisible();
+
         // * Verify reply post message is updated and displays edited indicator '(edited)'
-        const {postListPostItem: updatedReplyPostListPostItem, postListPostItemEditedIndicator} = ThreadScreen.getPostListPostItem(replyPost.id, updatedReplyMessage);
+        const {postListPostItem: updatedReplyPostListPostItem} = ThreadScreen.getPostListPostItem(replyPost.id);
         await expect(updatedReplyPostListPostItem).toBeVisible();
-        await expect(postListPostItemEditedIndicator).toHaveText('Edited');
+
+        const replyPostItemTestID = `thread.post_list.post.${replyPost.id}`;
+        const replyPostItemMatcher = by.id(replyPostItemTestID);
+
+        // Escape special characters in the message for regex this is for pencil icon
+        const escapedReplyMessage = updatedReplyMessage.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+        // Match text that contains the updated message followed by "Edited" (with possible spacing/icon)
+        const completeReplyTextPattern = new RegExp(`${escapedReplyMessage}.*Edited`, 'i');
+        const completeReplyTextMatcher = by.text(completeReplyTextPattern).withAncestor(replyPostItemMatcher);
+
+        // Wait for the text containing both message and "Edited" to be visible
+        await waitFor(element(completeReplyTextMatcher)).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await ThreadScreen.back();
