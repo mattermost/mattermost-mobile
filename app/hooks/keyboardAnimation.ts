@@ -4,7 +4,15 @@
 import {useKeyboardHandler} from 'react-native-keyboard-controller';
 import {useAnimatedScrollHandler, useSharedValue} from 'react-native-reanimated';
 
-export const useKeyboardAnimation = (postInputContainerHeight: number, enableAnimation = true) => {
+import {BOTTOM_TAB_HEIGHT} from '@constants/view';
+
+export const useKeyboardAnimation = (
+    postInputContainerHeight: number,
+    enableAnimation = true,
+    isTablet = false,
+    safeAreaBottom = 0,
+    isThreadView = false,
+) => {
     /**
    * progress: Keyboard animation progress (0 = closed, 1 = fully open)
    * Used for: Tracking keyboard animation state
@@ -69,6 +77,11 @@ export const useKeyboardAnimation = (postInputContainerHeight: number, enableAni
      */
     const isKeyboardInTransition = useSharedValue(false);
 
+    // Calculate tab bar adjustment (only for tablets, not in thread view)
+    // This accounts for the tab bar height + safe area bottom that gets hidden when keyboard opens
+    // Thread views don't have a tab bar, so no adjustment is needed
+    const tabBarAdjustment = isTablet && !isThreadView ? BOTTOM_TAB_HEIGHT + safeAreaBottom : 0;
+
     // ------------------------------------------------------------------
     // KEYBOARD EVENT HANDLERS
     // ------------------------------------------------------------------
@@ -112,7 +125,8 @@ export const useKeyboardAnimation = (postInputContainerHeight: number, enableAni
 
             // Store the exact keyboard height
             keyboardHeight.value = e.height;
-            height.value = e.height;
+            const adjustedHeight = e.height - (tabBarAdjustment * e.progress);
+            height.value = adjustedHeight;
 
             // Determine if keyboard is opening or closing
             // Opening if new height is greater than current visual height
@@ -125,7 +139,7 @@ export const useKeyboardAnimation = (postInputContainerHeight: number, enableAni
 
             // Update scroll view insets and offsets
             // inset: Adds bottom padding to scroll content
-            inset.value = e.height;
+            inset.value = adjustedHeight;
         },
 
         /**
@@ -149,9 +163,10 @@ export const useKeyboardAnimation = (postInputContainerHeight: number, enableAni
             // Track if keyboard is closing (height decreasing)
             isKeyboardClosing.value = e.height < height.value;
 
-            height.value = e.height;
-            offset.value = e.height;
-            inset.value = e.height;
+            const adjustedHeight = e.height - (tabBarAdjustment * e.progress);
+            height.value = adjustedHeight;
+            offset.value = adjustedHeight;
+            inset.value = adjustedHeight;
 
             // Update keyboard state flags
             isKeyboardFullyClosed.value = e.height === 0;
@@ -190,7 +205,7 @@ export const useKeyboardAnimation = (postInputContainerHeight: number, enableAni
                 return;
             }
 
-            const absHeight = Math.abs(e.height); // Use Math.abs because programmatic dismiss (KeyboardController.dismiss()) reports negative heights
+            const absHeight = Math.abs(e.height) - (tabBarAdjustment * e.progress); // Use Math.abs because programmatic dismiss (KeyboardController.dismiss()) reports negative heights
 
             height.value = absHeight;
             offset.value = absHeight;
@@ -215,7 +230,8 @@ export const useKeyboardAnimation = (postInputContainerHeight: number, enableAni
             isKeyboardClosing.value = false;
 
             if (progress.value === 1) {
-                height.value = Math.max(e.height, keyboardHeight.value);
+                const adjustedHeight = Math.max(e.height, keyboardHeight.value) - (tabBarAdjustment * e.progress);
+                height.value = adjustedHeight;
                 isKeyboardFullyOpen.value = true;
                 isKeyboardFullyClosed.value = false;
                 isKeyboardInTransition.value = false;

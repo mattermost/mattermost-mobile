@@ -3,10 +3,10 @@
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import {useIsFocused, useNavigation, useRoute} from '@react-navigation/native';
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {BackHandler, DeviceEventEmitter, StyleSheet, ToastAndroid, View} from 'react-native';
-import Animated, {KeyboardState, useAnimatedStyle, withTiming} from 'react-native-reanimated';
+import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {refetchCurrentUser} from '@actions/remote/user';
@@ -14,7 +14,7 @@ import FloatingCallContainer from '@calls/components/floating_call_container';
 import AnnouncementBanner from '@components/announcement_banner';
 import ConnectionBanner from '@components/connection_banner';
 import TeamSidebar from '@components/team_sidebar';
-import {Events, Navigation as NavigationConstants, Screens} from '@constants';
+import {Navigation as NavigationConstants, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -81,7 +81,6 @@ const ChannelListScreen = (props: ChannelProps) => {
     const serverUrl = useServerUrl();
     const params = route.params as {direction: string};
     const canAddOtherServers = managedConfig?.allowOtherServers !== 'false';
-    const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
 
     const handleBackPress = useCallback(() => {
         const isHomeScreen = NavigationStore.getVisibleScreen() === Screens.HOME;
@@ -158,7 +157,7 @@ const ChannelListScreen = (props: ChannelProps) => {
         if (!props.hasCurrentUser || !props.currentUserId) {
             refetchCurrentUser(serverUrl, props.currentUserId);
         }
-    }, [props.currentUserId, props.hasCurrentUser]);
+    }, [props.currentUserId, props.hasCurrentUser, serverUrl]);
 
     // Init the rate app. Only run the effect on the first render if ToS is not open
     useEffect(() => {
@@ -169,32 +168,19 @@ const ChannelListScreen = (props: ChannelProps) => {
         if (!NavigationStore.isToSOpen()) {
             tryRunAppReview(props.launchType, props.coldStart);
         }
-    }, []);
+    }, [props.launchType, props.coldStart]);
 
     useEffect(() => {
         PerformanceMetricsManager.finishLoad('HOME', serverUrl);
         PerformanceMetricsManager.measureTimeToInteraction();
-    }, []);
-
-    useEffect(() => {
-        const keyboardStateListener = DeviceEventEmitter.addListener(Events.KEYBOARD_STATE_CHANGED, (keyboardState: KeyboardState) => {
-            // Remove bottom inset when keyboard is opening or open
-            const isOpen = keyboardState === KeyboardState.OPEN || keyboardState === KeyboardState.OPENING;
-            setIsKeyboardOpen(isOpen);
-        });
-
-        return () => keyboardStateListener.remove();
-    }, []);
-
-    // Conditionally remove bottom edge when keyboard is open
-    const safeAreaEdges: Edge[] = isKeyboardOpen ? ['left', 'right'] : edges;
+    }, [serverUrl]);
 
     return (
         <>
             <Animated.View style={top}/>
             <SafeAreaView
                 style={styles.flex}
-                edges={safeAreaEdges}
+                edges={edges}
                 testID='channel_list.screen'
             >
                 <ConnectionBanner/>

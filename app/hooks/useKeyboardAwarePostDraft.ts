@@ -5,6 +5,9 @@ import {useCallback, useRef, useState} from 'react';
 import {FlatList, Platform} from 'react-native';
 import {KeyboardController} from 'react-native-keyboard-controller';
 import {useAnimatedStyle} from 'react-native-reanimated';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
+
+import {useIsTablet} from '@hooks/device';
 
 import {useKeyboardAnimation} from './keyboardAnimation';
 import {useKeyboardScrollAdjustment} from './useKeyboardScrollAdjustment';
@@ -20,10 +23,12 @@ const DEFAULT_POST_INPUT_HEIGHT = 91;
 
 const isIOS = Platform.OS === 'ios';
 
-export const useKeyboardAwarePostDraft = () => {
+export const useKeyboardAwarePostDraft = (isThreadView = false) => {
     const [postInputContainerHeight, setPostInputContainerHeight] = useState(DEFAULT_POST_INPUT_HEIGHT);
     const listRef = useRef<FlatList<string | PostModel>>(null);
     const inputRef = useRef<PasteInputRef>();
+    const isTablet = useIsTablet();
+    const insets = useSafeAreaInsets();
 
     const {
         height,
@@ -34,15 +39,17 @@ export const useKeyboardAwarePostDraft = () => {
         isKeyboardFullyOpen,
         isKeyboardFullyClosed,
         isKeyboardInTransition,
-    } = useKeyboardAnimation(postInputContainerHeight, isIOS);
+    } = useKeyboardAnimation(postInputContainerHeight, isIOS, isTablet, insets.bottom, isThreadView);
 
     // Only apply scroll adjustment on iOS, Android uses native keyboard handling
     useKeyboardScrollAdjustment(listRef, scroll, offset, isIOS);
 
     const inputContainerAnimatedStyle = useAnimatedStyle(
-        () => ({
-            transform: [{translateY: isIOS ? -height.value : 0}],
-        }),
+        () => {
+            return {
+                transform: [{translateY: isIOS ? -height.value : 0}],
+            };
+        },
         [],
     );
 

@@ -36,6 +36,7 @@ const ThreadContent = ({
         <KeyboardAwarePostDraftContainer
             textInputNativeID='thread.post_draft.post.input'
             containerStyle={styles.flex}
+            isThreadView={true}
             renderList={({listRef}) => (
                 <ThreadPostList
                     nativeID={rootId}

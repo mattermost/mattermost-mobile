@@ -4,8 +4,7 @@
 import {FlatList} from '@stream-io/flat-list-mvcp';
 import React, {type ReactElement, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {DeviceEventEmitter, type ListRenderItemInfo, Platform, type StyleProp, StyleSheet, type ViewStyle, type NativeSyntheticEvent, type NativeScrollEvent} from 'react-native';
-import {KeyboardController, useKeyboardState} from 'react-native-keyboard-controller';
-import Animated, {KeyboardState, runOnJS, useAnimatedProps, useAnimatedReaction, useSharedValue, type AnimatedStyle} from 'react-native-reanimated';
+import Animated, {runOnJS, useAnimatedProps, useAnimatedReaction, useSharedValue, type AnimatedStyle} from 'react-native-reanimated';
 
 import {removePost} from '@actions/local/post';
 import {fetchPosts, fetchPostThread} from '@actions/remote/post';
@@ -123,10 +122,6 @@ const PostList = ({
         isKeyboardFullyClosed,
     } = useKeyboardAnimationContext();
 
-    const keyboardState = useKeyboardState();
-    const isKeyboardVisible = keyboardState.isVisible;
-    const prevKeyboardVisible = useRef<boolean>(false);
-
     const onScrollEndIndexListener = useRef<onScrollEndIndexListenerEvent>();
     const onViewableItemsChangedListener = useRef<ViewableItemsChangedListenerEvent>();
     const scrolledToHighlighted = useRef(false);
@@ -136,28 +131,6 @@ const PostList = ({
     const [progressViewOffset, setProgressViewOffset] = useState(postInputContainerHeight);
     const theme = useTheme();
     const serverUrl = useServerUrl();
-
-    // Emit keyboard state changes for tab bar visibility control
-    useEffect(() => {
-        // Detect state transitions to emit OPENING/CLOSING states
-        let keyboardStateValue: KeyboardState;
-        if (isKeyboardVisible && !prevKeyboardVisible.current) {
-            // Transitioning from closed to open = OPENING
-            keyboardStateValue = KeyboardState.OPENING;
-        } else if (!isKeyboardVisible && prevKeyboardVisible.current) {
-            // Transitioning from open to closed = CLOSING
-            keyboardStateValue = KeyboardState.CLOSING;
-        } else if (isKeyboardVisible) {
-            // Already open = OPEN
-            keyboardStateValue = KeyboardState.OPEN;
-        } else {
-            // Already closed = CLOSED
-            keyboardStateValue = KeyboardState.CLOSED;
-        }
-
-        prevKeyboardVisible.current = isKeyboardVisible;
-        DeviceEventEmitter.emit(Events.KEYBOARD_STATE_CHANGED, keyboardStateValue);
-    }, [isKeyboardVisible]);
 
     // Update progressViewOffset to position RefreshControl correctly when keyboard-aware props are applied.
     // Only update when keyboard state changes (fully open ↔ fully closed) to prevent flickering during animation.
@@ -194,13 +167,12 @@ const PostList = ({
     const isNewMessage = lastPostId ? firstIdInPosts !== lastPostId : false;
 
     const scrollToEnd = useCallback((forceScrollToEnd = false) => {
-        const keyboardVisible = KeyboardController.isVisible();
 
-        if (keyboardVisible && !forceScrollToEnd) {
+        if (!forceScrollToEnd) {
             return;
         }
 
-        const targetOffset = (forceScrollToEnd && keyboardVisible) ? -keyboardHeight.value : 0;
+        const targetOffset = (forceScrollToEnd) ? -keyboardHeight.value : 0;
 
         listRef?.current?.scrollToOffset({offset: targetOffset, animated: true});
     }, [listRef, keyboardHeight]);
