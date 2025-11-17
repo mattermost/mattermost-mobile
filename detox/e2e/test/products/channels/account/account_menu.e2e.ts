@@ -7,7 +7,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {Setup} from '@support/server_api';
+import {Setup, User} from '@support/server_api';
 import {
     serverOneUrl,
     siteOneUrl,
@@ -134,5 +134,44 @@ describe('Account - Account Menu', () => {
 
         // # Go back to account screen
         await SettingsScreen.close();
+    });
+
+    it('MM-T3472 - should be able to add Nickname', async () => {
+        const nickname = 'nickname';
+        const existingNickname = testUser.nickname;
+
+        await AccountScreen.yourProfileOption.tap();
+        await EditProfileScreen.toBeVisible();
+
+        await EditProfileScreen.nicknameInput.replaceText(nickname);
+        await EditProfileScreen.saveButton.tap();
+        await AccountScreen.toBeVisible();
+
+        // Verify nickname is shown in the profile screen
+        await AccountScreen.yourProfileOption.tap();
+        await EditProfileScreen.toBeVisible();
+        await waitFor(EditProfileScreen.nicknameInput).toHaveText(nickname).withTimeout(timeouts.TEN_SEC);
+
+        // Verify nickname is different than previous nickname
+        const {user} = await User.apiGetUserById(siteOneUrl, testUser.id);
+        if (existingNickname === user.nickname) {
+            throw new Error('Nickname was not updated');
+        }
+
+        // # Go back to account screen
+        await EditProfileScreen.close();
+
+    });
+
+    it('MM-T3472 - should show error when Username is updated with invalid characters', async () => {
+        await AccountScreen.yourProfileOption.tap();
+        await EditProfileScreen.toBeVisible();
+
+        await EditProfileScreen.usernameInput.typeText('+new');
+        await EditProfileScreen.saveButton.tap();
+
+        await waitFor(AccountScreen.accountScreen).not.toBeVisible().withTimeout(timeouts.TWO_SEC);
+        await EditProfileScreen.toBeVisible();
+        await expect(EditProfileScreen.usernameInputError).toHaveText('Username must begin with a letter, and contain between 3 to 22 lowercase characters made up of numbers, letters, and the symbols \".\", \"-\", and \"_\".');
     });
 });
