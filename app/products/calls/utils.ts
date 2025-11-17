@@ -105,6 +105,11 @@ export function isCallsCustomMessage(post: PostModel | Post): boolean {
     return Boolean(post.type && post.type === Post.POST_TYPES.CUSTOM_CALLS);
 }
 
+export function isUnrevealedBoRPost(post: PostModel | Post): boolean {
+    // TODO - also check for post.props?.revealed === 'true' once its added
+    return Boolean(post.type && post.type === Post.POST_TYPES.BURN_ON_READ);
+}
+
 export function idsAreEqual(a: string[], b: string[]) {
     if (a.length !== b.length) {
         return false;

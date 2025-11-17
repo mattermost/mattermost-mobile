@@ -124,6 +124,7 @@ export async function updateLastDataRetentionRun(serverUrl: string, value?: numb
     }
 }
 
+// LOL
 export async function dataRetentionCleanup(serverUrl: string) {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
