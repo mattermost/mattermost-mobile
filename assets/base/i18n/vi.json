@@ -71,7 +71,7 @@
   "apps.error.parser.unexpected_squared_bracket": "Không được dùng dấu ngoặc vuông.",
   "apps.error.parser.unexpected_state": "Không thể truy cập: Trạng thái không mong đợi trong matchBinding: `{state}`.",
   "apps.error.parser.unexpected_whitespace": "Không thể truy cập: Khoảng trắng không mong muốn.",
-  "apps.error.responses.form.no_form": "Loại phản hồi là `form`, nhưng không có form nào được đưa vào phản hồi.",
+  "apps.error.responses.form.no_form": "Loại phản hồi là `form`, nhưng không có form hợp lệ nào được phản hồi.",
   "apps.error.responses.navigate.no_url": "Loại phản hồi là `navigate`, nhưng không có url nào được đưa vào phản hồi.",
   "apps.error.responses.unexpected_error": "Đã nhận được một lỗi không mong muốn.",
   "apps.error.responses.unexpected_type": "Loại phản hồi của ứng dụng không được mong đợi. Loại phản hồi: {type}",
