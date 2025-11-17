@@ -958,6 +958,33 @@ export const editPost = async (serverUrl: string, postId: string, postMessage: s
     }
 };
 
+export const revealBoRPost = async (serverUrl: string, postId: string) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        const post = await getPostById(database, postId);
+        if (post) {
+            const revealedPost = await client.revealBoRPost(postId);
+            console.log({revealedPost});
+
+            await database.write(async () => {
+                await post.update((p) => {
+                    p.message = revealedPost.message;
+                    p.metadata = p.metadata || {} as PostMetadata;
+                    p.metadata.expire_at = revealedPost.metadata.expire_at;
+                });
+            });
+        }
+
+        return {post};
+    } catch (error) {
+        logDebug('error on revealBoRPost', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
 export async function fetchSavedPosts(serverUrl: string, teamId?: string, channelId?: string, page?: number, perPage?: number) {
     try {
         const client = NetworkManager.getClient(serverUrl);

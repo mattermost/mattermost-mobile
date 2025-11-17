@@ -1,9 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useCallback} from 'react';
 
+import {revealBoRPost} from '@actions/remote/post';
 import Button from '@components/button';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -18,9 +20,20 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-export default function UnrevealedBurnOnReadPost() {
+type Props = {
+    postId: string;
+}
+
+export default function UnrevealedBurnOnReadPost({postId}: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+
+    const serverUrl = useServerUrl();
+
+    const handleRevealPost = useCallback(async () => {
+        console.log('Revealing post...');
+        await revealBoRPost(serverUrl, postId);
+    }, [postId, serverUrl]);
 
     return (
         <Button
@@ -29,6 +42,7 @@ export default function UnrevealedBurnOnReadPost() {
             theme={theme}
             backgroundStyle={styles.buttonBackgroundStyle}
             textStyle={styles.buttonTextStyle}
+            onPress={handleRevealPost}
         />
     );
 }

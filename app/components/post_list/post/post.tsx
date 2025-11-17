@@ -339,6 +339,10 @@ const Post = ({
         }
     }
 
+    if (post.type === 'burn_on_read') {
+        console.log({message: post.message});
+    }
+
     let body;
     if (isSystemPost && !isEphemeral && !isAutoResponder) {
         body = (
@@ -362,7 +366,7 @@ const Post = ({
         );
     } else if (isUnrevealedPost) {
         body = (
-            <UnrevealedBurnOnReadPost/>
+            <UnrevealedBurnOnReadPost postId={post.id}/>
         );
     } else {
         body = (
