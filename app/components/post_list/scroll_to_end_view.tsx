@@ -57,7 +57,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 });
 
 type Props = {
-    onPress: (forceScrollToEnd?: boolean) => void;
+    onPress: () => void;
     isNewMessage: boolean;
     showScrollToEndBtn: boolean;
     location: string;
@@ -109,7 +109,7 @@ const ScrollToEndView = ({
         >
             <Animated.View style={[animatedStyle, styles.buttonStyle]}>
                 <Pressable
-                    onPress={() => onPress(true)}
+                    onPress={onPress}
                     style={[scrollButtonStyles, styles.shadow]}
                 >
                     <CompassIcon

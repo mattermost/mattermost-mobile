@@ -166,13 +166,8 @@ const PostList = ({
 
     const isNewMessage = lastPostId ? firstIdInPosts !== lastPostId : false;
 
-    const scrollToEnd = useCallback((forceScrollToEnd = false) => {
-
-        if (!forceScrollToEnd) {
-            return;
-        }
-
-        const targetOffset = (forceScrollToEnd) ? -keyboardHeight.value : 0;
+    const scrollToEnd = useCallback(() => {
+        const targetOffset = -keyboardHeight.value;
 
         listRef?.current?.scrollToOffset({offset: targetOffset, animated: true});
     }, [listRef, keyboardHeight]);

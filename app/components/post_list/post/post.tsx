@@ -263,7 +263,8 @@ const Post = ({
 
         PerformanceMetricsManager.finishLoad(location === 'Thread' ? 'THREAD' : 'CHANNEL', serverUrl);
         PerformanceMetricsManager.endMetric('mobile_channel_switch', serverUrl);
-    }, [isLastPost, location, serverUrl]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const highlightSaved = isSaved && !skipSavedHeader;
     const hightlightPinned = post.isPinned && !skipPinnedHeader;

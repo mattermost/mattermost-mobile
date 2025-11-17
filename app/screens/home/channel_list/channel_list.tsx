@@ -157,7 +157,8 @@ const ChannelListScreen = (props: ChannelProps) => {
         if (!props.hasCurrentUser || !props.currentUserId) {
             refetchCurrentUser(serverUrl, props.currentUserId);
         }
-    }, [props.currentUserId, props.hasCurrentUser, serverUrl]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [props.currentUserId, props.hasCurrentUser]);
 
     // Init the rate app. Only run the effect on the first render if ToS is not open
     useEffect(() => {

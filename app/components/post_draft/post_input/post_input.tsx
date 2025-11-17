@@ -137,14 +137,6 @@ export default function PostInput({
         return {...style.input, maxHeight};
     }, [maxHeight, style.input]);
 
-    const handleAndroidKeyboardHide = () => {
-        onBlur();
-    };
-
-    const handleAndroidKeyboardShow = () => {
-        onFocus();
-    };
-
     const onBlur = useCallback(() => {
         handleDraftUpdate({
             serverUrl,
@@ -158,6 +150,14 @@ export default function PostInput({
     const onFocus = useCallback(() => {
         setIsFocused(true);
     }, [setIsFocused]);
+
+    const handleAndroidKeyboardHide = useCallback(() => {
+        onBlur();
+    }, [onBlur]);
+
+    const handleAndroidKeyboardShow = useCallback(() => {
+        onFocus();
+    }, [onFocus]);
 
     const checkMessageLength = useCallback((newValue: string) => {
         const valueLength = newValue.trim().length;
@@ -308,14 +308,16 @@ export default function PostInput({
             listener.remove();
             updateDraftMessage(serverUrl, channelId, rootId, lastNativeValue.current); // safe draft on unmount
         };
-    }, [updateValue, channelId, rootId, value, updateCursorPosition, propagateValue, inputRef, serverUrl]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [updateValue, channelId, rootId]);
 
     useEffect(() => {
         if (value !== lastNativeValue.current) {
             propagateValue(value);
             lastNativeValue.current = value;
         }
-    }, [propagateValue, value]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [value]);
 
     const events = useMemo(() => ({
         onEnterPressed: handleHardwareEnterPress,
