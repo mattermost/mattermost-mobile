@@ -206,11 +206,10 @@ const DownloadWithAction = ({action, enableSecureFilePreview, item, onDownloadSu
     const saveImageOrVideo = async (path: string) => {
         if (mounted.current) {
             try {
-                let mimeType = lookupMimeType(item.name || path);
+                const mimeType = lookupMimeType(item.name || path);
 
                 if (mimeType === 'application/octet-stream') {
-                    setError(intl.formatMessage({ id: 'gallery.save_failed', defaultMessage: 'Unable to save the file' }));
-                    return;
+                    saveFile(path);
                 }
                 const cameraType = item.type === 'avatar' ? 'image' : item.type;
                 await CameraRoll.saveAsset(path, {
