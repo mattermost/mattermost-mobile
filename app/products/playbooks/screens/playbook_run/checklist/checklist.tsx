@@ -6,6 +6,7 @@ import {useIntl} from 'react-intl';
 import {View, Text, TouchableOpacity, type LayoutChangeEvent, useWindowDimensions, StyleSheet} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
+import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -231,19 +232,15 @@ const Checklist = ({
                     />
                 ))}
                 {!isFinished && isParticipant && (
-                    <TouchableOpacity
-                        style={styles.addButton}
+                    <Button
+                        text={intl.formatMessage({id: 'playbooks.checklist_item.add.button', defaultMessage: 'New'})}
+                        iconName='plus'
                         onPress={handleAddPress}
+                        theme={theme}
+                        size='m'
+                        emphasis='tertiary'
                         testID='add-checklist-item-button'
-                    >
-                        <CompassIcon
-                            name='plus'
-                            style={styles.addButtonIcon}
-                        />
-                        <Text style={styles.addButtonText}>
-                            {intl.formatMessage({id: 'playbooks.checklist_item.add.button', defaultMessage: 'New'})}
-                        </Text>
-                    </TouchableOpacity>
+                    />
                 )}
             </Animated.View>
             {/* This is a hack to get the height of the checklist items */}
