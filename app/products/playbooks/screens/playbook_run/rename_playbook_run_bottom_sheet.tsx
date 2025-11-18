@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, StyleSheet, View} from 'react-native';
 
@@ -45,7 +45,10 @@ const RenamePlaybookRunBottomSheet = ({
     const theme = useTheme();
 
     const [title, setTitle] = useState<string>(currentTitle);
-    const [canSave, setCanSave] = useState(false);
+
+    const canSave = useMemo(() => {
+        return title.trim().length > 0 && title !== currentTitle;
+    }, [title, currentTitle]);
 
     const rightButton = React.useMemo(() => {
         const base = buildNavigationButton(
@@ -65,20 +68,16 @@ const RenamePlaybookRunBottomSheet = ({
         });
     }, [rightButton, componentId]);
 
-    useEffect(() => {
-        setCanSave(title.trim().length > 0 && title !== currentTitle);
-    }, [title, currentTitle]);
-
     const handleClose = useCallback(() => {
         close(componentId);
     }, [componentId]);
 
     const handleSave = useCallback(() => {
-        if (title.trim().length > 0) {
+        if (canSave) {
             onSave(title.trim());
             close(componentId);
         }
-    }, [title, componentId, onSave]);
+    }, [canSave, title, componentId, onSave]);
 
     useNavButtonPressed(SAVE_BUTTON_ID, componentId, handleSave, [handleSave]);
     useAndroidHardwareBackHandler(componentId, handleClose);

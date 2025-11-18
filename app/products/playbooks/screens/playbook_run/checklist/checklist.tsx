@@ -3,7 +3,7 @@
 
 import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {View, Text, TouchableOpacity, type LayoutChangeEvent, useWindowDimensions, StyleSheet} from 'react-native';
+import {View, Text, TouchableOpacity, type GestureResponderEvent, type LayoutChangeEvent, useWindowDimensions, StyleSheet} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import Button from '@components/button';
@@ -14,6 +14,9 @@ import {renameChecklist, addChecklistItem} from '@playbooks/actions/remote/check
 import ProgressBar from '@playbooks/components/progress_bar';
 import {goToRenameChecklist, goToAddChecklistItem} from '@playbooks/screens/navigation';
 import {getChecklistProgress} from '@playbooks/utils/progress';
+import {getFullErrorMessage} from '@utils/errors';
+import {logError} from '@utils/log';
+import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -141,17 +144,25 @@ const Checklist = ({
         setExpanded((prev) => !prev);
     }, []);
 
-    const handleRename = useCallback((newTitle: string) => {
-        renameChecklist(serverUrl, playbookRunId, checklistNumber, checklist.id, newTitle);
+    const handleRename = useCallback(async (newTitle: string) => {
+        const res = await renameChecklist(serverUrl, playbookRunId, checklistNumber, checklist.id, newTitle);
+        if ('error' in res && res.error) {
+            showPlaybookErrorSnackbar();
+            logError('error on renameChecklist', getFullErrorMessage(res.error));
+        }
     }, [serverUrl, playbookRunId, checklist.id, checklistNumber]);
 
-    const handleEditPress = useCallback((e: any) => {
+    const handleEditPress = useCallback((e: GestureResponderEvent) => {
         e.stopPropagation();
         goToRenameChecklist(intl, theme, playbookRunName, checklist.title, handleRename);
     }, [intl, theme, playbookRunName, checklist.title, handleRename]);
 
-    const handleAddItem = useCallback((title: string) => {
-        addChecklistItem(serverUrl, playbookRunId, checklistNumber, title);
+    const handleAddItem = useCallback(async (title: string) => {
+        const res = await addChecklistItem(serverUrl, playbookRunId, checklistNumber, title);
+        if ('error' in res && res.error) {
+            showPlaybookErrorSnackbar();
+            logError('error on addChecklistItem', getFullErrorMessage(res.error));
+        }
     }, [serverUrl, playbookRunId, checklistNumber]);
 
     const handleAddPress = useCallback(() => {
