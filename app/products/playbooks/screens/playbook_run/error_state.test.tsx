@@ -17,7 +17,7 @@ describe('ErrorState', () => {
     it('renders error state correctly', () => {
         const {getByText} = renderWithIntl(<ErrorState/>);
 
-        expect(getByText('Unable to fetch run details')).toBeTruthy();
+        expect(getByText('Unable to fetch details')).toBeTruthy();
         expect(getByText('Please check your network connection or try again later.')).toBeTruthy();
     });
 

@@ -228,7 +228,7 @@ export default function SelectedUsers({
 
     useEffect(() => {
         setIsVisible(numberSelectedIds > 0);
-    }, [numberSelectedIds > 0]);
+    }, [numberSelectedIds]);
 
     // This effect hides the toast after 4 seconds
     useEffect(() => {
@@ -240,7 +240,7 @@ export default function SelectedUsers({
         }
 
         return () => clearTimeout(timer);
-    }, [showToast]);
+    }, [showToast, setShowToast]);
 
     const isDisabled = Boolean(maxUsers && (numberSelectedIds > maxUsers));
     return (

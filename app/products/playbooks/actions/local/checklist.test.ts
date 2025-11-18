@@ -2,10 +2,11 @@
 // See LICENSE.txt for license information.
 
 import DatabaseManager from '@database/manager';
+import {getPlaybookChecklistById} from '@playbooks/database/queries/checklist';
 import {getPlaybookChecklistItemById} from '@playbooks/database/queries/item';
 import TestHelper from '@test/test_helper';
 
-import {updateChecklistItem, setChecklistItemCommand, setAssignee, setDueDate} from './checklist';
+import {updateChecklistItem, setChecklistItemCommand, setAssignee, setDueDate, renameChecklist} from './checklist';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 
@@ -262,5 +263,111 @@ describe('setDueDate', () => {
         const updated = await getPlaybookChecklistItemById(operator.database, item.id);
         expect(updated).toBeDefined();
         expect(updated!.dueDate).toBe(0);
+    });
+});
+
+describe('renameChecklist', () => {
+    it('should handle not found database', async () => {
+        const {error} = await renameChecklist('foo', 'checklistid', 'New Title');
+        expect(error).toBeTruthy();
+        expect((error as Error).message).toContain('foo database not found');
+    });
+
+    it('should handle checklist not found', async () => {
+        const {error} = await renameChecklist(serverUrl, 'nonexistent', 'New Title');
+        expect(error).toBe('Checklist not found: nonexistent');
+    });
+
+    it('should handle database write errors', async () => {
+        const runId = 'runid';
+        const checklist = {
+            ...TestHelper.createPlaybookChecklist(runId, 0, 0),
+            run_id: runId,
+            order: 0,
+        };
+        await operator.handlePlaybookChecklist({checklists: [checklist], prepareRecordsOnly: false});
+
+        const originalWrite = operator.database.write;
+        operator.database.write = jest.fn().mockRejectedValue(new Error('Database write failed'));
+
+        const {error} = await renameChecklist(serverUrl, checklist.id, 'New Title');
+        expect(error).toBeTruthy();
+
+        operator.database.write = originalWrite;
+    });
+
+    it('should rename checklist successfully', async () => {
+        const runId = 'runid';
+        const checklist = {
+            ...TestHelper.createPlaybookChecklist(runId, 0, 0),
+            run_id: runId,
+            order: 0,
+        };
+        await operator.handlePlaybookChecklist({checklists: [checklist], prepareRecordsOnly: false});
+
+        const newTitle = 'Updated Checklist Title';
+        const {data, error} = await renameChecklist(serverUrl, checklist.id, newTitle);
+        expect(error).toBeUndefined();
+        expect(data).toBe(true);
+
+        const updated = await getPlaybookChecklistById(operator.database, checklist.id);
+        expect(updated).toBeDefined();
+        expect(updated!.title).toBe(newTitle);
+    });
+
+    it('should handle empty title string', async () => {
+        const runId = 'runid';
+        const checklist = {
+            ...TestHelper.createPlaybookChecklist(runId, 0, 0),
+            run_id: runId,
+            order: 0,
+        };
+        await operator.handlePlaybookChecklist({checklists: [checklist], prepareRecordsOnly: false});
+
+        const {data, error} = await renameChecklist(serverUrl, checklist.id, '');
+        expect(error).toBeUndefined();
+        expect(data).toBe(true);
+
+        const updated = await getPlaybookChecklistById(operator.database, checklist.id);
+        expect(updated).toBeDefined();
+        expect(updated!.title).toBe('');
+    });
+
+    it('should handle whitespace-only title', async () => {
+        const runId = 'runid';
+        const checklist = {
+            ...TestHelper.createPlaybookChecklist(runId, 0, 0),
+            run_id: runId,
+            order: 0,
+        };
+        await operator.handlePlaybookChecklist({checklists: [checklist], prepareRecordsOnly: false});
+
+        const whitespaceTitle = '   ';
+        const {data, error} = await renameChecklist(serverUrl, checklist.id, whitespaceTitle);
+        expect(error).toBeUndefined();
+        expect(data).toBe(true);
+
+        const updated = await getPlaybookChecklistById(operator.database, checklist.id);
+        expect(updated).toBeDefined();
+        expect(updated!.title).toBe(whitespaceTitle);
+    });
+
+    it('should handle very long titles', async () => {
+        const runId = 'runid';
+        const checklist = {
+            ...TestHelper.createPlaybookChecklist(runId, 0, 0),
+            run_id: runId,
+            order: 0,
+        };
+        await operator.handlePlaybookChecklist({checklists: [checklist], prepareRecordsOnly: false});
+
+        const longTitle = 'A'.repeat(300); // 300 characters
+        const {data, error} = await renameChecklist(serverUrl, checklist.id, longTitle);
+        expect(error).toBeUndefined();
+        expect(data).toBe(true);
+
+        const updated = await getPlaybookChecklistById(operator.database, checklist.id);
+        expect(updated).toBeDefined();
+        expect(updated!.title).toBe(longTitle);
     });
 });
