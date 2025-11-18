@@ -47,7 +47,7 @@ type HeaderProps = {
     shouldRenderReplyButton?: boolean;
     teammateNameDisplay: string;
     hideGuestTags: boolean;
-    isUnrevealedBoRPost?: boolean;
+    showBoRIcon?: boolean;
     borExpireAt?: number;
 }
 
@@ -84,7 +84,7 @@ const Header = (props: HeaderProps) => {
         author, commentCount = 0, currentUser, enablePostUsernameOverride, isAutoResponse, isCRTEnabled, isCustomStatusEnabled,
         isEphemeral, isMilitaryTime, isPendingOrFailed, isSystemPost, isWebHook,
         location, post, rootPostAuthor, showPostPriority, shouldRenderReplyButton, teammateNameDisplay, hideGuestTags,
-        isUnrevealedBoRPost, borExpireAt,
+        showBoRIcon, borExpireAt,
     } = props;
     const theme = useTheme();
     const style = getStyleSheet(theme);
@@ -133,7 +133,7 @@ const Header = (props: HeaderProps) => {
                         style={style.time}
                         testID='post_header.date_time'
                     />
-                    {isUnrevealedBoRPost &&
+                    {showBoRIcon &&
                         <CompassIcon
                             name='fire'
                             size={16}
@@ -141,7 +141,7 @@ const Header = (props: HeaderProps) => {
                         />
                     }
                     {
-                        !isUnrevealedBoRPost && borExpireAt &&
+                        !showBoRIcon && borExpireAt &&
                         <ExpiryTimer
                             expiryTime={borExpireAt}
                         />
