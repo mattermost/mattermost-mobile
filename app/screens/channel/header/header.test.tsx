@@ -6,8 +6,8 @@ import React, {type ComponentProps} from 'react';
 import NavigationHeader from '@components/navigation_header';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
-import {createPlaybookRun, fetchPlaybookRunsForChannel} from '@playbooks/actions/remote/runs';
-import {goToPlaybookRun, goToPlaybookRuns} from '@playbooks/screens/navigation';
+import {fetchPlaybookRunsForChannel} from '@playbooks/actions/remote/runs';
+import {goToCreateQuickChecklist, goToPlaybookRun, goToPlaybookRuns} from '@playbooks/screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {renderWithIntl, waitFor} from '@test/intl-test-helper';
 
@@ -172,15 +172,7 @@ describe('ChannelHeader', () => {
         expect(goToPlaybookRun).not.toHaveBeenCalled();
     });
 
-    it('creates a new playbook run when clicking + button with no active runs', async () => {
-        const mockCreatedRun = {
-            id: 'new-run-id',
-            channel_id: 'channel-id',
-            name: 'Test Channel Checklist',
-        } as any;
-        jest.mocked(createPlaybookRun).mockResolvedValue({data: mockCreatedRun});
-        jest.mocked(fetchPlaybookRunsForChannel).mockResolvedValue({runs: [mockCreatedRun]});
-
+    it('navigates to create quick checklist screen when clicking + button with no active runs', () => {
         const props = getBaseProps();
         props.playbooksActiveRuns = 0;
         props.hasPlaybookRuns = false;
@@ -195,19 +187,16 @@ describe('ChannelHeader', () => {
 
         playbookButton?.onPress();
 
-        await waitFor(() => {
-            expect(createPlaybookRun).toHaveBeenCalledWith(
-                serverUrl,
-                '', // empty playbook_id
-                'current-user-id',
-                'team-id',
-                'Test Channel Checklist',
-                '', // empty description
-                'channel-id',
-            );
-            expect(fetchPlaybookRunsForChannel).toHaveBeenCalledWith(serverUrl, 'channel-id');
-            expect(goToPlaybookRun).toHaveBeenCalledWith(expect.anything(), 'new-run-id');
-        });
+        expect(goToCreateQuickChecklist).toHaveBeenCalledWith(
+            expect.anything(), // intl
+            'channel-id',
+            'Test Channel',
+            'current-user-id',
+            'team-id',
+            serverUrl,
+        );
+        expect(goToPlaybookRun).not.toHaveBeenCalled();
+        expect(goToPlaybookRuns).not.toHaveBeenCalled();
     });
 
     it('should not fetch runs when playbooks are disabled', async () => {
