@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import AgentPost from '@agents/components/agent_post';
+import {isAgentPost} from '@agents/utils';
 import React, {type ReactNode, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, Platform, type StyleProp, View, type ViewStyle, TouchableHighlight} from 'react-native';
@@ -157,6 +159,7 @@ const Post = ({
     const isFailed = isPostFailed(post);
     const isSystemPost = isSystemMessage(post);
     const isCallsPost = isCallsCustomMessage(post);
+    const isAgentPostType = isAgentPost(post);
     const hasBeenDeleted = (post.deleteAt !== 0);
     const isWebHook = isFromWebhook(post);
     const hasSameRoot = useMemo(() => {
@@ -354,6 +357,13 @@ const Post = ({
                 isAdmin={false}
                 isHost={false}
                 joiningChannelId={null}
+            />
+        );
+    } else if (isAgentPostType && !hasBeenDeleted) {
+        body = (
+            <AgentPost
+                serverUrl={serverUrl}
+                post={post}
             />
         );
     } else {
