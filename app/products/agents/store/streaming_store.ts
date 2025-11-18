@@ -1,12 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {DeviceEventEmitter} from 'react-native';
-
 import {CONTROL_SIGNALS} from '@agents/constants';
-import {StreamingEvents} from '@agents/types';
-
-import type {StreamingState, PostUpdateWebsocketMessage} from '@agents/types';
+import {StreamingEvents, type StreamingState, type PostUpdateWebsocketMessage} from '@agents/types';
+import {DeviceEventEmitter} from 'react-native';
 
 /**
  * Ephemeral store for managing streaming post state

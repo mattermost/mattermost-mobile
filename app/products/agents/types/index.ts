@@ -6,8 +6,8 @@
  */
 export interface PostUpdateWebsocketMessage {
     post_id: string;
-    next?: string;      // Full accumulated message text
-    control?: string;   // Control signals: 'start', 'end', 'cancel', 'reasoning_summary', 'tool_call', 'annotations'
+    next?: string; // Full accumulated message text
+    control?: string; // Control signals: 'start', 'end', 'cancel', 'reasoning_summary', 'tool_call', 'annotations'
     tool_call?: string; // JSON-encoded tool calls
     reasoning?: string; // Reasoning summary text
     annotations?: string; // JSON-encoded citations

@@ -1,10 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import type PostModel from '@typings/database/models/servers/post';
-import type {Post} from '@mattermost/types/posts';
-
 import {AGENT_POST_TYPES} from '@agents/constants';
+
+import type PostModel from '@typings/database/models/servers/post';
 
 /**
  * Check if a post is an agent post

@@ -1,20 +1,20 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import streamingStore from '@agents/store/streaming_store';
+import {StreamingEvents, type StreamingState} from '@agents/types';
 import React, {useEffect, useState} from 'react';
-import {DeviceEventEmitter, StyleSheet, Text, View} from 'react-native';
+import {DeviceEventEmitter, StyleSheet, View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import Markdown from '@components/markdown';
+import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import streamingStore from '@agents/store/streaming_store';
-import {StreamingEvents} from '@agents/types';
 
 import StreamingIndicator from './streaming_indicator';
 
 import type PostModel from '@typings/database/models/servers/post';
-import type {StreamingState} from '@agents/types';
 
 interface AgentPostProps {
     serverUrl: string;
@@ -25,7 +25,7 @@ interface AgentPostProps {
  * Custom post component for agent responses
  * Handles streaming text updates and displays animated cursor during generation
  */
-const AgentPost = ({serverUrl, post}: AgentPostProps) => {
+const AgentPost = ({post}: AgentPostProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -76,16 +76,16 @@ const AgentPost = ({serverUrl, post}: AgentPostProps) => {
                         defaultMessage='Generating response...'
                         style={styles.precontentText}
                     />
-                    <StreamingIndicator precontent={true}/>
+                    <StreamingIndicator/>
                 </View>
             ) : (
                 <View style={styles.messageContainer}>
                     {displayMessage ? (
                         <Markdown
                             baseTextStyle={styles.messageText}
-                            textStyles={{}}
-                            blockStyles={{}}
                             value={displayMessage}
+                            theme={theme}
+                            location={Screens.CHANNEL}
                         />
                     ) : null}
                     {isGenerating && !isPrecontent && (

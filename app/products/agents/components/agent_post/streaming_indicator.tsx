@@ -6,15 +6,11 @@ import {Animated, StyleSheet, View} from 'react-native';
 
 import {useTheme} from '@context/theme';
 
-interface StreamingIndicatorProps {
-    precontent?: boolean; // Show before any content arrives
-}
-
 /**
  * Animated indicator shown while agent is generating a response
  * Shows a pulsing cursor for mobile-optimized UX
  */
-const StreamingIndicator = ({precontent = false}: StreamingIndicatorProps) => {
+const StreamingIndicator = () => {
     const theme = useTheme();
     const pulseAnim = useRef(new Animated.Value(0)).current;
 
