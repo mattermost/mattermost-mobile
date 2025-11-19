@@ -276,7 +276,6 @@ export default function PlaybookRun({
 
 
         let message = intl.formatMessage(messages.finishRunDialogConfirmation);
-        
         if (pendingCount > 0) {
             message = `${intl.formatMessage(messages.finishRunDialogPendingTasks, {pendingCount})}\n\n${message}`;
         }
