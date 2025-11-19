@@ -130,7 +130,7 @@ const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) =>
             // Handle any unexpected errors during validation
             setPreauthSecretError(formatMessage({
                 id: 'mobile.server.validation.error',
-                defaultMessage: 'Unable to validate server. Please check your connection and try again.',
+                defaultMessage: 'Unable to validate server. Please try again.',
             }));
             setShowAdvancedOptions(true);
             return false;
