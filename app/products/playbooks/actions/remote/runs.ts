@@ -141,8 +141,9 @@ export const renamePlaybookRun = async (serverUrl: string, playbookRunId: string
         const client = NetworkManager.getClient(serverUrl);
         await client.patchPlaybookRun(playbookRunId, {name: newName});
 
-        await localRenamePlaybookRun(serverUrl, playbookRunId, newName);
-        return {data: true};
+        // Update local database
+        const result = await localRenamePlaybookRun(serverUrl, playbookRunId, newName);
+        return result.error ? result : {data: true};
     } catch (error) {
         logDebug('error on renamePlaybookRun', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);

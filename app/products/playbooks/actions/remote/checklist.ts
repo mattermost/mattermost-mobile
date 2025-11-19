@@ -11,6 +11,7 @@ import {
     setDueDate as localSetDueDate,
     renameChecklist as localRenameChecklist,
 } from '@playbooks/actions/local/checklist';
+import {handlePlaybookRuns} from '@playbooks/actions/local/run';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 
@@ -172,8 +173,8 @@ export const renameChecklist = async (
         await client.renameChecklist(playbookRunId, checklistNumber, newTitle);
 
         // Update local database
-        await localRenameChecklist(serverUrl, checklistId, newTitle);
-        return {data: true};
+        const result = await localRenameChecklist(serverUrl, checklistId, newTitle);
+        return result.error ? result : {data: true};
     } catch (error) {
         logDebug('error on renameChecklist', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
@@ -190,7 +191,11 @@ export const addChecklistItem = async (
     try {
         const client = NetworkManager.getClient(serverUrl);
         await client.addChecklistItem(playbookRunId, checklistNumber, title);
-        return {data: true};
+
+        // Fetch and sync the entire run to get the created item with server-generated ID
+        const run = await client.fetchPlaybookRun(playbookRunId);
+        const result = await handlePlaybookRuns(serverUrl, [run], false, true);
+        return result.error ? result : {data: true};
     } catch (error) {
         logDebug('error on addChecklistItem', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);

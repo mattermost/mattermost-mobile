@@ -61,7 +61,7 @@ describe('StatusUpdateIndicator', () => {
             />,
         );
 
-        const text = getByText(/pdate overdue/);
+        const text = getByText(/Update overdue/);
         expect(text).toHaveStyle({color: Preferences.THEMES.denim.dndIndicator});
 
         const icon = getByTestId('compass-icon');
