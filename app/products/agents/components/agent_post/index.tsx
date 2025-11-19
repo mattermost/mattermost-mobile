@@ -12,6 +12,7 @@ import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+import CitationsList from '../citations_list';
 import ReasoningDisplay from '../reasoning_display';
 import ToolApprovalSet from '../tool_approval_set';
 
@@ -49,6 +50,20 @@ const AgentPost = ({post}: AgentPostProps) => {
             const toolCallsJson = props?.pending_tool_call as string;
             if (toolCallsJson) {
                 return JSON.parse(toolCallsJson);
+            }
+            return [];
+        } catch {
+            return [];
+        }
+    }, [post.props]);
+
+    // Extract persisted annotations from post props
+    const persistedAnnotations = useMemo(() => {
+        try {
+            const props = post.props as Record<string, unknown>;
+            const annotationsJson = props?.annotations as string;
+            if (annotationsJson) {
+                return JSON.parse(annotationsJson);
             }
             return [];
         } catch {
@@ -102,6 +117,9 @@ const AgentPost = ({post}: AgentPostProps) => {
     // Determine tool calls - use streaming state if available, otherwise use persisted
     const toolCalls = streamingState?.toolCalls ?? persistedToolCalls;
 
+    // Determine annotations - use streaming state if available, otherwise use persisted
+    const annotations = streamingState?.annotations ?? persistedAnnotations;
+
     return (
         <View style={styles.container}>
             {showReasoning && (
@@ -139,6 +157,9 @@ const AgentPost = ({post}: AgentPostProps) => {
                     postId={post.id}
                     toolCalls={toolCalls}
                 />
+            )}
+            {annotations.length > 0 && (
+                <CitationsList annotations={annotations}/>
             )}
         </View>
     );

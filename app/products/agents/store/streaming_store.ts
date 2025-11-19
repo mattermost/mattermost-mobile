@@ -25,6 +25,7 @@ class StreamingPostStore {
             isReasoningLoading: false,
             showReasoning: false,
             toolCalls: [],
+            annotations: [],
         };
 
         this.streamingPosts.set(postId, state);
@@ -108,10 +109,28 @@ class StreamingPostStore {
     }
 
     /**
+     * Update annotations/citations
+     */
+    updateAnnotations(postId: string, annotationsJson: string): void {
+        const state = this.streamingPosts.get(postId);
+        if (!state) {
+            return;
+        }
+
+        try {
+            state.annotations = JSON.parse(annotationsJson);
+            state.precontent = false;
+            this.emitEvent(StreamingEvents.UPDATED, state);
+        } catch (error) {
+            // Silently handle JSON parse errors
+        }
+    }
+
+    /**
      * Handle a WebSocket message
      */
     handleWebSocketMessage(data: PostUpdateWebsocketMessage): void {
-        const {post_id, next, control, reasoning, tool_call} = data;
+        const {post_id, next, control, reasoning, tool_call, annotations} = data;
 
         if (!post_id) {
             return;
@@ -154,6 +173,12 @@ class StreamingPostStore {
             return;
         }
 
+        // Handle annotation events
+        if (control === CONTROL_SIGNALS.ANNOTATIONS && annotations) {
+            this.updateAnnotations(post_id, annotations);
+            return;
+        }
+
         // Handle message updates
         if (next) {
             // Message comes as full accumulated text, not delta
@@ -188,6 +213,7 @@ class StreamingPostStore {
             isReasoningLoading: state.isReasoningLoading,
             showReasoning: state.showReasoning,
             toolCalls: state.toolCalls,
+            annotations: state.annotations,
         });
 
         // Also emit a generic update event with the post ID

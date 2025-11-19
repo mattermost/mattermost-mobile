@@ -25,6 +25,19 @@ export interface ToolCall {
 }
 
 /**
+ * Citation/annotation data structure
+ */
+export interface Annotation {
+    type: string;
+    start_index: number;
+    end_index: number;
+    url: string;
+    title: string;
+    cited_text?: string;
+    index: number;
+}
+
+/**
  * WebSocket message data for agent post updates
  */
 export interface PostUpdateWebsocketMessage {
@@ -48,6 +61,7 @@ export interface StreamingState {
     isReasoningLoading: boolean; // True while reasoning is being generated
     showReasoning: boolean; // True if reasoning should be displayed
     toolCalls: ToolCall[]; // Tool calls pending approval or processed
+    annotations: Annotation[]; // Citations/annotations for the post
 }
 
 /**
