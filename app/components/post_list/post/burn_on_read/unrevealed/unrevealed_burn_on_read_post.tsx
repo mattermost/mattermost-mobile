@@ -2,9 +2,9 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {Text, TouchableOpacity, View} from 'react-native';
 
 import {revealBoRPost} from '@actions/remote/post';
+import Button from '@components/button';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -26,7 +26,7 @@ type Props = {
 
 export default function UnrevealedBurnOnReadPost({postId}: Props) {
     const theme = useTheme();
-    // const styles = getStyleSheet(theme);
+    const styles = getStyleSheet(theme);
 
     const serverUrl = useServerUrl();
 
@@ -34,58 +34,14 @@ export default function UnrevealedBurnOnReadPost({postId}: Props) {
         await revealBoRPost(serverUrl, postId);
     }, [postId, serverUrl]);
 
-    // return (
-    //     <Button
-    //         text={'View message'}
-    //         iconName='eye-outline'
-    //         theme={theme}
-    //         backgroundStyle={styles.buttonBackgroundStyle}
-    //         textStyle={styles.buttonTextStyle}
-    //         onPress={handleRevealPost}
-    //     />
-    // );
-
     return (
-        <TouchableOpacity onPress={handleRevealPost}>
-            <HeavyFakeBlurText>
-                {'Click to reveal this message'}
-            </HeavyFakeBlurText>
-        </TouchableOpacity>
-    );
-}
-
-export function HeavyFakeBlurText({
-    children,
-    style,
-}: {
-    children: string;
-    style?: any;
-}) {
-    const offsets = [-4, -3, -2, -1, 0, 1, 2, 3, 4];
-
-    return (
-        <View style={{position: 'relative'}}>
-            {offsets.flatMap((dx) =>
-                offsets.map((dy) => (
-                    <Text
-                        key={`${dx},${dy}`}
-                        style={[
-                            style,
-                            {
-                                position: 'absolute',
-                                left: dx,
-                                top: dy,
-                                opacity: 0.01,
-                            },
-                        ]}
-                    >
-                        {children}
-                    </Text>
-                )),
-            )}
-            <Text style={[style, {color: 'rgba(255,255,255,0.15)'}]}>
-                {children}
-            </Text>
-        </View>
+        <Button
+            text={'View message'}
+            iconName='eye-outline'
+            theme={theme}
+            backgroundStyle={styles.buttonBackgroundStyle}
+            textStyle={styles.buttonTextStyle}
+            onPress={handleRevealPost}
+        />
     );
 }
