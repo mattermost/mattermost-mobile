@@ -7,7 +7,7 @@ echo "{}" > assets/base/i18n/en.json
 
 npm run i18n-extract
 
-echo Assets/base is now regenerated. Rebuilding dist/assets/i18n
+echo assets/base is now regenerated. Rebuilding dist/assets/i18n
 
 node scripts/generate-assets.js
 
