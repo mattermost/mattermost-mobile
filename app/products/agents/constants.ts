@@ -22,6 +22,7 @@ export const CONTROL_SIGNALS = {
     END: 'end',
     CANCEL: 'cancel',
     REASONING_SUMMARY: 'reasoning_summary',
+    REASONING_SUMMARY_DONE: 'reasoning_summary_done',
     TOOL_CALL: 'tool_call',
     ANNOTATIONS: 'annotations',
 } as const;

@@ -3,7 +3,7 @@
 
 import streamingStore from '@agents/store/streaming_store';
 import {StreamingEvents, type StreamingState} from '@agents/types';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {DeviceEventEmitter, StyleSheet, View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
@@ -11,6 +11,8 @@ import Markdown from '@components/markdown';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
+import ReasoningDisplay from '../reasoning_display';
 
 import StreamingIndicator from './streaming_indicator';
 
@@ -28,6 +30,16 @@ interface AgentPostProps {
 const AgentPost = ({post}: AgentPostProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+
+    // Extract persisted reasoning from post props
+    const persistedReasoning = useMemo(() => {
+        try {
+            const props = post.props as Record<string, unknown>;
+            return (props?.reasoning_summary as string) || '';
+        } catch {
+            return '';
+        }
+    }, [post.props]);
 
     // Local state for streaming
     const [streamingState, setStreamingState] = useState<StreamingState | undefined>(
@@ -67,8 +79,19 @@ const AgentPost = ({post}: AgentPostProps) => {
     const isGenerating = streamingState?.generating ?? false;
     const isPrecontent = streamingState?.precontent ?? false;
 
+    // Determine reasoning state - use streaming state if available, otherwise use persisted
+    const reasoningSummary = streamingState?.reasoning || persistedReasoning;
+    const isReasoningLoading = streamingState?.isReasoningLoading ?? false;
+    const showReasoning = streamingState?.showReasoning ?? (persistedReasoning !== '');
+
     return (
         <View style={styles.container}>
+            {showReasoning && (
+                <ReasoningDisplay
+                    reasoningSummary={reasoningSummary}
+                    isReasoningLoading={isReasoningLoading}
+                />
+            )}
             {isPrecontent ? (
                 <View style={styles.precontentContainer}>
                     <FormattedText

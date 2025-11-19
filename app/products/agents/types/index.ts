@@ -21,6 +21,9 @@ export interface StreamingState {
     generating: boolean;
     message: string;
     precontent: boolean; // True during 'start' before first content
+    reasoning: string; // Accumulated reasoning text
+    isReasoningLoading: boolean; // True while reasoning is being generated
+    showReasoning: boolean; // True if reasoning should be displayed
 }
 
 /**

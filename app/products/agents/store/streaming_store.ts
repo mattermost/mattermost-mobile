@@ -21,6 +21,9 @@ class StreamingPostStore {
             generating: true,
             message: '',
             precontent: true, // Show "Starting..." state
+            reasoning: '',
+            isReasoningLoading: false,
+            showReasoning: false,
         };
 
         this.streamingPosts.set(postId, state);
@@ -64,10 +67,32 @@ class StreamingPostStore {
     }
 
     /**
+     * Update reasoning summary
+     */
+    updateReasoning(postId: string, reasoning: string, isLoading: boolean): void {
+        const state = this.streamingPosts.get(postId);
+        if (!state) {
+            return;
+        }
+
+        state.reasoning = reasoning;
+        state.isReasoningLoading = isLoading;
+        state.showReasoning = true;
+
+        // During reasoning, explicitly set generating to false to prevent blinking cursor
+        if (isLoading) {
+            state.generating = false;
+            state.precontent = false;
+        }
+
+        this.emitEvent(StreamingEvents.UPDATED, state);
+    }
+
+    /**
      * Handle a WebSocket message
      */
     handleWebSocketMessage(data: PostUpdateWebsocketMessage): void {
-        const {post_id, next, control} = data;
+        const {post_id, next, control, reasoning} = data;
 
         if (!post_id) {
             return;
@@ -81,6 +106,26 @@ class StreamingPostStore {
 
         if (control === CONTROL_SIGNALS.END || control === CONTROL_SIGNALS.CANCEL) {
             this.endStreaming(post_id);
+            return;
+        }
+
+        // Handle reasoning summary updates
+        if (control === CONTROL_SIGNALS.REASONING_SUMMARY && reasoning) {
+            // Replace entire reasoning with accumulated text from backend
+            this.updateReasoning(post_id, reasoning, true);
+            return;
+        }
+
+        if (control === CONTROL_SIGNALS.REASONING_SUMMARY_DONE) {
+            // Final reasoning text - mark as complete
+            const state = this.streamingPosts.get(post_id);
+            if (state && reasoning) {
+                this.updateReasoning(post_id, reasoning, false);
+            } else if (state) {
+                // Just mark as done if no new reasoning text
+                state.isReasoningLoading = false;
+                this.emitEvent(StreamingEvents.UPDATED, state);
+            }
             return;
         }
 
@@ -114,6 +159,9 @@ class StreamingPostStore {
             generating: state.generating,
             message: state.message,
             precontent: state.precontent,
+            reasoning: state.reasoning,
+            isReasoningLoading: state.isReasoningLoading,
+            showReasoning: state.showReasoning,
         });
 
         // Also emit a generic update event with the post ID
