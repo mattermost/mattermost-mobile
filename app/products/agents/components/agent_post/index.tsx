@@ -13,6 +13,7 @@ import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import ReasoningDisplay from '../reasoning_display';
+import ToolApprovalSet from '../tool_approval_set';
 
 import StreamingIndicator from './streaming_indicator';
 
@@ -38,6 +39,20 @@ const AgentPost = ({post}: AgentPostProps) => {
             return (props?.reasoning_summary as string) || '';
         } catch {
             return '';
+        }
+    }, [post.props]);
+
+    // Extract persisted tool calls from post props
+    const persistedToolCalls = useMemo(() => {
+        try {
+            const props = post.props as Record<string, unknown>;
+            const toolCallsJson = props?.pending_tool_call as string;
+            if (toolCallsJson) {
+                return JSON.parse(toolCallsJson);
+            }
+            return [];
+        } catch {
+            return [];
         }
     }, [post.props]);
 
@@ -84,6 +99,9 @@ const AgentPost = ({post}: AgentPostProps) => {
     const isReasoningLoading = streamingState?.isReasoningLoading ?? false;
     const showReasoning = streamingState?.showReasoning ?? (persistedReasoning !== '');
 
+    // Determine tool calls - use streaming state if available, otherwise use persisted
+    const toolCalls = streamingState?.toolCalls ?? persistedToolCalls;
+
     return (
         <View style={styles.container}>
             {showReasoning && (
@@ -115,6 +133,12 @@ const AgentPost = ({post}: AgentPostProps) => {
                         <StreamingIndicator/>
                     )}
                 </View>
+            )}
+            {toolCalls.length > 0 && (
+                <ToolApprovalSet
+                    postId={post.id}
+                    toolCalls={toolCalls}
+                />
             )}
         </View>
     );

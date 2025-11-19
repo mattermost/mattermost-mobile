@@ -2,6 +2,29 @@
 // See LICENSE.txt for license information.
 
 /**
+ * Tool call status values
+ */
+export enum ToolCallStatus {
+    Pending = 0,
+    Accepted = 1,
+    Rejected = 2,
+    Error = 3,
+    Success = 4,
+}
+
+/**
+ * Tool call data structure
+ */
+export interface ToolCall {
+    id: string;
+    name: string;
+    description: string;
+    arguments: any;
+    result?: string;
+    status: ToolCallStatus;
+}
+
+/**
  * WebSocket message data for agent post updates
  */
 export interface PostUpdateWebsocketMessage {
@@ -24,6 +47,7 @@ export interface StreamingState {
     reasoning: string; // Accumulated reasoning text
     isReasoningLoading: boolean; // True while reasoning is being generated
     showReasoning: boolean; // True if reasoning should be displayed
+    toolCalls: ToolCall[]; // Tool calls pending approval or processed
 }
 
 /**

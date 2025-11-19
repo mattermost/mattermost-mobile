@@ -24,6 +24,7 @@ class StreamingPostStore {
             reasoning: '',
             isReasoningLoading: false,
             showReasoning: false,
+            toolCalls: [],
         };
 
         this.streamingPosts.set(postId, state);
@@ -89,10 +90,28 @@ class StreamingPostStore {
     }
 
     /**
+     * Update tool calls
+     */
+    updateToolCalls(postId: string, toolCallsJson: string): void {
+        const state = this.streamingPosts.get(postId);
+        if (!state) {
+            return;
+        }
+
+        try {
+            state.toolCalls = JSON.parse(toolCallsJson);
+            state.precontent = false;
+            this.emitEvent(StreamingEvents.UPDATED, state);
+        } catch (error) {
+            // Silently handle JSON parse errors
+        }
+    }
+
+    /**
      * Handle a WebSocket message
      */
     handleWebSocketMessage(data: PostUpdateWebsocketMessage): void {
-        const {post_id, next, control, reasoning} = data;
+        const {post_id, next, control, reasoning, tool_call} = data;
 
         if (!post_id) {
             return;
@@ -129,6 +148,12 @@ class StreamingPostStore {
             return;
         }
 
+        // Handle tool call events
+        if (control === CONTROL_SIGNALS.TOOL_CALL && tool_call) {
+            this.updateToolCalls(post_id, tool_call);
+            return;
+        }
+
         // Handle message updates
         if (next) {
             // Message comes as full accumulated text, not delta
@@ -162,6 +187,7 @@ class StreamingPostStore {
             reasoning: state.reasoning,
             isReasoningLoading: state.isReasoningLoading,
             showReasoning: state.showReasoning,
+            toolCalls: state.toolCalls,
         });
 
         // Also emit a generic update event with the post ID
