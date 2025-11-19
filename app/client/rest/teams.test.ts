@@ -208,7 +208,7 @@ describe('ClientTeams', () => {
                 {email: 'guest2@example.com', error: {message: '', status_code: 0}},
             ];
 
-            jest.mocked(client.doFetch).mockResolvedValue(mockResponse as any);
+            jest.mocked(client.doFetch).mockResolvedValueOnce(mockResponse as any);
 
             const result = await client.sendGuestEmailInvitesToTeamGracefully(teamId, emails, channels, message);
 
@@ -226,7 +226,7 @@ describe('ClientTeams', () => {
                 {email: 'guest1@example.com', error: {message: '', status_code: 0}},
             ];
 
-            jest.mocked(client.doFetch).mockResolvedValue(mockResponse as any);
+            jest.mocked(client.doFetch).mockResolvedValueOnce(mockResponse as any);
 
             const result = await client.sendGuestEmailInvitesToTeamGracefully(teamId, emails, channels);
 
@@ -240,7 +240,7 @@ describe('ClientTeams', () => {
             const channels = ['channel1'];
             const message = 'Test message';
 
-            jest.mocked(client.doFetch).mockRejectedValue(new Error('Network error'));
+            jest.mocked(client.doFetch).mockRejectedValueOnce(new Error('Network error'));
 
             await expect(client.sendGuestEmailInvitesToTeamGracefully(teamId, emails, channels, message)).rejects.toThrow('Network error');
         });

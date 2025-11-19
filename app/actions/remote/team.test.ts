@@ -277,7 +277,7 @@ describe('sendGuestEmailInvitesToTeam', () => {
 
         expect(result).toBeDefined();
         expect(result.error).toBeDefined();
-        expect(result.members).toBeUndefined();
+        expect(result.members).toEqual([]);
         expect(mockClient.sendGuestEmailInvitesToTeamGracefully).toHaveBeenCalledWith(teamId, emails, channels, message);
     });
 
@@ -288,7 +288,7 @@ describe('sendGuestEmailInvitesToTeam', () => {
 
         expect(result).toBeDefined();
         expect(result.error).toBeDefined();
-        expect(result.members).toBeUndefined();
+        expect(result.members).toEqual([]);
     });
 });
 
