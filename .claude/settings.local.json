@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(jira issue view:*)",
+      "Bash(npm run check:*)",
+      "Bash(npm test:*)",
+      "Bash(grep:*)",
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(rg:*)",
+      "mcp__atlassian__jira_get_issue",
+      "Bash(npm run test:*)",
+      "Bash(npm run tsc:*)",
+      "Bash(npm run lint)",
+      "Bash(npm run fix:*)",
+      "WebFetch(domain:testing-library.com)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(sed:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(npm run lint:*)",
+      "Bash(timeout 30 npm test:*)",
+      "Bash(npm run clean:*)",
+      "Bash(npm install)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:api.github.com)",
+      "WebFetch(domain:patch-diff.githubusercontent.com)",
+      "Read(//Users/willyfrog/Proyectos/mattermost-plugin-playbooks/server/api/**)",
+      "Read(//Users/willyfrog/Proyectos/mattermost-plugin-playbooks/server/**)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "mcp__github__get_pull_request_comments",
+      "Bash(gh pr view:*)",
+      "Bash(gh api:*)",
+      "mcp__github__get_pull_request"
+    ],
+    "deny": []
+  }
+}
