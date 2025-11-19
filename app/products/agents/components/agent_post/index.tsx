@@ -1,9 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {regenerateResponse, stopGeneration} from '@agents/actions/remote/generation_controls';
 import streamingStore from '@agents/store/streaming_store';
 import {StreamingEvents, type StreamingState} from '@agents/types';
-import React, {useEffect, useMemo, useState} from 'react';
+import {isPostRequester} from '@agents/utils';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {DeviceEventEmitter, StyleSheet, View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
@@ -13,6 +15,7 @@ import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import CitationsList from '../citations_list';
+import ControlsBar from '../controls_bar';
 import ReasoningDisplay from '../reasoning_display';
 import ToolApprovalSet from '../tool_approval_set';
 
@@ -23,13 +26,14 @@ import type PostModel from '@typings/database/models/servers/post';
 interface AgentPostProps {
     serverUrl: string;
     post: PostModel;
+    currentUserId?: string;
 }
 
 /**
  * Custom post component for agent responses
  * Handles streaming text updates and displays animated cursor during generation
  */
-const AgentPost = ({post}: AgentPostProps) => {
+const AgentPost = ({serverUrl, post, currentUserId}: AgentPostProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -120,6 +124,37 @@ const AgentPost = ({post}: AgentPostProps) => {
     // Determine annotations - use streaming state if available, otherwise use persisted
     const annotations = streamingState?.annotations ?? persistedAnnotations;
 
+    // Check permissions
+    const isRequester = useMemo(() => {
+        return currentUserId ? isPostRequester(post, currentUserId) : false;
+    }, [post, currentUserId]);
+
+    // Determine if generation is in progress (generating or reasoning)
+    const isGenerationInProgress = isGenerating || isReasoningLoading;
+
+    // Show controls based on state and permissions
+    const showStopButton = isGenerationInProgress && isRequester;
+    const hasContent = displayMessage !== '' || reasoningSummary !== '';
+    const showRegenerateButton = !isGenerationInProgress && isRequester && hasContent;
+
+    // Handler for stop button
+    const handleStop = useCallback(async () => {
+        const {error} = await stopGeneration(serverUrl, post.id);
+        if (error) {
+            // Error is already logged in the action
+            // Could show a toast notification here if desired
+        }
+    }, [serverUrl, post.id]);
+
+    // Handler for regenerate button
+    const handleRegenerate = useCallback(async () => {
+        const {error} = await regenerateResponse(serverUrl, post.id);
+        if (error) {
+            // Error is already logged in the action
+            // Could show a toast notification here if desired
+        }
+    }, [serverUrl, post.id]);
+
     return (
         <View style={styles.container}>
             {showReasoning && (
@@ -161,6 +196,12 @@ const AgentPost = ({post}: AgentPostProps) => {
             {annotations.length > 0 && (
                 <CitationsList annotations={annotations}/>
             )}
+            <ControlsBar
+                showStopButton={showStopButton}
+                showRegenerateButton={showRegenerateButton}
+                onStop={handleStop}
+                onRegenerate={handleRegenerate}
+            />
         </View>
     );
 };

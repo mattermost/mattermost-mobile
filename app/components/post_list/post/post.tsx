@@ -254,7 +254,7 @@ const Post = ({
                 clearTimeout(t);
             }
         };
-    }, [post.id]);
+    }, [post.id, post.pendingPostId, post.updateAt, isFailed]);
 
     useEffect(() => {
         if (!isLastPost) {
@@ -267,7 +267,7 @@ const Post = ({
 
         PerformanceMetricsManager.finishLoad(location === 'Thread' ? 'THREAD' : 'CHANNEL', serverUrl);
         PerformanceMetricsManager.endMetric('mobile_channel_switch', serverUrl);
-    }, []);
+    }, [isLastPost, location, serverUrl]);
 
     const highlightSaved = isSaved && !skipSavedHeader;
     const hightlightPinned = post.isPinned && !skipPinnedHeader;
@@ -364,6 +364,7 @@ const Post = ({
             <AgentPost
                 serverUrl={serverUrl}
                 post={post}
+                currentUserId={currentUser?.id}
             />
         );
     } else {
