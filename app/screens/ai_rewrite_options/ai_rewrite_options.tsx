@@ -34,32 +34,42 @@ type Props = {
 }
 
 const CUSTOM_PROMPT_INPUT_HEIGHT = 56;
-const OPTIONS_PADDING = 12;
+const OPTIONS_PADDING = 8;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         backgroundColor: theme.centerChannelBg,
     },
+    headerContainer: {
+        paddingHorizontal: 20,
+        paddingTop: 8,
+        paddingBottom: 4,
+        gap: 8,
+    },
     customPromptContainer: {
         paddingHorizontal: 20,
-        paddingVertical: 12,
-        borderBottomWidth: 1,
-        borderBottomColor: changeOpacity(theme.centerChannelColor, 0.08),
+        paddingVertical: 4,
     },
-    customPromptContainerGeneration: {
-        paddingHorizontal: 20,
-        paddingVertical: 20,
-        borderBottomWidth: 1,
-        borderBottomColor: changeOpacity(theme.centerChannelColor, 0.08),
-    },
-    customPromptInput: {
-        backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
+    customPromptInputWrapper: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: theme.centerChannelBg,
+        borderWidth: 1,
+        borderColor: changeOpacity(theme.centerChannelColor, 0.16),
         borderRadius: 4,
         paddingHorizontal: 12,
-        paddingVertical: 8,
-        fontSize: 15,
+        paddingVertical: 12,
+        gap: 8,
+    },
+    customPromptInput: {
+        flex: 1,
+        fontSize: 16,
+        lineHeight: 24,
         color: theme.centerChannelColor,
-        minHeight: 40,
+        padding: 0,
+        margin: 0,
+        includeFontPadding: false,
+        textAlignVertical: 'center',
     },
     optionsContainer: {
         paddingTop: OPTIONS_PADDING,
@@ -364,12 +374,12 @@ const AIRewriteOptions = ({
     }, [theme, intl, agents, selectedAgent, isTablet]);
 
     const options: Array<{action: AIRewriteAction; labelId: string; defaultLabel: string; icon: string}> = [
-        {action: 'shorten', labelId: 'ai_rewrite.shorten', defaultLabel: 'Shorten', icon: 'arrow-collapse'},
-        {action: 'elaborate', labelId: 'ai_rewrite.elaborate', defaultLabel: 'Elaborate', icon: 'arrow-expand'},
-        {action: 'improve_writing', labelId: 'ai_rewrite.improve_writing', defaultLabel: 'Improve writing', icon: 'pencil-outline'},
-        {action: 'fix_spelling', labelId: 'ai_rewrite.fix_spelling', defaultLabel: 'Fix spelling and grammar', icon: 'format-letter-case'},
+        {action: 'shorten', labelId: 'ai_rewrite.shorten', defaultLabel: 'Shorten', icon: 'text-short'},
+        {action: 'elaborate', labelId: 'ai_rewrite.elaborate', defaultLabel: 'Elaborate', icon: 'text-long'},
+        {action: 'improve_writing', labelId: 'ai_rewrite.improve_writing', defaultLabel: 'Improve writing', icon: 'auto-fix'},
+        {action: 'fix_spelling', labelId: 'ai_rewrite.fix_spelling', defaultLabel: 'Fix spelling and grammar', icon: 'spellcheck'},
         {action: 'simplify', labelId: 'ai_rewrite.simplify', defaultLabel: 'Simplify', icon: 'lightbulb-outline'},
-        {action: 'summarize', labelId: 'ai_rewrite.summarize', defaultLabel: 'Summarize', icon: 'message-text-outline'},
+        {action: 'summarize', labelId: 'ai_rewrite.summarize', defaultLabel: 'Summarize', icon: 'ai-summarize'},
     ];
 
     const snapPoints = useMemo(() => {
@@ -433,39 +443,48 @@ const AIRewriteOptions = ({
                 </View>
             )}
 
-            {agents.length > 1 && (
-                <OptionItem
-                    label={intl.formatMessage({
-                        id: 'ai_rewrite.select_agent',
-                        defaultMessage: 'Select agent',
-                    })}
-                    info={selectedAgent?.displayName || intl.formatMessage({
-                        id: 'ai_rewrite.no_agent_selected',
-                        defaultMessage: 'None',
-                    })}
-                    action={handleOpenAgentSelector}
-                    type='arrow'
-                    testID='ai_rewrite.select_agent'
-                />
-            )}
+            <View style={styles.headerContainer}>
+                {agents.length > 1 && (
+                    <OptionItem
+                        label={intl.formatMessage({
+                            id: 'ai_rewrite.selected_agent',
+                            defaultMessage: 'Selected Agent',
+                        })}
+                        info={selectedAgent?.displayName || intl.formatMessage({
+                            id: 'ai_rewrite.no_agent_selected',
+                            defaultMessage: 'None',
+                        })}
+                        action={handleOpenAgentSelector}
+                        type='arrow'
+                        testID='ai_rewrite.select_agent'
+                    />
+                )}
 
-            <View style={isGeneratingContent ? styles.customPromptContainerGeneration : styles.customPromptContainer}>
-                <TextInput
-                    ref={textInputRef}
-                    style={styles.customPromptInput}
-                    placeholder={intl.formatMessage({
-                        id: isGeneratingContent ? 'ai_rewrite.generate_prompt' : 'ai_rewrite.custom_prompt',
-                        defaultMessage: isGeneratingContent ? 'Ask agents to create a message' : 'Ask AI to edit message...',
-                    })}
-                    placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                    value={customPrompt}
-                    onChangeText={setCustomPrompt}
-                    onSubmitEditing={handleCustomPromptSubmit}
-                    returnKeyType='send'
-                    multiline={false}
-                    editable={!isProcessing}
-                    autoCapitalize='none'
-                />
+                <View style={styles.customPromptContainer}>
+                    <View style={styles.customPromptInputWrapper}>
+                        <CompassIcon
+                            name='creation-outline'
+                            size={20}
+                            color={changeOpacity(theme.centerChannelColor, 0.64)}
+                        />
+                        <TextInput
+                            ref={textInputRef}
+                            style={styles.customPromptInput}
+                            placeholder={intl.formatMessage({
+                                id: isGeneratingContent ? 'ai_rewrite.generate_prompt' : 'ai_rewrite.custom_prompt',
+                                defaultMessage: isGeneratingContent ? 'Ask agents to create a message' : 'Ask AI to edit selection…',
+                            })}
+                            placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.64)}
+                            value={customPrompt}
+                            onChangeText={setCustomPrompt}
+                            onSubmitEditing={handleCustomPromptSubmit}
+                            returnKeyType='send'
+                            multiline={false}
+                            editable={!isProcessing}
+                            autoCapitalize='none'
+                        />
+                    </View>
+                </View>
             </View>
 
             {!isGeneratingContent && (
