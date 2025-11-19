@@ -3,7 +3,7 @@
 
 import {submitToolApproval} from '@agents/actions/remote/tool_approval';
 import {type ToolCall, ToolCallStatus} from '@agents/types';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {ActivityIndicator, StyleSheet, View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
@@ -33,6 +33,28 @@ const ToolApprovalSet = ({postId, toolCalls}: ToolApprovalSetProps) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [collapsedTools, setCollapsedTools] = useState<string[]>([]);
     const [toolDecisions, setToolDecisions] = useState<ToolDecision>({});
+
+    // Clear local decisions when tool status changes from Pending to something else
+    useEffect(() => {
+        const shouldClearDecision = (toolId: string) => {
+            const tool = toolCalls.find((t) => t.id === toolId);
+            return tool && tool.status !== ToolCallStatus.Pending;
+        };
+
+        setToolDecisions((prev) => {
+            const decisionsToRemove = Object.keys(prev).filter(shouldClearDecision);
+
+            if (decisionsToRemove.length === 0) {
+                return prev; // No changes needed
+            }
+
+            const updated = {...prev};
+            decisionsToRemove.forEach((toolId) => {
+                delete updated[toolId];
+            });
+            return updated;
+        });
+    }, [toolCalls]);
 
     const handleToolDecision = async (toolId: string, approved: boolean) => {
         if (isSubmitting) {
@@ -64,7 +86,11 @@ const ToolApprovalSet = ({postId, toolCalls}: ToolApprovalSetProps) => {
         const {error} = await submitToolApproval(serverUrl, postId, approvedToolIds);
 
         if (error) {
-            // Keep submitting state if there's an error - user can try again
+            // Reset on error so user can try again
+            setIsSubmitting(false);
+        } else {
+            // Backend will execute tools and update the post via POST_EDITED event
+            // The component will receive updated toolCalls prop and useEffect will clear local decisions
             setIsSubmitting(false);
         }
     };
@@ -109,6 +135,7 @@ const ToolApprovalSet = ({postId, toolCalls}: ToolApprovalSetProps) => {
                     tool={tool}
                     isCollapsed={isToolCollapsed(tool)}
                     isProcessing={isSubmitting}
+                    localDecision={toolDecisions[tool.id]}
                     onToggleCollapse={() => toggleCollapse(tool.id)}
                     onApprove={() => handleToolDecision(tool.id, true)}
                     onReject={() => handleToolDecision(tool.id, false)}

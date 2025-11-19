@@ -86,6 +86,12 @@ const AgentPost = ({serverUrl, post, currentUserId}: AgentPostProps) => {
             setStreamingState({...state});
         };
 
+        const handleStreamingEnded = () => {
+            // Clear streaming state immediately to force component to use persisted data
+            // This ensures POST_EDITED updates are reflected immediately
+            setStreamingState(undefined);
+        };
+
         const startedListener = DeviceEventEmitter.addListener(
             `${StreamingEvents.STARTED}_${post.id}`,
             handleStreamingUpdate,
@@ -98,7 +104,7 @@ const AgentPost = ({serverUrl, post, currentUserId}: AgentPostProps) => {
 
         const endedListener = DeviceEventEmitter.addListener(
             `${StreamingEvents.ENDED}_${post.id}`,
-            handleStreamingUpdate,
+            handleStreamingEnded,
         );
 
         return () => {

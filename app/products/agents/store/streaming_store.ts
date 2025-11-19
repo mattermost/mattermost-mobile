@@ -59,13 +59,12 @@ class StreamingPostStore {
 
         state.generating = false;
         state.precontent = false;
+        state.isReasoningLoading = false; // Stop showing reasoning loading state
 
         this.emitEvent(StreamingEvents.ENDED, state);
 
-        // Clean up after a short delay to allow final render
-        setTimeout(() => {
-            this.streamingPosts.delete(postId);
-        }, 500);
+        // Clean up immediately - component clears its local state on ENDED event
+        this.streamingPosts.delete(postId);
     }
 
     /**
@@ -94,9 +93,23 @@ class StreamingPostStore {
      * Update tool calls
      */
     updateToolCalls(postId: string, toolCallsJson: string): void {
-        const state = this.streamingPosts.get(postId);
+        let state = this.streamingPosts.get(postId);
+
+        // If no streaming state exists, create a minimal one for tool call updates
+        // This handles tool status updates that arrive after streaming ends but before POST_EDITED
         if (!state) {
-            return;
+            state = {
+                postId,
+                generating: false,
+                message: '',
+                precontent: false,
+                reasoning: '',
+                isReasoningLoading: false,
+                showReasoning: false,
+                toolCalls: [],
+                annotations: [],
+            };
+            this.streamingPosts.set(postId, state);
         }
 
         try {
@@ -218,6 +231,24 @@ class StreamingPostStore {
 
         // Also emit a generic update event with the post ID
         DeviceEventEmitter.emit(`${event}_${state.postId}`, state);
+    }
+
+    /**
+     * Remove streaming state for a specific post
+     * Call this when a post is updated via POST_EDITED to ensure
+     * the component uses the persisted data from the database
+     */
+    removePost(postId: string): void {
+        const state = this.streamingPosts.get(postId);
+        if (!state) {
+            return;
+        }
+
+        // Emit an ENDED event to notify component to switch to persisted data
+        this.emitEvent(StreamingEvents.ENDED, {...state});
+
+        // Clean up immediately - component clears its local state on ENDED event
+        this.streamingPosts.delete(postId);
     }
 
     /**

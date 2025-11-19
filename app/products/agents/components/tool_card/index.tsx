@@ -21,6 +21,7 @@ interface ToolCardProps {
     tool: ToolCall;
     isCollapsed: boolean;
     isProcessing: boolean;
+    localDecision?: boolean | null; // true = approved, false = rejected, null/undefined = undecided
     onToggleCollapse: () => void;
     onApprove?: () => void;
     onReject?: () => void;
@@ -33,6 +34,7 @@ const ToolCard = ({
     tool,
     isCollapsed,
     isProcessing,
+    localDecision,
     onToggleCollapse,
     onApprove,
     onReject,
@@ -41,6 +43,7 @@ const ToolCard = ({
     const styles = getStyleSheet(theme);
 
     const isPending = tool.status === ToolCallStatus.Pending;
+    const hasLocalDecision = localDecision !== undefined && localDecision !== null;
     const isAccepted = tool.status === ToolCallStatus.Accepted;
     const isSuccess = tool.status === ToolCallStatus.Success;
     const isError = tool.status === ToolCallStatus.Error;
@@ -221,47 +224,47 @@ const ToolCard = ({
                 </>
             )}
 
-            {isPending && (
-                isProcessing ? (
-                    <View style={styles.statusContainer}>
-                        <ActivityIndicator
-                            size='small'
-                            color={changeOpacity(theme.centerChannelColor, 0.64)}
-                        />
+            {isPending && !hasLocalDecision && isProcessing && (
+                <View style={styles.statusContainer}>
+                    <ActivityIndicator
+                        size='small'
+                        color={changeOpacity(theme.centerChannelColor, 0.64)}
+                    />
+                    <FormattedText
+                        id='agents.tool_call.processing'
+                        defaultMessage='Processing...'
+                        style={styles.statusText}
+                    />
+                </View>
+            )}
+
+            {isPending && !hasLocalDecision && !isProcessing && (
+                <View style={styles.buttonContainer}>
+                    <TouchableOpacity
+                        onPress={onApprove}
+                        disabled={isProcessing}
+                        style={[styles.button, isProcessing && styles.buttonDisabled]}
+                        activeOpacity={0.7}
+                    >
                         <FormattedText
-                            id='agents.tool_call.processing'
-                            defaultMessage='Processing...'
-                            style={styles.statusText}
+                            id='agents.tool_call.approve'
+                            defaultMessage='Accept'
+                            style={styles.buttonText}
                         />
-                    </View>
-                ) : (
-                    <View style={styles.buttonContainer}>
-                        <TouchableOpacity
-                            onPress={onApprove}
-                            disabled={isProcessing}
-                            style={[styles.button, isProcessing && styles.buttonDisabled]}
-                            activeOpacity={0.7}
-                        >
-                            <FormattedText
-                                id='agents.tool_call.approve'
-                                defaultMessage='Accept'
-                                style={styles.buttonText}
-                            />
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            onPress={onReject}
-                            disabled={isProcessing}
-                            style={[styles.button, isProcessing && styles.buttonDisabled]}
-                            activeOpacity={0.7}
-                        >
-                            <FormattedText
-                                id='agents.tool_call.reject'
-                                defaultMessage='Reject'
-                                style={styles.buttonText}
-                            />
-                        </TouchableOpacity>
-                    </View>
-                )
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={onReject}
+                        disabled={isProcessing}
+                        style={[styles.button, isProcessing && styles.buttonDisabled]}
+                        activeOpacity={0.7}
+                    >
+                        <FormattedText
+                            id='agents.tool_call.reject'
+                            defaultMessage='Reject'
+                            style={styles.buttonText}
+                        />
+                    </TouchableOpacity>
+                </View>
             )}
         </View>
     );
