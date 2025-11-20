@@ -98,7 +98,7 @@ jobs:
 
   detox-e2e:
     name: mobile-cmt-${{ matrix.server.version }}
-    uses: ./.github/workflows/e2e-detox-template.yml
+    uses: ./.github/workflows/e2e-ios-template.yml
     needs:
       - build-ios-simulator
     strategy:
@@ -106,7 +106,6 @@ jobs:
       matrix: ${{ fromJson(inputs.CMT_MATRIX) }}
     secrets: inherit
     with:
-      run-ios-tests: true
       run-type: "RELEASE"
       MM_TEST_SERVER_URL: ${{ matrix.server.url }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}

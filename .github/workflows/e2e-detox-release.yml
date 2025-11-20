@@ -1,12 +1,39 @@
 name: Detox E2E Tests Release
 
 on:
-  push:
-    branches:
-      - release-*
+  workflow_dispatch:
+    inputs:
+      SITE_1_URL:
+        description: "First test server URL"
+        required: true
+        type: string
+      SITE_2_URL:
+        description: "Second test server URL"
+        required: true
+        type: string
+      SITE_3_URL:
+        description: "Third test server URL"
+        required: true
+        type: string
+      MOBILE_VERSION:
+        description: "The mobile version to test (branch or SHA)"
+        required: true
+        type: string
+      PLATFORM:
+        description: "Platform to test: ios or android"
+        required: true
+        type: choice
+        options:
+          - ios
+          - android
+      DELIVERY_PLATFORM_RUN_ID:
+        description: "The delivery-platform workflow run ID that provisioned servers"
+        required: true
+        type: string
 
 jobs:
   update-initial-status-ios:
+    if: inputs.PLATFORM == 'ios'
     runs-on: ubuntu-22.04
     steps:
       - uses: mattermost/actions/delivery/update-commit-status@main
@@ -20,6 +47,7 @@ jobs:
           status: pending
 
   update-initial-status-android:
+    if: inputs.PLATFORM == 'android'
     runs-on: ubuntu-22.04
     steps:
       - uses: mattermost/actions/delivery/update-commit-status@main
@@ -33,12 +61,13 @@ jobs:
           status: pending
 
   build-ios-simulator:
+    if: inputs.PLATFORM == 'ios'
     runs-on: macos-14
-    needs:
-      - update-initial-status-ios
     steps:
       - name: Checkout Repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
 
       - name: Prepare iOS Build
         uses: ./.github/actions/prepare-ios-build
@@ -59,9 +88,8 @@ jobs:
           path: Mattermost-simulator-x86_64.app.zip
 
   build-android-apk:
+    if: inputs.PLATFORM == 'android'
     runs-on: ubuntu-latest-8-cores
-    needs: 
-      - update-initial-status-android
     env:
       ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
     steps:
@@ -109,29 +137,57 @@ jobs:
           path: "android/app/build/**/*"
         
   run-ios-tests-on-release:
+    if: inputs.PLATFORM == 'ios'
     name: iOS Mobile Tests on Release
     uses: ./.github/workflows/e2e-ios-template.yml
     needs:
       - build-ios-simulator
     with:
+      SITE_1_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.SITE_1_URL || 'https://mobile-e2e-site-1.test.mattermost.cloud' }}
+      SITE_2_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.SITE_2_URL || 'https://mobile-e2e-site-2.test.mattermost.cloud' }}
+      SITE_3_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.SITE_3_URL || 'https://mobile-e2e-site-3.test.mattermost.cloud' }}
       run-type: "RELEASE"
       record_tests_in_zephyr: 'true'
-      MOBILE_VERSION: ${{ github.ref }}
+      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
     secrets: inherit
 
   run-android-tests-on-release:
+    if: inputs.PLATFORM == 'android'
     name: Android Mobile Tests on Release
     uses: ./.github/workflows/e2e-android-template.yml
     needs:
       - build-android-apk
     with:
+      SITE_1_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.SITE_1_URL || 'https://mobile-e2e-site-1.test.mattermost.cloud' }}
+      SITE_2_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.SITE_2_URL || 'https://mobile-e2e-site-2.test.mattermost.cloud' }}
+      SITE_3_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.SITE_3_URL || 'https://mobile-e2e-site-3.test.mattermost.cloud' }}
       run-android-tests: true
       run-type: "RELEASE"
       record_tests_in_zephyr: 'true'
-      MOBILE_VERSION: ${{ github.ref }}
+      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
     secrets: inherit
 
+  upload-cleanup-reference:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Create cleanup reference file
+        run: |
+          cat > instance-details.json <<EOF
+          {
+            "delivery_platform_run_id": "${{ inputs.DELIVERY_PLATFORM_RUN_ID }}",
+            "delivery_platform_repository": "mattermost/delivery-platform"
+          }
+          EOF
+
+      - name: Upload cleanup reference
+        uses: actions/upload-artifact@v4
+        with:
+          name: instance-details.json
+          path: instance-details.json
+          retention-days: 1
+
   update-final-status-ios:
+    if: inputs.PLATFORM == 'ios'
     runs-on: ubuntu-22.04
     needs:
       - run-ios-tests-on-release
@@ -148,6 +204,7 @@ jobs:
           target_url: ${{ needs.run-ios-tests-on-release.outputs.TARGET_URL }}
 
   update-final-status-android:
+    if: inputs.PLATFORM == 'android'
     runs-on: ubuntu-22.04
     needs:
       - run-android-tests-on-release
