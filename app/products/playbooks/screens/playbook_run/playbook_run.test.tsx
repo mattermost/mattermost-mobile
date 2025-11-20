@@ -354,6 +354,29 @@ describe('PlaybookRun', () => {
         expect(finishRun).toHaveBeenCalledWith(serverUrl, props.playbookRun!.id);
     });
 
+    it('handles finish run button press with no pending tasks', () => {
+        const props = getBaseProps();
+        props.participants.push(TestHelper.fakeUserModel({id: props.currentUserId}));
+        props.pendingCount = 0;
+        jest.mocked(Alert.alert).mockClear();
+        const {getByText} = renderWithEverything(<PlaybookRun {...props}/>, {database});
+
+        const finishRunButton = getByText('Finish');
+        fireEvent.press(finishRunButton);
+
+        expect(Alert.alert).toHaveBeenCalledWith(
+            'Finish',
+            'Are you sure you want to finish the checklist for all participants?',
+            [
+                {text: 'Cancel', style: 'cancel'},
+                {text: 'Finish', style: 'destructive', onPress: expect.any(Function)},
+            ],
+        );
+        const finishAction = jest.mocked(Alert.alert).mock.calls[0][2]![1];
+        finishAction.onPress?.();
+        expect(finishRun).toHaveBeenCalledWith(serverUrl, props.playbookRun!.id);
+    });
+
     it('does not render finish run button when read only', () => {
         const props = getBaseProps();
         const {queryByText} = renderWithEverything(<PlaybookRun {...props}/>, {database});

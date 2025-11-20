@@ -71,9 +71,13 @@ const messages = defineMessages({
         id: 'playbooks.playbook_run.finish_run_dialog_title',
         defaultMessage: 'Finish',
     },
-    finishRunDialogDescription: {
-        id: 'playbooks.playbook_run.finish_run_dialog_description',
-        defaultMessage: 'There are {pendingCount} {pendingCount, plural, =1 {task} other {tasks}} pending.\n\nAre you sure you want to finish the checklist for all participants?',
+    finishRunDialogPendingTasks: {
+        id: 'playbooks.playbook_run.finish_run_dialog_pending_tasks',
+        defaultMessage: 'There are {pendingCount} {pendingCount, plural, =1 {task} other {tasks}} pending.',
+    },
+    finishRunDialogConfirmation: {
+        id: 'playbooks.playbook_run.finish_run_dialog_confirmation',
+        defaultMessage: 'Are you sure you want to finish the checklist for all participants?',
     },
     finishRunDialogCancel: {
         id: 'playbooks.playbook_run.finish_run_dialog_cancel',
@@ -270,9 +274,14 @@ export default function PlaybookRun({
             return;
         }
 
+        let message = intl.formatMessage(messages.finishRunDialogConfirmation);
+        if (pendingCount > 0) {
+            message = `${intl.formatMessage(messages.finishRunDialogPendingTasks, {pendingCount})}\n\n${message}`;
+        }
+
         Alert.alert(
             intl.formatMessage(messages.finishRunDialogTitle),
-            intl.formatMessage(messages.finishRunDialogDescription, {pendingCount}),
+            message,
             [
                 {
                     text: intl.formatMessage(messages.finishRunDialogCancel),
