@@ -105,7 +105,7 @@ export function isCallsCustomMessage(post: PostModel | Post): boolean {
     return Boolean(post.type && post.type === Post.POST_TYPES.CUSTOM_CALLS);
 }
 
-export function isBoRPost(post: PostModel): boolean {
+export function isBoRPost(post: PostModel | Post): boolean {
     return Boolean(post.type && post.type === Post.POST_TYPES.BURN_ON_READ);
 }
 
@@ -115,6 +115,10 @@ export function isUnrevealedBoRPost(post: PostModel): boolean {
 
 export function isOwnBoRPost(post: PostModel, currentUser?: UserModel): boolean {
     return isBoRPost(post) && Boolean(currentUser && post.userId === currentUser.id);
+}
+
+export function isExpiredBoRPost(post: PostModel): boolean {
+    return isBoRPost(post) && Boolean(post.metadata?.expire_at) && post.metadata!.expire_at! < Date.now();
 }
 
 export function idsAreEqual(a: string[], b: string[]) {

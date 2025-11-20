@@ -235,7 +235,7 @@ async function dataRetentionWithoutPolicyCleanup(serverUrl: string) {
     }
 }
 
-async function dataRetentionCleanPosts(serverUrl: string, postIds: string[]) {
+export async function dataRetentionCleanPosts(serverUrl: string, postIds: string[]) {
     if (postIds.length) {
         const batchSize = 1000;
         const deletePromises = [];

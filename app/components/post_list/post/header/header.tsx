@@ -1,15 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
-import {Text, View} from 'react-native';
+import React, {useCallback} from 'react';
+import {View} from 'react-native';
 
+import {deletePost} from '@actions/remote/post';
+import {isOwnBoRPost, isUnrevealedBoRPost} from '@calls/utils';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
 import ExpiryTimer from '@components/post_list/post/header/expiry_timer';
 import PostPriorityLabel from '@components/post_priority/post_priority_label';
 import {CHANNEL, THREAD} from '@constants/screens';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {DEFAULT_LOCALE} from '@i18n';
 import {postUserDisplayName} from '@utils/post';
@@ -47,8 +50,6 @@ type HeaderProps = {
     shouldRenderReplyButton?: boolean;
     teammateNameDisplay: string;
     hideGuestTags: boolean;
-    showBoRIcon?: boolean;
-    borExpireAt?: number;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -84,7 +85,6 @@ const Header = (props: HeaderProps) => {
         author, commentCount = 0, currentUser, enablePostUsernameOverride, isAutoResponse, isCRTEnabled, isCustomStatusEnabled,
         isEphemeral, isMilitaryTime, isPendingOrFailed, isSystemPost, isWebHook,
         location, post, rootPostAuthor, showPostPriority, shouldRenderReplyButton, teammateNameDisplay, hideGuestTags,
-        showBoRIcon, borExpireAt,
     } = props;
     const theme = useTheme();
     const style = getStyleSheet(theme);
@@ -100,6 +100,16 @@ const Header = (props: HeaderProps) => {
     ) && !isCustomStatusExpired(author) && Boolean(customStatus?.emoji);
     const userIconOverride = ensureString(post.props?.override_icon_url);
     const usernameOverride = ensureString(post.props?.override_username);
+
+    const isUnrevealedPost = isUnrevealedBoRPost(post);
+    const ownBoRPost = isOwnBoRPost(post, currentUser);
+    const showBoRIcon = isUnrevealedPost || ownBoRPost;
+    const borExpireAt = post.metadata?.expire_at;
+    const serverUrl = useServerUrl();
+
+    const onBoRPostExpiry = useCallback(() => {
+        deletePost(serverUrl, post);
+    }, [post, serverUrl]);
 
     return (
         <>
@@ -144,6 +154,7 @@ const Header = (props: HeaderProps) => {
                         !showBoRIcon && borExpireAt &&
                         <ExpiryTimer
                             expiryTime={borExpireAt}
+                            onExpiry={onBoRPostExpiry}
                         />
                     }
                     {isEphemeral && (

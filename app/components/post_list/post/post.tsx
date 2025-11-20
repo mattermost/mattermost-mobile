@@ -159,7 +159,6 @@ const Post = ({
     const isSystemPost = isSystemMessage(post);
     const isCallsPost = isCallsCustomMessage(post);
     const isUnrevealedPost = isUnrevealedBoRPost(post);
-    const ownBoRPost = isOwnBoRPost(post, currentUser);
     const hasBeenDeleted = (post.deleteAt !== 0);
     const isWebHook = isFromWebhook(post);
     const hasSameRoot = useMemo(() => {
@@ -333,8 +332,6 @@ const Post = ({
                     post={post}
                     showPostPriority={showPostPriority}
                     shouldRenderReplyButton={shouldRenderReplyButton}
-                    showBoRIcon={isUnrevealedPost || ownBoRPost}
-                    borExpireAt={post.metadata?.expire_at}
                 />
             );
         }

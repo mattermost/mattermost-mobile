@@ -10,6 +10,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
     expiryTime: number; // timestamp in ms
+    onExpiry?: () => void;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -41,7 +42,7 @@ function formatTime(ms: number) {
     return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 }
 
-const ExpiryCountdown: React.FC<Props> = ({expiryTime}) => {
+const ExpiryCountdown: React.FC<Props> = ({expiryTime, onExpiry}) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
@@ -49,11 +50,18 @@ const ExpiryCountdown: React.FC<Props> = ({expiryTime}) => {
 
     useEffect(() => {
         const timer = setInterval(() => {
-            setRemaining(Math.max(0, expiryTime - Date.now()));
+            console.log('interval........................................');
+            const remainingTime = Math.max(0, expiryTime - Date.now());
+            setRemaining(remainingTime);
+
+            if (remainingTime <= 0) {
+                clearInterval(timer);
+                onExpiry?.();
+            }
         }, 1000);
 
         return () => clearInterval(timer);
-    }, [expiryTime]);
+    }, [expiryTime, onExpiry]);
 
     return (
         <View style={style.container}>
