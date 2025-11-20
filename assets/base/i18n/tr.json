@@ -1025,7 +1025,6 @@
   "playbooks.playbook_run.error.title": "Oyun bilgileri alınamadı",
   "playbooks.playbook_run.finish_run_button": "Oyunu tamamla",
   "playbooks.playbook_run.finish_run_dialog_cancel": "İptal",
-  "playbooks.playbook_run.finish_run_dialog_description": "Bekleyen {pendingCount} {pendingCount, plural, =1 {görev} other {görev}} var.\n\nOyunu tüm katılımcılar için tamamlamak istediğinize emin misiniz?",
   "playbooks.playbook_run.finish_run_dialog_finish": "Tamamla",
   "playbooks.playbook_run.finish_run_dialog_title": "Oyunu tamamla",
   "playbooks.playbook_run.finished": "Tamamlanmış",

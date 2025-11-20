@@ -1033,7 +1033,6 @@
   "playbooks.playbook_run.error.title": "Details können nicht abgerufen werden",
   "playbooks.playbook_run.finish_run_button": "Beenden",
   "playbooks.playbook_run.finish_run_dialog_cancel": "Abbrechen",
-  "playbooks.playbook_run.finish_run_dialog_description": "Es {pendingCount, plural, =1 {ist eine Aufgabe} other {sind {pendingCount} Aufgaben}} anhängig.\n\nBist du sicher, dass du die Checkliste für alle Teilnehmer beenden willst?",
   "playbooks.playbook_run.finish_run_dialog_finish": "Beenden",
   "playbooks.playbook_run.finish_run_dialog_title": "Beenden",
   "playbooks.playbook_run.finished": "Beendet",

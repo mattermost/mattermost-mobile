@@ -1033,7 +1033,6 @@
   "playbooks.playbook_run.error.title": "Det går inte att hämta detaljer",
   "playbooks.playbook_run.finish_run_button": "Slutför",
   "playbooks.playbook_run.finish_run_dialog_cancel": "Avbryt",
-  "playbooks.playbook_run.finish_run_dialog_description": "Det finns {pendingCount} väntande {pendingCount, plural, =1 {uppgift} other {uppgifter}}.\n\nÄr du säker på att du vill avsluta checklistan för alla deltagare?",
   "playbooks.playbook_run.finish_run_dialog_finish": "Slutför",
   "playbooks.playbook_run.finish_run_dialog_title": "Slutför",
   "playbooks.playbook_run.finished": "Slutförd",

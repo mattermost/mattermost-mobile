@@ -1033,7 +1033,6 @@
   "playbooks.playbook_run.error.title": "Nie można pobrać szczegółów",
   "playbooks.playbook_run.finish_run_button": "Zakończ",
   "playbooks.playbook_run.finish_run_dialog_cancel": "Anuluj",
-  "playbooks.playbook_run.finish_run_dialog_description": "Istnieje/ą {pendingCount} {pendingCount, plural, =1 {zadanie} other {zadania}} oczekujące.\n\nCzy na pewno chcesz zakończyć listę kontrolną dla wszystkich uczestników?",
   "playbooks.playbook_run.finish_run_dialog_finish": "Zakończ",
   "playbooks.playbook_run.finish_run_dialog_title": "Zakończ",
   "playbooks.playbook_run.finished": "Zakończony",

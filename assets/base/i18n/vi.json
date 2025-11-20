@@ -809,7 +809,6 @@
   "playbooks.playbook_run.error.title": "Không thể lấy thông tin chi tiết",
   "playbooks.playbook_run.finish_run_button": "Kết thúc",
   "playbooks.playbook_run.finish_run_dialog_cancel": "Hủy",
-  "playbooks.playbook_run.finish_run_dialog_description": "Có {pendingCount} {pendingCount, plural, =1 {tác vụ} other {tác vụ}} tồn đọng.\n\nBạn có chắc chắn muốn hoàn thiện danh sách tác vụ cho tất cả người tham gia?",
   "playbooks.playbook_run.finish_run_dialog_finish": "Kết thúc",
   "playbooks.playbook_run.finish_run_dialog_title": "Kết thúc",
   "playbooks.playbook_run.finished": "Đã kết thúc",

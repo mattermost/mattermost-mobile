@@ -1032,7 +1032,6 @@
   "playbooks.playbook_run.error.title": "Kan geen details ophalen",
   "playbooks.playbook_run.finish_run_button": "Voltooien",
   "playbooks.playbook_run.finish_run_dialog_cancel": "Annuleren",
-  "playbooks.playbook_run.finish_run_dialog_description": "Er zijn {pendingCount} {pendingCount, plural, =1 {taak} other {taken}} in behandeling.\n\nWeet je zeker dat je de checklist voor alle deelnemers wilt beëindigen?",
   "playbooks.playbook_run.finish_run_dialog_finish": "Voltooien",
   "playbooks.playbook_run.finish_run_dialog_title": "Voltooien",
   "playbooks.playbook_run.finished": "Voltooid",
