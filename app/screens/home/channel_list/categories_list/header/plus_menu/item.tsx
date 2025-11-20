@@ -33,7 +33,7 @@ const PlusMenuItem = ({pickerAction, onPress}: PlusMenuItemProps) => {
             testID: 'plus_menu_item.open_direct_message',
         },
         openAgents: {
-            leftIcon: 'robot-happy-outline',
+            leftIcon: 'robot-happy',
             text: intl.formatMessage({id: 'plus_menu.open_agents.title', defaultMessage: 'Agents'}),
             testID: 'plus_menu_item.open_agents',
         },
