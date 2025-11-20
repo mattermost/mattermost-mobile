@@ -56,6 +56,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         rightHeader: {
             flex: 1,
+            alignItems: 'flex-end',
         },
     };
 });
