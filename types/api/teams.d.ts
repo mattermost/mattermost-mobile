@@ -16,12 +16,12 @@ type TeamMembership = {
 type TeamMemberWithError = {
     member: TeamMembership;
     user_id: string;
-    error: ApiError;
+    error?: ApiError;
 }
 
 type TeamInviteWithError = {
     email: string;
-    error: ApiError;
+    error?: ApiError;
 }
 
 type TeamType = 'O' | 'I';
