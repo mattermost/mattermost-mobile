@@ -56,7 +56,7 @@ const ControlsBar = ({
             {showStopButton && (
                 <TouchableOpacity
                     onPress={preventDoubleTap(onStop)}
-                    style={[styles.button, styles.stopButton]}
+                    style={styles.button}
                     activeOpacity={0.7}
                     testID='agents.controls_bar.stop_button'
                 >
@@ -112,10 +112,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             paddingHorizontal: 10,
             minHeight: 44, // Touch-optimized height
             justifyContent: 'center',
-        },
-        stopButton: {
-
-            // Specific styling for stop button if needed
         },
         buttonText: {
             fontSize: 12,

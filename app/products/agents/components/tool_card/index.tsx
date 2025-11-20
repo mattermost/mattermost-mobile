@@ -44,7 +44,6 @@ const ToolCard = ({
 
     const isPending = tool.status === ToolCallStatus.Pending;
     const hasLocalDecision = localDecision !== undefined && localDecision !== null;
-    const isAccepted = tool.status === ToolCallStatus.Accepted;
     const isSuccess = tool.status === ToolCallStatus.Success;
     const isError = tool.status === ToolCallStatus.Error;
     const isRejected = tool.status === ToolCallStatus.Rejected;
@@ -53,9 +52,7 @@ const ToolCard = ({
     const displayName = useMemo(() => {
         return tool.name.
             replace(/_/g, ' ').
-            split(' ').
-            map((word) => word.charAt(0).toUpperCase() + word.slice(1)).
-            join(' ');
+            replace(/\b\w/g, (char) => char.toUpperCase());
     }, [tool.name]);
 
     // Render arguments as JSON code block
@@ -94,7 +91,7 @@ const ToolCard = ({
             );
         }
 
-        if (isAccepted || (isPending && isProcessing)) {
+        if (isPending && isProcessing) {
             return (
                 <ActivityIndicator
                     size='small'

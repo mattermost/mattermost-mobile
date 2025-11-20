@@ -5,6 +5,8 @@ import {CONTROL_SIGNALS} from '@agents/constants';
 import {StreamingEvents, type StreamingState, type PostUpdateWebsocketMessage} from '@agents/types';
 import {DeviceEventEmitter} from 'react-native';
 
+import {logWarning} from '@utils/log';
+
 /**
  * Ephemeral store for managing streaming post state
  * Similar to typing indicators - state exists only while streaming
@@ -117,7 +119,7 @@ class StreamingPostStore {
             state.precontent = false;
             this.emitEvent(StreamingEvents.UPDATED, state);
         } catch (error) {
-            // Silently handle JSON parse errors
+            logWarning('Failed to parse tool calls JSON', error, {postId, toolCallsJson});
         }
     }
 
@@ -135,7 +137,7 @@ class StreamingPostStore {
             state.precontent = false;
             this.emitEvent(StreamingEvents.UPDATED, state);
         } catch (error) {
-            // Silently handle JSON parse errors
+            logWarning('Failed to parse annotations JSON', error, {postId, annotationsJson});
         }
     }
 

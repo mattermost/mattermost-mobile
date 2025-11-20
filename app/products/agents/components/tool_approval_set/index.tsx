@@ -31,28 +31,31 @@ const ToolApprovalSet = ({postId, toolCalls}: ToolApprovalSetProps) => {
     const serverUrl = useServerUrl();
 
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [collapsedTools, setCollapsedTools] = useState<string[]>([]);
+    const [expandedTools, setExpandedTools] = useState<Record<string, boolean>>({});
     const [toolDecisions, setToolDecisions] = useState<ToolDecision>({});
 
     // Clear local decisions when tool status changes from Pending to something else
     useEffect(() => {
-        const shouldClearDecision = (toolId: string) => {
-            const tool = toolCalls.find((t) => t.id === toolId);
-            return tool && tool.status !== ToolCallStatus.Pending;
+        // Keep only decisions for tools that are still pending
+        const filterPendingDecisions = (decisions: ToolDecision): ToolDecision => {
+            const updated: ToolDecision = {};
+            const prevToolIds = Object.keys(decisions);
+
+            for (const toolId of prevToolIds) {
+                const tool = toolCalls.find((t) => t.id === toolId);
+                if (tool && tool.status === ToolCallStatus.Pending) {
+                    updated[toolId] = decisions[toolId];
+                }
+            }
+
+            return updated;
         };
 
         setToolDecisions((prev) => {
-            const decisionsToRemove = Object.keys(prev).filter(shouldClearDecision);
-
-            if (decisionsToRemove.length === 0) {
-                return prev; // No changes needed
-            }
-
-            const updated = {...prev};
-            decisionsToRemove.forEach((toolId) => {
-                delete updated[toolId];
-            });
-            return updated;
+            const updated = filterPendingDecisions(prev);
+            const updatedCount = Object.keys(updated).length;
+            const prevCount = Object.keys(prev).length;
+            return updatedCount === prevCount ? prev : updated;
         });
     }, [toolCalls]);
 
@@ -95,10 +98,11 @@ const ToolApprovalSet = ({postId, toolCalls}: ToolApprovalSetProps) => {
         }
     };
 
-    const toggleCollapse = (toolId: string) => {
-        setCollapsedTools((prev) =>
-            (prev.includes(toolId) ? prev.filter((id) => id !== toolId) : [...prev, toolId]),
-        );
+    const toggleCollapse = (toolId: string, defaultExpanded: boolean) => {
+        setExpandedTools((prev) => ({
+            ...prev,
+            [toolId]: !(prev[toolId] ?? defaultExpanded),
+        }));
     };
 
     if (toolCalls.length === 0) {
@@ -111,20 +115,15 @@ const ToolApprovalSet = ({postId, toolCalls}: ToolApprovalSetProps) => {
     // Get processed tool calls
     const processedToolCalls = toolCalls.filter((call) => call.status !== ToolCallStatus.Pending);
 
-    // Calculate how many tools are left to decide on
-    const undecidedCount = Object.values(toolDecisions).filter((decision) => decision === null).length;
+    // Calculate how many pending tools haven't been decided yet
+    const undecidedCount = pendingToolCalls.filter(
+        (tool) => !(tool.id in toolDecisions),
+    ).length;
 
     // Helper to compute if a tool should be collapsed
     const isToolCollapsed = (tool: ToolCall) => {
-        // Pending tools are expanded by default, others are collapsed
         const defaultExpanded = tool.status === ToolCallStatus.Pending;
-
-        // Check if user has toggled this tool
-        const isCollapsed = collapsedTools.includes(tool.id);
-
-        // If default is expanded, being in the list means user collapsed it
-        // If default is collapsed, being in the list means user expanded it
-        return defaultExpanded ? isCollapsed : !isCollapsed;
+        return !(expandedTools[tool.id] ?? defaultExpanded);
     };
 
     return (
@@ -136,7 +135,7 @@ const ToolApprovalSet = ({postId, toolCalls}: ToolApprovalSetProps) => {
                     isCollapsed={isToolCollapsed(tool)}
                     isProcessing={isSubmitting}
                     localDecision={toolDecisions[tool.id]}
-                    onToggleCollapse={() => toggleCollapse(tool.id)}
+                    onToggleCollapse={() => toggleCollapse(tool.id, true)}
                     onApprove={() => handleToolDecision(tool.id, true)}
                     onReject={() => handleToolDecision(tool.id, false)}
                 />
@@ -148,7 +147,7 @@ const ToolApprovalSet = ({postId, toolCalls}: ToolApprovalSetProps) => {
                     tool={tool}
                     isCollapsed={isToolCollapsed(tool)}
                     isProcessing={false}
-                    onToggleCollapse={() => toggleCollapse(tool.id)}
+                    onToggleCollapse={() => toggleCollapse(tool.id, false)}
                 />
             ))}
 
