@@ -107,7 +107,7 @@ jobs:
     secrets: inherit
     with:
       run-type: "RELEASE"
-      MM_TEST_SERVER_URL: ${{ matrix.server.url }}
+      SITE_1_URL: ${{ matrix.server.url }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
 
   update-final-status:

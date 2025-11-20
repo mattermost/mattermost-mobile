@@ -41,8 +41,6 @@ concurrency:
 jobs:
   update-initial-status:
     runs-on: ubuntu-22.04
-    outputs:
-      mobile_sha: ${{ steps.get-sha.outputs.MOBILE_SHA }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
