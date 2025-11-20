@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
+import {useIntl} from 'react-intl';
 import {Alert, StyleSheet, TouchableOpacity, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
@@ -28,24 +29,37 @@ const ControlsBar = ({
 }: ControlsBarProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const intl = useIntl();
 
     const handleRegenerate = useCallback(() => {
         Alert.alert(
-            'Regenerate Response',
-            'This will clear the current response and generate a new one. Continue?',
+            intl.formatMessage({
+                id: 'agents.regenerate.confirm_title',
+                defaultMessage: 'Regenerate Response',
+            }),
+            intl.formatMessage({
+                id: 'agents.regenerate.confirm_message',
+                defaultMessage: 'This will clear the current response and generate a new one. Continue?',
+            }),
             [
                 {
-                    text: 'Cancel',
+                    text: intl.formatMessage({
+                        id: 'agents.regenerate.cancel',
+                        defaultMessage: 'Cancel',
+                    }),
                     style: 'cancel',
                 },
                 {
-                    text: 'Regenerate',
+                    text: intl.formatMessage({
+                        id: 'agents.regenerate.confirm',
+                        defaultMessage: 'Regenerate',
+                    }),
                     onPress: onRegenerate,
                     style: 'destructive',
                 },
             ],
         );
-    }, [onRegenerate]);
+    }, [intl, onRegenerate]);
 
     if (!showStopButton && !showRegenerateButton) {
         return null;

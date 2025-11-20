@@ -13,12 +13,12 @@ jest.mock('react-native', () => ({
 }));
 
 describe('StreamingPostStore', () => {
-    let StreamingPostStore: any;
+    let streamingStore: typeof import('./streaming_store').default;
 
     beforeEach(() => {
         jest.resetModules();
         mockEmit.mockClear();
-        StreamingPostStore = require('./streaming_store').default;
+        streamingStore = require('./streaming_store').default;
     });
 
     afterEach(() => {
@@ -28,9 +28,9 @@ describe('StreamingPostStore', () => {
     describe('startStreaming', () => {
         it('should create initial state with precontent true', () => {
             const postId = 'post123';
-            StreamingPostStore.startStreaming(postId);
+            streamingStore.startStreaming(postId);
 
-            const state = StreamingPostStore.getStreamingState(postId);
+            const state = streamingStore.getStreamingState(postId);
             expect(state).toBeDefined();
             expect(state?.postId).toBe(postId);
             expect(state?.generating).toBe(true);
@@ -45,7 +45,7 @@ describe('StreamingPostStore', () => {
 
         it('should emit STARTED event', () => {
             const postId = 'post123';
-            StreamingPostStore.startStreaming(postId);
+            streamingStore.startStreaming(postId);
 
             expect(mockEmit).toHaveBeenCalledWith(
                 StreamingEvents.STARTED,
@@ -60,7 +60,7 @@ describe('StreamingPostStore', () => {
 
         it('should emit post-specific STARTED event', () => {
             const postId = 'post123';
-            StreamingPostStore.startStreaming(postId);
+            streamingStore.startStreaming(postId);
 
             expect(mockEmit).toHaveBeenCalledWith(
                 `${StreamingEvents.STARTED}_${postId}`,
@@ -72,11 +72,11 @@ describe('StreamingPostStore', () => {
     describe('updateMessage', () => {
         it('should update message and set precontent to false', () => {
             const postId = 'post123';
-            StreamingPostStore.startStreaming(postId);
+            streamingStore.startStreaming(postId);
 
-            StreamingPostStore.updateMessage(postId, 'Hello world');
+            streamingStore.updateMessage(postId, 'Hello world');
 
-            const state = StreamingPostStore.getStreamingState(postId);
+            const state = streamingStore.getStreamingState(postId);
             expect(state?.message).toBe('Hello world');
             expect(state?.precontent).toBe(false);
             expect(state?.generating).toBe(true);
@@ -84,10 +84,10 @@ describe('StreamingPostStore', () => {
 
         it('should emit UPDATED event', () => {
             const postId = 'post123';
-            StreamingPostStore.startStreaming(postId);
+            streamingStore.startStreaming(postId);
             mockEmit.mockClear();
 
-            StreamingPostStore.updateMessage(postId, 'Hello world');
+            streamingStore.updateMessage(postId, 'Hello world');
 
             expect(mockEmit).toHaveBeenCalledWith(
                 StreamingEvents.UPDATED,
@@ -102,10 +102,10 @@ describe('StreamingPostStore', () => {
 
         it('should emit post-specific UPDATED event', () => {
             const postId = 'post123';
-            StreamingPostStore.startStreaming(postId);
+            streamingStore.startStreaming(postId);
             mockEmit.mockClear();
 
-            StreamingPostStore.updateMessage(postId, 'Hello world');
+            streamingStore.updateMessage(postId, 'Hello world');
 
             expect(mockEmit).toHaveBeenCalledWith(
                 `${StreamingEvents.UPDATED}_${postId}`,
@@ -118,9 +118,9 @@ describe('StreamingPostStore', () => {
 
         it('should do nothing if post is not streaming', () => {
             const postId = 'post123';
-            StreamingPostStore.updateMessage(postId, 'Hello world');
+            streamingStore.updateMessage(postId, 'Hello world');
 
-            const state = StreamingPostStore.getStreamingState(postId);
+            const state = streamingStore.getStreamingState(postId);
             expect(state).toBeUndefined();
             expect(mockEmit).not.toHaveBeenCalled();
         });
@@ -135,23 +135,22 @@ describe('StreamingPostStore', () => {
             jest.useRealTimers();
         });
 
-        it('should set generating to false', () => {
+        it('should clean up state immediately', () => {
             const postId = 'post123';
-            StreamingPostStore.startStreaming(postId);
+            streamingStore.startStreaming(postId);
 
-            StreamingPostStore.endStreaming(postId);
+            streamingStore.endStreaming(postId);
 
-            const state = StreamingPostStore.getStreamingState(postId);
-            expect(state?.generating).toBe(false);
-            expect(state?.precontent).toBe(false);
+            const state = streamingStore.getStreamingState(postId);
+            expect(state).toBeUndefined();
         });
 
         it('should emit ENDED event', () => {
             const postId = 'post123';
-            StreamingPostStore.startStreaming(postId);
+            streamingStore.startStreaming(postId);
             mockEmit.mockClear();
 
-            StreamingPostStore.endStreaming(postId);
+            streamingStore.endStreaming(postId);
 
             expect(mockEmit).toHaveBeenCalledWith(
                 StreamingEvents.ENDED,
@@ -164,10 +163,10 @@ describe('StreamingPostStore', () => {
 
         it('should emit post-specific ENDED event', () => {
             const postId = 'post123';
-            StreamingPostStore.startStreaming(postId);
+            streamingStore.startStreaming(postId);
             mockEmit.mockClear();
 
-            StreamingPostStore.endStreaming(postId);
+            streamingStore.endStreaming(postId);
 
             expect(mockEmit).toHaveBeenCalledWith(
                 `${StreamingEvents.ENDED}_${postId}`,
@@ -178,25 +177,9 @@ describe('StreamingPostStore', () => {
             );
         });
 
-        it('should cleanup state after 500ms', () => {
-            const postId = 'post123';
-            StreamingPostStore.startStreaming(postId);
-
-            StreamingPostStore.endStreaming(postId);
-
-            // State should still exist immediately
-            expect(StreamingPostStore.getStreamingState(postId)).toBeDefined();
-
-            // Fast-forward time by 500ms
-            jest.advanceTimersByTime(500);
-
-            // State should be cleaned up
-            expect(StreamingPostStore.getStreamingState(postId)).toBeUndefined();
-        });
-
         it('should do nothing if post is not streaming', () => {
             const postId = 'post123';
-            StreamingPostStore.endStreaming(postId);
+            streamingStore.endStreaming(postId);
 
             expect(mockEmit).not.toHaveBeenCalled();
         });
@@ -205,11 +188,11 @@ describe('StreamingPostStore', () => {
     describe('updateReasoning', () => {
         it('should update reasoning and set showReasoning to true', () => {
             const postId = 'post123';
-            StreamingPostStore.startStreaming(postId);
+            streamingStore.startStreaming(postId);
 
-            StreamingPostStore.updateReasoning(postId, 'Analyzing the question...', true);
+            streamingStore.updateReasoning(postId, 'Analyzing the question...', true);
 
-            const state = StreamingPostStore.getStreamingState(postId);
+            const state = streamingStore.getStreamingState(postId);
             expect(state?.reasoning).toBe('Analyzing the question...');
             expect(state?.isReasoningLoading).toBe(true);
             expect(state?.showReasoning).toBe(true);
@@ -217,33 +200,33 @@ describe('StreamingPostStore', () => {
 
         it('should set generating to false when isLoading is true', () => {
             const postId = 'post123';
-            StreamingPostStore.startStreaming(postId);
+            streamingStore.startStreaming(postId);
 
-            StreamingPostStore.updateReasoning(postId, 'Analyzing...', true);
+            streamingStore.updateReasoning(postId, 'Analyzing...', true);
 
-            const state = StreamingPostStore.getStreamingState(postId);
+            const state = streamingStore.getStreamingState(postId);
             expect(state?.generating).toBe(false);
             expect(state?.precontent).toBe(false);
         });
 
         it('should not set generating to false when isLoading is false', () => {
             const postId = 'post123';
-            StreamingPostStore.startStreaming(postId);
-            StreamingPostStore.updateMessage(postId, 'Some text');
+            streamingStore.startStreaming(postId);
+            streamingStore.updateMessage(postId, 'Some text');
 
-            StreamingPostStore.updateReasoning(postId, 'Reasoning complete', false);
+            streamingStore.updateReasoning(postId, 'Reasoning complete', false);
 
-            const state = StreamingPostStore.getStreamingState(postId);
+            const state = streamingStore.getStreamingState(postId);
             expect(state?.generating).toBe(true);
             expect(state?.isReasoningLoading).toBe(false);
         });
 
         it('should emit UPDATED event', () => {
             const postId = 'post123';
-            StreamingPostStore.startStreaming(postId);
+            streamingStore.startStreaming(postId);
             mockEmit.mockClear();
 
-            StreamingPostStore.updateReasoning(postId, 'Analyzing...', true);
+            streamingStore.updateReasoning(postId, 'Analyzing...', true);
 
             expect(mockEmit).toHaveBeenCalledWith(
                 StreamingEvents.UPDATED,
@@ -258,9 +241,9 @@ describe('StreamingPostStore', () => {
 
         it('should do nothing if post is not streaming', () => {
             const postId = 'post123';
-            StreamingPostStore.updateReasoning(postId, 'Reasoning', true);
+            streamingStore.updateReasoning(postId, 'Reasoning', true);
 
-            const state = StreamingPostStore.getStreamingState(postId);
+            const state = streamingStore.getStreamingState(postId);
             expect(state).toBeUndefined();
             expect(mockEmit).not.toHaveBeenCalled();
         });
@@ -269,7 +252,7 @@ describe('StreamingPostStore', () => {
     describe('updateToolCalls', () => {
         it('should parse JSON and update tool calls', () => {
             const postId = 'post123';
-            StreamingPostStore.startStreaming(postId);
+            streamingStore.startStreaming(postId);
 
             const toolCalls: ToolCall[] = [
                 {
@@ -281,16 +264,16 @@ describe('StreamingPostStore', () => {
                 },
             ];
 
-            StreamingPostStore.updateToolCalls(postId, JSON.stringify(toolCalls));
+            streamingStore.updateToolCalls(postId, JSON.stringify(toolCalls));
 
-            const state = StreamingPostStore.getStreamingState(postId);
+            const state = streamingStore.getStreamingState(postId);
             expect(state?.toolCalls).toEqual(toolCalls);
             expect(state?.precontent).toBe(false);
         });
 
         it('should emit UPDATED event', () => {
             const postId = 'post123';
-            StreamingPostStore.startStreaming(postId);
+            streamingStore.startStreaming(postId);
             mockEmit.mockClear();
 
             const toolCalls: ToolCall[] = [
@@ -303,7 +286,7 @@ describe('StreamingPostStore', () => {
                 },
             ];
 
-            StreamingPostStore.updateToolCalls(postId, JSON.stringify(toolCalls));
+            streamingStore.updateToolCalls(postId, JSON.stringify(toolCalls));
 
             expect(mockEmit).toHaveBeenCalledWith(
                 StreamingEvents.UPDATED,
@@ -316,30 +299,32 @@ describe('StreamingPostStore', () => {
 
         it('should silently handle JSON parse errors', () => {
             const postId = 'post123';
-            StreamingPostStore.startStreaming(postId);
+            streamingStore.startStreaming(postId);
             mockEmit.mockClear();
 
-            StreamingPostStore.updateToolCalls(postId, 'invalid json');
+            streamingStore.updateToolCalls(postId, 'invalid json');
 
-            const state = StreamingPostStore.getStreamingState(postId);
+            const state = streamingStore.getStreamingState(postId);
             expect(state?.toolCalls).toEqual([]);
             expect(mockEmit).not.toHaveBeenCalled();
         });
 
-        it('should do nothing if post is not streaming', () => {
+        it('should create minimal state if post is not streaming', () => {
             const postId = 'post123';
-            StreamingPostStore.updateToolCalls(postId, '[]');
+            streamingStore.updateToolCalls(postId, '[]');
 
-            const state = StreamingPostStore.getStreamingState(postId);
-            expect(state).toBeUndefined();
-            expect(mockEmit).not.toHaveBeenCalled();
+            const state = streamingStore.getStreamingState(postId);
+            expect(state).toBeDefined();
+            expect(state?.toolCalls).toEqual([]);
+            expect(state?.generating).toBe(false);
+            expect(mockEmit).toHaveBeenCalled();
         });
     });
 
     describe('updateAnnotations', () => {
         it('should parse JSON and update annotations', () => {
             const postId = 'post123';
-            StreamingPostStore.startStreaming(postId);
+            streamingStore.startStreaming(postId);
 
             const annotations: Annotation[] = [
                 {
@@ -352,16 +337,16 @@ describe('StreamingPostStore', () => {
                 },
             ];
 
-            StreamingPostStore.updateAnnotations(postId, JSON.stringify(annotations));
+            streamingStore.updateAnnotations(postId, JSON.stringify(annotations));
 
-            const state = StreamingPostStore.getStreamingState(postId);
+            const state = streamingStore.getStreamingState(postId);
             expect(state?.annotations).toEqual(annotations);
             expect(state?.precontent).toBe(false);
         });
 
         it('should emit UPDATED event', () => {
             const postId = 'post123';
-            StreamingPostStore.startStreaming(postId);
+            streamingStore.startStreaming(postId);
             mockEmit.mockClear();
 
             const annotations: Annotation[] = [
@@ -375,7 +360,7 @@ describe('StreamingPostStore', () => {
                 },
             ];
 
-            StreamingPostStore.updateAnnotations(postId, JSON.stringify(annotations));
+            streamingStore.updateAnnotations(postId, JSON.stringify(annotations));
 
             expect(mockEmit).toHaveBeenCalledWith(
                 StreamingEvents.UPDATED,
@@ -388,21 +373,21 @@ describe('StreamingPostStore', () => {
 
         it('should silently handle JSON parse errors', () => {
             const postId = 'post123';
-            StreamingPostStore.startStreaming(postId);
+            streamingStore.startStreaming(postId);
             mockEmit.mockClear();
 
-            StreamingPostStore.updateAnnotations(postId, 'invalid json');
+            streamingStore.updateAnnotations(postId, 'invalid json');
 
-            const state = StreamingPostStore.getStreamingState(postId);
+            const state = streamingStore.getStreamingState(postId);
             expect(state?.annotations).toEqual([]);
             expect(mockEmit).not.toHaveBeenCalled();
         });
 
         it('should do nothing if post is not streaming', () => {
             const postId = 'post123';
-            StreamingPostStore.updateAnnotations(postId, '[]');
+            streamingStore.updateAnnotations(postId, '[]');
 
-            const state = StreamingPostStore.getStreamingState(postId);
+            const state = streamingStore.getStreamingState(postId);
             expect(state).toBeUndefined();
             expect(mockEmit).not.toHaveBeenCalled();
         });
@@ -415,9 +400,9 @@ describe('StreamingPostStore', () => {
                 control: CONTROL_SIGNALS.START,
             };
 
-            StreamingPostStore.handleWebSocketMessage(message);
+            streamingStore.handleWebSocketMessage(message);
 
-            const state = StreamingPostStore.getStreamingState('post123');
+            const state = streamingStore.getStreamingState('post123');
             expect(state).toBeDefined();
             expect(state?.generating).toBe(true);
             expect(state?.precontent).toBe(true);
@@ -427,7 +412,7 @@ describe('StreamingPostStore', () => {
             jest.useFakeTimers({doNotFake: ['nextTick']});
 
             const postId = 'post123';
-            StreamingPostStore.startStreaming(postId);
+            streamingStore.startStreaming(postId);
             mockEmit.mockClear();
 
             const message: PostUpdateWebsocketMessage = {
@@ -435,10 +420,10 @@ describe('StreamingPostStore', () => {
                 control: CONTROL_SIGNALS.END,
             };
 
-            StreamingPostStore.handleWebSocketMessage(message);
+            streamingStore.handleWebSocketMessage(message);
 
-            const state = StreamingPostStore.getStreamingState(postId);
-            expect(state?.generating).toBe(false);
+            const state = streamingStore.getStreamingState(postId);
+            expect(state).toBeUndefined();
             expect(mockEmit).toHaveBeenCalledWith(
                 StreamingEvents.ENDED,
                 expect.objectContaining({postId}),
@@ -451,7 +436,7 @@ describe('StreamingPostStore', () => {
             jest.useFakeTimers({doNotFake: ['nextTick']});
 
             const postId = 'post123';
-            StreamingPostStore.startStreaming(postId);
+            streamingStore.startStreaming(postId);
             mockEmit.mockClear();
 
             const message: PostUpdateWebsocketMessage = {
@@ -459,10 +444,10 @@ describe('StreamingPostStore', () => {
                 control: CONTROL_SIGNALS.CANCEL,
             };
 
-            StreamingPostStore.handleWebSocketMessage(message);
+            streamingStore.handleWebSocketMessage(message);
 
-            const state = StreamingPostStore.getStreamingState(postId);
-            expect(state?.generating).toBe(false);
+            const state = streamingStore.getStreamingState(postId);
+            expect(state).toBeUndefined();
             expect(mockEmit).toHaveBeenCalledWith(
                 StreamingEvents.ENDED,
                 expect.objectContaining({postId}),
@@ -473,7 +458,7 @@ describe('StreamingPostStore', () => {
 
         it('should handle REASONING_SUMMARY control signal', () => {
             const postId = 'post123';
-            StreamingPostStore.startStreaming(postId);
+            streamingStore.startStreaming(postId);
             mockEmit.mockClear();
 
             const message: PostUpdateWebsocketMessage = {
@@ -482,9 +467,9 @@ describe('StreamingPostStore', () => {
                 reasoning: 'Thinking step 1...',
             };
 
-            StreamingPostStore.handleWebSocketMessage(message);
+            streamingStore.handleWebSocketMessage(message);
 
-            const state = StreamingPostStore.getStreamingState(postId);
+            const state = streamingStore.getStreamingState(postId);
             expect(state?.reasoning).toBe('Thinking step 1...');
             expect(state?.isReasoningLoading).toBe(true);
             expect(state?.showReasoning).toBe(true);
@@ -493,8 +478,8 @@ describe('StreamingPostStore', () => {
 
         it('should handle REASONING_SUMMARY_DONE with reasoning text', () => {
             const postId = 'post123';
-            StreamingPostStore.startStreaming(postId);
-            StreamingPostStore.updateReasoning(postId, 'Step 1', true);
+            streamingStore.startStreaming(postId);
+            streamingStore.updateReasoning(postId, 'Step 1', true);
             mockEmit.mockClear();
 
             const message: PostUpdateWebsocketMessage = {
@@ -503,17 +488,17 @@ describe('StreamingPostStore', () => {
                 reasoning: 'Final reasoning',
             };
 
-            StreamingPostStore.handleWebSocketMessage(message);
+            streamingStore.handleWebSocketMessage(message);
 
-            const state = StreamingPostStore.getStreamingState(postId);
+            const state = streamingStore.getStreamingState(postId);
             expect(state?.reasoning).toBe('Final reasoning');
             expect(state?.isReasoningLoading).toBe(false);
         });
 
         it('should handle REASONING_SUMMARY_DONE without reasoning text', () => {
             const postId = 'post123';
-            StreamingPostStore.startStreaming(postId);
-            StreamingPostStore.updateReasoning(postId, 'Existing reasoning', true);
+            streamingStore.startStreaming(postId);
+            streamingStore.updateReasoning(postId, 'Existing reasoning', true);
             mockEmit.mockClear();
 
             const message: PostUpdateWebsocketMessage = {
@@ -521,9 +506,9 @@ describe('StreamingPostStore', () => {
                 control: CONTROL_SIGNALS.REASONING_SUMMARY_DONE,
             };
 
-            StreamingPostStore.handleWebSocketMessage(message);
+            streamingStore.handleWebSocketMessage(message);
 
-            const state = StreamingPostStore.getStreamingState(postId);
+            const state = streamingStore.getStreamingState(postId);
             expect(state?.reasoning).toBe('Existing reasoning');
             expect(state?.isReasoningLoading).toBe(false);
             expect(mockEmit).toHaveBeenCalledWith(
@@ -537,7 +522,7 @@ describe('StreamingPostStore', () => {
 
         it('should handle TOOL_CALL control signal', () => {
             const postId = 'post123';
-            StreamingPostStore.startStreaming(postId);
+            streamingStore.startStreaming(postId);
             mockEmit.mockClear();
 
             const toolCalls: ToolCall[] = [
@@ -556,15 +541,15 @@ describe('StreamingPostStore', () => {
                 tool_call: JSON.stringify(toolCalls),
             };
 
-            StreamingPostStore.handleWebSocketMessage(message);
+            streamingStore.handleWebSocketMessage(message);
 
-            const state = StreamingPostStore.getStreamingState(postId);
+            const state = streamingStore.getStreamingState(postId);
             expect(state?.toolCalls).toEqual(toolCalls);
         });
 
         it('should handle ANNOTATIONS control signal', () => {
             const postId = 'post123';
-            StreamingPostStore.startStreaming(postId);
+            streamingStore.startStreaming(postId);
             mockEmit.mockClear();
 
             const annotations: Annotation[] = [
@@ -584,15 +569,15 @@ describe('StreamingPostStore', () => {
                 annotations: JSON.stringify(annotations),
             };
 
-            StreamingPostStore.handleWebSocketMessage(message);
+            streamingStore.handleWebSocketMessage(message);
 
-            const state = StreamingPostStore.getStreamingState(postId);
+            const state = streamingStore.getStreamingState(postId);
             expect(state?.annotations).toEqual(annotations);
         });
 
         it('should handle message updates with next field', () => {
             const postId = 'post123';
-            StreamingPostStore.startStreaming(postId);
+            streamingStore.startStreaming(postId);
             mockEmit.mockClear();
 
             const message: PostUpdateWebsocketMessage = {
@@ -600,9 +585,9 @@ describe('StreamingPostStore', () => {
                 next: 'Hello from agent',
             };
 
-            StreamingPostStore.handleWebSocketMessage(message);
+            streamingStore.handleWebSocketMessage(message);
 
-            const state = StreamingPostStore.getStreamingState(postId);
+            const state = streamingStore.getStreamingState(postId);
             expect(state?.message).toBe('Hello from agent');
             expect(state?.precontent).toBe(false);
             expect(state?.generating).toBe(true);
@@ -614,7 +599,7 @@ describe('StreamingPostStore', () => {
                 next: 'Hello',
             };
 
-            StreamingPostStore.handleWebSocketMessage(message);
+            streamingStore.handleWebSocketMessage(message);
 
             expect(mockEmit).not.toHaveBeenCalled();
         });
@@ -623,15 +608,15 @@ describe('StreamingPostStore', () => {
     describe('getStreamingState', () => {
         it('should return state for streaming post', () => {
             const postId = 'post123';
-            StreamingPostStore.startStreaming(postId);
+            streamingStore.startStreaming(postId);
 
-            const state = StreamingPostStore.getStreamingState(postId);
+            const state = streamingStore.getStreamingState(postId);
             expect(state).toBeDefined();
             expect(state?.postId).toBe(postId);
         });
 
         it('should return undefined for non-streaming post', () => {
-            const state = StreamingPostStore.getStreamingState('nonexistent');
+            const state = streamingStore.getStreamingState('nonexistent');
             expect(state).toBeUndefined();
         });
     });
@@ -639,43 +624,43 @@ describe('StreamingPostStore', () => {
     describe('isStreaming', () => {
         it('should return true for streaming post', () => {
             const postId = 'post123';
-            StreamingPostStore.startStreaming(postId);
+            streamingStore.startStreaming(postId);
 
-            expect(StreamingPostStore.isStreaming(postId)).toBe(true);
+            expect(streamingStore.isStreaming(postId)).toBe(true);
         });
 
         it('should return false for non-streaming post', () => {
-            expect(StreamingPostStore.isStreaming('nonexistent')).toBe(false);
+            expect(streamingStore.isStreaming('nonexistent')).toBe(false);
         });
     });
 
     describe('clear', () => {
         it('should clear all streaming state', () => {
-            StreamingPostStore.startStreaming('post1');
-            StreamingPostStore.startStreaming('post2');
-            StreamingPostStore.startStreaming('post3');
+            streamingStore.startStreaming('post1');
+            streamingStore.startStreaming('post2');
+            streamingStore.startStreaming('post3');
 
-            expect(StreamingPostStore.isStreaming('post1')).toBe(true);
-            expect(StreamingPostStore.isStreaming('post2')).toBe(true);
-            expect(StreamingPostStore.isStreaming('post3')).toBe(true);
+            expect(streamingStore.isStreaming('post1')).toBe(true);
+            expect(streamingStore.isStreaming('post2')).toBe(true);
+            expect(streamingStore.isStreaming('post3')).toBe(true);
 
-            StreamingPostStore.clear();
+            streamingStore.clear();
 
-            expect(StreamingPostStore.isStreaming('post1')).toBe(false);
-            expect(StreamingPostStore.isStreaming('post2')).toBe(false);
-            expect(StreamingPostStore.isStreaming('post3')).toBe(false);
+            expect(streamingStore.isStreaming('post1')).toBe(false);
+            expect(streamingStore.isStreaming('post2')).toBe(false);
+            expect(streamingStore.isStreaming('post3')).toBe(false);
         });
     });
 
     describe('multiple concurrent streams', () => {
         it('should handle multiple posts streaming simultaneously', () => {
-            StreamingPostStore.startStreaming('post1');
-            StreamingPostStore.startStreaming('post2');
-            StreamingPostStore.updateMessage('post1', 'Message 1');
-            StreamingPostStore.updateMessage('post2', 'Message 2');
+            streamingStore.startStreaming('post1');
+            streamingStore.startStreaming('post2');
+            streamingStore.updateMessage('post1', 'Message 1');
+            streamingStore.updateMessage('post2', 'Message 2');
 
-            const state1 = StreamingPostStore.getStreamingState('post1');
-            const state2 = StreamingPostStore.getStreamingState('post2');
+            const state1 = streamingStore.getStreamingState('post1');
+            const state2 = streamingStore.getStreamingState('post2');
 
             expect(state1?.message).toBe('Message 1');
             expect(state2?.message).toBe('Message 2');
@@ -684,14 +669,14 @@ describe('StreamingPostStore', () => {
         it('should handle ending one stream while others continue', () => {
             jest.useFakeTimers({doNotFake: ['nextTick']});
 
-            StreamingPostStore.startStreaming('post1');
-            StreamingPostStore.startStreaming('post2');
+            streamingStore.startStreaming('post1');
+            streamingStore.startStreaming('post2');
 
-            StreamingPostStore.endStreaming('post1');
+            streamingStore.endStreaming('post1');
             jest.advanceTimersByTime(500);
 
-            expect(StreamingPostStore.isStreaming('post1')).toBe(false);
-            expect(StreamingPostStore.isStreaming('post2')).toBe(true);
+            expect(streamingStore.isStreaming('post1')).toBe(false);
+            expect(streamingStore.isStreaming('post2')).toBe(true);
 
             jest.useRealTimers();
         });

@@ -22,9 +22,7 @@ const mockClient = {
 };
 
 beforeAll(() => {
-    // eslint-disable-next-line
-    // @ts-ignore
-    NetworkManager.getClient = jest.fn(() => mockClient);
+    (NetworkManager.getClient as jest.Mock) = jest.fn(() => mockClient);
 });
 
 beforeEach(() => {

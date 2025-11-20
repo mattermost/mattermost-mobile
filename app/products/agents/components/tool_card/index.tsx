@@ -81,17 +81,7 @@ const ToolCard = ({
 
     // Determine icon based on status
     const getStatusIcon = () => {
-        if (isPending && !isProcessing) {
-            return (
-                <ActivityIndicator
-                    size='small'
-                    color={changeOpacity(theme.centerChannelColor, 0.64)}
-                    style={styles.statusIcon}
-                />
-            );
-        }
-
-        if (isPending && isProcessing) {
+        if (isPending) {
             return (
                 <ActivityIndicator
                     size='small'
