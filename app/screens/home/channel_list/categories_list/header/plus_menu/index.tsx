@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {goToAgentChat} from '@agents/screens/navigation';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 
@@ -57,7 +58,12 @@ const PlusMenuList = ({canCreateChannels, canJoinChannels, canInvitePeople}: Pro
             Screens.INVITE,
             intl.formatMessage({id: 'invite.title', defaultMessage: 'Invite'}),
         );
-    }, [intl, theme]);
+    }, [intl]);
+
+    const openAgents = useCallback(async () => {
+        await dismissBottomSheet();
+        goToAgentChat(intl);
+    }, [intl]);
 
     return (
         <>
@@ -76,6 +82,11 @@ const PlusMenuList = ({canCreateChannels, canJoinChannels, canInvitePeople}: Pro
             <PlusMenuItem
                 pickerAction='openDirectMessage'
                 onPress={openDirectMessage}
+            />
+            <PlusMenuSeparator/>
+            <PlusMenuItem
+                pickerAction='openAgents'
+                onPress={openAgents}
             />
             {canInvitePeople &&
             <>
