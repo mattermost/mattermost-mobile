@@ -5,17 +5,23 @@ import {fetchAIBots, getBotDirectChannel, type LLMBot} from '@agents/actions/rem
 import {goToAgentThreadsList} from '@agents/screens/navigation';
 import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {type LayoutChangeEvent, View, Text, TouchableOpacity, ActivityIndicator, ScrollView} from 'react-native';
+import {type LayoutChangeEvent, View, Text, TouchableOpacity, ActivityIndicator, ScrollView, Image} from 'react-native';
 
+import {buildAbsoluteUrl} from '@actions/remote/file';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
+import {buildProfileImageUrl} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
 import PostDraft from '@components/post_draft';
+import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {Screens} from '@constants';
 import {ExtraKeyboardProvider} from '@context/extra_keyboard';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import {popTopScreen} from '@screens/navigation';
+import {usePreventDoubleTap} from '@hooks/utils';
+import {TITLE_HEIGHT} from '@screens/bottom_sheet/content';
+import {bottomSheet, dismissBottomSheet, popTopScreen} from '@screens/navigation';
+import {bottomSheetSnapPoint} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -51,6 +57,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         paddingHorizontal: 12,
         backgroundColor: changeOpacity(theme.buttonBg, 0.08),
         borderRadius: 4,
+    },
+    botAvatar: {
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+        marginRight: 8,
     },
     botSelectorText: {
         flex: 1,
@@ -167,17 +179,54 @@ const AgentChat = ({
         goToAgentThreadsList(intl);
     }, [intl]);
 
-    const handleBotSelectorPress = useCallback(() => {
+    const handleBotSelect = useCallback((bot: LLMBot) => {
+        setSelectedBot(bot);
+        dismissBottomSheet();
+    }, []);
+
+    const handleBotSelectorPress = usePreventDoubleTap(useCallback(() => {
         if (bots.length <= 1) {
             return;
         }
 
-        // TODO: Implement bot selector bottom sheet
-        // For now, just cycle through the available bots
-        const currentIndex = bots.findIndex((b) => b.id === selectedBot?.id);
-        const nextIndex = (currentIndex + 1) % bots.length;
-        setSelectedBot(bots[nextIndex]);
-    }, [bots, selectedBot]);
+        const renderContent = () => {
+            return (
+                <>
+                    {bots.map((bot) => {
+                        const avatarUrl = buildAbsoluteUrl(
+                            serverUrl,
+                            buildProfileImageUrl(serverUrl, bot.id, bot.lastIconUpdate),
+                        );
+
+                        return (
+                            <SlideUpPanelItem
+                                key={bot.id}
+                                leftIcon={{uri: avatarUrl}}
+                                leftImageStyles={{borderRadius: 12}}
+                                onPress={() => handleBotSelect(bot)}
+                                testID={`agent_chat.bot_selector.bot_item.${bot.id}`}
+                                text={bot.displayName}
+                                rightIcon={selectedBot?.id === bot.id ? 'check' : undefined}
+                                rightIconStyles={{color: theme.linkColor}}
+                            />
+                        );
+                    })}
+                </>
+            );
+        };
+
+        const snapPoint = bottomSheetSnapPoint(bots.length, ITEM_HEIGHT);
+        bottomSheet({
+            closeButtonId: 'close-bot-selector',
+            renderContent,
+            snapPoints: [1, (snapPoint + TITLE_HEIGHT)],
+            title: intl.formatMessage({
+                id: 'agents.chat.select_agent',
+                defaultMessage: 'Select an agent',
+            }),
+            theme,
+        });
+    }, [bots, selectedBot, theme, intl, handleBotSelect, serverUrl]));
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         setContainerHeight(e.nativeEvent.layout.height);
@@ -222,6 +271,18 @@ const AgentChat = ({
                     disabled={bots.length <= 1}
                     testID='agent_chat.bot_selector'
                 >
+                    {selectedBot && (
+                        <Image
+                            source={{
+                                uri: buildAbsoluteUrl(
+                                    serverUrl,
+                                    buildProfileImageUrl(serverUrl, selectedBot.id, selectedBot.lastIconUpdate),
+                                ),
+                            }}
+                            style={styles.botAvatar}
+                            testID='agent_chat.bot_selector.avatar'
+                        />
+                    )}
                     <Text style={styles.botSelectorText}>
                         {selectedBot?.displayName || intl.formatMessage({
                             id: 'agents.chat.select_agent',
