@@ -33,6 +33,7 @@ type Props = {
     isChannelScreen: boolean;
     canShowPostPriority?: boolean;
     location: AvailableScreens;
+    onPostCreated?: (postId: string) => void;
 }
 
 function PostDraft({
@@ -50,6 +51,7 @@ function PostDraft({
     isChannelScreen,
     canShowPostPriority,
     location,
+    onPostCreated,
 }: Props) {
     const [value, setValue] = useState(message);
     const [cursorPosition, setCursorPosition] = useState(message.length);
@@ -64,6 +66,7 @@ function PostDraft({
     useEffect(() => {
         setValue(message);
         setCursorPosition(message.length);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [channelId, rootId]);
 
     const autocompletePosition = AUTOCOMPLETE_ADJUST + kbHeight + postInputTop;
@@ -105,6 +108,7 @@ function PostDraft({
             updateValue={setValue}
             value={value}
             setIsFocused={setIsFocused}
+            onPostCreated={onPostCreated}
         />
     );
 

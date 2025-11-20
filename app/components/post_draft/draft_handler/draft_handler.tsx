@@ -29,6 +29,7 @@ type Props = {
     updateValue: React.Dispatch<React.SetStateAction<string>>;
     value: string;
     setIsFocused: (isFocused: boolean) => void;
+    onPostCreated?: (postId: string) => void;
 }
 
 const emptyFileList: FileInfo[] = [];
@@ -49,6 +50,7 @@ export default function DraftHandler(props: Props) {
         updateValue,
         value,
         setIsFocused,
+        onPostCreated,
     } = props;
 
     const serverUrl = useServerUrl();
@@ -60,7 +62,7 @@ export default function DraftHandler(props: Props) {
     const clearDraft = useCallback(() => {
         removeDraft(serverUrl, channelId, rootId);
         updateValue('');
-    }, [serverUrl, channelId, rootId]);
+    }, [serverUrl, channelId, rootId, updateValue]);
 
     const addFiles = useCallback((newFiles: FileInfo[]) => {
         if (!newFiles.length) {
@@ -93,7 +95,7 @@ export default function DraftHandler(props: Props) {
         }
 
         newUploadError(null);
-    }, [intl, newUploadError, maxFileSize, serverUrl, files?.length, channelId, rootId]);
+    }, [intl, newUploadError, maxFileSize, serverUrl, files?.length, channelId, rootId, canUploadFiles, maxFileCount]);
 
     // This effect mainly handles keeping clean the uploadErrorHandlers, and
     // reinstantiate them on component mount and file retry.
@@ -115,7 +117,7 @@ export default function DraftHandler(props: Props) {
                 uploadErrorHandlers.current[file.clientId!] = DraftEditPostUploadManager.registerErrorHandler(file.clientId!, newUploadError);
             }
         }
-    }, [files]);
+    }, [files, newUploadError]);
 
     return (
         <SendHandler
@@ -135,6 +137,7 @@ export default function DraftHandler(props: Props) {
             updatePostInputTop={updatePostInputTop}
             updateValue={updateValue}
             setIsFocused={setIsFocused}
+            onPostCreated={onPostCreated}
         />
     );
 }
