@@ -3,7 +3,7 @@
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 
-import {observeCurrentUserId, observeCurrentTeamId} from '@queries/servers/system';
+import {observeCurrentUserId} from '@queries/servers/system';
 
 import AgentChat from './agent_chat';
 
@@ -12,7 +12,6 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     return {
         currentUserId: observeCurrentUserId(database),
-        currentTeamId: observeCurrentTeamId(database),
     };
 });
 
