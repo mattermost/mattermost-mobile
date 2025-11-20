@@ -4,7 +4,9 @@
 import {act, fireEvent, waitFor, within} from '@testing-library/react-native';
 import React, {type ComponentProps} from 'react';
 
+import Button from '@components/button';
 import ProgressBar from '@playbooks/components/progress_bar';
+import {goToAddChecklistItem} from '@playbooks/screens/navigation';
 import {renderWithIntl} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -20,6 +22,19 @@ jest.mock('@playbooks/components/progress_bar');
 jest.mocked(ProgressBar).mockImplementation(
     (props) => React.createElement('ProgressBar', {testID: 'progress-bar-component', ...props}),
 );
+
+jest.mock('@components/button', () => ({
+    __esModule: true,
+    default: jest.fn(),
+}));
+jest.mocked(Button).mockImplementation(
+    (props) => React.createElement('Button', {testID: props.testID, ...props}),
+);
+
+jest.mock('@playbooks/screens/navigation', () => ({
+    goToRenameChecklist: jest.fn(),
+    goToAddChecklistItem: jest.fn(),
+}));
 
 describe('Checklist', () => {
     const mockChecklist = TestHelper.fakePlaybookChecklistModel({
@@ -227,5 +242,52 @@ describe('Checklist', () => {
 
         expect(progressBar.props.progress).toBe(100);
         expect(progressBar.props.isActive).toBe(false);
+    });
+
+    it('renders add button when not finished and is participant', () => {
+        const props = getBaseProps();
+        props.isFinished = false;
+        props.isParticipant = true;
+
+        const {getByTestId} = renderWithIntl(<Checklist {...props}/>);
+
+        const addButton = getByTestId('add-checklist-item-button');
+        expect(addButton).toBeTruthy();
+        expect(addButton.props.text).toBe('New');
+        expect(addButton.props.iconName).toBe('plus');
+    });
+
+    it('does not render add button when finished', () => {
+        const props = getBaseProps();
+        props.isFinished = true;
+        props.isParticipant = true;
+
+        const {queryByTestId} = renderWithIntl(<Checklist {...props}/>);
+
+        expect(queryByTestId('add-checklist-item-button')).toBeNull();
+    });
+
+    it('does not render add button when not participant', () => {
+        const props = getBaseProps();
+        props.isFinished = false;
+        props.isParticipant = false;
+
+        const {queryByTestId} = renderWithIntl(<Checklist {...props}/>);
+
+        expect(queryByTestId('add-checklist-item-button')).toBeNull();
+    });
+
+    it('calls goToAddChecklistItem when add button is pressed', () => {
+        jest.mocked(goToAddChecklistItem).mockClear();
+        const props = getBaseProps();
+        props.isFinished = false;
+        props.isParticipant = true;
+
+        const {getByTestId} = renderWithIntl(<Checklist {...props}/>);
+
+        const addButton = getByTestId('add-checklist-item-button');
+        fireEvent.press(addButton);
+
+        expect(goToAddChecklistItem).toHaveBeenCalled();
     });
 });
