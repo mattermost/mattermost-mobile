@@ -7,6 +7,7 @@ import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {type LayoutChangeEvent, View, Text, TouchableOpacity, ActivityIndicator, ScrollView} from 'react-native';
 
+import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import CompassIcon from '@components/compass_icon';
 import PostDraft from '@components/post_draft';
 import {Screens} from '@constants';
@@ -182,6 +183,10 @@ const AgentChat = ({
         setContainerHeight(e.nativeEvent.layout.height);
     }, []);
 
+    const handlePostCreated = useCallback((postId: string) => {
+        fetchAndSwitchToThread(serverUrl, postId);
+    }, [serverUrl]);
+
     if (loading) {
         return (
             <View style={styles.loadingContainer}>
@@ -260,6 +265,7 @@ const AgentChat = ({
                         containerHeight={containerHeight}
                         isChannelScreen={false}
                         location={Screens.AGENT_CHAT}
+                        onPostCreated={handlePostCreated}
                     />
                 </ExtraKeyboardProvider>
             )}
