@@ -5,10 +5,12 @@ import {fetchAIBots, getBotDirectChannel, type LLMBot} from '@agents/actions/rem
 import {goToAgentThreadsList} from '@agents/screens/navigation';
 import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {View, TextInput, Text, TouchableOpacity, ActivityIndicator, Platform, ScrollView} from 'react-native';
+import {type LayoutChangeEvent, View, Text, TouchableOpacity, ActivityIndicator, ScrollView} from 'react-native';
 
-import {switchToChannelById} from '@actions/remote/channel';
 import CompassIcon from '@components/compass_icon';
+import PostDraft from '@components/post_draft';
+import {Screens} from '@constants';
+import {ExtraKeyboardProvider} from '@context/extra_keyboard';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
@@ -20,7 +22,6 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 type Props = {
     componentId: AvailableScreens;
     currentUserId: string;
-    currentTeamId: string;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -70,33 +71,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: changeOpacity(theme.centerChannelColor, 0.64),
         marginBottom: 24,
     },
-    inputContainer: {
-        padding: 16,
-        borderTopWidth: 1,
-        borderTopColor: changeOpacity(theme.centerChannelColor, 0.16),
-        backgroundColor: theme.centerChannelBg,
-    },
-    inputWrapper: {
-        flexDirection: 'row',
-        alignItems: 'flex-end',
-        backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
-        borderRadius: 4,
-        paddingHorizontal: 12,
-        paddingVertical: 8,
-    },
-    input: {
-        flex: 1,
-        fontSize: 16,
-        color: theme.centerChannelColor,
-        maxHeight: 120,
-        minHeight: 40,
-        paddingTop: Platform.select({ios: 10, default: 8}),
-        paddingBottom: Platform.select({ios: 10, default: 8}),
-    },
-    sendButton: {
-        marginLeft: 8,
-        padding: 8,
-    },
     loadingContainer: {
         flex: 1,
         justifyContent: 'center',
@@ -113,7 +87,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const AgentChat = ({
     componentId,
     currentUserId,
-    currentTeamId,
 }: Props) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -124,8 +97,8 @@ const AgentChat = ({
     const [selectedBot, setSelectedBot] = useState<LLMBot | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [message, setMessage] = useState('');
-    const [sending, setSending] = useState(false);
+    const [channelId, setChannelId] = useState<string | null>(null);
+    const [containerHeight, setContainerHeight] = useState(0);
 
     useEffect(() => {
         const loadBots = async () => {
@@ -155,6 +128,34 @@ const AgentChat = ({
         loadBots();
     }, [serverUrl, intl]);
 
+    // Get or create DM channel when bot is selected
+    useEffect(() => {
+        const getChannel = async () => {
+            if (!selectedBot) {
+                setChannelId(null);
+                return;
+            }
+
+            const {channelId: dmChannelId, error: channelError} = await getBotDirectChannel(
+                serverUrl,
+                currentUserId,
+                selectedBot.id,
+            );
+
+            if (channelError || !dmChannelId) {
+                setError(intl.formatMessage({
+                    id: 'agents.chat.error_creating_channel',
+                    defaultMessage: 'Failed to start conversation. Please try again.',
+                }));
+                return;
+            }
+
+            setChannelId(dmChannelId);
+        };
+
+        getChannel();
+    }, [selectedBot, serverUrl, currentUserId, intl]);
+
     const exit = useCallback(() => {
         popTopScreen(componentId);
     }, [componentId]);
@@ -177,36 +178,9 @@ const AgentChat = ({
         setSelectedBot(bots[nextIndex]);
     }, [bots, selectedBot]);
 
-    const handleSend = useCallback(async () => {
-        if (!message.trim() || !selectedBot || sending) {
-            return;
-        }
-
-        setSending(true);
-
-        // Get or create DM channel with the bot
-        const {channelId, error: channelError} = await getBotDirectChannel(
-            serverUrl,
-            currentUserId,
-            selectedBot.id,
-        );
-
-        if (channelError || !channelId) {
-            setError(intl.formatMessage({
-                id: 'agents.chat.error_creating_channel',
-                defaultMessage: 'Failed to start conversation. Please try again.',
-            }));
-            setSending(false);
-            return;
-        }
-
-        // Navigate to the channel
-        await switchToChannelById(serverUrl, channelId, currentTeamId);
-
-        // Clear message
-        setMessage('');
-        setSending(false);
-    }, [message, selectedBot, sending, serverUrl, currentUserId, currentTeamId, intl]);
+    const onLayout = useCallback((e: LayoutChangeEvent) => {
+        setContainerHeight(e.nativeEvent.layout.height);
+    }, []);
 
     if (loading) {
         return (
@@ -220,7 +194,10 @@ const AgentChat = ({
     }
 
     return (
-        <View style={styles.container}>
+        <View
+            style={styles.container}
+            onLayout={onLayout}
+        >
             <View style={styles.header}>
                 <TouchableOpacity
                     onPress={handleThreadListPress}
@@ -275,42 +252,17 @@ const AgentChat = ({
                 {error && <Text style={styles.errorText}>{error}</Text>}
             </ScrollView>
 
-            <View style={styles.inputContainer}>
-                <View style={styles.inputWrapper}>
-                    <TextInput
-                        style={styles.input}
-                        value={message}
-                        onChangeText={setMessage}
-                        placeholder={intl.formatMessage({
-                            id: 'agents.chat.input_placeholder',
-                            defaultMessage: 'Type a message...',
-                        })}
-                        placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.4)}
-                        multiline={true}
-                        editable={!sending && Boolean(selectedBot)}
-                        testID='agent_chat.input'
+            {channelId && (
+                <ExtraKeyboardProvider>
+                    <PostDraft
+                        channelId={channelId}
+                        testID='agent_chat.post_draft'
+                        containerHeight={containerHeight}
+                        isChannelScreen={false}
+                        location={Screens.AGENT_CHAT}
                     />
-                    <TouchableOpacity
-                        onPress={handleSend}
-                        style={styles.sendButton}
-                        disabled={!message.trim() || !selectedBot || sending}
-                        testID='agent_chat.send_button'
-                    >
-                        {sending ? (
-                            <ActivityIndicator
-                                size='small'
-                                color={theme.buttonBg}
-                            />
-                        ) : (
-                            <CompassIcon
-                                name='send'
-                                size={24}
-                                color={message.trim() && selectedBot ? theme.buttonBg : changeOpacity(theme.centerChannelColor, 0.32)}
-                            />
-                        )}
-                    </TouchableOpacity>
-                </View>
-            </View>
+                </ExtraKeyboardProvider>
+            )}
         </View>
     );
 };

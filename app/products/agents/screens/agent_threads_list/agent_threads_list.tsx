@@ -7,7 +7,7 @@ import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View, Text, TouchableOpacity, RefreshControl, ActivityIndicator} from 'react-native';
 
-import {switchToChannelById} from '@actions/remote/channel';
+import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import CompassIcon from '@components/compass_icon';
 import FormattedRelativeTime from '@components/formatted_relative_time';
 import {useServerUrl} from '@context/server';
@@ -21,7 +21,6 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     componentId: AvailableScreens;
-    currentTeamId: string;
 };
 
 const THREAD_ITEM_HEIGHT = 88;
@@ -109,7 +108,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const AgentThreadsList = ({
     componentId,
-    currentTeamId,
 }: Props) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -167,10 +165,11 @@ const AgentThreadsList = ({
     }, [loadThreads]);
 
     const handleThreadPress = useCallback(async (thread: AIThread) => {
-        // Navigate to the DM channel with the bot
-        await switchToChannelById(serverUrl, thread.channel_id, currentTeamId);
-        exit();
-    }, [serverUrl, currentTeamId, exit]);
+        // Navigate to the thread
+        await fetchAndSwitchToThread(serverUrl, thread.id, false);
+
+        // fetchAndSwitchToThread handles navigation, so we don't need to exit
+    }, [serverUrl]);
 
     const renderItem: ListRenderItem<AIThread> = useCallback(({item}) => {
         return (
@@ -205,7 +204,7 @@ const AgentThreadsList = ({
                     )}
                     <View style={styles.threadMeta}>
                         <CompassIcon
-                            name='message-reply-text-outline'
+                            name='reply-outline'
                             size={14}
                             color={changeOpacity(theme.centerChannelColor, 0.64)}
                         />
