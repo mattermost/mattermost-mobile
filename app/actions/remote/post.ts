@@ -966,19 +966,15 @@ export const revealBoRPost = async (serverUrl: string, postId: string) => {
         const post = await getPostById(database, postId);
         if (post) {
             const revealedPost = await client.revealBoRPost(postId);
-            console.log({revealedPost});
 
             await database.write(async () => {
                 await post.update((p) => {
                     p.message = revealedPost.message;
 
-                    p.metadata = p.metadata || {} as PostMetadata;
-                    p.metadata.expire_at = revealedPost.metadata.expire_at;
+                    p.metadata = revealedPost.metadata;
 
                     p.props = p.props || {};
                     p.props = {...p.props, revealed: true};
-
-                    console.log({p});
                 });
             });
         }

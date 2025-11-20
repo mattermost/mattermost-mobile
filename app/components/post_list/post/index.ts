@@ -6,6 +6,7 @@ import React from 'react';
 import {of as of$, combineLatest} from 'rxjs';
 import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
+import {isBoRPost} from '@calls/utils';
 import {Permissions, Preferences, Screens} from '@constants';
 import {queryFilesForPost} from '@queries/servers/file';
 import {observePost, observePostAuthor, queryPostsBetween, observeIsPostPriorityEnabled} from '@queries/servers/post';
@@ -124,7 +125,7 @@ const withPost = withObservables(
 
         const hasReplies = observeHasReplies(database, post);//Need to review and understand
 
-        const isConsecutivePost = author.pipe(
+        const isConsecutivePost = isBoRPost(post) ? of$(false) : author.pipe(
             switchMap((user) => of$(Boolean(post && previousPost && !user?.isBot && areConsecutivePosts(post, previousPost)))),
             distinctUntilChanged(),
         );
