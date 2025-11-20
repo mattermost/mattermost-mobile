@@ -67,3 +67,14 @@ export interface StreamingState {
     annotations: Annotation[]; // Citations/annotations for the post
 }
 
+/**
+ * AI thread data structure from the server
+ */
+export interface AIThread {
+    id: string; // Post ID
+    message: string; // Preview text
+    title: string; // Thread title
+    channel_id: string; // DM channel with bot
+    reply_count: number; // Number of replies
+    update_at: number; // Last update timestamp
+}
