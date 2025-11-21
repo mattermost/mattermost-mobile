@@ -1357,6 +1357,7 @@
   "skintone_selector.tooltip.description": "You can now choose the skin tone you prefer to use for your emojis.",
   "skintone_selector.tooltip.title": "Choose your default skin tone",
   "smobile.search.recent_title": "Recent searches in {teamName}",
+  "snack.bar.bor_post_expired.error": "This burn-on-read post has expired and can no longer be revealed.",
   "snack.bar.channel.members.added": "{numMembers, number} {numMembers, plural, one {member} other {members}} added",
   "snack.bar.code.copied": "Code copied to clipboard",
   "snack.bar.default": "Error",

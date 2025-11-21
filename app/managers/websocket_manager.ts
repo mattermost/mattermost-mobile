@@ -109,6 +109,7 @@ class WebsocketManagerSingleton {
         }
     };
 
+    // LOL
     public openAll = async (groupLabel?: BaseRequestGroupLabel) => {
         let queued = 0;
         for await (const clientUrl of Object.keys(this.clients)) {

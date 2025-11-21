@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {markChannelAsViewed} from '@actions/local/channel';
-import {dataRetentionCleanup} from '@actions/local/systems';
+import {dataRetentionCleanup, expiredBoRPostCleanup} from '@actions/local/systems';
 import {markChannelAsRead} from '@actions/remote/channel';
 import {
     entry,
@@ -103,6 +103,8 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
     openAllUnreadChannels(serverUrl, groupLabel);
 
     dataRetentionCleanup(serverUrl);
+
+    expiredBoRPostCleanup();
 
     AppsManager.refreshAppBindings(serverUrl, groupLabel);
     return undefined;

@@ -9,7 +9,8 @@ import {removePost} from '@actions/local/post';
 import {showPermalink} from '@actions/remote/permalink';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import CallsCustomMessage from '@calls/components/calls_custom_message';
-import {isCallsCustomMessage} from '@calls/utils';
+import {isCallsCustomMessage, isUnrevealedBoRPost} from '@calls/utils';
+import UnrevealedBurnOnReadPost from '@components/post_list/post/burn_on_read/unrevealed';
 import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';
 import {POST_TIME_TO_FAIL} from '@constants/post';
@@ -157,6 +158,7 @@ const Post = ({
     const isFailed = isPostFailed(post);
     const isSystemPost = isSystemMessage(post);
     const isCallsPost = isCallsCustomMessage(post);
+    const isUnrevealedPost = isUnrevealedBoRPost(post);
     const hasBeenDeleted = (post.deleteAt !== 0);
     const isWebHook = isFromWebhook(post);
     const hasSameRoot = useMemo(() => {
@@ -355,6 +357,10 @@ const Post = ({
                 isHost={false}
                 joiningChannelId={null}
             />
+        );
+    } else if (isUnrevealedPost) {
+        body = (
+            <UnrevealedBurnOnReadPost post={post}/>
         );
     } else {
         body = (
