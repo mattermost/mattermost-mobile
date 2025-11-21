@@ -26,6 +26,11 @@ interface RequestOutcome {
 
 const SLOW_REQUEST_THRESHOLD = 2000;
 const SLOW_REQUEST_PERCENTAGE_THRESHOLD = 0.7;
+
+// We use a count-based sliding window instead of time-based filtering to prevent
+// flip-flopping between states. With the 70% threshold and 10 minimum requests,
+// the network needs 7/10 new requests to be fast/slow to change state, regardless
+// of how old previous requests are. This provides stable state transitions.
 const REQUEST_OUTCOME_WINDOW_SIZE = 20;
 const MINIMUM_REQUESTS_FOR_INITIAL_DETECTION = 4;
 const MINIMUM_REQUESTS_FOR_SUBSEQUENT_DETECTION = 10;
