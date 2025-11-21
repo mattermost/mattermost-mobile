@@ -70,3 +70,10 @@ export const showPlaybookErrorSnackbar = () => {
         barType: SNACK_BAR_TYPE.PLAYBOOK_ERROR,
     });
 };
+
+export const showBoRPostExpiredSnackbar = (message?: string) => {
+    return showSnackBar({
+        barType: SNACK_BAR_TYPE.BOR_POST_EXPIRED,
+        customMessage: message,
+    });
+};

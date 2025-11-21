@@ -8,7 +8,8 @@ import Button from '@components/button';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {PostModel} from '@database/models/server';
-import {isErrorWithStatusCode} from '@utils/errors';
+import {getFullErrorMessage, isErrorWithStatusCode} from '@utils/errors';
+import {showBoRPostExpiredSnackbar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -35,6 +36,7 @@ export default function UnrevealedBurnOnReadPost({post}: Props) {
     const handleRevealPost = useCallback(async () => {
         const {error} = await revealBoRPost(serverUrl, post.id);
         if (error && isErrorWithStatusCode(error) && error.status_code === 400) {
+            showBoRPostExpiredSnackbar(getFullErrorMessage(error));
             deletePost(serverUrl, post);
         }
 
