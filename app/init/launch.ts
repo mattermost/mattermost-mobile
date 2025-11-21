@@ -118,6 +118,7 @@ const launchAppFromNotification = async (
 
  * @returns a redirection to a screen, either onboarding, add_server, login or home depending on the scenario
  */
+
 export const launchApp = async (props: LaunchProps) => {
     let serverUrl: string | undefined;
     switch (props?.launchType) {
@@ -215,7 +216,7 @@ export const launchApp = async (props: LaunchProps) => {
     const onboardingViewed =
         LocalConfig.ShowOnboarding && (await getOnboardingViewed());
 
-    // if the config value is set and the onboarding has not been seeing yet, show the onboarding
+    
     if (LocalConfig.ShowOnboarding && !onboardingViewed) {
         return resetToOnboarding(props);
     }
