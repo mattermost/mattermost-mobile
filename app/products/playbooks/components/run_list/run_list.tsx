@@ -69,7 +69,7 @@ const messages = defineMessages({
     },
     cachedWarningMessage: {
         id: 'playbooks.run_list.cached_warning_message',
-        defaultMessage: 'Showing cached data only. Some playbook runs or updates may be missing from this list.',
+        defaultMessage: 'Showing cached data only. Some updates may be missing from this list.',
     },
     tabInProgress: {
         id: 'playbooks.run_list.tab_in_progress',
@@ -187,7 +187,7 @@ const RunList = ({
                 <Button
                     emphasis='tertiary'
                     onPress={startANewRun}
-                    text={intl.formatMessage({id: 'playbooks.runs.start_a_new_run', defaultMessage: 'Start a new run'})}
+                    text={intl.formatMessage({id: 'playbooks.runs.start_a_new_run', defaultMessage: 'New'})}
                     size='lg'
                     theme={theme}
                     iconName='play-outline'
