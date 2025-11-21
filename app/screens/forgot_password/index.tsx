@@ -86,6 +86,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     successTitle: {
         color: theme.centerChannelColor,
+        marginTop: 24,
         marginBottom: 12,
         ...typography('Heading', 1000),
     },
@@ -151,7 +152,7 @@ const ForgotPassword = ({componentId, serverUrl, theme}: Props) => {
                     testID={'password_send.link.sent'}
                     nativeID={SecurityManager.getShieldScreenId(componentId, false, true)}
                 >
-                    <Inbox/>
+                    <Inbox theme={theme}/>
                     <FormattedText
                         style={styles.successTitle}
                         id='password_send.link.title'
