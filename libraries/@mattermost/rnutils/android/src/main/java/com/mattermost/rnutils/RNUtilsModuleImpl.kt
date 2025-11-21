@@ -1,9 +1,12 @@
 package com.mattermost.rnutils
 
 import android.app.Activity
+import android.graphics.Color
 import android.os.Build
 import android.view.WindowManager
+import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
+import androidx.core.view.WindowInsetsControllerCompat
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
@@ -13,8 +16,13 @@ import com.mattermost.rnutils.helpers.Notifications
 import com.mattermost.rnutils.helpers.RealPathUtil
 import com.mattermost.rnutils.helpers.SaveDataTask
 import com.mattermost.rnutils.helpers.SplitView
+import androidx.core.graphics.toColorInt
+import com.facebook.react.bridge.LifecycleEventListener
 
-class RNUtilsModuleImpl(private val reactContext: ReactApplicationContext) {
+class RNUtilsModuleImpl(private val reactContext: ReactApplicationContext): LifecycleEventListener {
+
+    private var lastHex: String? = null
+    private var lastLightIcons: Boolean = true
 
     companion object {
         const val NAME = "RNUtils"
@@ -37,7 +45,16 @@ class RNUtilsModuleImpl(private val reactContext: ReactApplicationContext) {
         setCtx(reactContext)
         SplitView.setCtx(reactContext)
         Notifications.setCtx(reactContext)
+        reactContext.addLifecycleEventListener(this)
     }
+
+    override fun onHostResume() {
+        val hex = lastHex ?: return
+        val light = lastLightIcons
+        setNavigationBarColor(hex, light)
+    }
+    override fun onHostPause() {}
+    override fun onHostDestroy() {}
 
     fun getTypedExportedConstants(): MutableMap<String, Any> {
         val map = mutableMapOf<String, Any>()
@@ -211,6 +228,38 @@ class RNUtilsModuleImpl(private val reactContext: ReactApplicationContext) {
 
         currentActivity.runOnUiThread {
             currentActivity.window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+        }
+    }
+
+    fun setNavigationBarColor(colorHex: String, lightIcons: Boolean) {
+        val currentActivity: Activity = reactContext.currentActivity ?: return
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            return
+        }
+
+        lastHex = colorHex
+        lastLightIcons = lightIcons
+
+        currentActivity.runOnUiThread {
+            try {
+                val w = currentActivity.window
+                w.decorView.post {
+                    val parsedColor = colorHex.toColorInt()
+                    w.navigationBarColor = parsedColor
+
+                    val controller = WindowInsetsControllerCompat(w, w.decorView)
+                    controller.isAppearanceLightNavigationBars = lightIcons
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        w.isNavigationBarContrastEnforced = false
+                    }
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                        w.navigationBarDividerColor = Color.TRANSPARENT
+                    }
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("RNUtils", "Error setting navigation bar color: $colorHex", e)
+            }
         }
     }
 }

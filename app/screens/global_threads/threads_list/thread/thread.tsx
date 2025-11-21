@@ -17,7 +17,6 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {bottomSheetModalOptions, showModal, showModalOverCurrentContext} from '@screens/navigation';
-import {getMarkdownTextStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
@@ -129,7 +128,6 @@ const Thread = ({author, channel, location, post, teammateNameDisplay, testID, t
     const isTablet = useIsTablet();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const textStyles = getMarkdownTextStyles(theme);
     const serverUrl = useServerUrl();
 
     const [isChannelNamePressed, setIsChannelNamePressed] = useState<Boolean>(false);
@@ -223,7 +221,6 @@ const Thread = ({author, channel, location, post, teammateNameDisplay, testID, t
                         enableChannelLink={true}
                         enableHardBreak={true}
                         enableSoftBreak={true}
-                        textStyle={textStyles}
                         baseStyle={styles.message}
                         value={post.message.substring(0, 100)} // This substring helps to avoid ANR's
                     />

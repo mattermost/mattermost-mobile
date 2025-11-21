@@ -19,6 +19,7 @@ export interface ClientUsersMix {
     setDefaultProfileImage: (userId: string) => Promise<any>;
     login: (loginId: string, password: string, token?: string, deviceId?: string, ldapOnly?: boolean) => Promise<UserProfile>;
     loginById: (id: string, password: string, token?: string, deviceId?: string) => Promise<UserProfile>;
+    loginByMagicLinkLogin: (token: string, deviceId?: string) => Promise<UserProfile>;
     logout: () => Promise<any>;
     getProfiles: (page?: number, perPage?: number, options?: Record<string, any>) => Promise<UserProfile[]>;
     getProfilesByIds: (userIds: string[], options?: Record<string, any>, groupLabel?: RequestGroupLabel) => Promise<UserProfile[]>;
@@ -47,6 +48,7 @@ export interface ClientUsersMix {
     unsetCustomStatus: () => Promise<{status: string}>;
     removeRecentCustomStatus: (customStatus: UserCustomStatus) => Promise<{status: string}>;
     exchangeSsoLoginCode: (loginCode: string, codeVerifier: string, state: string) => Promise<{token: string; csrf: string}>;
+    getUserLoginType: (loginId: string, deviceId?: string) => Promise<{auth_service: LoginType; is_deactivated: boolean}>;
 }
 
 const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
@@ -162,6 +164,25 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         return resp?.data;
     };
 
+    loginByMagicLinkLogin = async (token: string, deviceId = '') => {
+        const body = {
+            magic_link_token: token,
+            device_id: deviceId,
+        };
+
+        const resp = await this.doFetch(
+            `${this.getUsersRoute()}/login`,
+            {
+                method: 'post',
+                body,
+                headers: {'Cache-Control': 'no-store'},
+            },
+            false,
+        );
+
+        return resp?.data;
+    };
+
     logout = async () => {
         const response = await this.doFetch(
             `${this.getUsersRoute()}/logout`,
@@ -169,6 +190,13 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         );
 
         return response;
+    };
+
+    getUserLoginType = async (loginId: string, deviceId?: string) => {
+        return this.doFetch(
+            `${this.getUsersRoute()}/login/type`,
+            {method: 'post', body: {login_id: loginId, device_id: deviceId}},
+        );
     };
 
     getProfiles = async (page = 0, perPage = PER_PAGE_DEFAULT, options = {}) => {

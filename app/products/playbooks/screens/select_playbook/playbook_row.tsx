@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {View, Text, TouchableOpacity} from 'react-native';
 
@@ -13,8 +13,7 @@ import {typography} from '@utils/typography';
 
 type Props = {
     playbook: Playbook;
-    onPress?: (playbook: Playbook) => void;
-    testID?: string;
+    onPress: (playbook: Playbook) => void;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -41,14 +40,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const PlaybookRow = ({playbook, onPress, testID}: Props) => {
+const PlaybookRow = ({
+    playbook,
+    onPress,
+}: Props) => {
     const theme = useTheme();
     const intl = useIntl();
     const styles = getStyleSheet(theme);
 
-    const handlePress = () => {
-        onPress?.(playbook);
-    };
+    const handlePress = useCallback(() => {
+        onPress(playbook);
+    }, [onPress, playbook]);
 
     const formatLastUsed = (lastRunAt: number) => {
         if (!lastRunAt) {
@@ -70,12 +72,12 @@ const PlaybookRow = ({playbook, onPress, testID}: Props) => {
         if (activeRuns === 0) {
             return intl.formatMessage({
                 id: 'playbooks.row.no_runs',
-                defaultMessage: 'No runs in progress',
+                defaultMessage: 'No checklists in progress',
             });
         }
         return intl.formatMessage({
             id: 'playbooks.row.runs',
-            defaultMessage: '{count} {count, plural, one {run} other {runs}} in progress',
+            defaultMessage: '{count} {count, plural, one {checklist} other {checklists}} in progress',
         }, {count: activeRuns});
     };
 
@@ -85,7 +87,6 @@ const PlaybookRow = ({playbook, onPress, testID}: Props) => {
         <TouchableOpacity
             onPress={handlePress}
             style={styles.container}
-            testID={testID}
             activeOpacity={0.7}
         >
             <CompassIcon

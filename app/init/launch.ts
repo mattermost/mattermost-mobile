@@ -46,7 +46,7 @@ import {
     resetToOnboarding,
 } from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
-import {getLaunchPropsFromDeepLink} from '@utils/deep_link';
+import {getLaunchPropsFromDeepLink, handleDeepLink} from '@utils/deep_link';
 import {logInfo} from '@utils/log';
 import {convertToNotificationData} from '@utils/notification';
 import {removeProtocol} from '@utils/url';
@@ -130,10 +130,16 @@ export const launchApp = async (props: LaunchProps) => {
                 );
                 serverUrl = existingServer;
                 props.serverUrl = serverUrl || extra.data?.serverUrl;
-                if (!serverUrl && extra.type !== DeepLink.Server) {
+                if (extra.type === DeepLink.MagicLink && extra.data && 'token' in extra.data) {
+                    const result = await handleDeepLink(extra);
+                    if (result.error) {
+                        props.launchError = true;
+                    } else {
+                        return '';
+                    }
+                } else if (!serverUrl && extra.type !== DeepLink.Server) {
                     props.launchError = true;
-                }
-                if (extra.type === DeepLink.Server) {
+                } else if (extra.type === DeepLink.Server) {
                     if (removeProtocol(serverUrl) === extra.data?.serverUrl) {
                         props.extra = undefined;
                         props.launchType = Launch.Normal;

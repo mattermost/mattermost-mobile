@@ -1,9 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {type ComponentProps, useCallback, useEffect, useMemo, useState} from 'react';
+import {type ComponentProps, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {FormattedMessage, useIntl} from 'react-intl';
-import {Alert, Keyboard, Text, View} from 'react-native';
+import {Alert, Keyboard, Text} from 'react-native';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 import {getPosts} from '@actions/local/post';
 import FloatingAutocompleteSelector from '@components/floating_input/floating_autocomplete_selector';
@@ -13,11 +14,14 @@ import OptionItem from '@components/option_item';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {useAvoidKeyboard} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import SecurityManager from '@managers/security_manager';
 import {fetchPlaybookRun, fetchPlaybookRunMetadata, postStatusUpdate} from '@playbooks/actions/remote/runs';
 import {buildNavigationButton, popTopScreen, setButtons} from '@screens/navigation';
 import {toSeconds} from '@utils/datetime';
 import {logDebug} from '@utils/log';
+import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -35,7 +39,6 @@ type Props = {
 
 const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
-        flex: 1,
         padding: 20,
         gap: 12,
     },
@@ -45,6 +48,9 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     introMessageBold: {
         ...typography('Body', 200, 'SemiBold'),
+    },
+    flex: {
+        flex: 1,
     },
 }));
 
@@ -84,6 +90,9 @@ const PostUpdate = ({
     const [alsoMarkRunAsFinished, setAlsoMarkRunAsFinished] = useState(false);
     const [canSave, setCanSave] = useState(false);
 
+    const keyboardAwareRef = useRef<KeyboardAwareScrollView>(null);
+    useAvoidKeyboard(keyboardAwareRef);
+
     const [followersCount, setFollowersCount] = useState<number>(0);
     const [broadcastChannelCount, setBroadcastChannelCount] = useState<number>(0);
 
@@ -122,7 +131,9 @@ const PostUpdate = ({
             if (metadataRes.error) {
                 logDebug('error on fetchPlaybookRunMetadata', metadataRes.error);
             } else {
-                calculatedFollowersCount = metadataRes.metadata?.followers?.length ?? 0;
+                // We can safely assume that metadata is not undefined
+                // because we are checking for error above
+                calculatedFollowersCount = metadataRes.metadata!.followers.length;
             }
 
             const runRes = await fetchPlaybookRun(serverUrl, playbookRunId, true);
@@ -130,12 +141,12 @@ const PostUpdate = ({
                 logDebug('error on fetchPlaybookRun', runRes.error);
             } else {
                 if (runRes.run?.status_update_broadcast_channels_enabled) {
-                    calculatedBroadcastChannelCount = runRes.run?.broadcast_channel_ids?.length ?? 0;
+                    calculatedBroadcastChannelCount = runRes.run.broadcast_channel_ids.length;
                 }
                 calculatedDefaultMessage = runRes.run?.reminder_message_template ?? '';
                 const lastStatusPostMetadata = runRes.run?.status_posts?.slice().reverse().find((post) => !post.delete_at);
                 if (lastStatusPostMetadata?.id) {
-                    const lastStatusPost = (await getPosts(serverUrl, [lastStatusPostMetadata?.id ?? '']))[0];
+                    const lastStatusPost = (await getPosts(serverUrl, [lastStatusPostMetadata.id]))[0];
                     if (lastStatusPost) {
                         calculatedDefaultMessage = lastStatusPost.message;
                     }
@@ -200,24 +211,27 @@ const PostUpdate = ({
         close(componentId);
     }, [componentId]);
 
-    const onConfirm = useCallback(() => {
+    const onConfirm = useCallback(async () => {
         close(componentId);
         if (!channelId) {
             // This should never happen, but this keeps typescript happy
             logDebug('cannot post status update without a channel id');
             return;
         }
-        postStatusUpdate(serverUrl, playbookRunId, {message: updateMessage, reminder: valueToTimeMap[nextUpdate], finishRun: alsoMarkRunAsFinished}, {user_id: userId, channel_id: channelId, team_id: teamId});
+        const {error} = await postStatusUpdate(serverUrl, playbookRunId, {message: updateMessage, reminder: valueToTimeMap[nextUpdate], finishRun: alsoMarkRunAsFinished}, {user_id: userId, channel_id: channelId, team_id: teamId});
+        if (error) {
+            showPlaybookErrorSnackbar();
+        }
     }, [alsoMarkRunAsFinished, channelId, componentId, nextUpdate, playbookRunId, serverUrl, teamId, updateMessage, userId]);
 
     const onPostUpdate = useCallback(() => {
         if (alsoMarkRunAsFinished) {
-            let message = intl.formatMessage({id: 'playbooks.post_update.confirm.message', defaultMessage: 'Are you sure you want to finish the run {runName} for all participants?'}, {runName});
+            let message = intl.formatMessage({id: 'playbooks.post_update.confirm.message', defaultMessage: 'Are you sure you want to finish the checklist {runName} for all participants?'}, {runName});
             if (outstanding > 0) {
-                message = intl.formatMessage({id: 'playbooks.post_update.confirm.message.with_tasks', defaultMessage: 'There {outstanding, plural, =1 {is # outstanding task} other {are # outstanding tasks}}. Are you sure you want to finish the run {runName} for all participants?'}, {runName, outstanding});
+                message = intl.formatMessage({id: 'playbooks.post_update.confirm.message.with_tasks', defaultMessage: 'There {outstanding, plural, =1 {is # outstanding task} other {are # outstanding tasks}}. Are you sure you want to finish the checklist {runName} for all participants?'}, {runName, outstanding});
             }
             Alert.alert(
-                intl.formatMessage({id: 'playbooks.post_update.confirm.title', defaultMessage: 'Confirm finish run'}),
+                intl.formatMessage({id: 'playbooks.post_update.confirm.title', defaultMessage: 'Confirm finish checklist'}),
                 message,
                 [
                     {
@@ -225,7 +239,7 @@ const PostUpdate = ({
                         style: 'cancel',
                     },
                     {
-                        text: intl.formatMessage({id: 'playbooks.post_update.confirm.confirm', defaultMessage: 'Finish run'}),
+                        text: intl.formatMessage({id: 'playbooks.post_update.confirm.confirm', defaultMessage: 'Finish'}),
                         onPress: onConfirm,
                     },
                 ],
@@ -251,7 +265,7 @@ const PostUpdate = ({
     }, [runName, followersCount, broadcastChannelCount, styles.introMessageBold]);
 
     if (loading) {
-        return <Loading/>;
+        return <Loading testID='loader'/>;
     }
     let introMessage;
     if (broadcastChannelCount + followersCount === 0) {
@@ -265,14 +279,19 @@ const PostUpdate = ({
         introMessage = (
             <FormattedMessage
                 id='playbooks.post_update.intro'
-                defaultMessage='This update for the run <Bold>{runName}</Bold> will be broadcasted to {hasChannels, select, true {<Bold>{broadcastChannelCount, plural, =1 {one channel} other {{broadcastChannelCount, number} channels}}</Bold>} other {}}{hasFollowersAndChannels, select, true { and } other {}}{hasFollowers, select, true {<Bold>{followersChannelCount, plural, =1 {one direct message} other {{followersChannelCount, number} direct messages}}</Bold>} other {}}.'
+                defaultMessage='This update for the checklist <Bold>{runName}</Bold> will be broadcasted to {hasChannels, select, true {<Bold>{broadcastChannelCount, plural, =1 {one channel} other {{broadcastChannelCount, number} channels}}</Bold>} other {}}{hasFollowersAndChannels, select, true { and } other {}}{hasFollowers, select, true {<Bold>{followersChannelCount, plural, =1 {one direct message} other {{followersChannelCount, number} direct messages}}</Bold>} other {}}.'
                 values={introMessageValues}
             />
         );
     }
 
     return (
-        <View style={styles.container}>
+        <KeyboardAwareScrollView
+            contentContainerStyle={styles.container}
+            ref={keyboardAwareRef}
+            nativeID={SecurityManager.getShieldScreenId(componentId, false, true)}
+            style={styles.flex}
+        >
             <Text style={styles.introMessage}>{introMessage}</Text>
             <FloatingTextInput
                 label={intl.formatMessage({id: 'playbooks.post_update.label', defaultMessage: 'Update message'})}
@@ -281,6 +300,7 @@ const PostUpdate = ({
                 onChangeText={onChangeText}
                 theme={theme}
                 multiline={true}
+                multilineInputHeight={300}
             />
             <FloatingAutocompleteSelector
                 options={dialogOptions}
@@ -290,13 +310,13 @@ const PostUpdate = ({
                 label={intl.formatMessage({id: 'playbooks.post_update.label.next_update', defaultMessage: 'Timer for next update'})}
             />
             <OptionItem
-                label={intl.formatMessage({id: 'playbooks.post_update.label.also_mark_run_as_finished', defaultMessage: 'Also mark the run as finished'})}
+                label={intl.formatMessage({id: 'playbooks.post_update.label.also_mark_run_as_finished', defaultMessage: 'Also mark the checklist as finished'})}
                 action={setAlsoMarkRunAsFinished}
                 testID='playbooks.post_update.selector.also_mark_run_as_finished'
                 selected={alsoMarkRunAsFinished}
                 type='toggle'
             />
-        </View>
+        </KeyboardAwareScrollView>
     );
 };
 

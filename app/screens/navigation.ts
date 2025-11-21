@@ -3,6 +3,7 @@
 
 /* eslint-disable max-lines */
 
+import RNUtils from '@mattermost/rnutils';
 import merge from 'deepmerge';
 import {
     Appearance,
@@ -63,6 +64,29 @@ export const allOrientations: LayoutOrientation[] = [
 ];
 export const portraitOrientation: LayoutOrientation[] = ['portrait'];
 
+const loginFlowScreens = new Set<AvailableScreens>([
+    Screens.ONBOARDING,
+    Screens.SERVER,
+    Screens.LOGIN,
+    Screens.SSO,
+    Screens.MFA,
+    Screens.FORGOT_PASSWORD,
+]);
+
+function setNavigationBarColor(screen: AvailableScreens, th?: Theme) {
+    if (Platform.OS === 'android' && Platform.Version >= 34) {
+        const theme = th || getThemeFromState();
+        const color = loginFlowScreens.has(screen) ? theme.sidebarBg : theme.centerChannelBg;
+        RNUtils.setNavigationBarColor(color, tinyColor(color).isLight());
+    }
+}
+
+function showBottomTabsIfNeeded(screen: AvailableScreens) {
+    if (screen === Screens.HOME) {
+        DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, true);
+    }
+}
+
 export function registerNavigationListeners() {
     subscriptions?.forEach((v) => v.remove());
     subscriptions = [
@@ -105,32 +129,26 @@ function onCommandListener(name: string, params: any) {
         case 'dismissModal':
             NavigationStore.removeModalFromStack(params.componentId);
             break;
-        case 'showOverlay':
-            NavigationStore.addOverlayToStack(params?.layout?.id);
-            break;
-        case 'dismissOverlay':
-            NavigationStore.removeOverlayFromStack(params?.componentId);
-            break;
-        case 'dismissAllOverlays': {
-            NavigationStore.removeAllOverlaysFromStack();
-            break;
-        }
     }
 
-    if (NavigationStore.getVisibleScreen() === Screens.HOME) {
-        DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, true);
-    }
+    const screen = NavigationStore.getVisibleScreen();
+    showBottomTabsIfNeeded(screen);
+    setNavigationBarColor(screen);
 }
 
 function onPoppedListener({componentId}: ScreenPoppedEvent) {
     // screen pop does not trigger registerCommandListener, but does trigger screenPoppedListener
-    NavigationStore.removeScreenFromStack(componentId as AvailableScreens);
+    const screen = componentId as AvailableScreens;
+    NavigationStore.removeScreenFromStack(screen);
+
+    // If we pop to home, we need to show the tab bar
+    showBottomTabsIfNeeded(NavigationStore.getVisibleScreen());
+
+    setNavigationBarColor(screen);
 }
 
 function onScreenWillAppear(event: ComponentWillAppearEvent) {
-    if (event.componentId === Screens.HOME) {
-        DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, true);
-    }
+    showBottomTabsIfNeeded(event.componentId as AvailableScreens);
 }
 
 export const loginAnimationOptions = () => {
@@ -330,6 +348,32 @@ function isScreenRegistered(screen: AvailableScreens) {
     return true;
 }
 
+function edgeToEdgeHack(screen: AvailableScreens, theme: Theme) {
+    const isDark = tinyColor(theme.sidebarBg).isDark();
+
+    if (Platform.OS === 'android') {
+        if (Platform.Version >= 34) {
+            const listener = Navigation.events().registerComponentDidAppearListener((event) => {
+                if (event.componentName === screen) {
+                    setNavigationBarColor(screen, theme);
+                    listener.remove();
+                }
+            });
+        }
+
+        if (Platform.Version >= 36) {
+            return {
+                drawBehind: true,
+                translucent: false,
+                isDark,
+            };
+        }
+    }
+
+    StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
+    return {isDark};
+}
+
 export function openToS() {
     NavigationStore.setToSOpen(true);
     return showOverlay(
@@ -343,8 +387,7 @@ export function resetToHome(
     passProps: LaunchProps = {launchType: Launch.Normal},
 ) {
     const theme = getThemeFromState();
-    const isDark = tinyColor(theme.sidebarBg).isDark();
-    StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
+    const edgeToEdge = edgeToEdgeHack(Screens.HOME, theme);
 
     if (
         !passProps.coldStart &&
@@ -365,15 +408,25 @@ export function resetToHome(
     }
 
     const stack = {
-        children: [
-            {
-                component: {
-                    id: Screens.HOME,
-                    name: Screens.HOME,
-                    passProps,
-                    options: {
-                        layout: {
-                            componentBackgroundColor: theme.centerChannelBg,
+        children: [{
+            component: {
+                id: Screens.HOME,
+                name: Screens.HOME,
+                passProps,
+                options: {
+                    layout: {
+                        componentBackgroundColor: theme.centerChannelBg,
+                    },
+                    statusBar: {
+                        visible: true,
+                        backgroundColor: theme.sidebarBg,
+                        ...edgeToEdge,
+                    },
+                    topBar: {
+                        visible: false,
+                        height: 0,
+                        background: {
+                            color: theme.sidebarBg,
                         },
                         statusBar: {
                             visible: true,
@@ -403,17 +456,25 @@ export function resetToHome(
 
 export function resetToSelectServer(passProps: LaunchProps) {
     const theme = getDefaultThemeByAppearance();
-    const isDark = tinyColor(theme.sidebarBg).isDark();
-    StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
+    const edgeToEdge = edgeToEdgeHack(Screens.SERVER, theme);
 
-    const children = [
-        {
-            component: {
-                id: Screens.SERVER,
-                name: Screens.SERVER,
-                passProps: {
-                    ...passProps,
-                    theme,
+    const children = [{
+        component: {
+            id: Screens.SERVER,
+            name: Screens.SERVER,
+            passProps: {
+                ...passProps,
+                theme,
+            },
+            options: {
+                layout: {
+                    backgroundColor: theme.centerChannelBg,
+                    componentBackgroundColor: theme.centerChannelBg,
+                },
+                statusBar: {
+                    visible: true,
+                    backgroundColor: theme.sidebarBg,
+                    ...edgeToEdge,
                 },
                 options: {
                     layout: {
@@ -451,17 +512,25 @@ export function resetToSelectServer(passProps: LaunchProps) {
 
 export function resetToOnboarding(passProps: LaunchProps) {
     const theme = getDefaultThemeByAppearance();
-    const isDark = tinyColor(theme.sidebarBg).isDark();
-    StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
+    const edgeToEdge = edgeToEdgeHack(Screens.ONBOARDING, theme);
 
-    const children = [
-        {
-            component: {
-                id: Screens.ONBOARDING,
-                name: Screens.ONBOARDING,
-                passProps: {
-                    ...passProps,
-                    theme,
+    const children = [{
+        component: {
+            id: Screens.ONBOARDING,
+            name: Screens.ONBOARDING,
+            passProps: {
+                ...passProps,
+                theme,
+            },
+            options: {
+                layout: {
+                    backgroundColor: theme.centerChannelBg,
+                    componentBackgroundColor: theme.centerChannelBg,
+                },
+                statusBar: {
+                    visible: true,
+                    backgroundColor: theme.sidebarBg,
+                    ...edgeToEdge,
                 },
                 options: {
                     layout: {
@@ -499,25 +568,29 @@ export function resetToOnboarding(passProps: LaunchProps) {
 
 export function resetToTeams() {
     const theme = getThemeFromState();
-    const isDark = tinyColor(theme.sidebarBg).isDark();
-    StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
+    const edgeToEdge = edgeToEdgeHack(Screens.SELECT_TEAM, theme);
 
     return Navigation.setRoot({
         root: {
             stack: {
-                children: [
-                    {
-                        component: {
-                            id: Screens.SELECT_TEAM,
-                            name: Screens.SELECT_TEAM,
-                            options: {
-                                layout: {
-                                    componentBackgroundColor:
-                                        theme.centerChannelBg,
-                                },
-                                statusBar: {
-                                    visible: true,
-                                    backgroundColor: theme.sidebarBg,
+                children: [{
+                    component: {
+                        id: Screens.SELECT_TEAM,
+                        name: Screens.SELECT_TEAM,
+                        options: {
+                            layout: {
+                                componentBackgroundColor: theme.centerChannelBg,
+                            },
+                            statusBar: {
+                                visible: true,
+                                backgroundColor: theme.sidebarBg,
+                                ...edgeToEdge,
+                            },
+                            topBar: {
+                                visible: false,
+                                height: 0,
+                                background: {
+                                    color: theme.sidebarBg,
                                 },
                                 topBar: {
                                     visible: false,
@@ -550,7 +623,7 @@ export function goToScreen(
     }
 
     const theme = getThemeFromState();
-    const isDark = tinyColor(theme.sidebarBg).isDark();
+    const edgeToEdge = edgeToEdgeHack(name, theme);
     const componentId = NavigationStore.getVisibleScreen();
     if (!componentId) {
         logError(
@@ -569,8 +642,10 @@ export function goToScreen(
             right: {enabled: false},
         },
         statusBar: {
-            style: isDark ? 'light' : 'dark',
+            style: edgeToEdge.isDark ? 'light' : 'dark',
             backgroundColor: theme.sidebarBg,
+            drawBehind: edgeToEdge.drawBehind ?? false,
+            translucent: edgeToEdge.translucent ?? false,
         },
         topBar: {
             animate: true,
@@ -643,7 +718,7 @@ export async function popToRoot() {
 
 export async function dismissAllModalsAndPopToRoot() {
     await dismissAllModals();
-    await dismissAllOverlaysWithExceptions();
+    await dismissAllOverlays();
     await popToRoot();
 }
 
@@ -662,7 +737,7 @@ export async function dismissAllModalsAndPopToScreen(
     options = {},
 ) {
     await dismissAllModals();
-    await dismissAllOverlaysWithExceptions();
+    await dismissAllOverlays();
     if (NavigationStore.getScreensInStack().includes(screenId)) {
         let mergeOptions = options;
         if (title) {
@@ -701,10 +776,8 @@ export function showModal(
     }
 
     const theme = getThemeFromState();
-    const modalPresentationStyle: OptionsModalPresentationStyle =
-        Platform.OS === 'ios'
-            ? OptionsModalPresentationStyle.pageSheet
-            : OptionsModalPresentationStyle.none;
+    const edgeToEdge = edgeToEdgeHack(name, theme);
+    const modalPresentationStyle: OptionsModalPresentationStyle = Platform.OS === 'ios' ? OptionsModalPresentationStyle.pageSheet : OptionsModalPresentationStyle.none;
     const defaultOptions: Options = {
         modalPresentationStyle,
         layout: {
@@ -713,6 +786,7 @@ export function showModal(
         statusBar: {
             visible: true,
             backgroundColor: theme.sidebarBg,
+            ...edgeToEdge,
         },
         topBar: {
             animate: true,
@@ -919,31 +993,6 @@ export async function dismissOverlay(componentId: string) {
     } catch (error) {
         // RNN returns a promise rejection if there is no modal with
         // this componentId to dismiss. We'll do nothing in this case.
-    }
-}
-
-/**
- * Instead of using native dismissAllOverlays, we're looping through the overlays
- * and dismissing them individually.  Native dismissAllOverlays is causing the app to
- * dismiss 700+ overlays. Even though those overlays doesn't exist in the stack. Since we're
- * tracking the overlays in the store, we can dismiss them individually.
- * @returns
- */
-export async function dismissAllOverlaysWithExceptions() {
-    try {
-        const overlaysToRemove =
-            NavigationStore.getAllOverlaysOtherThanExceptions();
-        if (!overlaysToRemove.length) {
-            return;
-        }
-
-        await Promise.all(
-            overlaysToRemove.map((overlayId) =>
-                Navigation.dismissOverlay(overlayId).catch(() => undefined),
-            ),
-        );
-    } catch {
-        // do nothing
     }
 }
 

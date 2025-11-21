@@ -21,7 +21,6 @@ import {ANDROID_33, OS_VERSION} from '@constants/versions';
 import {useTheme} from '@context/theme';
 import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
 import {bottomSheetSnapPoint, isEmail} from '@utils/helpers';
-import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {showSnackBar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -111,8 +110,6 @@ const Extra = ({channelId, createdAt, createdBy, customStatus, header, isCustomS
     const managedConfig = useManagedConfig<ManagedConfig>();
 
     const styles = getStyleSheet(theme);
-    const blockStyles = getMarkdownBlockStyles(theme);
-    const textStyles = getMarkdownTextStyles(theme);
     const created = useMemo(() => ({
         user: createdBy,
         date: (
@@ -242,14 +239,12 @@ const Extra = ({channelId, createdAt, createdBy, customStatus, header, isCustomS
                     <Markdown
                         channelId={channelId}
                         baseTextStyle={styles.header}
-                        blockStyles={blockStyles}
                         disableBlockQuote={true}
                         disableCodeBlock={true}
                         disableGallery={true}
                         disableHeading={true}
                         disableTables={true}
                         location={Screens.CHANNEL_INFO}
-                        textStyles={textStyles}
                         layoutHeight={48}
                         layoutWidth={100}
                         theme={theme}

@@ -5,6 +5,7 @@ import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of as of$} from 'rxjs';
 import {switchMap, distinctUntilChanged, map} from 'rxjs/operators';
 
+import {observeConfigValue} from '@queries/servers/system';
 import {observeCurrentTeam} from '@queries/servers/team';
 import {observeTeammateNameDisplay, observeCurrentUser} from '@queries/servers/user';
 import {isSystemAdmin} from '@utils/user';
@@ -34,6 +35,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
             map((user) => isSystemAdmin(user?.roles || '')),
             distinctUntilChanged(),
         ),
+        allowPasswordlessInvites: observeConfigValue(database, 'EnableGuestMagicLink'),
     };
 });
 

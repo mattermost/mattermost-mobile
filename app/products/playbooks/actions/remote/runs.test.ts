@@ -1,16 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable max-lines */
+
 import {PER_PAGE_DEFAULT} from '@client/rest/constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {updateLastPlaybookRunsFetchAt} from '@playbooks/actions/local/channel';
-import {handlePlaybookRuns, setOwner as localSetOwner} from '@playbooks/actions/local/run';
+import {handlePlaybookRuns, setOwner as localSetOwner, renamePlaybookRun as localRenamePlaybookRun} from '@playbooks/actions/local/run';
 import {getLastPlaybookRunsFetchAt} from '@playbooks/database/queries/run';
 import EphemeralStore from '@store/ephemeral_store';
 import TestHelper from '@test/test_helper';
 
-import {fetchPlaybookRunsForChannel, fetchFinishedRunsForChannel, fetchPlaybookRunsPageForParticipant, setOwner, finishRun} from './runs';
+import {fetchPlaybookRunsForChannel, fetchFinishedRunsForChannel, fetchPlaybookRunsPageForParticipant, setOwner, finishRun, renamePlaybookRun, createPlaybookRun, fetchPlaybookRun, fetchPlaybookRunMetadata, postStatusUpdate} from './runs';
 
 const serverUrl = 'baseHandler.test.com';
 const channelId = 'channel-id-1';
@@ -20,8 +22,13 @@ const mockPlaybookRun2 = TestHelper.fakePlaybookRun({channel_id: channelId});
 
 const mockClient = {
     fetchPlaybookRuns: jest.fn(),
+    fetchPlaybookRun: jest.fn(),
+    fetchPlaybookRunMetadata: jest.fn(),
     setOwner: jest.fn(),
     finishRun: jest.fn(),
+    createPlaybookRun: jest.fn(),
+    postStatusUpdate: jest.fn(),
+    patchPlaybookRun: jest.fn(),
 };
 
 jest.mock('@playbooks/database/queries/run');
@@ -47,6 +54,10 @@ afterEach(async () => {
 
 describe('fetchPlaybookRunsForChannel', () => {
     jest.mocked(getLastPlaybookRunsFetchAt).mockResolvedValue(123);
+
+    beforeEach(() => {
+        jest.mocked(handlePlaybookRuns).mockResolvedValue({data: []});
+    });
 
     it('should handle client error', async () => {
         jest.spyOn(NetworkManager, 'getClient').mockImplementationOnce(throwFunc);
@@ -160,6 +171,19 @@ describe('fetchPlaybookRunsForChannel', () => {
         expect(EphemeralStore.getChannelPlaybooksSynced(serverUrl, channelId)).toBe(false);
         await fetchPlaybookRunsForChannel(serverUrl, channelId, true);
         expect(EphemeralStore.getChannelPlaybooksSynced(serverUrl, channelId)).toBe(false);
+    });
+
+    it('should handle error from handlePlaybookRuns', async () => {
+        jest.mocked(handlePlaybookRuns).mockResolvedValueOnce({error: new Error('Handle error')});
+        mockClient.fetchPlaybookRuns.mockResolvedValueOnce({
+            items: [mockPlaybookRun],
+            has_more: false,
+        });
+
+        const result = await fetchPlaybookRunsForChannel(serverUrl, channelId);
+        expect(handlePlaybookRuns).toHaveBeenCalled();
+        expect(result).toBeDefined();
+        expect((result.error as Error).message).toBe('Handle error');
     });
 });
 
@@ -415,3 +439,342 @@ describe('fetchPlaybookRunsPageForParticipant', () => {
         });
     });
 });
+
+describe('createPlaybookRun', () => {
+    const playbookId = 'playbook-id-1';
+    const ownerUserId = 'owner-user-id-1';
+    const teamId = 'team-id-1';
+    const name = 'Test Playbook Run';
+    const description = 'Test Description';
+    const createPublicRun = true;
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
+    it('should create playbook run successfully with all required parameters', async () => {
+        const mockRun = TestHelper.fakePlaybookRun({
+            id: 'run-id-1',
+            playbook_id: playbookId,
+            owner_user_id: ownerUserId,
+            team_id: teamId,
+            name,
+            description,
+        });
+        mockClient.createPlaybookRun.mockResolvedValueOnce(mockRun);
+
+        const result = await createPlaybookRun(serverUrl, playbookId, ownerUserId, teamId, name, description);
+
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.data).toEqual(mockRun);
+        expect(mockClient.createPlaybookRun).toHaveBeenCalledWith(
+            playbookId,
+            ownerUserId,
+            teamId,
+            name,
+            description,
+            undefined,
+            undefined,
+        );
+    });
+
+    it('should create playbook run successfully with optional parameters', async () => {
+        const mockRun = TestHelper.fakePlaybookRun({
+            id: 'run-id-1',
+            playbook_id: playbookId,
+            owner_user_id: ownerUserId,
+            team_id: teamId,
+            name,
+            description,
+            channel_id: channelId,
+        });
+        mockClient.createPlaybookRun.mockResolvedValueOnce(mockRun);
+
+        const result = await createPlaybookRun(serverUrl, playbookId, ownerUserId, teamId, name, description, channelId, createPublicRun);
+
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.data).toEqual(mockRun);
+        expect(mockClient.createPlaybookRun).toHaveBeenCalledWith(
+            playbookId,
+            ownerUserId,
+            teamId,
+            name,
+            description,
+            channelId,
+            createPublicRun,
+        );
+    });
+
+    it('should handle client error', async () => {
+        const clientError = new Error('Client error');
+        mockClient.createPlaybookRun.mockRejectedValueOnce(clientError);
+
+        const result = await createPlaybookRun(serverUrl, playbookId, ownerUserId, teamId, name, description);
+
+        expect(result).toBeDefined();
+        expect(result.error).toBeDefined();
+        expect(result.data).toBeUndefined();
+        expect(mockClient.createPlaybookRun).toHaveBeenCalledWith(
+            playbookId,
+            ownerUserId,
+            teamId,
+            name,
+            description,
+            undefined,
+            undefined,
+        );
+    });
+
+    it('should handle network manager error', async () => {
+        jest.spyOn(NetworkManager, 'getClient').mockImplementationOnce(throwFunc);
+
+        const result = await createPlaybookRun(serverUrl, playbookId, ownerUserId, teamId, name, description);
+        expect(result).toBeDefined();
+        expect(result.error).toBeDefined();
+        expect(result.data).toBeUndefined();
+    });
+});
+
+describe('fetchPlaybookRun', () => {
+    const runId = 'run-id-1';
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+        jest.mocked(handlePlaybookRuns).mockResolvedValue({data: []});
+    });
+
+    it('should fetch playbook run successfully', async () => {
+        const mockRun = TestHelper.fakePlaybookRun({
+            id: runId,
+            channel_id: channelId,
+        });
+        mockClient.fetchPlaybookRun.mockResolvedValueOnce(mockRun);
+
+        const result = await fetchPlaybookRun(serverUrl, runId);
+
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.run).toEqual(mockRun);
+        expect(mockClient.fetchPlaybookRun).toHaveBeenCalledWith(runId);
+        expect(handlePlaybookRuns).toHaveBeenCalledWith(serverUrl, [mockRun], false, true);
+    });
+
+    it('should fetch playbook run successfully with fetchOnly mode', async () => {
+        const mockRun = TestHelper.fakePlaybookRun({
+            id: runId,
+            channel_id: channelId,
+        });
+        mockClient.fetchPlaybookRun.mockResolvedValueOnce(mockRun);
+
+        const result = await fetchPlaybookRun(serverUrl, runId, true);
+
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.run).toEqual(mockRun);
+        expect(mockClient.fetchPlaybookRun).toHaveBeenCalledWith(runId);
+        expect(handlePlaybookRuns).not.toHaveBeenCalled();
+    });
+
+    it('should handle client error', async () => {
+        const clientError = new Error('Client error');
+        mockClient.fetchPlaybookRun.mockRejectedValueOnce(clientError);
+
+        const result = await fetchPlaybookRun(serverUrl, runId);
+
+        expect(result).toBeDefined();
+        expect(result.error).toBeDefined();
+        expect(result.run).toBeUndefined();
+        expect(mockClient.fetchPlaybookRun).toHaveBeenCalledWith(runId);
+        expect(handlePlaybookRuns).not.toHaveBeenCalled();
+    });
+
+    it('should handle handlePlaybookRuns error', async () => {
+        const mockRun = TestHelper.fakePlaybookRun({
+            id: runId,
+            channel_id: channelId,
+        });
+        const handleError = new Error('Handle error');
+        mockClient.fetchPlaybookRun.mockResolvedValueOnce(mockRun);
+        jest.mocked(handlePlaybookRuns).mockResolvedValueOnce({error: handleError});
+
+        const result = await fetchPlaybookRun(serverUrl, runId);
+
+        expect(result).toBeDefined();
+        expect(result.error).toEqual(handleError);
+        expect(result.run).toBeUndefined();
+        expect(mockClient.fetchPlaybookRun).toHaveBeenCalledWith(runId);
+        expect(handlePlaybookRuns).toHaveBeenCalledWith(serverUrl, [mockRun], false, true);
+    });
+
+    it('should handle network manager error', async () => {
+        jest.spyOn(NetworkManager, 'getClient').mockImplementationOnce(throwFunc);
+
+        const result = await fetchPlaybookRun(serverUrl, runId);
+
+        expect(result).toBeDefined();
+        expect(result.error).toBeDefined();
+        expect(result.run).toBeUndefined();
+        expect(handlePlaybookRuns).not.toHaveBeenCalled();
+    });
+});
+
+describe('fetchPlaybookRunMetadata', () => {
+    const runId = 'run-id-1';
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
+    it('should fetch playbook run metadata successfully', async () => {
+        const mockMetadata = TestHelper.fakePlaybookRunMetadata();
+        mockClient.fetchPlaybookRunMetadata.mockResolvedValueOnce(mockMetadata);
+
+        const result = await fetchPlaybookRunMetadata(serverUrl, runId);
+
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.metadata).toEqual(mockMetadata);
+        expect(mockClient.fetchPlaybookRunMetadata).toHaveBeenCalledWith(runId);
+    });
+
+    it('should handle client error', async () => {
+        const clientError = new Error('Client error');
+        mockClient.fetchPlaybookRunMetadata.mockRejectedValueOnce(clientError);
+
+        const result = await fetchPlaybookRunMetadata(serverUrl, runId);
+
+        expect(result).toBeDefined();
+        expect(result.error).toBeDefined();
+        expect(result.metadata).toBeUndefined();
+        expect(mockClient.fetchPlaybookRunMetadata).toHaveBeenCalledWith(runId);
+    });
+
+    it('should handle network manager error', async () => {
+        jest.spyOn(NetworkManager, 'getClient').mockImplementationOnce(throwFunc);
+
+        const result = await fetchPlaybookRunMetadata(serverUrl, runId);
+
+        expect(result).toBeDefined();
+        expect(result.error).toBeDefined();
+        expect(result.metadata).toBeUndefined();
+    });
+});
+
+describe('postStatusUpdate', () => {
+    const playbookRunID = 'run-id-1';
+    const payload = {
+        message: 'Test status update message',
+        reminder: 3600000,
+        finishRun: false,
+    };
+    const ids = {
+        user_id: 'user-id-1',
+        channel_id: 'channel-id-1',
+        team_id: 'team-id-1',
+    };
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
+    it('should post status update successfully', async () => {
+        mockClient.postStatusUpdate.mockResolvedValueOnce(undefined);
+
+        const result = await postStatusUpdate(serverUrl, playbookRunID, payload, ids);
+        expect(result.error).toBeUndefined();
+
+        expect(mockClient.postStatusUpdate).toHaveBeenCalledWith(playbookRunID, payload, ids);
+        expect(mockClient.postStatusUpdate).toHaveBeenCalledTimes(1);
+    });
+
+    it('should post status update successfully without reminder', async () => {
+        const payloadWithoutReminder = {
+            message: 'Test status update message',
+            finishRun: false,
+        };
+        mockClient.postStatusUpdate.mockResolvedValueOnce(undefined);
+
+        const result = await postStatusUpdate(serverUrl, playbookRunID, payloadWithoutReminder, ids);
+        expect(result.error).toBeUndefined();
+
+        expect(mockClient.postStatusUpdate).toHaveBeenCalledWith(playbookRunID, payloadWithoutReminder, ids);
+    });
+
+    it('should handle client error gracefully', async () => {
+        const clientError = new Error('Client error');
+        mockClient.postStatusUpdate.mockRejectedValueOnce(clientError);
+
+        const result = await postStatusUpdate(serverUrl, playbookRunID, payload, ids);
+        expect(result.error).toBe(clientError);
+
+        expect(mockClient.postStatusUpdate).toHaveBeenCalledWith(playbookRunID, payload, ids);
+    });
+
+    it('should handle network manager error gracefully', async () => {
+        jest.spyOn(NetworkManager, 'getClient').mockImplementationOnce(throwFunc);
+
+        const result = await postStatusUpdate(serverUrl, playbookRunID, payload, ids);
+        expect(result.error).toBeDefined();
+
+    });
+});
+
+describe('renamePlaybookRun', () => {
+    const playbookRunId = 'playbook-run-id-1';
+    const newName = 'New Run Name';
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+        jest.mocked(localRenamePlaybookRun).mockResolvedValue({data: true});
+    });
+
+    it('should handle client error', async () => {
+        jest.spyOn(NetworkManager, 'getClient').mockImplementationOnce(throwFunc);
+
+        const result = await renamePlaybookRun(serverUrl, playbookRunId, newName);
+
+        expect(result).toBeDefined();
+        expect(result.error).toBeDefined();
+        expect(result.data).toBeUndefined();
+        expect(localRenamePlaybookRun).not.toHaveBeenCalled();
+    });
+
+    it('should handle API exception', async () => {
+        const clientError = new Error('Client error');
+        mockClient.patchPlaybookRun.mockRejectedValueOnce(clientError);
+
+        const result = await renamePlaybookRun(serverUrl, playbookRunId, newName);
+        expect(result).toBeDefined();
+        expect(result.error).toBeDefined();
+        expect(result.data).toBeUndefined();
+        expect(mockClient.patchPlaybookRun).toHaveBeenCalledWith(playbookRunId, {name: newName});
+        expect(localRenamePlaybookRun).not.toHaveBeenCalled();
+    });
+
+    it('should handle local DB update failure', async () => {
+        mockClient.patchPlaybookRun.mockResolvedValueOnce(undefined);
+        jest.mocked(localRenamePlaybookRun).mockResolvedValueOnce({error: 'DB error'});
+
+        const result = await renamePlaybookRun(serverUrl, playbookRunId, newName);
+        expect(result).toBeDefined();
+        expect(result.error).toBeDefined();
+        expect(mockClient.patchPlaybookRun).toHaveBeenCalledWith(playbookRunId, {name: newName});
+        expect(localRenamePlaybookRun).toHaveBeenCalledWith(serverUrl, playbookRunId, newName);
+    });
+
+    it('should rename playbook run successfully', async () => {
+        mockClient.patchPlaybookRun.mockResolvedValueOnce(undefined);
+
+        const result = await renamePlaybookRun(serverUrl, playbookRunId, newName);
+
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.data).toBe(true);
+        expect(mockClient.patchPlaybookRun).toHaveBeenCalledWith(playbookRunId, {name: newName});
+        expect(localRenamePlaybookRun).toHaveBeenCalledWith(serverUrl, playbookRunId, newName);
+
+    });
+});
+
