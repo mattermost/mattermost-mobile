@@ -308,6 +308,8 @@ export default function PostInput({
             listener.remove();
             updateDraftMessage(serverUrl, channelId, rootId, lastNativeValue.current); // safe draft on unmount
         };
+
+    // disabled because to keep the implementation as previous as it started complaining about the dependencies
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [updateValue, channelId, rootId]);
 
@@ -316,6 +318,8 @@ export default function PostInput({
             propagateValue(value);
             lastNativeValue.current = value;
         }
+
+    // disabled because to keep the implementation as previous as it started complaining about the dependencies
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [value]);
 

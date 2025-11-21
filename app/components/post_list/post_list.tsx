@@ -392,7 +392,10 @@ const PostList = ({
         }, 500);
 
         return () => clearTimeout(t);
-    }, [orderedPosts, highlightedId, listRef]);
+
+    // disabled because to keep the implementation as previous as it started complaining about the dependencies
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [orderedPosts, highlightedId]);
 
     // For inverted list: paddingTop in contentContainerStyle = visual bottom padding
     const contentContainerStyleWithPadding = useMemo(() => {
