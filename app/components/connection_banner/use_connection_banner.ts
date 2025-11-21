@@ -63,7 +63,6 @@ export const useConnectionBanner = ({
             previousWebsocketState.current = 'not_connected';
 
             if (!initialAppSession.current) {
-                initialAppSession.current = false;
                 setBannerText(intl.formatMessage({id: 'connection_banner.not_connected', defaultMessage: 'Unable to connect to network'}));
                 openCallback();
                 return true;
