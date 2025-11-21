@@ -4,6 +4,7 @@
 import {createIntl} from 'react-intl';
 import {Alert, DeviceEventEmitter, Platform} from 'react-native';
 
+import {cancelSessionNotification, findSession} from '@actions/local/session';
 import {Events} from '@constants';
 import {GLOBAL_IDENTIFIERS, SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
@@ -17,11 +18,9 @@ import {
     fetchSessions,
     login,
     logout,
-    cancelSessionNotification,
     scheduleSessionNotification,
     sendPasswordResetEmail,
     ssoLogin,
-    findSession,
 } from './session';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';

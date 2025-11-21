@@ -137,6 +137,8 @@ interface ClientConfig {
     IosAppDownloadLink: string;
     IosLatestVersion: string;
     IosMinVersion: string;
+    IntuneMAMEnabled?: string;
+    IntuneScope?: string;
     LdapFirstNameAttributeSet: string;
     LdapLastNameAttributeSet: string;
     LdapLoginButtonBorderColor: string;

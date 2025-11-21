@@ -16,6 +16,7 @@ import {getTranscriptionUri, hasCaptions} from '@calls/utils';
 import {Events} from '@constants';
 import {ANDROID_VIDEO_INSET, GALLERY_FOOTER_HEIGHT, VIDEO_INSET} from '@constants/gallery';
 import {useServerUrl} from '@context/server';
+import SecurityManager from '@managers/security_manager';
 import {transformerTimingConfig} from '@screens/gallery/animation_config/timing';
 import DownloadWithAction from '@screens/gallery/footer/download_with_action';
 import {useLightboxSharedValues} from '@screens/gallery/lightbox_swipeout/context';
@@ -299,7 +300,7 @@ const VideoRenderer = ({canDownloadFiles, enableSecureFilePreview, height, index
             {hasError &&
             <VideoError
                 cacheKey={item.cacheKey}
-                canDownloadFiles={canDownloadFiles}
+                canDownloadFiles={canDownloadFiles && SecurityManager.canSaveToLocation(serverUrl, 'CameraRoll')}
                 enableSecureFilePreview={enableSecureFilePreview}
                 filename={item.name}
                 isDownloading={downloading}

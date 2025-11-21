@@ -8,6 +8,7 @@ import {nativeApplicationVersion, nativeBuildVersion} from 'expo-application';
 import {deleteAsync, documentDirectory, getInfoAsync, makeDirectoryAsync, moveAsync} from 'expo-file-system';
 import {DeviceEventEmitter, Platform} from 'react-native';
 
+import {Events} from '@constants';
 import {DatabaseType, MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
 import AppDatabaseMigrations from '@database/migration/app';
 import ServerDatabaseMigrations from '@database/migration/server';
@@ -340,9 +341,10 @@ class DatabaseManagerSingleton {
             await database.write(async () => {
                 const servers = await database.collections.get(SERVERS).query(Q.where('url', serverUrl)).fetch();
                 if (servers.length) {
-                    servers[0].update((server: ServersModel) => {
+                    await servers[0].update((server: ServersModel) => {
                         server.lastActiveAt = Date.now();
                     });
+                    DeviceEventEmitter.emit(Events.ACTIVE_SERVER_CHANGED, serverUrl);
                 }
             });
         }

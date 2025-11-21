@@ -175,6 +175,37 @@ describe('ClientUsers', () => {
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, defaultExpectedOptions, false);
     });
 
+    test('loginWithEntra', async () => {
+        const idToken = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...';
+        const deviceId = 'deviceId';
+        const expectedUrl = '/oauth/entra';
+        const expectedOptions = {
+            method: 'post',
+            body: {
+                device_id: deviceId,
+                id_token: idToken,
+            },
+            headers: {'Cache-Control': 'no-store'},
+        };
+
+        await client.loginWithEntra(idToken, deviceId);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions, false);
+
+        // Test with default deviceId
+        const defaultExpectedOptions = {
+            method: 'post',
+            body: {
+                device_id: '',
+                id_token: idToken,
+            },
+            headers: {'Cache-Control': 'no-store'},
+        };
+
+        await client.loginWithEntra(idToken);
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, defaultExpectedOptions, false);
+    });
+
     test('logout', async () => {
         const expectedUrl = `${client.getUsersRoute()}/logout`;
         const expectedOptions = {method: 'post'};

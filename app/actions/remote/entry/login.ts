@@ -4,6 +4,7 @@
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
+import IntuneManager from '@managers/intune_manager';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import SecurityManager from '@managers/security_manager';
 import WebsocketManager from '@managers/websocket_manager';
@@ -34,7 +35,8 @@ export async function loginEntry({serverUrl}: AfterLoginArgs): Promise<{error?: 
 
         const credentials = await getServerCredentials(serverUrl);
         if (credentials?.token) {
-            SecurityManager.addServer(serverUrl, clData.config, true);
+            const intunePolicy = await IntuneManager.getPolicy(serverUrl);
+            SecurityManager.addServer(serverUrl, clData.config, true, intunePolicy);
             WebsocketManager.createClient(serverUrl, credentials.token, credentials.preauthSecret);
             await WebsocketManager.initializeClient(serverUrl, 'Login');
             SecurityManager.setActiveServer(serverUrl);

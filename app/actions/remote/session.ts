@@ -1,19 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import NetInfo from '@react-native-community/netinfo';
 import {defineMessages, type IntlShape} from 'react-intl';
-import {Alert, DeviceEventEmitter, Platform, type AlertButton} from 'react-native';
+import {Alert, DeviceEventEmitter, type AlertButton} from 'react-native';
 
+import {cancelSessionNotification, findSession} from '@actions/local/session';
 import {Database, Events} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
-import PushNotifications from '@init/push_notifications';
+import IntuneManager from '@managers/intune_manager';
 import NetworkManager from '@managers/network_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getDeviceToken} from '@queries/app/global';
 import {getServerDisplayName} from '@queries/app/servers';
-import {getCurrentUserId, getExpiredSession} from '@queries/servers/system';
+import {getCurrentUserId} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
 import {resetToHome} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
@@ -26,6 +26,7 @@ import {getServerUrlAfterRedirect} from '@utils/url';
 
 import {loginEntry} from './entry';
 
+import type {Client} from '@client/rest';
 import type {LoginArgs} from '@typings/database/database';
 
 const HTTP_UNAUTHORIZED = 401;
@@ -232,30 +233,6 @@ export const logout = async (
     return {data: true};
 };
 
-export const cancelSessionNotification = async (serverUrl: string) => {
-    try {
-        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const expiredSession = await getExpiredSession(database);
-        const rechable = (await NetInfo.fetch()).isInternetReachable;
-
-        if (expiredSession?.notificationId && rechable) {
-            PushNotifications.cancelScheduleNotification(parseInt(expiredSession.notificationId, 10));
-            operator.handleSystem({
-                systems: [{
-                    id: SYSTEM_IDENTIFIERS.SESSION_EXPIRATION,
-                    value: '',
-                }],
-                prepareRecordsOnly: false,
-            });
-        }
-
-        return {};
-    } catch (e) {
-        logError('cancelSessionNotification', e);
-        return {error: e};
-    }
-};
-
 export const scheduleSessionNotification = async (serverUrl: string) => {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -303,18 +280,13 @@ export const sendPasswordResetEmail = async (serverUrl: string, email: string) =
     }
 };
 
-export const ssoLogin = async (serverUrl: string, serverDisplayName: string, serverIdentifier: string, bearerToken: string, csrfToken: string, preauthSecret?: string): Promise<LoginActionResponse> => {
+const completeSSOLogin = async (serverUrl: string, serverDisplayName: string, serverIdentifier: string, client: Client, userData?: UserProfile): Promise<LoginActionResponse> => {
     const database = DatabaseManager.appDatabase?.database;
     if (!database) {
         return {error: 'App database not found', failed: true};
     }
 
     try {
-        const client = NetworkManager.getClient(serverUrl);
-
-        client.setClientCredentials(bearerToken, preauthSecret);
-        client.setCSRFToken(csrfToken);
-
         // Setting up active database for this SSO login flow
         const server = await DatabaseManager.createServerDatabase({
             config: {
@@ -324,7 +296,9 @@ export const ssoLogin = async (serverUrl: string, serverDisplayName: string, ser
                 displayName: serverDisplayName,
             },
         });
-        const user = await client.getMe();
+
+        const user = userData || await client.getMe();
+
         await server?.operator.handleUsers({users: [user], prepareRecordsOnly: false});
         await server?.operator.handleSystem({
             systems: [{
@@ -348,93 +322,90 @@ export const ssoLogin = async (serverUrl: string, serverDisplayName: string, ser
     }
 };
 
-export const ssoLoginWithCodeExchange = async (serverUrl: string, serverDisplayName: string, serverIdentifier: string, loginCode: string, samlChallenge: Pick<SAMLChallenge, 'codeVerifier' | 'state'>, preauthSecret?: string): Promise<LoginActionResponse> => {
-    const database = DatabaseManager.appDatabase?.database;
-    if (!database) {
-        return {error: 'App database not found', failed: true};
-    }
+export const ssoLogin = async (serverUrl: string, serverDisplayName: string, serverIdentifier: string, bearerToken: string, csrfToken: string, preauthSecret?: string): Promise<LoginActionResponse> => {
+    const client = NetworkManager.getClient(serverUrl);
 
-    try {
-        const client = NetworkManager.getClient(serverUrl);
-        const {token, csrf} = await client.exchangeSsoLoginCode(loginCode, samlChallenge.codeVerifier, samlChallenge.state);
+    client.setClientCredentials(bearerToken, preauthSecret);
+    client.setCSRFToken(csrfToken);
 
-        client.setClientCredentials(token, preauthSecret);
-        client.setCSRFToken(csrf);
-
-        const server = await DatabaseManager.createServerDatabase({
-            config: {
-                dbName: serverUrl,
-                serverUrl,
-                identifier: serverIdentifier,
-                displayName: serverDisplayName,
-            },
-        });
-        const user = await client.getMe();
-        await server?.operator.handleUsers({users: [user], prepareRecordsOnly: false});
-        await server?.operator.handleSystem({
-            systems: [{
-                id: Database.SYSTEM_IDENTIFIERS.CURRENT_USER_ID,
-                value: user.id,
-            }],
-            prepareRecordsOnly: false,
-        });
-    } catch (error) {
-        logDebug('error on ssoLoginWithCodeExchange', getFullErrorMessage(error));
-        return {error, failed: true};
-    }
-
-    try {
-        await addPushProxyVerificationStateFromLogin(serverUrl);
-        const {error} = await loginEntry({serverUrl});
-        await DatabaseManager.setActiveServerDatabase(serverUrl);
-        return {error, failed: false};
-    } catch (error) {
-        return {error, failed: false};
-    }
+    const result = await completeSSOLogin(serverUrl, serverDisplayName, serverIdentifier, client);
+    return result;
 };
 
-export async function findSession(serverUrl: string, sessions: Session[]) {
+export const ssoLoginWithCodeExchange = async (serverUrl: string, serverDisplayName: string, serverIdentifier: string, loginCode: string, samlChallenge: Pick<SAMLChallenge, 'codeVerifier' | 'state'>, preauthSecret?: string): Promise<LoginActionResponse> => {
+    const client = NetworkManager.getClient(serverUrl);
+    const {token, csrf} = await client.exchangeSsoLoginCode(loginCode, samlChallenge.codeVerifier, samlChallenge.state);
+
+    client.setClientCredentials(token, preauthSecret);
+    client.setCSRFToken(csrf);
+
+    const result = await completeSSOLogin(serverUrl, serverDisplayName, serverIdentifier, client);
+    return result;
+};
+
+export const nativeEntraLogin = async (serverUrl: string, serverDisplayName: string, serverIdentifier: string, intuneScope: string): Promise<LoginActionResponse> => {
     try {
-        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const expiredSession = await getExpiredSession(database);
+        // Step 1: Acquire MSAL tokens with IntuneScope
+        const tokens = await IntuneManager.login(serverUrl, [intuneScope]);
+        const {accessToken, identity} = tokens;
+
+        // Step 2: POST accessToken to /oauth/entra to exchange for session token
+        const client = NetworkManager.getClient(serverUrl);
         const deviceToken = await getDeviceToken();
+        let csrfToken: string;
 
-        // First try and find the session by the given identifier  hyqddef7jjdktqiyy36gxa8sqy
-        let session = sessions.find((s) => s.id === expiredSession?.id);
-        if (session) {
-            return session;
-        }
+        try {
+            await client.loginWithEntra(accessToken, deviceToken);
+            csrfToken = await getCSRFFromCookie(serverUrl);
+        } catch (error) {
+            // Handle 401: Invalid/expired token - try refreshing
+            if (isErrorWithStatusCode(error) && error.status_code === 401) {
+                logDebug('nativeEntraLogin: Token expired, retrying');
+                const refreshedTokens = await IntuneManager.login(serverUrl, [intuneScope]);
+                await client.loginWithEntra(refreshedTokens.accessToken, deviceToken);
+                csrfToken = await getCSRFFromCookie(serverUrl);
+            } else if (isErrorWithStatusCode(error) && error.status_code === 409) {
+                // Handle 409: User locked/disabled
+                throw new Error('Your account is locked or disabled. Please contact your administrator.');
+            } else if (isErrorWithStatusCode(error) && error.status_code === 412) {
+                // Handle 412: MAM enrollment required
+                logDebug('nativeEntraLogin: MAM enrollment required by server');
+                await IntuneManager.enrollServer(serverUrl, identity);
 
-        // Next try and find the session by deviceId
-        if (deviceToken) {
-            session = sessions.find((s) => s.device_id === deviceToken);
-            if (session) {
-                return session;
+                // Retry login after enrollment
+                await client.loginWithEntra(accessToken, deviceToken);
+                csrfToken = await getCSRFFromCookie(serverUrl);
+            } else {
+                throw error;
             }
         }
 
-        // Next try and find the session by the CSRF token
-        const csrfToken = await getCSRFFromCookie(serverUrl);
-        if (csrfToken) {
-            session = sessions.find((s) => s.props?.csrf === csrfToken);
-            if (session) {
-                return session;
+        // Step 3: Set credentials on client
+        // client.setClientCredentials(sessionToken, preauthSecret);
+        client.setCSRFToken(csrfToken);
+
+        // Step 4: Complete SSO login flow (sets up database, etc.)
+        const result = await completeSSOLogin(serverUrl, serverDisplayName, serverIdentifier, client);
+
+        // Step 5: Enroll in MAM if not already enrolled (if 412 was not triggered)
+        if (result && !result.failed) {
+            try {
+                const isManaged = await IntuneManager.isManagedServer(serverUrl);
+                if (!isManaged) {
+                    await IntuneManager.enrollServer(serverUrl, identity);
+                }
+            } catch (error) {
+                logWarning('Intune MAM enrollment failed, MAM protection may not be configured properly', error);
+                throw error;
             }
         }
 
-        // Next try and find the session based on the OS
-        // if multiple sessions exists with the same os type this can be inaccurate
-        session = sessions.find((s) => s.props?.os.toLowerCase() === Platform.OS);
-        if (session) {
-            return session;
-        }
-    } catch (e) {
-        logError('findSession', e);
+        return result;
+    } catch (error) {
+        logError('nativeEntraLogin failed', error);
+        return {error, failed: true};
     }
-
-    // At this point we did not find the session
-    return undefined;
-}
+};
 
 export const getUserLoginType = async (serverUrl: string, loginId: string) => {
     try {

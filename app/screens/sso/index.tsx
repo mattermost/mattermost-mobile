@@ -2,12 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useState} from 'react';
-import {StyleSheet, View} from 'react-native';
+import {Platform, StyleSheet, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-import {ssoLogin, ssoLoginWithCodeExchange} from '@actions/remote/session';
+import {nativeEntraLogin, ssoLogin, ssoLoginWithCodeExchange} from '@actions/remote/session';
 import {Screens, Sso} from '@constants';
+import License from '@constants/license';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {useScreenTransitionAnimation} from '@hooks/screen_transition_animation';
@@ -16,10 +17,12 @@ import SecurityManager from '@managers/security_manager';
 import Background from '@screens/background';
 import {dismissModal, popTopScreen, resetToHome} from '@screens/navigation';
 import {getFullErrorMessage, isErrorWithUrl} from '@utils/errors';
+import {isMinimumLicenseTier} from '@utils/helpers';
 import {logWarning} from '@utils/log';
 
 import SSOAuthentication from './sso_authentication';
 import SSOAuthenticationWithExternalBrowser from './sso_authentication_with_external_browser';
+import SSOEntra from './sso_entra';
 
 import type {LaunchProps} from '@typings/launch';
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -45,11 +48,13 @@ const styles = StyleSheet.create({
 
 const SSO = ({
     closeButtonId, componentId, config, extra,
-    launchError, launchType, serverDisplayName,
+    launchError, launchType, license, serverDisplayName,
     serverPreauthSecret, serverUrl, ssoType, theme,
 }: SSOProps) => {
     const [loginError, setLoginError] = useState<string>('');
+
     let loginUrl = '';
+    let shouldUseNativeEntra = false;
     switch (ssoType) {
         case Sso.GOOGLE: {
             loginUrl = `${serverUrl}/oauth/google/mobile_login`;
@@ -65,6 +70,9 @@ const SSO = ({
         }
         case Sso.OFFICE365: {
             loginUrl = `${serverUrl}/oauth/office365/mobile_login`;
+            shouldUseNativeEntra = Platform.OS === 'ios' && config.IntuneMAMEnabled === 'true' &&
+                Boolean(config.IntuneScope) &&
+                isMinimumLicenseTier(license, License.SKU_SHORT_NAME.EnterpriseAdvanced);
             break;
         }
         case Sso.OPENID: {
@@ -75,7 +83,7 @@ const SSO = ({
             break;
     }
 
-    const onLoadEndError = (e: unknown) => {
+    const onLoadEndError = useCallback((e: unknown) => {
         logWarning('Failed to set store from local data', e);
         if (typeof e === 'string') {
             setLoginError(e);
@@ -87,7 +95,7 @@ const SSO = ({
             errorMessage += `\nURL: ${e.url}`;
         }
         setLoginError(errorMessage);
-    };
+    }, []);
 
     const doSSOLogin = async (bearerToken: string, csrfToken: string) => {
         const result: LoginActionResponse = await ssoLogin(serverUrl!, serverDisplayName, config.DiagnosticId!, bearerToken, csrfToken, serverPreauthSecret);
@@ -107,10 +115,26 @@ const SSO = ({
         goToHome(result.error);
     };
 
-    const goToHome = (error?: unknown) => {
+    const goToHome = useCallback((error?: unknown) => {
         const hasError = launchError || Boolean(error);
         resetToHome({extra, launchError: hasError, launchType, serverUrl});
-    };
+    }, [extra, launchError, launchType, serverUrl]);
+
+    const doEntraLogin = useCallback(async () => {
+        const result = await nativeEntraLogin(
+            serverUrl!,
+            serverDisplayName,
+            config.DiagnosticId!,
+            config.IntuneScope!,
+        );
+
+        if (result?.error && result.failed) {
+            onLoadEndError(result.error);
+            return false;
+        }
+        goToHome();
+        return true;
+    }, [serverUrl, serverDisplayName, config.DiagnosticId, config.IntuneScope, goToHome, onLoadEndError]);
 
     const dismiss = useCallback(() => {
         if (serverUrl) {
@@ -143,7 +167,18 @@ const SSO = ({
     };
 
     let authentication;
-    if (config.MobileExternalBrowser === 'true') {
+
+    // Don't show web SSO if native Entra login is in progress or should be used
+    if (shouldUseNativeEntra) {
+        authentication = (
+            <SSOEntra
+                doEntraLogin={doEntraLogin}
+                loginError={loginError}
+                setLoginError={setLoginError}
+                theme={theme}
+            />
+        );
+    } else if (config.MobileExternalBrowser === 'true') {
         authentication = (
             <SSOAuthenticationWithExternalBrowser
                 {...props}

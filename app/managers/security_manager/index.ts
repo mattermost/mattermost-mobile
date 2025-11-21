@@ -3,18 +3,33 @@
 
 import Emm from '@mattermost/react-native-emm';
 import {isRootedExperimentalAsync} from 'expo-device';
-import {createIntl, defineMessages} from 'react-intl';
-import {Alert, type AlertButton, AppState, type AppStateStatus, Platform} from 'react-native';
+import {AppState, DeviceEventEmitter, type AppStateStatus, type EventSubscription} from 'react-native';
 
-import {switchToServer} from '@actions/app/server';
+import {terminateSession} from '@actions/local/session';
+import {getCurrentUserLocale} from '@actions/local/user';
 import {logout} from '@actions/remote/session';
-import {Preferences} from '@constants';
+import {Events} from '@constants';
+import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 import {getServerCredentials} from '@init/credentials';
 import ManagedApp from '@init/managed_app';
+import IntuneManager from '@managers/intune_manager';
+import {
+    IntuneConditionalLaunchBlockedReasons,
+    type IntuneAuthRequiredEvent,
+    type IntuneConditionalLaunchBlockedEvent,
+    type IntuneEnrollmentChangedEvent,
+    type IntuneIdentitySwitchRequiredEvent,
+    type IntunePolicy,
+    type IntunePolicyChangedEvent,
+    type IntuneWipeRequestedEvent,
+} from '@managers/intune_manager/types';
+import {queryAllActiveServers} from '@queries/app/servers';
+import {getSecurityConfig} from '@queries/servers/system';
+import {messages, showAuthenticationRequiredAlert, showBiometricFailureAlert, showBiometricFailureAlertForOrganization, showConditionalAccessAlert, showDeviceNotTrustedAlert, showIdentitySwitchRequiredAlert, showNotSecuredAlert} from '@utils/alerts';
 import {toMilliseconds} from '@utils/datetime';
 import {isMainActivity} from '@utils/helpers';
-import {logError} from '@utils/log';
+import {logDebug, logError} from '@utils/log';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
@@ -25,64 +40,10 @@ type SecurityManagerServerConfig = {
     authenticated?: boolean;
     lastAccessed?: number;
     siteName?: string;
+    intunePolicy?: IntunePolicy | null;
 };
 
 type SecurityManagerServersCollection = Record<string, SecurityManagerServerConfig>;
-
-const messages = defineMessages({
-    not_secured_vendor_ios: {
-        id: 'mobile.managed.not_secured.ios.vendor',
-        defaultMessage: 'This device must be secured with biometrics or passcode to use {vendor}.\n\nGo to Settings > Face ID & Passcode.',
-    },
-    not_secured_vendor_android: {
-        id: 'mobile.managed.not_secured.android.vendor',
-        defaultMessage: 'This device must be secured with a screen lock to use {vendor}.',
-    },
-    not_secured_ios: {
-        id: 'mobile.managed.not_secured.ios',
-        defaultMessage: 'This device must be secured with biometrics or passcode to use Mattermost.\n\nGo to Settings > Face ID & Passcode.',
-    },
-    not_secured_android: {
-        id: 'mobile.managed.not_secured.android',
-        defaultMessage: 'This device must be secured with a screen lock to use Mattermost.',
-    },
-    blocked_by: {
-        id: 'mobile.managed.blocked_by',
-        defaultMessage: 'Blocked by {vendor}',
-    },
-    androidSettings: {
-        id: 'mobile.managed.settings',
-        defaultMessage: 'Go to settings',
-    },
-    securedBy: {
-        id: 'mobile.managed.secured_by',
-        defaultMessage: 'Secured by {vendor}',
-    },
-    logout: {
-        id: 'mobile.managed.logout',
-        defaultMessage: 'Logout',
-    },
-    ok: {
-        id: 'mobile.managed.OK',
-        defaultMessage: 'OK',
-    },
-    switchServer: {
-        id: 'mobile.managed.switch_server',
-        defaultMessage: 'Switch server',
-    },
-    exit: {
-        id: 'mobile.managed.exit',
-        defaultMessage: 'Exit',
-    },
-    jailbreak: {
-        id: 'mobile.managed.jailbreak',
-        defaultMessage: 'Jailbroken or rooted devices are not trusted by {vendor}.',
-    },
-    biometric_failed: {
-        id: 'mobile.managed.biometric_failed',
-        defaultMessage: 'Biometric or Passcode authentication failed.',
-    },
-});
 
 class SecurityManagerSingleton {
     activeServer?: string;
@@ -90,37 +51,118 @@ class SecurityManagerSingleton {
     backgroundSince = 0;
     previousAppState?: AppStateStatus;
     initialized = false;
+    started = false;
+    intunePolicySubscription?: EventSubscription;
+    intuneEnrollmentSubscription?: EventSubscription;
+    intuneWipeSubscription?: EventSubscription;
+    intuneAuthSubscription?: EventSubscription;
+    intuneBlockedSubscription?: EventSubscription;
+    intuneIdentitySwitchSubscription?: EventSubscription;
 
     constructor() {
         AppState.addEventListener('change', this.onAppStateChange);
+        DeviceEventEmitter.addListener(Events.ACTIVE_SERVER_CHANGED, this.setActiveServer);
+        DeviceEventEmitter.addListener(Events.LICENSE_CHANGED, this.onLicenseChanged);
+        DeviceEventEmitter.addListener(Events.CONFIG_CHANGED, this.onConfigChanged);
+
+        // Setup Intune event listeners
+        this.intunePolicySubscription = IntuneManager.subscribeToPolicyChanges(this.onIntunePolicyChanged);
+        this.intuneEnrollmentSubscription = IntuneManager.subscribeToEnrollmentChanges(this.onEnrollmentChanged);
+        this.intuneWipeSubscription = IntuneManager.subscribeToWipeRequests(this.onWipeRequested);
+        this.intuneAuthSubscription = IntuneManager.subscribeToAuthRequired(this.onAuthRequired);
+        this.intuneBlockedSubscription = IntuneManager.subscribeToConditionalLaunchBlocked(this.onConditionalLaunchBlocked);
+        this.intuneIdentitySwitchSubscription = IntuneManager.subscribeToIdentitySwitchRequired(this.onIdentitySwitchRequired);
     }
 
     /**
-     * Initializes the class with existing servers on app launch.
-     * Should be called when the app starts.
+     * Initializes SecurityManager by loading server configs and Intune policies
+     * Should be called during app startup in app/init/app.ts
      */
-    async init(servers: Record<string, SecurityClientConfig>, activeServer?: string) {
+    async init() {
         if (this.initialized) {
             return;
         }
 
-        this.initialized = true;
-        const added = new Set<string>();
-        for (const [server, config] of Object.entries(servers)) {
-            if (!this.serverConfig[server]) {
-                this.addServer(server, config);
-                added.add(server);
+        logDebug('SecurityManager: Initializing');
+
+        const loadServerConfig = async (serverUrl: string) => {
+            try {
+                // Get security config from server database
+                const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+                const config = await getSecurityConfig(database);
+
+                // Get Intune policy if available
+                const intunePolicy = await IntuneManager.getPolicy(serverUrl);
+
+                // Add server to config map
+                this.addServer(serverUrl, config, false, intunePolicy);
+            } catch (error) {
+                logError('SecurityManager: Failed to load config for server', {error});
             }
+        };
+
+        try {
+            // Query all active servers from app database
+            const servers = await queryAllActiveServers()?.fetch();
+            if (!servers || servers.length === 0) {
+                logDebug('SecurityManager: No active servers found');
+                this.initialized = true;
+                return;
+            }
+
+            // Fetch configs and policies for all servers in parallel
+            await Promise.all(servers.map((server) => loadServerConfig(server.url)));
+        } catch (error) {
+            logError('SecurityManager: Failed to initialize', error);
         }
 
-        if (activeServer && (!added.has(activeServer) || !this.activeServer)) {
-            this.activeServer = activeServer;
-            this.setScreenCapturePolicy(activeServer);
-            const isJailbroken = await this.isDeviceJailbroken(activeServer);
-            if (!isJailbroken) {
-                this.authenticateWithBiometricsIfNeeded(activeServer);
-            }
+        this.initialized = true;
+    }
+
+    /**
+     * Start method applies security policies to the active server
+     * Should be called from Home screen after rendering
+     */
+    async start() {
+        if (this.started) {
+            return;
         }
+
+        this.started = true;
+        const activeServer = await DatabaseManager.getActiveServerUrl();
+        if (!activeServer) {
+            logDebug('SecurityManager: No active server to start');
+            return;
+        }
+
+        this.activeServer = activeServer;
+
+        // Set current Intune identity
+        await IntuneManager.setCurrentIdentity(activeServer);
+
+        // Apply screen capture policy
+        this.setScreenCapturePolicy(activeServer);
+
+        // Check jailbreak protection
+        const isJailbroken = await this.isDeviceJailbroken(activeServer);
+        if (!isJailbroken) {
+            // Prompt for biometric authentication if needed
+            await this.authenticateWithBiometricsIfNeeded(activeServer);
+        }
+    }
+
+    /**
+     * Cleanup event listeners (for testing or shutdown)
+     */
+    cleanup() {
+        logDebug('SecurityManager: Cleaning up');
+
+        this.intunePolicySubscription?.remove();
+        this.intuneEnrollmentSubscription?.remove();
+        this.intuneWipeSubscription?.remove();
+        this.intuneAuthSubscription?.remove();
+        this.intuneBlockedSubscription?.remove();
+        this.intuneIdentitySwitchSubscription?.remove();
     }
 
     /**
@@ -156,6 +198,191 @@ class SecurityManagerSingleton {
     };
 
     /**
+     * Handles config changes from app
+     */
+    onConfigChanged = async (event: {serverUrl: string; config: SecurityClientConfig}) => {
+        const {serverUrl, config} = event;
+        logDebug('SecurityManager: Config changed');
+
+        // Update server config
+        const existingConfig = this.serverConfig[serverUrl] || {};
+        const intunePolicy = await IntuneManager.getPolicy(serverUrl);
+
+        this.serverConfig[serverUrl] = {
+            ...existingConfig,
+            siteName: config.SiteName,
+            Biometrics: config.MobileEnableBiometrics === 'true',
+            JailbreakProtection: config.MobileJailbreakProtection === 'true',
+            PreventScreenCapture: config.MobilePreventScreenCapture === 'true',
+            intunePolicy,
+        };
+
+        if (serverUrl === this.activeServer) {
+            this.setScreenCapturePolicy(serverUrl);
+        }
+    };
+
+    onLicenseChanged = async (event: {serverUrl: string; license: ClientLicense}) => {
+        const {serverUrl, license} = event;
+
+        logDebug('SecurityManager: License changed', {isLicensed: license.IsLicensed, sku: license.SkuShortName});
+
+        this.serverConfig[serverUrl] = this.serverConfig[serverUrl] || {};
+
+        const intunePolicy = await IntuneManager.getPolicy(serverUrl);
+        this.serverConfig[serverUrl].intunePolicy = intunePolicy;
+
+        IntuneManager.setCurrentIdentity(serverUrl);
+    };
+
+    /**
+     * Handles Intune policy changes from IntuneManager
+     */
+    onIntunePolicyChanged = (event: IntunePolicyChangedEvent) => {
+        if (!this.initialized) {
+            return;
+        }
+
+        const {changed, removed, policy, serverUrls} = event;
+
+        // Update cached Intune policies for affected servers
+        for (const serverUrl of serverUrls) {
+            if (!this.serverConfig[serverUrl]) {
+                this.serverConfig[serverUrl] = {};
+            }
+
+            if (removed) {
+                this.serverConfig[serverUrl].intunePolicy = null;
+            } else if (changed && policy) {
+                this.serverConfig[serverUrl].intunePolicy = policy;
+            }
+        }
+
+        // Only re-apply policies if the active server is affected
+        if (this.activeServer && serverUrls.includes(this.activeServer)) {
+            this.setScreenCapturePolicy(this.activeServer);
+        }
+    };
+
+    /**
+     * Handles enrollment status changes from Intune SDK
+     */
+    onEnrollmentChanged = (event: IntuneEnrollmentChangedEvent) => {
+        const {enrolled, reason, serverUrls} = event;
+
+        logDebug('SecurityManager: Enrollment changed', {enrolled, reason});
+
+        if (enrolled) {
+            // Successful enrollment
+            this.handleEnrollmentSuccess(serverUrls);
+        } else {
+            // Unenrollment - remove intunePolicy from affected servers
+            this.handleUnenrollment(serverUrls, reason);
+        }
+    };
+
+    /**
+     * Handles selective wipe requests from Intune SDK
+     */
+    onWipeRequested = async (event: IntuneWipeRequestedEvent) => {
+        const {serverUrls} = event;
+
+        logDebug('SecurityManager: Wipe requested', {serverCount: serverUrls.length});
+
+        for await (const serverUrl of serverUrls) {
+            if (serverUrl === this.activeServer) {
+                // We do this one last to avoid issues with active server changes
+                continue;
+            }
+
+            const credentials = await getServerCredentials(serverUrl);
+            if (credentials) {
+                await this.performSelectiveWipe(serverUrl, true);
+            }
+        }
+
+        // Finally wipe active server if needed
+        if (this.activeServer && serverUrls.includes(this.activeServer)) {
+            const activeServerCredentials = await getServerCredentials(this.activeServer!);
+            if (activeServerCredentials) {
+                await this.performSelectiveWipe(this.activeServer, false);
+                this.removeServer(this.activeServer);
+            }
+        }
+    };
+
+    /**
+     * Handles authentication required events from Intune SDK
+     */
+    onAuthRequired = async (event: IntuneAuthRequiredEvent) => {
+        const {oid, serverUrls, reason} = event;
+
+        logDebug('SecurityManager: Auth required', {serverCount: serverUrls.length, reason});
+
+        Emm.enableBlurScreen(true);
+        Emm.applyBlurEffect(20);
+        this.onWipeRequested({oid, serverUrls});
+
+        const locale = await getCurrentUserLocale(serverUrls[0]);
+        showAuthenticationRequiredAlert(reason, locale, () => {
+            Emm.removeBlurEffect();
+            Emm.enableBlurScreen(false);
+        });
+    };
+
+    /**
+     * Handles conditional launch blocked events from Intune SDK
+     */
+    onConditionalLaunchBlocked = async (event: IntuneConditionalLaunchBlockedEvent) => {
+        const {oid, reason, serverUrls} = event;
+
+        logDebug('SecurityManager: Conditional launch blocked', {reason, serverCount: serverUrls.length});
+
+        if (reason === IntuneConditionalLaunchBlockedReasons.LAUNCH_BLOCKED) {
+            // Conditional launch policy blocked (OS version, jailbreak, threat level)
+            // Trigger selective wipe of managed data
+            Emm.enableBlurScreen(true);
+            Emm.applyBlurEffect(20);
+
+            this.onWipeRequested({oid, serverUrls});
+            const locale = await getCurrentUserLocale(serverUrls[0]);
+            showConditionalAccessAlert(locale, () => {
+                Emm.removeBlurEffect();
+                Emm.enableBlurScreen(false);
+            });
+        } else if (reason === IntuneConditionalLaunchBlockedReasons.LAUNCH_CANCELED) {
+            // User canceled conditional launch (dismissed PIN/auth prompt)
+            // Allow retry with biometric prompt
+            await new Promise((resolve) => setTimeout(resolve, 250));
+            Emm.enableBlurScreen(true);
+            Emm.applyBlurEffect(20);
+
+            const locale = await getCurrentUserLocale(serverUrls[0]);
+
+            await showBiometricFailureAlertForOrganization(serverUrls[0], locale, async () => {
+                Emm.removeBlurEffect();
+
+                // Retry by setting current identity again
+                await IntuneManager.setCurrentIdentity(serverUrls[0]);
+            });
+            Emm.enableBlurScreen(false);
+        }
+    };
+
+    /**
+     * Handles identity switch required events from Intune SDK
+     */
+    onIdentitySwitchRequired = async (event: IntuneIdentitySwitchRequiredEvent) => {
+        const {oid, reason, serverUrls} = event;
+
+        logDebug('SecurityManager: Identity switch required', {reason, serverCount: serverUrls.length});
+        const locale = await getCurrentUserLocale(serverUrls[0]);
+        this.onWipeRequested({oid, serverUrls});
+
+        showIdentitySwitchRequiredAlert(locale);
+    };
+
+    /**
      * Checks if EMM is already enabled and setup
      * to handle biometric / passcode authentication.
      */
@@ -181,6 +408,7 @@ class SecurityManagerSingleton {
 
     /**
      * Get the configuration of a server to prevent screenshots.
+     * MAM policy takes precedence over server config.
      */
     isScreenCapturePrevented = (server: string) => {
         const config = this.getServerConfig(server);
@@ -188,11 +416,19 @@ class SecurityManagerSingleton {
             return false;
         }
 
+        // Check Intune MAM policy first - MAM always wins
+        if (config.intunePolicy?.isScreenCaptureAllowed === false) {
+            // MAM explicitly disallows screen capture, so server policy doesn't apply
+            return false;
+        }
+
+        // Fall back to server config if no MAM policy applies
         return config.PreventScreenCapture == null ? false : config.PreventScreenCapture;
     };
 
     /**
      * Checks if the device is Jailbroken or Rooted.
+     * Skips check if MAM controls jailbreak detection.
      */
     isDeviceJailbroken = async (server: string, siteName?: string) => {
         if (this.isJalbreakProtectionHandledByEmm()) {
@@ -204,12 +440,16 @@ class SecurityManagerSingleton {
             return false;
         }
 
-        const locale = DEFAULT_LOCALE;
-        const translations = getTranslations(locale);
+        // Skip check if MAM policy is active - MAM handles jailbreak detection
+        if (config?.intunePolicy != null) {
+            return false;
+        }
+
+        // Fall back to server config if MAM doesn't control jailbreak detection
         if (config?.JailbreakProtection || siteName) {
             const isRooted = await isRootedExperimentalAsync();
             if (isRooted) {
-                this.showDeviceNotTrustedAlert(server, siteName, translations);
+                showDeviceNotTrustedAlert(server, siteName, DEFAULT_LOCALE);
                 return true;
             }
         }
@@ -220,14 +460,16 @@ class SecurityManagerSingleton {
     /**
      * Add the config for a server.
      */
-    addServer = (server: string, config?: SecurityClientConfig, authenticated = false) => {
+    addServer = async (server: string, config?: SecurityClientConfig, authenticated = false, intunePolicy: IntunePolicy | null = null) => {
         const mobileConfig: SecurityManagerServerConfig = {
             siteName: config?.SiteName,
             Biometrics: config?.MobileEnableBiometrics === 'true',
             JailbreakProtection: config?.MobileJailbreakProtection === 'true',
             PreventScreenCapture: config?.MobilePreventScreenCapture === 'true',
             authenticated,
+            intunePolicy,
         };
+
         this.serverConfig[server] = mobileConfig;
     };
 
@@ -253,6 +495,8 @@ class SecurityManagerSingleton {
      * Switches the active server.
      */
     setActiveServer = (server: string) => {
+        IntuneManager.setCurrentIdentity(server);
+
         if (this.activeServer === server) {
             // active server is not changing, so no need to do anything here
             return;
@@ -270,34 +514,8 @@ class SecurityManagerSingleton {
     };
 
     /**
-     * Gets the last accessed server.
-     */
-    getLastAccessedServer = (otherServers: string[]) => {
-        const lastAccessed = otherServers.map((s) => this.serverConfig[s].lastAccessed).sort((a: number, b: number) => b - a)[0];
-        return Object.keys(this.serverConfig).find((s) => this.serverConfig[s].lastAccessed === lastAccessed);
-    };
-
-    /**
-     * Switches to the previous server.
-     */
-    goToPreviousServer = async (otherServers: string[]) => {
-        // Switch to last accessed server
-        const lastAccessedServer = this.getLastAccessedServer(otherServers);
-        if (lastAccessedServer) {
-            const theme = Preferences.THEMES.denim;
-            const locale = DEFAULT_LOCALE;
-
-            const intl = createIntl({
-                locale,
-                defaultLocale: DEFAULT_LOCALE,
-                messages: getTranslations(locale),
-            });
-            await switchToServer(lastAccessedServer, theme, intl);
-        }
-    };
-
-    /**
      * Determines if biometric authentication should be prompted.
+     * MAM policy takes precedence over server config.
      */
     authenticateWithBiometricsIfNeeded = async (server: string) => {
         if (this.isAuthenticationHandledByEmm()) {
@@ -309,6 +527,12 @@ class SecurityManagerSingleton {
             return true;
         }
 
+        // Check Intune MAM policy first - if MAM requires PIN, skip server config
+        if (config.intunePolicy?.isPINRequired === true) {
+            return true;
+        }
+
+        // Fall back to server config if MAM doesn't require PIN
         if (config?.Biometrics) {
             const lastAccessed = config?.lastAccessed ?? 0;
             const timeSinceLastAccessed = Date.now() - lastAccessed;
@@ -333,12 +557,17 @@ class SecurityManagerSingleton {
             return true;
         }
 
+        // Check Intune MAM policy first - if MAM requires PIN, skip server config
+        if (config?.intunePolicy?.isPINRequired === true) {
+            return true;
+        }
+
         const locale = DEFAULT_LOCALE;
         const translations = getTranslations(locale);
 
         const isSecured = await Emm.isDeviceSecured();
         if (!isSecured) {
-            await this.showNotSecuredAlert(server, siteName, translations);
+            await showNotSecuredAlert(server, siteName, locale);
             return false;
         }
         const shouldBlurOnAuthenticate = server === this.activeServer && this.isScreenCapturePrevented(server);
@@ -359,7 +588,7 @@ class SecurityManagerSingleton {
             }
         } catch (err) {
             logError('Failed to authenticate with biometrics', err);
-            this.showBiometricFailureAlert(server, shouldBlurOnAuthenticate, siteName, translations);
+            showBiometricFailureAlert(server, shouldBlurOnAuthenticate, siteName, locale);
             return false;
         }
 
@@ -390,130 +619,85 @@ class SecurityManagerSingleton {
     };
 
     /**
-     * Builds the alert options for the alert.
+     * Checks if saving to a location is allowed by Intune policy.
      */
-    buildAlertOptions = async (server: string, translations: Record<string, string>, callback?: (value: boolean) => void) => {
-        const buttons: AlertButton[] = [];
-        const hasSessionToServer = await getServerCredentials(server);
-        if (server && hasSessionToServer) {
-            buttons.push({
-                text: translations[messages.logout.id],
-                style: 'destructive',
-                onPress: async () => {
-                    await logout(server, undefined);
-                    callback?.(true);
-                },
-            });
+    canSaveToLocation = (serverUrl: string, location: keyof IntunePolicy['allowedSaveLocations']) => {
+        const policy = this.serverConfig[serverUrl]?.intunePolicy;
+        if (!policy) {
+            return true;
         }
 
-        const otherServers = Object.keys(this.serverConfig).filter((s) => s !== server);
-        if (otherServers.length > 0) {
-            if (otherServers.length === 1 && otherServers[0] === this.activeServer) {
-                buttons.push({
-                    text: translations[messages.ok.id],
-                    style: 'cancel',
-                    onPress: () => {
-                        callback?.(true);
-                    },
-                });
-            } else {
-                buttons.push({
-                    text: translations[messages.switchServer.id],
-                    style: 'cancel',
-                    onPress: () => {
-                        this.goToPreviousServer(otherServers);
-                        callback?.(true);
-                    },
-                });
-            }
-        }
-
-        if (buttons.length === 0) {
-            buttons.push({
-                text: translations[messages.exit.id],
-                style: 'destructive',
-                onPress: () => {
-                    Emm.exitApp();
-                },
-            });
-        }
-
-        return buttons;
+        return policy.allowedSaveLocations[location];
     };
 
-    showDeviceNotTrustedAlert = async (server: string, siteName: string | undefined, translations: Record<string, string>) => {
-        const buttons = await this.buildAlertOptions(server, translations);
-        const securedBy = siteName || this.getServerConfig(server)?.siteName || 'Mattermost';
+    // ============================================================================
+    // Helper Methods for Intune Event Handling
+    // ============================================================================
 
-        Alert.alert(
-            translations[messages.blocked_by.id].replace('{vendor}', securedBy),
-            translations[messages.jailbreak.id].
-                replace('{vendor}', securedBy),
-            buttons,
-            {cancelable: false},
-        );
+    /**
+     * Handle successful enrollment
+     */
+    private handleEnrollmentSuccess = async (serverUrls: string[]) => {
+        logDebug('SecurityManager: Handling enrollment success', {serverCount: serverUrls.length});
+
+        // Fetch policy for first server (all servers for same identity share policy)
+        const policy = await IntuneManager.getPolicy(serverUrls[0]);
+        logDebug('SecurityManager: Fetched policy after enrollment', {policy});
+
+        // Update policy for all affected servers
+        for (const serverUrl of serverUrls) {
+            if (!this.serverConfig[serverUrl]) {
+                this.serverConfig[serverUrl] = {};
+            }
+            this.serverConfig[serverUrl].intunePolicy = policy;
+        }
+
+        // Set current identity if any affected server is active
+        const currentServer = await DatabaseManager.getActiveServerUrl();
+        if (currentServer && serverUrls.includes(currentServer)) {
+            await IntuneManager.setCurrentIdentity(currentServer);
+            this.setScreenCapturePolicy(currentServer);
+        }
     };
 
     /**
-     * Shows an alert when the device does not have biometrics or passcode set.
+     * Handle unenrollment - remove intunePolicy from affected servers
      */
-    showNotSecuredAlert = async (server: string, siteName: string | undefined, translations: Record<string, string>) => {
-        const buttons: AlertButton[] = [];
-        const config = this.serverConfig[server];
-        const securedBy = siteName || config?.siteName || 'Mattermost';
+    private handleUnenrollment = async (serverUrls: string[], reason?: string) => {
+        logDebug('SecurityManager: Handling unenrollment', {serverCount: serverUrls.length, reason});
 
-        if (Platform.OS === 'android') {
-            buttons.push({
-                text: translations[messages.androidSettings.id],
-                onPress: () => {
-                    Emm.openSecuritySettings();
-                },
-            });
+        // Remove intunePolicy from all affected servers
+        for (const serverUrl of serverUrls) {
+            if (this.serverConfig[serverUrl]) {
+                this.serverConfig[serverUrl].intunePolicy = null;
+            }
         }
 
-        const alertButtons = await this.buildAlertOptions(server, translations);
-        buttons.push(...alertButtons);
-
-        let message;
-        if (config?.siteName || siteName) {
-            const key = Platform.select({ios: messages.not_secured_vendor_ios.id, default: messages.not_secured_vendor_android.id});
-            message = translations[key].replace('{vendor}', securedBy);
-        } else {
-            const key = Platform.select({ios: messages.not_secured_ios.id, default: messages.not_secured_android.id});
-            message = translations[key];
+        // Re-apply policies if the active server is affected
+        const currentServer = await DatabaseManager.getActiveServerUrl();
+        if (currentServer && serverUrls.includes(currentServer)) {
+            this.setScreenCapturePolicy(currentServer);
         }
-
-        Alert.alert(
-            translations[messages.blocked_by.id].replace('{vendor}', securedBy),
-            message,
-            buttons,
-            {cancelable: false},
-        );
     };
 
     /**
-     * Shows an alert when biometric authentication fails.
+     * Perform selective wipe for affected servers
      */
-    showBiometricFailureAlert = async (server: string, blurOnAuthenticate: boolean, siteName: string | undefined, translations: Record<string, string>) => {
-        const buttons = await this.buildAlertOptions(server, translations, () => {
-            if (blurOnAuthenticate) {
-                Emm.removeBlurEffect();
+    private performSelectiveWipe = async (serverUrl: string, skipEvents: boolean) => {
+        try {
+            // Here we logout the server which will trigger session termination
+            await logout(serverUrl, undefined, {skipServerLogout: false, skipEvents});
+            if (skipEvents) {
+                await terminateSession(serverUrl, false);
             }
-        });
-        const securedBy = siteName || this.getServerConfig(server)?.siteName || 'Mattermost';
 
-        Alert.alert(
-            translations[messages.blocked_by.id].replace('{vendor}', securedBy),
-            translations[messages.biometric_failed.id],
-            buttons,
-            {cancelable: false},
-        );
+            // Logout the server which will trigger session termination
+            logDebug('SecurityManager: Wiping server');
+        } catch (error) {
+            logError('SecurityManager: Failed to wipe server', {error});
+        }
     };
 }
 
 const SecurityManager = new SecurityManagerSingleton();
 export default SecurityManager;
-
-export const exportsForTesting = {
-    messages,
-};
