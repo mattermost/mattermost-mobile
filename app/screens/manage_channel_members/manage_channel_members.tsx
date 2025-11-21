@@ -108,6 +108,8 @@ export default function ManageChannelMembers({
     const [term, setTerm] = useState('');
     const [searchedTerm, setSearchedTerm] = useState('');
 
+    const hasTerm = Boolean(term);
+
     const clearSearch = useCallback(() => {
         setTerm('');
         setSearchResults(EMPTY);
@@ -123,10 +125,6 @@ export default function ManageChannelMembers({
     useAndroidHardwareBackHandler(componentId, close);
 
     const handleSelectProfile = useCallback(async (profile: UserProfile) => {
-        if (profile.id === currentUserId && isManageMode) {
-            return;
-        }
-
         if (profile.id !== currentUserId) {
             await fetchUsersByIds(serverUrl, [profile.id]);
         }
@@ -191,7 +189,7 @@ export default function ManageChannelMembers({
                 text: formatMessage(manage ? messages.button_done : messages.button_manage),
             }],
         });
-    }, [theme.sidebarHeaderTextColor]);
+    }, [componentId, formatMessage, theme.sidebarHeaderTextColor]);
 
     const toggleManageEnabled = useCallback(() => {
         updateNavigationButtons(!isManageMode);
@@ -240,11 +238,11 @@ export default function ManageChannelMembers({
     }, [searchResults, profiles, searchedTerm, sortedProfiles]);
 
     useEffect(() => {
-        if (!term) {
+        if (!hasTerm) {
             setSearchResults(EMPTY);
             setSearchedTerm('');
         }
-    }, [Boolean(term)]);
+    }, [hasTerm]);
 
     useNavButtonPressed(MANAGE_BUTTON, componentId, toggleManageEnabled, [toggleManageEnabled]);
 
@@ -283,12 +281,19 @@ export default function ManageChannelMembers({
         return () => {
             mounted.current = false;
         };
+
+        // This effect is used only to track the mounted state and the initial fetch
+        // so it should only run once
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
         if (canManageAndRemoveMembers) {
             updateNavigationButtons(false);
         }
+
+        // We only want to update the navigation buttons when the permission changes
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [canManageAndRemoveMembers]);
 
     useEffect(() => {
@@ -334,7 +339,6 @@ export default function ManageChannelMembers({
                 />
             </View>
             <UserList
-                currentUserId={currentUserId}
                 handleSelectProfile={handleSelectProfile}
                 loading={loading}
                 manageMode={true} // default true to change row select icon to a dropdown

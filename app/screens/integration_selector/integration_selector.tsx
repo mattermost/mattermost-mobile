@@ -114,7 +114,6 @@ export type Props = {
     getDynamicOptions?: (userInput?: string) => Promise<DialogOption[]>;
     options?: PostActionOption[];
     currentTeamId: string;
-    currentUserId: string;
     data?: DataTypeList;
     dataSource: string;
     handleSelect: (opt: Selection) => void;
@@ -177,7 +176,7 @@ const messages = defineMessages({
 
 function IntegrationSelector(
     {dataSource, data, isMultiselect = false, selected, handleSelect,
-        currentTeamId, currentUserId, componentId, getDynamicOptions, options}: Props) {
+        currentTeamId, componentId, getDynamicOptions, options}: Props) {
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
@@ -576,7 +575,6 @@ function IntegrationSelector(
             case ViewConstants.DATA_SOURCE_USERS:
                 return (
                     <ServerUserList
-                        currentUserId={currentUserId}
                         term={term}
                         tutorialWatched={true}
                         handleSelectProfile={handleSelectProfile}
