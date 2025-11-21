@@ -9,7 +9,7 @@ import {removePost} from '@actions/local/post';
 import {showPermalink} from '@actions/remote/permalink';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import CallsCustomMessage from '@calls/components/calls_custom_message';
-import {isCallsCustomMessage, isOwnBoRPost, isUnrevealedBoRPost} from '@calls/utils';
+import {isCallsCustomMessage, isUnrevealedBoRPost} from '@calls/utils';
 import UnrevealedBurnOnReadPost from '@components/post_list/post/burn_on_read/unrevealed';
 import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';
