@@ -8,6 +8,8 @@ import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+const TIMER_REFRESH_INTERVAL_MS = 1000;
+
 type Props = {
     expiryTime: number; // timestamp in ms
     onExpiry?: () => void;
@@ -35,11 +37,7 @@ function formatTime(ms: number) {
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
-
-    if (hours > 0) {
-        return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    }
-    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    return `${hours ? hours + ':' : ''}${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 }
 
 const ExpiryCountdown: React.FC<Props> = ({expiryTime, onExpiry}) => {
@@ -50,7 +48,6 @@ const ExpiryCountdown: React.FC<Props> = ({expiryTime, onExpiry}) => {
 
     useEffect(() => {
         const timer = setInterval(() => {
-            console.log('interval........................................');
             const remainingTime = Math.max(0, expiryTime - Date.now());
             setRemaining(remainingTime);
 
@@ -58,7 +55,7 @@ const ExpiryCountdown: React.FC<Props> = ({expiryTime, onExpiry}) => {
                 clearInterval(timer);
                 onExpiry?.();
             }
-        }, 1000);
+        }, TIMER_REFRESH_INTERVAL_MS);
 
         return () => clearInterval(timer);
     }, [expiryTime, onExpiry]);

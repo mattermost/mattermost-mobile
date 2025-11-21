@@ -30,7 +30,6 @@ type Props = {
 export default function UnrevealedBurnOnReadPost({post}: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-
     const serverUrl = useServerUrl();
 
     const handleRevealPost = useCallback(async () => {

@@ -125,6 +125,8 @@ const withPost = withObservables(
 
         const hasReplies = observeHasReplies(database, post);//Need to review and understand
 
+        // Don't combine consecutive Burn on Read posts as we want each BoR post
+        // to display its header to allow displaying the remaining time.
         const isConsecutivePost = isBoRPost(post) ? of$(false) : author.pipe(
             switchMap((user) => of$(Boolean(post && previousPost && !user?.isBot && areConsecutivePosts(post, previousPost)))),
             distinctUntilChanged(),
