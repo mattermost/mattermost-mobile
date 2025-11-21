@@ -36,7 +36,7 @@ const Background = ({
     return (
         <Svg
             width='100%'
-            height='896'
+            height={896}
             viewBox='0 0 896 896'
             fill='none'
             preserveAspectRatio='xMidYMid slice'
