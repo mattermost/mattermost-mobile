@@ -29,7 +29,7 @@ export const clampVelocity = (velocity: number, minVelocity: number, maxVelocity
     return Math.max(Math.min(velocity, -minVelocity), -maxVelocity);
 };
 
-export const fileToGalleryItem = (file: FileInfo, authorId?: string, postProps?: Record<string, unknown>, lastPictureUpdate = 0): GalleryItemType => {
+export const fileToGalleryItem = (file: FileInfo, authorId?: string, postProps?: Record<string, unknown>, lastPictureUpdate = 0, cacheKey: string = file.id || ''): GalleryItemType => {
     let type: GalleryItemType['type'] = 'file';
     if (isVideo(file)) {
         type = 'video';
@@ -52,6 +52,7 @@ export const fileToGalleryItem = (file: FileInfo, authorId?: string, postProps?:
         uri: file.localPath || file.uri || '',
         width: file.width,
         postProps: postProps || file.postProps,
+        cacheKey,
     };
 };
 

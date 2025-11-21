@@ -5,6 +5,7 @@ import {Image as ExpoImage} from 'expo-image';
 import {Image, Platform} from 'react-native';
 
 import {logDebug} from '@utils/log';
+import {urlSafeBase64Encode} from '@utils/security';
 
 import {prefetchCustomEmojiImages} from './prefetch';
 
@@ -20,6 +21,9 @@ jest.mock('@utils/log');
 
 describe('prefetchCustomEmojiImages', () => {
     const mockClient = {
+        apiClient: {
+            baseUrl: 'https://example.com',
+        },
         getCustomEmojiImageUrl: jest.fn((id) => `url/${id}`),
     } as unknown as Client;
 
@@ -36,9 +40,19 @@ describe('prefetchCustomEmojiImages', () => {
         Platform.OS = 'ios';
 
         prefetchCustomEmojiImages(mockClient, emojis);
+        const cachePath = urlSafeBase64Encode(mockClient.apiClient.baseUrl);
+        const expectedResults = [{
+            uri: 'url/emoji1',
+            cacheKey: 'custom-emoji_name1',
+            cachePath,
+        }, {
+            uri: 'url/emoji2',
+            cacheKey: 'custom-emoji_name2',
+            cachePath,
+        }];
 
         expect(logDebug).toHaveBeenCalledWith('Prefetching 2 custom emoji images');
-        expect(ExpoImage.prefetch).toHaveBeenCalledWith(['url/emoji1', 'url/emoji2'], 'disk');
+        expect(ExpoImage.prefetch).toHaveBeenCalledWith(expectedResults, {cachePolicy: 'disk'});
     });
 
     it('should prefetch custom emoji images on Android', () => {

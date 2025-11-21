@@ -2,19 +2,20 @@
 // See LICENSE.txt for license information.
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
-import {Image as ExpoImage} from 'expo-image';
 import React from 'react';
 import {Image, Platform, StyleSheet, Text} from 'react-native';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {fetchCustomEmojiInBatch} from '@actions/remote/custom_emoji';
+import ExpoImage from '@components/expo_image';
 import {useServerUrl} from '@context/server';
 import NetworkManager from '@managers/network_manager';
 import {queryCustomEmojisByName} from '@queries/servers/custom_emoji';
 import {observeConfigBooleanValue} from '@queries/servers/system';
 import {EmojiIndicesByAlias, Emojis} from '@utils/emoji';
 import {isUnicodeEmoji} from '@utils/emoji/helpers';
+import {urlSafeBase64Encode} from '@utils/security';
 
 import type {EmojiProps} from '@typings/components/emoji';
 import type {WithDatabaseArgs} from '@typings/database/database';
@@ -105,6 +106,7 @@ const Emoji = (props: EmojiProps) => {
         return Platform.select({
             ios: (
                 <ExpoImage
+                    id={`emoji-${emojiName}`}
                     source={image}
                     style={[commonStyle, imageStyle, {width, height}]}
                     contentFit='contain'
@@ -131,6 +133,7 @@ const Emoji = (props: EmojiProps) => {
     return Platform.select({
         ios: (
             <ExpoImage
+                id={`${emojiName}-${urlSafeBase64Encode(serverUrl)}`}
                 style={[commonStyle, imageStyle, {width, height}]}
                 source={{uri: imageUrl}}
                 contentFit='contain'

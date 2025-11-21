@@ -298,6 +298,7 @@ const VideoRenderer = ({canDownloadFiles, enableSecureFilePreview, height, index
             }
             {hasError &&
             <VideoError
+                cacheKey={item.cacheKey}
                 canDownloadFiles={canDownloadFiles}
                 enableSecureFilePreview={enableSecureFilePreview}
                 filename={item.name}

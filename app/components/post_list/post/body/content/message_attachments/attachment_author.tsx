@@ -1,11 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Image} from 'expo-image';
 import React from 'react';
 import {Text, View} from 'react-native';
 
+import ExpoImage from '@components/expo_image';
 import {useExternalLinkHandler} from '@hooks/use_external_link_handler';
+import {urlSafeBase64Encode} from '@utils/security';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
@@ -41,7 +42,8 @@ const AttachmentAuthor = ({icon, link, name, theme}: Props) => {
     return (
         <View style={style.container}>
             {Boolean(icon) &&
-            <Image
+            <ExpoImage
+                id={`attachment-author-icon-${urlSafeBase64Encode(icon!)}`}
                 source={{uri: icon}}
                 key='author_icon'
                 style={style.icon}
