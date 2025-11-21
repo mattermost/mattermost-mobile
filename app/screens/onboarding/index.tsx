@@ -12,7 +12,10 @@ import {
     type NativeScrollEvent,
     BackHandler,
 } from 'react-native';
-import Animated, {useDerivedValue, useSharedValue} from 'react-native-reanimated';
+import Animated, {
+    useDerivedValue,
+    useSharedValue,
+} from 'react-native-reanimated';
 
 import {storeOnboardingViewedValue} from '@actions/app/global';
 import {Screens} from '@constants';
@@ -50,11 +53,7 @@ const styles = StyleSheet.create({
 
 const AnimatedSafeArea = Animated.createAnimatedComponent(SafeAreaView);
 
-const Onboarding = ({
-    componentId,
-    theme,
-    ...props
-}: OnboardingProps) => {
+const Onboarding = ({componentId, theme, ...props}: OnboardingProps) => {
     const {width} = useWindowDimensions();
     const {slidesData} = useSlidesData();
     const LAST_SLIDE_INDEX = slidesData.length - 1;
@@ -62,46 +61,65 @@ const Onboarding = ({
 
     const scrollX = useSharedValue(0);
 
-    const currentIndex = useDerivedValue(() => Math.round(scrollX.value / width));
+    const currentIndex = useDerivedValue(() =>
+        Math.round(scrollX.value / width),
+    );
 
-    const moveToSlide = useCallback((slideIndexToMove: number) => {
-        slidesRef.current?.scrollTo({
-            x: (slideIndexToMove * width),
-            animated: true,
-        });
-    }, [width]);
+    const moveToSlide = useCallback(
+        (slideIndexToMove: number) => {
+            slidesRef.current?.scrollTo({
+                x: slideIndexToMove * width,
+                animated: true,
+            });
+        },
+        [width],
+    );
 
     const signInHandler = useCallback(() => {
         // mark the onboarding as already viewed
         storeOnboardingViewedValue();
 
-        goToScreen(Screens.SERVER, '', {animated: true, theme, ...props}, loginAnimationOptions());
+        goToScreen(
+            Screens.SERVER,
+            '',
+            {animated: true, theme, ...props},
+            loginAnimationOptions(),
+        );
     }, []);
 
     const nextSlide = useCallback(() => {
         const nextSlideIndex = currentIndex.value + 1;
         if (slidesRef.current && currentIndex.value < LAST_SLIDE_INDEX) {
             moveToSlide(nextSlideIndex);
-        } else if (slidesRef.current && currentIndex.value === LAST_SLIDE_INDEX) {
+        } else if (
+            slidesRef.current &&
+            currentIndex.value === LAST_SLIDE_INDEX
+        ) {
             signInHandler();
         }
     }, [currentIndex, moveToSlide, signInHandler]);
 
-    const scrollHandler = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
-        scrollX.value = event.nativeEvent.contentOffset.x;
-    }, []);
+    const scrollHandler = useCallback(
+        (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+            scrollX.value = event.nativeEvent.contentOffset.x;
+        },
+        [],
+    );
 
     const animatedStyles = useScreenTransitionAnimation(Screens.ONBOARDING);
 
     useEffect(() => {
-        const listener = BackHandler.addEventListener('hardwareBackPress', () => {
-            if (!currentIndex.value) {
-                return false;
-            }
+        const listener = BackHandler.addEventListener(
+            'hardwareBackPress',
+            () => {
+                if (!currentIndex.value) {
+                    return false;
+                }
 
-            moveToSlide(currentIndex.value - 1);
-            return true;
-        });
+                moveToSlide(currentIndex.value - 1);
+                return true;
+            },
+        );
 
         return () => listener.remove();
     }, []);
@@ -110,7 +128,11 @@ const Onboarding = ({
         <View
             style={styles.onBoardingContainer}
             testID='onboarding.screen'
-            nativeID={SecurityManager.getShieldScreenId(componentId, false, true)}
+            nativeID={SecurityManager.getShieldScreenId(
+                componentId,
+                false,
+                true,
+            )}
         >
             <Background theme={theme}/>
             <AnimatedSafeArea

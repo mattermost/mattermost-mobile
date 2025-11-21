@@ -1,40 +1,60 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useManagedConfig} from '@mattermost/react-native-emm';
-import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {defineMessage, useIntl} from 'react-intl';
-import {Alert, BackHandler, View} from 'react-native';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-import {Navigation} from 'react-native-navigation';
-import Animated from 'react-native-reanimated';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import { useManagedConfig } from "@mattermost/react-native-emm";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { defineMessage, useIntl } from "react-intl";
+import {
+    Alert,
+    BackHandler,
+    Keyboard,
+    Platform,
+    Pressable,
+    View,
+} from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import { Navigation } from "react-native-navigation";
+import Animated, {
+    useAnimatedStyle,
+    useSharedValue,
+    withTiming,
+} from "react-native-reanimated";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import {doPing} from '@actions/remote/general';
-import {fetchConfigAndLicense} from '@actions/remote/systems';
-import LocalConfig from '@assets/config.json';
-import AppVersion from '@components/app_version';
-import {Screens, Launch, DeepLink} from '@constants';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
-import {useScreenTransitionAnimation} from '@hooks/screen_transition_animation';
-import {getServerCredentials} from '@init/credentials';
-import PushNotifications from '@init/push_notifications';
-import NetworkManager from '@managers/network_manager';
-import SecurityManager from '@managers/security_manager';
-import {getServerByDisplayName, getServerByIdentifier} from '@queries/app/servers';
-import Background from '@screens/background';
-import {dismissModal, goToScreen, loginAnimationOptions, popTopScreen} from '@screens/navigation';
-import {getErrorMessage} from '@utils/errors';
-import {canReceiveNotifications} from '@utils/push_proxy';
-import {loginOptions} from '@utils/server';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {getServerUrlAfterRedirect, isValidUrl, sanitizeUrl} from '@utils/url';
+import { doPing } from "@actions/remote/general";
+import { fetchConfigAndLicense } from "@actions/remote/systems";
+import LocalConfig from "@assets/config.json";
+import AppVersion from "@components/app_version";
+import CompassIcon from "@components/compass_icon";
+import { Screens, Launch, DeepLink } from "@constants";
+import useNavButtonPressed from "@hooks/navigation_button_pressed";
+import { useScreenTransitionAnimation } from "@hooks/screen_transition_animation";
+import { getServerCredentials } from "@init/credentials";
+import PushNotifications from "@init/push_notifications";
+import NetworkManager from "@managers/network_manager";
+import SecurityManager from "@managers/security_manager";
+import {
+    getServerByDisplayName,
+    getServerByIdentifier,
+} from "@queries/app/servers";
+import Background from "@screens/background";
+import {
+    dismissModal,
+    goToScreen,
+    loginAnimationOptions,
+    popTopScreen,
+} from "@screens/navigation";
+import { getErrorMessage } from "@utils/errors";
+import { canReceiveNotifications } from "@utils/push_proxy";
+import { loginOptions } from "@utils/server";
+import { changeOpacity, makeStyleSheetFromTheme } from "@utils/theme";
+import { getServerUrlAfterRedirect, isValidUrl, sanitizeUrl } from "@utils/url";
 
-import ServerForm from './form';
-import ServerHeader from './header';
+import ServerForm from "./form";
+import ServerHeader from "./header";
 
-import type {DeepLinkWithData, LaunchProps} from '@typings/launch';
-import type {AvailableScreens} from '@typings/screens/navigation';
+import type { DeepLinkWithData, LaunchProps } from "@typings/launch";
+import type { AvailableScreens } from "@typings/screens/navigation";
 
 interface ServerProps extends LaunchProps {
     animated?: boolean;
@@ -47,8 +67,8 @@ interface ServerProps extends LaunchProps {
 let cancelPing: undefined | (() => void);
 
 const defaultServerUrlMessage = defineMessage({
-    id: 'mobile.server_url.empty',
-    defaultMessage: 'Please enter a valid server URL',
+    id: "mobile.server_url.empty",
+    defaultMessage: "Please enter a valid server URL",
 });
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -56,7 +76,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: changeOpacity(theme.centerChannelColor, 0.56),
     },
     appVersionContainer: {
-        alignItems: 'center',
+        alignItems: "center",
         paddingHorizontal: 20,
         marginTop: 24,
     },
@@ -64,11 +84,21 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         flex: 1,
     },
     scrollContainer: {
-        alignItems: 'center',
+        alignItems: "center",
         flexGrow: 1,
-        justifyContent: 'center',
+        justifyContent: "center",
+    },
+    backButtonContainer: {
+        position: "absolute",
+        top: Platform.OS === "ios" ? 50 : 10,
+        left: 0,
+        zIndex: 1000,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
     },
 }));
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 const AnimatedSafeArea = Animated.createAnimatedComponent(SafeAreaView);
 
@@ -88,40 +118,83 @@ const Server = ({
     const managedConfig = useManagedConfig<ManagedConfig>();
     const keyboardAwareRef = useRef<KeyboardAwareScrollView>(null);
     const [connecting, setConnecting] = useState(false);
-    const [displayName, setDisplayName] = useState<string>('');
+    const [displayName, setDisplayName] = useState<string>("");
     const [buttonDisabled, setButtonDisabled] = useState(true);
-    const [preauthSecret, setPreauthSecret] = useState<string>('');
-    const [url, setUrl] = useState<string>('');
-    const [displayNameError, setDisplayNameError] = useState<string | undefined>();
+    const [preauthSecret, setPreauthSecret] = useState<string>("");
+    const [url, setUrl] = useState<string>("");
+    const [displayNameError, setDisplayNameError] = useState<
+        string | undefined
+    >();
     const [urlError, setUrlError] = useState<string | undefined>();
-    const [preauthSecretError, setPreauthSecretError] = useState<string | undefined>();
-    const [showAdvancedOptions, setShowAdvancedOptions] = useState<boolean>(false);
+    const [preauthSecretError, setPreauthSecretError] = useState<
+        string | undefined
+    >();
+    const [showAdvancedOptions, setShowAdvancedOptions] =
+        useState<boolean>(false);
     const styles = getStyleSheet(theme);
-    const {formatMessage} = intl;
-    const disableServerUrl = Boolean(managedConfig?.allowOtherServers === 'false' && managedConfig?.serverUrl);
-    const additionalServer = launchType === Launch.AddServerFromDeepLink || launchType === Launch.AddServer;
+    const { formatMessage } = intl;
+    const disableServerUrl = Boolean(
+        managedConfig?.allowOtherServers === "false" &&
+            managedConfig?.serverUrl,
+    );
+    const additionalServer =
+        launchType === Launch.AddServerFromDeepLink ||
+        launchType === Launch.AddServer;
+
+    // Animated value for back button horizontal translation
+    const backButtonTranslateX = useSharedValue(0);
 
     const dismiss = () => {
         NetworkManager.invalidateClient(url);
-        dismissModal({componentId});
+        dismissModal({ componentId });
     };
 
     const animatedStyles = useScreenTransitionAnimation(componentId, animated);
 
     useEffect(() => {
-        let serverName: string | undefined = defaultDisplayName || managedConfig?.serverName || LocalConfig.DefaultServerName;
-        let serverUrl: string | undefined = defaultServerUrl || managedConfig?.serverUrl || LocalConfig.DefaultServerUrl;
-        let autoconnect = managedConfig?.allowOtherServers === 'false' || LocalConfig.AutoSelectServerUrl;
+        let serverName: string | undefined =
+            defaultDisplayName ||
+            managedConfig?.serverName ||
+            LocalConfig.DefaultServerName;
+        let serverUrl: string | undefined =
+            defaultServerUrl ||
+            managedConfig?.serverUrl ||
+            LocalConfig.DefaultServerUrl;
+        let autoconnect =
+            managedConfig?.allowOtherServers === "false" ||
+            LocalConfig.AutoSelectServerUrl;
 
-        if (launchType === Launch.DeepLink || launchType === Launch.AddServerFromDeepLink) {
-            const deepLinkServerUrl = (extra as DeepLinkWithData).data?.serverUrl;
+        // Setup custom animated back button
+        Navigation.mergeOptions(componentId, {
+            topBar: {
+                backButton: {
+                    visible: false, // Hide native back button
+                },
+            },
+        });
+
+        if (
+            launchType === Launch.DeepLink ||
+            launchType === Launch.AddServerFromDeepLink
+        ) {
+            const deepLinkServerUrl = (extra as DeepLinkWithData).data
+                ?.serverUrl;
             if (managedConfig.serverUrl) {
-                autoconnect = (managedConfig.allowOtherServers === 'false' && managedConfig.serverUrl === deepLinkServerUrl);
-                if (managedConfig.serverUrl !== deepLinkServerUrl || launchError) {
-                    Alert.alert('', intl.formatMessage({
-                        id: 'mobile.server_url.deeplink.emm.denied',
-                        defaultMessage: 'This app is controlled by an EMM and the DeepLink server url does not match the EMM allowed server',
-                    }));
+                autoconnect =
+                    managedConfig.allowOtherServers === "false" &&
+                    managedConfig.serverUrl === deepLinkServerUrl;
+                if (
+                    managedConfig.serverUrl !== deepLinkServerUrl ||
+                    launchError
+                ) {
+                    Alert.alert(
+                        "",
+                        intl.formatMessage({
+                            id: "mobile.server_url.deeplink.emm.denied",
+                            defaultMessage:
+                                "This app is controlled by an EMM and the DeepLink server url does not match the EMM allowed server",
+                        }),
+                    );
                 }
             } else {
                 autoconnect = true;
@@ -143,9 +216,16 @@ const Server = ({
 
         if (serverUrl && serverName && autoconnect) {
             // If no other servers are allowed or the local config for AutoSelectServerUrl is set, attempt to connect
-            handleConnect(managedConfig?.serverUrl || LocalConfig.DefaultServerUrl);
+            handleConnect(
+                managedConfig?.serverUrl || LocalConfig.DefaultServerUrl,
+            );
         }
-    }, [managedConfig?.allowOtherServers, managedConfig?.serverUrl, managedConfig?.serverName, defaultServerUrl]);
+    }, [
+        managedConfig?.allowOtherServers,
+        managedConfig?.serverUrl,
+        managedConfig?.serverName,
+        defaultServerUrl,
+    ]);
 
     useEffect(() => {
         if (url && displayName && !urlError && !preauthSecretError) {
@@ -163,34 +243,78 @@ const Server = ({
                 }
             },
         };
-        const unsubscribe = Navigation.events().registerComponentListener(listener, componentId);
+        const unsubscribe = Navigation.events().registerComponentListener(
+            listener,
+            componentId,
+        );
 
         return () => unsubscribe.remove();
     }, [componentId, url]);
 
     useEffect(() => {
-        const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-            if (LocalConfig.ShowOnboarding && animated) {
-                popTopScreen(Screens.SERVER);
-                return true;
-            }
-            if (isModal) {
-                dismiss();
-                return true;
-            }
+        const backHandler = BackHandler.addEventListener(
+            "hardwareBackPress",
+            () => {
+                if (LocalConfig.ShowOnboarding && animated) {
+                    popTopScreen(Screens.SERVER);
+                    return true;
+                }
+                if (isModal) {
+                    dismiss();
+                    return true;
+                }
 
-            return false;
-        });
+                return false;
+            },
+        );
 
         PushNotifications.registerIfNeeded();
 
-        return () => backHandler.remove();
+        // Keyboard listeners for back button animation
+        const showEvent =
+            Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
+        const hideEvent =
+            Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+
+        const keyboardShowListener = Keyboard.addListener(showEvent, () => {
+            backButtonTranslateX.value = withTiming(400, { duration: 250 });
+        });
+
+        const keyboardHideListener = Keyboard.addListener(hideEvent, () => {
+            backButtonTranslateX.value = withTiming(0, { duration: 250 });
+        });
+
+        return () => {
+            backHandler.remove();
+            keyboardShowListener.remove();
+            keyboardHideListener.remove();
+        };
     }, []);
 
-    useNavButtonPressed(closeButtonId || '', componentId, dismiss, []);
+    useNavButtonPressed(closeButtonId || "", componentId, dismiss, []);
 
-    const displayLogin = (serverUrl: string, config: ClientConfig, license: ClientLicense) => {
-        const {enabledSSOs, hasLoginForm, numberSSOs, ssoOptions} = loginOptions(config, license);
+    const handleBackPress = () => {
+        if (LocalConfig.ShowOnboarding && animated) {
+            popTopScreen(Screens.SERVER);
+        } else if (isModal) {
+            dismiss();
+        } else {
+            // Default back navigation
+            Navigation.pop(componentId);
+        }
+    };
+
+    const backButtonAnimatedStyle = useAnimatedStyle(() => ({
+        transform: [{ translateX: backButtonTranslateX.value }],
+    }));
+
+    const displayLogin = (
+        serverUrl: string,
+        config: ClientConfig,
+        license: ClientLicense,
+    ) => {
+        const { enabledSSOs, hasLoginForm, numberSSOs, ssoOptions } =
+            loginOptions(config, license);
         const passProps = {
             config,
             extra,
@@ -218,7 +342,7 @@ const Server = ({
             passProps.launchType = Launch.Normal;
         }
 
-        goToScreen(screen, '', passProps, loginAnimationOptions());
+        goToScreen(screen, "", passProps, loginAnimationOptions());
         setConnecting(false);
         setButtonDisabled(false);
         setUrl(serverUrl);
@@ -234,8 +358,8 @@ const Server = ({
             return;
         }
 
-        const serverUrl = typeof manualUrl === 'string' ? manualUrl : url;
-        if (!serverUrl || serverUrl.trim() === '') {
+        const serverUrl = typeof manualUrl === "string" ? manualUrl : url;
+        if (!serverUrl || serverUrl.trim() === "") {
             setUrlError(formatMessage(defaultServerUrlMessage));
             return;
         }
@@ -256,10 +380,13 @@ const Server = ({
         const credentials = await getServerCredentials(serverUrl);
         if (server && server.lastActiveAt > 0 && credentials?.token) {
             setButtonDisabled(true);
-            setDisplayNameError(formatMessage({
-                id: 'mobile.server_name.exists',
-                defaultMessage: 'You are using this name for another server.',
-            }));
+            setDisplayNameError(
+                formatMessage({
+                    id: "mobile.server_name.exists",
+                    defaultMessage:
+                        "You are using this name for another server.",
+                }),
+            );
             setConnecting(false);
             return;
         }
@@ -277,25 +404,30 @@ const Server = ({
         setUrl(text);
     }, []);
 
-    const handlePreauthSecretTextChanged = useCallback((text: string) => {
-        setPreauthSecret(text);
+    const handlePreauthSecretTextChanged = useCallback(
+        (text: string) => {
+            setPreauthSecret(text);
 
-        // Clear any connection errors when preauth secret is modified
-        if (urlError) {
-            setUrlError(undefined);
-        }
-        if (preauthSecretError) {
-            setPreauthSecretError(undefined);
-        }
-    }, [urlError, preauthSecretError]);
+            // Clear any connection errors when preauth secret is modified
+            if (urlError) {
+                setUrlError(undefined);
+            }
+            if (preauthSecretError) {
+                setPreauthSecretError(undefined);
+            }
+        },
+        [urlError, preauthSecretError],
+    );
 
     const isServerUrlValid = (serverUrl?: string) => {
         const testUrl = sanitizeUrl(serverUrl ?? url);
         if (!isValidUrl(testUrl)) {
-            setUrlError(intl.formatMessage({
-                id: 'mobile.server_url.invalid_format',
-                defaultMessage: 'URL must start with http:// or https://',
-            }));
+            setUrlError(
+                intl.formatMessage({
+                    id: "mobile.server_url.invalid_format",
+                    defaultMessage: "URL must start with http:// or https://",
+                }),
+            );
             return false;
         }
         return true;
@@ -310,11 +442,15 @@ const Server = ({
             cancelPing = undefined;
         };
 
-        const headRequest = await getServerUrlAfterRedirect(pingUrl, !retryWithHttp, preauthSecret.trim() || undefined);
+        const headRequest = await getServerUrlAfterRedirect(
+            pingUrl,
+            !retryWithHttp,
+            preauthSecret.trim() || undefined,
+        );
         if (!headRequest.url) {
             cancelPing();
             if (retryWithHttp) {
-                const nurl = pingUrl.replace('https:', 'http:');
+                const nurl = pingUrl.replace("https:", "http:");
                 pingServer(nurl, false);
             } else {
                 setUrlError(getErrorMessage(headRequest.error, intl));
@@ -323,7 +459,14 @@ const Server = ({
             }
             return;
         }
-        const result = await doPing(headRequest.url, true, managedConfig?.timeout ? parseInt(managedConfig?.timeout, 10) : undefined, preauthSecret.trim() || undefined);
+        const result = await doPing(
+            headRequest.url,
+            true,
+            managedConfig?.timeout
+                ? parseInt(managedConfig?.timeout, 10)
+                : undefined,
+            preauthSecret.trim() || undefined,
+        );
 
         if (canceled) {
             return;
@@ -331,10 +474,13 @@ const Server = ({
 
         if (result.error) {
             if (result.isPreauthError) {
-                setPreauthSecretError(intl.formatMessage({
-                    id: 'mobile.server.preauth_secret.invalid',
-                    defaultMessage: 'Authentication secret is invalid. Try again or contact your admin.',
-                }));
+                setPreauthSecretError(
+                    intl.formatMessage({
+                        id: "mobile.server.preauth_secret.invalid",
+                        defaultMessage:
+                            "Authentication secret is invalid. Try again or contact your admin.",
+                    }),
+                );
                 setShowAdvancedOptions(true);
             } else {
                 setUrlError(getErrorMessage(result.error, intl));
@@ -344,7 +490,11 @@ const Server = ({
             return;
         }
 
-        canReceiveNotifications(headRequest.url, result.canReceiveNotifications as string, intl);
+        canReceiveNotifications(
+            headRequest.url,
+            result.canReceiveNotifications as string,
+            intl,
+        );
         const data = await fetchConfigAndLicense(headRequest.url, true);
         if (data.error) {
             setButtonDisabled(true);
@@ -354,24 +504,34 @@ const Server = ({
         }
 
         if (!data.config?.DiagnosticId) {
-            setUrlError(formatMessage({
-                id: 'mobile.diagnostic_id.empty',
-                defaultMessage: 'A DiagnosticId value is missing for this server. Contact your system admin to review this value and restart the server.',
-            }));
+            setUrlError(
+                formatMessage({
+                    id: "mobile.diagnostic_id.empty",
+                    defaultMessage:
+                        "A DiagnosticId value is missing for this server. Contact your system admin to review this value and restart the server.",
+                }),
+            );
             setConnecting(false);
             return;
         }
 
-        if (data.config.MobileJailbreakProtection === 'true') {
-            const isJailbroken = await SecurityManager.isDeviceJailbroken(headRequest.url, data.config.SiteName);
+        if (data.config.MobileJailbreakProtection === "true") {
+            const isJailbroken = await SecurityManager.isDeviceJailbroken(
+                headRequest.url,
+                data.config.SiteName,
+            );
             if (isJailbroken) {
                 setConnecting(false);
                 return;
             }
         }
 
-        if (data.config.MobileEnableBiometrics === 'true') {
-            const biometricsResult = await SecurityManager.authenticateWithBiometrics(headRequest.url, data.config.SiteName);
+        if (data.config.MobileEnableBiometrics === "true") {
+            const biometricsResult =
+                await SecurityManager.authenticateWithBiometrics(
+                    headRequest.url,
+                    data.config.SiteName,
+                );
             if (!biometricsResult) {
                 setConnecting(false);
                 return;
@@ -384,10 +544,12 @@ const Server = ({
 
         if (server && server.lastActiveAt > 0 && credentials?.token) {
             setButtonDisabled(true);
-            setUrlError(formatMessage({
-                id: 'mobile.server_identifier.exists',
-                defaultMessage: 'You are already connected to this server.',
-            }));
+            setUrlError(
+                formatMessage({
+                    id: "mobile.server_identifier.exists",
+                    defaultMessage: "You are already connected to this server.",
+                }),
+            );
             return;
         }
 
@@ -397,12 +559,28 @@ const Server = ({
     return (
         <View
             style={styles.flex}
-            testID='server.screen'
-            nativeID={SecurityManager.getShieldScreenId(componentId, false, true)}
+            testID="server.screen"
+            nativeID={SecurityManager.getShieldScreenId(
+                componentId,
+                false,
+                true,
+            )}
         >
-            <Background theme={theme}/>
+            <Background theme={theme} />
+            <AnimatedPressable
+                onPress={handleBackPress}
+                style={[styles.backButtonContainer, backButtonAnimatedStyle]}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                testID="server.back.button"
+            >
+                <CompassIcon
+                    name="arrow-left"
+                    size={28}
+                    color={theme.centerChannelColor}
+                />
+            </AnimatedPressable>
             <AnimatedSafeArea
-                key={'server_content'}
+                key={"server_content"}
                 style={[styles.flex, animatedStyles]}
             >
                 <KeyboardAwareScrollView
@@ -412,8 +590,8 @@ const Server = ({
                     enableOnAndroid={false}
                     enableResetScrollToCoords={true}
                     extraScrollHeight={20}
-                    keyboardDismissMode='on-drag'
-                    keyboardShouldPersistTaps='handled'
+                    keyboardDismissMode="on-drag"
+                    keyboardShouldPersistTaps="handled"
                     ref={keyboardAwareRef}
                     scrollToOverflowEnabled={true}
                     style={styles.flex}
@@ -430,8 +608,12 @@ const Server = ({
                         displayNameError={displayNameError}
                         disableServerUrl={disableServerUrl}
                         handleConnect={handleConnect}
-                        handleDisplayNameTextChanged={handleDisplayNameTextChanged}
-                        handlePreauthSecretTextChanged={handlePreauthSecretTextChanged}
+                        handleDisplayNameTextChanged={
+                            handleDisplayNameTextChanged
+                        }
+                        handlePreauthSecretTextChanged={
+                            handlePreauthSecretTextChanged
+                        }
                         handleUrlTextChanged={handleUrlTextChanged}
                         keyboardAwareRef={keyboardAwareRef}
                         preauthSecret={preauthSecret}
