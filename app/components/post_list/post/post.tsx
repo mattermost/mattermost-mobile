@@ -360,7 +360,7 @@ const Post = ({
         );
     } else if (isUnrevealedPost) {
         body = (
-            <UnrevealedBurnOnReadPost postId={post.id}/>
+            <UnrevealedBurnOnReadPost post={post}/>
         );
     } else {
         body = (

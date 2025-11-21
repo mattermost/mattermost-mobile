@@ -110,7 +110,7 @@ export function isBoRPost(post: PostModel | Post): boolean {
 }
 
 export function isUnrevealedBoRPost(post: PostModel): boolean {
-    return isBoRPost(post) && Boolean(!post.props?.revealed);
+    return isBoRPost(post) && Boolean(!post.metadata?.expire_at);
 }
 
 export function isOwnBoRPost(post: PostModel, currentUser?: UserModel): boolean {

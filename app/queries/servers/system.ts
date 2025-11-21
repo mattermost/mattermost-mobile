@@ -178,6 +178,15 @@ export const getLastGlobalDataRetentionRun = async (database: Database) => {
     }
 };
 
+export const getLastBoRPostCleanupRun = async (database: Database) => {
+    try {
+        const data = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.LAST_BOR_POST_CLEANUP_RUN);
+        return data?.value || 0;
+    } catch {
+        return undefined;
+    }
+};
+
 export const getGlobalDataRetentionPolicy = async (database: Database) => {
     try {
         const data = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.DATA_RETENTION_POLICIES);

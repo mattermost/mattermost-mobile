@@ -63,6 +63,8 @@ const ChannelPostList = ({
                 availablePosts.push(rawPost);
             }
         });
+        
+        console.log({unavailablePostIds});
 
         setPosts(availablePosts);
         dataRetentionCleanPosts(serverUrl, unavailablePostIds);

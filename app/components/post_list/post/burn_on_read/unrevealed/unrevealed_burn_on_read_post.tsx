@@ -3,10 +3,12 @@
 
 import React, {useCallback} from 'react';
 
-import {revealBoRPost} from '@actions/remote/post';
+import {deletePost, revealBoRPost} from '@actions/remote/post';
 import Button from '@components/button';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {PostModel} from '@database/models/server';
+import {isErrorWithStatusCode} from '@utils/errors';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -21,18 +23,22 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 type Props = {
-    postId: string;
+    post: PostModel;
 }
 
-export default function UnrevealedBurnOnReadPost({postId}: Props) {
+export default function UnrevealedBurnOnReadPost({post}: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
     const serverUrl = useServerUrl();
 
     const handleRevealPost = useCallback(async () => {
-        await revealBoRPost(serverUrl, postId);
-    }, [postId, serverUrl]);
+        const {error} = await revealBoRPost(serverUrl, post.id);
+        if (error && isErrorWithStatusCode(error) && error.status_code === 400) {
+            deletePost(serverUrl, post);
+        }
+
+    }, [serverUrl, post]);
 
     return (
         <Button

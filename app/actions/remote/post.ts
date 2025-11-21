@@ -970,11 +970,13 @@ export const revealBoRPost = async (serverUrl: string, postId: string) => {
             await database.write(async () => {
                 await post.update((p) => {
                     p.message = revealedPost.message;
-
                     p.metadata = revealedPost.metadata;
 
-                    p.props = p.props || {};
-                    p.props = {...p.props, revealed: true};
+                    if (revealedPost.props) {
+                        p.props = revealedPost.props;
+                    }
+
+                    p.metadata.files = revealedPost.metadata.files;
                 });
             });
         }

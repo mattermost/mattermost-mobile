@@ -77,6 +77,7 @@ export const SYSTEM_IDENTIFIERS = {
     TEAM_HISTORY: 'teamHistory',
     WEBSOCKET: 'WebSocket',
     PLAYBOOKS_VERSION: 'playbooks_version',
+    LAST_BOR_POST_CLEANUP_RUN: 'lastBoRPostCleanupRun',
 };
 
 export const GLOBAL_IDENTIFIERS = {

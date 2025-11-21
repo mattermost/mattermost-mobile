@@ -1,14 +1,26 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q} from '@nozbe/watermelondb';
+import {type Database, Q} from '@nozbe/watermelondb';
 import deepEqual from 'deep-equal';
 
+import {isExpiredBoRPost} from '@calls/utils';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {PostTypes} from '@constants/post';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
+import {getAllServers} from '@queries/app/servers';
 import {queryAllChannelsForTeam} from '@queries/servers/channel';
-import {getConfig, getLicense, getGlobalDataRetentionPolicy, getGranularDataRetentionPolicies, getLastGlobalDataRetentionRun, getIsDataRetentionEnabled} from '@queries/servers/system';
+import {queryPostsByType} from '@queries/servers/post';
+import {
+    getConfig,
+    getLicense,
+    getGlobalDataRetentionPolicy,
+    getGranularDataRetentionPolicies,
+    getLastGlobalDataRetentionRun,
+    getIsDataRetentionEnabled,
+    getLastBoRPostCleanupRun,
+} from '@queries/servers/system';
 import PostModel from '@typings/database/models/servers/post';
 import {logError} from '@utils/log';
 
@@ -17,6 +29,7 @@ import {deletePosts} from './post';
 import type {DataRetentionPoliciesRequest} from '@actions/remote/systems';
 
 const {SERVER: {POST}} = MM_TABLES;
+const BOR_POST_CLEANUP_MIN_RIN_INTERVAL = 15 * 60 * 1000; // 15 minutes
 
 export async function storeConfigAndLicense(serverUrl: string, config: ClientConfig, license: ClientLicense) {
     try {
@@ -307,6 +320,45 @@ export async function dismissAnnouncement(serverUrl: string, announcementText: s
         return {error: undefined};
     } catch (error) {
         logError('An error occurred while dismissing an announcement', error);
+        return {error};
+    }
+}
+
+export async function expiredBoRPostCleanup() {
+    console.log('expiredBoRPostCleanup....');
+    // const {database: appDatabase} = DatabaseManager.getAppDatabaseAndOperator();
+    // const lastRunAt = await getLastBoRPostCleanupRun(appDatabase);
+    // const shouldRunNow = (lastRunAt - Date.now()) > BOR_POST_CLEANUP_MIN_RIN_INTERVAL;
+    //
+    // if (!shouldRunNow) {
+    //     return {error: undefined};
+    // }
+
+    const servers = await getAllServers();
+    for (const server of servers) {
+        const serverDatabase = DatabaseManager.serverDatabases[server.url]?.database;
+        if (!serverDatabase) {
+            continue;
+        }
+
+        /* eslint-disable-next-line no-await-in-loop */
+        await removeExpiredBoRPosts(server.url, serverDatabase);
+    }
+
+    return {error: undefined};
+}
+
+async function removeExpiredBoRPosts(serverUrl: string, database: Database) {
+    try {
+        const allBoRPosts = await queryPostsByType(database, PostTypes.BURN_ON_READ).fetch();
+        const expiredBoRPostIDs = allBoRPosts.
+            filter((post) => isExpiredBoRPost(post)).
+            map((post) => post.id);
+
+        await dataRetentionCleanPosts(serverUrl, expiredBoRPostIDs);
+        return {error: undefined};
+    } catch (error) {
+        logError('An error occurred while performing BoR post cleanup', error);
         return {error};
     }
 }
