@@ -80,8 +80,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         flex: 1,
     },
     successText: {
-        color: changeOpacity(theme.centerChannelColor, 0.64),
-        ...typography('Body', 200, 'SemiBold'),
+        color: changeOpacity(theme.centerChannelColor, 0.75),
+        ...typography('Body', 200, 'Regular'),
         textAlign: 'center',
     },
     successTitle: {
