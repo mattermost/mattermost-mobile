@@ -4,7 +4,7 @@
 import {FlatList} from '@stream-io/flat-list-mvcp';
 import React, {type ReactElement, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {DeviceEventEmitter, type ListRenderItemInfo, Platform, type StyleProp, StyleSheet, type ViewStyle, type NativeSyntheticEvent, type NativeScrollEvent} from 'react-native';
-import Animated, {type AnimatedStyle} from 'react-native-reanimated';
+import Animated, {runOnJS, useAnimatedProps, useAnimatedReaction, useSharedValue, type AnimatedStyle} from 'react-native-reanimated';
 
 import {removePost} from '@actions/local/post';
 import {fetchPosts, fetchPostThread} from '@actions/remote/post';
@@ -15,6 +15,7 @@ import Post from '@components/post_list/post';
 import ThreadOverview from '@components/post_list/thread_overview';
 import {Events, Screens} from '@constants';
 import {PostTypes} from '@constants/post';
+import {useKeyboardAnimationContext} from '@context/keyboard_animation';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {getDateForDateLine, preparePostList} from '@utils/post_list';
@@ -55,6 +56,7 @@ type Props = {
     testID: string;
     currentCallBarVisible?: boolean;
     savedPostIds: Set<string>;
+    listRef?: React.RefObject<FlatList<string | PostModel>>;
 }
 
 type onScrollEndIndexListenerEvent = (endIndex: number) => void;
@@ -106,18 +108,54 @@ const PostList = ({
     showNewMessageLine = true,
     testID,
     savedPostIds,
+    listRef,
 }: Props) => {
     const firstIdInPosts = posts[0]?.id;
 
-    const listRef = useRef<FlatList<string | PostModel>>(null);
+    const {
+        height: keyboardHeightValue,
+        inset: contentInset,
+        onScroll: onScrollProp,
+        postInputContainerHeight,
+        keyboardHeight,
+        isKeyboardFullyOpen,
+        isKeyboardFullyClosed,
+    } = useKeyboardAnimationContext();
+
     const onScrollEndIndexListener = useRef<onScrollEndIndexListenerEvent>();
     const onViewableItemsChangedListener = useRef<ViewableItemsChangedListenerEvent>();
     const scrolledToHighlighted = useRef(false);
     const [refreshing, setRefreshing] = useState(false);
     const [showScrollToEndBtn, setShowScrollToEndBtn] = useState(false);
     const [lastPostId, setLastPostId] = useState<string | undefined>(firstIdInPosts);
+    const [progressViewOffset, setProgressViewOffset] = useState(postInputContainerHeight);
     const theme = useTheme();
     const serverUrl = useServerUrl();
+
+    // Update progressViewOffset to position RefreshControl correctly when keyboard-aware props are applied.
+    // Only update when keyboard state changes (fully open ↔ fully closed) to prevent flickering during animation.
+    const prevIsFullyOpen = useSharedValue(false);
+    const prevIsFullyClosed = useSharedValue(true);
+    useAnimatedReaction(
+        () => ({
+            isFullyOpen: isKeyboardFullyOpen.value,
+            isFullyClosed: isKeyboardFullyClosed.value,
+            height: keyboardHeightValue.value,
+        }),
+        ({isFullyOpen, isFullyClosed, height}) => {
+            // Only update when state actually changes (transition detected)
+            const stateChanged = (prevIsFullyClosed.value !== isFullyClosed) || (prevIsFullyOpen.value !== isFullyOpen);
+
+            if (stateChanged && (isFullyOpen || isFullyClosed)) {
+                const offset = postInputContainerHeight + height;
+                runOnJS(setProgressViewOffset)(offset);
+            }
+            prevIsFullyOpen.value = isFullyOpen;
+            prevIsFullyClosed.value = isFullyClosed;
+        },
+        [postInputContainerHeight],
+    );
+
     const orderedPosts = useMemo(() => {
         return preparePostList(posts, lastViewedAt, showNewMessageLine, currentUserId, currentUsername, shouldShowJoinLeaveMessages, currentTimezone, location === Screens.THREAD, savedPostIds);
     }, [posts, lastViewedAt, showNewMessageLine, currentUserId, currentUsername, shouldShowJoinLeaveMessages, currentTimezone, location, savedPostIds]);
@@ -129,8 +167,10 @@ const PostList = ({
     const isNewMessage = lastPostId ? firstIdInPosts !== lastPostId : false;
 
     const scrollToEnd = useCallback(() => {
-        listRef.current?.scrollToOffset({offset: 0, animated: true});
-    }, []);
+        const targetOffset = -keyboardHeight.value;
+
+        listRef?.current?.scrollToOffset({offset: targetOffset, animated: true});
+    }, [listRef, keyboardHeight]);
 
     useEffect(() => {
         const t = setTimeout(() => {
@@ -182,15 +222,15 @@ const PostList = ({
     }, [disablePullToRefresh, location, channelId, rootId, posts, serverUrl]);
 
     const scrollToIndex = useCallback((index: number, animated = true, applyOffset = true) => {
-        listRef.current?.scrollToIndex({
+        listRef?.current?.scrollToIndex({
             animated,
             index,
             viewOffset: applyOffset ? Platform.select({ios: -45, default: 0}) : 0,
             viewPosition: 1, // 0 is at bottom
         });
-    }, []);
+    }, [listRef]);
 
-    const onScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const internalOnScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
         const {y} = event.nativeEvent.contentOffset;
         const isThresholdReached = y > CONTENT_OFFSET_THRESHOLD;
 
@@ -250,6 +290,14 @@ const PostList = ({
 
         return removeListener;
     }, []);
+
+    useEffect(() => {
+        setTimeout(() => {
+            listRef?.current?.scrollToOffset({
+                offset: 0,
+            });
+        }, 1000);
+    }, [listRef]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<PostListItem | PostListOtherItem>) => {
         switch (item.type) {
@@ -332,7 +380,7 @@ const PostList = ({
                 scrolledToHighlighted.current = true;
                 // eslint-disable-next-line max-nested-callbacks
                 const index = orderedPosts.findIndex((p) => p.type === 'post' && p.value.currentPost.id === highlightedId);
-                if (index >= 0 && listRef.current) {
+                if (index >= 0 && listRef?.current) {
                     listRef.current?.scrollToIndex({
                         animated: true,
                         index,
@@ -344,12 +392,39 @@ const PostList = ({
         }, 500);
 
         return () => clearTimeout(t);
+
+    // disabled because to keep the implementation as previous as it started complaining about the dependencies
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [orderedPosts, highlightedId]);
+
+    // For inverted list: paddingTop in contentContainerStyle = visual bottom padding
+    const contentContainerStyleWithPadding = useMemo(() => {
+        return [
+            contentContainerStyle,
+            {paddingTop: postInputContainerHeight},
+        ];
+    }, [contentContainerStyle, postInputContainerHeight]);
+
+    // contentInset only for dynamic keyboard height
+    const animatedProps = useAnimatedProps(
+        () => {
+            // For inverted FlatList, contentInset.top applies to the visual bottom
+            return {
+                contentInset: {
+                    top: contentInset.value, // Only keyboard height (dynamic)
+                },
+            };
+        },
+        [contentInset],
+    );
 
     return (
         <>
             <Animated.FlatList
-                contentContainerStyle={contentContainerStyle}
+                animatedProps={animatedProps}
+                automaticallyAdjustContentInsets={false}
+                contentInsetAdjustmentBehavior='never'
+                contentContainerStyle={contentContainerStyleWithPadding}
                 data={orderedPosts}
                 keyboardDismissMode='interactive'
                 keyboardShouldPersistTaps='handled'
@@ -362,9 +437,11 @@ const PostList = ({
                 nativeID={nativeID}
                 onEndReached={onEndReached}
                 onEndReachedThreshold={0.9}
-                onScroll={onScroll}
+                onScroll={onScrollProp}
+                onMomentumScrollEnd={internalOnScroll}
                 onScrollToIndexFailed={onScrollToIndexFailed}
                 onViewableItemsChanged={onViewableItemsChanged}
+                progressViewOffset={progressViewOffset}
                 ref={listRef}
                 removeClippedSubviews={true}
                 renderItem={renderItem}

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {type StyleProp, StyleSheet, type ViewStyle, DeviceEventEmitter} from 'react-native';
+import {type StyleProp, StyleSheet, type ViewStyle, DeviceEventEmitter, FlatList} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {markChannelAsRead, unsetActiveChannelOnServer} from '@actions/remote/channel';
@@ -29,6 +29,7 @@ type Props = {
     nativeID: string;
     posts: PostModel[];
     shouldShowJoinLeaveMessages: boolean;
+    listRef: React.RefObject<FlatList<string | PostModel>>;
 }
 
 const edges: Edge[] = [];
@@ -40,6 +41,7 @@ const styles = StyleSheet.create({
 const ChannelPostList = ({
     channelId, contentContainerStyle, isCRTEnabled,
     lastViewedAt, nativeID, posts, shouldShowJoinLeaveMessages,
+    listRef,
 }: Props) => {
     const appState = useAppState();
     const isTablet = useIsTablet();
@@ -128,6 +130,7 @@ const ChannelPostList = ({
             shouldShowJoinLeaveMessages={shouldShowJoinLeaveMessages}
             showMoreMessages={true}
             testID='channel.post_list'
+            listRef={listRef}
         />
     );
 
