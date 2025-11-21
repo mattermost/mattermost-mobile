@@ -25,6 +25,13 @@ setup_permissions([
   "PhotoLibrary"
 ])
 
+# Conditional Intune MAM support
+intune_enabled = ENV['INTUNE_ENABLED'] == '1'
+
+if intune_enabled
+  puts "🔐 Intune MAM features enabled"
+end
+
 config = use_native_modules!
 
 target 'Mattermost' do
@@ -44,6 +51,11 @@ target 'Mattermost' do
   pod 'Gekidou', :path => './Gekidou'
   pod 'CocoaLumberjack', :modular_headers => true
   pod 'TurboLogIOSNative', :git => 'https://github.com/larkox/react-native-turbo-log-ios-native.git', :modular_headers => true
+
+  # Conditional Intune MAM pod (internal builds only)
+  if intune_enabled
+    pod 'mattermost-intune', :path => '../libraries/@mattermost/intune'
+  end
 end
 
 target 'NotificationService' do

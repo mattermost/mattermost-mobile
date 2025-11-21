@@ -8,6 +8,7 @@ on:
 env:
   NODE_VERSION: 22.14.0
   TERM: xterm
+  INTUNE_ENABLED: 1
 
 jobs:
   test:
@@ -22,7 +23,7 @@ jobs:
         uses: ./.github/actions/test
 
   build-ios-pr:
-    runs-on: macos-14-large
+    runs-on: macos-15-large
     if: ${{ github.event.label.name == 'Build Apps for PR' || github.event.label.name == 'Build App for iOS' }}
     needs:
       - test
@@ -34,6 +35,9 @@ jobs:
 
       - name: ci/prepare-ios-build
         uses: ./.github/actions/prepare-ios-build
+        with:
+          intune-enabled: 'true'
+          github-token: ${{ secrets.MM_MOBILE_GITHUB_TOKEN }}
 
       - name: ci/output-ssh-private-key
         shell: bash

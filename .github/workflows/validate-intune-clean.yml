@@ -1,0 +1,142 @@
+---
+name: Validate Intune Clean
+
+on:
+  pull_request:
+    paths:
+      - 'ios/Podfile'
+      - 'ios/Podfile.lock'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'ios/Mattermost/Info.plist'
+      - 'ios/Mattermost/Mattermost.entitlements'
+      - 'ios/Mattermost.xcodeproj/project.pbxproj'
+
+jobs:
+  validate-podfile-lock:
+    name: Validate Podfile.lock is OSS-only
+    runs-on: ubuntu-latest
+    steps:
+      - name: ci/checkout-repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Check Podfile.lock for Intune references
+        run: |
+          if grep -q "mattermost-intune\|IntuneMAMSwift" ios/Podfile.lock; then
+            echo ""
+            echo "❌ ERROR: Podfile.lock contains Intune dependencies"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo ""
+            echo "The committed Podfile.lock should only contain OSS dependencies."
+            echo "Please restore the OSS version:"
+            echo ""
+            echo "  git checkout main -- ios/Podfile.lock"
+            echo ""
+            echo "Or run: npm run intune:disable"
+            echo ""
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo ""
+            exit 1
+          fi
+          echo "✅ Podfile.lock is clean (OSS-only)"
+
+      - name: Check for package.json Intune reference
+        run: |
+          if grep -q "@mattermost/intune" package.json; then
+            echo ""
+            echo "❌ ERROR: package.json contains @mattermost/intune dependency"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo ""
+            echo "The Intune library should NOT be in package.json dependencies."
+            echo "It is installed via --no-save flag during internal builds only."
+            echo ""
+            echo "Please remove the @mattermost/intune entry from dependencies."
+            echo ""
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo ""
+            exit 1
+          fi
+          echo "✅ package.json is clean (no Intune reference)"
+
+      - name: Check for package-lock.json Intune reference
+        run: |
+          if grep -q "@mattermost/intune" package-lock.json 2>/dev/null; then
+            echo ""
+            echo "❌ ERROR: package-lock.json contains @mattermost/intune"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo ""
+            echo "The Intune library should NOT be in package-lock.json."
+            echo ""
+            echo "Please run: npm install (without INTUNE_ENABLED set)"
+            echo ""
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo ""
+            exit 1
+          fi
+          echo "✅ package-lock.json is clean (no Intune reference)"
+
+      - name: Check Info.plist for Intune configuration
+        run: |
+          if grep -q "IntuneMAMSettings\|msauth\.com\.microsoft\.intunemam\|mattermost-intunemam\|mmauthbeta-intunemam\|intunemam-mtd\|msauthv2\|msauthv3" ios/Mattermost/Info.plist; then
+            echo ""
+            echo "❌ ERROR: Info.plist contains Intune configuration"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo ""
+            echo "The Info.plist should NOT contain Intune-specific settings."
+            echo "Intune configuration is applied by Fastlane during internal builds only."
+            echo ""
+            echo "Please restore the OSS version:"
+            echo ""
+            echo "  git checkout main -- ios/Mattermost/Info.plist"
+            echo ""
+            echo "Or run: npm run intune:disable"
+            echo ""
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo ""
+            exit 1
+          fi
+          echo "✅ Info.plist is clean (no Intune configuration)"
+
+      - name: Check entitlements for Intune keychain groups
+        run: |
+          if grep -q "com\.microsoft\.adalcache\|com\.microsoft\.intune\.mam\|\.intunemam" ios/Mattermost/Mattermost.entitlements 2>/dev/null; then
+            echo ""
+            echo "❌ ERROR: Mattermost.entitlements contains Intune keychain groups"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo ""
+            echo "The entitlements should NOT contain Intune-specific keychain groups."
+            echo "Intune keychain groups are added by Fastlane during internal builds only."
+            echo ""
+            echo "Please restore the OSS version:"
+            echo ""
+            echo "  git checkout main -- ios/Mattermost/Mattermost.entitlements"
+            echo ""
+            echo "Or run: npm run intune:disable"
+            echo ""
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo ""
+            exit 1
+          fi
+          echo "✅ Mattermost.entitlements is clean (no Intune keychain groups)"
+
+      - name: Check project.pbxproj for Intune frameworks
+        run: |
+          if grep -q "MSAL\|IntuneMAM\|IntuneMAMSwift" ios/Mattermost.xcodeproj/project.pbxproj 2>/dev/null; then
+            echo ""
+            echo "❌ ERROR: project.pbxproj contains Intune framework references"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo ""
+            echo "The project.pbxproj should NOT contain Intune framework references."
+            echo "Intune frameworks (MSAL, IntuneMAM, IntuneMAMSwift) are added by Fastlane during internal builds only."
+            echo ""
+            echo "Please restore the OSS version:"
+            echo ""
+            echo "  git checkout main -- ios/Mattermost.xcodeproj/project.pbxproj"
+            echo ""
+            echo "Or run: npm run intune:disable"
+            echo ""
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo ""
+            exit 1
+          fi
+          echo "✅ project.pbxproj is clean (no Intune framework references)"
