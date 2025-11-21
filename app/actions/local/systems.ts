@@ -29,7 +29,7 @@ import {deletePosts} from './post';
 import type {DataRetentionPoliciesRequest} from '@actions/remote/systems';
 
 const {SERVER: {POST}} = MM_TABLES;
-const BOR_POST_CLEANUP_MIN_RIN_INTERVAL = 15 * 60 * 1000; // 15 minutes
+const BOR_POST_CLEANUP_MIN_RUN_INTERVAL = 15 * 60 * 1000; // 15 minutes
 
 export async function storeConfigAndLicense(serverUrl: string, config: ClientConfig, license: ClientLicense) {
     try {
@@ -325,14 +325,13 @@ export async function dismissAnnouncement(serverUrl: string, announcementText: s
 }
 
 export async function expiredBoRPostCleanup() {
-    console.log('expiredBoRPostCleanup....');
-    // const {database: appDatabase} = DatabaseManager.getAppDatabaseAndOperator();
-    // const lastRunAt = await getLastBoRPostCleanupRun(appDatabase);
-    // const shouldRunNow = (lastRunAt - Date.now()) > BOR_POST_CLEANUP_MIN_RIN_INTERVAL;
-    //
-    // if (!shouldRunNow) {
-    //     return {error: undefined};
-    // }
+    const {database: appDatabase} = DatabaseManager.getAppDatabaseAndOperator();
+    const lastRunAt = await getLastBoRPostCleanupRun(appDatabase);
+    const shouldRunNow = (lastRunAt - Date.now()) > BOR_POST_CLEANUP_MIN_RUN_INTERVAL;
+
+    if (!shouldRunNow) {
+        return {error: undefined};
+    }
 
     const servers = await getAllServers();
     for (const server of servers) {

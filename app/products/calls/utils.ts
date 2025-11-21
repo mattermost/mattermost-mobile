@@ -117,8 +117,16 @@ export function isOwnBoRPost(post: PostModel, currentUser?: UserModel): boolean 
     return isBoRPost(post) && Boolean(currentUser && post.userId === currentUser.id);
 }
 
+function isBoRPostExpiredForMe(post: PostModel): boolean {
+    return Boolean(post.metadata?.expire_at) && post.metadata!.expire_at! < Date.now();
+}
+
+function isBorPostExpiredForAll(post: PostModel): boolean {
+    return Boolean(post.props?.expire_at) && ensureNumber(post.props!.expire_at!) < Date.now();
+}
+
 export function isExpiredBoRPost(post: PostModel): boolean {
-    return isBoRPost(post) && Boolean(post.metadata?.expire_at) && post.metadata!.expire_at! < Date.now();
+    return isBoRPost(post) && (isBorPostExpiredForAll(post) || isBoRPostExpiredForMe(post));
 }
 
 export function idsAreEqual(a: string[], b: string[]) {
