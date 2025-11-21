@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {AppState, type AppStateStatus} from 'react-native';
+import {AppState, type AppStateStatus, type NativeEventSubscription} from 'react-native';
 import {BehaviorSubject} from 'rxjs';
 import {distinctUntilChanged} from 'rxjs/operators';
 
@@ -54,7 +54,7 @@ class NetworkPerformanceManagerSingleton {
     private requestOutcomes: Record<string, RequestOutcome[]> = {};
     private initialRequestTimestamp: Record<string, number> = {};
     private isInitialDetection: Record<string, boolean> = {};
-    private appStateSubscription: any = null;
+    private appStateSubscription: NativeEventSubscription | null = null;
 
     constructor() {
         this.setupAppStateMonitoring();

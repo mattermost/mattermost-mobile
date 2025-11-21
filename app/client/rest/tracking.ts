@@ -132,18 +132,6 @@ export default class ClientTracking {
         group.totalCompressedSize += metrics?.compressedSize ?? 0;
     }
 
-    startNetworkPerformanceTracking(url: string): string {
-        return NetworkPerformanceManager.startRequestTracking(this.apiClient.baseUrl, url);
-    }
-
-    completeNetworkPerformanceTracking(requestId: string, url: string, metrics?: ClientResponseMetrics) {
-        NetworkPerformanceManager.completeRequestTracking(this.apiClient.baseUrl, requestId, metrics);
-    }
-
-    cancelNetworkPerformanceTracking(requestId: string) {
-        NetworkPerformanceManager.cancelRequestTracking(this.apiClient.baseUrl, requestId);
-    }
-
     getAverageLatency(groupLabel: RequestGroupLabel): number {
         const groupData = this.requestGroups.get(groupLabel);
         if (!groupData) {
@@ -396,13 +384,13 @@ export default class ClientTracking {
             this.incrementRequestCount(groupLabel);
         }
 
-        const performanceRequestId = this.startNetworkPerformanceTracking(url);
+        const performanceRequestId = NetworkPerformanceManager.startRequestTracking(this.apiClient.baseUrl, url);
 
         let response: ClientResponse;
         try {
             response = await request!(url, this.buildRequestOptions(options));
         } catch (error) {
-            this.cancelNetworkPerformanceTracking(performanceRequestId);
+            NetworkPerformanceManager.cancelRequestTracking(this.apiClient.baseUrl, performanceRequestId);
             const response_error = error as ClientError;
             const status_code = isErrorWithStatusCode(error) ? error.status_code : undefined;
             throw new ClientError(this.apiClient.baseUrl, {
@@ -425,7 +413,7 @@ export default class ClientTracking {
         if (groupLabel && CollectNetworkMetrics) {
             this.trackRequest(groupLabel, url, response.metrics);
         }
-        this.completeNetworkPerformanceTracking(performanceRequestId, url, response.metrics);
+        NetworkPerformanceManager.completeRequestTracking(this.apiClient.baseUrl, performanceRequestId, response.metrics);
         const serverVersion = semverFromServerVersion(
             headers[ClientConstants.HEADER_X_VERSION_ID] || headers[ClientConstants.HEADER_X_VERSION_ID.toLowerCase()],
         );
