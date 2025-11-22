@@ -80,6 +80,50 @@ export const apiGetConfig = async (baseUrl: string): Promise<any> => {
 };
 
 /**
+ * Update server configuration.
+ * See https://api.mattermost.com/#operation/UpdateConfig
+ * @param {string} baseUrl - the base server URL
+ * @param {Object} newConfig - partial configuration object to merge with current config
+ * @return {Object} returns {config} on success or {error, status} on error
+ */
+export const apiUpdateConfig = async (baseUrl: string, newConfig: any): Promise<any> => {
+    try {
+        // Get current config first
+        const {config: currentConfig} = await apiGetConfig(baseUrl);
+
+        // Simple deep merge - replace matching properties
+        const mergedConfig = {...currentConfig};
+        Object.keys(newConfig).forEach((section) => {
+            if (typeof newConfig[section] === 'object' && newConfig[section] !== null) {
+                mergedConfig[section] = {...mergedConfig[section], ...newConfig[section]};
+            } else {
+                mergedConfig[section] = newConfig[section];
+            }
+        });
+
+        // Send the merged config
+        const response = await client.put(`${baseUrl}/api/v4/config`, mergedConfig);
+        return {config: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
+ * Check that plugin uploads are enabled, fail if not.
+ * @param {string} baseUrl - the base server URL
+ * @return {Promise<void>} throws error if plugin uploads are disabled
+ */
+export const shouldHavePluginUploadEnabled = async (baseUrl: string): Promise<void> => {
+    const {config} = await apiGetConfig(baseUrl);
+    const isUploadEnabled = config.PluginSettings.EnableUploads;
+    if (!isUploadEnabled) {
+        throw new Error('Plugin uploads must be enabled for this test to run. Set PluginSettings.EnableUploads=true');
+    }
+    jestExpect(isUploadEnabled).toEqual(true);
+};
+
+/**
  * Ping server status.
  * See https://api.mattermost.com/#operation/GetPing
  * @param {string} baseUrl - the base server URL
@@ -192,8 +236,10 @@ export const System = {
     apiRequireLicense,
     apiRequireLicenseForFeature,
     apiRequireSMTPServer,
+    apiUpdateConfig,
     apiUploadLicense,
     getClientLicense,
+    shouldHavePluginUploadEnabled,
 };
 
 export default System;
