@@ -60,8 +60,10 @@ class MattermostShareImpl(private val reactContext: ReactApplicationContext) {
         if (data != null && data.hasKey("serverUrl") && data.hasKey("token")) {
             val jsonObject = data.toJson()
             val jsonString = jsonObject.toString()
+            val isDraft = data.getBoolean("isDraft")
             val inputData = Data.Builder()
                     .putString("json_data", jsonString)
+                    .putBoolean("isDraft", isDraft)
                     .putString("tempFolder", this.tempFolder?.absolutePath)
                     .build()
 

@@ -104,6 +104,27 @@ PODS:
     - ReactCommon/turbomodule/core
     - TurboLogIOSNative
     - Yoga
+  - mattermost-rnshare (0.0.0):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.10.14.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - mattermost-rnutils (0.0.0):
     - DoubleConversion
     - glog
@@ -2247,6 +2268,7 @@ DEPENDENCIES:
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
   - "mattermost-hardware-keyboard (from `../node_modules/@mattermost/hardware-keyboard`)"
   - "mattermost-react-native-turbo-log (from `../node_modules/@mattermost/react-native-turbo-log`)"
+  - "mattermost-rnshare (from `../node_modules/@mattermost/rnshare`)"
   - "mattermost-rnutils (from `../node_modules/@mattermost/rnutils`)"
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCT-Folly/Fabric (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
@@ -2403,6 +2425,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@mattermost/hardware-keyboard"
   mattermost-react-native-turbo-log:
     :path: "../node_modules/@mattermost/react-native-turbo-log"
+  mattermost-rnshare:
+    :path: "../node_modules/@mattermost/rnshare"
   mattermost-rnutils:
     :path: "../node_modules/@mattermost/rnutils"
   RCT-Folly:
@@ -2625,6 +2649,7 @@ SPEC CHECKSUMS:
   JitsiWebRTC: b47805ab5668be38e7ee60e2258f49badfe8e1d0
   mattermost-hardware-keyboard: a17b424a774fe564c6b90016ba0bc02e4b567a3e
   mattermost-react-native-turbo-log: 08d7dba812981a2c155f00df12878222ee6eb062
+  mattermost-rnshare: 25c13cef98b442d7f0474fe21d428f0370a46421
   mattermost-rnutils: 32f4f7ad85e2e470259a0e1e5ae6cd4fee83e77e
   RCT-Folly: ea9d9256ba7f9322ef911169a9f696e5857b9e17
   RCTDeprecation: ebe712bb05077934b16c6bf25228bdec34b64f83
