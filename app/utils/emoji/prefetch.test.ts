@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Image as ExpoImage} from 'expo-image';
-import {Image, Platform} from 'react-native';
+import {Platform} from 'react-native';
 
 import {logDebug} from '@utils/log';
 import {urlSafeBase64Encode} from '@utils/security';
@@ -53,16 +53,5 @@ describe('prefetchCustomEmojiImages', () => {
 
         expect(logDebug).toHaveBeenCalledWith('Prefetching 2 custom emoji images');
         expect(ExpoImage.prefetch).toHaveBeenCalledWith(expectedResults, {cachePolicy: 'disk'});
-    });
-
-    it('should prefetch custom emoji images on Android', () => {
-        const prefetchSpy = jest.spyOn(Image, 'prefetch');
-        Platform.OS = 'android';
-
-        prefetchCustomEmojiImages(mockClient, emojis);
-
-        expect(logDebug).toHaveBeenCalledWith('Prefetching 2 custom emoji images');
-        expect(prefetchSpy).toHaveBeenCalledWith('url/emoji1');
-        expect(prefetchSpy).toHaveBeenCalledWith('url/emoji2');
     });
 });

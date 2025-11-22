@@ -1,16 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Image, type ImageSource} from 'expo-image';
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {Image, type ImageSourcePropType, StyleSheet, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 
 import Button from '@components/button';
 import {Sso} from '@constants';
 
 type SsoInfo = {
     text: string;
-    imageSrc?: ImageSourcePropType;
+    imageSrc?: ImageSource;
     compassIcon?: string;
 };
 
@@ -85,6 +86,7 @@ const SsoOptions = ({goToSso, ssoOnly, ssoOptions, theme}: Props) => {
                             key={'image' + ssoType}
                             source={imageSrc}
                             style={styles.logoStyle}
+                            cachePolicy='memory'
                         />
                     ) : undefined}
                     text={text}

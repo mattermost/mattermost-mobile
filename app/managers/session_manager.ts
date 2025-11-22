@@ -58,7 +58,12 @@ export class SessionManagerSingleton {
         queryGlobalValue(GLOBAL_IDENTIFIERS.CACHE_MIGRATION)?.fetch().then((records) => {
             const cacheMigrationDone = Boolean(records?.[0]?.value);
             if (!cacheMigrationDone) {
-                deleteFileCacheByDir('com.hackemist.SDImageCache');
+                if (Platform.OS === 'ios') {
+                    deleteFileCacheByDir('com.hackemist.SDImageCache');
+                } else if (Platform.OS === 'android') {
+                    deleteFileCacheByDir('image_cache');
+                    deleteFileCacheByDir('image_manager_disk_cache');
+                }
                 updateToMigrationDone = true;
             }
         }).finally(() => {

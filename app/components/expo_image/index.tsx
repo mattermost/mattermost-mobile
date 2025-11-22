@@ -42,11 +42,30 @@ const ExpoImage = forwardRef<Image, ExpoImageProps>(({id, ...props}, ref) => {
         return props.source;
     }, [id, props.source, cachePath]);
 
+    // Process placeholder to add cachePath and cacheKey if it has a uri
+    const placeholder: ImageSource | undefined = useMemo(() => {
+        if (!props.placeholder || typeof props.placeholder === 'number' || typeof props.placeholder === 'string') {
+            return props.placeholder;
+        }
+
+        // If placeholder has a uri and id is provided, add cachePath and cacheKey
+        if (props.placeholder.uri && id) {
+            return {
+                ...props.placeholder,
+                cacheKey: `${id}-thumb`,
+                cachePath,
+            };
+        }
+
+        return props.placeholder;
+    }, [props.placeholder, id, cachePath]);
+
     return (
         <Image
             ref={ref}
             {...props}
             source={source}
+            placeholder={placeholder}
         />
     );
 });
@@ -72,10 +91,29 @@ const ExpoImageBackground = ({id, ...props}: ExpoImageBackgroundProps) => {
         return props.source;
     }, [id, props.source, cachePath]);
 
+    // Process placeholder to add cachePath and cacheKey if it has a uri
+    const placeholder: ImageSource | undefined = useMemo(() => {
+        if (!props.placeholder || typeof props.placeholder === 'number' || typeof props.placeholder === 'string') {
+            return props.placeholder;
+        }
+
+        // If placeholder has a uri and id is provided, add cachePath and cacheKey
+        if (props.placeholder.uri && id) {
+            return {
+                ...props.placeholder,
+                cacheKey: `${id}-thumb`,
+                cachePath,
+            };
+        }
+
+        return props.placeholder;
+    }, [props.placeholder, id, cachePath]);
+
     return (
         <ImageBackground
             {...props}
             source={source}
+            placeholder={placeholder}
         >
             {props.children}
         </ImageBackground>

@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import NetInfo from '@react-native-community/netinfo';
-import {Image} from 'expo-image';
 import {Platform} from 'react-native';
 
 import {removePushDisabledInServerAcknowledged} from '@actions/app/global';
@@ -122,11 +121,7 @@ export const terminateSession = async (serverUrl: string, removeServer: boolean)
 
     resetLocale();
     clearCookiesForServer(serverUrl);
-    Image.clearDiskCache(urlSafeBase64Encode(serverUrl));
     deleteFileCache(serverUrl);
     deleteFileCacheByDir('mmPasteInput');
     deleteFileCacheByDir('thumbnails');
-    if (Platform.OS === 'android') {
-        deleteFileCacheByDir('image_cache');
-    }
 };

@@ -1,7 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {DeviceEventEmitter, Image} from 'react-native';
+import {Image} from 'expo-image';
+import {DeviceEventEmitter} from 'react-native';
 
 import {Navigation, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -10,8 +11,10 @@ import {getCurrentChannelId, getCurrentTeamId, setCurrentTeamAndChannelId} from 
 import {addChannelToTeamHistory} from '@queries/servers/team';
 import {goToScreen, popTo} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
+import {getExtensionFromMime} from '@utils/file';
 import {isTablet} from '@utils/helpers';
 import {logError} from '@utils/log';
+import {urlSafeBase64Encode} from '@utils/security';
 import {isParsableUrl} from '@utils/url';
 
 import type {DraftScreenTab} from '@constants/draft';
@@ -296,49 +299,40 @@ export async function updateDraftMarkdownImageMetadata({
     }
 }
 
-async function getImageMetadata(url: string) {
-    let height = 0;
-    let width = 0;
+async function getImageMetadata(serverUrl: string, url: string) {
     let format;
-    await new Promise((resolve) => {
-        Image.getSize(
-            url,
-            (imageWidth, imageHeight) => {
-                width = imageWidth;
-                height = imageHeight;
-                resolve(null);
-            },
-            (error) => {
-                logError('Failed getImageMetadata to get image size', error);
-            },
-        );
-    });
+    const image = await Image.loadAsync({uri: url, cachePath: urlSafeBase64Encode(serverUrl)});
 
-    /**
-     * Regex Explanation:
-     * \.       - Matches a literal period (e.g., before "jpg").
-     * (\w+)    - Captures the file extension (letters, digits, or underscores).
-     * (?=\?|$) - Ensures the extension is followed by "?" or the end of the URL.
-     *
-     * * Example Matches:
-     * "https://example.com/image.jpg"         -> Matches "jpg"
-     * "https://example.com/image.png?size=1"  -> Matches "png"
-     * "https://example.com/file"              -> No match (no file extension).
-     */
-    const match = url.match(/\.(\w+)(?=\?|$)/);
-    if (match) {
-        format = match[1];
+    if (image.mediaType) {
+        format = getExtensionFromMime(image.mediaType);
+    } else {
+        /**
+         * Regex Explanation:
+         * \.       - Matches a literal period (e.g., before "jpg").
+         * (\w+)    - Captures the file extension (letters, digits, or underscores).
+         * (?=\?|$) - Ensures the extension is followed by "?" or the end of the URL.
+         *
+         * * Example Matches:
+         * "https://example.com/image.jpg"         -> Matches "jpg"
+         * "https://example.com/image.png?size=1"  -> Matches "png"
+         * "https://example.com/file"              -> No match (no file extension).
+         */
+        const match = url.match(/\.(\w+)(?=\?|$)/);
+        if (match) {
+            format = match[1];
+        }
     }
+
     return {
-        height,
-        width,
+        height: image.height,
+        width: image.width,
         format,
         frame_count: 1,
         url,
     };
 }
 
-export async function parseMarkdownImages(markdown: string, imageMetadata: Dictionary<PostImage | undefined>) {
+export async function parseMarkdownImages(serverUrl: string, markdown: string, imageMetadata: Dictionary<PostImage | undefined>) {
     // Regex break down
     // ([a-zA-Z][a-zA-Z\d+\-.]*):\/\/ - Matches any valid scheme (protocol), such as http, https, ftp, mailto, file, etc.
     // [^\s()<>]+ - Matches the main part of the URL, excluding spaces, parentheses, and angle brackets.
@@ -350,7 +344,7 @@ export async function parseMarkdownImages(markdown: string, imageMetadata: Dicti
     const promises = matches.reduce<Array<Promise<PostImage & {url: string}>>>((result, match) => {
         const imageUrl = match[1];
         if (isParsableUrl(imageUrl)) {
-            result.push(getImageMetadata(imageUrl));
+            result.push(getImageMetadata(serverUrl, imageUrl));
         }
         return result;
     }, []);

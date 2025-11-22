@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import NetInfo, {type NetInfoState} from '@react-native-community/netinfo';
-import {Image} from 'expo-image';
 import {Platform} from 'react-native';
 
 import {removePushDisabledInServerAcknowledged} from '@actions/app/global';
@@ -285,7 +284,6 @@ describe('session actions', () => {
             expect(DatabaseManager.destroyServerDatabase).toHaveBeenCalledWith(mockServerUrl);
             expect(resetMomentLocale).toHaveBeenCalled();
             expect(clearCookiesForServer).toHaveBeenCalledWith(mockServerUrl);
-            expect(Image.clearDiskCache).toHaveBeenCalledWith(encodedServerUrl);
             expect(deleteFileCache).toHaveBeenCalledWith(mockServerUrl);
             expect(deleteFileCacheByDir).toHaveBeenCalledWith('mmPasteInput');
             expect(deleteFileCacheByDir).toHaveBeenCalledWith('thumbnails');
@@ -309,7 +307,6 @@ describe('session actions', () => {
             await terminateSession(mockServerUrl, true);
 
             expect(urlSafeBase64Encode).toHaveBeenCalledWith(mockServerUrl);
-            expect(Image.clearDiskCache).toHaveBeenCalledWith(encodedServerUrl);
         });
 
         it('should delete file caches for server and common directories', async () => {
@@ -318,22 +315,6 @@ describe('session actions', () => {
             expect(deleteFileCache).toHaveBeenCalledWith(mockServerUrl);
             expect(deleteFileCacheByDir).toHaveBeenCalledWith('mmPasteInput');
             expect(deleteFileCacheByDir).toHaveBeenCalledWith('thumbnails');
-        });
-
-        it('should delete image_cache directory on Android', async () => {
-            Platform.OS = 'android';
-
-            await terminateSession(mockServerUrl, true);
-
-            expect(deleteFileCacheByDir).toHaveBeenCalledWith('image_cache');
-        });
-
-        it('should not delete image_cache directory on iOS', async () => {
-            Platform.OS = 'ios';
-
-            await terminateSession(mockServerUrl, true);
-
-            expect(deleteFileCacheByDir).not.toHaveBeenCalledWith('image_cache');
         });
 
         it('should reset locale with user locale when active server database exists', async () => {
