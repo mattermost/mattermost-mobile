@@ -211,93 +211,99 @@ export const buildSecurityAlertOptions = async (
  * Shows an alert when the device is not trusted (jailbroken or rooted).
  */
 export const showDeviceNotTrustedAlert = async (server: string, siteName: string | undefined, locale?: string) => {
+    let serverSiteName;
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(server);
-        const translations = getTranslations(locale || DEFAULT_LOCALE);
-        const serverSiteName = await getConfigValue(database, 'SiteName');
-        const buttons = await buildSecurityAlertOptions(server, translations);
-        const securedBy = siteName || serverSiteName || 'Mattermost';
-
-        Alert.alert(
-            translations[messages.blocked_by.id].replace('{vendor}', securedBy),
-            translations[messages.jailbreak.id].
-                replace('{vendor}', securedBy),
-            buttons,
-            {cancelable: false},
-        );
+        serverSiteName = await getConfigValue(database, 'SiteName');
     } catch (error) {
         logError('showDeviceNotTrustedAlert', error);
     }
+
+    const translations = getTranslations(locale || DEFAULT_LOCALE);
+    const buttons = await buildSecurityAlertOptions(server, translations);
+    const securedBy = siteName || serverSiteName || 'Mattermost';
+
+    Alert.alert(
+        translations[messages.blocked_by.id].replace('{vendor}', securedBy),
+        translations[messages.jailbreak.id].
+            replace('{vendor}', securedBy),
+        buttons,
+        {cancelable: false},
+    );
 };
 
 /**
  * Shows an alert when the device does not have biometrics or passcode set.
  */
 export const showNotSecuredAlert = async (server: string, siteName: string | undefined, locale?: string) => {
+    const buttons: AlertButton[] = [];
+    let serverSiteName;
     try {
-        const buttons: AlertButton[] = [];
         const {database} = DatabaseManager.getServerDatabaseAndOperator(server);
-        const translations = getTranslations(locale || DEFAULT_LOCALE);
-        const serverSiteName = await getConfigValue(database, 'SiteName');
-        const securedBy = siteName || serverSiteName || 'Mattermost';
-
-        if (Platform.OS === 'android') {
-            buttons.push({
-                text: translations[messages.androidSettings.id],
-                onPress: () => {
-                    Emm.openSecuritySettings();
-                },
-            });
-        }
-
-        const alertButtons = await buildSecurityAlertOptions(server, translations);
-        buttons.push(...alertButtons);
-
-        let message;
-        if (serverSiteName || siteName) {
-            const key = Platform.select({ios: messages.not_secured_vendor_ios.id, default: messages.not_secured_vendor_android.id});
-            message = translations[key].replace('{vendor}', securedBy);
-        } else {
-            const key = Platform.select({ios: messages.not_secured_ios.id, default: messages.not_secured_android.id});
-            message = translations[key];
-        }
-
-        Alert.alert(
-            translations[messages.blocked_by.id].replace('{vendor}', securedBy),
-            message,
-            buttons,
-            {cancelable: false},
-        );
+        serverSiteName = await getConfigValue(database, 'SiteName');
     } catch (error) {
         logError('showNotSecuredAlert', error);
     }
+
+    const translations = getTranslations(locale || DEFAULT_LOCALE);
+    const securedBy = siteName || serverSiteName || 'Mattermost';
+
+    if (Platform.OS === 'android') {
+        buttons.push({
+            text: translations[messages.androidSettings.id],
+            onPress: () => {
+                Emm.openSecuritySettings();
+            },
+        });
+    }
+
+    const alertButtons = await buildSecurityAlertOptions(server, translations);
+    buttons.push(...alertButtons);
+
+    let message;
+    if (serverSiteName || siteName) {
+        const key = Platform.select({ios: messages.not_secured_vendor_ios.id, default: messages.not_secured_vendor_android.id});
+        message = translations[key].replace('{vendor}', securedBy);
+    } else {
+        const key = Platform.select({ios: messages.not_secured_ios.id, default: messages.not_secured_android.id});
+        message = translations[key];
+    }
+
+    Alert.alert(
+        translations[messages.blocked_by.id].replace('{vendor}', securedBy),
+        message,
+        buttons,
+        {cancelable: false},
+    );
 };
 
 /**
  * Shows an alert when biometric authentication fails.
  */
 export const showBiometricFailureAlert = async (server: string, blurOnAuthenticate: boolean, siteName: string | undefined, locale?: string, retryCallback?: () => void) => {
+    let serverSiteName;
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(server);
-        const translations = getTranslations(locale || DEFAULT_LOCALE);
-        const serverSiteName = await getConfigValue(database, 'SiteName');
-
-        const buttons = await buildSecurityAlertOptions(server, translations, () => {
-            if (blurOnAuthenticate) {
-                Emm.removeBlurEffect();
-            }
-        }, retryCallback);
-        const securedBy = siteName || serverSiteName || 'Mattermost';
-
-        Alert.alert(
-            translations[messages.blocked_by.id].replace('{vendor}', securedBy),
-            translations[messages.biometric_failed.id],
-            buttons,
-            {cancelable: false},
-        );
+        serverSiteName = await getConfigValue(database, 'SiteName');
     } catch (error) {
         logError('showBiometricFailureAlert', error);
     }
+
+    const translations = getTranslations(locale || DEFAULT_LOCALE);
+
+    const buttons = await buildSecurityAlertOptions(server, translations, () => {
+        if (blurOnAuthenticate) {
+            Emm.removeBlurEffect();
+        }
+    }, retryCallback);
+    const securedBy = siteName || serverSiteName || 'Mattermost';
+
+    Alert.alert(
+        translations[messages.blocked_by.id].replace('{vendor}', securedBy),
+        translations[messages.biometric_failed.id],
+        buttons,
+        {cancelable: false},
+    );
 };
 
 export const showBiometricFailureAlertForOrganization = async (server: string, locale?: string, retryCallback?: () => void) => {
