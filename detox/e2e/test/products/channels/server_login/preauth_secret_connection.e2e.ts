@@ -68,8 +68,8 @@ describe('Server Login - Preauth Secret Connection', () => {
         // * Verify preauth secret field is now visible with correct text and styling
         await expect(preauthSecretInput).toBeVisible();
         await expect(preauthSecretHelp).toBeVisible();
-        await expect(element(by.text('Authentication secret'))).toBeVisible();
-        await expect(preauthSecretHelp).toHaveText('The authentication secret shared by the administrator');
+        await expect(element(by.text('Pre-authentication secret'))).toBeVisible();
+        await expect(preauthSecretHelp).toHaveText('The pre-authentication secret shared by the administrator');
 
         // # Toggle advanced options again to hide
         await ServerScreen.toggleAdvancedOptions();
