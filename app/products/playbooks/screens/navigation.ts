@@ -187,3 +187,23 @@ export async function goToStartARun(intl: IntlShape, theme: Theme, playbook: Pla
         },
     });
 }
+
+export function goToCreateQuickChecklist(
+    intl: IntlShape,
+    channelId: string,
+    channelName: string,
+    currentUserId: string,
+    currentTeamId: string,
+    serverUrl: string,
+) {
+    const screen = Screens.PLAYBOOKS_CREATE_QUICK_CHECKLIST;
+    const title = intl.formatMessage({id: 'mobile.playbook.create_checklist', defaultMessage: 'Create Checklist'});
+
+    goToScreen(screen, title, {
+        channelId,
+        channelName,
+        currentUserId,
+        currentTeamId,
+        serverUrl,
+    }, {}); // Empty options, no subtitle needed
+}

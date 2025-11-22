@@ -19,17 +19,14 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {usePreventDoubleTap} from '@hooks/utils';
-import {createPlaybookRun, fetchPlaybookRunsForChannel} from '@playbooks/actions/remote/runs';
-import {goToPlaybookRun, goToPlaybookRuns} from '@playbooks/screens/navigation';
+import {fetchPlaybookRunsForChannel} from '@playbooks/actions/remote/runs';
+import {goToCreateQuickChecklist, goToPlaybookRun, goToPlaybookRuns} from '@playbooks/screens/navigation';
 import {BOTTOM_SHEET_ANDROID_OFFSET} from '@screens/bottom_sheet';
 import ChannelBanner from '@screens/channel/header/channel_banner';
 import {bottomSheet, popTopScreen, showModal} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {isTypeDMorGM} from '@utils/channel';
-import {getFullErrorMessage} from '@utils/errors';
 import {bottomSheetSnapPoint} from '@utils/helpers';
-import {logDebug} from '@utils/log';
-import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -219,33 +216,17 @@ const ChannelHeader = ({
         });
     }, [isTablet, callsAvailable, isDMorGM, hasPlaybookRuns, theme, onTitlePress, channelId]);
 
-    const handleCreateQuickRun = useCallback(async () => {
-        const runName = `${displayName} Checklist`;
-        const res = await createPlaybookRun(
-            serverUrl,
-            '', // empty playbook_id
-            currentUserId,
-            teamId,
-            runName,
-            '', // empty description
-            channelId,
-        );
-
-        if (res.error || !res.data) {
-            logDebug('error on createPlaybookRun', getFullErrorMessage(res.error));
-            showPlaybookErrorSnackbar();
-            return;
-        }
-
-        // Fetch updated runs and navigate to the new run
-        await fetchPlaybookRunsForChannel(serverUrl, channelId);
-        await goToPlaybookRun(intl, res.data.id);
-    }, [serverUrl, currentUserId, teamId, displayName, channelId, intl]);
-
     const openPlaybooksRuns = useCallback(() => {
         // If no active runs, create a new one instead
         if (playbooksActiveRuns === 0) {
-            handleCreateQuickRun();
+            goToCreateQuickChecklist(
+                intl,
+                channelId,
+                displayName,
+                currentUserId,
+                teamId,
+                serverUrl,
+            );
             return;
         }
 
@@ -254,7 +235,7 @@ const ChannelHeader = ({
             return;
         }
         goToPlaybookRuns(intl, channelId, displayName);
-    }, [playbooksActiveRuns, handleCreateQuickRun, activeRunId, channelId, displayName, intl]);
+    }, [playbooksActiveRuns, activeRunId, channelId, displayName, intl, currentUserId, teamId, serverUrl]);
 
     const rightButtons = useMemo(() => {
         const buttons: HeaderRightButton[] = [];
