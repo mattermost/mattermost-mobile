@@ -74,6 +74,7 @@ const SsoOptions = ({goToSso, ssoOnly, ssoOptions, theme}: Props) => {
                 key={ssoType}
             >
                 <Button
+                    testID={`login_options.sso.${ssoType}`}
                     key={ssoType}
                     onPress={handlePress}
                     size='lg'
