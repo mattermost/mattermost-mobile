@@ -35,13 +35,28 @@ jobs:
   update-initial-status-ios:
     if: inputs.PLATFORM == 'ios'
     runs-on: ubuntu-22.04
+    outputs:
+      mobile_sha: ${{ steps.get-sha.outputs.MOBILE_SHA }}
     steps:
-      - uses: mattermost/actions/delivery/update-commit-status@main
+      - name: Checkout Repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+
+      - name: Get commit SHA
+        id: get-sha
+        run: |
+          MOBILE_SHA=$(git rev-parse HEAD)
+          echo "MOBILE_SHA=${MOBILE_SHA}" >> ${GITHUB_OUTPUT}
+          echo "Resolved MOBILE_VERSION=${{ inputs.MOBILE_VERSION }} to SHA=${MOBILE_SHA}"
+
+      - name: Update commit status
+        uses: mattermost/actions/delivery/update-commit-status@main
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           repository_full_name: ${{ github.repository }}
-          commit_sha: ${{ github.sha }}
+          commit_sha: ${{ steps.get-sha.outputs.MOBILE_SHA }}
           context: e2e/detox-ios-tests
           description: Detox iOS tests for mattermost mobile app have started ...
           status: pending
@@ -49,13 +64,28 @@ jobs:
   update-initial-status-android:
     if: inputs.PLATFORM == 'android'
     runs-on: ubuntu-22.04
+    outputs:
+      mobile_sha: ${{ steps.get-sha.outputs.MOBILE_SHA }}
     steps:
-      - uses: mattermost/actions/delivery/update-commit-status@main
+      - name: Checkout Repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+
+      - name: Get commit SHA
+        id: get-sha
+        run: |
+          MOBILE_SHA=$(git rev-parse HEAD)
+          echo "MOBILE_SHA=${MOBILE_SHA}" >> ${GITHUB_OUTPUT}
+          echo "Resolved MOBILE_VERSION=${{ inputs.MOBILE_VERSION }} to SHA=${MOBILE_SHA}"
+
+      - name: Update commit status
+        uses: mattermost/actions/delivery/update-commit-status@main
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           repository_full_name: ${{ github.repository }}
-          commit_sha: ${{ github.sha }}
+          commit_sha: ${{ steps.get-sha.outputs.MOBILE_SHA }}
           context: e2e/detox-android-tests
           description: Detox Android tests for mattermost mobile app have started ...
           status: pending
@@ -63,6 +93,8 @@ jobs:
   build-ios-simulator:
     if: inputs.PLATFORM == 'ios'
     runs-on: macos-14
+    needs:
+      - update-initial-status-ios
     steps:
       - name: Checkout Repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -90,6 +122,8 @@ jobs:
   build-android-apk:
     if: inputs.PLATFORM == 'android'
     runs-on: ubuntu-latest-8-cores
+    needs:
+      - update-initial-status-android
     env:
       ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
     steps:
@@ -190,6 +224,7 @@ jobs:
     if: inputs.PLATFORM == 'ios'
     runs-on: ubuntu-22.04
     needs:
+      - update-initial-status-ios
       - run-ios-tests-on-main-scheduled
     steps:
       - uses: mattermost/actions/delivery/update-commit-status@main
@@ -197,7 +232,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           repository_full_name: ${{ github.repository }}
-          commit_sha: ${{ github.sha }}
+          commit_sha: ${{ needs.update-initial-status-ios.outputs.mobile_sha }}
           context: e2e/detox-ios-tests
           description: Completed with ${{ needs.run-ios-tests-on-main-scheduled.outputs.FAILURES }} failures
           status: ${{ needs.run-ios-tests-on-main-scheduled.outputs.STATUS }}
@@ -207,6 +242,7 @@ jobs:
     if: inputs.PLATFORM == 'android'
     runs-on: ubuntu-22.04
     needs:
+      - update-initial-status-android
       - run-android-tests-on-main-scheduled
     steps:
       - uses: mattermost/actions/delivery/update-commit-status@main
@@ -214,7 +250,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           repository_full_name: ${{ github.repository }}
-          commit_sha: ${{ github.sha }}
+          commit_sha: ${{ needs.update-initial-status-android.outputs.mobile_sha }}
           context: e2e/detox-android-tests
           description: Completed with ${{ needs.run-android-tests-on-main-scheduled.outputs.FAILURES }} failures
           status: ${{ needs.run-android-tests-on-main-scheduled.outputs.STATUS }}
