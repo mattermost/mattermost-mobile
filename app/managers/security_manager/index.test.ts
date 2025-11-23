@@ -5,21 +5,21 @@
 
 import Emm from '@mattermost/react-native-emm';
 import {isRootedExperimentalAsync} from 'expo-device';
-import {type AppStateStatus, type EventSubscription} from 'react-native';
 
 import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import IntuneManager from '@managers/intune_manager';
+import {
+    type IntunePolicy,
+} from '@managers/intune_manager/types';
 import {queryAllActiveServers} from '@queries/app/servers';
 import {getSecurityConfig} from '@queries/servers/system';
-import TestHelper from '@test/test_helper';
 import * as alerts from '@utils/alerts';
 import {toMilliseconds} from '@utils/datetime';
 import {logError} from '@utils/log';
 
 import SecurityManager from '.';
 
-import type {IntunePolicy} from '@managers/intune_manager/types';
 import type {Query} from '@nozbe/watermelondb';
 import type {ServerDatabase} from '@typings/database/database';
 import type ServersModel from '@typings/database/models/app/servers';
@@ -30,13 +30,19 @@ jest.mock('@mattermost/react-native-emm', () => ({
     openSecuritySettings: jest.fn(),
     exitApp: jest.fn(),
     enableBlurScreen: jest.fn(),
+    applyBlurEffect: jest.fn(),
+    removeBlurEffect: jest.fn(),
 }));
 
 jest.mock('expo-device', () => ({
     isRootedExperimentalAsync: jest.fn(),
 }));
 jest.mock('@actions/app/server', () => ({switchToServer: jest.fn()}));
-jest.mock('@actions/remote/session', () => ({logout: jest.fn()}));
+jest.mock('@actions/local/session', () => ({terminateSession: jest.fn()}));
+jest.mock('@actions/local/user', () => ({getCurrentUserLocale: jest.fn(() => Promise.resolve('en'))}));
+jest.mock('@actions/remote/session', () => ({
+    logout: jest.fn(),
+}));
 jest.mock('@utils/datetime', () => ({toMilliseconds: jest.fn(() => 25000)}));
 jest.mock('@utils/helpers', () => ({
     isMainActivity: jest.fn(() => true),
@@ -54,9 +60,14 @@ jest.mock('@database/manager', () => ({
 }));
 jest.mock('@queries/servers/system', () => ({
     getSecurityConfig: jest.fn(),
+    getConfig: jest.fn(),
 }));
 jest.mock('@queries/app/servers', () => ({
     queryAllActiveServers: jest.fn(),
+}));
+jest.mock('@queries/servers/user', () => ({
+    getCurrentUser: jest.fn(),
+    getCurrentUserLocale: jest.fn(() => Promise.resolve('en')),
 }));
 
 describe('SecurityManager', () => {
@@ -76,8 +87,8 @@ describe('SecurityManager', () => {
             const mockFetch = jest.fn().mockResolvedValue(mockServers);
             jest.mocked(queryAllActiveServers).mockReturnValue({fetch: mockFetch} as unknown as Query<ServersModel>);
 
-            const mockConfig1 = {SiteName: 'Server One', MobileEnableBiometrics: 'true'} as ClientConfig;
-            const mockConfig2 = {SiteName: 'Server Two', MobilePreventScreenCapture: 'true'} as ClientConfig;
+            const mockConfig1 = {SiteName: 'Server One', MobileEnableBiometrics: 'true'} as SecurityClientConfig;
+            const mockConfig2 = {SiteName: 'Server Two', MobilePreventScreenCapture: 'true'} as SecurityClientConfig;
 
             jest.mocked(getSecurityConfig).mockImplementation(async (database: any) => {
                 if (database === 'db-1') {
@@ -139,7 +150,7 @@ describe('SecurityManager', () => {
             const mockFetch = jest.fn().mockResolvedValue(mockServers);
             jest.mocked(queryAllActiveServers).mockReturnValue({fetch: mockFetch} as unknown as Query<ServersModel>);
 
-            const mockConfig = {SiteName: 'Server One', MobileEnableBiometrics: 'false'} as ClientConfig;
+            const mockConfig = {SiteName: 'Server One', MobileEnableBiometrics: 'false'} as unknown as SecurityClientConfig;
             const mockIntunePolicy: IntunePolicy = {
                 isPINRequired: false,
                 isContactSyncAllowed: true,
@@ -189,7 +200,7 @@ describe('SecurityManager', () => {
                 return {database: 'db-2'} as unknown as ServerDatabase;
             });
 
-            const mockConfig2 = {SiteName: 'Server Two'} as ClientConfig;
+            const mockConfig2 = {SiteName: 'Server Two'} as unknown as SecurityClientConfig;
             jest.mocked(getSecurityConfig).mockResolvedValue(mockConfig2);
             jest.mocked(IntuneManager.getPolicy).mockResolvedValue(null);
 
@@ -204,7 +215,7 @@ describe('SecurityManager', () => {
 
     describe('addServer', () => {
         test('should add server config with biometrics enabled', async () => {
-            await SecurityManager.addServer('server-1', {SiteName: 'Server One', MobileEnableBiometrics: 'true'} as ClientConfig);
+            await SecurityManager.addServer('server-1', {SiteName: 'Server One', MobileEnableBiometrics: 'true'} as unknown as SecurityClientConfig);
             expect(SecurityManager.serverConfig['server-1']).toEqual({
                 siteName: 'Server One',
                 Biometrics: true,
@@ -216,7 +227,7 @@ describe('SecurityManager', () => {
         });
 
         test('should add server config with jailbreak protection enabled', async () => {
-            await SecurityManager.addServer('server-2', {SiteName: 'Server Two', MobileJailbreakProtection: 'true'} as ClientConfig);
+            await SecurityManager.addServer('server-2', {SiteName: 'Server Two', MobileJailbreakProtection: 'true'} as unknown as SecurityClientConfig);
             expect(SecurityManager.serverConfig['server-2']).toEqual({
                 siteName: 'Server Two',
                 Biometrics: false,
@@ -228,7 +239,7 @@ describe('SecurityManager', () => {
         });
 
         test('should add server config with screen capture prevention enabled', async () => {
-            await SecurityManager.addServer('server-3', {SiteName: 'Server Three', MobilePreventScreenCapture: 'true'} as ClientConfig);
+            await SecurityManager.addServer('server-3', {SiteName: 'Server Three', MobilePreventScreenCapture: 'true'} as unknown as SecurityClientConfig);
             expect(SecurityManager.serverConfig['server-3']).toEqual({
                 siteName: 'Server Three',
                 Biometrics: false,
@@ -245,7 +256,7 @@ describe('SecurityManager', () => {
                 MobileEnableBiometrics: 'true',
                 MobileJailbreakProtection: 'true',
                 MobilePreventScreenCapture: 'true',
-            } as ClientConfig);
+            } as unknown as SecurityClientConfig);
             expect(SecurityManager.serverConfig['server-4']).toEqual({
                 siteName: 'Server Four',
                 Biometrics: true,
@@ -257,7 +268,7 @@ describe('SecurityManager', () => {
         });
 
         test('should add server config with authenticated set to true', async () => {
-            await SecurityManager.addServer('server-5', {SiteName: 'Server Five'} as ClientConfig, true);
+            await SecurityManager.addServer('server-5', {SiteName: 'Server Five'} as unknown as SecurityClientConfig, true);
             expect(SecurityManager.serverConfig['server-5']).toEqual({
                 siteName: 'Server Five',
                 Biometrics: false,
@@ -281,7 +292,7 @@ describe('SecurityManager', () => {
         });
 
         test('should update a server config previously added', async () => {
-            await SecurityManager.addServer('server-3', {SiteName: 'Server Three', MobilePreventScreenCapture: 'true'} as ClientConfig, true);
+            await SecurityManager.addServer('server-3', {SiteName: 'Server Three', MobilePreventScreenCapture: 'true'} as unknown as SecurityClientConfig, true);
             expect(SecurityManager.serverConfig['server-3']).toEqual({
                 siteName: 'Server Three',
                 Biometrics: false,
@@ -295,9 +306,9 @@ describe('SecurityManager', () => {
 
     describe('removeServer', () => {
         test('should remove server config and active server', async () => {
-            await SecurityManager.addServer('server-1', {SiteName: 'Server One', MobileEnableBiometrics: 'true'} as ClientConfig);
-            await SecurityManager.addServer('server-2', {SiteName: 'Server Two', MobileEnableBiometrics: 'false'} as ClientConfig);
-            SecurityManager.setActiveServer({serverUrl: 'server-1'});
+            await SecurityManager.addServer('server-1', {SiteName: 'Server One', MobileEnableBiometrics: 'true'} as SecurityClientConfig);
+            await SecurityManager.addServer('server-2', {SiteName: 'Server Two', MobileEnableBiometrics: 'false'} as SecurityClientConfig);
+            await SecurityManager.setActiveServer({serverUrl: 'server-1'});
             SecurityManager.initialized = true;
 
             SecurityManager.removeServer('server-1');
@@ -315,7 +326,7 @@ describe('SecurityManager', () => {
 
     describe('getServerConfig', () => {
         test('should return server config', async () => {
-            await SecurityManager.addServer('server-4', {SiteName: 'Server Four'} as ClientConfig);
+            await SecurityManager.addServer('server-4', {SiteName: 'Server Four'} as SecurityClientConfig);
             expect(SecurityManager.getServerConfig('server-4')?.siteName).toBe('Server Four');
         });
 
@@ -328,24 +339,24 @@ describe('SecurityManager', () => {
         test('should set active server and update lastAccessed', async () => {
             await SecurityManager.addServer('server-5');
             const before = Date.now();
-            SecurityManager.setActiveServer({serverUrl: 'server-5'});
+            await SecurityManager.setActiveServer({serverUrl: 'server-5'});
             const after = Date.now();
             expect(SecurityManager.activeServer).toBe('server-5');
             expect(SecurityManager.serverConfig['server-5'].lastAccessed).toBeGreaterThanOrEqual(before);
             expect(SecurityManager.serverConfig['server-5'].lastAccessed).toBeLessThanOrEqual(after);
         });
 
-        test('should not set active server if server does not exist', () => {
-            SecurityManager.setActiveServer({serverUrl: 'server-6'});
+        test('should not set active server if server does not exist', async () => {
+            await SecurityManager.setActiveServer({serverUrl: 'server-6'});
             expect(SecurityManager.activeServer).toBeUndefined();
         });
 
         test('should update active server and lastAccessed if a different server is set', async () => {
             await SecurityManager.addServer('server-7');
             await SecurityManager.addServer('server-8');
-            SecurityManager.setActiveServer({serverUrl: 'server-7'});
+            await SecurityManager.setActiveServer({serverUrl: 'server-7'});
             const before = Date.now();
-            SecurityManager.setActiveServer({serverUrl: 'server-8'});
+            await SecurityManager.setActiveServer({serverUrl: 'server-8'});
             const after = Date.now();
             expect(SecurityManager.activeServer).toBe('server-8');
             expect(SecurityManager.serverConfig['server-8'].lastAccessed).toBeGreaterThanOrEqual(before);
@@ -354,22 +365,114 @@ describe('SecurityManager', () => {
 
         test('should not change active server or lastAccessed if the same server is set', async () => {
             await SecurityManager.addServer('server-9');
-            SecurityManager.setActiveServer({serverUrl: 'server-9'});
+            await SecurityManager.setActiveServer({serverUrl: 'server-9'});
             const lastAccessed = SecurityManager.serverConfig['server-9'].lastAccessed;
-            SecurityManager.setActiveServer({serverUrl: 'server-9'});
+            await SecurityManager.setActiveServer({serverUrl: 'server-9'});
             expect(SecurityManager.activeServer).toBe('server-9');
             expect(SecurityManager.serverConfig['server-9'].lastAccessed).toBe(lastAccessed);
         });
     });
 
+    describe('setActiveServer options', () => {
+        const serverUrl1 = 'https://test1.server.com';
+        const serverUrl2 = 'https://test2.server.com';
+
+        beforeEach(async () => {
+            jest.mocked(IntuneManager.isIntuneMAMEnabledForServer).mockResolvedValue(true);
+            jest.mocked(IntuneManager.isManagedServer).mockResolvedValue(false);
+            jest.mocked(isRootedExperimentalAsync).mockResolvedValue(true);
+            jest.mocked(Emm.isDeviceSecured).mockResolvedValue(true);
+            jest.mocked(Emm.authenticate).mockResolvedValue(true);
+            await SecurityManager.init();
+            await SecurityManager.addServer(serverUrl1, {SiteName: 'Test Server 1'} as SecurityClientConfig);
+            await SecurityManager.addServer(serverUrl2, {SiteName: 'Test Server 2'} as SecurityClientConfig);
+        });
+
+        test('should skip MAM enrollment check when skipMAMEnrollmentCheck is true', async () => {
+            const ensureMAMSpy = jest.spyOn(SecurityManager, 'ensureMAMEnrollmentForActiveServer');
+
+            await SecurityManager.setActiveServer({serverUrl: serverUrl1, options: {skipMAMEnrollmentCheck: true}});
+
+            expect(ensureMAMSpy).not.toHaveBeenCalled();
+            ensureMAMSpy.mockRestore();
+        });
+
+        test('should perform MAM enrollment check when skipMAMEnrollmentCheck is false', async () => {
+            const ensureMAMSpy = jest.spyOn(SecurityManager, 'ensureMAMEnrollmentForActiveServer').mockResolvedValue(true);
+
+            await SecurityManager.setActiveServer({serverUrl: serverUrl1, options: {skipMAMEnrollmentCheck: false}});
+
+            expect(ensureMAMSpy).toHaveBeenCalledWith(serverUrl1);
+            ensureMAMSpy.mockRestore();
+        });
+
+        test('should skip jailbreak check when skipJailbreakCheck is true', async () => {
+            const jailbreakSpy = jest.spyOn(SecurityManager, 'isDeviceJailbroken');
+
+            await SecurityManager.setActiveServer({serverUrl: serverUrl1, options: {skipMAMEnrollmentCheck: true, skipJailbreakCheck: true}});
+
+            expect(jailbreakSpy).not.toHaveBeenCalled();
+            jailbreakSpy.mockRestore();
+        });
+
+        test('should perform jailbreak check when skipJailbreakCheck is false', async () => {
+            const jailbreakSpy = jest.spyOn(SecurityManager, 'isDeviceJailbroken').mockResolvedValue(false);
+
+            await SecurityManager.setActiveServer({serverUrl: serverUrl1, options: {skipMAMEnrollmentCheck: true, skipJailbreakCheck: false}});
+
+            expect(jailbreakSpy).toHaveBeenCalledWith(serverUrl1);
+            jailbreakSpy.mockRestore();
+        });
+
+        test('should skip biometric auth when skipBiometricCheck is true', async () => {
+            const biometricSpy = jest.spyOn(SecurityManager, 'authenticateWithBiometricsIfNeeded');
+
+            await SecurityManager.setActiveServer({serverUrl: serverUrl1, options: {skipMAMEnrollmentCheck: true, skipJailbreakCheck: true, skipBiometricCheck: true}});
+
+            expect(biometricSpy).not.toHaveBeenCalled();
+            biometricSpy.mockRestore();
+        });
+
+        test('should perform biometric auth when skipBiometricCheck is false', async () => {
+            const biometricSpy = jest.spyOn(SecurityManager, 'authenticateWithBiometricsIfNeeded');
+
+            await SecurityManager.setActiveServer({serverUrl: serverUrl1, options: {skipMAMEnrollmentCheck: true, skipJailbreakCheck: true, skipBiometricCheck: false}});
+
+            expect(biometricSpy).toHaveBeenCalledWith(serverUrl1);
+            biometricSpy.mockRestore();
+        });
+
+        test('should force switch to same server when forceSwitch is true', async () => {
+            await SecurityManager.setActiveServer({serverUrl: serverUrl1, options: {skipMAMEnrollmentCheck: true, skipJailbreakCheck: true, skipBiometricCheck: true}});
+            const setScreenCaptureSpy = jest.spyOn(SecurityManager, 'setScreenCapturePolicy');
+            setScreenCaptureSpy.mockClear();
+
+            await SecurityManager.setActiveServer({serverUrl: serverUrl1, options: {skipMAMEnrollmentCheck: true, skipJailbreakCheck: true, skipBiometricCheck: true, forceSwitch: true}});
+
+            expect(setScreenCaptureSpy).toHaveBeenCalledWith(serverUrl1);
+            setScreenCaptureSpy.mockRestore();
+        });
+
+        test('should not switch to same server when forceSwitch is false', async () => {
+            await SecurityManager.setActiveServer({serverUrl: serverUrl1, options: {skipMAMEnrollmentCheck: true, skipJailbreakCheck: true, skipBiometricCheck: true}});
+            const setScreenCaptureSpy = jest.spyOn(SecurityManager, 'setScreenCapturePolicy');
+            setScreenCaptureSpy.mockClear();
+
+            await SecurityManager.setActiveServer({serverUrl: serverUrl1, options: {skipMAMEnrollmentCheck: true, skipJailbreakCheck: true, skipBiometricCheck: true, forceSwitch: false}});
+
+            expect(setScreenCaptureSpy).not.toHaveBeenCalled();
+            setScreenCaptureSpy.mockRestore();
+        });
+    });
+
     describe('isScreenCapturePrevented', () => {
         test('should return true if screen capture prevention is enabled', async () => {
-            await SecurityManager.addServer('server-1', {SiteName: 'Server One', MobilePreventScreenCapture: 'true'} as ClientConfig);
+            await SecurityManager.addServer('server-1', {SiteName: 'Server One', MobilePreventScreenCapture: 'true'} as SecurityClientConfig);
             expect(SecurityManager.isScreenCapturePrevented('server-1')).toBe(true);
         });
 
         test('should return false if screen capture prevention is disabled', async () => {
-            await SecurityManager.addServer('server-2', {SiteName: 'Server Two', MobilePreventScreenCapture: 'false'} as ClientConfig);
+            await SecurityManager.addServer('server-2', {SiteName: 'Server Two', MobilePreventScreenCapture: 'false'} as SecurityClientConfig);
             expect(SecurityManager.isScreenCapturePrevented('server-2')).toBe(false);
         });
 
@@ -378,7 +481,7 @@ describe('SecurityManager', () => {
         });
 
         test('should return false if PreventScreenCapture property is not set', async () => {
-            await SecurityManager.addServer('server-4', {SiteName: 'Server Four'} as ClientConfig);
+            await SecurityManager.addServer('server-4', {SiteName: 'Server Four'} as SecurityClientConfig);
             expect(SecurityManager.isScreenCapturePrevented('server-4')).toBe(false);
         });
     });
@@ -387,7 +490,7 @@ describe('SecurityManager', () => {
         test('should handle biometric authentication if biometrics enabled and device secured', async () => {
             jest.mocked(Emm.isDeviceSecured).mockResolvedValue(true);
             jest.mocked(Emm.authenticate).mockResolvedValue(true);
-            await SecurityManager.addServer('server-6', {MobileEnableBiometrics: 'true'} as ClientConfig);
+            await SecurityManager.addServer('server-6', {MobileEnableBiometrics: 'true'} as SecurityClientConfig);
             await expect(SecurityManager.authenticateWithBiometricsIfNeeded('server-6')).resolves.toBe(true);
             expect(Emm.isDeviceSecured).toHaveBeenCalled();
             expect(Emm.authenticate).toHaveBeenCalled();
@@ -396,7 +499,7 @@ describe('SecurityManager', () => {
         test('should not prompt for biometric authentication if biometrics enabled but device is not secured', async () => {
             jest.mocked(Emm.isDeviceSecured).mockResolvedValue(false);
             const showNotSecuredAlertSpy = jest.spyOn(alerts, 'showNotSecuredAlert');
-            await SecurityManager.addServer('server-6', {MobileEnableBiometrics: 'true'} as ClientConfig);
+            await SecurityManager.addServer('server-6', {MobileEnableBiometrics: 'true'} as SecurityClientConfig);
             await expect(SecurityManager.authenticateWithBiometricsIfNeeded('server-6')).resolves.toBe(false);
             expect(showNotSecuredAlertSpy).toHaveBeenCalled();
             expect(Emm.isDeviceSecured).toHaveBeenCalled();
@@ -404,7 +507,7 @@ describe('SecurityManager', () => {
         });
 
         test('should not attempt biometric authentication if biometrics not enabled', async () => {
-            await SecurityManager.addServer('server-8', {MobileEnableBiometrics: 'false'} as ClientConfig);
+            await SecurityManager.addServer('server-8', {MobileEnableBiometrics: 'false'} as SecurityClientConfig);
             await expect(SecurityManager.authenticateWithBiometricsIfNeeded('server-8')).resolves.toBe(true);
             expect(Emm.isDeviceSecured).not.toHaveBeenCalled();
             expect(Emm.authenticate).not.toHaveBeenCalled();
@@ -413,7 +516,7 @@ describe('SecurityManager', () => {
         test('should resolve with true if biometric authentication succeeds', async () => {
             jest.mocked(Emm.isDeviceSecured).mockResolvedValue(true);
             jest.mocked(Emm.authenticate).mockResolvedValue(true);
-            await SecurityManager.addServer('server-9', {MobileEnableBiometrics: 'true'} as ClientConfig);
+            await SecurityManager.addServer('server-9', {MobileEnableBiometrics: 'true'} as SecurityClientConfig);
             await expect(SecurityManager.authenticateWithBiometricsIfNeeded('server-9')).resolves.toBe(true);
             expect(Emm.isDeviceSecured).toHaveBeenCalled();
             expect(Emm.authenticate).toHaveBeenCalled();
@@ -422,7 +525,7 @@ describe('SecurityManager', () => {
         test('should log error and resolve with false if biometric authentication fails', async () => {
             jest.mocked(Emm.isDeviceSecured).mockResolvedValue(true);
             jest.mocked(Emm.authenticate).mockResolvedValue(false);
-            await SecurityManager.addServer('server-10', {MobileEnableBiometrics: 'true'} as ClientConfig);
+            await SecurityManager.addServer('server-10', {MobileEnableBiometrics: 'true'} as SecurityClientConfig);
             await expect(SecurityManager.authenticateWithBiometricsIfNeeded('server-10')).resolves.toBe(false);
             expect(Emm.isDeviceSecured).toHaveBeenCalled();
             expect(Emm.authenticate).toHaveBeenCalled();
@@ -433,7 +536,7 @@ describe('SecurityManager', () => {
         test('should log error and resolve with false if biometric authentication throws an error', async () => {
             jest.mocked(Emm.isDeviceSecured).mockResolvedValue(true);
             jest.mocked(Emm.authenticate).mockRejectedValue(new Error('Authorization cancelled'));
-            await SecurityManager.addServer('server-11', {MobileEnableBiometrics: 'true'} as ClientConfig);
+            await SecurityManager.addServer('server-11', {MobileEnableBiometrics: 'true'} as SecurityClientConfig);
             await expect(SecurityManager.authenticateWithBiometricsIfNeeded('server-11')).resolves.toBe(false);
             expect(Emm.isDeviceSecured).toHaveBeenCalled();
             expect(Emm.authenticate).toHaveBeenCalled();
@@ -454,7 +557,7 @@ describe('SecurityManager', () => {
             Date.now = jest.fn(() => fixedTime);
 
             try {
-                await SecurityManager.addServer('server-12', {MobileEnableBiometrics: 'true'} as ClientConfig, true);
+                await SecurityManager.addServer('server-12', {MobileEnableBiometrics: 'true'} as SecurityClientConfig, true);
                 SecurityManager.serverConfig['server-12'].lastAccessed = oneMinuteAgo;
                 await expect(SecurityManager.authenticateWithBiometricsIfNeeded('server-12')).resolves.toBe(true);
                 expect(Emm.isDeviceSecured).not.toHaveBeenCalled();
@@ -467,7 +570,7 @@ describe('SecurityManager', () => {
         });
 
         test('should not attempt biometric authentication if server was previously failed authentication even though lastAccess is less than 5 mins', async () => {
-            await SecurityManager.addServer('server-13', {MobileEnableBiometrics: 'true'} as ClientConfig);
+            await SecurityManager.addServer('server-13', {MobileEnableBiometrics: 'true'} as SecurityClientConfig);
             SecurityManager.serverConfig['server-13'].authenticated = false;
             SecurityManager.serverConfig['server-13'].lastAccessed = Date.now() - toMilliseconds({minutes: 1});
             await SecurityManager.authenticateWithBiometricsIfNeeded('server-13');
@@ -476,34 +579,11 @@ describe('SecurityManager', () => {
         });
     });
 
-    describe('onAppStateChange', () => {
-        test('should handle app state changes', async () => {
-            await SecurityManager.addServer('server-8', {MobileEnableBiometrics: 'true'} as ClientConfig);
-            SecurityManager.setActiveServer({serverUrl: 'server-8'});
-            await SecurityManager.onAppStateChange('background' as AppStateStatus);
-            expect(SecurityManager.backgroundSince).toBeGreaterThan(0);
-            await SecurityManager.onAppStateChange('active' as AppStateStatus);
-            expect(SecurityManager.backgroundSince).toBe(0);
-        });
-
-        test('should call biometric authentication app state changes', async () => {
-            const authenticateWithBiometrics = jest.spyOn(SecurityManager, 'authenticateWithBiometrics');
-            jest.mocked(isRootedExperimentalAsync).mockResolvedValue(false);
-            await SecurityManager.addServer('server-8', {MobileEnableBiometrics: 'true'} as ClientConfig);
-            SecurityManager.setActiveServer({serverUrl: 'server-8'});
-            SecurityManager.onAppStateChange('background' as AppStateStatus);
-            SecurityManager.backgroundSince = Date.now() - toMilliseconds({minutes: 5, seconds: 1});
-            SecurityManager.onAppStateChange('active' as AppStateStatus);
-            await TestHelper.wait(300);
-            expect(authenticateWithBiometrics).toHaveBeenCalledWith('server-8');
-        });
-    });
-
     describe('isDeviceJailbroken', () => {
         test('should check if device is jailbroken and return true', async () => {
             const server = 'server-15';
             const siteName = 'Site Name';
-            await SecurityManager.addServer(server, {MobileJailbreakProtection: 'true'} as ClientConfig);
+            await SecurityManager.addServer(server, {MobileJailbreakProtection: 'true'} as SecurityClientConfig);
             jest.mocked(isRootedExperimentalAsync).mockResolvedValue(true);
 
             const result = await SecurityManager.isDeviceJailbroken(server, siteName);
@@ -514,7 +594,7 @@ describe('SecurityManager', () => {
         test('should return false if device is not jailbroken', async () => {
             const server = 'server-16';
             const siteName = 'Site Name';
-            await SecurityManager.addServer(server, {MobileJailbreakProtection: 'true'} as ClientConfig);
+            await SecurityManager.addServer(server, {MobileJailbreakProtection: 'true'} as SecurityClientConfig);
             jest.mocked(isRootedExperimentalAsync).mockResolvedValue(false);
 
             const result = await SecurityManager.isDeviceJailbroken(server, siteName);
@@ -524,7 +604,7 @@ describe('SecurityManager', () => {
 
         test('should return false if jailbreak protection is not enabled', async () => {
             const server = 'server-17';
-            await SecurityManager.addServer(server, {MobileJailbreakProtection: 'false'} as ClientConfig);
+            await SecurityManager.addServer(server, {MobileJailbreakProtection: 'false'} as SecurityClientConfig);
             jest.mocked(isRootedExperimentalAsync).mockResolvedValue(true);
 
             const result = await SecurityManager.isDeviceJailbroken(server);
@@ -536,329 +616,31 @@ describe('SecurityManager', () => {
 
     describe('getShieldScreenId', () => {
         test('should return the name of the screen shielded if prevent screen capture is enabled', () => {
-            SecurityManager.addServer('server-2', {MobilePreventScreenCapture: 'true'} as ClientConfig);
+            SecurityManager.addServer('server-2', {MobilePreventScreenCapture: 'true'} as SecurityClientConfig);
             SecurityManager.activeServer = 'server-2';
             expect(SecurityManager.getShieldScreenId(Screens.CHANNEL)).toBe(`${Screens.CHANNEL}.screen.shielded`);
         });
 
         test('should return the name of the screen without shielded if active server is different', () => {
-            SecurityManager.addServer('server-2', {MobilePreventScreenCapture: 'true'} as ClientConfig);
+            SecurityManager.addServer('server-2', {MobilePreventScreenCapture: 'true'} as SecurityClientConfig);
             SecurityManager.activeServer = 'server-1';
             expect(SecurityManager.getShieldScreenId(Screens.CHANNEL)).toBe(`${Screens.CHANNEL}.screen`);
         });
 
         test('should return the name of the screen shielded if prevent screen capture is disabled', () => {
-            SecurityManager.addServer('server-2', {MobilePreventScreenCapture: 'false'} as ClientConfig);
+            SecurityManager.addServer('server-2', {MobilePreventScreenCapture: 'false'} as SecurityClientConfig);
             expect(SecurityManager.getShieldScreenId(Screens.CHANNEL)).toBe(`${Screens.CHANNEL}.screen`);
         });
 
         test('should return the name of the screen shielded if prevent screen capture is disabled but forced', () => {
-            SecurityManager.addServer('server-2', {MobilePreventScreenCapture: 'false'} as ClientConfig);
+            SecurityManager.addServer('server-2', {MobilePreventScreenCapture: 'false'} as SecurityClientConfig);
             expect(SecurityManager.getShieldScreenId(Screens.CHANNEL, true)).toBe(`${Screens.CHANNEL}.screen.shielded`);
         });
 
         test('should return the name of the screen as shielded but skip', () => {
-            SecurityManager.addServer('server-2', {MobilePreventScreenCapture: 'true'} as ClientConfig);
+            SecurityManager.addServer('server-2', {MobilePreventScreenCapture: 'true'} as SecurityClientConfig);
             SecurityManager.activeServer = 'server-2';
             expect(SecurityManager.getShieldScreenId(Screens.CHANNEL, false, true)).toBe(`${Screens.CHANNEL}.screen.skip.shielded`);
-        });
-    });
-
-    describe('Intune MAM Integration', () => {
-        // Default policy with strict restrictions (all policies enforced)
-        const mockRestrictiveIntunePolicy: IntunePolicy = {
-            isPINRequired: true,
-            isContactSyncAllowed: false,
-            isWidgetContentSyncAllowed: false,
-            isSpotlightIndexingAllowed: false,
-            areSiriIntentsAllowed: false,
-            areAppIntentsAllowed: false,
-            isAppSharingAllowed: false,
-            shouldFileProviderEncryptFiles: true,
-            isManagedBrowserRequired: true,
-            isFileEncryptionRequired: true,
-            isScreenCaptureAllowed: false,
-            notificationPolicy: 2, // Block all notifications
-            allowedSaveLocations: {
-                Other: false,
-                OneDriveForBusiness: true,
-                SharePoint: true,
-                LocalDrive: false,
-                PhotoLibrary: false,
-                CameraRoll: false,
-                FilesApp: false,
-                iCloudDrive: false,
-            },
-            allowedOpenLocations: 0,
-        };
-
-        const mockPermissiveIntunePolicy: IntunePolicy = {
-            isPINRequired: false,
-            isContactSyncAllowed: true,
-            isWidgetContentSyncAllowed: true,
-            isSpotlightIndexingAllowed: true,
-            areSiriIntentsAllowed: true,
-            areAppIntentsAllowed: true,
-            isAppSharingAllowed: true,
-            shouldFileProviderEncryptFiles: false,
-            isManagedBrowserRequired: false,
-            isFileEncryptionRequired: false,
-            isScreenCaptureAllowed: true,
-            notificationPolicy: 0, // Allow all notifications
-            allowedSaveLocations: {
-                Other: true,
-                OneDriveForBusiness: true,
-                SharePoint: true,
-                LocalDrive: true,
-                PhotoLibrary: true,
-                CameraRoll: true,
-                FilesApp: true,
-                iCloudDrive: true,
-            },
-            allowedOpenLocations: 255, // All locations
-        };
-
-        describe('start', () => {
-            test('should set current Intune identity and apply policies', async () => {
-                const serverUrl = 'https://test.server.com';
-                SecurityManager.addServer(serverUrl, {MobilePreventScreenCapture: 'false'} as ClientConfig);
-                jest.mocked(DatabaseManager.getActiveServerUrl).mockResolvedValue(serverUrl);
-                jest.mocked(isRootedExperimentalAsync).mockResolvedValue(false);
-
-                await SecurityManager.start();
-
-                expect(IntuneManager.setCurrentIdentity).toHaveBeenCalledWith(serverUrl);
-                expect(SecurityManager.activeServer).toBe(serverUrl);
-            });
-
-            test('should handle missing active server', async () => {
-                jest.mocked(DatabaseManager.getActiveServerUrl).mockResolvedValue('');
-
-                await SecurityManager.start();
-
-                expect(IntuneManager.setCurrentIdentity).not.toHaveBeenCalled();
-            });
-
-            test('should skip biometric auth when device is jailbroken', async () => {
-                const serverUrl = 'https://test.server.com';
-                SecurityManager.addServer(serverUrl, {MobileEnableBiometrics: 'true', MobileJailbreakProtection: 'true'} as ClientConfig);
-                jest.mocked(DatabaseManager.getActiveServerUrl).mockResolvedValue(serverUrl);
-                jest.mocked(isRootedExperimentalAsync).mockResolvedValue(true);
-
-                await SecurityManager.start();
-
-                expect(Emm.authenticate).not.toHaveBeenCalled();
-            });
-        });
-
-        describe('isScreenCapturePrevented - MAM policy precedence', () => {
-            test('should return false (block capture) when MAM disallows even if server allows', () => {
-                const serverUrl = 'https://test.server.com';
-                SecurityManager.addServer(serverUrl, {MobilePreventScreenCapture: 'false'} as ClientConfig, false, mockRestrictiveIntunePolicy);
-
-                expect(SecurityManager.isScreenCapturePrevented(serverUrl)).toBe(false);
-            });
-
-            test('should return true (allow capture) when both MAM and server allow', () => {
-                const serverUrl = 'https://test.server.com';
-                SecurityManager.addServer(serverUrl, {MobilePreventScreenCapture: 'false'} as ClientConfig, false, mockPermissiveIntunePolicy);
-
-                expect(SecurityManager.isScreenCapturePrevented(serverUrl)).toBe(false);
-            });
-
-            test('should return true (block capture) when server prevents and MAM allows', () => {
-                const serverUrl = 'https://test.server.com';
-                SecurityManager.addServer(serverUrl, {MobilePreventScreenCapture: 'true'} as ClientConfig, false, mockPermissiveIntunePolicy);
-
-                expect(SecurityManager.isScreenCapturePrevented(serverUrl)).toBe(true);
-            });
-
-            test('should return false (block capture) when MAM disallows regardless of server', () => {
-                const serverUrl = 'https://test.server.com';
-
-                // Server allows capture, but MAM blocks - MAM wins
-                SecurityManager.addServer(serverUrl, {MobilePreventScreenCapture: 'false'} as ClientConfig, false, mockRestrictiveIntunePolicy);
-
-                expect(SecurityManager.isScreenCapturePrevented(serverUrl)).toBe(false);
-            });
-
-            test('should use server config when no Intune policy', () => {
-                const serverUrl1 = 'https://test1.server.com';
-                const serverUrl2 = 'https://test2.server.com';
-                SecurityManager.addServer(serverUrl1, {MobilePreventScreenCapture: 'true'} as ClientConfig, false, null);
-                SecurityManager.addServer(serverUrl2, {MobilePreventScreenCapture: 'false'} as ClientConfig, false, null);
-
-                expect(SecurityManager.isScreenCapturePrevented(serverUrl1)).toBe(true);
-                expect(SecurityManager.isScreenCapturePrevented(serverUrl2)).toBe(false);
-            });
-        });
-
-        describe('authenticateWithBiometricsIfNeeded - isPINRequired enforcement', () => {
-            test('should skip biometric auth when MAM requires PIN', async () => {
-                const serverUrl = 'https://test.server.com';
-                SecurityManager.addServer(serverUrl, {MobileEnableBiometrics: 'true'} as ClientConfig, false, mockRestrictiveIntunePolicy);
-
-                const result = await SecurityManager.authenticateWithBiometricsIfNeeded(serverUrl);
-
-                expect(result).toBe(true);
-                expect(Emm.authenticate).not.toHaveBeenCalled();
-            });
-
-            test('should use server biometric config when MAM PIN not required', async () => {
-                const serverUrl = 'https://test.server.com';
-                SecurityManager.addServer(serverUrl, {MobileEnableBiometrics: 'true'} as ClientConfig, false, mockPermissiveIntunePolicy);
-                jest.mocked(Emm.isDeviceSecured).mockResolvedValue(true);
-                jest.mocked(Emm.authenticate).mockResolvedValue(true);
-
-                const result = await SecurityManager.authenticateWithBiometricsIfNeeded(serverUrl);
-
-                expect(result).toBe(true);
-                expect(Emm.authenticate).toHaveBeenCalled();
-            });
-
-            test('should not require auth when server disables biometrics and MAM PIN not required', async () => {
-                const serverUrl = 'https://test.server.com';
-                SecurityManager.addServer(serverUrl, {MobileEnableBiometrics: 'false'} as ClientConfig, false, mockPermissiveIntunePolicy);
-
-                const result = await SecurityManager.authenticateWithBiometricsIfNeeded(serverUrl);
-
-                expect(result).toBe(true);
-                expect(Emm.authenticate).not.toHaveBeenCalled();
-            });
-
-            test('should skip auth when MAM requires PIN even if server enables biometrics', async () => {
-                const serverUrl = 'https://test.server.com';
-
-                // Server wants biometrics, but MAM requires PIN - MAM wins
-                SecurityManager.addServer(serverUrl, {MobileEnableBiometrics: 'true'} as ClientConfig, false, mockRestrictiveIntunePolicy);
-
-                const result = await SecurityManager.authenticateWithBiometricsIfNeeded(serverUrl);
-
-                expect(result).toBe(true);
-                expect(Emm.authenticate).not.toHaveBeenCalled();
-            });
-
-            test('should use server config when no Intune policy', async () => {
-                const serverUrl = 'https://test.server.com';
-                SecurityManager.addServer(serverUrl, {MobileEnableBiometrics: 'true'} as ClientConfig, false, null);
-                jest.mocked(Emm.isDeviceSecured).mockResolvedValue(true);
-                jest.mocked(Emm.authenticate).mockResolvedValue(true);
-
-                const result = await SecurityManager.authenticateWithBiometricsIfNeeded(serverUrl);
-
-                expect(result).toBe(true);
-                expect(Emm.authenticate).toHaveBeenCalled();
-            });
-        });
-
-        describe('authenticateWithBiometrics - isPINRequired enforcement', () => {
-            test('should skip authentication when MAM handles PIN', async () => {
-                const serverUrl = 'https://test.server.com';
-                SecurityManager.addServer(serverUrl, {MobileEnableBiometrics: 'true'} as ClientConfig, false, mockRestrictiveIntunePolicy);
-
-                const result = await SecurityManager.authenticateWithBiometrics(serverUrl);
-
-                expect(result).toBe(true);
-                expect(Emm.isDeviceSecured).not.toHaveBeenCalled();
-                expect(Emm.authenticate).not.toHaveBeenCalled();
-            });
-
-            test('should attempt authentication when MAM does not require PIN', async () => {
-                const serverUrl = 'https://test.server.com';
-                const siteName = 'Test Site';
-                SecurityManager.addServer(serverUrl, {MobileEnableBiometrics: 'true'} as ClientConfig, false, mockPermissiveIntunePolicy);
-                jest.mocked(Emm.isDeviceSecured).mockResolvedValue(true);
-                jest.mocked(Emm.authenticate).mockResolvedValue(true);
-
-                const result = await SecurityManager.authenticateWithBiometrics(serverUrl, siteName);
-
-                expect(result).toBe(true);
-                expect(Emm.authenticate).toHaveBeenCalled();
-            });
-        });
-
-        describe('cleanup', () => {
-            test('should remove all Intune event subscriptions', () => {
-                const mockSubscription = {remove: jest.fn()} as unknown as EventSubscription;
-                SecurityManager.intunePolicySubscription = mockSubscription;
-                SecurityManager.intuneEnrollmentSubscription = mockSubscription;
-                SecurityManager.intuneWipeSubscription = mockSubscription;
-                SecurityManager.intuneAuthSubscription = mockSubscription;
-                SecurityManager.intuneBlockedSubscription = mockSubscription;
-                SecurityManager.intuneIdentitySwitchSubscription = mockSubscription;
-
-                SecurityManager.cleanup();
-
-                expect(mockSubscription.remove).toHaveBeenCalledTimes(6);
-            });
-
-            test('should handle missing subscriptions gracefully', () => {
-                SecurityManager.intunePolicySubscription = undefined;
-                SecurityManager.intuneEnrollmentSubscription = undefined;
-
-                expect(() => SecurityManager.cleanup()).not.toThrow();
-            });
-        });
-
-        describe('addServer with Intune policy', () => {
-            test('should store restrictive Intune policy', () => {
-                const serverUrl = 'https://test.server.com';
-                SecurityManager.addServer(serverUrl, {SiteName: 'Test Server'} as ClientConfig, false, mockRestrictiveIntunePolicy);
-
-                const config = SecurityManager.getServerConfig(serverUrl);
-                expect(config?.intunePolicy).toEqual(mockRestrictiveIntunePolicy);
-                expect(config?.intunePolicy?.isPINRequired).toBe(true);
-                expect(config?.intunePolicy?.isScreenCaptureAllowed).toBe(false);
-            });
-
-            test('should store permissive Intune policy', () => {
-                const serverUrl = 'https://test.server.com';
-                SecurityManager.addServer(serverUrl, {SiteName: 'Test Server'} as ClientConfig, false, mockPermissiveIntunePolicy);
-
-                const config = SecurityManager.getServerConfig(serverUrl);
-                expect(config?.intunePolicy).toEqual(mockPermissiveIntunePolicy);
-                expect(config?.intunePolicy?.isPINRequired).toBe(false);
-                expect(config?.intunePolicy?.isScreenCaptureAllowed).toBe(true);
-            });
-
-            test('should store null when not enrolled in Intune', () => {
-                const serverUrl = 'https://test.server.com';
-                SecurityManager.addServer(serverUrl, {SiteName: 'Test Server'} as ClientConfig, false, null);
-
-                const config = SecurityManager.getServerConfig(serverUrl);
-                expect(config?.intunePolicy).toBeNull();
-            });
-
-            test('should update policy when server re-enrolls', () => {
-                const serverUrl = 'https://test.server.com';
-
-                // First add without policy
-                SecurityManager.addServer(serverUrl, {SiteName: 'Test Server'} as ClientConfig, false, null);
-                expect(SecurityManager.getServerConfig(serverUrl)?.intunePolicy).toBeNull();
-
-                // Then update with restrictive policy
-                SecurityManager.addServer(serverUrl, {SiteName: 'Test Server'} as ClientConfig, false, mockRestrictiveIntunePolicy);
-                const config = SecurityManager.getServerConfig(serverUrl);
-                expect(config?.intunePolicy?.isPINRequired).toBe(true);
-            });
-
-            test('should update from restrictive to permissive policy', () => {
-                const serverUrl = 'https://test.server.com';
-                SecurityManager.addServer(serverUrl, {SiteName: 'Test Server'} as ClientConfig, false, mockRestrictiveIntunePolicy);
-                expect(SecurityManager.getServerConfig(serverUrl)?.intunePolicy?.isPINRequired).toBe(true);
-
-                SecurityManager.addServer(serverUrl, {SiteName: 'Test Server'} as ClientConfig, false, mockPermissiveIntunePolicy);
-                expect(SecurityManager.getServerConfig(serverUrl)?.intunePolicy?.isPINRequired).toBe(false);
-            });
-
-            test('should clear policy when unenrolled', () => {
-                const serverUrl = 'https://test.server.com';
-                SecurityManager.addServer(serverUrl, {SiteName: 'Test Server'} as ClientConfig, false, mockRestrictiveIntunePolicy);
-                expect(SecurityManager.getServerConfig(serverUrl)?.intunePolicy).not.toBeNull();
-
-                SecurityManager.addServer(serverUrl, {SiteName: 'Test Server'} as ClientConfig, false, null);
-                expect(SecurityManager.getServerConfig(serverUrl)?.intunePolicy).toBeNull();
-            });
         });
     });
 });

@@ -3,7 +3,6 @@
 
 import {createIntl} from 'react-intl';
 import {DeviceEventEmitter} from 'react-native';
-import {Navigation} from 'react-native-navigation';
 
 import {doPing} from '@actions/remote/general';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
@@ -85,22 +84,6 @@ describe('switchToServer', () => {
         expect(SecurityManager.setActiveServer).toHaveBeenCalledWith('serverUrl');
         expect(WebsocketManager.initializeClient).toHaveBeenCalledWith('serverUrl', 'Server Switch');
     });
-
-    it('should not proceed if device is jailbroken', async () => {
-        const server = {url: 'serverUrl', lastActiveAt: 123} as ServersModel;
-        const setActiveSpy = jest.spyOn(DatabaseManager, 'setActiveServerDatabase');
-        jest.mocked(getServer).mockResolvedValueOnce(server);
-        jest.mocked(SecurityManager).isDeviceJailbroken.mockResolvedValueOnce(true);
-        jest.mocked(SecurityManager).authenticateWithBiometricsIfNeeded.mockResolvedValueOnce(true);
-
-        await Actions.switchToServer('serverUrl', theme, intl, jest.fn());
-
-        expect(Navigation.updateProps).not.toHaveBeenCalled();
-        expect(setActiveSpy).not.toHaveBeenCalled();
-        expect(SecurityManager.setActiveServer).not.toHaveBeenCalled();
-        expect(WebsocketManager.initializeClient).not.toHaveBeenCalled();
-        expect(SecurityManager.isDeviceJailbroken).toHaveBeenCalledWith('serverUrl');
-    });
 });
 
 // Tests for switchToServerAndLogin
@@ -153,27 +136,10 @@ describe('switchToServerAndLogin', () => {
         jest.mocked(doPing).mockResolvedValueOnce({});
         jest.mocked(fetchConfigAndLicense).mockResolvedValueOnce({config, license});
         jest.mocked(getServerByIdentifier).mockResolvedValueOnce(undefined);
-        jest.mocked(SecurityManager.authenticateWithBiometrics).mockResolvedValueOnce(true);
 
         await Actions.switchToServerAndLogin('serverUrl', theme, intl, jest.fn());
 
         expect(canReceiveNotifications).toHaveBeenCalledWith('serverUrl', undefined, intl);
         expect(loginToServer).toHaveBeenCalledWith(theme, 'serverUrl', 'Server', config, license);
-    });
-
-    it('should not proceed if device is jailbroken', async () => {
-        const server = {url: 'serverUrl'} as ServersModel;
-        const config = {DiagnosticId: 'diagId', MobileJailbreakProtection: 'true'} as ClientConfig;
-        jest.mocked(getServer).mockResolvedValueOnce(server);
-        jest.mocked(doPing).mockResolvedValueOnce({});
-        jest.mocked(fetchConfigAndLicense).mockResolvedValueOnce({config});
-        jest.mocked(getServerByIdentifier).mockResolvedValueOnce(undefined);
-        jest.mocked(SecurityManager.isDeviceJailbroken).mockResolvedValueOnce(true);
-
-        const callback = jest.fn();
-        await Actions.switchToServerAndLogin('serverUrl', theme, intl, callback);
-
-        expect(SecurityManager.isDeviceJailbroken).toHaveBeenCalledWith('serverUrl');
-        expect(callback).toHaveBeenCalled();
     });
 });

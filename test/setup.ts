@@ -95,8 +95,13 @@ jest.mock('@managers/intune_manager', () => ({
     __esModule: true,
     default: {
         init: jest.fn(),
+        login: jest.fn(),
+        enrollServer: jest.fn(),
+        unenrollServer: jest.fn(),
         setCurrentIdentity: jest.fn(),
         getPolicy: jest.fn(() => Promise.resolve(null)),
+        isIntuneMAMEnabledForServer: jest.fn(() => Promise.resolve(false)),
+        isManagedServer: jest.fn(() => Promise.resolve(false)),
         subscribeToPolicyChanges: jest.fn(() => ({remove: jest.fn()})),
         subscribeToEnrollmentChanges: jest.fn(() => ({remove: jest.fn()})),
         subscribeToWipeRequests: jest.fn(() => ({remove: jest.fn()})),

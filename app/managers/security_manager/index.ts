@@ -167,6 +167,11 @@ class SecurityManagerSingleton {
         this.intuneAuthSubscription?.remove();
         this.intuneBlockedSubscription?.remove();
         this.intuneIdentitySwitchSubscription?.remove();
+
+        this.initialized = false;
+        this.serverConfig = {};
+        this.activeServer = undefined;
+        this.started = false;
     }
 
     /**
