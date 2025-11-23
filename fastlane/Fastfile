@@ -548,7 +548,7 @@ platform :ios do
               app_auth_scheme,
               "msauth.#{app_bundle_id}",
               "#{app_scheme}-intunemam",
-              "#{app_auth_scheme}-intunemam",
+              "#{app_auth_scheme}-intunemam", 
               "msauth.com.microsoft.intunemam",
               "msauth.com.microsoft.intunemam-intunemam"
             ]
@@ -557,6 +557,8 @@ platform :ios do
               "AppGroupIdentifiers" => [ENV['IOS_APP_GROUP'] || 'group.com.mattermost.rnbeta'],
               "MAMTelemetryDisabled" => true,
               "MultiIdentity" => true,
+              "ADALLogOverrideDisabled" => true,
+              "HooksAlwaysEnabled" => true,
               "ADALClientId" => intune_client_id,
               "ADALRedirectUri" => intune_redirect_uri
             }
