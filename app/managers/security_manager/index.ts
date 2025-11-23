@@ -8,7 +8,7 @@ import {AppState, DeviceEventEmitter, type AppStateStatus, type EventSubscriptio
 import {terminateSession} from '@actions/local/session';
 import {getCurrentUserLocale} from '@actions/local/user';
 import {logout} from '@actions/remote/session';
-import {Events} from '@constants';
+import {Events, Sso} from '@constants';
 import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 import {getServerCredentials} from '@init/credentials';
@@ -25,8 +25,21 @@ import {
     type IntuneWipeRequestedEvent,
 } from '@managers/intune_manager/types';
 import {queryAllActiveServers} from '@queries/app/servers';
-import {getSecurityConfig} from '@queries/servers/system';
-import {messages, showAuthenticationRequiredAlert, showBiometricFailureAlert, showBiometricFailureAlertForOrganization, showConditionalAccessAlert, showDeviceNotTrustedAlert, showIdentitySwitchRequiredAlert, showNotSecuredAlert} from '@utils/alerts';
+import {getConfig, getSecurityConfig} from '@queries/servers/system';
+import {getCurrentUser} from '@queries/servers/user';
+import {
+    messages,
+    showAuthenticationRequiredAlert,
+    showBiometricFailureAlert,
+    showBiometricFailureAlertForOrganization,
+    showConditionalAccessAlert,
+    showDeviceNotTrustedAlert,
+    showIdentitySwitchRequiredAlert,
+    showMAMDeclinedAlert,
+    showMAMEnrollmentFailedAlert,
+    showMAMEnrollmentRequiredAlert,
+    showNotSecuredAlert,
+} from '@utils/alerts';
 import {toMilliseconds} from '@utils/datetime';
 import {isMainActivity} from '@utils/helpers';
 import {logDebug, logError} from '@utils/log';
@@ -52,6 +65,7 @@ class SecurityManagerSingleton {
     previousAppState?: AppStateStatus;
     initialized = false;
     started = false;
+    isEnrolling = false;
     intunePolicySubscription?: EventSubscription;
     intuneEnrollmentSubscription?: EventSubscription;
     intuneWipeSubscription?: EventSubscription;
@@ -135,20 +149,8 @@ class SecurityManagerSingleton {
             return;
         }
 
-        this.activeServer = activeServer;
-
-        // Set current Intune identity
-        await IntuneManager.setCurrentIdentity(activeServer);
-
-        // Apply screen capture policy
-        this.setScreenCapturePolicy(activeServer);
-
-        // Check jailbreak protection
-        const isJailbroken = await this.isDeviceJailbroken(activeServer);
-        if (!isJailbroken) {
-            // Prompt for biometric authentication if needed
-            await this.authenticateWithBiometricsIfNeeded(activeServer);
-        }
+        // Delegate all logic to setActiveServer
+        this.setActiveServer(activeServer);
     }
 
     /**
@@ -177,7 +179,7 @@ class SecurityManagerSingleton {
         const isBackground = appState === 'background';
 
         if (isActive && this.previousAppState === 'background') {
-            if (this.activeServer) {
+            if (this.activeServer && !this.serverConfig[this.activeServer].intunePolicy?.isPINRequired) {
                 const config = this.getServerConfig(this.activeServer);
                 if (config && config.Biometrics && isMainActivity()) {
                     const authExpired = this.backgroundSince > 0 && (Date.now() - this.backgroundSince) >= toMilliseconds({minutes: 5});
@@ -218,7 +220,14 @@ class SecurityManagerSingleton {
         };
 
         if (serverUrl === this.activeServer) {
-            this.setScreenCapturePolicy(serverUrl);
+            // Check if MAM enrollment needed (method handles all checks internally)
+            const enrollmentOk = await this.ensureMAMEnrollmentForActiveServer(serverUrl);
+
+            // Only set screen capture policy if enrollment wasn't needed/succeeded
+            if (enrollmentOk && !this.isEnrolling) {
+                await IntuneManager.setCurrentIdentity(serverUrl);
+                this.setScreenCapturePolicy(serverUrl);
+            }
         }
     };
 
@@ -232,7 +241,14 @@ class SecurityManagerSingleton {
         const intunePolicy = await IntuneManager.getPolicy(serverUrl);
         this.serverConfig[serverUrl].intunePolicy = intunePolicy;
 
-        IntuneManager.setCurrentIdentity(serverUrl);
+        if (serverUrl === this.activeServer) {
+            // Check if MAM enrollment needed (method handles all checks internally)
+            const enrollmentOk = await this.ensureMAMEnrollmentForActiveServer(serverUrl);
+
+            if (enrollmentOk && !this.isEnrolling) {
+                await IntuneManager.setCurrentIdentity(serverUrl);
+            }
+        }
     };
 
     /**
@@ -492,24 +508,172 @@ class SecurityManagerSingleton {
     };
 
     /**
-     * Switches the active server.
+     * Ensures MAM enrollment for a server that requires it.
+     * Shows alert with blur screen and performs enrollment via direct IntuneManager calls.
+     *
+     * @param serverUrl - Server URL to check and enroll
+     * @returns Promise<boolean> - true if enrollment OK, false if failed/declined
      */
-    setActiveServer = (server: string) => {
-        IntuneManager.setCurrentIdentity(server);
+    async ensureMAMEnrollmentForActiveServer(serverUrl: string): Promise<boolean> {
+        // Check if already enrolling to prevent race conditions
+        if (this.isEnrolling) {
+            logDebug('ensureMAMEnrollment: Already enrolling, skipping');
+            return true;
+        }
 
-        if (this.activeServer === server) {
+        // Check if Intune MAM is enabled
+        const isIntuneEnabled = await IntuneManager.isIntuneMAMEnabledForServer(serverUrl);
+        if (!isIntuneEnabled) {
+            return true;
+        }
+
+        // Check if already enrolled
+        const isManaged = await IntuneManager.isManagedServer(serverUrl);
+        if (isManaged) {
+            return true;
+        }
+
+        // Get server config and current user
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const currentUser = await getCurrentUser(database);
+
+        // Check if current user is not using SSO entra login, skip enrollment
+        if (currentUser && currentUser.authService.toLocaleLowerCase() !== Sso.OFFICE365.toLocaleLowerCase()) {
+            return true;
+        }
+
+        const config = await getConfig(database);
+        const intuneScope = config.IntuneScope;
+
+        if (!intuneScope) {
+            logError('ensureMAMEnrollment: IntuneScope not configured');
+            return false;
+        }
+
+        // Set enrolling flag and apply blur
+        this.isEnrolling = true;
+
+        // Get site name and locale for alerts
+        const siteName = this.serverConfig[serverUrl]?.siteName;
+        const locale = await getCurrentUserLocale(serverUrl);
+
+        // Show alert and handle enrollment
+        return new Promise(async (resolve) => {
+            logDebug('ensureMAMEnrollment: Enrollment required', {serverUrl});
+
+            Emm.enableBlurScreen(true);
+            Emm.applyBlurEffect(20);
+
+            // Give time for blur effect to apply
+            await new Promise((resolveEffect) => setTimeout(resolveEffect, 250));
+
+            const beforeExit = () => {
+                // Always clear enrolling flag and remove blur
+                this.isEnrolling = false;
+                Emm.removeBlurEffect();
+                this.setScreenCapturePolicy(serverUrl);
+            };
+
+            const handleEnrollment = async () => {
+                try {
+                    // Step 1: Acquire MSAL tokens via native login
+                    const tokens = await IntuneManager.login(serverUrl, [intuneScope]);
+
+                    // Step 2: Enroll in MAM (NO token sent to server - session exists)
+                    // If enrollServer doesn't throw, consider it successful
+                    // Policy and enrollment status will be updated via events
+                    await IntuneManager.enrollServer(serverUrl, tokens.identity);
+
+                    logDebug('ensureMAMEnrollment: Enrollment successful');
+
+                    // Always clear enrolling flag and remove blur
+                    beforeExit();
+                    resolve(true);
+                } catch (error) {
+                    logError('ensureMAMEnrollment: Failed', error);
+
+                    await showMAMEnrollmentFailedAlert(locale, () => {
+                        // Always clear enrolling flag and remove blur
+                        beforeExit();
+                        logout(serverUrl, undefined, {removeServer: true});
+                        resolve(false);
+                    });
+                }
+            };
+
+            const handleCancel = () => {
+                logDebug('ensureMAMEnrollment: User declined enrollment');
+
+                // Show declined alert with retry option
+                showMAMDeclinedAlert(serverUrl, siteName, locale, () => {
+                    beforeExit();
+                    resolve(false);
+                }, handleEnrollment);
+            };
+
+            // Show enrollment required alert
+            showMAMEnrollmentRequiredAlert(siteName, locale, handleEnrollment, handleCancel);
+        });
+    }
+
+    /**
+     * Switches the active server and applies security policies.
+     * Called via ACTIVE_SERVER_CHANGED event or directly.
+     *
+     * @param server - Server URL to activate
+     * @param options - Optional skip flags for certain checks
+     */
+    setActiveServer = async (server: string, options?: {
+        skipJailbreakCheck?: boolean;
+        skipBiometricCheck?: boolean;
+        skipMAMEnrollmentCheck?: boolean;
+        forceSwitch?: boolean;
+    }) => {
+        const opts = options || {};
+
+        // Set Intune identity
+        await IntuneManager.setCurrentIdentity(server);
+        if (this.activeServer === server && !opts.forceSwitch) {
             // active server is not changing, so no need to do anything here
             return;
         }
 
+        // Update active server tracking
         if (this.activeServer && this.serverConfig[this.activeServer]) {
             this.serverConfig[this.activeServer].lastAccessed = Date.now();
         }
 
-        if (this.serverConfig[server]) {
-            this.activeServer = server;
-            this.serverConfig[server].lastAccessed = Date.now();
-            this.setScreenCapturePolicy(server);
+        if (!this.serverConfig[server]) {
+            return;
+        }
+
+        this.activeServer = server;
+        this.serverConfig[server].lastAccessed = Date.now();
+        this.setScreenCapturePolicy(server);
+
+        // Security checks (moved from start() method)
+        // Order matters: MAM enrollment first, then jailbreak, then biometrics
+        // This way we only check jailbreak/biometrics if user doesn't need to enroll
+
+        // 1. Check MAM enrollment requirement (IMPORTANT: do not skip without explicit flag)
+        if (!opts.skipMAMEnrollmentCheck) {
+            const enrollmentOk = await this.ensureMAMEnrollmentForActiveServer(server);
+            if (!enrollmentOk || this.isEnrolling) {
+                return;
+            }
+        }
+
+        // 2. Check jailbreak protection
+        if (!opts.skipJailbreakCheck) {
+            const isJailbroken = await this.isDeviceJailbroken(server);
+            if (isJailbroken) {
+                return;
+            }
+        }
+
+        // 3. Check biometric authentication
+        if (!opts.skipBiometricCheck) {
+            await this.authenticateWithBiometricsIfNeeded(server);
         }
     };
 

@@ -117,6 +117,38 @@ export const messages = defineMessages({
         id: 'security_manager.your_organization',
         defaultMessage: 'your organization',
     },
+    mam_enrollment_required_title: {
+        id: 'security_manager.mam_enrollment_required_title',
+        defaultMessage: 'Enrollment Required',
+    },
+    mam_enrollment_required_message: {
+        id: 'security_manager.mam_enrollment_required_message',
+        defaultMessage: '{organization} requires enrollment in Microsoft Intune to protect corporate data.',
+    },
+    mam_enrollment_failed_title: {
+        id: 'security_manager.mam_enrollment_failed_title',
+        defaultMessage: 'Enrollment Failed',
+    },
+    mam_enrollment_failed_message: {
+        id: 'security_manager.mam_enrollment_failed_message',
+        defaultMessage: 'Failed to enroll in Microsoft Intune. You will be logged out.',
+    },
+    mam_declined_title: {
+        id: 'security_manager.mam_declined_title',
+        defaultMessage: 'Enrollment Declined',
+    },
+    mam_declined_message: {
+        id: 'security_manager.mam_declined_message',
+        defaultMessage: '{organization} requires enrollment in Microsoft Intune. You can retry enrollment or logout.',
+    },
+    enroll_now: {
+        id: 'security_manager.enroll_now',
+        defaultMessage: 'Enroll Now',
+    },
+    cancel: {
+        id: 'security_manager.cancel',
+        defaultMessage: 'Cancel',
+    },
 });
 
 /**
@@ -356,6 +388,82 @@ export const showIdentitySwitchRequiredAlert = async (locale?: string) => {
         translations[messages.identity_switch_required_title.id],
         translations[messages.identity_switch_required_message.id],
         [{text: translations[messages.okay.id]}],
+        {cancelable: false},
+    );
+};
+
+/**
+ * Shows an alert when MAM enrollment is required.
+ * User can choose to enroll now or cancel (which logs them out).
+ */
+export const showMAMEnrollmentRequiredAlert = async (
+    siteName: string | undefined,
+    locale: string | undefined,
+    enrollCallback: () => void,
+    cancelCallback: () => void,
+) => {
+    const translations = getTranslations(locale || DEFAULT_LOCALE);
+    const organization = siteName || translations[messages.organization.id];
+    const message = translations[messages.mam_enrollment_required_message.id].replace('{organization}', organization);
+
+    Alert.alert(
+        translations[messages.mam_enrollment_required_title.id],
+        message,
+        [
+            {
+                text: translations[messages.cancel.id],
+                style: 'cancel',
+                onPress: cancelCallback,
+            },
+            {
+                text: translations[messages.enroll_now.id],
+                style: 'default',
+                onPress: enrollCallback,
+            },
+        ],
+        {cancelable: false},
+    );
+};
+
+/**
+ * Shows an alert when MAM enrollment fails.
+ * User will be logged out after dismissing the alert.
+ */
+export const showMAMEnrollmentFailedAlert = async (
+    locale?: string,
+    callback?: () => void,
+) => {
+    const translations = getTranslations(locale || DEFAULT_LOCALE);
+
+    Alert.alert(
+        translations[messages.mam_enrollment_failed_title.id],
+        translations[messages.mam_enrollment_failed_message.id],
+        [{text: translations[messages.okay.id], onPress: callback}],
+        {cancelable: false},
+    );
+};
+
+/**
+ * Shows an alert when user declines MAM enrollment.
+ * Provides option to retry enrollment or logout.
+ */
+export const showMAMDeclinedAlert = async (
+    server: string,
+    siteName: string | undefined,
+    locale: string | undefined,
+    callback: (value: boolean) => void,
+    retryCallback: () => void,
+) => {
+    const translations = getTranslations(locale || DEFAULT_LOCALE);
+    const organization = siteName || translations[messages.organization.id];
+    const message = translations[messages.mam_declined_message.id].replace('{organization}', organization);
+
+    const buttons = await buildSecurityAlertOptions(server, translations, callback, retryCallback);
+
+    Alert.alert(
+        translations[messages.mam_declined_title.id],
+        message,
+        buttons,
         {cancelable: false},
     );
 };
