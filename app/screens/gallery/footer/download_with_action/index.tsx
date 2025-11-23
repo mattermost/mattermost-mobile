@@ -210,6 +210,7 @@ const DownloadWithAction = ({action, enableSecureFilePreview, item, onDownloadSu
 
                 if (mimeType === 'application/octet-stream') {
                     saveFile(path);
+                    return;
                 }
                 const cameraType = item.type === 'avatar' ? 'image' : item.type;
                 await CameraRoll.saveAsset(path, {
