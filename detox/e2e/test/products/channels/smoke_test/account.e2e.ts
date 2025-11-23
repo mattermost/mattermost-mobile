@@ -176,7 +176,7 @@ describe('Smoke Test - Account', () => {
         await ThemeDisplaySettingsScreen.denimOption.tap();
 
         // * Verify on display settings screen and denim is set
-        await ThemeDisplaySettingsScreen.back();
+        await DisplaySettingsScreen.toBeVisible();
         await expect(DisplaySettingsScreen.themeOptionInfo).toHaveText('Denim');
 
         // # Open clock display settings screen, select twelve hour option, and tap on back button

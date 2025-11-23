@@ -145,9 +145,9 @@ class ChannelScreen {
         return this.postList.getPostMessageAtIndex(index);
     };
 
-    toBeVisible = async () => {
+    toBeVisible = async (timeout = timeouts.TEN_SEC) => {
         await wait(timeouts.ONE_SEC);
-        await waitFor(this.channelScreen).toExist().withTimeout(timeouts.TEN_SEC);
+        await waitFor(this.channelScreen).toExist().withTimeout(timeout);
 
         return this.channelScreen;
     };

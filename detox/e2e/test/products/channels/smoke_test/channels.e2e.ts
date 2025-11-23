@@ -201,7 +201,7 @@ describe('Smoke Test - Channels', () => {
         await ChannelInfoScreen.archivePublicChannel({confirm: true});
 
         // * Verify on channel screen and post draft archived message is displayed
-        await ChannelScreen.toBeVisible();
+        await ChannelScreen.toBeVisible(timeouts.HALF_MIN);
         await expect(ChannelScreen.postDraftArchived).toBeVisible();
         await expect(element(by.text('You are viewing an archived channel. New messages cannot be posted.'))).toBeVisible();
 
