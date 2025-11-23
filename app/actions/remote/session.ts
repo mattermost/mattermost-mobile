@@ -280,7 +280,7 @@ export const sendPasswordResetEmail = async (serverUrl: string, email: string) =
     }
 };
 
-const completeSSOLogin = async (serverUrl: string, serverDisplayName: string, serverIdentifier: string, client: Client, userData?: UserProfile): Promise<LoginActionResponse> => {
+const completeSSOLogin = async (serverUrl: string, serverDisplayName: string, serverIdentifier: string, client: Client, userData?: UserProfile, skipChecks = false): Promise<LoginActionResponse> => {
     const database = DatabaseManager.appDatabase?.database;
     if (!database) {
         return {error: 'App database not found', failed: true};
@@ -315,7 +315,11 @@ const completeSSOLogin = async (serverUrl: string, serverDisplayName: string, se
     try {
         await addPushProxyVerificationStateFromLogin(serverUrl);
         const {error} = await loginEntry({serverUrl});
-        await DatabaseManager.setActiveServerDatabase(serverUrl);
+        await DatabaseManager.setActiveServerDatabase(serverUrl, {
+            skipMAMEnrollmentCheck: skipChecks,
+            skipJailbreakCheck: skipChecks,
+            skipBiometricCheck: skipChecks,
+        });
         return {error, failed: false};
     } catch (error) {
         return {error, failed: false};
@@ -353,6 +357,7 @@ export const nativeEntraLogin = async (serverUrl: string, serverDisplayName: str
         const client = NetworkManager.getClient(serverUrl);
         const deviceToken = await getDeviceToken();
         let csrfToken: string;
+        let userData: UserProfile | undefined;
 
         try {
             await client.loginWithEntra(accessToken, deviceToken);
@@ -362,7 +367,7 @@ export const nativeEntraLogin = async (serverUrl: string, serverDisplayName: str
             if (isErrorWithStatusCode(error) && error.status_code === 401) {
                 logDebug('nativeEntraLogin: Token expired, retrying');
                 const refreshedTokens = await IntuneManager.login(serverUrl, [intuneScope]);
-                await client.loginWithEntra(refreshedTokens.accessToken, deviceToken);
+                userData = await client.loginWithEntra(refreshedTokens.accessToken, deviceToken);
                 csrfToken = await getCSRFFromCookie(serverUrl);
             } else if (isErrorWithStatusCode(error) && error.status_code === 409) {
                 // Handle 409: User locked/disabled
@@ -373,7 +378,7 @@ export const nativeEntraLogin = async (serverUrl: string, serverDisplayName: str
                 await IntuneManager.enrollServer(serverUrl, identity);
 
                 // Retry login after enrollment
-                await client.loginWithEntra(accessToken, deviceToken);
+                userData = await client.loginWithEntra(accessToken, deviceToken);
                 csrfToken = await getCSRFFromCookie(serverUrl);
             } else {
                 throw error;
@@ -385,7 +390,7 @@ export const nativeEntraLogin = async (serverUrl: string, serverDisplayName: str
         client.setCSRFToken(csrfToken);
 
         // Step 4: Complete SSO login flow (sets up database, etc.)
-        const result = await completeSSOLogin(serverUrl, serverDisplayName, serverIdentifier, client);
+        const result = await completeSSOLogin(serverUrl, serverDisplayName, serverIdentifier, client, userData, true);
 
         // Step 5: Enroll in MAM if not already enrolled (if 412 was not triggered)
         if (result && !result.failed) {

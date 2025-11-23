@@ -297,7 +297,7 @@ describe('SecurityManager', () => {
         test('should remove server config and active server', async () => {
             await SecurityManager.addServer('server-1', {SiteName: 'Server One', MobileEnableBiometrics: 'true'} as ClientConfig);
             await SecurityManager.addServer('server-2', {SiteName: 'Server Two', MobileEnableBiometrics: 'false'} as ClientConfig);
-            SecurityManager.setActiveServer('server-1');
+            SecurityManager.setActiveServer({serverUrl: 'server-1'});
             SecurityManager.initialized = true;
 
             SecurityManager.removeServer('server-1');
@@ -328,7 +328,7 @@ describe('SecurityManager', () => {
         test('should set active server and update lastAccessed', async () => {
             await SecurityManager.addServer('server-5');
             const before = Date.now();
-            SecurityManager.setActiveServer('server-5');
+            SecurityManager.setActiveServer({serverUrl: 'server-5'});
             const after = Date.now();
             expect(SecurityManager.activeServer).toBe('server-5');
             expect(SecurityManager.serverConfig['server-5'].lastAccessed).toBeGreaterThanOrEqual(before);
@@ -336,16 +336,16 @@ describe('SecurityManager', () => {
         });
 
         test('should not set active server if server does not exist', () => {
-            SecurityManager.setActiveServer('server-6');
+            SecurityManager.setActiveServer({serverUrl: 'server-6'});
             expect(SecurityManager.activeServer).toBeUndefined();
         });
 
         test('should update active server and lastAccessed if a different server is set', async () => {
             await SecurityManager.addServer('server-7');
             await SecurityManager.addServer('server-8');
-            SecurityManager.setActiveServer('server-7');
+            SecurityManager.setActiveServer({serverUrl: 'server-7'});
             const before = Date.now();
-            SecurityManager.setActiveServer('server-8');
+            SecurityManager.setActiveServer({serverUrl: 'server-8'});
             const after = Date.now();
             expect(SecurityManager.activeServer).toBe('server-8');
             expect(SecurityManager.serverConfig['server-8'].lastAccessed).toBeGreaterThanOrEqual(before);
@@ -354,9 +354,9 @@ describe('SecurityManager', () => {
 
         test('should not change active server or lastAccessed if the same server is set', async () => {
             await SecurityManager.addServer('server-9');
-            SecurityManager.setActiveServer('server-9');
+            SecurityManager.setActiveServer({serverUrl: 'server-9'});
             const lastAccessed = SecurityManager.serverConfig['server-9'].lastAccessed;
-            SecurityManager.setActiveServer('server-9');
+            SecurityManager.setActiveServer({serverUrl: 'server-9'});
             expect(SecurityManager.activeServer).toBe('server-9');
             expect(SecurityManager.serverConfig['server-9'].lastAccessed).toBe(lastAccessed);
         });
@@ -479,7 +479,7 @@ describe('SecurityManager', () => {
     describe('onAppStateChange', () => {
         test('should handle app state changes', async () => {
             await SecurityManager.addServer('server-8', {MobileEnableBiometrics: 'true'} as ClientConfig);
-            SecurityManager.setActiveServer('server-8');
+            SecurityManager.setActiveServer({serverUrl: 'server-8'});
             await SecurityManager.onAppStateChange('background' as AppStateStatus);
             expect(SecurityManager.backgroundSince).toBeGreaterThan(0);
             await SecurityManager.onAppStateChange('active' as AppStateStatus);
@@ -490,7 +490,7 @@ describe('SecurityManager', () => {
             const authenticateWithBiometrics = jest.spyOn(SecurityManager, 'authenticateWithBiometrics');
             jest.mocked(isRootedExperimentalAsync).mockResolvedValue(false);
             await SecurityManager.addServer('server-8', {MobileEnableBiometrics: 'true'} as ClientConfig);
-            SecurityManager.setActiveServer('server-8');
+            SecurityManager.setActiveServer({serverUrl: 'server-8'});
             SecurityManager.onAppStateChange('background' as AppStateStatus);
             SecurityManager.backgroundSince = Date.now() - toMilliseconds({minutes: 5, seconds: 1});
             SecurityManager.onAppStateChange('active' as AppStateStatus);

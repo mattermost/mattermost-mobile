@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable max-lines */
+
 import Emm from '@mattermost/react-native-emm';
 import {isRootedExperimentalAsync} from 'expo-device';
 import {AppState, DeviceEventEmitter, type AppStateStatus, type EventSubscription} from 'react-native';
@@ -143,14 +145,14 @@ class SecurityManagerSingleton {
         }
 
         this.started = true;
-        const activeServer = await DatabaseManager.getActiveServerUrl();
-        if (!activeServer) {
+        const serverUrl = await DatabaseManager.getActiveServerUrl();
+        if (!serverUrl) {
             logDebug('SecurityManager: No active server to start');
             return;
         }
 
         // Delegate all logic to setActiveServer
-        this.setActiveServer(activeServer);
+        this.setActiveServer({serverUrl});
     }
 
     /**
@@ -620,20 +622,15 @@ class SecurityManagerSingleton {
      * Switches the active server and applies security policies.
      * Called via ACTIVE_SERVER_CHANGED event or directly.
      *
-     * @param server - Server URL to activate
+     * @param serverUrl - Server URL to activate
      * @param options - Optional skip flags for certain checks
      */
-    setActiveServer = async (server: string, options?: {
-        skipJailbreakCheck?: boolean;
-        skipBiometricCheck?: boolean;
-        skipMAMEnrollmentCheck?: boolean;
-        forceSwitch?: boolean;
-    }) => {
+    setActiveServer = async ({serverUrl, options}: {serverUrl: string; options?: ActiveServerOptions}) => {
         const opts = options || {};
 
         // Set Intune identity
-        await IntuneManager.setCurrentIdentity(server);
-        if (this.activeServer === server && !opts.forceSwitch) {
+        await IntuneManager.setCurrentIdentity(serverUrl);
+        if (this.activeServer === serverUrl && !opts.forceSwitch) {
             // active server is not changing, so no need to do anything here
             return;
         }
@@ -643,13 +640,13 @@ class SecurityManagerSingleton {
             this.serverConfig[this.activeServer].lastAccessed = Date.now();
         }
 
-        if (!this.serverConfig[server]) {
+        if (!this.serverConfig[serverUrl]) {
             return;
         }
 
-        this.activeServer = server;
-        this.serverConfig[server].lastAccessed = Date.now();
-        this.setScreenCapturePolicy(server);
+        this.activeServer = serverUrl;
+        this.serverConfig[serverUrl].lastAccessed = Date.now();
+        this.setScreenCapturePolicy(serverUrl);
 
         // Security checks (moved from start() method)
         // Order matters: MAM enrollment first, then jailbreak, then biometrics
@@ -657,7 +654,7 @@ class SecurityManagerSingleton {
 
         // 1. Check MAM enrollment requirement (IMPORTANT: do not skip without explicit flag)
         if (!opts.skipMAMEnrollmentCheck) {
-            const enrollmentOk = await this.ensureMAMEnrollmentForActiveServer(server);
+            const enrollmentOk = await this.ensureMAMEnrollmentForActiveServer(serverUrl);
             if (!enrollmentOk || this.isEnrolling) {
                 return;
             }
@@ -665,7 +662,7 @@ class SecurityManagerSingleton {
 
         // 2. Check jailbreak protection
         if (!opts.skipJailbreakCheck) {
-            const isJailbroken = await this.isDeviceJailbroken(server);
+            const isJailbroken = await this.isDeviceJailbroken(serverUrl);
             if (isJailbroken) {
                 return;
             }
@@ -673,7 +670,7 @@ class SecurityManagerSingleton {
 
         // 3. Check biometric authentication
         if (!opts.skipBiometricCheck) {
-            await this.authenticateWithBiometricsIfNeeded(server);
+            await this.authenticateWithBiometricsIfNeeded(serverUrl);
         }
     };
 
@@ -806,7 +803,6 @@ class SecurityManagerSingleton {
 
         // Fetch policy for first server (all servers for same identity share policy)
         const policy = await IntuneManager.getPolicy(serverUrls[0]);
-        logDebug('SecurityManager: Fetched policy after enrollment', {policy});
 
         // Update policy for all affected servers
         for (const serverUrl of serverUrls) {
