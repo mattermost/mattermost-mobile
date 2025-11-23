@@ -34,11 +34,11 @@ export async function storeConfigAndLicense(serverUrl: string, config: ClientCon
                     id: SYSTEM_IDENTIFIERS.LICENSE,
                     value: JSON.stringify(license),
                 });
-                DeviceEventEmitter.emit(Events.LICENSE_CHANGED, {serverUrl, license});
             }
 
             if (systems.length) {
                 await operator.handleSystem({systems, prepareRecordsOnly: false});
+                DeviceEventEmitter.emit(Events.LICENSE_CHANGED, {serverUrl, license});
             }
 
             return await storeConfig(serverUrl, config);
@@ -79,8 +79,9 @@ export async function storeConfig(serverUrl: string, config: ClientConfig | unde
         }
 
         if (configsToDelete.length || configsToUpdate.length) {
+            const results = await operator.handleConfigs({configs: configsToUpdate, configsToDelete, prepareRecordsOnly});
             DeviceEventEmitter.emit(Events.CONFIG_CHANGED, {serverUrl, config});
-            return operator.handleConfigs({configs: configsToUpdate, configsToDelete, prepareRecordsOnly});
+            return results;
         }
     } catch (error) {
         logError('storeConfig', error);
