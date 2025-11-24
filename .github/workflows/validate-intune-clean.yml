@@ -42,7 +42,8 @@ jobs:
 
       - name: Check for package.json Intune reference
         run: |
-          if grep -q "@mattermost/intune" package.json; then
+          # Check only dependencies and devDependencies sections (not scripts)
+          if jq -e '.dependencies."@mattermost/intune" // .devDependencies."@mattermost/intune"' package.json > /dev/null 2>&1; then
             echo ""
             echo "❌ ERROR: package.json contains @mattermost/intune dependency"
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -50,13 +51,15 @@ jobs:
             echo "The Intune library should NOT be in package.json dependencies."
             echo "It is installed via --no-save flag during internal builds only."
             echo ""
+            echo "The 'intune:link' script is OK - only dependencies are checked."
+            echo ""
             echo "Please remove the @mattermost/intune entry from dependencies."
             echo ""
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo ""
             exit 1
           fi
-          echo "✅ package.json is clean (no Intune reference)"
+          echo "✅ package.json is clean (no Intune in dependencies)"
 
       - name: Check for package-lock.json Intune reference
         run: |
