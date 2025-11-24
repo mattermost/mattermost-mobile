@@ -1,12 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, type ReactNode} from 'react';
+import React, {useCallback, useEffect, useMemo, type ReactNode} from 'react';
 import {Platform, type StyleProp, StyleSheet, type ViewStyle, View, type LayoutChangeEvent} from 'react-native';
 import {KeyboardGestureArea} from 'react-native-keyboard-controller';
 import Animated from 'react-native-reanimated';
 
+import {InputAccessoryViewContainer, InputAccessoryViewContent} from '@components/input_accessory_view';
 import {KeyboardAnimationProvider} from '@context/keyboard_animation';
+import {useInputAccessoryView} from '@hooks/useInputAccessoryView';
 import {useKeyboardAwarePostDraft} from '@hooks/useKeyboardAwarePostDraft';
 
 const isIOS = Platform.OS === 'ios';
@@ -74,11 +76,48 @@ export const KeyboardAwarePostDraftContainer = ({
         isKeyboardFullyOpen,
         isKeyboardFullyClosed,
         isKeyboardInTransition,
+        isInputAccessoryViewMode,
+        isTransitioningFromCustomView,
     } = useKeyboardAwarePostDraft(isThreadView, enabled);
 
+    const {
+        showInputAccessoryView,
+        setShowInputAccessoryView,
+        lastKeyboardHeight,
+        inputAccessoryViewAnimatedHeight,
+    } = useInputAccessoryView({
+        keyboardHeight,
+        isKeyboardFullyOpen,
+    });
+
     const onLayout = useCallback((e: LayoutChangeEvent) => {
-        setPostInputContainerHeight(e.nativeEvent.layout.height);
+        const newHeight = e.nativeEvent.layout.height;
+        const roundedHeight = Math.round(newHeight);
+
+        // Debounce sub-pixel layout fluctuations to prevent unnecessary re-renders.
+        // React Native sometimes reports fractional pixel measurements (90.67, 91.00, 90.99)
+        // that would trigger multiple state updates for the same visual height.
+        // Only update if the rounded height changed by more than 0.5px (a real change).
+        // This prevents jitter in FlatList paddingTop and improves performance.
+        setPostInputContainerHeight((prevHeight) => {
+            if (Math.abs(prevHeight - roundedHeight) > 0.5) {
+                return roundedHeight;
+            }
+            return prevHeight;
+        });
     }, [setPostInputContainerHeight]);
+
+    // After emoji picker renders, set input container height to 0
+    // This completes the transition from keyboard to emoji picker
+    // while keeping the input visually at the same position
+    useEffect(() => {
+        if (showInputAccessoryView) {
+            // Wait one frame to ensure emoji picker has rendered
+            requestAnimationFrame(() => {
+                keyboardHeight.value = 0;
+            });
+        }
+    }, [showInputAccessoryView, keyboardHeight]);
 
     const keyboardAnimationValue = useMemo(() => ({
         height: keyboardCurrentHeight,
@@ -95,8 +134,13 @@ export const KeyboardAwarePostDraftContainer = ({
         isKeyboardFullyOpen,
         isKeyboardFullyClosed,
         isKeyboardInTransition,
-    }), [
-        keyboardCurrentHeight,
+        isInputAccessoryViewMode,
+        showInputAccessoryView,
+        setShowInputAccessoryView,
+        lastKeyboardHeight,
+        inputAccessoryViewAnimatedHeight,
+        isTransitioningFromCustomView,
+    }), [keyboardCurrentHeight,
         contentInset,
         offset,
         keyboardHeight,
@@ -110,6 +154,12 @@ export const KeyboardAwarePostDraftContainer = ({
         isKeyboardFullyOpen,
         isKeyboardFullyClosed,
         isKeyboardInTransition,
+        isInputAccessoryViewMode,
+        showInputAccessoryView,
+        setShowInputAccessoryView,
+        lastKeyboardHeight,
+        inputAccessoryViewAnimatedHeight,
+        isTransitioningFromCustomView,
     ]);
 
     const wrapperProps = useMemo(() => {
@@ -143,9 +193,17 @@ export const KeyboardAwarePostDraftContainer = ({
                     inputContainerAnimatedStyle,
                     styles.inputContainer,
                 ]}
-                onLayout={onLayout}
             >
-                {children}
+                <View onLayout={onLayout}>
+                    {children}
+                </View>
+                {showInputAccessoryView && (
+                    <InputAccessoryViewContainer
+                        animatedHeight={inputAccessoryViewAnimatedHeight}
+                    >
+                        <InputAccessoryViewContent/>
+                    </InputAccessoryViewContainer>
+                )}
             </AnimatedView>
         </>
     );

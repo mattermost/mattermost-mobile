@@ -390,23 +390,18 @@ const PostList = ({
     }, [orderedPosts, highlightedId]);
 
     // For inverted list: paddingTop in contentContainerStyle = visual bottom padding
-    const contentContainerStyleWithPadding = useMemo(() => {
-        return [
-            contentContainerStyle,
-            {paddingTop: postInputContainerHeight},
-        ];
-    }, [contentContainerStyle, postInputContainerHeight]);
+    const contentContainerStyleWithPadding = useMemo(() => [
+        contentContainerStyle,
+        {paddingTop: postInputContainerHeight},
+    ], [contentContainerStyle, postInputContainerHeight]);
 
     // contentInset only for dynamic keyboard height
     const animatedProps = useAnimatedProps(
-        () => {
-            // For inverted FlatList, contentInset.top applies to the visual bottom
-            return {
-                contentInset: {
-                    top: contentInset.value, // Only keyboard height (dynamic)
-                },
-            };
-        },
+        () => ({
+            contentInset: {
+                top: contentInset.value, // For inverted FlatList, applies to visual bottom
+            },
+        }),
         [contentInset],
     );
 
