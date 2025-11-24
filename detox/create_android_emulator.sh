@@ -28,7 +28,15 @@ create_avd() {
     local cpu_arch_family cpu_arch
     read cpu_arch_family cpu_arch < <(get_cpu_architecture)
 
-    avdmanager create avd -n "$AVD_NAME" -k "system-images;android-${SDK_VERSION};google_apis;${cpu_arch_family}" -p "$AVD_NAME" -d 'pixel_5'
+    # Use cmdline-tools avdmanager if available, fallback to tools version
+    local avdmanager_cmd="avdmanager"
+    if [[ -f "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager" ]]; then
+        avdmanager_cmd="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager"
+    elif [[ -f "$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager" ]]; then
+        avdmanager_cmd="$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager"
+    fi
+
+    "$avdmanager_cmd" create avd -n "$AVD_NAME" -k "system-images;android-${SDK_VERSION};google_apis;${cpu_arch_family}" -p "$AVD_NAME" -d 'pixel_5'
 
     cp -r android_emulator/ "$AVD_NAME/"
     sed -i -e "s|AvdId = change_avd_id|AvdId = ${AVD_NAME}|g" "$AVD_NAME/config.ini"
