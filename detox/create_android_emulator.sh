@@ -105,7 +105,12 @@ run_detox_tests() {
     echo "Running Detox tests... $@"
 
     cd detox
-    npm run e2e:android-test -- "$@"
+    # Use CI script in CI environment (no --reuse flag)
+    if [[ "$CI" == "true" ]]; then
+        npm run e2e:android-test-ci -- "$@"
+    else
+        npm run e2e:android-test -- "$@"
+    fi
 }
 
 main() {
