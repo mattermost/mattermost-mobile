@@ -94,11 +94,11 @@ class CreateDirectMessageScreen {
             } else {
                 await device.pressBack();
             }
+            await waitFor(this.tutorialHighlight).not.toExist().withTimeout(timeouts.TEN_SEC);
         } catch {
             // eslint-disable-next-line no-console
             console.log('Tutorial element not visible, skipping action:');
         }
-        await waitFor(this.tutorialHighlight).not.toExist().withTimeout(timeouts.TEN_SEC);
     };
 }
 
