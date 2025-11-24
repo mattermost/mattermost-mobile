@@ -55,13 +55,6 @@ describe('Channels', () => {
     });
 
     it('MM-T3201 - RN apps Create public channel', async () => {
-        // Expected Results (for all steps):
-        // * On step 1, a list of existing channels should be displayed.
-        // * On step 2, a screen enabling you to name your channel should be displayed.
-        // * On step 6,
-        // * The new channel should be created and you should be redirected to the new channel
-        // * You can tap the channel name to view and verify channel purpose and header
-
         const channelName = `channel-${getRandomId()}`;
         const channelDisplayName = channelName.replace(/-/g, ' ');
         const channelPurpose = 'This is a test purpose\nwith multiple lines\nfor testing';
@@ -122,12 +115,6 @@ describe('Channels', () => {
     });
 
     it('MM-T3203 - RN apps Create private channel', async () => {
-        // Expected Results (for all steps):
-        // * After #1,
-        // * A screen enabling you to name your channel should be displayed.
-        // * After #3,
-        // * The new channel should be created and you should be redirected to the new channel
-
         const channelName = `private-channel-${getRandomId()}`;
         const channelDisplayName = channelName.replace(/-/g, ' ');
         const channelPurpose = 'This is a private test channel purpose';
@@ -176,10 +163,6 @@ describe('Channels', () => {
     });
 
     it('MM-T3199 - RN apps Edit public channel', async () => {
-        // Expected Results (for all steps):
-        // * Edit modal closes, channel info is displayed
-        // * The changes you made are displayed
-
         // # Setup: Create a public test channel
         const channelName = `edit-pub-${getRandomId()}`;
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
@@ -240,10 +223,6 @@ describe('Channels', () => {
     });
 
     it('MM-T3206 - RN apps Edit private channel', async () => {
-        // Expected Results (for all steps):
-        // * Edit modal closes, channel info is displayed
-        // * The changes you made are displayed
-
         // # Setup: Create a private test channel
         const channelName = `edit-priv-${getRandomId()}`;
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
@@ -304,9 +283,6 @@ describe('Channels', () => {
     });
 
     it('MM-T854 - RN apps Channel can be created using 2 non-latin characters', async () => {
-        // Expected Results (for all steps):
-        // * Channel is created
-
         // # Step 1: Go to create a channel on the RN apps
         await ChannelListScreen.headerPlusButton.tap();
         await BrowseChannelsScreen.toBeVisible();

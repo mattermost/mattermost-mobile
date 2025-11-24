@@ -50,9 +50,6 @@ describe('Channels', () => {
     });
 
     it('MM-T850 - RN apps Favorite a channel', async () => {
-        // Expected Results (for all steps):
-        // * Button should show green (selected) and be displayed in 'FAVORITES' list of channels
-
         // # Setup: Create a test channel
         const channelName = `fav-test-${getRandomId()}`;
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
@@ -84,10 +81,6 @@ describe('Channels', () => {
     });
 
     it('MM-T3192 - RN apps Un-favorite a channel', async () => {
-        // Expected Results (for all steps):
-        // * Button should show grey (off) and channel should be removed from "FAVORITES" list of channels
-        // * Note: Favorites section is not displayed if no channels are favorited
-
         // # Setup: Create a test channel and favorite it
         const channelName = `unfav-test-${getRandomId()}`;
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {

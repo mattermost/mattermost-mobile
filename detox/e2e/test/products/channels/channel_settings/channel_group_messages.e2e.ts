@@ -49,9 +49,6 @@ describe('Channels', () => {
     });
 
     it('MM-T878 - RN apps View Members in GM', async () => {
-        // Expected Results (for all steps):
-        // * GM members are displayed in a list and can't be selected
-
         // # Setup: Create two additional users for the GM
         const {user: user1} = await User.apiCreateUser(siteOneUrl, {prefix: 'gmuser1'});
         const {user: user2} = await User.apiCreateUser(siteOneUrl, {prefix: 'gmuser2'});

@@ -53,10 +53,6 @@ describe('Channels', () => {
     });
 
     it('MM-T3200 - RN apps Join existing channel', async () => {
-        // Expected Results (for all steps):
-        // * List filters as expected, and channel is joined and displayed
-        // * System message shows you have joined the channel
-
         // # Setup: Create a test channel that the user is not a member of
         const channelName = `join-test-${getRandomId()}`;
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
@@ -105,13 +101,6 @@ describe('Channels', () => {
     });
 
     it('MM-T3202 - RN apps Leave public channel', async () => {
-        // Expected Results (for all steps):
-        // * After #1,
-        // * A message is displayed on screen asking whether or not you want to leave the channel
-        // * After #2,
-        // * You should be removed from the channel and be redirected to Town Square
-        // * If you had tapped on "no", the message should just close and your view remains in channel info
-
         // # Setup: Create a test channel and navigate to it
         const channelName = `leave-test-${getRandomId()}`;
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
@@ -144,10 +133,6 @@ describe('Channels', () => {
     });
 
     it('MM-T3207 - RN apps Leave private channel', async () => {
-        // Expected Results (for all steps):
-        // * Redirects to Town Square
-        // * Channel no longer listed in channel drawer
-
         // # Setup: Create a private test channel
         const channelName = `private-leave-${getRandomId()}`;
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
@@ -187,9 +172,6 @@ describe('Channels', () => {
     });
 
     it('MM-T3188 - RN apps Search for public channel Cancel search join channel', async () => {
-        // Expected Results (for all steps):
-        // * Verify the channel name appears in the search results below
-
         // # Setup: Create a test channel that the user is not a member of
         const channelName = `search-join-${getRandomId()}`;
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {

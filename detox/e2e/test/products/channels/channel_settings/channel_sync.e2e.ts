@@ -48,9 +48,6 @@ describe('Channels', () => {
     });
 
     it('MM-T853 - Device sync when creating channel', async () => {
-        // Expected Results (for all steps):
-        // * The channel appears in the left hand sidebar for all devices as soon it gets created in the other device
-
         // # Step 1: Have the *same account* viewing the same team open in two different devices (can be two browsers, desktop app, RN, mobile app)
         // Note: Multi-device testing is simulated via API creating a channel that syncs to the mobile device
 

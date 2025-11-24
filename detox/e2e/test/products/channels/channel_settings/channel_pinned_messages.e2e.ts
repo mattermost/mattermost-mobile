@@ -50,9 +50,6 @@ describe('Channels', () => {
     });
 
     it('MM-T851 - RN apps Pinned Messages', async () => {
-        // Expected Results (for all steps):
-        // * Opens Pinned Messages list
-
         // # Setup: Create a test channel and post a message
         const channelName = `pinned-${getRandomId()}`;
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {

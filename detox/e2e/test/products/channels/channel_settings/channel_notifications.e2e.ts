@@ -48,9 +48,6 @@ describe('Channels', () => {
     });
 
     it('MM-T3198 - Channel notifications Mobile Push', async () => {
-        // Expected Results (for all steps):
-        // * Notifications should fire according to the selection you have made
-
         // # Step 1: Channel notifications: Mobile Push
         // 1. Channel name drop-down > Notification Preferences
         // 2. Click Edit on "Send mobile push notifications"

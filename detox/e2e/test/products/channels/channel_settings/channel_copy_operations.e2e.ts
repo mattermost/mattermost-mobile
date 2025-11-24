@@ -51,10 +51,6 @@ describe('Channels', () => {
     });
 
     it('MM-T867 - RN apps Copying channel header text', async () => {
-        // Expected Results (for all steps):
-        // * After #2,• Dialog shows up with "Copy Header" and "Cancel" options
-        // * After #4,• Pasted content matches the header
-
         // NOTE: Detox has limited clipboard support. This test verifies the UI flow
         // but cannot fully test clipboard operations on mobile devices.
 
@@ -96,12 +92,6 @@ describe('Channels', () => {
     });
 
     it('MM-T865 - RN apps Copying channel purpose text', async () => {
-        // Expected Results (for all steps):
-        // * After #2,
-        // * Dialog shows up with "Copy Purpose" and "Cancel" options
-        // * After #4,
-        // * Pasted content matches the header
-
         // NOTE: Detox has limited clipboard support. This test verifies the UI flow
         // but cannot fully test clipboard operations on mobile devices.
 
@@ -143,12 +133,6 @@ describe('Channels', () => {
     });
 
     it('MM-T866 - RN apps Copy channel header URL', async () => {
-        // Expected Results (for all steps):
-        // * After #3,
-        // * Dialog shows up with "Copy URL" and "Cancel" options
-        // * After #5,
-        // * URL is pasted
-
         // NOTE: Detox has limited clipboard support. This test verifies the UI flow
         // but cannot fully test clipboard operations on mobile devices.
 

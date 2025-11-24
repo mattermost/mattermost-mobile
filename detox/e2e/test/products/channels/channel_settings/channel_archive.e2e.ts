@@ -49,14 +49,6 @@ describe('Channels', () => {
     });
 
     it('MM-T3197 - RN apps Archive public or private channel', async () => {
-        // Expected Results (for all steps):
-        // * After #2,
-        // * A message is displayed on screen asking whether or not you want to archive the channel.
-        // * After #3,
-        // * The channel is archived and you are redirected to the last channel you were viewing
-        // * If you had tapped on "no", the confirmation should just close and your view remains in channel info
-        // * Note: If "Allow users to view archived channels" is set to "True" - view will remain in archived channel view of the channel you've just archived
-
         // # Setup: Create a test public channel
         const channelName = `archive-test-${getRandomId()}`;
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {

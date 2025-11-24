@@ -46,9 +46,6 @@ describe('Channels', () => {
     });
 
     it('MM-T873 - RN apps Channel list theme color', async () => {
-        // Expected Results (for all steps):
-        // * Selected theme color remains the same throughout including the footer and header of the channel list navigation
-
         // # Step 1: Swipe right to display the list of channels
         await ChannelScreen.toBeVisible();
         await ChannelListScreen.open();

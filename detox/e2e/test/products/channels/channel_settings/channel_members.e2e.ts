@@ -52,12 +52,6 @@ describe('Channels', () => {
     });
 
     it('MM-T3195 - RN apps Add members to channel', async () => {
-        // Expected Results (for all steps):
-        // * The user is added to the channel
-        // * Total number of members next to "manage members" menu option should increase by the number of users added to the channel
-        // * System message should display in the channel showing which members were added to the channel.
-        // * Tapping on the user's name in the system message should open the user's profile from where you can send them a DM
-
         // # Setup: Create a test channel and a new user to add
         const channelName = `add-members-${getRandomId()}`;
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
@@ -120,12 +114,6 @@ describe('Channels', () => {
     });
 
     it('MM-T856 - Add existing users to public channel from drop-down Add Members', async () => {
-        // Expected Results (for all steps):
-        // * at step 5. Selected user is removed from the list as soon as it is selected to be added
-        // * At step 7. System message posts in channel for each user added: "[user2, user3, user4] added to the channel by [user1]" (or "added... by you"), visible for both user1 and user2
-        // * This step N/A for mobile view / RN:
-        // * On user1 clicking "members" icon at top of channel, added user2 and user3 appear in list
-
         // # Setup: Create test channel and user
         const channelName = `add-users-${getRandomId()}`;
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
@@ -184,10 +172,6 @@ describe('Channels', () => {
     });
 
     it('MM-T3196 - RN apps Manage members in channel', async () => {
-        // Expected Results (for all steps):
-        // * The user should disappear from the list of users and be removed from the channel
-        // * A system message showing that the user has been removed from the channel should display in the channel
-
         // # Setup: Create a test channel and add a user to it
         const channelName = `manage-members-${getRandomId()}`;
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
@@ -253,17 +237,6 @@ describe('Channels', () => {
     });
 
     it('MM-T3204 - RN apps Add user to private channel', async () => {
-        // Expected Results (for all steps):
-        // * After #2,
-        // * A list of users on the server should be displayed
-        // * After #3,
-        // * Your keyboard should pop up so you can type in the name of a user.
-        // * The list should filter as you type in the name and display all users matching your input
-        // * After #4,
-        // * The circle should show blue with a white tick (selected)
-        // * After #5,
-        // * The user should be added to the channel, total number of members next to "manage members" menu option should increase by the number of users added to the channel and a system message should display in the channel showing which members were added to the channel.
-
         // # Setup: Create a private test channel and a new user
         const channelName = `private-add-${getRandomId()}`;
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
@@ -326,13 +299,6 @@ describe('Channels', () => {
     });
 
     it('MM-T3205 - RN apps Remove user from private channel', async () => {
-        // Expected Results (for all steps):
-        // * User is removed from channel:
-        // * Member count decrements by one
-        // * System message posts in channel for the user who removed them
-        // * If watching as the removed user, that user sees Town Square, and the channel is removed from their channel drawer list
-        // * User that was removed now also sees a message in a modal (from desktop) advising them they have been removed (if viewing channel while removed).
-
         // # Setup: Create a private channel with an additional member
         const channelName = `private-remove-${getRandomId()}`;
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {

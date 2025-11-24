@@ -52,13 +52,6 @@ describe('Channels', () => {
     });
 
     it('MM-T3189 - RN apps Display channel list', async () => {
-        // Expected Results (for all steps):
-        // * List of channels is displayed, and categorized as expected (when unfiltered):
-        // * Unreads
-        // * Favorites
-        // * Channels (private and public)
-        // * Direct Messages
-
         // # Step 1: Swipe right to display the list of channels
         await ChannelScreen.toBeVisible();
         await ChannelListScreen.open();
@@ -87,9 +80,6 @@ describe('Channels', () => {
     });
 
     it('MM-T3190 - RN apps Display Channel Info', async () => {
-        // Expected Results (for all steps):
-        // * Channel Info is displayed
-
         // # Step 1: Tap on the channel name in the bar at the top of your screen
         await ChannelScreen.toBeVisible();
         await ChannelInfoScreen.open();
@@ -106,9 +96,6 @@ describe('Channels', () => {
     });
 
     it('MM-T3191 - RN apps Change channel', async () => {
-        // Expected Results (for all steps):
-        // * The channel you tapped on opens in view
-
         // # Setup: Create a test channel to search for
         const channelName = `test-channel-${getRandomId()}`;
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {

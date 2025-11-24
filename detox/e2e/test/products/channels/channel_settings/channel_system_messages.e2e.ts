@@ -47,18 +47,6 @@ describe('Channels', () => {
     });
 
     it('MM-T858 - Combined joinleave messages in public channel', async () => {
-        // Expected Results (for all steps):
-        // * Observe the following three posts
-        // * (how the username/first-last/nickname displays can vary based on Account Settings, but they should at least combine in this way):
-        // * System
-        // * @user4 joined the channel
-        // * @user1 and 2 others were added to the channel by you
-        // * <2 others is a link that shows the others when clicked: user2, user3>
-        // * @user1 (or 2 or 3) was removed from the channel.
-        // * <the test message you posted>
-        // * System
-        // * @user5 added to the channel by you.
-
         // # Setup: Create test channel and users
         const channelName = `joinleave-${getRandomId()}`;
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
