@@ -11,7 +11,7 @@ import TestHelper from '@test/test_helper';
 import {getFullErrorMessage, isErrorWithStatusCode} from '@utils/errors';
 import {showBoRPostExpiredSnackbar} from '@utils/snack_bar';
 
-import UnrevealedBurnOnReadPost from './unrevealed_burn_on_read_post';
+import UnrevealedBurnOnReadPost from '.';
 
 jest.mock('@actions/remote/post', () => ({
     revealBoRPost: jest.fn(),

@@ -8,7 +8,6 @@ import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 import {dataRetentionCleanPosts} from '@actions/local/systems';
 import {markChannelAsRead, unsetActiveChannelOnServer} from '@actions/remote/channel';
 import {fetchPosts, fetchPostsBefore} from '@actions/remote/post';
-import {isExpiredBoRPost} from '@calls/utils';
 import {PER_PAGE_DEFAULT} from '@client/rest/constants';
 import PostList from '@components/post_list';
 import {Events, Screens} from '@constants';
@@ -22,6 +21,7 @@ import Intro from './intro';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type {AnimatedStyle} from 'react-native-reanimated';
+import {isExpiredBoRPost} from "@utils/bor";
 
 type Props = {
     channelId: string;

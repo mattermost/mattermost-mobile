@@ -10,13 +10,12 @@ import {of as of$, Observable, combineLatest} from 'rxjs';
 import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {Preferences, License} from '@constants';
-import {GLOBAL_IDENTIFIERS, MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_STATUS_UNKNOWN} from '@constants/push_proxy';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {logError} from '@utils/log';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
-import type GlobalModel from '@typings/database/models/app/global';
 import type ConfigModel from '@typings/database/models/servers/config';
 import type SystemModel from '@typings/database/models/servers/system';
 
@@ -29,7 +28,7 @@ export type PrepareCommonSystemValuesArgs = {
     teamHistory?: string;
 }
 
-const {SERVER: {SYSTEM, CONFIG}, APP: {GLOBAL}} = MM_TABLES;
+const {SERVER: {SYSTEM, CONFIG}} = MM_TABLES;
 
 export const getCurrentChannelId = async (serverDatabase: Database): Promise<string> => {
     try {
@@ -181,7 +180,7 @@ export const getLastGlobalDataRetentionRun = async (database: Database) => {
 
 export const getLastBoRPostCleanupRun = async (database: Database) => {
     try {
-        const data = await database.get<GlobalModel>(GLOBAL).find(GLOBAL_IDENTIFIERS.LAST_BOR_POST_CLEANUP_RUN);
+        const data = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.LAST_BOR_POST_CLEANUP_RUN);
         return data?.value || 0;
     } catch {
         return undefined;

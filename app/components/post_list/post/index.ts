@@ -6,7 +6,6 @@ import React from 'react';
 import {of as of$, combineLatest} from 'rxjs';
 import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
-import {isBoRPost} from '@calls/utils';
 import {Permissions, Preferences, Screens} from '@constants';
 import {queryFilesForPost} from '@queries/servers/file';
 import {observePost, observePostAuthor, queryPostsBetween, observeIsPostPriorityEnabled} from '@queries/servers/post';
@@ -23,6 +22,7 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 import type PostModel from '@typings/database/models/servers/post';
 import type PostsInThreadModel from '@typings/database/models/servers/posts_in_thread';
 import type UserModel from '@typings/database/models/servers/user';
+import {isBoRPost} from "@utils/bor";
 
 type PropsInput = WithDatabaseArgs & {
     currentUser?: UserModel;

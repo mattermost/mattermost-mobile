@@ -104,7 +104,7 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
 
     dataRetentionCleanup(serverUrl);
 
-    expiredBoRPostCleanup();
+    expiredBoRPostCleanup(serverUrl);
 
     AppsManager.refreshAppBindings(serverUrl, groupLabel);
     return undefined;

@@ -8,7 +8,7 @@ import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-const TIMER_REFRESH_INTERVAL_MS = 1000;
+import {TIMER_REFRESH_INTERVAL_MS} from './constants';
 
 type Props = {
     expiryTime: number; // timestamp in ms

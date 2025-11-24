@@ -5,9 +5,8 @@ import {type Database, Q} from '@nozbe/watermelondb';
 import deepEqual from 'deep-equal';
 
 import {storeGlobal} from '@actions/app/global';
-import {isExpiredBoRPost} from '@calls/utils';
 import {GLOBAL_IDENTIFIERS, MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
-import {PostTypes} from '@constants/post';
+import {PostTypes, BOR_POST_CLEANUP_MIN_RUN_INTERVAL} from '@constants/post';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
 import {getAllServers} from '@queries/app/servers';
@@ -28,9 +27,9 @@ import {logError} from '@utils/log';
 import {deletePosts} from './post';
 
 import type {DataRetentionPoliciesRequest} from '@actions/remote/systems';
+import {isExpiredBoRPost} from "@utils/bor";
 
 const {SERVER: {POST}} = MM_TABLES;
-const BOR_POST_CLEANUP_MIN_RUN_INTERVAL = 15 * 60 * 1000; // 15 minutes
 
 export async function storeConfigAndLicense(serverUrl: string, config: ClientConfig, license: ClientLicense) {
     try {
@@ -324,27 +323,18 @@ export async function dismissAnnouncement(serverUrl: string, announcementText: s
     }
 }
 
-export async function expiredBoRPostCleanup() {
-    const {database: appDatabase} = DatabaseManager.getAppDatabaseAndOperator();
-    const lastRunAt = (await getLastBoRPostCleanupRun(appDatabase)) || 0;
+export async function expiredBoRPostCleanup(serverUrl: string) {
+    const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+    const lastRunAt = (await getLastBoRPostCleanupRun(database)) || 0;
+
     const shouldRunNow = (Date.now() - lastRunAt) > BOR_POST_CLEANUP_MIN_RUN_INTERVAL;
 
     if (!shouldRunNow) {
         return {error: undefined};
     }
 
-    const servers = await getAllServers();
-    for (const server of servers) {
-        const serverDatabase = DatabaseManager.serverDatabases[server.url]?.database;
-        if (!serverDatabase) {
-            continue;
-        }
-
-        /* eslint-disable-next-line no-await-in-loop */
-        await removeExpiredBoRPosts(server.url, serverDatabase);
-    }
-
-    await storeGlobal(GLOBAL_IDENTIFIERS.LAST_BOR_POST_CLEANUP_RUN, Date.now(), false);
+    await removeExpiredBoRPosts(serverUrl, database);
+    await updateLastBoRCleanupRun(serverUrl);
     return {error: undefined};
 }
 
@@ -359,6 +349,22 @@ async function removeExpiredBoRPosts(serverUrl: string, database: Database) {
         return {error: undefined};
     } catch (error) {
         logError('An error occurred while performing BoR post cleanup', error);
+        return {error};
+    }
+}
+
+async function updateLastBoRCleanupRun(serverUrl: string, value?: number, prepareRecordsOnly = false) {
+    try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        const systems: IdValue[] = [{
+            id: SYSTEM_IDENTIFIERS.LAST_BOR_POST_CLEANUP_RUN,
+            value: value || Date.now(),
+        }];
+
+        return operator.handleSystem({systems, prepareRecordsOnly});
+    } catch (error) {
+        logError('Failed updateLastBoRCleanupRun', error);
         return {error};
     }
 }

@@ -51,6 +51,8 @@ export enum PostPriorityType {
 
 export const POST_TIME_TO_FAIL = toMilliseconds({seconds: 10});
 
+export const BOR_POST_CLEANUP_MIN_RUN_INTERVAL = 15 * 60 * 1000; // 15 minutes
+
 export default {
     POST_COLLAPSE_TIMEOUT: toMilliseconds({minutes: 5}),
     POST_TYPES: PostTypes,
