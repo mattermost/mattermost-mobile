@@ -5,6 +5,7 @@ import {fireEvent, screen} from '@testing-library/react-native';
 import React, {act} from 'react';
 
 import {deletePost, revealBoRPost} from '@actions/remote/post';
+import {PostModel} from '@database/models/server';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 import {getFullErrorMessage, isErrorWithStatusCode} from '@utils/errors';
@@ -12,13 +13,13 @@ import {showBoRPostExpiredSnackbar} from '@utils/snack_bar';
 
 import UnrevealedBurnOnReadPost from './unrevealed_burn_on_read_post';
 
-jest.mock('@utils/theme', () => ({
-    changeOpacity: jest.fn().mockReturnValue('rgba(0,0,0,0.5)'),
-    makeStyleSheetFromTheme: jest.fn().mockReturnValue(() => ({
-        buttonBackgroundStyle: {},
-        buttonTextStyle: {},
-    })),
-}));
+// jest.mock('@utils/theme', () => ({
+//     changeOpacity: jest.fn().mockReturnValue('rgba(0,0,0,0.5)'),
+//     makeStyleSheetFromTheme: jest.fn().mockReturnValue(() => ({
+//         buttonBackgroundStyle: {},
+//         buttonTextStyle: {},
+//     })),
+// }));
 
 jest.mock('@actions/remote/post', () => ({
     revealBoRPost: jest.fn(),
@@ -37,7 +38,7 @@ jest.mock('@utils/snack_bar', () => ({
 describe('UnrevealedBurnOnReadPost', () => {
     const mockPost = {
         id: 'post_id_123',
-    };
+    } as PostModel;
 
     const baseProps = {
         post: mockPost,
@@ -49,7 +50,7 @@ describe('UnrevealedBurnOnReadPost', () => {
 
     test('should render button with correct text and icon', () => {
         renderWithIntlAndTheme(<UnrevealedBurnOnReadPost {...baseProps}/>);
-        
+
         const button = screen.getByText('View message');
         expect(button).toBeTruthy();
     });
