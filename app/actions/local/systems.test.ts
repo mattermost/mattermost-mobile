@@ -26,6 +26,8 @@ import type SystemModel from '@typings/database/models/servers/system';
 const serverUrl = 'baseHandler.test.com';
 let operator: ServerDataOperator;
 
+const deletedBatches: string[][] = [];
+
 jest.mock('@init/credentials', () => {
     const original = jest.requireActual('@init/credentials');
     return {
@@ -34,9 +36,21 @@ jest.mock('@init/credentials', () => {
     };
 });
 
+jest.mock('./post', () => {
+    const original = jest.requireActual('./post');
+    return {
+        ...original,
+        deletePosts: jest.fn((url: string, postIds: string[]) => {
+            deletedBatches.push(postIds);
+            return Promise.resolve({error: false});
+        }),
+    };
+});
+
 beforeEach(async () => {
     await DatabaseManager.init([serverUrl]);
     operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
+    deletedBatches.length = 0;
 });
 
 afterEach(async () => {
@@ -207,6 +221,50 @@ describe('dataRetention', () => {
 
         const {error} = await dataRetentionCleanup(serverUrl);
         expect(error).toBeUndefined();
+    });
+
+    it('batch deletion handles large datasets correctly - dataRetentionCleanup', async () => {
+        const yesterday = Date.now() - (25 * 60 * 60 * 1000);
+        await operator.handleSystem({
+            systems: [
+                {id: SYSTEM_IDENTIFIERS.LAST_DATA_RETENTION_RUN, value: yesterday},
+            ],
+            prepareRecordsOnly: false,
+        });
+
+        const posts: Post[] = [];
+        const cutoffTime = Date.now() - (15 * 24 * 60 * 60 * 1000); // 15 days ago
+
+        for (let i = 0; i < 2500; i++) {
+            posts.push(TestHelper.fakePost({
+                channel_id: 'channelid1',
+                id: `post_${i}`,
+                create_at: cutoffTime - i, // all posts older than 14 days
+            }));
+        }
+
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: posts.map((p) => p.id),
+            posts,
+            prepareRecordsOnly: false,
+        });
+
+        const database = operator.database;
+        const postsBeforeCleanup = await database.get('Post').query().fetchCount();
+        expect(postsBeforeCleanup).toBe(2500);
+
+        const vacuumSpy = jest.spyOn(Database.prototype, 'unsafeVacuum').mockImplementation(jest.fn());
+
+        const {error} = await dataRetentionCleanup(serverUrl);
+        expect(error).toBeUndefined();
+
+        expect(deletedBatches.length).toBe(3);
+        expect(deletedBatches[0].length).toBe(1000);
+        expect(deletedBatches[1].length).toBe(1000);
+        expect(deletedBatches[2].length).toBe(500);
+
+        vacuumSpy.mockRestore();
     });
 });
 
