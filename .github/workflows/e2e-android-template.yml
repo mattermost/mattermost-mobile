@@ -130,10 +130,11 @@ jobs:
     name: android-detox-e2e-${{ matrix.runId }}-${{ matrix.deviceName }}-${{ matrix.deviceOsVersion }}
     runs-on: ubuntu-latest-8-cores
     continue-on-error: true
-    timeout-minutes: 240
+    timeout-minutes: 90
     env:
       ANDROID_HOME: /usr/local/lib/android/sdk
       ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+      DETOX_RETRIES: 1
     needs:
       - generate-specs
     strategy:
@@ -164,6 +165,24 @@ jobs:
           STORE_ALIAS: "${{ secrets.MM_MOBILE_STORE_ALIAS }}"
           STORE_PASSWORD: "${{ secrets.MM_MOBILE_STORE_PASSWORD }}"
           MATTERMOST_BUILD_GH_TOKEN: "${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}"
+
+      - name: Cache Detox Dependencies
+        uses: actions/cache@v4
+        with:
+          path: detox/node_modules
+          key: ${{ runner.os }}-detox-${{ hashFiles('detox/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-detox-
+
+      - name: Cache Android SDK
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: ${{ runner.os }}-android-sdk-${{ env.SDK_VERSION }}
+          restore-keys: |
+            ${{ runner.os }}-android-sdk-
 
       - name: Install Detox Dependencies
         run: |

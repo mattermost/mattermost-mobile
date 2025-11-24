@@ -37,7 +37,7 @@
     "android.emulator": {
       "type": "android.emulator",
       "device": {
-        "avdName": "detox_pixel_4_xl_api_34"
+        "avdName": "Pixel_6_Pro_API_33"
       }
     }
   },
@@ -64,19 +64,25 @@
     "plugins": {
       "screenshot": {
         "shouldTakeAutomaticSnapshots": true,
-        "keepOnlyFailedTestsArtifacts": true
+        "keepOnlyFailedTestsArtifacts": true,
+        "takeWhen": {
+          "testStart": false,
+          "testDone": false,
+          "testFailure": true
+        }
       },
       "video": {
         "enabled": false
       },
       "log": {
-        "enabled": true
+        "enabled": true,
+        "keepOnlyFailedTestsArtifacts": true
       }
     }
   },
   "behavior": {
     "init": {
-      "reinstallApp": true,
+      "reinstallApp": false,
       "launchApp": false
     },
     "cleanup": {
@@ -85,7 +91,7 @@
   },
   "session": {
     "sessionId": "mobile-test-session",
-    "debugSynchronization": 5000,
+    "debugSynchronization": 10000,
     "autoStart": true
   },
   "visibility": {

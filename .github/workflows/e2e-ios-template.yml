@@ -124,9 +124,10 @@ jobs:
     name: ios-detox-e2e-${{ matrix.runId }}-${{ matrix.deviceName }}-${{ matrix.deviceOsVersion }}
     runs-on: macos-14
     continue-on-error: true
-    timeout-minutes: ${{ inputs.low_bandwidth_mode && 240 || 180 }}
+    timeout-minutes: ${{ inputs.low_bandwidth_mode && 120 || 60 }}
     env:
       IOS: true
+      DETOX_RETRIES: 1
     needs:
       - generate-specs
     strategy:
@@ -141,10 +142,28 @@ jobs:
       - name: ci/prepare-node-deps
         uses: ./.github/actions/prepare-node-deps
 
+      - name: Cache Homebrew Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Caches/Homebrew
+            /usr/local/Cellar/applesimutils
+          key: ${{ runner.os }}-homebrew-applesimutils-${{ hashFiles('.github/workflows/e2e-ios-template.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-homebrew-applesimutils-
+
       - name: Install Homebrew Dependencies
         run: |
           brew tap wix/brew
           brew install applesimutils
+
+      - name: Cache Detox Dependencies
+        uses: actions/cache@v4
+        with:
+          path: detox/node_modules
+          key: ${{ runner.os }}-detox-${{ hashFiles('detox/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-detox-
 
       - name: Download iOS Simulator Build
         uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
@@ -188,17 +207,36 @@ jobs:
       - name: Run Detox E2E Tests
         continue-on-error: true # We want to run all the tests
         run: |
-          # Start the server
+          # Start the Metro bundler
           npm run start &
-          sleep 120 # Wait for watchman to finish querying the files
+          METRO_PID=$!
+
+          # Wait for Metro to be ready with proper timeout
+          echo "Waiting for Metro bundler to be ready..."
+          TIMEOUT=120
+          ELAPSED=0
+          until curl -s http://localhost:8081/status | grep -q "packager-status:running" || [ $ELAPSED -ge $TIMEOUT ]; do
+            sleep 2
+            ELAPSED=$((ELAPSED + 2))
+            if [ $((ELAPSED % 10)) -eq 0 ]; then
+              echo "Still waiting for Metro... ${ELAPSED}s elapsed"
+            fi
+          done
+
+          if [ $ELAPSED -ge $TIMEOUT ]; then
+            echo "Metro failed to start within ${TIMEOUT} seconds"
+            exit 1
+          fi
+
+          echo "Metro is ready after ${ELAPSED} seconds"
+
+          # Run tests
           cd detox
           npm run clean-detox
           npm run detox:config-gen
           npm run e2e:ios-test -- ${{ matrix.specs }}
         env:
-          DETOX_DISABLE_HIERARCHY_DUMP: "YES"
-          DETOX_DISABLE_SCREENSHOT_TRACKING: "YES"      
-          DETOX_LOGLEVEL: "debug"
+          DETOX_LOGLEVEL: "info"
           DETOX_DEVICE_TYPE: ${{ env.DEVICE_NAME }}
           DETOX_OS_VERSION: ${{ env.DEVICE_OS_VERSION }}
           LOW_BANDWIDTH_MODE: ${{ inputs.low_bandwidth_mode }}

@@ -7,15 +7,36 @@ import {Plugin, System, User} from '@support/server_api';
 import {siteOneUrl} from '@support/test_config';
 
 // Number of retry attempts
-const MAX_RETRY_ATTEMPTS = 3;
+const MAX_RETRY_ATTEMPTS = 2;
 
 // Delay between retries (in milliseconds)
-const RETRY_DELAY = 5000;
-
-let isFirstLaunch = true;
+const RETRY_DELAY = 3000;
 
 /**
- * Launch the app with retry mechanism
+ * Launch the app with proper configuration for stable tests
+ * @returns {Promise<void>}
+ */
+export async function launchApp(): Promise<void> {
+    await device.launchApp({
+        newInstance: true,
+        permissions: {
+            notifications: 'YES',
+            camera: 'NO',
+            medialibrary: 'NO',
+            photos: 'NO',
+        },
+        launchArgs: {
+            detoxPrintBusyIdleResources: 'YES',
+            detoxURLBlacklistRegex: '(.*localhost.*|.*127\\.0\\.0\\.1.*)',
+            reduceMotion: 'YES',
+        },
+    });
+
+    console.info('✅ App launched successfully');
+}
+
+/**
+ * Launch the app with retry mechanism for initial setup
  * @returns {Promise<void>}
  */
 export async function launchAppWithRetry(): Promise<void> {
@@ -23,44 +44,8 @@ export async function launchAppWithRetry(): Promise<void> {
 
     for (let attempt = 1; attempt <= MAX_RETRY_ATTEMPTS; attempt++) {
         try {
-            if (isFirstLaunch) {
-                // For first launch, clean install
-                await device.launchApp({
-                    newInstance: true,
-                    delete: true,
-                    permissions: {
-                        notifications: 'YES',
-                        camera: 'NO',
-                        medialibrary: 'NO',
-                        photos: 'NO',
-                    },
-                    launchArgs: {
-                        detoxPrintBusyIdleResources: 'YES',
-                        detoxDebugVisibility: 'YES',
-                        detoxDisableSynchronization: 'YES',
-                        detoxDisableHierarchyDump: 'YES',
-                        reduceMotion: 'YES',
-                    },
-                });
-                isFirstLaunch = false;
-            } else {
-                // For subsequent launches, reuse instance
-                await device.launchApp({
-                    newInstance: false,
-                    launchArgs: {
-                        detoxPrintBusyIdleResources: 'YES',
-                        detoxDebugVisibility: 'YES',
-                        detoxDisableSynchronization: 'YES',
-                        detoxURLBlacklistRegex: '.*localhost.*',
-                    },
-                });
-            }
-
-            // Verify app is connected by executing a simple command
-            await device.reloadReactNative();
-            console.info(`✅ App launched successfully on attempt ${attempt}`);
+            await launchApp();
             return; // Success, exit the function
-
         } catch (error) {
             lastError = error;
             console.warn(`❌ App launch failed on attempt ${attempt}/${MAX_RETRY_ATTEMPTS}: ${(error as Error).message}`);
@@ -69,12 +54,6 @@ export async function launchAppWithRetry(): Promise<void> {
             if (attempt < MAX_RETRY_ATTEMPTS) {
                 console.warn(`Waiting ${RETRY_DELAY}ms before retrying...`);
                 await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
-
-                // Force a new instance on retry
-                if (!isFirstLaunch && attempt > 1) {
-                    console.warn('Forcing new instance for next attempt');
-                    isFirstLaunch = true;
-                }
             }
         }
     }
