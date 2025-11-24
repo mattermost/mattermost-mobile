@@ -27,9 +27,6 @@ const CHANNEL_POST_INPUT_NATIVE_ID = `${CHANNEL_POST_DRAFT_TESTID}.post.input`;
 const styles = StyleSheet.create({
     flex: {
         flex: 1,
-        borderWidth: 4,
-        borderColor: 'red',
-        position: 'relative',
     },
 });
 
@@ -45,10 +42,12 @@ const ChannelContent = ({
             textInputNativeID={CHANNEL_POST_INPUT_NATIVE_ID}
             containerStyle={[styles.flex, {marginTop}]}
             enabled={enabled}
-            renderList={({listRef}) => (
+            renderList={({listRef, onTouchMove, onTouchEnd}) => (
                 <ChannelPostList
                     channelId={channelId}
                     listRef={listRef}
+                    onTouchMove={onTouchMove}
+                    onTouchEnd={onTouchEnd}
                 />
             )}
         >
