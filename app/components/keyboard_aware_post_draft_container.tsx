@@ -256,27 +256,31 @@ export const KeyboardAwarePostDraftContainer = ({
                     {duration: 250},
                     () => {
                         runOnJS(dismissEmojiPicker)();
+
+                        // Reset scroll adjustment after dismissal
+                        animatedScrollAdjustment.value = 0;
                     },
                 );
+
+                // Animate inset to 0
                 inset.value = withTiming(0, {duration: 250});
 
                 // Animate scroll position from start to end - this makes list scroll down smoothly
                 animatedScrollAdjustment.value = startScrollOffset;
-                animatedScrollAdjustment.value = withTiming(endScrollOffset, {
-                    duration: 250,
-                }, () => {
-                    animatedScrollAdjustment.value = 0;
-                });
+                animatedScrollAdjustment.value = withTiming(endScrollOffset, {duration: 250});
             } else {
                 // User was swiping UP → Expand to full height
                 const targetHeight = originalEmojiPickerHeightRef.current;
 
-                // Calculate scroll positions: as inset increases from current to targetHeight,
-                // list should scroll from current position to final position
+                // Calculate scroll positions: as inset increases from currentInsetHeight to targetHeight,
+                // scroll offset should decrease by (targetHeight - currentInsetHeight)
                 const startScrollOffset = -currentInsetHeight + currentScrollValue;
                 const endScrollOffset = -targetHeight + currentScrollValue;
 
+                // Animate emoji picker to full height
                 inputAccessoryViewAnimatedHeight.value = withTiming(targetHeight, {duration: 250});
+
+                // Animate inset to full height
                 inset.value = withTiming(targetHeight, {duration: 250});
 
                 // Animate scroll position from start to end - this makes list scroll up smoothly
@@ -284,11 +288,13 @@ export const KeyboardAwarePostDraftContainer = ({
                 animatedScrollAdjustment.value = withTiming(endScrollOffset, {
                     duration: 250,
                 }, () => {
+                    // Reset after animation completes
                     animatedScrollAdjustment.value = 0;
                 });
             }
         }
 
+        // Clear tracking references
         previousTouchYRef.current = null;
         lastDistanceFromBottomRef.current = null;
         lastIsSwipingDownRef.current = null;
@@ -296,6 +302,8 @@ export const KeyboardAwarePostDraftContainer = ({
     }, [inputAccessoryViewAnimatedHeight, dismissEmojiPicker, inset, scroll, animatedScrollAdjustment]);
 
     // After emoji picker renders, adjust heights and scroll to keep messages visible
+    // This completes the transition from keyboard to emoji picker
+    // while keeping the input visually at the same position
     useEffect(() => {
         if (showInputAccessoryView) {
             // Wait one frame to ensure emoji picker has rendered
