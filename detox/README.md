@@ -14,7 +14,7 @@ Comprehensive end-to-end testing suite for Mattermost Mobile using Detox.
 
 **Android:**
 - Node.js 18+ and npm
-- Android SDK (API 34)
+- Android SDK (API 33)
 - Android Emulator or physical device
 - Java 17
 
@@ -85,9 +85,9 @@ npm run e2e:android-test test/products/channels/messaging/message_post.e2e.ts
 ./create_android_emulator.sh SDK_VERSION AVD_NAME
 
 # Examples:
-./create_android_emulator.sh 34 pixel_5a_avd
-./create_android_emulator.sh 34 pixel_5a_avd --headless
-./create_android_emulator.sh 34 pixel_5a_avd --debug  # See emulator logs
+./create_android_emulator.sh 33 pixel_5a_avd
+./create_android_emulator.sh 33 pixel_5a_avd --headless
+./create_android_emulator.sh 33 pixel_5a_avd --debug  # See emulator logs
 ```
 
 ## 📊 Test Results
@@ -152,7 +152,7 @@ emulator -list-avds
 
 # Recreate emulator
 cd detox
-./create_android_emulator.sh 34 detox_pixel_4_xl
+./create_android_emulator.sh 33 detox_pixel_4_xl
 ```
 
 ### Test Hangs or Timeouts
