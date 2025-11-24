@@ -37,11 +37,13 @@ const ThreadContent = ({
             textInputNativeID='thread.post_draft.post.input'
             containerStyle={styles.flex}
             isThreadView={true}
-            renderList={({listRef}) => (
+            renderList={({listRef, onTouchMove, onTouchEnd}) => (
                 <ThreadPostList
                     nativeID={rootId}
                     rootPost={rootPost}
                     listRef={listRef}
+                    onTouchMove={onTouchMove}
+                    onTouchEnd={onTouchEnd}
                 />
             )}
         >

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useRef} from 'react';
-import {ActivityIndicator, FlatList, StyleSheet, View} from 'react-native';
+import {ActivityIndicator, FlatList, type GestureResponderEvent, StyleSheet, View} from 'react-native';
 
 import {fetchPostThread} from '@actions/remote/post';
 import {markThreadAsRead} from '@actions/remote/thread';
@@ -29,6 +29,8 @@ type Props = {
     thread?: ThreadModel;
     version?: string;
     listRef: React.RefObject<FlatList<string | PostModel>>;
+    onTouchMove?: (event: GestureResponderEvent) => void;
+    onTouchEnd?: () => void;
 }
 
 const styles = StyleSheet.create({
@@ -40,7 +42,7 @@ const styles = StyleSheet.create({
 const ThreadPostList = ({
     channelLastViewedAt, isCRTEnabled,
     nativeID, posts, rootPost, teamId, thread, version,
-    listRef,
+    listRef, onTouchMove, onTouchEnd,
 }: Props) => {
     const appState = useAppState();
     const serverUrl = useServerUrl();
@@ -115,6 +117,8 @@ const ThreadPostList = ({
             footer={<View style={styles.footer}/>}
             testID='thread.post_list'
             listRef={listRef}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
         />
     );
 

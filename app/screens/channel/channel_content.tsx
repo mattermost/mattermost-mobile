@@ -21,9 +21,6 @@ type ChannelContentProps = {
 const styles = StyleSheet.create({
     flex: {
         flex: 1,
-        borderWidth: 4,
-        borderColor: 'red',
-        position: 'relative',
     },
 });
 
@@ -37,11 +34,13 @@ const ChannelContent = ({
         <KeyboardAwarePostDraftContainer
             textInputNativeID='channel.post_draft.post.input'
             containerStyle={[styles.flex, {marginTop}]}
-            renderList={({listRef}) => (
+            renderList={({listRef, onTouchMove, onTouchEnd}) => (
                 <ChannelPostList
                     channelId={channelId}
                     nativeID={channelId}
                     listRef={listRef}
+                    onTouchMove={onTouchMove}
+                    onTouchEnd={onTouchEnd}
                 />
             )}
         >

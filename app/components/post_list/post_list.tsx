@@ -3,7 +3,7 @@
 
 import {FlatList} from '@stream-io/flat-list-mvcp';
 import React, {type ReactElement, useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {DeviceEventEmitter, type ListRenderItemInfo, Platform, type StyleProp, StyleSheet, type ViewStyle, type NativeSyntheticEvent, type NativeScrollEvent} from 'react-native';
+import {DeviceEventEmitter, type GestureResponderEvent, type ListRenderItemInfo, Platform, type StyleProp, StyleSheet, type ViewStyle, type NativeSyntheticEvent, type NativeScrollEvent} from 'react-native';
 import Animated, {runOnJS, useAnimatedProps, useAnimatedReaction, useSharedValue, type AnimatedStyle} from 'react-native-reanimated';
 
 import {removePost} from '@actions/local/post';
@@ -57,6 +57,8 @@ type Props = {
     currentCallBarVisible?: boolean;
     savedPostIds: Set<string>;
     listRef?: React.RefObject<FlatList<string | PostModel>>;
+    onTouchMove?: (event: GestureResponderEvent) => void;
+    onTouchEnd?: () => void;
 }
 
 type onScrollEndIndexListenerEvent = (endIndex: number) => void;
@@ -109,6 +111,8 @@ const PostList = ({
     testID,
     savedPostIds,
     listRef,
+    onTouchMove,
+    onTouchEnd,
 }: Props) => {
     const firstIdInPosts = posts[0]?.id;
 
@@ -443,6 +447,8 @@ const PostList = ({
                 testID={`${testID}.flat_list`}
                 inverted={true}
                 refreshing={refreshing}
+                onTouchMove={onTouchMove}
+                onTouchEnd={onTouchEnd}
                 onRefresh={onRefresh}
             />
             {location !== Screens.PERMALINK &&
