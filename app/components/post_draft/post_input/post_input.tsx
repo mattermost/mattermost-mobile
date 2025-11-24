@@ -14,6 +14,7 @@ import {
 import {updateDraftMessage} from '@actions/local/draft';
 import {userTyping} from '@actions/websocket/users';
 import {Events, Screens} from '@constants';
+import {useKeyboardAnimationContext} from '@context/keyboard_animation';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -122,6 +123,15 @@ export default function PostInput({
     const serverUrl = useServerUrl();
     const managedConfig = useManagedConfig<ManagedConfig>();
 
+    const {
+        setShowInputAccessoryView,
+        showInputAccessoryView,
+        isInputAccessoryViewMode,
+        inputAccessoryViewAnimatedHeight,
+        height,
+        isTransitioningFromCustomView,
+    } = useKeyboardAnimationContext();
+
     const [propagateValue, shouldProcessEvent] = useInputPropagation();
 
     const lastTypingEventSent = useRef(0);
@@ -149,7 +159,45 @@ export default function PostInput({
 
     const onFocus = useCallback(() => {
         setIsFocused(true);
-    }, [setIsFocused]);
+
+        // Transition from emoji picker to keyboard
+        if (showInputAccessoryView) {
+            // Save current emoji picker height to maintain input position
+            const emojiPickerHeight = inputAccessoryViewAnimatedHeight.value;
+
+            // Collapse emoji picker instantly
+            inputAccessoryViewAnimatedHeight.value = 0;
+
+            // Set input container height to emoji picker height to keep it at same position
+            height.value = emojiPickerHeight;
+
+            // Disable custom view mode to allow keyboard handlers to work
+            isInputAccessoryViewMode.value = false;
+
+            // Set transition flag to prevent keyboard handlers from interfering during transition
+            isTransitioningFromCustomView.value = true;
+
+            // Hide emoji picker component
+            setShowInputAccessoryView(false);
+
+            // Safety net: In rare cases (app backgrounding, system interruptions, rapid toggling),
+            // the keyboard onEnd event might not fire, leaving us stuck in transition state.
+            // This timeout ensures we recover after 1 second if that happens.
+            setTimeout(() => {
+                if (isTransitioningFromCustomView.value) {
+                    isTransitioningFromCustomView.value = false;
+                }
+            }, 1000);
+        }
+    }, [
+        setIsFocused,
+        showInputAccessoryView,
+        inputAccessoryViewAnimatedHeight,
+        setShowInputAccessoryView,
+        isInputAccessoryViewMode,
+        height,
+        isTransitioningFromCustomView,
+    ]);
 
     const handleAndroidKeyboardHide = useCallback(() => {
         onBlur();

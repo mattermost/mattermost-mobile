@@ -82,6 +82,18 @@ export const useKeyboardAnimation = (
     // Thread views don't have a tab bar, so no adjustment is needed
     const tabBarAdjustment = isTablet && !isThreadView ? BOTTOM_TAB_HEIGHT + safeAreaBottom : 0;
 
+    /**
+   * isCustomViewMode: Whether we're showing custom view instead of keyboard
+   * When true, keyboard handlers are ignored
+   */
+    const isInputAccessoryViewMode = useSharedValue(false);
+
+    /**
+   * isTransitioningFromCustomView: Special mode when transitioning from custom view to keyboard
+   * Prevents height updates during the transition to avoid jumps
+   */
+    const isTransitioningFromCustomView = useSharedValue(false);
+
     // ------------------------------------------------------------------
     // KEYBOARD EVENT HANDLERS
     // ------------------------------------------------------------------
@@ -106,7 +118,17 @@ export const useKeyboardAnimation = (
          * @param e - Event object with keyboard information
          */
         onStart: (e) => {
-            'worklet'; // Mark this function to run on UI thread (60fps)
+            'worklet';
+
+            // Ignore keyboard events when showing custom view (emoji picker)
+            if (isInputAccessoryViewMode.value) {
+                return;
+            }
+
+            // Ignore keyboard events during transition from custom view to keyboard
+            if (isTransitioningFromCustomView.value) {
+                return;
+            }
 
             // On Android, use native keyboard behavior (no custom animations)
             if (!enableAnimation) {
@@ -151,6 +173,16 @@ export const useKeyboardAnimation = (
         onInteractive: (e) => {
             'worklet';
 
+            // Ignore keyboard events when showing custom view (emoji picker)
+            if (isInputAccessoryViewMode.value) {
+                return;
+            }
+
+            // Ignore keyboard events during transition from custom view to keyboard
+            if (isTransitioningFromCustomView.value) {
+                return;
+            }
+
             // On Android, use native keyboard behavior (no custom animations)
             if (!enableAnimation) {
                 return;
@@ -182,6 +214,17 @@ export const useKeyboardAnimation = (
          */
         onMove: (e) => {
             'worklet';
+
+            // Ignore keyboard events when showing custom view (emoji picker)
+            if (isInputAccessoryViewMode.value) {
+                return;
+            }
+
+            // During transition from custom view, only update keyboardHeight for reference
+            if (isTransitioningFromCustomView.value) {
+                keyboardHeight.value = e.height;
+                return;
+            }
 
             // On Android, use native keyboard behavior (no custom animations)
             if (!enableAnimation) {
@@ -221,24 +264,52 @@ export const useKeyboardAnimation = (
         onEnd: (e) => {
             'worklet';
 
-            // On Android, use native keyboard behavior (no custom animations)
-            if (!enableAnimation) {
+            // Ignore keyboard events when showing custom view (emoji picker)
+            if (isInputAccessoryViewMode.value) {
+                isKeyboardClosing.value = false;
+                isTransitioningFromCustomView.value = false;
                 return;
             }
 
-            // Reset closing flag when animation ends
-            isKeyboardClosing.value = false;
+            // On Android, use native keyboard behavior (no custom animations)
+            if (!enableAnimation) {
+                isKeyboardClosing.value = false;
+                isTransitioningFromCustomView.value = false;
+                return;
+            }
 
-            if (progress.value === 1) {
-                const adjustedHeight = Math.max(e.height, keyboardHeight.value) - (tabBarAdjustment * e.progress);
-                height.value = adjustedHeight;
+            // Store if we were transitioning from custom view before clearing the flag
+            const wasTransitioningFromCustomView = isTransitioningFromCustomView.value;
+
+            // Reset state flags
+            isKeyboardClosing.value = false;
+            isTransitioningFromCustomView.value = false;
+
+            // Use e.progress (from event) not progress.value (shared value might be stale)
+            if (e.progress === 1) {
+                // Use same calculation as onInteractive/onMove for consistency
+                const adjustedHeight = e.height - (tabBarAdjustment * e.progress);
+
+                // If transitioning from custom view, always update height to match keyboard
+                // This ensures correct positioning when emoji picker height != keyboard height
+                if (wasTransitioningFromCustomView) {
+                    height.value = adjustedHeight;
+                } else if (Math.abs(height.value - adjustedHeight) > 1) {
+                    // For normal keyboard opening, only adjust if significantly different
+                    height.value = adjustedHeight;
+                }
+
                 isKeyboardFullyOpen.value = true;
                 isKeyboardFullyClosed.value = false;
                 isKeyboardInTransition.value = false;
             }
 
-            if (progress.value === 0) {
-                height.value = Math.min(e.height, 0);
+            // Use e.progress (from event) not progress.value (shared value might be stale)
+            if (e.progress === 0) {
+                // Only set to 0 if not already close to 0
+                if (Math.abs(height.value) > 0.5) {
+                    height.value = 0;
+                }
                 isKeyboardFullyOpen.value = false;
                 isKeyboardFullyClosed.value = true;
                 isKeyboardInTransition.value = false;
@@ -270,5 +341,7 @@ export const useKeyboardAnimation = (
         isKeyboardFullyOpen,
         isKeyboardFullyClosed,
         isKeyboardInTransition,
+        isInputAccessoryViewMode,
+        isTransitioningFromCustomView,
     };
 };

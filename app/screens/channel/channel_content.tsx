@@ -21,6 +21,9 @@ type ChannelContentProps = {
 const styles = StyleSheet.create({
     flex: {
         flex: 1,
+        borderWidth: 4,
+        borderColor: 'red',
+        position: 'relative',
     },
 });
 
