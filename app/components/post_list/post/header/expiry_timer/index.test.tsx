@@ -88,14 +88,12 @@ describe('ExpiryCountdown', () => {
 
         expect(screen.getByText('00:01')).toBeVisible();
 
-        // Advance timer past expiry - need to advance in smaller increments
-        // to allow the component's setInterval to trigger properly
-        await act(async () => {
-            jest.advanceTimersByTime(1000);
-            await TestHelper.wait(0);
-            jest.advanceTimersByTime(500);
-            await TestHelper.wait(0);
+        // Advance timer past expiry
+        act(() => {
+            jest.advanceTimersByTime(3500);
         });
+
+        await TestHelper.wait(0);
 
         expect(mockOnExpiry).toHaveBeenCalledTimes(1);
         expect(screen.getByText('00:00')).toBeVisible();

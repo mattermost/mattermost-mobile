@@ -13,14 +13,6 @@ import {showBoRPostExpiredSnackbar} from '@utils/snack_bar';
 
 import UnrevealedBurnOnReadPost from './unrevealed_burn_on_read_post';
 
-// jest.mock('@utils/theme', () => ({
-//     changeOpacity: jest.fn().mockReturnValue('rgba(0,0,0,0.5)'),
-//     makeStyleSheetFromTheme: jest.fn().mockReturnValue(() => ({
-//         buttonBackgroundStyle: {},
-//         buttonTextStyle: {},
-//     })),
-// }));
-
 jest.mock('@actions/remote/post', () => ({
     revealBoRPost: jest.fn(),
     deletePost: jest.fn(),

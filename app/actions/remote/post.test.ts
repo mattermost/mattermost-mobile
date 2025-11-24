@@ -1142,6 +1142,13 @@ describe('revealBoRPost', () => {
 
     it('revealBoRPost - handle error', async () => {
         mockClient.revealBoRPost.mockImplementationOnce(jest.fn(throwFunc));
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [post1.id],
+            posts: [{...post1, props: {failed: false}}],
+            prepareRecordsOnly: false,
+        });
+
         const result = await revealBoRPost(serverUrl, post1.id);
         expect(result).toBeDefined();
         expect(result.error).toBeTruthy();
