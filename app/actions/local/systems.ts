@@ -4,8 +4,9 @@
 import {type Database, Q} from '@nozbe/watermelondb';
 import deepEqual from 'deep-equal';
 
+import {storeGlobal} from '@actions/app/global';
 import {isExpiredBoRPost} from '@calls/utils';
-import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {GLOBAL_IDENTIFIERS, MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PostTypes} from '@constants/post';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
@@ -343,6 +344,7 @@ export async function expiredBoRPostCleanup() {
         await removeExpiredBoRPosts(server.url, serverDatabase);
     }
 
+    await storeGlobal(GLOBAL_IDENTIFIERS.LAST_BOR_POST_CLEANUP_RUN, Date.now(), false);
     return {error: undefined};
 }
 

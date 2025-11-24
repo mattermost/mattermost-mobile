@@ -255,6 +255,9 @@ describe('dismissAnnouncement', () => {
 
 describe('expiredBoRPostCleanup', () => {
     it('should delete expired BoR posts', async () => {
+        const database = operator.database;
+        jest.spyOn(database.adapter, 'unsafeExecute').mockImplementation(() => Promise.resolve());
+
         const channel: Channel = {
             id: 'channelid1',
             team_id: 'teamid1',
@@ -292,6 +295,17 @@ describe('expiredBoRPostCleanup', () => {
         const {error} = await expiredBoRPostCleanup();
         expect(error).toBeUndefined();
 
-        // TODO verify the posts are deleted after implementing unsafeSqlQuery in LokiJSAdapter
+        expect(database.adapter.unsafeExecute).toHaveBeenCalledWith({
+            sqls: [
+                [`DELETE FROM Post where id IN ('${borPostExpiredForMe.id}','${borPostExpiredForAll.id}')`, []],
+                [`DELETE FROM Reaction where post_id IN ('${borPostExpiredForMe.id}','${borPostExpiredForAll.id}')`, []],
+                [`DELETE FROM File where post_id IN ('${borPostExpiredForMe.id}','${borPostExpiredForAll.id}')`, []],
+                [`DELETE FROM Draft where root_id IN ('${borPostExpiredForMe.id}','${borPostExpiredForAll.id}')`, []],
+                [`DELETE FROM PostsInThread where root_id IN ('${borPostExpiredForMe.id}','${borPostExpiredForAll.id}')`, []],
+                [`DELETE FROM Thread where id IN ('${borPostExpiredForMe.id}','${borPostExpiredForAll.id}')`, []],
+                [`DELETE FROM ThreadParticipant where thread_id IN ('${borPostExpiredForMe.id}','${borPostExpiredForAll.id}')`, []],
+                [`DELETE FROM ThreadsInTeam where thread_id IN ('${borPostExpiredForMe.id}','${borPostExpiredForAll.id}')`, []],
+            ],
+        });
     });
 });
