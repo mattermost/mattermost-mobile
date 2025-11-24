@@ -23,22 +23,28 @@ const RETRY_DELAY = 3000;
  * @returns {Promise<void>}
  */
 export async function launchApp(): Promise<void> {
-    await device.launchApp({
-        newInstance: true,
-        permissions: {
-            notifications: 'YES',
-            camera: 'NO',
-            medialibrary: 'NO',
-            photos: 'NO',
-        },
-        launchArgs: {
-            detoxPrintBusyIdleResources: 'YES',
-            detoxURLBlacklistRegex: '(.*localhost.*|.*127\\.0\\.0\\.1.*)',
-            reduceMotion: 'YES',
-        },
-    });
+    try {
+        await device.launchApp({
+            newInstance: true,
+            delete: false,
+            permissions: {
+                notifications: 'YES',
+                camera: 'NO',
+                medialibrary: 'NO',
+                photos: 'NO',
+            },
+            launchArgs: {
+                detoxPrintBusyIdleResources: 'YES',
+                detoxURLBlacklistRegex: '(.*localhost.*|.*127\\.0\\.0\\.1.*)',
+                reduceMotion: 'YES',
+            },
+        });
 
-    console.info('✅ App launched successfully');
+        console.info('✅ App launched successfully');
+    } catch (error) {
+        console.error('❌ App launch error:', error);
+        throw error;
+    }
 }
 
 /**
