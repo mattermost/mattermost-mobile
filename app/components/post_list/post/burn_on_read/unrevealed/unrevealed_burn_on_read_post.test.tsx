@@ -52,7 +52,7 @@ describe('UnrevealedBurnOnReadPost', () => {
         renderWithIntlAndTheme(<UnrevealedBurnOnReadPost {...baseProps}/>);
 
         const button = screen.getByText('View message');
-        expect(button).toBeTruthy();
+        expect(button).toBeVisible();
     });
 
     test('should call revealBoRPost when button is pressed', async () => {
