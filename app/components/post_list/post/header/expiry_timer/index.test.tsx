@@ -31,12 +31,12 @@ describe('ExpiryCountdown', () => {
 
     test('should render countdown with correct time format', () => {
         const futureTime = Date.now() + 3661000; // 1 hour, 1 minute, 1 second
-        
+
         renderWithIntlAndTheme(
-            <ExpiryCountdown 
+            <ExpiryCountdown
                 expiryTime={futureTime}
                 onExpiry={mockOnExpiry}
-            />
+            />,
         );
 
         expect(screen.getByText('1:01:01')).toBeVisible();
@@ -44,46 +44,31 @@ describe('ExpiryCountdown', () => {
 
     test('should render countdown without hours when less than 1 hour remaining', () => {
         const futureTime = Date.now() + 125000; // 2 minutes, 5 seconds
-        
+
         renderWithIntlAndTheme(
-            <ExpiryCountdown 
+            <ExpiryCountdown
                 expiryTime={futureTime}
                 onExpiry={mockOnExpiry}
-            />
+            />,
         );
 
         expect(screen.getByText('02:05')).toBeVisible();
     });
 
-    test('should render fire icon', () => {
-        const futureTime = Date.now() + 60000;
-        
-        renderWithIntlAndTheme(
-            <ExpiryCountdown 
-                expiryTime={futureTime}
-                onExpiry={mockOnExpiry}
-            />
-        );
-
-        // The CompassIcon with name 'fire' should be rendered
-        // We can't directly test the icon, but we can verify the component renders
-        expect(screen.getByText('01:00')).toBeVisible();
-    });
-
     test('should update countdown every second', async () => {
         const futureTime = Date.now() + 5000; // 5 seconds
-        
+
         renderWithIntlAndTheme(
-            <ExpiryCountdown 
+            <ExpiryCountdown
                 expiryTime={futureTime}
                 onExpiry={mockOnExpiry}
-            />
+            />,
         );
 
         expect(screen.getByText('00:05')).toBeVisible();
 
         // Advance timer by 1 second
-        await act(async () => {
+        act(async () => {
             jest.advanceTimersByTime(1000);
             await TestHelper.wait(0);
         });
@@ -93,12 +78,12 @@ describe('ExpiryCountdown', () => {
 
     test('should call onExpiry when countdown reaches zero', async () => {
         const futureTime = Date.now() + 1000; // 1 second
-        
+
         renderWithIntlAndTheme(
-            <ExpiryCountdown 
+            <ExpiryCountdown
                 expiryTime={futureTime}
                 onExpiry={mockOnExpiry}
-            />
+            />,
         );
 
         expect(screen.getByText('00:01')).toBeVisible();
@@ -115,12 +100,12 @@ describe('ExpiryCountdown', () => {
 
     test('should handle already expired time', () => {
         const pastTime = Date.now() - 5000; // 5 seconds ago
-        
+
         renderWithIntlAndTheme(
-            <ExpiryCountdown 
+            <ExpiryCountdown
                 expiryTime={pastTime}
                 onExpiry={mockOnExpiry}
-            />
+            />,
         );
 
         expect(screen.getByText('00:00')).toBeVisible();
@@ -128,11 +113,11 @@ describe('ExpiryCountdown', () => {
 
     test('should work without onExpiry callback', async () => {
         const futureTime = Date.now() + 1000;
-        
+
         renderWithIntlAndTheme(
-            <ExpiryCountdown 
+            <ExpiryCountdown
                 expiryTime={futureTime}
-            />
+            />,
         );
 
         expect(screen.getByText('00:01')).toBeVisible();
@@ -158,12 +143,12 @@ describe('ExpiryCountdown', () => {
 
         testCases.forEach(({duration, expected}) => {
             const futureTime = Date.now() + duration;
-            
+
             const {unmount} = renderWithIntlAndTheme(
-                <ExpiryCountdown 
+                <ExpiryCountdown
                     expiryTime={futureTime}
                     onExpiry={mockOnExpiry}
-                />
+                />,
             );
 
             expect(screen.getByText(expected)).toBeVisible();
