@@ -6,6 +6,12 @@ import {ClaudePromptHandler} from '@support/pilot/ClaudePromptHandler';
 import {Plugin, System, User} from '@support/server_api';
 import {siteOneUrl} from '@support/test_config';
 
+// Configure jest retries if specified
+const retries = process.env.DETOX_RETRIES ? parseInt(process.env.DETOX_RETRIES, 10) : 0;
+if (retries > 0) {
+    jest.retryTimes(retries);
+}
+
 // Number of retry attempts
 const MAX_RETRY_ATTEMPTS = 2;
 

@@ -3,11 +3,6 @@
 
 const platform = process.env.IOS === 'true' ? 'ios' : 'android';
 const shard = process.env.CI_NODE_INDEX ? process.env.CI_NODE_INDEX : '';
-const retries = process.env.DETOX_RETRIES ? parseInt(process.env.DETOX_RETRIES, 10) : 0;
-
-if (retries > 0) {
-    jest.retryTimes(retries);
-}
 
 module.exports = {
     setupFilesAfterEnv: ['./test/setup.ts'],
