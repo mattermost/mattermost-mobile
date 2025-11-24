@@ -325,8 +325,8 @@ export async function dismissAnnouncement(serverUrl: string, announcementText: s
 
 export async function expiredBoRPostCleanup() {
     const {database: appDatabase} = DatabaseManager.getAppDatabaseAndOperator();
-    const lastRunAt = await getLastBoRPostCleanupRun(appDatabase);
-    const shouldRunNow = (lastRunAt - Date.now()) > BOR_POST_CLEANUP_MIN_RUN_INTERVAL;
+    const lastRunAt = (await getLastBoRPostCleanupRun(appDatabase)) || 0;
+    const shouldRunNow = (Date.now() - lastRunAt) > BOR_POST_CLEANUP_MIN_RUN_INTERVAL;
 
     if (!shouldRunNow) {
         return {error: undefined};

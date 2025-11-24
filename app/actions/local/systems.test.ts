@@ -3,8 +3,10 @@
 
 import Database from '@nozbe/watermelondb/Database';
 
+import {getPosts} from '@actions/local/post';
 import {ActionType} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
+import {PostTypes} from '@constants/post';
 import DatabaseManager from '@database/manager';
 import TestHelper from '@test/test_helper';
 
@@ -16,7 +18,7 @@ import {
     dataRetentionCleanup,
     setLastServerVersionCheck,
     setGlobalThreadsTab,
-    dismissAnnouncement,
+    dismissAnnouncement, expiredBoRPostCleanup,
 } from './systems';
 
 import type {DataRetentionPoliciesRequest} from '@actions/remote/systems';
@@ -251,3 +253,45 @@ describe('dismissAnnouncement', () => {
     });
 });
 
+describe('expiredBoRPostCleanup', () => {
+    it('should delete expired BoR posts', async () => {
+        const channel: Channel = {
+            id: 'channelid1',
+            team_id: 'teamid1',
+        } as Channel;
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+
+        const now = Date.now();
+
+        const borPostExpiredForAll = TestHelper.fakePost({
+            id: 'postid1',
+            channel_id: channel.id,
+            type: PostTypes.BURN_ON_READ,
+            props: {expire_at: now - 10000},
+        });
+
+        const borPostExpiredForMe = TestHelper.fakePost({
+            id: 'postid2',
+            channel_id: channel.id,
+            type: PostTypes.BURN_ON_READ,
+            props: {expire_at: now + 100000},
+            metadata: {expire_at: now - 10000},
+        });
+
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [borPostExpiredForAll.id, borPostExpiredForMe.id],
+            posts: [borPostExpiredForAll, borPostExpiredForMe],
+            prepareRecordsOnly: false,
+        });
+
+        // verify channel posts
+        const fetchedPosts = await getPosts(serverUrl, [borPostExpiredForAll.id, borPostExpiredForMe.id]);
+        expect(fetchedPosts.length).toBe(2);
+
+        const {error} = await expiredBoRPostCleanup();
+        expect(error).toBeUndefined();
+
+        // TODO verify the posts are deleted after implementing unsafeSqlQuery in LokiJSAdapter
+    });
+});

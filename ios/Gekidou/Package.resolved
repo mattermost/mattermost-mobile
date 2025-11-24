@@ -2,12 +2,93 @@
   "object": {
     "pins": [
       {
+        "package": "Cryptor",
+        "repositoryURL": "https://github.com/Kitura/BlueCryptor.git",
+        "state": {
+          "branch": null,
+          "revision": "cec97c24b111351e70e448972a7d3fe68a756d6d",
+          "version": "2.0.2"
+        }
+      },
+      {
+        "package": "CryptorECC",
+        "repositoryURL": "https://github.com/Kitura/BlueECC.git",
+        "state": {
+          "branch": null,
+          "revision": "1485268a54f8135435a825a855e733f026fa6cc8",
+          "version": "1.2.201"
+        }
+      },
+      {
+        "package": "CryptorRSA",
+        "repositoryURL": "https://github.com/Kitura/BlueRSA.git",
+        "state": {
+          "branch": null,
+          "revision": "f40325520344a966523b214394aa350132a6af68",
+          "version": "1.0.203"
+        }
+      },
+      {
+        "package": "KituraContracts",
+        "repositoryURL": "https://github.com/Kitura/KituraContracts.git",
+        "state": {
+          "branch": null,
+          "revision": "8a4778c3aa7833e9e1af884e8819d436c237cd70",
+          "version": "1.2.201"
+        }
+      },
+      {
+        "package": "LoggerAPI",
+        "repositoryURL": "https://github.com/Kitura/LoggerAPI.git",
+        "state": {
+          "branch": null,
+          "revision": "e82d34eab3f0b05391082b11ea07d3b70d2f65bb",
+          "version": "1.9.200"
+        }
+      },
+      {
+        "package": "OpenGraph",
+        "repositoryURL": "https://github.com/satoshi-takano/OpenGraph.git",
+        "state": {
+          "branch": null,
+          "revision": "382972f1963580eeabafd88ad012e66576b4d213",
+          "version": "1.4.1"
+        }
+      },
+      {
         "package": "SQLite.swift",
         "repositoryURL": "https://github.com/stephencelis/SQLite.swift.git",
         "state": {
           "branch": null,
           "revision": "392dd6058624d9f6c5b4c769d165ddd8c7293394",
           "version": "0.15.4"
+        }
+      },
+      {
+        "package": "SwiftJWT",
+        "repositoryURL": "https://github.com/Kitura/Swift-JWT.git",
+        "state": {
+          "branch": null,
+          "revision": "47c6384b6923e9bb1f214d2ba4bd52af39440588",
+          "version": "3.6.201"
+        }
+      },
+      {
+        "package": "swift-log",
+        "repositoryURL": "https://github.com/apple/swift-log.git",
+        "state": {
+          "branch": null,
+          "revision": "ce592ae52f982c847a4efc0dd881cc9eb32d29f2",
+          "version": "1.6.4"
+        }
+      },
+      {
+        "package": "swift-toolchain-sqlite",
+        "repositoryURL": "https://github.com/swiftlang/swift-toolchain-sqlite",
+        "state": {
+          "branch": null,
+          "revision": "b626d3002773b1a1304166643e7f118f724b2132",
+          "version": "1.0.4"
         }
       }
     ]
