@@ -41,6 +41,8 @@ const itemSeparatorStyle = StyleSheet.create({
         height: 12,
     },
 });
+
+const START_NEW_RUN_BUTTON_PADDING = 20;
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         padding: 20,
@@ -54,7 +56,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => ({
         paddingHorizontal: 16,
     },
     startANewRunButtonContainer: {
-        padding: 20,
+        padding: START_NEW_RUN_BUTTON_PADDING,
+        borderTopWidth: 1,
+        borderTopColor: changeOpacity(theme.centerChannelColor, 0.12),
     },
 }));
 
@@ -130,7 +134,7 @@ const RunList = ({
     ), [fetching, onShowMorePress, showMoreButton, activeTab]);
 
     const startANewRunButtonContainerStyle = useMemo(() => {
-        return [styles.startANewRunButtonContainer, {paddingBottom: insets.bottom}];
+        return [styles.startANewRunButtonContainer, {paddingBottom: insets.bottom + START_NEW_RUN_BUTTON_PADDING}];
     }, [insets.bottom, styles]);
 
     const renderItem: ListRenderItem<PlaybookRunModel> = useCallback(({item}) => {
