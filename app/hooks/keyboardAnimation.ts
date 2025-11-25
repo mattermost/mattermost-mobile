@@ -285,6 +285,13 @@ export const useKeyboardAnimation = (
                 return;
             }
 
+            // Ignore adjustment event from KeyboardGestureArea (can fire in onEnd too)
+            // After keyboard reaches full height, KeyboardGestureArea sends offset-adjusted event
+            // Example: keyboard opens at 346px → then adjustment event at 255px (346 - 91 offset)
+            if (parseInt(e.height.toString()) === keyboardHeight.value - postInputContainerHeight) {
+                return;
+            }
+
             // Store if we were transitioning from custom view before clearing the flag
             const wasTransitioningFromCustomView = isTransitioningFromCustomView.value;
 
@@ -296,6 +303,13 @@ export const useKeyboardAnimation = (
             if (e.progress === 1) {
                 // Use same calculation as onInteractive/onMove for consistency
                 const adjustedHeight = e.height - (tabBarAdjustment * e.progress);
+
+                // Ignore stale/out-of-order events
+                // If keyboard is supposed to be closed (keyboardHeight.value = 0) but we get an open event,
+                // it's a stale event from before the close - ignore it
+                if (keyboardHeight.value === 0 && e.height > 0) {
+                    return;
+                }
 
                 // If transitioning from custom view, always update height to match keyboard
                 // This ensures correct positioning when emoji picker height != keyboard height
@@ -320,6 +334,8 @@ export const useKeyboardAnimation = (
                 isKeyboardFullyOpen.value = false;
                 isKeyboardFullyClosed.value = true;
                 isKeyboardInTransition.value = false;
+                offset.value = 0;
+                inset.value = 0;
             }
         },
     });
