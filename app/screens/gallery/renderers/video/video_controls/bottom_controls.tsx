@@ -16,6 +16,7 @@ import {useStateFromSharedValue} from '../hooks';
 import ProgressBar from './progress_bar';
 
 import type {VideoControlAction} from './types';
+import {formatTime} from "@utils/datetime";
 
 interface BottomControlsProps extends VideoControlAction {
     currentTime: SharedValue<number>;
@@ -48,17 +49,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const formatTime = (seconds: number) => {
-    const h = Math.max(Math.floor(seconds / 3600), 0);
-    const m = Math.max(Math.floor((seconds % 3600) / 60), 0);
-    const s = Math.max(Math.floor(seconds % 60), 0);
 
-    const hh = h > 0 ? `${h}:` : '';
-    const mm = h > 0 ? `${m.toString().padStart(2, '0')}` : `${m}`;
-    const ss = s.toString().padStart(2, '0');
-
-    return `${hh}${mm}:${ss}`;
-};
 
 const BottomControls: React.FC<BottomControlsProps> = ({
     currentTime,

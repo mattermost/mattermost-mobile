@@ -36,6 +36,7 @@ import {forceLogoutIfNecessary} from './session';
 import type {Client} from '@client/rest';
 import type Model from '@nozbe/watermelondb/Model';
 import type PostModel from '@typings/database/models/servers/post';
+import {POSTS} from "@constants/action_type";
 
 type PostsRequest = {
     error?: unknown;

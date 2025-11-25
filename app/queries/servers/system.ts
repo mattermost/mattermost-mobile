@@ -183,7 +183,7 @@ export const getLastBoRPostCleanupRun = async (database: Database) => {
         const data = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.LAST_BOR_POST_CLEANUP_RUN);
         return data?.value || 0;
     } catch {
-        return undefined;
+        return 0;
     }
 };
 

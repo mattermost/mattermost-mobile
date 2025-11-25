@@ -16,12 +16,12 @@ import {useAppState, useIsTablet} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
 import {useDebounce} from '@hooks/utils';
 import EphemeralStore from '@store/ephemeral_store';
+import {isExpiredBoRPost} from '@utils/bor';
 
 import Intro from './intro';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type {AnimatedStyle} from 'react-native-reanimated';
-import {isExpiredBoRPost} from "@utils/bor";
 
 type Props = {
     channelId: string;

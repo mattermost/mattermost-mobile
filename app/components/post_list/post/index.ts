@@ -13,6 +13,7 @@ import {queryReactionsForPost} from '@queries/servers/reaction';
 import {observeCanManageChannelMembers, observePermissionForPost} from '@queries/servers/role';
 import {observeThreadById} from '@queries/servers/thread';
 import {observeCurrentUser} from '@queries/servers/user';
+import {isBoRPost} from '@utils/bor';
 import {areConsecutivePosts, isPostEphemeral} from '@utils/post';
 
 import Post from './post';
@@ -22,7 +23,6 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 import type PostModel from '@typings/database/models/servers/post';
 import type PostsInThreadModel from '@typings/database/models/servers/posts_in_thread';
 import type UserModel from '@typings/database/models/servers/user';
-import {isBoRPost} from "@utils/bor";
 
 type PropsInput = WithDatabaseArgs & {
     currentUser?: UserModel;

@@ -8,9 +8,11 @@ import Button from '@components/button';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {PostModel} from '@database/models/server';
-import {getFullErrorMessage, isErrorWithStatusCode} from '@utils/errors';
+import {getFullErrorMessage, getServerError} from '@utils/errors';
 import {showBoRPostExpiredSnackbar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
+import {BOR_GLOBALLY_EXPIRED_POST_ERROR_CODE, BOR_POST_EXPIRED_FOR_USER_ERROR_CODE} from './constants';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     buttonBackgroundStyle: {
@@ -34,9 +36,13 @@ export default function UnrevealedBurnOnReadPost({post}: Props) {
 
     const handleRevealPost = useCallback(async () => {
         const {error} = await revealBoRPost(serverUrl, post.id);
-        if (error && isErrorWithStatusCode(error) && error.status_code === 400) {
+        if (error) {
             showBoRPostExpiredSnackbar(getFullErrorMessage(error));
-            deletePost(serverUrl, post);
+
+            const serverError = getServerError(error);
+            if (serverError === BOR_POST_EXPIRED_FOR_USER_ERROR_CODE || serverError === BOR_GLOBALLY_EXPIRED_POST_ERROR_CODE) {
+                deletePost(serverUrl, post);
+            }
         }
 
     }, [serverUrl, post]);

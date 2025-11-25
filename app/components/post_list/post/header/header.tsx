@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {View} from 'react-native';
 
 import {deletePost} from '@actions/remote/post';
@@ -101,8 +101,8 @@ const Header = (props: HeaderProps) => {
     const userIconOverride = ensureString(post.props?.override_icon_url);
     const usernameOverride = ensureString(post.props?.override_username);
 
-    const isUnrevealedPost = isUnrevealedBoRPost(post);
-    const ownBoRPost = isOwnBoRPost(post, currentUser);
+    const isUnrevealedPost = useMemo(() => isUnrevealedBoRPost(post), [post, post.metadata?.expire_at]);
+    const ownBoRPost = useMemo(() => isOwnBoRPost(post, currentUser), [currentUser, post]);
     const showBoRIcon = isUnrevealedPost || ownBoRPost;
     const borExpireAt = post.metadata?.expire_at;
     const serverUrl = useServerUrl();
@@ -151,9 +151,9 @@ const Header = (props: HeaderProps) => {
                         />
                     }
                     {
-                        !showBoRIcon && borExpireAt &&
+                        !showBoRIcon && Boolean(borExpireAt) &&
                         <ExpiryTimer
-                            expiryTime={borExpireAt}
+                            expiryTime={borExpireAt as number}
                             onExpiry={onBoRPostExpiry}
                         />
                     }

@@ -22,12 +22,12 @@ import {
     getLastBoRPostCleanupRun,
 } from '@queries/servers/system';
 import PostModel from '@typings/database/models/servers/post';
+import {isExpiredBoRPost} from '@utils/bor';
 import {logError} from '@utils/log';
 
 import {deletePosts} from './post';
 
 import type {DataRetentionPoliciesRequest} from '@actions/remote/systems';
-import {isExpiredBoRPost} from "@utils/bor";
 
 const {SERVER: {POST}} = MM_TABLES;
 
@@ -325,7 +325,7 @@ export async function dismissAnnouncement(serverUrl: string, announcementText: s
 
 export async function expiredBoRPostCleanup(serverUrl: string) {
     const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-    const lastRunAt = (await getLastBoRPostCleanupRun(database)) || 0;
+    const lastRunAt = await getLastBoRPostCleanupRun(database);
 
     const shouldRunNow = (Date.now() - lastRunAt) > BOR_POST_CLEANUP_MIN_RUN_INTERVAL;
 
@@ -333,8 +333,8 @@ export async function expiredBoRPostCleanup(serverUrl: string) {
         return {error: undefined};
     }
 
-    await removeExpiredBoRPosts(serverUrl, database);
-    await updateLastBoRCleanupRun(serverUrl);
+    removeExpiredBoRPosts(serverUrl, database);
+    updateLastBoRCleanupRun(serverUrl);
     return {error: undefined};
 }
 
