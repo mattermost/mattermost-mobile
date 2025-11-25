@@ -160,7 +160,7 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
         canDelete,
         canReply,
         canPin,
-        combinedPost: of$(combinedPost),
+        combinedPost,
         isSaved,
         canEdit,
         post,
