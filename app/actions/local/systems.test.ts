@@ -292,7 +292,7 @@ describe('expiredBoRPostCleanup', () => {
         const fetchedPosts = await getPosts(serverUrl, [borPostExpiredForAll.id, borPostExpiredForMe.id]);
         expect(fetchedPosts.length).toBe(2);
 
-        const {error} = await expiredBoRPostCleanup();
+        const {error} = await expiredBoRPostCleanup(serverUrl);
         expect(error).toBeUndefined();
 
         expect(database.adapter.unsafeExecute).toHaveBeenCalledWith({

@@ -51,7 +51,7 @@ describe('ExpiryCountdown', () => {
             />,
         );
 
-        expect(screen.getByText('02:05')).toBeVisible();
+        expect(screen.getByText('2:05')).toBeVisible();
     });
 
     test('should handle already expired time', () => {
@@ -65,7 +65,7 @@ describe('ExpiryCountdown', () => {
             />,
         );
 
-        expect(screen.getByText('00:00')).toBeVisible();
+        expect(screen.getByText('0:00')).toBeVisible();
     });
 });
 
