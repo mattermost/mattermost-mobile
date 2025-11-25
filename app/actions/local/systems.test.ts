@@ -8,6 +8,7 @@ import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import TestHelper from '@test/test_helper';
 
+import * as PostActions from './post';
 import {
     storeConfig,
     storeConfigAndLicense,
@@ -26,8 +27,6 @@ import type SystemModel from '@typings/database/models/servers/system';
 const serverUrl = 'baseHandler.test.com';
 let operator: ServerDataOperator;
 
-const deletedBatches: string[][] = [];
-
 jest.mock('@init/credentials', () => {
     const original = jest.requireActual('@init/credentials');
     return {
@@ -36,21 +35,9 @@ jest.mock('@init/credentials', () => {
     };
 });
 
-jest.mock('./post', () => {
-    const original = jest.requireActual('./post');
-    return {
-        ...original,
-        deletePosts: jest.fn((url: string, postIds: string[]) => {
-            deletedBatches.push(postIds);
-            return Promise.resolve({error: false});
-        }),
-    };
-});
-
 beforeEach(async () => {
     await DatabaseManager.init([serverUrl]);
     operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
-    deletedBatches.length = 0;
 });
 
 afterEach(async () => {
@@ -254,6 +241,11 @@ describe('dataRetention', () => {
         const postsBeforeCleanup = await database.get('Post').query().fetchCount();
         expect(postsBeforeCleanup).toBe(2500);
 
+        const deletedBatches: string[][] = [];
+        const deletePostsSpy = jest.spyOn(PostActions, 'deletePosts').mockImplementation(async (url: string, postIds: string[]) => {
+            deletedBatches.push(postIds);
+            return {error: false};
+        });
         const vacuumSpy = jest.spyOn(Database.prototype, 'unsafeVacuum').mockImplementation(jest.fn());
 
         const {error} = await dataRetentionCleanup(serverUrl);
@@ -264,6 +256,7 @@ describe('dataRetention', () => {
         expect(deletedBatches[1].length).toBe(1000);
         expect(deletedBatches[2].length).toBe(500);
 
+        deletePostsSpy.mockRestore();
         vacuumSpy.mockRestore();
     });
 });
