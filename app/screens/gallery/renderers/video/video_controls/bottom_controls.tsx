@@ -9,6 +9,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {GALLERY_FOOTER_HEIGHT} from '@constants/gallery';
 import {translateYConfig} from '@hooks/gallery';
 import {useLightboxSharedValues} from '@screens/gallery/lightbox_swipeout/context';
+import {formatTime} from '@utils/datetime';
 import {typography} from '@utils/typography';
 
 import {useStateFromSharedValue} from '../hooks';
@@ -16,7 +17,6 @@ import {useStateFromSharedValue} from '../hooks';
 import ProgressBar from './progress_bar';
 
 import type {VideoControlAction} from './types';
-import {formatTime} from "@utils/datetime";
 
 interface BottomControlsProps extends VideoControlAction {
     currentTime: SharedValue<number>;
@@ -48,8 +48,6 @@ const styles = StyleSheet.create({
         ...typography('Body', 75),
     },
 });
-
-
 
 const BottomControls: React.FC<BottomControlsProps> = ({
     currentTime,

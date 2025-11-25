@@ -4,12 +4,10 @@
 import {type Database, Q} from '@nozbe/watermelondb';
 import deepEqual from 'deep-equal';
 
-import {storeGlobal} from '@actions/app/global';
-import {GLOBAL_IDENTIFIERS, MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PostTypes, BOR_POST_CLEANUP_MIN_RUN_INTERVAL} from '@constants/post';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
-import {getAllServers} from '@queries/app/servers';
 import {queryAllChannelsForTeam} from '@queries/servers/channel';
 import {queryPostsByType} from '@queries/servers/post';
 import {
