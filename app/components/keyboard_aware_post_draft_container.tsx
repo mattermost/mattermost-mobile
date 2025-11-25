@@ -123,7 +123,7 @@ export const KeyboardAwarePostDraftContainer = ({
     // Shared value to track scroll adjustment during emoji picker animation
     const animatedScrollAdjustment = useSharedValue(0);
 
-    // Callback to perform scroll adjustment (needs stable reference for runOnJS)
+    // Callback to perform scroll adjustment
     const performScrollAdjustment = useCallback((scrollOffset: number) => {
         listRef.current?.scrollToOffset({
             offset: scrollOffset,
@@ -146,7 +146,6 @@ export const KeyboardAwarePostDraftContainer = ({
 
     // Handle touch move: track finger position and adjust emoji picker height
     const handleTouchMove = useCallback((event: GestureResponderEvent) => {
-        // Only handle gestures when emoji picker is showing and keyboard is not visible
         if (!showInputAccessoryView || Keyboard.isVisible()) {
             return;
         }
@@ -159,7 +158,6 @@ export const KeyboardAwarePostDraftContainer = ({
 
         // On first touch, check if gesture started within emoji picker bounds
         if (!isGestureActiveRef.current) {
-            // Calculate emoji picker boundaries
             const currentEmojiPickerHeight = inputAccessoryViewAnimatedHeight.value;
             const emojiPickerTopEdge = windowHeight - postInputContainerHeight - currentEmojiPickerHeight;
             const emojiPickerBottomEdge = windowHeight - postInputContainerHeight;
@@ -168,11 +166,9 @@ export const KeyboardAwarePostDraftContainer = ({
             const isTouchInEmojiPicker = fingerY >= emojiPickerTopEdge && fingerY <= emojiPickerBottomEdge;
 
             if (!isTouchInEmojiPicker) {
-                // Touch started outside emoji picker - ignore this gesture
                 return;
             }
 
-            // Mark gesture as active and started in emoji picker
             isGestureActiveRef.current = true;
             gestureStartedInEmojiPickerRef.current = true;
         }
@@ -188,28 +184,15 @@ export const KeyboardAwarePostDraftContainer = ({
         // Subtract input container height to get emoji picker height
         const emojiPickerHeight = distanceFromBottom - postInputContainerHeight;
 
-        // Detect swipe direction (down = dismissing)
         const isSwipingDown = previousTouchYRef.current !== null && fingerY > previousTouchYRef.current;
-
-        // Get max height (original emoji picker height when it opened)
         const maxHeight = originalEmojiPickerHeightRef.current;
 
-        // Clamp height between 0 and maxHeight
-        // This allows swiping both down (decrease) and up (increase)
         const clampedHeight = Math.max(0, Math.min(emojiPickerHeight, maxHeight));
 
-        // Update emoji picker height - this will cause it to shrink/grow
         inputAccessoryViewAnimatedHeight.value = clampedHeight;
-
-        // Update inset to match current emoji picker height
-        // This adjusts the list's bottom padding automatically
         inset.value = clampedHeight;
-
-        // Save tracking values for touch end decision
         lastDistanceFromBottomRef.current = clampedHeight;
         lastIsSwipingDownRef.current = isSwipingDown;
-
-        // Save current position for next move event
         previousTouchYRef.current = fingerY;
     }, [showInputAccessoryView, postInputContainerHeight, inputAccessoryViewAnimatedHeight, inset, windowHeight]);
 
@@ -224,7 +207,6 @@ export const KeyboardAwarePostDraftContainer = ({
 
     // Handle touch end: decide whether to collapse or expand emoji picker
     const handleTouchEnd = useCallback(() => {
-        // Reset gesture flag
         isGestureActiveRef.current = false;
 
         // Only process if gesture started in emoji picker
@@ -234,16 +216,15 @@ export const KeyboardAwarePostDraftContainer = ({
         }
 
         if (lastDistanceFromBottomRef.current !== null && lastIsSwipingDownRef.current !== null) {
-            // Capture current state for scroll calculation
             const currentInsetHeight = lastDistanceFromBottomRef.current;
             const currentScrollValue = scroll.value;
 
             if (lastIsSwipingDownRef.current) {
                 // User was swiping DOWN → Collapse and dismiss emoji picker
-                // Calculate scroll positions: as inset decreases from currentInsetHeight to 0,
-                // scroll offset should increase by currentInsetHeight (for inverted list)
+                // Calculate scroll positions: as inset decreases from current to 0,
+                // list should scroll from current position to final position
                 const startScrollOffset = -currentInsetHeight + currentScrollValue;
-                const endScrollOffset = currentScrollValue; // inset will be 0
+                const endScrollOffset = currentScrollValue;
 
                 // Animate emoji picker height to 0
                 inputAccessoryViewAnimatedHeight.value = withTiming(
@@ -251,31 +232,27 @@ export const KeyboardAwarePostDraftContainer = ({
                     {duration: 250},
                     () => {
                         runOnJS(dismissEmojiPicker)();
-
-                        // Reset scroll adjustment after dismissal
-                        animatedScrollAdjustment.value = 0;
                     },
                 );
-
-                // Animate inset to 0
                 inset.value = withTiming(0, {duration: 250});
 
                 // Animate scroll position from start to end - this makes list scroll down smoothly
                 animatedScrollAdjustment.value = startScrollOffset;
-                animatedScrollAdjustment.value = withTiming(endScrollOffset, {duration: 250});
+                animatedScrollAdjustment.value = withTiming(endScrollOffset, {
+                    duration: 250,
+                }, () => {
+                    animatedScrollAdjustment.value = 0;
+                });
             } else {
                 // User was swiping UP → Expand to full height
                 const targetHeight = originalEmojiPickerHeightRef.current;
 
-                // Calculate scroll positions: as inset increases from currentInsetHeight to targetHeight,
-                // scroll offset should decrease by (targetHeight - currentInsetHeight)
+                // Calculate scroll positions: as inset increases from current to targetHeight,
+                // list should scroll from current position to final position
                 const startScrollOffset = -currentInsetHeight + currentScrollValue;
                 const endScrollOffset = -targetHeight + currentScrollValue;
 
-                // Animate emoji picker to full height
                 inputAccessoryViewAnimatedHeight.value = withTiming(targetHeight, {duration: 250});
-
-                // Animate inset to full height
                 inset.value = withTiming(targetHeight, {duration: 250});
 
                 // Animate scroll position from start to end - this makes list scroll up smoothly
@@ -283,13 +260,11 @@ export const KeyboardAwarePostDraftContainer = ({
                 animatedScrollAdjustment.value = withTiming(endScrollOffset, {
                     duration: 250,
                 }, () => {
-                    // Reset after animation completes
                     animatedScrollAdjustment.value = 0;
                 });
             }
         }
 
-        // Clear tracking references
         previousTouchYRef.current = null;
         lastDistanceFromBottomRef.current = null;
         lastIsSwipingDownRef.current = null;
@@ -297,8 +272,6 @@ export const KeyboardAwarePostDraftContainer = ({
     }, [inputAccessoryViewAnimatedHeight, dismissEmojiPicker, inset, scroll, animatedScrollAdjustment]);
 
     // After emoji picker renders, adjust heights and scroll to keep messages visible
-    // This completes the transition from keyboard to emoji picker
-    // while keeping the input visually at the same position
     useEffect(() => {
         if (showInputAccessoryView) {
             // Wait one frame to ensure emoji picker has rendered
@@ -318,9 +291,6 @@ export const KeyboardAwarePostDraftContainer = ({
                 // Set offset to emoji picker height (same as keyboard behavior)
                 offset.value = emojiPickerHeight;
 
-                // Manually scroll the list (useKeyboardScrollAdjustment is blocked during emoji picker mode)
-                // Same calculation as keyboard: scrollToOffset(offsetValue, scrollValue)
-                // For inverted list: final offset = -emojiPickerHeight + currentScroll
                 listRef.current?.scrollToOffset({
                     offset: -emojiPickerHeight + currentScroll,
                     animated: false,
@@ -329,7 +299,6 @@ export const KeyboardAwarePostDraftContainer = ({
         }
 
         // Only depend on showInputAccessoryView - the effect should only run when emoji picker visibility changes
-        // SharedValues (keyboardHeight, scroll, etc.) and refs (listRef) are stable and don't need to be in deps
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [showInputAccessoryView]);
 

@@ -122,6 +122,7 @@ const PostList = ({
         keyboardHeight,
         isKeyboardFullyOpen,
         isKeyboardFullyClosed,
+        inputAccessoryViewAnimatedHeight,
     } = useKeyboardAnimationContext();
 
     const onScrollEndIndexListener = useRef<onScrollEndIndexListenerEvent>();
@@ -169,10 +170,11 @@ const PostList = ({
     const isNewMessage = lastPostId ? firstIdInPosts !== lastPostId : false;
 
     const scrollToEnd = useCallback(() => {
-        const targetOffset = -keyboardHeight.value;
+        const activeHeight = Math.max(keyboardHeight.value, inputAccessoryViewAnimatedHeight.value);
+        const targetOffset = -activeHeight;
 
         listRef?.current?.scrollToOffset({offset: targetOffset, animated: true});
-    }, [listRef, keyboardHeight]);
+    }, [listRef, keyboardHeight, inputAccessoryViewAnimatedHeight]);
 
     useEffect(() => {
         const t = setTimeout(() => {
