@@ -62,6 +62,12 @@ export const useKeyboardAnimation = (
     const isKeyboardClosing = useSharedValue(false);
 
     /**
+     * isInteractiveGesture: Tracks if we're in an interactive gesture (user touching keyboard)
+     * Used to: Distinguish between normal keyboard opening vs stale events after gesture
+     */
+    const isInteractiveGesture = useSharedValue(false);
+
+    /**
      * isKeyboardFullyOpen: True when keyboard is fully open (height > 0 and progress === 1)
      */
     const isKeyboardFullyOpen = useSharedValue(false);
@@ -194,8 +200,26 @@ export const useKeyboardAnimation = (
                 return;
             }
 
-            // Track if keyboard is closing (height decreasing)
-            isKeyboardClosing.value = e.height < height.value;
+            // Ignore stale interactive events during screen navigation
+            // When navigating from channel (keyboard open) to thread, the channel's keyboard dismissal
+            // can trigger stale onInteractive events that arrive at the newly mounted thread screen.
+            // If keyboard is fully closed (height === 0), any onInteractive event is stale and should be ignored.
+            if (height.value === 0) {
+                return;
+            }
+
+            if (height.value > 0) {
+                isInteractiveGesture.value = true;
+            }
+
+            // Track if keyboard is closing (height decreasing) or opening (height increasing)
+            // This detects direction changes mid-gesture for smooth animations
+            if (e.height < height.value) {
+                isKeyboardClosing.value = true;
+            } else if (e.height > height.value) {
+                // User changed direction - swiped back up
+                isKeyboardClosing.value = false;
+            }
 
             const adjustedHeight = e.height - (tabBarAdjustment * e.progress);
             height.value = adjustedHeight;
@@ -252,6 +276,14 @@ export const useKeyboardAnimation = (
 
             const absHeight = Math.abs(e.height) - (tabBarAdjustment * e.progress); // Use Math.abs because programmatic dismiss (KeyboardController.dismiss()) reports negative heights
 
+            // Ignore stale/incorrect events ONLY during/after interactive gestures
+            // After user releases finger mid-swipe up, onMove sometimes gets wrong height values
+            // Example: keyboard at 346px, user releases, onMove reports 80px (stale from earlier)
+            // This check only applies during interactive gestures, not during normal keyboard opening
+            if (isInteractiveGesture.value && absHeight < height.value && e.progress < 1) {
+                return;
+            }
+
             height.value = absHeight;
             offset.value = absHeight;
             inset.value = absHeight;
@@ -298,6 +330,7 @@ export const useKeyboardAnimation = (
             // Reset state flags
             isKeyboardClosing.value = false;
             isTransitioningFromCustomView.value = false;
+            isInteractiveGesture.value = false;
 
             // Use e.progress (from event) not progress.value (shared value might be stale)
             if (e.progress === 1) {
@@ -319,6 +352,11 @@ export const useKeyboardAnimation = (
                     // For normal keyboard opening, only adjust if significantly different
                     height.value = adjustedHeight;
                 }
+
+                // Update inset and offset to match final keyboard height
+                // This ensures messages don't get hidden behind keyboard
+                inset.value = adjustedHeight;
+                offset.value = adjustedHeight;
 
                 isKeyboardFullyOpen.value = true;
                 isKeyboardFullyClosed.value = false;

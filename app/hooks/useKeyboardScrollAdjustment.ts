@@ -39,6 +39,8 @@ export const useKeyboardScrollAdjustment = (
             isTransitioning: isTransitioningFromCustomView?.value || false,
         }),
         (current, previous) => {
+            'worklet';
+
             // Skip scroll adjustment when:
             // - Input Accessory view (emoji picker) is active
             // - Transitioning from custom view to keyboard (heights are same, no scroll needed)
