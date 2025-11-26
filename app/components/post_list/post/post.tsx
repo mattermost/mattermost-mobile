@@ -191,6 +191,7 @@ const Post = ({
         if (isEphemeral || hasBeenDeleted) {
             removePost(serverUrl, post);
         } else if (isValidSystemMessage && !hasBeenDeleted && !isPendingOrFailed) {
+            // BoR posts cannot have replies, so don't open threads screen for them
             if (!borPost && [Screens.CHANNEL, Screens.PERMALINK].includes(location)) {
                 const postRootId = post.rootId || post.id;
                 fetchAndSwitchToThread(serverUrl, postRootId);
