@@ -28,22 +28,14 @@ create_avd() {
     local cpu_arch_family cpu_arch
     read cpu_arch_family cpu_arch < <(get_cpu_architecture)
 
-    # Use cmdline-tools avdmanager if available, fallback to tools version
-    local avdmanager_cmd="avdmanager"
-    if [[ -f "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager" ]]; then
-        avdmanager_cmd="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager"
-    elif [[ -f "$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager" ]]; then
-        avdmanager_cmd="$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager"
-    fi
-
-    "$avdmanager_cmd" create avd -n "$AVD_NAME" -k "system-images;android-${SDK_VERSION};google_apis;${cpu_arch_family}" -p "$AVD_NAME" -d 'pixel_5'
+    avdmanager create avd -n "$AVD_NAME" -k "system-images;android-${SDK_VERSION};google_apis;${cpu_arch_family}" -p "$AVD_NAME" -d 'pixel_5'
 
     cp -r android_emulator/ "$AVD_NAME/"
     sed -i -e "s|AvdId = change_avd_id|AvdId = ${AVD_NAME}|g" "$AVD_NAME/config.ini"
     sed -i -e "s|avd.ini.displayname = change_avd_displayname|avd.ini.displayname = Detox Pixel 4 XL API ${SDK_VERSION}|g" "$AVD_NAME/config.ini"
     sed -i -e "s|abi.type = change_type|abi.type = ${cpu_arch_family}|g" "$AVD_NAME/config.ini"
     sed -i -e "s|hw.cpu.arch = change_cpu_arch|hw.cpu.arch = ${cpu_arch}|g" "$AVD_NAME/config.ini"
-    sed -i -e "s|image.sysdir.1 = change_to_image_sysdir/|image.sysdir.1 = system-images/android-${SDK_VERSION}/google_apis/${cpu_arch_family}/|g" "$AVD_NAME/config.ini"
+    sed -i -e "s|image.sysdir.1 = change_to_image_sysdir/|image.sysdir.1 = system-images/android-${SDK_VERSION}/default/${cpu_arch_family}/|g" "$AVD_NAME/config.ini"
     sed -i -e "s|skin.path = change_to_absolute_path/pixel_4_xl_skin|skin.path = $(pwd)/${AVD_NAME}/pixel_4_xl_skin|g" "$AVD_NAME/config.ini"
 
     echo "hw.cpu.ncore=5" >> "$AVD_NAME/config.ini"
@@ -113,12 +105,7 @@ run_detox_tests() {
     echo "Running Detox tests... $@"
 
     cd detox
-    # Use CI script in CI environment (no --reuse flag)
-    if [[ "$CI" == "true" ]]; then
-        npm run e2e:android-test-ci -- "$@"
-    else
-        npm run e2e:android-test -- "$@"
-    fi
+    npm run e2e:android-test -- "$@"
 }
 
 main() {

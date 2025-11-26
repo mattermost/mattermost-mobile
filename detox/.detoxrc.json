@@ -64,25 +64,19 @@
     "plugins": {
       "screenshot": {
         "shouldTakeAutomaticSnapshots": true,
-        "keepOnlyFailedTestsArtifacts": true,
-        "takeWhen": {
-          "testStart": false,
-          "testDone": false,
-          "testFailure": true
-        }
+        "keepOnlyFailedTestsArtifacts": true
       },
       "video": {
         "enabled": false
       },
       "log": {
-        "enabled": true,
-        "keepOnlyFailedTestsArtifacts": true
+        "enabled": true
       }
     }
   },
   "behavior": {
     "init": {
-      "reinstallApp": false,
+      "reinstallApp": true,
       "launchApp": false
     },
     "cleanup": {
@@ -91,7 +85,7 @@
   },
   "session": {
     "sessionId": "mobile-test-session",
-    "debugSynchronization": 10000,
+    "debugSynchronization": 5000,
     "autoStart": true
   },
   "visibility": {
