@@ -1032,7 +1032,6 @@
   "playbooks.playbook_run.error.title": "无法获取详情",
   "playbooks.playbook_run.finish_run_button": "完成",
   "playbooks.playbook_run.finish_run_dialog_cancel": "取消",
-  "playbooks.playbook_run.finish_run_dialog_description": "还有 {pendingCount} 个待完成{pendingCount, plural, =1 {任务} other {任务}}。\n\n您确定要为所有参与者完成清单吗？",
   "playbooks.playbook_run.finish_run_dialog_finish": "完成",
   "playbooks.playbook_run.finish_run_dialog_title": "完成",
   "playbooks.playbook_run.finished": "已完成",

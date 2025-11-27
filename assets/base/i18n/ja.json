@@ -1024,7 +1024,6 @@
   "playbooks.playbook_run.error.title": "実行の詳細を取得できませんでした",
   "playbooks.playbook_run.finish_run_button": "実行を完了する",
   "playbooks.playbook_run.finish_run_dialog_cancel": "キャンセル",
-  "playbooks.playbook_run.finish_run_dialog_description": "{pendingCount} {pendingCount, plural, =1 {task} 他の{tasks}}が保留中です。\n\n参加者全員の実行を終了しますか？",
   "playbooks.playbook_run.finish_run_dialog_finish": "完了",
   "playbooks.playbook_run.finish_run_dialog_title": "実行を終了する",
   "playbooks.playbook_run.finished": "完了",

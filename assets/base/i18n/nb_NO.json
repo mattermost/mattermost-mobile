@@ -1022,7 +1022,6 @@
   "playbooks.playbook_run.error.title": "Kan ikke hente detaljer om kjøringen",
   "playbooks.playbook_run.finish_run_button": "Avslutt kjøring",
   "playbooks.playbook_run.finish_run_dialog_cancel": "Avbryt",
-  "playbooks.playbook_run.finish_run_dialog_description": "Det er {pendingCount} {pendingCount, plural, =1 {oppgave} andre {oppgaver}} som venter.\n\nEr du sikker på at du vil fullføre kjøringen for alle deltakerne?",
   "playbooks.playbook_run.finish_run_dialog_finish": "Avslutt",
   "playbooks.playbook_run.finish_run_dialog_title": "Avslutt kjøring",
   "playbooks.playbook_run.finished": "Avsluttet",
