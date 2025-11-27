@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useRef} from 'react';
-import {ActivityIndicator, StyleSheet, View} from 'react-native';
+import {ActivityIndicator, FlatList, StyleSheet, View} from 'react-native';
 
 import {fetchPostThread} from '@actions/remote/post';
 import {markThreadAsRead} from '@actions/remote/thread';
@@ -28,6 +28,7 @@ type Props = {
     teamId: string;
     thread?: ThreadModel;
     version?: string;
+    listRef: React.RefObject<FlatList<string | PostModel>>;
 }
 
 const styles = StyleSheet.create({
@@ -39,6 +40,7 @@ const styles = StyleSheet.create({
 const ThreadPostList = ({
     channelLastViewedAt, isCRTEnabled,
     nativeID, posts, rootPost, teamId, thread, version,
+    listRef,
 }: Props) => {
     const appState = useAppState();
     const serverUrl = useServerUrl();
@@ -112,6 +114,7 @@ const ThreadPostList = ({
             header={header}
             footer={<View style={styles.footer}/>}
             testID='thread.post_list'
+            listRef={listRef}
         />
     );
 

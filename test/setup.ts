@@ -313,6 +313,21 @@ jest.mock('react-native-vector-icons', () => {
 
 jest.mock('../node_modules/react-native/Libraries/EventEmitter/NativeEventEmitter');
 
+jest.mock('react-native-keyboard-controller', () => {
+    return {
+        KeyboardProvider: ({children}: {children: React.ReactNode}) => children,
+        KeyboardController: {
+            dismiss: jest.fn(),
+            isVisible: jest.fn(() => false),
+        },
+        useKeyboardHandler: jest.fn(),
+        useKeyboardState: jest.fn(() => ({
+            isVisible: false,
+        })),
+        KeyboardGestureArea: ({children}: {children: React.ReactNode}) => children,
+    };
+});
+
 jest.mock('react-native-localize', () => ({
     getTimeZone: () => 'World/Somewhere',
     getLocales: () => ([

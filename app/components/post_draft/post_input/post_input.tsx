@@ -14,7 +14,6 @@ import {
 import {updateDraftMessage} from '@actions/local/draft';
 import {userTyping} from '@actions/websocket/users';
 import {Events, Screens} from '@constants';
-import {useExtraKeyboardContext} from '@context/extra_keyboard';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -122,7 +121,7 @@ export default function PostInput({
     const style = getStyleSheet(theme);
     const serverUrl = useServerUrl();
     const managedConfig = useManagedConfig<ManagedConfig>();
-    const keyboardContext = useExtraKeyboardContext();
+
     const [propagateValue, shouldProcessEvent] = useInputPropagation();
 
     const lastTypingEventSent = useRef(0);
@@ -138,16 +137,7 @@ export default function PostInput({
         return {...style.input, maxHeight};
     }, [maxHeight, style.input]);
 
-    const handleAndroidKeyboardHide = () => {
-        onBlur();
-    };
-
-    const handleAndroidKeyboardShow = () => {
-        onFocus();
-    };
-
     const onBlur = useCallback(() => {
-        keyboardContext?.registerTextInputBlur();
         handleDraftUpdate({
             serverUrl,
             channelId,
@@ -155,12 +145,19 @@ export default function PostInput({
             value,
         });
         setIsFocused(false);
-    }, [keyboardContext, serverUrl, channelId, rootId, value, setIsFocused]);
+    }, [serverUrl, channelId, rootId, value, setIsFocused]);
 
     const onFocus = useCallback(() => {
-        keyboardContext?.registerTextInputFocus();
         setIsFocused(true);
-    }, [setIsFocused, keyboardContext]);
+    }, [setIsFocused]);
+
+    const handleAndroidKeyboardHide = useCallback(() => {
+        onBlur();
+    }, [onBlur]);
+
+    const handleAndroidKeyboardShow = useCallback(() => {
+        onFocus();
+    }, [onFocus]);
 
     const checkMessageLength = useCallback((newValue: string) => {
         const valueLength = newValue.trim().length;
@@ -286,7 +283,7 @@ export default function PostInput({
             keyboardShowListener?.remove();
             keyboardHideListener?.remove();
         });
-    }, []);
+    }, [handleAndroidKeyboardHide, handleAndroidKeyboardShow]);
 
     useEffect(() => {
         const listener = AppState.addEventListener('change', onAppStateChange);
@@ -311,6 +308,9 @@ export default function PostInput({
             listener.remove();
             updateDraftMessage(serverUrl, channelId, rootId, lastNativeValue.current); // safe draft on unmount
         };
+
+    // disabled because to keep the implementation as previous as it started complaining about the dependencies
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [updateValue, channelId, rootId]);
 
     useEffect(() => {
@@ -318,6 +318,9 @@ export default function PostInput({
             propagateValue(value);
             lastNativeValue.current = value;
         }
+
+    // disabled because to keep the implementation as previous as it started complaining about the dependencies
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [value]);
 
     const events = useMemo(() => ({
@@ -349,6 +352,7 @@ export default function PostInput({
             textContentType='none'
             value={value}
             autoCapitalize='sentences'
+            nativeID={testID}
         />
     );
 }

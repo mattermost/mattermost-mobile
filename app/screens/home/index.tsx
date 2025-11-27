@@ -4,9 +4,10 @@
 import {useHardwareKeyboardEvents} from '@mattermost/hardware-keyboard';
 import {createBottomTabNavigator, type BottomTabBarProps} from '@react-navigation/bottom-tabs';
 import {NavigationContainer, DefaultTheme} from '@react-navigation/native';
-import React, {useCallback, useEffect, useMemo} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Platform, StyleSheet, View} from 'react-native';
+import {KeyboardState} from 'react-native-reanimated';
 import {enableFreeze, enableScreens} from 'react-native-screens';
 
 import {initializeSecurityManager} from '@actions/app/server';
@@ -67,9 +68,19 @@ export function HomeScreen(props: HomeProps) {
     const theme = useTheme();
     const intl = useIntl();
     const appState = useAppState();
+    const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
 
     useEffect(() => {
         initializeSecurityManager();
+    }, []);
+
+    useEffect(() => {
+        const keyboardStateListener = DeviceEventEmitter.addListener(Events.KEYBOARD_STATE_CHANGED, (keyboardState: KeyboardState) => {
+            const isOpen = keyboardState === KeyboardState.OPEN || keyboardState === KeyboardState.OPENING;
+            setIsKeyboardOpen(isOpen);
+        });
+
+        return () => keyboardStateListener.remove();
     }, []);
 
     const handleFindChannels = useCallback(() => {
@@ -145,6 +156,22 @@ export function HomeScreen(props: HomeProps) {
         }
     }, []);
 
+    const tabBarComponent = useMemo(() => {
+        const TabBarComponent = (tabProps: BottomTabBarProps) => {
+            if (isKeyboardOpen) {
+                return null;
+            }
+            return (
+                <TabBar
+                    {...tabProps}
+                    theme={theme}
+                />
+            );
+        };
+        TabBarComponent.displayName = 'TabBarComponent';
+        return TabBarComponent;
+    }, [isKeyboardOpen, theme]);
+
     return (
         <View
             style={styles.flex}
@@ -168,11 +195,7 @@ export function HomeScreen(props: HomeProps) {
                 <Tab.Navigator
                     screenOptions={{headerShown: false, freezeOnBlur: false, lazy: true}}
                     backBehavior='none'
-                    tabBar={(tabProps: BottomTabBarProps) => (
-                        <TabBar
-                            {...tabProps}
-                            theme={theme}
-                        />)}
+                    tabBar={tabBarComponent}
                 >
                     <Tab.Screen
                         name={Screens.HOME}
