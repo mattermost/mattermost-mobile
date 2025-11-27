@@ -22,6 +22,7 @@ interface ClientConfig {
     BuildHash: string;
     BuildHashEnterprise: string;
     BuildNumber: string;
+    IsFipsEnabled: string;
     CloseUnusedDirectMessages: string;
     CollapsedThreads: string;
     CustomBrandText: string;
