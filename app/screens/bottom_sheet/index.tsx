@@ -38,6 +38,8 @@ type Props = {
     enableDynamicSizing?: boolean;
     testID?: string;
     scrollable?: boolean;
+    keyboardBehavior?: 'extend' | 'fillParent' | 'interactive';
+    keyboardBlurBehavior?: 'none' | 'restore';
 }
 
 const PADDING_TOP_MOBILE = 20;
@@ -101,6 +103,8 @@ const BottomSheet = ({
     testID,
     enableDynamicSizing = false,
     scrollable = false,
+    keyboardBehavior = 'extend',
+    keyboardBlurBehavior = 'restore',
 }: Props) => {
     const reducedMotion = useReducedMotion();
     const sheetRef = useRef<BottomSheetM>(null);
@@ -266,8 +270,8 @@ const BottomSheet = ({
             style={styles.bottomSheet}
             backgroundStyle={bottomSheetBackgroundStyle}
             footerComponent={footerComponent}
-            keyboardBehavior='extend'
-            keyboardBlurBehavior='restore'
+            keyboardBehavior={keyboardBehavior}
+            keyboardBlurBehavior={keyboardBlurBehavior}
             onClose={close}
             bottomInset={insets.bottom}
             enableDynamicSizing={enableDynamicSizing}
