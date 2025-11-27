@@ -145,15 +145,16 @@ class ChannelScreen {
         return this.postList.getPostMessageAtIndex(index);
     };
 
-    toBeVisible = async () => {
+    toBeVisible = async (timeout = timeouts.TEN_SEC) => {
         await wait(timeouts.ONE_SEC);
-        await waitFor(this.channelScreen).toExist().withTimeout(timeouts.TEN_SEC);
+        await waitFor(this.channelScreen).toExist().withTimeout(timeout);
 
         return this.channelScreen;
     };
 
     open = async (categoryKey: string, channelName: string) => {
         // # Open channel screen
+        await waitFor(ChannelListScreen.getChannelItemDisplayName(categoryKey, channelName)).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelListScreen.getChannelItemDisplayName(categoryKey, channelName).tap();
         try {
             await this.scheduledPostTooltipCloseButton.tap();
