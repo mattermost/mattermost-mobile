@@ -42,7 +42,7 @@ type MFAProps = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     centered: {
         width: '100%',
-        maxWidth: 600,
+        maxWidth: 480,
     },
     container: {
         flex: 1,
@@ -57,8 +57,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     header: {
         color: theme.centerChannelColor,
+        marginTop: 24,
         marginBottom: 12,
         ...typography('Heading', 1000, 'SemiBold'),
+        textAlign: 'center',
     },
     innerContainer: {
         alignItems: 'center',
@@ -71,12 +73,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     shield: {
         alignItems: 'center',
-        marginBottom: 56.22,
     },
     subheader: {
         color: changeOpacity(theme.centerChannelColor, 0.6),
         marginBottom: 12,
         ...typography('Body', 200, 'Regular'),
+        textAlign: 'center',
     },
 }));
 
@@ -153,7 +155,7 @@ const MFA = ({componentId, config, goToHome, license, loginId, password, serverD
                 >
                     <View style={styles.centered}>
                         <View style={styles.shield}>
-                            <Shield/>
+                            <Shield theme={theme}/>
                         </View>
                         <FormattedText
                             defaultMessage='Enter MFA Token'
