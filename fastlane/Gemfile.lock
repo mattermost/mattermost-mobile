@@ -1,9 +1,3 @@
-GIT
-  remote: https://github.com/jonathanneilritchie/fastlane-plugin-find_replace_string
-  revision: 1b71026318ad40abc710d601be48d67bcb353ddf
-  specs:
-    fastlane-plugin-find_replace_string (0.1.0)
-
 GEM
   remote: https://rubygems.org/
   specs:
@@ -15,26 +9,28 @@ GEM
       public_suffix (>= 2.0.2, < 7.0)
     artifactory (3.0.17)
     atomos (0.1.3)
-    aws-eventstream (1.3.2)
-    aws-partitions (1.1083.0)
-    aws-sdk-core (3.222.1)
+    aws-eventstream (1.4.0)
+    aws-partitions (1.1168.0)
+    aws-sdk-core (3.233.0)
       aws-eventstream (~> 1, >= 1.3.0)
       aws-partitions (~> 1, >= 1.992.0)
       aws-sigv4 (~> 1.9)
       base64
+      bigdecimal
       jmespath (~> 1, >= 1.6.1)
       logger
-    aws-sdk-kms (1.99.0)
-      aws-sdk-core (~> 3, >= 3.216.0)
+    aws-sdk-kms (1.113.0)
+      aws-sdk-core (~> 3, >= 3.231.0)
       aws-sigv4 (~> 1.5)
-    aws-sdk-s3 (1.183.0)
-      aws-sdk-core (~> 3, >= 3.216.0)
+    aws-sdk-s3 (1.199.1)
+      aws-sdk-core (~> 3, >= 3.231.0)
       aws-sdk-kms (~> 1)
       aws-sigv4 (~> 1.5)
-    aws-sigv4 (1.11.0)
+    aws-sigv4 (1.12.1)
       aws-eventstream (~> 1, >= 1.0.2)
     babosa (1.0.4)
-    base64 (0.2.0)
+    base64 (0.3.0)
+    bigdecimal (3.2.3)
     claide (1.1.0)
     colored (1.2)
     colored2 (3.1.2)
@@ -63,10 +59,10 @@ GEM
       faraday (>= 0.8.0)
       http-cookie (~> 1.0.0)
     faraday-em_http (1.0.0)
-    faraday-em_synchrony (1.0.0)
+    faraday-em_synchrony (1.0.1)
     faraday-excon (1.1.0)
     faraday-httpclient (1.0.1)
-    faraday-multipart (1.1.0)
+    faraday-multipart (1.1.1)
       multipart-post (~> 2.0)
     faraday-net_http (1.0.2)
     faraday-net_http_persistent (1.2.0)
@@ -76,7 +72,7 @@ GEM
     faraday_middleware (1.2.1)
       faraday (~> 1.0)
     fastimage (2.4.0)
-    fastlane (2.227.1)
+    fastlane (2.228.0)
       CFPropertyList (>= 2.3, < 4.0.0)
       addressable (>= 2.8, < 3.0.0)
       artifactory (~> 3.0)
@@ -118,10 +114,6 @@ GEM
       xcodeproj (>= 1.13.0, < 2.0.0)
       xcpretty (~> 0.4.1)
       xcpretty-travis-formatter (>= 0.0.3, < 2.0.0)
-    fastlane-plugin-android_change_package_identifier (0.1.0)
-    fastlane-plugin-android_change_string_app_name (0.1.1)
-      nokogiri
-    fastlane-plugin-versioning_android (0.1.1)
     fastlane-sirp (1.0.0)
       sysrandom (~> 1.0)
     gh_inspector (1.1.3)
@@ -167,17 +159,17 @@ GEM
     httpclient (2.9.0)
       mutex_m
     jmespath (1.6.2)
-    json (2.10.2)
-    jwt (2.10.1)
+    json (2.15.0)
+    jwt (2.10.2)
       base64
     logger (1.7.0)
     mini_magick (4.13.2)
     mini_mime (1.1.5)
-    multi_json (1.15.0)
+    multi_json (1.17.0)
     multipart-post (2.4.1)
     mutex_m (0.3.0)
     nanaimo (0.4.0)
-    naturally (2.2.1)
+    naturally (2.3.0)
     nkf (0.2.0)
     nokogiri (1.18.9-arm64-darwin)
       racc (~> 1.4)
@@ -188,23 +180,23 @@ GEM
     optparse (0.6.0)
     os (1.1.4)
     plist (3.7.2)
-    public_suffix (6.0.1)
+    public_suffix (6.0.2)
     racc (1.8.1)
-    rake (13.2.1)
+    rake (13.3.0)
     representable (3.2.0)
       declarative (< 0.1.0)
       trailblazer-option (>= 0.1.1, < 0.2.0)
       uber (< 0.2.0)
     retriable (3.1.2)
-    rexml (3.4.1)
+    rexml (3.4.4)
     rouge (3.28.0)
     ruby2_keywords (0.0.5)
     rubyzip (2.4.1)
     security (0.1.5)
-    signet (0.19.0)
+    signet (0.21.0)
       addressable (~> 2.8)
       faraday (>= 0.17.5, < 3.a)
-      jwt (>= 1.5, < 3.0)
+      jwt (>= 1.5, < 4.0)
       multi_json (~> 1.10)
     simctl (1.6.10)
       CFPropertyList
@@ -244,12 +236,8 @@ PLATFORMS
 
 DEPENDENCIES
   dotenv
-  fastlane
-  fastlane-plugin-android_change_package_identifier
-  fastlane-plugin-android_change_string_app_name
-  fastlane-plugin-find_replace_string!
-  fastlane-plugin-versioning_android
+  fastlane (>= 2.227.2)
   nokogiri (~> 1.18.9)
 
 BUNDLED WITH
-   2.5.11
+   2.3.27

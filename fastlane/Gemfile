@@ -1,6 +1,6 @@
 source "https://rubygems.org"
 
-gem "fastlane"
+gem "fastlane", ">= 2.227.2"
 gem "nokogiri", '~> 1.18.9'
 gem "dotenv"
 
