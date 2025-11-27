@@ -16,7 +16,7 @@ export function prefetchCustomEmojiImages(client: Client, emojis: CustomEmoji[])
         const source: ImageSource = {
             uri: client.getCustomEmojiImageUrl(ce.id),
             cachePath,
-            cacheKey: `custom-${ce.name}`,
+            cacheKey: `emoji-${ce.name}`,
         };
         return source;
     }), {cachePolicy: 'disk'});

@@ -57,7 +57,6 @@ jest.mock('@queries/app/global');
 jest.mock('@queries/servers/system');
 jest.mock('@queries/servers/user');
 jest.mock('@utils/file');
-jest.mock('@utils/log');
 jest.mock('@utils/security');
 
 describe('session actions', () => {

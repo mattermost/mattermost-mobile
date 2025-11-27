@@ -61,6 +61,7 @@ jest.mock('@database/manager', () => ({
 jest.mock('@queries/servers/system', () => ({
     getSecurityConfig: jest.fn(),
     getConfig: jest.fn(),
+    getConfigValue: jest.fn(),
 }));
 jest.mock('@queries/app/servers', () => ({
     queryAllActiveServers: jest.fn(),

@@ -175,20 +175,20 @@ describe('ClientUsers', () => {
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, defaultExpectedOptions, false);
     });
 
-    test('loginWithEntra', async () => {
-        const idToken = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...';
+    test('loginByIntune', async () => {
+        const accessToken = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...';
         const deviceId = 'deviceId';
-        const expectedUrl = '/oauth/entra';
+        const expectedUrl = '/oauth/intune';
         const expectedOptions = {
             method: 'post',
             body: {
                 device_id: deviceId,
-                id_token: idToken,
+                access_token: accessToken,
             },
             headers: {'Cache-Control': 'no-store'},
         };
 
-        await client.loginWithEntra(idToken, deviceId);
+        await client.loginByIntune(accessToken, deviceId);
 
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions, false);
 
@@ -197,12 +197,12 @@ describe('ClientUsers', () => {
             method: 'post',
             body: {
                 device_id: '',
-                id_token: idToken,
+                access_token: accessToken,
             },
             headers: {'Cache-Control': 'no-store'},
         };
 
-        await client.loginWithEntra(idToken);
+        await client.loginByIntune(accessToken);
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, defaultExpectedOptions, false);
     });
 

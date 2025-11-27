@@ -139,6 +139,7 @@ interface ClientConfig {
     IosMinVersion: string;
     IntuneMAMEnabled?: string;
     IntuneScope?: string;
+    IntuneAuthService?: string;
     LdapFirstNameAttributeSet: string;
     LdapLastNameAttributeSet: string;
     LdapLoginButtonBorderColor: string;

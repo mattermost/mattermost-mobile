@@ -17,12 +17,14 @@ type SsoInfo = {
 
 type Props = {
     goToSso: (ssoType: string) => void;
+    intuneAuthService?: string;
+    isIntuneEnabled?: boolean;
     ssoOnly: boolean;
     ssoOptions: SsoWithOptions;
     theme: Theme;
 }
 
-const SsoOptions = ({goToSso, ssoOnly, ssoOptions, theme}: Props) => {
+const SsoOptions = ({goToSso, intuneAuthService, isIntuneEnabled, ssoOnly, ssoOptions, theme}: Props) => {
     const {formatMessage} = useIntl();
 
     const getSsoButtonOptions = ((ssoType: string): SsoInfo => {
@@ -31,7 +33,11 @@ const SsoOptions = ({goToSso, ssoOnly, ssoOptions, theme}: Props) => {
         switch (ssoType) {
             case Sso.SAML:
                 sso.text = options.text || formatMessage({id: 'mobile.login_options.saml', defaultMessage: 'SAML'});
-                sso.compassIcon = 'lock';
+                if (isIntuneEnabled && intuneAuthService?.toLocaleLowerCase() === ssoType.toLocaleLowerCase()) {
+                    sso.imageSrc = require('@assets/images/Icon_EntraID.png');
+                } else {
+                    sso.compassIcon = 'lock';
+                }
                 break;
             case Sso.GITLAB:
                 sso.text = formatMessage({id: 'mobile.login_options.gitlab', defaultMessage: 'GitLab'});
@@ -56,7 +62,15 @@ const SsoOptions = ({goToSso, ssoOnly, ssoOptions, theme}: Props) => {
     });
 
     const enabledSSOs = Object.keys(ssoOptions).filter(
-        (ssoType: string) => ssoOptions[ssoType].enabled,
+        (ssoType: string) => {
+            if (isIntuneEnabled) {
+                if (ssoType === Sso.OFFICE365 && intuneAuthService?.toLocaleLowerCase() === Sso.SAML.toLocaleLowerCase()) {
+                    return false;
+                }
+
+            }
+            return ssoOptions[ssoType].enabled;
+        },
     );
 
     const styleViewContainer = enabledSSOs.length === 2 && !ssoOnly ? styles.containerAsRow : undefined;

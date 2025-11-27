@@ -220,18 +220,17 @@ describe('Gallery utils', () => {
 
     describe('getImageSize', () => {
         it('should resolve with image size', async () => {
-            jest.spyOn(Image, 'loadAsync').mockImplementationOnce(() => {
-                return Promise.resolve({width: 800, height: 600} as ImageRef);
-            });
+            jest.spyOn(Image, 'loadAsync').mockResolvedValue({
+                width: 800,
+                height: 600,
+            } as ImageRef);
 
             const result = await getImageSize('serverUrl', 'test-uri', 'cacheKey');
             expect(result).toEqual({width: 800, height: 600});
         });
 
         it('should reject on error', async () => {
-            jest.spyOn(Image, 'loadAsync').mockImplementationOnce(() => {
-                return Promise.reject(new Error('Failed to get size'));
-            });
+            jest.spyOn(Image, 'loadAsync').mockRejectedValue(new Error('Failed to get size'));
 
             await expect(getImageSize('serverUrl', 'test-uri', 'cacheKey')).rejects.toThrow('Failed to get size');
         });

@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useState} from 'react';
+import {useIntl} from 'react-intl';
 import {Platform, StyleSheet, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -18,6 +19,7 @@ import Background from '@screens/background';
 import {dismissModal, popTopScreen, resetToHome} from '@screens/navigation';
 import {getFullErrorMessage, isErrorWithUrl} from '@utils/errors';
 import {isMinimumLicenseTier} from '@utils/helpers';
+import {getIntuneErrorMessage} from '@utils/intune_errors';
 import {logWarning} from '@utils/log';
 
 import SSOAuthentication from './sso_authentication';
@@ -51,10 +53,17 @@ const SSO = ({
     launchError, launchType, license, serverDisplayName,
     serverPreauthSecret, serverUrl, ssoType, theme,
 }: SSOProps) => {
+    const intl = useIntl();
     const [loginError, setLoginError] = useState<string>('');
 
     let loginUrl = '';
     let shouldUseNativeEntra = false;
+
+    shouldUseNativeEntra = Platform.OS === 'ios' &&
+            config.IntuneMAMEnabled === 'true' && config.IntuneAuthService?.toLocaleLowerCase() === ssoType.toLocaleLowerCase() &&
+            Boolean(config.IntuneScope) &&
+            isMinimumLicenseTier(license, License.SKU_SHORT_NAME.EnterpriseAdvanced);
+
     switch (ssoType) {
         case Sso.GOOGLE: {
             loginUrl = `${serverUrl}/oauth/google/mobile_login`;
@@ -70,9 +79,6 @@ const SSO = ({
         }
         case Sso.OFFICE365: {
             loginUrl = `${serverUrl}/oauth/office365/mobile_login`;
-            shouldUseNativeEntra = Platform.OS === 'ios' && config.IntuneMAMEnabled === 'true' &&
-                Boolean(config.IntuneScope) &&
-                isMinimumLicenseTier(license, License.SKU_SHORT_NAME.EnterpriseAdvanced);
             break;
         }
         case Sso.OPENID: {
@@ -83,10 +89,17 @@ const SSO = ({
             break;
     }
 
-    const onLoadEndError = useCallback((e: unknown) => {
+    const onLoadEndError = useCallback((e: unknown, isEntraLogin = false) => {
         logWarning('Failed to set store from local data', e);
         if (typeof e === 'string') {
             setLoginError(e);
+            return;
+        }
+
+        // For Entra login errors, use intune error mapping
+        if (isEntraLogin) {
+            const errorMessage = getIntuneErrorMessage(e, intl);
+            setLoginError(errorMessage);
             return;
         }
 
@@ -95,7 +108,7 @@ const SSO = ({
             errorMessage += `\nURL: ${e.url}`;
         }
         setLoginError(errorMessage);
-    }, []);
+    }, [intl]);
 
     const doSSOLogin = async (bearerToken: string, csrfToken: string) => {
         const result: LoginActionResponse = await ssoLogin(serverUrl!, serverDisplayName, config.DiagnosticId!, bearerToken, csrfToken, serverPreauthSecret);
@@ -129,7 +142,7 @@ const SSO = ({
         );
 
         if (result?.error && result.failed) {
-            onLoadEndError(result.error);
+            onLoadEndError(result.error, true);
             return false;
         }
         goToHome();

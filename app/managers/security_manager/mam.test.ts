@@ -13,7 +13,7 @@ import {Sso} from '@constants';
 import DatabaseManager from '@database/manager';
 import IntuneManager from '@managers/intune_manager';
 import {type IntunePolicy} from '@managers/intune_manager/types';
-import {getConfig} from '@queries/servers/system';
+import {getConfig, getConfigValue} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
 import TestHelper from '@test/test_helper';
 import * as alerts from '@utils/alerts';
@@ -56,6 +56,7 @@ jest.mock('@database/manager', () => ({
 }));
 jest.mock('@queries/servers/system', () => ({
     getConfig: jest.fn(),
+    getConfigValue: jest.fn(),
 }));
 jest.mock('@queries/servers/user', () => ({
     getCurrentUser: jest.fn(),
@@ -369,7 +370,7 @@ describe('SecurityManager - Intune MAM Integration', () => {
         const serverUrl = 'https://test.server.com';
         const mockDatabase = {database: 'mock-db'};
         const mockUser = {id: 'user-id', authService: Sso.OFFICE365};
-        const mockConfig = {IntuneScope: 'https://msmamservice.api.application/.default', SiteName: 'Test Server'};
+        const mockConfig = {IntuneScope: 'https://msmamservice.api.application/.default', IntuneAuthService: Sso.OFFICE365, SiteName: 'Test Server'};
         const mockTokens = {
             identity: {upn: 'user@test.com', tid: 'tenant-id', oid: 'object-id'},
             idToken: 'id-token',
@@ -382,6 +383,7 @@ describe('SecurityManager - Intune MAM Integration', () => {
             jest.mocked(DatabaseManager.getServerDatabaseAndOperator).mockReturnValue(mockDatabase as unknown as ServerDatabase);
             jest.mocked(getCurrentUser).mockResolvedValue(mockUser as unknown as UserModel);
             jest.mocked(getConfig).mockResolvedValue(mockConfig as ClientConfig);
+            jest.mocked(getConfigValue).mockResolvedValue(Sso.OFFICE365);
             jest.mocked(getCurrentUserLocale).mockResolvedValue('en');
         });
 

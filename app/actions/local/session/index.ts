@@ -35,7 +35,7 @@ export async function findSession(serverUrl: string, sessions: Session[]) {
         const expiredSession = await getExpiredSession(database);
         const deviceToken = await getDeviceToken();
 
-        // First try and find the session by the given identifier  hyqddef7jjdktqiyy36gxa8sqy
+        // First try and find the session by the given identifier
         let session = sessions.find((s) => s.id === expiredSession?.id);
         if (session) {
             return session;

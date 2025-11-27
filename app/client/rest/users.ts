@@ -20,7 +20,7 @@ export interface ClientUsersMix {
     login: (loginId: string, password: string, token?: string, deviceId?: string, ldapOnly?: boolean) => Promise<UserProfile>;
     loginById: (id: string, password: string, token?: string, deviceId?: string) => Promise<UserProfile>;
     loginByMagicLinkLogin: (token: string, deviceId?: string) => Promise<UserProfile>;
-    loginWithEntra: (idToken: string, deviceId?: string) => Promise<UserProfile>;
+    loginByIntune: (accessToken: string, deviceId?: string) => Promise<UserProfile>;
     logout: () => Promise<any>;
     getProfiles: (page?: number, perPage?: number, options?: Record<string, any>) => Promise<UserProfile[]>;
     getProfilesByIds: (userIds: string[], options?: Record<string, any>, groupLabel?: RequestGroupLabel) => Promise<UserProfile[]>;
@@ -165,14 +165,14 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         return resp?.data;
     };
 
-    loginWithEntra = async (idToken: string, deviceId = '') => {
+    loginByIntune = async (accessToken: string, deviceId = '') => {
         const body = {
             device_id: deviceId,
-            id_token: idToken,
+            access_token: accessToken,
         };
 
         const resp = await this.doFetch(
-            '/oauth/entra',
+            '/oauth/intune',
             {
                 method: 'post',
                 body,

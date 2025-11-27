@@ -43,11 +43,11 @@ describe('prefetchCustomEmojiImages', () => {
         const cachePath = urlSafeBase64Encode(mockClient.apiClient.baseUrl);
         const expectedResults = [{
             uri: 'url/emoji1',
-            cacheKey: 'custom-emoji_name1',
+            cacheKey: 'emoji-emoji_name1',
             cachePath,
         }, {
             uri: 'url/emoji2',
-            cacheKey: 'custom-emoji_name2',
+            cacheKey: 'emoji-emoji_name2',
             cachePath,
         }];
 

@@ -43,6 +43,11 @@ if (Platform.OS === 'ios') {
  */
 export class IntuneManagerSingleton {
 
+    isIntuneEnabledForConfigAndLicense(config: ClientConfig, license?: ClientLicense): boolean {
+        return isMinimumLicenseTier(license, License.SKU_SHORT_NAME.EnterpriseAdvanced) &&
+            config.IntuneMAMEnabled === 'true' && Boolean(config.IntuneScope) && Boolean(config.IntuneAuthService);
+    }
+
     async isIntuneMAMEnabledForServer(serverUrl: string): Promise<boolean> {
         if (!Intune) {
             return false;
@@ -52,8 +57,7 @@ export class IntuneManagerSingleton {
             const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
             const config = await getConfig(database);
             const license = await getLicense(database);
-            return isMinimumLicenseTier(license, License.SKU_SHORT_NAME.EnterpriseAdvanced) &&
-                config.IntuneMAMEnabled === 'true' && Boolean(config.IntuneScope);
+            return this.isIntuneEnabledForConfigAndLicense(config, license);
         } catch {
             return false;
         }
@@ -126,6 +130,24 @@ export class IntuneManagerSingleton {
             await Intune.deregisterAndUnenroll(serverUrl, doWipe);
         } catch (error) {
             logError('IntuneManager: Unenrollment failed', error);
+        }
+    }
+
+    /**
+     * Cleanup storage and MSAL account after selective wipe completes
+     * This is called by SecurityManager after wipe operations complete successfully
+     * to remove the OID-to-serverUrl mappings from keychain and delete the MSAL account.
+     * @param oid - The Object ID (OID) to cleanup
+     */
+    async cleanupAfterWipe(oid: string): Promise<void> {
+        if (!Intune) {
+            return;
+        }
+
+        try {
+            await Intune.cleanupAfterWipe(oid);
+        } catch (error) {
+            logError('IntuneManager: Cleanup after wipe failed', error);
         }
     }
 

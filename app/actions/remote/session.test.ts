@@ -10,6 +10,7 @@ import {GLOBAL_IDENTIFIERS, SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import WebsocketManager from '@managers/websocket_manager';
+import TestHelper from '@test/test_helper';
 import {logWarning} from '@utils/log';
 
 import {
@@ -18,6 +19,7 @@ import {
     fetchSessions,
     login,
     logout,
+    nativeEntraLogin,
     scheduleSessionNotification,
     sendPasswordResetEmail,
     ssoLogin,
@@ -34,7 +36,7 @@ const intl = createIntl({
 const serverUrl = 'baseHandler.test.com';
 let operator: ServerDataOperator;
 
-const user1 = {id: 'userid1', username: 'user1', email: 'user1@mattermost.com', roles: ''} as UserProfile;
+const user1 = TestHelper.fakeUser({id: 'userid1', username: 'user1', email: 'user1@mattermost.com', roles: ''});
 
 const session1 = {id: 'sessionid1', user_id: user1.id, device_id: 'deviceid', props: {csrf: 'csrfid'}} as Session;
 
@@ -44,6 +46,7 @@ const throwFunc = () => {
 
 const mockClient = {
     login: jest.fn(() => user1),
+    loginByIntune: jest.fn().mockResolvedValue(user1),
     setCSRFToken: jest.fn(),
     setClientCredentials: jest.fn(),
     getClientConfigOld: jest.fn(() => ({})),
@@ -488,5 +491,169 @@ describe('logout', () => {
             expect(mockFormatMessage).not.toHaveBeenCalled();
             expect(mockAlert).not.toHaveBeenCalled();
         }
+    });
+});
+
+describe('nativeEntraLogin', () => {
+    const serverDisplayName = 'Test Server';
+    const serverIdentifier = 'test-server-id';
+    const intuneScope = 'api://test-scope/.default';
+
+    const mockTokens = {
+        accessToken: 'mock-access-token',
+        idToken: 'mock-id-token',
+        identity: {
+            upn: 'test@example.com',
+            tid: 'tenant-id',
+            oid: 'object-id',
+        },
+    };
+
+    let IntuneManager: any;
+
+    beforeEach(() => {
+        // Get the mocked IntuneManager
+        IntuneManager = require('@managers/intune_manager').default;
+
+        // Reset all mocks
+        jest.clearAllMocks();
+
+        // Set up default implementations
+        IntuneManager.login.mockResolvedValue(mockTokens);
+        IntuneManager.enrollServer.mockResolvedValue(undefined);
+        IntuneManager.isManagedServer.mockResolvedValue(false);
+
+        mockClient.loginByIntune.mockImplementation(() => Promise.resolve(user1));
+        mockGetCSRFFromCookie.mockImplementation(() => Promise.resolve('csrfid'));
+    });
+
+    it('should successfully login on first try without enrollment', async () => {
+        IntuneManager.isManagedServer.mockResolvedValue(false);
+
+        const result = await nativeEntraLogin(serverUrl, serverDisplayName, serverIdentifier, intuneScope);
+
+        expect(result.failed).toBe(false);
+        expect(IntuneManager.login).toHaveBeenCalledWith(serverUrl, [intuneScope]);
+        expect(mockClient.loginByIntune).toHaveBeenCalledWith(mockTokens.accessToken, expect.any(String));
+        expect(mockClient.setCSRFToken).toHaveBeenCalledWith('csrfid');
+        expect(IntuneManager.enrollServer).toHaveBeenCalledWith(serverUrl, mockTokens.identity);
+    });
+
+    it('should handle 401 token expiration and retry with refreshed token', async () => {
+        const refreshedTokens = {
+            ...mockTokens,
+            accessToken: 'refreshed-access-token',
+        };
+
+        mockClient.loginByIntune.mockRejectedValueOnce({status_code: 401} as never).mockResolvedValueOnce(user1);
+        IntuneManager.login.mockResolvedValueOnce(mockTokens).mockResolvedValueOnce(refreshedTokens);
+
+        const result = await nativeEntraLogin(serverUrl, serverDisplayName, serverIdentifier, intuneScope);
+
+        expect(result.failed).toBe(false);
+        expect(IntuneManager.login).toHaveBeenCalledTimes(2);
+        expect(mockClient.loginByIntune).toHaveBeenCalledTimes(2);
+        expect(mockClient.loginByIntune).toHaveBeenNthCalledWith(2, refreshedTokens.accessToken, expect.any(String));
+    });
+
+    it('should handle 412 MAM enrollment required', async () => {
+        mockClient.loginByIntune.mockRejectedValueOnce({status_code: 412} as never).mockResolvedValueOnce(user1);
+
+        const result = await nativeEntraLogin(serverUrl, serverDisplayName, serverIdentifier, intuneScope);
+
+        expect(result.failed).toBe(false);
+        expect(IntuneManager.enrollServer).toHaveBeenCalledWith(serverUrl, mockTokens.identity);
+        expect(mockClient.loginByIntune).toHaveBeenCalledTimes(2);
+    });
+
+    it('should handle 400 LDAP user missing error', async () => {
+        const error = {
+            status_code: 400,
+            server_error_id: 'ent.intune.login.ldap_user_missing.app_error',
+        };
+        mockClient.loginByIntune.mockRejectedValueOnce(error);
+
+        const result = await nativeEntraLogin(serverUrl, serverDisplayName, serverIdentifier, intuneScope);
+
+        expect(result.failed).toBe(true);
+        expect(result.error).toEqual(error);
+    });
+
+    it('should handle 409 user deactivated error', async () => {
+        const error = {status_code: 409};
+        mockClient.loginByIntune.mockRejectedValueOnce(error);
+
+        const result = await nativeEntraLogin(serverUrl, serverDisplayName, serverIdentifier, intuneScope);
+
+        expect(result.failed).toBe(true);
+        expect(result.error).toEqual(error);
+    });
+
+    it('should handle 428 account creation blocked error', async () => {
+        const error = {
+            status_code: 428,
+            server_error_id: 'ent.intune.login.account_creation_blocked.app_error',
+        };
+        mockClient.loginByIntune.mockRejectedValueOnce(error);
+
+        const result = await nativeEntraLogin(serverUrl, serverDisplayName, serverIdentifier, intuneScope);
+
+        expect(result.failed).toBe(true);
+        expect(result.error).toEqual(error);
+    });
+
+    it('should handle MSAL login failure', async () => {
+        const msalError = {
+            domain: 'MSALErrorDomain',
+            code: -50005,
+            message: 'User canceled authentication',
+        };
+        IntuneManager.login.mockRejectedValueOnce(msalError);
+
+        const result = await nativeEntraLogin(serverUrl, serverDisplayName, serverIdentifier, intuneScope);
+
+        expect(result.failed).toBe(true);
+        expect(result.error).toEqual(msalError);
+    });
+
+    it('should enroll in MAM after successful login if not already managed', async () => {
+        IntuneManager.isManagedServer.mockResolvedValue(false);
+
+        const result = await nativeEntraLogin(serverUrl, serverDisplayName, serverIdentifier, intuneScope);
+
+        expect(result.failed).toBe(false);
+        expect(IntuneManager.isManagedServer).toHaveBeenCalledWith(serverUrl);
+        expect(IntuneManager.enrollServer).toHaveBeenCalledWith(serverUrl, mockTokens.identity);
+    });
+
+    it('should skip MAM enrollment if already managed', async () => {
+        IntuneManager.isManagedServer.mockResolvedValue(true);
+
+        const result = await nativeEntraLogin(serverUrl, serverDisplayName, serverIdentifier, intuneScope);
+
+        expect(result.failed).toBe(false);
+        expect(IntuneManager.isManagedServer).toHaveBeenCalledWith(serverUrl);
+        expect(IntuneManager.enrollServer).not.toHaveBeenCalled();
+    });
+
+    it('should fail if post-login MAM enrollment fails', async () => {
+        const enrollmentError = new Error('Enrollment failed');
+        IntuneManager.isManagedServer.mockResolvedValue(false);
+        IntuneManager.enrollServer.mockRejectedValueOnce(enrollmentError);
+
+        const result = await nativeEntraLogin(serverUrl, serverDisplayName, serverIdentifier, intuneScope);
+
+        expect(result.failed).toBe(true);
+        expect(result.error).toEqual(enrollmentError);
+    });
+
+    it('should handle generic server errors', async () => {
+        const error = {status_code: 500, message: 'Internal server error'};
+        mockClient.loginByIntune.mockRejectedValueOnce(error);
+
+        const result = await nativeEntraLogin(serverUrl, serverDisplayName, serverIdentifier, intuneScope);
+
+        expect(result.failed).toBe(true);
+        expect(result.error).toEqual(error);
     });
 });

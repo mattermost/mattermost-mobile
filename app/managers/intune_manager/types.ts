@@ -136,6 +136,9 @@ export type IntuneSpec = {
     // Unenrollment
     deregisterAndUnenroll(serverUrl: string, doWipe: boolean): Promise<void>;
 
+    // Cleanup after wipe (removes storage and MSAL account)
+    cleanupAfterWipe(oid: string): Promise<void>;
+
     // Identity Switching
     setCurrentIdentity(serverUrl: string | null): Promise<void>;
 

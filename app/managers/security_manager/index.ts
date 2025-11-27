@@ -10,7 +10,7 @@ import {AppState, DeviceEventEmitter, type AppStateStatus, type EventSubscriptio
 import {terminateSession} from '@actions/local/session';
 import {getCurrentUserLocale} from '@actions/local/user';
 import {logout} from '@actions/remote/session';
-import {Events, Sso} from '@constants';
+import {Events} from '@constants';
 import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 import {getServerCredentials} from '@init/credentials';
@@ -27,7 +27,7 @@ import {
     type IntuneWipeRequestedEvent,
 } from '@managers/intune_manager/types';
 import {queryAllActiveServers} from '@queries/app/servers';
-import {getConfig, getSecurityConfig} from '@queries/servers/system';
+import {getConfig, getConfigValue, getSecurityConfig} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
 import {
     messages,
@@ -308,7 +308,7 @@ class SecurityManagerSingleton {
      * Handles selective wipe requests from Intune SDK
      */
     onWipeRequested = async (event: IntuneWipeRequestedEvent) => {
-        const {serverUrls} = event;
+        const {oid, serverUrls} = event;
 
         logDebug('SecurityManager: Wipe requested', {serverCount: serverUrls.length});
 
@@ -321,6 +321,7 @@ class SecurityManagerSingleton {
             const credentials = await getServerCredentials(serverUrl);
             if (credentials) {
                 await this.performSelectiveWipe(serverUrl, true);
+                this.removeServer(serverUrl);
             }
         }
 
@@ -332,6 +333,9 @@ class SecurityManagerSingleton {
                 this.removeServer(this.activeServer);
             }
         }
+
+        // Cleanup storage and MSAL account after all wipes complete
+        await IntuneManager.cleanupAfterWipe(oid);
     };
 
     /**
@@ -543,9 +547,10 @@ class SecurityManagerSingleton {
         // Get server config and current user
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const currentUser = await getCurrentUser(database);
+        const authService = await getConfigValue(database, 'IntuneAuthService');
 
         // Check if current user is not using SSO entra login, skip enrollment
-        if (currentUser && currentUser.authService.toLocaleLowerCase() !== Sso.OFFICE365.toLocaleLowerCase()) {
+        if (currentUser && currentUser.authService.toLocaleLowerCase() !== authService?.toLocaleLowerCase()) {
             return true;
         }
 

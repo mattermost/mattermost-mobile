@@ -17,6 +17,7 @@ enum KeychainError: Error {
     case IdentityNotFound
     case InvalidServerUrl(_ serverUrl: String)
     case InvalidHost(_ host: String)
+    case InvalidString(_ string: String)
     case FailedSecIdentityCopyCertificate(_ status: OSStatus)
     case FailedSecItemCopyMatching(_ status: OSStatus)
     case FailedSecItemAdd(_ status: OSStatus)
@@ -31,6 +32,7 @@ extension KeychainError: LocalizedError {
         case .IdentityNotFound: return -101
         case .InvalidServerUrl(_): return -106
         case .InvalidHost(_): return -107
+        case .InvalidString(_): return -108
         case .FailedSecIdentityCopyCertificate(status: let status): return status
         case .FailedSecItemCopyMatching(status: let status): return status
         case .FailedSecItemAdd(status: let status): return status
@@ -49,6 +51,8 @@ extension KeychainError: LocalizedError {
             return "Invalid server URL: \(serverUrl)"
         case .InvalidHost(host: let host):
             return "Invalid host: \(host)"
+        case .InvalidString(string: let string):
+            return "Failed to encode string as UTF-8: \(string)"
         case .FailedSecIdentityCopyCertificate(status: let status):
             return "Failed to copy certificate: iOS code \(status)"
         case .FailedSecItemCopyMatching(status: let status):
@@ -179,11 +183,11 @@ public class Keychain: NSObject {
 
     private func buildGenericPasswordAttributes(for service: String, account: String) throws -> [CFString: Any] {
         guard let serviceData = service.data(using: .utf8) else {
-            throw KeychainError.InvalidServerUrl(service)
+            throw KeychainError.InvalidString(service)
         }
 
         guard let accountData = account.data(using: .utf8) else {
-            throw KeychainError.InvalidServerUrl(account)
+            throw KeychainError.InvalidString(account)
         }
 
         var attributes: [CFString: Any] = [
@@ -199,19 +203,39 @@ public class Keychain: NSObject {
         return attributes
     }
 
-    // MARK: - Write Operations
+    // MARK: - Generic Password Operations
+
+    public func getGenericPassword(forService service: String, account: String) throws -> String? {
+        var attributes = try buildGenericPasswordAttributes(for: service, account: account)
+        attributes[kSecMatchLimit] = kSecMatchLimitOne
+        attributes[kSecReturnData] = kCFBooleanTrue
+
+        var result: AnyObject?
+        let status = SecItemCopyMatching(attributes as CFDictionary, &result)
+        if status == errSecSuccess,
+           let data = result as? Data,
+           let password = String(data: data, encoding: .utf8) {
+            return password
+        }
+
+        if status == errSecItemNotFound {
+            return nil
+        }
+
+        throw KeychainError.FailedSecItemCopyMatching(status)
+    }
 
     public func setGenericPassword(_ value: String, forService service: String, account: String) throws {
         guard let serviceData = service.data(using: .utf8) else {
-            throw KeychainError.InvalidServerUrl(service)
+            throw KeychainError.InvalidString(service)
         }
 
         guard let accountData = account.data(using: .utf8) else {
-            throw KeychainError.InvalidServerUrl(account)
+            throw KeychainError.InvalidString(account)
         }
 
         guard let valueData = value.data(using: .utf8) else {
-            throw KeychainError.InvalidServerUrl(value)
+            throw KeychainError.InvalidString(value)
         }
 
         var query: [CFString: Any] = [
@@ -243,26 +267,6 @@ public class Keychain: NSObject {
         } else if updateStatus != errSecSuccess {
             throw KeychainError.FailedSecItemUpdate(updateStatus)
         }
-    }
-
-    public func getGenericPassword(forService service: String, account: String) throws -> String? {
-        var attributes = try buildGenericPasswordAttributes(for: service, account: account)
-        attributes[kSecMatchLimit] = kSecMatchLimitOne
-        attributes[kSecReturnData] = kCFBooleanTrue
-
-        var result: AnyObject?
-        let status = SecItemCopyMatching(attributes as CFDictionary, &result)
-        if status == errSecSuccess,
-           let data = result as? Data,
-           let password = String(data: data, encoding: .utf8) {
-            return password
-        }
-
-        if status == errSecItemNotFound {
-            return nil
-        }
-
-        throw KeychainError.FailedSecItemCopyMatching(status)
     }
 
     public func removeGenericPassword(forService service: String, account: String) throws {

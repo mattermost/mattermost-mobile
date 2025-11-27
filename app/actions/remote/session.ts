@@ -353,46 +353,52 @@ export const nativeEntraLogin = async (serverUrl: string, serverDisplayName: str
         const tokens = await IntuneManager.login(serverUrl, [intuneScope]);
         const {accessToken, identity} = tokens;
 
-        // Step 2: POST accessToken to /oauth/entra to exchange for session token
+        // Step 2: POST accessToken to /oauth/intune to exchange for session token
         const client = NetworkManager.getClient(serverUrl);
         const deviceToken = await getDeviceToken();
         let csrfToken: string;
         let userData: UserProfile | undefined;
 
         try {
-            await client.loginWithEntra(accessToken, deviceToken);
+            await client.loginByIntune(accessToken, deviceToken);
             csrfToken = await getCSRFFromCookie(serverUrl);
         } catch (error) {
-            // Handle 401: Invalid/expired token - try refreshing
-            if (isErrorWithStatusCode(error) && error.status_code === 401) {
-                logDebug('nativeEntraLogin: Token expired, retrying');
-                const refreshedTokens = await IntuneManager.login(serverUrl, [intuneScope]);
-                userData = await client.loginWithEntra(refreshedTokens.accessToken, deviceToken);
-                csrfToken = await getCSRFFromCookie(serverUrl);
-            } else if (isErrorWithStatusCode(error) && error.status_code === 409) {
-                // Handle 409: User locked/disabled
-                throw new Error('Your account is locked or disabled. Please contact your administrator.');
-            } else if (isErrorWithStatusCode(error) && error.status_code === 412) {
-                // Handle 412: MAM enrollment required
-                logDebug('nativeEntraLogin: MAM enrollment required by server');
-                await IntuneManager.enrollServer(serverUrl, identity);
-
-                // Retry login after enrollment
-                userData = await client.loginWithEntra(accessToken, deviceToken);
-                csrfToken = await getCSRFFromCookie(serverUrl);
+            if (isErrorWithStatusCode(error)) {
+                switch (error.status_code) {
+                    case 401: {
+                        // Token expired/invalid - try refreshing
+                        logDebug('nativeEntraLogin: Token expired, retrying');
+                        const refreshedTokens = await IntuneManager.login(serverUrl, [intuneScope]);
+                        userData = await client.loginByIntune(refreshedTokens.accessToken, deviceToken);
+                        csrfToken = await getCSRFFromCookie(serverUrl);
+                        break;
+                    }
+                    case 412: {
+                        // MAM enrollment required
+                        logDebug('nativeEntraLogin: MAM enrollment required by server');
+                        await IntuneManager.enrollServer(serverUrl, identity);
+                        userData = await client.loginByIntune(accessToken, deviceToken);
+                        csrfToken = await getCSRFFromCookie(serverUrl);
+                        break;
+                    }
+                    default:
+                        // 400: LDAP user missing
+                        // 409: User locked/disabled
+                        // 428: Account creation blocked
+                        // All other errors - throw for i18n handling
+                        throw error;
+                }
             } else {
                 throw error;
             }
         }
 
-        // Step 3: Set credentials on client
-        // client.setClientCredentials(sessionToken, preauthSecret);
         client.setCSRFToken(csrfToken);
 
-        // Step 4: Complete SSO login flow (sets up database, etc.)
+        // Step 3: Complete SSO login flow (sets up database, etc.)
         const result = await completeSSOLogin(serverUrl, serverDisplayName, serverIdentifier, client, userData, true);
 
-        // Step 5: Enroll in MAM if not already enrolled (if 412 was not triggered)
+        // Step 4: Enroll in MAM if not already enrolled (if 412 was not triggered)
         if (result && !result.failed) {
             try {
                 const isManaged = await IntuneManager.isManagedServer(serverUrl);
