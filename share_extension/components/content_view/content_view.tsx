@@ -12,6 +12,7 @@ import Attachments from './attachments';
 import LinkPreview from './link_preview';
 import Message from './message';
 import Options from './options';
+import SaveDraftButton from './save_draft_button';
 
 import type {Database} from '@nozbe/watermelondb';
 
@@ -27,6 +28,7 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
         flex: 1,
     },
     content: {
+        flex: 1,
         paddingTop: 0,
     },
     divider: {
@@ -81,6 +83,7 @@ const ContentView = ({database, currentChannelId, currentUserId, theme}: Props) 
                 />
                 <View style={styles.divider}/>
                 <Message theme={theme}/>
+                <SaveDraftButton theme={theme}/>
             </KeyboardAwareScrollView>
         </View>
     );
