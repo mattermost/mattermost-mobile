@@ -15,12 +15,14 @@ import {getDeviceToken} from '@queries/app/global';
 import {getServerDisplayName} from '@queries/app/servers';
 import {getCurrentUserId, getExpiredSession} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
+import {resetToHome} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {getFullErrorMessage, isErrorWithStatusCode, isErrorWithUrl} from '@utils/errors';
 import {logWarning, logError, logDebug} from '@utils/log';
 import {scheduleExpiredNotification} from '@utils/notification';
 import {type SAMLChallenge} from '@utils/saml_challenge';
 import {getCSRFFromCookie} from '@utils/security';
+import {getServerUrlAfterRedirect} from '@utils/url';
 
 import {loginEntry} from './entry';
 
@@ -433,3 +435,74 @@ export async function findSession(serverUrl: string, sessions: Session[]) {
     // At this point we did not find the session
     return undefined;
 }
+
+export const getUserLoginType = async (serverUrl: string, loginId: string) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        return await client.getUserLoginType(loginId);
+    } catch (error) {
+        logError('error on getUserLoginType', getFullErrorMessage(error));
+        return {error};
+    }
+};
+
+export const magicLinkLogin = async (serverUrl: string, token: string): Promise<LoginActionResponse> => {
+    const httpsHeadRequest = await getServerUrlAfterRedirect(serverUrl);
+    let serverUrlToUse;
+    if (httpsHeadRequest.error || !httpsHeadRequest.url) {
+        // Retry with HTTP
+        const httpHeadRequest = await getServerUrlAfterRedirect(serverUrl, true);
+        if (httpHeadRequest.error || !httpHeadRequest.url) {
+            return {error: httpsHeadRequest.error || httpHeadRequest.error || 'empty server url', failed: true};
+        }
+        serverUrlToUse = httpHeadRequest.url;
+    } else {
+        serverUrlToUse = httpsHeadRequest.url;
+    }
+
+    const database = DatabaseManager.appDatabase?.database;
+    if (!database) {
+        return {error: 'App database not found', failed: true};
+    }
+
+    try {
+        const client = await NetworkManager.createClient(serverUrlToUse, undefined);
+        const config = await client.getClientConfigOld();
+        const deviceId = await getDeviceToken();
+        const serverDisplayName = config.SiteName;
+
+        const user = await client.loginByMagicLinkLogin(token, deviceId);
+
+        const server = await DatabaseManager.createServerDatabase({
+            config: {
+                dbName: serverUrlToUse,
+                serverUrl: serverUrlToUse,
+                identifier: config.DiagnosticId,
+                displayName: serverDisplayName,
+            },
+        });
+
+        await server?.operator.handleUsers({users: [user], prepareRecordsOnly: false});
+        await server?.operator.handleSystem({
+            systems: [{
+                id: Database.SYSTEM_IDENTIFIERS.CURRENT_USER_ID,
+                value: user.id,
+            }],
+            prepareRecordsOnly: false,
+        });
+        const csrfToken = await getCSRFFromCookie(serverUrlToUse);
+        client.setCSRFToken(csrfToken);
+    } catch (error) {
+        return {error, failed: true};
+    }
+
+    try {
+        await addPushProxyVerificationStateFromLogin(serverUrlToUse);
+        const {error} = await loginEntry({serverUrl: serverUrlToUse});
+        await DatabaseManager.setActiveServerDatabase(serverUrlToUse);
+        await resetToHome();
+        return {error, failed: false};
+    } catch (error) {
+        return {error, failed: false};
+    }
+};

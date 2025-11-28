@@ -753,6 +753,17 @@ describe('renamePlaybookRun', () => {
         expect(localRenamePlaybookRun).not.toHaveBeenCalled();
     });
 
+    it('should handle local DB update failure', async () => {
+        mockClient.patchPlaybookRun.mockResolvedValueOnce(undefined);
+        jest.mocked(localRenamePlaybookRun).mockResolvedValueOnce({error: 'DB error'});
+
+        const result = await renamePlaybookRun(serverUrl, playbookRunId, newName);
+        expect(result).toBeDefined();
+        expect(result.error).toBeDefined();
+        expect(mockClient.patchPlaybookRun).toHaveBeenCalledWith(playbookRunId, {name: newName});
+        expect(localRenamePlaybookRun).toHaveBeenCalledWith(serverUrl, playbookRunId, newName);
+    });
+
     it('should rename playbook run successfully', async () => {
         mockClient.patchPlaybookRun.mockResolvedValueOnce(undefined);
 

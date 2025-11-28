@@ -13,6 +13,7 @@ export const PLAYBOOK_SELECT_USER = 'PlaybookSelectUser';
 export const PLAYBOOKS_SELECT_DATE = 'PlaybooksSelectDate';
 export const PLAYBOOKS_SELECT_PLAYBOOK = 'PlaybooksSelectPlaybook';
 export const PLAYBOOKS_START_A_RUN = 'PlaybooksStartARun';
+export const PLAYBOOKS_CREATE_QUICK_CHECKLIST = 'PlaybooksCreateQuickChecklist';
 
 export default {
     PLAYBOOKS_RUNS,
@@ -27,4 +28,5 @@ export default {
     PLAYBOOKS_SELECT_DATE,
     PLAYBOOKS_SELECT_PLAYBOOK,
     PLAYBOOKS_START_A_RUN,
+    PLAYBOOKS_CREATE_QUICK_CHECKLIST,
 } as const;

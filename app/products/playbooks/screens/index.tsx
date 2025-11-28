@@ -30,6 +30,8 @@ export function loadPlaybooksScreen(screenName: string | number) {
             return withServerDatabase(require('@playbooks/screens/select_playbook').default);
         case Screens.PLAYBOOKS_START_A_RUN:
             return withServerDatabase(require('@playbooks/screens/start_a_run').default);
+        case Screens.PLAYBOOKS_CREATE_QUICK_CHECKLIST:
+            return withServerDatabase(require('@playbooks/screens/create_quick_checklist').default);
         default:
             return undefined;
     }
