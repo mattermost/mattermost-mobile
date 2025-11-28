@@ -308,4 +308,13 @@ describe('ClientPosts', () => {
             {method: 'post'},
         );
     });
+
+    test('revealBoRPost', async () => {
+        await client.revealBoRPost('post_id');
+
+        expect(client.doFetch).toHaveBeenCalledWith(
+            `${client.getPostRoute('post_id')}/reveal`,
+            {method: 'get'},
+        );
+    });
 });

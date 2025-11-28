@@ -26,6 +26,7 @@ export const SNACK_BAR_TYPE = keyMirror({
     RESCHEDULED_POST: null,
     DELETE_SCHEDULED_POST_ERROR: null,
     PLAYBOOK_ERROR: null,
+    BOR_POST_EXPIRED: null,
 });
 
 export const MESSAGE_TYPE = {
@@ -101,6 +102,10 @@ const messages = defineMessages({
     PLAYBOOK_ERROR: {
         id: 'snack.bar.playbook.error',
         defaultMessage: 'Unable to perform action. Please try again later.',
+    },
+    BOR_POST_EXPIRED: {
+        id: 'snack.bar.bor_post_expired.error',
+        defaultMessage: 'This burn-on-read post has expired and can no longer be revealed.',
     },
 });
 
@@ -180,6 +185,12 @@ export const SNACK_BAR_CONFIG: Record<string, SnackBarConfig> = {
     },
     PLAYBOOK_ERROR: {
         message: messages.PLAYBOOK_ERROR,
+        iconName: 'alert-outline',
+        canUndo: false,
+        type: MESSAGE_TYPE.ERROR,
+    },
+    BOR_POST_EXPIRED: {
+        message: messages.BOR_POST_EXPIRED,
         iconName: 'alert-outline',
         canUndo: false,
         type: MESSAGE_TYPE.ERROR,

@@ -55,3 +55,15 @@ export function getReadableTimestamp(timestamp: number, timeZone: string, isMili
 
     return date.toLocaleString(currentUserLocale, options);
 }
+
+export function formatTime(seconds: number) {
+    const h = Math.max(Math.floor(seconds / 3600), 0);
+    const m = Math.max(Math.floor((seconds % 3600) / 60), 0);
+    const s = Math.max(Math.floor(seconds % 60), 0);
+
+    const hh = h > 0 ? `${h}:` : '';
+    const mm = h > 0 ? `${m.toString().padStart(2, '0')}` : `${m}`;
+    const ss = s.toString().padStart(2, '0');
+
+    return `${hh}${mm}:${ss}`;
+}

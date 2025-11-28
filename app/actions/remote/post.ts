@@ -958,6 +958,45 @@ export const editPost = async (serverUrl: string, postId: string, postMessage: s
     }
 };
 
+export const revealBoRPost = async (serverUrl: string, postId: string) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        const post = await getPostById(database, postId);
+        if (!post) {
+            return {post: undefined};
+        }
+
+        const revealedPost = await client.revealBoRPost(postId);
+        operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [revealedPost.id],
+            posts: [revealedPost],
+            prepareRecordsOnly: false,
+        });
+
+        // await database.write(async () => {
+        //     await post.update((p) => {
+        //         p.message = revealedPost.message;
+        //         p.metadata = revealedPost.metadata;
+        //
+        //         if (revealedPost.props) {
+        //             p.props = revealedPost.props;
+        //         }
+        //
+        //         p.metadata.files = revealedPost.metadata.files;
+        //     });
+        // });
+
+        return {post};
+    } catch (error) {
+        logDebug('error on revealBoRPost', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
 export async function fetchSavedPosts(serverUrl: string, teamId?: string, channelId?: string, page?: number, perPage?: number) {
     try {
         const client = NetworkManager.getClient(serverUrl);

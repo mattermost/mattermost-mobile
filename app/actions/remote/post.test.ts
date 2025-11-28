@@ -19,6 +19,7 @@ import {
     editPost,
     acknowledgePost,
     unacknowledgePost,
+    revealBoRPost,
     fetchPostsForChannel,
     fetchPostsForUnreadChannels,
     fetchPosts,
@@ -100,6 +101,17 @@ const mockClient = {
     patchPost: jest.fn((message: string, postId: string) => ({...post1, id: postId, message})),
     acknowledgePost: jest.fn(() => ({acknowledged_at: acknowledgedTime})),
     unacknowledgePost: jest.fn(),
+    revealBoRPost: jest.fn((_postId: string) => ({
+        ...post1,
+        id: _postId,
+        message: 'Revealed message content',
+        metadata: {
+            files: [{id: 'file1', name: 'revealed-file.pdf'}],
+        },
+        props: {
+            revealed: true,
+        },
+    })),
     getPosts: genericGetPostsMock,
     getPostsBefore: genericGetPostsMock,
     getPostsSince: jest.fn((_channelId: string, since: number) => ({posts: {[post1.id]: {...post1, channel_id: _channelId, create_at: since + 1}, [post2.id]: {...post2, channel_id: _channelId, create_at: since + 2}}, order: [post1.id, post2.id]})),
@@ -1110,5 +1122,56 @@ describe('get posts', () => {
         expect(result.error).toBeUndefined();
         expect(result.posts).toBeTruthy();
         expect(result.posts?.length).toBe(2);
+    });
+});
+
+describe('revealBoRPost', () => {
+    it('revealBoRPost - handle database not found', async () => {
+        const result = await revealBoRPost('foo', '');
+        expect(result).toBeDefined();
+        expect(result.error).toBeTruthy();
+    });
+
+    it('revealBoRPost - handle client error', async () => {
+        jest.spyOn(NetworkManager, 'getClient').mockImplementationOnce(throwFunc);
+
+        const result = await revealBoRPost(serverUrl, post1.id);
+        expect(result).toBeDefined();
+        expect(result.error).toBeTruthy();
+    });
+
+    it('revealBoRPost - handle error', async () => {
+        mockClient.revealBoRPost.mockImplementationOnce(jest.fn(throwFunc));
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [post1.id],
+            posts: [{...post1, props: {failed: false}}],
+            prepareRecordsOnly: false,
+        });
+
+        const result = await revealBoRPost(serverUrl, post1.id);
+        expect(result).toBeDefined();
+        expect(result.error).toBeTruthy();
+    });
+
+    it('revealBoRPost - base case', async () => {
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [post1.id],
+            posts: [post1],
+            prepareRecordsOnly: false,
+        });
+
+        const result = await revealBoRPost(serverUrl, post1.id);
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.post).toBeDefined();
+    });
+
+    it('revealBoRPost - post not found', async () => {
+        const result = await revealBoRPost(serverUrl, 'nonexistent-post-id');
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.post).toBeUndefined();
     });
 });
