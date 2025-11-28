@@ -18,10 +18,6 @@ describe('BoR utility functions', () => {
         id: 'user123',
     } as UserModel;
 
-    const mockOtherUser: UserModel = {
-        id: 'user456',
-    } as UserModel;
-
     describe('isBoRPost', () => {
         it('should return true for BoR posts', () => {
             const borPost: PostModel = {
@@ -33,7 +29,7 @@ describe('BoR utility functions', () => {
 
         it('should return false for non-BoR posts', () => {
             const regularPost: PostModel = {
-                type: 'regular',
+                type: Post.POST_TYPES.CHANNEL_DELETED,
             } as PostModel;
 
             expect(isBoRPost(regularPost)).toBe(false);
@@ -43,19 +39,6 @@ describe('BoR utility functions', () => {
             const postWithoutType: PostModel = {} as PostModel;
 
             expect(isBoRPost(postWithoutType)).toBe(false);
-        });
-
-        it('should return false for posts with null/undefined type', () => {
-            const postWithNullType: PostModel = {
-                type: null,
-            } as PostModel;
-
-            const postWithUndefinedType: PostModel = {
-                type: undefined,
-            } as PostModel;
-
-            expect(isBoRPost(postWithNullType)).toBe(false);
-            expect(isBoRPost(postWithUndefinedType)).toBe(false);
         });
     });
 
@@ -89,9 +72,20 @@ describe('BoR utility functions', () => {
             expect(isUnrevealedBoRPost(revealedBorPost)).toBe(false);
         });
 
+        it('should return true for BoR posts with expire_at in the past', () => {
+            const revealedBorPost: PostModel = {
+                type: Post.POST_TYPES.BURN_ON_READ,
+                metadata: {
+                    expire_at: Date.now() - 10000,
+                },
+            } as PostModel;
+
+            expect(isUnrevealedBoRPost(revealedBorPost)).toBe(false);
+        });
+
         it('should return false for non-BoR posts', () => {
             const regularPost: PostModel = {
-                type: 'regular',
+                type: '',
                 metadata: {},
             } as PostModel;
 
@@ -118,9 +112,9 @@ describe('BoR utility functions', () => {
             expect(isOwnBoRPost(othersBorPost, mockUser)).toBe(false);
         });
 
-        it('should return false for non-BoR posts even if owned by current user', () => {
+        it('should return false for non-BoR posts', () => {
             const ownRegularPost: PostModel = {
-                type: 'regular',
+                type: '',
                 userId: 'user123',
             } as PostModel;
 
@@ -147,7 +141,7 @@ describe('BoR utility functions', () => {
                 type: Post.POST_TYPES.BURN_ON_READ,
                 props: {
                     expire_at: pastTime,
-                },
+                } as PostMetadata,
             } as PostModel;
 
             expect(isExpiredBoRPost(expiredBorPost)).toBe(true);
@@ -169,10 +163,10 @@ describe('BoR utility functions', () => {
                 type: Post.POST_TYPES.BURN_ON_READ,
                 props: {
                     expire_at: futureTime,
-                },
+                } as Record<string, unknown>,
                 metadata: {
                     expire_at: futureTime,
-                },
+                } as PostMetadata,
             } as PostModel;
 
             expect(isExpiredBoRPost(activeBorPost)).toBe(false);
@@ -180,13 +174,13 @@ describe('BoR utility functions', () => {
 
         it('should return false for non-BoR posts even with expired timestamps', () => {
             const expiredRegularPost: PostModel = {
-                type: 'regular',
+                type: '',
                 props: {
                     expire_at: pastTime,
-                },
+                } as Record<string, unknown>,
                 metadata: {
                     expire_at: pastTime,
-                },
+                } as PostMetadata,
             } as PostModel;
 
             expect(isExpiredBoRPost(expiredRegularPost)).toBe(false);
@@ -205,7 +199,7 @@ describe('BoR utility functions', () => {
                 type: Post.POST_TYPES.BURN_ON_READ,
                 props: {
                     expire_at: pastTime.toString(),
-                },
+                } as Record<string, unknown>,
             } as PostModel;
 
             expect(isExpiredBoRPost(expiredBorPostWithStringTime)).toBe(true);

@@ -13,7 +13,7 @@ import {queryReactionsForPost} from '@queries/servers/reaction';
 import {observeCanManageChannelMembers, observePermissionForPost} from '@queries/servers/role';
 import {observeThreadById} from '@queries/servers/thread';
 import {observeCurrentUser} from '@queries/servers/user';
-import {isBoRPost} from '@utils/index';
+import {isBoRPost} from '@utils/bor';
 import {areConsecutivePosts, isPostEphemeral} from '@utils/post';
 
 import Post from './post';

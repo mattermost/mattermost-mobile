@@ -20,7 +20,7 @@ import {
     getLastBoRPostCleanupRun,
 } from '@queries/servers/system';
 import PostModel from '@typings/database/models/servers/post';
-import {isExpiredBoRPost} from '@utils/index';
+import {isExpiredBoRPost} from '@utils/bor';
 import {logError} from '@utils/log';
 
 import {deletePosts} from './post';
