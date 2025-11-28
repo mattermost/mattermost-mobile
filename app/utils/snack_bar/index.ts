@@ -71,7 +71,7 @@ export const showPlaybookErrorSnackbar = () => {
     });
 };
 
-export const showBoRPostExpiredSnackbar = (message?: string) => {
+export const showBoRPostErrorSnackbar = (message?: string) => {
     return showSnackBar({
         barType: SNACK_BAR_TYPE.BOR_POST_EXPIRED,
         customMessage: message,

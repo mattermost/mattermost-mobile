@@ -33,6 +33,8 @@ import type PostModel from '@typings/database/models/servers/post';
 import type PostsInChannelModel from '@typings/database/models/servers/posts_in_channel';
 import type PostsInThreadModel from '@typings/database/models/servers/posts_in_thread';
 import type ReactionModel from '@typings/database/models/servers/reaction';
+import {PostTypes} from "@constants/post";
+import {isUnrevealedBoRPost} from "@utils/bor";
 
 const {
     DRAFT,
@@ -364,7 +366,16 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
             deleteRawValues: pendingPostsToDelete,
             tableName,
             fieldName: 'id',
-            shouldUpdate: (e: PostModel, n: Post) => n.update_at > e.updateAt,
+            shouldUpdate: (e: PostModel, n: Post) => {
+                const bothBoRPost = e.type === PostTypes.BURN_ON_READ && n.type === PostTypes.BURN_ON_READ;
+                const postBecameRevealed = isUnrevealedBoRPost(e) && !isUnrevealedBoRPost(n);
+
+                if (bothBoRPost && postBecameRevealed) {
+                    return true;
+                }
+
+                return n.update_at > e.updateAt;
+            },
         }));
 
         const preparedPosts = (await this.prepareRecords({

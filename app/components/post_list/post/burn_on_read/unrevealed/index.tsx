@@ -9,35 +9,21 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {PostModel} from '@database/models/server';
 import {getFullErrorMessage, getServerError} from '@utils/errors';
-import {showBoRPostExpiredSnackbar} from '@utils/snack_bar';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {showBoRPostErrorSnackbar} from '@utils/snack_bar';
 
 import {BOR_GLOBALLY_EXPIRED_POST_ERROR_CODE, BOR_POST_EXPIRED_FOR_USER_ERROR_CODE} from './constants';
-
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
-    buttonBackgroundStyle: {
-        backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
-        height: 56,
-        marginBottom: 8,
-    },
-    buttonTextStyle: {
-        color: changeOpacity(theme.centerChannelColor, 0.56),
-    },
-}));
-
 type Props = {
     post: PostModel;
 }
 
 export default function UnrevealedBurnOnReadPost({post}: Props) {
     const theme = useTheme();
-    const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
 
     const handleRevealPost = useCallback(async () => {
         const {error} = await revealBoRPost(serverUrl, post.id);
         if (error) {
-            showBoRPostExpiredSnackbar(getFullErrorMessage(error));
+            showBoRPostErrorSnackbar(getFullErrorMessage(error));
 
             const serverError = getServerError(error);
             if (serverError === BOR_POST_EXPIRED_FOR_USER_ERROR_CODE || serverError === BOR_GLOBALLY_EXPIRED_POST_ERROR_CODE) {
@@ -52,8 +38,8 @@ export default function UnrevealedBurnOnReadPost({post}: Props) {
             text={'View message'}
             iconName='eye-outline'
             theme={theme}
-            backgroundStyle={styles.buttonBackgroundStyle}
-            textStyle={styles.buttonTextStyle}
+            emphasis='tertiary'
+            size='lg'
             onPress={handleRevealPost}
         />
     );

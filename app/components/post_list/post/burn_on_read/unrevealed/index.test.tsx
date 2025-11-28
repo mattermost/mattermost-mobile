@@ -5,11 +5,13 @@ import {fireEvent, screen} from '@testing-library/react-native';
 import React, {act} from 'react';
 
 import {deletePost, revealBoRPost} from '@actions/remote/post';
-import {BOR_POST_EXPIRED_FOR_USER_ERROR_CODE} from '@components/post_list/post/burn_on_read/unrevealed/constants';
+import {
+    BOR_GLOBALLY_EXPIRED_POST_ERROR_CODE,
+    BOR_POST_EXPIRED_FOR_USER_ERROR_CODE
+} from '@components/post_list/post/burn_on_read/unrevealed/constants';
 import {PostModel} from '@database/models/server';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
-import TestHelper from '@test/test_helper';
-import {showBoRPostExpiredSnackbar} from '@utils/snack_bar';
+import {showBoRPostErrorSnackbar} from '@utils/snack_bar';
 
 import UnrevealedBurnOnReadPost from '.';
 
@@ -19,7 +21,7 @@ jest.mock('@actions/remote/post', () => ({
 }));
 
 jest.mock('@utils/snack_bar', () => ({
-    showBoRPostExpiredSnackbar: jest.fn(),
+    showBoRPostErrorSnackbar: jest.fn(),
 }));
 
 describe('UnrevealedBurnOnReadPost', () => {
@@ -51,7 +53,6 @@ describe('UnrevealedBurnOnReadPost', () => {
 
         await act(async () => {
             fireEvent.press(button);
-            await TestHelper.wait(0);
         });
 
         expect(revealBoRPost).toHaveBeenCalledWith('', 'post_id_123');
@@ -67,15 +68,14 @@ describe('UnrevealedBurnOnReadPost', () => {
 
         await act(async () => {
             fireEvent.press(button);
-            await TestHelper.wait(0);
         });
 
         expect(deletePost).not.toHaveBeenCalled();
-        expect(showBoRPostExpiredSnackbar).not.toHaveBeenCalled();
+        expect(showBoRPostErrorSnackbar).not.toHaveBeenCalled();
     });
 
-    test('should handle 400 error by showing snackbar and deleting post', async () => {
-        const error = {status_code: 400, server_error_id: BOR_POST_EXPIRED_FOR_USER_ERROR_CODE, message: 'Post has expired'};
+    test('should handle post expired for user error by showing snackbar and deleting post', async () => {
+        const error = {server_error_id: BOR_POST_EXPIRED_FOR_USER_ERROR_CODE, message: 'Post has expired'};
         jest.mocked(revealBoRPost).mockResolvedValue({error});
 
         renderWithIntlAndTheme(<UnrevealedBurnOnReadPost {...baseProps}/>);
@@ -84,10 +84,25 @@ describe('UnrevealedBurnOnReadPost', () => {
 
         await act(async () => {
             fireEvent.press(button);
-            await TestHelper.wait(0);
         });
 
-        expect(showBoRPostExpiredSnackbar).toHaveBeenCalledWith('Post has expired');
+        expect(showBoRPostErrorSnackbar).toHaveBeenCalledWith('Post has expired');
+        expect(deletePost).toHaveBeenCalledWith('', mockPost);
+    });
+
+    test('should handle post expired for all error by showing snackbar and deleting post', async () => {
+        const error = {server_error_id: BOR_GLOBALLY_EXPIRED_POST_ERROR_CODE, message: 'Post has expired'};
+        jest.mocked(revealBoRPost).mockResolvedValue({error});
+
+        renderWithIntlAndTheme(<UnrevealedBurnOnReadPost {...baseProps}/>);
+
+        const button = screen.getByText('View message');
+
+        await act(async () => {
+            fireEvent.press(button);
+        });
+
+        expect(showBoRPostErrorSnackbar).toHaveBeenCalledWith('Post has expired');
         expect(deletePost).toHaveBeenCalledWith('', mockPost);
     });
 
@@ -101,10 +116,9 @@ describe('UnrevealedBurnOnReadPost', () => {
 
         await act(async () => {
             fireEvent.press(button);
-            await TestHelper.wait(0);
         });
 
         expect(deletePost).not.toHaveBeenCalled();
-        expect(showBoRPostExpiredSnackbar).toHaveBeenCalledWith('Unexpected server error');
+        expect(showBoRPostErrorSnackbar).toHaveBeenCalledWith('Unexpected server error');
     });
 });

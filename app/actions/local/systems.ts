@@ -341,7 +341,7 @@ export async function expiredBoRPostCleanup(serverUrl: string) {
     }
 }
 
-export async function removeExpiredBoRPosts(serverUrl: string, database: Database) {
+async function removeExpiredBoRPosts(serverUrl: string, database: Database) {
     try {
         const allBoRPosts = await queryPostsByType(database, PostTypes.BURN_ON_READ).fetch();
         const expiredBoRPostIDs = allBoRPosts.
