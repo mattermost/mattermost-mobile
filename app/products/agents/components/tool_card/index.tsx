@@ -21,9 +21,9 @@ interface ToolCardProps {
     isCollapsed: boolean;
     isProcessing: boolean;
     localDecision?: boolean | null; // true = approved, false = rejected, null/undefined = undecided
-    onToggleCollapse: () => void;
-    onApprove?: () => void;
-    onReject?: () => void;
+    onToggleCollapse: (toolId: string) => void;
+    onApprove?: (toolId: string) => void;
+    onReject?: (toolId: string) => void;
 }
 
 /**
@@ -78,8 +78,16 @@ const ToolCard = ({
         const newCollapsed = !isCollapsed;
         contentOpacity.value = withTiming(newCollapsed ? 0 : 1, {duration: 200});
         chevronRotation.value = withTiming(newCollapsed ? 0 : 90, {duration: 200});
-        onToggleCollapse();
-    }, [isCollapsed, contentOpacity, chevronRotation, onToggleCollapse]);
+        onToggleCollapse(tool.id);
+    }, [isCollapsed, contentOpacity, chevronRotation, onToggleCollapse, tool.id]);
+
+    const handleApprove = useCallback(() => {
+        onApprove?.(tool.id);
+    }, [onApprove, tool.id]);
+
+    const handleReject = useCallback(() => {
+        onReject?.(tool.id);
+    }, [onReject, tool.id]);
 
     const chevronAnimatedStyle = useAnimatedStyle(() => ({
         transform: [{rotate: `${chevronRotation.value}deg`}],
@@ -239,7 +247,7 @@ const ToolCard = ({
             {isPending && !hasLocalDecision && !isProcessing && (
                 <View style={styles.buttonContainer}>
                     <TouchableOpacity
-                        onPress={onApprove}
+                        onPress={handleApprove}
                         disabled={isProcessing}
                         style={[styles.button, isProcessing && styles.buttonDisabled]}
                         activeOpacity={0.7}
@@ -251,7 +259,7 @@ const ToolCard = ({
                         />
                     </TouchableOpacity>
                     <TouchableOpacity
-                        onPress={onReject}
+                        onPress={handleReject}
                         disabled={isProcessing}
                         style={[styles.button, isProcessing && styles.buttonDisabled]}
                         activeOpacity={0.7}

@@ -3,10 +3,11 @@
 
 import {submitToolApproval} from '@agents/actions/remote/tool_approval';
 import {type ToolCall, ToolCallStatus} from '@agents/types';
-import React, {useEffect, useState} from 'react';
-import {ActivityIndicator, StyleSheet, View} from 'react-native';
+import React, {useCallback, useEffect, useState} from 'react';
+import {StyleSheet, View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
+import Loading from '@components/loading';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -59,7 +60,21 @@ const ToolApprovalSet = ({postId, toolCalls}: ToolApprovalSetProps) => {
         });
     }, [toolCalls]);
 
-    const handleToolDecision = async (toolId: string, approved: boolean) => {
+    const submitDecisions = useCallback(async (decisions: ToolDecision) => {
+        const approvedToolIds = Object.entries(decisions).
+            filter(([, isApproved]) => isApproved).
+            map(([id]) => id);
+
+        setIsSubmitting(true);
+        const {error} = await submitToolApproval(serverUrl, postId, approvedToolIds);
+
+        // Reset submitting state regardless of success/error
+        // On error, user can try again. On success, backend updates via POST_EDITED
+        setIsSubmitting(false);
+        return !error;
+    }, [serverUrl, postId]);
+
+    const handleToolDecision = useCallback(async (toolId: string, approved: boolean) => {
         if (isSubmitting) {
             return;
         }
@@ -75,35 +90,27 @@ const ToolApprovalSet = ({postId, toolCalls}: ToolApprovalSetProps) => {
             return !(tool.id in updatedDecisions) || updatedDecisions[tool.id] === null;
         });
 
-        if (hasUndecided) {
-            // If there are still undecided tools, do not submit yet
-            return;
+        if (!hasUndecided) {
+            await submitDecisions(updatedDecisions);
         }
+    }, [isSubmitting, toolDecisions, toolCalls, submitDecisions]);
 
-        // Submit when all tools are decided
-        const approvedToolIds = Object.entries(updatedDecisions).
-            filter(([, isApproved]) => isApproved).
-            map(([id]) => id);
+    const handleApprove = useCallback((toolId: string) => {
+        handleToolDecision(toolId, true);
+    }, [handleToolDecision]);
 
-        setIsSubmitting(true);
-        const {error} = await submitToolApproval(serverUrl, postId, approvedToolIds);
+    const handleReject = useCallback((toolId: string) => {
+        handleToolDecision(toolId, false);
+    }, [handleToolDecision]);
 
-        if (error) {
-            // Reset on error so user can try again
-            setIsSubmitting(false);
-        } else {
-            // Backend will execute tools and update the post via POST_EDITED event
-            // The component will receive updated toolCalls prop and useEffect will clear local decisions
-            setIsSubmitting(false);
-        }
-    };
-
-    const toggleCollapse = (toolId: string, defaultExpanded: boolean) => {
+    const toggleCollapse = useCallback((toolId: string) => {
+        const tool = toolCalls.find((t) => t.id === toolId);
+        const defaultExpanded = tool?.status === ToolCallStatus.Pending;
         setExpandedTools((prev) => ({
             ...prev,
             [toolId]: !(prev[toolId] ?? defaultExpanded),
         }));
-    };
+    }, [toolCalls]);
 
     if (toolCalls.length === 0) {
         return null;
@@ -135,9 +142,9 @@ const ToolApprovalSet = ({postId, toolCalls}: ToolApprovalSetProps) => {
                     isCollapsed={isToolCollapsed(tool)}
                     isProcessing={isSubmitting}
                     localDecision={toolDecisions[tool.id]}
-                    onToggleCollapse={() => toggleCollapse(tool.id, true)}
-                    onApprove={() => handleToolDecision(tool.id, true)}
-                    onReject={() => handleToolDecision(tool.id, false)}
+                    onToggleCollapse={toggleCollapse}
+                    onApprove={handleApprove}
+                    onReject={handleReject}
                 />
             ))}
 
@@ -147,14 +154,14 @@ const ToolApprovalSet = ({postId, toolCalls}: ToolApprovalSetProps) => {
                     tool={tool}
                     isCollapsed={isToolCollapsed(tool)}
                     isProcessing={false}
-                    onToggleCollapse={() => toggleCollapse(tool.id, false)}
+                    onToggleCollapse={toggleCollapse}
                 />
             ))}
 
             {/* Only show status bar for multiple pending tools */}
             {pendingToolCalls.length > 1 && isSubmitting && (
                 <View style={styles.statusBar}>
-                    <ActivityIndicator
+                    <Loading
                         size='small'
                         color={changeOpacity(theme.centerChannelColor, 0.64)}
                     />
