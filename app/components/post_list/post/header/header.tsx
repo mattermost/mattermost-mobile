@@ -14,7 +14,7 @@ import {CHANNEL, THREAD} from '@constants/screens';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {DEFAULT_LOCALE} from '@i18n';
-import {isOwnBoRPost, isUnrevealedBoRPost} from '@utils/bor';
+import {isOwnBoRPost, isUnrevealedBoRPost} from '@utils/index';
 import {postUserDisplayName} from '@utils/post';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {ensureString} from '@utils/types';

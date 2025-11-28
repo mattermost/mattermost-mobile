@@ -969,7 +969,12 @@ export const revealBoRPost = async (serverUrl: string, postId: string) => {
         }
 
         const revealedPost = await client.revealBoRPost(postId);
-        operator.handlePosts()
+        operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [revealedPost.id],
+            posts: [revealedPost],
+            prepareRecordsOnly: false,
+        });
 
 
         // await database.write(async () => {

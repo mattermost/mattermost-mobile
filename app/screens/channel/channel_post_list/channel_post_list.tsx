@@ -16,7 +16,7 @@ import {useAppState, useIsTablet} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
 import {useDebounce} from '@hooks/utils';
 import EphemeralStore from '@store/ephemeral_store';
-import {isExpiredBoRPost} from '@utils/bor';
+import {isExpiredBoRPost} from '@utils/index';
 
 import Intro from './intro';
 
