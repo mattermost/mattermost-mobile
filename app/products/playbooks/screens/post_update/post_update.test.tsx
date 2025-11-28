@@ -250,11 +250,10 @@ describe('PostUpdate', () => {
 
         await waitFor(() => {
             expect(setButtons).toHaveBeenCalled();
+            const lastCall = jest.mocked(setButtons).mock.calls[jest.mocked(setButtons).mock.calls.length - 1];
+            const rightButton = lastCall[1]?.rightButtons?.[0];
+            expect(rightButton?.enabled).toBe(true);
         });
-
-        const lastCall = jest.mocked(setButtons).mock.calls[jest.mocked(setButtons).mock.calls.length - 1];
-        const rightButton = lastCall[1]?.rightButtons?.[0];
-        expect(rightButton?.enabled).toBe(true);
     });
 
     it('should disable save button when message is empty', async () => {

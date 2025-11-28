@@ -1,14 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Image, type ImageSource} from 'expo-image';
+import {type ImageSource} from 'expo-image';
 import React, {useEffect, useMemo, useState} from 'react';
-import {type ImageStyle, StyleSheet, View, type ViewStyle} from 'react-native';
+import {type ImageStyle, type StyleProp, StyleSheet, View, type ViewStyle} from 'react-native';
 import Animated, {
     interpolate, runOnJS, runOnUI,
     useAnimatedStyle, withTiming,
+    type AnimatedStyle,
 } from 'react-native-reanimated';
 
+import {ExpoImageAnimated} from '@components/expo_image';
 import {calculateDimensions} from '@utils/images';
 
 import {pagerTimingConfig} from '../animation_config/timing';
@@ -22,7 +24,7 @@ export interface RenderItemInfo {
     source: ImageSource;
     width: number;
     height: number;
-    itemStyles: ViewStyle | ImageStyle;
+    itemStyles: ViewStyle | ImageStyle | StyleProp<AnimatedStyle<StyleProp<ImageStyle>>>;
 }
 
 interface LightboxProps {
@@ -32,8 +34,6 @@ interface LightboxProps {
     sharedValues: GalleryManagerSharedValues;
     source: ImageSource | string;
 }
-
-const AnimatedImage = Animated.createAnimatedComponent(Image);
 
 const styles = StyleSheet.create({
     container: {
@@ -87,8 +87,8 @@ export default function Lightbox({
             }
         };
 
-    // no need to add animateOnMount as this function uses references and is only needed on mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // We only want to run this on mount and unmount
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const {width: tw, height: th} = useMemo(() => calculateDimensions(
@@ -177,7 +177,9 @@ export default function Lightbox({
                                 itemStyles,
                             })
                         ) : (
-                            <AnimatedImage
+                            <ExpoImageAnimated
+                                id={target.cacheKey}
+                                source={imageSource}
                                 placeholder={imageSource}
                                 placeholderContentFit='cover'
                                 style={itemStyles}

@@ -2,16 +2,17 @@
 // See LICENSE.txt for license information.
 
 import base64 from 'base-64';
-import {Image} from 'expo-image';
 import React, {useCallback, useMemo} from 'react';
 import {Text, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {SvgXml} from 'react-native-svg';
 
 import CompassIcon from '@components/compass_icon';
+import ExpoImage from '@components/expo_image';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {COMMAND_SUGGESTION_ERROR} from '@constants/apps';
 import {useTheme} from '@context/theme';
+import {urlSafeBase64Encode} from '@utils/security';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const slashIcon = require('@assets/images/autocomplete/slash_command.png');
@@ -106,9 +107,10 @@ const SlashSuggestionItem = ({
     }
 
     let image = (
-        <Image
+        <ExpoImage
             style={style.slashIcon}
             source={slashIcon}
+            cachePolicy='memory'
         />
     );
     if (icon === COMMAND_SUGGESTION_ERROR) {
@@ -120,7 +122,8 @@ const SlashSuggestionItem = ({
         );
     } else if (icon.startsWith('http')) {
         image = (
-            <Image
+            <ExpoImage
+                id={`slash-${urlSafeBase64Encode(iconAsSource.uri)}`}
                 source={iconAsSource}
                 style={style.uriIcon}
             />
@@ -142,7 +145,8 @@ const SlashSuggestionItem = ({
             }
         } else {
             image = (
-                <Image
+                <ExpoImage
+                    id={`slash-${urlSafeBase64Encode(iconAsSource.uri)}`}
                     source={iconAsSource}
                     style={style.uriIcon}
                 />

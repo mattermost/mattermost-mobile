@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Image} from 'expo-image';
 import React, {type Dispatch, type SetStateAction, useCallback, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {StyleSheet, Text, TouchableWithoutFeedback, useWindowDimensions, View} from 'react-native';
@@ -9,6 +8,7 @@ import Animated from 'react-native-reanimated';
 
 import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
+import ExpoImage from '@components/expo_image';
 import FormattedText from '@components/formatted_text';
 import {Preferences} from '@constants';
 import {useLightboxSharedValues} from '@screens/gallery/lightbox_swipeout/context';
@@ -45,6 +45,7 @@ const styles = StyleSheet.create({
 });
 
 type Props = {
+    cacheKey: string;
     canDownloadFiles: boolean;
     enableSecureFilePreview: boolean;
     filename: string;
@@ -57,7 +58,7 @@ type Props = {
     hideHeaderAndFooter: (hide?: boolean) => void;
 }
 
-const VideoError = ({canDownloadFiles, enableSecureFilePreview, filename, height, isDownloading, isRemote, hideHeaderAndFooter, posterUri, setDownloading, width}: Props) => {
+const VideoError = ({cacheKey, canDownloadFiles, enableSecureFilePreview, filename, height, isDownloading, isRemote, hideHeaderAndFooter, posterUri, setDownloading, width}: Props) => {
     const [hasPoster, setHasPoster] = useState(false);
     const [loadPosterError, setLoadPosterError] = useState(false);
     const {headerAndFooterHidden} = useLightboxSharedValues();
@@ -87,7 +88,8 @@ const VideoError = ({canDownloadFiles, enableSecureFilePreview, filename, height
     if (posterUri && !loadPosterError) {
         const imageDimensions = calculateDimensions(height, width, dimensions.width);
         poster = (
-            <Image
+            <ExpoImage
+                id={cacheKey}
                 source={{uri: posterUri}}
                 style={hasPoster && imageDimensions}
                 onLoad={handlePosterSet}

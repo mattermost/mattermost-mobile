@@ -17,6 +17,7 @@ import {useDefaultHeaderHeight} from '@hooks/header';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {useScreenTransitionAnimation} from '@hooks/screen_transition_animation';
 import {usePreventDoubleTap} from '@hooks/utils';
+import IntuneManager from '@managers/intune_manager';
 import NetworkManager from '@managers/network_manager';
 import SecurityManager from '@managers/security_manager';
 import Background from '@screens/background';
@@ -268,6 +269,8 @@ const LoginOptions = ({
                             ssoOnly={!hasLoginForm}
                             ssoOptions={ssoOptions}
                             theme={theme}
+                            isIntuneEnabled={IntuneManager.isIntuneEnabledForConfigAndLicense(config, license)}
+                            intuneAuthService={config.IntuneAuthService}
                         />
                         }
                     </View>

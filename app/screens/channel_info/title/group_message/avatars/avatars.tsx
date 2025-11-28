@@ -1,15 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Image} from 'expo-image';
 import React from 'react';
 import {View} from 'react-native';
 
 import {buildAbsoluteUrl} from '@actions/remote/file';
 import {buildProfileImageUrlFromUser} from '@actions/remote/user';
+import ExpoImage from '@components/expo_image';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
+import {getLastPictureUpdate} from '@utils/user';
 
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -39,8 +40,10 @@ const GroupAvatars = ({users}: Props) => {
 
     const group = users.map((u, i) => {
         const pictureUrl = buildProfileImageUrlFromUser(serverUrl, u);
+        const lastPictureUpdateAt = getLastPictureUpdate(u);
         return (
-            <Image
+            <ExpoImage
+                id={`user-${u.id}-${lastPictureUpdateAt}`}
                 key={pictureUrl + i.toString()}
                 style={[styles.profile, {transform: [{translateX: -(i * 12)}]}]}
                 source={{uri: buildAbsoluteUrl(serverUrl, pictureUrl)}}

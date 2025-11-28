@@ -1,29 +1,48 @@
 name: prepare-ios-build
 description: Action to prepare environment for ios build
 
+inputs:
+  intune-enabled:
+    description: 'Enable Intune MAM features (requires Xcode 26.1+)'
+    required: false
+    default: 'false'
+  github-token:
+    description: 'GitHub token for private repository access (required when intune-enabled=true)'
+    required: false
+
 runs:
   using: composite
   steps:
     - name: ci/setup-xcode
       uses: maxim-lobanov/setup-xcode@60606e260d2fc5762a71e64e74b2174e8ea3c8bd # v1.6.0
       with:
-        xcode-version: latest-stable
+        xcode-version: '26.1'
 
     - name: ci/prepare-mobile-build
       uses: ./.github/actions/prepare-mobile-build
 
-    - name: ci/install-pods-dependencies
-      shell: bash
-      run: |
-        echo "::group::install-pods-dependencies"
-        npm run ios-gems
-        npm run pod-install
-        echo "::endgroup::"
+    - name: ci/setup-intune
+      if: inputs.intune-enabled == 'true'
+      uses: ./.github/actions/setup-intune
+      with:
+        github-token: ${{ inputs.github-token }}
 
     - name: Cache Pods
       uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
       with:
-        path: Pods
-        key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+        path: ios/Pods
+        key: ${{ runner.os }}-pods-intune-${{ inputs.intune-enabled }}-${{ hashFiles('ios/Podfile.lock') }}
         restore-keys: |
+          ${{ runner.os }}-pods-intune-${{ inputs.intune-enabled }}-
           ${{ runner.os }}-pods-
+
+    - name: ci/install-pods-dependencies
+      shell: bash
+      env:
+        INTUNE_ENABLED: ${{ inputs.intune-enabled == 'true' && '1' || '0' }}
+      run: |
+        echo "::group::install-pods-dependencies"
+        echo "INTUNE_ENABLED=$INTUNE_ENABLED"
+        npm run ios-gems
+        npm run pod-install
+        echo "::endgroup::"

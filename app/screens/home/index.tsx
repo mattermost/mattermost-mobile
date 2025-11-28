@@ -9,7 +9,6 @@ import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Platform, StyleSheet, View} from 'react-native';
 import {enableFreeze, enableScreens} from 'react-native-screens';
 
-import {initializeSecurityManager} from '@actions/app/server';
 import {autoUpdateTimezone} from '@actions/remote/user';
 import ServerVersion from '@components/server_version';
 import {Events, Launch, Screens} from '@constants';
@@ -69,7 +68,7 @@ export function HomeScreen(props: HomeProps) {
     const appState = useAppState();
 
     useEffect(() => {
-        initializeSecurityManager();
+        SecurityManager.start();
     }, []);
 
     const handleFindChannels = useCallback(() => {
@@ -143,6 +142,9 @@ export function HomeScreen(props: HomeProps) {
                 });
             }
         }
+
+    // only run on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (

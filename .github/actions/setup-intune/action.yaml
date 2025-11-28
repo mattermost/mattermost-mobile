@@ -1,0 +1,65 @@
+# Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+# See LICENSE.txt for license information.
+
+name: Setup Intune
+description: Initialize Intune submodule and link module for internal builds with MAM features
+
+inputs:
+  github-token:
+    description: 'GitHub token with access to mattermost-mobile-intune private repository'
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Configure git for private submodule access
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: |
+        echo "::group::Configure git authentication"
+        # Configure git to use token for private repository access
+        git config --global url."https://x-access-token:${GITHUB_TOKEN}@github.com/".insteadOf "git@github.com:"
+        git config --global url."https://x-access-token:${GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
+        echo "✅ Git authentication configured"
+        echo "::endgroup::"
+
+    - name: Initialize Intune submodule
+      shell: bash
+      run: |
+        echo "::group::Initialize Intune submodule"
+        # Check if submodule is already initialized
+        if [ -d "libraries/@mattermost/intune/.git" ]; then
+          echo "ℹ️  Intune submodule already initialized, updating..."
+          git submodule update --remote libraries/@mattermost/intune
+        else
+          echo "📥 Initializing Intune submodule..."
+          git submodule update --init --recursive libraries/@mattermost/intune
+        fi
+
+        # Display submodule info
+        cd libraries/@mattermost/intune
+        echo "📦 Intune submodule initialized:"
+        echo "   Branch: $(git rev-parse --abbrev-ref HEAD)"
+        echo "   Commit: $(git rev-parse --short HEAD)"
+        echo "   Remote: $(git remote get-url origin)"
+        cd ../..
+
+        echo "✅ Intune submodule ready"
+        echo "::endgroup::"
+
+    - name: Link Intune module to node_modules
+      shell: bash
+      run: |
+        echo "::group::Link Intune module"
+        # Install the module without saving to package.json
+        npm install --install-links --no-save ./libraries/@mattermost/intune
+
+        # Verify symlink was created
+        if [ -L "node_modules/@mattermost/intune" ] || [ -d "node_modules/@mattermost/intune" ]; then
+          echo "✅ Intune module linked to node_modules/@mattermost/intune"
+        else
+          echo "❌ Failed to link Intune module"
+          exit 1
+        fi
+        echo "::endgroup::"

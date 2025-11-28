@@ -14,6 +14,7 @@ import {useTheme} from '@context/theme';
 import {getServerCredentials} from '@init/credentials';
 import {fileExists} from '@utils/file';
 import {calculateDimensions} from '@utils/images';
+import {urlSafeBase64Encode} from '@utils/security';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import FileIcon from './file_icon';
@@ -108,7 +109,8 @@ const VideoFile = ({
                         if (cred?.token) {
                             headers.Authorization = `Bearer ${cred.token}`;
                         }
-                        const {uri, height, width} = await getThumbnailAsync(data.localPath || videoUrl, {time: 1000, headers});
+                        const cachePath = urlSafeBase64Encode(serverUrl);
+                        const {uri, height, width} = await getThumbnailAsync(data.localPath || videoUrl, {time: 1000, headers, cachePath});
                         data.mini_preview = uri;
                         data.height = height;
                         data.width = width;

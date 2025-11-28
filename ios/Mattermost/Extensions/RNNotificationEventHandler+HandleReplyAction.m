@@ -1,168 +1,187 @@
-//
-//  RNNotificationEventHandler+HandleReplyAction.m
-//  Mattermost
-//
-//  Created by Miguel Alatzar on 1/29/20.
-//  Copyright © 2020 Mattermost. All rights reserved.
-//
-
-#import "AppDelegate.h"
+// RNNotificationEventHandler+HandleReplyAction.m
 #import "RNNotificationEventHandler+HandleReplyAction.h"
-#import <react-native-notifications/RNNotificationParser.h>
+#import <UserNotifications/UserNotifications.h>
+#import <UIKit/UIKit.h>
 #import <objc/runtime.h>
 @import Gekidou;
 
-#define notificationCenterKey @"notificationCenter"
+// ---- Forward declaration of the class method we want to call (no header needed)
+@interface RNNotificationEventHandler (OriginalSelectorDecl)
+- (void)didReceiveNotificationResponse:(UNNotificationResponse *)response
+                    completionHandler:(void (^)(void))completionHandler;
+@end
+
+@interface RNNotificationParser : NSObject
++ (NSDictionary *)parseNotificationResponse:(UNNotificationResponse *)response;
+@end
+// ---------------------------------------------------------------------------
 
 NSString *const ReplyActionID = @"REPLY_ACTION";
 
-typedef void (*SendReplyCompletionHandlerIMP)(id, SEL, UNNotificationResponse *, void (^)(void));
-static SendReplyCompletionHandlerIMP originalSendReplyCompletionHandlerImplementation = NULL;
+// The original method we’re swizzling on RNNotificationEventHandler
+typedef void (*DidReceiveIMP)(id, SEL, UNNotificationResponse *, void (^)(void));
+static DidReceiveIMP original_didReceive_impl = NULL;
 
-@implementation RNNotificationEventHandler (HandleReplyAction)
+#pragma mark - Helpers
 
-- (RNNotificationCenter *)notificationCenter{
-  return objc_getAssociatedObject(self, notificationCenterKey);
+static inline void callCompletionOnMain(void (^completion)(void)) {
+  if (!completion) return;
+  if (NSThread.isMainThread) { completion(); }
+  else { dispatch_async(dispatch_get_main_queue(), completion); }
 }
 
-- (void)setNotificationCenter:(RNNotificationCenter *)notificationCenter{
-  objc_setAssociatedObject(self, notificationCenterKey, notificationCenter, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+static inline void postLocalFailureNotification(NSString *channelId) {
+  UNMutableNotificationContent *content = [UNMutableNotificationContent new];
+  content.body = @"Message failed to send.";
+  NSMutableDictionary *userInfo = [@{@"local": @YES, @"test": @NO} mutableCopy];
+  if (channelId) userInfo[@"channel_id"] = channelId;
+  content.userInfo = userInfo;
+
+  UNTimeIntervalNotificationTrigger *trigger =
+    [UNTimeIntervalNotificationTrigger triggerWithTimeInterval:0.1 repeats:NO];
+
+  NSString *identifier = [NSString stringWithFormat:@"mm-fail-%f",
+                          [NSDate timeIntervalSinceReferenceDate]];
+  UNNotificationRequest *req =
+    [UNNotificationRequest requestWithIdentifier:identifier content:content trigger:trigger];
+
+  [UNUserNotificationCenter.currentNotificationCenter addNotificationRequest:req withCompletionHandler:nil];
 }
 
-+ (void)load {
-  static dispatch_once_t once_token;
-  dispatch_once(&once_token,  ^{
-    Class class = [self class];
-  
-    SEL originalSelector = @selector(didReceiveNotificationResponse:completionHandler:);
-    SEL swizzledSelector = @selector(handleReplyAction_didReceiveNotificationResponse:completionHandler:);
-
-    Method originalMethod = class_getInstanceMethod(class, originalSelector);
-    Method swizzledMethod = class_getInstanceMethod(class, swizzledSelector);
-    
-    // Get the implementation of the swizzled method
-    IMP swizzledImplementation = method_getImplementation(swizzledMethod);
-    
-    // Get the original implementation
-    IMP originalImplementation = method_getImplementation(originalMethod);
-    
-    // Set the original method's implementation to the swizzled method's implementation
-    method_setImplementation(originalMethod, swizzledImplementation);
-    
-    originalSendReplyCompletionHandlerImplementation = (SendReplyCompletionHandlerIMP)originalImplementation;
-  });
+static inline void updateBadgeToDeliveredCount(void) {
+  [UNUserNotificationCenter.currentNotificationCenter
+    getDeliveredNotificationsWithCompletionHandler:^(NSArray<UNNotification *> *notes) {
+      dispatch_async(dispatch_get_main_queue(), ^{
+        UIApplication.sharedApplication.applicationIconBadgeNumber = (NSInteger)notes.count;
+      });
+    }];
 }
 
-- (void)sendReply:(UNNotificationResponse *)response completionHandler:(void (^)(void))notificationCompletionHandler {
-  NSDictionary *parsedResponse = [RNNotificationParser parseNotificationResponse:response];
-  NSString *serverUrl = [parsedResponse valueForKeyPath:@"notification.server_url"];
-  
-  if (serverUrl == nil) {
-      [self handleReplyFailure:@"" completionHandler:notificationCompletionHandler];
-      return;
+#pragma mark - Core sendReply (no RNNotifications headers)
+
+static void sendReplyUsingMattermost(UNNotificationResponse *response,
+                                    void (^completion)(void)) {
+  NSDictionary *parsedResponse = nil;
+
+  // Guard with runtime presence of the class
+  Class Parser = NSClassFromString(@"RNNotificationParser");
+  if (Parser && [Parser respondsToSelector:@selector(parseNotificationResponse:)]) {
+    // Compiler knows the signature thanks to the forward declaration above
+    parsedResponse = [RNNotificationParser parseNotificationResponse:response];
   }
-  
+
+  NSString *serverUrl = [parsedResponse valueForKeyPath:@"notification.server_url"];
+  if (serverUrl.length == 0) {
+    // minimal fallback
+    serverUrl = response.notification.request.content.userInfo[@"server_url"];
+  }
+  if (serverUrl.length == 0) {
+    postLocalFailureNotification(nil);
+    callCompletionOnMain(completion);
+    return;
+  }
+
   NSDictionary *credentials = [[Keychain default] getCredentialsObjcFor:serverUrl];
-  NSString *sessionToken = [credentials objectForKey:@"token"];
-  NSString *preauthSecret = [credentials objectForKey:@"preauthSecret"];
-  if (sessionToken == nil) {
-    [self handleReplyFailure:@"" completionHandler:notificationCompletionHandler];
+  NSString *sessionToken = credentials[@"token"];
+  NSString *preauthSecret = credentials[@"preauthSecret"];
+  if (sessionToken.length == 0) {
+    postLocalFailureNotification(nil);
+    callCompletionOnMain(completion);
     return;
   }
 
   NSString *completionKey = response.notification.request.identifier;
+
   NSString *message = [parsedResponse valueForKeyPath:@"action.text"];
+  if (message.length == 0 && [response isKindOfClass:UNTextInputNotificationResponse.class]) {
+    message = ((UNTextInputNotificationResponse *)response).userText;
+  }
+
   NSString *channelId = [parsedResponse valueForKeyPath:@"notification.channel_id"];
   NSString *rootId = [parsedResponse valueForKeyPath:@"notification.root_id"];
-  if (rootId == nil) {
+  if (rootId.length == 0) {
     rootId = [parsedResponse valueForKeyPath:@"notification.post_id"];
   }
 
   NSDictionary *post = @{
-    @"message": message,
-    @"channel_id": channelId,
-    @"root_id": rootId
+    @"message": message ?: @"",
+    @"channel_id": channelId ?: @"",
+    @"root_id": rootId ?: @""
   };
-  NSError *error;
-  NSData *postData = [NSJSONSerialization dataWithJSONObject:post options:0 error:&error];
+
+  NSError *jsonErr = nil;
+  NSData *postData = [NSJSONSerialization dataWithJSONObject:post options:0 error:&jsonErr];
   if (!postData) {
-    [self handleReplyFailure:channelId completionHandler:notificationCompletionHandler];
+    postLocalFailureNotification(channelId);
+    callCompletionOnMain(completion);
     return;
   }
 
-  NSString *urlString = [serverUrl stringByReplacingOccurrencesOfString:@"/$" withString:@"" options:NSRegularExpressionSearch range:NSMakeRange(0, [serverUrl length])];
-  NSString *postsEndpoint = @"/api/v4/posts?set_online=false";
-  NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@", urlString, postsEndpoint]];
-  NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
-  [request setHTTPMethod:@"POST"];
-  [request setValue:[NSString stringWithFormat:@"Bearer %@", sessionToken] forHTTPHeaderField:@"Authorization"];
-  [request setValue:@"application/json; charset=utf-8" forHTTPHeaderField:@"Content-Type"];
-  
-  // Add preauth secret header if available
-  if ([preauthSecret isKindOfClass:NSString.class] && [(NSString *)preauthSecret length] > 0) {
-    [request setValue:preauthSecret forHTTPHeaderField:@"X-Mattermost-Preauth-Secret"];
+  // Strip trailing slash
+  NSRegularExpression *re = [NSRegularExpression regularExpressionWithPattern:@"/$" options:0 error:nil];
+  NSString *urlString = [re stringByReplacingMatchesInString:serverUrl options:0
+                                                       range:NSMakeRange(0, serverUrl.length)
+                                                withTemplate:@""];
+  NSURL *url = [NSURL URLWithString:[urlString stringByAppendingString:@"/api/v4/posts?set_online=false"]];
+  if (!url) {
+    postLocalFailureNotification(channelId);
+    callCompletionOnMain(completion);
+    return;
   }
-  
-  [request setHTTPBody:postData];
 
-  NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration ephemeralSessionConfiguration];
-  NSURLSession *session = [NSURLSession sessionWithConfiguration:configuration];
-  NSURLSessionDataTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-    NSInteger statusCode = [(NSHTTPURLResponse *)response statusCode];
-    if (statusCode == 201) {
-      [self handleReplySuccess:completionKey completionHandler:notificationCompletionHandler];
+  NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:url];
+  req.HTTPMethod = @"POST";
+  [req setValue:[NSString stringWithFormat:@"Bearer %@", sessionToken] forHTTPHeaderField:@"Authorization"];
+  [req setValue:@"application/json; charset=utf-8" forHTTPHeaderField:@"Content-Type"];
+  if ([preauthSecret isKindOfClass:NSString.class] && preauthSecret.length > 0) {
+    [req setValue:preauthSecret forHTTPHeaderField:@"X-Mattermost-Preauth-Secret"];
+  }
+  req.HTTPBody = postData;
+
+  NSURLSession *session = [NSURLSession sessionWithConfiguration:NSURLSessionConfiguration.ephemeralSessionConfiguration];
+  [[session dataTaskWithRequest:req completionHandler:^(NSData *data, NSURLResponse *resp, NSError *err) {
+    NSInteger status = [(NSHTTPURLResponse *)resp statusCode];
+    if (!err && status == 201) {
+      updateBadgeToDeliveredCount();
+      callCompletionOnMain(completion);
     } else {
-      [self handleReplyFailure:channelId completionHandler:notificationCompletionHandler];
+      postLocalFailureNotification(channelId);
+      callCompletionOnMain(completion);
     }
-  }];
-
-  [task resume];
+  }] resume];
 }
 
-- (void) handleReplySuccess:(NSString *)completionKey completionHandler:(void (^)(void))completionHandler {
-  [[RNNotificationsStore sharedInstance] completeAction:completionKey];
-  UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
-  [center getDeliveredNotificationsWithCompletionHandler:^(NSArray<UNNotification *> * _Nonnull notifications) {
-    [[UIApplication sharedApplication] setApplicationIconBadgeNumber:[notifications count]];
-  }];
+#pragma mark - Swizzle SAME selector as original code
 
-  dispatch_async(dispatch_get_main_queue(), ^{
-    completionHandler();
+@implementation RNNotificationEventHandler (HandleReplyAction)
+
++ (void)load {
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    Class cls = self;
+
+    SEL sel = @selector(didReceiveNotificationResponse:completionHandler:);
+    Method m = class_getInstanceMethod(cls, sel);
+    if (!m) return;
+
+    original_didReceive_impl = (DidReceiveIMP)method_getImplementation(m);
+
+    IMP swizzled = imp_implementationWithBlock(^(
+      id _self,
+      UNNotificationResponse *response,
+      void (^completion)(void)
+    ){
+      if ([response.actionIdentifier isEqualToString:ReplyActionID]) {
+        sendReplyUsingMattermost(response, completion);
+      } else if (original_didReceive_impl) {
+        original_didReceive_impl(_self, sel, response, completion);
+      } else {
+        callCompletionOnMain(completion);
+      }
+    });
+
+    method_setImplementation(m, swizzled);
   });
-}
-
-- (void) handleReplyFailure:(NSString *)channelId completionHandler:(void (^)(void))completionHandler {
-  RNNotificationCenter *notificationCenter = [self notificationCenter];
-  if (!notificationCenter) {
-    notificationCenter = [RNNotificationCenter new];
-    [self setNotificationCenter:notificationCenter];
-  }
-
-  NSNumber *id = [NSNumber numberWithInteger:[NSDate timeIntervalSinceReferenceDate] * 10000];
-  NSDictionary *notification = @{
-    @"body": @"Message failed to send.",
-    @"alertAction": @"",
-    @"userInfo": @{
-        @"local": @YES,
-        @"test": @NO,
-        @"channel_id": channelId
-    }
-  };
-  [notificationCenter postLocalNotification:notification withId:id];
-
-  dispatch_async(dispatch_get_main_queue(), ^{
-    completionHandler();
-  });
-}
-
-#pragma mark - Method Swizzling
-
-- (void)handleReplyAction_didReceiveNotificationResponse:(UNNotificationResponse *)response completionHandler:(void (^)(void))completionHandler {
-  if ([response.actionIdentifier isEqualToString:ReplyActionID]) {
-    [self sendReply:response completionHandler:completionHandler];
-  } else {
-    originalSendReplyCompletionHandlerImplementation(self, @selector(sendReply:completionHandler:), response, completionHandler);
-  }
 }
 
 @end

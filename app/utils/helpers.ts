@@ -5,6 +5,7 @@ import RNUtils, {type SplitViewResult} from '@mattermost/rnutils';
 import moment, {type Moment} from 'moment-timezone';
 import {Platform} from 'react-native';
 
+import License from '@constants/license';
 import {STATUS_BAR_HEIGHT} from '@constants/view';
 
 // isMinimumServerVersion will return true if currentVersion is equal to higher or than
@@ -48,6 +49,25 @@ export const isMinimumServerVersion = (currentVersion = '', minMajorVersion = 0,
 
     // Dot version is equal
     return true;
+};
+
+// isMinimumLicenseTier will return true if the license meets or exceeds the target SKU tier
+// license is a ClientLicense object
+// targetSku is a string, e.g 'professional', 'enterprise', 'advanced'
+export const isMinimumLicenseTier = (license: Partial<ClientLicense> | undefined, targetSku: string): boolean => {
+    if (!targetSku || !license) {
+        return false;
+    }
+
+    const isLicensed = license.IsLicensed === 'true';
+    if (!isLicensed) {
+        return false;
+    }
+
+    const currentTier = License.LicenseSkuTier[license.SkuShortName || ''] || 0;
+    const targetTier = License.LicenseSkuTier[targetSku] || 0;
+
+    return Boolean(currentTier) && Boolean(targetTier) && currentTier >= targetTier;
 };
 
 export function buildQueryString(parameters: Dictionary<any>): string {
