@@ -10,6 +10,11 @@ export const AGENT_POST_TYPES = {
 } as const;
 
 /**
+ * Minimum touch target size for accessibility (44pt per iOS HIG)
+ */
+export const TOUCH_TARGET_SIZE = 44;
+
+/**
  * WebSocket event name for agent post updates
  */
 export const AGENT_WEBSOCKET_EVENT = 'custom_mattermost-ai_postupdate';

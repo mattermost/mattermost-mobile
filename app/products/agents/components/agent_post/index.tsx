@@ -3,15 +3,18 @@
 
 import {regenerateResponse, stopGeneration} from '@agents/actions/remote/generation_controls';
 import streamingStore from '@agents/store/streaming_store';
-import {StreamingEvents, type StreamingState} from '@agents/types';
+import {StreamingEvents, type Annotation, type StreamingState, type ToolCall} from '@agents/types';
 import {isPostRequester} from '@agents/utils';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {DeviceEventEmitter, StyleSheet, View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import Markdown from '@components/markdown';
-import {Screens} from '@constants';
+import {SNACK_BAR_TYPE} from '@constants/snack_bar';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {safeParseJSON} from '@utils/helpers';
+import {showSnackBar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import CitationsList from '../citations_list';
@@ -22,57 +25,78 @@ import ToolApprovalSet from '../tool_approval_set';
 import StreamingIndicator from './streaming_indicator';
 
 import type PostModel from '@typings/database/models/servers/post';
+import type {AvailableScreens} from '@typings/screens/navigation';
+
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+    return StyleSheet.create({
+        container: {
+            flex: 1,
+        },
+        messageContainer: {
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            alignItems: 'flex-start',
+        },
+        messageText: {
+            color: theme.centerChannelColor,
+            fontSize: 15,
+            lineHeight: 20,
+        },
+        precontentContainer: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingVertical: 8,
+        },
+        precontentText: {
+            color: changeOpacity(theme.centerChannelColor, 0.6),
+            fontSize: 14,
+            fontStyle: 'italic',
+            marginRight: 8,
+        },
+    });
+});
 
 interface AgentPostProps {
-    serverUrl: string;
     post: PostModel;
     currentUserId?: string;
+    location: AvailableScreens;
 }
 
 /**
  * Custom post component for agent responses
  * Handles streaming text updates and displays animated cursor during generation
  */
-const AgentPost = ({serverUrl, post, currentUserId}: AgentPostProps) => {
+const AgentPost = ({post, currentUserId, location}: AgentPostProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const serverUrl = useServerUrl();
 
     // Extract persisted reasoning from post props
     const persistedReasoning = useMemo(() => {
-        try {
-            const props = post.props as Record<string, unknown>;
-            return (props?.reasoning_summary as string) || '';
-        } catch {
-            return '';
-        }
+        const props = post.props as Record<string, unknown>;
+        return (props?.reasoning_summary as string) || '';
     }, [post.props]);
 
     // Extract persisted tool calls from post props
-    const persistedToolCalls = useMemo(() => {
-        try {
-            const props = post.props as Record<string, unknown>;
-            const toolCallsJson = props?.pending_tool_call as string;
-            if (toolCallsJson) {
-                return JSON.parse(toolCallsJson);
-            }
-            return [];
-        } catch {
-            return [];
+    const persistedToolCalls = useMemo((): ToolCall[] => {
+        const props = post.props as Record<string, unknown>;
+        const toolCallsJson = props?.pending_tool_call as string;
+        if (toolCallsJson) {
+            const parsed = safeParseJSON(toolCallsJson);
+            return Array.isArray(parsed) ? parsed as ToolCall[] : [];
         }
+        return [];
     }, [post.props]);
 
     // Extract persisted annotations from post props
-    const persistedAnnotations = useMemo(() => {
-        try {
-            const props = post.props as Record<string, unknown>;
-            const annotationsJson = props?.annotations as string;
-            if (annotationsJson) {
-                return JSON.parse(annotationsJson);
-            }
-            return [];
-        } catch {
-            return [];
+    const persistedAnnotations = useMemo((): Annotation[] => {
+        const props = post.props as Record<string, unknown>;
+        const annotationsJson = props?.annotations as string;
+        if (annotationsJson) {
+            const parsed = safeParseJSON(annotationsJson);
+            return Array.isArray(parsed) ? parsed as Annotation[] : [];
         }
+        return [];
     }, [post.props]);
 
     // Local state for streaming
@@ -147,8 +171,7 @@ const AgentPost = ({serverUrl, post, currentUserId}: AgentPostProps) => {
     const handleStop = useCallback(async () => {
         const {error} = await stopGeneration(serverUrl, post.id);
         if (error) {
-            // Error is already logged in the action
-            // Could show a toast notification here if desired
+            showSnackBar({barType: SNACK_BAR_TYPE.AGENT_STOP_ERROR});
         }
     }, [serverUrl, post.id]);
 
@@ -156,8 +179,7 @@ const AgentPost = ({serverUrl, post, currentUserId}: AgentPostProps) => {
     const handleRegenerate = useCallback(async () => {
         const {error} = await regenerateResponse(serverUrl, post.id);
         if (error) {
-            // Error is already logged in the action
-            // Could show a toast notification here if desired
+            showSnackBar({barType: SNACK_BAR_TYPE.AGENT_REGENERATE_ERROR});
         }
     }, [serverUrl, post.id]);
 
@@ -185,7 +207,7 @@ const AgentPost = ({serverUrl, post, currentUserId}: AgentPostProps) => {
                             baseTextStyle={styles.messageText}
                             value={displayMessage}
                             theme={theme}
-                            location={Screens.CHANNEL}
+                            location={location}
                         />
                     ) : null}
                     {isGenerating && !isPrecontent && (
@@ -211,34 +233,5 @@ const AgentPost = ({serverUrl, post, currentUserId}: AgentPostProps) => {
         </View>
     );
 };
-
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
-    return StyleSheet.create({
-        container: {
-            flex: 1,
-        },
-        messageContainer: {
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-            alignItems: 'flex-start',
-        },
-        messageText: {
-            color: theme.centerChannelColor,
-            fontSize: 15,
-            lineHeight: 20,
-        },
-        precontentContainer: {
-            flexDirection: 'row',
-            alignItems: 'center',
-            paddingVertical: 8,
-        },
-        precontentText: {
-            color: changeOpacity(theme.centerChannelColor, 0.6),
-            fontSize: 14,
-            fontStyle: 'italic',
-            marginRight: 8,
-        },
-    });
-});
 
 export default AgentPost;

@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {TOUCH_TARGET_SIZE} from '@agents/constants';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, StyleSheet, TouchableOpacity, View} from 'react-native';
@@ -8,7 +9,7 @@ import {Alert, StyleSheet, TouchableOpacity, View} from 'react-native';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
-import {preventDoubleTap} from '@utils/tap';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 interface ControlsBarProps {
@@ -31,7 +32,9 @@ const ControlsBar = ({
     const styles = getStyleSheet(theme);
     const intl = useIntl();
 
-    const handleRegenerate = useCallback(() => {
+    const handleStop = usePreventDoubleTap(onStop);
+
+    const handleRegenerate = usePreventDoubleTap(useCallback(() => {
         Alert.alert(
             intl.formatMessage({
                 id: 'agents.regenerate.confirm_title',
@@ -59,7 +62,7 @@ const ControlsBar = ({
                 },
             ],
         );
-    }, [intl, onRegenerate]);
+    }, [intl, onRegenerate]));
 
     if (!showStopButton && !showRegenerateButton) {
         return null;
@@ -69,7 +72,7 @@ const ControlsBar = ({
         <View style={styles.container}>
             {showStopButton && (
                 <TouchableOpacity
-                    onPress={preventDoubleTap(onStop)}
+                    onPress={handleStop}
                     style={styles.button}
                     activeOpacity={0.7}
                     testID='agents.controls_bar.stop_button'
@@ -88,7 +91,7 @@ const ControlsBar = ({
             )}
             {showRegenerateButton && (
                 <TouchableOpacity
-                    onPress={preventDoubleTap(handleRegenerate)}
+                    onPress={handleRegenerate}
                     style={styles.button}
                     activeOpacity={0.7}
                     testID='agents.controls_bar.regenerate_button'
@@ -124,7 +127,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             borderRadius: 4,
             paddingVertical: 8,
             paddingHorizontal: 10,
-            minHeight: 44, // Touch-optimized height
+            minHeight: TOUCH_TARGET_SIZE,
             justifyContent: 'center',
         },
         buttonText: {
