@@ -976,7 +976,6 @@ export const revealBoRPost = async (serverUrl: string, postId: string) => {
             prepareRecordsOnly: false,
         });
 
-
         // await database.write(async () => {
         //     await post.update((p) => {
         //         p.message = revealedPost.message;

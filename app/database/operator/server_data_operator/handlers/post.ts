@@ -5,6 +5,7 @@ import {Q} from '@nozbe/watermelondb';
 
 import {ActionType} from '@constants';
 import {MM_TABLES} from '@constants/database';
+import {PostTypes} from '@constants/post';
 import {buildDraftKey} from '@database/operator/server_data_operator/comparators';
 import {
     transformDraftRecord,
@@ -19,6 +20,7 @@ import {queryScheduledPostsForTeam} from '@queries/servers/scheduled_post';
 import {getCurrentTeamId} from '@queries/servers/system';
 import FileModel from '@typings/database/models/servers/file';
 import ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
+import {isUnrevealedBoRPost} from '@utils/bor';
 import {safeParseJSON} from '@utils/helpers';
 import {logWarning} from '@utils/log';
 
@@ -33,8 +35,6 @@ import type PostModel from '@typings/database/models/servers/post';
 import type PostsInChannelModel from '@typings/database/models/servers/posts_in_channel';
 import type PostsInThreadModel from '@typings/database/models/servers/posts_in_thread';
 import type ReactionModel from '@typings/database/models/servers/reaction';
-import {PostTypes} from "@constants/post";
-import {isUnrevealedBoRPost} from "@utils/index";
 
 const {
     DRAFT,

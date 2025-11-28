@@ -7,7 +7,7 @@ import React, {act} from 'react';
 import {deletePost, revealBoRPost} from '@actions/remote/post';
 import {
     BOR_GLOBALLY_EXPIRED_POST_ERROR_CODE,
-    BOR_POST_EXPIRED_FOR_USER_ERROR_CODE
+    BOR_POST_EXPIRED_FOR_USER_ERROR_CODE,
 } from '@components/post_list/post/burn_on_read/unrevealed/constants';
 import {PostModel} from '@database/models/server';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';

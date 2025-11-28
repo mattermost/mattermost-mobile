@@ -107,7 +107,7 @@ describe('getLastBoRPostCleanupRun', () => {
 
     it('should return the stored timestamp when BoR post cleanup run record exists', async () => {
         const timestamp = 1640995200000; // Example timestamp
-        
+
         await operator.handleSystem({
             systems: [
                 {id: SYSTEM_IDENTIFIERS.LAST_BOR_POST_CLEANUP_RUN, value: timestamp},
