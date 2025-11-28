@@ -7,6 +7,9 @@ import keyMirror from '@utils/key_mirror';
 
 export const SNACK_BAR_TYPE = keyMirror({
     ADD_CHANNEL_MEMBERS: null,
+    AGENT_STOP_ERROR: null,
+    AGENT_REGENERATE_ERROR: null,
+    AGENT_TOOL_APPROVAL_ERROR: null,
     CODE_COPIED: null,
     FAVORITE_CHANNEL: null,
     FOLLOW_THREAD: null,
@@ -45,6 +48,18 @@ const messages = defineMessages({
     ADD_CHANNEL_MEMBERS: {
         id: 'snack.bar.channel.members.added',
         defaultMessage: '{numMembers, number} {numMembers, plural, one {member} other {members}} added',
+    },
+    AGENT_STOP_ERROR: {
+        id: 'snack.bar.agent.stop.error',
+        defaultMessage: 'Failed to stop generation',
+    },
+    AGENT_REGENERATE_ERROR: {
+        id: 'snack.bar.agent.regenerate.error',
+        defaultMessage: 'Failed to regenerate response',
+    },
+    AGENT_TOOL_APPROVAL_ERROR: {
+        id: 'snack.bar.agent.tool.approval.error',
+        defaultMessage: 'Failed to submit tool approval',
     },
     CODE_COPIED: {
         id: 'snack.bar.code.copied',
@@ -109,6 +124,24 @@ export const SNACK_BAR_CONFIG: Record<string, SnackBarConfig> = {
         message: messages.ADD_CHANNEL_MEMBERS,
         iconName: 'check',
         canUndo: false,
+    },
+    AGENT_STOP_ERROR: {
+        message: messages.AGENT_STOP_ERROR,
+        iconName: 'alert-outline',
+        canUndo: false,
+        type: MESSAGE_TYPE.ERROR,
+    },
+    AGENT_REGENERATE_ERROR: {
+        message: messages.AGENT_REGENERATE_ERROR,
+        iconName: 'alert-outline',
+        canUndo: false,
+        type: MESSAGE_TYPE.ERROR,
+    },
+    AGENT_TOOL_APPROVAL_ERROR: {
+        message: messages.AGENT_TOOL_APPROVAL_ERROR,
+        iconName: 'alert-outline',
+        canUndo: false,
+        type: MESSAGE_TYPE.ERROR,
     },
     CODE_COPIED: {
         message: messages.CODE_COPIED,

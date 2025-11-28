@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {handleAgentPostUpdate} from '@agents/actions/websocket';
+
 import * as bookmark from '@actions/local/channel_bookmark';
 import * as scheduledPost from '@actions/websocket/scheduled_post';
 import * as calls from '@calls/connection/websocket_event_handlers';
@@ -300,6 +302,11 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
 
         case WebsocketEvents.CUSTOM_PROFILE_ATTRIBUTES_FIELD_DELETED:
             handleCustomProfileAttributesFieldDeletedEvent(serverUrl, msg);
+            break;
+
+        // Agents
+        case WebsocketEvents.AGENTS_POST_UPDATE:
+            handleAgentPostUpdate(msg);
             break;
     }
     handlePlaybookEvents(serverUrl, msg);

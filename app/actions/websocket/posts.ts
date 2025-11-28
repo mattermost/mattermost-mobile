@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import streamingStore from '@agents/store/streaming_store';
+import {isAgentPost} from '@agents/utils';
 import {DeviceEventEmitter} from 'react-native';
 
 import {storeMyChannelsForTeam, markChannelAsUnread, markChannelAsViewed, updateLastPostAt} from '@actions/local/channel';
@@ -207,6 +209,11 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
         post = JSON.parse(msg.data.post);
     } catch {
         return;
+    }
+
+    // Clear streaming state for agent posts to ensure component uses updated persisted data
+    if (isAgentPost(post)) {
+        streamingStore.removePost(post.id);
     }
 
     const permalinkModels: Model[] = [];
