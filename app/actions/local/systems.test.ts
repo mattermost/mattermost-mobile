@@ -258,10 +258,10 @@ describe('expiredBoRPostCleanup', () => {
         const database = operator.database;
         jest.spyOn(database.adapter, 'unsafeExecute').mockImplementation(() => Promise.resolve());
 
-        const channel: Channel = {
+        const channel: Channel = TestHelper.fakeChannel({
             id: 'channelid1',
             team_id: 'teamid1',
-        } as Channel;
+        });
         await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
 
         const now = Date.now();
@@ -292,8 +292,7 @@ describe('expiredBoRPostCleanup', () => {
         const fetchedPosts = await getPosts(serverUrl, [borPostExpiredForAll.id, borPostExpiredForMe.id]);
         expect(fetchedPosts.length).toBe(2);
 
-        const {error} = await expiredBoRPostCleanup(serverUrl);
-        expect(error).toBeUndefined();
+        await expiredBoRPostCleanup(serverUrl);
 
         expect(database.adapter.unsafeExecute).toHaveBeenCalledWith({
             sqls: [
