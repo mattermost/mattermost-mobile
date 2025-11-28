@@ -52,7 +52,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         ),
         emailInvitationsEnabled,
         canInviteGuests,
-        allowPasswordlessInvites: observeConfigBooleanValue(database, 'EnableGuestMagicLink'),
+        allowGuestMagicLink: observeConfigBooleanValue(database, 'EnableGuestMagicLink'),
     };
 });
 

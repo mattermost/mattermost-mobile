@@ -191,7 +191,7 @@ async function sendGuestInviteForMails(serverUrl: string, teamId: string, emails
     const sent: InviteResult[] = [];
     const notSent: InviteResult[] = [];
     const message = options.includeCustomMessage ? options.customMessage : '';
-    const response = await sendGuestEmailInvitesToTeam(serverUrl, teamId, emails, options.selectedChannels, message);
+    const response = await sendGuestEmailInvitesToTeam(serverUrl, teamId, emails, options.selectedChannels, message, options.guestMagicLink);
     if (response.error) {
         notSent.push(...emails.map((email) => ({userId: email, reason: getErrorMessage(response.error)})));
         return {sent, notSent};

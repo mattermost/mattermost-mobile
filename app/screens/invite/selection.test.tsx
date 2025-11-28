@@ -93,6 +93,7 @@ describe('Selection', () => {
                 includeCustomMessage: false,
                 customMessage: '',
                 selectedChannels: [],
+                guestMagicLink: false,
             },
             onSendOptionsChange: mockOnSendOptionsChange,
             onSearchChange: mockOnSearchChange,
@@ -100,6 +101,7 @@ describe('Selection', () => {
             onRemoveItem: mockOnRemoveItem,
             onClose: mockOnClose,
             canInviteGuests: true,
+            allowGuestMagicLink: true,
         };
     }
 
@@ -195,6 +197,9 @@ describe('Selection', () => {
         expect(optionItem).toHaveProp('testID', 'invite.invite_as_guest');
         optionItem.props.action();
         expect(mockOnSendOptionsChange).toHaveBeenCalledTimes(1);
+        const setStateFunction = mockOnSendOptionsChange.mock.calls[0][0];
+        const result = setStateFunction(props.sendOptions);
+        expect(result.inviteAsGuest).toBe(true);
     });
 
     it('does not render invite as guest option when canInviteGuests is false', () => {
@@ -215,6 +220,7 @@ describe('Selection', () => {
             includeCustomMessage: true,
             customMessage: 'Test message',
             selectedChannels: [],
+            guestMagicLink: false,
         };
 
         const {getByTestId} = renderWithIntl(<Selection {...props}/>);
@@ -229,6 +235,7 @@ describe('Selection', () => {
             includeCustomMessage: false,
             customMessage: '',
             selectedChannels: [],
+            guestMagicLink: false,
         };
 
         const {getByTestId} = renderWithIntl(<Selection {...props}/>);
@@ -243,6 +250,47 @@ describe('Selection', () => {
                 isMultiselect: true,
             }),
         );
+    });
+
+    it('renders guest magic link option when guestMagicLink is true', () => {
+        const props = getBaseProps();
+        props.allowGuestMagicLink = true;
+        props.sendOptions = {
+            inviteAsGuest: true,
+            includeCustomMessage: false,
+            customMessage: '',
+            selectedChannels: [],
+            guestMagicLink: false,
+        };
+
+        const {getByTestId} = renderWithIntl(<Selection {...props}/>);
+
+        const optionItem = getByTestId('invite.guest_magic_link');
+        expect(optionItem).toHaveProp('label', 'Allow newly created guests to login without password');
+        expect(optionItem).toHaveProp('type', 'toggle');
+        expect(optionItem).toHaveProp('selected', false);
+
+        optionItem.props.action();
+        expect(mockOnSendOptionsChange).toHaveBeenCalledTimes(1);
+        const setStateFunction = mockOnSendOptionsChange.mock.calls[0][0];
+        const result = setStateFunction(props.sendOptions);
+        expect(result.guestMagicLink).toBe(true);
+    });
+
+    it('does not render guest magic link option when allowGuestMagicLink is false', () => {
+        const props = getBaseProps();
+        props.allowGuestMagicLink = false;
+        props.sendOptions = {
+            inviteAsGuest: true,
+            includeCustomMessage: false,
+            customMessage: '',
+            selectedChannels: [],
+            guestMagicLink: false,
+        };
+        const {queryByTestId} = renderWithIntl(<Selection {...props}/>);
+
+        const optionItem = queryByTestId('invite.guest_magic_link');
+        expect(optionItem).toBeNull();
     });
 
     it('passes correct props to SelectionSearchBar', () => {

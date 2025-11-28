@@ -135,6 +135,7 @@ type SelectionProps = {
     onRemoveItem: (id: string) => void;
     onClose: () => Promise<void>;
     canInviteGuests: boolean;
+    allowGuestMagicLink: boolean;
 }
 
 export default function Selection({
@@ -160,9 +161,11 @@ export default function Selection({
         includeCustomMessage,
         customMessage,
         selectedChannels,
+        guestMagicLink,
     },
     onSendOptionsChange,
     canInviteGuests,
+    allowGuestMagicLink,
 }: SelectionProps) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -320,6 +323,13 @@ export default function Selection({
         }));
     }, [onSendOptionsChange]);
 
+    const handlePasswordlessInvitesChange = useCallback(() => {
+        onSendOptionsChange((options) => ({
+            ...options,
+            guestMagicLink: !options.guestMagicLink,
+        }));
+    }, [onSendOptionsChange]);
+
     const renderSelectedItems = () => {
         const selectedItems = [];
 
@@ -414,6 +424,15 @@ export default function Selection({
                                     testID='invite.custom_message'
                                     theme={theme}
                                     multiline={true}
+                                />
+                            )}
+                            {allowGuestMagicLink && (
+                                <OptionItem
+                                    label={intl.formatMessage({id: 'invite.guest_magic_link', defaultMessage: 'Allow newly created guests to login without password'})}
+                                    type='toggle'
+                                    selected={guestMagicLink}
+                                    action={handlePasswordlessInvitesChange}
+                                    testID='invite.guest_magic_link'
                                 />
                             )}
                         </>

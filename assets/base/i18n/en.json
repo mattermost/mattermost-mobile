@@ -423,6 +423,7 @@
   "invite_people_to_team.message": "Here’s a link to collaborate and communicate with us on Mattermost.",
   "invite_people_to_team.title": "Join the {team} team",
   "invite.custom_message": "Enter a custom message",
+  "invite.guest_magic_link": "Allow newly created guests to login without password",
   "invite.invite_as_guest": "Invite as guest",
   "invite.invite_as_guest_description": "Guests are limited to selected channels",
   "invite.members.already_member": "This person is already a team member",

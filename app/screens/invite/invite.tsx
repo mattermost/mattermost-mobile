@@ -85,6 +85,7 @@ type InviteProps = {
     isAdmin: boolean;
     emailInvitationsEnabled: boolean;
     canInviteGuests: boolean;
+    allowGuestMagicLink: boolean;
 }
 
 export default function Invite({
@@ -97,6 +98,7 @@ export default function Invite({
     isAdmin,
     emailInvitationsEnabled,
     canInviteGuests,
+    allowGuestMagicLink,
 }: InviteProps) {
     const intl = useIntl();
     const {formatMessage} = intl;
@@ -124,6 +126,7 @@ export default function Invite({
         includeCustomMessage: false,
         customMessage: '',
         selectedChannels: [],
+        guestMagicLink: false,
     });
 
     const isResult = stage === Stage.RESULT;
@@ -325,6 +328,7 @@ export default function Invite({
                         sendOptions={sendOptions}
                         onSendOptionsChange={setSendOptions}
                         canInviteGuests={canInviteGuests}
+                        allowGuestMagicLink={allowGuestMagicLink}
                     />
                 );
         }

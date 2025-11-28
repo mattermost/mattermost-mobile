@@ -416,6 +416,7 @@ describe('actions', () => {
             includeCustomMessage: false,
             customMessage: '',
             selectedChannels: ['channel-1', 'channel-2'],
+            guestMagicLink: false,
         };
 
         it('should successfully invite guest users', async () => {
@@ -756,6 +757,7 @@ describe('actions', () => {
                 [email],
                 options.selectedChannels,
                 'Welcome to the team!',
+                false,
             );
         });
 
@@ -788,6 +790,38 @@ describe('actions', () => {
                 [email],
                 options.selectedChannels,
                 '',
+                false,
+            );
+        });
+
+        it('should send guest email invites with guest magic link', async () => {
+            const email = 'guest@example.com';
+            const selectedIds = {[email]: email};
+            const customOptions = {
+                ...options,
+                guestMagicLink: true,
+            };
+
+            mockSendGuestEmailInvitesToTeam.mockResolvedValue({
+                members: [{email, error: undefined}],
+                error: undefined,
+            });
+
+            await sendGuestInvites(
+                serverUrl,
+                teamId,
+                selectedIds,
+                customOptions,
+                formatMessage,
+            );
+
+            expect(mockSendGuestEmailInvitesToTeam).toHaveBeenCalledWith(
+                serverUrl,
+                teamId,
+                [email],
+                options.selectedChannels,
+                '',
+                true,
             );
         });
 

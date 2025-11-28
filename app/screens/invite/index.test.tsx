@@ -56,6 +56,7 @@ describe('InviteContainer', () => {
         expect(invite.props.isAdmin).toBe(false);
         expect(invite.props.emailInvitationsEnabled).toBe(false);
         expect(invite.props.canInviteGuests).toBe(false);
+        expect(invite.props.allowGuestMagicLink).toBe(false);
     });
 
     it('should render correctly with team data', async () => {
@@ -103,6 +104,25 @@ describe('InviteContainer', () => {
 
         const invite = getByTestId('invite-component');
         expect(invite.props.emailInvitationsEnabled).toBe(true);
+        expect(invite.props.allowGuestMagicLink).toBe(false);
+
+        await act(async () => {
+            await operator.handleConfigs({
+                configs: [
+                    {
+                        id: 'EnableGuestMagicLink',
+                        value: 'true',
+                    },
+                ],
+                prepareRecordsOnly: false,
+                configsToDelete: [],
+            });
+        });
+
+        await waitFor(() => {
+            expect(invite.props.emailInvitationsEnabled).toBe(true);
+            expect(invite.props.allowGuestMagicLink).toBe(true);
+        });
     });
 
     it('should render correctly with user preferences', async () => {

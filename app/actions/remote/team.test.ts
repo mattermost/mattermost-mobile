@@ -250,7 +250,7 @@ describe('sendGuestEmailInvitesToTeam', () => {
         expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
         expect(result.members).toEqual(mockMembers);
-        expect(mockClient.sendGuestEmailInvitesToTeamGracefully).toHaveBeenCalledWith(teamId, emails, channels, message);
+        expect(mockClient.sendGuestEmailInvitesToTeamGracefully).toHaveBeenCalledWith(teamId, emails, channels, message, false);
         expect(mockClient.sendGuestEmailInvitesToTeamGracefully).toHaveBeenCalledTimes(1);
     });
 
@@ -265,7 +265,7 @@ describe('sendGuestEmailInvitesToTeam', () => {
         expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
         expect(result.members).toEqual(mockMembers);
-        expect(mockClient.sendGuestEmailInvitesToTeamGracefully).toHaveBeenCalledWith(teamId, ['guest1@example.com'], channels, '');
+        expect(mockClient.sendGuestEmailInvitesToTeamGracefully).toHaveBeenCalledWith(teamId, ['guest1@example.com'], channels, '', false);
         expect(mockClient.sendGuestEmailInvitesToTeamGracefully).toHaveBeenCalledTimes(1);
     });
 
@@ -278,7 +278,7 @@ describe('sendGuestEmailInvitesToTeam', () => {
         expect(result).toBeDefined();
         expect(result.error).toBeDefined();
         expect(result.members).toEqual([]);
-        expect(mockClient.sendGuestEmailInvitesToTeamGracefully).toHaveBeenCalledWith(teamId, emails, channels, message);
+        expect(mockClient.sendGuestEmailInvitesToTeamGracefully).toHaveBeenCalledWith(teamId, emails, channels, message, false);
     });
 
     it('should handle network manager error', async () => {
@@ -289,6 +289,21 @@ describe('sendGuestEmailInvitesToTeam', () => {
         expect(result).toBeDefined();
         expect(result.error).toBeDefined();
         expect(result.members).toEqual([]);
+    });
+
+    it('should send guest email invites with guest magic link', async () => {
+        const mockMembers: TeamInviteWithError[] = [
+            {email: 'guest1@example.com', error: {message: '', status_code: 0}},
+        ];
+        mockClient.sendGuestEmailInvitesToTeamGracefully.mockResolvedValueOnce(mockMembers);
+
+        const result = await sendGuestEmailInvitesToTeam(serverUrl, teamId, emails, channels, message, true);
+
+        expect(result).toBeDefined();
+        expect(result.error).toBeUndefined();
+        expect(result.members).toEqual(mockMembers);
+        expect(mockClient.sendGuestEmailInvitesToTeamGracefully).toHaveBeenCalledWith(teamId, emails, channels, message, true);
+        expect(mockClient.sendGuestEmailInvitesToTeamGracefully).toHaveBeenCalledTimes(1);
     });
 });
 

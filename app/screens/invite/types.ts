@@ -8,6 +8,7 @@ export type SendOptions = {
     includeCustomMessage: boolean;
     customMessage: string;
     selectedChannels: string[];
+    guestMagicLink: boolean;
 }
 
 export type EmailInvite = string;
