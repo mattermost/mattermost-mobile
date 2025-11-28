@@ -54,24 +54,6 @@ describe('SelectUser', () => {
         const selectUser = getByTestId('select-user');
 
         // Default values from observables when no data exists
-        expect(selectUser.props.currentUserId).toBe('');
-        expect(selectUser.props.currentTeamId).toBe('');
-    });
-
-    it('should render correctly with current user data', async () => {
-        await operator.handleSystem({
-            systems: [{
-                id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID,
-                value: 'current-user-id',
-            }],
-            prepareRecordsOnly: false,
-        });
-
-        const props = getBaseProps();
-        const {getByTestId} = renderWithEverything(<SelectUser {...props}/>, {database});
-
-        const selectUser = getByTestId('select-user');
-        expect(selectUser.props.currentUserId).toBe('current-user-id');
         expect(selectUser.props.currentTeamId).toBe('');
     });
 
@@ -89,40 +71,12 @@ describe('SelectUser', () => {
 
         const selectUser = getByTestId('select-user');
         expect(selectUser.props.currentTeamId).toBe('current-team-id');
-        expect(selectUser.props.currentUserId).toBe('');
-    });
-
-    it('should render correctly with both current user and team data', async () => {
-        await operator.handleSystem({
-            systems: [
-                {
-                    id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID,
-                    value: 'current-user-id',
-                },
-                {
-                    id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID,
-                    value: 'current-team-id',
-                },
-            ],
-            prepareRecordsOnly: false,
-        });
-
-        const props = getBaseProps();
-        const {getByTestId} = renderWithEverything(<SelectUser {...props}/>, {database});
-
-        const selectUser = getByTestId('select-user');
-        expect(selectUser.props.currentUserId).toBe('current-user-id');
-        expect(selectUser.props.currentTeamId).toBe('current-team-id');
     });
 
     it('should update observables when data changes', async () => {
         await operator.handleSystem({
             systems: [
                 {
-                    id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID,
-                    value: 'current-user-id',
-                },
-                {
                     id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID,
                     value: 'current-team-id',
                 },
@@ -134,24 +88,7 @@ describe('SelectUser', () => {
         const {getByTestId} = renderWithEverything(<SelectUser {...props}/>, {database});
 
         const selectUser = getByTestId('select-user');
-        expect(selectUser.props.currentUserId).toBe('current-user-id');
         expect(selectUser.props.currentTeamId).toBe('current-team-id');
-
-        await act(async () => {
-            // Update current user ID
-            await operator.handleSystem({
-                systems: [{
-                    id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID,
-                    value: 'new-user-id',
-                }],
-                prepareRecordsOnly: false,
-            });
-        });
-
-        await waitFor(() => {
-            expect(selectUser.props.currentUserId).toBe('new-user-id');
-            expect(selectUser.props.currentTeamId).toBe('current-team-id');
-        });
 
         await act(async () => {
             // Update current team ID
@@ -165,7 +102,6 @@ describe('SelectUser', () => {
         });
 
         await waitFor(() => {
-            expect(selectUser.props.currentUserId).toBe('new-user-id');
             expect(selectUser.props.currentTeamId).toBe('new-team-id');
         });
     });

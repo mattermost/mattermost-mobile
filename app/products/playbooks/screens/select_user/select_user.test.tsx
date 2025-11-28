@@ -63,7 +63,6 @@ describe('SelectUser', () => {
     function getBaseProps(): ComponentProps<typeof SelectUser> {
         return {
             currentTeamId: 'team-1',
-            currentUserId: 'current-user',
             handleSelect: jest.fn(),
             componentId: 'PlaybookSelectUser',
             participantIds: ['participant-1', 'participant-2'],
@@ -83,7 +82,6 @@ describe('SelectUser', () => {
         expect(queryByTestId('button')).toBeNull();
 
         const userList = getByTestId('integration_selector.user_list');
-        expect(userList).toHaveProp('currentUserId', props.currentUserId);
         expect(userList).toHaveProp('term', '');
         expect(userList).toHaveProp('tutorialWatched', true);
         expect(userList).toHaveProp('handleSelectProfile', expect.any(Function));
