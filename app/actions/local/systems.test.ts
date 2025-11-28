@@ -349,4 +349,194 @@ describe('expiredBoRPostCleanup', () => {
         // Verify that unsafeExecute was not called (no cleanup performed)
         expect(unsafeExecuteSpy).not.toHaveBeenCalled();
     });
+
+    it('should handle no server database gracefully', async () => {
+        // Try to run cleanup on a non-existent server
+        await expect(expiredBoRPostCleanup('nonexistent.server.com')).resolves.not.toThrow();
+    });
+
+    it('should handle no BoR posts gracefully', async () => {
+        const database = operator.database;
+        const unsafeExecuteSpy = jest.spyOn(database.adapter, 'unsafeExecute').mockImplementation(() => Promise.resolve());
+
+        const channel: Channel = TestHelper.fakeChannel({
+            id: 'channelid1',
+            team_id: 'teamid1',
+        });
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+
+        // Add a regular post (not BoR)
+        const regularPost = TestHelper.fakePost({
+            id: 'postid1',
+            channel_id: channel.id,
+            type: 'regular',
+        });
+
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [regularPost.id],
+            posts: [regularPost],
+            prepareRecordsOnly: false,
+        });
+
+        await expiredBoRPostCleanup(serverUrl);
+
+        // Verify that unsafeExecute was not called (no BoR posts to clean)
+        expect(unsafeExecuteSpy).not.toHaveBeenCalled();
+    });
+
+    it('should handle BoR posts that are not expired', async () => {
+        const database = operator.database;
+        const unsafeExecuteSpy = jest.spyOn(database.adapter, 'unsafeExecute').mockImplementation(() => Promise.resolve());
+
+        const channel: Channel = TestHelper.fakeChannel({
+            id: 'channelid1',
+            team_id: 'teamid1',
+        });
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+
+        const now = Date.now();
+
+        // Create BoR posts that are not expired
+        const borPostNotExpired = TestHelper.fakePost({
+            id: 'postid1',
+            channel_id: channel.id,
+            type: PostTypes.BURN_ON_READ,
+            props: {expire_at: now + 100000}, // Future expiry
+        });
+
+        const borPostNotExpiredForMe = TestHelper.fakePost({
+            id: 'postid2',
+            channel_id: channel.id,
+            type: PostTypes.BURN_ON_READ,
+            props: {expire_at: now - 10000}, // Expired for all
+            metadata: {expire_at: now + 100000}, // Not expired for me
+        });
+
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [borPostNotExpired.id, borPostNotExpiredForMe.id],
+            posts: [borPostNotExpired, borPostNotExpiredForMe],
+            prepareRecordsOnly: false,
+        });
+
+        await expiredBoRPostCleanup(serverUrl);
+
+        // Verify that unsafeExecute was not called (no expired BoR posts)
+        expect(unsafeExecuteSpy).not.toHaveBeenCalled();
+    });
+
+    it('should handle mixed expired and non-expired BoR posts', async () => {
+        const database = operator.database;
+        jest.spyOn(database.adapter, 'unsafeExecute').mockImplementation(() => Promise.resolve());
+
+        const channel: Channel = TestHelper.fakeChannel({
+            id: 'channelid1',
+            team_id: 'teamid1',
+        });
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+
+        const now = Date.now();
+
+        const borPostExpired = TestHelper.fakePost({
+            id: 'postid1',
+            channel_id: channel.id,
+            type: PostTypes.BURN_ON_READ,
+            props: {expire_at: now - 10000}, // Expired
+        });
+
+        const borPostNotExpired = TestHelper.fakePost({
+            id: 'postid2',
+            channel_id: channel.id,
+            type: PostTypes.BURN_ON_READ,
+            props: {expire_at: now + 100000}, // Not expired
+        });
+
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [borPostExpired.id, borPostNotExpired.id],
+            posts: [borPostExpired, borPostNotExpired],
+            prepareRecordsOnly: false,
+        });
+
+        await expiredBoRPostCleanup(serverUrl);
+
+        // Should only delete the expired post
+        expect(database.adapter.unsafeExecute).toHaveBeenCalledWith({
+            sqls: [
+                [`DELETE FROM Post where id IN ('${borPostExpired.id}')`, []],
+                [`DELETE FROM Reaction where post_id IN ('${borPostExpired.id}')`, []],
+                [`DELETE FROM File where post_id IN ('${borPostExpired.id}')`, []],
+                [`DELETE FROM Draft where root_id IN ('${borPostExpired.id}')`, []],
+                [`DELETE FROM PostsInThread where root_id IN ('${borPostExpired.id}')`, []],
+                [`DELETE FROM Thread where id IN ('${borPostExpired.id}')`, []],
+                [`DELETE FROM ThreadParticipant where thread_id IN ('${borPostExpired.id}')`, []],
+                [`DELETE FROM ThreadsInTeam where thread_id IN ('${borPostExpired.id}')`, []],
+            ],
+        });
+    });
+
+    it('should handle database errors gracefully', async () => {
+        const database = operator.database;
+        
+        // Mock database query to throw an error
+        jest.spyOn(database, 'get').mockImplementation(() => {
+            throw new Error('Database error');
+        });
+
+        // Should not throw an error, just log it
+        await expect(expiredBoRPostCleanup(serverUrl)).resolves.not.toThrow();
+    });
+
+    it('should run cleanup when last run was more than 15 minutes ago', async () => {
+        const database = operator.database;
+        jest.spyOn(database.adapter, 'unsafeExecute').mockImplementation(() => Promise.resolve());
+
+        // Set up an old last run time (more than 15 minutes ago)
+        const oldRunTime = Date.now() - (20 * 60 * 1000); // 20 minutes ago
+        await operator.handleSystem({
+            systems: [{
+                id: SYSTEM_IDENTIFIERS.LAST_BOR_POST_CLEANUP_RUN,
+                value: oldRunTime,
+            }],
+            prepareRecordsOnly: false,
+        });
+
+        const channel: Channel = TestHelper.fakeChannel({
+            id: 'channelid1',
+            team_id: 'teamid1',
+        });
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+
+        const now = Date.now();
+        const borPostExpired = TestHelper.fakePost({
+            id: 'postid1',
+            channel_id: channel.id,
+            type: PostTypes.BURN_ON_READ,
+            props: {expire_at: now - 10000},
+        });
+
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [borPostExpired.id],
+            posts: [borPostExpired],
+            prepareRecordsOnly: false,
+        });
+
+        await expiredBoRPostCleanup(serverUrl);
+
+        // Verify that cleanup was performed
+        expect(database.adapter.unsafeExecute).toHaveBeenCalledWith({
+            sqls: [
+                [`DELETE FROM Post where id IN ('${borPostExpired.id}')`, []],
+                [`DELETE FROM Reaction where post_id IN ('${borPostExpired.id}')`, []],
+                [`DELETE FROM File where post_id IN ('${borPostExpired.id}')`, []],
+                [`DELETE FROM Draft where root_id IN ('${borPostExpired.id}')`, []],
+                [`DELETE FROM PostsInThread where root_id IN ('${borPostExpired.id}')`, []],
+                [`DELETE FROM Thread where id IN ('${borPostExpired.id}')`, []],
+                [`DELETE FROM ThreadParticipant where thread_id IN ('${borPostExpired.id}')`, []],
+                [`DELETE FROM ThreadsInTeam where thread_id IN ('${borPostExpired.id}')`, []],
+            ],
+        });
+    });
 });
