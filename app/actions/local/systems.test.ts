@@ -307,4 +307,46 @@ describe('expiredBoRPostCleanup', () => {
             ],
         });
     });
+
+    it('should not run cleanup when called again within 15 minutes', async () => {
+        const database = operator.database;
+        const unsafeExecuteSpy = jest.spyOn(database.adapter, 'unsafeExecute').mockImplementation(() => Promise.resolve());
+
+        // Set up a recent last run time (within 15 minutes)
+        const recentRunTime = Date.now() - (10 * 60 * 1000); // 10 minutes ago
+        await operator.handleSystem({
+            systems: [{
+                id: SYSTEM_IDENTIFIERS.LAST_BOR_POST_CLEANUP_RUN,
+                value: recentRunTime,
+            }],
+            prepareRecordsOnly: false,
+        });
+
+        const channel: Channel = TestHelper.fakeChannel({
+            id: 'channelid1',
+            team_id: 'teamid1',
+        });
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+
+        const now = Date.now();
+        const borPostExpired = TestHelper.fakePost({
+            id: 'postid1',
+            channel_id: channel.id,
+            type: PostTypes.BURN_ON_READ,
+            props: {expire_at: now - 10000},
+        });
+
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [borPostExpired.id],
+            posts: [borPostExpired],
+            prepareRecordsOnly: false,
+        });
+
+        // Call cleanup - should not run because last run was within 15 minutes
+        await expiredBoRPostCleanup(serverUrl);
+
+        // Verify that unsafeExecute was not called (no cleanup performed)
+        expect(unsafeExecuteSpy).not.toHaveBeenCalled();
+    });
 });
