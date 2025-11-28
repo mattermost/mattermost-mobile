@@ -72,6 +72,7 @@ npm run clean                 # Clean build artifacts
 ### Network Layer
 - **NetworkManager** (`app/managers/network_manager.ts`) creates **one Client instance per server**
 - Uses `@mattermost/react-native-network-client`
+- **Product-specific API calls** should live in `client/rest.ts` within the product folder using the **ClientMix pattern** (see `app/products/calls/client/rest.ts` or `app/products/agents/client/rest.ts` for examples). Don't call `client.doFetch()` directly from action files.
 
 ### Actions Pattern
 - **Local Actions** (`app/actions/local/`): Database-only operations
@@ -229,6 +230,7 @@ Located at `libraries/@mattermost/`:
 - Avoid non-null assertions (`!`) - use optional chaining: `metadataRes.metadata?.followers?.length ?? 0`
 - Type function parameters using `ComponentProps<typeof Component>` instead of `as const` workarounds
 - JSDoc comments must match actual parameter names and types
+- **Prefer const objects over enums** for better tree-shaking: `export const Status = { Pending: 0, Done: 1 } as const;` with companion type `export type Status = typeof Status[keyof typeof Status];`
 
 ### React Hooks
 - **Always explain why dependencies are omitted** from exhaustive-deps with specific comments
@@ -239,6 +241,7 @@ Located at `libraries/@mattermost/`:
 - Stable references (refs, dispatch functions) don't need to be in dependency arrays but must have eslint-disable comments
 - React-Native-Reanimated shared values (`.value`) don't cause re-renders and don't need to be dependencies
 - **Critical**: When modifying existing `useEffect` hooks, you MUST include ALL dependencies used inside the effect, even if the original code had an incomplete dependency array - ESLint's `react-hooks/exhaustive-deps` rule is enforced strictly
+- **Memoize callbacks for list items**: When rendering lists with `.map()`, avoid inline arrow functions like `onPress={() => handler(item.id)}`. Instead, have the child component accept the ID and call the callback internally, allowing the parent to pass a single memoized callback reference.
 
 ### React Native & UI
 - Don't create hooks inside render functions - extract as local components
@@ -249,6 +252,10 @@ Located at `libraries/@mattermost/`:
 - Use `withTiming()` consistently for both states in animations
 - Test components with long strings to ensure proper text handling
 - Use constants from `PREFERENCES.THEMES` instead of hardcoded colors
+- **Use `react-native-reanimated`** instead of React Native's `Animated` API for all animations (better performance, runs on UI thread)
+- **Use `usePreventDoubleTap` hook** for button press handlers to prevent accidental double submissions
+- **Use `useServerUrl()` hook** instead of passing `serverUrl` as a prop - it's available via context
+- **Use existing components**: Check for `<Loading>` instead of `<ActivityIndicator>`, `safeParseJSON()` instead of try/catch JSON.parse
 
 ### Code Quality & Linting
 
@@ -271,6 +278,7 @@ Located at `libraries/@mattermost/`:
 - Use `logDebug()` for debug-level information
 - Don't ignore potential errors silently - handle them or add intentional comments
 - Don't log sensitive information
+- **Add function/class prefix to logs**: e.g., `logError('[ClassName.methodName]', error)` to make debugging easier
 
 ### State Management
 - Always handle errors from database operations
