@@ -1,21 +1,20 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {TOUCH_TARGET_SIZE} from '@agents/constants';
 import {ToolCallStatus, type ToolCall} from '@agents/types';
-import React, {useMemo} from 'react';
-import {ActivityIndicator, LayoutAnimation, Platform, StyleSheet, Text, TouchableOpacity, UIManager, View} from 'react-native';
+import React, {useCallback, useMemo} from 'react';
+import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
+import Loading from '@components/loading';
 import Markdown from '@components/markdown';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
+import {safeParseJSON} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-
-// Enable LayoutAnimation on Android
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
-    UIManager.setLayoutAnimationEnabledExperimental(true);
-}
 
 interface ToolCardProps {
     tool: ToolCall;
@@ -41,6 +40,8 @@ const ToolCard = ({
 }: ToolCardProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const contentOpacity = useSharedValue(isCollapsed ? 0 : 1);
+    const chevronRotation = useSharedValue(isCollapsed ? 0 : 90);
 
     const isPending = tool.status === ToolCallStatus.Pending;
     const hasLocalDecision = localDecision !== undefined && localDecision !== null;
@@ -66,27 +67,36 @@ const ToolCard = ({
             return '';
         }
 
-        try {
-            JSON.parse(tool.result);
+        const parsed = safeParseJSON(tool.result);
+        if (typeof parsed === 'object' && parsed !== null) {
             return `\`\`\`json\n${tool.result}\n\`\`\``;
-        } catch {
-            return `\`\`\`\n${tool.result}\n\`\`\``;
         }
+        return `\`\`\`\n${tool.result}\n\`\`\``;
     }, [tool.result]);
 
-    const handleToggle = () => {
-        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    const handleToggle = useCallback(() => {
+        const newCollapsed = !isCollapsed;
+        contentOpacity.value = withTiming(newCollapsed ? 0 : 1, {duration: 200});
+        chevronRotation.value = withTiming(newCollapsed ? 0 : 90, {duration: 200});
         onToggleCollapse();
-    };
+    }, [isCollapsed, contentOpacity, chevronRotation, onToggleCollapse]);
+
+    const chevronAnimatedStyle = useAnimatedStyle(() => ({
+        transform: [{rotate: `${chevronRotation.value}deg`}],
+    }));
+
+    const contentAnimatedStyle = useAnimatedStyle(() => ({
+        opacity: contentOpacity.value,
+    }));
 
     // Determine icon based on status
     const getStatusIcon = () => {
         if (isPending) {
             return (
-                <ActivityIndicator
+                <Loading
                     size='small'
                     color={changeOpacity(theme.centerChannelColor, 0.64)}
-                    style={styles.statusIcon}
+                    containerStyle={styles.statusIcon}
                 />
             );
         }
@@ -134,12 +144,13 @@ const ToolCard = ({
                 style={styles.header}
                 activeOpacity={0.7}
             >
-                <CompassIcon
-                    name={isCollapsed ? 'chevron-right' : 'chevron-down'}
-                    size={16}
-                    color={changeOpacity(theme.centerChannelColor, 0.56)}
-                    style={styles.chevronIcon}
-                />
+                <Animated.View style={[styles.chevronIcon, chevronAnimatedStyle]}>
+                    <CompassIcon
+                        name='chevron-right'
+                        size={16}
+                        color={changeOpacity(theme.centerChannelColor, 0.56)}
+                    />
+                </Animated.View>
                 {getStatusIcon()}
                 <Text
                     style={styles.toolName}
@@ -150,7 +161,7 @@ const ToolCard = ({
             </TouchableOpacity>
 
             {!isCollapsed && (
-                <>
+                <Animated.View style={contentAnimatedStyle}>
                     <View style={styles.argumentsContainer}>
                         <Markdown
                             baseTextStyle={styles.markdownText}
@@ -208,12 +219,12 @@ const ToolCard = ({
                             />
                         </View>
                     )}
-                </>
+                </Animated.View>
             )}
 
             {isPending && !hasLocalDecision && isProcessing && (
                 <View style={styles.statusContainer}>
-                    <ActivityIndicator
+                    <Loading
                         size='small'
                         color={changeOpacity(theme.centerChannelColor, 0.64)}
                     />
@@ -266,7 +277,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flexDirection: 'row',
             alignItems: 'center',
             gap: 8,
-            minHeight: 44, // Minimum touch target
+            minHeight: TOUCH_TARGET_SIZE,
             paddingVertical: 8,
         },
         chevronIcon: {
@@ -329,7 +340,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             borderRadius: 4,
             paddingVertical: 4,
             paddingHorizontal: 10,
-            height: 44, // Touch-optimized height
+            height: TOUCH_TARGET_SIZE,
             justifyContent: 'center',
         },
         buttonDisabled: {

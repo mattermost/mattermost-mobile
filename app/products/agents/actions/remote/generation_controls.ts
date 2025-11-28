@@ -17,16 +17,10 @@ export async function stopGeneration(
 ): Promise<{error?: unknown}> {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        const url = `/plugins/mattermost-ai/post/${postId}/stop`;
-
-        await client.doFetch(
-            url,
-            {method: 'POST'},
-        );
-
+        await client.stopGeneration(postId);
         return {};
     } catch (error) {
-        logError('Failed to stop generation', error);
+        logError('[stopGeneration]', error);
         return {error: getFullErrorMessage(error)};
     }
 }
@@ -43,16 +37,10 @@ export async function regenerateResponse(
 ): Promise<{error?: unknown}> {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        const url = `/plugins/mattermost-ai/post/${postId}/regenerate`;
-
-        await client.doFetch(
-            url,
-            {method: 'POST'},
-        );
-
+        await client.regenerateResponse(postId);
         return {};
     } catch (error) {
-        logError('Failed to regenerate response', error);
+        logError('[regenerateResponse]', error);
         return {error: getFullErrorMessage(error)};
     }
 }

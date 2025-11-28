@@ -1,8 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useState} from 'react';
-import {Linking, LayoutAnimation, Platform, StyleSheet, Text, TouchableOpacity, UIManager, View} from 'react-native';
+import {TOUCH_TARGET_SIZE} from '@agents/constants';
+import React, {useCallback, useState} from 'react';
+import {Linking, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
@@ -11,14 +13,19 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {Annotation} from '@agents/types';
 
-// Enable LayoutAnimation on Android
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
-    UIManager.setLayoutAnimationEnabledExperimental(true);
-}
-
 interface CitationsListProps {
     annotations: Annotation[];
 }
+
+// Extract domain from URL for display
+const getDomain = (url: string): string => {
+    try {
+        const urlObj = new URL(url);
+        return urlObj.hostname;
+    } catch {
+        return url;
+    }
+};
 
 /**
  * Component to display a collapsible list of citations below the agent response
@@ -26,32 +33,32 @@ interface CitationsListProps {
 const CitationsList = ({annotations}: CitationsListProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const [isCollapsed, setIsCollapsed] = useState(true);
+    const [isExpanded, setIsExpanded] = useState(false);
+    const animatedHeight = useSharedValue(0);
+    const opacity = useSharedValue(0);
+
+    const handleToggle = useCallback(() => {
+        const newExpanded = !isExpanded;
+        setIsExpanded(newExpanded);
+        animatedHeight.value = withTiming(newExpanded ? 1 : 0, {duration: 250});
+        opacity.value = withTiming(newExpanded ? 1 : 0, {duration: 250});
+    }, [isExpanded, animatedHeight, opacity]);
+
+    const handleCitationPress = useCallback((url: string) => {
+        if (url) {
+            Linking.openURL(url);
+        }
+    }, []);
+
+    const listAnimatedStyle = useAnimatedStyle(() => ({
+        opacity: opacity.value,
+        maxHeight: animatedHeight.value === 0 ? 0 : undefined,
+        overflow: 'hidden',
+    }));
 
     if (!annotations || annotations.length === 0) {
         return null;
     }
-
-    const handleToggle = () => {
-        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-        setIsCollapsed(!isCollapsed);
-    };
-
-    const handleCitationPress = (url: string) => {
-        if (url) {
-            Linking.openURL(url);
-        }
-    };
-
-    // Extract domain from URL for display
-    const getDomain = (url: string): string => {
-        try {
-            const urlObj = new URL(url);
-            return urlObj.hostname;
-        } catch {
-            return url;
-        }
-    };
 
     return (
         <View style={styles.container}>
@@ -74,14 +81,14 @@ const CitationsList = ({annotations}: CitationsListProps) => {
                     />
                 </View>
                 <CompassIcon
-                    name={isCollapsed ? 'chevron-down' : 'chevron-up'}
+                    name={isExpanded ? 'chevron-up' : 'chevron-down'}
                     size={20}
                     color={changeOpacity(theme.centerChannelColor, 0.64)}
                 />
             </TouchableOpacity>
 
-            {!isCollapsed && (
-                <View style={styles.citationsList}>
+            {isExpanded && (
+                <Animated.View style={[styles.citationsList, listAnimatedStyle]}>
                     {annotations.map((annotation, idx) => (
                         <TouchableOpacity
                             key={`citation-${annotation.index}-${idx}`}
@@ -117,7 +124,7 @@ const CitationsList = ({annotations}: CitationsListProps) => {
                             />
                         </TouchableOpacity>
                     ))}
-                </View>
+                </Animated.View>
             )}
         </View>
     );
@@ -136,7 +143,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             alignItems: 'center',
             justifyContent: 'space-between',
             paddingVertical: 8,
-            minHeight: 44, // Touch target size
+            minHeight: TOUCH_TARGET_SIZE,
         },
         headerLeft: {
             flexDirection: 'row',
@@ -160,7 +167,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             marginBottom: 8,
             borderRadius: 4,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.04),
-            minHeight: 44, // Touch target size
+            minHeight: TOUCH_TARGET_SIZE,
         },
         citationIcon: {
             width: 32,

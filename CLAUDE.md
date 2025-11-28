@@ -28,6 +28,15 @@ When testing features that require mobile device interaction:
 ## Key Commands
 
 ```bash
+# Setup
+npm run pod-install           # iOS CocoaPods (or pod-install-m1 for M1 Macs)
+npm run ios-gems              # Ruby gems for iOS (or ios-gems-m1 for M1 Macs)
+
+# Development
+npm start                     # Start Metro bundler
+npm run ios                   # Run iOS in simulator
+npm run android               # Run Android in emulator
+
 # TypeScript type checking
 npm run tsc
 
@@ -41,6 +50,9 @@ npm run e2e:android           # cd detox && npm run e2e:android-build && npm run
 # Builds delegate to Fastlane via shell scripts
 npm run build:ios             # ./scripts/build.sh ipa
 npm run build:android         # ./scripts/build.sh apk
+
+# Utilities
+npm run clean                 # Clean build artifacts
 ```
 
 ## Architecture
@@ -99,6 +111,17 @@ Modular features in `app/products/` with their own database models:
 - Otherwise stale streaming state prevents POST_EDITED updates from displaying
 - **Avoid setTimeout delays** in streaming cleanup - causes race conditions where components read stale ephemeral state instead of updated persisted data
 
+### Custom Native Modules
+Located at `libraries/@mattermost/`:
+- `@mattermost/rnutils` - Native utilities (orientation, notifications)
+- `@mattermost/rnshare` - Share extension integration
+- `@mattermost/hardware-keyboard` - External keyboard detection
+- `@mattermost/secure-pdf-viewer` - Secure PDF viewing
+
+**Native Bridge patterns** (when modifying native modules):
+- iOS: `RCT_EXPORT_MODULE()`, `RCT_EXPORT_METHOD()` in Objective-C++
+- Android: Extend `ReactContextBaseJavaModule`, use `@ReactMethod`
+
 ### TypeScript Path Aliases
 ```typescript
 @actions/*     → app/actions/*
@@ -114,6 +137,8 @@ Modular features in `app/products/` with their own database models:
 
 ### Share Extension
 **Separate bundle** at `share_extension/` for iOS/Android system share. Shares code with main app but runs independently.
+
+**Important:** Share extension uses **React Navigation** (not react-native-navigation like main app).
 
 ## Testing
 

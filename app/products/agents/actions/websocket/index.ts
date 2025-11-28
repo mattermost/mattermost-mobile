@@ -17,18 +17,3 @@ export function handleAgentPostUpdate(msg: WebSocketMessage<PostUpdateWebsocketM
     // Delegate to the streaming store
     streamingStore.handleWebSocketMessage(msg.data);
 }
-
-/**
- * Type definition for WebSocket messages
- */
-interface WebSocketMessage<T = any> {
-    event: string;
-    data: T;
-    broadcast: {
-        omit_users: Record<string, boolean> | null;
-        user_id: string;
-        channel_id: string;
-        team_id: string;
-    };
-    seq: number;
-}

@@ -2,11 +2,13 @@
 // See LICENSE.txt for license information.
 
 import NetworkManager from '@managers/network_manager';
+import {getFullErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
 
 import {submitToolApproval} from './tool_approval';
 
 jest.mock('@managers/network_manager');
+jest.mock('@utils/errors');
 jest.mock('@utils/log');
 
 const serverUrl = 'https://test.mattermost.com';
@@ -14,11 +16,11 @@ const postId = 'post123';
 const acceptedToolIds = ['tool1', 'tool2', 'tool3'];
 
 const mockClient = {
-    doFetch: jest.fn(),
+    submitToolApproval: jest.fn(),
 };
 
 beforeAll(() => {
-    (NetworkManager.getClient as jest.Mock) = jest.fn(() => mockClient);
+    jest.mocked(NetworkManager.getClient).mockReturnValue(mockClient as any);
 });
 
 beforeEach(() => {
@@ -26,50 +28,27 @@ beforeEach(() => {
 });
 
 describe('submitToolApproval', () => {
-    it('should call correct endpoint with POST method and return empty object on success', async () => {
-        mockClient.doFetch.mockResolvedValueOnce({});
+    it('should call client.submitToolApproval and return empty object on success', async () => {
+        mockClient.submitToolApproval.mockResolvedValue(undefined);
 
         const result = await submitToolApproval(serverUrl, postId, acceptedToolIds);
 
         expect(NetworkManager.getClient).toHaveBeenCalledWith(serverUrl);
-        expect(mockClient.doFetch).toHaveBeenCalledWith(
-            `/plugins/mattermost-ai/post/${postId}/tool_call`,
-            {
-                method: 'POST',
-                body: JSON.stringify({
-                    accepted_tool_ids: acceptedToolIds,
-                }),
-            },
-        );
+        expect(mockClient.submitToolApproval).toHaveBeenCalledWith(postId, acceptedToolIds);
         expect(result).toEqual({});
         expect(result.error).toBeUndefined();
     });
 
-    it('should serialize request body correctly as JSON', async () => {
-        mockClient.doFetch.mockResolvedValueOnce({});
-
-        await submitToolApproval(serverUrl, postId, acceptedToolIds);
-
-        const callArgs = mockClient.doFetch.mock.calls[0];
-        const requestBody = callArgs[1].body;
-
-        // Verify it's a JSON string
-        expect(typeof requestBody).toBe('string');
-
-        // Verify it can be parsed back
-        const parsedBody = JSON.parse(requestBody);
-        expect(parsedBody).toEqual({
-            accepted_tool_ids: acceptedToolIds,
-        });
-    });
-
     it('should return error object and log error on failure', async () => {
         const error = new Error('Network error');
-        mockClient.doFetch.mockRejectedValueOnce(error);
+        const errorMessage = 'Network error occurred';
+        mockClient.submitToolApproval.mockRejectedValue(error);
+        jest.mocked(getFullErrorMessage).mockReturnValue(errorMessage);
 
         const result = await submitToolApproval(serverUrl, postId, acceptedToolIds);
 
-        expect(result.error).toBeDefined();
-        expect(logError).toHaveBeenCalledWith('Failed to submit tool approval', error);
+        expect(logError).toHaveBeenCalledWith('[submitToolApproval]', error);
+        expect(getFullErrorMessage).toHaveBeenCalledWith(error);
+        expect(result).toEqual({error: errorMessage});
     });
 });

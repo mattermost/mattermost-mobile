@@ -4,13 +4,16 @@
 /**
  * Tool call status values
  */
-export enum ToolCallStatus {
-    Pending = 0,
-    Accepted = 1,
-    Rejected = 2,
-    Error = 3,
-    Success = 4,
-}
+export const ToolCallStatus = {
+    Pending: 0,
+    Accepted: 1,
+    Rejected: 2,
+    Error: 3,
+    Success: 4,
+} as const;
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare -- TypeScript supports same-name type/value pairs as enum alternative
+export type ToolCallStatus = typeof ToolCallStatus[keyof typeof ToolCallStatus];
 
 /**
  * Tool call data structure
@@ -67,8 +70,11 @@ export interface StreamingState {
 /**
  * Events emitted by the streaming store
  */
-export enum StreamingEvents {
-    STARTED = 'agents_streaming_started',
-    UPDATED = 'agents_streaming_updated',
-    ENDED = 'agents_streaming_ended',
-}
+export const StreamingEvents = {
+    STARTED: 'agents_streaming_started',
+    UPDATED: 'agents_streaming_updated',
+    ENDED: 'agents_streaming_ended',
+} as const;
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare -- TypeScript supports same-name type/value pairs as enum alternative
+export type StreamingEvents = typeof StreamingEvents[keyof typeof StreamingEvents];

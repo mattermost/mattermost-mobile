@@ -254,7 +254,9 @@ const Post = ({
                 clearTimeout(t);
             }
         };
-    }, [post.id, post.pendingPostId, post.updateAt, isFailed]);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Timer only needs to reset when post.id changes, not on other prop updates
+    }, [post.id]);
 
     useEffect(() => {
         if (!isLastPost) {
@@ -267,7 +269,9 @@ const Post = ({
 
         PerformanceMetricsManager.finishLoad(location === 'Thread' ? 'THREAD' : 'CHANNEL', serverUrl);
         PerformanceMetricsManager.endMetric('mobile_channel_switch', serverUrl);
-    }, [isLastPost, location, serverUrl]);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Performance metrics should only run once on mount
+    }, []);
 
     const highlightSaved = isSaved && !skipSavedHeader;
     const hightlightPinned = post.isPinned && !skipPinnedHeader;
@@ -362,9 +366,9 @@ const Post = ({
     } else if (isAgentPostType && !hasBeenDeleted) {
         body = (
             <AgentPost
-                serverUrl={serverUrl}
                 post={post}
                 currentUserId={currentUser?.id}
+                location={location}
             />
         );
     } else {
