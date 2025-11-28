@@ -109,7 +109,7 @@ export async function addUserToTeam(serverUrl: string, teamId: string, userId: s
     }
 }
 
-export async function addUsersToTeam(serverUrl: string, teamId: string, userIds: string[], fetchOnly = false) {
+export async function addUsersToTeam(serverUrl: string, teamId: string, userIds: string[], fetchOnly = false): Promise<{members: TeamMemberWithError[]; error?: unknown}> {
     try {
         const client = NetworkManager.getClient(serverUrl);
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -142,20 +142,33 @@ export async function addUsersToTeam(serverUrl: string, teamId: string, userIds:
         }
 
         forceLogoutIfNecessary(serverUrl, error);
-        return {error};
+        return {members: [], error};
     }
 }
 
-export async function sendEmailInvitesToTeam(serverUrl: string, teamId: string, emails: string[]) {
+export async function sendEmailInvitesToTeam(serverUrl: string, teamId: string, emails: string[]): Promise<{members: TeamInviteWithError[]; error?: unknown}> {
     try {
         const client = NetworkManager.getClient(serverUrl);
         const members = await client.sendEmailInvitesToTeamGracefully(teamId, emails);
 
-        return {members};
+        return {members, error: undefined};
     } catch (error) {
         logDebug('error on sendEmailInvitesToTeam', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
-        return {error};
+        return {members: [], error};
+    }
+}
+
+export async function sendGuestEmailInvitesToTeam(serverUrl: string, teamId: string, emails: string[], channels: string[], message = '', guestMagicLink = false): Promise<{members: TeamInviteWithError[]; error?: unknown}> {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const members = await client.sendGuestEmailInvitesToTeamGracefully(teamId, emails, channels, message, guestMagicLink);
+
+        return {members, error: undefined};
+    } catch (error) {
+        logDebug('error on sendGuestEmailInvitesToTeam', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {members: [], error};
     }
 }
 
@@ -483,7 +496,7 @@ export async function handleKickFromTeam(serverUrl: string, teamId: string) {
     }
 }
 
-export async function getTeamMembersByIds(serverUrl: string, teamId: string, userIds: string[], fetchOnly?: boolean) {
+export async function getTeamMembersByIds(serverUrl: string, teamId: string, userIds: string[], fetchOnly?: boolean): Promise<{members: TeamMembership[]; error?: unknown}> {
     try {
         const client = NetworkManager.getClient(serverUrl);
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -505,7 +518,7 @@ export async function getTeamMembersByIds(serverUrl: string, teamId: string, use
     } catch (error) {
         logDebug('error on getTeamMembersByIds', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
-        return {error};
+        return {members: [], error};
     }
 }
 

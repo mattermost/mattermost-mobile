@@ -194,6 +194,78 @@ describe('ClientTeams', () => {
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
     });
 
+    describe('sendGuestEmailInvitesToTeamGracefully', () => {
+        it('should send guest email invites with all params', async () => {
+            const teamId = 'team1';
+            const emails = ['guest1@example.com', 'guest2@example.com'];
+            const channels = ['channel1', 'channel2'];
+            const message = 'Welcome to the team!';
+            const params = {graceful: true};
+            const expectedUrl = `${client.getTeamRoute(teamId)}/invite-guests/email${buildQueryString(params)}`;
+            const expectedOptions = {method: 'post', body: {message, emails, channels}};
+            const mockResponse: TeamInviteWithError[] = [
+                {email: 'guest1@example.com', error: {message: '', status_code: 0}},
+                {email: 'guest2@example.com', error: {message: '', status_code: 0}},
+            ];
+
+            jest.mocked(client.doFetch).mockResolvedValueOnce(mockResponse as any);
+
+            const result = await client.sendGuestEmailInvitesToTeamGracefully(teamId, emails, channels, message);
+
+            expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+            expect(result).toEqual(mockResponse);
+        });
+
+        it('should send guest email invites with default message', async () => {
+            const teamId = 'team1';
+            const emails = ['guest1@example.com'];
+            const channels = ['channel1'];
+            const expectedUrl = `${client.getTeamRoute(teamId)}/invite-guests/email${buildQueryString({graceful: true})}`;
+            const expectedOptions = {method: 'post', body: {message: '', emails, channels}};
+            const mockResponse: TeamInviteWithError[] = [
+                {email: 'guest1@example.com', error: {message: '', status_code: 0}},
+            ];
+
+            jest.mocked(client.doFetch).mockResolvedValueOnce(mockResponse as any);
+
+            const result = await client.sendGuestEmailInvitesToTeamGracefully(teamId, emails, channels);
+
+            expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+            expect(result).toEqual(mockResponse);
+        });
+
+        it('should handle error when sending guest email invites', async () => {
+            const teamId = 'team1';
+            const emails = ['guest1@example.com'];
+            const channels = ['channel1'];
+            const message = 'Test message';
+
+            jest.mocked(client.doFetch).mockRejectedValueOnce(new Error('Network error'));
+
+            await expect(client.sendGuestEmailInvitesToTeamGracefully(teamId, emails, channels, message)).rejects.toThrow('Network error');
+        });
+
+        it('should send guest email invites with guest magic link', async () => {
+            const teamId = 'team1';
+            const emails = ['guest1@example.com'];
+            const channels = ['channel1'];
+            const message = 'Test message';
+            const guestMagicLink = true;
+            const expectedUrl = `${client.getTeamRoute(teamId)}/invite-guests/email${buildQueryString({graceful: true, guest_magic_link: true})}`;
+            const expectedOptions = {method: 'post', body: {message, emails, channels}};
+            const mockResponse: TeamInviteWithError[] = [
+                {email: 'guest1@example.com', error: {message: '', status_code: 0}},
+            ];
+
+            jest.mocked(client.doFetch).mockResolvedValueOnce(mockResponse as any);
+
+            const result = await client.sendGuestEmailInvitesToTeamGracefully(teamId, emails, channels, message, guestMagicLink);
+
+            expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+            expect(result).toEqual(mockResponse);
+        });
+    });
+
     test('joinTeam', async () => {
         const inviteId = 'invite1';
         const query = buildQueryString({invite_id: inviteId});

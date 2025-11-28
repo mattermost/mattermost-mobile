@@ -117,6 +117,7 @@ export type OptionItemProps = {
     icon?: string;
     iconColor?: string;
     info?: string | UserChipData;
+    isInfoDestructive?: boolean;
     inline?: boolean;
     label: string;
     onRemove?: () => void;
@@ -138,6 +139,7 @@ const OptionItem = ({
     icon,
     iconColor,
     info,
+    isInfoDestructive = false,
     inline = false,
     label,
     onRemove,
@@ -274,7 +276,7 @@ const OptionItem = ({
     } else if (info) {
         infoComponent = (
             <Text
-                style={[styles.info, !actionComponent && styles.iconContainer, destructive && {color: theme.dndIndicator}]}
+                style={[styles.info, !actionComponent && styles.iconContainer, (destructive || isInfoDestructive) && {color: theme.dndIndicator}]}
                 testID={`${testID}.info`}
                 numberOfLines={1}
             >
