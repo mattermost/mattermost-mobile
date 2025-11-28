@@ -28,6 +28,7 @@ const enchanced = withObservables([], ({database}: WithDatabaseArgs) => {
         switchMap((scheduledPosts) => of(hasScheduledPostError(scheduledPosts))),
     );
     const scheduledPostsEnabled = observeScheduledPostEnabled(database);
+    const agentsEnabled = of(true); // Always enabled for now
     const playbooksEnabled = observeIsPlaybooksEnabled(database);
 
     return {
@@ -36,6 +37,7 @@ const enchanced = withObservables([], ({database}: WithDatabaseArgs) => {
         scheduledPostCount,
         scheduledPostHasError,
         scheduledPostsEnabled,
+        agentsEnabled,
         playbooksEnabled,
     };
 });

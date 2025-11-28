@@ -119,7 +119,7 @@ class StreamingPostStore {
             state.precontent = false;
             this.emitEvent(StreamingEvents.UPDATED, state);
         } catch (error) {
-            logWarning('Failed to parse tool calls JSON', error, {postId, toolCallsJson});
+            logWarning('[StreamingPostStore.updateToolCalls]', error, {postId, toolCallsJson});
         }
     }
 
@@ -137,7 +137,7 @@ class StreamingPostStore {
             state.precontent = false;
             this.emitEvent(StreamingEvents.UPDATED, state);
         } catch (error) {
-            logWarning('Failed to parse annotations JSON', error, {postId, annotationsJson});
+            logWarning('[StreamingPostStore.updateAnnotations]', error, {postId, annotationsJson});
         }
     }
 

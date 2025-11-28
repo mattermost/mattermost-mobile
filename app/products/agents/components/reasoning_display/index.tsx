@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useState} from 'react';
-import {LayoutAnimation, Platform, StyleSheet, Text, TouchableOpacity, UIManager, View} from 'react-native';
+import React, {useCallback, useState} from 'react';
+import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
@@ -10,11 +11,6 @@ import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import LoadingSpinner from './loading_spinner';
-
-// Enable LayoutAnimation on Android
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
-    UIManager.setLayoutAnimationEnabledExperimental(true);
-}
 
 interface ReasoningDisplayProps {
     reasoningSummary: string;
@@ -28,71 +24,56 @@ interface ReasoningDisplayProps {
 const ReasoningDisplay = ({reasoningSummary, isReasoningLoading}: ReasoningDisplayProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const [isCollapsed, setIsCollapsed] = useState(true);
+    const [isExpanded, setIsExpanded] = useState(false);
+    const rotation = useSharedValue(0);
+    const contentOpacity = useSharedValue(0);
 
-    const handleToggle = () => {
-        // Animate the layout change
-        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-        setIsCollapsed(!isCollapsed);
-    };
+    const handleToggle = useCallback(() => {
+        const newExpanded = !isExpanded;
+        setIsExpanded(newExpanded);
+        rotation.value = withTiming(newExpanded ? 90 : 0, {duration: 200});
+        contentOpacity.value = withTiming(newExpanded ? 1 : 0, {duration: 250});
+    }, [isExpanded, rotation, contentOpacity]);
 
-    if (isCollapsed) {
-        return (
+    const chevronAnimatedStyle = useAnimatedStyle(() => ({
+        transform: [{rotate: `${rotation.value}deg`}],
+    }));
+
+    const contentAnimatedStyle = useAnimatedStyle(() => ({
+        opacity: contentOpacity.value,
+    }));
+
+    return (
+        <View style={isExpanded ? styles.expandedContainer : styles.minimalContainer}>
             <TouchableOpacity
                 onPress={handleToggle}
-                style={styles.minimalContainer}
+                style={isExpanded ? styles.expandedHeader : styles.minimalContent}
                 activeOpacity={0.7}
             >
-                <View style={styles.minimalContent}>
+                <Animated.View style={chevronAnimatedStyle}>
                     <CompassIcon
                         name='chevron-right'
                         size={16}
                         color={changeOpacity(theme.centerChannelColor, 0.64)}
-                        style={styles.chevronCollapsed}
                     />
-                    {isReasoningLoading && (
-                        <LoadingSpinner/>
-                    )}
-                    <FormattedText
-                        id='agents.reasoning.thinking'
-                        defaultMessage='Thinking'
-                        style={styles.minimalText}
-                    />
-                </View>
-            </TouchableOpacity>
-        );
-    }
-
-    return (
-        <View style={styles.expandedContainer}>
-            <TouchableOpacity
-                onPress={handleToggle}
-                style={styles.expandedHeader}
-                activeOpacity={0.7}
-            >
-                <CompassIcon
-                    name='chevron-right'
-                    size={16}
-                    color={changeOpacity(theme.centerChannelColor, 0.64)}
-                    style={styles.chevronExpanded}
-                />
+                </Animated.View>
                 {isReasoningLoading && (
                     <LoadingSpinner/>
                 )}
                 <FormattedText
                     id='agents.reasoning.thinking'
                     defaultMessage='Thinking'
-                    style={styles.expandedHeaderText}
+                    style={isExpanded ? styles.expandedHeaderText : styles.minimalText}
                 />
             </TouchableOpacity>
-            {reasoningSummary ? (
-                <View style={styles.reasoningContentContainer}>
+            {isExpanded && reasoningSummary ? (
+                <Animated.View style={[styles.reasoningContentContainer, contentAnimatedStyle]}>
                     <View style={styles.reasoningContent}>
                         <Text style={styles.reasoningText}>
                             {reasoningSummary}
                         </Text>
                     </View>
-                </View>
+                </Animated.View>
             ) : null}
         </View>
     );
@@ -128,12 +109,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         expandedHeaderText: {
             fontSize: 14,
             color: changeOpacity(theme.centerChannelColor, 0.64),
-        },
-        chevronCollapsed: {
-            transform: [{rotate: '0deg'}],
-        },
-        chevronExpanded: {
-            transform: [{rotate: '90deg'}],
         },
         reasoningContentContainer: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.02),

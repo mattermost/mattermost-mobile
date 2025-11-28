@@ -27,11 +27,11 @@ describe('handleAgentPostUpdate', () => {
             control: 'start',
         };
 
-        const msg = {
+        const msg: WebSocketMessage<PostUpdateWebsocketMessage> = {
             event: 'custom_mattermost-ai_postupdate',
             data: messageData,
             broadcast: {
-                omit_users: null,
+                omit_users: {},
                 user_id: 'user123',
                 channel_id: 'channel123',
                 team_id: 'team123',
@@ -50,7 +50,7 @@ describe('handleAgentPostUpdate', () => {
             event: 'custom_mattermost-ai_postupdate',
             data: undefined,
             broadcast: {
-                omit_users: null,
+                omit_users: {},
                 user_id: 'user123',
                 channel_id: 'channel123',
                 team_id: 'team123',
@@ -58,7 +58,7 @@ describe('handleAgentPostUpdate', () => {
             seq: 1,
         };
 
-        handleAgentPostUpdate(msg as any);
+        handleAgentPostUpdate(msg as unknown as WebSocketMessage<PostUpdateWebsocketMessage>);
 
         expect(streamingStore.handleWebSocketMessage).not.toHaveBeenCalled();
     });
@@ -68,7 +68,7 @@ describe('handleAgentPostUpdate', () => {
             event: 'custom_mattermost-ai_postupdate',
             data: null,
             broadcast: {
-                omit_users: null,
+                omit_users: {},
                 user_id: 'user123',
                 channel_id: 'channel123',
                 team_id: 'team123',
@@ -76,7 +76,7 @@ describe('handleAgentPostUpdate', () => {
             seq: 2,
         };
 
-        handleAgentPostUpdate(msg as any);
+        handleAgentPostUpdate(msg as unknown as WebSocketMessage<PostUpdateWebsocketMessage>);
 
         expect(streamingStore.handleWebSocketMessage).not.toHaveBeenCalled();
     });

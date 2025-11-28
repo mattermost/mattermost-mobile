@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import AGENTS_SCREENS from '@agents/constants/screens';
+
 import PLAYBOOKS_SCREENS from '@playbooks/constants/screens';
 
 export const ABOUT = 'About';
@@ -176,6 +178,7 @@ export default {
     THREAD_FOLLOW_BUTTON,
     THREAD_OPTIONS,
     USER_PROFILE,
+    ...AGENTS_SCREENS,
     ...PLAYBOOKS_SCREENS,
 } as const;
 

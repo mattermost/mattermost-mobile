@@ -18,11 +18,12 @@ const serverUrl = 'https://test.mattermost.com';
 const postId = 'test-post-id';
 
 const mockClient = {
-    doFetch: jest.fn(),
+    stopGeneration: jest.fn(),
+    regenerateResponse: jest.fn(),
 };
 
 beforeAll(() => {
-    (NetworkManager.getClient as jest.Mock) = jest.fn(() => mockClient);
+    jest.mocked(NetworkManager.getClient).mockReturnValue(mockClient as any);
 });
 
 beforeEach(() => {
@@ -30,16 +31,13 @@ beforeEach(() => {
 });
 
 describe('stopGeneration', () => {
-    it('should call correct endpoint with POST method and return empty object on success', async () => {
-        mockClient.doFetch.mockResolvedValue(undefined);
+    it('should call client.stopGeneration and return empty object on success', async () => {
+        mockClient.stopGeneration.mockResolvedValue(undefined);
 
         const result = await stopGeneration(serverUrl, postId);
 
         expect(NetworkManager.getClient).toHaveBeenCalledWith(serverUrl);
-        expect(mockClient.doFetch).toHaveBeenCalledWith(
-            `/plugins/mattermost-ai/post/${postId}/stop`,
-            {method: 'POST'},
-        );
+        expect(mockClient.stopGeneration).toHaveBeenCalledWith(postId);
         expect(result).toEqual({});
         expect(result.error).toBeUndefined();
     });
@@ -47,28 +45,25 @@ describe('stopGeneration', () => {
     it('should return error object and log error on failure', async () => {
         const error = new Error('Network error');
         const errorMessage = 'Network error occurred';
-        mockClient.doFetch.mockRejectedValue(error);
-        (getFullErrorMessage as jest.Mock).mockReturnValue(errorMessage);
+        mockClient.stopGeneration.mockRejectedValue(error);
+        jest.mocked(getFullErrorMessage).mockReturnValue(errorMessage);
 
         const result = await stopGeneration(serverUrl, postId);
 
-        expect(logError).toHaveBeenCalledWith('Failed to stop generation', error);
+        expect(logError).toHaveBeenCalledWith('[stopGeneration]', error);
         expect(getFullErrorMessage).toHaveBeenCalledWith(error);
         expect(result).toEqual({error: errorMessage});
     });
 });
 
 describe('regenerateResponse', () => {
-    it('should call correct endpoint with POST method and return empty object on success', async () => {
-        mockClient.doFetch.mockResolvedValue(undefined);
+    it('should call client.regenerateResponse and return empty object on success', async () => {
+        mockClient.regenerateResponse.mockResolvedValue(undefined);
 
         const result = await regenerateResponse(serverUrl, postId);
 
         expect(NetworkManager.getClient).toHaveBeenCalledWith(serverUrl);
-        expect(mockClient.doFetch).toHaveBeenCalledWith(
-            `/plugins/mattermost-ai/post/${postId}/regenerate`,
-            {method: 'POST'},
-        );
+        expect(mockClient.regenerateResponse).toHaveBeenCalledWith(postId);
         expect(result).toEqual({});
         expect(result.error).toBeUndefined();
     });
@@ -76,12 +71,12 @@ describe('regenerateResponse', () => {
     it('should return error object and log error on failure', async () => {
         const error = new Error('Network error');
         const errorMessage = 'Network error occurred';
-        mockClient.doFetch.mockRejectedValue(error);
-        (getFullErrorMessage as jest.Mock).mockReturnValue(errorMessage);
+        mockClient.regenerateResponse.mockRejectedValue(error);
+        jest.mocked(getFullErrorMessage).mockReturnValue(errorMessage);
 
         const result = await regenerateResponse(serverUrl, postId);
 
-        expect(logError).toHaveBeenCalledWith('Failed to regenerate response', error);
+        expect(logError).toHaveBeenCalledWith('[regenerateResponse]', error);
         expect(getFullErrorMessage).toHaveBeenCalledWith(error);
         expect(result).toEqual({error: errorMessage});
     });

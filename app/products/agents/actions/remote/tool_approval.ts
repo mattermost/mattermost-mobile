@@ -19,21 +19,10 @@ export async function submitToolApproval(
 ): Promise<{error?: unknown}> {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        const url = `/plugins/mattermost-ai/post/${postId}/tool_call`;
-
-        await client.doFetch(
-            url,
-            {
-                method: 'POST',
-                body: JSON.stringify({
-                    accepted_tool_ids: acceptedToolIds,
-                }),
-            },
-        );
-
+        await client.submitToolApproval(postId, acceptedToolIds);
         return {};
     } catch (error) {
-        logError('Failed to submit tool approval', error);
+        logError('[submitToolApproval]', error);
         return {error: getFullErrorMessage(error)};
     }
 }
