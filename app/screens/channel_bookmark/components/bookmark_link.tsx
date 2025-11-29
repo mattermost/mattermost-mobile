@@ -17,6 +17,7 @@ import {fetchOpenGraph} from '@utils/opengraph';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getUrlAfterRedirect} from '@utils/url';
+import {isValidLinkURL} from '@utils/url/validation';
 import {matchDeepLink} from '@utils/deep_link';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {observeConfigValue} from '@queries/servers/system';
@@ -66,6 +67,16 @@ const BookmarkLink = ({disabled, initialUrl = '', resetBookmark, setBookmark, se
 
     const validateAndFetchOG = useDebounce(useCallback((async (text: string) => {
         setLoading(true);
+
+        // Validate URL scheme (blocks javascript:, data:, file:, etc.)
+        if (!isValidLinkURL(text)) {
+            setError(intl.formatMessage({
+                id: 'channel_bookmark_add.link.invalid',
+                defaultMessage: 'Please enter a valid link',
+            }));
+            setLoading(false);
+            return;
+        }
 
         // Check if it's a custom app scheme URL (like mattermost://)
         if (matchDeepLink(text)) {
