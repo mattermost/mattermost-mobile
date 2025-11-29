@@ -5,6 +5,7 @@ import NetInfo from '@react-native-community/netinfo';
 import {defineMessages, type IntlShape} from 'react-intl';
 import {Alert, DeviceEventEmitter, Platform, type AlertButton} from 'react-native';
 
+import {doPing} from '@actions/remote/general';
 import {Database, Events} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
@@ -18,8 +19,10 @@ import {getCurrentUser} from '@queries/servers/user';
 import {resetToHome} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {getFullErrorMessage, isErrorWithStatusCode, isErrorWithUrl} from '@utils/errors';
+import {getIntlShape} from '@utils/general';
 import {logWarning, logError, logDebug} from '@utils/log';
 import {scheduleExpiredNotification} from '@utils/notification';
+import {canReceiveNotifications} from '@utils/push_proxy';
 import {type SAMLChallenge} from '@utils/saml_challenge';
 import {getCSRFFromCookie} from '@utils/security';
 import {getServerUrlAfterRedirect} from '@utils/url';
@@ -492,6 +495,13 @@ export const magicLinkLogin = async (serverUrl: string, token: string): Promise<
         });
         const csrfToken = await getCSRFFromCookie(serverUrlToUse);
         client.setCSRFToken(csrfToken);
+
+        // Check push notification capability (similar to normal login flow)
+        const pingResult = await doPing(serverUrlToUse, true, undefined, undefined, client);
+        if (!pingResult.error && pingResult.canReceiveNotifications) {
+            const intl = getIntlShape(user.locale);
+            canReceiveNotifications(serverUrlToUse, pingResult.canReceiveNotifications as string, intl);
+        }
     } catch (error) {
         return {error, failed: true};
     }
