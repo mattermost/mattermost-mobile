@@ -162,4 +162,77 @@ describe('Friendly Date', () => {
 
         jest.useRealTimers();
     });
+
+    it('should render correctly with times in the future', () => {
+        jest.useFakeTimers();
+        jest.setSystemTime(new Date('2020-05-15T00:00:00.000Z'));
+
+        const justNow = new Date();
+        justNow.setSeconds(justNow.getSeconds() + 10);
+        let value = justNow.getTime();
+        const justNowText = renderWithIntl(
+            <FriendlyDate value={value}/>,
+        );
+        expect(justNowText.getByText('Now')).toBeTruthy();
+
+        const inMinutes = new Date();
+        inMinutes.setMinutes(inMinutes.getMinutes() + 2);
+        value = inMinutes.getTime();
+        const inMinutesText = renderWithIntl(
+            <FriendlyDate value={value}/>,
+        );
+        expect(inMinutesText.getByText('in 2 min.')).toBeTruthy();
+
+        const inHours = new Date();
+        inHours.setHours(inHours.getHours() + 2);
+        value = inHours.getTime();
+        const inHoursText = renderWithIntl(
+            <FriendlyDate value={value}/>,
+        );
+        expect(inHoursText.getByText('in 2 hours')).toBeTruthy();
+
+        const inDays = new Date();
+        inDays.setDate(inDays.getDate() + 2);
+        value = inDays.getTime();
+        const inDaysText = renderWithIntl(
+            <FriendlyDate value={value}/>,
+        );
+        expect(inDaysText.getByText('in 2 days')).toBeTruthy();
+
+        const inDaysEdgeCase = new Date(2020, 5, 28);
+        const inDaysEdgeCaseTodayDate = new Date(2020, 4, 28);
+        jest.setSystemTime(inDaysEdgeCaseTodayDate);
+        value = inDaysEdgeCase.getTime();
+        const inDaysEdgeCaseText = renderWithIntl(
+            <FriendlyDate value={value}/>,
+        );
+        expect(inDaysEdgeCaseText.getByText('next month')).toBeTruthy();
+
+        const inDaysMax = new Date(2020, 5, 4);
+        const inDaysMaxTodayDate = new Date(2020, 4, 5);
+        jest.setSystemTime(inDaysMaxTodayDate);
+        value = inDaysMax.getTime();
+        const inDaysMaxText = renderWithIntl(
+            <FriendlyDate value={value}/>,
+        );
+        expect(inDaysMaxText.getByText('in 30 days')).toBeTruthy();
+
+        const inMonths = new Date();
+        inMonths.setMonth(inMonths.getMonth() + 2);
+        value = inMonths.getTime();
+        const inMonthsText = renderWithIntl(
+            <FriendlyDate value={value}/>,
+        );
+        expect(inMonthsText.getByText('in 2 months')).toBeTruthy();
+
+        const inYears = new Date();
+        inYears.setFullYear(inYears.getFullYear() + 2);
+        value = inYears.getTime();
+        const inYearsText = renderWithIntl(
+            <FriendlyDate value={value}/>,
+        );
+        expect(inYearsText.getByText('in 2 years')).toBeTruthy();
+
+        jest.useRealTimers();
+    });
 });

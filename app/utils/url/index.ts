@@ -19,6 +19,8 @@ export function isValidUrl(url = '') {
     return regex.test(url);
 }
 
+
+
 export function isParsableUrl(url: string): boolean {
     try {
         const parsedUrl = new URL(url);

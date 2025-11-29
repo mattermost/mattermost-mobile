@@ -174,7 +174,7 @@ describe('parseAndHandleDeepLink', () => {
     it('should create direct message for DirectMessage deep link', async () => {
         jest.mocked(DatabaseManager.searchUrl).mockReturnValueOnce('https://existingserver.com');
         jest.mocked(getActiveServerUrl).mockResolvedValueOnce('https://existingserver.com');
-        (queryUsersByUsername as jest.Mock).mockReturnValueOnce(TestHelper.fakeQuery([TestHelper.fakeUserModel({id: 'user-id'})]));
+        jest.mocked(queryUsersByUsername).mockReturnValueOnce(TestHelper.fakeQuery([TestHelper.fakeUserModel({id: 'user-id'})]));
         const result = await parseAndHandleDeepLink('https://existingserver.com/team/messages/@user-id', intl);
         expect(makeDirectChannel).toHaveBeenCalledWith('https://existingserver.com', 'user-id', '', true);
         expect(result).toEqual({error: false});
@@ -183,8 +183,8 @@ describe('parseAndHandleDeepLink', () => {
     it('should fetch user and create direct message if user not found locally', async () => {
         jest.mocked(DatabaseManager.searchUrl).mockReturnValueOnce('https://existingserver.com');
         jest.mocked(getActiveServerUrl).mockResolvedValueOnce('https://existingserver.com');
-        jest.mocked(fetchUsersByUsernames).mockResolvedValueOnce({users: [TestHelper.fakeUser({id: 'user-id'})]});
         jest.mocked(queryUsersByUsername).mockReturnValueOnce(TestHelper.fakeQuery([]));
+        jest.mocked(fetchUsersByUsernames).mockResolvedValueOnce({users: [TestHelper.fakeUser({id: 'user-id'})]});
         const result = await parseAndHandleDeepLink('https://existingserver.com/team/messages/@user-id', intl);
         expect(makeDirectChannel).toHaveBeenCalledWith('https://existingserver.com', 'user-id', '', true);
         expect(result).toEqual({error: false});
@@ -233,7 +233,7 @@ describe('parseAndHandleDeepLink', () => {
         await parseAndHandleDeepLink('https://existingserver.com/playbooks/playbooks/7b35c77a645e1906e03a2c330f', intl);
         expect(alertSpy).toHaveBeenCalledWith(
             intl.formatMessage({id: 'playbooks.only_runs_available.title', defaultMessage: 'Playbooks not available'}),
-            intl.formatMessage({id: 'playbooks.only_runs_available.description', defaultMessage: 'Only Playbook Runs are available on mobile. To access the Playbook, please use the desktop or web app.'}),
+            intl.formatMessage({id: 'playbooks.only_runs_available.description', defaultMessage: 'Only Playbook Checklists are available on mobile. To access the Playbook, please use the desktop or web app.'}),
             [{text: intl.formatMessage({id: 'playbooks.only_runs_available.ok', defaultMessage: 'OK'})}],
         );
     });
@@ -244,8 +244,8 @@ describe('parseAndHandleDeepLink', () => {
         jest.mocked(getActiveServerUrl).mockResolvedValueOnce('https://existingserver.com');
         await parseAndHandleDeepLink('https://existingserver.com/playbooks/runs/7b35c77a645e1906e03a2c330f/retrospective', intl);
         expect(alertSpy).toHaveBeenCalledWith(
-            intl.formatMessage({id: 'playbooks.retrospective_not_available.title', defaultMessage: 'Playbooks Run Retrospective not available'}),
-            intl.formatMessage({id: 'playbooks.retrospective_not_available.description', defaultMessage: 'Only Playbook Runs are available on mobile. To fill the Run Retrospective, please use the desktop or web app.'}),
+            intl.formatMessage({id: 'playbooks.retrospective_not_available.title', defaultMessage: 'Playbooks Retrospective not available'}),
+            intl.formatMessage({id: 'playbooks.retrospective_not_available.description', defaultMessage: 'Only Playbook Checklists are available on mobile. To fill the Run Retrospective, please use the desktop or web app.'}),
             [{text: intl.formatMessage({id: 'playbooks.retrospective_not_available.ok', defaultMessage: 'OK'})}],
         );
     });
@@ -273,8 +273,8 @@ describe('parseAndHandleDeepLink', () => {
         // Re-import to apply mocks
         await parseAndHandleDeepLink('https://existingserver.com/playbooks/runs/7b35c77a645e1906e03a2c330f', intl);
         expect(alertSpy).toHaveBeenCalledWith(
-            intl.formatMessage({id: 'playbooks.fetch_error.title', defaultMessage: 'Unable to open Run'}),
-            intl.formatMessage({id: 'playbooks.fetch_error.description', defaultMessage: "You don't have permission to view this run, or it may no longer exist."}),
+            intl.formatMessage({id: 'playbooks.fetch_error.title', defaultMessage: 'Unable to open Checklist'}),
+            intl.formatMessage({id: 'playbooks.fetch_error.description', defaultMessage: "You don't have permission to view this, or it may no longer exist."}),
             [{text: intl.formatMessage({id: 'playbooks.fetch_error.OK', defaultMessage: 'Okay'})}],
         );
     });

@@ -100,16 +100,6 @@ function onCommandListener(name: string, params: any) {
         case 'dismissModal':
             NavigationStore.removeModalFromStack(params.componentId);
             break;
-        case 'showOverlay':
-            NavigationStore.addOverlayToStack(params?.layout?.id);
-            break;
-        case 'dismissOverlay':
-            NavigationStore.removeOverlayFromStack(params?.componentId);
-            break;
-        case 'dismissAllOverlays': {
-            NavigationStore.removeAllOverlaysFromStack();
-            break;
-        }
     }
 
     const screen = NavigationStore.getVisibleScreen();
@@ -619,7 +609,7 @@ export async function popToRoot() {
 
 export async function dismissAllModalsAndPopToRoot() {
     await dismissAllModals();
-    await dismissAllOverlaysWithExceptions();
+    await dismissAllOverlays();
     await popToRoot();
 }
 
@@ -633,7 +623,7 @@ export async function dismissAllModalsAndPopToRoot() {
  */
 export async function dismissAllModalsAndPopToScreen(screenId: AvailableScreens, title: string, passProps = {}, options = {}) {
     await dismissAllModals();
-    await dismissAllOverlaysWithExceptions();
+    await dismissAllOverlays();
     if (NavigationStore.getScreensInStack().includes(screenId)) {
         let mergeOptions = options;
         if (title) {
@@ -859,28 +849,6 @@ export async function dismissOverlay(componentId: string) {
     }
 }
 
-/**
- * Instead of using native dismissAllOverlays, we're looping through the overlays
- * and dismissing them individually.  Native dismissAllOverlays is causing the app to
- * dismiss 700+ overlays. Even though those overlays doesn't exist in the stack. Since we're
- * tracking the overlays in the store, we can dismiss them individually.
- * @returns
- */
-export async function dismissAllOverlaysWithExceptions() {
-    try {
-        const overlaysToRemove = NavigationStore.getAllOverlaysOtherThanExceptions();
-        if (!overlaysToRemove.length) {
-            return;
-        }
-
-        await Promise.all(overlaysToRemove.map((overlayId) =>
-            Navigation.dismissOverlay(overlayId).catch(() => undefined),
-        ));
-    } catch {
-        // do nothing
-    }
-}
-
 export async function dismissAllOverlays() {
     try {
         await Navigation.dismissAllOverlays();
@@ -1002,4 +970,3 @@ export async function openUserProfileModal(
     Keyboard.dismiss();
     openAsBottomSheet({screen, title, theme, closeButtonId, props: {...props}});
 }
-

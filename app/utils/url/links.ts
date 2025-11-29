@@ -33,13 +33,9 @@ export const openLink = async (link: string, serverUrl: string, siteURL: string,
     if (match) {
         const {error} = await handleDeepLink(match, intl);
         if (error) {
-            tryOpenURL(match.url, () => {
-                onOpenLinkError(intl);
-            });
+            tryOpenURL(match.url, () => onOpenLinkError(intl));
         }
     } else {
-        tryOpenURL(url, () => {
-            onOpenLinkError(intl);
-        });
+        tryOpenURL(url, () => onOpenLinkError(intl));
     }
 };

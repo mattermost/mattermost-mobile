@@ -7,12 +7,12 @@ import {Text, TouchableOpacity, View} from 'react-native';
 
 import ExpandedAnnouncementBanner from '@components/announcement_banner/expanded_announcement_banner';
 import RemoveMarkdown from '@components/remove_markdown';
+import {CHANNEL_BANNER_HEIGHT} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {bottomSheet} from '@screens/navigation';
 import {getContrastingSimpleColor} from '@utils/general';
 import {bottomSheetSnapPoint} from '@utils/helpers';
-import {getMarkdownTextStyles} from '@utils/markdown';
 import {typography} from '@utils/typography';
 
 const BUTTON_HEIGHT = 48; // From /app/utils/buttonStyles.ts, lg button
@@ -27,11 +27,11 @@ const CLOSE_BUTTON_ID = 'channel-banner-close';
 
 const getStyleSheet = (bannerTextColor: string) => ({
     container: {
-        paddingTop: 10,
-        paddingBottom: 10,
+        paddingTop: 5,
+        paddingBottom: 5,
         paddingLeft: 16,
         paddingRight: 16,
-        height: 40,
+        height: CHANNEL_BANNER_HEIGHT,
     },
     containerTopItem: {
         borderTopLeftRadius: 12,
@@ -46,9 +46,12 @@ const getStyleSheet = (bannerTextColor: string) => ({
     bannerTextContainer: {
         flex: 1,
         flexGrow: 1,
+        alignItems: 'center' as const,
+        justifyContent: 'center' as const,
     },
     bannerText: {
         textAlign: 'center' as const,
+
     },
 });
 
@@ -73,21 +76,6 @@ export function ChannelBanner({bannerInfo, isTopItem}: Props) {
         top: defaultHeight,
         zIndex: 1,
     }), [bannerInfo?.background_color, defaultHeight, style.container]);
-
-    const markdownTextStyle = useMemo(() => {
-        // We do a shallow copy to avoid mutating the original object.
-        const textStyle = {...getMarkdownTextStyles(theme)};
-
-        // channel banner colors are theme independent.
-        // If we let the link color being set by the theme, it will be unreadable in some cases.
-        // So we set the link color to the banner text color explicitly. This, with the controlled
-        // background color, ensures the banner text is always readable.
-        textStyle.link = {
-            ...textStyle.link,
-            color: bannerTextColor,
-        };
-        return textStyle;
-    }, [bannerTextColor, theme]);
 
     const handlePress = useCallback(() => {
         // set snap point based on text length, with a defined
@@ -136,7 +124,6 @@ export function ChannelBanner({bannerInfo, isTopItem}: Props) {
                 >
                     <RemoveMarkdown
                         value={bannerInfo.text}
-                        textStyle={markdownTextStyle}
                         baseStyle={style.baseTextStyle}
                     />
                 </Text>
