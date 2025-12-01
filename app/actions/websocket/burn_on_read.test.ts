@@ -8,16 +8,12 @@ import TestHelper from '@test/test_helper';
 
 import {handleBoRPostRevealedEvent} from './burn_on_read';
 
-import type ServerDataOperator from '@database/operator/server_data_operator';
-
 jest.mock('@actions/websocket/posts');
 jest.mock('@queries/servers/post');
 
 const serverUrl = 'burnOnRead.test.com';
 
 describe('WebSocket Burn on Read Actions', () => {
-    let operator: ServerDataOperator;
-
     const post = TestHelper.fakePost({id: 'post1', channel_id: 'channel1', user_id: 'user1', create_at: 12345, message: 'hello'});
 
     const mockedGetPostById = jest.mocked(getPostById);
@@ -26,7 +22,6 @@ describe('WebSocket Burn on Read Actions', () => {
 
     beforeEach(async () => {
         await DatabaseManager.init([serverUrl]);
-        operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
         jest.clearAllMocks();
     });
 
