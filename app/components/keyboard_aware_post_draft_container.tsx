@@ -2,11 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useRef, type ReactNode} from 'react';
-import {Keyboard, Platform, type StyleProp, StyleSheet, type ViewStyle, View, type LayoutChangeEvent, type GestureResponderEvent} from 'react-native';
+import {DeviceEventEmitter, Keyboard, Platform, type StyleProp, StyleSheet, type ViewStyle, View, type LayoutChangeEvent, type GestureResponderEvent} from 'react-native';
 import {KeyboardGestureArea} from 'react-native-keyboard-controller';
 import Animated, {runOnJS, useAnimatedReaction, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {InputAccessoryViewContainer, InputAccessoryViewContent} from '@components/input_accessory_view';
+import {Events} from '@constants';
 import {KeyboardAnimationProvider} from '@context/keyboard_animation';
 import {useWindowDimensions} from '@hooks/device';
 import {useInputAccessoryView} from '@hooks/useInputAccessoryView';
@@ -215,6 +216,14 @@ export const KeyboardAwarePostDraftContainer = ({
         offset.value = withTiming(0, {duration: 200});
         keyboardHeight.value = 0;
     }, [inputAccessoryViewAnimatedHeight, inset, offset, keyboardHeight, setShowInputAccessoryView, isInputAccessoryViewMode, isTransitioningFromCustomView]);
+
+    useEffect(() => {
+        const listener = DeviceEventEmitter.addListener(Events.CLOSE_INPUT_ACCESSORY_VIEW, () => {
+            closeInputAccessoryView();
+        });
+
+        return () => listener.remove();
+    }, [closeInputAccessoryView]);
 
     // Handle touch end: decide whether to collapse or expand emoji picker
     const handleTouchEnd = useCallback(() => {
