@@ -8,6 +8,7 @@ import {Keyboard} from 'react-native';
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Screens} from '@constants';
+import {useAIRewrite} from '@context/ai_rewrite';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {openAsBottomSheet} from '@screens/navigation';
@@ -39,6 +40,7 @@ export default function AIRewriteAction({
     const intl = useIntl();
     const theme = useTheme();
     const isTablet = useIsTablet();
+    const {isProcessing} = useAIRewrite();
 
     const handlePress = useCallback(() => {
         Keyboard.dismiss();
@@ -57,15 +59,16 @@ export default function AIRewriteAction({
         });
     }, [intl, isTablet, theme, value, updateValue]);
 
-    const actionTestID = disabled ? `${testID}.disabled` : testID;
-    const iconColor = disabled ?
+    const isDisabled = disabled || isProcessing;
+    const actionTestID = isDisabled ? `${testID}.disabled` : testID;
+    const iconColor = isDisabled ?
         changeOpacity(theme.centerChannelColor, 0.16) :
         changeOpacity(theme.centerChannelColor, 0.64);
 
     return (
         <TouchableWithFeedback
             testID={actionTestID}
-            disabled={disabled}
+            disabled={isDisabled}
             onPress={handlePress}
             style={styles.icon}
             type={'opacity'}

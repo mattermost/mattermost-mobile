@@ -4,6 +4,7 @@
 import {DatabaseProvider} from '@nozbe/watermelondb/react';
 import React, {type ComponentType, useEffect, useState} from 'react';
 
+import {AIRewriteProvider} from '@context/ai_rewrite';
 import DeviceInfoProvider from '@context/device';
 import ServerProvider from '@context/server';
 import ThemeProvider from '@context/theme';
@@ -67,7 +68,9 @@ export function withServerDatabase<T extends JSX.IntrinsicAttributes>(Component:
                     <UserLocaleProvider database={state.database}>
                         <ServerProvider server={{displayName: state.serverDisplayName, url: state.serverUrl}}>
                             <ThemeProvider database={state.database}>
-                                <Component {...props}/>
+                                <AIRewriteProvider>
+                                    <Component {...props}/>
+                                </AIRewriteProvider>
                             </ThemeProvider>
                         </ServerProvider>
                     </UserLocaleProvider>

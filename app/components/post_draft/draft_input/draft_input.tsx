@@ -6,7 +6,9 @@ import {useIntl} from 'react-intl';
 import {Keyboard, type LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
+import AIProcessingOverlay from '@components/post_draft/post_input/ai_processing_overlay';
 import {Screens} from '@constants';
+import {useAIRewrite} from '@context/ai_rewrite';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -98,6 +100,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderColor: changeOpacity(theme.centerChannelColor, 0.20),
             borderTopLeftRadius: 12,
             borderTopRightRadius: 12,
+            position: 'relative',
         },
         postPriorityLabel: {
             marginLeft: 12,
@@ -139,10 +142,11 @@ function DraftInput({
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const isTablet = useIsTablet();
+    const {isProcessing, cancelRewrite} = useAIRewrite();
 
     const handleLayout = useCallback((e: LayoutChangeEvent) => {
         updatePostInputTop(e.nativeEvent.layout.height);
-    }, []);
+    }, [updatePostInputTop]);
 
     const inputRef = useRef<PasteInputRef>();
     const focus = useCallback(() => {
@@ -206,7 +210,6 @@ function DraftInput({
                 style={style.inputWrapper}
                 testID={testID}
             >
-
                 <ScrollView
                     style={style.inputContainer}
                     contentContainerStyle={style.inputContentContainer}
@@ -264,6 +267,12 @@ function DraftInput({
                         />
                     </View>
                 </ScrollView>
+                {isProcessing && (
+                    <AIProcessingOverlay
+                        theme={theme}
+                        onCancel={cancelRewrite}
+                    />
+                )}
             </SafeAreaView>
         </>
     );

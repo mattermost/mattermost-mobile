@@ -11,6 +11,11 @@ import type {AIAgent} from '@typings/api/ai';
 
 const TIME_TO_CLEAR_WEBSOCKET_ACTIONS = toMilliseconds({seconds: 30});
 
+export type AIRewriteState = {
+    isProcessing: boolean;
+    serverUrl: string;
+};
+
 class EphemeralStoreSingleton {
     theme: Theme | undefined;
     creatingChannel = false;
@@ -21,6 +26,7 @@ class EphemeralStoreSingleton {
     private pushProxyVerification: {[serverUrl: string]: string | undefined} = {};
     private canJoinOtherTeams: {[serverUrl: string]: BehaviorSubject<boolean>} = {};
     private aiAgents: {[serverUrl: string]: BehaviorSubject<AIAgent[]>} = {};
+    private aiRewriteState = new BehaviorSubject<AIRewriteState>({isProcessing: false, serverUrl: ''});
 
     private loadingMessagesForChannel: {[serverUrl: string]: Set<string>} = {};
 
@@ -274,6 +280,23 @@ class EphemeralStoreSingleton {
 
     getAIAgents = (serverUrl: string) => {
         return this.getAIAgentsSubject(serverUrl).getValue();
+    };
+
+    // AI Rewrite state management
+    observeAIRewriteState = () => {
+        return this.aiRewriteState.asObservable();
+    };
+
+    setAIRewriteProcessing = (isProcessing: boolean, serverUrl: string) => {
+        this.aiRewriteState.next({isProcessing, serverUrl});
+    };
+
+    getAIRewriteState = () => {
+        return this.aiRewriteState.getValue();
+    };
+
+    isAIRewriteProcessing = () => {
+        return this.aiRewriteState.getValue().isProcessing;
     };
 
     setNotificationTapped = (value: boolean) => {

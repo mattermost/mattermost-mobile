@@ -3,25 +3,23 @@
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native';
+import {Alert, Keyboard, Platform, TextInput, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import OptionItem, {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
+import {useAIRewrite} from '@context/ai_rewrite';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
-import NetworkManager from '@managers/network_manager';
 import BottomSheet from '@screens/bottom_sheet';
 import {dismissBottomSheet, openAsBottomSheet} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {logWarning} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-
-import AnimatedAIIcon from './animated_ai_icon';
 
 import type {AIAgent, AIRewriteAction} from '@typings/api/ai';
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -70,46 +68,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     optionsContainer: {
         paddingTop: OPTIONS_PADDING,
     },
-    loadingOverlay: {
-        ...StyleSheet.absoluteFillObject,
-        backgroundColor: changeOpacity(theme.centerChannelBg, 0.95),
-        justifyContent: 'center',
-        alignItems: 'center',
-        zIndex: 1000,
-    },
-    loadingContent: {
-        alignItems: 'center',
-        paddingVertical: 20,
-    },
-    loadingText: {
-        marginTop: 24,
-        fontSize: 16,
-        color: theme.centerChannelColor,
-        fontWeight: '600',
-    },
-    errorIcon: {
-        marginBottom: 12,
-    },
-    errorText: {
-        marginTop: 16,
-        fontSize: 16,
-        color: theme.centerChannelColor,
-        fontWeight: '600',
-        textAlign: 'center',
-        paddingHorizontal: 20,
-    },
-    closeButton: {
-        marginTop: 20,
-        paddingHorizontal: 24,
-        paddingVertical: 12,
-        backgroundColor: theme.buttonBg,
-        borderRadius: 4,
-    },
-    closeButtonText: {
-        color: theme.buttonColor,
-        fontSize: 16,
-        fontWeight: '600',
-    },
 }));
 
 const AIRewriteOptions = ({
@@ -122,14 +80,12 @@ const AIRewriteOptions = ({
     const theme = useTheme();
     const serverUrl = useServerUrl();
     const styles = getStyleSheet(theme);
+    const {startRewrite} = useAIRewrite();
 
-    const [isProcessing, setIsProcessing] = useState(false);
-    const [errorMessage, setErrorMessage] = useState<string>('');
     const [customPrompt, setCustomPrompt] = useState('');
     const [agents, setAgents] = useState<AIAgent[]>([]);
     const [selectedAgent, setSelectedAgent] = useState<AIAgent | null>(null);
     const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
-    const currentPromiseRef = useRef<Promise<string> | null>(null);
     const textInputRef = useRef<TextInput>(null);
 
     // Get agents from EphemeralStore on mount and subscribe to changes
@@ -148,11 +104,6 @@ const AIRewriteOptions = ({
             // Auto-select first agent if none selected
             if (updatedAgents.length > 0) {
                 setSelectedAgent((current) => current || updatedAgents[0]);
-            } else {
-                setErrorMessage(intl.formatMessage({
-                    id: 'ai_rewrite.no_agents_available',
-                    defaultMessage: 'AI features are not available on this server.',
-                }));
             }
         };
 
@@ -160,7 +111,7 @@ const AIRewriteOptions = ({
         const subscription = EphemeralStore.observeAIAgents(serverUrl).subscribe(handleAgentsUpdate);
 
         return () => subscription.unsubscribe();
-    }, [serverUrl, intl]);
+    }, [serverUrl]);
 
     const closeBottomSheet = useCallback(async () => {
         try {
@@ -173,16 +124,6 @@ const AIRewriteOptions = ({
 
     useNavButtonPressed(closeButtonId, componentId, closeBottomSheet, []);
     useAndroidHardwareBackHandler(componentId, closeBottomSheet);
-
-    // Cleanup on unmount
-    useEffect(() => {
-        return () => {
-            // Cancel any ongoing promises
-            currentPromiseRef.current = null;
-            setIsProcessing(false);
-            setErrorMessage('');
-        };
-    }, []);
 
     // Track keyboard visibility
     useEffect(() => {
@@ -201,11 +142,27 @@ const AIRewriteOptions = ({
         };
     }, []);
 
-    const handleRewrite = useCallback(async (action: AIRewriteAction, prompt?: string) => {
-        if (isProcessing) {
-            return;
-        }
+    const handleRewriteSuccess = useCallback((rewrittenText: string) => {
+        updateValue(rewrittenText);
+    }, [updateValue]);
 
+    const handleRewriteError = useCallback((errorMsg: string) => {
+        Alert.alert(
+            intl.formatMessage({
+                id: 'ai_rewrite.error.title',
+                defaultMessage: 'AI Rewrite Error',
+            }),
+            errorMsg,
+            [{
+                text: intl.formatMessage({
+                    id: 'ai_rewrite.error.ok',
+                    defaultMessage: 'OK',
+                }),
+            }],
+        );
+    }, [intl]);
+
+    const handleRewrite = useCallback((action: AIRewriteAction, prompt?: string) => {
         // Only dismiss keyboard if it's actually visible to prevent unwanted animations
         if (isKeyboardVisible) {
             Keyboard.dismiss();
@@ -220,89 +177,29 @@ const AIRewriteOptions = ({
             return;
         }
 
-        setIsProcessing(true);
-        setErrorMessage('');
+        // For generation, pass empty string as message and use prompt; for editing, use original message
+        const messageToProcess = isGenerating ? '' : originalMessage;
+        const agentId = selectedAgent?.id;
 
-        // Create timeout promise (30 seconds)
-        const timeoutPromise = new Promise<never>((_, reject) => {
-            setTimeout(() => reject(new Error('timeout')), 30000);
+        const triggerRewrite = () => {
+            startRewrite(
+                serverUrl,
+                messageToProcess,
+                action,
+                prompt,
+                agentId,
+                handleRewriteSuccess,
+                handleRewriteError,
+            );
+        };
+
+        // Close the bottom sheet first, then start rewrite
+        closeBottomSheet().then(triggerRewrite).catch((e) => {
+            logWarning('Error closing bottom sheet:', e);
+            // Still try to start the rewrite even if sheet close failed
+            triggerRewrite();
         });
-
-        try {
-            const client = NetworkManager.getClient(serverUrl);
-
-            // For generation, pass empty string as message and use prompt; for editing, use original message
-            const messageToProcess = isGenerating ? '' : originalMessage;
-            const agentId = selectedAgent?.id;
-            const rewritePromise = client.getAIRewrittenMessage(messageToProcess, action, prompt, agentId);
-            currentPromiseRef.current = rewritePromise;
-
-            // Race between API call and timeout
-            const response = await Promise.race([rewritePromise, timeoutPromise]);
-
-            // Check if this is still the current promise (not cancelled)
-            if (currentPromiseRef.current === rewritePromise) {
-                // Ensure response is a valid non-empty string before updating
-                if (response && typeof response === 'string' && response.trim().length > 0) {
-                    // If response is a JSON-encoded string, parse it to get actual newlines/escapes
-                    let formattedResponse = response;
-                    if (response.startsWith('"') && response.endsWith('"')) {
-                        try {
-                            formattedResponse = JSON.parse(response);
-                        } catch (e) {
-                            // If parsing fails, use the response as-is
-                            logWarning('Failed to parse JSON-encoded response, using raw:', e);
-                        }
-                    }
-                    updateValue(formattedResponse);
-                } else {
-                    logWarning('Invalid or empty AI response received:', response);
-
-                    // Show error if response is invalid
-                    setErrorMessage(intl.formatMessage({
-                        id: 'ai_rewrite.error.invalid_response',
-                        defaultMessage: 'Received an invalid response from AI. Please try again.',
-                    }));
-                    setIsProcessing(false);
-                    currentPromiseRef.current = null;
-                    return; // Don't close, show error instead
-                }
-
-                setIsProcessing(false);
-                currentPromiseRef.current = null;
-
-                // Close bottom sheet after updating value
-                try {
-                    await closeBottomSheet();
-                } catch (e) {
-                    logWarning('Error closing bottom sheet after success:', e);
-                }
-            }
-        } catch (error) {
-            // Only handle error if this is still the current promise
-            if (currentPromiseRef.current) {
-                logWarning('AI rewrite error:', error);
-
-                // Determine error message
-                let errorMsg = intl.formatMessage({
-                    id: 'ai_rewrite.error.generic',
-                    defaultMessage: 'An error occurred while rewriting your message. Please try again.',
-                });
-
-                if (error instanceof Error && error.message === 'timeout') {
-                    errorMsg = intl.formatMessage({
-                        id: 'ai_rewrite.error.timeout',
-                        defaultMessage: 'The AI request timed out. Please try again.',
-                    });
-                }
-
-                // Show error in overlay instead of closing
-                setErrorMessage(errorMsg);
-                setIsProcessing(false);
-                currentPromiseRef.current = null;
-            }
-        }
-    }, [isProcessing, originalMessage, serverUrl, updateValue, closeBottomSheet, intl, selectedAgent, isKeyboardVisible]);
+    }, [originalMessage, serverUrl, closeBottomSheet, selectedAgent, isKeyboardVisible, startRewrite, handleRewriteSuccess, handleRewriteError]);
 
     // Determine if we're in generation mode (empty original message)
     const isGeneratingContent = !originalMessage || !originalMessage.trim();
@@ -329,21 +226,6 @@ const AIRewriteOptions = ({
             handleRewrite('custom', customPrompt);
         }
     }, [customPrompt, handleRewrite, isKeyboardVisible]);
-
-    const handleDismissError = useCallback(async () => {
-        setErrorMessage('');
-        try {
-            await closeBottomSheet();
-        } catch (e) {
-            logWarning('Error dismissing bottom sheet:', e);
-
-            // Force dismiss using the navigation directly
-            dismissBottomSheet(Screens.AI_REWRITE_OPTIONS).catch(() => {
-                // Last resort - if dismissal fails, at least clear the error state
-                logWarning('Failed to dismiss bottom sheet');
-            });
-        }
-    }, [closeBottomSheet]);
 
     const isTablet = useIsTablet();
 
@@ -394,51 +276,6 @@ const AIRewriteOptions = ({
 
     const renderContent = () => (
         <View style={styles.container}>
-            {(isProcessing || errorMessage) && (
-                <View style={styles.loadingOverlay}>
-                    <View style={styles.loadingContent}>
-                        {isProcessing && !errorMessage && (
-                            <>
-                                <AnimatedAIIcon
-                                    size={48}
-                                    color={theme.buttonBg}
-                                />
-                                <Text style={styles.loadingText}>
-                                    {intl.formatMessage({
-                                        id: isGeneratingContent ? 'ai_rewrite.generating' : 'ai_rewrite.processing',
-                                        defaultMessage: isGeneratingContent ? 'AI is generating...' : 'AI is rewriting...',
-                                    })}
-                                </Text>
-                            </>
-                        )}
-                        {errorMessage && (
-                            <>
-                                <CompassIcon
-                                    name='alert-circle-outline'
-                                    size={48}
-                                    color={theme.errorTextColor}
-                                    style={styles.errorIcon}
-                                />
-                                <Text style={styles.errorText}>
-                                    {errorMessage}
-                                </Text>
-                                <TouchableOpacity
-                                    onPress={handleDismissError}
-                                    style={styles.closeButton}
-                                >
-                                    <Text style={styles.closeButtonText}>
-                                        {intl.formatMessage({
-                                            id: 'ai_rewrite.error.close',
-                                            defaultMessage: 'Close',
-                                        })}
-                                    </Text>
-                                </TouchableOpacity>
-                            </>
-                        )}
-                    </View>
-                </View>
-            )}
-
             <View style={styles.headerContainer}>
                 {agents.length > 1 && (
                     <OptionItem
@@ -476,7 +313,6 @@ const AIRewriteOptions = ({
                             onSubmitEditing={handleCustomPromptSubmit}
                             returnKeyType='send'
                             multiline={false}
-                            editable={!isProcessing}
                             autoCapitalize='none'
                         />
                     </View>

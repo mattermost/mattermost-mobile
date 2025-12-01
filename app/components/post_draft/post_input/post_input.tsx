@@ -14,6 +14,7 @@ import {
 import {updateDraftMessage} from '@actions/local/draft';
 import {userTyping} from '@actions/websocket/users';
 import {Events, Screens} from '@constants';
+import {useAIRewrite} from '@context/ai_rewrite';
 import {useExtraKeyboardContext} from '@context/extra_keyboard';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -124,6 +125,7 @@ export default function PostInput({
     const managedConfig = useManagedConfig<ManagedConfig>();
     const keyboardContext = useExtraKeyboardContext();
     const [propagateValue, shouldProcessEvent] = useInputPropagation();
+    const {isProcessing} = useAIRewrite();
 
     const lastTypingEventSent = useRef(0);
 
@@ -349,6 +351,7 @@ export default function PostInput({
             textContentType='none'
             value={value}
             autoCapitalize='sentences'
+            editable={!isProcessing}
         />
     );
 }
