@@ -8,6 +8,7 @@ import {Alert, StyleSheet} from 'react-native';
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {ICON_SIZE} from '@constants/post_draft';
+import {useKeyboardAnimationContext} from '@context/keyboard_animation';
 import {useTheme} from '@context/theme';
 import {fileMaxWarning} from '@utils/file';
 import PickerUtil from '@utils/file/file_picker';
@@ -33,8 +34,11 @@ export default function ImageQuickAction({
 }: QuickActionAttachmentProps) {
     const intl = useIntl();
     const theme = useTheme();
+    const {blurAndDismissKeyboard, closeInputAccessoryView} = useKeyboardAnimationContext();
 
-    const handleButtonPress = useCallback(() => {
+    const handleButtonPress = useCallback(async () => {
+        closeInputAccessoryView();
+        await blurAndDismissKeyboard();
         if (maxFilesReached) {
             Alert.alert(
                 intl.formatMessage({
@@ -50,7 +54,7 @@ export default function ImageQuickAction({
             onUploadFiles);
 
         picker.attachFileFromPhotoGallery(maxFileCount - fileCount);
-    }, [onUploadFiles, fileCount, maxFileCount]);
+    }, [blurAndDismissKeyboard, closeInputAccessoryView, onUploadFiles, fileCount, maxFileCount, maxFilesReached, intl]);
 
     const actionTestID = disabled ? `${testID}.disabled` : testID;
     const color = disabled ? changeOpacity(theme.centerChannelColor, 0.16) : changeOpacity(theme.centerChannelColor, 0.64);

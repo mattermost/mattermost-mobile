@@ -9,6 +9,7 @@ import CompassIcon from '@components/compass_icon';
 import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {ICON_SIZE} from '@constants/post_draft';
+import {useKeyboardAnimationContext} from '@context/keyboard_animation';
 import {useTheme} from '@context/theme';
 import {TITLE_HEIGHT} from '@screens/bottom_sheet/content';
 import {bottomSheet} from '@screens/navigation';
@@ -39,13 +40,16 @@ export default function CameraQuickAction({
 }: QuickActionAttachmentProps) {
     const intl = useIntl();
     const theme = useTheme();
+    const {blurAndDismissKeyboard, closeInputAccessoryView} = useKeyboardAnimationContext();
 
-    const handleButtonPress = useCallback((options: CameraOptions) => {
+    const handleButtonPress = useCallback(async (options: CameraOptions) => {
+        closeInputAccessoryView();
+        await blurAndDismissKeyboard();
         const picker = new PickerUtil(intl,
             onUploadFiles);
 
         picker.attachFileFromCamera(options);
-    }, [intl, onUploadFiles]);
+    }, [blurAndDismissKeyboard, closeInputAccessoryView, intl, onUploadFiles]);
 
     const renderContent = useCallback(() => {
         return (
@@ -55,7 +59,9 @@ export default function CameraQuickAction({
         );
     }, [handleButtonPress]);
 
-    const openSelectorModal = useCallback(() => {
+    const openSelectorModal = useCallback(async () => {
+        closeInputAccessoryView();
+        await blurAndDismissKeyboard();
         if (maxFilesReached) {
             Alert.alert(
                 intl.formatMessage({
@@ -74,7 +80,7 @@ export default function CameraQuickAction({
             theme,
             closeButtonId: 'camera-close-id',
         });
-    }, [intl, theme, renderContent, maxFilesReached, maxFileCount]);
+    }, [blurAndDismissKeyboard, closeInputAccessoryView, intl, theme, renderContent, maxFilesReached, maxFileCount]);
 
     const actionTestID = disabled ? `${testID}.disabled` : testID;
     const color = disabled ? changeOpacity(theme.centerChannelColor, 0.16) : changeOpacity(theme.centerChannelColor, 0.64);
