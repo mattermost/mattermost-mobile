@@ -68,6 +68,8 @@ class SecurityManagerSingleton {
     initialized = false;
     started = false;
     isEnrolling = false;
+    isCheckingBiometrics = false;
+    needsEnrollmentCheck = false;
     intunePolicySubscription?: EventSubscription;
     intuneEnrollmentSubscription?: EventSubscription;
     intuneWipeSubscription?: EventSubscription;
@@ -227,6 +229,13 @@ class SecurityManagerSingleton {
         };
 
         if (serverUrl === this.activeServer) {
+            // If biometric auth is in progress, defer enrollment check
+            if (this.isCheckingBiometrics) {
+                logDebug('SecurityManager: Biometric auth in progress, deferring enrollment check');
+                this.needsEnrollmentCheck = true;
+                return;
+            }
+
             // Check if MAM enrollment needed (method handles all checks internally)
             const enrollmentOk = await this.ensureMAMEnrollmentForActiveServer(serverUrl);
 
@@ -719,51 +728,70 @@ class SecurityManagerSingleton {
      * Handles biometric authentication.
      */
     authenticateWithBiometrics = async (server: string, siteName?: string) => {
-        if (this.isAuthenticationHandledByEmm()) {
+        // Prevent concurrent biometric checks
+        if (this.isCheckingBiometrics) {
+            logDebug('SecurityManager: Biometric check already in progress, skipping');
             return true;
         }
 
-        const config = this.getServerConfig(server);
-        if (!config && !siteName) {
-            return true;
-        }
+        this.isCheckingBiometrics = true;
 
-        // Check Intune MAM policy first - if MAM requires PIN, skip server config
-        if (config?.intunePolicy?.isPINRequired === true) {
-            return true;
-        }
-
-        const locale = DEFAULT_LOCALE;
-        const translations = getTranslations(locale);
-
-        const isSecured = await Emm.isDeviceSecured();
-        if (!isSecured) {
-            await showNotSecuredAlert(server, siteName, locale);
-            return false;
-        }
-        const shouldBlurOnAuthenticate = server === this.activeServer && this.isScreenCapturePrevented(server);
         try {
-            const auth = await Emm.authenticate({
-                reason: translations[messages.securedBy.id].replace('{vendor}', siteName || config?.siteName || 'Mattermost'),
-                fallback: true,
-                supressEnterPassword: true,
-                blurOnAuthenticate: shouldBlurOnAuthenticate,
-            });
-
-            if (config) {
-                config.authenticated = auth;
+            if (this.isAuthenticationHandledByEmm()) {
+                return true;
             }
 
-            if (!auth) {
-                throw new Error('Authorization cancelled');
+            const config = this.getServerConfig(server);
+            if (!config && !siteName) {
+                return true;
             }
-        } catch (err) {
-            logError('Failed to authenticate with biometrics', err);
-            showBiometricFailureAlert(server, shouldBlurOnAuthenticate, siteName, locale);
-            return false;
+
+            // Check Intune MAM policy first - if MAM requires PIN, skip server config
+            if (config?.intunePolicy?.isPINRequired === true) {
+                return true;
+            }
+
+            const locale = DEFAULT_LOCALE;
+            const translations = getTranslations(locale);
+
+            const isSecured = await Emm.isDeviceSecured();
+            if (!isSecured) {
+                await showNotSecuredAlert(server, siteName, locale);
+                return false;
+            }
+            const shouldBlurOnAuthenticate = server === this.activeServer && this.isScreenCapturePrevented(server);
+            try {
+                const auth = await Emm.authenticate({
+                    reason: translations[messages.securedBy.id].replace('{vendor}', siteName || config?.siteName || 'Mattermost'),
+                    fallback: true,
+                    supressEnterPassword: true,
+                    blurOnAuthenticate: shouldBlurOnAuthenticate,
+                });
+
+                if (config) {
+                    config.authenticated = auth;
+                }
+
+                if (!auth) {
+                    throw new Error('Authorization cancelled');
+                }
+            } catch (err) {
+                logError('Failed to authenticate with biometrics', err);
+                showBiometricFailureAlert(server, shouldBlurOnAuthenticate, siteName, locale);
+                return false;
+            }
+
+            // After successful authentication, check if enrollment was deferred
+            if (this.needsEnrollmentCheck) {
+                this.needsEnrollmentCheck = false;
+                logDebug('SecurityManager: Triggering deferred enrollment check');
+                await this.ensureMAMEnrollmentForActiveServer(server);
+            }
+
+            return true;
+        } finally {
+            this.isCheckingBiometrics = false;
         }
-
-        return true;
     };
 
     /**
