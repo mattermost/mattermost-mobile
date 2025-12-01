@@ -27,6 +27,7 @@ interface KeyboardAnimationContextType {
     lastKeyboardHeight: number;
     inputAccessoryViewAnimatedHeight: SharedValue<number>;
     isTransitioningFromCustomView: SharedValue<boolean>;
+    closeInputAccessoryView: () => void;
 }
 
 const KeyboardAnimationContext = createContext<KeyboardAnimationContextType | null>(null);
@@ -80,6 +81,10 @@ export const useKeyboardAnimationContext = () => {
         // No-op fallback
     }, []);
 
+    const defaultCloseInputAccessoryView = useCallback(() => {
+        // No-op fallback
+    }, []);
+
     const fallbackValue = useMemo(() => ({
         height: defaultHeight,
         inset: defaultInset,
@@ -101,6 +106,7 @@ export const useKeyboardAnimationContext = () => {
         isInputAccessoryViewMode: defaultIsInputAccessoryViewMode,
         inputAccessoryViewAnimatedHeight: defaultInputAccessoryViewAnimatedHeight,
         isTransitioningFromCustomView: defaultIsTransitioningFromCustomView,
+        closeInputAccessoryView: defaultCloseInputAccessoryView,
     }), [
         defaultHeight,
         defaultInset,
@@ -119,6 +125,7 @@ export const useKeyboardAnimationContext = () => {
         defaultIsInputAccessoryViewMode,
         defaultInputAccessoryViewAnimatedHeight,
         defaultIsTransitioningFromCustomView,
+        defaultCloseInputAccessoryView,
     ]);
 
     // If context exists, return it; otherwise return fallback

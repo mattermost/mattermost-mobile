@@ -205,6 +205,17 @@ export const KeyboardAwarePostDraftContainer = ({
         keyboardHeight.value = 0;
     }, [setShowInputAccessoryView, isInputAccessoryViewMode, inset, offset, keyboardHeight]);
 
+    const closeInputAccessoryView = useCallback(() => {
+        setShowInputAccessoryView(false);
+        isInputAccessoryViewMode.value = false;
+        isTransitioningFromCustomView.value = false;
+
+        inputAccessoryViewAnimatedHeight.value = withTiming(0, {duration: 200});
+        inset.value = withTiming(0, {duration: 200});
+        offset.value = withTiming(0, {duration: 200});
+        keyboardHeight.value = 0;
+    }, [inputAccessoryViewAnimatedHeight, inset, offset, keyboardHeight, setShowInputAccessoryView, isInputAccessoryViewMode, isTransitioningFromCustomView]);
+
     // Handle touch end: decide whether to collapse or expand emoji picker
     const handleTouchEnd = useCallback(() => {
         isGestureActiveRef.current = false;
@@ -323,6 +334,7 @@ export const KeyboardAwarePostDraftContainer = ({
         lastKeyboardHeight,
         inputAccessoryViewAnimatedHeight,
         isTransitioningFromCustomView,
+        closeInputAccessoryView,
     }), [keyboardCurrentHeight,
         inset,
         offset,
@@ -343,6 +355,7 @@ export const KeyboardAwarePostDraftContainer = ({
         lastKeyboardHeight,
         inputAccessoryViewAnimatedHeight,
         isTransitioningFromCustomView,
+        closeInputAccessoryView,
     ]);
 
     const wrapperProps = useMemo(() => {
