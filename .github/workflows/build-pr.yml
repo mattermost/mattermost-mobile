@@ -33,20 +33,15 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
+      - name: ci/setup-ssh-key
+        uses: ./.github/actions/setup-ssh-key
+        with:
+          ssh-private-key: ${{ secrets.MM_MOBILE_PRIVATE_DEPLOY_KEY }}
+
       - name: ci/prepare-ios-build
         uses: ./.github/actions/prepare-ios-build
         with:
           intune-enabled: 'true'
-          github-token: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
-
-      - name: ci/output-ssh-private-key
-        shell: bash
-        run: |
-          SSH_KEY_PATH=~/.ssh/id_ed25519
-          mkdir -p ~/.ssh
-          echo -e '${{ secrets.MM_MOBILE_PRIVATE_DEPLOY_KEY }}' > ${SSH_KEY_PATH}
-          chmod 0600 ${SSH_KEY_PATH}
-          ssh-keygen -y -f ${SSH_KEY_PATH} > ${SSH_KEY_PATH}.pub
 
       - name: ci/build-ios-pr
         env:

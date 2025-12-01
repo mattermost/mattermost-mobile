@@ -4,26 +4,9 @@
 name: Setup Intune
 description: Initialize Intune submodule and link module for internal builds with MAM features
 
-inputs:
-  github-token:
-    description: 'GitHub token with access to mattermost-mobile-intune private repository'
-    required: true
-
 runs:
   using: composite
   steps:
-    - name: Configure git for private submodule access
-      shell: bash
-      env:
-        GITHUB_TOKEN: ${{ inputs.github-token }}
-      run: |
-        echo "::group::Configure git authentication"
-        # Configure git to use token for private repository access
-        git config --global url."https://x-access-token:${GITHUB_TOKEN}@github.com/".insteadOf "git@github.com:"
-        git config --global url."https://x-access-token:${GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
-        echo "✅ Git authentication configured"
-        echo "::endgroup::"
-
     - name: Initialize Intune submodule
       shell: bash
       run: |
