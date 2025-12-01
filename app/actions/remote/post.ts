@@ -976,19 +976,6 @@ export const revealBoRPost = async (serverUrl: string, postId: string) => {
             prepareRecordsOnly: false,
         });
 
-        // await database.write(async () => {
-        //     await post.update((p) => {
-        //         p.message = revealedPost.message;
-        //         p.metadata = revealedPost.metadata;
-        //
-        //         if (revealedPost.props) {
-        //             p.props = revealedPost.props;
-        //         }
-        //
-        //         p.metadata.files = revealedPost.metadata.files;
-        //     });
-        // });
-
         return {post};
     } catch (error) {
         logDebug('error on revealBoRPost', getFullErrorMessage(error));
