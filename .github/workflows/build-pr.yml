@@ -42,6 +42,7 @@ jobs:
         uses: ./.github/actions/prepare-ios-build
         with:
           intune-enabled: 'true'
+          intune-ssh-private-key: ${{ secrets.MM_MOBILE_INTUNE_DEPLOY_KEY }}
 
       - name: ci/build-ios-pr
         env:

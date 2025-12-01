@@ -6,8 +6,8 @@ inputs:
     description: 'Enable Intune MAM features (requires Xcode 26.1+)'
     required: false
     default: 'false'
-  github-token:
-    description: 'GitHub token for private repository access (required when intune-enabled=true)'
+  intune-ssh-private-key:
+    description: 'SSH private key for Intune submodule repository access (required if intune-enabled is true)'
     required: false
 
 runs:
@@ -25,7 +25,7 @@ runs:
       if: inputs.intune-enabled == 'true'
       uses: ./.github/actions/setup-intune
       with:
-        github-token: ${{ inputs.github-token }}
+        ssh-private-key: ${{ inputs.intune-ssh-private-key }}
 
     - name: Cache Pods
       uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3

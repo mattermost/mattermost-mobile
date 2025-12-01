@@ -46,7 +46,7 @@ jobs:
         uses: ./.github/actions/prepare-ios-build
         with:
           intune-enabled: 'true'
-          github-token: ${{ secrets.MM_MOBILE_GITHUB_TOKEN }}
+          intune-ssh-private-key: ${{ secrets.MM_MOBILE_INTUNE_DEPLOY_KEY }}
 
       - name: Build iOS Simulator
         env:

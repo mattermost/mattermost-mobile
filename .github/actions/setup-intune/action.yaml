@@ -4,9 +4,19 @@
 name: Setup Intune
 description: Initialize Intune submodule and link module for internal builds with MAM features
 
+inputs:
+  ssh-private-key:
+    description: 'SSH private key for Intune submodule repository access'
+    required: true
+
 runs:
   using: composite
   steps:
+    - name: Configure SSH for Intune submodule
+      uses: ./.github/actions/setup-intune-ssh-key
+      with:
+        ssh-private-key: ${{ inputs.ssh-private-key }}
+
     - name: Initialize Intune submodule
       shell: bash
       run: |
