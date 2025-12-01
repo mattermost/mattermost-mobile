@@ -25,16 +25,8 @@ runs:
         chmod 0600 ${INTUNE_KEY_PATH}
         ssh-keygen -y -f ${INTUNE_KEY_PATH} > ${INTUNE_KEY_PATH}.pub
 
-        # Test SSH connection with the key
+        # Test SSH connection with the key (for debugging)
         echo "Testing SSH connection to github.com with Intune key..."
         ssh -i ${INTUNE_KEY_PATH} -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -T git@github.com 2>&1 || true
-
-        # Configure Git to use this specific SSH key for the Intune submodule
-        # Set in .git/config (not .gitmodules) so git submodule update uses it
-        git config submodule."libraries/@mattermost/intune".sshCommand "ssh -i ${INTUNE_KEY_PATH} -o IdentitiesOnly=yes -o StrictHostKeyChecking=no"
-
-        # Verify the config was set
-        echo "Git submodule SSH config:"
-        git config --get submodule."libraries/@mattermost/intune".sshCommand
 
         echo "✅ Intune submodule SSH key configured"

@@ -19,6 +19,8 @@ runs:
 
     - name: Initialize Intune submodule
       shell: bash
+      env:
+        GIT_SSH_COMMAND: ssh -i $HOME/.ssh/intune_submodule_ed25519 -o IdentitiesOnly=yes -o StrictHostKeyChecking=no
       run: |
         echo "::group::Initialize Intune submodule"
         # Check if submodule is already initialized
