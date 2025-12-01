@@ -37,7 +37,7 @@ jobs:
         uses: ./.github/actions/prepare-ios-build
         with:
           intune-enabled: 'true'
-          github-token: ${{ secrets.MM_MOBILE_GITHUB_TOKEN }}
+          github-token: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
 
       - name: ci/output-ssh-private-key
         shell: bash
