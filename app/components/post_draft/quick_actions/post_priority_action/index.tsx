@@ -39,9 +39,10 @@ export default function PostPriorityAction({
     const intl = useIntl();
     const isTablet = useIsTablet();
     const theme = useTheme();
-    const {blurAndDismissKeyboard} = useKeyboardAnimationContext();
+    const {blurAndDismissKeyboard, closeInputAccessoryView} = useKeyboardAnimationContext();
 
     const onPress = useCallback(async () => {
+        closeInputAccessoryView();
         await blurAndDismissKeyboard();
 
         const title = isTablet ? intl.formatMessage({id: 'post_priority.picker.title', defaultMessage: 'Message priority'}) : '';
@@ -57,7 +58,7 @@ export default function PostPriorityAction({
                 closeButtonId: POST_PRIORITY_PICKER_BUTTON,
             },
         });
-    }, [blurAndDismissKeyboard, isTablet, intl, theme, postPriority, updatePostPriority]);
+    }, [closeInputAccessoryView, blurAndDismissKeyboard, isTablet, intl, theme, postPriority, updatePostPriority]);
 
     const iconName = 'alert-circle-outline';
     const iconColor = changeOpacity(theme.centerChannelColor, 0.64);
