@@ -19,14 +19,9 @@ runs:
         chmod 700 ~/.ssh
 
         # Configure Intune submodule SSH key (separate from main repo key)
-        # Use absolute path to avoid tilde expansion issues
         INTUNE_KEY_PATH="${HOME}/.ssh/intune_submodule_ed25519"
         echo -e '${{ inputs.ssh-private-key }}' > ${INTUNE_KEY_PATH}
         chmod 0600 ${INTUNE_KEY_PATH}
         ssh-keygen -y -f ${INTUNE_KEY_PATH} > ${INTUNE_KEY_PATH}.pub
-
-        # Test SSH connection with the key (for debugging)
-        echo "Testing SSH connection to github.com with Intune key..."
-        ssh -i ${INTUNE_KEY_PATH} -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -T git@github.com 2>&1 || true
 
         echo "✅ Intune submodule SSH key configured"
