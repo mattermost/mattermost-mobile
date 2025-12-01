@@ -41,15 +41,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         backgroundColor: theme.centerChannelBg,
     },
     headerContainer: {
-        paddingHorizontal: 20,
         paddingTop: 8,
         paddingBottom: 4,
         gap: 8,
     },
-    customPromptContainer: {
-        paddingHorizontal: 20,
-        paddingVertical: 4,
-    },
+    customPromptContainer: {},
     customPromptInputWrapper: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -378,7 +374,7 @@ const AIRewriteOptions = ({
         {action: 'elaborate', labelId: 'ai_rewrite.elaborate', defaultLabel: 'Elaborate', icon: 'text-long'},
         {action: 'improve_writing', labelId: 'ai_rewrite.improve_writing', defaultLabel: 'Improve writing', icon: 'auto-fix'},
         {action: 'fix_spelling', labelId: 'ai_rewrite.fix_spelling', defaultLabel: 'Fix spelling and grammar', icon: 'spellcheck'},
-        {action: 'simplify', labelId: 'ai_rewrite.simplify', defaultLabel: 'Simplify', icon: 'lightbulb-outline'},
+        {action: 'simplify', labelId: 'ai_rewrite.simplify', defaultLabel: 'Simplify', icon: 'creation-outline'},
         {action: 'summarize', labelId: 'ai_rewrite.summarize', defaultLabel: 'Summarize', icon: 'ai-summarize'},
     ];
 
