@@ -92,6 +92,8 @@ type PlaybookRunAttributeValue = {
     value: string;
 }
 
+type PlaybookRunType = typeof PLAYBOOK_RUN_TYPES[keyof typeof PLAYBOOK_RUN_TYPES];
+
 type PlaybookRun = {
     id: string;
     name: string;
@@ -108,7 +110,8 @@ type PlaybookRun = {
     create_at: number;
     end_at: number;
     post_id?: string;
-    playbook_id: string;
+    playbook_id?: string;
+    type?: PlaybookRunType;
     current_status: PlaybookRunStatusType;
     last_status_update_at: number;
     reminder_post_id?: string;

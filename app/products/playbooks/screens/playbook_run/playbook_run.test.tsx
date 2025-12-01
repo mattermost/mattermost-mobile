@@ -193,7 +193,7 @@ describe('PlaybookRun', () => {
         const userAvatarsStack = getByTestId('user-avatars-stack');
         expect(userAvatarsStack.props.users).toBe(props.participants);
         expect(userAvatarsStack.props.location).toBe('PlaybookRun');
-        expect(userAvatarsStack.props.bottomSheetTitle.defaultMessage).toBe('Run Participants');
+        expect(userAvatarsStack.props.bottomSheetTitle.defaultMessage).toBe('Participants');
 
         props.owner = undefined;
         rerender(<PlaybookRun {...props}/>);
@@ -330,7 +330,7 @@ describe('PlaybookRun', () => {
 
         const {getByText} = renderWithEverything(<PlaybookRun {...props}/>, {database});
 
-        expect(getByText('Finish Run')).toBeTruthy();
+        expect(getByText('Finish')).toBeTruthy();
     });
 
     it('handles finish run button press', () => {
@@ -338,12 +338,35 @@ describe('PlaybookRun', () => {
         props.participants.push(TestHelper.fakeUserModel({id: props.currentUserId}));
         const {getByText} = renderWithEverything(<PlaybookRun {...props}/>, {database});
 
-        const finishRunButton = getByText('Finish Run');
+        const finishRunButton = getByText('Finish');
         fireEvent.press(finishRunButton);
 
         expect(Alert.alert).toHaveBeenCalledWith(
-            'Finish Run',
-            'There are 3 tasks pending.\n\nAre you sure you want to finish the run for all participants?',
+            'Finish',
+            'There are 3 tasks pending.\n\nAre you sure you want to finish the checklist for all participants?',
+            [
+                {text: 'Cancel', style: 'cancel'},
+                {text: 'Finish', style: 'destructive', onPress: expect.any(Function)},
+            ],
+        );
+        const finishAction = jest.mocked(Alert.alert).mock.calls[0][2]![1];
+        finishAction.onPress?.();
+        expect(finishRun).toHaveBeenCalledWith(serverUrl, props.playbookRun!.id);
+    });
+
+    it('handles finish run button press with no pending tasks', () => {
+        const props = getBaseProps();
+        props.participants.push(TestHelper.fakeUserModel({id: props.currentUserId}));
+        props.pendingCount = 0;
+        jest.mocked(Alert.alert).mockClear();
+        const {getByText} = renderWithEverything(<PlaybookRun {...props}/>, {database});
+
+        const finishRunButton = getByText('Finish');
+        fireEvent.press(finishRunButton);
+
+        expect(Alert.alert).toHaveBeenCalledWith(
+            'Finish',
+            'Are you sure you want to finish the checklist for all participants?',
             [
                 {text: 'Cancel', style: 'cancel'},
                 {text: 'Finish', style: 'destructive', onPress: expect.any(Function)},
@@ -358,7 +381,7 @@ describe('PlaybookRun', () => {
         const props = getBaseProps();
         const {queryByText} = renderWithEverything(<PlaybookRun {...props}/>, {database});
 
-        expect(queryByText('Finish Run')).toBeNull();
+        expect(queryByText('Finish')).toBeNull();
     });
 
     it('shows the error snackbar when finishing run fails', async () => {
@@ -367,7 +390,7 @@ describe('PlaybookRun', () => {
         jest.mocked(finishRun).mockResolvedValue({error: 'error'});
         const {getByText} = renderWithEverything(<PlaybookRun {...props}/>, {database});
 
-        const finishRunButton = getByText('Finish Run');
+        const finishRunButton = getByText('Finish');
         fireEvent.press(finishRunButton);
 
         const finishAction = jest.mocked(Alert.alert).mock.calls[0][2]![1];

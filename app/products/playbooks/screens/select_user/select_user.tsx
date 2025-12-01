@@ -40,7 +40,7 @@ export type Props = {
 const messages = defineMessages({
     participants: {
         id: 'playbooks.select_user.participants',
-        defaultMessage: 'RUN PARTICIPANTS',
+        defaultMessage: 'PARTICIPANTS',
     },
     notParticipants: {
         id: 'playbooks.select_user.not_participants',

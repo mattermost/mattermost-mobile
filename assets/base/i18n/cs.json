@@ -1024,7 +1024,6 @@
   "playbooks.playbook_run.error.title": "Nelze načíst podrobnosti spuštění",
   "playbooks.playbook_run.finish_run_button": "Dokončit běh",
   "playbooks.playbook_run.finish_run_dialog_cancel": "Zrušit",
-  "playbooks.playbook_run.finish_run_dialog_description": "Celkem čeká {pendingCount} {pendingCount, plural, one {úloha} few {úlohy} other {úloh}}.\n\nOpravdu chcete dokončit běh pro všechny účastníky?",
   "playbooks.playbook_run.finish_run_dialog_finish": "Dokončit",
   "playbooks.playbook_run.finish_run_dialog_title": "Dokončit běh",
   "playbooks.playbook_run.finished": "Dokončeno",

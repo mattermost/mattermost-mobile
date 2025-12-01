@@ -85,8 +85,12 @@ class CustomStatusScreen {
     openEmojiPicker = async (emojiName: string, closeToolTip = false) => {
         await this.getCustomStatusEmoji(emojiName).tap();
         if (closeToolTip) {
-            await wait(timeouts.ONE_SEC);
-            await EmojiPickerScreen.toolTipCloseButton.tap();
+            await wait(timeouts.TWO_SEC);
+            try {
+                await EmojiPickerScreen.toolTipCloseButton.tap();
+            } catch (error) {
+                // Tool tip not shown
+            }
         }
         await EmojiPickerScreen.toBeVisible();
     };
