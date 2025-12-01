@@ -322,18 +322,23 @@ export async function dismissAnnouncement(serverUrl: string, announcementText: s
 }
 
 export async function expiredBoRPostCleanup(serverUrl: string) {
-    const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-    const lastRunAt = await getLastBoRPostCleanupRun(database);
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const lastRunAt = await getLastBoRPostCleanupRun(database);
 
-    const shouldRunNow = (Date.now() - lastRunAt) > BOR_POST_CLEANUP_MIN_RUN_INTERVAL;
+        const shouldRunNow = (Date.now() - lastRunAt) > BOR_POST_CLEANUP_MIN_RUN_INTERVAL;
 
-    if (!shouldRunNow) {
-        return {error: undefined};
+        if (!shouldRunNow) {
+            return;
+        }
+
+        const {error} = await removeExpiredBoRPosts(serverUrl, database);
+        if (!error) {
+            updateLastBoRCleanupRun(serverUrl);
+        }
+    } catch (error) {
+        logError('An error occurred running the Burn on Read cleanup task', error);
     }
-
-    removeExpiredBoRPosts(serverUrl, database);
-    updateLastBoRCleanupRun(serverUrl);
-    return {error: undefined};
 }
 
 async function removeExpiredBoRPosts(serverUrl: string, database: Database) {

@@ -961,25 +961,33 @@ export const editPost = async (serverUrl: string, postId: string, postMessage: s
 export const revealBoRPost = async (serverUrl: string, postId: string) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         const post = await getPostById(database, postId);
-        if (post) {
-            const revealedPost = await client.revealBoRPost(postId);
-
-            await database.write(async () => {
-                await post.update((p) => {
-                    p.message = revealedPost.message;
-                    p.metadata = revealedPost.metadata;
-
-                    if (revealedPost.props) {
-                        p.props = revealedPost.props;
-                    }
-
-                    p.metadata.files = revealedPost.metadata.files;
-                });
-            });
+        if (!post) {
+            return {post: undefined};
         }
+
+        const revealedPost = await client.revealBoRPost(postId);
+        operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [revealedPost.id],
+            posts: [revealedPost],
+            prepareRecordsOnly: false,
+        });
+
+        // await database.write(async () => {
+        //     await post.update((p) => {
+        //         p.message = revealedPost.message;
+        //         p.metadata = revealedPost.metadata;
+        //
+        //         if (revealedPost.props) {
+        //             p.props = revealedPost.props;
+        //         }
+        //
+        //         p.metadata.files = revealedPost.metadata.files;
+        //     });
+        // });
 
         return {post};
     } catch (error) {

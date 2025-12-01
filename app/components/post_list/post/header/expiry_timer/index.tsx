@@ -54,7 +54,10 @@ const ExpiryCountdown: React.FC<Props> = ({expiryTime, onExpiry}) => {
     }, [expiryTime, onExpiry]);
 
     return (
-        <View style={style.container}>
+        <View
+            style={style.container}
+            testID='expiry-timer'
+        >
             <CompassIcon
                 name='fire'
                 size={16}

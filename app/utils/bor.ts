@@ -11,7 +11,7 @@ export function isBoRPost(post: PostModel | Post): boolean {
     return Boolean(post.type && post.type === Post.POST_TYPES.BURN_ON_READ);
 }
 
-export function isUnrevealedBoRPost(post: PostModel): boolean {
+export function isUnrevealedBoRPost(post: Post | PostModel): boolean {
     return isBoRPost(post) && Boolean(!post.metadata?.expire_at);
 }
 
