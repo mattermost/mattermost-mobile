@@ -6,7 +6,7 @@ import {PER_PAGE_DEFAULT} from '@client/rest/constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {updateLastPlaybookRunsFetchAt} from '@playbooks/actions/local/channel';
-import {handlePlaybookRuns, setOwner as localSetOwner} from '@playbooks/actions/local/run';
+import {handlePlaybookRuns, setOwner as localSetOwner, renamePlaybookRun as localRenamePlaybookRun} from '@playbooks/actions/local/run';
 import {getLastPlaybookRunsFetchAt} from '@playbooks/database/queries/run';
 import {getMaxRunUpdateAt} from '@playbooks/utils/run';
 import EphemeralStore from '@store/ephemeral_store';
@@ -51,7 +51,7 @@ export const fetchPlaybookRunsForChannel = async (serverUrl: string, channelId: 
 
         if (!fetchOnly) {
             const result = await handlePlaybookRuns(serverUrl, allRuns, false, true);
-            if (result && result.error) {
+            if (result.error) {
                 throw result.error;
             }
 
@@ -136,6 +136,21 @@ export const setOwner = async (serverUrl: string, playbookRunId: string, ownerId
     }
 };
 
+export const renamePlaybookRun = async (serverUrl: string, playbookRunId: string, newName: string) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        await client.patchPlaybookRun(playbookRunId, {name: newName});
+
+        // Update local database
+        const result = await localRenamePlaybookRun(serverUrl, playbookRunId, newName);
+        return result.error ? result : {data: true};
+    } catch (error) {
+        logDebug('error on renamePlaybookRun', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
 export const createPlaybookRun = async (
     serverUrl: string,
     playbook_id: string,
@@ -161,9 +176,11 @@ export const postStatusUpdate = async (serverUrl: string, playbookRunID: string,
     try {
         const client = NetworkManager.getClient(serverUrl);
         await client.postStatusUpdate(playbookRunID, payload, ids);
+        return {data: true};
     } catch (error) {
         logDebug('error on postStatusUpdate', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
+        return {error};
     }
 };
 

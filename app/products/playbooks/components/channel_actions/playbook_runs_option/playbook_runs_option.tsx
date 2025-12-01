@@ -20,7 +20,7 @@ type Props = {
 const messages = defineMessages({
     playbookRuns: {
         id: 'playbooks.playbooks_runs.title',
-        defaultMessage: 'Playbook runs',
+        defaultMessage: 'Playbook checklists',
     },
 });
 

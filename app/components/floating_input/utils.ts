@@ -17,7 +17,7 @@ export const getLabelPositions = (style: TextStyle, labelStyle: TextStyle, small
     const bottom: number = style.paddingBottom as number || 0;
 
     const height: number = (style.height as number || (top + bottom) || style.padding as number) || 0;
-    const textInputFontSize = style.fontSize || 13;
+    const textInputFontSize = labelStyle.fontSize || 13;
     const labelFontSize = labelStyle.fontSize || 16;
     const smallLabelFontSize = smallLabelStyle.fontSize || 10;
     const fontSizeDiff = textInputFontSize - labelFontSize;

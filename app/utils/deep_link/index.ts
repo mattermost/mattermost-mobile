@@ -9,6 +9,7 @@ import urlParse from 'url-parse';
 
 import {joinIfNeededAndSwitchToChannel, makeDirectChannel} from '@actions/remote/channel';
 import {showPermalink} from '@actions/remote/permalink';
+import {magicLinkLogin} from '@actions/remote/session';
 import {fetchUsersByUsernames} from '@actions/remote/user';
 import {DeepLink, Launch, Screens} from '@constants';
 import DeepLinkType from '@constants/deep_linking';
@@ -35,6 +36,7 @@ import {
     TEAM_NAME_PATH_PATTERN,
     IDENTIFIER_PATH_PATTERN,
     ID_PATH_PATTERN,
+    TOKEN_PATH_PATTERN,
 } from '@utils/url/path';
 
 import type {DeepLinkChannel, DeepLinkDM, DeepLinkGM, DeepLinkPermalink, DeepLinkPlaybookRuns, DeepLinkWithData, LaunchProps} from '@typings/launch';
@@ -54,6 +56,15 @@ export async function handleDeepLink(deepLink: DeepLinkWithData, intlShape?: Int
         // After checking the server for http & https then we add it
         if (!existingServerUrl) {
             const theme = EphemeralStore.theme || getDefaultThemeByAppearance();
+
+            if (deepLink.type === DeepLink.MagicLink && 'token' in deepLink.data) {
+                const result = await magicLinkLogin(deepLink.data.serverUrl, deepLink.data.token);
+                if (result.error) {
+                    logError('Failed to do magic link login', result.error);
+                    return {error: true};
+                }
+                return {error: false};
+            }
             if (NavigationStore.getVisibleScreen() === Screens.SERVER) {
                 Navigation.updateProps(Screens.SERVER, {serverUrl: deepLink.data.serverUrl});
             } else if (!NavigationStore.getScreensInStack().includes(Screens.SERVER)) {
@@ -118,7 +129,7 @@ export async function handleDeepLink(deepLink: DeepLinkWithData, intlShape?: Int
                 // Alert that playbooks should be access from the webapp or desktop app
                 Alert.alert(
                     intl.formatMessage({id: 'playbooks.only_runs_available.title', defaultMessage: 'Playbooks not available'}),
-                    intl.formatMessage({id: 'playbooks.only_runs_available.description', defaultMessage: 'Only Playbook Runs are available on mobile. To access the Playbook, please use the desktop or web app.'}),
+                    intl.formatMessage({id: 'playbooks.only_runs_available.description', defaultMessage: 'Only Playbook Checklists are available on mobile. To access the Playbook, please use the desktop or web app.'}),
                     [{
                         text: intl.formatMessage({id: 'playbooks.only_runs_available.ok', defaultMessage: 'OK'}),
                     }],
@@ -127,8 +138,8 @@ export async function handleDeepLink(deepLink: DeepLinkWithData, intlShape?: Int
             }
             case DeepLink.PlaybookRunsRetrospective: {
                 Alert.alert(
-                    intl.formatMessage({id: 'playbooks.retrospective_not_available.title', defaultMessage: 'Playbooks Run Retrospective not available'}),
-                    intl.formatMessage({id: 'playbooks.retrospective_not_available.description', defaultMessage: 'Only Playbook Runs are available on mobile. To fill the Run Retrospective, please use the desktop or web app.'}),
+                    intl.formatMessage({id: 'playbooks.retrospective_not_available.title', defaultMessage: 'Playbooks Retrospective not available'}),
+                    intl.formatMessage({id: 'playbooks.retrospective_not_available.description', defaultMessage: 'Only Playbook Checklists are available on mobile. To fill the Run Retrospective, please use the desktop or web app.'}),
                     [{
                         text: intl.formatMessage({id: 'playbooks.retrospective_not_available.ok', defaultMessage: 'OK'}),
                     }],
@@ -145,8 +156,8 @@ export async function handleDeepLink(deepLink: DeepLinkWithData, intlShape?: Int
                         const {error} = await fetchPlaybookRun(existingServerUrl, deepLinkData.playbookRunId);
                         if (error) {
                             Alert.alert(
-                                intl.formatMessage({id: 'playbooks.fetch_error.title', defaultMessage: 'Unable to open Run'}),
-                                intl.formatMessage({id: 'playbooks.fetch_error.description', defaultMessage: "You don't have permission to view this run, or it may no longer exist."}),
+                                intl.formatMessage({id: 'playbooks.fetch_error.title', defaultMessage: 'Unable to open Checklist'}),
+                                intl.formatMessage({id: 'playbooks.fetch_error.description', defaultMessage: "You don't have permission to view this, or it may no longer exist."}),
                                 [{
                                     text: intl.formatMessage({id: 'playbooks.fetch_error.OK', defaultMessage: 'Okay'}),
                                 }],
@@ -165,6 +176,16 @@ export async function handleDeepLink(deepLink: DeepLinkWithData, intlShape?: Int
                         }],
                     );
                 }
+                break;
+            }
+            case DeepLink.MagicLink: {
+                Alert.alert(
+                    intl.formatMessage({id: 'magic_link.already_logged_in_error.title', defaultMessage: 'Already logged in'}),
+                    intl.formatMessage({id: 'magic_link.already_logged_in_error.description', defaultMessage: 'You are already logged in to this server. Log out and follow the link again.'}),
+                    [{
+                        text: intl.formatMessage({id: 'magic_link.already_logged_in_error.ok', defaultMessage: 'OK'}),
+                    }],
+                );
                 break;
             }
         }
@@ -209,6 +230,14 @@ export const matchPlaybookRunsDeeplink = match<PlaybookRunsPathParams>(PLAYBOOK_
 
 const PLAYBOOK_RUNS_RETROSPECTIVE = '*serverUrl/playbooks/runs/:playbookRunId/retrospective';
 export const matchPlaybookRunsRetrospectiveDeeplink = match<PlaybookRunsPathParams>(PLAYBOOK_RUNS_RETROSPECTIVE);
+
+type MagicLinkPathParams = {
+    serverUrl: string[];
+    token: string;
+};
+
+const MAGIC_LINK_PATH = '*serverUrl/login/one_time_link';
+export const matchMagicLinkDeeplink = match<MagicLinkPathParams>(MAGIC_LINK_PATH);
 
 type PermalinkPathParams = {
     serverUrl: string[];
@@ -290,9 +319,17 @@ function isValidId(id: string): boolean {
     return regex.test(id);
 }
 
+function isValidToken(token?: string): boolean {
+    if (!token) {
+        return false;
+    }
+    const regex = new RegExp(`^${TOKEN_PATH_PATTERN}$`);
+    return regex.test(token);
+}
+
 export function parseDeepLink(deepLinkUrl: string, asServer = false): DeepLinkWithData {
     try {
-        const parsedUrl = urlParse(deepLinkUrl);
+        const parsedUrl = urlParse(deepLinkUrl, true);
         const urlWithoutQuery = stripTrailingSlashes(parsedUrl.protocol + '//' + parsedUrl.host + parsedUrl.pathname);
         const url = removeProtocol(urlWithoutQuery);
 
@@ -335,6 +372,16 @@ export function parseDeepLink(deepLinkUrl: string, asServer = false): DeepLinkWi
         if (playbooksRunsMatch && isValidId(playbooksRunsMatch.params.playbookRunId)) {
             const {params: {serverUrl, playbookRunId}} = playbooksRunsMatch;
             return {type: DeepLink.PlaybookRuns, url: deepLinkUrl, data: {serverUrl: serverUrl.join('/'), playbookRunId}};
+        }
+
+        const magicLinkMatch = matchMagicLinkDeeplink(url);
+        if (magicLinkMatch) {
+            const token = parsedUrl.query.t;
+            const {params: {serverUrl}} = magicLinkMatch;
+            if (!isValidToken(token)) {
+                return {type: DeepLink.Invalid, url: deepLinkUrl};
+            }
+            return {type: DeepLink.MagicLink, url: deepLinkUrl, data: {serverUrl: serverUrl.join('/'), token}};
         }
 
         if (asServer) {

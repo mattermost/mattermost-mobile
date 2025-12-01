@@ -409,5 +409,14 @@
   "mobile.calls_stop_recording": "Parar Gravação",
   "post_priority.picker.cancel": "Cancelar",
   "suggestion.search.private": "Canais Privados",
-  "suggestion.search.public": "Canais Públicos"
+  "suggestion.search.public": "Canais Públicos",
+  "user.settings.general.firstName": "Primeiro Nome",
+  "user.settings.general.lastName": "Sobrenome",
+  "user.settings.general.nickname": "Apelido",
+  "user.settings.general.position": "Posição",
+  "user.settings.general.username": "Nome de utilizador",
+  "user_settings.notifications.test_notification.send_button.send": "Enviar uma Notificação de Teste",
+  "user_settings.notifications.test_notification.send_button.sending": "A enviar uma notificação de teste",
+  "user_settings.notifications.test_notification.send_button.sent": "Notificação de teste enviada",
+  "user_settings.notifications.test_notification.title": "Notificações de resolução de problemas"
 }

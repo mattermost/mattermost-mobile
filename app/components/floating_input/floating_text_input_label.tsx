@@ -7,6 +7,7 @@ import React, {useState, useRef, useImperativeHandle, forwardRef, useMemo, useCa
 import {type LayoutChangeEvent, type NativeSyntheticEvent, type StyleProp, type TargetedEvent, TextInput, type TextInputFocusEventData, type TextInputProps, type TextStyle} from 'react-native';
 
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import FloatingInputContainer from './floating_input_container';
 import {onExecution} from './utils';
@@ -22,11 +23,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         paddingTop: 0,
         paddingBottom: 0,
         flexDirection: 'row',
-        fontFamily: 'OpenSans',
-        fontSize: 16,
         color: theme.centerChannelColor,
         borderColor: changeOpacity(theme.centerChannelColor, 0.16),
         borderRadius: 4,
+        ...typography('Body', 200),
     },
 }));
 
