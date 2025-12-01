@@ -368,9 +368,7 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
             fieldName: 'id',
             shouldUpdate: (e: PostModel, n: Post) => {
                 const bothBoRPost = e.type === PostTypes.BURN_ON_READ && n.type === PostTypes.BURN_ON_READ;
-                const postBecameRevealed = isUnrevealedBoRPost(e) && !isUnrevealedBoRPost(n);
-
-                if (bothBoRPost && postBecameRevealed) {
+                if (bothBoRPost && isUnrevealedBoRPost(e) && !isUnrevealedBoRPost(n)) {
                     return true;
                 }
 
