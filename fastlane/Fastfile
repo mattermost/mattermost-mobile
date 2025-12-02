@@ -263,8 +263,8 @@ lane :upload_file_to_s3 do |options|
       "#{ENV['AWS_FOLDER_NAME']}/#{ENV['BRANCH_TO_BUILD']}" :
       "#{ENV['AWS_FOLDER_NAME']}/#{version_number}/#{build_number}"
 
-    s3 = Aws::S3::Resource.new(region: s3_region)
-    s3_bucket = s3.bucket(s3_bucket_name)
+    s3_client = Aws::S3::Client.new(region: s3_region)
+    transfer_manager = Aws::S3::TransferManager.new(client: s3_client)
     mutex = Mutex.new
     threads = []
     file_number = 0
@@ -282,9 +282,19 @@ lane :upload_file_to_s3 do |options|
 
           filename = File.basename(file)
           puts "[#{Thread.current["file_number"]}/#{total_files}] #{filename} uploading..."
-          s3_file = s3_bucket.object("#{s3_folder}/#{filename}")
-          s3_file.upload_file("#{file}")
-          links.push("https://#{s3_bucket_name}/#{s3_folder}/#{filename}")
+          s3_key = "#{s3_folder}/#{filename}"
+          transfer_manager.upload_file(
+            file,
+            s3_bucket_name,
+            s3_key,
+            {
+              cache_control: 'no-cache, no-store, must-revalidate',
+              metadata: {
+                'uploaded-at' => Time.now.utc.iso8601
+              }
+            }
+          )
+          links.push("https://#{s3_bucket_name}/#{s3_key}")
         end
       }
     end
@@ -294,12 +304,19 @@ lane :upload_file_to_s3 do |options|
       if os_type == 'android'
         install_url = "https://#{s3_bucket_name}/#{s3_folder}/#{pr_file}"
       elsif os_type == 'ios'
-        current_build_number = get_build_number(xcodeproj: './ios/Mattermost.xcodeproj')
         plist_template = File.read('plist.erb')
         plist_body = ERB.new(plist_template).result(binding)
 
-        plist_obj = s3_bucket.object("#{s3_folder}/#{plist_file}")
-        plist_obj.put(body: plist_body)
+        s3_client.put_object(
+          bucket: s3_bucket_name,
+          key: "#{s3_folder}/#{plist_file}",
+          body: plist_body,
+          cache_control: 'no-cache, no-store, must-revalidate',
+          content_type: 'application/xml',
+          metadata: {
+            'uploaded-at' => Time.now.utc.iso8601
+          }
+        )
 
         install_url = "itms-services://?action=download-manifest&url=https://#{s3_bucket_name}/#{s3_folder}/#{plist_file}"
       end
@@ -371,7 +388,7 @@ platform :ios do
       api_key = get_apple_api_key()
       match(
           api_key: api_key,
-          type: ENV['MATCH_TYPE'] || 'adhoc'
+          type: ENV['MATCH_TYPE'] || 'adhoc',
       )
     end
   end
