@@ -101,14 +101,101 @@ const Server = ({
     const disableServerUrl = Boolean(managedConfig?.allowOtherServers === 'false' && managedConfig?.serverUrl);
     const additionalServer = launchType === Launch.AddServerFromDeepLink || launchType === Launch.AddServer;
 
-    const dismiss = useCallback(() => {
+    const dismiss = () => {
         NetworkManager.invalidateClient(url);
         dismissModal({componentId});
-    }, [componentId, url]);
+    };
 
     const animatedStyles = useScreenTransitionAnimation(componentId, animated);
 
-    const displayLogin = useCallback((serverUrl: string, config: ClientConfig, license: ClientLicense) => {
+    useEffect(() => {
+        let serverName: string | undefined = defaultDisplayName || managedConfig?.serverName || LocalConfig.DefaultServerName;
+        let serverUrl: string | undefined = defaultServerUrl || managedConfig?.serverUrl || LocalConfig.DefaultServerUrl;
+        let autoconnect = managedConfig?.allowOtherServers === 'false' || LocalConfig.AutoSelectServerUrl;
+
+        if (launchType === Launch.DeepLink || launchType === Launch.AddServerFromDeepLink) {
+            const deepLinkServerUrl = (extra as DeepLinkWithData).data?.serverUrl;
+            if (managedConfig.serverUrl) {
+                autoconnect = (managedConfig.allowOtherServers === 'false' && managedConfig.serverUrl === deepLinkServerUrl);
+                if (managedConfig.serverUrl !== deepLinkServerUrl || launchError) {
+                    Alert.alert('', intl.formatMessage({
+                        id: 'mobile.server_url.deeplink.emm.denied',
+                        defaultMessage: 'This app is controlled by an EMM and the DeepLink server url does not match the EMM allowed server',
+                    }));
+                }
+            } else {
+                autoconnect = true;
+                serverUrl = deepLinkServerUrl;
+            }
+        } else if (launchType === Launch.AddServer) {
+            serverName = defaultDisplayName;
+            serverUrl = defaultServerUrl;
+        }
+
+        if (serverUrl) {
+            // If a server Url is set by the managed or local configuration, use it.
+            setUrl(serverUrl);
+        }
+
+        if (serverName) {
+            setDisplayName(serverName);
+        }
+
+        if (serverUrl && serverName && autoconnect) {
+            // If no other servers are allowed or the local config for AutoSelectServerUrl is set, attempt to connect
+            handleConnect(managedConfig?.serverUrl || LocalConfig.DefaultServerUrl);
+        }
+
+    // functions do not need memoization
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [managedConfig?.allowOtherServers, managedConfig?.serverUrl, managedConfig?.serverName, defaultServerUrl]);
+
+    useEffect(() => {
+        if (url && displayName && !urlError && !preauthSecretError) {
+            setButtonDisabled(false);
+        } else {
+            setButtonDisabled(true);
+        }
+    }, [url, displayName, urlError, preauthSecretError]);
+
+    useEffect(() => {
+        const listener = {
+            componentDidAppear: () => {
+                if (url) {
+                    NetworkManager.invalidateClient(url);
+                }
+            },
+        };
+        const unsubscribe = Navigation.events().registerComponentListener(listener, componentId);
+
+        return () => unsubscribe.remove();
+    }, [componentId, url]);
+
+    useEffect(() => {
+        const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+            if (LocalConfig.ShowOnboarding && animated) {
+                popTopScreen(Screens.SERVER);
+                return true;
+            }
+            if (isModal) {
+                dismiss();
+                return true;
+            }
+
+            return false;
+        });
+
+        PushNotifications.registerIfNeeded();
+
+        return () => backHandler.remove();
+
+    // only needed on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    useNavButtonPressed(closeButtonId || '', componentId, dismiss, []);
+
+    const displayLogin = (serverUrl: string, config: ClientConfig, license: ClientLicense) => {
         const {enabledSSOs, hasLoginForm, numberSSOs, ssoOptions} = loginOptions(config, license);
         const passProps = {
             config,
@@ -141,9 +228,74 @@ const Server = ({
         setConnecting(false);
         setButtonDisabled(false);
         setUrl(serverUrl);
-    }, [displayName, extra, launchError, launchType, preauthSecret, theme]);
+    };
 
-    const isServerUrlValid = useCallback((serverUrl?: string) => {
+    const handleConnect = async (manualUrl?: string) => {
+        if (buttonDisabled && !manualUrl) {
+            return;
+        }
+
+        if (connecting && cancelPing) {
+            cancelPing();
+            return;
+        }
+
+        const serverUrl = typeof manualUrl === 'string' ? manualUrl : url;
+        if (!serverUrl || serverUrl.trim() === '') {
+            setUrlError(formatMessage(defaultServerUrlMessage));
+            return;
+        }
+
+        if (!isServerUrlValid(serverUrl)) {
+            return;
+        }
+
+        if (displayNameError) {
+            setDisplayNameError(undefined);
+        }
+
+        if (urlError) {
+            setUrlError(undefined);
+        }
+
+        const server = await getServerByDisplayName(displayName);
+        const credentials = await getServerCredentials(serverUrl);
+        if (server && server.lastActiveAt > 0 && credentials?.token) {
+            setButtonDisabled(true);
+            setDisplayNameError(formatMessage({
+                id: 'mobile.server_name.exists',
+                defaultMessage: 'You are using this name for another server.',
+            }));
+            setConnecting(false);
+            return;
+        }
+
+        pingServer(serverUrl);
+    };
+
+    const handleDisplayNameTextChanged = useCallback((text: string) => {
+        setDisplayName(text);
+        setDisplayNameError(undefined);
+    }, []);
+
+    const handleUrlTextChanged = useCallback((text: string) => {
+        setUrlError(undefined);
+        setUrl(text);
+    }, []);
+
+    const handlePreauthSecretTextChanged = useCallback((text: string) => {
+        setPreauthSecret(text);
+
+        // Clear any connection errors when preauth secret is modified
+        if (urlError) {
+            setUrlError(undefined);
+        }
+        if (preauthSecretError) {
+            setPreauthSecretError(undefined);
+        }
+    }, [urlError, preauthSecretError]);
+
+    const isServerUrlValid = (serverUrl?: string) => {
         const testUrl = sanitizeUrl(serverUrl ?? url);
         if (!isValidUrl(testUrl)) {
             setUrlError(intl.formatMessage({
@@ -153,9 +305,9 @@ const Server = ({
             return false;
         }
         return true;
-    }, [intl, url]);
+    };
 
-    const pingServer = useCallback(async (pingUrl: string, retryWithHttp = true) => {
+    const pingServer = async (pingUrl: string, retryWithHttp = true) => {
         let canceled = false;
         setConnecting(true);
         cancelPing = () => {
@@ -230,155 +382,7 @@ const Server = ({
         }
 
         displayLogin(headRequest.url, data.config!, data.license!);
-    }, [displayLogin, formatMessage, intl, managedConfig?.timeout, preauthSecret]);
-
-    const handleConnect = useCallback(async (manualUrl?: string) => {
-        if (buttonDisabled && !manualUrl) {
-            return;
-        }
-
-        if (connecting && cancelPing) {
-            cancelPing();
-            return;
-        }
-
-        const serverUrl = typeof manualUrl === 'string' ? manualUrl : url;
-        if (!serverUrl || serverUrl.trim() === '') {
-            setUrlError(formatMessage(defaultServerUrlMessage));
-            return;
-        }
-
-        if (!isServerUrlValid(serverUrl)) {
-            return;
-        }
-
-        if (displayNameError) {
-            setDisplayNameError(undefined);
-        }
-
-        if (urlError) {
-            setUrlError(undefined);
-        }
-
-        const server = await getServerByDisplayName(displayName);
-        const credentials = await getServerCredentials(serverUrl);
-        if (server && server.lastActiveAt > 0 && credentials?.token) {
-            setButtonDisabled(true);
-            setDisplayNameError(formatMessage({
-                id: 'mobile.server_name.exists',
-                defaultMessage: 'You are using this name for another server.',
-            }));
-            setConnecting(false);
-            return;
-        }
-
-        pingServer(serverUrl);
-    }, [buttonDisabled, connecting, displayName, displayNameError, formatMessage, isServerUrlValid, pingServer, url, urlError]);
-
-    const handleDisplayNameTextChanged = useCallback((text: string) => {
-        setDisplayName(text);
-        setDisplayNameError(undefined);
-    }, []);
-
-    const handleUrlTextChanged = useCallback((text: string) => {
-        setUrlError(undefined);
-        setUrl(text);
-    }, []);
-
-    const handlePreauthSecretTextChanged = useCallback((text: string) => {
-        setPreauthSecret(text);
-
-        // Clear any connection errors when preauth secret is modified
-        if (urlError) {
-            setUrlError(undefined);
-        }
-        if (preauthSecretError) {
-            setPreauthSecretError(undefined);
-        }
-    }, [urlError, preauthSecretError]);
-
-    useEffect(() => {
-        let serverName: string | undefined = defaultDisplayName || managedConfig?.serverName || LocalConfig.DefaultServerName;
-        let serverUrl: string | undefined = defaultServerUrl || managedConfig?.serverUrl || LocalConfig.DefaultServerUrl;
-        let autoconnect = managedConfig?.allowOtherServers === 'false' || LocalConfig.AutoSelectServerUrl;
-
-        if (launchType === Launch.DeepLink || launchType === Launch.AddServerFromDeepLink) {
-            const deepLinkServerUrl = (extra as DeepLinkWithData).data?.serverUrl;
-            if (managedConfig.serverUrl) {
-                autoconnect = (managedConfig.allowOtherServers === 'false' && managedConfig.serverUrl === deepLinkServerUrl);
-                if (managedConfig.serverUrl !== deepLinkServerUrl || launchError) {
-                    Alert.alert('', intl.formatMessage({
-                        id: 'mobile.server_url.deeplink.emm.denied',
-                        defaultMessage: 'This app is controlled by an EMM and the DeepLink server url does not match the EMM allowed server',
-                    }));
-                }
-            } else {
-                autoconnect = true;
-                serverUrl = deepLinkServerUrl;
-            }
-        } else if (launchType === Launch.AddServer) {
-            serverName = defaultDisplayName;
-            serverUrl = defaultServerUrl;
-        }
-
-        if (serverUrl) {
-            // If a server Url is set by the managed or local configuration, use it.
-            setUrl(serverUrl);
-        }
-
-        if (serverName) {
-            setDisplayName(serverName);
-        }
-
-        if (serverUrl && serverName && autoconnect) {
-            // If no other servers are allowed or the local config for AutoSelectServerUrl is set, attempt to connect
-            handleConnect(managedConfig?.serverUrl || LocalConfig.DefaultServerUrl);
-        }
-    }, [
-        managedConfig.allowOtherServers, managedConfig.serverUrl, managedConfig?.serverName,
-        defaultServerUrl, defaultDisplayName, launchType, extra, launchError, intl, handleConnect]);
-
-    useEffect(() => {
-        if (url && displayName && !urlError && !preauthSecretError) {
-            setButtonDisabled(false);
-        } else {
-            setButtonDisabled(true);
-        }
-    }, [url, displayName, urlError, preauthSecretError]);
-
-    useEffect(() => {
-        const listener = {
-            componentDidAppear: () => {
-                if (url) {
-                    NetworkManager.invalidateClient(url);
-                }
-            },
-        };
-        const unsubscribe = Navigation.events().registerComponentListener(listener, componentId);
-
-        return () => unsubscribe.remove();
-    }, [componentId, url]);
-
-    useEffect(() => {
-        const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-            if (LocalConfig.ShowOnboarding && animated) {
-                popTopScreen(Screens.SERVER);
-                return true;
-            }
-            if (isModal) {
-                dismiss();
-                return true;
-            }
-
-            return false;
-        });
-
-        PushNotifications.registerIfNeeded();
-
-        return () => backHandler.remove();
-    }, [animated, dismiss, isModal]);
-
-    useNavButtonPressed(closeButtonId || '', componentId, dismiss, []);
+    };
 
     return (
         <View
