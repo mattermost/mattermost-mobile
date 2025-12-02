@@ -42,11 +42,13 @@ runs:
     - name: Cache Pods
       uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
       with:
-        path: ios/Pods
-        key: ${{ runner.os }}-pods-v2-intune-${{ inputs.intune-enabled }}-${{ steps.intune-hash.outputs.hash }}-${{ hashFiles('ios/Podfile.lock') }}
+        path: |
+          ios/Pods
+          libraries/@mattermost/intune/ios/Frameworks
+        key: ${{ runner.os }}-pods-v3-intune-${{ inputs.intune-enabled }}-${{ steps.intune-hash.outputs.hash }}-${{ hashFiles('ios/Podfile.lock') }}
         restore-keys: |
-          ${{ runner.os }}-pods-v2-intune-${{ inputs.intune-enabled }}-${{ steps.intune-hash.outputs.hash }}-
-          ${{ runner.os }}-pods-v2-intune-${{ inputs.intune-enabled }}-
+          ${{ runner.os }}-pods-v3-intune-${{ inputs.intune-enabled }}-${{ steps.intune-hash.outputs.hash }}-
+          ${{ runner.os }}-pods-v3-intune-${{ inputs.intune-enabled }}-
 
     - name: ci/install-pods-dependencies
       shell: bash
