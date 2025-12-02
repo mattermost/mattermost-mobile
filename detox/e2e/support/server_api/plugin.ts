@@ -309,15 +309,17 @@ export const apiUploadAndEnablePlugin = async (options: {
                     version: verifyStatus.plugin?.version,
                 });
 
-                if (verifyStatus.isActive) {
-                    if (!version || (version && verifyStatus.isVersionMatch)) {
-                        return {plugin: verifyStatus.plugin, message: 'Plugin was inactive with correct version, now enabled'};
-                    }
+                return {plugin: verifyStatus.plugin, message: 'Plugin was inactive with correct version, now enabled'};
 
-                    // Wrong version but active - log it and continue to try installing correct version
-                    // eslint-disable-next-line no-console
-                    console.log(`Activated existing plugin version ${verifyStatus.plugin?.version} but expected ${version}. Will attempt to download correct version.`);
-                }
+                // if (verifyStatus.isActive) {
+                //     if (!version || (version && verifyStatus.isVersionMatch)) {
+                //         return {plugin: verifyStatus.plugin, message: 'Plugin was inactive with correct version, now enabled'};
+                //     }
+
+                //     // Wrong version but active - log it and continue to try installing correct version
+                //     // eslint-disable-next-line no-console
+                //     console.log(`Activated existing plugin version ${verifyStatus.plugin?.version} but expected ${version}. Will attempt to download correct version.`);
+                // }
             }
         }
 
