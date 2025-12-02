@@ -476,4 +476,48 @@ describe('expiredBoRPostCleanup', () => {
         expect(logError).toHaveBeenCalledWith('An error occurred while performing BoR post cleanup', expect.any(Error));
     });
 
+    it('should handle updateLastBoRCleanupRun error gracefully', async () => {
+        const database = operator.database;
+        jest.spyOn(database.adapter, 'unsafeExecute').mockImplementation(() => Promise.resolve());
+
+        // Mock handleSystem to throw an error when updating last cleanup run
+        const handleSystemSpy = jest.spyOn(operator, 'handleSystem').mockImplementation(() => {
+            throw new Error('System update error');
+        });
+
+        const channel: Channel = TestHelper.fakeChannel({
+            id: 'channelid1',
+            team_id: 'teamid1',
+        });
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+
+        // Restore handleSystem for channel creation, then mock it again for the cleanup run update
+        handleSystemSpy.mockRestore();
+        jest.spyOn(operator, 'handleSystem').mockImplementation((args) => {
+            if (args.systems?.[0]?.id === SYSTEM_IDENTIFIERS.LAST_BOR_POST_CLEANUP_RUN) {
+                throw new Error('System update error');
+            }
+            return Promise.resolve([]);
+        });
+
+        const now = Date.now();
+        const borPostExpired = TestHelper.fakePost({
+            id: 'postid1',
+            channel_id: channel.id,
+            type: PostTypes.BURN_ON_READ,
+            props: {expire_at: now - 10000},
+        });
+
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [borPostExpired.id],
+            posts: [borPostExpired],
+            prepareRecordsOnly: false,
+        });
+
+        // Should not throw an error, just log it
+        await expect(expiredBoRPostCleanup(serverUrl)).resolves.not.toThrow();
+        expect(logError).toHaveBeenCalledWith('Failed updateLastBoRCleanupRun', expect.any(Error));
+    });
+
 });
