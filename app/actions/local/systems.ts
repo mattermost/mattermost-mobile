@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {type Database, Q} from '@nozbe/watermelondb';
+import {Q} from '@nozbe/watermelondb';
 import deepEqual from 'deep-equal';
 
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';

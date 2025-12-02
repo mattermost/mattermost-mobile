@@ -3,6 +3,8 @@
 
 import React, {type ComponentProps} from 'react';
 
+import UnrevealedBurnOnReadPost from '@components/post_list/post/burn_on_read/unrevealed';
+import {PostTypes} from '@constants/post';
 import NetworkManager from '@managers/network_manager';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {getPostById} from '@queries/servers/post';
@@ -13,8 +15,6 @@ import Post from './post';
 
 import type {Database} from '@nozbe/watermelondb';
 import type PostModel from '@typings/database/models/servers/post';
-import {PostTypes} from "@constants/post";
-import UnrevealedBurnOnReadPost from "@components/post_list/post/burn_on_read/unrevealed";
 
 jest.mock('@managers/performance_metrics_manager');
 jest.mock('@components/post_list/post/burn_on_read/unrevealed');
