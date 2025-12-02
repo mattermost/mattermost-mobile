@@ -285,13 +285,11 @@ lane :upload_file_to_s3 do |options|
           s3_key = "#{s3_folder}/#{filename}"
           transfer_manager.upload_file(
             file,
-            s3_bucket_name,
-            s3_key,
-            {
-              cache_control: 'no-cache, no-store, must-revalidate',
-              metadata: {
-                'uploaded-at' => Time.now.utc.iso8601
-              }
+            bucket: s3_bucket_name,
+            key: s3_key,
+            cache_control: 'no-cache, no-store, must-revalidate',
+            metadata: {
+              'uploaded-at' => Time.now.utc.iso8601
             }
           )
           links.push("https://#{s3_bucket_name}/#{s3_key}")
