@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@formatjs/intl-datetimeformat": "6.18.0",
+    "@formatjs/intl-displaynames": "6.8.13",
     "@formatjs/intl-getcanonicallocales": "2.5.5",
     "@formatjs/intl-listformat": "7.7.11",
     "@formatjs/intl-locale": "4.2.11",

@@ -5,6 +5,7 @@ import {fetchPostAuthors} from '@actions/remote/post';
 import {ActionType, Post} from '@constants';
 import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import {getChannelById, queryMyChannelsWithAutotranslation} from '@queries/servers/channel';
 import {countUsersFromMentions, getPostById, prepareDeletePost, queryPostsById} from '@queries/servers/post';
 import {getCurrentUserId} from '@queries/servers/system';
 import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers/thread';
@@ -388,5 +389,73 @@ export function getUsersCountFromMentions(serverUrl: string, mentions: string[])
         return countUsersFromMentions(database, mentions);
     } catch (error) {
         return Promise.resolve(0);
+    }
+}
+
+export async function deletePostsForChannel(serverUrl: string, channelId: string, prepareRecordsOnly = false) {
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const channel = await getChannelById(database, channelId);
+
+        if (!channel) {
+            return {error: false, models: []};
+        }
+
+        const posts = await channel.posts.fetch();
+        if (!posts.length) {
+            return {error: false, models: []};
+        }
+
+        const preparedPostsPromises = posts.map((post) => prepareDeletePost(post));
+        const preparedPostsArrays = await Promise.all(preparedPostsPromises);
+        const preparedModels: Model[] = preparedPostsArrays.flat();
+
+        if (preparedModels.length && !prepareRecordsOnly) {
+            await operator.batchRecords(preparedModels, 'deletePostsForChannel');
+        }
+
+        return {error: false, models: preparedModels};
+    } catch (error) {
+        logError('Failed deletePostsForChannel', error);
+        return {error, models: []};
+    }
+}
+
+export async function deletePostsForChannelsWithAutotranslation(serverUrl: string, resetAutotranslations = false, prepareRecordsOnly = false) {
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const myChannels = await queryMyChannelsWithAutotranslation(database).fetch();
+
+        const deleteResults = await Promise.all(
+            myChannels.map((myChannel) => deletePostsForChannel(serverUrl, myChannel.id, prepareRecordsOnly)),
+        );
+
+        const allModels: Model[] = [];
+        for (const result of deleteResults) {
+            if (result.models) {
+                allModels.push(...result.models);
+            }
+        }
+
+        // Reset autotranslation for all channels if requested
+        if (resetAutotranslations && myChannels.length) {
+            const myChannelModels: Model[] = [];
+            for (const myChannel of myChannels) {
+                myChannel.prepareUpdate((v) => {
+                    v.autotranslation = false;
+                });
+                myChannelModels.push(myChannel);
+            }
+            allModels.push(...myChannelModels);
+        }
+
+        if (allModels.length && !prepareRecordsOnly) {
+            await operator.batchRecords(allModels, 'deletePostsForChannelsWithAutotranslation');
+        }
+
+        return {error: undefined, models: allModels};
+    } catch (error) {
+        logError('Failed deletePostsForChannelsWithAutotranslation', error);
+        return {error, models: []};
     }
 }

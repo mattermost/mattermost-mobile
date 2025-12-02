@@ -9,7 +9,7 @@ import {Permissions, Post, Screens} from '@constants';
 import {AppBindingLocations} from '@constants/apps';
 import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
 import AppsManager from '@managers/apps_manager';
-import {observeChannel, observeIsReadOnlyChannel} from '@queries/servers/channel';
+import {observeChannel, observeIsReadOnlyChannel, observeIsChannelAutotranslated} from '@queries/servers/channel';
 import {observePost, observePostSaved} from '@queries/servers/post';
 import {observeReactionsForPost} from '@queries/servers/reaction';
 import {observePermissionForChannel, observePermissionForPost} from '@queries/servers/role';
@@ -151,6 +151,10 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
         switchMap((enabled) => (enabled ? observeThreadById(database, post.id) : of$(undefined))),
     );
 
+    const canViewTranslation = observeIsChannelAutotranslated(database, post.channelId).pipe(
+        switchMap((isAutotranslated) => of$(isAutotranslated && post.translationState === 'ready')),
+    );
+
     return {
         canMarkAsUnread,
         canAddReaction,
@@ -160,6 +164,7 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
         combinedPost: of$(combinedPost),
         isSaved,
         canEdit,
+        canViewTranslation,
         post,
         thread,
         bindings,

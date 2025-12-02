@@ -155,6 +155,9 @@ export default class ChannelModel extends Model implements ChannelModelInterface
     /** categoryChannel : Query returning the membership data for the current user if it belongs to this channel */
     @immutableRelation(CATEGORY_CHANNEL, 'channel_id') categoryChannel!: Relation<CategoryChannelModel>;
 
+    /** autotranslation : Whether the channel has automatic translation enabled */
+    @field('autotranslation') autotranslation!: boolean;
+
     toApi = (): Channel => {
         return {
             id: this.id,
@@ -176,6 +179,7 @@ export default class ChannelModel extends Model implements ChannelModelInterface
             shared: this.shared,
             banner_info: this.bannerInfo,
             policy_enforced: this.abacPolicyEnforced,
+            autotranslation: this.autotranslation,
         };
     };
 }

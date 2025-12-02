@@ -80,6 +80,8 @@ describe('components/post_list/PostList', () => {
         savedPostIds: new Set(),
         testID: 'post_list',
         shouldShowJoinLeaveMessages: false,
+        isChannelAutotranslated: false,
+        channelAutotranslationEnabled: false,
     };
 
     it('renders correctly with basic props', () => {

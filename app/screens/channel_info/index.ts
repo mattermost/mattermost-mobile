@@ -149,6 +149,8 @@ const enhanced = withObservables([], ({serverUrl, database}: Props) => {
 
     const isPlaybooksEnabled = observeIsPlaybooksEnabled(database);
 
+    const isChannelAutotranslateEnabled = observeConfigBooleanValue(database, 'EnableAutoTranslation');
+
     return {
         type,
         canEnableDisableCalls,
@@ -162,6 +164,7 @@ const enhanced = withObservables([], ({serverUrl, database}: Props) => {
         isGuestUser,
         isConvertGMFeatureAvailable,
         isPlaybooksEnabled,
+        isChannelAutotranslateEnabled,
     };
 });
 

@@ -22,6 +22,7 @@ import ChannelInfoAppBindings from './app_bindings';
 import DestructiveOptions from './destructive_options';
 import Extra from './extra';
 import Options from './options';
+import ChannelAutotranslation from './options/channel_autotranslation';
 import Title from './title';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -42,6 +43,7 @@ type Props = {
     isCRTEnabled: boolean;
     isGuestUser: boolean;
     type?: ChannelType;
+    isChannelAutotranslateEnabled: boolean;
 }
 
 const edges: Edge[] = ['bottom', 'left', 'right'];
@@ -77,6 +79,7 @@ const ChannelInfo = ({
     isCRTEnabled,
     isGuestUser,
     type,
+    isChannelAutotranslateEnabled,
 }: Props) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -156,6 +159,12 @@ const ChannelInfo = ({
                                 channelId={channelId}
                                 enabled={isCallsEnabledInChannel}
                             />
+                            <View style={styles.separator}/>
+                        </>
+                    }
+                    {canManageSettings && isChannelAutotranslateEnabled &&
+                        <>
+                            <ChannelAutotranslation channelId={channelId}/>
                             <View style={styles.separator}/>
                         </>
                     }

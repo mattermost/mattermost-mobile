@@ -58,6 +58,11 @@ export const transformPostRecord = ({action, database, value}: TransformerArgs<P
         post.rootId = raw.root_id;
         post.type = raw.type ?? '';
         post.props = raw.props ?? {};
+
+        post.translation = raw.translation;
+        post.translationType = raw.translation_type;
+        post.translationConfidence = raw.translation_confidence ?? undefined;
+        post.translationState = raw.translation_state;
     };
 
     return prepareBaseRecord({

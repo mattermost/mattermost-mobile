@@ -6,7 +6,7 @@ import {useManagedConfig} from '@mattermost/react-native-emm';
 import React, {useMemo} from 'react';
 import {ScrollView} from 'react-native';
 
-import {CopyPermalinkOption, FollowThreadOption, ReplyOption, SaveOption} from '@components/common_post_options';
+import {CopyPermalinkOption, FollowThreadOption, ReplyOption, SaveOption, ViewTranslationOption} from '@components/common_post_options';
 import CopyTextOption from '@components/copy_text_option';
 import {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
@@ -39,6 +39,7 @@ type PostOptionsProps = {
     canMarkAsUnread: boolean;
     canPin: boolean;
     canReply: boolean;
+    canViewTranslation: boolean;
     combinedPost?: Post | PostModel;
     isSaved: boolean;
     sourceScreen: AvailableScreens;
@@ -50,7 +51,7 @@ type PostOptionsProps = {
 };
 const PostOptions = ({
     canAddReaction, canDelete, canEdit,
-    canMarkAsUnread, canPin, canReply,
+    canMarkAsUnread, canPin, canReply, canViewTranslation,
     combinedPost, componentId, isSaved,
     sourceScreen, post, thread, bindings, serverUrl,
 }: PostOptionsProps) => {
@@ -77,7 +78,7 @@ const PostOptions = ({
         const items: Array<string | number> = [1];
         const optionsCount = [
             canCopyPermalink, canCopyText, canDelete, canEdit,
-            canMarkAsUnread, canPin, canReply, !isSystemPost, shouldRenderFollow,
+            canMarkAsUnread, canPin, canReply, !isSystemPost, shouldRenderFollow, canViewTranslation,
         ].reduce((acc, v) => {
             return v ? acc + 1 : acc;
         }, 0) + (shouldShowBindings ? 0.5 : 0);
@@ -92,7 +93,7 @@ const PostOptions = ({
     }, [
         canAddReaction, canCopyPermalink, canCopyText,
         canDelete, canEdit, shouldRenderFollow, shouldShowBindings,
-        canMarkAsUnread, canPin, canReply, isSystemPost,
+        canMarkAsUnread, canPin, canReply, canViewTranslation, isSystemPost,
     ]);
 
     const renderContent = () => {
@@ -132,6 +133,12 @@ const PostOptions = ({
                     bottomSheetId={Screens.POST_OPTIONS}
                     post={post}
                     sourceScreen={sourceScreen}
+                />
+                }
+                {canViewTranslation &&
+                <ViewTranslationOption
+                    bottomSheetId={Screens.POST_OPTIONS}
+                    postId={post.id}
                 />
                 }
                 {!isSystemPost &&

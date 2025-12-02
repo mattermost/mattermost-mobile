@@ -70,6 +70,18 @@ declare class PostModel extends Model {
     /** user_id : The foreign key of the User who authored this post. */
     userId: string;
 
+    /** translation : The translation of the post */
+    translation: string | Record<string, string> | undefined;
+
+    /** translation_type : The type of the translation */
+    translationType: 'string' | 'object' | undefined;
+
+    /** translation_confidence : The confidence of the translation */
+    translationConfidence: number | undefined;
+
+    /** translation_state : The state of the translation */
+    translationState: 'ready' | 'skipped' | 'unavailable' | undefined;
+
     /** props : Additional attributes for this props */
     props: Record<string, unknown> | null;
 

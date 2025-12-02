@@ -4,6 +4,7 @@
 import React from 'react';
 import {View} from 'react-native';
 
+import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
 import PostPriorityLabel from '@components/post_priority/post_priority_label';
@@ -11,7 +12,7 @@ import {CHANNEL, THREAD} from '@constants/screens';
 import {useTheme} from '@context/theme';
 import {DEFAULT_LOCALE} from '@i18n';
 import {postUserDisplayName} from '@utils/post';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {ensureString} from '@utils/types';
 import {typography} from '@utils/typography';
 import {displayUsername, getUserCustomStatus, getUserTimezone, isCustomStatusExpired} from '@utils/user';
@@ -45,6 +46,7 @@ type HeaderProps = {
     shouldRenderReplyButton?: boolean;
     teammateNameDisplay: string;
     hideGuestTags: boolean;
+    isChannelAutotranslated: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -75,12 +77,28 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const Header = (props: HeaderProps) => {
-    const {
-        author, commentCount = 0, currentUser, enablePostUsernameOverride, isAutoResponse, isCRTEnabled, isCustomStatusEnabled,
-        isEphemeral, isMilitaryTime, isPendingOrFailed, isSystemPost, isWebHook,
-        location, post, rootPostAuthor, showPostPriority, shouldRenderReplyButton, teammateNameDisplay, hideGuestTags,
-    } = props;
+const Header = ({
+    commentCount,
+    enablePostUsernameOverride,
+    hideGuestTags,
+    isAutoResponse,
+    isChannelAutotranslated,
+    isCustomStatusEnabled,
+    isEphemeral,
+    isMilitaryTime,
+    isPendingOrFailed,
+    isSystemPost,
+    isWebHook,
+    location,
+    post,
+    showPostPriority,
+    teammateNameDisplay,
+    author,
+    currentUser,
+    isCRTEnabled,
+    rootPostAuthor,
+    shouldRenderReplyButton,
+}: HeaderProps) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const pendingPostStyle = isPendingOrFailed ? style.pendingPost : undefined;
@@ -128,6 +146,13 @@ const Header = (props: HeaderProps) => {
                         style={style.time}
                         testID='post_header.date_time'
                     />
+                    {isChannelAutotranslated && post.translationState === 'ready' &&
+                        <CompassIcon
+                            name='globe'
+                            size={16}
+                            color={changeOpacity(theme.centerChannelColor, 0.56)}
+                        />
+                    }
                     {isEphemeral && (
                         <FormattedText
                             id='post_header.visible_message'

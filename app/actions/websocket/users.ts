@@ -4,6 +4,7 @@
 import {DeviceEventEmitter} from 'react-native';
 
 import {updateChannelsDisplayName} from '@actions/local/channel';
+import {deletePostsForChannelsWithAutotranslation} from '@actions/local/post';
 import {setCurrentUserStatus} from '@actions/local/user';
 import {fetchMe, fetchUsersByIds} from '@actions/remote/user';
 import {General, Events, Preferences} from '@constants';
@@ -59,6 +60,9 @@ export async function handleUserUpdatedEvent(serverUrl: string, msg: WebSocketMe
                         modelsToBatch.push(...models);
                     }
                 }
+
+                // Delete posts for all channels with user autotranslation enabled when locale changes
+                await deletePostsForChannelsWithAutotranslation(serverUrl);
             }
         }
     } else {

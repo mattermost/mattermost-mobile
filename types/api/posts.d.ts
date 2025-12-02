@@ -74,6 +74,7 @@ type PostMetadata = {
     images?: Dictionary<PostImage | undefined>;
     reactions?: Reaction[];
     priority?: PostPriority;
+    original_language?: string;
 };
 
 type Post = {
@@ -102,6 +103,10 @@ type Post = {
     user_activity_posts?: Post[];
     state?: 'DELETED';
     prev_post_id?: string;
+    translation?: string | Record<string, string>;
+    translation_type?: 'string' | 'object';
+    translation_confidence?: number | null;
+    translation_state?: 'ready' | 'skipped' | 'unavailable';
 };
 
 type PostProps = {

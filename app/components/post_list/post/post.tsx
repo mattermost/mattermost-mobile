@@ -72,6 +72,7 @@ type PostProps = {
     style?: StyleProp<ViewStyle>;
     testID?: string;
     thread?: ThreadModel;
+    isChannelAutotranslated: boolean;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -145,6 +146,7 @@ const Post = ({
     thread,
     previousPost,
     isLastPost,
+    isChannelAutotranslated,
 }: PostProps) => {
     const pressDetected = useRef(false);
     const intl = useIntl();
@@ -251,6 +253,9 @@ const Post = ({
                 clearTimeout(t);
             }
         };
+
+        // We only need to rerender when the post id changes to the real id
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [post.id]);
 
     useEffect(() => {
@@ -264,6 +269,9 @@ const Post = ({
 
         PerformanceMetricsManager.finishLoad(location === 'Thread' ? 'THREAD' : 'CHANNEL', serverUrl);
         PerformanceMetricsManager.endMetric('mobile_channel_switch', serverUrl);
+
+        // Only run on initial load
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const highlightSaved = isSaved && !skipSavedHeader;
@@ -330,6 +338,7 @@ const Post = ({
                     post={post}
                     showPostPriority={showPostPriority}
                     shouldRenderReplyButton={shouldRenderReplyButton}
+                    isChannelAutotranslated={isChannelAutotranslated}
                 />
             );
         }
@@ -377,6 +386,7 @@ const Post = ({
                 searchPatterns={searchPatterns}
                 showAddReaction={showAddReaction}
                 theme={theme}
+                isChannelAutotranslated={isChannelAutotranslated}
             />
         );
     }

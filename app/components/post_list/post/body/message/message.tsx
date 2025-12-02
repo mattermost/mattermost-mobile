@@ -31,6 +31,7 @@ type MessageProps = {
     post: PostModel;
     searchPatterns?: SearchPattern[];
     theme: Theme;
+    isChannelAutotranslated: boolean;
 }
 
 const SHOW_MORE_HEIGHT = 54;
@@ -56,7 +57,20 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const Message = ({currentUser, isHighlightWithoutNotificationLicensed, highlight, isEdited, isPendingOrFailed, isReplyPost, layoutWidth, location, post, searchPatterns, theme}: MessageProps) => {
+const Message = ({
+    currentUser,
+    isHighlightWithoutNotificationLicensed,
+    highlight,
+    isEdited,
+    isPendingOrFailed,
+    isReplyPost,
+    layoutWidth,
+    location,
+    post,
+    searchPatterns,
+    theme,
+    isChannelAutotranslated,
+}: MessageProps) => {
     const [open, setOpen] = useState(false);
     const [height, setHeight] = useState<number|undefined>();
     const dimensions = useWindowDimensions();
@@ -86,6 +100,13 @@ const Message = ({currentUser, isHighlightWithoutNotificationLicensed, highlight
         return isChannelMentions(post.props?.channel_mentions) ? post.props.channel_mentions : {};
     }, [post.props?.channel_mentions]);
 
+    let message = post.message;
+    if (isChannelAutotranslated) {
+        if (typeof post.translation === 'string') {
+            message = post.translation;
+        }
+    }
+
     return (
         <>
             <Animated.View style={animatedStyle}>
@@ -110,7 +131,7 @@ const Message = ({currentUser, isHighlightWithoutNotificationLicensed, highlight
                             layoutWidth={layoutWidth}
                             location={location}
                             postId={post.id}
-                            value={post.message}
+                            value={message}
                             mentionKeys={mentionKeys}
                             highlightKeys={highlightKeys}
                             searchPatterns={searchPatterns}
