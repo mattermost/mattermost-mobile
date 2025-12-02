@@ -533,7 +533,7 @@ platform :ios do
     ########################
 
     # Configure Intune
-    intune_enabled = ENV['INTUNE_ENABLED'] == 'true'
+    intune_enabled = ENV['INTUNE_ENABLED'] == 'true' || ENV['INTUNE_ENABLED'] == '1'
     if intune_enabled
       intune_client_id = ENV['INTUNE_CLIENT_ID']
       intune_redirect_uri = "msauth.#{app_bundle_id}://auth"
