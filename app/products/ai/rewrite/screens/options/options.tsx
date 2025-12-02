@@ -8,7 +8,6 @@ import {Alert, Keyboard, Platform, TextInput, View} from 'react-native';
 import CompassIcon from '@components/compass_icon';
 import OptionItem, {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
-import {useAIRewrite} from '@context/ai_rewrite';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
@@ -21,7 +20,9 @@ import {bottomSheetSnapPoint} from '@utils/helpers';
 import {logWarning} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import type {AIAgent, AIRewriteAction} from '@typings/api/ai';
+import {useAIRewrite} from '../../hooks';
+
+import type {AIAgent, AIRewriteAction} from '../../types';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
@@ -29,7 +30,7 @@ type Props = {
     componentId: AvailableScreens;
     originalMessage: string;
     updateValue: (value: string | ((prevValue: string) => string)) => void;
-}
+};
 
 const CUSTOM_PROMPT_INPUT_HEIGHT = 56;
 const OPTIONS_PADDING = 8;
@@ -70,7 +71,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const AIRewriteOptions = ({
+const RewriteOptions = ({
     closeButtonId,
     componentId,
     originalMessage,
@@ -196,6 +197,7 @@ const AIRewriteOptions = ({
         // Close the bottom sheet first, then start rewrite
         closeBottomSheet().then(triggerRewrite).catch((e) => {
             logWarning('Error closing bottom sheet:', e);
+
             // Still try to start the rewrite even if sheet close failed
             triggerRewrite();
         });
@@ -351,4 +353,5 @@ const AIRewriteOptions = ({
     );
 };
 
-export default AIRewriteOptions;
+export default RewriteOptions;
+

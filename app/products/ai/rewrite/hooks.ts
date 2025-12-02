@@ -7,7 +7,7 @@ import NetworkManager from '@managers/network_manager';
 import EphemeralStore from '@store/ephemeral_store';
 import {logWarning} from '@utils/log';
 
-import type {AIRewriteAction} from '@typings/api/ai';
+import type {AIRewriteAction} from './types';
 
 const TIMEOUT_MS = 30000; // 30 seconds
 
@@ -157,7 +157,3 @@ export const useAIRewrite = (): UseAIRewriteReturn => {
     };
 };
 
-// Re-export provider for backwards compatibility (but it's now a no-op)
-export const AIRewriteProvider = ({children}: {children: React.ReactNode}) => {
-    return children;
-};

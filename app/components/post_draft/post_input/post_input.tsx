@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {useAIRewrite} from '@ai/rewrite';
 import {useHardwareKeyboardEvents} from '@mattermost/hardware-keyboard';
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import PasteableTextInput, {type PastedFile, type PasteInputRef} from '@mattermost/react-native-paste-input';
@@ -14,7 +15,6 @@ import {
 import {updateDraftMessage} from '@actions/local/draft';
 import {userTyping} from '@actions/websocket/users';
 import {Events, Screens} from '@constants';
-import {useAIRewrite} from '@context/ai_rewrite';
 import {useExtraKeyboardContext} from '@context/extra_keyboard';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -140,14 +140,6 @@ export default function PostInput({
         return {...style.input, maxHeight};
     }, [maxHeight, style.input]);
 
-    const handleAndroidKeyboardHide = () => {
-        onBlur();
-    };
-
-    const handleAndroidKeyboardShow = () => {
-        onFocus();
-    };
-
     const onBlur = useCallback(() => {
         keyboardContext?.registerTextInputBlur();
         handleDraftUpdate({
@@ -163,6 +155,14 @@ export default function PostInput({
         keyboardContext?.registerTextInputFocus();
         setIsFocused(true);
     }, [setIsFocused, keyboardContext]);
+
+    const handleAndroidKeyboardHide = useCallback(() => {
+        onBlur();
+    }, [onBlur]);
+
+    const handleAndroidKeyboardShow = useCallback(() => {
+        onFocus();
+    }, [onFocus]);
 
     const checkMessageLength = useCallback((newValue: string) => {
         const valueLength = newValue.trim().length;
@@ -288,7 +288,7 @@ export default function PostInput({
             keyboardShowListener?.remove();
             keyboardHideListener?.remove();
         });
-    }, []);
+    }, [handleAndroidKeyboardHide, handleAndroidKeyboardShow]);
 
     useEffect(() => {
         const listener = AppState.addEventListener('change', onAppStateChange);
@@ -313,14 +313,14 @@ export default function PostInput({
             listener.remove();
             updateDraftMessage(serverUrl, channelId, rootId, lastNativeValue.current); // safe draft on unmount
         };
-    }, [updateValue, channelId, rootId]);
+    }, [updateValue, channelId, rootId, inputRef, propagateValue, serverUrl, updateCursorPosition, value]);
 
     useEffect(() => {
         if (value !== lastNativeValue.current) {
             propagateValue(value);
             lastNativeValue.current = value;
         }
-    }, [value]);
+    }, [value, propagateValue]);
 
     const events = useMemo(() => ({
         onEnterPressed: handleHardwareEnterPress,

@@ -17,7 +17,7 @@ type Props = {
  * - Horizontal bar with loading indicator, "Rewriting" text, and stop button
  * - Semi-transparent background over the input area
  */
-const AIProcessingOverlay = ({theme, onCancel}: Props) => {
+const ProcessingOverlay = ({theme, onCancel}: Props) => {
     const intl = useIntl();
 
     const styles = StyleSheet.create({
@@ -84,4 +84,5 @@ const AIProcessingOverlay = ({theme, onCancel}: Props) => {
     );
 };
 
-export default AIProcessingOverlay;
+export default ProcessingOverlay;
+

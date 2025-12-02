@@ -1,14 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {ProcessingOverlay, useAIRewrite} from '@ai/rewrite';
 import React, {useCallback, useRef} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, type LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
-import AIProcessingOverlay from '@components/post_draft/post_input/ai_processing_overlay';
 import {Screens} from '@constants';
-import {useAIRewrite} from '@context/ai_rewrite';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -268,7 +267,7 @@ function DraftInput({
                     </View>
                 </ScrollView>
                 {isProcessing && (
-                    <AIProcessingOverlay
+                    <ProcessingOverlay
                         theme={theme}
                         onCancel={cancelRewrite}
                     />

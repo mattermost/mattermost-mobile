@@ -10,7 +10,7 @@ import CompassIcon from '@components/compass_icon';
 type Props = {
     color: string;
     size?: number;
-}
+};
 
 const AnimatedView = Animated.createAnimatedComponent(View);
 
@@ -140,3 +140,4 @@ const AnimatedAIIcon = ({color, size = 48}: Props) => {
 };
 
 export default AnimatedAIIcon;
+

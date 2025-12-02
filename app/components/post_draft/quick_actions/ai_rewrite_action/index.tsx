@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {useAIRewrite} from '@ai/rewrite';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard} from 'react-native';
@@ -8,7 +9,6 @@ import {Keyboard} from 'react-native';
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Screens} from '@constants';
-import {useAIRewrite} from '@context/ai_rewrite';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {openAsBottomSheet} from '@screens/navigation';

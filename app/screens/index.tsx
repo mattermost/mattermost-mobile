@@ -65,10 +65,10 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             screen = withServerDatabase(require('@screens/settings/about').default);
             break;
         case Screens.AI_AGENT_SELECTOR:
-            screen = withServerDatabase(require('@screens/ai_agent_selector').default);
+            screen = withServerDatabase(require('@ai/rewrite/screens/agent_selector').default);
             break;
         case Screens.AI_REWRITE_OPTIONS:
-            screen = withServerDatabase(require('@screens/ai_rewrite_options').default);
+            screen = withServerDatabase(require('@ai/rewrite/screens/options').default);
             break;
         case Screens.APPS_FORM:
             screen = withServerDatabase(require('@screens/apps_form').default);

@@ -7,7 +7,7 @@ import {BehaviorSubject} from 'rxjs';
 import {Events} from '@constants';
 import {toMilliseconds} from '@utils/datetime';
 
-import type {AIAgent} from '@typings/api/ai';
+import type {AIAgent} from '@ai/rewrite/types';
 
 const TIME_TO_CLEAR_WEBSOCKET_ACTIONS = toMilliseconds({seconds: 30});
 

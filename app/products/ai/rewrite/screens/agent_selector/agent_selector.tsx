@@ -14,7 +14,7 @@ import {dismissModal} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import type {AIAgent} from '@typings/api/ai';
+import type {AIAgent} from '../../types';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
@@ -23,7 +23,7 @@ type Props = {
     agents: AIAgent[];
     selectedAgentId: string;
     onSelectAgent: (agent: AIAgent) => void;
-}
+};
 
 const OPTIONS_PADDING = 12;
 
@@ -36,7 +36,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const AIAgentSelector = ({
+const AgentSelector = ({
     componentId,
     closeButtonId,
     agents,
@@ -101,5 +101,5 @@ const AIAgentSelector = ({
     );
 };
 
-export default AIAgentSelector;
+export default AgentSelector;
 

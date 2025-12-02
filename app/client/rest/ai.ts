@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import type ClientBase from './base';
-import type {AIAgent, AIRewriteRequest, AIRewriteResponse} from '@typings/api/ai';
+import type {AIAgent, AIRewriteRequest, AIRewriteResponse} from '@ai/rewrite/types';
 
 export interface ClientAIMix {
     getAIAgents: () => Promise<AIAgent[]>;
