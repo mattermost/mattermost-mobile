@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessages, useIntl} from 'react-intl';
 import {Alert, Keyboard, Platform, TextInput, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
@@ -24,6 +24,61 @@ import {useAIRewrite} from '../../hooks';
 
 import type {AIAgent, AIRewriteAction} from '../../types';
 import type {AvailableScreens} from '@typings/screens/navigation';
+
+const messages = defineMessages({
+    errorTitle: {
+        id: 'ai_rewrite.error.title',
+        defaultMessage: 'AI Rewrite Error',
+    },
+    errorOk: {
+        id: 'ai_rewrite.error.ok',
+        defaultMessage: 'OK',
+    },
+    agentSelectorTitle: {
+        id: 'ai_rewrite.agent_selector_title',
+        defaultMessage: 'Select AI Agent',
+    },
+    selectedAgent: {
+        id: 'ai_rewrite.selected_agent',
+        defaultMessage: 'Selected Agent',
+    },
+    noAgentSelected: {
+        id: 'ai_rewrite.no_agent_selected',
+        defaultMessage: 'None',
+    },
+    generatePrompt: {
+        id: 'ai_rewrite.generate_prompt',
+        defaultMessage: 'Ask agents to create a message',
+    },
+    customPrompt: {
+        id: 'ai_rewrite.custom_prompt',
+        defaultMessage: 'Ask AI to edit selection…',
+    },
+    shorten: {
+        id: 'ai_rewrite.shorten',
+        defaultMessage: 'Shorten',
+    },
+    elaborate: {
+        id: 'ai_rewrite.elaborate',
+        defaultMessage: 'Elaborate',
+    },
+    improveWriting: {
+        id: 'ai_rewrite.improve_writing',
+        defaultMessage: 'Improve writing',
+    },
+    fixSpelling: {
+        id: 'ai_rewrite.fix_spelling',
+        defaultMessage: 'Fix spelling and grammar',
+    },
+    simplify: {
+        id: 'ai_rewrite.simplify',
+        defaultMessage: 'Simplify',
+    },
+    summarize: {
+        id: 'ai_rewrite.summarize',
+        defaultMessage: 'Summarize',
+    },
+});
 
 type Props = {
     closeButtonId: string;
@@ -149,16 +204,10 @@ const RewriteOptions = ({
 
     const handleRewriteError = useCallback((errorMsg: string) => {
         Alert.alert(
-            intl.formatMessage({
-                id: 'ai_rewrite.error.title',
-                defaultMessage: 'AI Rewrite Error',
-            }),
+            intl.formatMessage(messages.errorTitle),
             errorMsg,
             [{
-                text: intl.formatMessage({
-                    id: 'ai_rewrite.error.ok',
-                    defaultMessage: 'OK',
-                }),
+                text: intl.formatMessage(messages.errorOk),
             }],
         );
     }, [intl]);
@@ -232,10 +281,7 @@ const RewriteOptions = ({
     const isTablet = useIsTablet();
 
     const handleOpenAgentSelector = useCallback(() => {
-        const title = isTablet ? intl.formatMessage({
-            id: 'ai_rewrite.agent_selector_title',
-            defaultMessage: 'Select AI Agent',
-        }) : '';
+        const title = isTablet ? intl.formatMessage(messages.agentSelectorTitle) : '';
 
         openAsBottomSheet({
             closeButtonId: 'close-agent-selector',
@@ -253,13 +299,13 @@ const RewriteOptions = ({
         });
     }, [theme, intl, agents, selectedAgent, isTablet]);
 
-    const options: Array<{action: AIRewriteAction; labelId: string; defaultLabel: string; icon: string}> = [
-        {action: 'shorten', labelId: 'ai_rewrite.shorten', defaultLabel: 'Shorten', icon: 'text-short'},
-        {action: 'elaborate', labelId: 'ai_rewrite.elaborate', defaultLabel: 'Elaborate', icon: 'text-long'},
-        {action: 'improve_writing', labelId: 'ai_rewrite.improve_writing', defaultLabel: 'Improve writing', icon: 'auto-fix'},
-        {action: 'fix_spelling', labelId: 'ai_rewrite.fix_spelling', defaultLabel: 'Fix spelling and grammar', icon: 'spellcheck'},
-        {action: 'simplify', labelId: 'ai_rewrite.simplify', defaultLabel: 'Simplify', icon: 'creation-outline'},
-        {action: 'summarize', labelId: 'ai_rewrite.summarize', defaultLabel: 'Summarize', icon: 'ai-summarize'},
+    const options: Array<{action: AIRewriteAction; message: typeof messages.shorten; icon: string}> = [
+        {action: 'shorten', message: messages.shorten, icon: 'text-short'},
+        {action: 'elaborate', message: messages.elaborate, icon: 'text-long'},
+        {action: 'improve_writing', message: messages.improveWriting, icon: 'auto-fix'},
+        {action: 'fix_spelling', message: messages.fixSpelling, icon: 'spellcheck'},
+        {action: 'simplify', message: messages.simplify, icon: 'creation-outline'},
+        {action: 'summarize', message: messages.summarize, icon: 'ai-summarize'},
     ];
 
     const snapPoints = useMemo(() => {
@@ -281,14 +327,8 @@ const RewriteOptions = ({
             <View style={styles.headerContainer}>
                 {agents.length > 1 && (
                     <OptionItem
-                        label={intl.formatMessage({
-                            id: 'ai_rewrite.selected_agent',
-                            defaultMessage: 'Selected Agent',
-                        })}
-                        info={selectedAgent?.displayName || intl.formatMessage({
-                            id: 'ai_rewrite.no_agent_selected',
-                            defaultMessage: 'None',
-                        })}
+                        label={intl.formatMessage(messages.selectedAgent)}
+                        info={selectedAgent?.displayName || intl.formatMessage(messages.noAgentSelected)}
                         action={handleOpenAgentSelector}
                         type='arrow'
                         testID='ai_rewrite.select_agent'
@@ -305,10 +345,7 @@ const RewriteOptions = ({
                         <TextInput
                             ref={textInputRef}
                             style={styles.customPromptInput}
-                            placeholder={intl.formatMessage({
-                                id: isGeneratingContent ? 'ai_rewrite.generate_prompt' : 'ai_rewrite.custom_prompt',
-                                defaultMessage: isGeneratingContent ? 'Ask agents to create a message' : 'Ask AI to edit selection…',
-                            })}
+                            placeholder={intl.formatMessage(isGeneratingContent ? messages.generatePrompt : messages.customPrompt)}
                             placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.64)}
                             value={customPrompt}
                             onChangeText={setCustomPrompt}
@@ -326,7 +363,7 @@ const RewriteOptions = ({
                     {options.map((option) => (
                         <OptionItem
                             key={option.action}
-                            label={intl.formatMessage({id: option.labelId, defaultMessage: option.defaultLabel})}
+                            label={intl.formatMessage(option.message)}
                             icon={option.icon}
                             action={() => handleRewrite(option.action)}
                             type='default'
