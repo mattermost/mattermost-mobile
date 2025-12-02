@@ -24,7 +24,7 @@ runs:
       run: |
         echo "::group::Initialize Intune submodule"
         # Check if submodule is already initialized
-        if [ -d "libraries/@mattermost/intune/.git" ]; then
+        if [ -e "libraries/@mattermost/intune/.git" ]; then
           echo "ℹ️  Intune submodule already initialized, updating..."
           git submodule update --remote libraries/@mattermost/intune
         else

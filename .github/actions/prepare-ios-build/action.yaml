@@ -32,7 +32,7 @@ runs:
       id: intune-hash
       shell: bash
       run: |
-        if [ -d "libraries/@mattermost/intune/.git" ]; then
+        if [ -e "libraries/@mattermost/intune/.git" ]; then
           INTUNE_HASH=$(cd libraries/@mattermost/intune && git rev-parse --short HEAD)
           echo "hash=${INTUNE_HASH}" >> $GITHUB_OUTPUT
         else
