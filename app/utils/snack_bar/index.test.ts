@@ -24,5 +24,14 @@ describe('snack bar', () => {
                 barType: 'BOR_POST_EXPIRED',
             });
         });
+
+        it('should show custom message when provided', () => {
+            showBoRPostErrorSnackbar('custom message');
+
+            expect(showOverlay).toHaveBeenCalledWith('SnackBar', {
+                barType: 'BOR_POST_EXPIRED',
+                customMessage: 'custom message',
+            });
+        });
     });
 });

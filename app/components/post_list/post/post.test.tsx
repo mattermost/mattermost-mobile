@@ -3,6 +3,8 @@
 
 import React, {type ComponentProps} from 'react';
 
+import UnrevealedBurnOnReadPost from '@components/post_list/post/burn_on_read/unrevealed';
+import {PostTypes} from '@constants/post';
 import NetworkManager from '@managers/network_manager';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {getPostById} from '@queries/servers/post';
@@ -15,6 +17,7 @@ import type {Database} from '@nozbe/watermelondb';
 import type PostModel from '@typings/database/models/servers/post';
 
 jest.mock('@managers/performance_metrics_manager');
+jest.mock('@components/post_list/post/burn_on_read/unrevealed');
 
 describe('performance metrics', () => {
     let database: Database;
@@ -76,6 +79,23 @@ describe('performance metrics', () => {
         await waitFor(() => {
             expect(PerformanceMetricsManager.finishLoad).toHaveBeenCalledWith('THREAD', serverUrl);
             expect(PerformanceMetricsManager.endMetric).toHaveBeenCalledWith('mobile_channel_switch', serverUrl);
+        });
+    });
+
+    it('should render unrevealed post correctly', async () => {
+        const props = getBaseProps();
+        const unrevealedBoRPost = TestHelper.fakePostModel({
+            type: PostTypes.BURN_ON_READ,
+            props: {
+                expire_at: Date.now() + 1000000,
+            },
+        });
+
+        props.post = unrevealedBoRPost;
+
+        renderWithEverything(<Post {...props}/>, {database, serverUrl});
+        await waitFor(() => {
+            expect(UnrevealedBurnOnReadPost).toHaveBeenCalled();
         });
     });
 });

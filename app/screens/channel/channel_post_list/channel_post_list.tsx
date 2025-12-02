@@ -5,7 +5,6 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {type StyleProp, StyleSheet, type ViewStyle, DeviceEventEmitter} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
-import {dataRetentionCleanPosts} from '@actions/local/systems';
 import {markChannelAsRead, unsetActiveChannelOnServer} from '@actions/remote/channel';
 import {fetchPosts, fetchPostsBefore} from '@actions/remote/post';
 import {PER_PAGE_DEFAULT} from '@client/rest/constants';
@@ -16,7 +15,6 @@ import {useAppState, useIsTablet} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
 import {useDebounce} from '@hooks/utils';
 import EphemeralStore from '@store/ephemeral_store';
-import {isExpiredBoRPost} from '@utils/bor';
 
 import Intro from './intro';
 
@@ -41,7 +39,7 @@ const styles = StyleSheet.create({
 
 const ChannelPostList = ({
     channelId, contentContainerStyle, isCRTEnabled,
-    lastViewedAt, nativeID, posts: rawPosts, shouldShowJoinLeaveMessages,
+    lastViewedAt, nativeID, posts, shouldShowJoinLeaveMessages,
 }: Props) => {
     const appState = useAppState();
     const isTablet = useIsTablet();
@@ -49,24 +47,7 @@ const ChannelPostList = ({
     const canLoadPostsBefore = useRef(true);
     const canLoadPost = useRef(true);
     const [fetchingPosts, setFetchingPosts] = useState(EphemeralStore.isLoadingMessagesForChannel(serverUrl, channelId));
-    const [posts, setPosts] = useState<PostModel[]>([]);
     const oldPostsCount = useRef<number>(posts.length);
-
-    useEffect(() => {
-        const unavailablePostIds: string[] = [];
-        const availablePosts: PostModel[] = [];
-
-        rawPosts.forEach((rawPost) => {
-            if (isExpiredBoRPost(rawPost)) {
-                unavailablePostIds.push(rawPost.id);
-            } else {
-                availablePosts.push(rawPost);
-            }
-        });
-
-        setPosts(availablePosts);
-        dataRetentionCleanPosts(serverUrl, unavailablePostIds);
-    }, [rawPosts, serverUrl]);
 
     const onEndReached = useDebounce(useCallback(async () => {
         if (!fetchingPosts && canLoadPostsBefore.current && posts.length) {
