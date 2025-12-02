@@ -71,9 +71,35 @@ describe('WebSocket Burn on Read Actions', () => {
             expect(mockedHandlePostEdited).not.toHaveBeenCalled();
         });
 
-        it('should handle missing operator gracefully', async () => {
+        it('should handle missing server database gracefully', async () => {
             await handleBoRPostRevealedEvent('invalid-server-url', msg);
 
+            expect(mockedGetPostById).not.toHaveBeenCalled();
+            expect(mockedHandleNewPostEvent).not.toHaveBeenCalled();
+            expect(mockedHandlePostEdited).not.toHaveBeenCalled();
+        });
+
+        it('should handle missing operator gracefully', async () => {
+            // Mock a server database without an operator
+            DatabaseManager.serverDatabases[serverUrl] = {} as any;
+
+            await handleBoRPostRevealedEvent(serverUrl, msg);
+
+            expect(mockedGetPostById).not.toHaveBeenCalled();
+            expect(mockedHandleNewPostEvent).not.toHaveBeenCalled();
+            expect(mockedHandlePostEdited).not.toHaveBeenCalled();
+        });
+
+        it('should handle JSON parse error gracefully', async () => {
+            const invalidJsonMsg = {
+                data: {
+                    post: '{"invalid": json}',
+                },
+            } as WebSocketMessage;
+
+            const result = await handleBoRPostRevealedEvent(serverUrl, invalidJsonMsg);
+
+            expect(result).toBeNull();
             expect(mockedGetPostById).not.toHaveBeenCalled();
             expect(mockedHandleNewPostEvent).not.toHaveBeenCalled();
             expect(mockedHandlePostEdited).not.toHaveBeenCalled();
