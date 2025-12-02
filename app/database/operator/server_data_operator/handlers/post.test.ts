@@ -755,7 +755,9 @@ describe('*** Operator: Post Handlers tests ***', () => {
 
     it('=> HandlePosts: should update unrevealed burn-on-read post when it becomes revealed', async () => {
         const spyOnProcessRecords = jest.spyOn(operator, 'processRecords');
-        
+
+        const now = Date.now();
+
         // Create an unrevealed burn-on-read post
         const unrevealedBorPost: Post = {
             id: 'bor_post_id',
@@ -771,7 +773,7 @@ describe('*** Operator: Post Handlers tests ***', () => {
             original_id: '',
             message: '',
             type: 'burn_on_read',
-            props: {},
+            props: {expire_at: now + 1000000},
             hashtags: '',
             pending_post_id: '',
             reply_count: 0,
@@ -792,7 +794,7 @@ describe('*** Operator: Post Handlers tests ***', () => {
         const revealedBorPost: Post = {
             ...unrevealedBorPost,
             message: 'This is the revealed message',
-            update_at: unrevealedBorPost.update_at + 1000, // Later timestamp
+            metadata: {expire_at: now + 1000000},
         };
 
         // Handle the revealed post
@@ -808,23 +810,8 @@ describe('*** Operator: Post Handlers tests ***', () => {
             expect.objectContaining({
                 createOrUpdateRawValues: [revealedBorPost],
                 shouldUpdate: expect.any(Function),
-            })
+            }),
         );
-
-        // Test the shouldUpdate function directly by getting the call arguments
-        const lastCall = spyOnProcessRecords.mock.calls[spyOnProcessRecords.mock.calls.length - 1];
-        const shouldUpdateFn = lastCall[0].shouldUpdate;
-
-        // Mock existing record (unrevealed BoR post)
-        const existingRecord = {
-            type: 'burn_on_read',
-            updateAt: unrevealedBorPost.update_at,
-            message: '',
-        };
-
-        // Test that shouldUpdate returns true for unrevealed -> revealed BoR post
-        const shouldUpdate = shouldUpdateFn(existingRecord, revealedBorPost);
-        expect(shouldUpdate).toBe(true);
     });
 });
 

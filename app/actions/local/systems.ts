@@ -332,7 +332,7 @@ export async function expiredBoRPostCleanup(serverUrl: string) {
             return;
         }
 
-        const {error} = await removeExpiredBoRPosts(serverUrl, database);
+        const {error} = await removeExpiredBoRPosts(serverUrl);
         if (!error) {
             updateLastBoRCleanupRun(serverUrl);
         }
@@ -341,8 +341,9 @@ export async function expiredBoRPostCleanup(serverUrl: string) {
     }
 }
 
-async function removeExpiredBoRPosts(serverUrl: string, database: Database) {
+async function removeExpiredBoRPosts(serverUrl: string) {
     try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const allBoRPosts = await queryPostsByType(database, PostTypes.BURN_ON_READ).fetch();
         const expiredBoRPostIDs = allBoRPosts.
             filter((post) => isExpiredBoRPost(post)).
@@ -356,16 +357,16 @@ async function removeExpiredBoRPosts(serverUrl: string, database: Database) {
     }
 }
 
-async function updateLastBoRCleanupRun(serverUrl: string, value?: number, prepareRecordsOnly = false) {
+async function updateLastBoRCleanupRun(serverUrl: string) {
     try {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         const systems: IdValue[] = [{
             id: SYSTEM_IDENTIFIERS.LAST_BOR_POST_CLEANUP_RUN,
-            value: value || Date.now(),
+            value: Date.now(),
         }];
 
-        return operator.handleSystem({systems, prepareRecordsOnly});
+        return operator.handleSystem({systems, prepareRecordsOnly: false});
     } catch (error) {
         logError('Failed updateLastBoRCleanupRun', error);
         return {error};
