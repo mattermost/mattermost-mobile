@@ -259,11 +259,17 @@ lane :upload_file_to_s3 do |options|
 
     s3_region = ENV['AWS_REGION']
     s3_bucket_name = ENV['AWS_BUCKET_NAME']
-    s3_folder = is_build_pr ?
-      "#{ENV['AWS_FOLDER_NAME']}/#{ENV['BRANCH_TO_BUILD']}" :
-      "#{ENV['AWS_FOLDER_NAME']}/#{version_number}/#{build_number}"
+
+    if is_build_pr
+      # Get the current git commit SHA (short version)
+      commit_sha = sh("git rev-parse --short HEAD").strip
+      s3_folder = "#{ENV['AWS_FOLDER_NAME']}/#{ENV['BRANCH_TO_BUILD']}/#{commit_sha}"
+    else
+      s3_folder = "#{ENV['AWS_FOLDER_NAME']}/#{version_number}/#{build_number}"
+    end
 
     s3_client = Aws::S3::Client.new(region: s3_region)
+    transfer_manager = Aws::S3::TransferManager.new(client: s3_client)
     mutex = Mutex.new
     threads = []
     file_number = 0
@@ -282,17 +288,7 @@ lane :upload_file_to_s3 do |options|
           filename = File.basename(file)
           puts "[#{Thread.current["file_number"]}/#{total_files}] #{filename} uploading..."
           s3_key = "#{s3_folder}/#{filename}"
-          File.open(file, 'rb') do |file_handle|
-            s3_client.put_object(
-              bucket: s3_bucket_name,
-              key: s3_key,
-              body: file_handle,
-              cache_control: 'no-cache, no-store, must-revalidate',
-              metadata: {
-                'uploaded-at' => Time.now.utc.iso8601
-              }
-            )
-          end
+          transfer_manager.upload_file(file, bucket: s3_bucket_name, key: s3_key)
           links.push("https://#{s3_bucket_name}/#{s3_key}")
         end
       }
@@ -311,11 +307,7 @@ lane :upload_file_to_s3 do |options|
           bucket: s3_bucket_name,
           key: "#{s3_folder}/#{plist_file}",
           body: plist_body,
-          cache_control: 'no-cache, no-store, must-revalidate',
-          content_type: 'application/xml',
-          metadata: {
-            'uploaded-at' => Time.now.utc.iso8601
-          }
+          content_type: 'application/xml'
         )
 
         install_url = "itms-services://?action=download-manifest&url=https://#{s3_bucket_name}/#{s3_folder}/#{plist_file}"
