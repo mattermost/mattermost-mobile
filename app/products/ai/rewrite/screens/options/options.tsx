@@ -52,7 +52,7 @@ const messages = defineMessages({
     },
     customPrompt: {
         id: 'ai_rewrite.custom_prompt',
-        defaultMessage: 'Ask AI to edit selection…',
+        defaultMessage: 'Ask AI to edit message...',
     },
     shorten: {
         id: 'ai_rewrite.shorten',
