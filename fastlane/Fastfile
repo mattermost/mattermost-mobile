@@ -302,6 +302,7 @@ lane :upload_file_to_s3 do |options|
       if os_type == 'android'
         install_url = "https://#{s3_bucket_name}/#{s3_folder}/#{pr_file}"
       elsif os_type == 'ios'
+        current_build_number = get_build_number(xcodeproj: './ios/Mattermost.xcodeproj')
         plist_template = File.read('plist.erb')
         plist_body = ERB.new(plist_template).result(binding)
 
