@@ -752,6 +752,80 @@ describe('*** Operator: Post Handlers tests ***', () => {
         expect(files).toHaveLength(1);
         expect(files[0].id).toBe(uploadedFiles[0].id);
     });
+
+    it('=> HandlePosts: should update unrevealed burn-on-read post when it becomes revealed', async () => {
+        const spyOnProcessRecords = jest.spyOn(operator, 'processRecords');
+        
+        // Create an unrevealed burn-on-read post
+        const unrevealedBorPost: Post = {
+            id: 'bor_post_id',
+            create_at: 1596032651747,
+            update_at: 1596032651747,
+            edit_at: 0,
+            delete_at: 0,
+            is_pinned: false,
+            is_following: false,
+            user_id: 'user_id',
+            channel_id: 'channel_id',
+            root_id: '',
+            original_id: '',
+            message: '',
+            type: 'burn_on_read',
+            props: {},
+            hashtags: '',
+            pending_post_id: '',
+            reply_count: 0,
+            last_reply_at: 0,
+            participants: null,
+            metadata: {},
+        };
+
+        // First, create the unrevealed post
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [unrevealedBorPost.id],
+            posts: [unrevealedBorPost],
+            prepareRecordsOnly: false,
+        });
+
+        // Now create a revealed version of the same post
+        const revealedBorPost: Post = {
+            ...unrevealedBorPost,
+            message: 'This is the revealed message',
+            update_at: unrevealedBorPost.update_at + 1000, // Later timestamp
+        };
+
+        // Handle the revealed post
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [revealedBorPost.id],
+            posts: [revealedBorPost],
+            prepareRecordsOnly: false,
+        });
+
+        // Verify that processRecords was called with the shouldUpdate function that handles BoR posts
+        expect(spyOnProcessRecords).toHaveBeenCalledWith(
+            expect.objectContaining({
+                createOrUpdateRawValues: [revealedBorPost],
+                shouldUpdate: expect.any(Function),
+            })
+        );
+
+        // Test the shouldUpdate function directly by getting the call arguments
+        const lastCall = spyOnProcessRecords.mock.calls[spyOnProcessRecords.mock.calls.length - 1];
+        const shouldUpdateFn = lastCall[0].shouldUpdate;
+
+        // Mock existing record (unrevealed BoR post)
+        const existingRecord = {
+            type: 'burn_on_read',
+            updateAt: unrevealedBorPost.update_at,
+            message: '',
+        };
+
+        // Test that shouldUpdate returns true for unrevealed -> revealed BoR post
+        const shouldUpdate = shouldUpdateFn(existingRecord, revealedBorPost);
+        expect(shouldUpdate).toBe(true);
+    });
 });
 
 describe('*** Operator: merge chunks ***', () => {
