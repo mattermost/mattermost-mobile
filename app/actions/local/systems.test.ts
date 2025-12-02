@@ -9,6 +9,7 @@ import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PostTypes} from '@constants/post';
 import DatabaseManager from '@database/manager';
 import TestHelper from '@test/test_helper';
+import {logError} from '@utils/log';
 
 import {
     storeConfig,
@@ -18,7 +19,8 @@ import {
     dataRetentionCleanup,
     setLastServerVersionCheck,
     setGlobalThreadsTab,
-    dismissAnnouncement, expiredBoRPostCleanup,
+    dismissAnnouncement,
+    expiredBoRPostCleanup,
 } from './systems';
 
 import type {DataRetentionPoliciesRequest} from '@actions/remote/systems';
@@ -471,5 +473,7 @@ describe('expiredBoRPostCleanup', () => {
 
         // Should not throw an error, just log it
         await expect(expiredBoRPostCleanup(serverUrl)).resolves.not.toThrow();
+        expect(logError).toHaveBeenCalledWith('An error occurred while performing BoR post cleanup', expect.any(Error));
     });
+
 });
