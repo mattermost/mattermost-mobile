@@ -354,14 +354,6 @@ describe('Helpers', () => {
     });
 
     describe('isMinimumLicenseTier', () => {
-        test('should return false when targetSku is not provided', () => {
-            const license = {
-                IsLicensed: 'true',
-                SkuShortName: License.SKU_SHORT_NAME.Professional,
-            };
-            expect(isMinimumLicenseTier(license, '')).toBe(false);
-        });
-
         test('should return false when license is not provided', () => {
             expect(isMinimumLicenseTier(undefined, License.SKU_SHORT_NAME.Professional)).toBe(false);
         });
@@ -379,14 +371,6 @@ describe('Helpers', () => {
                 IsLicensed: 'true',
             };
             expect(isMinimumLicenseTier(license, License.SKU_SHORT_NAME.Professional)).toBe(false);
-        });
-
-        test('should return false when targetSku is not a valid tier', () => {
-            const license = {
-                IsLicensed: 'true',
-                SkuShortName: License.SKU_SHORT_NAME.Professional,
-            };
-            expect(isMinimumLicenseTier(license, 'invalid-tier')).toBe(false);
         });
 
         test('should return true when license tier equals target tier', () => {

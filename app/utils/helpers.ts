@@ -51,10 +51,12 @@ export const isMinimumServerVersion = (currentVersion = '', minMajorVersion = 0,
     return true;
 };
 
+export type LicenseTierSku = keyof typeof License.LicenseSkuTier;
+
 // isMinimumLicenseTier will return true if the license meets or exceeds the target SKU tier
 // license is a ClientLicense object
 // targetSku is a string, e.g 'professional', 'enterprise', 'advanced'
-export const isMinimumLicenseTier = (license: Partial<ClientLicense> | undefined, targetSku: string): boolean => {
+export const isMinimumLicenseTier = (license: Partial<ClientLicense> | undefined, targetSku: LicenseTierSku): boolean => {
     if (!targetSku || !license) {
         return false;
     }
@@ -64,8 +66,14 @@ export const isMinimumLicenseTier = (license: Partial<ClientLicense> | undefined
         return false;
     }
 
-    const currentTier = License.LicenseSkuTier[license.SkuShortName || ''] || 0;
-    const targetTier = License.LicenseSkuTier[targetSku] || 0;
+    // Only use SkuShortName if it's a valid SKU
+    const sku = license.SkuShortName as LicenseTierSku;
+    if (!sku || !(sku in License.LicenseSkuTier)) {
+        return false;
+    }
+
+    const currentTier = License.LicenseSkuTier[sku];
+    const targetTier = License.LicenseSkuTier[targetSku];
 
     return Boolean(currentTier) && Boolean(targetTier) && currentTier >= targetTier;
 };
