@@ -7,6 +7,8 @@ PODS:
   - DoubleConversion (1.1.6)
   - EXApplication (6.0.2):
     - ExpoModulesCore
+  - EXConstants (17.1.7):
+    - ExpoModulesCore
   - Expo (53.0.24):
     - DoubleConversion
     - ExpoModulesCore
@@ -35,10 +37,13 @@ PODS:
     - ExpoModulesCore
   - ExpoDevice (7.0.3):
     - ExpoModulesCore
-  - ExpoImage (2.0.7):
+  - ExpoFileSystem (18.1.11):
     - ExpoModulesCore
-    - SDWebImage (~> 5.19.1)
+  - ExpoImage (2.4.1):
+    - ExpoModulesCore
+    - SDWebImage (~> 5.21.0)
     - SDWebImageSVGCoder (~> 1.7.0)
+    - SDWebImageWebPCoder (~> 0.14.6)
   - ExpoLinearGradient (14.0.2):
     - ExpoModulesCore
   - ExpoModulesCore (2.5.0):
@@ -78,6 +83,18 @@ PODS:
   - hermes-engine/Pre-built (0.77.3)
   - HMSegmentedControl (1.5.6)
   - JitsiWebRTC (124.0.2)
+  - libwebp (1.5.0):
+    - libwebp/demux (= 1.5.0)
+    - libwebp/mux (= 1.5.0)
+    - libwebp/sharpyuv (= 1.5.0)
+    - libwebp/webp (= 1.5.0)
+  - libwebp/demux (1.5.0):
+    - libwebp/webp
+  - libwebp/mux (1.5.0):
+    - libwebp/demux
+  - libwebp/sharpyuv (1.5.0)
+  - libwebp/webp (1.5.0):
+    - libwebp/sharpyuv
   - mattermost-hardware-keyboard (0.0.0):
     - DoubleConversion
     - glog
@@ -2144,11 +2161,14 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - SDWebImage (5.19.7):
-    - SDWebImage/Core (= 5.19.7)
-  - SDWebImage/Core (5.19.7)
+  - SDWebImage (5.21.4):
+    - SDWebImage/Core (= 5.21.4)
+  - SDWebImage/Core (5.21.4)
   - SDWebImageSVGCoder (1.7.0):
     - SDWebImage/Core (~> 5.6)
+  - SDWebImageWebPCoder (0.14.6):
+    - libwebp (~> 1.0)
+    - SDWebImage/Core (~> 5.17)
   - secure-pdf-viewer (1.0.0):
     - DoubleConversion
     - glog
@@ -2187,9 +2207,11 @@ DEPENDENCIES:
   - CocoaLumberjack
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
   - EXApplication (from `../node_modules/expo-application/ios`)
+  - EXConstants (from `../node_modules/expo-constants/ios`)
   - Expo (from `../node_modules/expo`)
   - ExpoCrypto (from `../node_modules/expo-crypto/ios`)
   - ExpoDevice (from `../node_modules/expo-device/ios`)
+  - ExpoFileSystem (from `../node_modules/expo-file-system/ios`)
   - ExpoImage (from `../node_modules/expo-image/ios`)
   - ExpoLinearGradient (from `../node_modules/expo-linear-gradient/ios`)
   - ExpoModulesCore (from `../node_modules/expo-modules-core`)
@@ -2310,8 +2332,10 @@ SPEC REPOS:
     - CocoaLumberjack
     - HMSegmentedControl
     - JitsiWebRTC
+    - libwebp
     - SDWebImage
     - SDWebImageSVGCoder
+    - SDWebImageWebPCoder
     - Sentry
     - SocketRocket
     - Starscream
@@ -2324,12 +2348,16 @@ EXTERNAL SOURCES:
     :podspec: "../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec"
   EXApplication:
     :path: "../node_modules/expo-application/ios"
+  EXConstants:
+    :path: "../node_modules/expo-constants/ios"
   Expo:
     :path: "../node_modules/expo"
   ExpoCrypto:
     :path: "../node_modules/expo-crypto/ios"
   ExpoDevice:
     :path: "../node_modules/expo-device/ios"
+  ExpoFileSystem:
+    :path: "../node_modules/expo-file-system/ios"
   ExpoImage:
     :path: "../node_modules/expo-image/ios"
   ExpoLinearGradient:
@@ -2563,10 +2591,12 @@ SPEC CHECKSUMS:
   CocoaLumberjack: 6a459bc897d6d80bd1b8c78482ec7ad05dffc3f0
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
   EXApplication: 4c72f6017a14a65e338c5e74fca418f35141e819
+  EXConstants: 98bcf0f22b820f9b28f9fee55ff2daededadd2f8
   Expo: 9b875ea7f4dbde2ae61b11bc61f0539028896440
   ExpoCrypto: e97e864c8d7b9ce4a000bca45dddb93544a1b2b4
   ExpoDevice: d36ab4186b6799a28fd449bb9a1c77455f23fd1a
-  ExpoImage: 043fcf882697fbcf4f50da1233b373d281f0456d
+  ExpoFileSystem: 7f92f7be2f5c5ed40a7c9efc8fa30821181d9d63
+  ExpoImage: d6e8ffc37557567a219ab0d0e1be28213a21f3bc
   ExpoLinearGradient: 35ebd83b16f80b3add053a2fd68cc328ed927f60
   ExpoModulesCore: a2c6e08169fdbbdbbc3047924962d9ca797f230e
   ExpoStoreReview: 92ad323dd14485e7aa67d5b47248fb22876ffaee
@@ -2579,6 +2609,7 @@ SPEC CHECKSUMS:
   hermes-engine: b2187dbe13edb0db8fcb2a93a69c1987a30d98a4
   HMSegmentedControl: 34c1f54d822d8308e7b24f5d901ec674dfa31352
   JitsiWebRTC: b47805ab5668be38e7ee60e2258f49badfe8e1d0
+  libwebp: 02b23773aedb6ff1fd38cec7a77b81414c6842a8
   mattermost-hardware-keyboard: 0c8667d54bbed7750ff8d871df24fce251b9c65b
   mattermost-react-native-turbo-log: 4ae260996ee4b901d622f4fcfa6fdb05d0fab0f1
   mattermost-rnutils: 74d780b576a5fc82b51582a23eb7fe72d4174168
@@ -2673,8 +2704,9 @@ SPEC CHECKSUMS:
   RNShare: b1660f26d8bc57cbf9acf11872a8eb2f3ecf4825
   RNSVG: 67de7abef81f367387b708ba6d2acefe7d4f5895
   RNVectorIcons: f7a99433a71f4b38891c14c64b21fc521d064392
-  SDWebImage: 8a6b7b160b4d710e2a22b6900e25301075c34cb3
+  SDWebImage: d0184764be51240d49c761c37f53dd017e1ccaaf
   SDWebImageSVGCoder: 15a300a97ec1c8ac958f009c02220ac0402e936c
+  SDWebImageWebPCoder: e38c0a70396191361d60c092933e22c20d5b1380
   secure-pdf-viewer: c6cc439b002967a7541be2c563c3719be4ef126d
   Sentry: 1ca8405451040482877dcd344dfa3ef80b646631
   simdjson: 7bb9e33d87737cec966e7b427773c67baa4458fe
