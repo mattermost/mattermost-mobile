@@ -4,12 +4,12 @@
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {StyleSheet} from 'react-native';
+import {KeyboardController} from 'react-native-keyboard-controller';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Screens} from '@constants';
 import {ICON_SIZE} from '@constants/post_draft';
-import {useKeyboardAnimationContext} from '@context/keyboard_animation';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {openAsBottomSheet} from '@screens/navigation';
@@ -39,10 +39,9 @@ export default function PostPriorityAction({
     const intl = useIntl();
     const isTablet = useIsTablet();
     const theme = useTheme();
-    const {blurAndDismissKeyboard} = useKeyboardAnimationContext();
 
     const onPress = useCallback(async () => {
-        await blurAndDismissKeyboard();
+        await KeyboardController.dismiss();
 
         const title = isTablet ? intl.formatMessage({id: 'post_priority.picker.title', defaultMessage: 'Message priority'}) : '';
 
@@ -57,7 +56,7 @@ export default function PostPriorityAction({
                 closeButtonId: POST_PRIORITY_PICKER_BUTTON,
             },
         });
-    }, [blurAndDismissKeyboard, isTablet, intl, theme, postPriority, updatePostPriority]);
+    }, [isTablet, intl, theme, postPriority, updatePostPriority]);
 
     const iconName = 'alert-circle-outline';
     const iconColor = changeOpacity(theme.centerChannelColor, 0.64);

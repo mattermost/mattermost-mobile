@@ -65,6 +65,8 @@ type Props = {
 };
 
 const SCROLL_TO_END_BOTTOM_OFFSET = 15;
+const SCROLL_TO_END_BUTTON_WIDTH = 40;
+const SCROLL_TO_END_BADGE_MAX_WIDTH = 169;
 
 const ScrollToEndView = ({
     onPress,
@@ -93,7 +95,7 @@ const ScrollToEndView = ({
                         translateY: showScrollToEndBtn ? -postInputContainerHeight - height.value - SCROLL_TO_END_BOTTOM_OFFSET : -SCROLL_TO_END_BOTTOM_OFFSET,
                     },
                 ],
-                maxWidth: withTiming(isNewMessage ? 169 : 40, {duration: 300}),
+                maxWidth: withTiming(isNewMessage ? SCROLL_TO_END_BADGE_MAX_WIDTH : SCROLL_TO_END_BUTTON_WIDTH, {duration: 300}),
                 opacity: withTiming(showScrollToEndBtn ? 1 : 0),
             };
         },

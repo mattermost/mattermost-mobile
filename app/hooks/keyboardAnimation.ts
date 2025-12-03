@@ -20,8 +20,12 @@ export const useKeyboardAnimation = (
     const progress = useSharedValue(0);
 
     /**
-   * height: Current visual height used for animating the input container
-   * This is the value that actually moves the input up/down
+   * height: Keyboard height (adjusted for tab bar) used to animate input container position
+   *
+   * How it works: This value represents the keyboard height and is used with negative translateY
+   * in useKeyboardAwarePostDraft.ts (transform: [{translateY: -height.value}]) to move the input
+   * container UP by the keyboard height amount. Higher keyboard height = input moves up more.
+   *
    * Smoothed during interactive gestures to prevent jerky movements
    */
     const height = useSharedValue(0);
@@ -49,12 +53,6 @@ export const useKeyboardAnimation = (
    * Always reflects the true keyboard height without smoothing
    */
     const keyboardHeight = useSharedValue(0);
-
-    /**
-   * isKeyboardOpening: Tracks if keyboard is currently opening (vs closing)
-   * Used for: Smooth height updates - only increase when opening, only decrease when closing
-   */
-    const isKeyboardOpening = useSharedValue(false);
 
     /**
      * isKeyboardClosing: Tracks if keyboard is currently closing (detected in onInteractive)
@@ -127,10 +125,6 @@ export const useKeyboardAnimation = (
             keyboardHeight.value = e.height;
             const adjustedHeight = e.height - (tabBarAdjustment * e.progress);
             height.value = adjustedHeight;
-
-            // Determine if keyboard is opening or closing
-            // Opening if new height is greater than current visual height
-            isKeyboardOpening.value = e.height > height.value;
 
             // Update keyboard state flags
             isKeyboardFullyClosed.value = e.height === 0;

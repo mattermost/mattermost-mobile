@@ -4,10 +4,10 @@
 import {useHardwareKeyboardEvents} from '@mattermost/hardware-keyboard';
 import {createBottomTabNavigator, type BottomTabBarProps} from '@react-navigation/bottom-tabs';
 import {NavigationContainer, DefaultTheme} from '@react-navigation/native';
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Platform, StyleSheet, View} from 'react-native';
-import {KeyboardState} from 'react-native-reanimated';
+import {useKeyboardState} from 'react-native-keyboard-controller';
 import {enableFreeze, enableScreens} from 'react-native-screens';
 
 import {initializeSecurityManager} from '@actions/app/server';
@@ -68,20 +68,16 @@ export function HomeScreen(props: HomeProps) {
     const theme = useTheme();
     const intl = useIntl();
     const appState = useAppState();
-    const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+    const keyboardState = useKeyboardState();
 
     useEffect(() => {
         initializeSecurityManager();
     }, []);
 
     useEffect(() => {
-        const keyboardStateListener = DeviceEventEmitter.addListener(Events.KEYBOARD_STATE_CHANGED, (keyboardState: KeyboardState) => {
-            const isOpen = keyboardState === KeyboardState.OPEN || keyboardState === KeyboardState.OPENING;
-            setIsKeyboardOpen(isOpen);
-        });
-
-        return () => keyboardStateListener.remove();
-    }, []);
+        // Hide tab bar when keyboard opens, show when it closes
+        DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, !keyboardState.isVisible);
+    }, [keyboardState.isVisible]);
 
     const handleFindChannels = useCallback(() => {
         if (!NavigationStore.getScreensInStack().includes(Screens.FIND_CHANNELS)) {
@@ -154,13 +150,15 @@ export function HomeScreen(props: HomeProps) {
                 });
             }
         }
+
+        // Empty dependency array because this effect should only run once on mount to handle initial launch
+        // - intl, props.launchType, props.launchError, props.extra, props.componentId are intentionally omitted
+        // - This is a one-time launch event handler, not meant to re-trigger when props change
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const tabBarComponent = useMemo(() => {
         const TabBarComponent = (tabProps: BottomTabBarProps) => {
-            if (isKeyboardOpen) {
-                return null;
-            }
             return (
                 <TabBar
                     {...tabProps}
@@ -170,7 +168,7 @@ export function HomeScreen(props: HomeProps) {
         };
         TabBarComponent.displayName = 'TabBarComponent';
         return TabBarComponent;
-    }, [isKeyboardOpen, theme]);
+    }, [theme]);
 
     return (
         <View

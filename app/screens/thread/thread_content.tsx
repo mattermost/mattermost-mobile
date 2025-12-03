@@ -20,6 +20,11 @@ type ThreadContentProps = {
     containerHeight: number;
 }
 
+const THREAD_POST_DRAFT_TESTID = 'thread.post_draft';
+
+// This follows the same pattern as draft_input.tsx: `${testID}.post.input`
+const THREAD_POST_INPUT_NATIVE_ID = `${THREAD_POST_DRAFT_TESTID}.post.input`;
+
 const styles = StyleSheet.create({
     flex: {
         flex: 1,
@@ -34,12 +39,11 @@ const ThreadContent = ({
 }: ThreadContentProps) => {
     return (
         <KeyboardAwarePostDraftContainer
-            textInputNativeID='thread.post_draft.post.input'
+            textInputNativeID={THREAD_POST_INPUT_NATIVE_ID}
             containerStyle={styles.flex}
             isThreadView={true}
             renderList={({listRef}) => (
                 <ThreadPostList
-                    nativeID={rootId}
                     rootPost={rootPost}
                     listRef={listRef}
                 />
@@ -54,7 +58,7 @@ const ThreadContent = ({
             <PostDraft
                 channelId={rootPost.channelId}
                 rootId={rootId}
-                testID='thread.post_draft'
+                testID={THREAD_POST_DRAFT_TESTID}
                 containerHeight={containerHeight}
                 isChannelScreen={false}
                 location={Screens.THREAD}

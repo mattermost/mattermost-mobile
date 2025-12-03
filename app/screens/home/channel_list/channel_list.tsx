@@ -158,7 +158,8 @@ const ChannelListScreen = (props: ChannelProps) => {
             refetchCurrentUser(serverUrl, props.currentUserId);
         }
 
-    // disabled because to keep the implementation as previous as it started complaining about the dependencies
+    // - serverUrl is stable from useServerUrl hook
+    // - We only need to re-run when the current user state changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props.currentUserId, props.hasCurrentUser]);
 
