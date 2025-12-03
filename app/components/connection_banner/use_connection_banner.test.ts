@@ -472,6 +472,65 @@ describe('useConnectionBanner', () => {
                 expect(result.current.bannerText).toBe('Limited network connection');
             });
         });
+
+        it('should not show connection restored banner when returning from background if websocket stayed connected', async () => {
+            const {result, rerender} = renderHook(
+                ({appState, websocketState, ...rest}) => useConnectionBanner({
+                    appState,
+                    websocketState,
+                    ...rest,
+                }),
+                {
+                    initialProps: {
+                        websocketState: 'not_connected' as WebsocketConnectedState,
+                        networkPerformanceState: 'normal' as NetworkPerformanceState,
+                        netInfo: createMockNetInfo(),
+                        appState: 'active',
+                        intl: mockIntl,
+                    },
+                },
+            );
+
+            act(() => {
+                rerender({
+                    websocketState: 'connected' as WebsocketConnectedState,
+                    networkPerformanceState: 'normal' as NetworkPerformanceState,
+                    netInfo: createMockNetInfo(),
+                    appState: 'active',
+                    intl: mockIntl,
+                });
+            });
+
+            await waitFor(() => {
+                expect(result.current.visible).toBe(false);
+            });
+
+            act(() => {
+                rerender({
+                    websocketState: 'connected' as WebsocketConnectedState,
+                    networkPerformanceState: 'normal' as NetworkPerformanceState,
+                    netInfo: createMockNetInfo(),
+                    appState: 'background',
+                    intl: mockIntl,
+                });
+            });
+
+            act(() => {
+                rerender({
+                    websocketState: 'connected' as WebsocketConnectedState,
+                    networkPerformanceState: 'normal' as NetworkPerformanceState,
+                    netInfo: createMockNetInfo(),
+                    appState: 'active',
+                    intl: mockIntl,
+                });
+            });
+
+            await waitFor(() => {
+                expect(result.current.visible).toBe(false);
+                expect(result.current.bannerText).toBe('');
+                expect(result.current.isShowingConnectedBanner).toBe(false);
+            });
+        });
     });
 
     describe('auto-close behavior', () => {
