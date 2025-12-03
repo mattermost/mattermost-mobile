@@ -152,7 +152,7 @@ const Post = ({
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const isTablet = useIsTablet();
-    const {blurAndDismissKeyboard} = useKeyboardAnimationContext();
+    const {blurAndDismissKeyboard, closeInputAccessoryView, showInputAccessoryView} = useKeyboardAnimationContext();
     const styles = getStyleSheet(theme);
     const isAutoResponder = fromAutoResponder(post);
     const isPendingOrFailed = isPostPendingOrFailed(post);
@@ -228,6 +228,10 @@ const Post = ({
             return;
         }
 
+        if (showInputAccessoryView) {
+            closeInputAccessoryView();
+        }
+
         await blurAndDismissKeyboard();
         const passProps = {sourceScreen: location, post, showAddReaction, serverUrl};
         const title = isTablet ? intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}) : '';
@@ -239,7 +243,7 @@ const Post = ({
             title,
             props: passProps,
         });
-    }, [post, isSystemPost, canDelete, hasBeenDeleted, isPendingOrFailed, isEphemeral, blurAndDismissKeyboard, location, showAddReaction, serverUrl, isTablet, intl, theme]);
+    }, [post, isSystemPost, canDelete, hasBeenDeleted, isPendingOrFailed, isEphemeral, blurAndDismissKeyboard, closeInputAccessoryView, showInputAccessoryView, location, showAddReaction, serverUrl, isTablet, intl, theme]);
 
     const [, rerender] = useState(false);
     useEffect(() => {

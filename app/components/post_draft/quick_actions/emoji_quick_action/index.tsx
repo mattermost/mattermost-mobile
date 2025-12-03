@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
-import {StyleSheet} from 'react-native';
+import React, {useCallback, useRef} from 'react';
+import {Platform, StyleSheet} from 'react-native';
 import {KeyboardController} from 'react-native-keyboard-controller';
 import {runOnJS, runOnUI} from 'react-native-reanimated';
 
@@ -40,11 +40,56 @@ export default function EmojiQuickAction({
         inputAccessoryViewAnimatedHeight,
         showInputAccessoryView,
         setShowInputAccessoryView,
+        isKeyboardFullyClosed,
     } = useKeyboardAnimationContext();
+
+    const showEmojiPicker = useCallback(() => {
+        setShowInputAccessoryView(true);
+    }, [setShowInputAccessoryView]);
+
+    const checkCallbackRef = useRef<(() => void) | null>(null);
+
+    const scheduleKeyboardCheck = useCallback(() => {
+        const checkKeyboard = () => {
+            runOnUI(() => {
+                'worklet';
+                const currentKeyboardHeight = keyboardHeight.value;
+                const targetHeight = currentKeyboardHeight || lastKeyboardHeight || DEFAULT_INPUT_ACCESSORY_HEIGHT;
+
+                if (isKeyboardFullyClosed.value || keyboardHeight.value === 0) {
+                    // Match iOS order: Set SharedValues first, then trigger React render
+                    // This ensures values are set before emoji picker component mounts
+                    isInputAccessoryViewMode.value = true;
+                    inputAccessoryViewAnimatedHeight.value = targetHeight;
+
+                    // Trigger React render to mount emoji picker component
+                    runOnJS(showEmojiPicker)();
+                } else if (checkCallbackRef.current) {
+                    runOnJS(checkCallbackRef.current)();
+                }
+            })();
+        };
+
+        checkCallbackRef.current = () => {
+            requestAnimationFrame(checkKeyboard);
+        };
+
+        checkKeyboard();
+    }, [keyboardHeight, lastKeyboardHeight, isKeyboardFullyClosed, isInputAccessoryViewMode, inputAccessoryViewAnimatedHeight, showEmojiPicker]);
 
     const handleButtonPress = useCallback(() => {
         // Prevent opening if already showing or transitioning
-        if (disabled || showInputAccessoryView || isTransitioningFromCustomView.value) {
+        if ((disabled || showInputAccessoryView || isTransitioningFromCustomView.value) && Platform.OS !== 'android') {
+            return;
+        }
+
+        if (Platform.OS === 'android') {
+            KeyboardController.dismiss();
+
+            // Wait for keyboard to be fully dismissed before showing emoji picker
+            // This prevents the emoji picker from appearing above the keyboard
+            // Start checking after a small delay to give keyboard dismissal time to start
+            setTimeout(scheduleKeyboardCheck, 50);
             return;
         }
 
@@ -76,7 +121,7 @@ export default function EmojiQuickAction({
             // Dismiss keyboard
             runOnJS(KeyboardController.dismiss)();
         })();
-    }, [disabled, showInputAccessoryView, isInputAccessoryViewMode, isTransitioningFromCustomView, inputAccessoryViewAnimatedHeight, keyboardHeight, lastKeyboardHeight, setShowInputAccessoryView]);
+    }, [disabled, showInputAccessoryView, isTransitioningFromCustomView.value, keyboardHeight.value, lastKeyboardHeight, isInputAccessoryViewMode, inputAccessoryViewAnimatedHeight, setShowInputAccessoryView, scheduleKeyboardCheck]);
 
     const actionTestID = disabled ? `${testID}.disabled` : testID;
     const color = disabled ? changeOpacity(theme.centerChannelColor, 0.16) : changeOpacity(theme.centerChannelColor, 0.64);
