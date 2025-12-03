@@ -3,15 +3,11 @@
 
 import {defineMessage, type IntlShape, type MessageDescriptor} from 'react-intl';
 
-import {isErrorWithMessage, isServerError, isErrorWithStatusCode} from '@utils/errors';
+import {isErrorWithMessage, isErrorWithStatusCode} from '@utils/errors';
 
 // MSAL Error Domain and Codes
 const MSAL_ERROR_DOMAIN = 'MSALErrorDomain';
 const MSAL_ERROR_CODE_USER_CANCELED = -50005;
-
-// Server error IDs from Intune Implementation Plan
-const SERVER_ERROR_LDAP_USER_MISSING = 'ent.intune.login.ldap_user_missing.app_error';
-const SERVER_ERROR_ACCOUNT_CREATION_BLOCKED = 'ent.intune.login.account_creation_blocked.app_error';
 
 // i18n message definitions
 const intuneErrorMessages = {
@@ -84,13 +80,8 @@ export function getIntuneErrorMessage(error: unknown, intl: IntlShape): string {
             return intl.formatMessage(intuneErrorMessages.userDeactivated);
         }
 
-        // HTTP 400: LDAP user missing
-        if (error.status_code === 400 && isServerError(error) && error.server_error_id === SERVER_ERROR_LDAP_USER_MISSING) {
-            return intl.formatMessage(intuneErrorMessages.ldapUserMissing);
-        }
-
         // HTTP 428: Account creation blocked by Custom Profile Attributes
-        if (error.status_code === 428 && isServerError(error) && error.server_error_id === SERVER_ERROR_ACCOUNT_CREATION_BLOCKED) {
+        if (error.status_code === 428) {
             return intl.formatMessage(intuneErrorMessages.accountCreationBlocked);
         }
     }
@@ -132,11 +123,7 @@ export function getIntuneErrorMessageDescriptor(error: unknown): MessageDescript
             return intuneErrorMessages.userDeactivated;
         }
 
-        if (error.status_code === 400 && isServerError(error) && error.server_error_id === SERVER_ERROR_LDAP_USER_MISSING) {
-            return intuneErrorMessages.ldapUserMissing;
-        }
-
-        if (error.status_code === 428 && isServerError(error) && error.server_error_id === SERVER_ERROR_ACCOUNT_CREATION_BLOCKED) {
+        if (error.status_code === 428) {
             return intuneErrorMessages.accountCreationBlocked;
         }
     }

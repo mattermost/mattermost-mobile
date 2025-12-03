@@ -100,6 +100,8 @@ jest.mock('@managers/intune_manager', () => ({
         unenrollServer: jest.fn(),
         setCurrentIdentity: jest.fn(),
         cleanupAfterWipe: jest.fn(),
+        reportWipeComplete: jest.fn(),
+        getPendingWipes: jest.fn(() => Promise.resolve([])),
         getPolicy: jest.fn(() => Promise.resolve(null)),
         isIntuneMAMEnabledForServer: jest.fn(() => Promise.resolve(false)),
         isManagedServer: jest.fn(() => Promise.resolve(false)),

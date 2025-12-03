@@ -297,9 +297,9 @@ describe('SecurityManager - Event Handlers', () => {
                 performWipeSpy.mockRestore();
             });
 
-            test('should skip servers without credentials', async () => {
+            test('should proceed with wipe even without credentials (already deleted by native)', async () => {
                 jest.mocked(getServerCredentials).mockResolvedValue(null);
-                const performWipeSpy = jest.spyOn(SecurityManager as any, 'performSelectiveWipe').mockResolvedValue(undefined);
+                const performWipeSpy = jest.spyOn(SecurityManager as any, 'performSelectiveWipe').mockResolvedValue(true);
 
                 const event: IntuneWipeRequestedEvent = {
                     oid: 'object-id',
@@ -308,7 +308,8 @@ describe('SecurityManager - Event Handlers', () => {
 
                 await SecurityManager.onWipeRequested(event);
 
-                expect(performWipeSpy).not.toHaveBeenCalled();
+                // Should still call wipe to clean up database (credentials already deleted by native)
+                expect(performWipeSpy).toHaveBeenCalledWith(serverUrl1, true);
                 performWipeSpy.mockRestore();
             });
 
