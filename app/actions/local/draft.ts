@@ -14,6 +14,7 @@ import NavigationStore from '@store/navigation_store';
 import {getExtensionFromMime} from '@utils/file';
 import {isTablet} from '@utils/helpers';
 import {logError} from '@utils/log';
+import {removeImageProxyForKey} from '@utils/markdown';
 import {urlSafeBase64Encode} from '@utils/security';
 import {isParsableUrl} from '@utils/url';
 
@@ -301,7 +302,9 @@ export async function updateDraftMarkdownImageMetadata({
 
 async function getImageMetadata(serverUrl: string, url: string) {
     let format;
-    const image = await Image.loadAsync({uri: url, cachePath: urlSafeBase64Encode(serverUrl)});
+    const sourceKey = removeImageProxyForKey(url);
+    const cacheKey = `uid-${urlSafeBase64Encode(sourceKey)}`;
+    const image = await Image.loadAsync({uri: url, cacheKey, cachePath: urlSafeBase64Encode(serverUrl)});
 
     if (image.mediaType) {
         format = getExtensionFromMime(image.mediaType);
