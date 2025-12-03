@@ -16,7 +16,7 @@ import {getDeviceToken} from '@queries/app/global';
 import {getExpiredSession} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
 import {deleteFileCache, deleteFileCacheByDir} from '@utils/file';
-import {logError} from '@utils/log';
+import {logError, logWarning} from '@utils/log';
 import {clearCookiesForServer, getCSRFFromCookie, urlSafeBase64Encode} from '@utils/security';
 
 const resetLocale = async () => {
@@ -104,24 +104,87 @@ export const cancelSessionNotification = async (serverUrl: string) => {
 };
 
 export const terminateSession = async (serverUrl: string, removeServer: boolean) => {
-    cancelSessionNotification(serverUrl);
-    await removeServerCredentials(serverUrl);
+    const errors: Array<{operation: string; error: unknown}> = [];
 
+    // Helper to safely execute operations and optionally track errors
+    const safeExecute = async (operation: string, fn: () => Promise<unknown>, critical = true) => {
+        try {
+            const result = await fn();
+
+            // Check if function returned {error}
+            if (result && typeof result === 'object' && 'error' in result && critical) {
+                errors.push({operation, error: result.error});
+            }
+        } catch (error) {
+            if (critical) {
+                errors.push({operation, error});
+            } else {
+                // Log but don't track as failure
+                logWarning(`terminateSession: ${operation} failed (non-critical)`, error);
+            }
+        }
+    };
+
+    // Cancel session notification (critical)
+    await safeExecute('cancelSessionNotification', () => {
+        return cancelSessionNotification(serverUrl);
+    });
+
+    // Remove server credentials (critical)
+    await safeExecute('removeServerCredentials', async () => {
+        await removeServerCredentials(serverUrl);
+    });
+
+    // Remove push notifications (synchronous, no error handling needed)
     PushNotifications.removeServerNotifications(serverUrl);
 
+    // Invalidate clients (synchronous, no error handling needed)
     NetworkManager.invalidateClient(serverUrl);
     WebsocketManager.invalidateClient(serverUrl);
 
+    // Remove push disabled acknowledgment (non-critical)
     if (removeServer) {
-        await removePushDisabledInServerAcknowledged(urlSafeBase64Encode(serverUrl));
-        await DatabaseManager.destroyServerDatabase(serverUrl);
-    } else {
-        await DatabaseManager.deleteServerDatabase(serverUrl);
+        await safeExecute('removePushDisabledInServerAcknowledged', async () => {
+            const result = await removePushDisabledInServerAcknowledged(urlSafeBase64Encode(serverUrl));
+            if (result && typeof result === 'object' && 'error' in result) {
+                throw result.error;
+            }
+        }, false);
     }
 
-    resetLocale();
+    // Database operations (critical)
+    await safeExecute('databaseOperation', async () => {
+        if (removeServer) {
+            await DatabaseManager.destroyServerDatabase(serverUrl);
+        } else {
+            await DatabaseManager.deleteServerDatabase(serverUrl);
+        }
+    });
+
+    // Reset locale (non-critical)
+    await safeExecute('resetLocale', async () => {
+        await resetLocale();
+    }, false);
+
+    // Clear cookies (synchronous)
     clearCookiesForServer(serverUrl);
-    deleteFileCache(serverUrl);
-    deleteFileCacheByDir('mmPasteInput');
-    deleteFileCacheByDir('thumbnails');
+
+    // Delete file caches (critical - we need to wipe local data)
+    await safeExecute('deleteFileCache', async () => {
+        await deleteFileCache(serverUrl);
+    });
+
+    await safeExecute('deleteFileCacheMmPasteInput', async () => {
+        await deleteFileCacheByDir('mmPasteInput');
+    });
+
+    await safeExecute('deleteFileCacheThumbnails', async () => {
+        await deleteFileCacheByDir('thumbnails');
+    });
+
+    if (errors.length > 0) {
+        return {error: errors};
+    }
+
+    return {};
 };

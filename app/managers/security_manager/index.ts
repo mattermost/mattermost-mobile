@@ -13,7 +13,6 @@ import {logout} from '@actions/remote/session';
 import {Events} from '@constants';
 import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
-import {getServerCredentials} from '@init/credentials';
 import ManagedApp from '@init/managed_app';
 import IntuneManager from '@managers/intune_manager';
 import {
@@ -130,6 +129,9 @@ class SecurityManagerSingleton {
 
             // Fetch configs and policies for all servers in parallel
             await Promise.all(servers.map((server) => loadServerConfig(server.url)));
+
+            // Retry any pending wipes that failed previously
+            await this.retryPendingWipes();
         } catch (error) {
             logError('SecurityManager: Failed to initialize', error);
         }
@@ -321,30 +323,36 @@ class SecurityManagerSingleton {
 
         logDebug('SecurityManager: Wipe requested', {serverCount: serverUrls.length});
 
+        let success = true;
+
+        // Wipe non-active servers
         for await (const serverUrl of serverUrls) {
             if (serverUrl === this.activeServer) {
                 // We do this one last to avoid issues with active server changes
                 continue;
             }
 
-            const credentials = await getServerCredentials(serverUrl);
-            if (credentials) {
-                await this.performSelectiveWipe(serverUrl, true);
-                this.removeServer(serverUrl);
+            const wipeSuccess = await this.performSelectiveWipe(serverUrl, true);
+            if (!wipeSuccess) {
+                success = false;
             }
+            this.removeServer(serverUrl);
         }
 
         // Finally wipe active server if needed
         if (this.activeServer && serverUrls.includes(this.activeServer)) {
-            const activeServerCredentials = await getServerCredentials(this.activeServer!);
-            if (activeServerCredentials) {
-                await this.performSelectiveWipe(this.activeServer, false);
-                this.removeServer(this.activeServer);
+            const wipeSuccess = await this.performSelectiveWipe(this.activeServer, false);
+            if (!wipeSuccess) {
+                success = false;
             }
+            this.removeServer(this.activeServer);
         }
 
         // Cleanup storage and MSAL account after all wipes complete
         await IntuneManager.cleanupAfterWipe(oid);
+
+        // Report completion status to native (clears pending state if successful)
+        await IntuneManager.reportWipeComplete(oid, success);
     };
 
     /**
@@ -880,20 +888,50 @@ class SecurityManagerSingleton {
 
     /**
      * Perform selective wipe for affected servers
+     * @returns true if wipe succeeded, false if it failed
      */
-    private performSelectiveWipe = async (serverUrl: string, skipEvents: boolean) => {
-        try {
-            // Here we logout the server which will trigger session termination
-            await logout(serverUrl, undefined, {skipServerLogout: false, skipEvents});
-            if (skipEvents) {
-                await terminateSession(serverUrl, false);
-            }
+    private performSelectiveWipe = async (serverUrl: string, skipEvents: boolean): Promise<boolean> => {
+        // Try to logout from server (skip alert dialog for automated wipes)
+        await logout(serverUrl, undefined, {skipServerLogout: false, skipEvents, skipAlert: true});
 
-            // Logout the server which will trigger session termination
-            logDebug('SecurityManager: Wiping server');
-        } catch (error) {
-            logError('SecurityManager: Failed to wipe server', {error});
+        // Always call terminateSession to clean up local data (even if server logout failed)
+        if (skipEvents) {
+            const result = await terminateSession(serverUrl, false);
+            if (result.error) {
+                logError('SecurityManager: terminateSession failed', {errors: result.error});
+                return false;
+            }
         }
+
+        logDebug('SecurityManager: Server wiped successfully');
+        return true;
+    };
+
+    /**
+     * Retry any pending wipes that failed in a previous app session
+     */
+    private retryPendingWipes = async () => {
+        const pendingWipes = await IntuneManager.getPendingWipes();
+        if (pendingWipes.length === 0) {
+            return;
+        }
+
+        logDebug('SecurityManager: Retrying pending wipes', {count: pendingWipes.length});
+
+        pendingWipes.forEach(async (wipe) => {
+            const {oid, serverUrls} = wipe;
+
+            // Retry wipe for each server
+            const results = await Promise.all(
+                serverUrls.map((serverUrl) => this.performSelectiveWipe(serverUrl, true)),
+            );
+
+            // Check if all wipes succeeded
+            const success = results.every((result) => result === true);
+
+            // Report completion status (clears pending state if successful)
+            await IntuneManager.reportWipeComplete(oid, success);
+        });
     };
 }
 

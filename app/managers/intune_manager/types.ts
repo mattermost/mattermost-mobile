@@ -120,29 +120,23 @@ export type IntuneWipeRequestedEvent = Readonly<{
     serverUrls: string[];
 }>;
 
+export type PendingWipe = Readonly<{
+    oid: string;
+    serverUrls: string[];
+    timestamp: number;
+}>;
+
 export type IntuneSpec = {
     addListener: (eventType: string) => void;
     removeListeners: (count: number) => void;
-
-    // Native OIDC Login (prompts user for account selection)
     login(serverUrl: string, scopes: string[]): Promise<MSALTokens>;
-
-    // MAM Enrollment (separate from token acquisition)
     enrollInMAM(serverUrl: string, identity: MSALIdentity): Promise<void>;
-
-    // Status
     isManagedServer(serverUrl: string): Promise<boolean>;
-
-    // Unenrollment
     deregisterAndUnenroll(serverUrl: string, doWipe: boolean): Promise<void>;
-
-    // Cleanup after wipe (removes storage and MSAL account)
     cleanupAfterWipe(oid: string): Promise<void>;
-
-    // Identity Switching
+    reportWipeComplete(oid: string, success: boolean): Promise<void>;
+    getPendingWipes(): Promise<PendingWipe[]>;
     setCurrentIdentity(serverUrl: string | null): Promise<void>;
-
-    // Policy (queries SDK cache)
     getPolicy(serverUrl: string): Promise<IntunePolicy | null>;
 
     onIntuneEnrollmentChanged: (listener: (event: IntuneEnrollmentChangedEvent) => void) => EventSubscription;

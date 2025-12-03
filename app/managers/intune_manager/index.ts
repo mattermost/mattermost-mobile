@@ -44,7 +44,7 @@ if (Platform.OS === 'ios') {
 export class IntuneManagerSingleton {
 
     isIntuneEnabledForConfigAndLicense(config: ClientConfig, license?: ClientLicense): boolean {
-        return isMinimumLicenseTier(license, License.SKU_SHORT_NAME.EnterpriseAdvanced) &&
+        return Boolean(Intune) && isMinimumLicenseTier(license, License.SKU_SHORT_NAME.EnterpriseAdvanced) &&
             config.IntuneMAMEnabled === 'true' && Boolean(config.IntuneScope) && Boolean(config.IntuneAuthService);
     }
 
@@ -311,6 +311,45 @@ export class IntuneManagerSingleton {
         }
 
         return Intune.onIntuneIdentitySwitchRequired(handler);
+    }
+
+    /**
+     * Report wipe completion status to native layer
+     * Clears pending state if successful, retains for retry if failed
+     * @param oid - The OID to report completion for
+     * @param success - Whether the wipe was successful
+     */
+    async reportWipeComplete(oid: string, success: boolean): Promise<void> {
+        if (!Intune) {
+            return;
+        }
+
+        try {
+            await Intune.reportWipeComplete(oid, success);
+            logDebug(`IntuneManager: Wipe completion reported (success: ${success})`);
+        } catch (error) {
+            logError('IntuneManager: Failed to report wipe completion', error);
+        }
+    }
+
+    /**
+     * Get pending wipes that need to be retried
+     * Filters out stale wipes (> 7 days old) automatically
+     * @returns Array of pending wipes (empty array if none)
+     */
+    async getPendingWipes(): Promise<Array<{oid: string; serverUrls: string[]; timestamp: number}>> {
+        if (!Intune) {
+            return [];
+        }
+
+        try {
+            const pendingWipes = await Intune.getPendingWipes();
+            logDebug(`IntuneManager: Retrieved ${pendingWipes.length} pending wipe(s)`);
+            return pendingWipes;
+        } catch (error) {
+            logError('IntuneManager: Failed to get pending wipes', error);
+            return [];
+        }
     }
 }
 

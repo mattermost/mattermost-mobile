@@ -277,4 +277,13 @@ public class Keychain: NSObject {
             throw KeychainError.FailedSecItemDelete(status)
         }
     }
+
+    public func removeInternetPassword(forServer serverUrl: String) throws {
+        let query = try buildTokenAttributes(for: serverUrl)
+
+        let status = SecItemDelete(query as CFDictionary)
+        guard status == errSecSuccess || status == errSecItemNotFound else {
+            throw KeychainError.FailedSecItemDelete(status)
+        }
+    }
 }

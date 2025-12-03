@@ -173,6 +173,7 @@ type LogoutOptions = {
     removeServer?: boolean;
     skipEvents?: boolean;
     logoutOnAlert?: boolean;
+    skipAlert?: boolean; // Skip showing alert dialog (for automated wipes)
 };
 
 export const logout = async (
@@ -183,6 +184,7 @@ export const logout = async (
         removeServer = false,
         skipEvents = false,
         logoutOnAlert = false,
+        skipAlert = false,
     }: LogoutOptions = {}) => {
     if (!skipServerLogout) {
         let loggedOut = false;
@@ -197,7 +199,7 @@ export const logout = async (
             logWarning('An error occurred logging out from the server', serverUrl, getFullErrorMessage(error));
         }
 
-        if (!loggedOut) {
+        if (!loggedOut && !skipAlert) {
             const title = intl?.formatMessage(logoutMessages.title) || logoutMessages.title.defaultMessage;
 
             const bodyMessage = logoutOnAlert ? logoutMessages.bodyForced : logoutMessages.body;
