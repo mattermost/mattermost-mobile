@@ -497,7 +497,13 @@ export const magicLinkLogin = async (serverUrl: string, token: string): Promise<
         client.setCSRFToken(csrfToken);
 
         // Check push notification capability (similar to normal login flow)
-        const pingResult = await doPing(serverUrlToUse, true, undefined, undefined, client);
+        const pingResult = await doPing(
+            serverUrlToUse,
+            true, // verifyPushProxy
+            undefined, // timeoutInterval
+            undefined, // preauthSecret
+            client, // client
+        );
         if (!pingResult.error && pingResult.canReceiveNotifications) {
             const intl = getIntlShape(user.locale);
             canReceiveNotifications(serverUrlToUse, pingResult.canReceiveNotifications as string, intl);
