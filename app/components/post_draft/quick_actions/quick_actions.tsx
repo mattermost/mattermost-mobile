@@ -5,7 +5,6 @@ import React from 'react';
 import {StyleSheet, View} from 'react-native';
 
 import CameraAction from './camera_quick_action';
-import EmojiAction from './emoji_quick_action';
 import FileAction from './file_quick_action';
 import ImageAction from './image_quick_action';
 import InputAction from './input_quick_action';
@@ -59,7 +58,8 @@ export default function QuickActions({
 
     const atInputActionTestID = `${testID}.at_input_action`;
     const slashInputActionTestID = `${testID}.slash_input_action`;
-    const emojiActionTestID = `${testID}.emoji_action`;
+
+    // const emojiActionTestID = `${testID}.emoji_action`;
     const fileActionTestID = `${testID}.file_action`;
     const imageActionTestID = `${testID}.image_action`;
     const cameraActionTestID = `${testID}.camera_action`;
@@ -94,9 +94,10 @@ export default function QuickActions({
                     focus={focus}
                 />
             )}
-            <EmojiAction
+            {/* TODO: Uncomment this when we have the actual emoji picker */}
+            {/* <EmojiAction
                 testID={emojiActionTestID}
-            />
+            /> */}
             <FileAction
                 testID={fileActionTestID}
                 {...uploadProps}
