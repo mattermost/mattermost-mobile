@@ -34,7 +34,11 @@ npm run intune:link
 
 # Install pods with Intune
 echo "📦 Installing iOS dependencies with Intune..."
-INTUNE_ENABLED=1 npm run pod-install
+if [[ $(uname -p) == 'arm' ]]; then
+    INTUNE_ENABLED=1 npm run pod-install-m1
+else
+    INTUNE_ENABLED=1 npm run pod-install
+fi
 
 echo ""
 echo "✅ Intune development environment ready!"
