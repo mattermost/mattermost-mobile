@@ -9,7 +9,9 @@ import {
     updateChecklistItem as localUpdateChecklistItem,
     setAssignee as localSetAssignee,
     setDueDate as localSetDueDate,
+    renameChecklist as localRenameChecklist,
 } from '@playbooks/actions/local/checklist';
+import {handlePlaybookRuns} from '@playbooks/actions/local/run';
 
 import {
     updateChecklistItem,
@@ -19,6 +21,8 @@ import {
     setChecklistItemCommand,
     setAssignee,
     setDueDate,
+    renameChecklist,
+    addChecklistItem,
 } from './checklist';
 
 const serverUrl = 'baseHandler.test.com';
@@ -37,9 +41,13 @@ const mockClient = {
     setAssignee: jest.fn(),
     setChecklistItemCommand: jest.fn(),
     setDueDate: jest.fn(),
+    renameChecklist: jest.fn(),
+    addChecklistItem: jest.fn(),
+    fetchPlaybookRun: jest.fn(),
 };
 
 jest.mock('@playbooks/actions/local/checklist');
+jest.mock('@playbooks/actions/local/run');
 
 const throwFunc = () => {
     throw Error('error');
@@ -320,6 +328,118 @@ describe('checklist', () => {
             expect(result.data).toBe(true);
             expect(mockClient.setDueDate).toHaveBeenCalledWith(playbookRunId, checklistNumber, itemNumber, 0);
             expect(localSetDueDate).toHaveBeenCalledWith(serverUrl, itemId, 0);
+        });
+    });
+
+    describe('renameChecklist', () => {
+        const checklistId = 'checklist-id-1';
+        const newTitle = 'New Checklist Title';
+
+        it('should handle client error', async () => {
+            jest.spyOn(NetworkManager, 'getClient').mockImplementationOnce(throwFunc);
+
+            const result = await renameChecklist(serverUrl, playbookRunId, checklistNumber, checklistId, newTitle);
+            expect(result).toBeDefined();
+            expect(result.error).toBeDefined();
+            expect(localRenameChecklist).not.toHaveBeenCalled();
+        });
+
+        it('should handle API exception', async () => {
+            mockClient.renameChecklist.mockImplementationOnce(throwFunc);
+
+            const result = await renameChecklist(serverUrl, playbookRunId, checklistNumber, checklistId, newTitle);
+            expect(result).toBeDefined();
+            expect(result.error).toBeDefined();
+            expect(mockClient.renameChecklist).toHaveBeenCalledWith(playbookRunId, checklistNumber, newTitle);
+            expect(localRenameChecklist).not.toHaveBeenCalled();
+        });
+
+        it('should handle local DB update failure', async () => {
+            mockClient.renameChecklist.mockResolvedValueOnce({});
+            jest.mocked(localRenameChecklist).mockResolvedValueOnce({error: 'DB error'});
+
+            const result = await renameChecklist(serverUrl, playbookRunId, checklistNumber, checklistId, newTitle);
+            expect(result).toBeDefined();
+            expect(result.error).toBeDefined();
+            expect(mockClient.renameChecklist).toHaveBeenCalledWith(playbookRunId, checklistNumber, newTitle);
+            expect(localRenameChecklist).toHaveBeenCalledWith(serverUrl, checklistId, newTitle);
+        });
+
+        it('should rename checklist successfully', async () => {
+            mockClient.renameChecklist.mockResolvedValueOnce({});
+            jest.mocked(localRenameChecklist).mockResolvedValueOnce({data: true});
+
+            const result = await renameChecklist(serverUrl, playbookRunId, checklistNumber, checklistId, newTitle);
+            expect(result).toBeDefined();
+            expect(result.error).toBeUndefined();
+            expect(result.data).toBe(true);
+            expect(mockClient.renameChecklist).toHaveBeenCalledWith(playbookRunId, checklistNumber, newTitle);
+            expect(localRenameChecklist).toHaveBeenCalledWith(serverUrl, checklistId, newTitle);
+        });
+
+        it('should rename checklist with empty title', async () => {
+            mockClient.renameChecklist.mockResolvedValueOnce({});
+            jest.mocked(localRenameChecklist).mockResolvedValueOnce({data: true});
+            const emptyTitle = '';
+
+            const result = await renameChecklist(serverUrl, playbookRunId, checklistNumber, checklistId, emptyTitle);
+            expect(result).toBeDefined();
+            expect(result.error).toBeUndefined();
+            expect(result.data).toBe(true);
+            expect(mockClient.renameChecklist).toHaveBeenCalledWith(playbookRunId, checklistNumber, emptyTitle);
+            expect(localRenameChecklist).toHaveBeenCalledWith(serverUrl, checklistId, emptyTitle);
+        });
+    });
+
+    describe('addChecklistItem', () => {
+        const title = 'New Item Title';
+
+        it('should handle client error', async () => {
+            jest.spyOn(NetworkManager, 'getClient').mockImplementationOnce(throwFunc);
+
+            const result = await addChecklistItem(serverUrl, playbookRunId, checklistNumber, title);
+            expect(result).toBeDefined();
+            expect('error' in result && result.error).toBeDefined();
+        });
+
+        it('should handle API exception', async () => {
+            mockClient.addChecklistItem.mockImplementationOnce(throwFunc);
+
+            const result = await addChecklistItem(serverUrl, playbookRunId, checklistNumber, title);
+            expect(result).toBeDefined();
+            expect('error' in result && result.error).toBeDefined();
+            expect(mockClient.addChecklistItem).toHaveBeenCalledWith(playbookRunId, checklistNumber, title);
+        });
+
+        it('should add checklist item successfully', async () => {
+            const mockRun = {id: playbookRunId, checklists: []};
+            mockClient.addChecklistItem.mockResolvedValueOnce(undefined);
+            mockClient.fetchPlaybookRun.mockResolvedValueOnce(mockRun);
+            (handlePlaybookRuns as jest.Mock).mockResolvedValueOnce({data: true});
+
+            const result = await addChecklistItem(serverUrl, playbookRunId, checklistNumber, title);
+            expect(result).toBeDefined();
+            expect('error' in result ? result.error : undefined).toBeUndefined();
+            expect('data' in result && result.data).toBe(true);
+            expect(mockClient.addChecklistItem).toHaveBeenCalledWith(playbookRunId, checklistNumber, title);
+            expect(mockClient.fetchPlaybookRun).toHaveBeenCalledWith(playbookRunId);
+            expect(handlePlaybookRuns).toHaveBeenCalledWith(serverUrl, [mockRun], false, true);
+        });
+
+        it('should add checklist item with empty title', async () => {
+            const mockRun = {id: playbookRunId, checklists: []};
+            const emptyTitle = '';
+            mockClient.addChecklistItem.mockResolvedValueOnce(undefined);
+            mockClient.fetchPlaybookRun.mockResolvedValueOnce(mockRun);
+            (handlePlaybookRuns as jest.Mock).mockResolvedValueOnce({data: true});
+
+            const result = await addChecklistItem(serverUrl, playbookRunId, checklistNumber, emptyTitle);
+            expect(result).toBeDefined();
+            expect('error' in result ? result.error : undefined).toBeUndefined();
+            expect('data' in result && result.data).toBe(true);
+            expect(mockClient.addChecklistItem).toHaveBeenCalledWith(playbookRunId, checklistNumber, emptyTitle);
+            expect(mockClient.fetchPlaybookRun).toHaveBeenCalledWith(playbookRunId);
+            expect(handlePlaybookRuns).toHaveBeenCalledWith(serverUrl, [mockRun], false, true);
         });
     });
 });

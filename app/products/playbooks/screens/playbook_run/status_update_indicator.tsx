@@ -71,7 +71,7 @@ const messages = defineMessages({
     },
     finished: {
         id: 'playbooks.playbook_run.status_update_finished',
-        defaultMessage: 'Run finished\n{time}',
+        defaultMessage: 'Finished at\n{time}',
     },
     update: {
         id: 'playbooks.playbook_run.status_update',
@@ -120,12 +120,8 @@ const StatusUpdateIndicator = ({
     }, [styles.icon, styles.overdueText, isFinished, timestamp]);
 
     const onUpdatePress = useCallback(async () => {
-        if (readOnly) {
-            return;
-        }
-
         await goToPostUpdate(intl, playbookRunId);
-    }, [intl, playbookRunId, readOnly]);
+    }, [intl, playbookRunId]);
 
     const icon = isFinished ? 'flag-checkered' : 'clock-outline';
     return (

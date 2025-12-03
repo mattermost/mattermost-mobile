@@ -29,7 +29,6 @@ const close = () => {
 
 export type Props = {
     currentTeamId: string;
-    currentUserId: string;
     handleSelect: (opt: UserProfile) => void;
     handleRemove?: () => void;
     selected?: string;
@@ -40,7 +39,7 @@ export type Props = {
 const messages = defineMessages({
     participants: {
         id: 'playbooks.select_user.participants',
-        defaultMessage: 'RUN PARTICIPANTS',
+        defaultMessage: 'PARTICIPANTS',
     },
     notParticipants: {
         id: 'playbooks.select_user.not_participants',
@@ -93,7 +92,6 @@ function SelectUser({
     handleSelect,
     handleRemove,
     currentTeamId,
-    currentUserId,
     componentId,
     participantIds,
 }: Props) {
@@ -251,7 +249,6 @@ function SelectUser({
                 )}
             </View>
             <ServerUserList
-                currentUserId={currentUserId}
                 term={term}
                 tutorialWatched={true}
                 handleSelectProfile={handleSelectProfile}

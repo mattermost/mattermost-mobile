@@ -28,6 +28,7 @@ import IntegrationSelectorScreen from './integration_selector';
 import InteractiveDialogScreen from './interactive_dialog';
 import Invite from './invite';
 import LoginScreen from './login';
+import ManageChannelMembersScreen from './manage_channel_members';
 import MentionNotificationSettingsScreen from './mention_notification_settings';
 import NotificationSettingsScreen from './notification_settings';
 import PermalinkScreen from './permalink';
@@ -78,6 +79,7 @@ export {
     InteractiveDialogScreen,
     Invite,
     LoginScreen,
+    ManageChannelMembersScreen,
     MentionNotificationSettingsScreen,
     NotificationSettingsScreen,
     PermalinkScreen,

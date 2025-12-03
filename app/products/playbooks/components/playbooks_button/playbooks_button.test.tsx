@@ -25,7 +25,7 @@ describe('PlaybooksButton', () => {
 
         const icon = getByTestId('channel_list.playbooks.button-icon');
         expect(icon).toHaveProp('name', 'product-playbooks');
-        expect(getByText('Playbook runs')).toBeTruthy();
+        expect(getByText('Playbook checklists')).toBeTruthy();
     });
 
     it('calls goToParticipantPlaybooks when pressed', () => {
