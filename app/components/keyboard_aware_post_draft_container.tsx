@@ -215,6 +215,13 @@ export const KeyboardAwarePostDraftContainer = ({
         keyboardHeight.value = 0;
     }, [inputAccessoryViewAnimatedHeight, inset, offset, keyboardHeight, setShowInputAccessoryView, isInputAccessoryViewMode, isTransitioningFromCustomView]);
 
+    const scrollToEnd = useCallback(() => {
+        const activeHeight = Math.max(keyboardHeight.value, inputAccessoryViewAnimatedHeight.value);
+        const targetOffset = -activeHeight;
+
+        listRef.current?.scrollToOffset({offset: targetOffset, animated: true});
+    }, [listRef, keyboardHeight, inputAccessoryViewAnimatedHeight]);
+
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.CLOSE_INPUT_ACCESSORY_VIEW, () => {
             closeInputAccessoryView();
@@ -342,6 +349,7 @@ export const KeyboardAwarePostDraftContainer = ({
         inputAccessoryViewAnimatedHeight,
         isTransitioningFromCustomView,
         closeInputAccessoryView,
+        scrollToEnd,
     }), [keyboardCurrentHeight,
         inset,
         offset,
@@ -363,6 +371,7 @@ export const KeyboardAwarePostDraftContainer = ({
         inputAccessoryViewAnimatedHeight,
         isTransitioningFromCustomView,
         closeInputAccessoryView,
+        scrollToEnd,
     ]);
 
     const wrapperProps = useMemo(() => {
