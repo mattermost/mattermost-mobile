@@ -156,7 +156,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
                 },
                 Plugins: {
                     'com.mattermost.demo-plugin': {
-                        'enablementionuser': false,
+                        'MinimalMode': true,
                     },
                 }},
         });

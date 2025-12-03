@@ -113,7 +113,6 @@ describe('components/channel_list_row', () => {
         return {
             profiles: [],
             testID: 'create_direct_message.user_list',
-            currentUserId: '1',
             handleSelectProfile: jest.fn(),
             fetchMore: jest.fn(),
             loading: true,
