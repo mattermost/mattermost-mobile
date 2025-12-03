@@ -159,7 +159,6 @@ describe('SessionManager', () => {
 
             // Wait for the async promise chain to complete
             await new Promise((resolve) => setImmediate(resolve));
-            await new Promise((resolve) => setImmediate(resolve));
 
             expect(deleteFileCacheByDir).toHaveBeenCalledWith('com.hackemist.SDImageCache');
         });
