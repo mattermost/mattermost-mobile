@@ -79,9 +79,7 @@ function ScheduledPostIndicator({
     );
 
     return (
-        <View
-            className='ScheduledPostIndicator'
-        >
+        <View>
             <View style={styles.container}>
                 <CompassIcon
                     color={changeOpacity(theme.centerChannelColor, 0.6)}
