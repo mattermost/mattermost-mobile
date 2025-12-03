@@ -29,7 +29,6 @@ const close = () => {
 
 export type Props = {
     currentTeamId: string;
-    currentUserId: string;
     handleSelect: (opt: UserProfile) => void;
     handleRemove?: () => void;
     selected?: string;
@@ -93,7 +92,6 @@ function SelectUser({
     handleSelect,
     handleRemove,
     currentTeamId,
-    currentUserId,
     componentId,
     participantIds,
 }: Props) {
@@ -251,7 +249,6 @@ function SelectUser({
                 )}
             </View>
             <ServerUserList
-                currentUserId={currentUserId}
                 term={term}
                 tutorialWatched={true}
                 handleSelectProfile={handleSelectProfile}
