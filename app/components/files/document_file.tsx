@@ -1,19 +1,25 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {forwardRef, useImperativeHandle, useRef, useState} from 'react';
+import React, {forwardRef, useImperativeHandle, useRef} from 'react';
 import {StyleSheet, TouchableOpacity, View} from 'react-native';
 
 import Document, {type DocumentRef} from '@components/document';
 import ProgressBar from '@components/progress_bar';
 import {useTheme} from '@context/theme';
+import {useDownloadFileAndPreview} from '@hooks/files';
 
 import FileIcon from './file_icon';
+
+export type DocumentFileRef = {
+    handlePreviewPress: () => void;
+}
 
 type DocumentFileProps = {
     backgroundColor?: string;
     disabled?: boolean;
     canDownloadFiles: boolean;
+    enableSecureFilePreview: boolean;
     file: FileInfo;
 }
 
@@ -27,10 +33,10 @@ const styles = StyleSheet.create({
     },
 });
 
-const DocumentFile = forwardRef<DocumentRef, DocumentFileProps>(({backgroundColor, canDownloadFiles, disabled = false, file}: DocumentFileProps, ref) => {
+const DocumentFile = forwardRef<DocumentRef, DocumentFileProps>(({backgroundColor, canDownloadFiles, disabled = false, enableSecureFilePreview, file}: DocumentFileProps, ref) => {
     const theme = useTheme();
-    const [progress, setProgress] = useState(0);
     const document = useRef<DocumentRef>(null);
+    const {downloading, progress, toggleDownloadAndPreview} = useDownloadFileAndPreview(enableSecureFilePreview);
 
     const handlePreviewPress = async () => {
         document.current?.handlePreviewPress();
@@ -48,7 +54,7 @@ const DocumentFile = forwardRef<DocumentRef, DocumentFileProps>(({backgroundColo
     );
 
     let fileAttachmentComponent = icon;
-    if (progress) {
+    if (downloading) {
         fileAttachmentComponent = (
             <>
                 {icon}
@@ -65,8 +71,9 @@ const DocumentFile = forwardRef<DocumentRef, DocumentFileProps>(({backgroundColo
     return (
         <Document
             canDownloadFiles={canDownloadFiles}
+            enableSecureFilePreview={enableSecureFilePreview}
             file={file}
-            onProgress={setProgress}
+            downloadAndPreviewFile={toggleDownloadAndPreview}
             ref={document}
         >
             <TouchableOpacity

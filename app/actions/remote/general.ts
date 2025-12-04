@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {defineMessage} from 'react-intl';
+
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_RESPONSE_VERIFIED, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import DatabaseManager from '@database/manager';
-import {t} from '@i18n';
 import NetworkManager from '@managers/network_manager';
 import {getDeviceToken} from '@queries/app/global';
 import {getExpandedLinks, getPushVerificationStatus} from '@queries/servers/system';
@@ -14,6 +15,7 @@ import {logDebug} from '@utils/log';
 import {forceLogoutIfNecessary} from './session';
 
 import type {Client} from '@client/rest';
+import type ClientError from '@client/rest/error';
 import type {ClientResponse} from '@mattermost/react-native-network-client';
 
 async function getDeviceIdForPing(serverUrl: string, checkDeviceId: boolean) {
@@ -33,29 +35,34 @@ async function getDeviceIdForPing(serverUrl: string, checkDeviceId: boolean) {
 }
 
 // Default timeout interval for ping is 5 seconds
-export const doPing = async (serverUrl: string, verifyPushProxy: boolean, timeoutInterval = 5000) => {
-    let client: Client;
-    try {
-        client = await NetworkManager.createClient(serverUrl);
-    } catch (error) {
-        return {error};
+export const doPing = async (serverUrl: string, verifyPushProxy: boolean, timeoutInterval = 5000, preauthSecret?: string, client?: Client) => {
+    let pingClient: Client;
+
+    if (client) {
+        pingClient = client;
+    } else {
+        try {
+            pingClient = await NetworkManager.createClient(serverUrl, undefined, preauthSecret);
+        } catch (error) {
+            return {error};
+        }
     }
 
-    const certificateError = {
-        id: t('mobile.server_requires_client_certificate'),
+    const certificateError = defineMessage({
+        id: 'mobile.server_requires_client_certificate',
         defaultMessage: 'Server requires client certificate for authentication.',
-    };
+    });
 
-    const pingError = {
-        id: t('mobile.server_ping_failed'),
+    const pingError = defineMessage({
+        id: 'mobile.server_ping_failed',
         defaultMessage: 'Cannot connect to the server.',
-    };
+    });
 
     const deviceId = await getDeviceIdForPing(serverUrl, verifyPushProxy);
 
     let response: ClientResponse;
     try {
-        response = await client.ping(deviceId, timeoutInterval);
+        response = await pingClient.ping(deviceId, timeoutInterval);
 
         if (response.code === 401) {
             // Don't invalidate the client since we want to eventually
@@ -65,13 +72,26 @@ export const doPing = async (serverUrl: string, verifyPushProxy: boolean, timeou
         }
 
         if (!response.ok) {
-            logDebug('Server ping returned not ok response', response);
-            NetworkManager.invalidateClient(serverUrl);
+            if (!client) {
+                NetworkManager.invalidateClient(serverUrl);
+            }
+            if (response.code === 403 && response.headers?.['x-reject-reason'] === 'pre-auth') {
+                return {error: {intl: pingError}, isPreauthError: true};
+            }
             return {error: {intl: pingError}};
         }
     } catch (error) {
-        logDebug('Server ping threw an exception', getFullErrorMessage(error));
-        NetworkManager.invalidateClient(serverUrl);
+        // Check if this is a 403 with pre-auth header
+        const errorObj = error as ClientError;
+        if (errorObj.status_code === 403) {
+            if (errorObj.headers?.['x-reject-reason'] === 'pre-auth') {
+                return {error: {intl: pingError}, isPreauthError: true};
+            }
+        }
+
+        if (!client) {
+            NetworkManager.invalidateClient(serverUrl);
+        }
         return {error: {intl: pingError}};
     }
 

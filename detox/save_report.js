@@ -99,12 +99,13 @@ const saveReport = async () => {
     // Merge all XML reports into one single XML report
     const platform = process.env.IOS === 'true' ? 'ios' : 'android';
     const combinedFilePath = `${ARTIFACTS_DIR}/${platform}-combined.xml`;
+
     await mergeFiles(path.join(__dirname, combinedFilePath), [`${ARTIFACTS_DIR}/${platform}-results*/${platform}-junit*.xml`]);
     console.log(`Merged, check ${combinedFilePath}`);
 
     // Read XML from a file
     const xml = fse.readFileSync(combinedFilePath);
-    const {testsuites} = convertXmlToJson(xml);
+    const {testsuites} = convertXmlToJson(xml, platform);
 
     // Generate short summary, write to file and then send report via webhook
     const allTests = getAllTests(testsuites);
@@ -120,8 +121,8 @@ const saveReport = async () => {
     }
 
     // "ios-results-*" or "android-results-*" is the path in CI where the parallel detox jobs save the artifacts
-    await mergeJestStareJsonFiles(jestStareCombinedFilePath, [`${ARTIFACTS_DIR}/${platform}-results*/jest-stare/${platform}-data*.json`]);
-    generateJestStareHtmlReport(jestStareOutputDir, `${platform}-report.html`, jestStareCombinedFilePath);
+    await mergeJestStareJsonFiles(jestStareCombinedFilePath, [`${ARTIFACTS_DIR}/${platform}-results*/jest-stare/${platform}-data*.json`], platform);
+    await generateJestStareHtmlReport(jestStareOutputDir, `${platform}-report.html`, jestStareCombinedFilePath, platform);
 
     if (process.env.CI) {
         // Delete folders starting with "ios-results-" or "android-results-" only in CI environment
@@ -132,7 +133,7 @@ const saveReport = async () => {
             }
         }
     }
-    const result = await saveArtifacts();
+    const result = await saveArtifacts(platform);
     if (result && result.success) {
         console.log('Successfully uploaded artifacts to S3:', result.reportLink);
     }

@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
+import {Notifications as RNNotifications} from 'react-native-notifications';
 
 import {getCallsConfig} from '@calls/state';
 import SettingContainer from '@components/settings/container';
@@ -10,11 +11,13 @@ import SettingItem from '@components/settings/item';
 import {General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import {t} from '@i18n';
+import {useAppState} from '@hooks/device';
 import {popTopScreen} from '@screens/navigation';
 import {gotoSettingsScreen} from '@screens/settings/config';
+import {logError} from '@utils/log';
 import {getEmailInterval, getEmailIntervalTexts, getNotificationProps} from '@utils/user';
 
+import NotificationsDisabledNotice from './notifications_disabled_notice';
 import SendTestNotificationNotice from './send_test_notification_notice';
 
 import type UserModel from '@typings/database/models/servers/user';
@@ -39,7 +42,7 @@ const mentionTexts = defineMessages({
     },
 });
 
-type NotificationsProps = {
+export type NotificationsProps = {
     componentId: AvailableScreens;
     currentUser?: UserModel;
     emailInterval: string;
@@ -61,8 +64,33 @@ const Notifications = ({
 }: NotificationsProps) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
-    const notifyProps = useMemo(() => getNotificationProps(currentUser), [currentUser?.notifyProps]);
+    const notifyProps = useMemo(() => getNotificationProps(currentUser), [currentUser]);
     const callsRingingEnabled = useMemo(() => getCallsConfig(serverUrl).EnableRinging, [serverUrl]);
+    const [isRegistered, setIsRegistered] = useState(true);
+
+    const appState = useAppState();
+
+    useEffect(() => {
+        let isCurrent = true;
+        if (appState === 'active') {
+            const checkNotificationStatus = async () => {
+                try {
+                    const registered = await RNNotifications.isRegisteredForRemoteNotifications();
+                    if (isCurrent) {
+                        setIsRegistered(registered);
+                    }
+                } catch (error) {
+                    if (isCurrent) {
+                        logError('Error checking notification registration status:', error);
+                    }
+                }
+            };
+            checkNotificationStatus();
+        }
+        return () => {
+            isCurrent = false;
+        };
+    }, [appState]);
 
     const emailIntervalPref = useMemo(() =>
         getEmailInterval(
@@ -75,9 +103,8 @@ const Notifications = ({
     const goToNotificationSettingsMentions = useCallback(() => {
         const screen = Screens.SETTINGS_NOTIFICATION_MENTION;
 
-        const id = isCRTEnabled ? t('notification_settings.mentions') : t('notification_settings.mentions_replies');
-        const defaultMessage = isCRTEnabled ? 'Mentions' : 'Mentions and Replies';
-        const title = intl.formatMessage({id, defaultMessage});
+        const message = isCRTEnabled ? mentionTexts.crtOn : mentionTexts.crtOff;
+        const title = intl.formatMessage(message);
         gotoSettingsScreen(screen, title);
     }, [intl, isCRTEnabled]);
 
@@ -126,6 +153,10 @@ const Notifications = ({
 
     return (
         <SettingContainer testID='notification_settings'>
+            {!isRegistered &&
+                <NotificationsDisabledNotice
+                    testID='notifications-disabled-notice'
+                />}
             <SettingItem
                 onPress={goToNotificationSettingsMentions}
                 optionName='mentions'

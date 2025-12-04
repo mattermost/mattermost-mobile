@@ -9,7 +9,6 @@ import mockSafeAreaContext from 'react-native-safe-area-context/jest/mock';
 import {v4 as uuidv4} from 'uuid';
 
 import 'react-native-gesture-handler/jestSetup';
-import '@testing-library/react-native/extend-expect';
 
 import {mockApiClient} from './mock_api_client';
 
@@ -17,6 +16,9 @@ import type {RequestOptions} from '@mattermost/react-native-network-client';
 
 // @ts-expect-error Promise does not exists in global
 global.Promise = jest.requireActual('promise');
+
+// eslint-disable-next-line no-process-env
+process.env.EXPO_OS = 'ios';
 
 setGenerator(uuidv4);
 
@@ -30,6 +32,15 @@ jest.mock('expo-application', () => {
         applicationId: 'com.mattermost.rnbeta',
     };
 });
+
+jest.mock('expo-crypto', () => ({
+    randomUUID: jest.fn(() => '12345678-1234-1234-1234-1234567890ab'),
+    getRandomValues: jest.fn((arr: Uint8Array) => {
+        // deterministic non-zero bytes for tests
+        arr.fill(0x7b);
+        return arr;
+    }),
+}));
 
 jest.mock('expo-device', () => {
     return {
@@ -63,12 +74,25 @@ jest.mock('expo-web-browser', () => ({
     })),
 }));
 
+jest.mock('@react-native-camera-roll/camera-roll', () => ({}));
+
+jest.mock('@mattermost/react-native-turbo-log', () => ({
+    getLogPaths: jest.fn(),
+}));
+
 jest.mock('@nozbe/watermelondb/utils/common/randomId/randomId', () => ({}));
+jest.mock('@nozbe/watermelondb/react/withObservables/garbageCollector', () => {
+    return {
+        __esModule: true,
+        default: jest.fn(),
+    };
+});
 
 /* eslint-disable no-console */
 jest.mock('@database/manager');
 jest.doMock('react-native', () => {
     const {
+        AppState: RNAppState,
         Platform,
         StyleSheet,
         requireNativeComponent,
@@ -76,6 +100,7 @@ jest.doMock('react-native', () => {
         InteractionManager: RNInteractionManager,
         NativeModules: RNNativeModules,
         Linking: RNLinking,
+        Keyboard: RNKeyboard,
     } = ReactNative;
 
     const Alert = {
@@ -83,9 +108,39 @@ jest.doMock('react-native', () => {
         alert: jest.fn(),
     };
 
+    const AppState = {
+        ...RNAppState,
+        currentState: 'active',
+        addEventListener: jest.fn(() => ({
+            remove: jest.fn(),
+        })),
+    };
+
+    let activeInteractions = 0;
+    const pendingCallbacks: Array<() => void> = [];
     const InteractionManager = {
         ...RNInteractionManager,
-        runAfterInteractions: jest.fn((cb) => cb()),
+        createInteractionHandle: jest.fn(() => {
+            activeInteractions += 1;
+            return activeInteractions;
+        }),
+        clearInteractionHandle: jest.fn(() => {
+            activeInteractions = Math.max(0, activeInteractions - 1);
+            if (activeInteractions === 0) {
+                // Execute pending callbacks when interactions are cleared
+                while (pendingCallbacks.length > 0) {
+                    const cb = pendingCallbacks.shift();
+                    cb?.();
+                }
+            }
+        }),
+        runAfterInteractions: jest.fn((callback) => {
+            if (activeInteractions === 0) {
+                callback();
+            } else {
+                pendingCallbacks.push(callback); // Delay execution until interactions finish
+            }
+        }),
     };
 
     const NativeModules = {
@@ -153,7 +208,11 @@ jest.doMock('react-native', () => {
             removeThreadNotifications: jest.fn().mockImplementation(),
             removeServerNotifications: jest.fn().mockImplementation(),
 
+            createZipFile: jest.fn(),
+            saveFile: jest.fn(),
+
             unlockOrientation: jest.fn(),
+            getWindowDimensions: jest.fn().mockReturnValue({width: 426, height: 952}),
         },
         APIClient: {
             getConstants: () => ({
@@ -199,6 +258,14 @@ jest.doMock('react-native', () => {
         }),
     };
 
+    const Keyboard = {
+        ...RNKeyboard,
+        dismiss: jest.fn(),
+        addListener: jest.fn(() => ({
+            remove: jest.fn(),
+        })),
+    };
+
     return Object.setPrototypeOf({
         Platform: {
             ...Platform,
@@ -210,13 +277,22 @@ jest.doMock('react-native', () => {
                     minor: 64,
                 },
             },
+            select: jest.fn((dict) => dict.ios || dict.default),
         },
         StyleSheet,
         requireNativeComponent,
         Alert,
+        AppState,
         InteractionManager,
         NativeModules,
         Linking,
+        Keyboard,
+        Animated: {
+            ...ReactNative.Animated,
+            timing: jest.fn(() => ({
+                start: jest.fn((callback) => callback?.({finished: true})),
+            })),
+        },
     }, ReactNative);
 });
 
@@ -235,7 +311,6 @@ jest.mock('react-native-vector-icons', () => {
     };
 });
 
-jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper');
 jest.mock('../node_modules/react-native/Libraries/EventEmitter/NativeEventEmitter');
 
 jest.mock('react-native-localize', () => ({
@@ -305,6 +380,7 @@ jest.mock('react-native-notifications', () => {
         Notifications: {
             registerRemoteNotifications: jest.fn(),
             addEventListener: jest.fn(),
+            isRegisteredForRemoteNotifications: jest.fn(),
             setDeliveredNotifications: jest.fn((notifications) => {
                 deliveredNotifications = notifications;
             }),
@@ -335,6 +411,7 @@ jest.mock('react-native-share', () => ({
 }));
 
 jest.mock('@screens/navigation', () => ({
+    ...jest.requireActual('@screens/navigation'),
     resetToChannel: jest.fn(),
     resetToSelectServer: jest.fn(),
     resetToTeams: jest.fn(),
@@ -352,6 +429,10 @@ jest.mock('@screens/navigation', () => ({
     dismissAllModalsAndPopToRoot: jest.fn(),
     dismissOverlay: jest.fn(() => Promise.resolve()),
     dismissAllOverlays: jest.fn(() => Promise.resolve()),
+    dismissBottomSheet: jest.fn(),
+    openUserProfileModal: jest.fn(),
+    popTo: jest.fn(),
+    bottomSheet: jest.fn(),
 }));
 
 jest.mock('@mattermost/react-native-emm', () => ({
@@ -375,12 +456,12 @@ jest.mock('@react-native-clipboard/clipboard', () => ({}));
 jest.mock('react-native-document-picker', () => ({}));
 
 jest.mock('@mattermost/react-native-network-client', () => ({
-    getOrCreateAPIClient: (serverUrl: string) => ({client: {
+    getOrCreateAPIClient: jest.fn((serverUrl: string) => Promise.resolve({client: {
         baseUrl: serverUrl,
         get: (url: string, options?: RequestOptions) => mockApiClient.get(`${serverUrl}${url}`, options),
         post: (url: string, options?: RequestOptions) => mockApiClient.post(`${serverUrl}${url}`, options),
         invalidate: jest.fn(),
-    }}),
+    }})),
     RetryTypes: {
         EXPONENTIAL_RETRY: 'exponential',
     },
@@ -388,16 +469,25 @@ jest.mock('@mattermost/react-native-network-client', () => ({
 
 jest.mock('react-native-safe-area-context', () => mockSafeAreaContext);
 
-jest.mock('react-native-reanimated', () => require('react-native-reanimated/mock'));
+require('@shopify/flash-list/jestSetup');
+
+require('react-native-reanimated').setUpTests();
 jest.mock('react-native-permissions', () => require('react-native-permissions/mock'));
 
 jest.mock('react-native-haptic-feedback', () => {
-    const RNHF = jest.requireActual('react-native-haptic-feedback');
+    const RNHF = jest.requireActual('react-native-haptic-feedback/src/types');
     return {
         ...RNHF,
         trigger: () => '',
     };
 });
+
+jest.mock('@utils/log', () => ({
+    logError: jest.fn(),
+    logDebug: jest.fn(),
+    logInfo: jest.fn(),
+    logWarning: jest.fn(),
+}));
 
 declare const global: {
     requestAnimationFrame: (callback: () => void) => void;
@@ -411,3 +501,28 @@ global.requestAnimationFrame = (callback) => {
 };
 
 global.performance.now = () => Date.now();
+
+const colors = {
+    reset: '\x1b[0m',
+    yellow: '\x1b[33m',
+    red: '\x1b[31m',
+    cyan: '\x1b[36m',
+    blue: '\x1b[1;34m',
+};
+
+const filterStackTrace = (color: string, prefix: string) => {
+    return (...args: unknown[]) => {
+        const message = args.join(' ');
+        process.stdout.write(`\n${color}${prefix} ${message}${colors.reset}\n`);
+    };
+};
+
+// Override console methods globally
+console.warn = filterStackTrace(colors.yellow, '⚠️  Warning:');
+console.error = filterStackTrace(colors.red, '🚨 Error:');
+console.log = filterStackTrace(colors.cyan, '📢 Log:');
+console.debug = filterStackTrace(colors.blue, '🐞 Debug:');
+
+// Silence warnings about missing EXPO_OS environment variable
+// on tests
+process.env.EXPO_OS = 'ios'; // eslint-disable-line no-process-env

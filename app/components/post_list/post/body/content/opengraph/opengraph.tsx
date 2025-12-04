@@ -2,11 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {useIntl} from 'react-intl';
-import {Alert, Text, TouchableOpacity, View} from 'react-native';
+import {Text, TouchableOpacity, View} from 'react-native';
 
+import {useExternalLinkHandler} from '@hooks/use_external_link_handler';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {tryOpenURL} from '@utils/url';
+
+import ExternalLinkPreview from '../permalink_preview/external_link_preview';
 
 import OpengraphImage from './opengraph_image';
 
@@ -18,6 +19,7 @@ type OpengraphProps = {
     postId: string;
     showLinkPreviews: boolean;
     theme: Theme;
+    isEmbedded?: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -59,9 +61,8 @@ const selectOpenGraphData = (url: string, metadata: PostMetadata | undefined | n
     })?.data;
 };
 
-const Opengraph = ({isReplyPost, layoutWidth, location, metadata, postId, showLinkPreviews, theme}: OpengraphProps) => {
-    const intl = useIntl();
-    const link = metadata?.embeds![0]!.url || '';
+const Opengraph = ({isReplyPost, layoutWidth, location, metadata, postId, showLinkPreviews, theme, isEmbedded}: OpengraphProps) => {
+    const link = metadata?.embeds?.[0]?.url || '';
     const openGraphData = selectOpenGraphData(link, metadata);
 
     if (!showLinkPreviews || !openGraphData) {
@@ -75,22 +76,7 @@ const Opengraph = ({isReplyPost, layoutWidth, location, metadata, postId, showLi
         openGraphData.images.length &&
         metadata?.images);
 
-    const goToLink = () => {
-        const onError = () => {
-            Alert.alert(
-                intl.formatMessage({
-                    id: 'mobile.link.error.title',
-                    defaultMessage: 'Error',
-                }),
-                intl.formatMessage({
-                    id: 'mobile.link.error.text',
-                    defaultMessage: 'Unable to open the link.',
-                }),
-            );
-        };
-
-        tryOpenURL(link, onError);
-    };
+    const goToLink = useExternalLinkHandler(link);
 
     let siteName;
     if (openGraphData.site_name) {
@@ -144,22 +130,28 @@ const Opengraph = ({isReplyPost, layoutWidth, location, metadata, postId, showLi
     }
 
     return (
-        <View style={style.container}>
-            {siteName}
-            {siteTitle}
-            {siteDescription}
-            {hasImage &&
-            <OpengraphImage
-                isReplyPost={isReplyPost}
-                layoutWidth={layoutWidth}
-                location={location}
-                openGraphImages={openGraphData.images as never[]}
-                metadata={metadata}
-                postId={postId}
-                theme={theme}
-            />
-            }
-        </View>
+        <>
+            {isEmbedded ? (
+                <ExternalLinkPreview embeds={metadata?.embeds}/>
+            ) : (
+                <View style={style.container}>
+                    {siteName}
+                    {siteTitle}
+                    {siteDescription}
+                    {hasImage &&
+                    <OpengraphImage
+                        isReplyPost={isReplyPost}
+                        layoutWidth={layoutWidth}
+                        location={location}
+                        openGraphImages={openGraphData.images as never[]}
+                        metadata={metadata}
+                        postId={postId}
+                        theme={theme}
+                    />
+                    }
+                </View>
+            )}
+        </>
     );
 };
 

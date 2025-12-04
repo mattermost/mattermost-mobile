@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Database, Model, Q, Query, Relation} from '@nozbe/watermelondb';
-import {of as of$, map as map$, Observable} from 'rxjs';
+import {combineLatest, of as of$, map as map$, Observable} from 'rxjs';
 import {switchMap, distinctUntilChanged, combineLatestWith} from 'rxjs/operators';
 
 import {Database as DatabaseConstants, Preferences, Screens} from '@constants';
@@ -11,10 +11,10 @@ import {selectDefaultTeam} from '@helpers/api/team';
 import {DEFAULT_LOCALE} from '@i18n';
 
 import {prepareDeleteCategory} from './categories';
-import {prepareDeleteChannel, getDefaultChannelForTeam, observeMyChannelMentionCount} from './channel';
+import {prepareDeleteChannel, getDefaultChannelForTeam, observeMyChannelMentionCount, observeMyChannelUnreads} from './channel';
 import {queryPreferencesByCategoryAndName} from './preference';
 import {patchTeamHistory, getConfig, getTeamHistory, observeCurrentTeamId, getCurrentTeamId} from './system';
-import {observeThreadMentionCount} from './thread';
+import {observeThreadMentionCount, observeUnreadsAndMentions} from './thread';
 import {getCurrentUser} from './user';
 
 import type {MyChannelModel} from '@database/models/server';
@@ -49,7 +49,7 @@ export const addChannelToTeamHistory = async (operator: ServerDataOperator, team
         const {database} = operator;
 
         // Exlude GLOBAL_THREADS from channel check
-        if (channelId !== Screens.GLOBAL_THREADS) {
+        if (channelId !== Screens.GLOBAL_THREADS && channelId !== Screens.GLOBAL_DRAFTS) {
             const myChannel = (await database.get<MyChannelModel>(MY_CHANNEL).find(channelId));
             if (!myChannel) {
                 return [];
@@ -84,6 +84,13 @@ export const getTeamChannelHistory = async (database: Database, teamId: string) 
     } catch {
         return [];
     }
+};
+
+export const observeTeamLastChannelId = (database: Database, teamId: string) => {
+    return database.get<TeamChannelHistoryModel>(TEAM_CHANNEL_HISTORY).query(Q.where('id', teamId), Q.take(1)).observe().pipe(
+        switchMap((result) => (result.length ? result[0].observe() : of$(undefined))),
+        map$((result) => result?.channelIds[0]),
+    );
 };
 
 export const getNthLastChannelFromTeam = async (database: Database, teamId: string, n = 0, ignoreIdForDefault?: string) => {
@@ -227,7 +234,7 @@ export async function deleteMyTeams(operator: ServerDataOperator, myTeams: MyTea
     }
 }
 
-export const prepareDeleteTeam = async (team: TeamModel): Promise<Model[]> => {
+export const prepareDeleteTeam = async (serverUrl: string, team: TeamModel): Promise<Model[]> => {
     try {
         const preparedModels: Model[] = [team.prepareDestroyPermanently()];
 
@@ -272,7 +279,7 @@ export const prepareDeleteTeam = async (team: TeamModel): Promise<Model[]> => {
         if (channels.length) {
             for await (const channel of channels) {
                 try {
-                    const preparedChannel = await prepareDeleteChannel(channel);
+                    const preparedChannel = await prepareDeleteChannel(serverUrl, channel);
                     preparedModels.push(...preparedChannel);
                 } catch {
                     // Record not found, do nothing
@@ -409,11 +416,60 @@ export const observeCurrentTeam = (database: Database) => {
 
 export function observeMentionCount(database: Database, teamId?: string, includeDmGm?: boolean): Observable<number> {
     const channelMentionCountObservable = observeMyChannelMentionCount(database, teamId);
-    const threadMentionCountObservable = observeThreadMentionCount(database, teamId, includeDmGm);
+    const threadMentionCountObservable = observeThreadMentionCount(database, {teamId, includeDmGm});
 
     return channelMentionCountObservable.pipe(
         combineLatestWith(threadMentionCountObservable),
         map$(([ccount, tcount]) => ccount + tcount),
         distinctUntilChanged(),
+    );
+}
+
+export function observeIsTeamUnread(database: Database, teamId: string): Observable<boolean> {
+    const channelUnreads = observeMyChannelUnreads(database, teamId);
+    const threadsUnreadsAndMentions = observeUnreadsAndMentions(database, {teamId});
+
+    return channelUnreads.pipe(
+        combineLatestWith(threadsUnreadsAndMentions),
+        map$(([channels, threads]) => {
+            return channels || threads.unreads;
+        }),
+        distinctUntilChanged(),
+    );
+}
+
+export function observeSortedJoinedTeams(database: Database) {
+    const myTeams = queryMyTeams(database).observe();
+    const teams = queryJoinedTeams(database).observe();
+    const order = queryPreferencesByCategoryAndName(database, Preferences.CATEGORIES.TEAMS_ORDER).
+        observeWithColumns(['value']).pipe(
+            switchMap((p) => (p.length ? of$(p[0].value.split(',')) : of$([]))),
+        );
+
+    function reorderTeamsBySet(joinedTeams: TeamModel[], orderedIds: Set<string>): TeamModel[] {
+        const itemMap = new Map(joinedTeams.map((team) => [team.id, team]));
+        return [...orderedIds].map((id) => itemMap.get(id)).filter(Boolean) as TeamModel[];
+    }
+
+    return combineLatest([myTeams, order, teams]).pipe(
+        map$(([memberships, o, joinedTeams]) => {
+            const sortedTeamIds = new Set(o);
+            const membershipMap = new Map(memberships.map((m) => [m.id, m]));
+
+            if (sortedTeamIds.size) {
+                const mySortedTeams = reorderTeamsBySet(joinedTeams, sortedTeamIds).
+                    filter((team) => membershipMap.has(team.id));
+
+                const extraTeams = joinedTeams.
+                    filter((t) => t.id && !sortedTeamIds.has(t.id) && membershipMap.has(t.id)).
+                    sort((a, b) => a.displayName.toLocaleLowerCase().localeCompare(b.displayName.toLocaleLowerCase()));
+
+                return [...mySortedTeams, ...extraTeams];
+            }
+
+            return joinedTeams.
+                filter((t) => t.id && membershipMap.has(t.id)).
+                sort((a, b) => a.displayName.toLocaleLowerCase().localeCompare(b.displayName.toLocaleLowerCase()));
+        }),
     );
 }

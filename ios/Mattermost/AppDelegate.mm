@@ -7,6 +7,7 @@
 #import <RNKeychain/RNKeychainManager.h>
 #import <ReactNativeNavigation/ReactNativeNavigation.h>
 #import <UserNotifications/UserNotifications.h>
+#import <TurboLogIOSNative/TurboLog.h>
 
 #import "Mattermost-Swift.h"
 #import <os/log.h>
@@ -28,6 +29,19 @@ NSString* const NOTIFICATION_TEST_ACTION = @"test";
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+  NSString *appGroupId = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"AppGroupIdentifier"];
+  NSURL *containerURL = [[NSFileManager defaultManager] containerURLForSecurityApplicationGroupIdentifier:appGroupId];
+  containerURL = [containerURL URLByAppendingPathComponent:@"Logs"];
+  NSError *error = nil;
+  [TurboLog configureWithDailyRolling:FALSE maximumFileSize:1024*1024 maximumNumberOfFiles:2 logsDirectory:containerURL.path logsFilename:@"MMLogs" error:&error];
+  if (error) {
+      NSLog(@"Failed to configure TurboLog: %@", error.localizedDescription);
+    }
+  [TurboLog writeWithLogLevel:TurboLogLevelInfo message:@[@"Configured turbolog"]];
+
+  // Configure Gekidou to use TurboLog via wrapper
+  [[GekidouWrapper default] configureTurboLogForGekidou];
+
   OrientationManager.shared.delegate = self;
   
   // Clear keychain on first run in case of reinstallation
@@ -35,9 +49,9 @@ NSString* const NOTIFICATION_TEST_ACTION = @"test";
 
     RNKeychainManager *keychain = [[RNKeychainManager alloc] init];
     NSArray<NSString*> *servers = [keychain getAllServersForInternetPasswords];
-    NSLog(@"Servers %@", servers);
+    [TurboLog writeWithLogLevel:TurboLogLevelInfo message:@[@"Servers", servers]];
     for (NSString *server in servers) {
-      [keychain deleteCredentialsForServer:server];
+      [keychain deleteCredentialsForServer:server withOptions:nil];
     }
 
     [[NSUserDefaults standardUserDefaults] setValue:@YES forKey:@"FirstRun"];
@@ -101,11 +115,21 @@ NSString* const NOTIFICATION_TEST_ACTION = @"test";
   if (state != UIApplicationStateActive) {
     [[GekidouWrapper default] fetchDataForPushNotification:userInfo withContentHandler:^(NSData * _Nullable data) {
       NSMutableDictionary *notification = [userInfo mutableCopy];
-      NSError *jsonError;
+      if (notification == nil) {
+        [TurboLog writeWithLogLevel:TurboLogLevelError message:@[@"Mattermost AppDelegate: Failed to copy userInfo dictionary"]];
+        completionHandler(UIBackgroundFetchResultFailed);
+        return;
+      }
+
       if (data != nil) {
+        NSError *jsonError = nil;
         id json = [NSJSONSerialization JSONObjectWithData:data options:NULL error:&jsonError];
-        if (!jsonError) {
+        if (jsonError) {
+          [TurboLog writeWithLogLevel:TurboLogLevelError message:@[@"Mattermost AppDelegate: JSON serialization error", jsonError.localizedDescription]];
+        } else if (json != nil) {
           [notification setObject:json forKey:@"data"];
+        } else {
+          [TurboLog writeWithLogLevel:TurboLogLevelWarning message:@[@"Mattermost AppDelegate: JSON serialization returned nil without error"]];
         }
       }
       [RNNotifications didReceiveBackgroundNotification:notification withCompletionHandler:completionHandler];

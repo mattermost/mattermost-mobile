@@ -9,11 +9,11 @@ import ClientTracking from './tracking';
 import type {APIClientInterface} from '@mattermost/react-native-network-client';
 
 export default class ClientBase extends ClientTracking {
-    constructor(apiClient: APIClientInterface, serverUrl: string, bearerToken?: string, csrfToken?: string) {
+    constructor(apiClient: APIClientInterface, serverUrl: string, bearerToken?: string, csrfToken?: string, preauthSecret?: string) {
         super(apiClient);
 
-        if (bearerToken) {
-            this.setBearerToken(bearerToken);
+        if (bearerToken || preauthSecret) {
+            this.setClientCredentials(bearerToken || '', preauthSecret || '');
         }
         if (csrfToken) {
             this.setCSRFToken(csrfToken);
@@ -171,6 +171,10 @@ export default class ClientBase extends ClientTracking {
         return `${this.urlVersion}/redirect_location`;
     }
 
+    getTeamAndDirectChannelScheduledPostsRoute() {
+        return `${this.getPostsRoute()}/scheduled`;
+    }
+
     getThreadsRoute(userId: string, teamId: string): string {
         return `${this.getUserRoute(userId)}/teams/${teamId}/threads`;
     }
@@ -197,6 +201,18 @@ export default class ClientBase extends ClientTracking {
 
     getPerformanceRoute() {
         return `${this.urlVersion}/client_perf`;
+    }
+
+    getCustomProfileAttributesRoute() {
+        return `${this.urlVersion}/custom_profile_attributes`;
+    }
+
+    getScheduledPostRoute() {
+        return `${this.getPostsRoute()}/schedule`;
+    }
+
+    getUserCustomProfileAttributesRoute(userId: string) {
+        return `${this.getUsersRoute()}/${userId}/custom_profile_attributes`;
     }
 
     doFetch = async (url: string, options: ClientOptions, returnDataOnly = true) => {

@@ -53,14 +53,20 @@ exports[`ThreadOverview should match snapshot when post is saved and has replies
       delayLongPress={600}
       enabled={true}
       exclusive={true}
-      handlerTag={1}
+      handlerTag={-1}
       handlerType="NativeViewGestureHandler"
       innerRef={null}
-      onGestureEvent={[Function]}
       onGestureHandlerEvent={[Function]}
       onGestureHandlerStateChange={[Function]}
-      onHandlerStateChange={[Function]}
-      rippleColor={0}
+      rippleColor="transparent"
+      style={
+        [
+          undefined,
+          {
+            "cursor": undefined,
+          },
+        ]
+      }
       testID="thread-overview.save.button"
       touchSoundDisabled={false}
     >
@@ -86,14 +92,20 @@ exports[`ThreadOverview should match snapshot when post is saved and has replies
       delayLongPress={600}
       enabled={true}
       exclusive={true}
-      handlerTag={2}
+      handlerTag={-1}
       handlerType="NativeViewGestureHandler"
       innerRef={null}
-      onGestureEvent={[Function]}
       onGestureHandlerEvent={[Function]}
       onGestureHandlerStateChange={[Function]}
-      onHandlerStateChange={[Function]}
-      rippleColor={0}
+      rippleColor="transparent"
+      style={
+        [
+          undefined,
+          {
+            "cursor": undefined,
+          },
+        ]
+      }
       testID="thread-overview.post_options.button"
       touchSoundDisabled={false}
     >

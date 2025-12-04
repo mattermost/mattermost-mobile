@@ -7,16 +7,14 @@ import {type StyleProp, Text, type TextStyle, View} from 'react-native';
 import Markdown from '@components/markdown';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import type {MarkdownBlockStyles, MarkdownTextStyles} from '@typings/global/markdown';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     baseTextStyle: StyleProp<TextStyle>;
-    blockStyles?: MarkdownBlockStyles;
     channelId: string;
     fields: MessageAttachmentField[];
-    location: string;
+    location: AvailableScreens;
     metadata?: PostMetadata | null;
-    textStyles?: MarkdownTextStyles;
     theme: Theme;
 }
 
@@ -46,7 +44,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const AttachmentFields = ({baseTextStyle, blockStyles, channelId, fields, location, metadata, textStyles, theme}: Props) => {
+const AttachmentFields = ({baseTextStyle, channelId, fields, location, metadata, theme}: Props) => {
     const style = getStyleSheet(theme);
     const fieldTables = [];
 
@@ -95,13 +93,11 @@ const AttachmentFields = ({baseTextStyle, blockStyles, channelId, fields, locati
                     <Markdown
                         baseTextStyle={baseTextStyle}
                         channelId={channelId}
-                        textStyles={textStyles}
-                        blockStyles={blockStyles}
                         disableGallery={true}
                         imagesMetadata={metadata?.images}
                         location={location}
                         theme={theme}
-                        value={(field.value || '')}
+                        value={field.value || ''}
                     />
                 </View>
             </View>,

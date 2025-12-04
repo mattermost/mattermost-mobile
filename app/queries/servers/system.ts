@@ -1,7 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable max-lines */
+
 import {Database, Q} from '@nozbe/watermelondb';
+import {nativeApplicationVersion, nativeBuildVersion} from 'expo-application';
+import {Platform} from 'react-native';
 import {of as of$, Observable, combineLatest} from 'rxjs';
 import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
@@ -137,17 +141,23 @@ export const getCommonSystemValues = async (serverDatabase: Database) => {
     };
 };
 
-const fromModelToClientConfig = (list: ConfigModel[]) => {
+const fromModelToClientConfig = <T = ClientConfig>(list: ConfigModel[]) => {
     const config: {[key: string]: any} = {};
     list.forEach((v) => {
         config[v.id] = v.value;
     });
-    return config as ClientConfig;
+    return config as T;
 };
 
 export const getConfig = async (database: Database) => {
     const configList = await database.get<ConfigModel>(CONFIG).query().fetch();
     return fromModelToClientConfig(configList);
+};
+
+export const getSecurityConfig = async (database: Database) => {
+    const configList = await database.get<ConfigModel>(CONFIG).query(
+        Q.where('id', Q.oneOf(['MobileEnableBiometrics', 'MobileJailbreakProtection', 'MobilePreventScreenCapture', 'SiteName']))).fetch();
+    return fromModelToClientConfig<SecurityClientConfig>(configList);
 };
 
 export const queryConfigValue = (database: Database, key: keyof ClientConfig) => {
@@ -205,7 +215,7 @@ export const getIsDataRetentionEnabled = async (database: Database) => {
 
 export const observeConfig = (database: Database): Observable<ClientConfig | undefined> => {
     return database.get<ConfigModel>(CONFIG).query().observeWithColumns(['value']).pipe(
-        switchMap((result) => of$(fromModelToClientConfig(result))),
+        switchMap((result) => of$(fromModelToClientConfig<ClientConfig>(result))),
     );
 };
 
@@ -533,28 +543,6 @@ export const observeLastDismissedAnnouncement = (database: Database) => {
     );
 };
 
-export const observeCanUploadFiles = (database: Database) => {
-    const enableFileAttachments = observeConfigBooleanValue(database, 'EnableFileAttachments', true);
-    const enableMobileFileUpload = observeConfigBooleanValue(database, 'EnableMobileFileUpload', true);
-    const license = observeLicense(database);
-
-    return combineLatest([enableFileAttachments, enableMobileFileUpload, license]).pipe(
-        switchMap(([efa, emfu, l]) => of$(
-            efa &&
-                (l?.IsLicensed !== 'true' || l?.Compliance !== 'true' || emfu),
-        )),
-    );
-};
-
-export const observeCanDownloadFiles = (database: Database) => {
-    const enableMobileFileDownload = observeConfigBooleanValue(database, 'EnableMobileFileDownload', true);
-    const license = observeLicense(database);
-
-    return combineLatest([enableMobileFileDownload, license]).pipe(
-        switchMap(([emfd, l]) => of$((l?.IsLicensed !== 'true' || l?.Compliance !== 'true' || emfd))),
-    );
-};
-
 export const observeLastServerVersionCheck = (database: Database) => {
     return querySystemValue(database, SYSTEM_IDENTIFIERS.LAST_SERVER_VERSION_CHECK).observeWithColumns(['value']).pipe(
         switchMap((result) => (result.length ? result[0].observe() : of$({value: 0}))),
@@ -618,3 +606,48 @@ const observeIsSelfHosterStarter = (database: Database) => {
     );
 };
 
+export const observeReportAProblemMetadata = (database: Database) => {
+    const currentUserId = observeCurrentUserId(database);
+    const currentTeamId = observeCurrentTeamId(database);
+    const serverVersion = observeConfigValue(database, 'Version');
+    const buildNumber = observeConfigValue(database, 'BuildNumber');
+
+    return combineLatest([
+        currentUserId,
+        currentTeamId,
+        serverVersion,
+        buildNumber,
+    ]).pipe(
+        switchMap(([userId, teamId, version = 'Unknown', build = 'Unknown']) => of$({
+            currentUserId: userId,
+            currentTeamId: teamId,
+            serverVersion: `${version} (Build ${build})`,
+            appVersion: `${nativeApplicationVersion} (Build ${nativeBuildVersion})`,
+            appPlatform: Platform.OS,
+        })),
+    );
+};
+
+export const observeIsMinimumLicenseTier = (database: Database, shortSku: string) => {
+    const license = observeLicense(database);
+    const isEnterpriseReady = observeConfigBooleanValue(database, 'BuildEnterpriseReady', false);
+
+    return combineLatest([license, isEnterpriseReady]).pipe(
+        switchMap(([lic, isEnt]) => {
+            if (!shortSku) {
+                return of$(false);
+            }
+            const isLicensed = lic?.IsLicensed === 'true';
+            if (!isEnt || !isLicensed) {
+                return of$(false);
+            }
+
+            const tier = License.LicenseSkuTier[lic.SkuShortName];
+            const targetTier = License.LicenseSkuTier[shortSku] || 0;
+            const isMinimumTier = Boolean(tier) && Boolean(targetTier) && isEnt && isLicensed && tier >= targetTier;
+
+            return of$(isMinimumTier);
+        }),
+        distinctUntilChanged(),
+    );
+};

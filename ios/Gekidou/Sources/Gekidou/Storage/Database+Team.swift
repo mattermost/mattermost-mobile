@@ -59,10 +59,17 @@ extension Database {
         if let db = try? getDatabaseForServer(serverUrl) {
             let idCol = Expression<String>("id")
             if let myTeams = try? db.prepare(myTeamTable.select(idCol)) {
-                return myTeams.map { try! $0.get(idCol) }
+                return myTeams.compactMap { row in
+                    do {
+                        return try row.get(idCol)
+                    } catch {
+                        GekidouLogger.shared.log(.error, "Gekidou Database: Failed to get team ID from row for server %{public}@ - %{public}@", serverUrl, String(describing: error))
+                        return nil
+                    }
+                }
             }
         }
-        
+
         return nil
     }
     

@@ -1,0 +1,22 @@
+diff --git a/node_modules/@react-native-community/cli-platform-apple/build/commands/runCommand/getBuildSettings.js b/node_modules/@react-native-community/cli-platform-apple/build/commands/runCommand/getBuildSettings.js
+index 8e60c59..bc201d2 100644
+--- a/node_modules/@react-native-community/cli-platform-apple/build/commands/runCommand/getBuildSettings.js
++++ b/node_modules/@react-native-community/cli-platform-apple/build/commands/runCommand/getBuildSettings.js
+@@ -31,10 +31,16 @@ async function getBuildSettings(xcodeProject, mode, buildOutput, scheme, target)
+     encoding: 'utf8'
+   });
+   const settings = JSON.parse(buildSettings);
++    const firstIndexForAppTarget = Math.max(
++      0,
++      settings.findIndex(({
++        buildSettings: bs
++      }) => bs.WRAPPER_EXTENSION === 'app')
++  );
+   const targets = settings.map(({
+     target: settingsTarget
+   }) => settingsTarget);
+-  let selectedTarget = targets[0];
++  let selectedTarget = targets[firstIndexForAppTarget];
+   if (target) {
+     if (!targets.includes(target)) {
+       _cliTools().logger.info(`Target ${_chalk().default.bold(target)} not found for scheme ${_chalk().default.bold(scheme)}, automatically selected target ${_chalk().default.bold(selectedTarget)}`);

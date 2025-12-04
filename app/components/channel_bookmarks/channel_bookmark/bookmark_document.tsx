@@ -2,12 +2,13 @@
 // See LICENSE.txt for license information.
 
 import {Button} from '@rneui/base';
-import React, {useCallback, useRef, useState} from 'react';
+import React, {useCallback, useRef} from 'react';
 import {StyleSheet, View} from 'react-native';
 
 import Document, {type DocumentRef} from '@components/document';
 import ProgressBar from '@components/progress_bar';
 import {useTheme} from '@context/theme';
+import {useDownloadFileAndPreview} from '@hooks/files';
 
 import BookmarkDetails from './bookmark_details';
 
@@ -17,6 +18,7 @@ import type FileModel from '@typings/database/models/servers/file';
 type Props = {
     bookmark: ChannelBookmarkModel;
     canDownloadFiles: boolean;
+    enableSecureFilePreview: boolean;
     file: FileModel;
     onLongPress: () => void;
 }
@@ -32,10 +34,10 @@ const styles = StyleSheet.create({
     },
 });
 
-const BookmarkDocument = ({bookmark, canDownloadFiles, file, onLongPress}: Props) => {
-    const [progress, setProgress] = useState(0);
+const BookmarkDocument = ({bookmark, canDownloadFiles, enableSecureFilePreview, file, onLongPress}: Props) => {
     const document = useRef<DocumentRef>(null);
     const theme = useTheme();
+    const {progress, toggleDownloadAndPreview} = useDownloadFileAndPreview(enableSecureFilePreview);
 
     const handlePress = useCallback(async () => {
         if (document.current) {
@@ -46,8 +48,9 @@ const BookmarkDocument = ({bookmark, canDownloadFiles, file, onLongPress}: Props
     return (
         <Document
             canDownloadFiles={canDownloadFiles}
+            enableSecureFilePreview={enableSecureFilePreview}
             file={file.toFileInfo(bookmark.ownerId)}
-            onProgress={setProgress}
+            downloadAndPreviewFile={toggleDownloadAndPreview}
             ref={document}
         >
             <Button

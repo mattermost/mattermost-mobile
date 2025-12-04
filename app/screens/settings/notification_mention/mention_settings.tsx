@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useState} from 'react';
-import {useIntl} from 'react-intl';
-import {Text} from 'react-native';
+import React, {useCallback, useState} from 'react';
+import {defineMessage, useIntl} from 'react-intl';
+import {Text, View} from 'react-native';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 import {updateMe} from '@actions/remote/user';
-import FloatingTextChipsInput from '@components/floating_text_chips_input';
+import FloatingTextChipsInput from '@components/floating_input/floating_text_chips_input';
 import SettingBlock from '@components/settings/block';
 import SettingOption from '@components/settings/option';
 import SettingSeparator from '@components/settings/separator';
@@ -14,38 +15,32 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useBackNavigation from '@hooks/navigate_back';
-import {t} from '@i18n';
 import {popTopScreen} from '@screens/navigation';
 import ReplySettings from '@screens/settings/notification_mention/reply_settings';
 import {areBothStringArraysEqual} from '@utils/helpers';
-import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getNotificationProps} from '@utils/user';
 
 import type UserModel from '@typings/database/models/servers/user';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
-const mentionHeaderText = {
-    id: t('notification_settings.mentions.keywords_mention'),
+const mentionHeaderText = defineMessage({
+    id: 'notification_settings.mentions.keywords_mention',
     defaultMessage: 'Keywords that trigger mentions',
-};
+});
 
 const COMMA_KEY = ',';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
-        input: {
-            color: theme.centerChannelColor,
-            paddingHorizontal: 15,
-            ...typography('Body', 100, 'Regular'),
-        },
+        flex: {flex: 1},
         containerStyle: {
+            flexDirection: 'row',
             marginTop: 30,
             alignSelf: 'center',
-            paddingHorizontal: 18.5,
         },
         keywordLabelStyle: {
-            paddingHorizontal: 18.5,
             marginTop: 4,
             color: changeOpacity(theme.centerChannelColor, 0.64),
             ...typography('Body', 75, 'Regular'),
@@ -116,7 +111,7 @@ export function getUniqueKeywordsFromInput(inputText: string, keywords: string[]
 
 const MentionSettings = ({componentId, currentUser, isCRTEnabled}: Props) => {
     const serverUrl = useServerUrl();
-    const mentionProps = useMemo(() => getMentionProps(currentUser), []);
+    const [mentionProps] = useState(() => getMentionProps(currentUser));
     const notifyProps = mentionProps.notifyProps;
 
     const [mentionKeywords, setMentionKeywords] = useState(mentionProps.mentionKeywords);
@@ -129,8 +124,6 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const intl = useIntl();
-
-    const close = () => popTopScreen(componentId);
 
     const saveMention = useCallback(() => {
         if (!currentUser) {
@@ -164,17 +157,10 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: Props) => {
             updateMe(serverUrl, {notify_props});
         }
 
-        close();
+        popTopScreen(componentId);
     }, [
-        channelMentionOn,
-        firstNameMentionOn,
-        usernameMentionOn,
-        mentionKeywords,
-        notifyProps,
-        mentionProps,
-        replyNotificationType,
-        serverUrl,
-        currentUser,
+        componentId, currentUser, channelMentionOn, replyNotificationType, firstNameMentionOn,
+        usernameMentionOn, mentionKeywords, mentionProps, notifyProps, serverUrl,
     ]);
 
     const handleFirstNameToggle = useCallback(() => {
@@ -226,7 +212,16 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: Props) => {
     useAndroidHardwareBackHandler(componentId, saveMention);
 
     return (
-        <>
+        <KeyboardAwareScrollView
+            bounces={false}
+            enableAutomaticScroll={true}
+            enableOnAndroid={true}
+            keyboardShouldPersistTaps='handled'
+            keyboardDismissMode='none'
+            scrollToOverflowEnabled={true}
+            noPaddingBottomOnAndroid={true}
+            style={styles.flex}
+        >
             <SettingBlock
                 headerText={mentionHeaderText}
             >
@@ -263,29 +258,23 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: Props) => {
                     type='toggle'
                 />
                 <SettingSeparator/>
-                <FloatingTextChipsInput
-                    allowFontScaling={true}
-                    autoCapitalize='none'
-                    autoCorrect={false}
-                    blurOnSubmit={true}
-                    containerStyle={styles.containerStyle}
-                    keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                    label={intl.formatMessage({
-                        id: 'notification_settings.mentions.keywords',
-                        defaultMessage: 'Enter other keywords',
-                    })}
-                    onTextInputChange={handleMentionKeywordsInputChanged}
-                    onChipRemove={handleMentionKeywordRemoved}
-                    returnKeyType='done'
-                    testID='mention_notification_settings.keywords.input'
-                    textInputStyle={styles.input}
-                    textAlignVertical='center'
-                    theme={theme}
-                    underlineColorAndroid='transparent'
-                    chipsValues={mentionKeywords}
-                    textInputValue={mentionKeywordsInput}
-                    onTextInputSubmitted={handleMentionKeywordEntered}
-                />
+                <View style={styles.containerStyle}>
+                    <FloatingTextChipsInput
+                        blurOnSubmit={true}
+                        label={intl.formatMessage({
+                            id: 'notification_settings.mentions.keywords',
+                            defaultMessage: 'Enter other keywords',
+                        })}
+                        onTextInputChange={handleMentionKeywordsInputChanged}
+                        onChipRemove={handleMentionKeywordRemoved}
+                        returnKeyType='done'
+                        testID='mention_notification_settings.keywords.input'
+                        theme={theme}
+                        chipsValues={mentionKeywords}
+                        textInputValue={mentionKeywordsInput}
+                        onTextInputSubmitted={handleMentionKeywordEntered}
+                    />
+                </View>
                 <Text
                     style={styles.keywordLabelStyle}
                     testID='mention_notification_settings.keywords.input.description'
@@ -303,7 +292,7 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: Props) => {
                     setReplyNotificationType={setReplyNotificationType}
                 />
             )}
-        </>
+        </KeyboardAwareScrollView>
     );
 };
 

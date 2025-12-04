@@ -2,19 +2,29 @@
 // See LICENSE.txt for license information.
 
 import moment from 'moment-timezone';
+import {defineMessages, type IntlShape} from 'react-intl';
 import {Alert} from 'react-native';
 
 import {General, Permissions, Preferences} from '@constants';
 import {Ringtone} from '@constants/calls';
 import {CustomStatusDurationEnum} from '@constants/custom_status';
-import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
-import {toTitleCase} from '@utils/helpers';
+import {DEFAULT_LOCALE, getLocalizedMessage} from '@i18n';
+import {safeParseJSON, toTitleCase} from '@utils/helpers';
+import {logError} from '@utils/log';
 
+import type {CustomProfileFieldModel, CustomProfileAttributeModel} from '@database/models/server';
+import type {CustomAttribute, CustomAttributeSet} from '@typings/api/custom_profile_attributes';
 import type UserModel from '@typings/database/models/servers/user';
-import type {IntlShape} from 'react-intl';
+
+const displayUsernameMessages = defineMessages({
+    someone: {
+        id: 'channel_loader.someone',
+        defaultMessage: 'Someone',
+    },
+});
 
 export function displayUsername(user?: UserProfile | UserModel | null, locale?: string, teammateDisplayNameSetting?: string, useFallbackUsername = true) {
-    let name = useFallbackUsername ? getLocalizedMessage(locale || DEFAULT_LOCALE, t('channel_loader.someone'), 'Someone') : '';
+    let name = useFallbackUsername ? getLocalizedMessage(locale || DEFAULT_LOCALE, displayUsernameMessages.someone.id, displayUsernameMessages.someone.defaultMessage) : '';
 
     if (user) {
         if (teammateDisplayNameSetting === Preferences.DISPLAY_PREFER_NICKNAME) {
@@ -188,24 +198,35 @@ export function isCustomStatusExpired(user?: UserModel | UserProfile) {
 }
 
 export function confirmOutOfOfficeDisabled(intl: IntlShape, status: string, updateStatus: (status: string) => void) {
-    const userStatusId = 'modal.manual_status.auto_responder.message_' + status;
-    t('modal.manual_status.auto_responder.message_');
-    t('modal.manual_status.auto_responder.message_away');
-    t('modal.manual_status.auto_responder.message_dnd');
-    t('modal.manual_status.auto_responder.message_offline');
-    t('modal.manual_status.auto_responder.message_online');
-
     let translatedStatus;
-    if (status === 'dnd') {
-        translatedStatus = intl.formatMessage({
-            id: 'mobile.set_status.dnd',
-            defaultMessage: 'Do Not Disturb',
-        });
-    } else {
-        translatedStatus = intl.formatMessage({
-            id: `mobile.set_status.${status}`,
-            defaultMessage: toTitleCase(status),
-        });
+    switch (status) {
+        case General.DND:
+            translatedStatus = intl.formatMessage({
+                id: 'mobile.set_status.dnd',
+                defaultMessage: 'Do Not Disturb',
+            });
+            break;
+        case General.AWAY:
+            translatedStatus = intl.formatMessage({
+                id: 'mobile.set_status.away',
+                defaultMessage: 'Away',
+            });
+            break;
+        case General.OFFLINE:
+            translatedStatus = intl.formatMessage({
+                id: 'mobile.set_status.offline',
+                defaultMessage: 'Offline',
+            });
+            break;
+        case General.ONLINE:
+            translatedStatus = intl.formatMessage({
+                id: 'mobile.set_status.online',
+                defaultMessage: 'Online',
+            });
+            break;
+        default:
+            translatedStatus = toTitleCase(status);
+            break;
     }
 
     Alert.alert(
@@ -214,7 +235,7 @@ export function confirmOutOfOfficeDisabled(intl: IntlShape, status: string, upda
             defaultMessage: 'Disable "Out Of Office"?',
         }),
         intl.formatMessage({
-            id: userStatusId,
+            id: 'modal.manual_status.auto_responder.message_',
             defaultMessage: 'Would you like to switch your status to "{status}" and disable Automatic Replies?',
         }, {status: translatedStatus}),
         [{
@@ -392,4 +413,318 @@ export const getLastPictureUpdate = (user: UserModel | UserProfile) => {
     }
 
     return user.is_bot ? user.bot_last_icon_update : user.last_picture_update || 0;
+};
+
+/**
+ * Sorts custom profile attributes by their sort_order property, falling back to name comparison.
+ * Attributes with undefined sort_order are placed last.
+ * @param a First CustomAttribute to compare
+ * @param b Second CustomAttribute to compare
+ * @returns Negative if a comes first, positive if b comes first, 0 if equal
+ */
+export const sortCustomProfileAttributes = (a: CustomAttribute, b: CustomAttribute): number => {
+    const orderA = a.sort_order ?? Number.MAX_SAFE_INTEGER;
+    const orderB = b.sort_order ?? Number.MAX_SAFE_INTEGER;
+    return orderA === orderB ? a.name.localeCompare(b.name) : orderA - orderB;
+};
+
+/**
+ * Converts an array of custom profile attributes to a map of attributes by their id.
+ * @param attributesToConvert - The array of custom profile attributes to convert
+ * @returns A map of attributes by their id
+ */
+export const convertToAttributesMap = (attributesToConvert: CustomAttributeSet | CustomAttribute[]): CustomAttributeSet => {
+    if (!Array.isArray(attributesToConvert)) {
+        return attributesToConvert as CustomAttributeSet;
+    }
+    const attributesMap: CustomAttributeSet = {};
+    attributesToConvert.forEach((attr) => {
+        attributesMap[attr.id] = attr;
+    });
+    return attributesMap;
+};
+
+export const getDisplayType = (field: CustomProfileFieldModel): string => {
+    if (field.type === 'text' && field.attrs?.value_type !== undefined && field.attrs.value_type !== '') {
+        return field.attrs.value_type;
+    }
+    return field.type;
+};
+
+/**
+ * Get the options from a select or multiselect field as a map of option IDs to option names
+ * @param field - The custom profile field
+ * @returns A record where keys are option IDs and values are option names
+ */
+export const getFieldOptions = (field: CustomProfileFieldModel): Record<string, string> => {
+    if (!field.attrs || (field.type !== 'select' && field.type !== 'multiselect')) {
+        return {};
+    }
+
+    const options = field.attrs.options as Array<{id: string; name: string}> | undefined;
+    if (!options || !Array.isArray(options)) {
+        return {};
+    }
+
+    const optionsMap: Record<string, string> = {};
+    options.forEach((option) => {
+        if (option.id && option.name) {
+            optionsMap[option.id] = option.name;
+        }
+    });
+
+    return optionsMap;
+};
+
+/**
+ * Convert option IDs to display values for select/multiselect fields
+ * @param value - The stored value (option ID or comma-separated IDs)
+ * @param fieldType - The field type ('select' or 'multiselect')
+ * @param optionsMap - Map of option IDs to option names
+ * @returns The display value with option names
+ */
+const convertOptionsToDisplayValue = (value: string, fieldType: string, optionsMap: Record<string, string>): string => {
+    if (!value || !optionsMap) {
+        return value;
+    }
+
+    if (fieldType === 'select') {
+        // Single select: just return the option name for the ID
+        return optionsMap[value] || value;
+    }
+
+    if (fieldType === 'multiselect') {
+        // Multi-select: handle comma-separated IDs or JSON array
+        let optionIds: string[] = [];
+
+        // Try parsing as JSON array first
+        try {
+            const parsed = JSON.parse(value);
+            if (Array.isArray(parsed)) {
+                optionIds = parsed;
+            } else {
+                // Fallback to comma-separated string
+                optionIds = value.split(',').map((id) => id.trim());
+            }
+        } catch {
+            // Fallback to comma-separated string
+            optionIds = value.split(',').map((id) => id.trim());
+        }
+
+        // Convert IDs to names and filter out empty values
+        const optionNames = optionIds.
+            map((id) => optionsMap[id] || id).
+            filter((name) => name.trim() !== '');
+
+        return optionNames.join(', ');
+    }
+
+    return value;
+};
+
+/**
+ * Convert custom profile attributes to the UI-ready CustomAttribute format
+ * @param attributes - Array of custom profile attribute models
+ * @param fields - Array of custom profile field models
+ * @param sortFn - Optional sort function
+ * @returns Array of formatted CustomAttribute objects
+ */
+export const convertProfileAttributesToCustomAttributes = (
+    attributes: CustomProfileAttributeModel[] | null | undefined,
+    fields: CustomProfileFieldModel[] | null | undefined,
+    sortFn?: (a: CustomAttribute, b: CustomAttribute) => number,
+    useDisplayType: boolean = false,
+): CustomAttribute[] => {
+    if (!attributes?.length) {
+        return [];
+    }
+
+    const fieldsMap = new Map();
+    const fieldOptionsMap = new Map<string, Record<string, string>>();
+    fields?.forEach((field) => {
+        const customType = useDisplayType ? getDisplayType(field) : field.type;
+        fieldsMap.set(field.id, {
+            name: field.name,
+            type: customType,
+            sort_order: field.attrs?.sort_order ?? Number.MAX_SAFE_INTEGER,
+            originalField: field,
+        });
+
+        // Store options map for select/multiselect fields
+        if (field.type === 'select' || field.type === 'multiselect') {
+            fieldOptionsMap.set(field.id, getFieldOptions(field));
+        }
+    });
+
+    const customAttrs = attributes.map((attr) => {
+        const field = fieldsMap.get(attr.fieldId);
+        let displayValue = attr.value;
+
+        // Convert option IDs to names for select/multiselect fields
+        if (field && (field.type === 'select' || field.type === 'multiselect')) {
+            const optionsMap = fieldOptionsMap.get(attr.fieldId);
+
+            if (optionsMap && Object.keys(optionsMap).length > 0) {
+                displayValue = convertOptionsToDisplayValue(attr.value, field.type, optionsMap);
+            }
+        }
+
+        return ({
+            id: attr.fieldId,
+            name: field?.name || attr.fieldId,
+            type: field?.type || 'text',
+            value: displayValue,
+            sort_order: field?.sort_order ?? Number.MAX_SAFE_INTEGER,
+        });
+    });
+
+    // Sort if a sort function is provided
+    return sortFn ? customAttrs.sort(sortFn) : customAttrs;
+};
+
+/**
+ * Convert display values back to option IDs for select/multiselect fields
+ * @param displayValue - The display value (option names)
+ * @param fieldType - The field type ('select' or 'multiselect')
+ * @param optionsMap - Map of option IDs to option names
+ * @returns The option IDs as string (select) or JSON array string (multiselect)
+ */
+export const convertDisplayValueToOptionIds = (displayValue: string, fieldType: string, optionsMap: Record<string, string>): string => {
+    if (!displayValue || !optionsMap) {
+        return displayValue;
+    }
+
+    // Create reverse map (option names to IDs)
+    const reverseOptionsMap: Record<string, string> = {};
+    Object.entries(optionsMap).forEach(([id, name]) => {
+        reverseOptionsMap[name] = id;
+    });
+
+    if (fieldType === 'select') {
+        // Single select: return the option ID for the name
+        return reverseOptionsMap[displayValue] || displayValue;
+    }
+
+    if (fieldType === 'multiselect') {
+        // Multi-select: split display names and convert to IDs
+        const optionNames = displayValue.split(',').map((name) => name.trim()).filter((name) => name !== '');
+        const optionIds = optionNames.map((name) => reverseOptionsMap[name] || name);
+        return JSON.stringify(optionIds);
+    }
+
+    return displayValue;
+};
+
+/**
+ * Get selected option IDs from a custom attribute value
+ * @param value - The stored value (option ID or JSON array string)
+ * @param fieldType - The field type ('select' or 'multiselect')
+ * @returns Array of selected option IDs
+ */
+export const getSelectedOptionIds = (value: string, fieldType: string): string[] => {
+    if (!value) {
+        return [];
+    }
+
+    if (fieldType === 'select') {
+        return [value];
+    }
+
+    if (fieldType === 'multiselect') {
+        try {
+            const parsed: unknown = safeParseJSON(value);
+            if (Array.isArray(parsed)) {
+                return parsed;
+            }
+
+            // Fallback to comma-separated string
+            return value.split(',').map((id) => id.trim()).filter((id) => id !== '');
+        } catch (error) {
+            return value.split(',').map((id) => id.trim()).filter((id) => id !== '');
+        }
+    }
+
+    return [];
+};
+
+/**
+ * Format field options for use with AutocompleteSelector component
+ * @param field - The custom profile field
+ * @returns Array of DialogOption objects for the selector
+ */
+export const formatOptionsForSelector = (field: CustomProfileFieldModel): DialogOption[] => {
+    if (!field.attrs || (field.type !== 'select' && field.type !== 'multiselect')) {
+        return [];
+    }
+
+    const options = field.attrs.options as Array<{id: string; name: string}> | undefined;
+    if (!options || !Array.isArray(options)) {
+        return [];
+    }
+
+    return options.map((option) => ({
+        text: option.name,
+        value: option.id,
+    }));
+};
+
+/**
+ * Convert selected option IDs to the format expected by the server
+ * @param value - The stored value (option ID or JSON array string)
+ * @param fieldType - The field type ('select' or 'multiselect')
+ * @returns String for select, array for multiselect
+ */
+export const convertValueForServer = (value: string, fieldType: string): string|string[] => {
+    if (fieldType !== 'multiselect') {
+        return value;
+    }
+    if (!value) {
+        return [];
+    }
+
+    try {
+        const parsed = JSON.parse(value);
+        if (Array.isArray(parsed)) {
+            return parsed;
+        }
+    } catch {
+        const parsed = value.split(',').map((id) => id.trim()).filter((id) => id !== '');
+        return parsed;
+    }
+    return [];
+};
+
+/**
+ * Convert server response values to the format expected by the UI
+ * @param value - The value from server (string or array)
+ * @param fieldType - The field type ('select' or 'multiselect')
+ * @returns String representation for UI storage
+ */
+export const convertValueFromServer = (value: string | string[], fieldType: string): string => {
+    if (value === null || value === undefined) {
+        return '';
+    }
+
+    if (fieldType === 'select') {
+        return Array.isArray(value) ? (value[0] || '') : String(value);
+    }
+
+    if (fieldType === 'multiselect') {
+        if (Array.isArray(value)) {
+            try {
+                return JSON.stringify(value);
+            } catch (error) {
+                logError('Error converting value from server to string', error);
+                return '';
+            }
+        }
+
+        return String(value);
+    }
+
+    return String(value);
+};
+
+export const isCustomFieldSamlLinked = (customField?: CustomProfileFieldModel): boolean => {
+    return Boolean(customField?.attrs?.saml);
 };

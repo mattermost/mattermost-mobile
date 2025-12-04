@@ -6,15 +6,13 @@ import {type StyleProp, StyleSheet, type TextStyle, View} from 'react-native';
 
 import Markdown from '@components/markdown';
 
-import type {MarkdownBlockStyles, MarkdownTextStyles} from '@typings/global/markdown';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     baseTextStyle: StyleProp<TextStyle>;
-    blockStyles?: MarkdownBlockStyles;
     channelId: string;
-    location: string;
+    location: AvailableScreens;
     metadata?: PostMetadata | null;
-    textStyles?: MarkdownTextStyles;
     theme: Theme;
     value?: string;
 }
@@ -25,14 +23,14 @@ const style = StyleSheet.create({
     },
 });
 
-export default function AttachmentPreText(props: Props) {
-    const {
-        baseTextStyle,
-        blockStyles,
-        metadata,
-        value,
-        textStyles,
-    } = props;
+export default function AttachmentPreText({
+    baseTextStyle,
+    channelId,
+    location,
+    theme,
+    metadata,
+    value,
+}: Props) {
 
     if (!value) {
         return null;
@@ -42,13 +40,11 @@ export default function AttachmentPreText(props: Props) {
         <View style={style.container}>
             <Markdown
                 baseTextStyle={baseTextStyle}
-                channelId={props.channelId}
-                textStyles={textStyles}
-                blockStyles={blockStyles}
+                channelId={channelId}
                 disableGallery={true}
                 imagesMetadata={metadata?.images}
-                location={props.location}
-                theme={props.theme}
+                location={location}
+                theme={theme}
                 value={value}
             />
         </View>

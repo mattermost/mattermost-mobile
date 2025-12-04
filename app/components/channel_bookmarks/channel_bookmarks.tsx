@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {LinearGradient} from 'expo-linear-gradient';
+import {LinearGradient, type LinearGradientProps} from 'expo-linear-gradient';
 import React, {useCallback, useMemo, useState} from 'react';
 import {FlatList, View, type ListRenderItemInfo, type NativeSyntheticEvent, type NativeScrollEvent} from 'react-native';
 import Animated from 'react-native-reanimated';
@@ -9,9 +9,9 @@ import Animated from 'react-native-reanimated';
 import {GalleryInit} from '@context/gallery';
 import {useTheme} from '@context/theme';
 import {useChannelBookmarkFiles} from '@hooks/files';
+import {usePreventDoubleTap} from '@hooks/utils';
 import ChannelBookmarkModel from '@typings/database/models/servers/channel_bookmark';
 import {fileToGalleryItem, openGalleryAtIndex} from '@utils/gallery';
-import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import AddBookmark from './add_bookmark';
@@ -26,12 +26,13 @@ type Props = {
     canUploadFiles: boolean;
     channelId: string;
     currentUserId: string;
+    enableSecureFilePreview: boolean;
     publicLinkEnabled: boolean;
     showInInfo: boolean;
     separator?: boolean;
 }
 
-const GRADIENT_LOCATIONS = [0, 0.64, 1];
+const GRADIENT_LOCATIONS: LinearGradientProps['locations'] = [0, 0.64, 1];
 const SCROLL_OFFSET = 10;
 
 const isCloseToBottom = ({layoutMeasurement, contentOffset, contentSize}: NativeScrollEvent) => {
@@ -68,24 +69,24 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const ChannelBookmarks = ({
     bookmarks, canAddBookmarks, canDeleteBookmarks, canDownloadFiles, canEditBookmarks, canUploadFiles,
-    channelId, currentUserId, publicLinkEnabled, showInInfo, separator = true,
+    channelId, currentUserId, enableSecureFilePreview, publicLinkEnabled, showInInfo, separator = true,
 }: Props) => {
     const galleryIdentifier = `${channelId}-bookmarks`;
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const files = useChannelBookmarkFiles(bookmarks, publicLinkEnabled);
+    const files = useChannelBookmarkFiles(bookmarks);
     const [allowEndFade, setAllowEndFade] = useState(true);
 
     const attachmentIndex = useCallback((fileId: string) => {
         return files.findIndex((file) => file.id === fileId) || 0;
     }, [files]);
 
-    const handlePreviewPress = useCallback(preventDoubleTap((idx: number) => {
+    const handlePreviewPress = usePreventDoubleTap(useCallback((idx: number) => {
         if (files.length) {
             const items = files.map((f) => fileToGalleryItem(f, f.user_id));
             openGalleryAtIndex(galleryIdentifier, idx, items);
         }
-    }), [files]);
+    }, [files, galleryIdentifier]));
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<ChannelBookmarkModel>) => {
         return (
@@ -94,6 +95,7 @@ const ChannelBookmarks = ({
                 canDeleteBookmarks={canDeleteBookmarks}
                 canDownloadFiles={canDownloadFiles}
                 canEditBookmarks={canEditBookmarks}
+                enableSecureFilePreview={enableSecureFilePreview}
                 galleryIdentifier={galleryIdentifier}
                 index={item.fileId ? attachmentIndex(item.fileId) : undefined}
                 onPress={handlePreviewPress}
@@ -101,7 +103,7 @@ const ChannelBookmarks = ({
             />
         );
     }, [
-        canDeleteBookmarks, canDownloadFiles, canEditBookmarks,
+        canDeleteBookmarks, canDownloadFiles, canEditBookmarks, enableSecureFilePreview,
         galleryIdentifier, attachmentIndex, handlePreviewPress,
         publicLinkEnabled,
     ]);
@@ -112,7 +114,7 @@ const ChannelBookmarks = ({
         setAllowEndFade(isCloseToBottom(e.nativeEvent));
     }, []);
 
-    const gradientColors = useMemo(() => [
+    const gradientColors: LinearGradientProps['colors'] = useMemo(() => [
         theme.centerChannelBg,
         changeOpacity(theme.centerChannelBg, 0.6458),
         changeOpacity(theme.centerChannelBg, 0),

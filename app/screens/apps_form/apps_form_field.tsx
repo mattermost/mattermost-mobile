@@ -8,11 +8,10 @@ import AutocompleteSelector from '@components/autocomplete_selector';
 import Markdown from '@components/markdown';
 import BoolSetting from '@components/settings/bool_setting';
 import TextSetting from '@components/settings/text_setting';
-import {View as ViewConstants} from '@constants';
+import {Screens, View as ViewConstants} from '@constants';
 import {AppFieldTypes, SelectableAppFieldTypes} from '@constants/apps';
 import {useTheme} from '@context/theme';
 import {selectKeyboardType} from '@utils/integrations';
-import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 const TEXT_DEFAULT_MAX_LENGTH = 150;
@@ -33,8 +32,8 @@ const dialogOptionToAppSelectOption = (option: DialogOption): AppSelectOption =>
 });
 
 const appSelectOptionToDialogOption = (option: AppSelectOption): DialogOption => ({
-    text: option.label,
-    value: option.value,
+    text: option.label || '',
+    value: option.value || '',
 });
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -81,7 +80,7 @@ function AppsFormField({
 
     const handleChange = useCallback((newValue: string | boolean) => {
         onChange(name, newValue);
-    }, [name]);
+    }, [name, onChange]);
 
     const handleSelect = useCallback((newValue: SelectedDialogOption) => {
         if (!newValue) {
@@ -100,6 +99,9 @@ function AppsFormField({
     }, [onChange, field, name]);
 
     const getDynamicOptions = useCallback(async (userInput = ''): Promise<DialogOption[]> => {
+        if (!field.name) {
+            return [];
+        }
         const options = await performLookup(field.name, userInput);
         return options.map(appSelectOptionToDialogOption);
     }, [performLookup, field]);
@@ -126,7 +128,7 @@ function AppsFormField({
     }, [field, value]);
 
     const selectedValue = useMemo(() => {
-        if (!value || !SelectableAppFieldTypes.includes(field.type)) {
+        if (!value || !SelectableAppFieldTypes.includes(field.type || '')) {
             return undefined;
         }
 
@@ -135,7 +137,7 @@ function AppsFormField({
         }
 
         if (Array.isArray(value)) {
-            return value.map((v) => v.value);
+            return value.map((v) => v.value || '');
         }
 
         return value as string;
@@ -158,6 +160,7 @@ function AppsFormField({
                     secureTextEntry={field.subtype === 'password'}
                     disabled={Boolean(field.readonly)}
                     testID={testID}
+                    location={Screens.APPS_FORM}
                 />
             );
         }
@@ -182,6 +185,7 @@ function AppsFormField({
                     disabled={field.readonly}
                     isMultiselect={field.multiselect}
                     testID={testID}
+                    location={Screens.APPS_FORM}
                 />
             );
         }
@@ -197,6 +201,7 @@ function AppsFormField({
                     onChange={handleChange}
                     disabled={field.readonly}
                     testID={testID}
+                    location={Screens.APPS_FORM}
                 />
             );
         }
@@ -211,11 +216,8 @@ function AppsFormField({
                 >
                     <Markdown
                         value={field.description}
-                        mentionKeys={[]}
                         disableAtMentions={true}
-                        location=''
-                        blockStyles={getMarkdownBlockStyles(theme)}
-                        textStyles={getMarkdownTextStyles(theme)}
+                        location={Screens.APPS_FORM}
                         baseTextStyle={style.markdownFieldText}
                         theme={theme}
                     />

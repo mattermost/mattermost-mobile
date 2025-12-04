@@ -13,17 +13,17 @@ import Loading from '@components/loading';
 import Search from '@components/search';
 import SelectedUsers from '@components/selected_users';
 import ServerUserList from '@components/server_user_list';
-import {General} from '@constants';
+import {General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useKeyboardOverlap} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import SecurityManager from '@managers/security_manager';
 import {dismissModal, setButtons} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
-import {displayUsername} from '@utils/user';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
@@ -94,10 +94,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-function removeProfileFromList(list: {[id: string]: UserProfile}, id: string) {
-    const newSelectedIds = Object.assign({}, list);
-
-    Reflect.deleteProperty(newSelectedIds, id);
+function removeProfileFromList(list: Set<string>, id: string) {
+    const newSelectedIds = new Set(list);
+    newSelectedIds.delete(id);
     return newSelectedIds;
 }
 
@@ -121,9 +120,9 @@ export default function CreateDirectMessage({
 
     const [term, setTerm] = useState('');
     const [startingConversation, setStartingConversation] = useState(false);
-    const [selectedIds, setSelectedIds] = useState<{[id: string]: UserProfile}>({});
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set<string>());
     const [showToast, setShowToast] = useState(false);
-    const selectedCount = Object.keys(selectedIds).length;
+    const selectedCount = selectedIds.size;
 
     const clearSearch = useCallback(() => {
         setTerm('');
@@ -133,17 +132,15 @@ export default function CreateDirectMessage({
         setSelectedIds((current) => removeProfileFromList(current, id));
     }, []);
 
-    const createDirectChannel = useCallback(async (id: string, selectedUser?: UserProfile): Promise<boolean> => {
-        const user = selectedUser || selectedIds[id];
-        const displayName = displayUsername(user, intl.locale, teammateNameDisplay);
-        const result = await makeDirectChannel(serverUrl, id, displayName);
+    const createDirectChannel = useCallback(async (id: string): Promise<boolean> => {
+        const result = await makeDirectChannel(serverUrl, id);
 
         if (result.error) {
             alertErrorWithFallback(intl, result.error, messages.dm);
         }
 
         return !result.error;
-    }, [selectedIds, intl, teammateNameDisplay, serverUrl]);
+    }, [intl, serverUrl]);
 
     const createGroupChannel = useCallback(async (ids: string[]): Promise<boolean> => {
         const result = await makeGroupChannel(serverUrl, ids);
@@ -155,21 +152,21 @@ export default function CreateDirectMessage({
         return !result.error;
     }, [intl, serverUrl]);
 
-    const startConversation = useCallback(async (selectedId?: {[id: string]: boolean}, selectedUser?: UserProfile) => {
+    const startConversation = useCallback(async (selectedId?: string) => {
         if (startingConversation) {
             return;
         }
 
         setStartingConversation(true);
 
-        const idsToUse = selectedId ? Object.keys(selectedId) : Object.keys(selectedIds);
+        const idsToUse = selectedId ? [selectedId] : Array.from(selectedIds);
         let success;
         if (idsToUse.length === 0) {
             success = false;
         } else if (idsToUse.length > 1) {
             success = await createGroupChannel(idsToUse);
         } else {
-            success = await createDirectChannel(idsToUse[0], selectedUser);
+            success = await createDirectChannel(idsToUse[0]);
         }
 
         if (success) {
@@ -181,29 +178,21 @@ export default function CreateDirectMessage({
 
     const handleSelectProfile = useCallback((user: UserProfile) => {
         if (user.id === currentUserId) {
-            const selectedId = {
-                [currentUserId]: true,
-            };
-
-            startConversation(selectedId, user);
+            startConversation(currentUserId);
         } else {
             clearSearch();
             setSelectedIds((current) => {
-                if (current[user.id]) {
+                if (current.has(user.id)) {
                     return removeProfileFromList(current, user.id);
                 }
 
-                const wasSelected = current[user.id];
-
-                if (!wasSelected && selectedCount >= General.MAX_USERS_IN_GM) {
+                if (selectedCount >= General.MAX_USERS_IN_GM) {
                     setShowToast(true);
                     return current;
                 }
 
-                const newSelectedIds = Object.assign({}, current);
-                if (!wasSelected) {
-                    newSelectedIds[user.id] = user;
-                }
+                const newSelectedIds = new Set(current);
+                newSelectedIds.add(user.id);
 
                 return newSelectedIds;
             });
@@ -232,9 +221,9 @@ export default function CreateDirectMessage({
     const userFetchFunction = useCallback(async (page: number) => {
         let results;
         if (restrictDirectMessage) {
-            results = await fetchProfilesInTeam(serverUrl, currentTeamId, page, General.PROFILE_CHUNK_SIZE);
+            results = await fetchProfilesInTeam(serverUrl, currentTeamId, page, General.PROFILE_CHUNK_SIZE, '', {active: true});
         } else {
-            results = await fetchProfiles(serverUrl, page, General.PROFILE_CHUNK_SIZE);
+            results = await fetchProfiles(serverUrl, page, General.PROFILE_CHUNK_SIZE, {active: true});
         }
 
         if (results.users?.length) {
@@ -248,9 +237,9 @@ export default function CreateDirectMessage({
         const lowerCasedTerm = searchTerm.toLowerCase();
         let results;
         if (restrictDirectMessage) {
-            results = await searchProfiles(serverUrl, lowerCasedTerm, {team_id: currentTeamId, allow_inactive: true});
+            results = await searchProfiles(serverUrl, lowerCasedTerm, {team_id: currentTeamId, allow_inactive: false});
         } else {
-            results = await searchProfiles(serverUrl, lowerCasedTerm, {allow_inactive: true});
+            results = await searchProfiles(serverUrl, lowerCasedTerm, {allow_inactive: false});
         }
 
         if (results.data) {
@@ -298,6 +287,7 @@ export default function CreateDirectMessage({
         <SafeAreaView
             style={style.container}
             testID='create_direct_message.screen'
+            nativeID={SecurityManager.getShieldScreenId(componentId)}
             onLayout={onLayout}
             ref={mainView}
         >
@@ -315,7 +305,6 @@ export default function CreateDirectMessage({
                 />
             </View>
             <ServerUserList
-                currentUserId={currentUserId}
                 handleSelectProfile={handleSelectProfile}
                 selectedIds={selectedIds}
                 term={term}
@@ -324,6 +313,7 @@ export default function CreateDirectMessage({
                 fetchFunction={userFetchFunction}
                 searchFunction={userSearchFunction}
                 createFilter={createUserFilter}
+                location={Screens.CREATE_DIRECT_MESSAGE}
             />
             <SelectedUsers
                 keyboardOverlap={keyboardOverlap}

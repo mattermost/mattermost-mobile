@@ -2,11 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
+import {defineMessages, type MessageDescriptor} from 'react-intl';
 
 import {updateThreadFollowing} from '@actions/remote/thread';
 import {BaseOption} from '@components/common_post_options';
 import {useServerUrl} from '@context/server';
-import {t} from '@i18n';
 import {dismissBottomSheet} from '@screens/navigation';
 
 import type ThreadModel from '@typings/database/models/servers/thread';
@@ -18,28 +18,41 @@ type FollowThreadOptionProps = {
     teamId?: string;
 };
 
+const messages = defineMessages({
+    unfollowThread: {
+        id: 'threads.unfollowThread',
+        defaultMessage: 'Unfollow Thread',
+    },
+    followThread: {
+        id: 'threads.followThread',
+        defaultMessage: 'Follow Thread',
+    },
+    followMessage: {
+        id: 'threads.followMessage',
+        defaultMessage: 'Follow Message',
+    },
+    unfollowMessage: {
+        id: 'threads.unfollowMessage',
+        defaultMessage: 'Unfollow Message',
+    },
+});
 const FollowThreadOption = ({bottomSheetId, thread, teamId}: FollowThreadOptionProps) => {
-    let id: string;
-    let defaultMessage: string;
+    let message: MessageDescriptor;
     let icon: string;
 
     if (thread.isFollowing) {
         icon = 'message-minus-outline';
         if (thread.replyCount) {
-            id = t('threads.unfollowThread');
-            defaultMessage = 'Unfollow Thread';
+            message = messages.unfollowThread;
         } else {
-            id = t('threads.unfollowMessage');
-            defaultMessage = 'Unfollow Message';
+            message = messages.unfollowMessage;
         }
     } else {
         icon = 'message-plus-outline';
         if (thread.replyCount) {
-            id = t('threads.followThread');
-            defaultMessage = 'Follow Thread';
+            message = messages.followThread;
         } else {
-            id = t('threads.followMessage');
-            defaultMessage = 'Follow Message';
+            message = messages.followMessage;
         }
     }
 
@@ -51,14 +64,13 @@ const FollowThreadOption = ({bottomSheetId, thread, teamId}: FollowThreadOptionP
         }
         await dismissBottomSheet(bottomSheetId);
         updateThreadFollowing(serverUrl, teamId, thread.id, !thread.isFollowing, true);
-    }, [bottomSheetId, teamId, thread]);
+    }, [bottomSheetId, serverUrl, teamId, thread.id, thread.isFollowing]);
 
     const followThreadOptionTestId = thread.isFollowing ? 'post_options.following_thread.option' : 'post_options.follow_thread.option';
 
     return (
         <BaseOption
-            i18nId={id}
-            defaultMessage={defaultMessage}
+            message={message}
             testID={followThreadOptionTestId}
             iconName={icon}
             onPress={handleToggleFollow}

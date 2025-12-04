@@ -8,8 +8,8 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {Screens} from '@constants';
 import {useIsTablet} from '@hooks/device';
+import {usePreventDoubleTap} from '@hooks/utils';
 import NavigationStore from '@store/navigation_store';
-import {preventDoubleTap} from '@utils/tap';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
@@ -54,6 +54,10 @@ export const ExtraKeyboardProvider = (({children}: {children: React.ReactElement
     const [isTextInputFocused, setIsTextInputFocused] = useState(false);
 
     const showExtraKeyboard = useCallback((newComponent: React.ReactElement|null) => {
+        // Do not use ExtraKeyboard on Android versions below 11
+        if (Platform.OS === 'android' && Platform.Version < 30) {
+            return;
+        }
         setExtraKeyboardVisible(true);
         setComponent(newComponent);
         if (Keyboard.isVisible()) {
@@ -62,6 +66,10 @@ export const ExtraKeyboardProvider = (({children}: {children: React.ReactElement
     }, []);
 
     const hideExtraKeyboard = useCallback(() => {
+        // Do not use ExtraKeyboard on Android versions below 11
+        if (Platform.OS === 'android' && Platform.Version < 30) {
+            return;
+        }
         setExtraKeyboardVisible(false);
         setComponent(null);
         if (Keyboard.isVisible()) {
@@ -70,6 +78,11 @@ export const ExtraKeyboardProvider = (({children}: {children: React.ReactElement
     }, []);
 
     const registerTextInputFocus = useCallback(() => {
+        // Do not use ExtraKeyboard on Android versions below 11
+        if (Platform.OS === 'android' && Platform.Version < 30) {
+            return;
+        }
+
         // If the extra keyboard is opened if we don't do this
         // we get a glitch in the UI that will animate the extra keyboard down
         // and immediately bring the keyboard, by doing this
@@ -81,11 +94,21 @@ export const ExtraKeyboardProvider = (({children}: {children: React.ReactElement
     }, []);
 
     const registerTextInputBlur = useCallback(() => {
+        // Do not use ExtraKeyboard on Android versions below 11
+        if (Platform.OS === 'android' && Platform.Version < 30) {
+            return;
+        }
+
         setIsTextInputFocused(false);
     }, []);
 
     useEffect(() => {
         const keyboardHideListener = Keyboard.addListener('keyboardDidHide', () => {
+            // Do not use ExtraKeyboard on Android versions below 11
+            if (Platform.OS === 'android' && Platform.Version < 30) {
+                return;
+            }
+
             if (isTextInputFocused) {
                 setExtraKeyboardVisible(false);
             }
@@ -121,7 +144,7 @@ export const useExtraKeyboardContext = (): ExtraKeyboardContextProps|undefined =
 export const useHideExtraKeyboardIfNeeded = (callback: (...args: any) => void, dependencies: React.DependencyList = []) => {
     const keyboardContext = useExtraKeyboardContext();
 
-    return useCallback(preventDoubleTap((...args: any) => {
+    return usePreventDoubleTap(useCallback((...args: any) => {
         if (keyboardContext?.isExtraKeyboardVisible) {
             keyboardContext.hideExtraKeyboard();
 
@@ -139,10 +162,10 @@ export const useHideExtraKeyboardIfNeeded = (callback: (...args: any) => void, d
         }
 
         callback(...args);
-    }), [keyboardContext, ...dependencies]);
+    }, [keyboardContext, ...dependencies]));
 };
 
-export const ExtraKeyboard = () => {
+const ExtraKeyboardComponent = () => {
     const keyb = useAnimatedKeyboard({isStatusBarTranslucentAndroid: true});
     const defaultKeyboardHeight = Platform.select({ios: 291, default: 240});
     const context = useExtraKeyboardContext();
@@ -160,9 +183,6 @@ export const ExtraKeyboard = () => {
 
     const animatedStyle = useAnimatedStyle(() => {
         let height = keyb.height.value + offset;
-        if (keyb.height.value < 70) {
-            height = 0; // When using a hw keyboard
-        }
         if (context?.isExtraKeyboardVisible) {
             height = withTiming(maxKeyboardHeight.value, {duration: 250});
         } else if (keyb.state.value === KeyboardState.CLOSED || keyb.state.value === KeyboardState.UNKNOWN) {
@@ -179,5 +199,16 @@ export const ExtraKeyboard = () => {
         <Animated.View style={animatedStyle}>
             {context?.isExtraKeyboardVisible && context.component}
         </Animated.View>
+    );
+};
+
+// Do not use ExtraKeyboard on Android versions below 11
+export const ExtraKeyboard = () => {
+    if (Platform.OS === 'android' && Platform.Version < 30) {
+        return null;
+    }
+
+    return (
+        <ExtraKeyboardComponent/>
     );
 };

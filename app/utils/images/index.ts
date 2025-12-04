@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Dimensions} from 'react-native';
+import RNUtils from '@mattermost/rnutils';
 
 import {View} from '@constants';
 import {
@@ -13,7 +13,7 @@ import {
     VIEWPORT_IMAGE_REPLY_OFFSET,
 } from '@constants/image';
 
-export const calculateDimensions = (height?: number, width?: number, viewPortWidth = 0, viewPortHeight = 0) => {
+export const calculateDimensions = (height?: number, width?: number, viewPortWidth = 0, viewPortHeight = 0, matchViewPort?: boolean) => {
     'worklet';
 
     if (!height || !width) {
@@ -48,6 +48,34 @@ export const calculateDimensions = (height?: number, width?: number, viewPortWid
         imageWidth = imageHeight * heightRatio;
     }
 
+    if (
+        matchViewPort &&
+        width < viewPortWidth &&
+        height < viewPortHeight
+    ) {
+        if (height > width) {
+            // Portrait: fit to viewport height
+            imageHeight = viewPortHeight;
+            imageWidth = imageHeight * heightRatio;
+
+            // Ensure width doesn't exceed viewport
+            if (imageWidth > viewPortWidth) {
+                imageWidth = viewPortWidth;
+                imageHeight = imageWidth * ratio;
+            }
+        } else {
+            // Landscape or square: fit to viewport width
+            imageWidth = viewPortWidth;
+            imageHeight = imageWidth * ratio;
+
+            // Ensure height doesn't exceed viewport
+            if (imageHeight > viewPortHeight) {
+                imageHeight = viewPortHeight;
+                imageWidth = imageHeight * heightRatio;
+            }
+        }
+    }
+
     return {
         height: imageHeight,
         width: imageWidth,
@@ -55,7 +83,7 @@ export const calculateDimensions = (height?: number, width?: number, viewPortWid
 };
 
 export function getViewPortWidth(isReplyPost: boolean, tabletOffset = false, imageAttachmentOffset = false) {
-    const {width, height} = Dimensions.get('window');
+    const {width, height} = RNUtils.getWindowDimensions();
     let portraitPostWidth = Math.min(width, height) - VIEWPORT_IMAGE_OFFSET;
 
     if (tabletOffset) {

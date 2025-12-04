@@ -31,7 +31,7 @@ const messages = defineMessages({
     },
     remove_title: {
         id: 'mobile.manage_members.remove_member',
-        defaultMessage: 'Remove From Channel',
+        defaultMessage: 'Remove from Channel',
     },
     remove_message: {
         id: 'mobile.manage_members.message',

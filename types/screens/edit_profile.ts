@@ -2,18 +2,19 @@
 // See LICENSE.txt for license information.
 
 import type {AvailableScreens} from './navigation';
-import type {FloatingTextInputRef} from '@components/floating_text_input_label';
+import type {CustomProfileFieldModel} from '@database/models/server';
 import type {FieldProps} from '@screens/edit_profile/components/field';
+import type {CustomAttributeSet} from '@typings/api/custom_profile_attributes';
 import type UserModel from '@typings/database/models/servers/user';
-import type {RefObject} from 'react';
 
-export interface UserInfo extends Record<string, string | undefined | null| boolean> {
+export interface UserInfo {
     email: string;
     firstName: string;
     lastName: string;
     nickname: string;
     position: string;
     username: string;
+    customAttributes: CustomAttributeSet;
 }
 
 export type EditProfileProps = {
@@ -26,14 +27,43 @@ export type EditProfileProps = {
     lockedNickname: boolean;
     lockedPosition: boolean;
     lockedPicture: boolean;
+    enableCustomAttributes: boolean;
+    customFields: CustomProfileFieldModel[];
+    customAttributesSet?: CustomAttributeSet;
 };
 
 export type NewProfileImage = { localPath?: string; isRemoved?: boolean };
 
 export type FieldSequence = Record<string, {
-    ref: RefObject<FloatingTextInputRef>;
     isDisabled: boolean;
+    maxLength?: number;
+    error?: string;
 }>
 
 export type FieldConfig = Pick<FieldProps, 'blurOnSubmit' | 'enablesReturnKeyAutomatically' | 'onFocusNextField' | 'onTextChange' | 'returnKeyType'>
+
+export type SelectFieldProps = {
+    fieldKey: string;
+    label: string;
+    value: string;
+    options: DialogOption[];
+    isDisabled?: boolean;
+    onValueChange: (fieldKey: string, value: string) => void;
+    onFocusNextField: (fieldKey: string) => void;
+    testID: string;
+    isOptional?: boolean;
+    isMultiselect?: boolean;
+}
+
+export type CustomFieldRenderProps = {
+    fieldKey: string;
+    field: CustomProfileFieldModel;
+    value: string;
+    isDisabled: boolean;
+    onUpdateField: (fieldKey: string, value: string) => void;
+    onFocusNextField: (fieldKey: string) => void;
+    testID: string;
+    isOptional?: boolean;
+    returnKeyType?: 'next' | 'done';
+}
 

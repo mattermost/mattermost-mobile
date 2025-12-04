@@ -13,12 +13,16 @@ runs:
         echo "::group::check-styles"
         npm run check
         echo "::endgroup::"
+
     - name: ci/run-tests
+      # main and PR will run test:coverage
+      if: startsWith(github.ref_name, 'release-')
       shell: bash
       run: |
         echo "::group::run-tests"
-        npm test
+        npm run test:ci
         echo "::endgroup::"
+
     - name: ci/check-i18n
       shell: bash
       run: |

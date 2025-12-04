@@ -1,5 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+/* eslint-disable max-lines */
 
 import {Database, Q} from '@nozbe/watermelondb';
 
@@ -9,20 +10,31 @@ import DatabaseManager from '@database/manager';
 import {buildDraftKey} from '@database/operator/server_data_operator/comparators';
 import {transformDraftRecord, transformPostsInChannelRecord} from '@database/operator/server_data_operator/transformers/post';
 import {createPostsChain} from '@database/operator/utils/post';
+import * as ScheduledPostQueries from '@queries/servers/scheduled_post';
+import {logWarning} from '@utils/log';
+
+import {shouldUpdateScheduledPostRecord} from '../comparators/scheduled_post';
 
 import {exportedForTest} from './post';
 
-import type ServerDataOperator from '..';
+import type ServerDataOperator from '@database/operator/server_data_operator/index';
 import type PostsInChannelModel from '@typings/database/models/servers/posts_in_channel';
+import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 
 Q.sortBy = jest.fn().mockImplementation((field) => {
     return Q.where(field, Q.gte(0));
 });
+
+jest.mock('@utils/log', () => ({
+    logWarning: jest.fn(),
+}));
 describe('*** Operator: Post Handlers tests ***', () => {
     let operator: ServerDataOperator;
+    let database: Database;
 
     let posts: Post[] = [];
-    beforeEach(() => {
+    let scheduledPosts: ScheduledPost[] = [];
+    beforeEach(async () => {
         posts = [
             {
                 id: '8swgtrrdiff89jnsiwiip3y1eoe',
@@ -44,6 +56,7 @@ describe('*** Operator: Post Handlers tests ***', () => {
                 reply_count: 4,
                 last_reply_at: 0,
                 participants: null,
+                file_ids: ['f1oxe5rtepfs7n3zifb4sso7po'],
                 metadata: {
                     images: {
                         'https://community-release.mattermost.com/api/v4/image?url=https%3A%2F%2Favatars1.githubusercontent.com%2Fu%2F6913320%3Fs%3D400%26v%3D4': {
@@ -101,8 +114,8 @@ describe('*** Operator: Post Handlers tests ***', () => {
                     files: [
                         {
                             id: 'f1oxe5rtepfs7n3zifb4sso7po',
-                            user_id: '89ertha8xpfsumpucqppy5knao',
-                            post_id: 'a7ebyw883trm884p1qcgt8yw4a',
+                            user_id: 'q3mzxua9zjfczqakxdkowc6u6yy',
+                            post_id: '8swgtrrdiff89jnsiwiip3y1eoe',
                             create_at: 1608270920357,
                             update_at: 1608270920357,
                             delete_at: 0,
@@ -169,11 +182,41 @@ describe('*** Operator: Post Handlers tests ***', () => {
                 metadata: {},
             },
         ];
-    });
 
-    beforeAll(async () => {
+        scheduledPosts = [
+            {
+                id: 'scheduled_post_id',
+                channel_id: 'channel_id',
+                root_id: '',
+                message: 'test scheduled post',
+                scheduled_at: 123,
+                user_id: 'user_id',
+                processed_at: 0,
+                create_at: 789,
+                update_at: 456,
+                error_code: '',
+            },
+            {
+                id: 'scheduled_post_id_2',
+                channel_id: 'channel_id',
+                root_id: '',
+                message: 'test scheduled post 2',
+                scheduled_at: 123,
+                user_id: 'user_id',
+                processed_at: 0,
+                create_at: 789,
+                update_at: 456,
+                error_code: '',
+            },
+        ];
+
         await DatabaseManager.init(['baseHandler.test.com']);
         operator = DatabaseManager.serverDatabases['baseHandler.test.com']!.operator;
+        database = DatabaseManager.serverDatabases['baseHandler.test.com']!.database;
+    });
+
+    afterEach(async () => {
+        DatabaseManager.destroyServerDatabase('baseHandler.test.com');
     });
 
     it('=> HandleDraft: should write to the the Draft table', async () => {
@@ -264,8 +307,8 @@ describe('*** Operator: Post Handlers tests ***', () => {
             files: [
                 {
                     id: 'f1oxe5rtepfs7n3zifb4sso7po',
-                    user_id: '89ertha8xpfsumpucqppy5knao',
-                    post_id: 'a7ebyw883trm884p1qcgt8yw4a',
+                    user_id: 'q3mzxua9zjfczqakxdkowc6u6yy',
+                    post_id: '8swgtrrdiff89jnsiwiip3y1eoe',
                     create_at: 1608270920357,
                     update_at: 1608270920357,
                     delete_at: 0,
@@ -366,6 +409,348 @@ describe('*** Operator: Post Handlers tests ***', () => {
             }],
             prepareRecordsOnly: true,
         });
+    });
+
+    it('=> HandlePosts: should remove files no longer present in the post', async () => {
+        const postWithMetadata = posts[0];
+        const uploadedFiles = postWithMetadata.metadata.files!;
+        const updatedPosts: Post[] = [
+            {
+                ...postWithMetadata,
+                update_at: Date.now(),
+                metadata: {
+                    ...postWithMetadata.metadata,
+                    files: [],
+                },
+                file_ids: [],
+            },
+        ];
+
+        const order = [
+            '8swgtrrdiff89jnsiwiip3y1eoe',
+            '8fcnk3p1jt8mmkaprgajoxz115a',
+            '3y3w3a6gkbg73bnj3xund9o5ic',
+        ];
+
+        const actionType = ActionType.POSTS.RECEIVED_IN_CHANNEL;
+
+        await operator.handlePosts({
+            actionType,
+            order,
+            posts,
+            prepareRecordsOnly: false,
+        });
+
+        let files = await operator.database.get('File').query(Q.where('post_id', postWithMetadata.id)).fetch();
+        expect(files).toHaveLength(1);
+        expect(files[0].id).toBe(uploadedFiles[0].id);
+
+        await operator.handlePosts({
+            actionType,
+            order: [uploadedFiles[0].id!],
+            posts: updatedPosts,
+        });
+
+        files = await operator.database.get('File').query(Q.where('post_id', postWithMetadata.id)).fetch();
+        expect(files).toHaveLength(0);
+    });
+
+    it('=> HandlePosts: should add new files if new files are added', async () => {
+        const postWithMetadata = posts[0];
+        const uploadedFiles = postWithMetadata.metadata.files!;
+        const updatedPosts: Post[] = [
+            {
+                ...postWithMetadata,
+                update_at: Date.now(),
+                metadata: {
+                    ...postWithMetadata.metadata,
+                    files: [
+                        ...postWithMetadata.metadata.files!,
+                        {
+                            id: 'another-file-id',
+                            user_id: 'q3mzxua9zjfczqakxdkowc6u6yy',
+                            post_id: '8swgtrrdiff89jnsiwiip3y1eoe',
+                            create_at: 1608270920357,
+                            update_at: 1608270920357,
+                            delete_at: 0,
+                            name: '4qtwrg.jpg',
+                            extension: 'jpg',
+                            size: 89208,
+                            mime_type: 'image/jpeg',
+                            width: 500,
+                            height: 656,
+                            has_preview_image: true,
+                            mini_preview:
+                                '/9j/2wCEAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRQBAwQEBQQFCQUFCRQNCw0UFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFP/AABEIABAAEAMBIgACEQEDEQH/xAGiAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgsQAAIBAwMCBAMFBQQEAAABfQECAwAEEQUSITFBBhNRYQcicRQygZGhCCNCscEVUtHwJDNicoIJChYXGBkaJSYnKCkqNDU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6g4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2drh4uPk5ebn6Onq8fLz9PX29/j5+gEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoLEQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/AN/T/iZp+pX15FpUmnwLbXtpJpyy2sQLw8CcBXA+bksCDnHGOaf4W+P3xIshbQ6loB8RrbK11f3FpbBFW3ZwiFGHB2kr25BIOeCPPbX4S3407T7rTdDfxFNIpDyRaw9lsB4OECHGR15yO4GK6fRPhR4sGmSnxAs8NgchNOjvDPsjz8qSHA37cDk5JPPFdlOpTdPlcVt/Ku1lrvr17b67EPnjrH8/626H/9k=',
+                        },
+                    ],
+                },
+                file_ids: [...postWithMetadata.file_ids!, 'another-file-id'],
+            },
+        ];
+
+        const order = [
+            '8swgtrrdiff89jnsiwiip3y1eoe',
+            '8fcnk3p1jt8mmkaprgajoxz115a',
+            '3y3w3a6gkbg73bnj3xund9o5ic',
+        ];
+
+        const actionType = ActionType.POSTS.RECEIVED_IN_CHANNEL;
+
+        await operator.handlePosts({
+            actionType,
+            order,
+            posts,
+            prepareRecordsOnly: false,
+        });
+
+        let files = await operator.database.get('File').query(Q.where('post_id', postWithMetadata.id)).fetch();
+        expect(files).toHaveLength(1);
+        expect(files[0].id).toBe(uploadedFiles[0].id);
+
+        await operator.handlePosts({
+            actionType,
+            order: [uploadedFiles[0].id!],
+            posts: updatedPosts,
+        });
+
+        files = await operator.database.get('File').query(Q.where('post_id', postWithMetadata.id)).fetch();
+        expect(files).toHaveLength(2);
+        expect(files.map((file) => file.id)).toEqual(expect.arrayContaining(['f1oxe5rtepfs7n3zifb4sso7po', 'another-file-id']));
+    });
+
+    it('=> HandlePosts: should substitute files new files are added and old files are removed', async () => {
+        const postWithMetadata = posts[0];
+        const uploadedFiles = postWithMetadata.metadata.files!;
+        const updatedPosts: Post[] = [
+            {
+                ...postWithMetadata,
+                update_at: Date.now(),
+                metadata: {
+                    ...postWithMetadata.metadata,
+                    files: [
+                        {
+                            id: 'another-file-id',
+                            user_id: 'q3mzxua9zjfczqakxdkowc6u6yy',
+                            post_id: '8swgtrrdiff89jnsiwiip3y1eoe',
+                            create_at: 1608270920357,
+                            update_at: 1608270920357,
+                            delete_at: 0,
+                            name: '4qtwrg.jpg',
+                            extension: 'jpg',
+                            size: 89208,
+                            mime_type: 'image/jpeg',
+                            width: 500,
+                            height: 656,
+                            has_preview_image: true,
+                            mini_preview:
+                                '/9j/2wCEAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRQBAwQEBQQFCQUFCRQNCw0UFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFP/AABEIABAAEAMBIgACEQEDEQH/xAGiAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgsQAAIBAwMCBAMFBQQEAAABfQECAwAEEQUSITFBBhNRYQcicRQygZGhCCNCscEVUtHwJDNicoIJChYXGBkaJSYnKCkqNDU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6g4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2drh4uPk5ebn6Onq8fLz9PX29/j5+gEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoLEQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/AN/T/iZp+pX15FpUmnwLbXtpJpyy2sQLw8CcBXA+bksCDnHGOaf4W+P3xIshbQ6loB8RrbK11f3FpbBFW3ZwiFGHB2kr25BIOeCPPbX4S3407T7rTdDfxFNIpDyRaw9lsB4OECHGR15yO4GK6fRPhR4sGmSnxAs8NgchNOjvDPsjz8qSHA37cDk5JPPFdlOpTdPlcVt/Ku1lrvr17b67EPnjrH8/626H/9k=',
+                        },
+                    ],
+                },
+                file_ids: ['another-file-id'],
+            },
+        ];
+
+        const order = [
+            '8swgtrrdiff89jnsiwiip3y1eoe',
+            '8fcnk3p1jt8mmkaprgajoxz115a',
+            '3y3w3a6gkbg73bnj3xund9o5ic',
+        ];
+
+        const actionType = ActionType.POSTS.RECEIVED_IN_CHANNEL;
+
+        await operator.handlePosts({
+            actionType,
+            order,
+            posts,
+            prepareRecordsOnly: false,
+        });
+
+        let files = await operator.database.get('File').query(Q.where('post_id', postWithMetadata.id)).fetch();
+        expect(files).toHaveLength(1);
+        expect(files[0].id).toBe(uploadedFiles[0].id);
+
+        await operator.handlePosts({
+            actionType,
+            order: [uploadedFiles[0].id!],
+            posts: updatedPosts,
+        });
+
+        files = await operator.database.get('File').query(Q.where('post_id', postWithMetadata.id)).fetch();
+        expect(files).toHaveLength(1);
+        expect(files[0].id).toBe('another-file-id');
+    });
+
+    it('should return empty array when scheduledPosts is empty and actionType is not RECEIVED_ALL_SCHEDULED_POSTS', async () => {
+        const result = await operator.handleScheduledPosts(
+            {
+                actionType: ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST,
+                scheduledPosts: [],
+                prepareRecordsOnly: false,
+            });
+        expect(result).toEqual([]);
+    });
+
+    it('HandleScheduledPosts: should write to the ScheduledPost table', async () => {
+        const spyOnBatchRecords = jest.spyOn(operator, 'processRecords');
+        await operator.handleScheduledPosts({
+            actionType: ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST,
+            scheduledPosts,
+            prepareRecordsOnly: false,
+        });
+
+        expect(spyOnBatchRecords).toHaveBeenCalledWith({
+            createOrUpdateRawValues: scheduledPosts,
+            deleteRawValues: [],
+            tableName: 'ScheduledPost',
+            fieldName: 'id',
+            shouldUpdate: shouldUpdateScheduledPostRecord,
+        });
+    });
+
+    it('HandleScheduledPosts: should delete from the ScheduledPost table', async () => {
+        await operator.handleScheduledPosts({
+            actionType: ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST,
+            scheduledPosts,
+            prepareRecordsOnly: false,
+        });
+
+        const scheduledPost = scheduledPosts[0];
+
+        const deletedRecord = await operator.handleScheduledPosts({
+            actionType: ActionType.SCHEDULED_POSTS.DELETE_SCHEDULED_POST,
+            scheduledPosts: [scheduledPost],
+            prepareRecordsOnly: false,
+        });
+
+        expect(deletedRecord).toBeTruthy();
+        expect(deletedRecord[0]._raw.id).toBe(scheduledPost.id);
+    });
+
+    it('HandleScheduledPosts: should handle empty input array', async () => {
+        const deletedRecord = await operator.handleScheduledPosts({
+            actionType: ActionType.SCHEDULED_POSTS.DELETE_SCHEDULED_POST,
+            scheduledPosts: [],
+            prepareRecordsOnly: false,
+        });
+
+        expect(deletedRecord).toBeTruthy();
+        expect(deletedRecord.length).toBe(0);
+    });
+
+    it('HandleScheduledPosts: should delete all the schedule post from the database when action is RECEIVED_ALL_SCHEDULED_POSTS', async () => {
+        const spyOnBatchRecords = jest.spyOn(operator, 'batchRecords');
+        jest.spyOn(ScheduledPostQueries, 'queryScheduledPostsForTeam').mockReturnValue({
+            fetch: jest.fn().mockResolvedValue(scheduledPosts),
+        } as any);
+
+        jest.spyOn(database, 'get').mockReturnValue({
+            query: jest.fn().mockReturnValue({
+                fetch: jest.fn().mockResolvedValue(scheduledPosts.map((post) => ({...post, toApi: () => post}))),
+            }),
+        } as any);
+
+        jest.spyOn(operator, 'prepareRecords').mockResolvedValue(scheduledPosts as unknown as ScheduledPostModel[]);
+
+        await operator.handleScheduledPosts({
+            actionType: ActionType.SCHEDULED_POSTS.RECEIVED_ALL_SCHEDULED_POSTS,
+            scheduledPosts: [],
+            prepareRecordsOnly: false,
+        });
+
+        expect(spyOnBatchRecords).toHaveBeenCalledWith(scheduledPosts, 'handleScheduledPosts');
+    });
+
+    it('HandleUpdateScheduledPostErrorCode: should update error code for a scheduled post', async () => {
+        // First create a scheduled post
+        await operator.handleScheduledPosts({
+            actionType: ActionType.SCHEDULED_POSTS.CREATE_OR_UPDATED_SCHEDULED_POST,
+            scheduledPosts: [scheduledPosts[0]],
+            prepareRecordsOnly: false,
+        });
+
+        const errorCode = 'ERROR_CODE_TEST';
+        const spyOnBatchRecords = jest.spyOn(operator, 'batchRecords');
+
+        // Update the error code
+        const updatedPost = await operator.handleUpdateScheduledPostErrorCode({
+            scheduledPostId: scheduledPosts[0].id,
+            errorCode,
+            prepareRecordsOnly: false,
+        });
+
+        expect(updatedPost).toBeTruthy();
+        expect(updatedPost?.id).toBe(scheduledPosts[0].id);
+        expect(updatedPost?.errorCode).toBe(errorCode);
+        expect(spyOnBatchRecords).toHaveBeenCalledWith([updatedPost], 'handleScheduledPostErrorCode');
+
+        // Verify the post was updated in the database
+        const scheduledPost = await operator.database.get<ScheduledPostModel>('ScheduledPost').query(
+            Q.where('id', scheduledPosts[0].id),
+        ).fetch();
+
+        expect(scheduledPost.length).toBe(1);
+        expect(scheduledPost[0].errorCode).toBe(errorCode);
+    });
+
+    it('HandleUpdateScheduledPostErrorCode: should return null when post is not found', async () => {
+        const errorCode = 'ERROR_CODE_TEST';
+
+        jest.spyOn(database, 'get').mockReturnValue({
+            find: jest.fn().mockReturnValue(null),
+        } as any);
+
+        const result = await operator.handleUpdateScheduledPostErrorCode({
+            scheduledPostId: 'non_existent_id',
+            errorCode,
+            prepareRecordsOnly: false,
+        });
+
+        expect(result).toBeNull();
+        expect(logWarning).toHaveBeenCalled();
+    });
+
+    it('=> HandlePosts: should not remove files if file ids are present but metadata is missing', async () => {
+        const postWithMetadata = posts[0];
+        const uploadedFiles = postWithMetadata.metadata.files!;
+        const updatedPosts: Post[] = [
+            {
+                ...postWithMetadata,
+                update_at: Date.now(),
+                metadata: {}, // No metadata
+                file_ids: postWithMetadata.file_ids, // File IDs are still present
+            },
+        ];
+
+        const order = [
+            '8swgtrrdiff89jnsiwiip3y1eoe',
+            '8fcnk3p1jt8mmkaprgajoxz115a',
+            '3y3w3a6gkbg73bnj3xund9o5ic',
+        ];
+
+        const actionType = ActionType.POSTS.RECEIVED_IN_CHANNEL;
+
+        await operator.handlePosts({
+            actionType,
+            order,
+            posts,
+            prepareRecordsOnly: false,
+        });
+
+        let files = await operator.database.get('File').query(Q.where('post_id', postWithMetadata.id)).fetch();
+        expect(files).toHaveLength(1);
+        expect(files[0].id).toBe(uploadedFiles[0].id);
+
+        await operator.handlePosts({
+            actionType,
+            order: [uploadedFiles[0].id!],
+            posts: updatedPosts,
+        });
+
+        files = await operator.database.get('File').query(Q.where('post_id', postWithMetadata.id)).fetch();
+        expect(files).toHaveLength(1);
+        expect(files[0].id).toBe(uploadedFiles[0].id);
     });
 });
 

@@ -8,9 +8,10 @@ import Animated from 'react-native-reanimated';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useTheme} from '@context/theme';
 import {useGalleryItem} from '@hooks/gallery';
-import {isDocument, isImage, isVideo} from '@utils/file';
+import {isAudio, isDocument, isImage, isVideo} from '@utils/file';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+import AudioFile from './audio_file';
 import DocumentFile from './document_file';
 import FileIcon from './file_icon';
 import FileInfo from './file_info';
@@ -23,6 +24,7 @@ import type {DocumentRef} from '@components/document';
 
 type FileProps = {
     canDownloadFiles: boolean;
+    enableSecureFilePreview: boolean;
     file: FileInfo;
     galleryIdentifier: string;
     index: number;
@@ -30,7 +32,6 @@ type FileProps = {
     isSingleImage?: boolean;
     nonVisibleImagesCount: number;
     onPress: (index: number) => void;
-    publicLinkEnabled: boolean;
     channelName?: string;
     onOptionsPress?: (fileInfo: FileInfo) => void;
     optionSelected?: boolean;
@@ -44,7 +45,6 @@ type FileProps = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         fileWrapper: {
-            flex: 1,
             flexDirection: 'row',
             alignItems: 'center',
             borderWidth: 1,
@@ -62,6 +62,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             width: 40,
             margin: 4,
         },
+        audioFile: {
+            flexDirection: 'row',
+            alignItems: 'center',
+        },
     };
 });
 
@@ -69,6 +73,7 @@ const File = ({
     asCard = false,
     canDownloadFiles,
     channelName,
+    enableSecureFilePreview,
     file,
     galleryIdentifier,
     inViewPort = false,
@@ -78,7 +83,6 @@ const File = ({
     onOptionsPress,
     onPress,
     optionSelected,
-    publicLinkEnabled,
     showDate = false,
     updateFileForGallery,
     wrapperWidth = 300,
@@ -94,7 +98,7 @@ const File = ({
         } else {
             onPress(index);
         }
-    }, [index]);
+    }, [index, onPress]);
 
     const {styles, onGestureEvent, ref} = useGalleryItem(galleryIdentifier, index, handlePreviewPress);
 
@@ -129,8 +133,20 @@ const File = ({
         );
     };
 
+    const touchableWithPreview = (
+        <TouchableWithFeedback
+            onPress={handlePreviewPress}
+            disabled={isPressDisabled}
+            type={'opacity'}
+        >
+            <FileIcon
+                file={file}
+            />
+        </TouchableWithFeedback>
+    );
+
     let fileComponent;
-    if (isVideo(file) && publicLinkEnabled) {
+    if (isVideo(file)) {
         const renderVideoFile = (
             <TouchableWithoutFeedback
                 disabled={isPressDisabled}
@@ -189,6 +205,7 @@ const File = ({
                     ref={document}
                     canDownloadFiles={canDownloadFiles}
                     disabled={isPressDisabled}
+                    enableSecureFilePreview={enableSecureFilePreview}
                     file={file}
                 />
             </View>
@@ -216,19 +233,19 @@ const File = ({
                 }
             </View>
         );
-    } else {
-        const touchableWithPreview = (
-            <TouchableWithFeedback
-                onPress={handlePreviewPress}
-                disabled={isPressDisabled}
-                type={'opacity'}
-            >
-                <FileIcon
+    } else if (isAudio(file)) {
+        const renderAudioFile = (
+            <Animated.View style={[styles, asCard ? style.imageVideo : style.audioFile]}>
+                <AudioFile
                     file={file}
+                    canDownloadFiles={canDownloadFiles}
+                    enableSecureFilePreview={enableSecureFilePreview}
                 />
-            </TouchableWithFeedback>
+            </Animated.View>
         );
 
+        fileComponent = asCard ? renderCardWithImage(touchableWithPreview) : renderAudioFile;
+    } else {
         fileComponent = renderCardWithImage(touchableWithPreview);
     }
     return fileComponent;

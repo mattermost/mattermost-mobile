@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useState} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {type LayoutChangeEvent, type StyleProp, View, type ViewStyle} from 'react-native';
 
 import Files from '@components/files';
@@ -9,6 +9,8 @@ import FormattedText from '@components/formatted_text';
 import JumboEmoji from '@components/jumbo_emoji';
 import {Screens} from '@constants';
 import {THREAD} from '@constants/screens';
+import StatusUpdatePost from '@playbooks/components/status_update_post';
+import {PLAYBOOKS_UPDATE_STATUS_POST_TYPE} from '@playbooks/constants/plugin';
 import {isEdited as postEdited, isPostFailed} from '@utils/post';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -21,6 +23,7 @@ import Reactions from './reactions';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type {SearchPattern} from '@typings/global/markdown';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type BodyProps = {
     appsEnabled: boolean;
@@ -36,7 +39,7 @@ type BodyProps = {
     isPendingOrFailed: boolean;
     isPostAcknowledgementEnabled?: boolean;
     isPostAddChannelMember: boolean;
-    location: string;
+    location: AvailableScreens;
     post: PostModel;
     searchPatterns?: SearchPattern[];
     showAddReaction?: boolean;
@@ -102,7 +105,7 @@ const Body = ({
     const isReplyPost = Boolean(post.rootId && (!isEphemeral || !hasBeenDeleted) && location !== THREAD);
     const hasContent = Boolean((post.metadata?.embeds?.length || (appsEnabled && nBindings)) || nAttachments);
 
-    const replyBarStyle = useCallback((): StyleProp<ViewStyle>|undefined => {
+    const replyBarStyle = useMemo<StyleProp<ViewStyle>|undefined>(() => {
         if (!isReplyPost || (isCRTEnabled && location === Screens.PERMALINK)) {
             return undefined;
         }
@@ -122,7 +125,7 @@ const Body = ({
         }
 
         return barStyle;
-    }, []);
+    }, [highlightReplyBar, isCRTEnabled, isFirstReply, isLastReply, isReplyPost, location, style]);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         if (location === Screens.SAVED_MESSAGES) {
@@ -136,6 +139,14 @@ const Body = ({
                 style={style.message}
                 id='post_body.deleted'
                 defaultMessage='(message deleted)'
+            />
+        );
+    } else if (post.type === PLAYBOOKS_UPDATE_STATUS_POST_TYPE && post.props != null) {
+        message = (
+            <StatusUpdatePost
+                location={location}
+                post={post}
+                theme={theme}
             />
         );
     } else if (isPostAddChannelMember) {
@@ -154,7 +165,7 @@ const Body = ({
                 value={post.message}
             />
         );
-    } else if (post.message.length) {
+    } else if (post.message.length || isEdited) { // isEdited is added to handle the case where the post is edited and the message is empty
         message = (
             <Message
                 highlight={highlight}
@@ -222,7 +233,7 @@ const Body = ({
             style={style.messageContainerWithReplyBar}
             onLayout={onLayout}
         >
-            <View style={replyBarStyle()}/>
+            <View style={replyBarStyle}/>
             {body}
             {isFailed &&
             <Failed

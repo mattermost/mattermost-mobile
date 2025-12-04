@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {act} from '@testing-library/react-native';
+import {act, waitFor} from '@testing-library/react-native';
 import React from 'react';
 
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
@@ -9,7 +9,7 @@ import {getTeamById} from '@queries/servers/team';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
-import CategoriesList from '.';
+import CategoriesList from './categories_list';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type Database from '@nozbe/watermelondb/Database';
@@ -30,35 +30,60 @@ describe('components/categories_list', () => {
         });
     });
 
-    it('should render', () => {
+    it('should render', async () => {
         const wrapper = renderWithEverything(
             <CategoriesList
                 moreThanOneTeam={false}
                 hasChannels={true}
+                draftsCount={0}
+                scheduledPostHasError={false}
+                scheduledPostCount={0}
             />,
             {database},
         );
-        expect(wrapper.toJSON()).toBeTruthy();
+        await waitFor(() => {
+            expect(wrapper.toJSON()).toBeTruthy();
+        });
     });
 
-    it('should render channel list with thread menu', () => {
-        jest.useFakeTimers();
+    it('should render channel list with thread menu', async () => {
         const wrapper = renderWithEverything(
             <CategoriesList
                 isCRTEnabled={true}
                 moreThanOneTeam={false}
                 hasChannels={true}
+                draftsCount={0}
+                scheduledPostCount={0}
+                scheduledPostHasError={false}
             />,
             {database},
         );
-        act(() => {
-            jest.runAllTimers();
+
+        await waitFor(() => {
+            expect(wrapper.toJSON()).toBeTruthy();
         });
-        expect(wrapper.toJSON()).toBeTruthy();
-        jest.useRealTimers();
     });
 
-    it('should render team error', async () => {
+    it('should render channel list with Draft menu', async () => {
+        const wrapper = renderWithEverything(
+            <CategoriesList
+                isCRTEnabled={true}
+                moreThanOneTeam={false}
+                hasChannels={true}
+                draftsCount={1}
+                scheduledPostCount={0}
+                scheduledPostHasError={false}
+            />,
+            {database},
+        );
+        await waitFor(() => {
+            expect(wrapper.getByText('Drafts')).toBeTruthy();
+        });
+    });
+
+    // Skipping this test because the snapshot became too big and
+    // it errors out.
+    it.skip('should render team error', async () => {
         await operator.handleSystem({
             systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: ''}],
             prepareRecordsOnly: false,
@@ -69,6 +94,9 @@ describe('components/categories_list', () => {
             <CategoriesList
                 moreThanOneTeam={false}
                 hasChannels={true}
+                draftsCount={0}
+                scheduledPostCount={0}
+                scheduledPostHasError={false}
             />,
             {database},
         );
@@ -76,27 +104,100 @@ describe('components/categories_list', () => {
         act(() => {
             jest.runAllTimers();
         });
-        expect(wrapper.toJSON()).toMatchSnapshot();
+
         jest.useRealTimers();
 
+        await waitFor(() => {
+            expect(wrapper.toJSON()).toMatchSnapshot();
+        });
+    });
+
+    // Skipping this test because the snapshot became too big and
+    // it errors out.
+    it.skip('should render channels error', async () => {
         await operator.handleSystem({
             systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: TestHelper.basicTeam!.id}],
             prepareRecordsOnly: false,
         });
-    });
-
-    it('should render channels error', () => {
         jest.useFakeTimers();
         const wrapper = renderWithEverything(
             <CategoriesList
                 moreThanOneTeam={true}
                 hasChannels={false}
+                draftsCount={0}
+                scheduledPostCount={0}
+                scheduledPostHasError={false}
             />,
             {database},
         );
         act(() => {
             jest.runAllTimers();
         });
-        expect(wrapper.toJSON()).toMatchSnapshot();
+        jest.useRealTimers();
+        await waitFor(() => {
+            expect(wrapper.toJSON()).toMatchSnapshot();
+        });
+    });
+
+    it('should render channel list with Draft menu if scheduledPostCount is greater than 0 and scheduledPost feature is enabled', () => {
+        const wrapper = renderWithEverything(
+            <CategoriesList
+                isCRTEnabled={true}
+                moreThanOneTeam={false}
+                hasChannels={true}
+                draftsCount={0}
+                scheduledPostCount={1}
+                scheduledPostHasError={false}
+                scheduledPostsEnabled={true}
+            />,
+            {database},
+        );
+        expect(wrapper.getByText('Drafts')).toBeTruthy();
+    });
+
+    it('should not render channel list with Draft menu if scheduledPostCount is greater than 0 and scheduledPost feature is disabled', () => {
+        const wrapper = renderWithEverything(
+            <CategoriesList
+                isCRTEnabled={true}
+                moreThanOneTeam={false}
+                hasChannels={true}
+                draftsCount={0}
+                scheduledPostCount={1}
+                scheduledPostHasError={false}
+                scheduledPostsEnabled={false}
+            />,
+            {database},
+        );
+        expect(wrapper.queryByText('Drafts')).not.toBeTruthy();
+    });
+
+    it('should not render channel list with Playbooks menu if playbooks feature is disabled', () => {
+        const wrapper = renderWithEverything(
+            <CategoriesList
+                moreThanOneTeam={false}
+                hasChannels={true}
+                draftsCount={0}
+                scheduledPostCount={0}
+                scheduledPostHasError={false}
+                playbooksEnabled={false}
+            />,
+            {database},
+        );
+        expect(wrapper.queryByText('Playbook checklists')).not.toBeTruthy();
+    });
+
+    it('should render channel list with Playbooks menu if playbooks feature is enabled', () => {
+        const wrapper = renderWithEverything(
+            <CategoriesList
+                moreThanOneTeam={false}
+                hasChannels={true}
+                draftsCount={0}
+                scheduledPostCount={0}
+                scheduledPostHasError={false}
+                playbooksEnabled={true}
+            />,
+            {database},
+        );
+        expect(wrapper.getByText('Playbook checklists')).toBeTruthy();
     });
 });

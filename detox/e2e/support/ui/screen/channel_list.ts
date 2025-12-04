@@ -12,6 +12,10 @@ class ChannelListScreen {
     testID = {
         categoryHeaderPrefix: 'channel_list.category_header.',
         categoryPrefix: 'channel_list.category.',
+        draftChannelInfo: 'draft_post.channel_info',
+        draftbuttonListScreen: 'channel_list.drafts.button',
+        draftCountListScreen: 'channel_list.drafts.count',
+        scheduledMessageCountListScreen: 'channel_list.scheduled_post.count',
         teamItemPrefix: 'team_sidebar.team_list.team_item.',
         channelListScreen: 'channel_list.screen',
         serverIcon: 'channel_list.servers.server_icon',
@@ -82,6 +86,22 @@ class ChannelListScreen {
         await HomeScreen.channelListTab.tap();
 
         return this.toBeVisible();
+    };
+
+    draftsButton = {
+        toBeVisible: async () => {
+            await waitFor(element(by.id(this.testID.draftbuttonListScreen))).toBeVisible().withTimeout(timeouts.ONE_SEC);
+        },
+        toNotBeVisible: async () => {
+            await waitFor(element(by.id(this.testID.draftbuttonListScreen))).not.toBeVisible().withTimeout(timeouts.ONE_SEC);
+        },
+        tap: async () => {
+            await element(by.id(this.testID.draftbuttonListScreen)).tap();
+        },
+    };
+
+    getDraftChannelInfo = () => {
+        return element(by.id(this.testID.draftChannelInfo));
     };
 }
 

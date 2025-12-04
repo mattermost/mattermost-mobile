@@ -1,4 +1,4 @@
-# Server Database - Schema Version 3 
+# Server Database - Schema Version 14
 # Please bump the version by 1, any time the schema changes.
 # Also, include the migration plan under app/database/migration/server,
 # update all models, relationships and types.
@@ -39,6 +39,8 @@ shared bool
 team_id string INDEX FK >- Team.id
 type string
 update_at number
+banner_info string
+abac_policy_enforced boolean
 
 
 ChannelInfo
@@ -64,6 +66,28 @@ id PK string # auto-generated
 name string
 
 
+CustomProfileField
+-
+id PK string # server-generated
+group_id string
+name string
+type string
+target_id string
+target_type string
+create_at number
+update_at number
+delete_at number
+attrs string NULL # stringified JSON
+
+
+CustomProfileAttribute
+-
+id PK string # composition ID User.id-CustomProfileField.id
+field_id string INDEX FK >- CustomProfileField.id
+user_id string INDEX FK >- User.id
+value string
+
+
 Draft
 -
 id PK string # auto-generated
@@ -85,6 +109,7 @@ name string
 post_id string INDEX FK >- Post.id
 size number
 width number
+is_blocked bool #Determines if a file has been blocked and cannot be opened anymore
 
 Group
 -
@@ -149,7 +174,81 @@ MyTeam
 id PK string FK - Team.id # same as Team.id
 roles string
 
+PlaybookRun
+-
+id PK string # server-generated
+playbook_id string
+name string
+description string
+is_active boolean
+active_stage number
+active_stage_title string
+participant_ids string # stringified array of user IDs
+summary string
+current_status string # (valid values InProgres, Finished)
+owner_user_id string INDEX FK >- User.id
+team_id string INDEX FK >- Team.id
+channel_id string INDEX FK >- Channel.id
+post_id string INDEX FK >- Post.id
+create_at number
+end_at number
+delete_at number
+last_status_update_at number
+retrospective_enabled boolean
+retrospective string
+retrospective_published_at number
+synced string NULL INDEX # optional field for sync status
+last_sync_at number NULL # optional field for last sync timestamp
 
+PlaybookChecklist
+-
+id PK string # server-generated
+run_id string INDEX FK >- PlaybookRun.id
+title string
+sort_order number
+synced string NULL INDEX # optional field for sync status
+last_sync_at number NULL # optional field for last sync timestamp
+
+PlaybookChecklistItem
+-
+id PK string # server-generated
+checklist_id string INDEX FK >- PlaybookChecklist.id
+title string
+description string
+state string # e.g., 'open', 'closed'
+state_modified number
+assignee_id string INDEX FK >- User.id
+assignee_modified number
+command string
+command_last_run number
+due_date number
+task_actions string # stringified array of TaskAction
+condition_action string # condition action for the checklist item (values should be '' or 'hidden')
+condition_reason string # condition reason for the checklist item (default empty string meaning there is no condition affecting)
+order number
+completed_at number
+synced string NULL INDEX # optional field for sync status
+last_sync_at number NULL # optional field for last sync timestamp
+
+PlaybookRunAttribute
+-
+id PK string # server-generated
+group_id string
+name string
+type string
+target_id string
+target_type string
+create_at number
+update_at number
+delete_at number
+attrs string NULL # stringified JSON
+
+PlaybookRunAttributeValue
+-
+id PK string # composition ID PlaybookRun.id-PlaybookRunAttribute.id
+attribute_id string INDEX FK >- PlaybookRunAttribute.id
+run_id string INDEX FK >- PlaybookRun.id
+value string
 
 Post
 -
@@ -303,4 +402,4 @@ roles string
 status string
 timezone string
 update_at number
-username string 
+username string

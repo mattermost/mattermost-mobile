@@ -2,17 +2,19 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {useIntl} from 'react-intl';
-import {Alert, Text, View} from 'react-native';
+import {Text, View} from 'react-native';
 
 import Markdown from '@components/markdown';
+import {useExternalLinkHandler} from '@hooks/use_external_link_handler';
 import {makeStyleSheetFromTheme} from '@utils/theme';
-import {tryOpenURL} from '@utils/url';
+import {typography} from '@utils/typography';
+
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     channelId: string;
     link?: string;
-    location: string;
+    location: AvailableScreens;
     theme: Theme;
     value?: string;
 }
@@ -27,36 +29,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         link: {color: theme.linkColor},
         title: {
             color: theme.centerChannelColor,
-            fontSize: 14,
-            fontFamily: 'OpenSans-SemiBold',
-            lineHeight: 20,
+            ...typography('Heading', 100, 'SemiBold'),
             marginBottom: 5,
         },
     };
 });
 
 const AttachmentTitle = ({channelId, link, location, theme, value}: Props) => {
-    const intl = useIntl();
     const style = getStyleSheet(theme);
-
-    const openLink = () => {
-        if (link) {
-            const onError = () => {
-                Alert.alert(
-                    intl.formatMessage({
-                        id: 'mobile.link.error.title',
-                        defaultMessage: 'Error',
-                    }),
-                    intl.formatMessage({
-                        id: 'mobile.link.error.text',
-                        defaultMessage: 'Unable to open the link.',
-                    }),
-                );
-            };
-
-            tryOpenURL(link, onError);
-        }
-    };
+    const openLink = useExternalLinkHandler(link);
 
     let title;
     if (link) {
@@ -73,18 +54,12 @@ const AttachmentTitle = ({channelId, link, location, theme, value}: Props) => {
             <Markdown
                 channelId={channelId}
                 location={location}
-                isEdited={false}
-                isReplyPost={false}
                 disableHashtags={true}
                 disableAtMentions={true}
-                disableChannelLink={true}
                 disableGallery={true}
-                autolinkedUrlSchemes={[]}
-                mentionKeys={[]}
                 theme={theme}
                 value={value}
                 baseTextStyle={style.title}
-                textStyles={{link: style.link}}
             />
         );
     }

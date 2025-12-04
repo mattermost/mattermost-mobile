@@ -20,10 +20,12 @@ type FileHandler = {
         lastTimeStored: number;
         onError: Array<(msg: string) => void>;
         onProgress: Array<(p: number, b: number) => void>;
+        isEditPost?: boolean;
+        updateFileCallback?: (fileInfo: FileInfo) => void;
     };
 }
 
-class DraftUploadManager {
+class DraftEditPostUploadManagerSingleton {
     private handlers: FileHandler = {};
     private previousAppState: AppStateStatus;
 
@@ -38,6 +40,8 @@ class DraftUploadManager {
         channelId: string,
         rootId: string,
         skipBytes = 0,
+        isEditPost = false,
+        updateFileCallback?: (fileInfo: FileInfo) => void,
     ) => {
         this.handlers[file.clientId!] = {
             fileInfo: file,
@@ -47,6 +51,8 @@ class DraftUploadManager {
             lastTimeStored: 0,
             onError: [],
             onProgress: [],
+            isEditPost,
+            updateFileCallback,
         };
 
         const onProgress = (progress: number, bytesRead?: number | null | undefined) => {
@@ -83,7 +89,7 @@ class DraftUploadManager {
 
     public registerProgressHandler = (clientId: string, callback: (progress: number, bytes: number) => void) => {
         if (!this.handlers[clientId]) {
-            return null;
+            return undefined;
         }
 
         this.handlers[clientId].onProgress.push(callback);
@@ -98,7 +104,7 @@ class DraftUploadManager {
 
     public registerErrorHandler = (clientId: string, callback: (errMessage: string) => void) => {
         if (!this.handlers[clientId]) {
-            return null;
+            return undefined;
         }
 
         this.handlers[clientId].onError.push(callback);
@@ -121,12 +127,12 @@ class DraftUploadManager {
 
         h.onProgress.forEach((c) => c(progress, bytes));
         if (AppState.currentState !== 'active' && h.lastTimeStored + PROGRESS_TIME_TO_STORE < Date.now()) {
-            updateDraftFile(h.serverUrl, h.channelId, h.rootId, this.handlers[clientId].fileInfo);
+            this.handleUpdateDraftFile(h, this.handlers[clientId].fileInfo, h.isEditPost || false);
             h.lastTimeStored = Date.now();
         }
     };
 
-    private handleComplete = (response: ClientResponse, clientId: string) => {
+    private handleComplete = async (response: ClientResponse, clientId: string) => {
         const h = this.handlers[clientId];
         if (!h) {
             return;
@@ -151,10 +157,10 @@ class DraftUploadManager {
         fileInfo.clientId = h.fileInfo.clientId;
         fileInfo.localPath = h.fileInfo.localPath;
 
-        updateDraftFile(h.serverUrl, h.channelId, h.rootId, fileInfo);
+        await this.handleUpdateDraftFile(h, fileInfo, h.isEditPost || false);
     };
 
-    private handleError = (errorMessage: string, clientId: string) => {
+    private handleError = async (errorMessage: string, clientId: string) => {
         const h = this.handlers[clientId];
         if (!h) {
             return;
@@ -166,7 +172,15 @@ class DraftUploadManager {
 
         const fileInfo = {...h.fileInfo};
         fileInfo.failed = true;
-        updateDraftFile(h.serverUrl, h.channelId, h.rootId, fileInfo);
+        await this.handleUpdateDraftFile(h, fileInfo, h.isEditPost || false);
+    };
+
+    private handleUpdateDraftFile = async (handler: FileHandler[string], fileInfo: FileInfo, isEditPost: boolean) => {
+        if (isEditPost && handler.updateFileCallback) {
+            handler.updateFileCallback(fileInfo);
+        } else {
+            await updateDraftFile(handler.serverUrl, handler.channelId, handler.rootId, fileInfo);
+        }
     };
 
     private onAppStateChange = async (appState: AppStateStatus) => {
@@ -180,14 +194,15 @@ class DraftUploadManager {
     private storeProgress = async () => {
         for (const h of Object.values(this.handlers)) {
             // eslint-disable-next-line no-await-in-loop
-            await updateDraftFile(h.serverUrl, h.channelId, h.rootId, h.fileInfo);
+            await this.handleUpdateDraftFile(h, h.fileInfo, h.isEditPost || false);
             h.lastTimeStored = Date.now();
         }
     };
 }
 
-export default new DraftUploadManager();
+const DraftEditPostUploadManager = new DraftEditPostUploadManagerSingleton();
+export default DraftEditPostUploadManager;
 
 export const exportedForTesting = {
-    DraftUploadManager,
+    DraftEditPostUploadManagerSingleton,
 };

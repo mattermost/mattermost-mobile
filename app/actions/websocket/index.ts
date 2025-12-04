@@ -5,11 +5,11 @@ import {markChannelAsViewed} from '@actions/local/channel';
 import {dataRetentionCleanup} from '@actions/local/systems';
 import {markChannelAsRead} from '@actions/remote/channel';
 import {
-    deferredAppEntryActions,
     entry,
     handleEntryAfterLoadNavigation,
     setExtraSessionProps,
 } from '@actions/remote/entry/common';
+import {deferredAppEntryActions} from '@actions/remote/entry/deferred';
 import {fetchPostsForChannel, fetchPostThread} from '@actions/remote/post';
 import {openAllUnreadChannels} from '@actions/remote/preference';
 import {autoUpdateTimezone} from '@actions/remote/user';
@@ -18,6 +18,7 @@ import {isSupportedServerCalls} from '@calls/utils';
 import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import AppsManager from '@managers/apps_manager';
+import {handlePlaybookReconnect} from '@playbooks/actions/websocket/reconnect';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {getLastPostInThread} from '@queries/servers/post';
 import {
@@ -36,17 +37,17 @@ import {setTeamLoading} from '@store/team_load_store';
 import {isTablet} from '@utils/helpers';
 import {logDebug, logInfo} from '@utils/log';
 
-export async function handleFirstConnect(serverUrl: string, groupLabel?: string) {
+export async function handleFirstConnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel) {
     setExtraSessionProps(serverUrl, groupLabel);
     autoUpdateTimezone(serverUrl, groupLabel);
     return doReconnect(serverUrl, groupLabel);
 }
 
-export async function handleReconnect(serverUrl: string) {
-    return doReconnect(serverUrl, 'reconnection');
+export async function handleReconnect(serverUrl: string, groupLabel: BaseRequestGroupLabel = 'WebSocket Reconnect') {
+    return doReconnect(serverUrl, groupLabel);
 }
 
-async function doReconnect(serverUrl: string, groupLabel?: string) {
+async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return new Error('cannot find server database');
@@ -71,7 +72,7 @@ async function doReconnect(serverUrl: string, groupLabel?: string) {
         setTeamLoading(serverUrl, false);
         return entryData.error;
     }
-    const {models, initialTeamId, initialChannelId, prefData, teamData, chData, gmConverted} = entryData;
+    const {models, initialTeamId, initialChannelId, prefData, teamData, chData, meData, gmConverted} = entryData;
 
     await handleEntryAfterLoadNavigation(serverUrl, teamData.memberships || [], chData?.memberships || [], currentTeamId || '', currentChannelId || '', initialTeamId, initialChannelId, gmConverted);
 
@@ -80,17 +81,7 @@ async function doReconnect(serverUrl: string, groupLabel?: string) {
         await operator.batchRecords(models, 'doReconnect');
     }
 
-    await setLastFullSync(operator, now);
-
-    const tabletDevice = isTablet();
-    const isActiveServer = (await getActiveServerUrl()) === serverUrl;
-    if (isActiveServer && tabletDevice && initialChannelId === currentChannelId) {
-        await markChannelAsRead(serverUrl, initialChannelId, false, groupLabel);
-        markChannelAsViewed(serverUrl, initialChannelId);
-    }
-
     logInfo('WEBSOCKET RECONNECT MODELS BATCHING TOOK', `${Date.now() - dt}ms`);
-    setTeamLoading(serverUrl, false);
 
     await fetchPostDataIfNeeded(serverUrl, groupLabel);
 
@@ -98,11 +89,16 @@ async function doReconnect(serverUrl: string, groupLabel?: string) {
     const license = await getLicense(database);
     const config = await getConfig(database);
 
+    handlePlaybookReconnect(serverUrl);
+
     if (isSupportedServerCalls(config?.Version)) {
         loadConfigAndCalls(serverUrl, currentUserId, groupLabel);
     }
 
-    await deferredAppEntryActions(serverUrl, lastFullSync, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId, undefined, groupLabel);
+    await deferredAppEntryActions(serverUrl, lastFullSync, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, meData, initialTeamId, undefined, groupLabel);
+
+    await setLastFullSync(operator, now);
+    setTeamLoading(serverUrl, false);
 
     openAllUnreadChannels(serverUrl, groupLabel);
 
@@ -112,7 +108,7 @@ async function doReconnect(serverUrl: string, groupLabel?: string) {
     return undefined;
 }
 
-async function fetchPostDataIfNeeded(serverUrl: string, groupLabel?: string) {
+async function fetchPostDataIfNeeded(serverUrl: string, groupLabel?: RequestGroupLabel) {
     try {
         const isActiveServer = (await getActiveServerUrl()) === serverUrl;
         if (!isActiveServer) {
@@ -146,7 +142,7 @@ async function fetchPostDataIfNeeded(serverUrl: string, groupLabel?: string) {
         }
 
         if (currentChannelId && (isChannelScreenMounted || tabletDevice)) {
-            await fetchPostsForChannel(serverUrl, currentChannelId, false, groupLabel);
+            await fetchPostsForChannel(serverUrl, currentChannelId, false, false, groupLabel);
             markChannelAsRead(serverUrl, currentChannelId, false, groupLabel);
             if (!EphemeralStore.wasNotificationTapped()) {
                 markChannelAsViewed(serverUrl, currentChannelId, true);

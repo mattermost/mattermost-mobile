@@ -11,16 +11,18 @@ import {DatabaseType, MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
 import AppDatabaseMigrations from '@database/migration/app';
 import ServerDatabaseMigrations from '@database/migration/server';
 import {InfoModel, GlobalModel, ServersModel} from '@database/models/app';
-import {CategoryModel, CategoryChannelModel, ChannelModel, ChannelBookmarkModel, ChannelInfoModel, ChannelMembershipModel, ConfigModel, CustomEmojiModel, DraftModel, FileModel,
+import {CategoryModel, CategoryChannelModel, ChannelModel, ChannelBookmarkModel, ChannelInfoModel, ChannelMembershipModel, ConfigModel, CustomEmojiModel, CustomProfileFieldModel, CustomProfileAttributeModel, DraftModel, FileModel,
     GroupModel, GroupChannelModel, GroupTeamModel, GroupMembershipModel, MyChannelModel, MyChannelSettingsModel, MyTeamModel,
     PostModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, ReactionModel, RoleModel,
     SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,
     ThreadModel, ThreadParticipantModel, ThreadInTeamModel, TeamThreadsSyncModel, UserModel,
+    ScheduledPostModel,
 } from '@database/models/server';
 import AppDataOperator from '@database/operator/app_data_operator';
 import ServerDataOperator from '@database/operator/server_data_operator';
 import {schema as appSchema} from '@database/schema/app';
 import {serverSchema} from '@database/schema/server';
+import {PlaybookRunModel, PlaybookChecklistModel, PlaybookChecklistItemModel, PlaybookRunAttributeModel, PlaybookRunAttributeValueModel} from '@playbooks/database/models';
 import {deleteIOSDatabase} from '@utils/mattermost_managed';
 import {urlSafeBase64Encode} from '@utils/security';
 import {removeProtocol} from '@utils/url';
@@ -32,12 +34,12 @@ const {SERVERS} = MM_TABLES.APP;
 const APP_DATABASE = 'app';
 
 if (__DEV__) {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
     // @ts-ignore
     logger.silence();
 }
 
-class DatabaseManager {
+class DatabaseManagerSingleton {
     public appDatabase?: AppDatabase;
     public serverDatabases: ServerDatabases = {};
     private readonly appModels: Models;
@@ -47,11 +49,12 @@ class DatabaseManager {
     constructor() {
         this.appModels = [InfoModel, GlobalModel, ServersModel];
         this.serverModels = [
-            CategoryModel, CategoryChannelModel, ChannelModel, ChannelBookmarkModel, ChannelInfoModel, ChannelMembershipModel, ConfigModel, CustomEmojiModel, DraftModel, FileModel,
+            CategoryModel, CategoryChannelModel, ChannelModel, ChannelBookmarkModel, ChannelInfoModel, ChannelMembershipModel, ConfigModel, CustomEmojiModel, CustomProfileFieldModel, CustomProfileAttributeModel, DraftModel, FileModel,
             GroupModel, GroupChannelModel, GroupTeamModel, GroupMembershipModel, MyChannelModel, MyChannelSettingsModel, MyTeamModel,
             PostModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, ReactionModel, RoleModel,
-            SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,
+            ScheduledPostModel, SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,
             ThreadModel, ThreadParticipantModel, ThreadInTeamModel, TeamThreadsSyncModel, UserModel,
+            PlaybookRunModel, PlaybookChecklistModel, PlaybookChecklistItemModel, PlaybookRunAttributeModel, PlaybookRunAttributeValueModel,
         ];
         this.databaseDirectory = '';
     }
@@ -59,6 +62,7 @@ class DatabaseManager {
     public init = async (serverUrls: string[]): Promise<void> => {
         await this.createAppDatabase();
         for await (const serverUrl of serverUrls) {
+            await this.destroyServerDatabase(serverUrl);
             await this.initServerDatabase(serverUrl);
         }
         this.appDatabase?.operator.handleInfo({
@@ -76,7 +80,9 @@ class DatabaseManager {
             const modelClasses = this.appModels;
             const schema = appSchema;
 
-            const adapter = new LokiJSAdapter({dbName: APP_DATABASE, migrations: AppDatabaseMigrations, schema, useWebWorker: false, useIncrementalIndexedDB: true});
+            // autosave uses a timeout that doesn't get cleared when we close the database in tests
+            // disabling it makes it so the tests don't leak memory
+            const adapter = new LokiJSAdapter({dbName: APP_DATABASE, migrations: AppDatabaseMigrations, schema, useWebWorker: false, useIncrementalIndexedDB: true, extraLokiOptions: {autosave: false}});
 
             const database = new Database({adapter, modelClasses});
             const operator = new AppDataOperator(database);
@@ -103,7 +109,9 @@ class DatabaseManager {
                 const modelClasses = this.serverModels;
                 const schema = serverSchema;
 
-                const adapter = new LokiJSAdapter({dbName, migrations, schema, useWebWorker: false, useIncrementalIndexedDB: true});
+                // autosave uses a timeout that doesn't get cleared when we close the database in tests
+                // disabling it makes it so the tests don't leak memory
+                const adapter = new LokiJSAdapter({dbName, migrations, schema, useWebWorker: false, useIncrementalIndexedDB: true, extraLokiOptions: {autosave: false}});
 
                 // Registers the new server connection into the DEFAULT database
                 await this.addServerToAppDatabase({
@@ -399,4 +407,5 @@ class DatabaseManager {
     };
 }
 
-export default new DatabaseManager();
+const DatabaseManager = new DatabaseManagerSingleton();
+export default DatabaseManager;

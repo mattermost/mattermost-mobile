@@ -52,10 +52,11 @@ class FoldableObserver(activity: Activity) {
         if (disposable?.isDisposed == true) {
             onCreate()
         }
+
         disposable = observable.observeOn(AndroidSchedulers.mainThread())
                 .subscribe { layoutInfo ->
                     setIsDeviceFolded(layoutInfo)
-                    handleWindowLayoutInfo(layoutInfo)
+                    handleWindowLayoutInfo()
                     SplitView.setDeviceFolded()
                 }
     }
@@ -82,7 +83,7 @@ class FoldableObserver(activity: Activity) {
         }
     }
 
-    private fun handleWindowLayoutInfo(windowLayoutInfo: WindowLayoutInfo) {
+    fun handleWindowLayoutInfo() {
         val bounds = getWindowSize()
 
         if (bounds?.width() != windowBounds?.width()) {
@@ -111,7 +112,7 @@ class FoldableObserver(activity: Activity) {
     }
 
     fun getWindowDimensions(): Rect? {
-        return this.windowBounds;
+        return this.windowBounds
     }
 
     fun isCompactView(): Boolean {

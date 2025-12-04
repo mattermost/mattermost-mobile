@@ -7,6 +7,7 @@ import {
     type CallsConfig,
     type EmojiData,
     type UserReactionData,
+    type CallsVersionInfo,
 } from '@mattermost/calls/lib/types';
 
 import type UserModel from '@typings/database/models/servers/user';
@@ -142,7 +143,7 @@ export type CallsConnection = {
     disconnect: (err?: Error) => void;
     mute: () => void;
     unmute: () => void;
-    waitForPeerConnection: () => Promise<void>;
+    waitForPeerConnection: () => Promise<string>;
     raiseHand: () => void;
     unraiseHand: () => void;
     initializeVoiceTrack: () => void;
@@ -153,7 +154,7 @@ export type CallsConfigState = CallsConfig & {
     AllowEnableCalls: boolean;
     GroupCallsAllowed: boolean;
     pluginEnabled: boolean;
-    version: CallsVersion;
+    version: CallsVersionInfo;
     last_retrieved_at: number;
 }
 
@@ -211,30 +212,11 @@ export type AudioDeviceInfo = {
     selectedAudioDevice: AudioDevice;
 };
 
-export type CallsVersion = {
-    version?: string;
-    build?: string;
-};
-
 export type LiveCaptionMobile = {
     captionId: string;
     sessionId: string;
     userId: string;
     text: string;
-}
-
-// DEPRECATED in favour of CallJobState since v2.16
-export type CallRecordingState = {
-    init_at: number;
-    start_at: number;
-    end_at: number;
-    err?: string;
-    error_at?: number;
-}
-
-export type CallRecordingStateData = {
-    recState: CallRecordingState;
-    callID: string;
 }
 
 // TODO: MM-57919, refactor wsmsg data to calls-common

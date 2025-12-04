@@ -1,5 +1,6 @@
 package com.mattermost.helpers.database_extension
 
+import android.util.Log
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.NoSuchKeyException
 import com.facebook.react.bridge.ReadableArray
@@ -9,6 +10,21 @@ import com.mattermost.helpers.mapCursor
 import com.nozbe.watermelondb.WMDatabase
 import org.json.JSONObject
 
+private fun getLastReplyAt(thread: ReadableMap): Double {
+    try {
+        var v = thread.getDouble("last_reply_at")
+        if (v == 0.0) {
+            val post = thread.getMap("post")
+            if (post != null) {
+                v = post.getDouble("create_at")
+            }
+        }
+        return v
+    } catch (e: NoSuchKeyException) {
+        return 0.0
+    }
+}
+
 internal fun insertThread(db: WMDatabase, thread: ReadableMap) {
     // These fields are not present when we extract threads from posts
     try {
@@ -17,7 +33,7 @@ internal fun insertThread(db: WMDatabase, thread: ReadableMap) {
         val lastViewedAt = try { thread.getDouble("last_viewed_at") } catch (e: NoSuchKeyException) { 0 }
         val unreadReplies = try { thread.getInt("unread_replies") } catch (e: NoSuchKeyException) { 0 }
         val unreadMentions = try { thread.getInt("unread_mentions") } catch (e: NoSuchKeyException) { 0 }
-        val lastReplyAt = try { thread.getDouble("last_reply_at") } catch (e: NoSuchKeyException) { 0 }
+        val lastReplyAt = getLastReplyAt(thread)
         val replyCount = try { thread.getInt("reply_count") } catch (e: NoSuchKeyException) { 0 }
 
         db.execute(
@@ -44,7 +60,7 @@ internal fun updateThread(db: WMDatabase, thread: ReadableMap, existingRecord: R
         val lastViewedAt = try { thread.getDouble("last_viewed_at") } catch (e: NoSuchKeyException) { existingRecord.getDouble("last_viewed_at") }
         val unreadReplies = try { thread.getInt("unread_replies") } catch (e: NoSuchKeyException) { existingRecord.getInt("unread_replies") }
         val unreadMentions = try { thread.getInt("unread_mentions") } catch (e: NoSuchKeyException) { existingRecord.getInt("unread_mentions") }
-        val lastReplyAt = try { thread.getDouble("last_reply_at") } catch (e: NoSuchKeyException) { 0 }
+        val lastReplyAt = getLastReplyAt(thread)
         val replyCount = try { thread.getInt("reply_count") } catch (e: NoSuchKeyException) { 0 }
 
         db.execute(
@@ -231,8 +247,19 @@ fun handleThreadInTeam(db: WMDatabase, thread: ReadableMap, teamId: String) {
 
 fun handleTeamThreadsSync(db: WMDatabase, threadList: ArrayList<ReadableMap>, teamIds: ArrayList<String>) {
     val sortedList = threadList.filter{ it.getBoolean("is_following") }
-            .sortedBy { it.getDouble("last_reply_at") }
-            .map { it.getDouble("last_reply_at") }
+            .sortedBy {
+                var v = getLastReplyAt(it)
+                if (v == 0.0) {
+                    Log.d("Database", "Trying to add a thread with no replies and no post")
+                }
+                v
+            }
+            .map {
+                getLastReplyAt(it)
+            }
+    if (sortedList.isEmpty()) {
+        return;
+    }
     val earliest = sortedList.first()
     val latest = sortedList.last()
 

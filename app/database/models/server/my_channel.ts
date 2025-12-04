@@ -53,6 +53,9 @@ export default class MyChannelModel extends Model implements MyChannelModelInter
     /** viewed_at : The timestamp showing when the user's last opened this channel (this is used for the new line message indicator) */
     @field('viewed_at') viewedAt!: number;
 
+    /** last_playbook_runs_fetch_at : The timestamp of the last successful fetch of playbook runs for this channel, used as the "since" parameter for incremental updates */
+    @field('last_playbook_runs_fetch_at') lastPlaybookRunsFetchAt!: number;
+
     /** channel : The relation pointing to the CHANNEL table */
     @immutableRelation(CHANNEL, 'id') channel!: Relation<ChannelModel>;
 

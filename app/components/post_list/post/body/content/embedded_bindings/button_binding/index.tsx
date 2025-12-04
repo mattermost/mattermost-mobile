@@ -11,12 +11,12 @@ import {handleBindingClick, postEphemeralCallResponseForPost} from '@actions/rem
 import {handleGotoLocation} from '@actions/remote/command';
 import {AppBindingLocations, AppCallResponseTypes} from '@constants/apps';
 import {useServerUrl} from '@context/server';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {observeChannel} from '@queries/servers/channel';
 import {observeCurrentTeamId} from '@queries/servers/system';
 import {showAppForm} from '@screens/navigation';
 import {createCallContext} from '@utils/apps';
 import {getStatusColors} from '@utils/message_attachment';
-import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
 import ButtonBindingText from './button_binding_text';
@@ -62,7 +62,7 @@ const ButtonBinding = ({currentTeamId, binding, post, teamID, theme}: Props) => 
     const serverUrl = useServerUrl();
     const style = getStyleSheet(theme);
 
-    const onPress = useCallback(preventDoubleTap(async () => {
+    const onPress = usePreventDoubleTap(useCallback(async () => {
         if (pressed.current) {
             return;
         }
@@ -70,7 +70,7 @@ const ButtonBinding = ({currentTeamId, binding, post, teamID, theme}: Props) => 
         pressed.current = true;
 
         const context = createCallContext(
-            binding.app_id,
+            binding.app_id!,
             AppBindingLocations.IN_POST + binding.location,
             post.channelId,
             teamID || currentTeamId,
@@ -118,7 +118,7 @@ const ButtonBinding = ({currentTeamId, binding, post, teamID, theme}: Props) => 
                 postEphemeralCallResponseForPost(serverUrl, callResp, errorMessage, post);
             }
         }
-    }), []);
+    }, [binding, currentTeamId, intl, post, serverUrl, teamID]));
 
     return (
         <Button
@@ -127,7 +127,7 @@ const ButtonBinding = ({currentTeamId, binding, post, teamID, theme}: Props) => 
             onPress={onPress}
         >
             <ButtonBindingText
-                message={binding.label}
+                message={binding.label || intl.formatMessage({id: 'apps.binding.default_button_name', defaultMessage: 'Submit'})}
                 style={style.text}
             />
         </Button>

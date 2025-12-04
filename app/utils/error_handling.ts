@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {defineMessages} from 'react-intl';
 import {Alert} from 'react-native';
 import {setJSExceptionHandler} from 'react-native-exception-handler';
 
-import {DEFAULT_LOCALE, getTranslations, t} from '@i18n';
+import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 import {dismissAllModals, dismissAllOverlays} from '@screens/navigation';
 import {isBetaApp} from '@utils/general';
 import {
@@ -15,7 +16,22 @@ import {
 
 import {logWarning} from './log';
 
-class JavascriptAndNativeErrorHandler {
+const messages = defineMessages({
+    title: {
+        id: 'mobile.error_handler.title',
+        defaultMessage: 'Unexpected error occurred',
+    },
+    description: {
+        id: 'mobile.error_handler.description',
+        defaultMessage: '\nTap relaunch to open the app again. After restart, you can report the problem from the settings menu.\n',
+    },
+    button: {
+        id: 'mobile.error_handler.button',
+        defaultMessage: 'Relaunch',
+    },
+});
+
+class JavascriptAndNativeErrorHandlerSingleton {
     initializeErrorHandling = () => {
         initializeSentry();
         setJSExceptionHandler(this.errorHandler, false);
@@ -46,10 +62,10 @@ class JavascriptAndNativeErrorHandler {
             const translations = getTranslations(DEFAULT_LOCALE);
 
             Alert.alert(
-                translations[t('mobile.error_handler.title')],
-                translations[t('mobile.error_handler.description')] + `\n\n${e.message}\n\n${e.stack}`,
+                translations[messages.title.id],
+                translations[messages.description.id] + `\n\n${e.message}\n\n${e.stack}`,
                 [{
-                    text: translations[t('mobile.error_handler.button')],
+                    text: translations[messages.button.id],
                     onPress: async () => {
                         await dismissAllModals();
                         await dismissAllOverlays();
@@ -61,4 +77,5 @@ class JavascriptAndNativeErrorHandler {
     };
 }
 
-export default new JavascriptAndNativeErrorHandler();
+const JavascriptAndNativeErrorHandler = new JavascriptAndNativeErrorHandlerSingleton();
+export default JavascriptAndNativeErrorHandler;

@@ -9,6 +9,7 @@ import type TeamMembershipModel from './team_membership';
 import type TeamSearchHistoryModel from './team_search_history';
 import type {Query, Relation, Model} from '@nozbe/watermelondb';
 import type {Associations} from '@nozbe/watermelondb/Model';
+import type PlaybookRunModel from '@playbooks/types/database/models/playbook_run';
 
 /**
  * A Team houses and enables communication to happen across channels and users.
@@ -55,6 +56,9 @@ declare class TeamModel extends Model {
 
     /** channels : All the channels associated with this team */
     channels: Query<ChannelModel>;
+
+    /** playbookRuns : All playbook runs for this channel */
+    playbookRuns: Query<PlaybookRunModel>;
 
     /** myTeam : Retrieves additional information about the team that this user is possibly part of.  This query might yield no result if the user isn't part of a team. */
     myTeam: Relation<MyTeamModel>;

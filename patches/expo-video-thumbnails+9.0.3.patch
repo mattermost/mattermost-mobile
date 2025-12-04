@@ -1,0 +1,13 @@
+diff --git a/node_modules/expo-video-thumbnails/ios/VideoThumbnailsModule.swift b/node_modules/expo-video-thumbnails/ios/VideoThumbnailsModule.swift
+index 069e3e4..c32ba6c 100644
+--- a/node_modules/expo-video-thumbnails/ios/VideoThumbnailsModule.swift
++++ b/node_modules/expo-video-thumbnails/ios/VideoThumbnailsModule.swift
+@@ -7,7 +7,7 @@ public class VideoThumbnailsModule: Module {
+   public func definition() -> ModuleDefinition {
+     Name("ExpoVideoThumbnails")
+ 
+-    AsyncFunction("getThumbnail", getVideoThumbnail)
++    AsyncFunction("getThumbnail", getVideoThumbnail).runOnQueue(.global())
+   }
+ 
+   internal func getVideoThumbnail(sourceFilename: URL, options: VideoThumbnailsOptions) throws -> [String: Any] {

@@ -12,6 +12,7 @@ import PushNotifications from '@init/push_notifications';
 import {
     prepareDeleteChannel, prepareMyChannelsForTeam, queryAllMyChannel,
     getMyChannel, getChannelById, queryUsersOnChannel, queryUserChannelsByTypes,
+    prepareAllMyChannels,
 } from '@queries/servers/channel';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {prepareCommonSystemValues, type PrepareCommonSystemValuesArgs, getCommonSystemValues, getCurrentTeamId, setCurrentChannelId, getCurrentUserId, getConfig, getLicense} from '@queries/servers/system';
@@ -20,9 +21,10 @@ import {getCurrentUser, queryUsersById} from '@queries/servers/user';
 import {dismissAllModalsAndPopToRoot, dismissAllModalsAndPopToScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {isTablet} from '@utils/helpers';
-import {logError, logInfo} from '@utils/log';
+import {logDebug, logError, logInfo} from '@utils/log';
 import {displayGroupMessageName, displayUsername, getUserIdFromChannelName} from '@utils/user';
 
+import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Model} from '@nozbe/watermelondb';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type UserModel from '@typings/database/models/servers/user';
@@ -86,14 +88,16 @@ export async function switchToChannel(serverUrl: string, channelId: string, team
                 }
 
                 if (isTabletDevice) {
-                    dismissAllModalsAndPopToRoot();
+                    await dismissAllModalsAndPopToRoot();
                     DeviceEventEmitter.emit(NavigationConstants.NAVIGATION_HOME, Screens.CHANNEL);
                 } else {
-                    dismissAllModalsAndPopToScreen(Screens.CHANNEL, '', undefined, {topBar: {visible: false}});
+                    await dismissAllModalsAndPopToScreen(Screens.CHANNEL, '', undefined, {topBar: {visible: false}});
                 }
 
                 logInfo('channel switch to', channel?.displayName, channelId, (Date.now() - dt), 'ms');
             }
+        } else {
+            logDebug('failed to navigate to channel because there was no membership, channel id: ', channelId);
         }
 
         return {models};
@@ -114,7 +118,7 @@ export async function removeCurrentUserFromChannel(serverUrl: string, channelId:
             if (!channel) {
                 throw new Error('myChannel present but no channel on the database');
             }
-            models.push(...await prepareDeleteChannel(channel));
+            models.push(...await prepareDeleteChannel(serverUrl, channel));
             let teamId = channel.teamId;
             if (teamId) {
                 teamId = await getCurrentTeamId(database);
@@ -237,6 +241,43 @@ export async function resetMessageCount(serverUrl: string, channelId: string) {
     }
 }
 
+const resolveAndFlattenModels = async (
+    operator: ServerDataOperator,
+    modelPromises: Array<Promise<Model[]>>,
+    description: string,
+    prepareRecordsOnly: boolean,
+) => {
+    try {
+        const models = await Promise.all(modelPromises);
+        const flattenedModels = models.flat();
+
+        if (prepareRecordsOnly || !flattenedModels.length) {
+            return {models: flattenedModels, error: undefined};
+        }
+
+        await operator.batchRecords(flattenedModels, description);
+        return {models: flattenedModels, error: undefined};
+    } catch (error) {
+        logError('Failed resolveAndFlattenModels', {error, description});
+        return {models: [], error};
+    }
+};
+
+export async function storeAllMyChannels(serverUrl: string, channels: Channel[], memberships: ChannelMembership[], isCRTEnabled: boolean, prepareRecordsOnly = false) {
+    try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const cs = new Set(channels.map((c) => c.id));
+        const modelPromises: Array<Promise<Model[]>> = [
+            ...await prepareAllMyChannels(operator, channels, memberships.filter((m) => cs.has(m.channel_id)), isCRTEnabled),
+        ];
+
+        return resolveAndFlattenModels(operator, modelPromises, 'storeAllMyChannels', prepareRecordsOnly);
+    } catch (error) {
+        logError('Failed storeAllMyChannels', {error, serverUrl, channelsCount: channels.length});
+        return {error, models: undefined};
+    }
+}
+
 export async function storeMyChannelsForTeam(serverUrl: string, teamId: string, channels: Channel[], memberships: ChannelMembership[], prepareRecordsOnly = false, isCRTEnabled?: boolean) {
     try {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -244,25 +285,10 @@ export async function storeMyChannelsForTeam(serverUrl: string, teamId: string, 
             ...await prepareMyChannelsForTeam(operator, teamId, channels, memberships, isCRTEnabled),
         ];
 
-        const models = await Promise.all(modelPromises);
-        if (!models.length) {
-            return {models: []};
-        }
-
-        const flattenedModels = models.flat();
-
-        if (prepareRecordsOnly) {
-            return {models: flattenedModels};
-        }
-
-        if (flattenedModels.length) {
-            await operator.batchRecords(flattenedModels, 'storeMyChannelsForTeam');
-        }
-
-        return {models: flattenedModels};
+        return resolveAndFlattenModels(operator, modelPromises, 'storeMyChannelsForTeam', prepareRecordsOnly);
     } catch (error) {
         logError('Failed storeMyChannelsForTeam', error);
-        return {error};
+        return {error, models: undefined};
     }
 }
 

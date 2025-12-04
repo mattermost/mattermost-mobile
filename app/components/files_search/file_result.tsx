@@ -24,12 +24,12 @@ const styles = StyleSheet.create({
 type Props = {
     canDownloadFiles: boolean;
     channelName?: string;
+    enableSecureFilePreview: boolean;
     fileInfo: FileInfo;
     index: number;
     numOptions: number;
     onOptionsPress: (finfo: FileInfo) => void;
     onPress: (idx: number) => void;
-    publicLinkEnabled: boolean;
     setAction: (action: GalleryAction) => void;
     updateFileForGallery: (idx: number, file: FileInfo) => void;
 }
@@ -39,12 +39,12 @@ const galleryIdentifier = 'search-files-location';
 const FileResult = ({
     canDownloadFiles,
     channelName,
+    enableSecureFilePreview,
     fileInfo,
     index,
     numOptions,
     onOptionsPress,
     onPress,
-    publicLinkEnabled,
     setAction,
     updateFileForGallery,
 }: Props) => {
@@ -83,6 +83,7 @@ const FileResult = ({
                 <File
                     asCard={true}
                     canDownloadFiles={canDownloadFiles}
+                    enableSecureFilePreview={enableSecureFilePreview}
                     channelName={channelName}
                     file={fileInfo}
                     galleryIdentifier={galleryIdentifier}
@@ -92,7 +93,6 @@ const FileResult = ({
                     onOptionsPress={handleOptionsPress}
                     onPress={onPress}
                     optionSelected={isTablet && showOptions}
-                    publicLinkEnabled={publicLinkEnabled}
                     showDate={true}
                     updateFileForGallery={updateFileForGallery}
                     wrapperWidth={(getViewPortWidth(isReplyPost, isTablet) - 6)}

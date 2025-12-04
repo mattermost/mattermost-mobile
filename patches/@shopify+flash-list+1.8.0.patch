@@ -1,0 +1,53 @@
+diff --git a/node_modules/@shopify/flash-list/dist/FlashList.js b/node_modules/@shopify/flash-list/dist/FlashList.js
+index 486a284..1ad99e4 100644
+--- a/node_modules/@shopify/flash-list/dist/FlashList.js
++++ b/node_modules/@shopify/flash-list/dist/FlashList.js
+@@ -159,6 +159,8 @@ var FlashList = /** @class */ (function (_super) {
+             (_a = _this.stickyContentContainerRef) === null || _a === void 0 ? void 0 : _a.setEnabled(_this.isStickyEnabled);
+         };
+         _this.rowRendererSticky = function (index) {
++            var _a, _b;
++            (_b = (_a = _this.props).onStickyHeaderIndexChanged) === null || _b === void 0 ? void 0 : _b.call(_a, index);
+             return _this.rowRendererWithIndex(index, FlashListProps_1.RenderTargetOptions.StickyHeader);
+         };
+         _this.rowRendererWithIndex = function (index, target) {
+diff --git a/node_modules/@shopify/flash-list/dist/FlashListProps.d.ts b/node_modules/@shopify/flash-list/dist/FlashListProps.d.ts
+index 19055e9..aa586ed 100644
+--- a/node_modules/@shopify/flash-list/dist/FlashListProps.d.ts
++++ b/node_modules/@shopify/flash-list/dist/FlashListProps.d.ts
+@@ -187,6 +187,10 @@ export interface FlashListProps<TItem> extends ScrollViewProps {
+         viewableItems: ViewToken[];
+         changed: ViewToken[];
+     }) => void) | null | undefined;
++    /**
++     * Called when the sticky headers change. This event is raised when the sticky header index changes.
++     */
++    onStickyHeaderIndexChanged?: ((index: number) => void) | null | undefined;
+     /**
+      * If provided, a standard RefreshControl will be added for "Pull to Refresh" functionality.
+      * Make sure to also set the refreshing prop correctly.
+diff --git a/node_modules/@shopify/flash-list/src/FlashList.tsx b/node_modules/@shopify/flash-list/src/FlashList.tsx
+index 0e9f071..a158be1 100644
+--- a/node_modules/@shopify/flash-list/src/FlashList.tsx
++++ b/node_modules/@shopify/flash-list/src/FlashList.tsx
+@@ -642,6 +642,7 @@ class FlashList<T> extends React.PureComponent<
+   };
+ 
+   private rowRendererSticky = (index: number) => {
++    this.props.onStickyHeaderIndexChanged?.(index);
+     return this.rowRendererWithIndex(index, RenderTargetOptions.StickyHeader);
+   };
+ 
+diff --git a/node_modules/@shopify/flash-list/src/FlashListProps.ts b/node_modules/@shopify/flash-list/src/FlashListProps.ts
+index 77e6096..f61fe03 100644
+--- a/node_modules/@shopify/flash-list/src/FlashListProps.ts
++++ b/node_modules/@shopify/flash-list/src/FlashListProps.ts
+@@ -251,6 +251,8 @@ export interface FlashListProps<TItem> extends ScrollViewProps {
+     | null
+     | undefined;
+ 
++  onStickyHeaderIndexChanged?: ((index: number) => void) | null | undefined;
++
+   /**
+    * If provided, a standard RefreshControl will be added for "Pull to Refresh" functionality.
+    * Make sure to also set the refreshing prop correctly.

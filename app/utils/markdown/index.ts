@@ -2,11 +2,13 @@
 // See LICENSE.txt for license information.
 
 import {Platform, type StyleProp, StyleSheet, type TextStyle} from 'react-native';
+import parseUrl from 'url-parse';
 
 import {getViewPortWidth} from '@utils/images';
 import {logError} from '@utils/log';
-import {changeOpacity, concatStyles, makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+import {safeDecodeURIComponent} from '@utils/url';
 
 import type {MarkdownTextStyles, SearchPattern} from '@typings/global/markdown';
 
@@ -31,6 +33,7 @@ export function getCodeFont() {
 
 export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme: Theme) => {
     const codeFont = getCodeFont();
+    const platformHeadingPadding = Platform.select({ios: 3, default: 12});
 
     return {
         emph: {
@@ -51,42 +54,42 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme: Theme) => {
             ...typography('Heading', 700),
         },
         heading1Text: {
-            paddingTop: 12,
+            paddingTop: platformHeadingPadding,
             paddingBottom: 6,
         },
         heading2: {
             ...typography('Heading', 600),
         },
         heading2Text: {
-            paddingTop: 12,
+            paddingTop: platformHeadingPadding,
             paddingBottom: 6,
         },
         heading3: {
             ...typography('Heading', 500),
         },
         heading3Text: {
-            paddingTop: 12,
+            paddingTop: platformHeadingPadding,
             paddingBottom: 6,
         },
         heading4: {
             ...typography('Heading', 400),
         },
         heading4Text: {
-            paddingTop: 12,
+            paddingTop: platformHeadingPadding,
             paddingBottom: 6,
         },
         heading5: {
             ...typography('Heading', 300),
         },
         heading5Text: {
-            paddingTop: 12,
+            paddingTop: platformHeadingPadding,
             paddingBottom: 6,
         },
         heading6: {
             ...typography('Heading', 200),
         },
         heading6Text: {
-            paddingTop: 12,
+            paddingTop: platformHeadingPadding,
             paddingBottom: 6,
         },
         code: {
@@ -273,7 +276,7 @@ export const getMarkdownImageSize = (
 
 export const computeTextStyle = (textStyles: MarkdownTextStyles, baseStyle: StyleProp<TextStyle>, context: string[]) => {
     const contextStyles: TextStyle[] = context.map((type) => textStyles[type]).filter((f) => f !== undefined);
-    return contextStyles.length ? concatStyles(baseStyle, contextStyles) : baseStyle;
+    return contextStyles.length ? [baseStyle, contextStyles] : baseStyle;
 };
 
 export function parseSearchTerms(searchTerm: string): string[] | undefined {
@@ -363,3 +366,12 @@ export function convertSearchTermToRegex(term: string): SearchPattern {
         term,
     };
 }
+
+export const removeImageProxyForKey = (key: string) => {
+    const parseKey = parseUrl(key, true);
+    if (parseKey.query.url) {
+        return safeDecodeURIComponent(parseKey.query.url);
+    }
+
+    return key;
+};

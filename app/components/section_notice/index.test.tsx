@@ -3,6 +3,7 @@
 
 import React, {type ComponentProps} from 'react';
 
+import {Screens} from '@constants';
 import {fireEvent, renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -38,6 +39,7 @@ function getBaseProps(): ComponentProps<typeof SectionNotice> {
             loading: true,
         },
         onDismissClick: jest.fn(),
+        location: Screens.SETTINGS_NOTIFICATION_PUSH,
     };
 }
 

@@ -17,8 +17,8 @@ class CreateOrEditChannelScreen {
         createButton: 'create_or_edit_channel.create.button',
         saveButton: 'create_or_edit_channel.save.button',
         scrollView: 'create_or_edit_channel.scroll_view',
-        makePrivateToggledOff: 'channel_info_form.make_private.toggled.false',
-        makePrivateToggledOn: 'channel_info_form.make_private.toggled.true',
+        makePrivateToggledOff: 'channel_info_form.make_private.toggled.false.button',
+        makePrivateToggledOn: 'channel_info_form.make_private.toggled.true.button',
         makePrivateDescription: 'channel_info_form.make_private.description',
         displayNameInput: 'channel_info_form.display_name.input',
         purposeInput: 'channel_info_form.purpose.input',
@@ -60,7 +60,7 @@ class CreateOrEditChannelScreen {
     openEditChannel = async () => {
         // # Open edit channel screen
         await ChannelInfoScreen.scrollView.tap({x: 1, y: 1});
-        await ChannelInfoScreen.scrollView.scroll(100, 'down');
+        await ChannelInfoScreen.scrollView.scrollTo('bottom');
         await ChannelInfoScreen.editChannelOption.tap();
 
         return this.toBeVisible();
@@ -95,6 +95,16 @@ class CreateOrEditChannelScreen {
     toggleMakePrivateOff = async () => {
         await this.makePrivateToggledOn.tap();
         await expect(this.makePrivateToggledOff).toBeVisible();
+    };
+
+    clickonCreateButton = async () => {
+        await this.createButton.tap();
+        try {
+            await ChannelScreen.scheduledPostTooltipCloseButton.tap();
+        } catch (error) {
+            // eslint-disable-next-line no-console
+            console.log('Element not visible, skipping click');
+        }
     };
 }
 

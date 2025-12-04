@@ -18,12 +18,12 @@
     "android.debug": {
       "type": "android.apk",
       "binaryPath": "../android/app/build/outputs/apk/debug/app-debug.apk",
-      "build": "cd .. && ./node_modules/.bin/jetify && cd android && ./gradlew clean && ./gradlew assembleDebug assembleAndroidTest -DtestBuildType=debug && cd ../detox"
+      "build": "cd ../android && ./gradlew clean && ./gradlew assembleDebug assembleAndroidTest -DtestBuildType=debug && cd ../detox"
     },
     "android.release": {
       "type": "android.apk",
       "binaryPath": "../android/app/build/outputs/apk/release/app-release.apk",
-      "build": "cd .. && ./node_modules/.bin/jetify && cd android && ./gradlew clean && ./gradlew assembleRelease assembleAndroidTest -DtestBuildType=release && cd ../detox"
+      "build": "cd ../android && ./gradlew clean && ./gradlew assembleRelease assembleAndroidTest -DtestBuildType=release && cd ../detox"
     }
   },
   "devices": {
@@ -37,7 +37,7 @@
     "android.emulator": {
       "type": "android.emulator",
       "device": {
-        "avdName": "detox_pixel_4_xl_api_31"
+        "avdName": "detox_pixel_4_xl_api_34"
       }
     }
   },
@@ -60,11 +60,35 @@
     }
   },
   "artifacts": {
-    "pathBuilder": "./e2e/path_builder.js"
+    "pathBuilder": "./e2e/path_builder.js",
+    "plugins": {
+      "screenshot": {
+        "shouldTakeAutomaticSnapshots": true,
+        "keepOnlyFailedTestsArtifacts": true
+      },
+      "video": {
+        "enabled": false
+      },
+      "log": {
+        "enabled": true
+      }
+    }
   },
   "behavior": {
     "init": {
+      "reinstallApp": true,
       "launchApp": false
+    },
+    "cleanup": {
+      "shutdownDevice": false
     }
+  },
+  "session": {
+    "sessionId": "mobile-test-session",
+    "debugSynchronization": 5000,
+    "autoStart": true
+  },
+  "visibility": {
+    "threshold": 75
   }
 }

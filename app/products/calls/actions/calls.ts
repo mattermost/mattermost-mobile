@@ -21,6 +21,7 @@ import {
     getCurrentCall,
     myselfLeftCall,
     newCurrentCall,
+    setCurrentCallConnected,
     setCallForChannel,
     setCalls,
     setChannelEnabled,
@@ -47,13 +48,13 @@ import {displayUsername, getUserIdFromChannelName, isSystemAdmin} from '@utils/u
 
 import {newConnection} from '../connection/connection';
 
-import type {CallChannelState, CallState, EmojiData, SessionState} from '@mattermost/calls/lib/types';
+import type {CallChannelState, CallState, EmojiData} from '@mattermost/calls/lib/types';
 import type {IntlShape} from 'react-intl';
 
 let connection: CallsConnection | null = null;
 export const getConnectionForTesting = () => connection;
 
-export const loadConfig = async (serverUrl: string, force = false, groupLabel?: string) => {
+export const loadConfig = async (serverUrl: string, force = false, groupLabel?: RequestGroupLabel) => {
     const now = Date.now();
     const config = getCallsConfig(serverUrl);
 
@@ -77,7 +78,7 @@ export const loadConfig = async (serverUrl: string, force = false, groupLabel?: 
     }
 };
 
-export const loadCalls = async (serverUrl: string, userId: string, groupLabel?: string) => {
+export const loadCalls = async (serverUrl: string, userId: string, groupLabel?: RequestGroupLabel) => {
     let resp: CallChannelState[] = [];
     try {
         const client = NetworkManager.getClient(serverUrl);
@@ -94,7 +95,7 @@ export const loadCalls = async (serverUrl: string, userId: string, groupLabel?: 
 
     for (const channel of resp) {
         if (channel.call) {
-            callsResults[channel.channel_id] = createCallAndAddToIds(channel.channel_id, convertOldCallToNew(channel.call), ids);
+            callsResults[channel.channel_id] = createCallAndAddToIds(channel.channel_id, channel.call, ids);
         }
 
         if (typeof channel.enabled !== 'undefined') {
@@ -126,7 +127,7 @@ export const loadCallForChannel = async (serverUrl: string, channelId: string) =
     let call: Call | undefined;
     const ids = new Set<string>();
     if (resp.call) {
-        call = createCallAndAddToIds(channelId, convertOldCallToNew(resp.call), ids);
+        call = createCallAndAddToIds(channelId, resp.call, ids);
     }
 
     // Batch load user models async because we'll need them later
@@ -137,29 +138,6 @@ export const loadCallForChannel = async (serverUrl: string, channelId: string) =
     setCallForChannel(serverUrl, channelId, call, resp.enabled);
 
     return {data: {call, enabled: resp.enabled}};
-};
-
-// Converts pre-0.21.0 call to 0.21.0+ call. Can be removed when we stop supporting pre-0.21.0
-// Also can be removed: all code prefaced with a "Pre v0.21.0, sessionID == userID" comment
-// Does nothing if the call is in the new format.
-const convertOldCallToNew = (call: CallState): CallState => {
-    if (call.sessions) {
-        return call;
-    }
-
-    return {
-        ...call,
-        sessions: call.users.reduce((accum, cur, curIdx) => {
-            accum.push({
-                session_id: cur,
-                user_id: cur,
-                unmuted: call.states && call.states[curIdx] ? call.states[curIdx].unmuted : false,
-                raised_hand: call.states && call.states[curIdx] ? call.states[curIdx].raised_hand : 0,
-            });
-            return accum;
-        }, [] as SessionState[]),
-        screen_sharing_session_id: call.screen_sharing_id,
-    };
 };
 
 export const createCallAndAddToIds = (channelId: string, call: CallState, ids?: Set<string>) => {
@@ -192,7 +170,7 @@ export const createCallAndAddToIds = (channelId: string, call: CallState, ids?: 
     return convertedCall;
 };
 
-export const loadConfigAndCalls = async (serverUrl: string, userId: string, groupLabel?: string) => {
+export const loadConfigAndCalls = async (serverUrl: string, userId: string, groupLabel?: RequestGroupLabel) => {
     const res = await checkIsCallsPluginEnabled(serverUrl);
     if (res.data) {
         loadConfig(serverUrl, true, groupLabel);
@@ -272,7 +250,9 @@ export const joinCall = async (
     }
 
     try {
-        await connection.waitForPeerConnection();
+        const sessionId = await connection.waitForPeerConnection();
+
+        setCurrentCallConnected(channelId, sessionId);
 
         // Follow the thread.
         const database = DatabaseManager.serverDatabases[serverUrl]?.database;
@@ -419,8 +399,8 @@ export const getEndCallMessage = async (serverUrl: string, channelId: string, cu
 
     msg = intl.formatMessage({
         id: 'mobile.calls_end_msg_channel',
-        defaultMessage: 'Are you sure you want to end a call with {numSessions} participants in {displayName}?',
-    }, {numSessions, displayName: channel.displayName});
+        defaultMessage: 'Are you sure you want to end a call with {numParticipants} participants in {displayName}?',
+    }, {numParticipants: numSessions, displayName: channel.displayName});
 
     if (channel.type === General.DM_CHANNEL) {
         const otherID = getUserIdFromChannelName(currentUserId, channel.name);
@@ -635,7 +615,7 @@ const handleEndCall = async (serverUrl: string, channelId: string, currentUserId
             }),
             intl.formatMessage({
                 id: 'mobile.calls_end_permission_msg',
-                defaultMessage: 'You don\'t have permission to end the call. Please ask the call owner to end the call.',
+                defaultMessage: 'You don\'t have permission to end the call. Please ask the call host to end the call.',
             }));
         return;
     }
@@ -669,7 +649,7 @@ const handleEndCall = async (serverUrl: string, channelId: string, currentUserId
 export const hostMake = async (serverUrl: string, callId: string, newHostId: string) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        return client.hostMake(callId, newHostId);
+        return await client.hostMake(callId, newHostId);
     } catch (error) {
         logDebug('error on hostMake', getFullErrorMessage(error));
         await forceLogoutIfNecessary(serverUrl, error);
@@ -680,7 +660,7 @@ export const hostMake = async (serverUrl: string, callId: string, newHostId: str
 export const hostMuteSession = async (serverUrl: string, callId: string, sessionId: string) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        return client.hostMute(callId, sessionId);
+        return await client.hostMute(callId, sessionId);
     } catch (error) {
         logDebug('error on hostMute', getFullErrorMessage(error));
         await forceLogoutIfNecessary(serverUrl, error);
@@ -691,7 +671,7 @@ export const hostMuteSession = async (serverUrl: string, callId: string, session
 export const hostMuteOthers = async (serverUrl: string, callId: string) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        return client.hostMuteOthers(callId);
+        return await client.hostMuteOthers(callId);
     } catch (error) {
         logDebug('error on hostMuteOthers', getFullErrorMessage(error));
         await forceLogoutIfNecessary(serverUrl, error);
@@ -702,7 +682,7 @@ export const hostMuteOthers = async (serverUrl: string, callId: string) => {
 export const hostStopScreenshare = async (serverUrl: string, callId: string, sessionId: string) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        return client.hostScreenOff(callId, sessionId);
+        return await client.hostScreenOff(callId, sessionId);
     } catch (error) {
         logDebug('error on hostStopScreenshare', getFullErrorMessage(error));
         await forceLogoutIfNecessary(serverUrl, error);
@@ -713,7 +693,7 @@ export const hostStopScreenshare = async (serverUrl: string, callId: string, ses
 export const hostLowerHand = async (serverUrl: string, callId: string, sessionId: string) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        return client.hostLowerHand(callId, sessionId);
+        return await client.hostLowerHand(callId, sessionId);
     } catch (error) {
         logDebug('error on hostLowerHand', getFullErrorMessage(error));
         await forceLogoutIfNecessary(serverUrl, error);
@@ -724,7 +704,7 @@ export const hostLowerHand = async (serverUrl: string, callId: string, sessionId
 export const hostRemove = async (serverUrl: string, callId: string, sessionId: string) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        return client.hostRemove(callId, sessionId);
+        return await client.hostRemove(callId, sessionId);
     } catch (error) {
         logDebug('error on hostRemove', getFullErrorMessage(error));
         await forceLogoutIfNecessary(serverUrl, error);

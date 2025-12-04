@@ -3,7 +3,7 @@
 
 import {EventEmitter} from 'events';
 
-import {encode} from '@msgpack/msgpack/dist';
+import {encode} from '@msgpack/msgpack';
 
 import Calls from '@constants/calls';
 import DatabaseManager from '@database/manager';
@@ -11,7 +11,7 @@ import {getConfigValue} from '@queries/servers/system';
 import {logError, logDebug} from '@utils/log';
 
 const wsMinReconnectRetryTimeMs = 1000; // 1 second
-const wsReconnectionTimeout = 30000; // 30 seconds
+export const wsReconnectionTimeout = 30000; // 30 seconds
 const wsReconnectTimeIncrement = 500; // 0.5 seconds
 export const wsReconnectionTimeoutErr = new Error('max disconnected time reached');
 
@@ -179,5 +179,9 @@ export class WebSocketClient extends EventEmitter {
             return WebSocket.CLOSED;
         }
         return this.ws.readyState;
+    }
+
+    get sessionID() {
+        return this.originalConnID;
     }
 }

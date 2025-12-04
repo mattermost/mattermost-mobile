@@ -9,11 +9,11 @@ import {storeProfile} from '@actions/local/user';
 import Loading from '@components/loading';
 import NoResultsWithTerm from '@components/no_results_with_term';
 import UserListRow from '@components/user_list_row';
-import {General, Screens} from '@constants';
+import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useKeyboardHeight} from '@hooks/device';
-import {openAsBottomSheet} from '@screens/navigation';
+import {openUserProfileModal} from '@screens/navigation';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
@@ -21,6 +21,7 @@ import {
 import {typography} from '@utils/typography';
 
 import type UserModel from '@typings/database/models/servers/user';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type UserProfileWithChannelAdmin = UserProfile & {scheme_admin?: boolean}
 type RenderItemType = ListRenderItemInfo<UserProfileWithChannelAdmin> & {section?: SectionListData<UserProfileWithChannelAdmin>}
@@ -171,25 +172,25 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 type Props = {
     profiles: UserProfile[];
     channelMembers?: ChannelMembership[];
-    currentUserId: string;
     handleSelectProfile: (user: UserProfile | UserModel) => void;
     fetchMore?: () => void;
     loading: boolean;
     manageMode?: boolean;
     showManageMode?: boolean;
     showNoResults: boolean;
-    selectedIds: {[id: string]: UserProfile};
+    selectedIds: Set<string>;
     testID?: string;
     term?: string;
     tutorialWatched: boolean;
     includeUserMargin?: boolean;
+    location: AvailableScreens;
+    customSection?: (profiles: UserProfile[]) => Array<SectionListData<UserProfile>>;
 }
 
 export default function UserList({
     profiles,
     channelMembers,
     selectedIds,
-    currentUserId,
     handleSelectProfile,
     fetchMore,
     loading,
@@ -200,6 +201,8 @@ export default function UserList({
     testID,
     tutorialWatched,
     includeUserMargin,
+    location,
+    customSection,
 }: Props) {
     const intl = useIntl();
     const theme = useTheme();
@@ -220,8 +223,11 @@ export default function UserList({
             return createProfiles(profiles, channelMembers);
         }
 
+        if (customSection) {
+            return customSection(profiles);
+        }
         return createProfilesSections(intl, profiles, channelMembers);
-    }, [channelMembers, intl, loading, profiles, term]);
+    }, [channelMembers, customSection, intl, loading, profiles, term]);
 
     const openUserProfile = useCallback(async (profile: UserProfile | UserModel) => {
         let user: UserModel;
@@ -235,23 +241,16 @@ export default function UserList({
             user = profile;
         }
 
-        const screen = Screens.USER_PROFILE;
-        const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
-        const closeButtonId = 'close-user-profile';
-        const props = {
-            closeButtonId,
+        openUserProfileModal(intl, theme, {
             userId: user.id,
-            location: Screens.USER_PROFILE,
-        };
-
-        Keyboard.dismiss();
-        openAsBottomSheet({screen, title, theme, closeButtonId, props});
-    }, [intl, serverUrl, theme]);
+            location,
+        });
+    }, [intl, location, serverUrl, theme]);
 
     const renderItem = useCallback(({item, index, section}: RenderItemType) => {
         // The list will re-render when the selection changes because it's passed into the list as extraData
-        const selected = Boolean(selectedIds[item.id]);
-        const canAdd = Object.keys(selectedIds).length < General.MAX_USERS_IN_GM;
+        const selected = selectedIds.has(item.id);
+        const canAdd = selectedIds.size < General.MAX_USERS_IN_GM;
 
         const isChAdmin = item.scheme_admin || false;
 
@@ -261,7 +260,6 @@ export default function UserList({
                 highlight={section?.first && index === 0}
                 id={item.id}
                 isChannelAdmin={isChAdmin}
-                isMyUser={currentUserId === item.id}
                 manageMode={manageMode}
                 onPress={handleSelectProfile}
                 onLongPress={openUserProfile}
@@ -275,7 +273,7 @@ export default function UserList({
                 includeMargin={includeUserMargin}
             />
         );
-    }, [selectedIds, currentUserId, manageMode, handleSelectProfile, openUserProfile, showManageMode, tutorialWatched, includeUserMargin]);
+    }, [selectedIds, manageMode, handleSelectProfile, openUserProfile, showManageMode, tutorialWatched, includeUserMargin]);
 
     const renderLoading = useCallback(() => {
         if (!loading) {
@@ -289,7 +287,7 @@ export default function UserList({
                 size='large'
             />
         );
-    }, [loading, theme]);
+    }, [loading, style.loadingContainer, theme.buttonBg]);
 
     const renderNoResults = useCallback(() => {
         if (!showNoResults || !term) {
@@ -301,7 +299,7 @@ export default function UserList({
                 <NoResultsWithTerm term={term}/>
             </View>
         );
-    }, [showNoResults && style, term, noResutsStyle]);
+    }, [showNoResults, term, noResutsStyle]);
 
     const renderSectionHeader = useCallback(({section}: {section: SectionListData<UserProfile>}) => {
         return (

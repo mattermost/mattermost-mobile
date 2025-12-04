@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useEffect, useState} from 'react';
+import {Platform} from 'react-native';
 
 import Autocomplete from '@components/autocomplete';
 import {ExtraKeyboard} from '@context/extra_keyboard';
@@ -13,6 +14,8 @@ import {useDefaultHeaderHeight} from '@hooks/header';
 import Archived from './archived';
 import DraftHandler from './draft_handler';
 import ReadOnly from './read_only';
+
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 const AUTOCOMPLETE_ADJUST = -5;
 type Props = {
@@ -29,6 +32,7 @@ type Props = {
     containerHeight: number;
     isChannelScreen: boolean;
     canShowPostPriority?: boolean;
+    location: AvailableScreens;
 }
 
 function PostDraft({
@@ -45,12 +49,14 @@ function PostDraft({
     containerHeight,
     isChannelScreen,
     canShowPostPriority,
+    location,
 }: Props) {
     const [value, setValue] = useState(message);
     const [cursorPosition, setCursorPosition] = useState(message.length);
     const [postInputTop, setPostInputTop] = useState(0);
     const [isFocused, setIsFocused] = useState(false);
     const keyboardHeight = useKeyboardHeight();
+    const kbHeight = Platform.OS === 'ios' ? keyboardHeight : 0; // useKeyboardHeight is already deducting the keyboard height on Android
     const headerHeight = useDefaultHeaderHeight();
     const serverUrl = useServerUrl();
 
@@ -60,9 +66,8 @@ function PostDraft({
         setCursorPosition(message.length);
     }, [channelId, rootId]);
 
-    const autocompletePosition = AUTOCOMPLETE_ADJUST + keyboardHeight + postInputTop;
+    const autocompletePosition = AUTOCOMPLETE_ADJUST + kbHeight + postInputTop;
     const autocompleteAvailableSpace = containerHeight - autocompletePosition - (isChannelScreen ? headerHeight : 0);
-
     const [animatedAutocompletePosition, animatedAutocompleteAvailableSpace] = useAutocompleteDefaultAnimatedValues(autocompletePosition, autocompleteAvailableSpace);
 
     if (channelIsArchived || deactivatedChannel) {
@@ -72,6 +77,7 @@ function PostDraft({
             <Archived
                 testID={archivedTestID}
                 deactivated={deactivatedChannel}
+                location={location}
             />
         );
     }
@@ -111,8 +117,7 @@ function PostDraft({
             cursorPosition={cursorPosition}
             value={value}
             isSearch={isSearch}
-            hasFilesAttached={Boolean(files?.length)}
-            inPost={true}
+            shouldDirectlyReact={!Boolean(files?.length)}
             availableSpace={animatedAutocompleteAvailableSpace}
             serverUrl={serverUrl}
         />
@@ -122,7 +127,7 @@ function PostDraft({
         <>
             {draftHandler}
             {autoComplete}
-            <ExtraKeyboard/>
+            {Platform.OS !== 'android' && <ExtraKeyboard/>}
         </>
     );
 }

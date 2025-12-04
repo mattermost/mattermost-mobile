@@ -1,45 +1,45 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {t} from '@i18n';
+import {defineMessages} from 'react-intl';
 
 export const labels = {
-    standard: {
+    standard: defineMessages({
         label: {
-            id: t('post_priority.picker.label.standard'),
+            id: 'post_priority.picker.label.standard',
             defaultMessage: 'Standard',
         },
-    },
-    urgent: {
+    }),
+    urgent: defineMessages({
         label: {
-            id: t('post_priority.picker.label.urgent'),
+            id: 'post_priority.picker.label.urgent',
             defaultMessage: 'Urgent',
         },
-    },
-    important: {
+    }),
+    important: defineMessages({
         label: {
-            id: t('post_priority.picker.label.important'),
+            id: 'post_priority.picker.label.important',
             defaultMessage: 'Important',
         },
-    },
-    requestAck: {
+    }),
+    requestAck: defineMessages({
         label: {
-            id: t('post_priority.picker.label.request_ack'),
+            id: 'post_priority.picker.label.request_ack',
             defaultMessage: 'Request acknowledgement',
         },
         description: {
-            id: t('post_priority.picker.label.request_ack.description'),
+            id: 'post_priority.picker.label.request_ack.description',
             defaultMessage: 'An acknowledgement button will appear with your message',
         },
-    },
-    persistentNotifications: {
+    }),
+    persistentNotifications: defineMessages({
         label: {
-            id: t('post_priority.picker.label.persistent_notifications'),
+            id: 'post_priority.picker.label.persistent_notifications',
             defaultMessage: 'Send persistent notifications',
         },
         description: {
-            id: t('post_priority.picker.label.persistent_notifications.description'),
+            id: 'post_priority.picker.label.persistent_notifications.description',
             defaultMessage: 'Recipients are notified every {interval, plural, one {minute} other {{interval} minutes}} until they acknowledge or reply.',
         },
-    },
+    }),
 };

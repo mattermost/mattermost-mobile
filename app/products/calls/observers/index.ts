@@ -158,7 +158,7 @@ export const observeEndCallDetails = () => {
         distinctUntilChanged(),
     );
     const isHost = cc.pipe(
-        switchMap((call) => of$(call?.hostId === call?.myUserId)),
+        switchMap((call) => of$(call ? call.hostId === call.myUserId : false)),
         distinctUntilChanged(),
     );
 

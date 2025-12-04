@@ -1,39 +1,39 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {defineMessage, defineMessages, type IntlShape, type MessageDescriptor} from 'react-intl';
 import {Alert, type AlertButton} from 'react-native';
+import {type SwipeableMethods} from 'react-native-gesture-handler/ReanimatedSwipeable';
 
+import {parseMarkdownImages, removeDraft, updateDraftMarkdownImageMetadata, updateDraftMessage} from '@actions/local/draft';
 import {General} from '@constants';
 import {CODE_REGEX} from '@constants/autocomplete';
-import {t} from '@i18n';
-
-import type {IntlShape, MessageDescriptor} from 'react-intl';
 
 type AlertCallback = (value?: string) => void;
 
 export function errorBadChannel(intl: IntlShape) {
-    const message = {
-        id: t('mobile.server_link.unreachable_channel.error'),
+    const message = defineMessage({
+        id: 'mobile.server_link.unreachable_channel.error',
         defaultMessage: 'This link belongs to a deleted channel or to a channel to which you do not have access.',
-    };
+    });
 
     return alertErrorWithFallback(intl, {}, message);
 }
 
 export function errorUnkownUser(intl: IntlShape) {
-    const message = {
-        id: t('mobile.server_link.unreachable_user.error'),
+    const message = defineMessage({
+        id: 'mobile.server_link.unreachable_user.error',
         defaultMessage: 'We can\'t redirect you to the DM. The user specified is unknown.',
-    };
+    });
 
     alertErrorWithFallback(intl, {}, message);
 }
 
 export function permalinkBadTeam(intl: IntlShape) {
-    const message = {
-        id: t('mobile.server_link.unreachable_team.error'),
+    const message = defineMessage({
+        id: 'mobile.server_link.unreachable_team.error',
         defaultMessage: 'This link belongs to a deleted team or to a team to which you do not have access.',
-    };
+    });
 
     alertErrorWithFallback(intl, {}, message);
 }
@@ -76,19 +76,33 @@ export const textContainsAtHere = (text: string) => {
     return (/(?:\B|\b_+)@(here)(?!(\.|-|_)*[^\W_])/i).test(textWithoutCode);
 };
 
+const buildChannelWideMentionMessageMessages = defineMessages({
+    hereWithTimezones: {
+        id: 'mobile.post_textbox.entire_channel_here.message.with_timezones',
+        defaultMessage: 'By using @here you are about to send notifications up to {totalMembers, number} {totalMembers, plural, one {person} other {people}} in {timezones, number} {timezones, plural, one {timezone} other {timezones}}. Are you sure you want to do this?',
+    },
+    othersWithTimezones: {
+        id: 'mobile.post_textbox.entire_channel.message.with_timezones',
+        defaultMessage: 'By using @all or @channel you are about to send notifications to {totalMembers, number} {totalMembers, plural, one {person} other {people}} in {timezones, number} {timezones, plural, one {timezone} other {timezones}}. Are you sure you want to do this?',
+    },
+    here: {
+        id: 'mobile.post_textbox.entire_channel_here.message',
+        defaultMessage: 'By using @here you are about to send notifications to up to {totalMembers, number} {totalMembers, plural, one {person} other {people}}. Are you sure you want to do this?',
+    },
+    others: {
+        id: 'mobile.post_textbox.entire_channel.message',
+        defaultMessage: 'By using @all or @channel you are about to send notifications to {totalMembers, number} {totalMembers, plural, one {person} other {people}}. Are you sure you want to do this?',
+    },
+});
+
 export function buildChannelWideMentionMessage(intl: IntlShape, membersCount: number, channelTimezoneCount: number, atHere: boolean) {
     let notifyAllMessage = '';
     if (channelTimezoneCount) {
-        const msgID = atHere ? t('mobile.post_textbox.entire_channel_here.message.with_timezones') : t('mobile.post_textbox.entire_channel.message.with_timezones');
-        const atHereMsg = 'By using @here you are about to send notifications up to {totalMembers, number} {totalMembers, plural, one {person} other {people}} in {timezones, number} {timezones, plural, one {timezone} other {timezones}}. Are you sure you want to do this?';
-        const atAllOrChannelMsg = 'By using @all or @channel you are about to send notifications to {totalMembers, number} {totalMembers, plural, one {person} other {people}} in {timezones, number} {timezones, plural, one {timezone} other {timezones}}. Are you sure you want to do this?';
+        const message = atHere ? buildChannelWideMentionMessageMessages.hereWithTimezones : buildChannelWideMentionMessageMessages.othersWithTimezones;
 
         notifyAllMessage = (
             intl.formatMessage(
-                {
-                    id: msgID,
-                    defaultMessage: atHere ? atHereMsg : atAllOrChannelMsg,
-                },
+                message,
                 {
                     totalMembers: membersCount - 1,
                     timezones: channelTimezoneCount,
@@ -96,16 +110,11 @@ export function buildChannelWideMentionMessage(intl: IntlShape, membersCount: nu
             )
         );
     } else {
-        const msgID = atHere ? t('mobile.post_textbox.entire_channel_here.message') : t('mobile.post_textbox.entire_channel.message');
-        const atHereMsg = 'By using @here you are about to send notifications to up to {totalMembers, number} {totalMembers, plural, one {person} other {people}}. Are you sure you want to do this?';
-        const atAllOrChannelMsg = 'By using @all or @channel you are about to send notifications to {totalMembers, number} {totalMembers, plural, one {person} other {people}}. Are you sure you want to do this?';
+        const message = atHere ? buildChannelWideMentionMessageMessages.here : buildChannelWideMentionMessageMessages.others;
 
         notifyAllMessage = (
             intl.formatMessage(
-                {
-                    id: msgID,
-                    defaultMessage: atHere ? atHereMsg : atAllOrChannelMsg,
-                },
+                message,
                 {
                     totalMembers: membersCount - 1,
                 },
@@ -168,5 +177,71 @@ export function alertSlashCommandFailed(intl: IntlShape, error: string) {
             defaultMessage: 'Error Executing Command',
         }),
         error,
+    );
+}
+
+export const handleDraftUpdate = async ({
+    serverUrl,
+    channelId,
+    rootId,
+    value,
+}: {
+    serverUrl: string;
+    channelId: string;
+    rootId: string;
+    value: string;
+}) => {
+    await updateDraftMessage(serverUrl, channelId, rootId, value);
+    const imageMetadata: Dictionary<PostImage | undefined> = {};
+    await parseMarkdownImages(value, imageMetadata);
+
+    if (Object.keys(imageMetadata).length !== 0) {
+        updateDraftMarkdownImageMetadata({serverUrl, channelId, rootId, imageMetadata});
+    }
+};
+
+export function deleteDraftConfirmation({intl, serverUrl, channelId, rootId, swipeable}: {
+    intl: IntlShape;
+    serverUrl: string;
+    channelId: string;
+    rootId: string;
+    swipeable?: React.RefObject<SwipeableMethods>;
+}) {
+    const deleteDraft = async () => {
+        removeDraft(serverUrl, channelId, rootId);
+    };
+
+    const onDismiss = () => {
+        if (swipeable?.current) {
+            swipeable.current.close();
+        }
+    };
+
+    Alert.alert(
+        intl.formatMessage({
+            id: 'draft.options.delete.title',
+            defaultMessage: 'Delete draft',
+        }),
+        intl.formatMessage({
+            id: 'draft.options.delete.confirmation',
+            defaultMessage: 'Are you sure you want to delete this draft?',
+        }),
+        [
+            {
+                text: intl.formatMessage({
+                    id: 'draft.options.delete.cancel',
+                    defaultMessage: 'Cancel',
+                }),
+                style: 'cancel',
+                onPress: onDismiss,
+            },
+            {
+                text: intl.formatMessage({
+                    id: 'draft.options.delete.confirm',
+                    defaultMessage: 'Delete',
+                }),
+                onPress: deleteDraft,
+            },
+        ],
     );
 }

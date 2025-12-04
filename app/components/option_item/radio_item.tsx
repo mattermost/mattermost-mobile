@@ -58,7 +58,7 @@ const RadioItem = ({selected, checkedBody, testID}: RadioItemProps) => {
         }
 
         return (<View style={styles.center}/>);
-    }, [checkedBody]);
+    }, [checkedBody, styles.center, styles.checkedBodyContainer, theme.buttonColor]);
 
     return (
         <View

@@ -115,7 +115,7 @@ export const leaveAndJoinWithAlert = async (
         }, {leaveChannelName, joinChannelName});
         if (newCall) {
             joinMessage = formatMessage({
-                id: 'mobile.leave_and_join_message',
+                id: 'mobile.leave_and_create_message',
                 defaultMessage: 'You are already on a channel call in ~{leaveChannelName}. Do you want to leave your current call and start a new call in ~{joinChannelName}?',
             }, {leaveChannelName, joinChannelName});
         }
@@ -268,7 +268,7 @@ export const recordingAlert = (isHost: boolean, transcriptionsEnabled: boolean, 
     });
     const hostMessage = formatMessage({
         id: 'mobile.calls_host_rec',
-        defaultMessage: 'Consider letting everyone know that this meeting is being recorded.',
+        defaultMessage: 'You are recording this meeting. Consider letting everyone know that this meeting is being recorded.',
     });
 
     const participantTitle = formatMessage({

@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {debounce} from 'lodash';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {defineMessages} from 'react-intl';
 import {Platform, SectionList, type SectionListData, type SectionListRenderItemInfo, type StyleProp, type ViewStyle} from 'react-native';
 
 import {searchChannels} from '@actions/remote/channel';
@@ -13,7 +13,7 @@ import {CHANNEL_MENTION_REGEX, CHANNEL_MENTION_SEARCH_REGEX} from '@constants/au
 import {useServerUrl} from '@context/server';
 import DatabaseManager from '@database/manager';
 import useDidUpdate from '@hooks/did_update';
-import {t} from '@i18n';
+import {useDebounce} from '@hooks/utils';
 import {getUserById} from '@queries/servers/user';
 import {hasTrailingSpaces} from '@utils/helpers';
 import {getUserIdFromChannelName} from '@utils/user';
@@ -57,14 +57,36 @@ const reduceChannelsForAutocomplete = (channels: Array<Channel | ChannelModel>, 
     }, [[], []]);
 };
 
+const channelMentionMessages = defineMessages({
+    public: {
+        id: 'suggestion.search.public',
+        defaultMessage: 'Public Channels',
+    },
+    private: {
+        id: 'suggestion.search.private',
+        defaultMessage: 'Private Channels',
+    },
+    direct: {
+        id: 'suggestion.search.direct',
+        defaultMessage: 'Direct Messages',
+    },
+    channels: {
+        id: 'suggestion.mention.channels',
+        defaultMessage: 'My Channels',
+    },
+    morechannels: {
+        id: 'suggestion.mention.morechannels',
+        defaultMessage: 'Other Channels',
+    },
+});
+
 const makeSections = (channels: Array<Channel | ChannelModel>, myMembers: MyChannelModel[], loading: boolean, isSearch = false) => {
     const newSections = [];
     if (isSearch) {
         const [publicChannels, privateChannels, directAndGroupMessages] = reduceChannelsForSearch(channels, myMembers);
         if (publicChannels.length) {
             newSections.push({
-                id: t('suggestion.search.public'),
-                defaultMessage: 'Public Channels',
+                ...channelMentionMessages.public,
                 data: publicChannels,
                 key: 'publicChannels',
                 hideLoadingIndicator: true,
@@ -73,8 +95,7 @@ const makeSections = (channels: Array<Channel | ChannelModel>, myMembers: MyChan
 
         if (privateChannels.length) {
             newSections.push({
-                id: t('suggestion.search.private'),
-                defaultMessage: 'Private Channels',
+                ...channelMentionMessages.private,
                 data: privateChannels,
                 key: 'privateChannels',
                 hideLoadingIndicator: true,
@@ -83,8 +104,7 @@ const makeSections = (channels: Array<Channel | ChannelModel>, myMembers: MyChan
 
         if (directAndGroupMessages.length) {
             newSections.push({
-                id: t('suggestion.search.direct'),
-                defaultMessage: 'Direct Messages',
+                ...channelMentionMessages.direct,
                 data: directAndGroupMessages,
                 key: 'directAndGroupMessages',
                 hideLoadingIndicator: true,
@@ -94,8 +114,7 @@ const makeSections = (channels: Array<Channel | ChannelModel>, myMembers: MyChan
         const [myChannels, otherChannels] = reduceChannelsForAutocomplete(channels, myMembers);
         if (myChannels.length) {
             newSections.push({
-                id: t('suggestion.mention.channels'),
-                defaultMessage: 'My Channels',
+                ...channelMentionMessages.channels,
                 data: myChannels,
                 key: 'myChannels',
                 hideLoadingIndicator: true,
@@ -104,8 +123,7 @@ const makeSections = (channels: Array<Channel | ChannelModel>, myMembers: MyChan
 
         if (otherChannels.length || (!myChannels.length && loading)) {
             newSections.push({
-                id: t('suggestion.mention.morechannels'),
-                defaultMessage: 'Other Channels',
+                ...channelMentionMessages.morechannels,
                 data: otherChannels,
                 key: 'otherChannels',
                 hideLoadingIndicator: true,
@@ -171,7 +189,7 @@ const ChannelMention = ({
 
     const latestSearchAt = useRef(0);
 
-    const runSearch = useMemo(() => debounce(async (sUrl: string, term: string, tId: string) => {
+    const runSearch = useDebounce(useCallback(async (sUrl: string, term: string, tId: string) => {
         const searchAt = Date.now();
         latestSearchAt.current = searchAt;
 
@@ -187,7 +205,7 @@ const ChannelMention = ({
         setRemoteChannels(channelsToStore.length ? channelsToStore : emptyChannels);
 
         setLoading(false);
-    }, 200), []);
+    }, [isSearch]), 200);
 
     const resetState = () => {
         latestSearchAt.current = Date.now();
@@ -251,7 +269,7 @@ const ChannelMention = ({
         setSections(emptySections);
         setRemoteChannels(emptyChannels);
         latestSearchAt.current = Date.now();
-    }, [value, localCursorPosition, isSearch, currentUserId]);
+    }, [currentUserId, value, localCursorPosition, isSearch, updateValue, onShowingChange, serverUrl]);
 
     const renderItem = useCallback(({item}: SectionListRenderItemInfo<Channel | ChannelModel>) => {
         return (
@@ -279,6 +297,9 @@ const ChannelMention = ({
         if (localCursorPosition !== cursorPosition) {
             setLocalCursorPosition(cursorPosition);
         }
+
+        // We only want to update the local cursor position if the cursor position changes
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [cursorPosition]);
 
     useEffect(() => {
@@ -295,6 +316,8 @@ const ChannelMention = ({
         setNoResultsTerm(null);
         setLoading(true);
         runSearch(serverUrl, matchTerm, teamId);
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [matchTerm, teamId]);
 
     const channels = useMemo(() => {

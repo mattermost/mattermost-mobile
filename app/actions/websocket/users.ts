@@ -14,9 +14,12 @@ import {queryChannelsByTypes, queryUserChannelsByTypes} from '@queries/servers/c
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {getConfig, getLicense} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
+import {customProfileAttributeId} from '@utils/custom_profile_attribute';
+import {logError} from '@utils/log';
 import {displayUsername} from '@utils/user';
 
 import type {Model} from '@nozbe/watermelondb';
+import type {CustomProfileField} from '@typings/api/custom_profile_attributes';
 
 export async function handleUserUpdatedEvent(serverUrl: string, msg: WebSocketMessage) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -92,7 +95,7 @@ export async function handleUserTypingEvent(serverUrl: string, msg: WebSocketMes
         const {users, existingUsers} = await fetchUsersByIds(serverUrl, [msg.data.user_id]);
         const user = users?.[0] || existingUsers?.[0];
 
-        const namePreference = await queryDisplayNamePreferences(database, Preferences.NAME_NAME_FORMAT).fetch();
+        const namePreference = await queryDisplayNamePreferences(database, Preferences.NAME_NAME_FORMAT)?.fetch();
         const teammateDisplayNameSetting = getTeammateNameDisplaySetting(namePreference, config.LockTeammateNameDisplay, config.TeammateNameDisplay, license);
         const currentUser = await getCurrentUser(database);
         const username = displayUsername(user, currentUser?.locale, teammateDisplayNameSetting);
@@ -119,4 +122,83 @@ export const userTyping = async (serverUrl: string, channelId: string, rootId?: 
 export async function handleStatusChangedEvent(serverUrl: string, msg: WebSocketMessage) {
     const newStatus = msg.data.status;
     setCurrentUserStatus(serverUrl, newStatus);
+}
+
+export async function handleCustomProfileAttributesValuesUpdatedEvent(serverUrl: string, msg: WebSocketMessage) {
+    try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        const {user_id, values} = msg.data;
+        const attributesForDatabase = Object.entries(values).map(([fieldId, value]) => ({
+            id: customProfileAttributeId(fieldId, user_id),
+            field_id: fieldId,
+            user_id,
+            value: value as string,
+        }));
+
+        try {
+            await operator.handleCustomProfileAttributes({
+                attributes: attributesForDatabase,
+                prepareRecordsOnly: false,
+            });
+        } catch (error) {
+            logError('Error handling custom profile attributes values updated event', error);
+        }
+    } catch (error) {
+        logError('Error getting the operator for the custom profile attributes values updated event', error);
+    }
+
+}
+
+export async function handleCustomProfileAttributesFieldUpdatedEvent(serverUrl: string, msg: WebSocketMessage) {
+    try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        const {field} = msg.data;
+
+        try {
+            await operator.handleCustomProfileFields({
+                fields: [field],
+                prepareRecordsOnly: false,
+            });
+        } catch (error) {
+            logError('Error handling custom profile attributes field updated event', error);
+        }
+    } catch (error) {
+        logError('Error getting the operator for the custom profile field updated event', error);
+    }
+
+}
+
+export async function handleCustomProfileAttributesFieldDeletedEvent(serverUrl: string, msg: WebSocketMessage) {
+    try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        const {field_id} = msg.data;
+
+        try {
+            // Delete the field from the database
+            const fieldForDatabase: CustomProfileField = {
+                id: field_id,
+                group_id: '',
+                name: '',
+                type: '',
+                target_id: '',
+                target_type: '',
+                create_at: 0,
+                update_at: 0,
+                delete_at: Date.now(),
+                attrs: {},
+            };
+
+            await operator.handleCustomProfileFields({
+                fields: [fieldForDatabase],
+                prepareRecordsOnly: false,
+            });
+        } catch (error) {
+            logError('Error handling custom profile field deleted event', error);
+        }
+    } catch (error) {
+        logError('Error getting the operator for the custom profile field deleted event', error);
+    }
 }

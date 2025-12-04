@@ -41,6 +41,7 @@ class Alert {
     cancelButton = isAndroid() ? element(by.text('CANCEL')) : element(by.label('Cancel')).atIndex(1);
     confirmButton = isAndroid() ? element(by.text('CONFIRM')) : element(by.label('Confirm')).atIndex(1);
     deleteButton = isAndroid() ? element(by.text('DELETE')) : element(by.label('Delete')).atIndex(0);
+    deleteScheduledMessageButton = isAndroid() ? element(by.text('DELETE')) : element(by.label('Delete')).atIndex(1);
     leaveButton = isAndroid() ? element(by.text('LEAVE')) : element(by.label('Leave')).atIndex(0);
     logoutButton = isAndroid() ? element(by.text('LOG OUT')) : element(by.label('Log out')).atIndex(1);
     logoutButton2 = isAndroid() ? element(by.text('LOG OUT')) : element(by.label('Log out')).atIndex(2);
@@ -56,6 +57,7 @@ class Alert {
     removeButton3 = isAndroid() ? element(by.text('REMOVE')) : element(by.label('Remove')).atIndex(3);
     yesButton = isAndroid() ? element(by.text('YES')) : element(by.label('Yes')).atIndex(0);
     yesButton2 = isAndroid() ? element(by.text('YES')) : element(by.label('Yes')).atIndex(1);
+    sendButton = isAndroid() ? element(by.text('SEND')) : element(by.label('Send')).atIndex(1);
 }
 
 const alert = new Alert();

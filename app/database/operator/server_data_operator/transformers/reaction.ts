@@ -16,14 +16,17 @@ const {REACTION} = MM_TABLES.SERVER;
  * @param {RecordPair} operator.value
  * @returns {Promise<ReactionModel>}
  */
-export const transformReactionRecord = ({action, database, value}: TransformerArgs): Promise<ReactionModel> => {
-    const raw = value.raw as Reaction;
-    const record = value.record as ReactionModel;
+export const transformReactionRecord = ({action, database, value}: TransformerArgs<ReactionModel, Reaction>): Promise<ReactionModel> => {
+    const raw = value.raw;
+    const record = value.record;
     const isCreateAction = action === OperationType.CREATE;
+    if (!isCreateAction && !record) {
+        throw new Error('Record not found for non create action');
+    }
 
     // id of reaction comes from server response
     const fieldsMapper = (reaction: ReactionModel) => {
-        reaction._raw.id = isCreateAction ? (raw?.id ?? reaction.id) : record.id;
+        reaction._raw.id = isCreateAction ? (raw?.id ?? reaction.id) : record!.id;
         reaction.userId = raw.user_id;
         reaction.postId = raw.post_id;
         reaction.emojiName = raw.emoji_name;
@@ -36,5 +39,5 @@ export const transformReactionRecord = ({action, database, value}: TransformerAr
         tableName: REACTION,
         value,
         fieldsMapper,
-    }) as Promise<ReactionModel>;
+    });
 };

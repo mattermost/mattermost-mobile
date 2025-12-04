@@ -9,14 +9,14 @@ apply plugin: "com.facebook.react"
 
  react {
     /* Folders */
-    //   The root of your project, i.e. where "package.json" lives. Default is '..'
-    // root = file("../")
-    //   The folder where the react-native NPM package is. Default is ../node_modules/react-native
-    // reactNativeDir = file("../node_modules/react-native")
-    //   The folder where the react-native Codegen package is. Default is ../node_modules/@react-native/codegen
-    // codegenDir = file("../node_modules/@react-native/codegen")
-    //   The cli.js file which is the React Native CLI entrypoint. Default is ../node_modules/react-native/cli.js
-    // cliFile = file("../node_modules/react-native/cli.js")
+    //   The root of your project, i.e. where "package.json" lives. Default is '../..'
+    // root = file("../../")
+    //   The folder where the react-native NPM package is. Default is ../../node_modules/react-native
+    // reactNativeDir = file("../../node_modules/react-native")
+    //   The folder where the react-native Codegen package is. Default is ../../node_modules/@react-native/codegen
+    // codegenDir = file("../../node_modules/@react-native/codegen")
+    //   The cli.js file which is the React Native CLI entrypoint. Default is ../../node_modules/react-native/cli.js
+    // cliFile = file("../../node_modules/react-native/cli.js")
     /* Variants */
     //   The list of variants to that are debuggable. For those we're going to
     //   skip the bundling of the JS bundle and the assets. By default is just 'debug'.
@@ -47,6 +47,9 @@ apply plugin: "com.facebook.react"
     //
     //   The list of flags to pass to the Hermes compiler. By default is "-O", "-output-source-map"
     // hermesFlags = ["-O", "-output-source-map"]
+
+    /* Autolinking */
+    autolinkLibrariesWithApp()
 }
 
 apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
@@ -67,6 +70,7 @@ if (System.getenv("SENTRY_ENABLED") == "true") {
  * and want to have separate APKs to upload to the Play Store
  */
 def enableSeparateBuildPerCPUArchitecture = project.hasProperty('separateApk') ? project.property('separateApk').toBoolean() : false
+def enableUniversalBuild = project.hasProperty('universalApk') ? project.property('universalApk').toBoolean() : false
 
 /**
  * Set this to true to Run Proguard on Release builds to minify the Java bytecode.
@@ -111,8 +115,8 @@ android {
         applicationId "com.mattermost.rnbeta"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 591
-        versionName "2.24.0"
+        versionCode 689
+        versionName "2.35.0"
         testBuildType System.getProperty('testBuildType', 'debug')
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
@@ -137,7 +141,7 @@ android {
         abi {
             reset()
             enable enableSeparateBuildPerCPUArchitecture
-            universalApk enableSeparateBuildPerCPUArchitecture  // If true, also generate a universal APK
+            universalApk enableUniversalBuild  // If true, also generate a universal APK
             include (*reactNativeArchitectures())
         }
     }
@@ -199,15 +203,22 @@ dependencies {
         implementation jscFlavor
     }
 
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1'
-    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'com.google.android.material:material:1.12.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
     implementation "com.google.firebase:firebase-messaging:$firebaseVersion"
     androidTestImplementation('com.wix:detox:+')
-    androidTestImplementation 'androidx.test:core:1.6.0'
-    androidTestImplementation 'androidx.test:runner:1.5.2'
+    androidTestImplementation 'androidx.test:core:1.6.1'
+    androidTestImplementation 'androidx.test:runner:1.6.2'
     androidTestImplementation 'com.wix:detox:20.26.2'
+
+    // For animated GIF support
+    implementation 'com.facebook.fresco:animated-gif:3.6.0'
+
+    // For WebP support, including animated WebP
+    implementation 'com.facebook.fresco:animated-webp:3.6.0'
+    implementation 'com.facebook.fresco:webpsupport:3.6.0'
 
     implementation project(':reactnativenotifications')
     implementation project(':watermelondb-jsi')
@@ -221,16 +232,16 @@ dependencies {
 
 configurations.all {
     resolutionStrategy {
-        force 'androidx.test:core:1.6.0'
+        force 'androidx.test:core:1.6.1'
         eachDependency { DependencyResolveDetails details ->
             if (details.requested.name == 'play-services-base') {
-                details.useTarget group: details.requested.group, name: details.requested.name, version: '18.2.0'
+                details.useTarget group: details.requested.group, name: details.requested.name, version: '18.5.0'
             }
             if (details.requested.name == 'play-services-tasks') {
-                details.useTarget group: details.requested.group, name: details.requested.name, version: '18.0.2'
+                details.useTarget group: details.requested.group, name: details.requested.name, version: '18.2.0'
             }
             if (details.requested.name == 'play-services-basement') {
-                details.useTarget group: details.requested.group, name: details.requested.name, version: '18.2.0'
+                details.useTarget group: details.requested.group, name: details.requested.name, version: '18.5.0'
             }
             if (details.requested.name == 'okhttp') {
                 details.useTarget group: details.requested.group, name: details.requested.name, version: '4.12.0'
@@ -253,4 +264,3 @@ tasks.register('copyDownloadableDepsToLibs', Copy) {
 }
 
 apply plugin: 'com.google.gms.google-services'
-apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)

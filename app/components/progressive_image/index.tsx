@@ -6,10 +6,8 @@ import React, {type ReactNode, useEffect, useState} from 'react';
 import {type StyleProp, StyleSheet, View, type ViewStyle} from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-const AnimatedImageBackground = Animated.createAnimatedComponent(ImageBackground);
 const AnimatedImage = Animated.createAnimatedComponent(Image);
 
 type Props = ProgressiveImageProps & {
@@ -22,6 +20,7 @@ type Props = ProgressiveImageProps & {
     contentFit?: ImageContentFit;
     style?: StyleProp<ViewStyle>;
     tintDefaultSource?: boolean;
+    theme: Theme;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
@@ -39,11 +38,22 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 });
 
 const ProgressiveImage = ({
-    children, defaultSource, forwardRef, id, imageStyle, imageUri, inViewPort, isBackgroundImage,
-    onError, contentFit = 'contain', style = {}, thumbnailUri, tintDefaultSource,
+    children,
+    defaultSource,
+    forwardRef,
+    id,
+    imageStyle,
+    imageUri,
+    inViewPort,
+    isBackgroundImage,
+    onError,
+    contentFit = 'contain',
+    style = {},
+    thumbnailUri,
+    tintDefaultSource,
+    theme,
 }: Props) => {
     const [showHighResImage, setShowHighResImage] = useState(false);
-    const theme = useTheme();
     const styles = getStyleSheet(theme);
 
     useEffect(() => {
@@ -55,14 +65,14 @@ const ProgressiveImage = ({
     if (isBackgroundImage && imageUri) {
         return (
             <View style={[styles.defaultImageContainer, style]}>
-                <AnimatedImageBackground
+                <ImageBackground
                     key={id}
                     source={{uri: imageUri}}
                     contentFit='cover'
-                    style={[StyleSheet.absoluteFill, imageStyle]}
+                    style={[StyleSheet.absoluteFill, imageStyle as StyleProp<ViewStyle>]}
                 >
                     {children}
-                </AnimatedImageBackground>
+                </ImageBackground>
             </View>
         );
     }

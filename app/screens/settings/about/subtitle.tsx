@@ -2,10 +2,10 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {defineMessages} from 'react-intl';
 
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
-import {t} from '@i18n';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -20,6 +20,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
+const messages = defineMessages({
+    teamEditionSt: {
+        id: 'about.teamEditionSt',
+        defaultMessage: 'All your team communication in one place, instantly searchable and accessible anywhere.',
+    },
+    enterpriseEditionSt: {
+        id: 'about.enterpriseEditionSt',
+        defaultMessage: 'Modern communication from behind your firewall.',
+    },
+});
+
 type SubtitleProps = {
     config: ClientConfig;
 }
@@ -27,18 +38,15 @@ const Subtitle = ({config}: SubtitleProps) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
-    let id = t('about.teamEditionSt');
-    let defaultMessage = 'All your team communication in one place, instantly searchable and accessible anywhere.';
+    let message = messages.teamEditionSt;
 
     if (config.BuildEnterpriseReady === 'true') {
-        id = t('about.enterpriseEditionSt');
-        defaultMessage = 'Modern communication from\n behind your firewall.';
+        message = messages.enterpriseEditionSt;
     }
 
     return (
         <FormattedText
-            id={id}
-            defaultMessage={defaultMessage}
+            {...message}
             style={style.subtitle}
             testID='about.subtitle'
         />

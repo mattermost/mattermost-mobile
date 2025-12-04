@@ -64,7 +64,7 @@ class InviteScreen {
     };
 
     getSearchListUserItemText = (id: string) => {
-        return element(by.id(`${this.testID.searchListUserItemPrefix}.${id}.username`));
+        return element(by.id(`${this.testID.searchListUserItemPrefix}.${id}.display_name`));
     };
 
     getSearchListNoResults = (id: string) => {
@@ -77,6 +77,10 @@ class InviteScreen {
 
     getSelectedItem = (id: string) => {
         return element(by.id(`${this.testID.selectedItemPrefix}.${id}`));
+    };
+
+    getSelectedChip = () => {
+        return element(by.id('invite.selected_item.display_name'));
     };
 
     getSummaryReportSent = () => {

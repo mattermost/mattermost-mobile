@@ -1,17 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import BottomSheetM, {BottomSheetBackdrop, type BottomSheetBackdropProps} from '@gorhom/bottom-sheet';
+import BottomSheetM, {BottomSheetBackdrop, BottomSheetScrollView, BottomSheetView, type BottomSheetBackdropProps} from '@gorhom/bottom-sheet';
 import React, {type ReactNode, useCallback, useEffect, useMemo, useRef} from 'react';
-import {DeviceEventEmitter, type Handle, InteractionManager, Keyboard, type StyleProp, View, type ViewStyle} from 'react-native';
-import {ReduceMotion, type WithSpringConfig} from 'react-native-reanimated';
+import {DeviceEventEmitter, type Handle, InteractionManager, Keyboard, ScrollView, type StyleProp, View, type ViewStyle} from 'react-native';
+import {ReduceMotion, useReducedMotion, type WithSpringConfig} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {Events} from '@constants';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {useBottomSheetListsFix} from '@hooks/bottom_sheet_lists_fix';
 import {useIsTablet} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import SecurityManager from '@managers/security_manager';
 import {dismissModal} from '@screens/navigation';
 import {hapticFeedback} from '@utils/general';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -33,7 +35,9 @@ type Props = {
     footerComponent?: React.FC<unknown>;
     renderContent: () => ReactNode;
     snapPoints?: Array<string | number>;
+    enableDynamicSizing?: boolean;
     testID?: string;
+    scrollable?: boolean;
 }
 
 const PADDING_TOP_MOBILE = 20;
@@ -71,6 +75,9 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             borderTopWidth: 1,
             borderColor: changeOpacity(theme.centerChannelColor, 0.08),
         },
+        view: {
+            flex: 1,
+        },
     };
 });
 
@@ -81,7 +88,6 @@ export const animatedConfig: Omit<WithSpringConfig, 'velocity'> = {
     overshootClamping: true,
     restSpeedThreshold: 0.3,
     restDisplacementThreshold: 0.3,
-    reduceMotion: ReduceMotion.Never,
 };
 
 const BottomSheet = ({
@@ -93,7 +99,10 @@ const BottomSheet = ({
     renderContent,
     snapPoints = [1, '50%', '80%'],
     testID,
+    enableDynamicSizing = false,
+    scrollable = false,
 }: Props) => {
+    const reducedMotion = useReducedMotion();
     const sheetRef = useRef<BottomSheetM>(null);
     const isTablet = useIsTablet();
     const insets = useSafeAreaInsets();
@@ -101,6 +110,13 @@ const BottomSheet = ({
     const styles = getStyleSheet(theme);
     const interaction = useRef<Handle>();
     const timeoutRef = useRef<NodeJS.Timeout>();
+
+    const {enabled, panResponder} = useBottomSheetListsFix();
+
+    const animationConfigs = useMemo(() => ({
+        ...animatedConfig,
+        reduceMotion: reducedMotion ? ReduceMotion.Always : ReduceMotion.Never,
+    }), [reducedMotion]);
 
     useEffect(() => {
         interaction.current = InteractionManager.createInteractionHandle();
@@ -139,7 +155,7 @@ const BottomSheet = ({
         } else {
             close();
         }
-    }, []);
+    }, [close]);
 
     const handleChange = useCallback((index: number) => {
         timeoutRef.current = setTimeout(() => {
@@ -152,7 +168,7 @@ const BottomSheet = ({
         if (index <= 0) {
             close();
         }
-    }, []);
+    }, [close]);
 
     useAndroidHardwareBackHandler(componentId, handleClose);
     useNavButtonPressed(closeButtonId || '', componentId, close, [close]);
@@ -192,14 +208,47 @@ const BottomSheet = ({
         </View>
     );
 
+    const scrollViewProps = {
+        style: styles.view,
+        showsVerticalScrollIndicator: false,
+        scrollEnabled: enabled,
+        ...panResponder.panHandlers,
+    };
+
     if (isTablet) {
         const FooterComponent = footerComponent;
+        let content = renderContainerContent();
+        if (scrollable) {
+            content = (
+                <ScrollView {...scrollViewProps}>
+                    {content}
+                </ScrollView>
+            );
+        }
         return (
-            <>
+            <View
+                style={styles.view}
+                nativeID={SecurityManager.getShieldScreenId(componentId)}
+            >
                 <View style={styles.separator}/>
-                {renderContainerContent()}
+                {content}
                 {FooterComponent && (<FooterComponent/>)}
-            </>
+            </View>
+        );
+    }
+
+    let content;
+    if (scrollable) {
+        content = (
+            <BottomSheetScrollView {...scrollViewProps}>
+                {renderContainerContent()}
+            </BottomSheetScrollView>
+        );
+    } else {
+        content = (
+            <BottomSheetView style={styles.view}>
+                {renderContainerContent()}
+            </BottomSheetView>
         );
     }
 
@@ -212,7 +261,7 @@ const BottomSheet = ({
             backdropComponent={renderBackdrop}
             onAnimate={handleAnimationStart}
             onChange={handleChange}
-            animationConfigs={animatedConfig}
+            animationConfigs={animationConfigs}
             handleComponent={Indicator}
             style={styles.bottomSheet}
             backgroundStyle={bottomSheetBackgroundStyle}
@@ -221,8 +270,9 @@ const BottomSheet = ({
             keyboardBlurBehavior='restore'
             onClose={close}
             bottomInset={insets.bottom}
+            enableDynamicSizing={enableDynamicSizing}
         >
-            {renderContainerContent()}
+            {content}
         </BottomSheetM>
     );
 };

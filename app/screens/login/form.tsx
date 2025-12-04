@@ -2,23 +2,22 @@
 // See LICENSE.txt for license information.
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
-import {Button} from '@rneui/base';
+import {Button as RNEButton} from '@rneui/base';
 import React, {useCallback, useEffect, useMemo, useRef, useState, type RefObject} from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessages, useIntl} from 'react-intl';
 import {Keyboard, TextInput, TouchableOpacity, View} from 'react-native';
 
-import {login} from '@actions/remote/session';
+import {getUserLoginType, login} from '@actions/remote/session';
+import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
-import FloatingTextInput from '@components/floating_text_input_label';
+import FloatingTextInput from '@components/floating_input/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
-import Loading from '@components/loading';
 import {FORGOT_PASSWORD, MFA} from '@constants/screens';
 import {useAvoidKeyboard} from '@hooks/device';
-import {t} from '@i18n';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {goToScreen, loginAnimationOptions, resetToHome} from '@screens/navigation';
-import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
-import {getFullErrorMessage, isErrorWithMessage, isServerError} from '@utils/errors';
-import {preventDoubleTap} from '@utils/tap';
+import {getFullErrorMessage, getServerError, isErrorWithMessage, isServerError} from '@utils/errors';
+import {logError} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
 
@@ -31,24 +30,36 @@ interface LoginProps extends LaunchProps {
     keyboardAwareRef: RefObject<KeyboardAwareScrollView>;
     serverDisplayName: string;
     theme: Theme;
+    setMagicLinkSent: (linkSent: boolean) => void;
 }
 
 export const MFA_EXPECTED_ERRORS = ['mfa.validate_token.authenticate.app_error', 'ent.mfa.validate_token.authenticate.app_error'];
 const hitSlop = {top: 8, right: 8, bottom: 8, left: 8};
 
+function getButtonDisabled(loginId: string, password: string, userLoginType: LoginType | undefined, isDeactivated: boolean, magicLinkEnabled: boolean) {
+    if (!loginId) {
+        return true;
+    }
+
+    if (isDeactivated) {
+        return true;
+    }
+
+    if (magicLinkEnabled && (userLoginType === 'guest_magic_link' || userLoginType === undefined)) {
+        return false;
+    }
+
+    if (!password) {
+        return true;
+    }
+
+    return false;
+}
+
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         marginBottom: 24,
-    },
-    inputBoxEmail: {
-        marginTop: 16,
-        marginBottom: 5,
-        color: theme.centerChannelColor,
-    },
-    inputBoxPassword: {
-        marginTop: 24,
-        marginBottom: 11,
-        color: theme.centerChannelColor,
+        gap: 24,
     },
     forgotPasswordBtn: {
         backgroundColor: 'transparent',
@@ -58,29 +69,50 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         borderColor: 'transparent',
         width: '60%',
     },
-    forgotPasswordError: {
-        marginTop: 30,
-    },
     forgotPasswordTxt: {
-        paddingVertical: 10,
         color: theme.buttonBg,
         fontSize: 14,
         fontFamily: 'OpenSans-SemiBold',
     },
-    loadingContainerStyle: {
-        marginRight: 10,
-        padding: 0,
-        top: -2,
-    },
-    loginButton: {
-        marginTop: 25,
+    loginButtonContainer: {
+        marginTop: 20,
     },
     endAdornment: {
         top: 2,
     },
 }));
 
-const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchError, launchType, license, serverUrl, theme}: LoginProps) => {
+const messages = defineMessages({
+    signIn: {
+        id: 'login.signIn',
+        defaultMessage: 'Log In',
+    },
+    signingIn: {
+        id: 'login.signingIn',
+        defaultMessage: 'Logging In',
+    },
+});
+
+const isMFAError = (loginError: unknown): boolean => {
+    const serverError = getServerError(loginError);
+    if (serverError) {
+        return MFA_EXPECTED_ERRORS.includes(serverError);
+    }
+    return false;
+};
+
+const LoginForm = ({
+    config,
+    extra,
+    keyboardAwareRef,
+    serverDisplayName,
+    launchError,
+    launchType,
+    license,
+    serverUrl,
+    theme,
+    setMagicLinkSent,
+}: LoginProps) => {
     const styles = getStyleSheet(theme);
     const loginRef = useRef<TextInput>(null);
     const passwordRef = useRef<TextInput>(null);
@@ -90,62 +122,45 @@ const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchEr
     const [error, setError] = useState<string | undefined>();
     const [loginId, setLoginId] = useState<string>('');
     const [password, setPassword] = useState<string>('');
-    const [buttonDisabled, setButtonDisabled] = useState(true);
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+    const [isDeactivated, setIsDeactivated] = useState(false);
     const emailEnabled = config.EnableSignInWithEmail === 'true';
     const usernameEnabled = config.EnableSignInWithUsername === 'true';
     const ldapEnabled = license.IsLicensed === 'true' && config.EnableLdap === 'true' && license.LDAP === 'true';
 
+    const [userLoginType, setUserLoginType] = useState<LoginType | undefined>(undefined);
+    const magicLinkEnabled = config.EnableGuestMagicLink === 'true';
+
     useAvoidKeyboard(keyboardAwareRef);
 
-    const preSignIn = preventDoubleTap(async () => {
-        setIsLoading(true);
-
-        Keyboard.dismiss();
-        signIn();
-    });
-
-    const signIn = async () => {
-        const result: LoginActionResponse = await login(serverUrl!, {serverDisplayName, loginId: loginId.toLowerCase(), password, config, license});
-        if (checkLoginResponse(result)) {
-            goToHome(result.error);
-        }
-    };
-
-    const goToHome = (loginError?: unknown) => {
+    const goToHome = useCallback((loginError?: unknown) => {
         const hasError = launchError || Boolean(loginError);
         resetToHome({extra, launchError: hasError, launchType, serverUrl});
-    };
+    }, [extra, launchError, launchType, serverUrl]);
 
-    const checkLoginResponse = (data: LoginActionResponse) => {
-        let errorId = '';
-        const loginError = data.error;
-        if (isServerError(loginError) && loginError.server_error_id) {
-            errorId = loginError.server_error_id;
-        }
-
-        if (data.failed && MFA_EXPECTED_ERRORS.includes(errorId)) {
-            goToMfa();
-            setIsLoading(false);
-            return false;
-        }
-
-        if (loginError && data.failed) {
-            setIsLoading(false);
-            setError(getLoginErrorMessage(loginError));
-            return false;
-        }
-
-        setIsLoading(false);
-
-        return true;
-    };
-
-    const goToMfa = () => {
+    const goToMfa = useCallback(() => {
         goToScreen(MFA, '', {goToHome, loginId, password, config, serverDisplayName, license, serverUrl, theme}, loginAnimationOptions());
-    };
+    }, [config, goToHome, license, loginId, password, serverDisplayName, serverUrl, theme]);
 
-    const getLoginErrorMessage = (loginError: unknown) => {
+    const checkUserLoginType = useCallback(async () => {
+        if (!serverUrl) {
+            setUserLoginType('');
+            logError('error on checkUserLoginType', 'serverUrl is required');
+            setError(intl.formatMessage({id: 'login.magic_link.request.error', defaultMessage: 'Failed to check user login type'}));
+            return '';
+        }
+        const response = await getUserLoginType(serverUrl, loginId);
+        if ('error' in response) {
+            logError('error on checkUserLoginType', getFullErrorMessage(response?.error));
+            setError(intl.formatMessage({id: 'login.magic_link.request.error', defaultMessage: 'Failed to check user login type'}));
+            return '';
+        }
+        setUserLoginType(response.auth_service);
+        setIsDeactivated(response.is_deactivated ?? false);
+        return (response.auth_service);
+    }, [serverUrl, loginId, intl]);
+
+    const getLoginErrorMessage = useCallback((loginError: unknown) => {
         if (isServerError(loginError)) {
             const errorId = loginError.server_error_id;
             if (errorId === 'api.user.login.invalid_credentials_email_username' || (!isErrorWithMessage(loginError) && typeof loginError !== 'string')) {
@@ -157,7 +172,40 @@ const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchEr
         }
 
         return getFullErrorMessage(loginError);
-    };
+    }, [intl]);
+
+    const checkLoginResponse = useCallback((data: LoginActionResponse) => {
+        const {failed, error: loginError} = data;
+        if (failed && isMFAError(loginError)) {
+            goToMfa();
+            setIsLoading(false);
+            return false;
+        }
+
+        if (failed && loginError) {
+            setIsLoading(false);
+            setError(getLoginErrorMessage(loginError));
+            return false;
+        }
+
+        setIsLoading(false);
+
+        return true;
+    }, [getLoginErrorMessage, goToMfa]);
+
+    const signIn = useCallback(async () => {
+        const result: LoginActionResponse = await login(serverUrl!, {serverDisplayName, loginId: loginId.toLowerCase(), password, config, license});
+        if (checkLoginResponse(result)) {
+            goToHome(result.error);
+        }
+    }, [checkLoginResponse, config, goToHome, license, loginId, password, serverDisplayName, serverUrl]);
+
+    const preSignIn = usePreventDoubleTap(useCallback(async () => {
+        setIsLoading(true);
+
+        Keyboard.dismiss();
+        signIn();
+    }, [signIn]));
 
     const createLoginPlaceholder = () => {
         const {formatMessage} = intl;
@@ -196,17 +244,34 @@ const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchEr
         passwordRef?.current?.focus();
     }, []);
 
-    const onLogin = useCallback(() => {
+    const onLogin = useCallback(async () => {
         Keyboard.dismiss();
+        if (magicLinkEnabled && userLoginType === undefined) {
+            const receivedUserLoginType = await checkUserLoginType();
+            if (receivedUserLoginType === 'guest_magic_link') {
+                setMagicLinkSent(true);
+            }
+            if (isDeactivated) {
+                setError(intl.formatMessage({id: 'login.deactivated', defaultMessage: 'This account is deactivated'}));
+                return;
+            }
+            return;
+        }
+
         preSignIn();
-    }, [loginId, password, theme]);
+    }, [checkUserLoginType, intl, isDeactivated, magicLinkEnabled, preSignIn, setMagicLinkSent, userLoginType]);
 
     const onLoginChange = useCallback((text: string) => {
         setLoginId(text);
         if (error) {
             setError(undefined);
         }
-    }, [error]);
+        if (userLoginType !== undefined) {
+            setPassword('');
+            setUserLoginType(undefined);
+            setIsDeactivated(false);
+        }
+    }, [error, userLoginType]);
 
     const onPasswordChange = useCallback((text: string) => {
         setPassword(text);
@@ -244,55 +309,39 @@ const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchEr
         setEmmUsernameIfAvailable();
     }, [managedConfig?.username]);
 
-    useEffect(() => {
-        if (loginId && password) {
-            setButtonDisabled(false);
+    const onIdInputSubmitting = useCallback(() => {
+        if (!magicLinkEnabled || (userLoginType !== 'guest_magic_link')) {
+            focusPassword();
             return;
         }
-        setButtonDisabled(true);
-    }, [loginId, password]);
 
-    const renderProceedButton = useMemo(() => {
-        const buttonType = buttonDisabled ? 'disabled' : 'default';
-        const styleButtonText = buttonTextStyle(theme, 'lg', 'primary', buttonType);
-        const styleButtonBackground = buttonBackgroundStyle(theme, 'lg', 'primary', buttonType);
+        onLogin();
+    }, [focusPassword, onLogin, magicLinkEnabled, userLoginType]);
 
-        let buttonID = t('login.signIn');
-        let buttonText = 'Log In';
-        let buttonIcon;
+    const buttonDisabled = getButtonDisabled(loginId, password, userLoginType, isDeactivated, magicLinkEnabled);
+    const showPasswordInput = !magicLinkEnabled || (userLoginType !== 'guest_magic_link' && userLoginType !== undefined && !isDeactivated);
+    let userInputError = error;
+    if (showPasswordInput) {
+        // error is passed to the password input box, so we use this
+        // hack to make the input box also show the error border
+        userInputError = error ? ' ' : '';
+    }
 
-        if (isLoading) {
-            buttonID = t('login.signingIn');
-            buttonText = 'Logging In';
-            buttonIcon = (
-                <Loading
-                    containerStyle={styles.loadingContainerStyle}
-                    color={theme.buttonColor}
-                />
-            );
-        }
-
-        const signinButtonTestId = buttonDisabled ? 'login_form.signin.button.disabled' : 'login_form.signin.button';
-
-        return (
+    const proceedButton = (
+        <View style={styles.loginButtonContainer}>
             <Button
                 disabled={buttonDisabled}
                 onPress={onLogin}
-                buttonStyle={[styles.loginButton, styleButtonBackground]}
-                disabledStyle={[styles.loginButton, styleButtonBackground]}
-                testID={signinButtonTestId}
-            >
-                {buttonIcon}
-                <FormattedText
-                    id={buttonID}
-                    defaultMessage={buttonText}
-                    style={styleButtonText}
-                />
-            </Button>
-        );
-    }, [buttonDisabled, loginId, password, isLoading, theme]);
+                size='lg'
+                testID={buttonDisabled ? 'login_form.signin.button.disabled' : 'login_form.signin.button'}
+                text={intl.formatMessage(isLoading ? messages.signingIn : messages.signIn)}
+                showLoader={isLoading}
+                theme={theme}
+            />
+        </View>
+    );
 
-    const endAdornment = (
+    const endAdornment = useMemo(() => (
         <TouchableOpacity
             onPress={togglePasswordVisiblity}
             hitSlop={hitSlop}
@@ -304,66 +353,67 @@ const LoginForm = ({config, extra, keyboardAwareRef, serverDisplayName, launchEr
                 color={changeOpacity(theme.centerChannelColor, 0.64)}
             />
         </TouchableOpacity>
-    );
+    ), [isPasswordVisible, styles.endAdornment, theme.centerChannelColor, togglePasswordVisiblity]);
 
     return (
         <View style={styles.container}>
             <FloatingTextInput
-                autoCorrect={false}
-                autoCapitalize={'none'}
+                rawInput={true}
                 blurOnSubmit={false}
-                containerStyle={styles.inputBoxEmail}
+                autoComplete='email'
                 disableFullscreenUI={true}
                 enablesReturnKeyAutomatically={true}
-                error={error ? ' ' : ''}
+                error={userInputError}
                 keyboardType='email-address'
                 label={createLoginPlaceholder()}
                 onChangeText={onLoginChange}
-                onSubmitEditing={focusPassword}
+                onSubmitEditing={onIdInputSubmitting}
                 ref={loginRef}
                 returnKeyType='next'
-                showErrorIcon={false}
-                spellCheck={false}
+                hideErrorIcon={true}
                 testID='login_form.username.input'
                 theme={theme}
                 value={loginId}
             />
-            <FloatingTextInput
-                autoCorrect={false}
-                autoCapitalize={'none'}
-                blurOnSubmit={false}
-                containerStyle={styles.inputBoxPassword}
-                disableFullscreenUI={true}
-                enablesReturnKeyAutomatically={true}
-                error={error}
-                keyboardType={isPasswordVisible ? 'visible-password' : 'default'}
-                label={intl.formatMessage({id: 'login.password', defaultMessage: 'Password'})}
-                onChangeText={onPasswordChange}
-                onSubmitEditing={onLogin}
-                ref={passwordRef}
-                returnKeyType='join'
-                spellCheck={false}
-                secureTextEntry={!isPasswordVisible}
-                testID='login_form.password.input'
-                theme={theme}
-                value={password}
-                endAdornment={endAdornment}
-            />
-
-            {(emailEnabled || usernameEnabled) && config.PasswordEnableForgotLink !== 'false' && (
-                <Button
-                    onPress={onPressForgotPassword}
-                    buttonStyle={[styles.forgotPasswordBtn, error ? styles.forgotPasswordError : undefined]}
-                    testID='login_form.forgot_password.button'
-                >
-                    <FormattedText
-                        id='login.forgot'
-                        defaultMessage='Forgot your password?'
-                        style={styles.forgotPasswordTxt}
+            {showPasswordInput && (
+                <>
+                    <FloatingTextInput
+                        rawInput={true}
+                        blurOnSubmit={false}
+                        autoComplete='current-password'
+                        disableFullscreenUI={true}
+                        enablesReturnKeyAutomatically={true}
+                        error={error}
+                        keyboardType={isPasswordVisible ? 'visible-password' : 'default'}
+                        label={intl.formatMessage({id: 'login.password', defaultMessage: 'Password'})}
+                        onChangeText={onPasswordChange}
+                        onSubmitEditing={onLogin}
+                        ref={passwordRef}
+                        returnKeyType='join'
+                        secureTextEntry={!isPasswordVisible}
+                        testID='login_form.password.input'
+                        theme={theme}
+                        value={password}
+                        endAdornment={endAdornment}
+                        autoFocus={magicLinkEnabled}
                     />
-                </Button>
+
+                    {(emailEnabled || usernameEnabled) && config.PasswordEnableForgotLink !== 'false' && (
+                        <RNEButton
+                            onPress={onPressForgotPassword}
+                            buttonStyle={styles.forgotPasswordBtn}
+                            testID='login_form.forgot_password.button'
+                        >
+                            <FormattedText
+                                id='login.forgot'
+                                defaultMessage='Forgot your password?'
+                                style={styles.forgotPasswordTxt}
+                            />
+                        </RNEButton>
+                    )}
+                </>
             )}
-            {renderProceedButton}
+            {proceedButton}
         </View>
     );
 };

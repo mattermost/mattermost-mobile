@@ -8,16 +8,16 @@ import {
     SafeAreaView,
     ScrollView,
     StyleSheet,
-    Platform,
     type NativeSyntheticEvent,
     type NativeScrollEvent,
     BackHandler,
 } from 'react-native';
-import {Navigation} from 'react-native-navigation';
-import Animated, {ReduceMotion, useAnimatedStyle, useDerivedValue, useSharedValue, withTiming} from 'react-native-reanimated';
+import Animated, {useDerivedValue, useSharedValue} from 'react-native-reanimated';
 
 import {storeOnboardingViewedValue} from '@actions/app/global';
 import {Screens} from '@constants';
+import {useScreenTransitionAnimation} from '@hooks/screen_transition_animation';
+import SecurityManager from '@managers/security_manager';
 import Background from '@screens/background';
 import {goToScreen, loginAnimationOptions} from '@screens/navigation';
 
@@ -27,8 +27,10 @@ import SlideItem from './slide';
 import useSlidesData from './slides_data';
 
 import type {LaunchProps} from '@typings/launch';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 interface OnboardingProps extends LaunchProps {
+    componentId: AvailableScreens;
     theme: Theme;
 }
 
@@ -49,6 +51,7 @@ const styles = StyleSheet.create({
 const AnimatedSafeArea = Animated.createAnimatedComponent(SafeAreaView);
 
 const Onboarding = ({
+    componentId,
     theme,
     ...props
 }: OnboardingProps) => {
@@ -58,9 +61,6 @@ const Onboarding = ({
     const slidesRef = useRef<ScrollView>(null);
 
     const scrollX = useSharedValue(0);
-
-    // used to smothly animate the whole onboarding screen during the appear event scenario (from server screen back to onboarding screen)
-    const translateX = useSharedValue(width);
 
     const currentIndex = useDerivedValue(() => Math.round(scrollX.value / width));
 
@@ -91,26 +91,7 @@ const Onboarding = ({
         scrollX.value = event.nativeEvent.contentOffset.x;
     }, []);
 
-    useEffect(() => {
-        const listener = {
-            componentDidAppear: () => {
-                translateX.value = 0;
-            },
-            componentDidDisappear: () => {
-                translateX.value = -width;
-            },
-        };
-        const unsubscribe = Navigation.events().registerComponentListener(listener, Screens.ONBOARDING);
-
-        return () => unsubscribe.remove();
-    }, [width]);
-
-    const transform = useAnimatedStyle(() => {
-        const duration = Platform.OS === 'android' ? 250 : 350;
-        return {
-            transform: [{translateX: withTiming(translateX.value, {duration, reduceMotion: ReduceMotion.Never})}],
-        };
-    }, []);
+    const animatedStyles = useScreenTransitionAnimation(Screens.ONBOARDING);
 
     useEffect(() => {
         const listener = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -125,18 +106,15 @@ const Onboarding = ({
         return () => listener.remove();
     }, []);
 
-    useEffect(() => {
-        translateX.value = 0;
-    }, []);
-
     return (
         <View
             style={styles.onBoardingContainer}
             testID='onboarding.screen'
+            nativeID={SecurityManager.getShieldScreenId(componentId, false, true)}
         >
             <Background theme={theme}/>
             <AnimatedSafeArea
-                style={[styles.scrollContainer, transform]}
+                style={[styles.scrollContainer, animatedStyles]}
                 key={'onboarding_content'}
             >
                 <ScrollView

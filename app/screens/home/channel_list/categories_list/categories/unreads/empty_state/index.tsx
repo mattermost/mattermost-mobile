@@ -1,14 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React, {useMemo} from 'react';
+import React from 'react';
+import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 
 import {showUnreadChannelsOnly} from '@actions/local/channel';
+import Button from '@components/button';
 import FormattedText from '@components/formatted_text';
-import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -19,7 +19,7 @@ type Props = {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
-    button: {
+    buttonContainer: {
         marginTop: 24,
     },
     container: {
@@ -31,6 +31,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         top: -20,
     },
     title: {
+        marginTop: 24,
         color: theme.sidebarText,
         textAlign: 'center',
         ...typography('Heading', 400, 'SemiBold'),
@@ -44,12 +45,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 function EmptyUnreads({onlyUnreads}: Props) {
+    const intl = useIntl();
     const theme = useTheme();
     const serverUrl = useServerUrl();
     const styles = getStyleSheet(theme);
-
-    const buttonStyle = useMemo(() => [buttonBackgroundStyle(theme, 'lg', 'tertiary', 'inverted'), styles.button],
-        [theme]);
 
     const onPress = () => {
         showUnreadChannelsOnly(serverUrl, !onlyUnreads);
@@ -70,17 +69,16 @@ function EmptyUnreads({onlyUnreads}: Props) {
                 style={styles.paragraph}
                 testID='unreads.empty.paragraph'
             />
-            <TouchableWithFeedback
-                style={buttonStyle}
-                onPress={onPress}
-                type={'opacity'}
-            >
-                <FormattedText
-                    id='unreads.empty.show_all'
-                    defaultMessage='Show all'
-                    style={buttonTextStyle(theme, 'lg', 'tertiary', 'inverted')}
+            <View style={styles.buttonContainer}>
+                <Button
+                    text={intl.formatMessage({id: 'unreads.empty.show_all', defaultMessage: 'Show all'})}
+                    theme={theme}
+                    size='lg'
+                    onPress={onPress}
+                    emphasis='tertiary'
+                    isInverted={true}
                 />
-            </TouchableWithFeedback>
+            </View>
         </View>
     );
 }

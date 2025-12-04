@@ -11,8 +11,8 @@ import {Events, Screens} from '@constants';
 import {SET_CUSTOM_STATUS_FAILURE} from '@constants/custom_status';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {showModal} from '@screens/navigation';
-import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getUserCustomStatus, isCustomStatusExpired as checkCustomStatusIsExpired} from '@utils/user';
@@ -62,7 +62,7 @@ const CustomStatus = ({isTablet, currentUser}: CustomStatusProps) => {
         return () => listener.remove();
     }, []);
 
-    const clearCustomStatus = useCallback(preventDoubleTap(async () => {
+    const clearCustomStatus = usePreventDoubleTap(useCallback(async () => {
         setShowRetryMessage(false);
 
         const {error} = await unsetCustomStatus(serverUrl);
@@ -72,16 +72,16 @@ const CustomStatus = ({isTablet, currentUser}: CustomStatusProps) => {
         }
 
         updateLocalCustomStatus(serverUrl, currentUser, undefined);
-    }), []);
+    }, [currentUser, serverUrl]));
 
-    const goToCustomStatusScreen = useCallback(preventDoubleTap(() => {
+    const goToCustomStatusScreen = usePreventDoubleTap(useCallback(() => {
         if (isTablet) {
             DeviceEventEmitter.emit(Events.ACCOUNT_SELECT_TABLET_VIEW, Screens.CUSTOM_STATUS);
         } else {
             showModal(Screens.CUSTOM_STATUS, intl.formatMessage({id: 'mobile.routes.custom_status', defaultMessage: 'Set a custom status'}));
         }
         setShowRetryMessage(false);
-    }), [isTablet]);
+    }, [intl, isTablet]));
 
     return (
         <TouchableOpacity

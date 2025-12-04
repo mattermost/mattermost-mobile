@@ -32,6 +32,10 @@ class MattermostHardwareKeyboardImpl(reactApplicationContext: ReactApplicationCo
         }
 
         private fun sendEvent(action: String) {
+            if (!this::context.isInitialized) {
+                return
+            }
+
             if (context.hasActiveReactInstance()) {
                 val result: WritableMap = WritableNativeMap()
                 result.putString("action", action)

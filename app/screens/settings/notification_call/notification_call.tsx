@@ -42,17 +42,14 @@ const NotificationCall = ({componentId, currentUser}: Props) => {
 
     const notifyProps = useMemo(() => getNotificationProps(currentUser), [currentUser?.notifyProps]);
 
-    const initialCallsMobileSound = useMemo(() => Boolean(notifyProps?.calls_mobile_sound ? notifyProps.calls_mobile_sound === 'true' : notifyProps?.calls_desktop_sound === 'true'),
-        [/* dependency array should remain empty */]);
-    const [callsMobileSound, setCallsMobileSound] = useState(initialCallsMobileSound);
-    const initialCallsMobileNotificationSound = useMemo(() => {
+    const [callsMobileSound, setCallsMobileSound] = useState(() => Boolean(notifyProps?.calls_mobile_sound ? notifyProps.calls_mobile_sound === 'true' : notifyProps?.calls_desktop_sound === 'true'));
+    const [callsMobileNotificationSound, setCallsMobileNotificationSound] = useState(() => {
         let initialSound = notifyProps?.calls_mobile_notification_sound ? notifyProps.calls_mobile_notification_sound : notifyProps?.calls_notification_sound;
         if (!initialSound) {
             initialSound = Calls.RINGTONE_DEFAULT;
         }
         return initialSound;
-    }, [/* dependency array should remain empty */]);
-    const [callsMobileNotificationSound, setCallsMobileNotificationSound] = useState(initialCallsMobileNotificationSound);
+    });
     const [playingRingtone, setPlayingRingtone] = useState(false);
 
     const close = useCallback(() => {
@@ -107,7 +104,7 @@ const NotificationCall = ({componentId, currentUser}: Props) => {
             updateMe(serverUrl, {notify_props});
         }
         close();
-    }, [serverUrl, canSaveSettings, close, notifyProps, callsMobileSound, callsMobileNotificationSound, playingRingtone]);
+    }, [serverUrl, canSaveSettings, close, notifyProps, callsMobileSound, callsMobileNotificationSound]);
 
     useBackNavigation(saveNotificationSettings);
 

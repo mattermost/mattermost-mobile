@@ -19,8 +19,6 @@ import AppSlashSuggestion from './slash_suggestion/app_slash_suggestion/';
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         base: {
-            left: 8,
-            right: 8,
             position: 'absolute',
         },
         borders: {
@@ -59,13 +57,29 @@ type Props = {
     isAppsEnabled: boolean;
     nestedScrollEnabled?: boolean;
     updateValue: (v: string) => void;
-    hasFilesAttached?: boolean;
+    shouldDirectlyReact?: boolean;
     availableSpace: SharedValue<number>;
-    inPost?: boolean;
     growDown?: boolean;
     teamId?: string;
     containerStyle?: StyleProp<ViewStyle>;
+    autocompleteProviders?: AutocompleteProviders;
+    useAllAvailableSpace?: boolean;
+    horizontalPadding?: number;
 }
+
+type AutocompleteProviders = {
+    user: boolean;
+    channel: boolean;
+    emoji: boolean;
+    slash: boolean;
+}
+
+const defaultAutocompleteProviders: AutocompleteProviders = {
+    user: true,
+    channel: true,
+    emoji: true,
+    slash: true,
+};
 
 const Autocomplete = ({
     cursorPosition,
@@ -80,11 +94,13 @@ const Autocomplete = ({
     isAppsEnabled,
     nestedScrollEnabled = false,
     updateValue,
-    hasFilesAttached,
-    inPost = false,
+    shouldDirectlyReact = false,
     growDown = false,
     containerStyle,
     teamId,
+    autocompleteProviders = defaultAutocompleteProviders,
+    useAllAvailableSpace = false,
+    horizontalPadding = 8,
 }: Props) => {
     const theme = useTheme();
     const isTablet = useIsTablet();
@@ -107,8 +123,8 @@ const Autocomplete = ({
     const maxHeightAdjust = (isTablet && isLandscape) ? MAX_LIST_TABLET_DIFF : 0;
     const defaultMaxHeight = MAX_LIST_HEIGHT - maxHeightAdjust;
     const maxHeight = useDerivedValue(() => {
-        return Math.min(availableSpace.value, defaultMaxHeight);
-    }, [defaultMaxHeight]);
+        return useAllAvailableSpace ? availableSpace.value : Math.min(availableSpace.value, defaultMaxHeight);
+    }, [defaultMaxHeight, useAllAvailableSpace, availableSpace]);
 
     const containerAnimatedStyle = useAnimatedStyle(() => {
         return growDown ?
@@ -117,7 +133,7 @@ const Autocomplete = ({
     }, [growDown, position]);
 
     const containerStyles = useMemo(() => {
-        const s: StyleProp<ViewStyle> = [style.base, containerAnimatedStyle];
+        const s: StyleProp<ViewStyle> = [style.base, {left: horizontalPadding, right: horizontalPadding}, containerAnimatedStyle];
         if (hasElements) {
             s.push(style.borders);
         }
@@ -128,14 +144,14 @@ const Autocomplete = ({
             s.push(containerStyle);
         }
         return s;
-    }, [hasElements, style, containerStyle, containerAnimatedStyle]);
+    }, [style.base, style.borders, style.shadow, horizontalPadding, containerAnimatedStyle, hasElements, containerStyle]);
 
     return (
         <Animated.View
             testID='autocomplete'
             style={containerStyles}
         >
-            {isAppsEnabled && channelId && (
+            {isAppsEnabled && channelId && autocompleteProviders.slash && (
                 <AppSlashSuggestion
                     listStyle={style.listStyle}
                     updateValue={updateValue}
@@ -147,29 +163,33 @@ const Autocomplete = ({
                 />
             )}
             {(!appsTakeOver || !isAppsEnabled) && (<>
-                <AtMention
-                    cursorPosition={cursorPosition}
-                    listStyle={style.listStyle}
-                    updateValue={updateValue}
-                    onShowingChange={setShowingAtMention}
-                    value={value || ''}
-                    nestedScrollEnabled={nestedScrollEnabled}
-                    isSearch={isSearch}
-                    channelId={channelId}
-                    teamId={teamId}
-                />
-                <ChannelMention
-                    cursorPosition={cursorPosition}
-                    listStyle={style.listStyle}
-                    updateValue={updateValue}
-                    onShowingChange={setShowingChannelMention}
-                    value={value || ''}
-                    nestedScrollEnabled={nestedScrollEnabled}
-                    isSearch={isSearch}
-                    channelId={channelId}
-                    teamId={teamId}
-                />
-                {!isSearch &&
+                {autocompleteProviders.user && (
+                    <AtMention
+                        cursorPosition={cursorPosition}
+                        listStyle={style.listStyle}
+                        updateValue={updateValue}
+                        onShowingChange={setShowingAtMention}
+                        value={value || ''}
+                        nestedScrollEnabled={nestedScrollEnabled}
+                        isSearch={isSearch}
+                        channelId={channelId}
+                        teamId={teamId}
+                    />
+                )}
+                {autocompleteProviders.channel && (
+                    <ChannelMention
+                        cursorPosition={cursorPosition}
+                        listStyle={style.listStyle}
+                        updateValue={updateValue}
+                        onShowingChange={setShowingChannelMention}
+                        value={value || ''}
+                        nestedScrollEnabled={nestedScrollEnabled}
+                        isSearch={isSearch}
+                        channelId={channelId}
+                        teamId={teamId}
+                    />
+                )}
+                {!isSearch && autocompleteProviders.emoji && (
                     <EmojiSuggestion
                         cursorPosition={cursorPosition}
                         listStyle={style.listStyle}
@@ -178,11 +198,10 @@ const Autocomplete = ({
                         value={value || ''}
                         nestedScrollEnabled={nestedScrollEnabled}
                         rootId={rootId}
-                        hasFilesAttached={hasFilesAttached}
-                        inPost={inPost}
+                        shouldDirectlyReact={shouldDirectlyReact}
                     />
-                }
-                {showCommands && channelId &&
+                )}
+                {showCommands && channelId && autocompleteProviders.slash && (
                     <SlashSuggestion
                         listStyle={style.listStyle}
                         updateValue={updateValue}
@@ -193,7 +212,7 @@ const Autocomplete = ({
                         rootId={rootId}
                         isAppsEnabled={isAppsEnabled}
                     />
-                }
+                )}
                 {/* {(isSearch && enableDateSuggestion) &&
                     <DateSuggestion
                         cursorPosition={cursorPosition}

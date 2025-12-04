@@ -12,7 +12,7 @@ import {addRecentReaction} from './reactions';
 import type Model from '@nozbe/watermelondb/Model';
 import type UserModel from '@typings/database/models/servers/user';
 
-export async function setCurrentUserStatus(serverUrl: string, status: string) {
+export async function setCurrentUserStatus(serverUrl: string, status: string): Promise<{error?: unknown}> {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const user = await getCurrentUser(database);
@@ -25,14 +25,14 @@ export async function setCurrentUserStatus(serverUrl: string, status: string) {
             await operator.batchRecords([user], 'setCurrentUserStatus');
         }
 
-        return null;
+        return {};
     } catch (error) {
         logError('Failed setCurrentUserStatus', error);
         return {error};
     }
 }
 
-export async function updateLocalCustomStatus(serverUrl: string, user: UserModel, customStatus?: UserCustomStatus) {
+export async function updateLocalCustomStatus(serverUrl: string, user: UserModel, customStatus?: UserCustomStatus): Promise<{error?: unknown}> {
     try {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const models: Model[] = [];
@@ -43,9 +43,9 @@ export async function updateLocalCustomStatus(serverUrl: string, user: UserModel
 
         models.push(userModel);
         if (customStatus) {
-            const recent = await updateRecentCustomStatuses(serverUrl, customStatus, true);
-            if (Array.isArray(recent)) {
-                models.push(...recent);
+            const {models: customStatusModels} = await updateRecentCustomStatuses(serverUrl, customStatus, true);
+            if (customStatusModels?.length) {
+                models.push(...customStatusModels);
             }
 
             if (customStatus.emoji) {
@@ -65,7 +65,7 @@ export async function updateLocalCustomStatus(serverUrl: string, user: UserModel
     }
 }
 
-export const updateRecentCustomStatuses = async (serverUrl: string, customStatus: UserCustomStatus, prepareRecordsOnly = false, remove = false) => {
+export const updateRecentCustomStatuses = async (serverUrl: string, customStatus: UserCustomStatus, prepareRecordsOnly = false, remove = false): Promise<{models?: Model[]; error?: unknown}> => {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const recentStatuses = await getRecentCustomStatuses(database);
@@ -83,13 +83,14 @@ export const updateRecentCustomStatuses = async (serverUrl: string, customStatus
             recentStatuses.unshift(customStatus);
         }
 
-        return operator.handleSystem({
+        const models = await operator.handleSystem({
             systems: [{
                 id: SYSTEM_IDENTIFIERS.RECENT_CUSTOM_STATUS,
                 value: JSON.stringify(recentStatuses),
             }],
             prepareRecordsOnly,
         });
+        return {models};
     } catch (error) {
         logError('Failed updateRecentCustomStatuses', error);
         return {error};

@@ -7,7 +7,8 @@ import {StyleSheet, View} from 'react-native';
 import {searchCustomEmojis} from '@actions/remote/custom_emoji';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {debounce} from '@helpers/api/general';
+import {useDebounce} from '@hooks/utils';
+import SecurityManager from '@managers/security_manager';
 import {getKeyboardAppearanceFromTheme} from '@utils/theme';
 
 import EmojiFiltered from './filtered';
@@ -15,6 +16,7 @@ import PickerHeader from './header';
 import EmojiSections from './sections';
 
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 export const SCROLLVIEW_NATIVE_ID = 'emojiSelector';
 
@@ -44,16 +46,16 @@ const Picker = ({customEmojis, customEmojisEnabled, file, imageUrl, onEmojiPress
 
     const onCancelSearch = useCallback(() => setSearchTerm(undefined), []);
 
-    const onChangeSearchTerm = useCallback((text: string) => {
-        setSearchTerm(text);
-        searchCustom(text.replace(/^:|:$/g, '').trim());
-    }, []);
-
-    const searchCustom = debounce((text: string) => {
+    const searchCustom = useDebounce(useCallback((text: string) => {
         if (text && text.length > 1) {
             searchCustomEmojis(serverUrl, text);
         }
-    }, 500);
+    }, [serverUrl]), 500);
+
+    const onChangeSearchTerm = useCallback((text: string) => {
+        setSearchTerm(text);
+        searchCustom(text.replace(/^:|:$/g, '').trim());
+    }, [searchCustom]);
 
     let EmojiList: React.ReactNode = null;
     const term = searchTerm?.replace(/^:|:$/g, '').trim();
@@ -82,6 +84,7 @@ const Picker = ({customEmojis, customEmojisEnabled, file, imageUrl, onEmojiPress
         <View
             style={styles.flex}
             testID={`${testID}.screen`}
+            nativeID={SecurityManager.getShieldScreenId(testID as AvailableScreens)}
         >
             <View style={styles.searchBar}>
                 <PickerHeader

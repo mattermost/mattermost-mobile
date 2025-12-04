@@ -282,7 +282,7 @@ describe('executeAppCommand', () => {
 
         expect(parser.composeCommandSubmitCall).toHaveBeenCalledWith(msg);
         expect(doAppSubmit).toHaveBeenCalledWith(serverUrl, {}, intl);
-        expect(result).toEqual({error: {message: 'Unknown error.'}});
+        expect(result).toEqual({error: {message: 'Unknown error occurred.'}});
     });
 
     it('should handle a form response', async () => {
@@ -382,7 +382,7 @@ describe('handleGotoLocation', () => {
 
         expect(getConfig).toHaveBeenCalledWith(mockOperator.database);
         expect(matchDeepLink).toHaveBeenCalledWith(location, serverUrl, serverUrl);
-        expect(handleDeepLink).toHaveBeenCalledWith(location, intl, location);
+        expect(handleDeepLink).toHaveBeenCalledWith({url: location}, intl, location);
         expect(result).toEqual({data: true});
     });
 

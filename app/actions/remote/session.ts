@@ -2,28 +2,60 @@
 // See LICENSE.txt for license information.
 
 import NetInfo from '@react-native-community/netinfo';
-import {DeviceEventEmitter, Platform} from 'react-native';
+import {defineMessages, type IntlShape} from 'react-intl';
+import {Alert, DeviceEventEmitter, Platform, type AlertButton} from 'react-native';
 
 import {Database, Events} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import PushNotifications from '@init/push_notifications';
 import NetworkManager from '@managers/network_manager';
+import WebsocketManager from '@managers/websocket_manager';
 import {getDeviceToken} from '@queries/app/global';
 import {getServerDisplayName} from '@queries/app/servers';
 import {getCurrentUserId, getExpiredSession} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
+import {resetToHome} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {getFullErrorMessage, isErrorWithStatusCode, isErrorWithUrl} from '@utils/errors';
 import {logWarning, logError, logDebug} from '@utils/log';
 import {scheduleExpiredNotification} from '@utils/notification';
+import {type SAMLChallenge} from '@utils/saml_challenge';
 import {getCSRFFromCookie} from '@utils/security';
+import {getServerUrlAfterRedirect} from '@utils/url';
 
 import {loginEntry} from './entry';
 
 import type {LoginArgs} from '@typings/database/database';
 
 const HTTP_UNAUTHORIZED = 401;
+
+const logoutMessages = defineMessages({
+    title: {
+        id: 'logout.fail.title',
+        defaultMessage: 'Logout not complete',
+    },
+    bodyForced: {
+        id: 'logout.fail.message.forced',
+        defaultMessage: 'We could not log you out of the server. Some data may continue to be accessible to this device once the device goes back online.',
+    },
+    body: {
+        id: 'logout.fail.message',
+        defaultMessage: 'You’re not fully logged out. Some data may continue to be accessible to this device once the device goes back online. What do you want to do?',
+    },
+    cancel: {
+        id: 'logout.fail.cancel',
+        defaultMessage: 'Cancel',
+    },
+    continue: {
+        id: 'logout.fail.continue_anyway',
+        defaultMessage: 'Continue Anyway',
+    },
+    ok: {
+        id: 'logout.fail.ok',
+        defaultMessage: 'OK',
+    },
+});
 
 export const addPushProxyVerificationStateFromLogin = async (serverUrl: string) => {
     try {
@@ -56,7 +88,7 @@ export const forceLogoutIfNecessary = async (serverUrl: string, err: unknown) =>
     const currentUserId = await getCurrentUserId(database);
 
     if (isErrorWithStatusCode(err) && err.status_code === HTTP_UNAUTHORIZED && isErrorWithUrl(err) && err.url?.indexOf('/login') === -1 && currentUserId) {
-        await logout(serverUrl);
+        await logout(serverUrl, undefined, {skipServerLogout: true});
         return {error: null, logout: true};
     }
 
@@ -135,17 +167,64 @@ export const login = async (serverUrl: string, {ldapOnly = false, loginId, mfaTo
     }
 };
 
-export const logout = async (serverUrl: string, skipServerLogout = false, removeServer = false, skipEvents = false) => {
+type LogoutOptions = {
+    skipServerLogout?: boolean;
+    removeServer?: boolean;
+    skipEvents?: boolean;
+    logoutOnAlert?: boolean;
+};
+
+export const logout = async (
+    serverUrl: string,
+    intl: IntlShape | undefined,
+    {
+        skipServerLogout = false,
+        removeServer = false,
+        skipEvents = false,
+        logoutOnAlert = false,
+    }: LogoutOptions = {}) => {
     if (!skipServerLogout) {
+        let loggedOut = false;
         try {
             const client = NetworkManager.getClient(serverUrl);
-            await client.logout();
+            const response = await client.logout();
+            if (response.status === 'OK') {
+                loggedOut = true;
+            }
         } catch (error) {
             // We want to log the user even if logging out from the server failed
             logWarning('An error occurred logging out from the server', serverUrl, getFullErrorMessage(error));
         }
+
+        if (!loggedOut) {
+            const title = intl?.formatMessage(logoutMessages.title) || logoutMessages.title.defaultMessage;
+
+            const bodyMessage = logoutOnAlert ? logoutMessages.bodyForced : logoutMessages.body;
+            const confirmMessage = logoutOnAlert ? logoutMessages.ok : logoutMessages.continue;
+            const body = intl?.formatMessage(bodyMessage) || bodyMessage.defaultMessage;
+            const cancel = intl?.formatMessage(logoutMessages.cancel) || logoutMessages.cancel.defaultMessage;
+            const confirm = intl?.formatMessage(confirmMessage) || confirmMessage.defaultMessage;
+
+            const buttons: AlertButton[] = logoutOnAlert ? [] : [{text: cancel, style: 'cancel'}];
+            buttons.push({
+                text: confirm,
+                onPress: logoutOnAlert ? undefined : () => {
+                    logout(serverUrl, intl, {skipEvents, removeServer, logoutOnAlert, skipServerLogout: true});
+                },
+            });
+            Alert.alert(
+                title,
+                body,
+                buttons,
+            );
+
+            if (!logoutOnAlert) {
+                return {data: false};
+            }
+        }
     }
 
+    WebsocketManager.getClient(serverUrl)?.close(true);
     if (!skipEvents) {
         DeviceEventEmitter.emit(Events.SERVER_LOGOUT, {serverUrl, removeServer});
     }
@@ -224,7 +303,7 @@ export const sendPasswordResetEmail = async (serverUrl: string, email: string) =
     }
 };
 
-export const ssoLogin = async (serverUrl: string, serverDisplayName: string, serverIdentifier: string, bearerToken: string, csrfToken: string): Promise<LoginActionResponse> => {
+export const ssoLogin = async (serverUrl: string, serverDisplayName: string, serverIdentifier: string, bearerToken: string, csrfToken: string, preauthSecret?: string): Promise<LoginActionResponse> => {
     const database = DatabaseManager.appDatabase?.database;
     if (!database) {
         return {error: 'App database not found', failed: true};
@@ -233,7 +312,7 @@ export const ssoLogin = async (serverUrl: string, serverDisplayName: string, ser
     try {
         const client = NetworkManager.getClient(serverUrl);
 
-        client.setBearerToken(bearerToken);
+        client.setClientCredentials(bearerToken, preauthSecret);
         client.setCSRFToken(csrfToken);
 
         // Setting up active database for this SSO login flow
@@ -256,6 +335,51 @@ export const ssoLogin = async (serverUrl: string, serverDisplayName: string, ser
         });
     } catch (error) {
         logDebug('error on ssoLogin', getFullErrorMessage(error));
+        return {error, failed: true};
+    }
+
+    try {
+        await addPushProxyVerificationStateFromLogin(serverUrl);
+        const {error} = await loginEntry({serverUrl});
+        await DatabaseManager.setActiveServerDatabase(serverUrl);
+        return {error, failed: false};
+    } catch (error) {
+        return {error, failed: false};
+    }
+};
+
+export const ssoLoginWithCodeExchange = async (serverUrl: string, serverDisplayName: string, serverIdentifier: string, loginCode: string, samlChallenge: Pick<SAMLChallenge, 'codeVerifier' | 'state'>, preauthSecret?: string): Promise<LoginActionResponse> => {
+    const database = DatabaseManager.appDatabase?.database;
+    if (!database) {
+        return {error: 'App database not found', failed: true};
+    }
+
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const {token, csrf} = await client.exchangeSsoLoginCode(loginCode, samlChallenge.codeVerifier, samlChallenge.state);
+
+        client.setClientCredentials(token, preauthSecret);
+        client.setCSRFToken(csrf);
+
+        const server = await DatabaseManager.createServerDatabase({
+            config: {
+                dbName: serverUrl,
+                serverUrl,
+                identifier: serverIdentifier,
+                displayName: serverDisplayName,
+            },
+        });
+        const user = await client.getMe();
+        await server?.operator.handleUsers({users: [user], prepareRecordsOnly: false});
+        await server?.operator.handleSystem({
+            systems: [{
+                id: Database.SYSTEM_IDENTIFIERS.CURRENT_USER_ID,
+                value: user.id,
+            }],
+            prepareRecordsOnly: false,
+        });
+    } catch (error) {
+        logDebug('error on ssoLoginWithCodeExchange', getFullErrorMessage(error));
         return {error, failed: true};
     }
 
@@ -311,3 +435,74 @@ export async function findSession(serverUrl: string, sessions: Session[]) {
     // At this point we did not find the session
     return undefined;
 }
+
+export const getUserLoginType = async (serverUrl: string, loginId: string) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        return await client.getUserLoginType(loginId);
+    } catch (error) {
+        logError('error on getUserLoginType', getFullErrorMessage(error));
+        return {error};
+    }
+};
+
+export const magicLinkLogin = async (serverUrl: string, token: string): Promise<LoginActionResponse> => {
+    const httpsHeadRequest = await getServerUrlAfterRedirect(serverUrl);
+    let serverUrlToUse;
+    if (httpsHeadRequest.error || !httpsHeadRequest.url) {
+        // Retry with HTTP
+        const httpHeadRequest = await getServerUrlAfterRedirect(serverUrl, true);
+        if (httpHeadRequest.error || !httpHeadRequest.url) {
+            return {error: httpsHeadRequest.error || httpHeadRequest.error || 'empty server url', failed: true};
+        }
+        serverUrlToUse = httpHeadRequest.url;
+    } else {
+        serverUrlToUse = httpsHeadRequest.url;
+    }
+
+    const database = DatabaseManager.appDatabase?.database;
+    if (!database) {
+        return {error: 'App database not found', failed: true};
+    }
+
+    try {
+        const client = await NetworkManager.createClient(serverUrlToUse, undefined);
+        const config = await client.getClientConfigOld();
+        const deviceId = await getDeviceToken();
+        const serverDisplayName = config.SiteName;
+
+        const user = await client.loginByMagicLinkLogin(token, deviceId);
+
+        const server = await DatabaseManager.createServerDatabase({
+            config: {
+                dbName: serverUrlToUse,
+                serverUrl: serverUrlToUse,
+                identifier: config.DiagnosticId,
+                displayName: serverDisplayName,
+            },
+        });
+
+        await server?.operator.handleUsers({users: [user], prepareRecordsOnly: false});
+        await server?.operator.handleSystem({
+            systems: [{
+                id: Database.SYSTEM_IDENTIFIERS.CURRENT_USER_ID,
+                value: user.id,
+            }],
+            prepareRecordsOnly: false,
+        });
+        const csrfToken = await getCSRFFromCookie(serverUrlToUse);
+        client.setCSRFToken(csrfToken);
+    } catch (error) {
+        return {error, failed: true};
+    }
+
+    try {
+        await addPushProxyVerificationStateFromLogin(serverUrlToUse);
+        const {error} = await loginEntry({serverUrl: serverUrlToUse});
+        await DatabaseManager.setActiveServerDatabase(serverUrlToUse);
+        await resetToHome();
+        return {error, failed: false};
+    } catch (error) {
+        return {error, failed: false};
+    }
+};

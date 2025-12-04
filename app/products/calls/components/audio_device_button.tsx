@@ -15,9 +15,11 @@ import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
+import {messages} from './messages';
+
 type Props = {
     pressableStyle: StyleProp<ViewStyle>;
-    iconStyle: StyleProp<ViewStyle>;
+    iconStyle: StyleProp<TextStyle>;
     buttonTextStyle: StyleProp<TextStyle>;
     currentCall: CurrentCall;
 }
@@ -33,11 +35,10 @@ export const AudioDeviceButton = ({pressableStyle, iconStyle, buttonTextStyle, c
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
     const isTablet = Device.IS_TABLET; // not `useIsTablet` because even if we're in splitView, we're still using a tablet.
-    const color = theme.awayIndicator;
     const audioDeviceInfo = currentCall.audioDeviceInfo;
     const phoneLabel = intl.formatMessage({id: 'mobile.calls_phone', defaultMessage: 'Phone'});
     const tabletLabel = intl.formatMessage({id: 'mobile.calls_tablet', defaultMessage: 'Tablet'});
-    const speakerLabel = intl.formatMessage({id: 'mobile.calls_speaker', defaultMessage: 'SpeakerPhone'});
+    const speakerLabel = intl.formatMessage(messages.speaker);
     const bluetoothLabel = intl.formatMessage({id: 'mobile.calls_bluetooth', defaultMessage: 'Bluetooth'});
     const headsetLabel = intl.formatMessage({id: 'mobile.calls_headset', defaultMessage: 'Headset'});
 
@@ -111,7 +112,11 @@ export const AudioDeviceButton = ({pressableStyle, iconStyle, buttonTextStyle, c
             title: intl.formatMessage({id: 'mobile.calls_audio_device', defaultMessage: 'Select audio device'}),
             theme,
         });
-    }, [setPreferredAudioRoute, audioDeviceInfo, color]);
+    }, [
+        audioDeviceInfo.selectedAudioDevice, audioDeviceInfo.availableAudioDeviceList,
+        intl, theme, isTablet, tabletLabel, style.checkIcon,
+        phoneLabel, speakerLabel, bluetoothLabel, headsetLabel,
+    ]);
 
     let icon = 'volume-high';
     let label = speakerLabel;

@@ -3,6 +3,7 @@
 
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import TestHelper from '@test/test_helper';
 
 import {
     setCurrentUserStatus,
@@ -13,8 +14,6 @@ import {
 } from './user';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
-import type SystemModel from '@typings/database/models/servers/system';
-import type UserModel from '@typings/database/models/servers/user';
 
 const serverUrl = 'baseHandler.test.com';
 let operator: ServerDataOperator;
@@ -27,11 +26,11 @@ jest.mock('@init/credentials', () => {
     };
 });
 
-const user: UserProfile = {
+const user: UserProfile = TestHelper.fakeUser({
     id: 'userid',
     username: 'username',
     roles: '',
-} as UserProfile;
+});
 
 beforeEach(async () => {
     await DatabaseManager.init([serverUrl]);
@@ -44,12 +43,12 @@ afterEach(async () => {
 
 describe('setCurrentUserStatus', () => {
     it('handle not found database', async () => {
-        const result = await setCurrentUserStatus('foo', '') as {error: unknown};
+        const result = await setCurrentUserStatus('foo', '');
         expect(result?.error).toBeDefined();
     });
 
     it('handle no user', async () => {
-        const result = await setCurrentUserStatus(serverUrl, '') as {error: unknown};
+        const result = await setCurrentUserStatus(serverUrl, '');
         expect(result?.error).toBeDefined();
         expect((result?.error as Error).message).toBe(`No current user for ${serverUrl}`);
     });
@@ -58,20 +57,20 @@ describe('setCurrentUserStatus', () => {
         await operator.handleUsers({users: [user], prepareRecordsOnly: false});
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user.id}], prepareRecordsOnly: false});
         const result = await setCurrentUserStatus(serverUrl, 'away');
-        expect(result).toBeNull();
+        expect(result).not.toHaveProperty('error');
     });
 });
 
 describe('updateLocalCustomStatus', () => {
     it('handle not found database', async () => {
-        const result = await updateLocalCustomStatus('foo', {} as UserModel) as {error: unknown};
+        const result = await updateLocalCustomStatus('foo', TestHelper.fakeUserModel());
         expect(result?.error).toBeDefined();
     });
 
     it('base case', async () => {
         const userModels = await operator.handleUsers({users: [user], prepareRecordsOnly: false});
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user.id}], prepareRecordsOnly: false});
-        const result = await updateLocalCustomStatus(serverUrl, userModels[0], {text: 'customstatus'}) as {};
+        const result = await updateLocalCustomStatus(serverUrl, userModels[0], {text: 'customstatus'});
         expect(result).toBeDefined();
         expect(result).not.toHaveProperty('error');
     });
@@ -79,14 +78,13 @@ describe('updateLocalCustomStatus', () => {
 
 describe('updateRecentCustomStatuses', () => {
     it('handle not found database', async () => {
-        const result = await updateRecentCustomStatuses('foo', {text: 'customstatus'}) as {error: unknown};
-        expect(result?.error).toBeDefined();
+        const result = await updateRecentCustomStatuses('foo', {text: 'customstatus'});
+        expect(result.error).toBeDefined();
     });
 
     it('base case', async () => {
-        const result = await updateRecentCustomStatuses(serverUrl, {text: 'customstatus'}) as SystemModel[];
-        expect(result).toBeDefined();
-        expect(result.length).toBe(1); // system
+        const result = await updateRecentCustomStatuses(serverUrl, {text: 'customstatus'});
+        expect(result.models?.length).toBe(1); // system
     });
 });
 

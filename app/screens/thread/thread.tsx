@@ -1,11 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import RNUtils from '@mattermost/rnutils';
 import {uniqueId} from 'lodash';
 import React, {useCallback, useEffect, useState} from 'react';
 import {type LayoutChangeEvent, StyleSheet, View} from 'react-native';
-import {Navigation} from 'react-native-navigation';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {storeLastViewedThreadIdAndServer, removeLastViewedThreadIdAndServer} from '@actions/app/global';
@@ -13,10 +11,12 @@ import FloatingCallContainer from '@calls/components/floating_call_container';
 import FreezeScreen from '@components/freeze_screen';
 import PostDraft from '@components/post_draft';
 import RoundedHeaderContext from '@components/rounded_header_context';
+import ScheduledPostIndicator from '@components/scheduled_post_indicator';
 import {Screens} from '@constants';
 import {ExtraKeyboardProvider} from '@context/extra_keyboard';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useDidUpdate from '@hooks/did_update';
+import SecurityManager from '@managers/security_manager';
 import {popTopScreen, setButtons} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
@@ -34,6 +34,7 @@ type ThreadProps = {
     showIncomingCalls: boolean;
     rootId: string;
     rootPost?: PostModel;
+    scheduledPostCount: number;
 };
 
 const edges: Edge[] = ['left', 'right'];
@@ -50,6 +51,7 @@ const Thread = ({
     showJoinCallBanner,
     isInACall,
     showIncomingCalls,
+    scheduledPostCount,
 }: ThreadProps) => {
     const [containerHeight, setContainerHeight] = useState(0);
 
@@ -58,20 +60,6 @@ const Thread = ({
     }, [componentId]);
 
     useAndroidHardwareBackHandler(componentId, close);
-
-    useEffect(() => {
-        const listener = {
-            componentDidAppear: () => {
-                RNUtils.setSoftKeyboardToAdjustNothing();
-            },
-            componentDidDisappear: () => {
-                RNUtils.setSoftKeyboardToAdjustResize();
-            },
-        };
-        const unsubscribe = Navigation.events().registerComponentListener(listener, componentId!);
-
-        return () => unsubscribe.remove();
-    }, []);
 
     useEffect(() => {
         if (isCRTEnabled && rootId) {
@@ -130,6 +118,7 @@ const Thread = ({
                 edges={edges}
                 testID='thread.screen'
                 onLayout={onLayout}
+                nativeID={SecurityManager.getShieldScreenId(componentId)}
             >
                 <RoundedHeaderContext/>
                 {Boolean(rootPost) &&
@@ -140,12 +129,21 @@ const Thread = ({
                             rootPost={rootPost!}
                         />
                     </View>
+                    <>
+                        {scheduledPostCount > 0 &&
+                            <ScheduledPostIndicator
+                                isThread={true}
+                                scheduledPostCount={scheduledPostCount}
+                            />
+                        }
+                    </>
                     <PostDraft
                         channelId={rootPost!.channelId}
                         rootId={rootId}
                         testID='thread.post_draft'
                         containerHeight={containerHeight}
                         isChannelScreen={false}
+                        location={Screens.THREAD}
                     />
                 </ExtraKeyboardProvider>
                 }

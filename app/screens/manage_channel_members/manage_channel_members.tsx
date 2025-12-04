@@ -10,12 +10,15 @@ import {fetchChannelMemberships} from '@actions/remote/channel';
 import {fetchUsersByIds, searchProfiles} from '@actions/remote/user';
 import {PER_PAGE_DEFAULT} from '@client/rest/constants';
 import Search from '@components/search';
+import SectionNotice from '@components/section_notice';
 import UserList from '@components/user_list';
 import {Events, General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {useAccessControlAttributes} from '@hooks/access_control_attributes';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import SecurityManager from '@managers/security_manager';
 import {openAsBottomSheet, popTopScreen, setButtons} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
 import {showRemoveChannelUserSnackbar} from '@utils/snack_bar';
@@ -32,6 +35,7 @@ type Props = {
     currentUserId: string;
     tutorialWatched: boolean;
     teammateDisplayNameSetting: string;
+    channelAbacPolicyEnforced: boolean;
 }
 
 const styles = StyleSheet.create({
@@ -42,6 +46,10 @@ const styles = StyleSheet.create({
         marginLeft: 12,
         marginRight: Platform.select({ios: 4, default: 12}),
         marginVertical: 12,
+    },
+    flatBottomBanner: {
+        borderBottomLeftRadius: 0,
+        borderBottomRightRadius: 0,
     },
 });
 
@@ -65,9 +73,10 @@ const sortUsers = (a: UserProfile, b: UserProfile, locale: string, teammateDispl
 const MANAGE_BUTTON = 'manage-button';
 const EMPTY: UserProfile[] = [];
 const EMPTY_MEMBERS: ChannelMembership[] = [];
-const EMPTY_IDS = {};
+const EMPTY_IDS = new Set<string>();
 const {USER_PROFILE} = Screens;
 const CLOSE_BUTTON_ID = 'close-user-profile';
+const TEST_ID = 'manage_members';
 
 export default function ManageChannelMembers({
     canManageAndRemoveMembers,
@@ -77,6 +86,7 @@ export default function ManageChannelMembers({
     currentUserId,
     tutorialWatched,
     teammateDisplayNameSetting,
+    channelAbacPolicyEnforced,
 }: Props) {
     const serverUrl = useServerUrl();
     const theme = useTheme();
@@ -87,6 +97,9 @@ export default function ManageChannelMembers({
     const hasMoreProfiles = useRef(true);
     const pageRef = useRef(0);
 
+    // Use the hook to fetch access control attributes
+    const {attributeTags} = useAccessControlAttributes('channel', channelId, channelAbacPolicyEnforced);
+
     const [isManageMode, setIsManageMode] = useState(false);
     const [profiles, setProfiles] = useState<UserProfile[]>(EMPTY);
     const [channelMembers, setChannelMembers] = useState<ChannelMembership[]>(EMPTY_MEMBERS);
@@ -94,6 +107,8 @@ export default function ManageChannelMembers({
     const [loading, setLoading] = useState(true);
     const [term, setTerm] = useState('');
     const [searchedTerm, setSearchedTerm] = useState('');
+
+    const hasTerm = Boolean(term);
 
     const clearSearch = useCallback(() => {
         setTerm('');
@@ -110,10 +125,6 @@ export default function ManageChannelMembers({
     useAndroidHardwareBackHandler(componentId, close);
 
     const handleSelectProfile = useCallback(async (profile: UserProfile) => {
-        if (profile.id === currentUserId && isManageMode) {
-            return;
-        }
-
         if (profile.id !== currentUserId) {
             await fetchUsersByIds(serverUrl, [profile.id]);
         }
@@ -174,11 +185,11 @@ export default function ManageChannelMembers({
                 enabled: true,
                 id: MANAGE_BUTTON,
                 showAsAction: 'always',
-                testID: 'manage_members.button',
+                testID: `${TEST_ID}.button`,
                 text: formatMessage(manage ? messages.button_done : messages.button_manage),
             }],
         });
-    }, [theme.sidebarHeaderTextColor]);
+    }, [componentId, formatMessage, theme.sidebarHeaderTextColor]);
 
     const toggleManageEnabled = useCallback(() => {
         updateNavigationButtons(!isManageMode);
@@ -227,11 +238,11 @@ export default function ManageChannelMembers({
     }, [searchResults, profiles, searchedTerm, sortedProfiles]);
 
     useEffect(() => {
-        if (!term) {
+        if (!hasTerm) {
             setSearchResults(EMPTY);
             setSearchedTerm('');
         }
-    }, [Boolean(term)]);
+    }, [hasTerm]);
 
     useNavButtonPressed(MANAGE_BUTTON, componentId, toggleManageEnabled, [toggleManageEnabled]);
 
@@ -270,12 +281,19 @@ export default function ManageChannelMembers({
         return () => {
             mounted.current = false;
         };
+
+        // This effect is used only to track the mounted state and the initial fetch
+        // so it should only run once
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
         if (canManageAndRemoveMembers) {
             updateNavigationButtons(false);
         }
+
+        // We only want to update the navigation buttons when the permission changes
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [canManageAndRemoveMembers]);
 
     useEffect(() => {
@@ -290,8 +308,22 @@ export default function ManageChannelMembers({
     return (
         <SafeAreaView
             style={styles.container}
-            testID='manage_members.screen'
+            testID={`${TEST_ID}.screen`}
+            nativeID={SecurityManager.getShieldScreenId(componentId)}
         >
+            {channelAbacPolicyEnforced && (
+                <SectionNotice
+                    type='info'
+                    title={formatMessage({
+                        id: 'channel.abac_policy_enforced.title',
+                        defaultMessage: 'Channel access is restricted by user attributes',
+                    })}
+                    tags={attributeTags.length > 0 ? attributeTags : undefined}
+                    location={Screens.MANAGE_CHANNEL_MEMBERS}
+                    testID={`${TEST_ID}.notice`}
+                    squareCorners={true}
+                />
+            )}
             <View style={styles.searchBar}>
                 <Search
                     autoCapitalize='none'
@@ -302,12 +334,11 @@ export default function ManageChannelMembers({
                     onSubmitEditing={search}
                     placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                     placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                    testID='manage_members.search_bar'
+                    testID={`${TEST_ID}.search_bar`}
                     value={term}
                 />
             </View>
             <UserList
-                currentUserId={currentUserId}
                 handleSelectProfile={handleSelectProfile}
                 loading={loading}
                 manageMode={true} // default true to change row select icon to a dropdown
@@ -317,10 +348,11 @@ export default function ManageChannelMembers({
                 showManageMode={canManageAndRemoveMembers && isManageMode}
                 showNoResults={!loading}
                 term={searchedTerm}
-                testID='manage_members.user_list'
+                testID={`${TEST_ID}.user_list`}
                 tutorialWatched={tutorialWatched}
                 includeUserMargin={true}
                 fetchMore={handleReachedBottom}
+                location={Screens.MANAGE_CHANNEL_MEMBERS}
             />
         </SafeAreaView>
     );

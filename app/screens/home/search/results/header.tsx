@@ -1,6 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useMemo, type ComponentProps} from 'react';
 import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 
@@ -9,50 +9,60 @@ import CompassIcon from '@components/compass_icon';
 import Filter, {DIVIDERS_HEIGHT, FILTER_ITEM_HEIGHT, NUMBER_FILTER_ITEMS} from '@components/files/file_filter';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import Tabs from '@hooks/use_tabs/tabs';
 import {TITLE_SEPARATOR_MARGIN, TITLE_SEPARATOR_MARGIN_TABLET, TITLE_HEIGHT} from '@screens/bottom_sheet/content';
-import TeamPickerIcon from '@screens/home/search/team_picker_icon';
+import TeamPicker from '@screens/home/search/team_picker';
 import {bottomSheet} from '@screens/navigation';
 import {type FileFilter, FileFilters} from '@utils/file';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {TabTypes, type TabType} from '@utils/search';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import SelectButton from './header_button';
-
 import type TeamModel from '@typings/database/models/servers/team';
 
 type Props = {
-    onTabSelect: (tab: TabType) => void;
     onFilterChanged: (filter: FileFilter) => void;
     selectedTab: TabType;
     selectedFilter: FileFilter;
     setTeamId: (id: string) => void;
     teamId: string;
     teams: TeamModel[];
+    crossTeamSearchEnabled: boolean;
+    tabsProps: ComponentProps<typeof Tabs>;
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
             marginTop: 10,
-            backgroundColor: theme.centerChannelBg,
             borderBottomWidth: 1,
             borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
+            backgroundColor: theme.centerChannelBg,
         },
         badge: {
             backgroundColor: theme.buttonBg,
             borderColor: theme.centerChannelBg,
             marginTop: 2,
         },
-        buttonsContainer: {
+        header: {
             marginBottom: 12,
             paddingHorizontal: 12,
             flexDirection: 'row',
+            justifyContent: 'space-between',
         },
-        iconsContainer: {
-            alignItems: 'center',
+        buttonContainer: {
             flexDirection: 'row',
-            marginLeft: 'auto',
+        },
+        teamPickerContainer: {
+            flex: 1,
+            flexDirection: 'row',
+            justifyContent: 'flex-end',
+        },
+        filterContainer: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            maxWidth: 32,
         },
     };
 });
@@ -60,31 +70,22 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
 const Header = ({
     teamId,
     setTeamId,
-    onTabSelect,
     onFilterChanged,
     selectedTab,
     selectedFilter,
     teams,
+    crossTeamSearchEnabled,
+    tabsProps,
 }: Props) => {
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
     const intl = useIntl();
     const isTablet = useIsTablet();
 
-    const messagesText = intl.formatMessage({id: 'screen.search.header.messages', defaultMessage: 'Messages'});
-    const filesText = intl.formatMessage({id: 'screen.search.header.files', defaultMessage: 'Files'});
     const title = intl.formatMessage({id: 'screen.search.results.filter.title', defaultMessage: 'Filter by file type'});
 
     const showFilterIcon = selectedTab === TabTypes.FILES;
     const hasFilters = selectedFilter !== FileFilters.ALL;
-
-    const handleMessagesPress = useCallback(() => {
-        onTabSelect(TabTypes.MESSAGES);
-    }, [onTabSelect]);
-
-    const handleFilesPress = useCallback(() => {
-        onTabSelect(TabTypes.FILES);
-    }, [onTabSelect]);
 
     const snapPoints = useMemo(() => {
         return [
@@ -113,28 +114,18 @@ const Header = ({
             theme,
             title,
         });
-    }, [onFilterChanged, selectedFilter]);
-
-    const filterStyle = useMemo(() => ({marginRight: teams.length > 1 ? 0 : 8}), [teams.length > 1]);
+    }, [onFilterChanged, selectedFilter, snapPoints, title, theme]);
 
     return (
         <View style={styles.container}>
-            <View style={styles.buttonsContainer}>
-                <SelectButton
-                    selected={selectedTab === TabTypes.MESSAGES}
-                    onPress={handleMessagesPress}
-                    text={messagesText}
-                />
-                <SelectButton
-                    selected={selectedTab === TabTypes.FILES}
-                    onPress={handleFilesPress}
-                    text={filesText}
-                />
-                <View style={styles.iconsContainer}>
-                    {showFilterIcon && (
-                        <View style={filterStyle}>
+            <View style={styles.header}>
+                <Tabs {...tabsProps}/>
+                {showFilterIcon && (
+                    <View style={styles.filterContainer}>
+                        <View>
                             <CompassIcon
                                 name={'filter-variant'}
+                                testID='search.filters.file_type_icon'
                                 size={24}
                                 color={changeOpacity(
                                     theme.centerChannelColor,
@@ -149,17 +140,19 @@ const Header = ({
                                 value={-1}
                             />
                         </View>
-                    )}
-                    {teams.length > 1 && (
-                        <TeamPickerIcon
-                            size={32}
-                            divider={true}
+                    </View>
+                )}
+                {teams.length > 1 && (
+                    <View style={styles.teamPickerContainer}>
+                        <TeamPicker
                             setTeamId={setTeamId}
                             teamId={teamId}
                             teams={teams}
+                            crossTeamSearchEnabled={crossTeamSearchEnabled}
                         />
-                    )}
-                </View>
+                    </View>
+                )}
+
             </View>
         </View>
     );

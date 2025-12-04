@@ -4,69 +4,80 @@
 const fs = require('fs');
 const path = require('path');
 
-// Paths to files
-const androidManifestPath = path.resolve(
+// Path to APNG4Android gif AndroidManifest.xml
+const apngGifManifestPath = path.resolve(
     __dirname,
-    '../android/app/src/debug/AndroidManifest.xml',
+    '../node_modules/APNG4Android/gif/src/androidTest/AndroidManifest.xml',
 );
-const settingsGradlePath = path.resolve(__dirname, '../android/settings.gradle');
 
-// Detox code to add to settings.gradle
-const detoxSettings = `
-include ':detox'
-project(':detox').projectDir = new File(rootProject.projectDir, '../detox/node_modules/detox/android')
-`;
-
-// Updated AndroidManifest.xml content
-const updatedManifest = `<?xml version="1.0" encoding="utf-8"?>
+// Content for APNG4Android gif AndroidManifest.xml
+const apngGifManifestContent = `<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          xmlns:tools="http://schemas.android.com/tools"
-          package="com.mattermost.rnbeta">
-
-    <application
-        android:usesCleartextTraffic="true"
-        tools:targetApi="28"
-        tools:ignore="GoogleAppIndexingWarning">
+    xmlns:tools="http://schemas.android.com/tools">
+    <application>
         <activity
             android:name="androidx.test.core.app.InstrumentationActivityInvoker$BootstrapActivity"
-            android:exported="true" 
-            tools:node="replace"/>
+            android:exported="true"
+            tools:node="merge" />
         <activity
             android:name="androidx.test.core.app.InstrumentationActivityInvoker$EmptyActivity"
             android:exported="true" 
-            tools:node="replace"/>
+            tools:node="merge" />
         <activity
             android:name="androidx.test.core.app.InstrumentationActivityInvoker$EmptyFloatingActivity"
-            android:exported="true" 
-            tools:node="replace"/>
+            android:exported="true"
+            tools:node="merge" />
     </application>
 </manifest>`;
 
-// Update AndroidManifest.xml
-function updateAndroidManifest() {
+// Path to APNG4Android frameanimation AndroidManifest.xml
+const apngFrameAnimationManifestPath = path.resolve(
+    __dirname,
+    '../node_modules/APNG4Android/frameanimation/src/androidTest/AndroidManifest.xml',
+);
+
+// Content for APNG4Android frameanimation AndroidManifest.xml
+const apngFrameAnimationManifestContent = `<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <application>
+        <activity
+            android:name="androidx.test.core.app.InstrumentationActivityInvoker$BootstrapActivity"
+            android:exported="false"
+            tools:node="merge" />
+        <activity
+            android:name="androidx.test.core.app.InstrumentationActivityInvoker$EmptyActivity"
+            android:exported="false"
+            tools:node="merge" />
+        <activity
+            android:name="androidx.test.core.app.InstrumentationActivityInvoker$EmptyFloatingActivity"
+            android:exported="false"
+            tools:node="merge" />
+    </application>
+</manifest>`;
+
+// Function to create AndroidManifest.xml for APNG4Android gif
+function createApngGifManifest() {
     try {
-        fs.writeFileSync(androidManifestPath, updatedManifest, 'utf-8');
-        console.log('AndroidManifest.xml updated successfully.');
+        fs.mkdirSync(path.dirname(apngGifManifestPath), {recursive: true});
+        fs.writeFileSync(apngGifManifestPath, apngGifManifestContent, 'utf-8');
+        console.log('APNG4Android gif AndroidManifest.xml created successfully.');
     } catch (err) {
-        console.error(`Failed to update AndroidManifest.xml: ${err.message}`);
+        console.error(`Failed to create APNG4Android gif AndroidManifest.xml: ${err.message}`);
     }
 }
 
-// Update settings.gradle
-function updateSettingsGradle() {
+// Function to create AndroidManifest.xml for APNG4Android frameanimation
+function createApngFrameAnimationManifest() {
     try {
-        const content = fs.readFileSync(settingsGradlePath, 'utf-8');
-        if (content.includes("include ':detox'")) {
-            console.log('Detox settings already present in settings.gradle.');
-            return;
-        }
-        fs.writeFileSync(settingsGradlePath, content + detoxSettings, 'utf-8');
-        console.log('settings.gradle updated successfully.');
+        fs.mkdirSync(path.dirname(apngFrameAnimationManifestPath), {recursive: true});
+        fs.writeFileSync(apngFrameAnimationManifestPath, apngFrameAnimationManifestContent, 'utf-8');
+        console.log('APNG4Android frameanimation AndroidManifest.xml created successfully.');
     } catch (err) {
-        console.error(`Failed to update settings.gradle: ${err.message}`);
+        console.error(`Failed to create APNG4Android frameanimation AndroidManifest.xml: ${err.message}`);
     }
 }
 
 // Run updates
-updateAndroidManifest();
-updateSettingsGradle();
+createApngGifManifest();
+createApngFrameAnimationManifest();

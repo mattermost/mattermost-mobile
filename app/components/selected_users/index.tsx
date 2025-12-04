@@ -7,13 +7,12 @@ import Animated, {useAnimatedStyle, useDerivedValue, useSharedValue, withTiming}
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import Button from '@components/button';
-import {USER_CHIP_BOTTOM_MARGIN, USER_CHIP_HEIGHT} from '@components/selected_chip';
+import {CHIP_HEIGHT} from '@components/chips/constants';
+import SelectedUserChipById from '@components/chips/selected_user_chip_by_id';
 import Toast from '@components/toast';
 import {useTheme} from '@context/theme';
 import {useIsTablet, useKeyboardHeightWithDuration} from '@hooks/device';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-
-import SelectedUser from './selected_user';
 
 type Props = {
 
@@ -33,9 +32,9 @@ type Props = {
     keyboardOverlap?: number;
 
     /**
-     * A handler function that will select or deselect a user when clicked on.
+     * A handler function that will trigger when the button is pressed.
      */
-    onPress: (selectedId?: {[id: string]: boolean}) => void;
+    onPress: () => void;
 
     /**
      * A handler function that will deselect a user when clicked on.
@@ -43,9 +42,9 @@ type Props = {
     onRemove: (id: string) => void;
 
     /**
-     * An object mapping user ids to a falsey value indicating whether or not they have been selected.
+     * A set of the selected user ids.
      */
-    selectedIds: {[id: string]: UserProfile};
+    selectedIds: Set<string>;
 
     /**
      * callback to set the value of showToast
@@ -84,8 +83,9 @@ type Props = {
 }
 
 const BUTTON_HEIGHT = 48;
-const CHIP_HEIGHT_WITH_MARGIN = USER_CHIP_HEIGHT + USER_CHIP_BOTTOM_MARGIN;
-const EXPOSED_CHIP_HEIGHT = 0.33 * USER_CHIP_HEIGHT;
+const CHIP_GAP = 8;
+const CHIP_HEIGHT_WITH_MARGIN = CHIP_HEIGHT + CHIP_GAP;
+const EXPOSED_CHIP_HEIGHT = 0.33 * CHIP_HEIGHT;
 const MAX_CHIP_ROWS = 2;
 const SCROLL_MARGIN_TOP = 20;
 const SCROLL_MARGIN_BOTTOM = 12;
@@ -126,6 +126,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
             flexGrow: 1,
             flexWrap: 'wrap',
+            gap: CHIP_GAP,
         },
         message: {
             color: theme.centerChannelBg,
@@ -160,22 +161,20 @@ export default function SelectedUsers({
 
     const usersChipsHeight = useSharedValue(0);
     const [isVisible, setIsVisible] = useState(false);
-    const numberSelectedIds = Object.keys(selectedIds).length;
+    const numberSelectedIds = selectedIds.size;
 
     const users = useMemo(() => {
         const u = [];
-        for (const [id, user] of Object.entries(selectedIds)) {
-            if (!user) {
-                continue;
-            }
+        for (const userId of selectedIds) {
+            const userItemTestID = `${testID}.${userId}`;
 
             u.push(
-                <SelectedUser
-                    key={id}
-                    user={user}
+                <SelectedUserChipById
+                    key={userId}
+                    userId={userId}
+                    onPress={onRemove}
                     teammateNameDisplay={teammateNameDisplay}
-                    onRemove={onRemove}
-                    testID={`${testID}.selected_user`}
+                    testID={userItemTestID}
                 />,
             );
         }
@@ -195,7 +194,7 @@ export default function SelectedUsers({
             USERS_CHIPS_MAX_HEIGHT,
             e.nativeEvent.layout.height,
         );
-    }, []);
+    }, [usersChipsHeight]);
 
     const androidMaxHeight = Platform.select({
         android: {
@@ -229,7 +228,7 @@ export default function SelectedUsers({
 
     useEffect(() => {
         setIsVisible(numberSelectedIds > 0);
-    }, [numberSelectedIds > 0]);
+    }, [numberSelectedIds]);
 
     // This effect hides the toast after 4 seconds
     useEffect(() => {
@@ -241,7 +240,7 @@ export default function SelectedUsers({
         }
 
         return () => clearTimeout(timer);
-    }, [showToast]);
+    }, [showToast, setShowToast]);
 
     const isDisabled = Boolean(maxUsers && (numberSelectedIds > maxUsers));
     return (
@@ -268,12 +267,11 @@ export default function SelectedUsers({
                         onPress={handlePress}
                         iconName={buttonIcon}
                         text={buttonText}
-                        iconSize={20}
                         theme={theme}
-                        buttonType={isDisabled ? 'disabled' : 'default'}
                         emphasis={'primary'}
                         size={'lg'}
                         testID={`${testID}.start.button`}
+                        disabled={isDisabled}
                     />
                 </Animated.View>
             </Animated.View>

@@ -7,9 +7,11 @@ import {View} from 'react-native';
 import Markdown from '@components/markdown';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 type Props = {
     channelId: string;
-    location: string;
+    location: AvailableScreens;
     theme: Theme;
     value: string;
 }
@@ -28,9 +30,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             fontSize: 14,
             lineHeight: 20,
         },
-        link: {
-            color: theme.linkColor,
-        },
     };
 });
 
@@ -46,12 +45,9 @@ const EmbedTitle = ({channelId, location, theme, value}: Props) => {
                 disableChannelLink={true}
                 disableGallery={true}
                 location={location}
-                autolinkedUrlSchemes={[]}
-                mentionKeys={[]}
                 theme={theme}
                 value={value}
                 baseTextStyle={style.title}
-                textStyles={{link: style.link}}
             />
         </View>
     );

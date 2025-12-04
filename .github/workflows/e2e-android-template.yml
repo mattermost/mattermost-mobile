@@ -1,0 +1,345 @@
+name: Detox Android E2E Tests Template
+
+on:
+  workflow_call:
+    inputs:
+      MM_TEST_SERVER_URL:
+        description: "The test server URL"
+        required: false
+        type: string
+      MM_TEST_USER_NAME:
+        description: "The admin username of the test instance"
+        required: false
+        type: string
+      MM_TEST_PASSWORD:
+        description: "The admin password of the test instance"
+        required: false
+        type: string
+      MOBILE_VERSION:
+        description: "The mobile version to test"
+        required: false
+        default: ${{ github.head_ref || github.ref }}
+        type: string
+      run-android-tests:
+        description: "Run Android tests"
+        required: true
+        type: boolean
+      run-type:
+        type: string
+        required: false
+        default: "PR"
+      testcase_failure_fatal:
+        description: "Should failures be considered fatal"
+        required: false
+        type: boolean
+        default: false
+      record_tests_in_zephyr:
+        description: "Record test results in Zephyr, typically for nightly and release runs"
+        required: false
+        type: string
+        default: 'false'
+      low_bandwidth_mode:
+        description: "Enable low bandwidth mode"
+        required: false
+        type: boolean
+        default: false
+      android_avd_name:
+        description: "Android Emulator name"
+        required: false
+        type: string
+        default: "detox_pixel_4_xl"
+      android_api_level:
+        description: "Android API level"
+        required: false
+        type: string
+        default: "34"
+    outputs:
+      STATUS:
+        value: ${{ jobs.generate-report.outputs.STATUS }}
+      TARGET_URL:
+        value: ${{ jobs.generate-report.outputs.TARGET_URL }}
+      FAILURES:
+        value: ${{ jobs.generate-report.outputs.FAILURES }}
+
+env:
+  AWS_REGION: "us-east-1"
+  ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
+  ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
+  ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
+  BRANCH: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
+  COMMIT_HASH: ${{ github.sha }}
+  DEVICE_NAME: ${{ inputs.android_avd_name }} # This is needed to split tests as same code is used in iOS job
+  DEVICE_OS_VERSION: ${{ inputs.android_api_level }}
+  DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
+  HEADLESS: "true"
+  TYPE: ${{ inputs.run-type }}
+  PULL_REQUEST: "https://github.com/mattermost/mattermost-mobile/pull/${{ github.event.number }}"
+  SITE_1_URL: ${{ inputs.MM_TEST_SERVER_URL || 'https://mobile-e2e-site-1.test.mattermost.cloud' }}
+  SITE_2_URL: "https://mobile-e2e-site-2.test.mattermost.cloud"
+  SITE_3_URL: "https://mobile-e2e-site-3.test.mattermost.cloud"
+  ZEPHYR_ENABLE: ${{ inputs.record_tests_in_zephyr }}
+  JIRA_PROJECT_KEY: "MM"
+  ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
+  ZEPHYR_FOLDER_ID: "3233873"
+  TEST_CYCLE_LINK_PREFIX: ${{ secrets.MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX }}
+  WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
+  FAILURE_MESSAGE: "Something has failed"
+  IOS: "false"
+  RUNNING_E2E: "true"
+  AVD_NAME: ${{ inputs.android_avd_name }}
+  SDK_VERSION: ${{ inputs.android_api_level }}
+
+jobs:
+  generate-specs:
+    runs-on: ubuntu-22.04
+    outputs:
+      specs: ${{ steps.generate-specs.outputs.specs }}
+      build_id: ${{ steps.resolve-device.outputs.BUILD_ID }}
+      mobile_sha: ${{ steps.resolve-device.outputs.MOBILE_SHA }}
+      mobile_ref: ${{ steps.resolve-device.outputs.MOBILE_REF }}
+      workflow_hash: ${{ steps.resolve-device.outputs.WORKFLOW_HASH }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+
+      - name: Set Build ID
+        id: resolve-device
+        run: |
+          BUILD_ID="${{ github.run_id }}-${{ env.AVD_NAME }}-${{ env.SDK_VERSION}}"
+          WORKFLOW_HASH=$(tr -dc a-z0-9 </dev/urandom | head -c 10)
+
+          ## We need that hash to separate the artifacts
+          echo "WORKFLOW_HASH=${WORKFLOW_HASH}" >> ${GITHUB_OUTPUT}
+
+          echo "BUILD_ID=$(echo ${BUILD_ID} | sed 's/ /_/g')" >> ${GITHUB_OUTPUT}
+          echo "MOBILE_SHA=$(git rev-parse HEAD)" >> ${GITHUB_OUTPUT}
+          echo "MOBILE_REF=$(git rev-parse --abbrev-ref HEAD)" >> ${GITHUB_OUTPUT}
+
+      - name: Generate Test Specs
+        id: generate-specs
+        uses: ./.github/actions/generate-specs
+        with:
+          parallelism: 10
+          search_path: detox/e2e/test
+          device_name: ${{ env.AVD_NAME }}
+          device_os_version: ${{ env.SDK_VERSION }}
+
+  e2e-android:
+    name: android-detox-e2e-${{ matrix.runId }}-${{ matrix.deviceName }}-${{ matrix.deviceOsVersion }}
+    runs-on: ubuntu-latest-8-cores
+    continue-on-error: true
+    timeout-minutes: 240
+    env:
+      ANDROID_HOME: /usr/local/lib/android/sdk
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+    needs:
+      - generate-specs
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.generate-specs.outputs.specs) }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libpulse0
+          sudo apt-get install -y scrot ffmpeg xvfb
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Prepare Android Build
+        uses: ./.github/actions/prepare-android-build
+        env:
+          STORE_FILE: "${{ secrets.MM_MOBILE_STORE_FILE }}"
+          STORE_ALIAS: "${{ secrets.MM_MOBILE_STORE_ALIAS }}"
+          STORE_PASSWORD: "${{ secrets.MM_MOBILE_STORE_PASSWORD }}"
+          MATTERMOST_BUILD_GH_TOKEN: "${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}"
+
+      - name: Install Detox Dependencies
+        run: |
+          cd detox
+          npm install
+
+      - name: Set .env with RUNNING_E2E=true
+        run: |
+          cat > .env <<EOF
+          RUNNING_E2E=true
+          EOF
+  
+      - name: Create destination path
+        run: mkdir -p android/app/build
+
+      - name: Download APK artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: android-build-files-${{ github.run_id }}
+          path: android/app/build
+
+      - name: Set up Android SDK
+        run: |
+          export ANDROID_HOME=/usr/local/lib/android/sdk
+          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/emulator:$ANDROID_HOME/tools/bin:$ANDROID_HOME/platform-tools:$PATH
+          echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
+          echo "PATH=$PATH" >> $GITHUB_ENV
+
+      - name: Start Xvfb
+        run: |
+          Xvfb :99 -screen 0 1920x1080x24 &
+          export DISPLAY=:99
+          echo "DISPLAY=:99" >> $GITHUB_ENV
+
+      - name: Accept Android licenses
+        run: |
+          mkdir -p ~/.android
+          yes | sdkmanager --licenses > sdk_licenses_output.txt || true
+      
+          # Check if "All SDK package licenses accepted" appears in output
+          if grep -q "All SDK package licenses accepted" sdk_licenses_output.txt; then
+            echo "✅ All licenses accepted successfully."
+          else
+            echo "❌ Licenses not fully accepted."
+            cat sdk_licenses_output.txt
+            exit 1
+          fi
+
+      - name: Install Android SDK components
+        run: |
+          yes | sdkmanager --install "platform-tools" "emulator" "platforms;android-34" "system-images;android-34;default;x86_64" "system-images;android-34;google_apis;x86_64"
+        env:
+          JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
+        
+      - name: Create and run Android Emulator
+        run: |
+          cd detox
+          chmod +x ./create_android_emulator.sh
+          CI=true ./create_android_emulator.sh ${{ env.SDK_VERSION }} ${{ env.AVD_NAME }} ${{ matrix.specs }}
+        continue-on-error: true # We want to run all the tests
+
+      - name: Upload Android Test Report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: android-results-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
+          path: detox/artifacts/
+
+  generate-report:
+    runs-on: ubuntu-22.04
+    needs:
+      - generate-specs
+      - e2e-android
+    outputs:
+      TARGET_URL: ${{ steps.set-url.outputs.TARGET_URL }}
+      STATUS: ${{ steps.determine-status.outputs.STATUS }}
+      FAILURES: ${{ steps.summary.outputs.FAILURES }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+
+      - name: ci/prepare-node-deps
+        uses: ./.github/actions/prepare-node-deps
+
+      - name: Download Android Artifacts
+        uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
+        with:
+          path: detox/artifacts/
+          pattern: android-results-${{ needs.generate-specs.outputs.workflow_hash }}-*
+        continue-on-error: true
+
+      - name: Generate Report Path
+        id: s3
+        run: |
+          path="${{ needs.generate-specs.outputs.build_id }}-${{ needs.generate-specs.outputs.mobile_sha }}-${{ needs.generate-specs.outputs.mobile_ref }}"
+          echo "path=$(echo "${path}" | sed 's/\./-/g')" >> ${GITHUB_OUTPUT}
+
+      - name: Save report Detox Dependencies
+        id: report-link
+        run: |
+          cd detox
+          npm ci
+          npm run e2e:save-report
+        env:
+          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+          BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
+          REPORT_PATH: ${{ steps.s3.outputs.path }}
+          ## These are needed for the MM Webhook report
+          COMMIT_HASH: ${{ needs.generate-specs.outputs.mobile_sha }}
+          BRANCH: ${{ needs.generate-specs.outputs.mobile_ref }}
+
+      - name: Calculate failures
+        id: summary
+        run: |
+          echo "FAILURES=$(cat detox/artifacts/summary.json | jq .stats.failures)" >> ${GITHUB_OUTPUT}
+          echo "PASSES=$(cat detox/artifacts/summary.json | jq .stats.passes)" >> ${GITHUB_OUTPUT}
+          echo "SKIPPED=$(cat detox/artifacts/summary.json | jq .stats.skipped)" >> ${GITHUB_OUTPUT}
+          echo "TOTAL=$(cat detox/artifacts/summary.json | jq .stats.tests)" >> ${GITHUB_OUTPUT}
+          echo "ERRORS=$(cat detox/artifacts/summary.json | jq .stats.errors)" >> ${GITHUB_OUTPUT}
+          echo "PERCENTAGE=$(cat detox/artifacts/summary.json | jq .stats.passPercent)" >> ${GITHUB_OUTPUT}
+
+      - name: Set Target URL
+        id: set-url
+        run: |
+            echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${{ steps.s3.outputs.path }}/jest-stare/android-report.html" >> ${GITHUB_OUTPUT}
+
+      - name: Determine Status
+        id: determine-status
+        run: |
+          if [[ ${{ steps.summary.outputs.failures }} -gt 0 && "${{ inputs.testcase_failure_fatal }}" == "true" ]]; then
+            echo "STATUS=failure" >> ${GITHUB_OUTPUT}
+          else
+            echo "STATUS=success" >> ${GITHUB_OUTPUT}
+          fi
+
+      - name: Generate Summary
+        run: |
+          echo "| Tests | Passed :white_check_mark: | Failed :x: | Skipped :fast_forward: | Errors :warning: | " >> ${GITHUB_STEP_SUMMARY}
+          echo "|:---:|:---:|:---:|:---:|:---:|" >> ${GITHUB_STEP_SUMMARY}
+          echo "| ${{ steps.summary.outputs.TOTAL }} | ${{ steps.summary.outputs.PASSES }} | ${{ steps.summary.outputs.FAILURES }} | ${{ steps.summary.outputs.SKIPPED }} | ${{ steps.summary.outputs.ERRORS }} |" >> ${GITHUB_STEP_SUMMARY}
+          echo "" >> ${GITHUB_STEP_SUMMARY}
+          echo "You can check the full report [here](${{ steps.set-url.outputs.TARGET_URL }})" >> ${GITHUB_STEP_SUMMARY}
+          echo "There was **${{ steps.summary.outputs.PERCENTAGE }}%** success rate." >> ${GITHUB_STEP_SUMMARY}
+
+      - name: Comment report on the PR
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = context.payload.pull_request.number;
+
+            const commentBody = `**Android E2E Test Report**: ${process.env.MOBILE_SHA} | ${process.env.PERCENTAGE}% (${process.env.PASSES}/${process.env.TOTAL}) | [full report](${process.env.TARGET_URL})
+            | Tests | Passed ✅ | Failed ❌ | Skipped ⏭️ | Errors ⚠️ |
+            |:---:|:---:|:---:|:---:|:---:|
+            | ${process.env.TOTAL} | ${process.env.PASSES} | ${process.env.FAILURES} | ${process.env.SKIPPED} | ${process.env.ERRORS} |
+            `;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: commentBody,
+            });
+        env:
+          STATUS: ${{ steps.determine-status.outputs.STATUS }}
+          FAILURES: ${{ steps.summary.outputs.FAILURES }}
+          PASSES: ${{ steps.summary.outputs.PASSES }}
+          SKIPPED: ${{ steps.summary.outputs.SKIPPED }}
+          TOTAL: ${{ steps.summary.outputs.TOTAL }}
+          ERRORS: ${{ steps.summary.outputs.ERRORS }}
+          PERCENTAGE: ${{ steps.summary.outputs.PERCENTAGE }}
+          BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
+          RUN_TYPE: ${{ inputs.run-type }}
+          MOBILE_REF: ${{ needs.generate-specs.outputs.mobile_ref }}
+          MOBILE_SHA: ${{ needs.generate-specs.outputs.mobile_sha }}
+          TARGET_URL: ${{ steps.set-url.outputs.TARGET_URL }}

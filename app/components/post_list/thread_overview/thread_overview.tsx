@@ -13,8 +13,8 @@ import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {bottomSheetModalOptions, showModal, showModalOverCurrentContext} from '@screens/navigation';
-import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -65,14 +65,14 @@ const ThreadOverview = ({isSaved, repliesCount, rootPost, style, testID}: Props)
     const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
 
-    const onHandleSavePress = useCallback(preventDoubleTap(() => {
+    const onHandleSavePress = usePreventDoubleTap(useCallback(() => {
         if (rootPost?.id) {
             const remoteAction = isSaved ? deleteSavedPost : savePostPreference;
             remoteAction(serverUrl, rootPost.id);
         }
-    }), [isSaved, rootPost, serverUrl]);
+    }, [isSaved, rootPost, serverUrl]));
 
-    const showPostOptions = useCallback(preventDoubleTap(() => {
+    const showPostOptions = usePreventDoubleTap(useCallback(() => {
         Keyboard.dismiss();
         if (rootPost?.id) {
             const passProps = {sourceScreen: Screens.THREAD, post: rootPost, showAddReaction: true};
@@ -84,7 +84,7 @@ const ThreadOverview = ({isSaved, repliesCount, rootPost, style, testID}: Props)
                 showModalOverCurrentContext(Screens.POST_OPTIONS, passProps, bottomSheetModalOptions(theme));
             }
         }
-    }), [rootPost]);
+    }, [intl, isTablet, rootPost, theme]));
 
     const containerStyle = useMemo(() => {
         const container: StyleProp<ViewStyle> = [styles.container];
@@ -95,7 +95,7 @@ const ThreadOverview = ({isSaved, repliesCount, rootPost, style, testID}: Props)
         }
         container.push(style);
         return container;
-    }, [repliesCount, style]);
+    }, [repliesCount, style, styles.container]);
 
     const saveButtonTestId = isSaved ? `${testID}.unsave.button` : `${testID}.save.button`;
 

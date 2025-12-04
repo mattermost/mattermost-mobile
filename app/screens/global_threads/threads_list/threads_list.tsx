@@ -12,19 +12,17 @@ import {useTheme} from '@context/theme';
 
 import EmptyState from './empty_state';
 import EndOfList from './end_of_list';
-import Header from './header';
 import Thread from './thread';
 
 import type ThreadModel from '@typings/database/models/servers/thread';
 
 type Props = {
-    setTab: (tab: GlobalThreadsTab) => void;
     tab: GlobalThreadsTab;
     teamId: string;
     teammateNameDisplay: string;
     testID: string;
     threads: ThreadModel[];
-    unreadsCount: number;
+    flatListRef: React.RefObject<FlatList<ThreadModel>>;
 };
 
 const styles = StyleSheet.create({
@@ -46,18 +44,16 @@ const styles = StyleSheet.create({
 });
 
 const ThreadsList = ({
-    setTab,
     tab,
     teamId,
     teammateNameDisplay,
     testID,
     threads,
-    unreadsCount,
+    flatListRef,
 }: Props) => {
     const serverUrl = useServerUrl();
     const theme = useTheme();
 
-    const flatListRef = useRef<FlatList<ThreadModel>>(null);
     const hasFetchedOnce = useRef(false);
     const [isLoading, setIsLoading] = useState(false);
     const [endReached, setEndReached] = useState(false);
@@ -97,8 +93,10 @@ const ThreadsList = ({
         );
     }, [isLoading, theme, tab]);
 
+    const hasThreads = threads.length > 0;
+
     const listFooterComponent = useMemo(() => {
-        if (tab === 'unreads' || !threads.length) {
+        if (tab === 'unreads' || !hasThreads) {
             return null;
         }
 
@@ -116,17 +114,12 @@ const ThreadsList = ({
         }
 
         return null;
-    }, [isLoading, tab, theme, endReached]);
-
-    const handleTabChange = useCallback((value: GlobalThreadsTab) => {
-        setTab(value);
-        flatListRef.current?.scrollToOffset({animated: true, offset: 0});
-    }, [setTab]);
+    }, [tab, hasThreads, endReached, isLoading, theme.buttonBg]);
 
     const handleRefresh = useCallback(() => {
         setRefreshing(true);
 
-        syncTeamThreads(serverUrl, teamId).finally(() => {
+        syncTeamThreads(serverUrl, teamId, {refresh: true}).finally(() => {
             setRefreshing(false);
         });
     }, [serverUrl, teamId]);
@@ -157,29 +150,20 @@ const ThreadsList = ({
     ), [teammateNameDisplay, testID]);
 
     return (
-        <>
-            <Header
-                setTab={handleTabChange}
-                tab={tab}
-                teamId={teamId}
-                testID={`${testID}.header`}
-                unreadsCount={unreadsCount}
-            />
-            <FlatList
-                ListEmptyComponent={listEmptyComponent}
-                ListFooterComponent={listFooterComponent}
-                contentContainerStyle={threads.length ? styles.messagesContainer : styles.empty}
-                data={threads}
-                maxToRenderPerBatch={10}
-                onEndReached={handleEndReached}
-                onRefresh={handleRefresh}
-                ref={flatListRef}
-                refreshing={isRefreshing}
-                removeClippedSubviews={true}
-                renderItem={renderItem}
-                testID={`${testID}.flat_list`}
-            />
-        </>
+        <FlatList
+            ListEmptyComponent={listEmptyComponent}
+            ListFooterComponent={listFooterComponent}
+            contentContainerStyle={threads.length ? styles.messagesContainer : styles.empty}
+            data={threads}
+            maxToRenderPerBatch={10}
+            onEndReached={handleEndReached}
+            onRefresh={handleRefresh}
+            ref={flatListRef}
+            refreshing={isRefreshing}
+            removeClippedSubviews={true}
+            renderItem={renderItem}
+            testID={`${testID}.flat_list`}
+        />
     );
 };
 

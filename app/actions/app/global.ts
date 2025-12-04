@@ -40,6 +40,18 @@ export const storeSkinEmojiSelectorTutorial = async (prepareRecordsOnly = false)
     return storeGlobal(Tutorial.EMOJI_SKIN_SELECTOR, 'true', prepareRecordsOnly);
 };
 
+export const storeDraftsTutorial = async () => {
+    return storeGlobal(Tutorial.DRAFTS, 'true', false);
+};
+
+export const storeScheduledPostTutorial = async () => {
+    return storeGlobal(Tutorial.SCHEDULED_POST, 'true', false);
+};
+
+export const storeScheduledPostsListTutorial = async () => {
+    return storeGlobal(Tutorial.SCHEDULED_POSTS_LIST, 'true', false);
+};
+
 export const storeDontAskForReview = async (prepareRecordsOnly = false) => {
     return storeGlobal(GLOBAL_IDENTIFIERS.DONT_ASK_FOR_REVIEW, 'true', prepareRecordsOnly);
 };

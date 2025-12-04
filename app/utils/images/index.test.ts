@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Dimensions} from 'react-native';
+import RNUtils from '@mattermost/rnutils';
 
-import {IMAGE_MAX_HEIGHT} from '@constants/image';
+import {IMAGE_MAX_HEIGHT, IMAGE_MIN_DIMENSION} from '@constants/image';
 
 import {
     calculateDimensions,
@@ -11,10 +11,8 @@ import {
     isGifTooLarge,
 } from './index';
 
-jest.mock('react-native', () => ({
-    Dimensions: {
-        get: jest.fn(() => ({width: 800, height: 600})),
-    },
+jest.mock('@mattermost/rnutils', () => ({
+    getWindowDimensions: jest.fn(() => ({width: 800, height: 600})),
 }));
 
 jest.mock('@constants/image', () => ({
@@ -96,11 +94,154 @@ describe('calculateDimensions', () => {
             width: 900 * (900 / 1700),
         });
     });
+
+    it('should handle negative image dimensions gracefully', () => {
+        const result = calculateDimensions(-100, -200, 300);
+        expect(result.height).toBeGreaterThanOrEqual(0);
+        expect(result.width).toBeGreaterThanOrEqual(0);
+    });
+
+    it('should handle zero viewport width', () => {
+        const result = calculateDimensions(100, 200, 0);
+        expect(result).toEqual({height: 0, width: 0});
+    });
+
+    it('should handle square images', () => {
+        const result = calculateDimensions(100, 100, 50);
+        expect(result).toEqual({height: 50, width: 50});
+    });
+
+    it('should handle extremely large images', () => {
+        const result = calculateDimensions(10000, 5000, 1000, 800);
+        expect(result.height).toBeLessThanOrEqual(800);
+        expect(result.width).toBeLessThanOrEqual(1000);
+    });
+
+    it('should handle extremely small images', () => {
+        const result = calculateDimensions(1, 1, 100);
+        expect(result.height).toBeGreaterThanOrEqual(IMAGE_MIN_DIMENSION);
+        expect(result.width).toBeGreaterThanOrEqual(IMAGE_MIN_DIMENSION);
+    });
+
+    it('should handle when only width is provided', () => {
+        const result = calculateDimensions(undefined, 200, 300);
+        expect(result).toEqual({height: 0, width: 0});
+    });
+
+    it('should handle when only height is provided', () => {
+        const result = calculateDimensions(200, undefined, 300);
+        expect(result).toEqual({height: 0, width: 0});
+    });
+
+    it('should handle when all parameters are undefined', () => {
+        const result = calculateDimensions(undefined, undefined, undefined, undefined);
+        expect(result).toEqual({height: 0, width: 0});
+    });
+
+    it('should fit portrait image to viewport height when matchViewPort is true', () => {
+        const result = calculateDimensions(800, 400, 600, 900, true);
+        expect(result.height).toBe(900);
+        expect(result.width).toBe(450);
+    });
+
+    it('should fit landscape image to viewport width when matchViewPort is true', () => {
+        const result = calculateDimensions(400, 800, 600, 900, true);
+        expect(result.width).toBe(600);
+        expect(result.height).toBe(300);
+    });
+
+    it('should fit square image to viewport width when matchViewPort is true', () => {
+        const result = calculateDimensions(500, 500, 300, 700, true);
+        expect(result.width).toBe(300);
+        expect(result.height).toBe(300);
+    });
+
+    it('should not fit to viewport if matchViewPort is false', () => {
+        const result = calculateDimensions(800, 400, 600, 900, false);
+        expect(result.height).not.toBe(900);
+        expect(result.width).not.toBe(450);
+    });
+
+    it('should handle when viewPortHeight is 0', () => {
+        const result = calculateDimensions(800, 400, 600, 0, true);
+        expect(result.height).not.toBe(0);
+        expect(result.width).not.toBe(0);
+    });
+
+    it('should handle when matchViewPort is true and image is smaller than viewport', () => {
+        const result = calculateDimensions(100, 80, 300, 300, true);
+        expect(result.width).toBe(240);
+        expect(result.height).toBe(300);
+    });
+
+    it('should handle when matchViewPort is true and image is square', () => {
+        const result = calculateDimensions(100, 100, 200, 300, true);
+        expect(result.width).toBe(200);
+        expect(result.height).toBe(200);
+    });
+
+    it('should handle when matchViewPort is true and image is wider than tall', () => {
+        const result = calculateDimensions(100, 200, 150, 300, true);
+        expect(result.width).toBe(150);
+        expect(result.height).toBe(75);
+    });
+
+    it('should handle when matchViewPort is true and image is taller than wide', () => {
+        const result = calculateDimensions(200, 100, 150, 300, true);
+        expect(result.height).toBe(300);
+        expect(result.width).toBe(150);
+    });
+
+    it('should handle when matchViewPort is true and image is exactly viewport size', () => {
+        const result = calculateDimensions(300, 300, 300, 300, true);
+        expect(result.width).toBe(300);
+        expect(result.height).toBe(300);
+    });
+
+    it('should constrain portrait image width when scaling to viewport height would cause overflow', () => {
+        // Portrait image 380×800, viewport 400×900
+        // Without fix: height=900, width=900×(380/800)=427.5 (OVERFLOW!)
+        // With fix: should scale based on width instead
+        const result = calculateDimensions(800, 380, 400, 900, true);
+        expect(result.width).toBeLessThanOrEqual(400);
+        expect(result.height).toBeLessThanOrEqual(900);
+
+        // Should constrain to width: 400w, height=400×(800/380)≈842
+        expect(result.width).toBe(400);
+        expect(result.height).toBeCloseTo(842.1, 0);
+    });
+
+    it('should constrain landscape image height when scaling to viewport width would cause overflow', () => {
+        // Landscape image 800×380, viewport 900×400
+        // Without fix: width=900, height=900×(380/800)=427.5 (OVERFLOW!)
+        // With fix: should scale based on height instead
+        const result = calculateDimensions(380, 800, 900, 400, true);
+        expect(result.width).toBeLessThanOrEqual(900);
+        expect(result.height).toBeLessThanOrEqual(400);
+
+        // Should constrain to height: 400h, width=400×(800/380)≈842
+        expect(result.height).toBe(400);
+        expect(result.width).toBeCloseTo(842.1, 0);
+    });
+
+    it('should handle extreme portrait aspect ratio with matchViewPort', () => {
+        // Very tall portrait image 200×1000 (1:5 ratio), viewport 300×600
+        // Would try to fit to height: 600h, width=600×(200/1000)=120 (OK)
+        // But if viewport is narrower: 100×600
+        // Would try: 600h, width=600×(200/1000)=120 (OVERFLOW!)
+        const result = calculateDimensions(1000, 200, 100, 600, true);
+        expect(result.width).toBeLessThanOrEqual(100);
+        expect(result.height).toBeLessThanOrEqual(600);
+
+        // Should constrain to width: 100w, height=100×(1000/200)=500
+        expect(result.width).toBe(100);
+        expect(result.height).toBe(500);
+    });
 });
 
 describe('getViewPortWidth', () => {
     beforeEach(() => {
-        (Dimensions.get as jest.Mock).mockReturnValue({width: 800, height: 600});
+        (RNUtils.getWindowDimensions as jest.Mock).mockReturnValue({width: 800, height: 600});
     });
 
     it('should calculate viewport width for normal post', () => {

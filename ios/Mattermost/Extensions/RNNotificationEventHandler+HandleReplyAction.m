@@ -59,9 +59,12 @@ static SendReplyCompletionHandlerIMP originalSendReplyCompletionHandlerImplement
   
   if (serverUrl == nil) {
       [self handleReplyFailure:@"" completionHandler:notificationCompletionHandler];
+      return;
   }
   
-  NSString *sessionToken = [[Keychain default] getTokenObjcFor:serverUrl];
+  NSDictionary *credentials = [[Keychain default] getCredentialsObjcFor:serverUrl];
+  NSString *sessionToken = [credentials objectForKey:@"token"];
+  NSString *preauthSecret = [credentials objectForKey:@"preauthSecret"];
   if (sessionToken == nil) {
     [self handleReplyFailure:@"" completionHandler:notificationCompletionHandler];
     return;
@@ -94,6 +97,12 @@ static SendReplyCompletionHandlerIMP originalSendReplyCompletionHandlerImplement
   [request setHTTPMethod:@"POST"];
   [request setValue:[NSString stringWithFormat:@"Bearer %@", sessionToken] forHTTPHeaderField:@"Authorization"];
   [request setValue:@"application/json; charset=utf-8" forHTTPHeaderField:@"Content-Type"];
+  
+  // Add preauth secret header if available
+  if ([preauthSecret isKindOfClass:NSString.class] && [(NSString *)preauthSecret length] > 0) {
+    [request setValue:preauthSecret forHTTPHeaderField:@"X-Mattermost-Preauth-Secret"];
+  }
+  
   [request setHTTPBody:postData];
 
   NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration ephemeralSessionConfiguration];

@@ -5,19 +5,21 @@ import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import websocketManager from '@managers/websocket_manager';
 import {getBookmarksSince, getChannelBookmarkById} from '@queries/servers/channel_bookmark';
-import {getConfigValue} from '@queries/servers/system';
+import {getConfigValue, getLicense} from '@queries/servers/system';
 import {getFullErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
 
 import {forceLogoutIfNecessary} from './session';
 
-export async function fetchChannelBookmarks(serverUrl: string, channelId: string, fetchOnly = false, groupLabel?: string) {
+export async function fetchChannelBookmarks(serverUrl: string, channelId: string, fetchOnly = false, groupLabel?: RequestGroupLabel) {
     try {
         const client = NetworkManager.getClient(serverUrl);
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         const bookmarksEnabled = (await getConfigValue(database, 'FeatureFlagChannelBookmarks')) === 'true';
-        if (!bookmarksEnabled) {
+        const isLicensed = (await getLicense(database))?.IsLicensed === 'true';
+
+        if (!bookmarksEnabled || !isLicensed) {
             return {bookmarks: []};
         }
 

@@ -97,7 +97,7 @@ export const executeAppCommand = async (serverUrl: string, intl: IntlShape, pars
         const errorResponse = res.error;
         return createErrorMessage(errorResponse.text || intl.formatMessage({
             id: 'apps.error.unknown',
-            defaultMessage: 'Unknown error.',
+            defaultMessage: 'Unknown error occurred.',
         }));
     }
     const callResp = res.data;
@@ -143,7 +143,7 @@ export const handleGotoLocation = async (serverUrl: string, intl: IntlShape, loc
     const match = matchDeepLink(location, serverUrl, config?.SiteURL);
 
     if (match) {
-        handleDeepLink(match.url, intl, location);
+        handleDeepLink(match, intl, location);
     } else {
         const {formatMessage} = intl;
         const onError = () => Alert.alert(

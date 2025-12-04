@@ -18,7 +18,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import Autocomplete from '@components/autocomplete';
 import ErrorText from '@components/error_text';
-import FloatingTextInput from '@components/floating_text_input_label';
+import FloatingTextInput from '@components/floating_input/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import OptionItem from '@components/option_item';
@@ -27,11 +27,9 @@ import {useTheme} from '@context/theme';
 import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
 import {useKeyboardHeight, useKeyboardOverlap} from '@hooks/device';
 import {useInputPropagation} from '@hooks/input';
-import {t} from '@i18n';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
-    getKeyboardAppearanceFromTheme,
 } from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -61,16 +59,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         alignItems: 'center',
         justifyContent: 'center',
     },
-    makePrivateContainer: {
-        marginBottom: MAKE_PRIVATE_MARGIN_BOTTOM,
-    },
-    fieldContainer: {
-        marginBottom: FIELD_MARGIN_BOTTOM,
-    },
     helpText: {
         ...typography('Body', 75, 'Regular'),
         color: changeOpacity(theme.centerChannelColor, 0.5),
         marginTop: 8,
+    },
+    mainView: {
+        gap: 24,
     },
 }));
 
@@ -136,17 +131,17 @@ export default function ChannelInfoForm({
     const [headerFieldHeight, setHeaderFieldHeight] = useState(0);
     const [headerPosition, setHeaderPosition] = useState(0);
 
-    const optionalText = formatMessage({id: t('channel_modal.optional'), defaultMessage: '(optional)'});
-    const labelDisplayName = formatMessage({id: t('channel_modal.name'), defaultMessage: 'Name'});
-    const labelPurpose = formatMessage({id: t('channel_modal.purpose'), defaultMessage: 'Purpose'}) + ' ' + optionalText;
-    const labelHeader = formatMessage({id: t('channel_modal.header'), defaultMessage: 'Header'}) + ' ' + optionalText;
+    const optionalText = formatMessage({id: 'channel_modal.optional', defaultMessage: '(optional)'});
+    const labelDisplayName = formatMessage({id: 'channel_modal.name', defaultMessage: 'Name'});
+    const labelPurpose = formatMessage({id: 'channel_modal.purpose', defaultMessage: 'Purpose'}) + ' ' + optionalText;
+    const labelHeader = formatMessage({id: 'channel_modal.header', defaultMessage: 'Header'}) + ' ' + optionalText;
 
-    const placeholderDisplayName = formatMessage({id: t('channel_modal.nameEx'), defaultMessage: 'Bugs, Marketing'});
-    const placeholderPurpose = formatMessage({id: t('channel_modal.purposeEx'), defaultMessage: 'A channel to file bugs and improvements'});
-    const placeholderHeader = formatMessage({id: t('channel_modal.headerEx'), defaultMessage: 'Use Markdown to format header text'});
+    const placeholderDisplayName = formatMessage({id: 'channel_modal.nameEx', defaultMessage: 'Bugs, Marketing'});
+    const placeholderPurpose = formatMessage({id: 'channel_modal.purposeEx', defaultMessage: 'A channel to file bugs and improvements'});
+    const placeholderHeader = formatMessage({id: 'channel_modal.headerEx', defaultMessage: 'Use Markdown to format header text'});
 
-    const makePrivateLabel = formatMessage({id: t('channel_modal.makePrivate.label'), defaultMessage: 'Make Private'});
-    const makePrivateDescription = formatMessage({id: t('channel_modal.makePrivate.description'), defaultMessage: 'When a channel is set to private, only invited team members can access and participate in that channel.'});
+    const makePrivateLabel = formatMessage({id: 'channel_modal.makePrivate.label', defaultMessage: 'Make Private'});
+    const makePrivateDescription = formatMessage({id: 'channel_modal.makePrivate.description', defaultMessage: 'When a channel is set to private, only invited team members can access and participate in that channel'});
 
     const displayHeaderOnly = headerOnly || channelType === General.DM_CHANNEL || channelType === General.GM_CHANNEL;
     const showSelector = !displayHeaderOnly && !editing;
@@ -189,19 +184,22 @@ export default function ChannelInfoForm({
         if (!keyboardVisible && keyboardHeight) {
             setKeyBoardVisible(true);
         }
+
+        // We only want to change the visibility when the height changes
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [keyboardHeight]);
 
     const onHeaderAutocompleteChange = useCallback((value: string) => {
         onHeaderChange(value);
         propagateValue(value);
-    }, [onHeaderChange]);
+    }, [onHeaderChange, propagateValue]);
 
     const onHeaderInputChange = useCallback((value: string) => {
         if (!shouldProcessEvent(value)) {
             return;
         }
         onHeaderChange(value);
-    }, [onHeaderChange]);
+    }, [onHeaderChange, shouldProcessEvent]);
 
     const onLayoutError = useCallback((e: LayoutChangeEvent) => {
         setErrorHeight(e.nativeEvent.layout.height);
@@ -231,9 +229,9 @@ export default function ChannelInfoForm({
     const spaceOnTop = otherElementsSize - scrollPosition - AUTOCOMPLETE_ADJUST;
     const spaceOnBottom = (workingSpace + scrollPosition) - (otherElementsSize + headerFieldHeight + BOTTOM_AUTOCOMPLETE_SEPARATION);
 
-    const autocompletePosition = spaceOnBottom > spaceOnTop ?
-        (otherElementsSize + headerFieldHeight) - scrollPosition :
-        (workingSpace + scrollPosition + AUTOCOMPLETE_ADJUST + keyboardOverlap) - otherElementsSize;
+    const bottomPosition = (otherElementsSize + headerFieldHeight) - scrollPosition;
+    const topPosition = (workingSpace + scrollPosition + AUTOCOMPLETE_ADJUST + keyboardOverlap) - otherElementsSize;
+    const autocompletePosition = spaceOnBottom > spaceOnTop ? bottomPosition : topPosition;
     const autocompleteAvailableSpace = spaceOnBottom > spaceOnTop ? spaceOnBottom : spaceOnTop;
     const growDown = spaceOnBottom > spaceOnTop;
 
@@ -290,7 +288,7 @@ export default function ChannelInfoForm({
                 <TouchableWithoutFeedback
                     onPress={blur}
                 >
-                    <View>
+                    <View style={styles.mainView}>
                         {showSelector && (
                             <OptionItem
                                 testID='channel_info_form.make_private'
@@ -300,15 +298,12 @@ export default function ChannelInfoForm({
                                 type={'toggle'}
                                 selected={isPrivate}
                                 icon={'lock-outline'}
-                                containerStyle={styles.makePrivateContainer}
                                 onLayout={onLayoutMakePrivate}
                             />
                         )}
                         {!displayHeaderOnly && (
                             <>
                                 <FloatingTextInput
-                                    autoCorrect={false}
-                                    autoCapitalize={'none'}
                                     blurOnSubmit={false}
                                     disableFullscreenUI={true}
                                     enablesReturnKeyAutomatically={true}
@@ -316,34 +311,24 @@ export default function ChannelInfoForm({
                                     placeholder={placeholderDisplayName}
                                     onChangeText={onDisplayNameChange}
                                     maxLength={Channel.MAX_CHANNEL_NAME_LENGTH}
-                                    keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                                     returnKeyType='next'
-                                    showErrorIcon={false}
-                                    spellCheck={false}
                                     testID='channel_info_form.display_name.input'
                                     value={displayName}
                                     ref={nameInput}
-                                    containerStyle={styles.fieldContainer}
                                     theme={theme}
                                     onLayout={onLayoutDisplayName}
                                 />
                                 <View
-                                    style={styles.fieldContainer}
                                     onLayout={onLayoutPurpose}
                                 >
                                     <FloatingTextInput
-                                        autoCorrect={false}
-                                        autoCapitalize={'none'}
                                         blurOnSubmit={false}
                                         disableFullscreenUI={true}
                                         enablesReturnKeyAutomatically={true}
                                         label={labelPurpose}
                                         placeholder={placeholderPurpose}
                                         onChangeText={onPurposeChange}
-                                        keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                                         returnKeyType='next'
-                                        showErrorIcon={false}
-                                        spellCheck={false}
                                         testID='channel_info_form.purpose.input'
                                         value={purpose}
                                         ref={purposeInput}
@@ -358,12 +343,8 @@ export default function ChannelInfoForm({
                                 </View>
                             </>
                         )}
-                        <View
-                            style={styles.fieldContainer}
-                        >
+                        <View>
                             <FloatingTextInput
-                                autoCorrect={false}
-                                autoCapitalize={'none'}
                                 blurOnSubmit={false}
                                 disableFullscreenUI={true}
                                 enablesReturnKeyAutomatically={true}
@@ -371,10 +352,7 @@ export default function ChannelInfoForm({
                                 placeholder={placeholderHeader}
                                 onChangeText={onHeaderInputChange}
                                 multiline={true}
-                                keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                                 returnKeyType='next'
-                                showErrorIcon={false}
-                                spellCheck={false}
                                 testID='channel_info_form.header.input'
                                 value={header}
                                 ref={headerInput}
@@ -400,7 +378,7 @@ export default function ChannelInfoForm({
                 value={header}
                 nestedScrollEnabled={true}
                 availableSpace={animatedAutocompleteAvailableSpace}
-                inPost={false}
+                shouldDirectlyReact={false}
                 growDown={growDown}
             />
         </SafeAreaView>

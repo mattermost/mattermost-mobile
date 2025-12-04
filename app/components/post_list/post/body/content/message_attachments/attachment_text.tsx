@@ -9,16 +9,14 @@ import Markdown from '@components/markdown';
 import ShowMoreButton from '@components/post_list/post/body/message/show_more_button';
 import {useShowMoreAnimatedStyle} from '@hooks/show_more';
 
-import type {MarkdownBlockStyles, MarkdownTextStyles} from '@typings/global/markdown';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     baseTextStyle: StyleProp<TextStyle>;
-    blockStyles?: MarkdownBlockStyles;
     channelId: string;
     hasThumbnail?: boolean;
-    location: string;
+    location: AvailableScreens;
     metadata?: PostMetadata | null;
-    textStyles?: MarkdownTextStyles;
     theme: Theme;
     value?: string;
 }
@@ -30,7 +28,15 @@ const style = StyleSheet.create({
     },
 });
 
-const AttachmentText = ({baseTextStyle, blockStyles, channelId, hasThumbnail, location, metadata, textStyles, theme, value}: Props) => {
+const AttachmentText = ({
+    baseTextStyle,
+    channelId,
+    hasThumbnail,
+    location,
+    metadata,
+    theme,
+    value,
+}: Props) => {
     const [open, setOpen] = useState(false);
     const [height, setHeight] = useState<number|undefined>();
     const dimensions = useWindowDimensions();
@@ -54,8 +60,6 @@ const AttachmentText = ({baseTextStyle, blockStyles, channelId, hasThumbnail, lo
                             channelId={channelId}
                             location={location}
                             baseTextStyle={baseTextStyle}
-                            textStyles={textStyles}
-                            blockStyles={blockStyles}
                             disableGallery={true}
                             imagesMetadata={metadata?.images}
                             value={value}

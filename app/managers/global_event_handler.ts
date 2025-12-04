@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import RNUtils, {type SplitViewResult} from '@mattermost/rnutils';
+import {defineMessages} from 'react-intl';
 import {Alert, DeviceEventEmitter, Linking, NativeEventEmitter} from 'react-native';
 import semver from 'semver';
 
@@ -9,21 +10,36 @@ import {switchToChannelById} from '@actions/remote/channel';
 import {Device, Events, Sso} from '@constants';
 import {MIN_REQUIRED_VERSION} from '@constants/supported_server';
 import DatabaseManager from '@database/manager';
-import {DEFAULT_LOCALE, getTranslations, t} from '@i18n';
+import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 import {getServerCredentials} from '@init/credentials';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {queryTeamDefaultChannel} from '@queries/servers/channel';
 import {getCommonSystemValues} from '@queries/servers/system';
 import {getTeamChannelHistory} from '@queries/servers/team';
 import {setScreensOrientation} from '@screens/navigation';
-import {alertInvalidDeepLink, handleDeepLink} from '@utils/deep_link';
+import {alertInvalidDeepLink, parseAndHandleDeepLink} from '@utils/deep_link';
 import {getIntlShape} from '@utils/general';
 
 type LinkingCallbackArg = {url: string};
 
 const splitViewEmitter = new NativeEventEmitter(RNUtils);
 
-class GlobalEventHandler {
+const messages = defineMessages({
+    serverUpgradeTitle: {
+        id: 'mobile.server_upgrade.title',
+        defaultMessage: 'Server upgrade required',
+    },
+    serverUpgradeDescription: {
+        id: 'mobile.server_upgrade.description',
+        defaultMessage: '\nA server upgrade is required to use the Mattermost app. Please ask your System Administrator for details.\n',
+    },
+    serverUpgradeButton: {
+        id: 'mobile.server_upgrade.button',
+        defaultMessage: 'OK',
+    },
+});
+
+class GlobalEventHandlerSingleton {
     JavascriptAndNativeErrorHandler: jsAndNativeErrorHandler | undefined;
 
     constructor() {
@@ -43,7 +59,7 @@ class GlobalEventHandler {
         }
 
         if (event.url) {
-            const {error} = await handleDeepLink(event.url, undefined, undefined, true);
+            const {error} = await parseAndHandleDeepLink(event.url, undefined, undefined, true);
             if (error) {
                 alertInvalidDeepLink(getIntlShape(DEFAULT_LOCALE));
             }
@@ -59,10 +75,10 @@ class GlobalEventHandler {
         if (version) {
             if (semver.valid(version) && semver.lt(version, MIN_REQUIRED_VERSION)) {
                 Alert.alert(
-                    translations[t('mobile.server_upgrade.title')],
-                    translations[t('mobile.server_upgrade.description')],
+                    translations[messages.serverUpgradeTitle.id],
+                    translations[messages.serverUpgradeDescription.id],
                     [{
-                        text: translations[t('mobile.server_upgrade.button')],
+                        text: translations[messages.serverUpgradeButton.id],
                         onPress: () => this.serverUpgradeNeeded(serverUrl),
                     }],
                     {cancelable: false},
@@ -112,4 +128,5 @@ class GlobalEventHandler {
     };
 }
 
-export default new GlobalEventHandler();
+const GlobalEventHandler = new GlobalEventHandlerSingleton();
+export default GlobalEventHandler;

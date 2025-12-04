@@ -8,16 +8,17 @@ import {Text} from 'react-native';
 import FormattedMarkdownText from '@components/formatted_markdown_text';
 import FormattedText from '@components/formatted_text';
 import Markdown from '@components/markdown';
-import {getMarkdownTextStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {secureGetFromRecord} from '@utils/types';
 
 import {postTypeMessages, systemMessages} from './messages';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 type LastUsersProps = {
     actor: string;
     channelId?: string;
-    location: string;
+    location: AvailableScreens;
     postType: string;
     usernames: string[];
     theme: Theme;
@@ -42,7 +43,6 @@ const LastUsers = ({actor, channelId, location, postType, theme, usernames}: Las
     const [expanded, setExpanded] = useState(false);
     const intl = useIntl();
     const style = getStyleSheet(theme);
-    const textStyles = getMarkdownTextStyles(theme);
 
     const onPress = () => {
         setExpanded(true);
@@ -65,7 +65,6 @@ const LastUsers = ({actor, channelId, location, postType, theme, usernames}: Las
                 baseTextStyle={style.baseText}
                 channelId={channelId}
                 location={location}
-                textStyles={textStyles}
                 value={formattedMessage}
                 theme={theme}
             />

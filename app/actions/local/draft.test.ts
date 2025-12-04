@@ -1,17 +1,25 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-/* eslint-disable max-lines */
+import {DeviceEventEmitter} from 'react-native';
 
+import {Navigation, Screens} from '@constants';
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
+import {DRAFT_SCREEN_TAB_DRAFTS, DRAFT_SCREEN_TAB_SCHEDULED_POSTS} from '@constants/draft';
 import DatabaseManager from '@database/manager';
+import {goToScreen, popTo} from '@screens/navigation';
+import NavigationStore from '@store/navigation_store';
+import {isTablet} from '@utils/helpers';
 
 import {
+    switchToGlobalDrafts,
     updateDraftFile,
     removeDraftFile,
     updateDraftMessage,
     addFilesToDraft,
     removeDraft,
     updateDraftPriority,
+    updateDraftMarkdownImageMetadata,
 } from './draft';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -46,6 +54,16 @@ beforeEach(async () => {
 afterEach(async () => {
     await DatabaseManager.destroyServerDatabase(serverUrl);
 });
+
+jest.mock('@utils/helpers', () => ({
+    ...jest.requireActual('@utils/helpers'),
+    isTablet: jest.fn(),
+}));
+
+jest.mock('@screens/navigation', () => ({
+    popTo: jest.fn(),
+    goToScreen: jest.fn(),
+}));
 
 describe('updateDraftFile', () => {
     it('handle not found database', async () => {
@@ -240,5 +258,150 @@ describe('updateDraftPriority', () => {
         expect(result.error).toBeUndefined();
         expect(result.draft).toBeDefined();
         expect(result.draft.metadata?.priority?.priority).toBe(postPriority.priority);
+    });
+});
+
+describe('switchToGlobalDrafts', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
+    it('should emit navigation event on tablet', async () => {
+        jest.mocked(isTablet).mockReturnValue(true);
+        const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
+
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
+
+        await switchToGlobalDrafts(serverUrl);
+
+        expect(emitSpy).toHaveBeenCalledWith(Navigation.NAVIGATION_HOME, Screens.GLOBAL_DRAFTS, {});
+    });
+
+    it('if prepareRecordsOnly is true, should emit navigation event on tablet for Scheduled post tab and also call batchRecord', async () => {
+        jest.mocked(isTablet).mockReturnValue(true);
+        const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
+        const batchRecordSpy = jest.spyOn(operator, 'batchRecords');
+
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
+
+        await switchToGlobalDrafts(serverUrl, '', DRAFT_SCREEN_TAB_SCHEDULED_POSTS, true);
+
+        expect(batchRecordSpy).toHaveBeenCalled();
+        expect(emitSpy).toHaveBeenCalled();
+    });
+
+    it('should fail to emit navigation event on tablet', async () => {
+        jest.mocked(isTablet).mockReturnValue(true);
+        const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
+
+        await switchToGlobalDrafts('nonexistent');
+
+        expect(emitSpy).not.toHaveBeenCalled();
+    });
+
+    it('should fail to emit navigation event on tablet if currentTeamId is not set', async () => {
+        jest.mocked(isTablet).mockReturnValue(true);
+        const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
+
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: ''}], prepareRecordsOnly: false});
+
+        await switchToGlobalDrafts(serverUrl);
+
+        expect(emitSpy).not.toHaveBeenCalled();
+    });
+
+    it('should call goToScreen on non-tablet', async () => {
+        jest.mocked(isTablet).mockReturnValue(false);
+        const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
+
+        const goToScreenMock = jest.mocked(goToScreen);
+
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
+        await switchToGlobalDrafts(serverUrl);
+
+        expect(goToScreenMock).toHaveBeenCalledWith(Screens.GLOBAL_DRAFTS, '', {}, {topBar: {visible: false}});
+        expect(emitSpy).not.toHaveBeenCalled();
+    });
+
+    it('should not call goToScreen on non-tablet when server url is a non existent URL', async () => {
+        jest.mocked(isTablet).mockReturnValue(false);
+        const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
+        const goToScreenMock = jest.mocked(goToScreen);
+
+        await switchToGlobalDrafts('nonexistent');
+
+        expect(goToScreenMock).not.toHaveBeenCalled();
+        expect(emitSpy).not.toHaveBeenCalled();
+    });
+
+    it('should pass initialTab param when provided', async () => {
+        jest.mocked(isTablet).mockReturnValue(true);
+        const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
+
+        await switchToGlobalDrafts(serverUrl, teamId, DRAFT_SCREEN_TAB_SCHEDULED_POSTS);
+        expect(emitSpy).toHaveBeenCalledWith(Navigation.NAVIGATION_HOME, Screens.GLOBAL_DRAFTS, {initialTab: DRAFT_SCREEN_TAB_SCHEDULED_POSTS});
+
+        await switchToGlobalDrafts(serverUrl, teamId, DRAFT_SCREEN_TAB_DRAFTS);
+        expect(emitSpy).toHaveBeenCalledWith(Navigation.NAVIGATION_HOME, Screens.GLOBAL_DRAFTS, {initialTab: DRAFT_SCREEN_TAB_DRAFTS});
+    });
+
+    it('should pass initialTab param when provided on non-tablet', async () => {
+        jest.mocked(isTablet).mockReturnValue(false);
+        const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
+        const goToScreenMock = jest.mocked(goToScreen);
+
+        await switchToGlobalDrafts(serverUrl, teamId, DRAFT_SCREEN_TAB_SCHEDULED_POSTS);
+        expect(goToScreenMock).toHaveBeenCalledWith(Screens.GLOBAL_DRAFTS, '', {initialTab: DRAFT_SCREEN_TAB_SCHEDULED_POSTS}, {topBar: {visible: false}});
+
+        await switchToGlobalDrafts(serverUrl, teamId, DRAFT_SCREEN_TAB_DRAFTS);
+        expect(goToScreenMock).toHaveBeenCalledWith(Screens.GLOBAL_DRAFTS, '', {initialTab: DRAFT_SCREEN_TAB_DRAFTS}, {topBar: {visible: false}});
+        expect(emitSpy).not.toHaveBeenCalled();
+    });
+
+    it('should call popto from navigation store if Global draft is alreay present', async () => {
+        NavigationStore.addScreenToStack(Screens.GLOBAL_DRAFTS);
+        NavigationStore.addScreenToStack(Screens.CHANNEL);
+        NavigationStore.addScreenToStack(Screens.THREAD);
+
+        await switchToGlobalDrafts(serverUrl, teamId, DRAFT_SCREEN_TAB_SCHEDULED_POSTS);
+
+        expect(popTo).toHaveBeenCalledWith(Screens.GLOBAL_DRAFTS);
+    });
+});
+
+describe('updateDraftMarkdownImageMetadata', () => {
+    const postImageData: PostImage = {
+        height: 1080,
+        width: 1920,
+        format: 'jpg',
+        frame_count: undefined,
+    };
+
+    it('handle not found database', async () => {
+        const result = await updateDraftMarkdownImageMetadata({
+            serverUrl: 'foo',
+            channelId,
+            rootId: '',
+            imageMetadata: {
+                image1: postImageData,
+            },
+        }) as {draft: unknown; error: unknown};
+        expect(result.error).toBeDefined();
+        expect(result.draft).toBeUndefined();
+    });
+
+    it('handle update image metadata', async () => {
+        await operator.handleDraft({drafts: [draft], prepareRecordsOnly: false});
+        const result = await updateDraftMarkdownImageMetadata({
+            serverUrl,
+            channelId,
+            rootId: '',
+            imageMetadata: {
+                image1: postImageData,
+            },
+        }) as {draft: DraftModel; error: unknown};
+        expect(result.error).toBeUndefined();
+        expect(result.draft).toBeDefined();
+        expect(result.draft.metadata?.images?.image1).toEqual(postImageData);
     });
 });

@@ -1,16 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {memo, type RefObject, useCallback} from 'react';
+import React, {type ComponentProps, memo, useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform, type TextInputProps, View} from 'react-native';
 
-import FloatingTextInput, {type FloatingTextInputRef} from '@components/floating_text_input_label';
+import FloatingTextInput from '@components/floating_input/floating_text_input_label';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-export type FieldProps = TextInputProps & {
+export type FieldProps = {
     isDisabled?: boolean;
     fieldKey: string;
     label: string;
@@ -20,8 +20,12 @@ export type FieldProps = TextInputProps & {
     testID: string;
     error?: string;
     value: string;
-    fieldRef: RefObject<FloatingTextInputRef>;
+    fieldRef: ComponentProps<typeof FloatingTextInput>['ref'];
     onFocusNextField: (fieldKey: string) => void;
+    returnKeyType: TextInputProps['returnKeyType'];
+    blurOnSubmit: TextInputProps['blurOnSubmit'];
+    enablesReturnKeyAutomatically: TextInputProps['enablesReturnKeyAutomatically'];
+    keyboardType?: TextInputProps['keyboardType'];
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
@@ -38,8 +42,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 });
 
 const Field = ({
-    autoCapitalize = 'none',
-    autoCorrect = false,
     fieldKey,
     isDisabled = false,
     isOptional = false,
@@ -52,7 +54,7 @@ const Field = ({
     fieldRef,
     error,
     onFocusNextField,
-    ...props
+    ...textInputProps
 }: FieldProps) => {
     const theme = useTheme();
     const intl = useIntl();
@@ -81,11 +83,9 @@ const Field = ({
             style={subContainer}
         >
             <FloatingTextInput
-                autoCapitalize={autoCapitalize}
-                autoCorrect={autoCorrect}
+                rawInput={true}
                 disableFullscreenUI={true}
                 editable={!isDisabled}
-                keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                 keyboardType={keyboard}
                 label={formattedLabel}
                 maxLength={maxLength}
@@ -96,7 +96,7 @@ const Field = ({
                 value={value}
                 ref={fieldRef}
                 onSubmitEditing={onSubmitEditing}
-                {...props}
+                {...textInputProps}
             />
         </View>
     );

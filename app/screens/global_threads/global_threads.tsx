@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {useIntl} from 'react-intl';
-import {Keyboard, StyleSheet, View} from 'react-native';
+import React, {useCallback, useEffect, useMemo, useRef} from 'react';
+import {defineMessage, useIntl} from 'react-intl';
+import {FlatList, Keyboard, StyleSheet, View} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {setGlobalThreadsTab} from '@actions/local/systems';
@@ -16,15 +16,21 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {useTeamSwitch} from '@hooks/team_switch';
+import useTabs, {type TabDefinition} from '@hooks/use_tabs';
+import SecurityManager from '@managers/security_manager';
 import {popTopScreen} from '@screens/navigation';
 
 import ThreadsList from './threads_list';
+import Header from './threads_list/header';
 
+import type ThreadModel from '@typings/database/models/servers/thread';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     componentId?: AvailableScreens;
     globalThreadsTab: GlobalThreadsTab;
+    hasUnreads: boolean;
+    teamId: string;
 };
 
 const edges: Edge[] = ['left', 'right'];
@@ -35,15 +41,41 @@ const styles = StyleSheet.create({
     },
 });
 
-const GlobalThreads = ({componentId, globalThreadsTab}: Props) => {
+const testID = 'global_threads.threads_list';
+
+const GlobalThreads = ({componentId, globalThreadsTab, hasUnreads, teamId}: Props) => {
     const serverUrl = useServerUrl();
     const intl = useIntl();
     const switchingTeam = useTeamSwitch();
     const isTablet = useIsTablet();
 
+    const flatListRef = useRef<FlatList<ThreadModel>>(null);
+
     const defaultHeight = useDefaultHeaderHeight();
 
-    const [tab, setTab] = useState<GlobalThreadsTab>(globalThreadsTab);
+    const tabs = useMemo<Array<TabDefinition<GlobalThreadsTab>>>(() => [
+        {
+            name: defineMessage({
+                id: 'global_threads.allThreads',
+                defaultMessage: 'All Your Threads',
+            }),
+            id: 'all',
+            requiresUserAttention: false,
+        },
+        {
+            name: defineMessage({
+                id: 'global_threads.unreads',
+                defaultMessage: 'Unreads',
+            }),
+            id: 'unreads',
+            requiresUserAttention: hasUnreads,
+        },
+    ], [hasUnreads]);
+    const tabOnChange = useCallback(() => {
+        flatListRef.current?.scrollToOffset({offset: 0});
+    }, []);
+
+    const [tab, tabsProps] = useTabs<GlobalThreadsTab>(globalThreadsTab, tabs, tabOnChange, 'global_threads.threads_list.header');
     const mounted = useRef(false);
 
     const containerStyle = useMemo(() => {
@@ -84,6 +116,7 @@ const GlobalThreads = ({componentId, globalThreadsTab}: Props) => {
             mode='margin'
             style={styles.flex}
             testID='global_threads.screen'
+            nativeID={SecurityManager.getShieldScreenId(componentId || Screens.GLOBAL_THREADS)}
         >
             <NavigationHeader
                 showBackButton={!isTablet}
@@ -102,10 +135,16 @@ const GlobalThreads = ({componentId, globalThreadsTab}: Props) => {
             </View>
             {!switchingTeam &&
             <View style={containerStyle}>
+                <Header
+                    teamId={teamId}
+                    testID={`${testID}.header`}
+                    hasUnreads={hasUnreads}
+                    tabsProps={tabsProps}
+                />
                 <ThreadsList
-                    setTab={setTab}
                     tab={tab}
-                    testID={'global_threads.threads_list'}
+                    testID={testID}
+                    flatListRef={flatListRef}
                 />
             </View>
             }

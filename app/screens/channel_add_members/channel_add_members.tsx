@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessage, useIntl} from 'react-intl';
 import {Keyboard, type LayoutChangeEvent, Platform, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
@@ -11,15 +11,17 @@ import {fetchProfilesNotInChannel, searchProfiles} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
 import Loading from '@components/loading';
 import Search from '@components/search';
+import SectionNotice from '@components/section_notice';
 import SelectedUsers from '@components/selected_users';
 import ServerUserList from '@components/server_user_list';
-import {General} from '@constants';
+import {General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {useAccessControlAttributes} from '@hooks/access_control_attributes';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useKeyboardOverlap} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
-import {t} from '@i18n';
+import SecurityManager from '@managers/security_manager';
 import {dismissModal} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
 import {mergeNavigationOptions} from '@utils/navigation';
@@ -61,7 +63,6 @@ export const getHeaderOptions = async (theme: Theme, displayName: string, inModa
 type Props = {
     componentId: AvailableScreens;
     channel?: ChannelModel;
-    currentUserId: string;
     teammateNameDisplay: string;
     tutorialWatched: boolean;
     inModal?: boolean;
@@ -101,20 +102,22 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.5),
             ...typography('Body', 600, 'Regular'),
         },
+        flatBottomBanner: {
+            borderBottomLeftRadius: 0,
+            borderBottomRightRadius: 0,
+        },
     };
 });
 
-function removeProfileFromList(list: {[id: string]: UserProfile}, id: string) {
-    const newSelectedIds = Object.assign({}, list);
-
-    Reflect.deleteProperty(newSelectedIds, id);
+function removeProfileFromList(list: Set<string>, id: string) {
+    const newSelectedIds = new Set(list);
+    newSelectedIds.delete(id);
     return newSelectedIds;
 }
 
 export default function ChannelAddMembers({
     componentId,
     channel,
-    currentUserId,
     teammateNameDisplay,
     tutorialWatched,
     inModal,
@@ -131,7 +134,15 @@ export default function ChannelAddMembers({
 
     const [term, setTerm] = useState('');
     const [addingMembers, setAddingMembers] = useState(false);
-    const [selectedIds, setSelectedIds] = useState<{[id: string]: UserProfile}>({});
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set<string>());
+    const [showBanner, setShowBanner] = useState(Boolean(channel?.abacPolicyEnforced));
+
+    // Use the hook to fetch access control attributes
+    const {attributeTags} = useAccessControlAttributes('channel', channel?.id, channel?.abacPolicyEnforced);
+
+    const handleDismissBanner = useCallback(() => {
+        setShowBanner(false);
+    }, []);
 
     const clearSearch = useCallback(() => {
         setTerm('');
@@ -150,7 +161,7 @@ export default function ChannelAddMembers({
             return;
         }
 
-        const idsToUse = Object.keys(selectedIds);
+        const idsToUse = Array.from(selectedIds);
         if (!idsToUse.length) {
             return;
         }
@@ -159,7 +170,7 @@ export default function ChannelAddMembers({
         const result = await addMembersToChannel(serverUrl, channel.id, idsToUse);
 
         if (result.error) {
-            alertErrorWithFallback(intl, result.error, {id: t('mobile.channel_add_members.error'), defaultMessage: 'There has been an error and we could not add those users to the channel.'});
+            alertErrorWithFallback(intl, result.error, defineMessage({id: 'mobile.channel_add_members.error', defaultMessage: 'There has been an error and we could not add those users to the channel.'}));
             setAddingMembers(false);
         } else {
             close();
@@ -170,16 +181,16 @@ export default function ChannelAddMembers({
     const handleSelectProfile = useCallback((user: UserProfile) => {
         clearSearch();
         setSelectedIds((current) => {
-            if (current[user.id]) {
+            if (current.has(user.id)) {
                 return removeProfileFromList(current, user.id);
             }
 
-            const newSelectedIds = Object.assign({}, current);
-            newSelectedIds[user.id] = user;
+            const newSelectedIds = new Set(current);
+            newSelectedIds.add(user.id);
 
             return newSelectedIds;
         });
-    }, [currentUserId, clearSearch]);
+    }, [clearSearch]);
 
     const onTextChange = useCallback((searchTerm: string) => {
         setTerm(searchTerm);
@@ -238,7 +249,7 @@ export default function ChannelAddMembers({
 
     useEffect(() => {
         updateNavigationButtons();
-    }, [updateNavigationButtons]);
+    }, [updateNavigationButtons, channel, serverUrl]);
 
     if (addingMembers) {
         return (
@@ -255,7 +266,27 @@ export default function ChannelAddMembers({
             onLayout={onLayout}
             ref={mainView}
             edges={['top', 'left', 'right']}
+            nativeID={SecurityManager.getShieldScreenId(componentId)}
         >
+            {showBanner && (
+                <SectionNotice
+                    type='info'
+                    title={formatMessage({
+                        id: 'channel.abac_policy_enforced.title',
+                        defaultMessage: 'Channel access is restricted by user attributes',
+                    })}
+                    text={formatMessage({
+                        id: 'channel.abac_policy_enforced.description',
+                        defaultMessage: 'Only people who match the specified access rules can be selected and added to this channel.',
+                    })}
+                    tags={attributeTags.length > 0 ? attributeTags : undefined}
+                    isDismissable={true}
+                    onDismissClick={handleDismissBanner}
+                    location={Screens.CHANNEL_ADD_MEMBERS}
+                    testID={`${TEST_ID}.notice`}
+                    squareCorners={true}
+                />
+            )}
             <View style={style.searchBar}>
                 <Search
                     testID={`${TEST_ID}.search_bar`}
@@ -270,7 +301,6 @@ export default function ChannelAddMembers({
                 />
             </View>
             <ServerUserList
-                currentUserId={currentUserId}
                 handleSelectProfile={handleSelectProfile}
                 selectedIds={selectedIds}
                 term={term}
@@ -279,6 +309,7 @@ export default function ChannelAddMembers({
                 fetchFunction={userFetchFunction}
                 searchFunction={userSearchFunction}
                 createFilter={createUserFilter}
+                location={Screens.CHANNEL_ADD_MEMBERS}
             />
             <SelectedUsers
                 keyboardOverlap={keyboardOverlap}
@@ -293,4 +324,3 @@ export default function ChannelAddMembers({
         </SafeAreaView>
     );
 }
-

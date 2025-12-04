@@ -87,8 +87,16 @@ export const observeTeamIdByThread = (database: Database, thread: ThreadModel) =
     return observeTeamIdByThreadId(database, thread.id);
 };
 
-export const observeUnreadsAndMentionsInTeam = (database: Database, teamId?: string, includeDmGm?: boolean): Observable<{unreads: boolean; mentions: number}> => {
-    const observeThreads = () => queryThreads(database, teamId, true, includeDmGm).
+type ObserveUnreadsAndMentionsOptions = {
+    teamId?: string;
+    includeDmGm?: boolean;
+};
+
+export const observeUnreadsAndMentions = (database: Database, {
+    teamId,
+    includeDmGm,
+}: ObserveUnreadsAndMentionsOptions): Observable<{unreads: boolean; mentions: number}> => {
+    const observeThreads = () => queryThreads(database, {teamId, onlyUnreads: true, includeDmGm}).
         observeWithColumns(['unread_replies', 'unread_mentions']).
         pipe(
             switchMap((threads) => {
@@ -123,7 +131,7 @@ export const prepareThreadsFromReceivedPosts = async (operator: ServerDataOperat
                 id: post.id,
                 participants: post.participants,
                 reply_count: post.reply_count,
-                last_reply_at: post.last_reply_at,
+                last_reply_at: post.last_reply_at || post.create_at,
                 is_following: post.is_following,
                 lastFetchedAt: post.create_at,
             } as ThreadWithLastFetchedAt);
@@ -154,7 +162,21 @@ export const prepareThreadsFromReceivedPosts = async (operator: ServerDataOperat
     return models;
 };
 
-export const queryThreadsInTeam = (database: Database, teamId: string, onlyUnreads?: boolean, hasReplies?: boolean, isFollowing?: boolean, sort?: boolean, earliest?: number): Query<ThreadModel> => {
+type QueryThreadsInTeamOptions = {
+    onlyUnreads?: boolean;
+    hasReplies?: boolean;
+    isFollowing?: boolean;
+    sort?: boolean;
+    earliest?: number;
+};
+
+export const queryThreadsInTeam = (database: Database, teamId: string, {
+    onlyUnreads,
+    hasReplies,
+    isFollowing,
+    sort,
+    earliest,
+}: QueryThreadsInTeamOptions): Query<ThreadModel> => {
     const query: Q.Clause[] = [
         Q.experimentalNestedJoin(POST, CHANNEL),
         Q.on(POST, Q.on(CHANNEL, Q.where('delete_at', 0))),
@@ -193,14 +215,32 @@ export const queryTeamThreadsSync = (database: Database, teamId: string) => {
     );
 };
 
-export function observeThreadMentionCount(database: Database, teamId?: string, includeDmGm?: boolean): Observable<number> {
-    return observeUnreadsAndMentionsInTeam(database, teamId, includeDmGm).pipe(
+type ObserveThreadMentionCountOptions = {
+    teamId?: string;
+    includeDmGm?: boolean;
+};
+
+export function observeThreadMentionCount(database: Database, {
+    teamId,
+    includeDmGm,
+}: ObserveThreadMentionCountOptions): Observable<number> {
+    return observeUnreadsAndMentions(database, {teamId, includeDmGm}).pipe(
         switchMap(({mentions}) => of$(mentions)),
         distinctUntilChanged(),
     );
 }
 
-export const queryThreads = (database: Database, teamId?: string, onlyUnreads = false, includeDmGm = true): Query<ThreadModel> => {
+type QueryThreadsOptions = {
+    teamId?: string;
+    onlyUnreads?: boolean;
+    includeDmGm?: boolean;
+};
+
+export const queryThreads = (database: Database, {
+    teamId,
+    onlyUnreads,
+    includeDmGm,
+}: QueryThreadsOptions): Query<ThreadModel> => {
     const query: Q.Clause[] = [
         Q.where('is_following', true),
         Q.where('reply_count', Q.gt(0)),

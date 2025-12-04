@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useLayoutEffect, useMemo, useRef, useState} from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessages, useIntl} from 'react-intl';
 import {
     InteractionManager,
     Platform,
@@ -17,7 +17,6 @@ import TutorialLongPress from '@components/tutorial_highlight/long_press';
 import UserItem from '@components/user_item';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {t} from '@i18n';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -27,7 +26,6 @@ type Props = {
     highlight?: boolean;
     id: string;
     includeMargin?: boolean;
-    isMyUser: boolean;
     isChannelAdmin: boolean;
     manageMode: boolean;
     onLongPress: (user: UserProfile | UserModel) => void;
@@ -69,10 +67,20 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 
 const DEFAULT_ICON_OPACITY = 0.32;
 
+const messages = defineMessages({
+    admin: {
+        id: 'mobile.manage_members.admin',
+        defaultMessage: 'Admin',
+    },
+    member: {
+        id: 'mobile.manage_members.member',
+        defaultMessage: 'Member',
+    },
+});
+
 function UserListRow({
     id,
     includeMargin,
-    isMyUser,
     highlight,
     isChannelAdmin,
     onPress,
@@ -119,20 +127,18 @@ function UserListRow({
     }, [onPress]);
 
     const manageModeIcon = useMemo(() => {
-        if (!showManageMode || isMyUser) {
+        if (!showManageMode) {
             return null;
         }
 
         const color = changeOpacity(theme.centerChannelColor, 0.64);
-        const i18nId = isChannelAdmin ? t('mobile.manage_members.admin') : t('mobile.manage_members.member');
-        const defaultMessage = isChannelAdmin ? 'Admin' : 'Member';
+        const message = isChannelAdmin ? messages.admin : messages.member;
 
         return (
             <View style={style.selectorManage}>
                 <FormattedText
-                    id={i18nId}
+                    {...message}
                     style={style.manageText}
-                    defaultMessage={defaultMessage}
                 />
                 <CompassIcon
                     name={'chevron-down'}
@@ -141,7 +147,7 @@ function UserListRow({
                 />
             </View>
         );
-    }, [isChannelAdmin, showManageMode, theme]);
+    }, [isChannelAdmin, showManageMode, style.manageText, style.selectorManage, theme.centerChannelColor]);
 
     const onLayout = useCallback(() => {
         if (highlight && !tutorialWatched) {
@@ -153,7 +159,7 @@ function UserListRow({
                 setShowTutorial(true);
             });
         }
-    }, [showTutorial]);
+    }, [highlight, isTablet, tutorialWatched]);
 
     useLayoutEffect(() => {
         if (showTutorial && !tutorialShown.current) {
@@ -177,7 +183,7 @@ function UserListRow({
                 />
             </View>
         );
-    }, [selectable, disabled, selected, theme]);
+    }, [selectable, selected, theme.buttonBg, theme.centerChannelColor, style.selector]);
 
     const userItemTestID = `${testID}.${id}`;
 

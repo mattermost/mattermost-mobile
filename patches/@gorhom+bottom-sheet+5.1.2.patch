@@ -1,0 +1,30 @@
+diff --git a/node_modules/@gorhom/bottom-sheet/src/components/bottomSheet/BottomSheet.tsx b/node_modules/@gorhom/bottom-sheet/src/components/bottomSheet/BottomSheet.tsx
+index c79181a..31fc208 100644
+--- a/node_modules/@gorhom/bottom-sheet/src/components/bottomSheet/BottomSheet.tsx
++++ b/node_modules/@gorhom/bottom-sheet/src/components/bottomSheet/BottomSheet.tsx
+@@ -1892,7 +1892,7 @@ const BottomSheetComponent = forwardRef<BottomSheet, BottomSheetProps>(
+               detached={detached}
+               style={_providedContainerStyle}
+             >
+-              <Animated.View style={containerStyle}>
++              <Animated.View style={containerStyle} nativeID={'BottomSheetComponent'}>
+                 <BottomSheetBackgroundContainer
+                   key="BottomSheetBackgroundContainer"
+                   animatedIndex={animatedIndex}
+diff --git a/node_modules/@gorhom/bottom-sheet/src/components/bottomSheetContainer/BottomSheetContainer.tsx b/node_modules/@gorhom/bottom-sheet/src/components/bottomSheetContainer/BottomSheetContainer.tsx
+index 0716ecd..081d723 100644
+--- a/node_modules/@gorhom/bottom-sheet/src/components/bottomSheetContainer/BottomSheetContainer.tsx
++++ b/node_modules/@gorhom/bottom-sheet/src/components/bottomSheetContainer/BottomSheetContainer.tsx
+@@ -30,10 +30,10 @@ function BottomSheetContainerComponent({
+       {
+         top: topInset,
+         bottom: bottomInset,
+-        overflow: detached ? 'visible' : 'hidden',
++        overflow: 'visible',
+       },
+     ],
+-    [style, detached, topInset, bottomInset]
++    [style, topInset, bottomInset]
+   );
+   //#endregion
+ 

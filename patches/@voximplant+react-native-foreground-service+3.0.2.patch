@@ -19,8 +19,6 @@ index 7f9022f..b3e920a 100644
          versionCode 1
          versionName "1.0"
      }
-diff --git a/node_modules/@voximplant/react-native-foreground-service/android/src/main/java/com/voximplant/foregroundservice/VIForegroundServiceModule.java b/node_modules/@voximplant/react-native-foreground-service/android/src/main/java/com/voximplant/foregroundservice/VIForegroundServiceModule.java
-index afc578c..c8c32e3 100644
 --- a/node_modules/@voximplant/react-native-foreground-service/android/src/main/java/com/voximplant/foregroundservice/VIForegroundServiceModule.java
 +++ b/node_modules/@voximplant/react-native-foreground-service/android/src/main/java/com/voximplant/foregroundservice/VIForegroundServiceModule.java
 @@ -110,7 +110,11 @@ public class VIForegroundServiceModule extends ReactContextBaseJavaModule {
@@ -29,7 +27,7 @@ index afc578c..c8c32e3 100644
          filter.addAction(FOREGROUND_SERVICE_BUTTON_PRESSED);
 -        getReactApplicationContext().registerReceiver(foregroundReceiver, filter);
 +        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-+            getReactApplicationContext().registerReceiver(foregroundReceiver, filter, Context.RECEIVER_EXPORTED);
++            getReactApplicationContext().registerReceiver(foregroundReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
 +        } else {
 +            getReactApplicationContext().registerReceiver(foregroundReceiver, filter);
 +        }

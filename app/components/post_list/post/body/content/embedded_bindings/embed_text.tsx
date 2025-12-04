@@ -8,12 +8,13 @@ import Animated from 'react-native-reanimated';
 import Markdown from '@components/markdown';
 import ShowMoreButton from '@components/post_list/post/body/message/show_more_button';
 import {useShowMoreAnimatedStyle} from '@hooks/show_more';
-import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {makeStyleSheetFromTheme} from '@utils/theme';
+
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     channelId: string;
-    location: string;
+    location: AvailableScreens;
     theme: Theme;
     value: string;
 }
@@ -34,8 +35,6 @@ const EmbedText = ({channelId, location, theme, value}: Props) => {
     const dimensions = useWindowDimensions();
     const maxHeight = Math.round((dimensions.height * 0.4) + SHOW_MORE_HEIGHT);
     const animatedStyle = useShowMoreAnimatedStyle(height, maxHeight, open);
-    const blockStyles = getMarkdownBlockStyles(theme);
-    const textStyles = getMarkdownTextStyles(theme);
     const style = getStyles(theme);
 
     const onLayout = useCallback((event: LayoutChangeEvent) => setHeight(event.nativeEvent.layout.height), []);
@@ -55,8 +54,6 @@ const EmbedText = ({channelId, location, theme, value}: Props) => {
                             baseTextStyle={style.message}
                             channelId={channelId}
                             location={location}
-                            textStyles={textStyles}
-                            blockStyles={blockStyles}
                             disableGallery={true}
                             theme={theme}
                             value={value}

@@ -18,7 +18,6 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {bottomSheet} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
-import {getMarkdownTextStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -87,7 +86,6 @@ const AnnouncementBanner = ({
     const theme = useTheme();
     const [visible, setVisible] = useState(false);
     const style = getStyle(theme);
-    const markdownTextStyles = getMarkdownTextStyles(theme);
 
     const renderContent = useCallback(() => (
         <ExpandedAnnouncementBanner
@@ -114,7 +112,7 @@ const AnnouncementBanner = ({
             snapPoints: [1, snapPoint],
             theme,
         });
-    }, [theme.sidebarHeaderTextColor, intl.locale, renderContent, allowDismissal]);
+    }, [intl, allowDismissal, renderContent, theme]);
 
     const handleDismiss = useCallback(() => {
         dismissAnnouncement(serverUrl, bannerText);
@@ -129,7 +127,7 @@ const AnnouncementBanner = ({
         height.value = withTiming(visible ? ANNOUNCEMENT_BAR_HEIGHT : 0, {
             duration: 200,
         });
-    }, [visible]);
+    }, [height, visible]);
 
     const bannerStyle = useAnimatedStyle(() => ({
         height: height.value,
@@ -165,7 +163,6 @@ const AnnouncementBanner = ({
                                 {'  '}
                                 <RemoveMarkdown
                                     value={bannerText}
-                                    textStyle={markdownTextStyles}
                                     baseStyle={style.bannerText}
                                 />
                             </Text>

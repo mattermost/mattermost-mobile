@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Platform, type TextStyle} from 'react-native';
+import {Platform, StyleSheet, type TextStyle} from 'react-native';
 
 import {Preferences} from '@constants';
 
@@ -16,6 +16,7 @@ import {
     computeTextStyle,
     parseSearchTerms,
     convertSearchTermToRegex,
+    removeImageProxyForKey,
 } from './index';
 
 jest.mock('@utils/images', () => ({
@@ -135,15 +136,15 @@ describe('Utility functions', () => {
         });
 
         it('should apply a single context style', () => {
-            expect(computeTextStyle(textStyles, baseStyle, ['bold'])).toEqual([baseStyle, textStyles.bold]);
+            expect(StyleSheet.flatten(computeTextStyle(textStyles, baseStyle, ['bold']))).toEqual({...baseStyle, ...textStyles.bold});
         });
 
         it('should apply multiple context styles', () => {
-            expect(computeTextStyle(textStyles, baseStyle, ['bold', 'italic'])).toEqual([baseStyle, textStyles.bold, textStyles.italic]);
+            expect(StyleSheet.flatten(computeTextStyle(textStyles, baseStyle, ['bold', 'italic']))).toEqual({...baseStyle, ...textStyles.bold, ...textStyles.italic});
         });
 
         it('should ignore undefined styles', () => {
-            expect(computeTextStyle(textStyles, baseStyle, ['bold', 'unknown'])).toEqual([baseStyle, textStyles.bold]);
+            expect(StyleSheet.flatten(computeTextStyle(textStyles, baseStyle, ['bold', 'unknown']))).toEqual({...baseStyle, ...textStyles.bold});
         });
 
         it('should handle multiple undefined styles', () => {
@@ -203,6 +204,38 @@ describe('Utility functions', () => {
         it('should create regex for plain text', () => {
             const result = convertSearchTermToRegex('hello');
             expect(result.pattern).toEqual(/\b()(hello)\b/gi);
+        });
+    });
+
+    describe('removeImageProxyForKey', () => {
+        test('should return the original URL if the key contains a valid proxy URL with a query parameter', () => {
+            const proxyKey = 'https://proxy.example.com/image?url=https%3A%2F%2Foriginal.example.com%2Fimage.png';
+            const result = removeImageProxyForKey(proxyKey);
+            expect(result).toBe('https://original.example.com/image.png');
+        });
+
+        test('should return the key itself if it does not contain a query parameter', () => {
+            const key = 'https://proxy.example.com/image';
+            const result = removeImageProxyForKey(key);
+            expect(result).toBe(key);
+        });
+
+        test('should return the key itself if the query parameter does not contain a URL', () => {
+            const key = 'https://proxy.example.com/image?otherParam=value';
+            const result = removeImageProxyForKey(key);
+            expect(result).toBe(key);
+        });
+
+        test('should decode the URL if it is encoded in the query parameter', () => {
+            const proxyKey = 'https://proxy.example.com/image?url=https%3A%2F%2Foriginal.example.com%2Fpath%2Fto%2Fimage%3Fparam%3Dvalue';
+            const result = removeImageProxyForKey(proxyKey);
+            expect(result).toBe('https://original.example.com/path/to/image?param=value');
+        });
+
+        test('should handle keys with no query string gracefully', () => {
+            const key = 'https://proxy.example.com/image';
+            const result = removeImageProxyForKey(key);
+            expect(result).toBe(key);
         });
     });
 });

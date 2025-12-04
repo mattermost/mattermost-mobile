@@ -2,12 +2,14 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {StyleSheet, useWindowDimensions, View} from 'react-native';
+import {Freeze} from 'react-freeze';
+import {StyleSheet, View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
 import FileResults from '@components/files_search/file_results';
 import Loading from '@components/loading';
 import {useTheme} from '@context/theme';
+import {useWindowDimensions} from '@hooks/device';
 import {TabTypes, type TabType} from '@utils/search';
 
 import PostResults from './post_results';
@@ -41,6 +43,7 @@ type Props = {
     canDownloadFiles: boolean;
     currentTimezone: string;
     customEmojiNames: string[];
+    enableSecureFilePreview: boolean;
     fileChannels: ChannelModel[];
     fileInfos: FileInfo[];
     loading: boolean;
@@ -57,6 +60,7 @@ const Results = ({
     canDownloadFiles,
     currentTimezone,
     customEmojiNames,
+    enableSecureFilePreview,
     fileChannels,
     fileInfos,
     loading,
@@ -99,25 +103,30 @@ const Results = ({
             {!loading &&
             <Animated.View style={[styles.container, transform]}>
                 <View style={styles.result}>
-                    <PostResults
-                        appsEnabled={appsEnabled}
-                        currentTimezone={currentTimezone}
-                        customEmojiNames={customEmojiNames}
-                        posts={posts}
-                        matches={matches}
-                        paddingTop={paddingTop}
-                        searchValue={searchValue}
-                    />
+                    <Freeze freeze={selectedTab !== TabTypes.MESSAGES}>
+                        <PostResults
+                            appsEnabled={appsEnabled}
+                            currentTimezone={currentTimezone}
+                            customEmojiNames={customEmojiNames}
+                            posts={posts}
+                            matches={matches}
+                            paddingTop={paddingTop}
+                            searchValue={searchValue}
+                        />
+                    </Freeze>
                 </View>
                 <View style={styles.result}>
-                    <FileResults
-                        canDownloadFiles={canDownloadFiles}
-                        fileChannels={fileChannels}
-                        fileInfos={fileInfos}
-                        paddingTop={paddingTop}
-                        publicLinkEnabled={publicLinkEnabled}
-                        searchValue={searchValue}
-                    />
+                    <Freeze freeze={selectedTab !== TabTypes.FILES}>
+                        <FileResults
+                            canDownloadFiles={canDownloadFiles}
+                            enableSecureFilePreview={enableSecureFilePreview}
+                            fileChannels={fileChannels}
+                            fileInfos={fileInfos}
+                            paddingTop={paddingTop}
+                            publicLinkEnabled={publicLinkEnabled}
+                            searchValue={searchValue}
+                        />
+                    </Freeze>
                 </View>
             </Animated.View>
             }

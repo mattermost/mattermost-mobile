@@ -14,6 +14,8 @@ import {
 import Footer from './footer';
 import Label from './label';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     const input = {
         color: theme.centerChannelColor,
@@ -60,6 +62,7 @@ type Props = {
     keyboardType: KeyboardTypeOptions;
     secureTextEntry: boolean;
     testID: string;
+    location: AvailableScreens;
 }
 function TextSetting({
     label,
@@ -76,6 +79,7 @@ function TextSetting({
     keyboardType,
     secureTextEntry,
     testID,
+    location,
 }: Props) {
     const theme = useTheme();
     const style = getStyleSheet(theme);
@@ -123,6 +127,7 @@ function TextSetting({
                     disabledText={disabledText}
                     errorText={errorText}
                     helpText={helpText}
+                    location={location}
                 />
             </View>
         </View>

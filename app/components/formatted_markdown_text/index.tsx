@@ -5,15 +5,16 @@ import {Parser} from 'commonmark';
 import Renderer from 'commonmark-react-renderer';
 import React, {type ReactElement, useRef} from 'react';
 import {useIntl} from 'react-intl';
-import {type GestureResponderEvent, type StyleProp, Text, type TextStyle, type ViewStyle} from 'react-native';
+import {type StyleProp, Text, type TextStyle, type ViewStyle} from 'react-native';
 
 import AtMention from '@components/markdown/at_mention';
 import MarkdownLink from '@components/markdown/markdown_link';
 import {useTheme} from '@context/theme';
 import {logWarning} from '@utils/log';
-import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
-import {concatStyles, changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {computeTextStyle, getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
 import type {PrimitiveType} from 'intl-messageformat';
 
 type Props = {
@@ -21,8 +22,7 @@ type Props = {
     channelId?: string;
     defaultMessage: string;
     id: string;
-    location: string;
-    onPostPress?: (e: GestureResponderEvent) => void;
+    location: AvailableScreens;
     style?: StyleProp<TextStyle>;
     values?: Record<string, PrimitiveType>;
 };
@@ -47,7 +47,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const FormattedMarkdownText = ({baseTextStyle, channelId, defaultMessage, id, location, onPostPress, style, values}: Props) => {
+const FormattedMarkdownText = ({baseTextStyle, channelId, defaultMessage, id, location, style, values}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -77,10 +77,6 @@ const FormattedMarkdownText = ({baseTextStyle, channelId, defaultMessage, id, lo
         });
     };
 
-    const computeTextStyle = (base: StyleProp<TextStyle>, context: string[]) => {
-        return concatStyles(base, context.map((type) => (txtStyles as {[s: string]: TextStyle})[type]));
-    };
-
     const renderAtMention = ({context, mentionName}: {context: string[]; mentionName: string}) => {
         return (
             <AtMention
@@ -88,8 +84,8 @@ const FormattedMarkdownText = ({baseTextStyle, channelId, defaultMessage, id, lo
                 mentionStyle={txtStyles.mention}
                 mentionName={mentionName}
                 location={location}
-                onPostPress={onPostPress}
-                textStyle={[computeTextStyle(baseTextStyle, context), styles.atMentionOpacity]}
+                textStyle={[computeTextStyle(txtStyles, baseTextStyle, context), styles.atMentionOpacity]}
+                theme={theme}
             />
         );
     };
@@ -99,7 +95,7 @@ const FormattedMarkdownText = ({baseTextStyle, channelId, defaultMessage, id, lo
     };
 
     const renderCodeSpan = ({context, literal}: {context: string[]; literal: string}) => {
-        const computed = computeTextStyle([styles.message, txtStyles.code], context);
+        const computed = computeTextStyle(txtStyles, [styles.message, txtStyles.code], context);
         return <Text style={computed}>{literal}</Text>;
     };
 
@@ -110,11 +106,18 @@ const FormattedMarkdownText = ({baseTextStyle, channelId, defaultMessage, id, lo
 
     const renderLink = ({children, href}: {children: ReactElement; href: string}) => {
         const url = href[0] === TARGET_BLANK_URL_PREFIX ? href.substring(1, href.length) : href;
-        return <MarkdownLink href={url}>{children}</MarkdownLink>;
+        return (
+            <MarkdownLink
+                href={url}
+                theme={theme}
+            >
+                {children}
+            </MarkdownLink>
+        );
     };
 
     const renderParagraph = ({children, first}: {children: ReactElement; first: boolean}) => {
-        const blockStyle: StyleProp<ViewStyle> = [styles.block];
+        const blockStyle: StyleProp<Intersection<TextStyle, ViewStyle>> = [styles.block];
         if (!first) {
             const blockS = getMarkdownBlockStyles(theme);
             blockStyle.push(blockS.adjacentParagraph);
@@ -128,7 +131,7 @@ const FormattedMarkdownText = ({baseTextStyle, channelId, defaultMessage, id, lo
     };
 
     const renderText = ({context, literal}: {context: string[]; literal: string}) => {
-        const computed = computeTextStyle(style || styles.message, context);
+        const computed = computeTextStyle(txtStyles, style || styles.message, context);
         return <Text style={computed}>{literal}</Text>;
     };
 

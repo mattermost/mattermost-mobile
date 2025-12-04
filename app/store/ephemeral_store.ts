@@ -9,7 +9,7 @@ import {toMilliseconds} from '@utils/datetime';
 
 const TIME_TO_CLEAR_WEBSOCKET_ACTIONS = toMilliseconds({seconds: 30});
 
-class EphemeralStore {
+class EphemeralStoreSingleton {
     theme: Theme | undefined;
     creatingChannel = false;
     creatingDMorGMTeammates: string[] = [];
@@ -44,6 +44,11 @@ class EphemeralStore {
     // launch will be called) but the notification callbacks are registered. This is used
     // so the notification is processed only once (preferably on launch).
     private processingNotification = '';
+
+    // This is used to track the channels that have their playbooks synced with the server.
+    // This is used to avoid fetching the playbooks for the same channel multiple times.
+    // It is cleared any time the connection with the server is lost.
+    private channelPlaybooksSynced: {[serverUrl: string]: Set<string>} = {};
 
     setProcessingNotification = (v: string) => {
         this.processingNotification = v;
@@ -279,6 +284,26 @@ class EphemeralStore {
     isUnacknowledgingPost = (postId: string) => {
         return this.unacknowledgingPost.has(postId);
     };
+
+    getChannelPlaybooksSynced = (serverUrl: string, channelId: string) => {
+        return this.channelPlaybooksSynced[serverUrl]?.has(channelId) ?? false;
+    };
+
+    setChannelPlaybooksSynced = (serverUrl: string, channelId: string) => {
+        if (!this.channelPlaybooksSynced[serverUrl]) {
+            this.channelPlaybooksSynced[serverUrl] = new Set();
+        }
+        this.channelPlaybooksSynced[serverUrl]?.add(channelId);
+    };
+
+    unsetChannelPlaybooksSynced = (serverUrl: string, channelId: string) => {
+        this.channelPlaybooksSynced[serverUrl]?.delete(channelId);
+    };
+
+    clearChannelPlaybooksSynced = (serverUrl: string) => {
+        delete this.channelPlaybooksSynced[serverUrl];
+    };
 }
 
-export default new EphemeralStore();
+const EphemeralStore = new EphemeralStoreSingleton();
+export default EphemeralStore;

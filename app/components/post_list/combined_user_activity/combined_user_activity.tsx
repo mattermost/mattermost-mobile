@@ -14,7 +14,6 @@ import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
 import {bottomSheetModalOptions, showModal, showModalOverCurrentContext} from '@screens/navigation';
 import {emptyFunction} from '@utils/general';
-import {getMarkdownTextStyles} from '@utils/markdown';
 import {isUserActivityProp} from '@utils/post_list';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {secureGetFromRecord} from '@utils/types';
@@ -22,11 +21,13 @@ import {secureGetFromRecord} from '@utils/types';
 import LastUsers from './last_users';
 import {postTypeMessages} from './messages';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 type Props = {
     canDelete: boolean;
     currentUserId?: string;
     currentUsername?: string;
-    location: string;
+    location: AvailableScreens;
     post: Post | null;
     showJoinLeave: boolean;
     testID?: string;
@@ -67,7 +68,6 @@ const CombinedUserActivity = ({
     const intl = useIntl();
     const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
-    const textStyles = getMarkdownTextStyles(theme);
     const styles = getStyleSheet(theme);
     const content = [];
     const removedUserIds: string[] = [];
@@ -114,7 +114,7 @@ const CombinedUserActivity = ({
         } else {
             showModalOverCurrentContext(Screens.POST_OPTIONS, passProps, bottomSheetModalOptions(theme));
         }
-    }, [post, canDelete, isTablet, intl, location]);
+    }, [canDelete, post, location, isTablet, intl, theme]);
 
     const renderMessage = (postType: string, userIds: string[], actorId?: string) => {
         if (!post) {
@@ -156,10 +156,10 @@ const CombinedUserActivity = ({
                 (userIds[0] === currentUserId || userIds[0] === currentUsername) &&
                 secureGetFromRecord(postTypeMessages, postType)?.one_you
             ) {
-                localeHolder = postTypeMessages[postType].one_you;
+                localeHolder = postTypeMessages[postType as keyof typeof postTypeMessages].one_you;
             }
         } else {
-            localeHolder = postTypeMessages[postType].two;
+            localeHolder = postTypeMessages[postType as keyof typeof postTypeMessages].two;
         }
 
         // We default to empty string, but this should never happen
@@ -170,7 +170,6 @@ const CombinedUserActivity = ({
                 key={postType + actorId}
                 baseTextStyle={styles.baseText}
                 location={location}
-                textStyles={textStyles}
                 value={formattedMessage}
                 theme={theme}
             />
@@ -191,7 +190,7 @@ const CombinedUserActivity = ({
         if (allUsernames.length) {
             fetchMissingProfilesByUsernames(serverUrl, allUsernames);
         }
-    }, [userActivity?.allUserIds, userActivity?.allUsernames]);
+    }, [serverUrl, userActivity]);
 
     if (!post) {
         return null;
