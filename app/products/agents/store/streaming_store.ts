@@ -2,17 +2,30 @@
 // See LICENSE.txt for license information.
 
 import {CONTROL_SIGNALS} from '@agents/constants';
-import {StreamingEvents, type StreamingState, type PostUpdateWebsocketMessage} from '@agents/types';
-import {DeviceEventEmitter} from 'react-native';
+import {type StreamingState, type PostUpdateWebsocketMessage} from '@agents/types';
+import {useEffect, useState} from 'react';
+import {BehaviorSubject, type Observable} from 'rxjs';
 
 import {logWarning} from '@utils/log';
 
 /**
  * Ephemeral store for managing streaming post state
- * Similar to typing indicators - state exists only while streaming
+ * Uses RxJS BehaviorSubject for reactive state management
  */
 class StreamingPostStore {
-    private streamingPosts: Map<string, StreamingState> = new Map();
+    private streamingSubjects: Map<string, BehaviorSubject<StreamingState | undefined>> = new Map();
+
+    /**
+     * Get or create a BehaviorSubject for a post
+     */
+    private getSubject(postId: string): BehaviorSubject<StreamingState | undefined> {
+        let subject = this.streamingSubjects.get(postId);
+        if (!subject) {
+            subject = new BehaviorSubject<StreamingState | undefined>(undefined);
+            this.streamingSubjects.set(postId, subject);
+        }
+        return subject;
+    }
 
     /**
      * Start streaming for a post
@@ -30,72 +43,73 @@ class StreamingPostStore {
             annotations: [],
         };
 
-        this.streamingPosts.set(postId, state);
-        this.emitEvent(StreamingEvents.STARTED, state);
+        this.getSubject(postId).next(state);
     }
 
     /**
      * Update the streaming message
      */
     updateMessage(postId: string, message: string): void {
-        const state = this.streamingPosts.get(postId);
+        const state = this.getStreamingState(postId);
         if (!state) {
             return;
         }
 
-        state.message = message;
-        state.precontent = false;
-        state.generating = true;
-
-        this.emitEvent(StreamingEvents.UPDATED, state);
+        this.getSubject(postId).next({
+            ...state,
+            message,
+            precontent: false,
+            generating: true,
+        });
     }
 
     /**
      * End streaming for a post
+     * Preserves message but marks as done - POST_EDITED will call removePost to clear
      */
     endStreaming(postId: string): void {
-        const state = this.streamingPosts.get(postId);
+        const state = this.getStreamingState(postId);
         if (!state) {
             return;
         }
 
-        state.generating = false;
-        state.precontent = false;
-        state.isReasoningLoading = false; // Stop showing reasoning loading state
-
-        this.emitEvent(StreamingEvents.ENDED, state);
-
-        // Clean up immediately - component clears its local state on ENDED event
-        this.streamingPosts.delete(postId);
+        // Preserve message but mark as done - wait for POST_EDITED to clear via removePost
+        this.getSubject(postId).next({
+            ...state,
+            generating: false,
+            precontent: false,
+            isReasoningLoading: false,
+        });
     }
 
     /**
      * Update reasoning summary
      */
     updateReasoning(postId: string, reasoning: string, isLoading: boolean): void {
-        const state = this.streamingPosts.get(postId);
+        const state = this.getStreamingState(postId);
         if (!state) {
             return;
         }
 
-        state.reasoning = reasoning;
-        state.isReasoningLoading = isLoading;
-        state.showReasoning = true;
-
         // During reasoning, explicitly set generating to false to prevent blinking cursor
-        if (isLoading) {
-            state.generating = false;
-            state.precontent = false;
-        }
+        const generating = isLoading ? false : state.generating;
+        const precontent = isLoading ? false : state.precontent;
 
-        this.emitEvent(StreamingEvents.UPDATED, state);
+        this.getSubject(postId).next({
+            ...state,
+            reasoning,
+            isReasoningLoading: isLoading,
+            showReasoning: true,
+            generating,
+            precontent,
+        });
     }
 
     /**
      * Update tool calls
      */
     updateToolCalls(postId: string, toolCallsJson: string): void {
-        let state = this.streamingPosts.get(postId);
+        let state = this.getStreamingState(postId);
 
         // If no streaming state exists, create a minimal one for tool call updates
         // This handles tool status updates that arrive after streaming ends but before POST_EDITED
@@ -111,13 +125,15 @@ class StreamingPostStore {
                 toolCalls: [],
                 annotations: [],
             };
-            this.streamingPosts.set(postId, state);
         }
 
         try {
-            state.toolCalls = JSON.parse(toolCallsJson);
-            state.precontent = false;
-            this.emitEvent(StreamingEvents.UPDATED, state);
+            const toolCalls = JSON.parse(toolCallsJson);
+            this.getSubject(postId).next({
+                ...state,
+                toolCalls,
+                precontent: false,
+            });
         } catch (error) {
             logWarning('[StreamingPostStore.updateToolCalls]', error, {postId, toolCallsJson});
         }
@@ -127,15 +143,18 @@ class StreamingPostStore {
      * Update annotations/citations
      */
     updateAnnotations(postId: string, annotationsJson: string): void {
-        const state = this.streamingPosts.get(postId);
+        const state = this.getStreamingState(postId);
         if (!state) {
             return;
         }
 
         try {
-            state.annotations = JSON.parse(annotationsJson);
-            state.precontent = false;
-            this.emitEvent(StreamingEvents.UPDATED, state);
+            const annotations = JSON.parse(annotationsJson);
+            this.getSubject(postId).next({
+                ...state,
+                annotations,
+                precontent: false,
+            });
         } catch (error) {
             logWarning('[StreamingPostStore.updateAnnotations]', error, {postId, annotationsJson});
         }
@@ -171,13 +190,15 @@ class StreamingPostStore {
 
         if (control === CONTROL_SIGNALS.REASONING_SUMMARY_DONE) {
             // Final reasoning text - mark as complete
-            const state = this.streamingPosts.get(post_id);
+            const state = this.getStreamingState(post_id);
             if (state && reasoning) {
                 this.updateReasoning(post_id, reasoning, false);
             } else if (state) {
                 // Just mark as done if no new reasoning text
-                state.isReasoningLoading = false;
-                this.emitEvent(StreamingEvents.UPDATED, state);
+                this.getSubject(post_id).next({
+                    ...state,
+                    isReasoningLoading: false,
+                });
             }
             return;
         }
@@ -202,37 +223,25 @@ class StreamingPostStore {
     }
 
     /**
-     * Get the current streaming state for a post
+     * Get the current streaming state for a post (synchronous)
      */
     getStreamingState(postId: string): StreamingState | undefined {
-        return this.streamingPosts.get(postId);
+        return this.streamingSubjects.get(postId)?.value;
     }
 
     /**
-     * Check if a post is currently streaming
+     * Observe streaming state for a post (reactive)
+     */
+    observeStreamingState(postId: string): Observable<StreamingState | undefined> {
+        return this.getSubject(postId).asObservable();
+    }
+
+    /**
+     * Check if a post is currently streaming (actively generating)
      */
     isStreaming(postId: string): boolean {
-        return this.streamingPosts.has(postId);
-    }
-
-    /**
-     * Emit an event for UI updates
-     */
-    private emitEvent(event: StreamingEvents, state: StreamingState): void {
-        DeviceEventEmitter.emit(event, {
-            postId: state.postId,
-            generating: state.generating,
-            message: state.message,
-            precontent: state.precontent,
-            reasoning: state.reasoning,
-            isReasoningLoading: state.isReasoningLoading,
-            showReasoning: state.showReasoning,
-            toolCalls: state.toolCalls,
-            annotations: state.annotations,
-        });
-
-        // Also emit a generic update event with the post ID
-        DeviceEventEmitter.emit(`${event}_${state.postId}`, state);
+        const state = this.getStreamingState(postId);
+        return state?.generating ?? false;
     }
 
     /**
@@ -241,25 +250,45 @@ class StreamingPostStore {
      * the component uses the persisted data from the database
      */
     removePost(postId: string): void {
-        const state = this.streamingPosts.get(postId);
-        if (!state) {
+        const subject = this.streamingSubjects.get(postId);
+        if (!subject) {
             return;
         }
 
-        // Emit an ENDED event to notify component to switch to persisted data
-        this.emitEvent(StreamingEvents.ENDED, {...state});
-
-        // Clean up immediately - component clears its local state on ENDED event
-        this.streamingPosts.delete(postId);
+        // Signal end to subscribers, but keep subject alive for potential reuse
+        subject.next(undefined);
     }
 
     /**
      * Clear all streaming state (e.g., on logout)
      */
     clear(): void {
-        this.streamingPosts.clear();
+        // Complete all subjects before clearing
+        for (const subject of this.streamingSubjects.values()) {
+            subject.next(undefined);
+            subject.complete();
+        }
+        this.streamingSubjects.clear();
     }
 }
 
-// Export singleton instance
-export default new StreamingPostStore();
+// Singleton instance
+const streamingStore = new StreamingPostStore();
+
+/**
+ * React hook to subscribe to streaming state for a post
+ */
+export function useStreamingState(postId: string): StreamingState | undefined {
+    const [state, setState] = useState<StreamingState | undefined>(
+        () => streamingStore.getStreamingState(postId),
+    );
+
+    useEffect(() => {
+        const subscription = streamingStore.observeStreamingState(postId).subscribe(setState);
+        return () => subscription.unsubscribe();
+    }, [postId]);
+
+    return state;
+}
+
+export default streamingStore;

@@ -211,11 +211,6 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
         return;
     }
 
-    // Clear streaming state for agent posts to ensure component uses updated persisted data
-    if (isAgentPost(post)) {
-        streamingStore.removePost(post.id);
-    }
-
     const permalinkModels: Model[] = [];
     try {
         const updatedPermalinkPosts = await syncPermalinkPreviewsForEditedPost(database, post);
@@ -274,7 +269,11 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
     });
     models.push(...postModels);
 
-    operator.batchRecords(models, 'handlePostEdited');
+    await operator.batchRecords(models, 'handlePostEdited');
+
+    if (isAgentPost(post)) {
+        streamingStore.removePost(post.id);
+    }
 }
 
 export async function handlePostDeleted(serverUrl: string, msg: WebSocketMessage) {

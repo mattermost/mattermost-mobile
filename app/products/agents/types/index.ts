@@ -67,14 +67,3 @@ export interface StreamingState {
     annotations: Annotation[]; // Citations/annotations for the post
 }
 
-/**
- * Events emitted by the streaming store
- */
-export const StreamingEvents = {
-    STARTED: 'agents_streaming_started',
-    UPDATED: 'agents_streaming_updated',
-    ENDED: 'agents_streaming_ended',
-} as const;
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare -- TypeScript supports same-name type/value pairs as enum alternative
-export type StreamingEvents = typeof StreamingEvents[keyof typeof StreamingEvents];

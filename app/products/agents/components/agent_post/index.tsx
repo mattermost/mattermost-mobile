@@ -2,11 +2,11 @@
 // See LICENSE.txt for license information.
 
 import {regenerateResponse, stopGeneration} from '@agents/actions/remote/generation_controls';
-import streamingStore from '@agents/store/streaming_store';
-import {StreamingEvents, type Annotation, type StreamingState, type ToolCall} from '@agents/types';
+import {useStreamingState} from '@agents/store/streaming_store';
+import {type Annotation, type ToolCall} from '@agents/types';
 import {isPostRequester} from '@agents/utils';
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {DeviceEventEmitter, View} from 'react-native';
+import React, {useCallback, useMemo} from 'react';
+import {View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import Markdown from '@components/markdown';
@@ -99,52 +99,16 @@ const AgentPost = ({post, currentUserId, location}: AgentPostProps) => {
         return [];
     }, [post.props]);
 
-    // Local state for streaming
-    const [streamingState, setStreamingState] = useState<StreamingState | undefined>(
-        () => streamingStore.getStreamingState(post.id),
-    );
+    // Subscribe to streaming state via observable
+    const streamingState = useStreamingState(post.id);
 
-    useEffect(() => {
-        // Subscribe to streaming events for this specific post
-        const handleStreamingUpdate = (state: StreamingState) => {
-            setStreamingState({...state});
-        };
-
-        const handleStreamingEnded = () => {
-            // Clear streaming state immediately to force component to use persisted data
-            // This ensures POST_EDITED updates are reflected immediately
-            setStreamingState(undefined);
-        };
-
-        const startedListener = DeviceEventEmitter.addListener(
-            `${StreamingEvents.STARTED}_${post.id}`,
-            handleStreamingUpdate,
-        );
-
-        const updatedListener = DeviceEventEmitter.addListener(
-            `${StreamingEvents.UPDATED}_${post.id}`,
-            handleStreamingUpdate,
-        );
-
-        const endedListener = DeviceEventEmitter.addListener(
-            `${StreamingEvents.ENDED}_${post.id}`,
-            handleStreamingEnded,
-        );
-
-        return () => {
-            startedListener.remove();
-            updatedListener.remove();
-            endedListener.remove();
-        };
-    }, [post.id]);
-
-    // Determine the message to display
-    const displayMessage = streamingState?.message || post.message || '';
+    // Determine the message to display (use ?? not || to preserve empty string during streaming)
+    const displayMessage = streamingState?.message ?? post.message ?? '';
     const isGenerating = streamingState?.generating ?? false;
     const isPrecontent = streamingState?.precontent ?? false;
 
     // Determine reasoning state - use streaming state if available, otherwise use persisted
-    const reasoningSummary = streamingState?.reasoning || persistedReasoning;
+    const reasoningSummary = streamingState?.reasoning ?? persistedReasoning;
     const isReasoningLoading = streamingState?.isReasoningLoading ?? false;
     const showReasoning = streamingState?.showReasoning ?? (persistedReasoning !== '');
 
