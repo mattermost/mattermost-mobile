@@ -1024,7 +1024,6 @@
   "playbooks.playbook_run.error.title": "Unable to fetch run details",
   "playbooks.playbook_run.finish_run_button": "Finish Run",
   "playbooks.playbook_run.finish_run_dialog_cancel": "Cancel",
-  "playbooks.playbook_run.finish_run_dialog_description": "There are {pendingCount} {pendingCount, plural, =1 {task} other {tasks}} pending.\n\nAre you sure you want to finish the run for all participants?",
   "playbooks.playbook_run.finish_run_dialog_finish": "Finish",
   "playbooks.playbook_run.finish_run_dialog_title": "Finish Run",
   "playbooks.playbook_run.finished": "Finished",

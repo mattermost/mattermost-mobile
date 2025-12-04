@@ -172,7 +172,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 type Props = {
     profiles: UserProfile[];
     channelMembers?: ChannelMembership[];
-    currentUserId: string;
     handleSelectProfile: (user: UserProfile | UserModel) => void;
     fetchMore?: () => void;
     loading: boolean;
@@ -192,7 +191,6 @@ export default function UserList({
     profiles,
     channelMembers,
     selectedIds,
-    currentUserId,
     handleSelectProfile,
     fetchMore,
     loading,
@@ -262,7 +260,6 @@ export default function UserList({
                 highlight={section?.first && index === 0}
                 id={item.id}
                 isChannelAdmin={isChAdmin}
-                isMyUser={currentUserId === item.id}
                 manageMode={manageMode}
                 onPress={handleSelectProfile}
                 onLongPress={openUserProfile}
@@ -276,7 +273,7 @@ export default function UserList({
                 includeMargin={includeUserMargin}
             />
         );
-    }, [selectedIds, currentUserId, manageMode, handleSelectProfile, openUserProfile, showManageMode, tutorialWatched, includeUserMargin]);
+    }, [selectedIds, manageMode, handleSelectProfile, openUserProfile, showManageMode, tutorialWatched, includeUserMargin]);
 
     const renderLoading = useCallback(() => {
         if (!loading) {
@@ -290,7 +287,7 @@ export default function UserList({
                 size='large'
             />
         );
-    }, [loading, theme]);
+    }, [loading, style.loadingContainer, theme.buttonBg]);
 
     const renderNoResults = useCallback(() => {
         if (!showNoResults || !term) {
@@ -302,7 +299,7 @@ export default function UserList({
                 <NoResultsWithTerm term={term}/>
             </View>
         );
-    }, [showNoResults && style, term, noResutsStyle]);
+    }, [showNoResults, term, noResutsStyle]);
 
     const renderSectionHeader = useCallback(({section}: {section: SectionListData<UserProfile>}) => {
         return (
