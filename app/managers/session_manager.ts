@@ -114,7 +114,9 @@ export class SessionManagerSingleton {
             const activeServerDisplayName = await DatabaseManager.getActiveServerDisplayName();
             await terminateSession(serverUrl, removeServer);
             SecurityManager.removeServer(serverUrl);
-            await IntuneManager.unenrollServer(serverUrl, true);
+
+            // We do not unenroll with Wipe as we already removed all the data during terminateSession
+            await IntuneManager.unenrollServer(serverUrl, false);
 
             if (activeServerUrl === serverUrl) {
                 let displayName = '';

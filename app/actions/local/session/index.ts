@@ -126,9 +126,9 @@ export const terminateSession = async (serverUrl: string, removeServer: boolean)
     };
 
     // Cancel session notification (critical)
-    await safeExecute('cancelSessionNotification', () => {
-        return cancelSessionNotification(serverUrl);
-    });
+    await safeExecute('cancelSessionNotification', async () => {
+        await cancelSessionNotification(serverUrl);
+    }, false);
 
     // Remove server credentials (critical)
     await safeExecute('removeServerCredentials', async () => {
