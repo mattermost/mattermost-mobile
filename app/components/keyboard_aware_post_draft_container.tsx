@@ -96,23 +96,47 @@ export const KeyboardAwarePostDraftContainer = ({
         isKeyboardFullyOpen,
     });
 
+    // Ref to track if a layout update is already scheduled
+    const layoutUpdateScheduledRef = useRef(false);
+    const pendingHeightRef = useRef<number | null>(null);
+
+    // Helper to apply the batched height update
+    const applyBatchedHeightUpdate = useCallback(() => {
+        layoutUpdateScheduledRef.current = false;
+
+        if (pendingHeightRef.current !== null) {
+            const heightToSet = pendingHeightRef.current;
+            pendingHeightRef.current = null;
+
+            // Only update if the rounded height changed by more than 0.5px (a real change).
+            // This prevents jitter in FlatList paddingTop and improves performance.
+            setPostInputContainerHeight((prevHeight) => {
+                const roundedPrevHeight = Math.round(prevHeight);
+                if (roundedPrevHeight !== heightToSet) {
+                    return heightToSet;
+                }
+                return prevHeight;
+            });
+        }
+    }, [setPostInputContainerHeight]);
+
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         const newHeight = e.nativeEvent.layout.height;
         const roundedHeight = Math.round(newHeight);
 
-        // Debounce sub-pixel layout fluctuations to prevent unnecessary re-renders.
-        // React Native sometimes reports fractional pixel measurements (90.67, 91.00, 90.99)
-        // that would trigger multiple state updates for the same visual height.
-        // Round both prevHeight and newHeight to integers and compare for equality.
-        // This prevents jitter in FlatList paddingTop and improves performance.
-        setPostInputContainerHeight((prevHeight) => {
-            const roundedPrevHeight = Math.round(prevHeight);
-            if (roundedPrevHeight !== roundedHeight) {
-                return roundedHeight;
-            }
-            return prevHeight;
-        });
-    }, [setPostInputContainerHeight]);
+        // Store the latest height value
+        pendingHeightRef.current = roundedHeight;
+
+        // If an update is already scheduled, skip scheduling another one
+        // This batches all layout updates during animations to a single update per frame
+        if (layoutUpdateScheduledRef.current) {
+            return;
+        }
+
+        // Schedule update for next frame to batch rapid layout changes during animations
+        layoutUpdateScheduledRef.current = true;
+        requestAnimationFrame(applyBatchedHeightUpdate);
+    }, [applyBatchedHeightUpdate]);
 
     // Refs for tracking emoji picker swipe-to-dismiss gesture
     const previousTouchYRef = useRef<number | null>(null);
