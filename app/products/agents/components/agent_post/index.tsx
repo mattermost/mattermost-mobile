@@ -6,7 +6,7 @@ import streamingStore from '@agents/store/streaming_store';
 import {StreamingEvents, type Annotation, type StreamingState, type ToolCall} from '@agents/types';
 import {isPostRequester} from '@agents/utils';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {DeviceEventEmitter, StyleSheet, View} from 'react-native';
+import {DeviceEventEmitter, View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import Markdown from '@components/markdown';
@@ -28,7 +28,7 @@ import type PostModel from '@typings/database/models/servers/post';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
-    return StyleSheet.create({
+    return {
         container: {
             flex: 1,
         },
@@ -53,7 +53,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             fontStyle: 'italic',
             marginRight: 8,
         },
-    });
+    };
 });
 
 interface AgentPostProps {
@@ -224,12 +224,14 @@ const AgentPost = ({post, currentUserId, location}: AgentPostProps) => {
             {annotations.length > 0 && (
                 <CitationsList annotations={annotations}/>
             )}
-            <ControlsBar
-                showStopButton={showStopButton}
-                showRegenerateButton={showRegenerateButton}
-                onStop={handleStop}
-                onRegenerate={handleRegenerate}
-            />
+            {(showStopButton || showRegenerateButton) && (
+                <ControlsBar
+                    showStopButton={showStopButton}
+                    showRegenerateButton={showRegenerateButton}
+                    onStop={handleStop}
+                    onRegenerate={handleRegenerate}
+                />
+            )}
         </View>
     );
 };

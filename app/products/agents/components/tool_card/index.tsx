@@ -4,7 +4,7 @@
 import {TOUCH_TARGET_SIZE} from '@agents/constants';
 import {ToolCallStatus, type ToolCall} from '@agents/types';
 import React, {useCallback, useMemo} from 'react';
-import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {Text, TouchableOpacity, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
@@ -277,7 +277,7 @@ const ToolCard = ({
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
-    return StyleSheet.create({
+    return {
         container: {
             marginBottom: 4,
         },
@@ -360,7 +360,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             lineHeight: 16,
             color: theme.buttonBg,
         },
-    });
+    };
 });
 
 export default ToolCard;

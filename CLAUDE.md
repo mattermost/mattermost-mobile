@@ -110,7 +110,6 @@ Modular features in `app/products/` with their own database models:
 **Critical Pattern:**
 - Components must clear local streaming state on `ENDED` event to switch from ephemeral streaming data to persisted database data
 - Otherwise stale streaming state prevents POST_EDITED updates from displaying
-- **Avoid setTimeout delays** in streaming cleanup - causes race conditions where components read stale ephemeral state instead of updated persisted data
 
 ### Custom Native Modules
 Located at `libraries/@mattermost/`:
@@ -137,9 +136,10 @@ Located at `libraries/@mattermost/`:
 ```
 
 ### Share Extension
-**Separate bundle** at `share_extension/` for iOS/Android system share. Shares code with main app but runs independently.
+**Separate bundle** at `share_extension/` for Android system share. Shares code with main app but runs independently.
+* iOS has its own native implementation for the Share Extension with Swift and SwiftUI
 
-**Important:** Share extension uses **React Navigation** (not react-native-navigation like main app).
+**Important:** Share extension on Android uses **React Navigation** (not react-native-navigation like main app).
 
 ## Testing
 
@@ -247,6 +247,8 @@ Located at `libraries/@mattermost/`:
 - Don't create hooks inside render functions - extract as local components
 - Prefer `Button` components over `TouchableOpacity` when appropriate
 - Non-memoized inline styles add render stress - define in stylesheet instead
+- **`StyleSheet.create` is unnecessary** when using `makeStyleSheetFromTheme` - just return the plain object
+- **Place `getStyleSheet` at file top** (after imports, before interfaces/components) not at the bottom
 - Use `Platform.select()` for platform-specific values instead of ternaries
 - StyleProps support nested lists - no need for custom `concatStyles()`
 - Use `withTiming()` consistently for both states in animations
@@ -256,6 +258,8 @@ Located at `libraries/@mattermost/`:
 - **Use `usePreventDoubleTap` hook** for button press handlers to prevent accidental double submissions
 - **Use `useServerUrl()` hook** instead of passing `serverUrl` as a prop - it's available via context
 - **Use existing components**: Check for `<Loading>` instead of `<ActivityIndicator>`, `safeParseJSON()` instead of try/catch JSON.parse
+- **Parent checks before mounting**: If a child component would return null for empty data, have the parent conditionally render instead (e.g., `{items.length > 0 && <ItemList items={items} />}`)
+- **Use `@utils/url` utilities**: `tryOpenURL()` instead of `Linking.openURL()`, `getUrlDomain()` with `urlParse` instead of `new URL()`
 
 ### Code Quality & Linting
 
@@ -283,13 +287,12 @@ Located at `libraries/@mattermost/`:
 ### State Management
 - Always handle errors from database operations
 - Consider race conditions in async functions within effects
-- Default to enabled (`true`) for features to maintain backward compatibility when database record doesn't exist
 - Local state initialized with prop values won't update when props change - sync with `useEffect` if needed
 
 ### Performance
 - Create parsers/expensive objects only once, not on every render (use refs or useMemo)
 - Memoize AST output to avoid regenerating on every render
-- Use named constants for magic numbers (timeouts, intervals)
+- Use named constants instead of magic numbers and check if one already exists.
 
 ### Localization (i18n)
 - **CRITICAL**: Only update `en.json` - never modify other language files or Weblate gets corrupted
@@ -348,7 +351,6 @@ Components use hierarchical testIDs: `component.subcomponent.element`
 
 ## Configuration
 
-- **Base config**: `dist/assets/config.json` (feature flags, white-labeling)
 - **Patches**: Applied via `patch-package` on postinstall (`patches/` directory)
 - **Self-compiled apps**: Require your own Mattermost Push Notification Service
 - **Self-signed certificates**: Not supported

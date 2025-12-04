@@ -4,13 +4,40 @@
 import {TOUCH_TARGET_SIZE} from '@agents/constants';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, StyleSheet, TouchableOpacity, View} from 'react-native';
+import {Alert, TouchableOpacity, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+    return {
+        container: {
+            flexDirection: 'row',
+            gap: 8,
+            marginTop: 8,
+        },
+        button: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 6,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
+            borderRadius: 4,
+            paddingVertical: 8,
+            paddingHorizontal: 10,
+            minHeight: TOUCH_TARGET_SIZE,
+            justifyContent: 'center',
+        },
+        buttonText: {
+            fontSize: 12,
+            fontWeight: '600',
+            lineHeight: 16,
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+        },
+    };
+});
 
 interface ControlsBarProps {
     showStopButton: boolean;
@@ -64,10 +91,6 @@ const ControlsBar = ({
         );
     }, [intl, onRegenerate]));
 
-    if (!showStopButton && !showRegenerateButton) {
-        return null;
-    }
-
     return (
         <View style={styles.container}>
             {showStopButton && (
@@ -111,32 +134,5 @@ const ControlsBar = ({
         </View>
     );
 };
-
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
-    return StyleSheet.create({
-        container: {
-            flexDirection: 'row',
-            gap: 8,
-            marginTop: 8,
-        },
-        button: {
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 6,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
-            borderRadius: 4,
-            paddingVertical: 8,
-            paddingHorizontal: 10,
-            minHeight: TOUCH_TARGET_SIZE,
-            justifyContent: 'center',
-        },
-        buttonText: {
-            fontSize: 12,
-            fontWeight: '600',
-            lineHeight: 16,
-            color: changeOpacity(theme.centerChannelColor, 0.64),
-        },
-    });
-});
 
 export default ControlsBar;

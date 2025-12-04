@@ -4,7 +4,7 @@
 import {submitToolApproval} from '@agents/actions/remote/tool_approval';
 import {type ToolCall, ToolCallStatus} from '@agents/types';
 import React, {useCallback, useEffect, useState} from 'react';
-import {StyleSheet, View} from 'react-native';
+import {View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
@@ -189,7 +189,7 @@ const ToolApprovalSet = ({postId, toolCalls}: ToolApprovalSetProps) => {
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
-    return StyleSheet.create({
+    return {
         container: {
             marginTop: 8,
             marginBottom: 12,
@@ -208,7 +208,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             fontSize: 12,
             color: changeOpacity(theme.centerChannelColor, 0.64),
         },
-    });
+    };
 });
 
 export default ToolApprovalSet;

@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {TOUCH_TARGET_SIZE} from '@agents/constants';
 import React, {useCallback, useState} from 'react';
-import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {Text, TouchableOpacity, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
@@ -11,6 +12,56 @@ import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import LoadingSpinner from './loading_spinner';
+
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+    return {
+        minimalContainer: {
+            marginBottom: 4,
+            minHeight: TOUCH_TARGET_SIZE,
+        },
+        minimalContent: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 8,
+            paddingVertical: 12,
+        },
+        minimalText: {
+            fontSize: 14,
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+        },
+        expandedContainer: {
+            marginBottom: 16,
+        },
+        expandedHeader: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 8,
+            marginBottom: 12,
+            minHeight: TOUCH_TARGET_SIZE,
+            paddingVertical: 12,
+        },
+        expandedHeaderText: {
+            fontSize: 14,
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+        },
+        reasoningContentContainer: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.02),
+            borderWidth: 1,
+            borderColor: changeOpacity(theme.centerChannelColor, 0.08),
+            borderRadius: 8,
+            overflow: 'hidden',
+        },
+        reasoningContent: {
+            maxHeight: 600,
+        },
+        reasoningText: {
+            padding: 16,
+            fontSize: 14,
+            lineHeight: 22,
+            color: changeOpacity(theme.centerChannelColor, 0.8),
+        },
+    };
+});
 
 interface ReasoningDisplayProps {
     reasoningSummary: string;
@@ -78,55 +129,5 @@ const ReasoningDisplay = ({reasoningSummary, isReasoningLoading}: ReasoningDispl
         </View>
     );
 };
-
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
-    return StyleSheet.create({
-        minimalContainer: {
-            marginBottom: 4,
-            minHeight: 44, // Minimum touch target
-        },
-        minimalContent: {
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 8,
-            paddingVertical: 12,
-        },
-        minimalText: {
-            fontSize: 14,
-            color: changeOpacity(theme.centerChannelColor, 0.64),
-        },
-        expandedContainer: {
-            marginBottom: 16,
-        },
-        expandedHeader: {
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 8,
-            marginBottom: 12,
-            minHeight: 44, // Minimum touch target
-            paddingVertical: 12,
-        },
-        expandedHeaderText: {
-            fontSize: 14,
-            color: changeOpacity(theme.centerChannelColor, 0.64),
-        },
-        reasoningContentContainer: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.02),
-            borderWidth: 1,
-            borderColor: changeOpacity(theme.centerChannelColor, 0.08),
-            borderRadius: 8,
-            overflow: 'hidden',
-        },
-        reasoningContent: {
-            maxHeight: 600,
-        },
-        reasoningText: {
-            padding: 16,
-            fontSize: 14,
-            lineHeight: 22,
-            color: changeOpacity(theme.centerChannelColor, 0.8),
-        },
-    });
-});
 
 export default ReasoningDisplay;
