@@ -10,6 +10,7 @@ import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Screens} from '@constants';
 import {ICON_SIZE} from '@constants/post_draft';
+import {useKeyboardAnimationContext} from '@context/keyboard_animation';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {openAsBottomSheet} from '@screens/navigation';
@@ -39,6 +40,7 @@ export default function PostPriorityAction({
     const intl = useIntl();
     const isTablet = useIsTablet();
     const theme = useTheme();
+    const {closeInputAccessoryView} = useKeyboardAnimationContext();
 
     const onPress = useCallback(async () => {
         closeInputAccessoryView();
