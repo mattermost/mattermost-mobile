@@ -3,6 +3,7 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
+import {KeyboardController} from 'react-native-keyboard-controller';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
@@ -43,13 +44,13 @@ export default function AttachmentQuickAction({
 }: QuickActionAttachmentProps) {
     const intl = useIntl();
     const theme = useTheme();
-    const {blurAndDismissKeyboard, closeInputAccessoryView} = useKeyboardAnimationContext();
+    const {closeInputAccessoryView} = useKeyboardAnimationContext();
     const style = getStyleSheet(theme);
     const iconColor = disabled ? changeOpacity(theme.centerChannelColor, 0.16) : changeOpacity(theme.centerChannelColor, 0.64);
 
     const openFileAttachmentOptions = useCallback(async () => {
         closeInputAccessoryView();
-        await blurAndDismissKeyboard();
+        await KeyboardController.dismiss();
 
         openAsBottomSheet({
             closeButtonId: 'attachment-close-id',
@@ -65,7 +66,7 @@ export default function AttachmentQuickAction({
                 maxFileCount,
             },
         });
-    }, [blurAndDismissKeyboard, closeInputAccessoryView, intl, theme, onUploadFiles, maxFilesReached, disabled, testID, fileCount, maxFileCount]);
+    }, [closeInputAccessoryView, intl, theme, onUploadFiles, maxFilesReached, disabled, testID, fileCount, maxFileCount]);
 
     const actionTestID = disabled ? `${testID}.disabled` : testID;
 
