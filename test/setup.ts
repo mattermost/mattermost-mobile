@@ -260,6 +260,7 @@ jest.doMock('react-native', () => {
 
     const Keyboard = {
         ...RNKeyboard,
+        isVisible: jest.fn(() => false),
         dismiss: jest.fn(),
         addListener: jest.fn(() => ({
             remove: jest.fn(),
