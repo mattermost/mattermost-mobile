@@ -13,27 +13,27 @@ const MSAL_ERROR_CODE_USER_CANCELED = -50005;
 const intuneErrorMessages = {
     ldapUserMissing: defineMessage({
         id: 'mobile.intune.login.ldap_user_missing',
-        defaultMessage: 'We couldn\'t sign you in. Please contact your system administrator for assistance.',
+        defaultMessage: 'We couldn\'t sign you in. Please contact your system administrator for assistance',
     }),
     authTypeMismatch: defineMessage({
         id: 'mobile.intune.login.auth_type_mismatch',
-        defaultMessage: 'Unable to find an existing account matching your authentication type. Please contact your system administrator for assistance.',
+        defaultMessage: 'Unable to find an existing account matching your authentication type. Please contact your system administrator for assistance',
     }),
     accountCreationBlocked: defineMessage({
         id: 'mobile.intune.login.account_creation_blocked',
-        defaultMessage: 'Your account isn\'t fully set up yet. Please sign in to Mattermost via the web or desktop app first.',
+        defaultMessage: 'Your account isn\'t fully set up yet. Please sign in to Mattermost via the web or desktop app first',
     }),
     userDeactivated: defineMessage({
         id: 'mobile.intune.login.user_locked',
-        defaultMessage: 'Your account has been deactivated. Please contact your system administrator.',
+        defaultMessage: 'Your account has been deactivated. Please contact your system administrator',
     }),
     loginCanceled: defineMessage({
         id: 'mobile.intune.login.canceled',
-        defaultMessage: 'Login was canceled. Please try again.',
+        defaultMessage: 'Login was canceled. Please try again',
     }),
     authFailed: defineMessage({
         id: 'mobile.intune.login.failed',
-        defaultMessage: 'Authentication failed. Please try again.',
+        defaultMessage: 'Authentication failed. Please try again',
     }),
 };
 
