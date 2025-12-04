@@ -3,7 +3,7 @@
 
 import {act} from '@testing-library/react-native';
 import React, {createRef, type ComponentProps} from 'react';
-import {DeviceEventEmitter, FlatList, Platform} from 'react-native';
+import {DeviceEventEmitter, type FlatList, Platform} from 'react-native';
 
 import * as localPostFunctions from '@actions/local/post';
 import * as postFunctions from '@actions/remote/post';
@@ -75,7 +75,6 @@ describe('components/post_list/PostList', () => {
         customEmojiNames: [],
         lastViewedAt: 0,
         location: Screens.CHANNEL,
-        nativeID: 'post-list',
         posts: mockPosts,
         savedPostIds: new Set(),
         testID: 'post_list',

@@ -4,6 +4,7 @@
 import React, {type ReactNode, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform, type StyleProp, View, type ViewStyle, TouchableHighlight} from 'react-native';
+import {KeyboardController} from 'react-native-keyboard-controller';
 
 import {removePost} from '@actions/local/post';
 import {showPermalink} from '@actions/remote/permalink';
@@ -207,6 +208,8 @@ const Post = ({
     const handlePress = useCallback(() => {
         pressDetected.current = true;
 
+        KeyboardController.dismiss();
+
         if (post) {
             setTimeout(handlePostPress, 300);
         }
@@ -254,7 +257,10 @@ const Post = ({
                 clearTimeout(t);
             }
         };
-    }, [isFailed, post.id, post.pendingPostId, post.updateAt]);
+
+    // disabled because to keep the implementation as previous as it started complaining about the dependencies
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [post.id]);
 
     useEffect(() => {
         if (!isLastPost) {
@@ -267,6 +273,8 @@ const Post = ({
 
         PerformanceMetricsManager.finishLoad(location === 'Thread' ? 'THREAD' : 'CHANNEL', serverUrl);
         PerformanceMetricsManager.endMetric('mobile_channel_switch', serverUrl);
+
+    // disabled because to keep the implementation as previous as it started complaining about the dependencies
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 

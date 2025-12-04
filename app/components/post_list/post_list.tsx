@@ -45,7 +45,6 @@ type Props = {
     isPostAcknowledgementEnabled?: boolean;
     lastViewedAt: number;
     location: AvailableScreens;
-    nativeID: string;
     onEndReached?: () => void;
     posts: PostModel[];
     rootId?: string;
@@ -102,7 +101,6 @@ const PostList = ({
     isPostAcknowledgementEnabled,
     lastViewedAt,
     location,
-    nativeID,
     onEndReached,
     posts,
     rootId,
@@ -302,14 +300,6 @@ const PostList = ({
         return removeListener;
     }, []);
 
-    useEffect(() => {
-        setTimeout(() => {
-            listRef?.current?.scrollToOffset({
-                offset: 0,
-            });
-        }, 1000);
-    }, [listRef]);
-
     const renderItem = useCallback(({item}: ListRenderItemInfo<PostListItem | PostListOtherItem>) => {
         switch (item.type) {
             case 'start-of-new-messages':
@@ -403,7 +393,12 @@ const PostList = ({
         }, 500);
 
         return () => clearTimeout(t);
-    }, [orderedPosts, highlightedId, listRef]);
+
+    // - listRef is a ref (stable reference, doesn't need to be in deps)
+    // - scrolledToHighlighted is a ref (stable reference, doesn't need to be in deps)
+    // - We only need to re-run when the posts list changes or the highlighted post changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [orderedPosts, highlightedId]);
 
     // Sync emoji picker padding from SharedValue to React state
     // This ensures the padding updates when SharedValues change
@@ -452,7 +447,6 @@ const PostList = ({
                 ListFooterComponent={footer}
                 maintainVisibleContentPosition={SCROLL_POSITION_CONFIG}
                 maxToRenderPerBatch={10}
-                nativeID={nativeID}
                 onEndReached={onEndReached}
                 onEndReachedThreshold={0.9}
                 onScroll={onScrollProp}

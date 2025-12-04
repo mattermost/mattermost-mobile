@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useRef} from 'react';
-import {ActivityIndicator, FlatList, type GestureResponderEvent, StyleSheet, View} from 'react-native';
+import {ActivityIndicator, type FlatList, type GestureResponderEvent, StyleSheet, View} from 'react-native';
 
 import {fetchPostThread} from '@actions/remote/post';
 import {markThreadAsRead} from '@actions/remote/thread';
@@ -22,7 +22,6 @@ import type ThreadModel from '@typings/database/models/servers/thread';
 type Props = {
     channelLastViewedAt: number;
     isCRTEnabled: boolean;
-    nativeID: string;
     posts: PostModel[];
     rootPost: PostModel;
     teamId: string;
@@ -41,7 +40,7 @@ const styles = StyleSheet.create({
 
 const ThreadPostList = ({
     channelLastViewedAt, isCRTEnabled,
-    nativeID, posts, rootPost, teamId, thread, version,
+    posts, rootPost, teamId, thread, version,
     listRef, onTouchMove, onTouchEnd,
 }: Props) => {
     const appState = useAppState();
@@ -107,7 +106,6 @@ const ThreadPostList = ({
             isCRTEnabled={isCRTEnabled}
             lastViewedAt={lastViewedAt}
             location={Screens.THREAD}
-            nativeID={nativeID}
             onEndReached={onEndReached}
             posts={threadPosts}
             rootId={rootPost.id}

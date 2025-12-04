@@ -18,6 +18,11 @@ type ChannelContentProps = {
     containerHeight: number;
 }
 
+const CHANNEL_POST_DRAFT_TESTID = 'channel.post_draft';
+
+// This follows the same pattern as draft_input.tsx: `${testID}.post.input`
+const CHANNEL_POST_INPUT_NATIVE_ID = `${CHANNEL_POST_DRAFT_TESTID}.post.input`;
+
 const styles = StyleSheet.create({
     flex: {
         flex: 1,
@@ -32,12 +37,11 @@ const ChannelContent = ({
 }: ChannelContentProps) => {
     return (
         <KeyboardAwarePostDraftContainer
-            textInputNativeID='channel.post_draft.post.input'
+            textInputNativeID={CHANNEL_POST_INPUT_NATIVE_ID}
             containerStyle={[styles.flex, {marginTop}]}
             renderList={({listRef, onTouchMove, onTouchEnd}) => (
                 <ChannelPostList
                     channelId={channelId}
-                    nativeID={channelId}
                     listRef={listRef}
                     onTouchMove={onTouchMove}
                     onTouchEnd={onTouchEnd}
@@ -49,7 +53,7 @@ const ChannelContent = ({
             }
             <PostDraft
                 channelId={channelId}
-                testID='channel.post_draft'
+                testID={CHANNEL_POST_DRAFT_TESTID}
                 containerHeight={containerHeight}
                 isChannelScreen={true}
                 canShowPostPriority={true}

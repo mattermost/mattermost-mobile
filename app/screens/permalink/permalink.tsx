@@ -263,6 +263,12 @@ function Permalink({
             });
             setLoading(false);
         })();
+
+    // - serverUrl is stable from useServerUrl hook (doesn't need to be in deps)
+    // - postId, isTeamMember, currentTeamId are props that don't change for a given permalink screen
+    // - setError, setLoading, setChannelId, setPosts are stable setState functions
+    // - We only need to re-run when channelId, rootId, isCRTEnabled, or teamName changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [channelId, rootId, isCRTEnabled, teamName]);
 
     const handleClose = useCallback(() => {
@@ -327,7 +333,6 @@ function Permalink({
                         channelId={channel!.id}
                         rootId={rootId}
                         testID='permalink.post_list'
-                        nativeID={Screens.PERMALINK}
                         highlightPinnedOrSaved={false}
                     />
                 </View>

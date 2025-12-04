@@ -416,6 +416,11 @@ export default function PostInput({
             listener.remove();
             updateDraftMessage(serverUrl, channelId, rootId, lastNativeValue.current); // safe draft on unmount
         };
+
+    // - updateValue, updateCursorPosition, propagateValue are stable setState/hook functions
+    // - inputRef is a ref (stable reference, doesn't need to be in deps)
+    // - serverUrl, value, lastNativeValue are either stable or we want their latest values when event fires
+    // - We need to recreate the listener when channelId/rootId changes to check the correct source screen
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [updateValue, channelId, rootId]);
 
@@ -424,6 +429,9 @@ export default function PostInput({
             propagateValue(value);
             lastNativeValue.current = value;
         }
+
+    // - propagateValue is from useInputPropagation hook (stable reference, doesn't need to be in deps)
+    // - lastNativeValue is a ref (stable reference, doesn't need to be in deps)
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [value]);
 
