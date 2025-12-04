@@ -203,35 +203,39 @@ describe('renamePlaybookRun', () => {
         expect(updatedRun.name).toBe(newName);
     });
 
-    it('should handle empty name string', async () => {
+    it('should reject empty name string', async () => {
         const runs = TestHelper.createPlaybookRuns(1, 0, 0);
         await handlePlaybookRuns(serverUrl, runs, false, false);
 
         const playbookRunId = runs[0].id;
+        const originalName = runs[0].name;
 
         const {data, error} = await renamePlaybookRun(serverUrl, playbookRunId, '');
 
-        expect(error).toBeUndefined();
-        expect(data).toBe(true);
+        expect(error).toBe('Name cannot be empty or whitespace-only');
+        expect(data).toBeUndefined();
 
+        // Verify the name was not changed
         const updatedRun = await database.get<PlaybookRunModel>(PLAYBOOK_TABLES.PLAYBOOK_RUN).find(playbookRunId);
-        expect(updatedRun.name).toBe('');
+        expect(updatedRun.name).toBe(originalName);
     });
 
-    it('should handle whitespace-only name', async () => {
+    it('should reject whitespace-only name', async () => {
         const runs = TestHelper.createPlaybookRuns(1, 0, 0);
         await handlePlaybookRuns(serverUrl, runs, false, false);
 
         const playbookRunId = runs[0].id;
+        const originalName = runs[0].name;
         const whitespaceName = '   ';
 
         const {data, error} = await renamePlaybookRun(serverUrl, playbookRunId, whitespaceName);
 
-        expect(error).toBeUndefined();
-        expect(data).toBe(true);
+        expect(error).toBe('Name cannot be empty or whitespace-only');
+        expect(data).toBeUndefined();
 
+        // Verify the name was not changed
         const updatedRun = await database.get<PlaybookRunModel>(PLAYBOOK_TABLES.PLAYBOOK_RUN).find(playbookRunId);
-        expect(updatedRun.name).toBe(whitespaceName);
+        expect(updatedRun.name).toBe(originalName);
     });
 
     it('should handle very long names', async () => {

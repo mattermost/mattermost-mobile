@@ -7,7 +7,7 @@ import {goToScreen} from '@screens/navigation';
 import TestHelper from '@test/test_helper';
 import {changeOpacity} from '@utils/theme';
 
-import {goToPlaybookRuns, goToPlaybookRun, goToParticipantPlaybooks, goToPlaybookRunWithChannelSwitch, goToEditCommand, goToSelectUser, goToSelectDate, goToPostUpdate, goToSelectPlaybook, goToStartARun} from './navigation';
+import {goToPlaybookRuns, goToPlaybookRun, goToParticipantPlaybooks, goToPlaybookRunWithChannelSwitch, goToEditCommand, goToSelectUser, goToSelectDate, goToPostUpdate, goToSelectPlaybook, goToStartARun, goToRenameChecklist, goToAddChecklistItem, goToRenamePlaybookRun, goToCreateQuickChecklist} from './navigation';
 
 jest.mock('@screens/navigation', () => ({
     goToScreen: jest.fn(),
@@ -480,6 +480,115 @@ describe('Playbooks Navigation', () => {
                         },
                     },
                 },
+            );
+        });
+    });
+
+    describe('goToRenameChecklist', () => {
+        it('should navigate to rename checklist screen with correct parameters', async () => {
+            const currentTitle = 'Checklist Title';
+            const onSave = jest.fn();
+
+            await goToRenameChecklist(mockIntl, Preferences.THEMES.denim, 'Run 1', currentTitle, onSave);
+
+            expect(mockIntl.formatMessage).toHaveBeenCalledWith({
+                id: 'playbooks.checklist.rename.title',
+                defaultMessage: 'Rename checklist',
+            });
+            expect(goToScreen).toHaveBeenCalledWith(
+                Screens.PLAYBOOK_RENAME_CHECKLIST,
+                'Rename checklist',
+                {
+                    currentTitle,
+                    onSave,
+                },
+                {
+                    topBar: {
+                        subtitle: {
+                            text: 'Run 1',
+                            color: changeOpacity(Preferences.THEMES.denim.sidebarHeaderTextColor, 0.72),
+                        },
+                    },
+                },
+            );
+        });
+    });
+
+    describe('goToAddChecklistItem', () => {
+        it('should navigate to add checklist item screen with correct parameters', async () => {
+            const onSave = jest.fn();
+
+            await goToAddChecklistItem(mockIntl, Preferences.THEMES.denim, 'Run 1', onSave);
+
+            expect(mockIntl.formatMessage).toHaveBeenCalledWith({
+                id: 'playbooks.checklist_item.add.title',
+                defaultMessage: 'New Task',
+            });
+            expect(goToScreen).toHaveBeenCalledWith(
+                Screens.PLAYBOOK_ADD_CHECKLIST_ITEM,
+                'New Task',
+                {
+                    onSave,
+                },
+                {
+                    topBar: {
+                        subtitle: {
+                            text: 'Run 1',
+                            color: changeOpacity(Preferences.THEMES.denim.sidebarHeaderTextColor, 0.72),
+                        },
+                    },
+                },
+            );
+        });
+    });
+
+    describe('goToRenamePlaybookRun', () => {
+        it('should navigate to rename playbook run screen with correct parameters', async () => {
+            const currentTitle = 'Playbook Run Title';
+            const onSave = jest.fn();
+
+            await goToRenamePlaybookRun(mockIntl, Preferences.THEMES.denim, currentTitle, onSave);
+
+            expect(mockIntl.formatMessage).toHaveBeenCalledWith({
+                id: 'playbooks.playbook_run.rename.title',
+                defaultMessage: 'Rename playbook run',
+            });
+            expect(goToScreen).toHaveBeenCalledWith(
+                Screens.PLAYBOOK_RENAME_RUN,
+                'Rename playbook run',
+                {
+                    currentTitle,
+                    onSave,
+                },
+            );
+        });
+    });
+
+    describe('goToCreateQuickChecklist', () => {
+        it('should navigate to create quick checklist screen with correct parameters', () => {
+            const channelId = 'channel-id-1';
+            const channelName = 'channel-name-1';
+            const currentUserId = 'user-id-1';
+            const currentTeamId = 'team-id-1';
+            const serverUrl = 'https://test.server.com';
+
+            goToCreateQuickChecklist(mockIntl, channelId, channelName, currentUserId, currentTeamId, serverUrl);
+
+            expect(mockIntl.formatMessage).toHaveBeenCalledWith({
+                id: 'mobile.playbook.create_checklist',
+                defaultMessage: 'Create Checklist',
+            });
+            expect(goToScreen).toHaveBeenCalledWith(
+                Screens.PLAYBOOKS_CREATE_QUICK_CHECKLIST,
+                'Create Checklist',
+                {
+                    channelId,
+                    channelName,
+                    currentUserId,
+                    currentTeamId,
+                    serverUrl,
+                },
+                {},
             );
         });
     });
