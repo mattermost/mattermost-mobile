@@ -684,6 +684,7 @@
   "mobile.integration_selector.loading_channels": "Loading channels...",
   "mobile.integration_selector.loading_options": "Loading options...",
   "mobile.intune.login.account_creation_blocked": "Your account isn't fully set up yet. Please sign in to Mattermost via the web or desktop app first.",
+  "mobile.intune.login.auth_type_mismatch": "Unable to find an existing account matching your authentication type. Please contact your system administrator for assistance.",
   "mobile.intune.login.canceled": "Login was canceled. Please try again.",
   "mobile.intune.login.failed": "Authentication failed. Please try again.",
   "mobile.intune.login.ldap_user_missing": "We couldn't sign you in. Please contact your system administrator for assistance.",
