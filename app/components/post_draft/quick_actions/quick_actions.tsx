@@ -58,6 +58,8 @@ export default function QuickActions({
 
     const atInputActionTestID = `${testID}.at_input_action`;
     const slashInputActionTestID = `${testID}.slash_input_action`;
+
+    // const emojiActionTestID = `${testID}.emoji_action`;
     const fileActionTestID = `${testID}.file_action`;
     const imageActionTestID = `${testID}.image_action`;
     const cameraActionTestID = `${testID}.camera_action`;
@@ -92,6 +94,10 @@ export default function QuickActions({
                     focus={focus}
                 />
             )}
+            {/* TODO: Uncomment this when we have the actual emoji picker */}
+            {/* <EmojiAction
+                testID={emojiActionTestID}
+            /> */}
             <FileAction
                 testID={fileActionTestID}
                 {...uploadProps}

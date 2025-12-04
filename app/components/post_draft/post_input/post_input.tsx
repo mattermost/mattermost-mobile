@@ -10,10 +10,12 @@ import {
     Alert, AppState, type AppStateStatus, DeviceEventEmitter, type EmitterSubscription, Keyboard,
     type NativeSyntheticEvent, Platform, type TextInputSelectionChangeEventData,
 } from 'react-native';
+import {runOnUI} from 'react-native-reanimated';
 
 import {updateDraftMessage} from '@actions/local/draft';
 import {userTyping} from '@actions/websocket/users';
 import {Events, Screens} from '@constants';
+import {useKeyboardAnimationContext} from '@context/keyboard_animation';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -122,12 +124,24 @@ export default function PostInput({
     const serverUrl = useServerUrl();
     const managedConfig = useManagedConfig<ManagedConfig>();
 
+    const {
+        setShowInputAccessoryView,
+        showInputAccessoryView,
+        isInputAccessoryViewMode,
+        inputAccessoryViewAnimatedHeight,
+        height,
+        isTransitioningFromCustomView,
+    } = useKeyboardAnimationContext();
+
     const [propagateValue, shouldProcessEvent] = useInputPropagation();
 
     const lastTypingEventSent = useRef(0);
 
     const lastNativeValue = useRef('');
     const previousAppState = useRef(AppState.currentState);
+    const [isManuallyFocusingAfterEmojiDismiss, setIsManuallyFocusingAfterEmojiDismiss] = useState(false);
+    const isDismissingEmojiPicker = useRef(false);
+    const focusTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     const [longMessageAlertShown, setLongMessageAlertShown] = useState(false);
 
@@ -147,9 +161,103 @@ export default function PostInput({
         setIsFocused(false);
     }, [serverUrl, channelId, rootId, value, setIsFocused]);
 
+    // Handle press event (fires BEFORE onFocus) - dismiss emoji picker before keyboard opens
+    const handlePress = useCallback(() => {
+        if (Platform.OS === 'android' && showInputAccessoryView) {
+            isDismissingEmojiPicker.current = true;
+            setIsManuallyFocusingAfterEmojiDismiss(true);
+
+            runOnUI(() => {
+                'worklet';
+                inputAccessoryViewAnimatedHeight.value = 0;
+                height.value = 0;
+                isInputAccessoryViewMode.value = false;
+                isTransitioningFromCustomView.value = true;
+            })();
+
+            setShowInputAccessoryView(false);
+        }
+    }, [showInputAccessoryView, inputAccessoryViewAnimatedHeight, setShowInputAccessoryView, isInputAccessoryViewMode, height, isTransitioningFromCustomView]);
+
+    // Handle focus after emoji picker is dismissed
+    useEffect(() => {
+        if (Platform.OS === 'android' && isManuallyFocusingAfterEmojiDismiss && !showInputAccessoryView) {
+            isDismissingEmojiPicker.current = false;
+
+            if (focusTimeoutRef.current) {
+                clearTimeout(focusTimeoutRef.current);
+            }
+
+            inputRef.current?.blur();
+
+            const handleDelayedFocus = () => {
+                inputRef.current?.focus();
+                setIsManuallyFocusingAfterEmojiDismiss(false);
+                focusTimeoutRef.current = null;
+            };
+
+            focusTimeoutRef.current = setTimeout(handleDelayedFocus, 200);
+
+            return () => {
+                if (focusTimeoutRef.current) {
+                    clearTimeout(focusTimeoutRef.current);
+                    focusTimeoutRef.current = null;
+                }
+            };
+        }
+
+        return undefined;
+    }, [isManuallyFocusingAfterEmojiDismiss, showInputAccessoryView, inputRef]);
+
     const onFocus = useCallback(() => {
+        // Ignore focus events during emoji picker dismissal - handled manually
+        if (Platform.OS === 'android' && (isDismissingEmojiPicker.current || focusTimeoutRef.current || isManuallyFocusingAfterEmojiDismiss)) {
+            return;
+        }
+
         setIsFocused(true);
-    }, [setIsFocused]);
+        setShowInputAccessoryView(false);
+
+        if (Platform.OS === 'android') {
+            if (!focusTimeoutRef.current) {
+                setIsManuallyFocusingAfterEmojiDismiss(false);
+            }
+            height.value = inputAccessoryViewAnimatedHeight.value;
+            inputAccessoryViewAnimatedHeight.value = 0;
+            isInputAccessoryViewMode.value = false;
+            return;
+        }
+
+        // Transition from emoji picker to keyboard
+        if (showInputAccessoryView) {
+            // Save current emoji picker height to maintain input position
+            const emojiPickerHeight = inputAccessoryViewAnimatedHeight.value;
+
+            // Collapse emoji picker instantly
+            inputAccessoryViewAnimatedHeight.value = 0;
+
+            // Set input container height to emoji picker height to keep it at same position
+            height.value = emojiPickerHeight;
+
+            // Disable custom view mode to allow keyboard handlers to work
+            isInputAccessoryViewMode.value = false;
+
+            // Set transition flag to prevent keyboard handlers from interfering during transition
+            isTransitioningFromCustomView.value = true;
+
+            // Hide emoji picker component
+            setShowInputAccessoryView(false);
+
+            // Safety net: In rare cases (app backgrounding, system interruptions, rapid toggling),
+            // the keyboard onEnd event might not fire, leaving us stuck in transition state.
+            // This timeout ensures we recover after 1 second if that happens.
+            setTimeout(() => {
+                if (isTransitioningFromCustomView.value) {
+                    isTransitioningFromCustomView.value = false;
+                }
+            }, 1000);
+        }
+    }, [setIsFocused, showInputAccessoryView, inputAccessoryViewAnimatedHeight, setShowInputAccessoryView, isInputAccessoryViewMode, height, isTransitioningFromCustomView, isManuallyFocusingAfterEmojiDismiss]);
 
     const handleAndroidKeyboardHide = useCallback(() => {
         onBlur();
@@ -343,11 +451,13 @@ export default function PostInput({
             onBlur={onBlur}
             onChangeText={handleTextChange}
             onFocus={onFocus}
+            onPress={Platform.OS === 'android' ? handlePress : undefined}
             onPaste={onPaste}
             onSelectionChange={handlePostDraftSelectionChanged}
             placeholder={intl.formatMessage(getPlaceHolder(rootId), {channelDisplayName})}
             placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
             ref={inputRef}
+            showSoftInputOnFocus={Platform.OS === 'android' ? (!showInputAccessoryView || isManuallyFocusingAfterEmojiDismiss) : true}
             smartPunctuation='disable'
             submitBehavior='newline'
             style={pasteInputStyle}

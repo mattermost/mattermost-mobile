@@ -21,6 +21,14 @@ interface KeyboardAnimationContextType {
     isKeyboardFullyOpen: SharedValue<boolean>;
     isKeyboardFullyClosed: SharedValue<boolean>;
     isKeyboardInTransition: SharedValue<boolean>;
+    showInputAccessoryView: boolean;
+    isInputAccessoryViewMode: SharedValue<boolean>;
+    setShowInputAccessoryView: (show: boolean) => void;
+    lastKeyboardHeight: number;
+    inputAccessoryViewAnimatedHeight: SharedValue<number>;
+    isTransitioningFromCustomView: SharedValue<boolean>;
+    closeInputAccessoryView: () => void;
+    scrollToEnd: () => void;
 }
 
 const KeyboardAnimationContext = createContext<KeyboardAnimationContextType | null>(null);
@@ -54,7 +62,9 @@ export const useKeyboardAnimationContext = () => {
     const defaultIsKeyboardFullyClosed = useSharedValue(true);
     const defaultIsKeyboardInTransition = useSharedValue(false);
     const defaultInputRef = useRef<PasteInputRef | undefined>(undefined);
-
+    const defaultIsInputAccessoryViewMode = useSharedValue(false);
+    const defaultIsTransitioningFromCustomView = useSharedValue(false);
+    const defaultInputAccessoryViewAnimatedHeight = useSharedValue(0);
     const defaultOnScroll = useCallback(() => {
         // No-op fallback
     }, []);
@@ -65,6 +75,18 @@ export const useKeyboardAnimationContext = () => {
         // No-op fallback
     }, []);
     const defaultBlurAndDismissKeyboard = useCallback(async () => {
+        // No-op fallback
+    }, []);
+
+    const defaultSetShowInputAccessoryView = useCallback(() => {
+        // No-op fallback
+    }, []);
+
+    const defaultCloseInputAccessoryView = useCallback(() => {
+        // No-op fallback
+    }, []);
+
+    const defaultScrollToEnd = useCallback(() => {
         // No-op fallback
     }, []);
 
@@ -83,6 +105,14 @@ export const useKeyboardAnimationContext = () => {
         isKeyboardFullyOpen: defaultIsKeyboardFullyOpen,
         isKeyboardFullyClosed: defaultIsKeyboardFullyClosed,
         isKeyboardInTransition: defaultIsKeyboardInTransition,
+        setShowInputAccessoryView: defaultSetShowInputAccessoryView,
+        showInputAccessoryView: false,
+        lastKeyboardHeight: 0,
+        isInputAccessoryViewMode: defaultIsInputAccessoryViewMode,
+        inputAccessoryViewAnimatedHeight: defaultInputAccessoryViewAnimatedHeight,
+        isTransitioningFromCustomView: defaultIsTransitioningFromCustomView,
+        closeInputAccessoryView: defaultCloseInputAccessoryView,
+        scrollToEnd: defaultScrollToEnd,
     }), [
         defaultHeight,
         defaultInset,
@@ -97,6 +127,12 @@ export const useKeyboardAnimationContext = () => {
         defaultIsKeyboardFullyOpen,
         defaultIsKeyboardFullyClosed,
         defaultIsKeyboardInTransition,
+        defaultSetShowInputAccessoryView,
+        defaultIsInputAccessoryViewMode,
+        defaultInputAccessoryViewAnimatedHeight,
+        defaultIsTransitioningFromCustomView,
+        defaultCloseInputAccessoryView,
+        defaultScrollToEnd,
     ]);
 
     // If context exists, return it; otherwise return fallback

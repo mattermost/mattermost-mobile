@@ -39,10 +39,13 @@ export const useKeyboardAwarePostDraft = (isThreadView = false) => {
         isKeyboardFullyOpen,
         isKeyboardFullyClosed,
         isKeyboardInTransition,
+        isInputAccessoryViewMode,
+        isTransitioningFromCustomView,
     } = useKeyboardAnimation(postInputContainerHeight, isIOS, isTablet, insets.bottom, isThreadView);
 
     // Only apply scroll adjustment on iOS, Android uses native keyboard handling
-    useKeyboardScrollAdjustment(listRef, scroll, offset, isIOS);
+    // Also pass isInputAccessoryViewMode and isTransitioningFromCustomView to control scroll behavior
+    useKeyboardScrollAdjustment(listRef, scroll, offset, isIOS, isInputAccessoryViewMode, isTransitioningFromCustomView);
 
     const inputContainerAnimatedStyle = useAnimatedStyle(
         () => {
@@ -87,6 +90,8 @@ export const useKeyboardAwarePostDraft = (isThreadView = false) => {
         isKeyboardFullyOpen,
         isKeyboardFullyClosed,
         isKeyboardInTransition,
+        isInputAccessoryViewMode,
+        isTransitioningFromCustomView,
     };
 };
 
