@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useRef} from 'react';
-import {ActivityIndicator, StyleSheet, View} from 'react-native';
+import {ActivityIndicator, type FlatList, StyleSheet, View} from 'react-native';
 
 import {fetchPostThread} from '@actions/remote/post';
 import {markThreadAsRead} from '@actions/remote/thread';
@@ -22,12 +22,12 @@ import type ThreadModel from '@typings/database/models/servers/thread';
 type Props = {
     channelLastViewedAt: number;
     isCRTEnabled: boolean;
-    nativeID: string;
     posts: PostModel[];
     rootPost: PostModel;
     teamId: string;
     thread?: ThreadModel;
     version?: string;
+    listRef: React.RefObject<FlatList<string | PostModel>>;
 }
 
 const styles = StyleSheet.create({
@@ -38,7 +38,8 @@ const styles = StyleSheet.create({
 
 const ThreadPostList = ({
     channelLastViewedAt, isCRTEnabled,
-    nativeID, posts, rootPost, teamId, thread, version,
+    posts, rootPost, teamId, thread, version,
+    listRef,
 }: Props) => {
     const appState = useAppState();
     const serverUrl = useServerUrl();
@@ -103,7 +104,6 @@ const ThreadPostList = ({
             isCRTEnabled={isCRTEnabled}
             lastViewedAt={lastViewedAt}
             location={Screens.THREAD}
-            nativeID={nativeID}
             onEndReached={onEndReached}
             posts={threadPosts}
             rootId={rootPost.id}
@@ -112,6 +112,7 @@ const ThreadPostList = ({
             header={header}
             footer={<View style={styles.footer}/>}
             testID='thread.post_list'
+            listRef={listRef}
         />
     );
 

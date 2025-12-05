@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useRef} from 'react';
+import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, type LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {Screens} from '@constants';
+import {useKeyboardAnimationContext} from '@context/keyboard_animation';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -22,8 +23,6 @@ import Typing from '../typing';
 import Uploads from '../uploads';
 
 import Header from './header';
-
-import type {PasteInputRef} from '@mattermost/react-native-paste-input';
 
 export type Props = {
     testID?: string;
@@ -59,8 +58,6 @@ export type Props = {
     setIsFocused: (isFocused: boolean) => void;
     scheduledPostsEnabled: boolean;
 }
-
-const SAFE_AREA_VIEW_EDGES: Edge[] = ['left', 'right'];
 
 const SCHEDULED_POST_PICKER_BUTTON = 'close-scheduled-post-picker';
 
@@ -140,14 +137,13 @@ function DraftInput({
     const theme = useTheme();
     const isTablet = useIsTablet();
 
+    const {inputRef, focusInput: focus} = useKeyboardAnimationContext();
+
+    const safeAreaViewEdges: Edge[] = isTablet ? ['left', 'right'] : ['left', 'right', 'bottom'];
+
     const handleLayout = useCallback((e: LayoutChangeEvent) => {
         updatePostInputTop(e.nativeEvent.layout.height);
-    }, []);
-
-    const inputRef = useRef<PasteInputRef>();
-    const focus = useCallback(() => {
-        inputRef.current?.focus();
-    }, []);
+    }, [updatePostInputTop]);
 
     // Render
     const postInputTestID = `${testID}.post.input`;
@@ -201,7 +197,7 @@ function DraftInput({
                 rootId={rootId}
             />
             <SafeAreaView
-                edges={SAFE_AREA_VIEW_EDGES}
+                edges={safeAreaViewEdges}
                 onLayout={handleLayout}
                 style={style.inputWrapper}
                 testID={testID}

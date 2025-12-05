@@ -3,7 +3,8 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, StyleSheet} from 'react-native';
+import {StyleSheet} from 'react-native';
+import {KeyboardController} from 'react-native-keyboard-controller';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
@@ -39,8 +40,8 @@ export default function PostPriorityAction({
     const isTablet = useIsTablet();
     const theme = useTheme();
 
-    const onPress = useCallback(() => {
-        Keyboard.dismiss();
+    const onPress = useCallback(async () => {
+        await KeyboardController.dismiss();
 
         const title = isTablet ? intl.formatMessage({id: 'post_priority.picker.title', defaultMessage: 'Message priority'}) : '';
 

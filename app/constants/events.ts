@@ -35,4 +35,5 @@ export default keyMirror({
     DRAFT_SWIPEABLE: null,
     ACTIVE_SCREEN: null,
     FILE_ADD_REMOVED: null,
+    KEYBOARD_STATE_CHANGED: null,
 });
