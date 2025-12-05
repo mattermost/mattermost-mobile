@@ -1088,7 +1088,7 @@ class TestHelperSingleton {
         update_at: 0,
     });
 
-    createPlaybookRunAttribute = (prefix: string, index: number): PlaybookRunAttribute => ({
+    createPlaybookRunAttribute = (prefix: string, index: number): PlaybookRunPropertyField => ({
         id: `${prefix}-attribute_${index}`,
         group_id: 'group_1',
         name: `Attribute ${index + 1}`,
@@ -1101,10 +1101,11 @@ class TestHelperSingleton {
         attrs: '',
     });
 
-    createPlaybookRunAttributeValue = (attributeId: string, runId: string, index: number): PlaybookRunAttributeValue => ({
+    createPlaybookRunAttributeValue = (attributeId: string, runId: string, index: number): PlaybookRunPropertyValue => ({
         id: `${runId}-${attributeId}-value_${index}`,
-        attribute_id: attributeId,
-        run_id: runId,
+        field_id: attributeId,
+        target_id: runId,
+        update_at: Date.now(),
         value: `Value ${index + 1}`,
     });
 
@@ -1328,7 +1329,7 @@ class TestHelperSingleton {
         };
     };
 
-    fakePlaybookRunAttribute = (overwrite: Partial<PlaybookRunAttribute> = {}): PlaybookRunAttribute => {
+    fakePlaybookRunAttribute = (overwrite: Partial<PlaybookRunPropertyField> = {}): PlaybookRunPropertyField => {
         return {
             id: this.generateId(),
             group_id: this.generateId(),
@@ -1344,11 +1345,12 @@ class TestHelperSingleton {
         };
     };
 
-    fakePlaybookRunAttributeValue = (attributeId: string, runId: string, overwrite: Partial<PlaybookRunAttributeValue> = {}): PlaybookRunAttributeValue => {
+    fakePlaybookRunAttributeValue = (attributeId: string, runId: string, overwrite: Partial<PlaybookRunPropertyValue> = {}): PlaybookRunPropertyValue => {
         return {
             id: this.generateId(),
-            attribute_id: attributeId,
-            run_id: runId,
+            field_id: attributeId,
+            target_id: runId,
+            update_at: Date.now(),
             value: 'Test Value',
             ...overwrite,
         };
@@ -1376,6 +1378,7 @@ class TestHelperSingleton {
             attributeId: this.generateId(),
             runId: this.generateId(),
             value: 'Test Value',
+            updateAt: Date.now(),
             attribute: this.fakeRelation(),
             run: this.fakeRelation(),
             ...overwrite,
