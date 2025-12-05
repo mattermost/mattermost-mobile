@@ -149,6 +149,11 @@ class TestHelperSingleton {
             prepareRecordsOnly: false,
         });
 
+        await operator.handleRole({
+            roles: Object.values(this.basicRoles!),
+            prepareRecordsOnly: false,
+        });
+
         return {database, operator};
     };
 
@@ -751,7 +756,7 @@ class TestHelperSingleton {
     };
 
     fakePostModel = (overwrite?: Partial<PostModel>): PostModel => {
-        return {
+        const fakePost: PostModel = {
             ...this.fakeModel(),
             channelId: this.generateId(),
             createAt: 0,
@@ -781,6 +786,9 @@ class TestHelperSingleton {
             toApi: jest.fn(),
             ...overwrite,
         };
+
+        jest.mocked(fakePost.observe).mockReturnValue(of$(fakePost));
+        return fakePost;
     };
 
     fakeGroupModel = (overwrite?: Partial<GroupModel>): GroupModel => {
@@ -1439,6 +1447,8 @@ class TestHelperSingleton {
                 description: 'authentication.roles.global_admin.description',
                 permissions: [
                     'system_admin_permission',
+                    'create_post',
+                    'edit_post',
                 ],
                 scheme_managed: true,
                 built_in: true,
@@ -1450,6 +1460,8 @@ class TestHelperSingleton {
                 description: 'authentication.roles.global_user.description',
                 permissions: [
                     'system_user_permission',
+                    'create_post',
+                    'edit_post',
                 ],
                 scheme_managed: true,
                 built_in: true,
@@ -1461,6 +1473,8 @@ class TestHelperSingleton {
                 description: 'authentication.roles.team_admin.description',
                 permissions: [
                     'team_admin_permission',
+                    'create_post',
+                    'edit_post',
                 ],
                 scheme_managed: true,
                 built_in: true,
@@ -1472,6 +1486,8 @@ class TestHelperSingleton {
                 description: 'authentication.roles.team_user.description',
                 permissions: [
                     'team_user_permission',
+                    'create_post',
+                    'edit_post',
                 ],
                 scheme_managed: true,
                 built_in: true,
@@ -1483,6 +1499,8 @@ class TestHelperSingleton {
                 description: 'authentication.roles.channel_admin.description',
                 permissions: [
                     'channel_admin_permission',
+                    'create_post',
+                    'edit_post',
                 ],
                 scheme_managed: true,
                 built_in: true,
@@ -1494,6 +1512,8 @@ class TestHelperSingleton {
                 description: 'authentication.roles.channel_user.description',
                 permissions: [
                     'channel_user_permission',
+                    'create_post',
+                    'edit_post',
                 ],
                 scheme_managed: true,
                 built_in: true,

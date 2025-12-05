@@ -51,7 +51,7 @@ describe('ScheduledPostIndicator', () => {
         };
 
         renderWithIntlAndTheme(<ScheduledPostIndicator {...props}/>);
-        expect(screen.getByText(/2 scheduled messages in channel/i)).toBeTruthy();
+        expect(screen.getByText(/2 scheduled messages in channel/i)).toBeVisible();
     });
 
     test('should render thread message when isThread is true', () => {
@@ -63,7 +63,7 @@ describe('ScheduledPostIndicator', () => {
         };
 
         renderWithIntlAndTheme(<ScheduledPostIndicator {...props}/>);
-        expect(screen.getByText(/2 scheduled messages in thread/i)).toBeTruthy();
+        expect(screen.getByText(/2 scheduled messages in thread/i)).toBeVisible();
     });
 
     test('should render correct message when there is only one scheduled post', () => {
@@ -75,7 +75,7 @@ describe('ScheduledPostIndicator', () => {
         };
 
         renderWithIntlAndTheme(<ScheduledPostIndicator {...props}/>);
-        expect(screen.getByText(/1 scheduled message in thread/i)).toBeTruthy();
+        expect(screen.getByText(/1 scheduled message in thread/i)).toBeVisible();
     });
 
     test('should handle see all scheduled posts click', async () => {

@@ -2,6 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {Post} from '@constants';
+import {PostTypes} from '@constants/post';
+import TestHelper from '@test/test_helper';
 
 import {
     selectOrderedPostsWithPrevAndNext,
@@ -13,6 +15,7 @@ import {
     shouldFilterJoinLeavePost,
 } from '.';
 
+import type {PostListItem} from '@typings/components/post_list';
 import type PostModel from '@typings/database/models/servers/post';
 
 const mockPostModel = (overrides: Partial<PostModel> = {}): PostModel => ({
@@ -266,6 +269,39 @@ describe('selectOrderedPosts', () => {
 
         // The second post should not be marked as saved
         expect(typeof result[1].value === 'object' && result[1].value.isSaved).toBe(false);
+    });
+
+    it('should filter out expired BoR posts', () => {
+        const now = Date.now();
+
+        const borPostExpiredForAll = TestHelper.fakePostModel({
+            id: 'postid1',
+            type: PostTypes.BURN_ON_READ,
+            props: {expire_at: now - 10000},
+        });
+
+        const borPostExpiredForMe = TestHelper.fakePostModel({
+            id: 'postid2',
+            type: PostTypes.BURN_ON_READ,
+            props: {expire_at: now + 100000},
+            metadata: {expire_at: now - 10000},
+        });
+
+        const unrevealedBoRPost = TestHelper.fakePostModel({
+            id: 'postid3',
+            type: PostTypes.BURN_ON_READ,
+            props: {expire_at: now + 10000},
+        });
+
+        const result = selectOrderedPosts([borPostExpiredForAll, borPostExpiredForMe, unrevealedBoRPost], lastViewedAt, true, currentUserId, currentUsername, showJoinLeave, currentTimezone, isThreadScreen, savedPostIds);
+
+        // Both BoR posts should be filtered out
+        expect(result.length).toBe(2);
+
+        expect(result[0].type).toBe('post');
+        expect(result[1].type).toBe('date');
+
+        expect((result[0] as PostListItem).value.currentPost.id).toBe(unrevealedBoRPost.id);
     });
 });
 
