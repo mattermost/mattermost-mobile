@@ -223,14 +223,18 @@ export const KeyboardAwarePostDraftContainer = ({
 
     // Callback to dismiss emoji picker after animation completes
     const dismissEmojiPicker = useCallback(() => {
+        // Reset emoji search focus when dismissing emoji picker
+        setIsEmojiSearchFocused(false);
         setShowInputAccessoryView(false);
         isInputAccessoryViewMode.value = false;
         inset.value = 0;
         offset.value = 0;
         keyboardHeight.value = 0;
-    }, [setShowInputAccessoryView, isInputAccessoryViewMode, inset, offset, keyboardHeight]);
+    }, [setShowInputAccessoryView, isInputAccessoryViewMode, inset, offset, keyboardHeight, setIsEmojiSearchFocused]);
 
     const closeInputAccessoryView = useCallback(() => {
+        // Reset emoji search focus when closing emoji picker
+        setIsEmojiSearchFocused(false);
         setShowInputAccessoryView(false);
         isInputAccessoryViewMode.value = false;
         isTransitioningFromCustomView.value = false;
@@ -239,7 +243,7 @@ export const KeyboardAwarePostDraftContainer = ({
         inset.value = withTiming(0, {duration: 200});
         offset.value = withTiming(0, {duration: 200});
         keyboardHeight.value = 0;
-    }, [inputAccessoryViewAnimatedHeight, inset, offset, keyboardHeight, setShowInputAccessoryView, isInputAccessoryViewMode, isTransitioningFromCustomView]);
+    }, [inputAccessoryViewAnimatedHeight, inset, offset, keyboardHeight, setShowInputAccessoryView, isInputAccessoryViewMode, isTransitioningFromCustomView, setIsEmojiSearchFocused]);
 
     const scrollToEnd = useCallback(() => {
         const activeHeight = Math.max(keyboardHeight.value, inputAccessoryViewAnimatedHeight.value);

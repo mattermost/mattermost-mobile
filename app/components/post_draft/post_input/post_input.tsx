@@ -20,6 +20,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {useInputPropagation} from '@hooks/input';
+import {DEFAULT_INPUT_ACCESSORY_HEIGHT} from '@hooks/useInputAccessoryView';
 import NavigationStore from '@store/navigation_store';
 import {handleDraftUpdate} from '@utils/draft';
 import {extractFileInfo} from '@utils/file';
@@ -178,9 +179,10 @@ export default function PostInput({
                 isTransitioningFromCustomView.value = true;
             })();
 
+            setIsEmojiSearchFocused(false);
             setShowInputAccessoryView(false);
         }
-    }, [showInputAccessoryView, inputAccessoryViewAnimatedHeight, setShowInputAccessoryView, isInputAccessoryViewMode, height, isTransitioningFromCustomView]);
+    }, [showInputAccessoryView, inputAccessoryViewAnimatedHeight, setShowInputAccessoryView, isInputAccessoryViewMode, height, isTransitioningFromCustomView, setIsEmojiSearchFocused]);
 
     // Handle focus after emoji picker is dismissed
     useEffect(() => {
@@ -241,7 +243,9 @@ export default function PostInput({
         if (showInputAccessoryView) {
             // Use actual keyboard height instead of emoji picker height to ensure consistency
             // This prevents height accumulation when transitioning multiple times
-            const targetKeyboardHeight = keyboardHeight.value || lastKeyboardHeight || 0;
+            // Use default keyboard height if no keyboard height has been recorded yet
+            // This prevents input container from going to bottom when keyboard hasn't been opened
+            const targetKeyboardHeight = keyboardHeight.value || lastKeyboardHeight || DEFAULT_INPUT_ACCESSORY_HEIGHT;
 
             // Set transition flag FIRST synchronously to prevent keyboard handlers from interfering
             // This must be set before disabling input accessory view mode to avoid race conditions
