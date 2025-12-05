@@ -315,7 +315,7 @@ describe('renameChecklist', () => {
         expect(updated!.title).toBe(newTitle);
     });
 
-    it('should handle empty title string', async () => {
+    it('should reject empty title string', async () => {
         const runId = 'runid';
         const checklist = {
             ...TestHelper.createPlaybookChecklist(runId, 0, 0),
@@ -324,16 +324,18 @@ describe('renameChecklist', () => {
         };
         await operator.handlePlaybookChecklist({checklists: [checklist], prepareRecordsOnly: false});
 
+        const originalTitle = checklist.title;
         const {data, error} = await renameChecklist(serverUrl, checklist.id, '');
-        expect(error).toBeUndefined();
-        expect(data).toBe(true);
+        expect(error).toBe('Title cannot be empty or whitespace-only');
+        expect(data).toBeUndefined();
 
+        // Verify the title was not changed
         const updated = await getPlaybookChecklistById(operator.database, checklist.id);
         expect(updated).toBeDefined();
-        expect(updated!.title).toBe('');
+        expect(updated!.title).toBe(originalTitle);
     });
 
-    it('should handle whitespace-only title', async () => {
+    it('should reject whitespace-only title', async () => {
         const runId = 'runid';
         const checklist = {
             ...TestHelper.createPlaybookChecklist(runId, 0, 0),
@@ -342,14 +344,16 @@ describe('renameChecklist', () => {
         };
         await operator.handlePlaybookChecklist({checklists: [checklist], prepareRecordsOnly: false});
 
+        const originalTitle = checklist.title;
         const whitespaceTitle = '   ';
         const {data, error} = await renameChecklist(serverUrl, checklist.id, whitespaceTitle);
-        expect(error).toBeUndefined();
-        expect(data).toBe(true);
+        expect(error).toBe('Title cannot be empty or whitespace-only');
+        expect(data).toBeUndefined();
 
+        // Verify the title was not changed
         const updated = await getPlaybookChecklistById(operator.database, checklist.id);
         expect(updated).toBeDefined();
-        expect(updated!.title).toBe(whitespaceTitle);
+        expect(updated!.title).toBe(originalTitle);
     });
 
     it('should handle very long titles', async () => {
