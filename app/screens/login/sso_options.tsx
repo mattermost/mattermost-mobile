@@ -61,18 +61,7 @@ const SsoOptions = ({goToSso, intuneAuthService, isIntuneEnabled, ssoOnly, ssoOp
         return sso;
     });
 
-    const enabledSSOs = Object.keys(ssoOptions).filter(
-        (ssoType: string) => {
-            if (isIntuneEnabled) {
-                if (ssoType === Sso.OFFICE365 && intuneAuthService?.toLocaleLowerCase() === Sso.SAML.toLocaleLowerCase()) {
-                    return false;
-                }
-
-            }
-            return ssoOptions[ssoType].enabled;
-        },
-    );
-
+    const enabledSSOs = Object.keys(ssoOptions).filter((ssoType: string) => ssoOptions[ssoType].enabled);
     const styleViewContainer = enabledSSOs.length === 2 && !ssoOnly ? styles.containerAsRow : undefined;
     const styleButtonWrapper = enabledSSOs.length === 2 && !ssoOnly ? styles.buttonWrapper : undefined;
 
