@@ -135,23 +135,20 @@ class PushNotificationDataRunnable {
                     threadsArray.add(thread)
                 }
                 for(i in 0 until it.size()) {
-                    val thread = it.getMap(i)
-                    val threadId = thread?.getString("id")
-                    if (threadId != null) {
-                        if (threadIds.contains(threadId)) {
-                         // replace the values for participants and is_following
-                            val index = threadsArray.indexOfFirst { el -> el.getString("id") == threadId }
-                            val prev = threadsArray[index]
-                            val merge = Arguments.createMap()
-                            merge.merge(prev)
-                            thread?.let { t ->
-                                merge.putBoolean("is_following", t.getBoolean("is_following"))
-                                merge.putArray("participants", t.getArray("participants"))
-                            }
-                            threadsArray[index] = merge
-                        } else {
-                            thread?.let { t ->
-                                threadsArray.add(t)
+                    it.getMap(i)?.let { thread ->
+                        val threadId = thread.getString("id")
+                        if (threadId != null) {
+                            if (threadIds.contains(threadId)) {
+                                // replace the values for participants and is_following
+                                val index = threadsArray.indexOfFirst { el -> el.getString("id") == threadId }
+                                val prev = threadsArray[index]
+                                val merge = Arguments.createMap()
+                                merge.merge(prev)
+                                merge.putBoolean("is_following", thread.getBoolean("is_following"))
+                                merge.putArray("participants", thread.getArray("participants"))
+                                threadsArray[index] = merge
+                            } else {
+                                threadsArray.add(thread)
                                 threadIds.add(threadId)
                             }
                         }
