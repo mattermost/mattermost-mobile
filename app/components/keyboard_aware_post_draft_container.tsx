@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useRef, type ReactNode} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState, type ReactNode} from 'react';
 import {DeviceEventEmitter, Keyboard, Platform, type StyleProp, StyleSheet, type ViewStyle, View, type LayoutChangeEvent, type GestureResponderEvent} from 'react-native';
 import {KeyboardGestureArea} from 'react-native-keyboard-controller';
 import Animated, {runOnJS, useAnimatedReaction, useSharedValue, withTiming} from 'react-native-reanimated';
@@ -95,6 +95,8 @@ export const KeyboardAwarePostDraftContainer = ({
         keyboardHeight,
         isKeyboardFullyOpen,
     });
+
+    const [isEmojiSearchFocused, setIsEmojiSearchFocused] = useState(false);
 
     // Ref to track if a layout update is already scheduled
     const layoutUpdateScheduledRef = useRef(false);
@@ -373,6 +375,8 @@ export const KeyboardAwarePostDraftContainer = ({
         isTransitioningFromCustomView,
         closeInputAccessoryView,
         scrollToEnd,
+        isEmojiSearchFocused,
+        setIsEmojiSearchFocused,
     }), [keyboardCurrentHeight,
         inset,
         offset,
@@ -395,6 +399,8 @@ export const KeyboardAwarePostDraftContainer = ({
         isTransitioningFromCustomView,
         closeInputAccessoryView,
         scrollToEnd,
+        isEmojiSearchFocused,
+        setIsEmojiSearchFocused,
     ]);
 
     const wrapperProps = useMemo(() => {

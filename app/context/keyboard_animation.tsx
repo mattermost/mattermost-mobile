@@ -29,6 +29,8 @@ interface KeyboardAnimationContextType {
     isTransitioningFromCustomView: SharedValue<boolean>;
     closeInputAccessoryView: () => void;
     scrollToEnd: () => void;
+    isEmojiSearchFocused: boolean;
+    setIsEmojiSearchFocused: (focused: boolean) => void;
 }
 
 const KeyboardAnimationContext = createContext<KeyboardAnimationContextType | null>(null);
@@ -90,6 +92,10 @@ export const useKeyboardAnimationContext = () => {
         // No-op fallback
     }, []);
 
+    const defaultSetIsEmojiSearchFocused = useCallback(() => {
+        // No-op fallback
+    }, []);
+
     const fallbackValue = useMemo(() => ({
         height: defaultHeight,
         inset: defaultInset,
@@ -113,6 +119,8 @@ export const useKeyboardAnimationContext = () => {
         isTransitioningFromCustomView: defaultIsTransitioningFromCustomView,
         closeInputAccessoryView: defaultCloseInputAccessoryView,
         scrollToEnd: defaultScrollToEnd,
+        isEmojiSearchFocused: false,
+        setIsEmojiSearchFocused: defaultSetIsEmojiSearchFocused,
     }), [
         defaultHeight,
         defaultInset,
@@ -133,6 +141,7 @@ export const useKeyboardAnimationContext = () => {
         defaultIsTransitioningFromCustomView,
         defaultCloseInputAccessoryView,
         defaultScrollToEnd,
+        defaultSetIsEmojiSearchFocused,
     ]);
 
     // If context exists, return it; otherwise return fallback

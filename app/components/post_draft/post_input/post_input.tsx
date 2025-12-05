@@ -131,6 +131,9 @@ export default function PostInput({
         inputAccessoryViewAnimatedHeight,
         height,
         isTransitioningFromCustomView,
+        setIsEmojiSearchFocused,
+        keyboardHeight,
+        lastKeyboardHeight,
     } = useKeyboardAnimationContext();
 
     const [propagateValue, shouldProcessEvent] = useInputPropagation();
@@ -216,6 +219,12 @@ export default function PostInput({
         }
 
         setIsFocused(true);
+
+        // Reset emoji search focus immediately to prevent jumping
+        // This must happen before closing the emoji picker
+        setIsEmojiSearchFocused(false);
+
+        // Close emoji picker immediately
         setShowInputAccessoryView(false);
 
         if (Platform.OS === 'android') {
@@ -230,23 +239,30 @@ export default function PostInput({
 
         // Transition from emoji picker to keyboard
         if (showInputAccessoryView) {
-            // Save current emoji picker height to maintain input position
-            const emojiPickerHeight = inputAccessoryViewAnimatedHeight.value;
+            // Use actual keyboard height instead of emoji picker height to ensure consistency
+            // This prevents height accumulation when transitioning multiple times
+            const targetKeyboardHeight = keyboardHeight.value || lastKeyboardHeight || 0;
+
+            // Set transition flag FIRST synchronously to prevent keyboard handlers from interfering
+            // This must be set before disabling input accessory view mode to avoid race conditions
+            isTransitioningFromCustomView.value = true;
 
             // Collapse emoji picker instantly
             inputAccessoryViewAnimatedHeight.value = 0;
 
-            // Set input container height to emoji picker height to keep it at same position
-            height.value = emojiPickerHeight;
+            // Set input container height to keyboard height to ensure correct final position
+            // This ensures the height always matches the keyboard, preventing accumulation
+            height.value = targetKeyboardHeight;
 
-            // Disable custom view mode to allow keyboard handlers to work
-            isInputAccessoryViewMode.value = false;
+            // Use runOnUI to disable input accessory view mode atomically
+            // This ensures the transition flag is visible when keyboard handlers start processing
+            runOnUI(() => {
+                'worklet';
 
-            // Set transition flag to prevent keyboard handlers from interfering during transition
-            isTransitioningFromCustomView.value = true;
-
-            // Hide emoji picker component
-            setShowInputAccessoryView(false);
+                // Disable custom view mode to allow keyboard handlers to work
+                // This is done AFTER setting transition flag to prevent race conditions
+                isInputAccessoryViewMode.value = false;
+            })();
 
             // Safety net: In rare cases (app backgrounding, system interruptions, rapid toggling),
             // the keyboard onEnd event might not fire, leaving us stuck in transition state.
@@ -257,7 +273,7 @@ export default function PostInput({
                 }
             }, 1000);
         }
-    }, [setIsFocused, showInputAccessoryView, inputAccessoryViewAnimatedHeight, setShowInputAccessoryView, isInputAccessoryViewMode, height, isTransitioningFromCustomView, isManuallyFocusingAfterEmojiDismiss]);
+    }, [setIsFocused, showInputAccessoryView, inputAccessoryViewAnimatedHeight, setShowInputAccessoryView, isInputAccessoryViewMode, height, isTransitioningFromCustomView, isManuallyFocusingAfterEmojiDismiss, setIsEmojiSearchFocused, keyboardHeight, lastKeyboardHeight]);
 
     const handleAndroidKeyboardHide = useCallback(() => {
         onBlur();
