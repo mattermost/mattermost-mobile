@@ -375,14 +375,6 @@ export const nativeEntraLogin = async (serverUrl: string, serverDisplayName: str
                         csrfToken = await getCSRFFromCookie(serverUrl);
                         break;
                     }
-                    case 412: {
-                        // MAM enrollment required
-                        logDebug('nativeEntraLogin: MAM enrollment required by server');
-                        await IntuneManager.enrollServer(serverUrl, identity);
-                        userData = await client.loginByIntune(accessToken, deviceToken);
-                        csrfToken = await getCSRFFromCookie(serverUrl);
-                        break;
-                    }
                     default:
                         // 400: LDAP user missing
                         // 409: User locked/disabled
