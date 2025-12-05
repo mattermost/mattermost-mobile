@@ -191,7 +191,7 @@ describe('SessionManager', () => {
             expect(NetworkManager.invalidateClient).toHaveBeenCalledWith(mockServerUrl);
             expect(WebsocketManager.invalidateClient).toHaveBeenCalledWith(mockServerUrl);
             expect(SecurityManager.removeServer).toHaveBeenCalledWith(mockServerUrl);
-            expect(IntuneManager.unenrollServer).toHaveBeenCalledWith(mockServerUrl, true);
+            expect(IntuneManager.unenrollServer).toHaveBeenCalledWith(mockServerUrl, false);
         });
 
         it('should handle session expiration', async () => {

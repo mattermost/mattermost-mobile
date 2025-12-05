@@ -22,7 +22,7 @@ const style = StyleSheet.create({
     },
 });
 
-const SSOEntra = ({doEntraLogin, loginError, setLoginError, theme}: SSOAuthenticationProps) => {
+const SSOIntune = ({doEntraLogin, loginError, setLoginError, theme}: SSOAuthenticationProps) => {
     const [loginSuccess, setLoginSuccess] = useState(false);
 
     const init = useCallback(async () => {
@@ -65,4 +65,4 @@ const SSOEntra = ({doEntraLogin, loginError, setLoginError, theme}: SSOAuthentic
     );
 };
 
-export default SSOEntra;
+export default SSOIntune;

@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {defineMessage, type IntlShape, type MessageDescriptor} from 'react-intl';
+import {defineMessage, type IntlShape} from 'react-intl';
 
-import {isErrorWithMessage, isErrorWithStatusCode} from '@utils/errors';
+import {isErrorWithMessage} from '@utils/errors';
 
 // MSAL Error Domain and Codes
 const MSAL_ERROR_DOMAIN = 'MSALErrorDomain';
@@ -11,22 +11,6 @@ const MSAL_ERROR_CODE_USER_CANCELED = -50005;
 
 // i18n message definitions
 const intuneErrorMessages = {
-    ldapUserMissing: defineMessage({
-        id: 'mobile.intune.login.ldap_user_missing',
-        defaultMessage: 'We couldn\'t sign you in. Please contact your system administrator for assistance',
-    }),
-    authTypeMismatch: defineMessage({
-        id: 'mobile.intune.login.auth_type_mismatch',
-        defaultMessage: 'Unable to find an existing account matching your authentication type. Please contact your system administrator for assistance',
-    }),
-    accountCreationBlocked: defineMessage({
-        id: 'mobile.intune.login.account_creation_blocked',
-        defaultMessage: 'Your account isn\'t fully set up yet. Please sign in to Mattermost via the web or desktop app first',
-    }),
-    userDeactivated: defineMessage({
-        id: 'mobile.intune.login.user_locked',
-        defaultMessage: 'Your account has been deactivated. Please contact your system administrator',
-    }),
     loginCanceled: defineMessage({
         id: 'mobile.intune.login.canceled',
         defaultMessage: 'Login was canceled. Please try again',
@@ -77,29 +61,6 @@ export function getIntuneErrorMessage(error: unknown, intl: IntlShape): string {
         return intl.formatMessage(intuneErrorMessages.loginCanceled);
     }
 
-    // Handle server errors with status codes
-    if (isErrorWithStatusCode(error)) {
-        // HTTP 409: User locked/disabled
-        if (error.status_code === 409) {
-            return intl.formatMessage(intuneErrorMessages.userDeactivated);
-        }
-
-        // HTTP 400: user missing
-        if (error.status_code === 400) {
-            return intl.formatMessage(intuneErrorMessages.ldapUserMissing);
-        }
-
-        // HTTP 500: auth type mismatch
-        if (error.status_code === 500) {
-            return intl.formatMessage(intuneErrorMessages.authTypeMismatch);
-        }
-
-        // HTTP 428: Account creation blocked by Custom Profile Attributes
-        if (error.status_code === 428) {
-            return intl.formatMessage(intuneErrorMessages.accountCreationBlocked);
-        }
-    }
-
     // Handle generic MSAL errors (other MSALErrorDomain codes)
     if (isNSError(error) && error.domain === MSAL_ERROR_DOMAIN) {
         return intl.formatMessage(intuneErrorMessages.authFailed);
@@ -108,7 +69,7 @@ export function getIntuneErrorMessage(error: unknown, intl: IntlShape): string {
     // Handle any other error with message
     if (isErrorWithMessage(error)) {
         // Check for raw MSAL error strings in message
-        if (error.message.includes('MSALErrorDomain') || error.message.includes('code:')) {
+        if (error.message.includes(MSAL_ERROR_DOMAIN) || error.message.includes('code:')) {
             return intl.formatMessage(intuneErrorMessages.authFailed);
         }
         return error.message;
@@ -116,47 +77,4 @@ export function getIntuneErrorMessage(error: unknown, intl: IntlShape): string {
 
     // Fallback for unknown errors
     return intl.formatMessage(intuneErrorMessages.authFailed);
-}
-
-/**
- * Export message descriptors for direct use without intl
- */
-export const IntuneErrorMessages = intuneErrorMessages;
-
-/**
- * Get raw message descriptor for specific error type
- * Useful for scenarios where intl is not yet available
- */
-export function getIntuneErrorMessageDescriptor(error: unknown): MessageDescriptor {
-    if (isMSALUserCancellation(error)) {
-        return intuneErrorMessages.loginCanceled;
-    }
-
-    if (isErrorWithStatusCode(error)) {
-        if (error.status_code === 409) {
-            return intuneErrorMessages.userDeactivated;
-        }
-
-        if (error.status_code === 428) {
-            return intuneErrorMessages.accountCreationBlocked;
-        }
-
-        if (error.status_code === 400) {
-            return intuneErrorMessages.ldapUserMissing;
-        }
-
-        if (error.status_code === 500) {
-            return intuneErrorMessages.authTypeMismatch;
-        }
-    }
-
-    if (isNSError(error) && error.domain === MSAL_ERROR_DOMAIN) {
-        return intuneErrorMessages.authFailed;
-    }
-
-    if (isErrorWithMessage(error) && (error.message.includes('MSALErrorDomain') || error.message.includes('code:'))) {
-        return intuneErrorMessages.authFailed;
-    }
-
-    return intuneErrorMessages.authFailed;
 }

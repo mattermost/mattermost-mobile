@@ -20,11 +20,10 @@ import {dismissModal, popTopScreen, resetToHome} from '@screens/navigation';
 import {getFullErrorMessage, isErrorWithUrl} from '@utils/errors';
 import {isMinimumLicenseTier} from '@utils/helpers';
 import {getIntuneErrorMessage} from '@utils/intune_errors';
-import {logWarning} from '@utils/log';
 
 import SSOAuthentication from './sso_authentication';
 import SSOAuthenticationWithExternalBrowser from './sso_authentication_with_external_browser';
-import SSOEntra from './sso_entra';
+import SSOIntune from './sso_intune';
 
 import type {LaunchProps} from '@typings/launch';
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -90,7 +89,6 @@ const SSO = ({
     }
 
     const onLoadEndError = useCallback((e: unknown, isEntraLogin = false) => {
-        logWarning('Failed to set store from local data', e);
         if (typeof e === 'string') {
             setLoginError(e);
             return;
@@ -184,7 +182,7 @@ const SSO = ({
     // Don't show web SSO if native Entra login is in progress or should be used
     if (shouldUseNativeEntra) {
         authentication = (
-            <SSOEntra
+            <SSOIntune
                 doEntraLogin={doEntraLogin}
                 loginError={loginError}
                 setLoginError={setLoginError}
