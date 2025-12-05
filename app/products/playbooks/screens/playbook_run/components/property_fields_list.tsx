@@ -10,6 +10,8 @@ import {useTheme} from '@context/theme';
 import {fetchPlaybookRunPropertyFields, updatePlaybookRunPropertyValue} from '@playbooks/actions/remote/property_fields';
 import {observePlaybookRunPropertyFieldsWithValues} from '@playbooks/database/queries/property_fields';
 import {sortPropertyFieldsByOrder} from '@playbooks/utils/property_fields';
+import {getFullErrorMessage} from '@utils/errors';
+import {logError} from '@utils/log';
 import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -60,12 +62,17 @@ type PropertyFieldsListProps = WithDatabaseArgs & {
     isReadOnly: boolean;
 };
 
+type PropertyFieldsWithValues = {
+    propertyField: PlaybookRunPropertyFieldModel;
+    value?: PlaybookRunPropertyValueModel;
+};
+
 const PropertyFieldsListComponent = ({
     serverUrl,
     runId,
     isReadOnly,
     propertyFieldsWithValues = [],
-}: PropertyFieldsListProps & {propertyFieldsWithValues?: Array<{propertyField: PlaybookRunPropertyFieldModel; value?: PlaybookRunPropertyValueModel}>}) => {
+}: PropertyFieldsListProps & {propertyFieldsWithValues?: PropertyFieldsWithValues[]}) => {
     const theme = useTheme();
     const intl = useIntl();
     const styles = getStyleSheet(theme);
@@ -73,8 +80,8 @@ const PropertyFieldsListComponent = ({
 
     // Fetch property fields when component mounts to ensure they're loaded
     useEffect(() => {
-        fetchPlaybookRunPropertyFields(serverUrl, runId, false).catch(() => {
-            // Silently fail - property fields are not critical
+        fetchPlaybookRunPropertyFields(serverUrl, runId, false).catch((error) => {
+            logError('failed to fetch playbook run property fields', getFullErrorMessage(error) ?? 'unknown error');
         });
     }, [serverUrl, runId]);
 
@@ -120,7 +127,7 @@ const PropertyFieldsListComponent = ({
             return null;
         }
 
-        return sortedPropertyFields.map((propertyField) => {
+        return sortedPropertyFields.map((propertyField: PlaybookRunPropertyFieldModel) => {
             const value = valuesMap.get(propertyField.id);
             const isUpdating = updatingFieldId === propertyField.id;
             const isDisabled = isReadOnly || isUpdating;
@@ -141,11 +148,14 @@ const PropertyFieldsListComponent = ({
 
             if (propertyField.type === 'select' || propertyField.type === 'multiselect') {
                 // Include value's updateAt in key to force re-render when value changes
-                const selectKey = `${propertyField.id}-${value?.updateAt ?? 'no-value'}`;
+                // Use propertyField.id as fallback to ensure uniqueness when there's no value
+                const valueKey = value?.updateAt ?? propertyField.id;
+                const containerKey = `${propertyField.id}-container-${valueKey}`;
+                const fieldKey = `${propertyField.id}-field-${valueKey}`;
                 return (
-                    <View key={selectKey}>
+                    <View key={containerKey}>
                         <PropertySelectField
-                            key={selectKey}
+                            key={fieldKey}
                             propertyField={propertyField}
                             value={value}
                             onValueChange={handleValueChange}
