@@ -276,3 +276,8 @@ export function safeDecodeURIComponent(v: string) {
         return v;
     }
 }
+
+export function getUrlDomain(url: string): string {
+    const parsed = urlParse(url);
+    return parsed.hostname || url;
+}

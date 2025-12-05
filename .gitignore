@@ -123,3 +123,6 @@ libraries/**/**/.build
 # Android sounds
 android/app/src/main/res/raw/*
 .aider*
+
+# Claude Code
+.claude/settings.local.json

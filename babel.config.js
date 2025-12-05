@@ -15,6 +15,7 @@ module.exports = {
             root: ['.'],
             alias: {
                 '@actions': './app/actions',
+                '@agents': './app/products/agents',
                 '@assets': './dist/assets/',
                 '@calls': './app/products/calls',
                 '@client': './app/client',

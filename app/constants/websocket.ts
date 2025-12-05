@@ -105,6 +105,9 @@ const WebsocketEvents = {
     CUSTOM_PROFILE_ATTRIBUTES_FIELD_UPDATED: 'custom_profile_attributes_field_updated',
     CUSTOM_PROFILE_ATTRIBUTES_FIELD_CREATED: 'custom_profile_attributes_field_created',
     CUSTOM_PROFILE_ATTRIBUTES_FIELD_DELETED: 'custom_profile_attributes_field_deleted',
+
+    // Agents
+    AGENTS_POST_UPDATE: 'custom_mattermost-ai_postupdate',
 };
 
 export default WebsocketEvents;
