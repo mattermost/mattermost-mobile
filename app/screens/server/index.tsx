@@ -145,6 +145,9 @@ const Server = ({
             // If no other servers are allowed or the local config for AutoSelectServerUrl is set, attempt to connect
             handleConnect(managedConfig?.serverUrl || LocalConfig.DefaultServerUrl);
         }
+
+        // We only want to handle connect when a smaller set of variables change
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [managedConfig?.allowOtherServers, managedConfig?.serverUrl, managedConfig?.serverName, defaultServerUrl]);
 
     useEffect(() => {
@@ -185,6 +188,9 @@ const Server = ({
         PushNotifications.registerIfNeeded();
 
         return () => backHandler.remove();
+
+        // We register the back handler and the push notifications only on mount
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useNavButtonPressed(closeButtonId || '', componentId, dismiss, []);
@@ -323,7 +329,12 @@ const Server = ({
             }
             return;
         }
-        const result = await doPing(headRequest.url, true, managedConfig?.timeout ? parseInt(managedConfig?.timeout, 10) : undefined, preauthSecret.trim() || undefined);
+        const result = await doPing(
+            headRequest.url,
+            true, // verifyPushProxy
+            managedConfig?.timeout ? parseInt(managedConfig?.timeout, 10) : undefined, // timeoutInterval
+            preauthSecret.trim() || undefined, // preauthSecret
+        );
 
         if (canceled) {
             return;
