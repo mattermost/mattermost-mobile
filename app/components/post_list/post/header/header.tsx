@@ -4,7 +4,7 @@
 import React, {useCallback, useMemo} from 'react';
 import {View} from 'react-native';
 
-import {deletePost} from '@actions/remote/post';
+import {removePost} from '@actions/local/post';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
@@ -107,8 +107,8 @@ const Header = (props: HeaderProps) => {
     const borExpireAt = post.metadata?.expire_at;
     const serverUrl = useServerUrl();
 
-    const onBoRPostExpiry = useCallback(() => {
-        deletePost(serverUrl, post);
+    const onBoRPostExpiry = useCallback(async () => {
+        await removePost(serverUrl, post);
     }, [post, serverUrl]);
 
     return (
