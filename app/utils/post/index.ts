@@ -45,13 +45,7 @@ export function isEdited(post: PostModel): boolean {
 }
 
 export function isPostEphemeral(post: PostModel): boolean {
-    const is = post.type === Post.POST_TYPES.EPHEMERAL || post.type === Post.POST_TYPES.EPHEMERAL_ADD_TO_CHANNEL || post.deleteAt > 0;
-
-    if (is) {
-        console.log({is, type: post.type, deleteat: post.deleteAt});
-    }
-
-    return is;
+    return post.type === Post.POST_TYPES.EPHEMERAL || post.type === Post.POST_TYPES.EPHEMERAL_ADD_TO_CHANNEL || post.deleteAt > 0;
 }
 
 export function isPostFailed(post: PostModel): boolean {

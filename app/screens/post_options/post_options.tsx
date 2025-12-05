@@ -72,8 +72,6 @@ const PostOptions = ({
     const canCopyPermalink = !isSystemPost && managedConfig?.copyAndPasteProtection !== 'true';
     const canCopyText = canCopyPermalink && post.message && !isBoRPost;
 
-    console.log({canCopyText, canCopyPermalink, isBoRPost});
-
     const shouldRenderFollow = !(sourceScreen !== Screens.CHANNEL || !thread);
     const shouldShowBindings = bindings.length > 0 && !isSystemPost;
 
