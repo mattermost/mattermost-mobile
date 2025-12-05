@@ -343,7 +343,7 @@ index 035ec31..630b8d4 100644
 +    }
  }
 diff --git a/node_modules/react-native-navigation/lib/android/app/src/reactNative71/java/com/reactnativenavigation/react/modal/ModalContentLayout.kt b/node_modules/react-native-navigation/lib/android/app/src/reactNative71/java/com/reactnativenavigation/react/modal/ModalContentLayout.kt
-index 551f72b..9507dc9 100644
+index 551f72b..f275c18 100644
 --- a/node_modules/react-native-navigation/lib/android/app/src/reactNative71/java/com/reactnativenavigation/react/modal/ModalContentLayout.kt
 +++ b/node_modules/react-native-navigation/lib/android/app/src/reactNative71/java/com/reactnativenavigation/react/modal/ModalContentLayout.kt
 @@ -49,17 +49,23 @@ class ModalContentLayout(context: Context?) : ReactViewGroup(context), RootView{
@@ -377,29 +377,33 @@ index 551f72b..9507dc9 100644
          val reactContext: ReactContext = this.getReactContext()
          return reactContext.getNativeModule(UIManagerModule::class.java)!!.eventDispatcher
      }
-@@ -74,14 +80,13 @@ class ModalContentLayout(context: Context?) : ReactViewGroup(context), RootView{
+@@ -73,13 +79,17 @@ class ModalContentLayout(context: Context?) : ReactViewGroup(context), RootView{
+         return this.context as ReactContext
      }
  
-     override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
+-    override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
 -        mJSTouchDispatcher.handleTouchEvent(event, getEventDispatcher())
-+        mJSTouchDispatcher.handleTouchEvent(event, getEventDispatcher()!!)
++    override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
++        getEventDispatcher()?.let {
++            mJSTouchDispatcher.handleTouchEvent(event, it)
++        }
          return super.onInterceptTouchEvent(event)
      }
- 
-     override fun onTouchEvent(event: MotionEvent): Boolean {
+
+-    override fun onTouchEvent(event: MotionEvent): Boolean {
 -        mJSTouchDispatcher.handleTouchEvent(event, getEventDispatcher())
-+        mJSTouchDispatcher.handleTouchEvent(event, getEventDispatcher()!!)
++    override fun onTouchEvent(event: MotionEvent): Boolean {
++        getEventDispatcher()?.let {
++            mJSTouchDispatcher.handleTouchEvent(event, it)
++        }
          super.onTouchEvent(event)
          return true
      }
--
- }
-\ No newline at end of file
 diff --git a/node_modules/react-native-navigation/lib/ios/RNNComponentViewController.m b/node_modules/react-native-navigation/lib/ios/RNNComponentViewController.m
 index fc482a6..9406bbf 100644
 --- a/node_modules/react-native-navigation/lib/ios/RNNComponentViewController.m
 +++ b/node_modules/react-native-navigation/lib/ios/RNNComponentViewController.m
-@@ -94,6 +94,7 @@ - (void)renderReactViewIfNeeded {
+@@ -94,6 +94,7 @@
                                                                 }];
                                    }];
          self.reactView.backgroundColor = UIColor.clearColor;
@@ -420,7 +424,7 @@ index b44f24f..bf4e1c3 100644
  
  @implementation RNNOverlayWindow
  
-@@ -9,6 +11,8 @@ - (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
+@@ -9,6 +11,8 @@
  
      if ([hitTestResult isKindOfClass:[UIWindow class]] ||
          [hitTestResult.subviews.firstObject isKindOfClass:RNNReactView.class] ||
