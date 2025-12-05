@@ -2,8 +2,10 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
+import {useIntl} from 'react-intl';
 
-import {deletePost, revealBoRPost} from '@actions/remote/post';
+import {removePost} from '@actions/local/post';
+import {revealBoRPost} from '@actions/remote/post';
 import Button from '@components/button';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -12,7 +14,7 @@ import {getFullErrorMessage, getServerError} from '@utils/errors';
 import {showBoRPostErrorSnackbar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import {BOR_GLOBALLY_EXPIRED_POST_ERROR_CODE, BOR_POST_EXPIRED_FOR_USER_ERROR_CODE} from './constants';
+import {BOR_ERROR_CODES} from './constants';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     buttonBackgroundStyle: {
@@ -33,6 +35,7 @@ export default function UnrevealedBurnOnReadPost({post}: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
+    const intl = useIntl();
 
     const handleRevealPost = useCallback(async () => {
         const {error} = await revealBoRPost(serverUrl, post.id);
@@ -40,8 +43,8 @@ export default function UnrevealedBurnOnReadPost({post}: Props) {
             showBoRPostErrorSnackbar(getFullErrorMessage(error));
 
             const serverError = getServerError(error);
-            if (serverError === BOR_POST_EXPIRED_FOR_USER_ERROR_CODE || serverError === BOR_GLOBALLY_EXPIRED_POST_ERROR_CODE) {
-                deletePost(serverUrl, post);
+            if (serverError && BOR_ERROR_CODES.includes(serverError)) {
+                await removePost(serverUrl, post);
             }
         }
 
@@ -49,7 +52,7 @@ export default function UnrevealedBurnOnReadPost({post}: Props) {
 
     return (
         <Button
-            text={'View message'}
+            text={intl.formatMessage({id: 'mobile.burn_on_read.placeholder', defaultMessage: 'View message'})}
             iconName='eye-outline'
             theme={theme}
             backgroundStyle={styles.buttonBackgroundStyle}

@@ -114,7 +114,7 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
         return of$(!isArchived && !isReadOnly && sourceScreen !== Screens.THREAD && !isSystemMessage(post) && canPost);
     }));
 
-    const canPin = combineLatest([channelIsArchived, channelIsReadOnly]).pipe(switchMap(([isArchived, isReadOnly]) => {
+    const canPin = borPost ? of$(false) : combineLatest([channelIsArchived, channelIsReadOnly]).pipe(switchMap(([isArchived, isReadOnly]) => {
         return of$(!isSystemMessage(post) && !isArchived && !isReadOnly);
     }));
 
@@ -166,6 +166,7 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
         post,
         thread,
         bindings,
+        isBoRPost: of$(borPost),
     };
 });
 
