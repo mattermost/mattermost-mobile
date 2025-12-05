@@ -11,6 +11,7 @@ import {
     Alert, AppState, type AppStateStatus, DeviceEventEmitter, type EmitterSubscription, Keyboard,
     type NativeSyntheticEvent, Platform, type TextInputSelectionChangeEventData,
 } from 'react-native';
+import Animated, {cancelAnimation, Easing, useAnimatedStyle, useSharedValue, withRepeat, withTiming} from 'react-native-reanimated';
 
 import {updateDraftMessage} from '@actions/local/draft';
 import {userTyping} from '@actions/websocket/users';
@@ -139,6 +140,29 @@ export default function PostInput({
     const pasteInputStyle = useMemo(() => {
         return {...style.input, maxHeight};
     }, [maxHeight, style.input]);
+
+    // Pulsing animation for when AI rewrite is processing
+    const pulseOpacity = useSharedValue(1);
+    const pulsingAnimatedStyle = useAnimatedStyle(() => ({
+        opacity: pulseOpacity.value,
+    }));
+
+    useEffect(() => {
+        if (isProcessing) {
+            pulseOpacity.value = withRepeat(
+                withTiming(0.5, {duration: 400, easing: Easing.inOut(Easing.ease)}),
+                -1,
+                true,
+            );
+        } else {
+            cancelAnimation(pulseOpacity);
+            pulseOpacity.value = withTiming(1, {duration: 200});
+        }
+
+        return () => {
+            cancelAnimation(pulseOpacity);
+        };
+    }, [isProcessing, pulseOpacity]);
 
     const onBlur = useCallback(() => {
         keyboardContext?.registerTextInputBlur();
@@ -329,29 +353,31 @@ export default function PostInput({
     useHardwareKeyboardEvents(events);
 
     return (
-        <PasteableTextInput
-            allowFontScaling={true}
-            disableCopyPaste={disableCopyAndPaste}
-            disableFullscreenUI={true}
-            keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-            multiline={true}
-            onBlur={onBlur}
-            onChangeText={handleTextChange}
-            onFocus={onFocus}
-            onPaste={onPaste}
-            onSelectionChange={handlePostDraftSelectionChanged}
-            placeholder={intl.formatMessage(getPlaceHolder(rootId), {channelDisplayName})}
-            placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-            ref={inputRef}
-            smartPunctuation='disable'
-            submitBehavior='newline'
-            style={pasteInputStyle}
-            testID={testID}
-            underlineColorAndroid='transparent'
-            textContentType='none'
-            value={value}
-            autoCapitalize='sentences'
-            editable={!isProcessing}
-        />
+        <Animated.View style={pulsingAnimatedStyle}>
+            <PasteableTextInput
+                allowFontScaling={true}
+                disableCopyPaste={disableCopyAndPaste}
+                disableFullscreenUI={true}
+                keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                multiline={true}
+                onBlur={onBlur}
+                onChangeText={handleTextChange}
+                onFocus={onFocus}
+                onPaste={onPaste}
+                onSelectionChange={handlePostDraftSelectionChanged}
+                placeholder={intl.formatMessage(getPlaceHolder(rootId), {channelDisplayName})}
+                placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
+                ref={inputRef}
+                smartPunctuation='disable'
+                submitBehavior='newline'
+                style={pasteInputStyle}
+                testID={testID}
+                underlineColorAndroid='transparent'
+                textContentType='none'
+                value={value}
+                autoCapitalize='sentences'
+                editable={!isProcessing}
+            />
+        </Animated.View>
     );
 }

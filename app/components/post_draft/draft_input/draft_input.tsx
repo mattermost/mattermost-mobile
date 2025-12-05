@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ProcessingOverlay, useAIRewrite} from '@ai/rewrite';
+import {AIRewriting} from '@ai/rewrite';
 import React, {useCallback, useRef} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, type LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
@@ -141,7 +141,6 @@ function DraftInput({
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const isTablet = useIsTablet();
-    const {isProcessing, cancelRewrite} = useAIRewrite();
 
     const handleLayout = useCallback((e: LayoutChangeEvent) => {
         updatePostInputTop(e.nativeEvent.layout.height);
@@ -199,6 +198,7 @@ function DraftInput({
 
     return (
         <>
+            <AIRewriting/>
             <Typing
                 channelId={channelId}
                 rootId={rootId}
@@ -266,12 +266,6 @@ function DraftInput({
                         />
                     </View>
                 </ScrollView>
-                {isProcessing && (
-                    <ProcessingOverlay
-                        theme={theme}
-                        onCancel={cancelRewrite}
-                    />
-                )}
             </SafeAreaView>
         </>
     );

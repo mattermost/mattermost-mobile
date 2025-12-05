@@ -5,7 +5,7 @@
 export {useAIRewrite} from './hooks';
 
 // Components
-export {ProcessingOverlay, AnimatedAIIcon} from './components';
+export {AIRewriting} from './components';
 
 // Screens
 export {RewriteOptions, AgentSelector} from './screens';
