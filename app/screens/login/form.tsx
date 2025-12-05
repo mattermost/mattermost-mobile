@@ -45,7 +45,7 @@ function getButtonDisabled(loginId: string, password: string, userLoginType: Log
         return true;
     }
 
-    if (magicLinkEnabled && (userLoginType === 'guest_magic_link' || userLoginType === undefined)) {
+    if (magicLinkEnabled && (userLoginType === 'magic_link' || userLoginType === undefined)) {
         return false;
     }
 
@@ -248,7 +248,7 @@ const LoginForm = ({
         Keyboard.dismiss();
         if (magicLinkEnabled && userLoginType === undefined) {
             const receivedUserLoginType = await checkUserLoginType();
-            if (receivedUserLoginType === 'guest_magic_link') {
+            if (receivedUserLoginType === 'magic_link') {
                 setMagicLinkSent(true);
             }
             if (isDeactivated) {
@@ -310,7 +310,7 @@ const LoginForm = ({
     }, [managedConfig?.username]);
 
     const onIdInputSubmitting = useCallback(() => {
-        if (!magicLinkEnabled || (userLoginType !== 'guest_magic_link')) {
+        if (!magicLinkEnabled || (userLoginType !== 'magic_link')) {
             focusPassword();
             return;
         }
@@ -319,7 +319,7 @@ const LoginForm = ({
     }, [focusPassword, onLogin, magicLinkEnabled, userLoginType]);
 
     const buttonDisabled = getButtonDisabled(loginId, password, userLoginType, isDeactivated, magicLinkEnabled);
-    const showPasswordInput = !magicLinkEnabled || (userLoginType !== 'guest_magic_link' && userLoginType !== undefined && !isDeactivated);
+    const showPasswordInput = !magicLinkEnabled || (userLoginType !== 'magic_link' && userLoginType !== undefined && !isDeactivated);
     let userInputError = error;
     if (showPasswordInput) {
         // error is passed to the password input box, so we use this
