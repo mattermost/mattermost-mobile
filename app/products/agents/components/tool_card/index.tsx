@@ -26,6 +26,93 @@ interface ToolCardProps {
     onReject?: (toolId: string) => void;
 }
 
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+    return {
+        container: {
+            marginBottom: 4,
+        },
+        header: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 8,
+            minHeight: TOUCH_TARGET_SIZE,
+            paddingVertical: 8,
+        },
+        chevronIcon: {
+            width: 12,
+        },
+        statusIcon: {
+            width: 12,
+            height: 12,
+        },
+        toolName: {
+            fontSize: 11,
+            lineHeight: 20,
+            color: changeOpacity(theme.centerChannelColor, 0.75),
+            flex: 1,
+        },
+        argumentsContainer: {
+            marginLeft: 24,
+        },
+        markdownText: {
+            fontSize: 11,
+            lineHeight: 16,
+            color: changeOpacity(theme.centerChannelColor, 0.75),
+        },
+        responseLabel: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 8,
+            paddingTop: 8,
+            paddingLeft: 24,
+        },
+        responseLabelText: {
+            fontSize: 11,
+            fontWeight: '600',
+            lineHeight: 20,
+            color: changeOpacity(theme.centerChannelColor, 0.75),
+        },
+        resultContainer: {
+            marginLeft: 24,
+        },
+        statusContainer: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 8,
+            marginTop: 16,
+            paddingLeft: 24,
+        },
+        statusText: {
+            fontSize: 11,
+            lineHeight: 16,
+            color: changeOpacity(theme.centerChannelColor, 0.75),
+        },
+        buttonContainer: {
+            flexDirection: 'row',
+            gap: 8,
+            marginTop: 4,
+            paddingLeft: 24,
+        },
+        button: {
+            backgroundColor: changeOpacity(theme.buttonBg, 0.08),
+            borderRadius: 4,
+            paddingVertical: 4,
+            paddingHorizontal: 10,
+            height: TOUCH_TARGET_SIZE,
+            justifyContent: 'center',
+        },
+        buttonDisabled: {
+            opacity: 0.5,
+        },
+        buttonText: {
+            fontSize: 12,
+            fontWeight: '600',
+            lineHeight: 16,
+            color: theme.buttonBg,
+        },
+    };
+});
+
 /**
  * Individual tool card component showing tool details and approval buttons
  */
@@ -275,92 +362,5 @@ const ToolCard = ({
         </View>
     );
 };
-
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
-    return {
-        container: {
-            marginBottom: 4,
-        },
-        header: {
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 8,
-            minHeight: TOUCH_TARGET_SIZE,
-            paddingVertical: 8,
-        },
-        chevronIcon: {
-            width: 12,
-        },
-        statusIcon: {
-            width: 12,
-            height: 12,
-        },
-        toolName: {
-            fontSize: 11,
-            lineHeight: 20,
-            color: changeOpacity(theme.centerChannelColor, 0.75),
-            flex: 1,
-        },
-        argumentsContainer: {
-            marginLeft: 24,
-        },
-        markdownText: {
-            fontSize: 11,
-            lineHeight: 16,
-            color: changeOpacity(theme.centerChannelColor, 0.75),
-        },
-        responseLabel: {
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 8,
-            paddingTop: 8,
-            paddingLeft: 24,
-        },
-        responseLabelText: {
-            fontSize: 11,
-            fontWeight: '600',
-            lineHeight: 20,
-            color: changeOpacity(theme.centerChannelColor, 0.75),
-        },
-        resultContainer: {
-            marginLeft: 24,
-        },
-        statusContainer: {
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 8,
-            marginTop: 16,
-            paddingLeft: 24,
-        },
-        statusText: {
-            fontSize: 11,
-            lineHeight: 16,
-            color: changeOpacity(theme.centerChannelColor, 0.75),
-        },
-        buttonContainer: {
-            flexDirection: 'row',
-            gap: 8,
-            marginTop: 4,
-            paddingLeft: 24,
-        },
-        button: {
-            backgroundColor: changeOpacity(theme.buttonBg, 0.08),
-            borderRadius: 4,
-            paddingVertical: 4,
-            paddingHorizontal: 10,
-            height: TOUCH_TARGET_SIZE,
-            justifyContent: 'center',
-        },
-        buttonDisabled: {
-            opacity: 0.5,
-        },
-        buttonText: {
-            fontSize: 12,
-            fontWeight: '600',
-            lineHeight: 16,
-            color: theme.buttonBg,
-        },
-    };
-});
 
 export default ToolCard;

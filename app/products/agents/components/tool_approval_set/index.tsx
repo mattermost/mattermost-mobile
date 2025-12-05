@@ -23,6 +23,29 @@ type ToolDecision = {
     [toolId: string]: boolean | null; // true = approved, false = rejected, null = undecided
 };
 
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+    return {
+        container: {
+            marginTop: 8,
+            marginBottom: 12,
+            gap: 8,
+        },
+        statusBar: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 8,
+            padding: 12,
+            marginTop: 8,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.04),
+            borderRadius: 4,
+        },
+        statusText: {
+            fontSize: 12,
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+        },
+    };
+});
+
 /**
  * Container component for displaying and managing tool approval requests
  */
@@ -187,28 +210,5 @@ const ToolApprovalSet = ({postId, toolCalls}: ToolApprovalSetProps) => {
         </View>
     );
 };
-
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
-    return {
-        container: {
-            marginTop: 8,
-            marginBottom: 12,
-            gap: 8,
-        },
-        statusBar: {
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 8,
-            padding: 12,
-            marginTop: 8,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.04),
-            borderRadius: 4,
-        },
-        statusText: {
-            fontSize: 12,
-            color: changeOpacity(theme.centerChannelColor, 0.64),
-        },
-    };
-});
 
 export default ToolApprovalSet;
