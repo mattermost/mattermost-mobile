@@ -87,7 +87,7 @@ type Props = {
     updateValue: (value: string | ((prevValue: string) => string)) => void;
 };
 
-const CUSTOM_PROMPT_INPUT_HEIGHT = 56;
+const CUSTOM_PROMPT_INPUT_HEIGHT = 64;
 const OPTIONS_PADDING = 8;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -95,9 +95,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         backgroundColor: theme.centerChannelBg,
     },
     headerContainer: {
-        paddingTop: 8,
-        paddingBottom: 4,
-        gap: 8,
+        gap: 4,
     },
     customPromptContainer: {},
     customPromptInputWrapper: {
@@ -109,7 +107,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         borderRadius: 4,
         paddingHorizontal: 12,
         paddingVertical: 12,
-        gap: 8,
+        gap: 4,
+    },
+    customPromptIcon: {
+        marginTop: 4,
     },
     customPromptInput: {
         flex: 1,
@@ -120,6 +121,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         margin: 0,
         includeFontPadding: false,
         textAlignVertical: 'center',
+        verticalAlign: 'middle',
+        justifyContent: 'center',
     },
     optionsContainer: {
         paddingTop: OPTIONS_PADDING,
@@ -341,6 +344,7 @@ const RewriteOptions = ({
                             name='creation-outline'
                             size={20}
                             color={changeOpacity(theme.centerChannelColor, 0.64)}
+                            style={styles.customPromptIcon}
                         />
                         <TextInput
                             ref={textInputRef}
@@ -383,9 +387,10 @@ const RewriteOptions = ({
             initialSnapIndex={1}
             snapPoints={snapPoints}
             scrollable={true}
-            keyboardBehavior='extend'
+            keyboardBehavior='fillParent'
             keyboardBlurBehavior='none'
             testID='ai_rewrite_options'
+            contentStyle={{paddingTop: 10}}
         />
     );
 };
