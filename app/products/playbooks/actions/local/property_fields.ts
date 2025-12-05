@@ -4,6 +4,8 @@
 import DatabaseManager from '@database/manager';
 import {logError} from '@utils/log';
 
+import type Model from '@nozbe/watermelondb/Model';
+
 /**
  * Store property fields and values in the local database
  * @param serverUrl - The server URL
@@ -19,20 +21,30 @@ export async function handlePlaybookRunPropertyFields(
     try {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
+        // Prepare records for batching
+        const batch: Model[] = [];
+
         // Handle property fields
         if (propertyFields.length) {
-            await operator.handlePlaybookRunPropertyField({
+            const propertyFieldRecords = await operator.handlePlaybookRunPropertyField({
                 propertyFields,
-                prepareRecordsOnly: false,
+                prepareRecordsOnly: true,
             });
+            batch.push(...propertyFieldRecords);
         }
 
         // Handle property values
         if (propertyValues.length) {
-            await operator.handlePlaybookRunPropertyValue({
+            const propertyValueRecords = await operator.handlePlaybookRunPropertyValue({
                 propertyValues,
-                prepareRecordsOnly: false,
+                prepareRecordsOnly: true,
             });
+            batch.push(...propertyValueRecords);
+        }
+
+        // Batch all records together in a single database operation
+        if (batch.length) {
+            await operator.batchRecords(batch, 'handlePlaybookRunPropertyFields');
         }
 
         return {data: true};
