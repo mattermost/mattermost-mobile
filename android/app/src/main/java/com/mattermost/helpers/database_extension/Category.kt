@@ -69,19 +69,22 @@ fun insertCategoriesWithChannels(db: WMDatabase, orderCategories: ReadableMap) {
 fun insertChannelToDefaultCategory(db: WMDatabase, categoryChannels: ReadableArray) {
     try {
         for (i in 0 until categoryChannels.size()) {
-            val cc = categoryChannels.getMap(i)
-            val id = cc?.getString("id")
-            val categoryId = cc?.getString("category_id")
-            val channelId = cc?.getString("channel_id")
-            val count = countByColumn(db, "CategoryChannel", "category_id", categoryId)
-            db.execute(
-                    """
-                        INSERT INTO CategoryChannel
-                        (id, category_id, channel_id, sort_order, _changed, _status)
-                        VALUES (?, ?, ?, ?, '', 'created')
-                    """.trimIndent(),
-                    arrayOf(id, categoryId, channelId, if (count > 0) count + 1 else count)
-            )
+            categoryChannels.getMap(i)?.let { cc ->
+                val id = cc.getString("id")
+                val categoryId = cc.getString("category_id")
+                val channelId = cc.getString("channel_id")
+                if (id != null && categoryId != null && channelId != null) {
+                    val count = countByColumn(db, "CategoryChannel", "category_id", categoryId)
+                    db.execute(
+                            """
+                                INSERT INTO CategoryChannel
+                                (id, category_id, channel_id, sort_order, _changed, _status)
+                                VALUES (?, ?, ?, ?, '', 'created')
+                            """.trimIndent(),
+                            arrayOf(id, categoryId, channelId, if (count > 0) count + 1 else count)
+                    )
+                }
+            }
         }
     } catch (e: Exception) {
         e.printStackTrace()
