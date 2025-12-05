@@ -204,7 +204,7 @@
     "postinstall": "patch-package && ./scripts/postinstall.sh",
     "prepare": "husky",
     "preinstall": "./scripts/preinstall.sh && npx solidarity",
-    "start": "react-native start",
+    "start": "react-native start --host 127.0.0.1",
     "test": "NODE_OPTIONS=--max_old_space_size=12000 jest --runInBand",
     "test:ci": "NODE_OPTIONS=--max_old_space_size=12000 jest --verbose=false --forceExit",
     "test:ci:coverage": "npm run test:ci -- --coverage",
