@@ -3,7 +3,7 @@
 
 import {Image} from 'expo-image';
 import React, {forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState} from 'react';
-import {BackHandler} from 'react-native';
+import {BackHandler, type ImageStyle} from 'react-native';
 import Animated, {runOnJS, runOnUI, useAnimatedReaction, type SharedValue} from 'react-native-reanimated';
 
 import {buildFilePreviewUrl} from '@actions/remote/file';
@@ -153,7 +153,7 @@ const Gallery = forwardRef<GalleryRef, GalleryProps>(({
             return (
                 <AnimatedImage
                     placeholder={{uri: item.posterUri}}
-                    style={info.itemStyles}
+                    style={info.itemStyles as ImageStyle}
                     placeholderContentFit='cover'
                 />
             );
