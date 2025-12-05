@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {useAIRewrite} from '@ai/rewrite';
 import {useHardwareKeyboardEvents} from '@mattermost/hardware-keyboard';
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import PasteableTextInput, {type PastedFile, type PasteInputRef} from '@mattermost/react-native-paste-input';
@@ -10,6 +11,7 @@ import {
     Alert, AppState, type AppStateStatus, DeviceEventEmitter, type EmitterSubscription, Keyboard,
     type NativeSyntheticEvent, Platform, type TextInputSelectionChangeEventData,
 } from 'react-native';
+import Animated, {cancelAnimation, Easing, useAnimatedStyle, useSharedValue, withRepeat, withTiming} from 'react-native-reanimated';
 
 import {updateDraftMessage} from '@actions/local/draft';
 import {userTyping} from '@actions/websocket/users';
@@ -124,6 +126,7 @@ export default function PostInput({
     const managedConfig = useManagedConfig<ManagedConfig>();
     const keyboardContext = useExtraKeyboardContext();
     const [propagateValue, shouldProcessEvent] = useInputPropagation();
+    const {isProcessing} = useAIRewrite();
 
     const lastTypingEventSent = useRef(0);
 
@@ -138,13 +141,28 @@ export default function PostInput({
         return {...style.input, maxHeight};
     }, [maxHeight, style.input]);
 
-    const handleAndroidKeyboardHide = () => {
-        onBlur();
-    };
+    // Pulsing animation for when AI rewrite is processing
+    const pulseOpacity = useSharedValue(1);
+    const pulsingAnimatedStyle = useAnimatedStyle(() => ({
+        opacity: pulseOpacity.value,
+    }));
 
-    const handleAndroidKeyboardShow = () => {
-        onFocus();
-    };
+    useEffect(() => {
+        if (isProcessing) {
+            pulseOpacity.value = withRepeat(
+                withTiming(0.5, {duration: 400, easing: Easing.inOut(Easing.ease)}),
+                -1,
+                true,
+            );
+        } else {
+            cancelAnimation(pulseOpacity);
+            pulseOpacity.value = withTiming(1, {duration: 200});
+        }
+
+        return () => {
+            cancelAnimation(pulseOpacity);
+        };
+    }, [isProcessing, pulseOpacity]);
 
     const onBlur = useCallback(() => {
         keyboardContext?.registerTextInputBlur();
@@ -161,6 +179,14 @@ export default function PostInput({
         keyboardContext?.registerTextInputFocus();
         setIsFocused(true);
     }, [setIsFocused, keyboardContext]);
+
+    const handleAndroidKeyboardHide = useCallback(() => {
+        onBlur();
+    }, [onBlur]);
+
+    const handleAndroidKeyboardShow = useCallback(() => {
+        onFocus();
+    }, [onFocus]);
 
     const checkMessageLength = useCallback((newValue: string) => {
         const valueLength = newValue.trim().length;
@@ -286,7 +312,7 @@ export default function PostInput({
             keyboardShowListener?.remove();
             keyboardHideListener?.remove();
         });
-    }, []);
+    }, [handleAndroidKeyboardHide, handleAndroidKeyboardShow]);
 
     useEffect(() => {
         const listener = AppState.addEventListener('change', onAppStateChange);
@@ -311,14 +337,14 @@ export default function PostInput({
             listener.remove();
             updateDraftMessage(serverUrl, channelId, rootId, lastNativeValue.current); // safe draft on unmount
         };
-    }, [updateValue, channelId, rootId]);
+    }, [updateValue, channelId, rootId, inputRef, propagateValue, serverUrl, updateCursorPosition, value]);
 
     useEffect(() => {
         if (value !== lastNativeValue.current) {
             propagateValue(value);
             lastNativeValue.current = value;
         }
-    }, [value]);
+    }, [value, propagateValue]);
 
     const events = useMemo(() => ({
         onEnterPressed: handleHardwareEnterPress,
@@ -327,28 +353,31 @@ export default function PostInput({
     useHardwareKeyboardEvents(events);
 
     return (
-        <PasteableTextInput
-            allowFontScaling={true}
-            disableCopyPaste={disableCopyAndPaste}
-            disableFullscreenUI={true}
-            keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-            multiline={true}
-            onBlur={onBlur}
-            onChangeText={handleTextChange}
-            onFocus={onFocus}
-            onPaste={onPaste}
-            onSelectionChange={handlePostDraftSelectionChanged}
-            placeholder={intl.formatMessage(getPlaceHolder(rootId), {channelDisplayName})}
-            placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-            ref={inputRef}
-            smartPunctuation='disable'
-            submitBehavior='newline'
-            style={pasteInputStyle}
-            testID={testID}
-            underlineColorAndroid='transparent'
-            textContentType='none'
-            value={value}
-            autoCapitalize='sentences'
-        />
+        <Animated.View style={pulsingAnimatedStyle}>
+            <PasteableTextInput
+                allowFontScaling={true}
+                disableCopyPaste={disableCopyAndPaste}
+                disableFullscreenUI={true}
+                keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                multiline={true}
+                onBlur={onBlur}
+                onChangeText={handleTextChange}
+                onFocus={onFocus}
+                onPaste={onPaste}
+                onSelectionChange={handlePostDraftSelectionChanged}
+                placeholder={intl.formatMessage(getPlaceHolder(rootId), {channelDisplayName})}
+                placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
+                ref={inputRef}
+                smartPunctuation='disable'
+                submitBehavior='newline'
+                style={pasteInputStyle}
+                testID={testID}
+                underlineColorAndroid='transparent'
+                textContentType='none'
+                value={value}
+                autoCapitalize='sentences'
+                editable={!isProcessing}
+            />
+        </Animated.View>
     );
 }

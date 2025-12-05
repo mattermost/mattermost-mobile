@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {setLastServerVersionCheck} from '@actions/local/systems';
+import {fetchAIAgents} from '@actions/remote/ai';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import DatabaseManager from '@database/manager';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
@@ -34,6 +35,9 @@ export async function appEntry(serverUrl: string, since = 0) {
     WebsocketManager.openAll('Cold Start');
 
     verifyPushProxy(serverUrl);
+
+    // Fetch AI agents to determine if AI features are available
+    fetchAIAgents(serverUrl);
 
     return {};
 }
