@@ -20,10 +20,11 @@ class MattermostSharePackage : TurboReactPackage() {
       val moduleInfos: MutableMap<String, ReactModuleInfo> = HashMap()
       val isTurboModule: Boolean = BuildConfig.IS_NEW_ARCHITECTURE_ENABLED
       moduleInfos[MattermostShareImpl.NAME] = ReactModuleInfo(
-        MattermostShareImpl.NAME,
-        MattermostShareImpl.NAME,
-          _canOverrideExistingModule = false,
-          _needsEagerInit = false,
+          name = MattermostShareImpl.NAME,
+          className = MattermostShareImpl.NAME,
+          canOverrideExistingModule = false,
+          needsEagerInit = false,
+          hasConstants = false,
           isCxxModule = false,
           isTurboModule = isTurboModule
       )
