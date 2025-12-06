@@ -3,6 +3,7 @@
 
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import {DEFAULT_LOCALE} from '@i18n';
 import {getRecentCustomStatuses} from '@queries/servers/system';
 import {getCurrentUser, getUserById} from '@queries/servers/user';
 import {logError} from '@utils/log';
@@ -158,5 +159,15 @@ export const storeProfile = async (serverUrl: string, profile: UserProfile) => {
     } catch (error) {
         logError('Failed storeProfile', error);
         return {error};
+    }
+};
+
+export const getCurrentUserLocale = async (serverUrl: string): Promise<string> => {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const user = await getCurrentUser(database);
+        return user?.locale || DEFAULT_LOCALE;
+    } catch {
+        return DEFAULT_LOCALE;
     }
 };

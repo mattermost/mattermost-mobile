@@ -8,7 +8,9 @@ import {View, Text, ActivityIndicator, Platform} from 'react-native';
 import Share from 'react-native-share';
 
 import Button from '@components/button';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import SecurityManager from '@managers/security_manager';
 import {deleteFile, pathWithPrefix} from '@utils/file';
 import {logDebug} from '@utils/log';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -31,6 +33,7 @@ const AppLogs = () => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const intl = useIntl();
+    const serverUrl = useServerUrl();
 
     const [logFiles, setLogFiles] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -57,7 +60,9 @@ const AppLogs = () => {
             } else {
                 await Share.open({
                     url: pathWithPrefix('file://', zipFilePath),
-                    saveToFiles: true,
+
+                    // If Allowing to save to Files app, save it there, otherwise show share dialog
+                    saveToFiles: SecurityManager.canSaveToLocation(serverUrl, 'FilesApp'),
                 });
             }
         } catch (error) {
@@ -71,7 +76,7 @@ const AppLogs = () => {
                 logDebug('Failed to delete zip file', error);
             }
         }
-    }, [logFiles]);
+    }, [logFiles, serverUrl]);
 
     const hasLogs = logFiles.length > 0;
 

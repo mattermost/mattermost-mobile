@@ -4,6 +4,9 @@ on:
   schedule:
     - cron: "0 0 * * 4,5" # Wednesday and Thursday midnight
 
+env:
+  INTUNE_ENABLED: 1
+
 jobs:
   update-initial-status-ios:
     runs-on: ubuntu-22.04
@@ -32,7 +35,7 @@ jobs:
           status: pending
 
   build-ios-simulator:
-    runs-on: macos-14
+    runs-on: macos-15
     needs:
       - update-initial-status-ios
     steps:
@@ -41,6 +44,9 @@ jobs:
 
       - name: Prepare iOS Build
         uses: ./.github/actions/prepare-ios-build
+        with:
+          intune-enabled: 'true'
+          intune-ssh-private-key: ${{ secrets.MM_MOBILE_INTUNE_DEPLOY_KEY }}
 
       - name: Build iOS Simulator
         env:

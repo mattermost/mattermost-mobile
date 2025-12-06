@@ -11,7 +11,10 @@ function installPodsM1() {
 }
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
-  if [[ $(uname -p) == 'arm' ]]; then
+  if [ "$INTUNE_ENABLED" = "1" ]; then
+    echo "🔐 INTUNE_ENABLED detected"
+    npm run intune:init
+  elif [[ $(uname -p) == 'arm' ]]; then
     installPodsM1
   else
     installPods

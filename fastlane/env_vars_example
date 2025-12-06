@@ -77,3 +77,7 @@ export SUBMIT_ANDROID_TO_GOOGLE_PLAY=false
 #export AWS_BUCKET_NAME=<your aws bucket name>
 #export AWS_FOLDER_NAME=<the folder to use in you aws bucket>
 #export AWS_REGION=<your aws region>
+
+############ INTUNE MAM CONFIGURATION ############
+#export INTUNE_ENABLED=false # Set to true to enable Intune MAM SDK
+#export INTUNE_CLIENT_ID=<Entra App Registration Client ID>

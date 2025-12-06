@@ -1,15 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Image} from 'expo-image';
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
 
 import {buildAbsoluteUrl} from '@actions/remote/file';
 import {buildProfileImageUrlFromUser} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
+import ExpoImage from '@components/expo_image';
 import {useServerUrl} from '@context/server';
+import {urlSafeBase64Encode} from '@utils/security';
 import {changeOpacity} from '@utils/theme';
+import {getLastPictureUpdate} from '@utils/user';
 
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -41,14 +43,19 @@ const Avatar = ({
     const serverUrl = useServerUrl();
 
     let uri = overrideIconUrl;
-    if (!uri && author) {
+    let id = 'avatar-override';
+    if (uri) {
+        id = `avatar-override-${urlSafeBase64Encode(uri)}`;
+    } else if (author) {
         uri = buildProfileImageUrlFromUser(serverUrl, author);
+        id = `user-${author.id}-${getLastPictureUpdate(author)}`;
     }
 
     let picture;
     if (uri) {
         picture = (
-            <Image
+            <ExpoImage
+                id={id}
                 source={{uri: buildAbsoluteUrl(serverUrl, uri)}}
                 style={[styles.avatar, styles.avatarRadius]}
             />

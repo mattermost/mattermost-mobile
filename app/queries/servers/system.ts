@@ -12,7 +12,7 @@ import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 import {Preferences, License} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_STATUS_UNKNOWN} from '@constants/push_proxy';
-import {isMinimumServerVersion} from '@utils/helpers';
+import {isMinimumLicenseTier, isMinimumServerVersion, type LicenseTierSku} from '@utils/helpers';
 import {logError} from '@utils/log';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -628,25 +628,19 @@ export const observeReportAProblemMetadata = (database: Database) => {
     );
 };
 
-export const observeIsMinimumLicenseTier = (database: Database, shortSku: string) => {
+export const observeIsMinimumLicenseTier = (database: Database, shortSku: LicenseTierSku) => {
     const license = observeLicense(database);
     const isEnterpriseReady = observeConfigBooleanValue(database, 'BuildEnterpriseReady', false);
 
     return combineLatest([license, isEnterpriseReady]).pipe(
         switchMap(([lic, isEnt]) => {
-            if (!shortSku) {
-                return of$(false);
-            }
-            const isLicensed = lic?.IsLicensed === 'true';
-            if (!isEnt || !isLicensed) {
+            if (!shortSku || !isEnt) {
                 return of$(false);
             }
 
-            const tier = License.LicenseSkuTier[lic.SkuShortName];
-            const targetTier = License.LicenseSkuTier[shortSku] || 0;
-            const isMinimumTier = Boolean(tier) && Boolean(targetTier) && isEnt && isLicensed && tier >= targetTier;
+            const meetsMinimumTier = isMinimumLicenseTier(lic, shortSku);
 
-            return of$(isMinimumTier);
+            return of$(meetsMinimumTier);
         }),
         distinctUntilChanged(),
     );

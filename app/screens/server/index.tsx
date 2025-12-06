@@ -145,6 +145,9 @@ const Server = ({
             // If no other servers are allowed or the local config for AutoSelectServerUrl is set, attempt to connect
             handleConnect(managedConfig?.serverUrl || LocalConfig.DefaultServerUrl);
         }
+
+    // functions do not need memoization
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [managedConfig?.allowOtherServers, managedConfig?.serverUrl, managedConfig?.serverName, defaultServerUrl]);
 
     useEffect(() => {
@@ -185,6 +188,9 @@ const Server = ({
         PushNotifications.registerIfNeeded();
 
         return () => backHandler.remove();
+
+    // only needed on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useNavButtonPressed(closeButtonId || '', componentId, dismiss, []);
@@ -360,22 +366,6 @@ const Server = ({
             }));
             setConnecting(false);
             return;
-        }
-
-        if (data.config.MobileJailbreakProtection === 'true') {
-            const isJailbroken = await SecurityManager.isDeviceJailbroken(headRequest.url, data.config.SiteName);
-            if (isJailbroken) {
-                setConnecting(false);
-                return;
-            }
-        }
-
-        if (data.config.MobileEnableBiometrics === 'true') {
-            const biometricsResult = await SecurityManager.authenticateWithBiometrics(headRequest.url, data.config.SiteName);
-            if (!biometricsResult) {
-                setConnecting(false);
-                return;
-            }
         }
 
         const server = await getServerByIdentifier(data.config.DiagnosticId);

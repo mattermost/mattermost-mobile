@@ -1,7 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {DeviceEventEmitter, Image, Keyboard, View} from 'react-native';
+import {Image, ImageRef} from 'expo-image';
+import {DeviceEventEmitter, Keyboard, View} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import {measure, type AnimatedRef} from 'react-native-reanimated';
 
@@ -219,21 +220,19 @@ describe('Gallery utils', () => {
 
     describe('getImageSize', () => {
         it('should resolve with image size', async () => {
-            jest.spyOn(Image, 'getSize').mockImplementationOnce((uri, success) => {
-                success(800, 600);
-            });
+            jest.spyOn(Image, 'loadAsync').mockResolvedValue({
+                width: 800,
+                height: 600,
+            } as ImageRef);
 
-            const result = await getImageSize('test-uri');
+            const result = await getImageSize('serverUrl', 'test-uri', 'cacheKey');
             expect(result).toEqual({width: 800, height: 600});
         });
 
         it('should reject on error', async () => {
-            jest.spyOn(Image, 'getSize').mockImplementationOnce((uri, success, failure) => {
-                // @ts-expect-error param
-                failure(new Error('Failed to get size'));
-            });
+            jest.spyOn(Image, 'loadAsync').mockRejectedValue(new Error('Failed to get size'));
 
-            await expect(getImageSize('test-uri')).rejects.toThrow('Failed to get size');
+            await expect(getImageSize('serverUrl', 'test-uri', 'cacheKey')).rejects.toThrow('Failed to get size');
         });
     });
 

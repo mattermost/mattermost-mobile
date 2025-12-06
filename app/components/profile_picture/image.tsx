@@ -1,13 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Image as ExpoImage, type ImageSource} from 'expo-image';
+import {type ImageSource} from 'expo-image';
 import React, {useMemo} from 'react';
-import Animated from 'react-native-reanimated';
 
 import {buildAbsoluteUrl} from '@actions/remote/file';
 import {buildProfileImageUrlFromUser} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
+import {ExpoImageAnimated} from '@components/expo_image';
 import {ACCOUNT_OUTLINE_IMAGE} from '@constants/profile';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -24,8 +24,6 @@ type Props = {
     source?: ImageSource | string;
     url?: string;
 };
-
-const AnimatedImage = Animated.createAnimatedComponent(ExpoImage);
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -62,6 +60,13 @@ const Image = ({author, forwardRef, iconSize, size, source, url}: Props) => {
     // in the containing object (author).
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [author, serverUrl, source, lastPictureUpdateAt]);
+    const id = useMemo(() => {
+        if (author) {
+            return `user-${author.id}-${lastPictureUpdateAt}`;
+        }
+
+        return undefined;
+    }, [author, lastPictureUpdateAt]);
 
     if (typeof source === 'string') {
         return (
@@ -75,8 +80,9 @@ const Image = ({author, forwardRef, iconSize, size, source, url}: Props) => {
 
     if (imgSource?.uri?.startsWith('file://')) {
         return (
-            <AnimatedImage
-                key={imgSource.uri}
+            <ExpoImageAnimated
+                id={id}
+                key={id}
                 ref={forwardRef}
                 style={fIStyle}
                 source={{uri: imgSource.uri}}
@@ -86,8 +92,9 @@ const Image = ({author, forwardRef, iconSize, size, source, url}: Props) => {
 
     if (imgSource) {
         return (
-            <AnimatedImage
-                key={imgSource.uri}
+            <ExpoImageAnimated
+                id={id}
+                key={id}
                 ref={forwardRef}
                 style={fIStyle}
                 source={imgSource}

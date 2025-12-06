@@ -83,7 +83,7 @@ const ChannelBookmarks = ({
 
     const handlePreviewPress = usePreventDoubleTap(useCallback((idx: number) => {
         if (files.length) {
-            const items = files.map((f) => fileToGalleryItem(f, f.user_id));
+            const items = files.map((f) => fileToGalleryItem(f, f.user_id, undefined, 0, f.id));
             openGalleryAtIndex(galleryIdentifier, idx, items);
         }
     }, [files, galleryIdentifier]));
@@ -108,7 +108,9 @@ const ChannelBookmarks = ({
         publicLinkEnabled,
     ]);
 
-    const renderItemSeparator = useCallback(() => (<View style={styles.emptyItemSeparator}/>), []);
+    const renderItemSeparator = useCallback(() => (
+        <View style={styles.emptyItemSeparator}/>
+    ), [styles.emptyItemSeparator]);
 
     const onScrolled = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
         setAllowEndFade(isCloseToBottom(e.nativeEvent));

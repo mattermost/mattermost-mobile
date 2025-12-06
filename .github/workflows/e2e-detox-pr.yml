@@ -14,6 +14,9 @@ concurrency:
   group: "${{ github.workflow }}-${{ github.event.pull_request.number }}-${{ github.event.label.name }}"
   cancel-in-progress: true
 
+env:
+  INTUNE_ENABLED: 1
+
 jobs:
   update-initial-status-ios:
     if: contains(github.event.label.name, 'E2E iOS tests for PR')
@@ -46,7 +49,7 @@ jobs:
 
   build-ios-simulator:
     if: contains(github.event.label.name, 'E2E iOS tests for PR')
-    runs-on: macos-14
+    runs-on: macos-15
     needs:
       - update-initial-status-ios
     steps:
@@ -55,6 +58,9 @@ jobs:
 
       - name: Prepare iOS Build
         uses: ./.github/actions/prepare-ios-build
+        with:
+          intune-enabled: 'true'
+          intune-ssh-private-key: ${{ secrets.MM_MOBILE_INTUNE_DEPLOY_KEY }}
 
       - name: Build iOS Simulator
         env:

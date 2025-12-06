@@ -3,10 +3,11 @@
 
 import {type ImageSource} from 'expo-image';
 import React, {forwardRef, useImperativeHandle, useMemo} from 'react';
-import {type ImageSize, type ImageStyle, type ViewStyle} from 'react-native';
+import {type ImageSize, type ImageStyle, type StyleProp} from 'react-native';
 import {
     cancelAnimation,
     useAnimatedReaction, useSharedValue, withTiming,
+    type AnimatedStyle,
     type SharedValue,
 } from 'react-native-reanimated';
 
@@ -22,7 +23,7 @@ export interface RenderItemInfo {
     source: ImageSource;
     width: number;
     height: number;
-    itemStyles: ViewStyle | ImageStyle;
+    itemStyles: StyleProp<AnimatedStyle<StyleProp<ImageStyle>>>;
 }
 
 interface LightboxSwipeoutProps {

@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Image} from 'expo-image';
 import React, {useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {TouchableWithoutFeedback, View, Text, type ViewStyle} from 'react-native';
 import Animated from 'react-native-reanimated';
 
+import ExpoImage from '@components/expo_image';
 import FileIcon from '@components/files/file_icon';
 import ImageFile from '@components/files/image_file';
 import UploadRetry from '@components/post_draft/uploads/upload_item/upload_retry';
@@ -210,10 +210,11 @@ export default function UploadItemShared({
             if (isShareExtension) {
                 return (
                     <View style={style.imageOnlyThumbnail}>
-                        <Image
+                        <ExpoImage
                             source={{uri: file.uri}}
                             style={style.imageOnlyImage}
                             contentFit='cover'
+                            cachePolicy='memory'
                         />
                     </View>
                 );
@@ -237,7 +238,7 @@ export default function UploadItemShared({
                 />
             </View>
         );
-    }, [file.uri, imageFileData, forwardRef, inViewPort, isImageFile, isShareExtension, style.imageOnlyThumbnail, style.imageOnlyImage, style.iconContainer, fileForCheck]);
+    }, [isImageFile, style.iconContainer, style.imageOnlyThumbnail, style.imageOnlyImage, fileForCheck, isShareExtension, imageFileData, forwardRef, inViewPort, file.uri]);
 
     const fileExtension = file.extension?.toUpperCase() || file.name?.split('.').pop()?.toUpperCase() || '';
     const formattedSize = getFormattedFileSize(file.size || 0);
