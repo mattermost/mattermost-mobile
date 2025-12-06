@@ -168,12 +168,13 @@ const About = ({componentId, config, license}: AboutProps) => {
     const serverVersion = useMemo(() => {
         const buildNumber = config.BuildNumber;
         const version = config.Version;
+        const fipsSuffix = config.IsFipsEnabled === 'true' ? ' (FIPS)' : '';
 
         if (buildNumber === version) {
-            return version;
+            return version + fipsSuffix;
         }
 
-        return intl.formatMessage({id: 'settings.about.server.version.value', defaultMessage: '{version} (Build {buildNumber})'}, {version, buildNumber});
+        return intl.formatMessage({id: 'settings.about.server.version.value', defaultMessage: '{version} (Build {buildNumber})'}, {version, buildNumber}) + fipsSuffix;
     }, [config, intl]);
 
     const close = useCallback(() => {
@@ -187,7 +188,8 @@ const About = ({componentId, config, license}: AboutProps) => {
             const appVersion = intl.formatMessage({id: 'settings.about.app.version', defaultMessage: 'App Version: {version} (Build {number})'}, {version: nativeApplicationVersion, number: nativeBuildVersion});
             const buildNumber = config.BuildNumber;
             const version = config.Version;
-            const server = buildNumber === version ? intl.formatMessage({id: 'settings.about.server.version.noBuild', defaultMessage: 'Server Version: {version}'}, {version}) : intl.formatMessage({id: 'settings.about.server.version', defaultMessage: 'Server Version: {version} (Build {buildNumber})'}, {version, buildNumber});
+            const fipsSuffix = config.IsFipsEnabled === 'true' ? ' (FIPS)' : '';
+            const server = buildNumber === version ? intl.formatMessage({id: 'settings.about.server.version.noBuild', defaultMessage: 'Server Version: {version}'}, {version}) + fipsSuffix : intl.formatMessage({id: 'settings.about.server.version', defaultMessage: 'Server Version: {version} (Build {buildNumber})'}, {version, buildNumber}) + fipsSuffix;
             const database = intl.formatMessage({id: 'settings.about.database', defaultMessage: 'Database: {driverName}'}, {driverName: config.SQLDriverName});
             const databaseSchemaVersion = intl.formatMessage({id: 'settings.about.database.schema', defaultMessage: 'Database Schema Version: {version}'}, {version: config.SchemaVersion});
             let copiedString = `${appVersion}\n${server}\n${database}\n${databaseSchemaVersion}`;
@@ -200,7 +202,7 @@ const About = ({componentId, config, license}: AboutProps) => {
             Clipboard.setString(copiedString);
             showSnackBar({barType: SNACK_BAR_TYPE.INFO_COPIED, sourceScreen: componentId});
         },
-        [intl, config.BuildNumber, config.Version, config.SQLDriverName, config.SchemaVersion, loadMetric, componentId],
+        [intl, config.BuildNumber, config.Version, config.IsFipsEnabled, config.SQLDriverName, config.SchemaVersion, loadMetric, componentId],
     );
 
     return (
