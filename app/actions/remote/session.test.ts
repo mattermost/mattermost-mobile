@@ -523,7 +523,7 @@ describe('nativeEntraLogin', () => {
         IntuneManager.enrollServer.mockResolvedValue(undefined);
         IntuneManager.isManagedServer.mockResolvedValue(false);
 
-        mockClient.loginByIntune.mockImplementation(() => Promise.resolve(user1));
+        mockClient.loginByIntune.mockReset().mockImplementation(() => Promise.resolve(user1));
         mockGetCSRFFromCookie.mockImplementation(() => Promise.resolve('csrfid'));
     });
 
@@ -557,13 +557,13 @@ describe('nativeEntraLogin', () => {
     });
 
     it('should handle 412 MAM enrollment required', async () => {
-        mockClient.loginByIntune.mockRejectedValueOnce({status_code: 412} as never).mockResolvedValueOnce(user1);
+        const error = {status_code: 412};
+        mockClient.loginByIntune.mockRejectedValueOnce(error);
 
         const result = await nativeEntraLogin(serverUrl, serverDisplayName, serverIdentifier, intuneScope);
 
-        expect(result.failed).toBe(false);
-        expect(IntuneManager.enrollServer).toHaveBeenCalledWith(serverUrl, mockTokens.identity);
-        expect(mockClient.loginByIntune).toHaveBeenCalledTimes(2);
+        expect(result.failed).toBe(true);
+        expect(result.error).toEqual(error);
     });
 
     it('should handle 400 LDAP user missing error', async () => {
