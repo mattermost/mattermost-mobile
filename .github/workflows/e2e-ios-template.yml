@@ -121,7 +121,7 @@ jobs:
           device_os_version: ${{ env.DEVICE_OS_VERSION }}
 
   e2e-ios:
-    name: ios-detox-e2e-${{ matrix.runId }}-${{ matrix.deviceName }}-${{ matrix.deviceOsVersion }}
+    name: machine-${{ matrix.runId }}-os-${{ matrix.deviceOsVersion }}
     runs-on: macos-14
     continue-on-error: true
     timeout-minutes: ${{ inputs.low_bandwidth_mode && 240 || 180 }}
