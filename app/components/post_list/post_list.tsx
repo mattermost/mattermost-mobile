@@ -17,6 +17,7 @@ import {Events, Screens} from '@constants';
 import {PostTypes} from '@constants/post';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {useTranslationPrompt} from '@hooks/use_translation_prompt';
 import {getDateForDateLine, preparePostList} from '@utils/post_list';
 
 import {INITIAL_BATCH_TO_RENDER, SCROLL_POSITION_CONFIG, VIEWABILITY_CONFIG} from './config';
@@ -55,6 +56,8 @@ type Props = {
     testID: string;
     currentCallBarVisible?: boolean;
     savedPostIds: Set<string>;
+    isChannelAutotranslated: boolean;
+    channelAutotranslationEnabled: boolean;
 }
 
 type onScrollEndIndexListenerEvent = (endIndex: number) => void;
@@ -106,6 +109,8 @@ const PostList = ({
     showNewMessageLine = true,
     testID,
     savedPostIds,
+    isChannelAutotranslated,
+    channelAutotranslationEnabled,
 }: Props) => {
     const firstIdInPosts = posts[0]?.id;
 
@@ -118,6 +123,16 @@ const PostList = ({
     const [lastPostId, setLastPostId] = useState<string | undefined>(firstIdInPosts);
     const theme = useTheme();
     const serverUrl = useServerUrl();
+
+    // Show translation prompt if location is channel or thread
+    useTranslationPrompt({
+        channelId,
+        channelAutotranslationEnabled,
+        isChannelAutotranslated,
+        posts,
+        location,
+    });
+
     const orderedPosts = useMemo(() => {
         return preparePostList(posts, lastViewedAt, showNewMessageLine, currentUserId, currentUsername, shouldShowJoinLeaveMessages, currentTimezone, location === Screens.THREAD, savedPostIds);
     }, [posts, lastViewedAt, showNewMessageLine, currentUserId, currentUsername, shouldShowJoinLeaveMessages, currentTimezone, location, savedPostIds]);
@@ -314,6 +329,7 @@ const PostList = ({
                     shouldRenderReplyButton,
                     skipSaveddHeader,
                     testID: `${testID}.post`,
+                    isChannelAutotranslated,
                 };
 
                 return (
@@ -324,7 +340,7 @@ const PostList = ({
                 );
             }
         }
-    }, [appsEnabled, currentTimezone, currentUsername, customEmojiNames, highlightPinnedOrSaved, highlightedId, isCRTEnabled, isPostAcknowledgementEnabled, location, rootId, shouldRenderReplyButton, shouldShowJoinLeaveMessages, testID, theme]);
+    }, [appsEnabled, currentTimezone, currentUsername, customEmojiNames, highlightPinnedOrSaved, highlightedId, isCRTEnabled, isChannelAutotranslated, isPostAcknowledgementEnabled, location, rootId, shouldRenderReplyButton, shouldShowJoinLeaveMessages, testID, theme]);
 
     useEffect(() => {
         const t = setTimeout(() => {

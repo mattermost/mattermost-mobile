@@ -89,6 +89,7 @@ export const THREAD = 'Thread';
 export const THREAD_FOLLOW_BUTTON = 'ThreadFollowButton';
 export const THREAD_OPTIONS = 'ThreadOptions';
 export const USER_PROFILE = 'UserProfile';
+export const VIEW_TRANSLATION = 'ViewTranslation';
 
 export default {
     ABOUT,
@@ -176,6 +177,7 @@ export default {
     THREAD_FOLLOW_BUTTON,
     THREAD_OPTIONS,
     USER_PROFILE,
+    VIEW_TRANSLATION,
     ...PLAYBOOKS_SCREENS,
 } as const;
 

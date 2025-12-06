@@ -36,6 +36,7 @@ describe('performance metrics', () => {
             location: 'Channel',
             post,
             isLastPost: true,
+            isChannelAutotranslated: false,
         };
     }
 

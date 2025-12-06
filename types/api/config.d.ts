@@ -45,6 +45,7 @@ interface ClientConfig {
     EmailLoginButtonTextColor: string;
     EmailNotificationContentsType: string;
     EnableBanner: string;
+    EnableAutoTranslation: string;
     EnableBotAccountCreation: string;
     EnableChannelViewedMessages: string;
     EnableClientMetrics?: string;

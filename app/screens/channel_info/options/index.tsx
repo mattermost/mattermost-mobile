@@ -14,6 +14,7 @@ import ChannelFiles from './channel_files';
 import EditChannel from './edit_channel';
 import IgnoreMentions from './ignore_mentions';
 import Members from './members';
+import MyAutotranslation from './my_autotranslation';
 import NotificationPreference from './notification_preference';
 import PinnedMessages from './pinned_messages';
 
@@ -49,6 +50,7 @@ const Options = ({
                 </>
             )}
             <NotificationPreference channelId={channelId}/>
+            <MyAutotranslation channelId={channelId}/>
             <PinnedMessages channelId={channelId}/>
             <ChannelFiles channelId={channelId}/>
             {isPlaybooksEnabled && !isDMorGM &&

@@ -26,6 +26,32 @@ const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM, PLAYBOOK_RUN_A
 
 export default schemaMigrations({migrations: [
     {
+        toVersion: 16,
+        steps: [
+            addColumns({
+                table: MY_CHANNEL,
+                columns: [
+                    {name: 'autotranslation', type: 'boolean'},
+                ],
+            }),
+            addColumns({
+                table: CHANNEL,
+                columns: [
+                    {name: 'autotranslation', type: 'boolean'},
+                ],
+            }),
+            addColumns({
+                table: POST,
+                columns: [
+                    {name: 'translation', type: 'string', isOptional: true},
+                    {name: 'translation_type', type: 'string', isOptional: true},
+                    {name: 'translation_confidence', type: 'number', isOptional: true},
+                    {name: 'translation_state', type: 'string', isOptional: true},
+                ],
+            }),
+        ],
+    },
+    {
         toVersion: 15,
         steps: [
             addColumns({

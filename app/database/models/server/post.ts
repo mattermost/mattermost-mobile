@@ -101,6 +101,18 @@ export default class PostModel extends Model implements PostModelInterface {
     /** props : Additional attributes for this props */
     @json('props', safeParseJSON) props!: any;
 
+    /** translation : The translation of the post */
+    @json('translation', safeParseJSON) translation!: string | Record<string, string>;
+
+    /** translation_type : The type of the translation */
+    @field('translation_type') translationType!: 'string' | 'object';
+
+    /** translation_confidence : The confidence of the translation */
+    @field('translation_confidence') translationConfidence!: number;
+
+    /** translation_state : The state of the translation */
+    @field('translation_state') translationState!: 'ready' | 'skipped' | 'unavailable';
+
     // A draft can be associated with this post for as long as this post is a parent post
     @lazy drafts = this.collections.get<DraftModel>(DRAFT).query(Q.on(POST, 'id', this.id));
 

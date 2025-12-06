@@ -12,7 +12,7 @@ import {getConfig, getLicense, getGlobalDataRetentionPolicy, getGranularDataRete
 import PostModel from '@typings/database/models/servers/post';
 import {logError} from '@utils/log';
 
-import {deletePosts} from './post';
+import {deletePosts, deletePostsForChannelsWithAutotranslation} from './post';
 
 import type {DataRetentionPoliciesRequest} from '@actions/remote/systems';
 
@@ -57,6 +57,9 @@ export async function storeConfig(serverUrl: string, config: ClientConfig | unde
         const configsToUpdate: IdValue[] = [];
         const configsToDelete: IdValue[] = [];
 
+        // Check if EnableAutoTranslation changed from enabled to disabled
+        const enableAutoTranslationChanged = currentConfig?.EnableAutoTranslation === 'true' && config.EnableAutoTranslation !== 'true';
+
         let k: keyof ClientConfig;
         for (k in config) {
             if (currentConfig?.[k] !== config[k]) {
@@ -76,7 +79,14 @@ export async function storeConfig(serverUrl: string, config: ClientConfig | unde
         }
 
         if (configsToDelete.length || configsToUpdate.length) {
-            return operator.handleConfigs({configs: configsToUpdate, configsToDelete, prepareRecordsOnly});
+            const result = await operator.handleConfigs({configs: configsToUpdate, configsToDelete, prepareRecordsOnly});
+
+            // If EnableAutoTranslation was disabled, delete posts and disable user autotranslation
+            if (enableAutoTranslationChanged) {
+                await deletePostsForChannelsWithAutotranslation(serverUrl, true, prepareRecordsOnly);
+            }
+
+            return result;
         }
     } catch (error) {
         logError('storeConfig', error);
