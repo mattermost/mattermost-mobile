@@ -5,8 +5,26 @@
 
 import RNUtils from '@mattermost/rnutils';
 import merge from 'deepmerge';
-import {Appearance, DeviceEventEmitter, Platform, Alert, type EmitterSubscription, Keyboard, StatusBar} from 'react-native';
-import {type ComponentWillAppearEvent, type ImageResource, type LayoutOrientation, Navigation, type Options, OptionsModalPresentationStyle, type OptionsTopBarButton, type ScreenPoppedEvent, type EventSubscription} from 'react-native-navigation';
+import {
+    Appearance,
+    DeviceEventEmitter,
+    StatusBar,
+    Platform,
+    Alert,
+    type EmitterSubscription,
+    Keyboard,
+} from 'react-native';
+import {
+    type ComponentWillAppearEvent,
+    type ImageResource,
+    type LayoutOrientation,
+    Navigation,
+    type Options,
+    OptionsModalPresentationStyle,
+    type OptionsTopBarButton,
+    type ScreenPoppedEvent,
+    type EventSubscription,
+} from 'react-native-navigation';
 import tinyColor from 'tinycolor2';
 
 import CompassIcon from '@components/compass_icon';
@@ -17,7 +35,10 @@ import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
 import {logError} from '@utils/log';
-import {appearanceControlledScreens, mergeNavigationOptions} from '@utils/navigation';
+import {
+    appearanceControlledScreens,
+    mergeNavigationOptions,
+} from '@utils/navigation';
 import {changeOpacity, setNavigatorStyles} from '@utils/theme';
 
 import type {BottomSheetFooterProps} from '@gorhom/bottom-sheet';
@@ -34,7 +55,13 @@ const alpha = {
 };
 let subscriptions: Array<EmitterSubscription | EventSubscription> | undefined;
 
-export const allOrientations: LayoutOrientation[] = ['sensor', 'sensorLandscape', 'sensorPortrait', 'landscape', 'portrait'];
+export const allOrientations: LayoutOrientation[] = [
+    'sensor',
+    'sensorLandscape',
+    'sensorPortrait',
+    'landscape',
+    'portrait',
+];
 export const portraitOrientation: LayoutOrientation[] = ['portrait'];
 
 const loginFlowScreens = new Set<AvailableScreens>([
@@ -65,7 +92,9 @@ export function registerNavigationListeners() {
     subscriptions = [
         Navigation.events().registerScreenPoppedListener(onPoppedListener),
         Navigation.events().registerCommandListener(onCommandListener),
-        Navigation.events().registerComponentWillAppearListener(onScreenWillAppear),
+        Navigation.events().registerComponentWillAppearListener(
+            onScreenWillAppear,
+        ),
 
         /**
          * For the time being and until we add the emoji picker in the keyboard area
@@ -124,6 +153,7 @@ function onScreenWillAppear(event: ComponentWillAppearEvent) {
 
 export const loginAnimationOptions = () => {
     const theme = getThemeFromState();
+
     return {
         layout: {
             backgroundColor: theme.centerChannelBg,
@@ -139,8 +169,11 @@ export const loginAnimationOptions = () => {
                 color: 'transparent',
             },
             backButton: {
-                color: changeOpacity(theme.centerChannelColor, 0.56),
+
+                // color: changeOpacity(theme.centerChannelColor, 0.56),
+                visible: true,
             },
+
             scrollEdgeAppearance: {
                 active: true,
                 noBorder: true,
@@ -170,18 +203,27 @@ export const loginAnimationOptions = () => {
     };
 };
 
-export const bottomSheetModalOptions = (theme: Theme, closeButtonId?: string): Options => {
+export const bottomSheetModalOptions = (
+    theme: Theme,
+    closeButtonId?: string,
+): Options => {
     if (closeButtonId) {
-        const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.centerChannelColor);
+        const closeButton = CompassIcon.getImageSourceSync(
+            'close',
+            24,
+            theme.centerChannelColor,
+        );
         const closeButtonTestId = `${closeButtonId.replace('close-', 'close.').replace(/-/g, '_')}.button`;
         return {
             modalPresentationStyle: OptionsModalPresentationStyle.formSheet,
             topBar: {
-                leftButtons: [{
-                    id: closeButtonId,
-                    icon: closeButton,
-                    testID: closeButtonTestId,
-                }],
+                leftButtons: [
+                    {
+                        id: closeButtonId,
+                        icon: closeButton,
+                        testID: closeButtonTestId,
+                    },
+                ],
                 leftButtonColor: changeOpacity(theme.centerChannelColor, 0.56),
                 background: {
                     color: theme.centerChannelBg,
@@ -254,11 +296,19 @@ Appearance.addChangeListener(() => {
     const theme = getThemeFromState();
     const screens = NavigationStore.getScreensInStack();
 
-    if (screens.includes(Screens.SERVER) || screens.includes(Screens.ONBOARDING)) {
+    if (
+        screens.includes(Screens.SERVER) ||
+        screens.includes(Screens.ONBOARDING)
+    ) {
         for (const screen of screens) {
             if (appearanceControlledScreens.has(screen)) {
                 Navigation.updateProps(screen, {theme});
-                setNavigatorStyles(screen, theme, loginAnimationOptions(), theme.sidebarBg);
+                setNavigatorStyles(
+                    screen,
+                    theme,
+                    loginAnimationOptions(),
+                    theme.sidebarBg,
+                );
             }
         }
     }
@@ -285,7 +335,8 @@ export function getThemeFromState(): Theme {
 // crashes when trying to load a screen that does
 // NOT exists, this should be removed for GA
 function isScreenRegistered(screen: AvailableScreens) {
-    const notImplemented = NOT_READY.includes(screen) || !Object.values(Screens).includes(screen);
+    const notImplemented =
+        NOT_READY.includes(screen) || !Object.values(Screens).includes(screen);
     if (notImplemented) {
         Alert.alert(
             'Temporary error ' + screen,
@@ -325,20 +376,33 @@ function edgeToEdgeHack(screen: AvailableScreens, theme: Theme) {
 
 export function openToS() {
     NavigationStore.setToSOpen(true);
-    return showOverlay(Screens.TERMS_OF_SERVICE, {}, {overlay: {interceptTouchOutside: true}});
+    return showOverlay(
+        Screens.TERMS_OF_SERVICE,
+        {},
+        {overlay: {interceptTouchOutside: true}},
+    );
 }
 
-export function resetToHome(passProps: LaunchProps = {launchType: Launch.Normal}) {
+export function resetToHome(
+    passProps: LaunchProps = {launchType: Launch.Normal},
+) {
     const theme = getThemeFromState();
     const edgeToEdge = edgeToEdgeHack(Screens.HOME, theme);
 
-    if (!passProps.coldStart && (passProps.launchType === Launch.AddServer || passProps.launchType === Launch.AddServerFromDeepLink)) {
+    if (
+        !passProps.coldStart &&
+        (passProps.launchType === Launch.AddServer ||
+            passProps.launchType === Launch.AddServerFromDeepLink)
+    ) {
         dismissModal({componentId: Screens.SERVER});
         dismissModal({componentId: Screens.LOGIN});
         dismissModal({componentId: Screens.SSO});
         dismissModal({componentId: Screens.BOTTOM_SHEET});
         if (passProps.launchType === Launch.AddServerFromDeepLink) {
-            Navigation.updateProps(Screens.HOME, {launchType: Launch.DeepLink, extra: passProps.extra});
+            Navigation.updateProps(Screens.HOME, {
+                launchType: Launch.DeepLink,
+                extra: passProps.extra,
+            });
         }
         return '';
     }
@@ -364,14 +428,25 @@ export function resetToHome(passProps: LaunchProps = {launchType: Launch.Normal}
                         background: {
                             color: theme.sidebarBg,
                         },
-                        backButton: {
+                        statusBar: {
+                            visible: true,
+                            backgroundColor: theme.sidebarBg,
+                        },
+                        topBar: {
                             visible: false,
-                            color: theme.sidebarHeaderTextColor,
+                            height: 0,
+                            background: {
+                                color: theme.sidebarBg,
+                            },
+                            backButton: {
+                                visible: false,
+                                color: theme.sidebarHeaderTextColor,
+                            },
                         },
                     },
                 },
             },
-        }],
+        ],
     };
 
     return Navigation.setRoot({
@@ -401,20 +476,30 @@ export function resetToSelectServer(passProps: LaunchProps) {
                     backgroundColor: theme.sidebarBg,
                     ...edgeToEdge,
                 },
-                topBar: {
-                    backButton: {
-                        color: theme.sidebarHeaderTextColor,
-                        title: '',
+                options: {
+                    layout: {
+                        backgroundColor: theme.centerChannelBg,
+                        componentBackgroundColor: theme.centerChannelBg,
                     },
-                    background: {
-                        color: theme.sidebarBg,
+                    statusBar: {
+                        visible: true,
+                        backgroundColor: theme.sidebarBg,
                     },
-                    visible: false,
-                    height: 0,
+                    topBar: {
+                        backButton: {
+                            color: theme.sidebarHeaderTextColor,
+                            title: '',
+                        },
+                        background: {
+                            color: theme.sidebarBg,
+                        },
+                        visible: false,
+                        height: 0,
+                    },
                 },
             },
         },
-    }];
+    ];
 
     return Navigation.setRoot({
         root: {
@@ -447,20 +532,30 @@ export function resetToOnboarding(passProps: LaunchProps) {
                     backgroundColor: theme.sidebarBg,
                     ...edgeToEdge,
                 },
-                topBar: {
-                    backButton: {
-                        color: theme.sidebarHeaderTextColor,
-                        title: '',
+                options: {
+                    layout: {
+                        backgroundColor: theme.centerChannelBg,
+                        componentBackgroundColor: theme.centerChannelBg,
                     },
-                    background: {
-                        color: theme.sidebarBg,
+                    statusBar: {
+                        visible: true,
+                        backgroundColor: theme.sidebarBg,
                     },
-                    visible: false,
-                    height: 0,
+                    topBar: {
+                        backButton: {
+                            color: theme.sidebarHeaderTextColor,
+                            title: '',
+                        },
+                        background: {
+                            color: theme.sidebarBg,
+                        },
+                        visible: false,
+                        height: 0,
+                    },
                 },
             },
         },
-    }];
+    ];
 
     return Navigation.setRoot({
         root: {
@@ -497,20 +592,32 @@ export function resetToTeams() {
                                 background: {
                                     color: theme.sidebarBg,
                                 },
-                                backButton: {
+                                topBar: {
                                     visible: false,
-                                    color: theme.sidebarHeaderTextColor,
+                                    height: 0,
+                                    background: {
+                                        color: theme.sidebarBg,
+                                    },
+                                    backButton: {
+                                        visible: false,
+                                        color: theme.sidebarHeaderTextColor,
+                                    },
                                 },
                             },
                         },
                     },
-                }],
+                ],
             },
         },
     });
 }
 
-export function goToScreen(name: AvailableScreens, title: string, passProps = {}, options: Options = {}) {
+export function goToScreen(
+    name: AvailableScreens,
+    title: string,
+    passProps = {},
+    options: Options = {},
+) {
     if (!isScreenRegistered(name)) {
         return '';
     }
@@ -519,7 +626,9 @@ export function goToScreen(name: AvailableScreens, title: string, passProps = {}
     const edgeToEdge = edgeToEdgeHack(name, theme);
     const componentId = NavigationStore.getVisibleScreen();
     if (!componentId) {
-        logError('Trying to go to screen without any screen on the navigation store');
+        logError(
+            'Trying to go to screen without any screen on the navigation store',
+        );
         return '';
     }
 
@@ -621,7 +730,12 @@ export async function dismissAllModalsAndPopToRoot() {
  * @param passProps Props to pass to the screen
  * @param options Navigation options
  */
-export async function dismissAllModalsAndPopToScreen(screenId: AvailableScreens, title: string, passProps = {}, options = {}) {
+export async function dismissAllModalsAndPopToScreen(
+    screenId: AvailableScreens,
+    title: string,
+    passProps = {},
+    options = {},
+) {
     await dismissAllModals();
     await dismissAllOverlays();
     if (NavigationStore.getScreensInStack().includes(screenId)) {
@@ -648,8 +762,16 @@ export async function dismissAllModalsAndPopToScreen(screenId: AvailableScreens,
     }
 }
 
-export function showModal(name: AvailableScreens, title: string, passProps = {}, options: Options = {}) {
-    if (!isScreenRegistered(name) || NavigationStore.getVisibleModal() === name) {
+export function showModal(
+    name: AvailableScreens,
+    title: string,
+    passProps = {},
+    options: Options = {},
+) {
+    if (
+        !isScreenRegistered(name) ||
+        NavigationStore.getVisibleModal() === name
+    ) {
         return;
     }
 
@@ -688,22 +810,28 @@ export function showModal(name: AvailableScreens, title: string, passProps = {},
 
     Navigation.showModal({
         stack: {
-            children: [{
-                component: {
-                    id: name,
-                    name,
-                    passProps: {
-                        ...passProps,
-                        isModal: true,
+            children: [
+                {
+                    component: {
+                        id: name,
+                        name,
+                        passProps: {
+                            ...passProps,
+                            isModal: true,
+                        },
+                        options: merge(defaultOptions, options),
                     },
-                    options: merge(defaultOptions, options),
                 },
-            }],
+            ],
         },
     });
 }
 
-export function showModalOverCurrentContext(name: AvailableScreens, passProps = {}, options: Options = {}) {
+export function showModalOverCurrentContext(
+    name: AvailableScreens,
+    passProps = {},
+    options: Options = {},
+) {
     const title = '';
     let animations;
     switch (Platform.OS) {
@@ -747,7 +875,8 @@ export function showModalOverCurrentContext(name: AvailableScreens, passProps = 
             break;
     }
     const defaultOptions = {
-        modalPresentationStyle: OptionsModalPresentationStyle.overCurrentContext,
+        modalPresentationStyle:
+            OptionsModalPresentationStyle.overCurrentContext,
         layout: {
             backgroundColor: 'transparent',
             componentBackgroundColor: 'transparent',
@@ -762,12 +891,15 @@ export function showModalOverCurrentContext(name: AvailableScreens, passProps = 
     showModal(name, title, passProps, mergeOptions);
 }
 
-export async function dismissModal(options?: Options & { componentId: AvailableScreens}) {
+export async function dismissModal(
+    options?: Options & { componentId: AvailableScreens },
+) {
     if (!NavigationStore.hasModalsOpened()) {
         return;
     }
 
-    const componentId = options?.componentId || NavigationStore.getVisibleModal();
+    const componentId =
+        options?.componentId || NavigationStore.getVisibleModal();
     if (componentId) {
         try {
             await Navigation.dismissModal(componentId, options);
@@ -786,7 +918,9 @@ export async function dismissAllModals() {
     try {
         const modals = [...NavigationStore.getModalsInStack()];
         for await (const modal of modals) {
-            await Navigation.dismissModal(modal, {animations: {dismissModal: {enabled: false}}});
+            await Navigation.dismissModal(modal, {
+                animations: {dismissModal: {enabled: false}},
+            });
         }
     } catch (error) {
         // RNN returns a promise rejection if there are no modals to
@@ -794,7 +928,12 @@ export async function dismissAllModals() {
     }
 }
 
-export const buildNavigationButton = (id: string, testID: string, icon?: ImageResource, text?: string): OptionsTopBarButton => ({
+export const buildNavigationButton = (
+    id: string,
+    testID: string,
+    icon?: ImageResource,
+    text?: string,
+): OptionsTopBarButton => ({
     fontSize: 16,
     fontFamily: 'OpenSans-SemiBold',
     fontWeight: '600',
@@ -805,7 +944,10 @@ export const buildNavigationButton = (id: string, testID: string, icon?: ImageRe
     text,
 });
 
-export function setButtons(componentId: AvailableScreens, buttons: NavButtons = {leftButtons: [], rightButtons: []}) {
+export function setButtons(
+    componentId: AvailableScreens,
+    buttons: NavButtons = {leftButtons: [], rightButtons: []},
+) {
     const options = {
         topBar: {
             ...buttons,
@@ -815,7 +957,12 @@ export function setButtons(componentId: AvailableScreens, buttons: NavButtons = 
     mergeNavigationOptions(componentId, options);
 }
 
-export function showOverlay(name: AvailableScreens, passProps = {}, options: Options = {}, id?: string) {
+export function showOverlay(
+    name: AvailableScreens,
+    passProps = {},
+    options: Options = {},
+    id?: string,
+) {
     if (!isScreenRegistered(name)) {
         return;
     }
@@ -866,30 +1013,50 @@ type BottomSheetArgs = {
     theme: Theme;
     title: string;
     scrollable?: boolean;
-}
+};
 
-export function bottomSheet({title, renderContent, footerComponent, snapPoints, initialSnapIndex = 1, theme, closeButtonId, scrollable = false}: BottomSheetArgs) {
+export function bottomSheet({
+    title,
+    renderContent,
+    footerComponent,
+    snapPoints,
+    initialSnapIndex = 1,
+    theme,
+    closeButtonId,
+    scrollable = false,
+}: BottomSheetArgs) {
     if (isTablet()) {
-        showModal(Screens.BOTTOM_SHEET, title, {
-            closeButtonId,
-            initialSnapIndex,
-            renderContent,
-            footerComponent,
-            snapPoints,
-            scrollable,
-        }, bottomSheetModalOptions(theme, closeButtonId));
+        showModal(
+            Screens.BOTTOM_SHEET,
+            title,
+            {
+                closeButtonId,
+                initialSnapIndex,
+                renderContent,
+                footerComponent,
+                snapPoints,
+                scrollable,
+            },
+            bottomSheetModalOptions(theme, closeButtonId),
+        );
     } else {
-        showModalOverCurrentContext(Screens.BOTTOM_SHEET, {
-            initialSnapIndex,
-            renderContent,
-            footerComponent,
-            snapPoints,
-            scrollable,
-        }, bottomSheetModalOptions(theme));
+        showModalOverCurrentContext(
+            Screens.BOTTOM_SHEET,
+            {
+                initialSnapIndex,
+                renderContent,
+                footerComponent,
+                snapPoints,
+                scrollable,
+            },
+            bottomSheetModalOptions(theme),
+        );
     }
 }
 
-export async function dismissBottomSheet(alternativeScreen: AvailableScreens = Screens.BOTTOM_SHEET) {
+export async function dismissBottomSheet(
+    alternativeScreen: AvailableScreens = Screens.BOTTOM_SHEET,
+) {
     DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
     await NavigationStore.waitUntilScreensIsRemoved(alternativeScreen);
 }
@@ -900,16 +1067,31 @@ type AsBottomSheetArgs = {
     screen: AvailableScreens;
     theme: Theme;
     title: string;
-}
+};
 
-export function openAsBottomSheet({closeButtonId, screen, theme, title, props}: AsBottomSheetArgs) {
+export function openAsBottomSheet({
+    closeButtonId,
+    screen,
+    theme,
+    title,
+    props,
+}: AsBottomSheetArgs) {
     if (isTablet()) {
-        showModal(screen, title, {
-            closeButtonId,
-            ...props,
-        }, bottomSheetModalOptions(theme, closeButtonId));
+        showModal(
+            screen,
+            title,
+            {
+                closeButtonId,
+                ...props,
+            },
+            bottomSheetModalOptions(theme, closeButtonId),
+        );
     } else {
-        showModalOverCurrentContext(screen, props, bottomSheetModalOptions(theme));
+        showModalOverCurrentContext(
+            screen,
+            props,
+            bottomSheetModalOptions(theme),
+        );
     }
 }
 
@@ -937,21 +1119,22 @@ export const showShareFeedbackOverlay = () => {
 export async function findChannels(title: string, theme: Theme) {
     const options: Options = {};
     const closeButtonId = 'close-find-channels';
-    const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
+    const closeButton = CompassIcon.getImageSourceSync(
+        'close',
+        24,
+        theme.sidebarHeaderTextColor,
+    );
     options.topBar = {
-        leftButtons: [{
-            id: closeButtonId,
-            icon: closeButton,
-            testID: 'close.find_channels.button',
-        }],
+        leftButtons: [
+            {
+                id: closeButtonId,
+                icon: closeButton,
+                testID: 'close.find_channels.button',
+            },
+        ],
     };
 
-    showModal(
-        Screens.FIND_CHANNELS,
-        title,
-        {closeButtonId},
-        options,
-    );
+    showModal(Screens.FIND_CHANNELS, title, {closeButtonId}, options);
 }
 
 export async function openUserProfileModal(
@@ -964,9 +1147,18 @@ export async function openUserProfileModal(
         await dismissBottomSheet(screenToDismiss);
     }
     const screen = Screens.USER_PROFILE;
-    const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
+    const title = intl.formatMessage({
+        id: 'mobile.routes.user_profile',
+        defaultMessage: 'Profile',
+    });
     const closeButtonId = 'close-user-profile';
 
     Keyboard.dismiss();
-    openAsBottomSheet({screen, title, theme, closeButtonId, props: {...props}});
+    openAsBottomSheet({
+        screen,
+        title,
+        theme,
+        closeButtonId,
+        props: {...props},
+    });
 }
