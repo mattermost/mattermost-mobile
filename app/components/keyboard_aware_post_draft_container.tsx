@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useRef, useState, type ReactNode} from 'react';
+import React, {useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode} from 'react';
 import {DeviceEventEmitter, Keyboard, Platform, type StyleProp, StyleSheet, type ViewStyle, View, type LayoutChangeEvent, type GestureResponderEvent} from 'react-native';
 import {KeyboardGestureArea} from 'react-native-keyboard-controller';
 import Animated, {runOnJS, useAnimatedReaction, useSharedValue, withTiming} from 'react-native-reanimated';
@@ -325,6 +325,12 @@ export const KeyboardAwarePostDraftContainer = ({
         gestureStartedInEmojiPickerRef.current = false;
     }, [inputAccessoryViewAnimatedHeight, dismissEmojiPicker, inset, scroll, animatedScrollAdjustment]);
 
+    useLayoutEffect(() => {
+        if (showInputAccessoryView && Platform.OS === 'ios') {
+            keyboardHeight.value = 0;
+        }
+    }, [showInputAccessoryView, keyboardHeight]);
+
     // After emoji picker renders, adjust heights and scroll to keep messages visible
     useEffect(() => {
         if (showInputAccessoryView) {
@@ -335,7 +341,6 @@ export const KeyboardAwarePostDraftContainer = ({
 
                 originalScrollBeforeEmojiPicker.value = currentScroll;
                 originalEmojiPickerHeightRef.current = emojiPickerHeight;
-                keyboardHeight.value = 0;
 
                 // For inverted list: when inset increases, content shifts UP visually. Scroll UP to compensate.
                 const targetContentOffset = currentScroll - emojiPickerHeight;
