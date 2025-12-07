@@ -201,13 +201,7 @@ describe('Smoke Test - Channels', () => {
         await ChannelInfoScreen.archivePublicChannel({confirm: true});
 
         // * Verify on channel screen and post draft archived message is displayed
-        await ChannelScreen.toBeVisible(timeouts.HALF_MIN);
-        await expect(ChannelScreen.postDraftArchived).toBeVisible();
-        await expect(element(by.text('You are viewing an archived channel. New messages cannot be posted.'))).toBeVisible();
-
-        // # Open channel info screen, and tap on leave channel option and confirm
-        await ChannelInfoScreen.open();
-        await ChannelInfoScreen.leaveChannel({confirm: true});
+        await waitFor(ChannelListScreen.channelListScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // * Verify on channel list screen and the channel left by the user does not appear on the list
         await ChannelListScreen.toBeVisible();

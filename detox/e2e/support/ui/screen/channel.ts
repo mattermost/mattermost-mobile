@@ -312,6 +312,32 @@ class ChannelScreen {
             await this.scheduleDraftInforMessage.tap();
         }
     };
+
+    assertPostMessageEdited = async (
+        postId: string,
+        updatedMessage: string,
+        locator: 'channel' | 'pinned' | 'thread' = 'channel',
+    ) => {
+        const locatorTestIDs = {
+            channel: 'channel.post_list.post',
+            pinned: 'pinned_messages.post_list.post',
+            thread: 'thread.post_list.post',
+        };
+
+        const postItemTestID = locatorTestIDs[locator];
+        const postItemElement = `${postItemTestID}.${postId}`;
+        const postItemMatcher = by.id(postItemElement);
+
+        // Escape special characters in the message for regex
+        const escapedMessage = updatedMessage.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+        // Match text that contains the updated message followed by "Edited" (with possible spacing/icon)
+        const completeTextPattern = new RegExp(`${escapedMessage}.*Edited`, 'i');
+        const completeTextMatcher = by.text(completeTextPattern).withAncestor(postItemMatcher);
+
+        // Wait for the text containing both message and "Edited" to be visible
+        await waitFor(element(completeTextMatcher)).toBeVisible().withTimeout(timeouts.TEN_SEC);
+    };
 }
 
 const channelScreen = new ChannelScreen();

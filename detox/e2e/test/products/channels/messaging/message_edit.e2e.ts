@@ -75,10 +75,12 @@ describe('Messaging - Message Edit', () => {
         await EditPostScreen.messageInput.replaceText(updatedMessage);
         await EditPostScreen.saveButton.tap();
 
-        // * Verify post message is updated and displays edited indicator '(edited)'
-        const {postListPostItem: updatedPostListPostItem, postListPostItemEditedIndicator} = ChannelScreen.getPostListPostItem(post.id, updatedMessage);
+        await expect(EditPostScreen.editPostScreen).not.toBeVisible();
+
+        const {postListPostItem: updatedPostListPostItem} = ChannelScreen.getPostListPostItem(post.id);
         await expect(updatedPostListPostItem).toBeVisible();
-        await expect(postListPostItemEditedIndicator).toHaveText('Edited');
+
+        await ChannelScreen.assertPostMessageEdited(post.id, updatedMessage);
 
         // # Go back to channel list screen
         await ChannelScreen.back();
@@ -141,10 +143,13 @@ describe('Messaging - Message Edit', () => {
         await EditPostScreen.messageInput.replaceText(updatedReplyMessage);
         await EditPostScreen.saveButton.tap();
 
+        await expect(EditPostScreen.editPostScreen).not.toBeVisible();
+
         // * Verify reply post message is updated and displays edited indicator '(edited)'
-        const {postListPostItem: updatedReplyPostListPostItem, postListPostItemEditedIndicator} = ThreadScreen.getPostListPostItem(replyPost.id, updatedReplyMessage);
+        const {postListPostItem: updatedReplyPostListPostItem} = ThreadScreen.getPostListPostItem(replyPost.id);
         await expect(updatedReplyPostListPostItem).toBeVisible();
-        await expect(postListPostItemEditedIndicator).toHaveText('Edited');
+
+        await ChannelScreen.assertPostMessageEdited(replyPost.id, updatedReplyMessage, 'thread');
 
         // # Go back to channel list screen
         await ThreadScreen.back();
