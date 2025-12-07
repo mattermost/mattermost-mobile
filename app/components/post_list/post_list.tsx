@@ -179,6 +179,8 @@ const PostList = ({
         const targetOffset = -activeHeight;
 
         listRef?.current?.scrollToOffset({offset: targetOffset, animated: true});
+
+        setShowScrollToEndBtn(false);
     }, [listRef, keyboardHeight, inputAccessoryViewAnimatedHeight]);
 
     useEffect(() => {
