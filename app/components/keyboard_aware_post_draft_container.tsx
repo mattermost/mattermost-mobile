@@ -333,20 +333,18 @@ export const KeyboardAwarePostDraftContainer = ({
                 const emojiPickerHeight = inputAccessoryViewAnimatedHeight.value;
                 const currentScroll = scroll.value;
 
-                // Save original emoji picker height for gesture tracking
+                originalScrollBeforeEmojiPicker.value = currentScroll;
                 originalEmojiPickerHeightRef.current = emojiPickerHeight;
-
-                // Reset keyboard height to 0 (removes translateY, emoji picker height replaces it)
                 keyboardHeight.value = 0;
 
-                // Set inset to emoji picker height (adds bottom padding to list)
-                inset.value = emojiPickerHeight;
+                // For inverted list: when inset increases, content shifts UP visually. Scroll UP to compensate.
+                const targetContentOffset = currentScroll - emojiPickerHeight;
 
-                // Set offset to emoji picker height (same as keyboard behavior)
+                inset.value = emojiPickerHeight;
                 offset.value = emojiPickerHeight;
 
                 listRef.current?.scrollToOffset({
-                    offset: -emojiPickerHeight + currentScroll,
+                    offset: targetContentOffset,
                     animated: false,
                 });
             });
@@ -355,6 +353,67 @@ export const KeyboardAwarePostDraftContainer = ({
         // Only depend on showInputAccessoryView - the effect should only run when emoji picker visibility changes
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [showInputAccessoryView]);
+
+    // Track if we've already restored scroll for current emoji picker closing (Android only)
+    // Use SharedValue instead of ref so it can be accessed in worklets
+    const hasRestoredScrollForEmojiPicker = useSharedValue(false);
+
+    // Store the original scroll value when emoji picker opens, so we can restore it when closing
+    const originalScrollBeforeEmojiPicker = useSharedValue(0);
+
+    // Reset restoration flag when emoji picker opens
+    useEffect(() => {
+        if (showInputAccessoryView) {
+            hasRestoredScrollForEmojiPicker.value = false;
+            originalScrollBeforeEmojiPicker.value = 0;
+        }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [showInputAccessoryView]);
+
+    // Callback to restore scroll when emoji picker closes (called from worklet)
+    const restoreScrollAfterEmojiPickerClose = useCallback((previousHeight: number, currentScroll: number) => {
+        if (listRef.current && previousHeight > 0) {
+            listRef.current.scrollToOffset({
+                offset: currentScroll,
+                animated: false,
+            });
+        }
+
+        // ref is not required to be in deps because it is a stable reference
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // Android: Watch for emoji picker closing and restore scroll position when both height and inset reach 0
+    const isAndroid = Platform.OS === 'android';
+    useAnimatedReaction(
+        () => ({
+            height: inputAccessoryViewAnimatedHeight.value,
+            inset: inset.value,
+        }),
+        (current, previous) => {
+            if (!isAndroid) {
+                return;
+            }
+
+            // When emoji picker closes: height goes to 0 AND inset reaches 0. Check previous.inset > 0 because inset affects scroll.
+            const shouldRestoreScroll = previous !== null &&
+                previous.inset !== undefined &&
+                previous.inset > 0 &&
+                current.height === 0 &&
+                current.inset === 0 &&
+                !hasRestoredScrollForEmojiPicker.value;
+
+            if (shouldRestoreScroll) {
+                hasRestoredScrollForEmojiPicker.value = true;
+                const currentScroll = scroll.value;
+                const emojiPickerHeight = previous.inset;
+
+                runOnJS(restoreScrollAfterEmojiPickerClose)(emojiPickerHeight, currentScroll);
+            }
+        },
+        [inputAccessoryViewAnimatedHeight, inset, scroll, restoreScrollAfterEmojiPickerClose],
+    );
 
     const keyboardAnimationValue = useMemo(() => ({
         height: keyboardCurrentHeight,
