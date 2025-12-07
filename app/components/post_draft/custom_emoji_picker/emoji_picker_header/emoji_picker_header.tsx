@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect} from 'react';
-import {View, type LayoutChangeEvent} from 'react-native';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {Platform, View, type LayoutChangeEvent} from 'react-native';
 import {useKeyboardState} from 'react-native-keyboard-controller';
 import {Easing, useAnimatedReaction, useSharedValue, withTiming, type SharedValue} from 'react-native-reanimated';
 
-import SearchBar, {type SearchProps} from '@components/search';
+import SearchBar, {type SearchProps, type SearchRef} from '@components/search';
 import {useKeyboardAnimationContext} from '@context/keyboard_animation';
 import {useTheme} from '@context/theme';
 import {setEmojiSkinTone} from '@hooks/emoji_category_bar';
@@ -50,6 +50,11 @@ const EmojiPickerHeader: React.FC<Props> = ({
     const {lastKeyboardHeight: contextLastKeyboardHeight, showInputAccessoryView, isInputAccessoryViewMode} = useKeyboardAnimationContext();
     const containerWidth = useSharedValue(0);
     const isSearching = useSharedValue(false);
+    const [showKeyboard, setShowKeyboard] = useState(false);
+    const keyboardTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const isReducingHeight = useRef(false);
+
+    const searchRef = useRef<SearchRef>(null);
 
     // Use useKeyboardState to get keyboard height
     const {height: keyboardHeight} = useKeyboardState();
@@ -73,8 +78,23 @@ const EmojiPickerHeader: React.FC<Props> = ({
         if (!showInputAccessoryView) {
             isSearching.value = false;
             setIsEmojiSearchFocused(false);
+            setShowKeyboard(false);
+            isReducingHeight.current = false;
+            if (keyboardTimeoutRef.current) {
+                clearTimeout(keyboardTimeoutRef.current);
+                keyboardTimeoutRef.current = null;
+            }
         }
     }, [showInputAccessoryView, isSearching, setIsEmojiSearchFocused]);
+
+    // Cleanup timeout on unmount
+    useEffect(() => {
+        return () => {
+            if (keyboardTimeoutRef.current) {
+                clearTimeout(keyboardTimeoutRef.current);
+            }
+        };
+    }, []);
 
     // Update emoji picker height when keyboard height changes and search is focused
     useAnimatedReaction(
@@ -96,7 +116,7 @@ const EmojiPickerHeader: React.FC<Props> = ({
                 }
 
                 // Calculate total height: keyboardHeight + search bar height + search container padding + visibility offset
-                const targetHeight = currentKeyboardH + SEARCH_BAR_HEIGHT + SEARCH_CONTAINER_PADDING + SEARCH_VISIBILITY_OFFSET;
+                const targetHeight = Platform.OS === 'android' ? SEARCH_BAR_HEIGHT + SEARCH_CONTAINER_PADDING + SEARCH_VISIBILITY_OFFSET : currentKeyboardH + SEARCH_BAR_HEIGHT + SEARCH_CONTAINER_PADDING + SEARCH_VISIBILITY_OFFSET;
 
                 emojiPickerHeight.value = withTiming(targetHeight, {
                     duration: 250,
@@ -108,8 +128,20 @@ const EmojiPickerHeader: React.FC<Props> = ({
     );
 
     const onBlur = useCallback(() => {
+        // Ignore blur events during height reduction process
+        if (isReducingHeight.current) {
+            return;
+        }
+
         setIsEmojiSearchFocused(false);
         isSearching.value = false;
+        setShowKeyboard(false);
+
+        // Clear any pending keyboard timeout
+        if (keyboardTimeoutRef.current) {
+            clearTimeout(keyboardTimeoutRef.current);
+            keyboardTimeoutRef.current = null;
+        }
 
         // Only restore height if emoji picker is still showing
         // If emoji picker is being dismissed (showInputAccessoryView is false),
@@ -122,17 +154,47 @@ const EmojiPickerHeader: React.FC<Props> = ({
     }, [emojiPickerHeight, isSearching, setIsEmojiSearchFocused, contextLastKeyboardHeight, showInputAccessoryView]);
 
     const onFocus = useCallback(() => {
+        if (Platform.OS === 'android' && showKeyboard) {
+            isReducingHeight.current = false;
+            return;
+        }
+
         setIsEmojiSearchFocused(true);
 
         // Use last keyboard height from context if available, otherwise use default input accessory height
         // The useAnimatedReaction will handle real-time updates when keyboard actually opens
         const keyboardH = contextLastKeyboardHeight > 0 ? contextLastKeyboardHeight : DEFAULT_INPUT_ACCESSORY_HEIGHT;
-        const targetHeight = keyboardH + SEARCH_BAR_HEIGHT + SEARCH_CONTAINER_PADDING + SEARCH_VISIBILITY_OFFSET;
+        const targetHeight = Platform.OS === 'android' ? SEARCH_BAR_HEIGHT + SEARCH_CONTAINER_PADDING + SEARCH_VISIBILITY_OFFSET : keyboardH + SEARCH_BAR_HEIGHT + SEARCH_CONTAINER_PADDING + SEARCH_VISIBILITY_OFFSET;
+
+        if (Platform.OS === 'android') {
+            setShowKeyboard(false);
+            isReducingHeight.current = true;
+        }
 
         // Set height immediately (without animation) to prevent jump
-        emojiPickerHeight.value = targetHeight;
+        emojiPickerHeight.value = withTiming(targetHeight, {duration: 250});
         isSearching.value = true;
-    }, [emojiPickerHeight, isSearching, setIsEmojiSearchFocused, contextLastKeyboardHeight]);
+
+        // On Android, delay keyboard opening to allow height reduction to render first
+        if (Platform.OS === 'android') {
+            if (keyboardTimeoutRef.current) {
+                clearTimeout(keyboardTimeoutRef.current);
+            }
+
+            // Blur immediately to prevent keyboard from opening
+            searchRef.current?.blur();
+
+            const handleDelayedFocus = () => {
+                setShowKeyboard(true);
+                requestAnimationFrame(() => {
+                    searchRef.current?.focus();
+                });
+                keyboardTimeoutRef.current = null;
+            };
+
+            keyboardTimeoutRef.current = setTimeout(handleDelayedFocus, 500);
+        }
+    }, [emojiPickerHeight, isSearching, setIsEmojiSearchFocused, contextLastKeyboardHeight, showKeyboard]);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         containerWidth.value = e.nativeEvent.layout.width;
@@ -148,6 +210,8 @@ const EmojiPickerHeader: React.FC<Props> = ({
                     {...props}
                     onBlur={onBlur}
                     onFocus={onFocus}
+                    ref={searchRef}
+                    showSoftInputOnFocus={Platform.OS !== 'android' || showKeyboard}
                 />
             </View>
             <SkinToneSelector

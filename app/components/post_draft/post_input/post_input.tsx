@@ -133,6 +133,7 @@ export default function PostInput({
         height,
         isTransitioningFromCustomView,
         setIsEmojiSearchFocused,
+        isEmojiSearchFocused,
         keyboardHeight,
         lastKeyboardHeight,
     } = useKeyboardAnimationContext();
@@ -220,6 +221,12 @@ export default function PostInput({
             return;
         }
 
+        // On Android, ignore focus events when emoji search is focused
+        // This prevents the emoji picker from closing when the search bar gets focus
+        if (Platform.OS === 'android' && isEmojiSearchFocused) {
+            return;
+        }
+
         setIsFocused(true);
 
         // Reset emoji search focus immediately to prevent jumping
@@ -277,7 +284,7 @@ export default function PostInput({
                 }
             }, 1000);
         }
-    }, [setIsFocused, showInputAccessoryView, inputAccessoryViewAnimatedHeight, setShowInputAccessoryView, isInputAccessoryViewMode, height, isTransitioningFromCustomView, isManuallyFocusingAfterEmojiDismiss, setIsEmojiSearchFocused, keyboardHeight, lastKeyboardHeight]);
+    }, [setIsFocused, showInputAccessoryView, inputAccessoryViewAnimatedHeight, setShowInputAccessoryView, isInputAccessoryViewMode, height, isTransitioningFromCustomView, isManuallyFocusingAfterEmojiDismiss, setIsEmojiSearchFocused, isEmojiSearchFocused, keyboardHeight, lastKeyboardHeight]);
 
     const handleAndroidKeyboardHide = useCallback(() => {
         onBlur();
