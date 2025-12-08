@@ -64,7 +64,8 @@ const EmojiFiltered: React.FC<Props> = ({
 
     // Calculate dynamic height: keyboardHeight + search bar height + search container padding + visibility offset
     const animatedStyle = useAnimatedStyle(() => {
-        const calculatedHeight = keyboardHeight.value > 0 ? keyboardHeight.value + SEARCH_BAR_HEIGHT + SEARCH_CONTAINER_PADDING + SEARCH_VISIBILITY_OFFSET : SEARCH_BAR_HEIGHT + SEARCH_CONTAINER_PADDING + SEARCH_VISIBILITY_OFFSET;
+        const calculatedKeyboardHeight = Math.max(keyboardHeight.value, 0);
+        const calculatedHeight = calculatedKeyboardHeight + SEARCH_BAR_HEIGHT + SEARCH_CONTAINER_PADDING + SEARCH_VISIBILITY_OFFSET;
         return {
             height: calculatedHeight,
         };

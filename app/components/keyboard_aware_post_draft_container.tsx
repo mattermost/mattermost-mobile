@@ -117,6 +117,13 @@ export const KeyboardAwarePostDraftContainer = ({
     ) => {
         updateValueRef.current = updateValueFn;
         updateCursorPositionRef.current = updateCursorPositionFn;
+
+        if (updateValueFn) {
+            updateValueFn((currentValue: string) => {
+                cursorPositionRef.current = currentValue.length;
+                return currentValue;
+            });
+        }
     }, []);
 
     // Ref to track if a layout update is already scheduled
