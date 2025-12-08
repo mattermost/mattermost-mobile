@@ -138,7 +138,26 @@ export default function PostInput({
         lastKeyboardHeight,
         inset,
         offset,
+        registerCursorPosition,
+        registerPostInputCallbacks,
     } = useKeyboardAnimationContext();
+
+    // Register cursor position updates with context
+    useEffect(() => {
+        if (showInputAccessoryView) {
+            return;
+        }
+        if (registerCursorPosition) {
+            registerCursorPosition(cursorPosition);
+        }
+    }, [registerCursorPosition, cursorPosition, showInputAccessoryView]);
+
+    // Register updateValue and updateCursorPosition with context
+    useEffect(() => {
+        if (registerPostInputCallbacks) {
+            registerPostInputCallbacks(updateValue, updateCursorPosition);
+        }
+    }, [registerPostInputCallbacks, updateValue, updateCursorPosition]);
 
     const [propagateValue, shouldProcessEvent] = useInputPropagation();
 
@@ -329,10 +348,13 @@ export default function PostInput({
     }, [intl, longMessageAlertShown, maxMessageLength]);
 
     const handlePostDraftSelectionChanged = useCallback((event: NativeSyntheticEvent<TextInputSelectionChangeEventData> | null, fromHandleTextChange = false) => {
+        if (showInputAccessoryView && !fromHandleTextChange) {
+            return;
+        }
         const cp = fromHandleTextChange ? cursorPosition : event!.nativeEvent.selection.end;
 
         updateCursorPosition(cp);
-    }, [updateCursorPosition, cursorPosition]);
+    }, [showInputAccessoryView, cursorPosition, updateCursorPosition]);
 
     const handleTextChange = useCallback((newValue: string) => {
         if (!shouldProcessEvent(newValue)) {

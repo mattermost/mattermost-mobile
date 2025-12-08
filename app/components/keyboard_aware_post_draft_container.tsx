@@ -98,6 +98,27 @@ export const KeyboardAwarePostDraftContainer = ({
 
     const [isEmojiSearchFocused, setIsEmojiSearchFocused] = useState(false);
 
+    // Ref to store cursor position from PostInput
+    const cursorPositionRef = useRef<number>(0);
+
+    // Function to register cursor position updates from PostInput
+    const registerCursorPosition = useCallback((cursorPosition: number) => {
+        cursorPositionRef.current = cursorPosition;
+    }, []);
+
+    // Refs to store PostInput callbacks
+    const updateValueRef = useRef<React.Dispatch<React.SetStateAction<string>> | null>(null);
+    const updateCursorPositionRef = useRef<React.Dispatch<React.SetStateAction<number>> | null>(null);
+
+    // Function to register PostInput callbacks
+    const registerPostInputCallbacks = useCallback((
+        updateValueFn: React.Dispatch<React.SetStateAction<string>>,
+        updateCursorPositionFn: React.Dispatch<React.SetStateAction<number>>,
+    ) => {
+        updateValueRef.current = updateValueFn;
+        updateCursorPositionRef.current = updateCursorPositionFn;
+    }, []);
+
     // Ref to track if a layout update is already scheduled
     const layoutUpdateScheduledRef = useRef(false);
     const pendingHeightRef = useRef<number | null>(null);
@@ -445,6 +466,11 @@ export const KeyboardAwarePostDraftContainer = ({
         scrollToEnd,
         isEmojiSearchFocused,
         setIsEmojiSearchFocused,
+        cursorPositionRef,
+        registerCursorPosition,
+        updateValue: updateValueRef.current,
+        updateCursorPosition: updateCursorPositionRef.current,
+        registerPostInputCallbacks,
     }), [keyboardCurrentHeight,
         inset,
         offset,
@@ -469,6 +495,8 @@ export const KeyboardAwarePostDraftContainer = ({
         scrollToEnd,
         isEmojiSearchFocused,
         setIsEmojiSearchFocused,
+        registerCursorPosition,
+        registerPostInputCallbacks,
     ]);
 
     const wrapperProps = useMemo(() => {
