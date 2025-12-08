@@ -1,10 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {screen} from '@testing-library/react-native';
+import {act} from '@testing-library/react-hooks';
+import {screen, userEvent} from '@testing-library/react-native';
 import React from 'react';
 
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
+import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_helpers';
 
 import ExpiryCountdown from './index';
 
@@ -18,15 +20,15 @@ jest.mock('@utils/theme', () => ({
 
 describe('ExpiryCountdown', () => {
     beforeEach(() => {
-        jest.clearAllMocks();
-        jest.useFakeTimers();
+        enableFakeTimers();
+        userEvent.setup({advanceTimers: jest.advanceTimersByTime});
     });
 
     afterEach(() => {
-        jest.useRealTimers();
+        disableFakeTimers();
     });
 
-    test('should render countdown with correct time format', () => {
+    test('should render countdown with correct time format', async () => {
         const futureTime = Date.now() + 3661000; // 1 hour, 1 minute, 1 second
         const mockOnExpiry = jest.fn();
 
@@ -38,6 +40,11 @@ describe('ExpiryCountdown', () => {
         );
 
         expect(screen.getByText('1:01:01')).toBeVisible();
+
+        act(() => {
+            advanceTimers(2000);
+        });
+        expect(screen.getByText('1:00:59')).toBeVisible();
     });
 
     test('should render countdown without hours when less than 1 hour remaining', () => {
@@ -66,6 +73,24 @@ describe('ExpiryCountdown', () => {
         );
 
         expect(screen.getByText('0:00')).toBeVisible();
+    });
+
+    test('should call onExpiry callback when countdown reaches zero', async () => {
+        const futureTime = Date.now() + 2000; // 2 seconds
+        const mockOnExpiry = jest.fn();
+
+        renderWithIntlAndTheme(
+            <ExpiryCountdown
+                expiryTime={futureTime}
+                onExpiry={mockOnExpiry}
+            />,
+        );
+
+        act(() => {
+            advanceTimers(2000);
+        });
+        expect(screen.getByText('0:00')).toBeVisible();
+        expect(mockOnExpiry).toHaveBeenCalled();
     });
 });
 
