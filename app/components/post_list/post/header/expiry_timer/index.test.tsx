@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {act} from '@testing-library/react-hooks';
-import {screen, userEvent} from '@testing-library/react-native';
+import {screen} from '@testing-library/react-native';
 import React from 'react';
 
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
@@ -21,7 +21,6 @@ jest.mock('@utils/theme', () => ({
 describe('ExpiryCountdown', () => {
     beforeEach(() => {
         enableFakeTimers();
-        userEvent.setup({advanceTimers: jest.advanceTimersByTime});
     });
 
     afterEach(() => {
