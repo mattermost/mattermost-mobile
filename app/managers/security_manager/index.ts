@@ -794,7 +794,13 @@ class SecurityManagerSingleton {
             if (this.needsEnrollmentCheck) {
                 this.needsEnrollmentCheck = false;
                 logDebug('SecurityManager: Triggering deferred enrollment check');
-                await this.ensureMAMEnrollmentForActiveServer(server);
+                const enrollmentOk = await this.ensureMAMEnrollmentForActiveServer(server);
+
+                // Apply screen capture policy if enrollment succeeded
+                if (enrollmentOk && !this.isEnrolling) {
+                    await IntuneManager.setCurrentIdentity(server);
+                    this.setScreenCapturePolicy(server);
+                }
             }
 
             return true;
