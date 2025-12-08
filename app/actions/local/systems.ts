@@ -334,7 +334,7 @@ export async function expiredBoRPostCleanup(serverUrl: string) {
 
         const {error} = await removeExpiredBoRPosts(serverUrl);
         if (!error) {
-            updateLastBoRCleanupRun(serverUrl);
+            await updateLastBoRCleanupRun(serverUrl);
         }
     } catch (error) {
         logError('An error occurred running the Burn on Read cleanup task', error);
