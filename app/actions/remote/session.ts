@@ -362,7 +362,7 @@ export const nativeEntraLogin = async (serverUrl: string, serverDisplayName: str
         let userData: UserProfile | undefined;
 
         try {
-            await client.loginByIntune(accessToken, deviceToken);
+            userData = await client.loginByIntune(accessToken, deviceToken);
             csrfToken = await getCSRFFromCookie(serverUrl);
         } catch (error) {
             if (isErrorWithStatusCode(error)) {
