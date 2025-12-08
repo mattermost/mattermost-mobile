@@ -13,6 +13,7 @@ import CompassIcon from '@components/compass_icon';
 import FloatingTextInput from '@components/floating_input/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import {FORGOT_PASSWORD, MFA} from '@constants/screens';
+import {LOGIN_TYPE} from '@constants/sso';
 import {useAvoidKeyboard} from '@hooks/device';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {goToScreen, loginAnimationOptions, resetToHome} from '@screens/navigation';
@@ -45,7 +46,7 @@ function getButtonDisabled(loginId: string, password: string, userLoginType: Log
         return true;
     }
 
-    if (magicLinkEnabled && (userLoginType === 'magic_link' || userLoginType === undefined)) {
+    if (magicLinkEnabled && (userLoginType === LOGIN_TYPE.MAGIC_LINK || userLoginType === undefined)) {
         return false;
     }
 
@@ -248,7 +249,7 @@ const LoginForm = ({
         Keyboard.dismiss();
         if (magicLinkEnabled && userLoginType === undefined) {
             const receivedUserLoginType = await checkUserLoginType();
-            if (receivedUserLoginType === 'magic_link') {
+            if (receivedUserLoginType === LOGIN_TYPE.MAGIC_LINK) {
                 setMagicLinkSent(true);
             }
             if (isDeactivated) {
@@ -310,7 +311,7 @@ const LoginForm = ({
     }, [managedConfig?.username]);
 
     const onIdInputSubmitting = useCallback(() => {
-        if (!magicLinkEnabled || (userLoginType !== 'magic_link')) {
+        if (!magicLinkEnabled || (userLoginType !== LOGIN_TYPE.MAGIC_LINK)) {
             focusPassword();
             return;
         }
@@ -319,7 +320,7 @@ const LoginForm = ({
     }, [focusPassword, onLogin, magicLinkEnabled, userLoginType]);
 
     const buttonDisabled = getButtonDisabled(loginId, password, userLoginType, isDeactivated, magicLinkEnabled);
-    const showPasswordInput = !magicLinkEnabled || (userLoginType !== 'magic_link' && userLoginType !== undefined && !isDeactivated);
+    const showPasswordInput = !magicLinkEnabled || (userLoginType !== LOGIN_TYPE.MAGIC_LINK && userLoginType !== undefined && !isDeactivated);
     let userInputError = error;
     if (showPasswordInput) {
         // error is passed to the password input box, so we use this
