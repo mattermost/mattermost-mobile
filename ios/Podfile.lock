@@ -2197,7 +2197,7 @@ PODS:
   - SwiftyJSON (5.0.2)
   - TurboLogIOSNative (0.1.0):
     - CocoaLumberjack (~> 3.8.5)
-  - WatermelonDB (0.28.1-0):
+  - WatermelonDB (0.28.0):
     - React
     - simdjson
   - Yoga (0.0.0)
@@ -2714,7 +2714,7 @@ SPEC CHECKSUMS:
   Starscream: 19b5533ddb925208db698f0ac508a100b884a1b9
   SwiftyJSON: f5b1bf1cd8dd53cd25887ac0eabcfd92301c6a5a
   TurboLogIOSNative: 45f6d20ba17ee39f8106e718e93baf43b2d76b7b
-  WatermelonDB: 4c846c8cb94eef3cba90fa034d15310163226703
+  WatermelonDB: 75e467adbaf2cb2809780fb3eda7ce4964e11778
   Yoga: 92f3bb322c40a86b7233b815854730442e01b8c4
 
 PODFILE CHECKSUM: dc945c4735b28054f91358b30d6093381fc540ec

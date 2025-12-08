@@ -67,5 +67,5 @@ dependencies {
     implementation 'com.facebook.react:react-native'
     implementation 'androidx.security:security-crypto:1.0.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
-    implementation 'com.github.mattermost:mattermost-android-pdfium:v1.1.0'
+    implementation 'com.github.mattermost:mattermost-android-pdfium:v1.0.1'
 }
