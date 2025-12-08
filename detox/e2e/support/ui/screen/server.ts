@@ -91,7 +91,7 @@ class ServerScreen {
     };
 
     enterPreauthSecret = async (secret: string) => {
-        await waitFor(this.preauthSecretInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await waitFor(this.preauthSecretInput.atIndex(0)).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await this.preauthSecretInput.atIndex(0).replaceText(secret);
     };
 
