@@ -79,7 +79,7 @@ describe('UnrevealedBurnOnReadPost', () => {
     test('should handle all post reveal errors', async () => {
         for (const errorCode of BOR_ERROR_CODES) {
             const error = {server_error_id: errorCode, message: `Post unrevealed error for code: ${errorCode}`};
-            jest.mocked(revealBoRPost).mockResolvedValue({error});
+            jest.mocked(revealBoRPost).mockResolvedValueOnce({error});
 
             renderWithIntlAndTheme(<UnrevealedBurnOnReadPost {...baseProps}/>);
             const button = screen.getByText('View message');
