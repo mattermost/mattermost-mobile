@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import GraphemeSplitter from 'grapheme-splitter';
 import React, {useCallback} from 'react';
 import {ScrollView, View} from 'react-native';
 
@@ -11,6 +10,7 @@ import {useKeyboardAnimationContext} from '@context/keyboard_animation';
 import {useTheme} from '@context/theme';
 import {selectEmojiCategoryBarSection, useEmojiCategoryBar} from '@hooks/emoji_category_bar';
 import {usePreventDoubleTap} from '@hooks/utils';
+import {deleteLastGrapheme} from '@utils/grapheme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import EmojiCategoryBarIcon from './icon';
@@ -96,15 +96,10 @@ const EmojiCategoryBar = ({onSelect}: Props) => {
         }
 
         updateValue((value: string) => {
-            const splitter = new GraphemeSplitter();
-            const valueBeforeCursor = value.slice(0, currentCursorPosition);
-            const clusters = splitter.splitGraphemes(valueBeforeCursor);
-            clusters.pop();
-            const updatedValue = clusters.join('') + value.slice(currentCursorPosition);
-            const newCursorPosition = clusters.join('').length;
-            cursorPositionRef.current = newCursorPosition;
-            updateCursorPosition(newCursorPosition);
-            return updatedValue;
+            const result = deleteLastGrapheme(value, currentCursorPosition);
+            cursorPositionRef.current = result.cursorPosition;
+            updateCursorPosition(result.cursorPosition);
+            return result.text;
         });
     }, [updateValue, updateCursorPosition, cursorPositionRef]);
 
