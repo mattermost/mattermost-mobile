@@ -1423,7 +1423,7 @@ PODS:
     - Yoga
   - react-native-netinfo (11.4.1):
     - React-Core
-  - react-native-network-client (1.8.4):
+  - react-native-network-client (1.9.0):
     - Alamofire (~> 5.10.2)
     - DoubleConversion
     - glog
@@ -2161,7 +2161,7 @@ PODS:
   - SwiftyJSON (5.0.2)
   - TurboLogIOSNative (0.1.0):
     - CocoaLumberjack (~> 3.8.5)
-  - WatermelonDB (0.28.0):
+  - WatermelonDB (0.28.1-0):
     - React
     - simdjson
   - Yoga (0.0.0)
@@ -2611,7 +2611,7 @@ SPEC CHECKSUMS:
   react-native-emm: 222b53b2d81d01477fcb6f7891b177effb3669b2
   react-native-image-picker: 02103d18c612bd41a8d8198eb4dfebfb3d9ee7eb
   react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187
-  react-native-network-client: 0eb89f45e0ba2133a096f8685f6561382168a65b
+  react-native-network-client: e158b2dd0a141107009606df0f3c4f4a2e09b608
   react-native-notifications: 3bafa1237ae8a47569a84801f17d80242fe9f6a5
   react-native-paste-input: 25882b3a411e75a7b92f6e9d50ac685ee3ebc7ed
   react-native-performance: 125a96c145e29918b55b45ce25cbba54f1e24dcd
@@ -2674,7 +2674,7 @@ SPEC CHECKSUMS:
   Starscream: 19b5533ddb925208db698f0ac508a100b884a1b9
   SwiftyJSON: f5b1bf1cd8dd53cd25887ac0eabcfd92301c6a5a
   TurboLogIOSNative: 45f6d20ba17ee39f8106e718e93baf43b2d76b7b
-  WatermelonDB: 75e467adbaf2cb2809780fb3eda7ce4964e11778
+  WatermelonDB: 4c846c8cb94eef3cba90fa034d15310163226703
   Yoga: 92f3bb322c40a86b7233b815854730442e01b8c4
 
 PODFILE CHECKSUM: dc945c4735b28054f91358b30d6093381fc540ec
