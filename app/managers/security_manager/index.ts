@@ -265,6 +265,7 @@ class SecurityManagerSingleton {
 
             if (enrollmentOk && !this.isEnrolling) {
                 await IntuneManager.setCurrentIdentity(serverUrl);
+                this.setScreenCapturePolicy(serverUrl);
             }
         }
     };
