@@ -19,7 +19,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         backgroundColor: theme.centerChannelBg,
         height: 55,
-        paddingTop: 11,
         paddingHorizontal: 12,
         borderTopColor: changeOpacity(theme.centerChannelColor, 0.08),
         borderTopWidth: 1,
@@ -31,14 +30,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         height: 32,
         alignItems: 'center',
         justifyContent: 'center',
-        marginHorizontal: 4,
     },
     actionIcon: {
         color: changeOpacity(theme.centerChannelColor, 0.56),
     },
     scrollableContainer: {
         flex: 1,
-        paddingHorizontal: 4,
+        marginHorizontal: 8,
     },
     categoriesContainer: {
         flexDirection: 'row',
@@ -48,7 +46,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         width: 1,
         height: 20,
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
-        marginHorizontal: 4,
+        marginHorizontal: 8,
     },
 }));
 
@@ -172,3 +170,4 @@ const EmojiCategoryBar = ({onSelect}: Props) => {
 };
 
 export default EmojiCategoryBar;
+
