@@ -36,7 +36,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         headerText: {
             fontSize: 14,
-            fontWeight: '600',
+            fontWeight: 600,
             color: changeOpacity(theme.centerChannelColor, 0.72),
             marginLeft: 8,
         },
@@ -68,7 +68,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         citationTitle: {
             fontSize: 14,
-            fontWeight: '600',
+            fontWeight: 600,
             color: theme.centerChannelColor,
             marginBottom: 2,
         },

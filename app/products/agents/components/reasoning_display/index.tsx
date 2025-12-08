@@ -27,6 +27,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         minimalText: {
             fontSize: 14,
+            lineHeight: 20,
             color: changeOpacity(theme.centerChannelColor, 0.64),
         },
         expandedContainer: {
@@ -42,6 +43,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         expandedHeaderText: {
             fontSize: 14,
+            lineHeight: 20,
             color: changeOpacity(theme.centerChannelColor, 0.64),
         },
         reasoningContentContainer: {

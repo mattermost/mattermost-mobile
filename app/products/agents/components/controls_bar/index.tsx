@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {TOUCH_TARGET_SIZE} from '@agents/constants';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, TouchableOpacity, View} from 'react-native';
@@ -26,13 +25,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
             borderRadius: 4,
             paddingVertical: 8,
-            paddingHorizontal: 10,
-            minHeight: TOUCH_TARGET_SIZE,
+            paddingHorizontal: 16,
             justifyContent: 'center',
         },
         buttonText: {
             fontSize: 12,
-            fontWeight: '600',
+            fontWeight: 600,
             lineHeight: 16,
             color: changeOpacity(theme.centerChannelColor, 0.64),
         },
@@ -102,7 +100,7 @@ const ControlsBar = ({
                 >
                     <CompassIcon
                         name='close-circle-outline'
-                        size={14}
+                        size={12}
                         color={changeOpacity(theme.centerChannelColor, 0.64)}
                     />
                     <FormattedText
@@ -121,7 +119,7 @@ const ControlsBar = ({
                 >
                     <CompassIcon
                         name='refresh'
-                        size={14}
+                        size={12}
                         color={changeOpacity(theme.centerChannelColor, 0.64)}
                     />
                     <FormattedText

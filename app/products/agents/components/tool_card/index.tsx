@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {TOUCH_TARGET_SIZE} from '@agents/constants';
 import {ToolCallStatus, type ToolCall} from '@agents/types';
 import React, {useCallback, useMemo} from 'react';
 import {Text, TouchableOpacity, View} from 'react-native';
@@ -35,7 +34,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flexDirection: 'row',
             alignItems: 'center',
             gap: 8,
-            minHeight: TOUCH_TARGET_SIZE,
             paddingVertical: 8,
         },
         chevronIcon: {
@@ -46,7 +44,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             height: 12,
         },
         toolName: {
-            fontSize: 11,
+            fontSize: 14,
             lineHeight: 20,
             color: changeOpacity(theme.centerChannelColor, 0.75),
             flex: 1,
@@ -67,8 +65,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             paddingLeft: 24,
         },
         responseLabelText: {
-            fontSize: 11,
-            fontWeight: '600',
+            fontSize: 14,
+            fontWeight: 600,
             lineHeight: 20,
             color: changeOpacity(theme.centerChannelColor, 0.75),
         },
@@ -83,22 +81,21 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             paddingLeft: 24,
         },
         statusText: {
-            fontSize: 11,
-            lineHeight: 16,
+            fontSize: 14,
+            lineHeight: 20,
             color: changeOpacity(theme.centerChannelColor, 0.75),
         },
         buttonContainer: {
             flexDirection: 'row',
             gap: 8,
             marginTop: 4,
-            paddingLeft: 24,
+            paddingLeft: 36,
         },
         button: {
             backgroundColor: changeOpacity(theme.buttonBg, 0.08),
             borderRadius: 4,
-            paddingVertical: 4,
-            paddingHorizontal: 10,
-            height: TOUCH_TARGET_SIZE,
+            paddingVertical: 8,
+            paddingHorizontal: 16,
             justifyContent: 'center',
         },
         buttonDisabled: {
@@ -106,7 +103,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         buttonText: {
             fontSize: 12,
-            fontWeight: '600',
+            fontWeight: 600,
             lineHeight: 16,
             color: theme.buttonBg,
         },
