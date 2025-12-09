@@ -56,6 +56,9 @@ export default class MyChannelModel extends Model implements MyChannelModelInter
     /** last_playbook_runs_fetch_at : The timestamp of the last successful fetch of playbook runs for this channel, used as the "since" parameter for incremental updates */
     @field('last_playbook_runs_fetch_at') lastPlaybookRunsFetchAt!: number;
 
+    /* autotranslation: Determines if the channel has automatic translation enabled for this user*/
+    @field('autotranslation') autotranslation!: boolean;
+
     /** channel : The relation pointing to the CHANNEL table */
     @immutableRelation(CHANNEL, 'id') channel!: Relation<ChannelModel>;
 

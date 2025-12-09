@@ -285,6 +285,24 @@ export const observeMyChannelRoles = (database: Database, channelId: string) => 
     );
 };
 
+export const observeChannelAutotranslation = (database: Database, channelId: string) => {
+    const enableAutoTranslation = observeConfigBooleanValue(database, 'EnableAutoTranslation');
+    const channel = observeChannel(database, channelId);
+    return combineLatest([enableAutoTranslation, channel]).pipe(
+        switchMap(([et, c]) => of$(Boolean(et && c?.autotranslation))),
+        distinctUntilChanged(),
+    );
+};
+
+export const observeMyChannelAutotranslation = (database: Database, channelId: string) => {
+    const enableAutoTranslation = observeConfigBooleanValue(database, 'EnableAutoTranslation');
+    const myChannel = observeMyChannel(database, channelId);
+    return combineLatest([enableAutoTranslation, myChannel]).pipe(
+        switchMap(([et, mc]) => of$(Boolean(et && mc?.autotranslation))),
+        distinctUntilChanged(),
+    );
+};
+
 export const getChannelById = async (database: Database, channelId: string) => {
     try {
         const channel = await database.get<ChannelModel>(CHANNEL).find(channelId);
@@ -466,6 +484,18 @@ export const queryMyChannelsByTeam = (database: Database, teamId: string, includ
         Q.on(CHANNEL, Q.and(
             ...conditions,
         )),
+    );
+};
+
+export const queryMyChannelsByChannelIds = (database: Database, ids: string[]) => {
+    return database.get<MyChannelModel>(MY_CHANNEL).query(
+        Q.where('id', Q.oneOf(ids)),
+    );
+};
+
+export const queryMyChannelsWithAutotranslation = (database: Database) => {
+    return database.get<MyChannelModel>(MY_CHANNEL).query(
+        Q.where('autotranslation', Q.eq(true)),
     );
 };
 
@@ -772,4 +802,11 @@ export const observeIsReadOnlyChannel = (database: Database, channelId: string) 
     return combineLatest([channel, user, experimentalTownSquareIsReadOnly]).pipe(
         switchMap(([c, u, readOnly]) => of$(isDefaultChannel(c) && !isSystemAdmin(u?.roles || '') && readOnly)),
     );
+};
+
+export const observeIsChannelAutotranslated = (database: Database, channelId: string) => {
+    const enableAutoTranslation = observeConfigBooleanValue(database, 'EnableAutoTranslation');
+    const channel = observeChannel(database, channelId);
+    const myChannel = observeMyChannel(database, channelId);
+    return combineLatest([enableAutoTranslation, channel, myChannel]).pipe(switchMap(([et, c, mc]) => of$(Boolean(et && c?.autotranslation && mc?.autotranslation))));
 };

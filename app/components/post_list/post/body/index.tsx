@@ -44,6 +44,7 @@ type BodyProps = {
     searchPatterns?: SearchPattern[];
     showAddReaction?: boolean;
     theme: Theme;
+    isChannelAutotranslated: boolean;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -87,9 +88,25 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const Body = ({
-    appsEnabled, hasFiles, hasReactions, highlight, highlightReplyBar,
-    isCRTEnabled, isEphemeral, isFirstReply, isJumboEmoji, isLastReply, isPendingOrFailed, isPostAcknowledgementEnabled, isPostAddChannelMember,
-    location, post, searchPatterns, showAddReaction, theme,
+    appsEnabled,
+    hasFiles,
+    hasReactions,
+    highlight,
+    highlightReplyBar,
+    isCRTEnabled,
+    isEphemeral,
+    isFirstReply,
+    isJumboEmoji,
+    isLastReply,
+    isPendingOrFailed,
+    isPostAcknowledgementEnabled,
+    isPostAddChannelMember,
+    location,
+    post,
+    searchPatterns,
+    showAddReaction,
+    theme,
+    isChannelAutotranslated,
 }: BodyProps) => {
     const style = getStyleSheet(theme);
     const isEdited = postEdited(post);
@@ -177,6 +194,7 @@ const Body = ({
                 post={post}
                 searchPatterns={searchPatterns}
                 theme={theme}
+                isChannelAutotranslated={isChannelAutotranslated}
             />
         );
     }
