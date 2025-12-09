@@ -14,6 +14,7 @@ import RoundedHeaderContext from '@components/rounded_header_context';
 import {Screens} from '@constants';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useDidUpdate from '@hooks/did_update';
+import {useIsScreenVisible} from '@hooks/use_screen_visibility';
 import SecurityManager from '@managers/security_manager';
 import {popTopScreen, setButtons} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
@@ -52,6 +53,7 @@ const Thread = ({
     scheduledPostCount,
 }: ThreadProps) => {
     const [containerHeight, setContainerHeight] = useState(0);
+    const isVisible = useIsScreenVisible(componentId);
 
     const close = useCallback(() => {
         popTopScreen(componentId);
@@ -126,6 +128,7 @@ const Thread = ({
                         rootPost={rootPost!}
                         scheduledPostCount={scheduledPostCount}
                         containerHeight={containerHeight}
+                        enabled={isVisible}
                     />
                 </KeyboardProvider>
                 }

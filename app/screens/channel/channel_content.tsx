@@ -16,6 +16,7 @@ type ChannelContentProps = {
     marginTop: number;
     scheduledPostCount: number;
     containerHeight: number;
+    enabled?: boolean;
 }
 
 const CHANNEL_POST_DRAFT_TESTID = 'channel.post_draft';
@@ -34,11 +35,13 @@ const ChannelContent = ({
     marginTop,
     scheduledPostCount,
     containerHeight,
+    enabled = true,
 }: ChannelContentProps) => {
     return (
         <KeyboardAwarePostDraftContainer
             textInputNativeID={CHANNEL_POST_INPUT_NATIVE_ID}
             containerStyle={[styles.flex, {marginTop}]}
+            enabled={enabled}
             renderList={({listRef}) => (
                 <ChannelPostList
                     channelId={channelId}

@@ -18,6 +18,7 @@ type ThreadContentProps = {
     rootPost: PostModel;
     scheduledPostCount: number;
     containerHeight: number;
+    enabled?: boolean;
 }
 
 const THREAD_POST_DRAFT_TESTID = 'thread.post_draft';
@@ -36,12 +37,14 @@ const ThreadContent = ({
     rootPost,
     scheduledPostCount,
     containerHeight,
+    enabled = true,
 }: ThreadContentProps) => {
     return (
         <KeyboardAwarePostDraftContainer
             textInputNativeID={THREAD_POST_INPUT_NATIVE_ID}
             containerStyle={styles.flex}
             isThreadView={true}
+            enabled={enabled}
             renderList={({listRef}) => (
                 <ThreadPostList
                     rootPost={rootPost}

@@ -23,7 +23,7 @@ const DEFAULT_POST_INPUT_HEIGHT = 91;
 
 const isIOS = Platform.OS === 'ios';
 
-export const useKeyboardAwarePostDraft = (isThreadView = false) => {
+export const useKeyboardAwarePostDraft = (isThreadView = false, enabled = true) => {
     const [postInputContainerHeight, setPostInputContainerHeight] = useState(DEFAULT_POST_INPUT_HEIGHT);
     const listRef = useRef<FlatList<string | PostModel>>(null);
     const inputRef = useRef<PasteInputRef>();
@@ -39,7 +39,7 @@ export const useKeyboardAwarePostDraft = (isThreadView = false) => {
         isKeyboardFullyOpen,
         isKeyboardFullyClosed,
         isKeyboardInTransition,
-    } = useKeyboardAnimation(postInputContainerHeight, isIOS, isTablet, insets.bottom, isThreadView);
+    } = useKeyboardAnimation(postInputContainerHeight, isIOS, isTablet, insets.bottom, isThreadView, enabled);
 
     // Only apply scroll adjustment on iOS, Android uses native keyboard handling
     useKeyboardScrollAdjustment(listRef, scroll, offset, isIOS);

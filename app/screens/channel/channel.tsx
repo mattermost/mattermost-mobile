@@ -14,6 +14,7 @@ import {useChannelSwitch} from '@hooks/channel_switch';
 import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {useTeamSwitch} from '@hooks/team_switch';
+import {useIsScreenVisible} from '@hooks/use_screen_visibility';
 import SecurityManager from '@managers/security_manager';
 import {popTopScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
@@ -77,6 +78,7 @@ const Channel = ({
     const defaultHeight = useDefaultHeaderHeight();
     const [containerHeight, setContainerHeight] = useState(0);
     const shouldRender = !switchingTeam && !switchingChannels && shouldRenderPosts && Boolean(channelId);
+    const isVisible = useIsScreenVisible(componentId);
     const handleBack = useCallback(() => {
         popTopScreen(componentId);
     }, [componentId]);
@@ -138,6 +140,7 @@ const Channel = ({
                         marginTop={marginTop}
                         scheduledPostCount={scheduledPostCount}
                         containerHeight={containerHeight}
+                        enabled={isVisible}
                     />
                 </KeyboardProvider>
                 }

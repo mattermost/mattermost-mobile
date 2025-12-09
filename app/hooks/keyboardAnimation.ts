@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {useKeyboardHandler} from 'react-native-keyboard-controller';
-import {useAnimatedScrollHandler, useSharedValue} from 'react-native-reanimated';
+import {useAnimatedScrollHandler, useDerivedValue, useSharedValue} from 'react-native-reanimated';
 
 import {BOTTOM_TAB_HEIGHT} from '@constants/view';
 
@@ -12,6 +12,7 @@ export const useKeyboardAnimation = (
     isTablet = false,
     safeAreaBottom = 0,
     isThreadView = false,
+    enabled = true,
 ) => {
     /**
    * progress: Keyboard animation progress (0 = closed, 1 = fully open)
@@ -75,6 +76,13 @@ export const useKeyboardAnimation = (
      */
     const isKeyboardInTransition = useSharedValue(false);
 
+    /**
+     * isEnabled: Shared value to track if keyboard handling is enabled for this screen
+     * Used to prevent processing keyboard events when screen is not visible
+     * useDerivedValue automatically tracks the enabled prop and updates reactively
+     */
+    const isEnabled = useDerivedValue(() => enabled, [enabled]);
+
     // Calculate tab bar adjustment (only for tablets, not in thread view)
     // This accounts for the tab bar height + safe area bottom that gets hidden when keyboard opens
     // Thread views don't have a tab bar, so no adjustment is needed
@@ -106,8 +114,8 @@ export const useKeyboardAnimation = (
         onStart: (e) => {
             'worklet'; // Mark this function to run on UI thread (60fps)
 
-            // On Android, use native keyboard behavior (no custom animations)
-            if (!enableAnimation) {
+            // Skip processing if screen is not enabled/visible or if animations are disabled
+            if (!isEnabled.value || !enableAnimation) {
                 return;
             }
 
@@ -145,8 +153,8 @@ export const useKeyboardAnimation = (
         onInteractive: (e) => {
             'worklet';
 
-            // On Android, use native keyboard behavior (no custom animations)
-            if (!enableAnimation) {
+            // Skip processing if screen is not enabled/visible or if animations are disabled
+            if (!isEnabled.value || !enableAnimation) {
                 return;
             }
 
@@ -177,8 +185,8 @@ export const useKeyboardAnimation = (
         onMove: (e) => {
             'worklet';
 
-            // On Android, use native keyboard behavior (no custom animations)
-            if (!enableAnimation) {
+            // Skip processing if screen is not enabled/visible or if animations are disabled
+            if (!isEnabled.value || !enableAnimation) {
                 return;
             }
 
@@ -215,8 +223,8 @@ export const useKeyboardAnimation = (
         onEnd: (e) => {
             'worklet';
 
-            // On Android, use native keyboard behavior (no custom animations)
-            if (!enableAnimation) {
+            // Skip processing if screen is not enabled/visible or if animations are disabled
+            if (!isEnabled.value || !enableAnimation) {
                 return;
             }
 

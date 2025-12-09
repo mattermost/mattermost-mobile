@@ -26,6 +26,7 @@ type Props = {
     textInputNativeID: string;
     containerStyle?: StyleProp<ViewStyle>;
     isThreadView?: boolean;
+    enabled?: boolean;
 };
 
 const styles = StyleSheet.create({
@@ -53,6 +54,7 @@ export const KeyboardAwarePostDraftContainer = ({
     textInputNativeID,
     containerStyle,
     isThreadView = false,
+    enabled = true,
 }: Props) => {
     const {
         height: keyboardCurrentHeight,
@@ -72,7 +74,7 @@ export const KeyboardAwarePostDraftContainer = ({
         isKeyboardFullyOpen,
         isKeyboardFullyClosed,
         isKeyboardInTransition,
-    } = useKeyboardAwarePostDraft(isThreadView);
+    } = useKeyboardAwarePostDraft(isThreadView, enabled);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         setPostInputContainerHeight(e.nativeEvent.layout.height);
