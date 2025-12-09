@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import AgentPost from '@agents/components/agent_post';
+import {isAgentPost} from '@agents/utils';
 import React, {type ReactNode, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform, type StyleProp, View, type ViewStyle, TouchableHighlight} from 'react-native';
@@ -159,6 +161,7 @@ const Post = ({
     const isFailed = isPostFailed(post);
     const isSystemPost = isSystemMessage(post);
     const isCallsPost = isCallsCustomMessage(post);
+    const isAgentPostType = isAgentPost(post);
     const hasBeenDeleted = (post.deleteAt !== 0);
     const isWebHook = isFromWebhook(post);
     const hasSameRoot = useMemo(() => {
@@ -254,8 +257,7 @@ const Post = ({
             }
         };
 
-    // disabled because to keep the implementation as previous as it started complaining about the dependencies
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Timer only needs to reset when post.id changes, not on other prop updates
     }, [post.id]);
 
     useEffect(() => {
@@ -270,8 +272,7 @@ const Post = ({
         PerformanceMetricsManager.finishLoad(location === 'Thread' ? 'THREAD' : 'CHANNEL', serverUrl);
         PerformanceMetricsManager.endMetric('mobile_channel_switch', serverUrl);
 
-    // disabled because to keep the implementation as previous as it started complaining about the dependencies
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Performance metrics should only run once on mount
     }, []);
 
     const highlightSaved = isSaved && !skipSavedHeader;
@@ -362,6 +363,14 @@ const Post = ({
                 isAdmin={false}
                 isHost={false}
                 joiningChannelId={null}
+            />
+        );
+    } else if (isAgentPostType && !hasBeenDeleted) {
+        body = (
+            <AgentPost
+                post={post}
+                currentUserId={currentUser?.id}
+                location={location}
             />
         );
     } else {

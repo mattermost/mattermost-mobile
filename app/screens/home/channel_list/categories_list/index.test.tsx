@@ -183,7 +183,7 @@ describe('components/categories_list', () => {
             />,
             {database},
         );
-        expect(wrapper.queryByText('Playbook runs')).not.toBeTruthy();
+        expect(wrapper.queryByText('Playbook checklists')).not.toBeTruthy();
     });
 
     it('should render channel list with Playbooks menu if playbooks feature is enabled', () => {
@@ -198,6 +198,6 @@ describe('components/categories_list', () => {
             />,
             {database},
         );
-        expect(wrapper.getByText('Playbook runs')).toBeTruthy();
+        expect(wrapper.getByText('Playbook checklists')).toBeTruthy();
     });
 });

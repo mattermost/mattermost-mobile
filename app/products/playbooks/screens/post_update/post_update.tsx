@@ -226,12 +226,12 @@ const PostUpdate = ({
 
     const onPostUpdate = useCallback(() => {
         if (alsoMarkRunAsFinished) {
-            let message = intl.formatMessage({id: 'playbooks.post_update.confirm.message', defaultMessage: 'Are you sure you want to finish the run {runName} for all participants?'}, {runName});
+            let message = intl.formatMessage({id: 'playbooks.post_update.confirm.message', defaultMessage: 'Are you sure you want to finish the checklist {runName} for all participants?'}, {runName});
             if (outstanding > 0) {
-                message = intl.formatMessage({id: 'playbooks.post_update.confirm.message.with_tasks', defaultMessage: 'There {outstanding, plural, =1 {is # outstanding task} other {are # outstanding tasks}}. Are you sure you want to finish the run {runName} for all participants?'}, {runName, outstanding});
+                message = intl.formatMessage({id: 'playbooks.post_update.confirm.message.with_tasks', defaultMessage: 'There {outstanding, plural, =1 {is # outstanding task} other {are # outstanding tasks}}. Are you sure you want to finish the checklist {runName} for all participants?'}, {runName, outstanding});
             }
             Alert.alert(
-                intl.formatMessage({id: 'playbooks.post_update.confirm.title', defaultMessage: 'Confirm finish run'}),
+                intl.formatMessage({id: 'playbooks.post_update.confirm.title', defaultMessage: 'Confirm finish checklist'}),
                 message,
                 [
                     {
@@ -239,7 +239,7 @@ const PostUpdate = ({
                         style: 'cancel',
                     },
                     {
-                        text: intl.formatMessage({id: 'playbooks.post_update.confirm.confirm', defaultMessage: 'Finish run'}),
+                        text: intl.formatMessage({id: 'playbooks.post_update.confirm.confirm', defaultMessage: 'Finish'}),
                         onPress: onConfirm,
                     },
                 ],
@@ -279,7 +279,7 @@ const PostUpdate = ({
         introMessage = (
             <FormattedMessage
                 id='playbooks.post_update.intro'
-                defaultMessage='This update for the run <Bold>{runName}</Bold> will be broadcasted to {hasChannels, select, true {<Bold>{broadcastChannelCount, plural, =1 {one channel} other {{broadcastChannelCount, number} channels}}</Bold>} other {}}{hasFollowersAndChannels, select, true { and } other {}}{hasFollowers, select, true {<Bold>{followersChannelCount, plural, =1 {one direct message} other {{followersChannelCount, number} direct messages}}</Bold>} other {}}.'
+                defaultMessage='This update for the checklist <Bold>{runName}</Bold> will be broadcasted to {hasChannels, select, true {<Bold>{broadcastChannelCount, plural, =1 {one channel} other {{broadcastChannelCount, number} channels}}</Bold>} other {}}{hasFollowersAndChannels, select, true { and } other {}}{hasFollowers, select, true {<Bold>{followersChannelCount, plural, =1 {one direct message} other {{followersChannelCount, number} direct messages}}</Bold>} other {}}.'
                 values={introMessageValues}
             />
         );
@@ -310,7 +310,7 @@ const PostUpdate = ({
                 label={intl.formatMessage({id: 'playbooks.post_update.label.next_update', defaultMessage: 'Timer for next update'})}
             />
             <OptionItem
-                label={intl.formatMessage({id: 'playbooks.post_update.label.also_mark_run_as_finished', defaultMessage: 'Also mark the run as finished'})}
+                label={intl.formatMessage({id: 'playbooks.post_update.label.also_mark_run_as_finished', defaultMessage: 'Also mark the checklist as finished'})}
                 action={setAlsoMarkRunAsFinished}
                 testID='playbooks.post_update.selector.also_mark_run_as_finished'
                 selected={alsoMarkRunAsFinished}

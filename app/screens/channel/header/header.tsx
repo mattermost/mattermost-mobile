@@ -20,7 +20,7 @@ import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {fetchPlaybookRunsForChannel} from '@playbooks/actions/remote/runs';
-import {goToPlaybookRun, goToPlaybookRuns} from '@playbooks/screens/navigation';
+import {goToCreateQuickChecklist, goToPlaybookRun, goToPlaybookRuns} from '@playbooks/screens/navigation';
 import {BOTTOM_SHEET_ANDROID_OFFSET} from '@screens/bottom_sheet';
 import ChannelBanner from '@screens/channel/header/channel_banner';
 import {bottomSheet, popTopScreen, showModal} from '@screens/navigation';
@@ -40,6 +40,7 @@ type ChannelProps = {
     canAddBookmarks: boolean;
     channelId: string;
     channelType: ChannelType;
+    currentUserId: string;
     customStatus?: UserCustomStatus;
     isBookmarksEnabled: boolean;
     isCustomStatusEnabled: boolean;
@@ -93,6 +94,7 @@ const ChannelHeader = ({
     channelId,
     channelType,
     componentId,
+    currentUserId,
     customStatus,
     displayName,
     hasBookmarks,
@@ -215,21 +217,34 @@ const ChannelHeader = ({
     }, [isTablet, callsAvailable, isDMorGM, hasPlaybookRuns, theme, onTitlePress, channelId]);
 
     const openPlaybooksRuns = useCallback(() => {
+        // If no active runs, create a new one instead
+        if (playbooksActiveRuns === 0) {
+            goToCreateQuickChecklist(
+                intl,
+                channelId,
+                displayName,
+                currentUserId,
+                teamId,
+                serverUrl,
+            );
+            return;
+        }
+
         if (activeRunId) {
             goToPlaybookRun(intl, activeRunId);
             return;
         }
         goToPlaybookRuns(intl, channelId, displayName);
-    }, [activeRunId, channelId, displayName, intl]);
+    }, [playbooksActiveRuns, activeRunId, channelId, displayName, intl, currentUserId, teamId, serverUrl]);
 
     const rightButtons = useMemo(() => {
         const buttons: HeaderRightButton[] = [];
-        if (playbooksActiveRuns && !isDMorGM) {
+        if (isPlaybooksEnabled && !isDMorGM) {
             buttons.push({
                 iconName: 'product-playbooks',
                 onPress: openPlaybooksRuns,
                 buttonType: 'opacity',
-                count: playbooksActiveRuns,
+                count: playbooksActiveRuns || '+',
             });
         }
 
@@ -250,7 +265,7 @@ const ChannelHeader = ({
         });
 
         return buttons;
-    }, [playbooksActiveRuns, isDMorGM, onChannelQuickAction, openPlaybooksRuns]);
+    }, [isPlaybooksEnabled, playbooksActiveRuns, isDMorGM, onChannelQuickAction, openPlaybooksRuns]);
 
     let title = displayName;
     if (isOwnDirectMessage) {
