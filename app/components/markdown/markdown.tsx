@@ -20,6 +20,7 @@ import {typography} from '@utils/typography';
 import AtMention from './at_mention';
 import ChannelMention from './channel_mention';
 import Hashtag from './hashtag';
+import InlineEntityLink, {type InlineEntityType} from './inline_entity_link';
 import MarkdownBlockQuote from './markdown_block_quote';
 import MarkdownCodeBlock from './markdown_code_block';
 import MarkdownImage from './markdown_image';
@@ -32,7 +33,7 @@ import MarkdownTable from './markdown_table';
 import MarkdownTableCell, {type MarkdownTableCellProps} from './markdown_table_cell';
 import MarkdownTableImage from './markdown_table_image';
 import MarkdownTableRow, {type MarkdownTableRowProps} from './markdown_table_row';
-import {addListItemIndices, combineTextNodes, highlightMentions, highlightWithoutNotification, highlightSearchPatterns, parseTaskLists, pullOutImages} from './transform';
+import {addListItemIndices, combineTextNodes, highlightMentions, highlightWithoutNotification, highlightSearchPatterns, parseTaskLists, processInlineEntities, pullOutImages} from './transform';
 
 import type {ChannelMentions} from './channel_mention/channel_mention';
 import type {
@@ -114,6 +115,11 @@ const getExtraPropsForNode = (node: any) => {
 
     if (node.type === 'checkbox') {
         extraProps.isChecked = node.isChecked;
+    }
+
+    if (node.type === 'inline_entity_link') {
+        extraProps.entityType = node.entityType;
+        extraProps.entityId = node.entityId;
     }
 
     return extraProps;
@@ -284,6 +290,15 @@ const Markdown = ({
             </Text>
         );
     }, [theme.centerChannelColor]);
+
+    const renderInlineEntityLink = useCallback(({entityType, entityId}: {entityType: InlineEntityType; entityId: string}) => {
+        return (
+            <InlineEntityLink
+                entityType={entityType}
+                entityId={entityId}
+            />
+        );
+    }, []);
 
     const renderCodeBlock = useCallback((props: any) => {
         if (disableCodeBlock) {
@@ -617,6 +632,7 @@ const Markdown = ({
             search_highlight: Renderer.forwardChildren,
             highlight_without_notification: Renderer.forwardChildren,
             checkbox: renderCheckbox,
+            inline_entity_link: renderInlineEntityLink,
 
             editedIndicator: renderEditedIndicator,
             maxNodesWarning: renderMaxNodesWarning,
@@ -660,6 +676,7 @@ const Markdown = ({
         renderTableRow,
         renderTableCell,
         renderCheckbox,
+        renderInlineEntityLink,
         renderEditedIndicator,
         renderMaxNodesWarning,
         maxNodes,
@@ -676,6 +693,7 @@ const Markdown = ({
             ast = addListItemIndices(ast);
             ast = pullOutImages(ast);
             ast = parseTaskLists(ast);
+            ast = processInlineEntities(ast);
             if (mentionKeys) {
                 ast = highlightMentions(ast, mentionKeys);
             }

@@ -381,3 +381,72 @@ export function parseTaskLists(ast: Node) {
 
     return ast;
 }
+
+// Regex pattern to match inline entity markers: [POST:id], [CHANNEL:id], [TEAM:id]
+const INLINE_ENTITY_PATTERN = /\[(POST|CHANNEL|TEAM):([^\]]+)\]/i;
+
+/**
+ * Process inline entity markers like [POST:id], [CHANNEL:id], [TEAM:id] and
+ * replace them with inline_entity_link nodes that will be rendered as clickable links.
+ */
+export function processInlineEntities(ast: Node) {
+    const walker = ast.walker();
+
+    let e;
+    while ((e = walker.next())) {
+        if (!e.entering) {
+            continue;
+        }
+
+        const node = e.node;
+
+        if (node.type !== 'text' || !node.literal) {
+            continue;
+        }
+
+        const match = INLINE_ENTITY_PATTERN.exec(node.literal);
+        if (!match) {
+            continue;
+        }
+
+        const fullMatch = match[0];
+        const entityType = match[1].toUpperCase();
+        const entityId = match[2];
+        const startIndex = match.index;
+        const endIndex = startIndex + fullMatch.length;
+        const literal = node.literal;
+
+        // Create the inline entity link node
+        const entityNode: any = new Node('inline_entity_link' as any);
+        entityNode.entityType = entityType;
+        entityNode.entityId = entityId;
+
+        // Replace the text node similar to how highlightTextNode works
+        // but instead of wrapping, we replace with the entity node
+        if (startIndex > 0) {
+            // There's text before the match
+            const beforeNode = new Node('text');
+            beforeNode.literal = literal.substring(0, startIndex);
+            node.insertBefore(beforeNode);
+        }
+
+        // Insert the entity node
+        node.insertBefore(entityNode);
+
+        if (endIndex < literal.length) {
+            // There's text after the match - update the current node to contain it
+            node.literal = literal.substring(endIndex);
+
+            // Resume at the current node to check for more matches
+            walker.resumeAt(node, true);
+        } else {
+            // No text after the match, remove the current node
+            node.unlink();
+
+            // Resume at the entity node
+            walker.resumeAt(entityNode, false);
+        }
+    }
+
+    return ast;
+}

@@ -62,4 +62,19 @@ describe('ChannelQuickAction', () => {
         const {queryByTestId} = renderWithEverything(<ChannelQuickAction {...props}/>, {database});
         expect(queryByTestId('playbook-runs-option')).toBeNull();
     });
+
+    it('shows Ask Agents option when channel is not DM/GM', () => {
+        const props = getBaseProps();
+        const {getByTestId} = renderWithEverything(<ChannelQuickAction {...props}/>, {database});
+
+        expect(getByTestId('channel.quick_actions.ask_agents')).toBeTruthy();
+    });
+
+    it('hides Ask Agents option for DM/GM channels', () => {
+        const props = getBaseProps();
+        props.isDMorGM = true;
+        const {queryByTestId} = renderWithEverything(<ChannelQuickAction {...props}/>, {database});
+
+        expect(queryByTestId('channel.quick_actions.ask_agents')).toBeNull();
+    });
 });
