@@ -78,6 +78,9 @@ describe('UnrevealedBurnOnReadPost', () => {
 
     test('should handle all post reveal errors', async () => {
         for (const errorCode of BOR_ERROR_CODES) {
+            // Clearing mocks to ensure each iteration runs with fresh mock state
+            jest.clearAllMocks();
+
             const error = {server_error_id: errorCode, message: `Post unrevealed error for code: ${errorCode}`};
             jest.mocked(revealBoRPost).mockResolvedValueOnce({error});
 
