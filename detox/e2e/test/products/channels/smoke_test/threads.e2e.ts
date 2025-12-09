@@ -64,18 +64,15 @@ describe('Smoke Test - Threads', () => {
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
         await waitFor(ThreadScreen.postInput).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         await ThreadScreen.postMessage(`${parentMessage} reply`);
-        await wait(timeouts.ONE_SEC);
         await ThreadScreen.followingButton.tap();
 
         // * Verify thread is not followed by user via thread navigation
-        await waitFor(ThreadScreen.followButton).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         await expect(ThreadScreen.followButton).toBeVisible();
 
         // # Follow thread via thread navigation
         await ThreadScreen.followButton.tap();
 
         // * Verify thread is followed by user via thread navigation
-        await waitFor(ThreadScreen.followingButton).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         await expect(ThreadScreen.followingButton).toBeVisible();
 
         // # Go back to channel list screen, then go to global threads screen, tap on all your threads button, open thread options for thread, tap on mark as unread option, and tap on unread threads button

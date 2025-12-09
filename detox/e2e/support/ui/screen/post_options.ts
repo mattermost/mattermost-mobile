@@ -22,11 +22,8 @@ class PostOptionsScreen {
         unpinPostOption: 'post_options.unpin_post.option',
         editPostOption: 'post_options.edit_post.option',
         deletePostOption: 'post_options.delete_post.option',
-        pinnedPostListItemPrefix: 'pinned_messages.post_list.post',
     };
 
-    searchedPostListItem = (postId: string) => element(by.id(`search_results.post_list.post.${postId}`));
-    pinnedPostListItem = (postId: string) => element(by.id(`pinned_messages.post_list.post.${postId}`));
     postOptionsScreen = element(by.id(this.testID.postOptionsScreen));
     pickReactionButton = element(by.id(this.testID.pickReactionButton));
     replyPostOption = element(by.id(this.testID.replyPostOption));
@@ -84,16 +81,6 @@ class PostOptionsScreen {
             await expect(this.postOptionsScreen).toExist();
             await this.close();
         }
-    };
-
-    openPostOptionsForPinedPosts = async (postId: string) => {
-        await waitFor(this.pinnedPostListItem(postId)).toExist().withTimeout(timeouts.TWO_SEC);
-        await this.pinnedPostListItem(postId).longPress();
-    };
-
-    openPostOptionsForSearchedPosts = async (postId: string) => {
-        await waitFor(this.searchedPostListItem(postId)).toExist().withTimeout(timeouts.TWO_SEC);
-        await this.searchedPostListItem(postId).longPress();
     };
 }
 

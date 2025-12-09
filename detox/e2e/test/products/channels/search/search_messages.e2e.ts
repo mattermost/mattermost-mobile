@@ -391,10 +391,12 @@ describe('Search - Search Messages', () => {
         await EditPostScreen.saveButton.tap();
 
         // * Verify post message is updated and displays edited indicator '(edited)'
-        await ChannelScreen.assertPostMessageEdited(searchedPost.id, updatedMessage, 'search_page');
+        const {postListPostItem: updatedPostListPostItem, postListPostItemEditedIndicator} = SearchMessagesScreen.getPostListPostItem(searchedPost.id, updatedMessage);
+        await expect(updatedPostListPostItem).toBeVisible();
+        await expect(postListPostItemEditedIndicator).toHaveText('Edited');
 
         // # Open post options for searched message and tap on reply option
-        await PostOptionsScreen.openPostOptionsForSearchedPosts(searchedPost.id);
+        await SearchMessagesScreen.openPostOptionsFor(searchedPost.id, updatedMessage);
         await PostOptionsScreen.replyPostOption.tap();
 
         // * Verify on thread screen
@@ -411,11 +413,11 @@ describe('Search - Search Messages', () => {
 
         // # Go back to search results screen
         await ThreadScreen.back();
-        await SearchMessagesScreen.toBeVisible();
 
         // * Verify reply count and following button
-        await SearchMessagesScreen.verifyReplyCount(replyPost.id, 1);
-        await SearchMessagesScreen.verifyFollowingLabel(replyPost.id, true);
+        const {postListPostItemFooterReplyCount, postListPostItemFooterFollowingButton} = SearchMessagesScreen.getPostListPostItem(searchedPost.id, updatedMessage);
+        await expect(postListPostItemFooterReplyCount).toHaveText('1 reply');
+        await expect(postListPostItemFooterFollowingButton).toBeVisible();
 
         // # Open post options for updated searched message and delete post
         await SearchMessagesScreen.openPostOptionsFor(searchedPost.id, updatedMessage);

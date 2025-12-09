@@ -61,7 +61,6 @@ describe('Threads - Follow and Unfollow Thread', () => {
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
         await ThreadScreen.postMessage(`${parentMessage} reply`);
-        await wait(timeouts.ONE_SEC);
 
         // * Verify thread is followed by user by default via thread navigation
         await expect(ThreadScreen.followingButton).toBeVisible();
@@ -73,7 +72,6 @@ describe('Threads - Follow and Unfollow Thread', () => {
         await expect(ThreadScreen.followButton).toBeVisible();
 
         // # Follow thread via thread navigation
-        await wait(timeouts.TWO_SEC);
         await ThreadScreen.followButton.tap();
 
         // * Verify thread is followed by user via thread navigation
@@ -92,7 +90,6 @@ describe('Threads - Follow and Unfollow Thread', () => {
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
         await ThreadScreen.postMessage(`${parentMessage} reply`);
-        await wait(timeouts.ONE_SEC);
         await ThreadScreen.back();
 
         // * Verify thread is followed by user by default via post footer
@@ -106,7 +103,6 @@ describe('Threads - Follow and Unfollow Thread', () => {
         await expect(postListPostItemFooterFollowButton).toBeVisible();
 
         // # Follow thread via post footer
-        await wait(timeouts.TWO_SEC);
         await postListPostItemFooterFollowButton.tap();
 
         // * Verify thread is followed by user via post footer
@@ -128,11 +124,9 @@ describe('Threads - Follow and Unfollow Thread', () => {
         await ChannelScreen.openPostOptionsFor(parentPost.id, parentMessage);
 
         // * Verify thread is followed by user by default via post options
-        await waitFor(PostOptionsScreen.followingThreadOption).toBeVisible().withTimeout(timeouts.TWO_SEC);
         await expect(PostOptionsScreen.followingThreadOption).toBeVisible();
 
         // # Unfollow thread via post options
-        await waitFor(PostOptionsScreen.followingThreadOption).toBeVisible().withTimeout(timeouts.TWO_SEC);
         await PostOptionsScreen.followingThreadOption.tap();
 
         // * Verify thread is not followed by user via post footer
@@ -146,7 +140,6 @@ describe('Threads - Follow and Unfollow Thread', () => {
         await expect(PostOptionsScreen.followThreadOption).toBeVisible();
 
         // # Tap on follow thread option
-        await wait(timeouts.TWO_SEC);
         await PostOptionsScreen.followThreadOption.tap();
 
         // * Verify thread is followed by user via post footer

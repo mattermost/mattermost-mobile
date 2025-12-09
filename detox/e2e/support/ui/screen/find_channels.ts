@@ -9,7 +9,6 @@ import {expect} from 'detox';
 class FindChannelsScreen {
     testID = {
         findChannelsScreenPrefix: 'find_channels.',
-        filteredArchivedChannelItemPrefix: 'find_channels.filtered_list.remote_channel_item.',
         filteredChannelItemPrefix: 'find_channels.filtered_list.channel_item.',
         unfilteredChannelItemPrefix: 'find_channels.unfiltered_list.channel_item.',
         findChannelsScreen: 'find_channels.screen',
@@ -41,10 +40,6 @@ class FindChannelsScreen {
 
     getUnfilteredChannelItemDisplayName = (channelName: string) => {
         return element(by.id(`${this.testID.unfilteredChannelItemPrefix}${channelName}.display_name`));
-    };
-
-    getFilteredArchivedChannelItem = (channelName: string) => {
-        return element(by.id(`${this.testID.filteredArchivedChannelItemPrefix}${channelName}`));
     };
 
     getFilteredChannelItem = (channelName: string) => {

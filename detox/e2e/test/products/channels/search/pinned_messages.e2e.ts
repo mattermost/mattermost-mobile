@@ -19,6 +19,7 @@ import {
     ChannelListScreen,
     ChannelScreen,
     EditPostScreen,
+    HomeScreen,
     LoginScreen,
     PermalinkScreen,
     PostOptionsScreen,
@@ -51,6 +52,11 @@ describe('Search - Pinned Messages', () => {
         await ChannelListScreen.toBeVisible();
     });
 
+    afterAll(async () => {
+        // # Log out
+        await HomeScreen.logout();
+    });
+
     it('MM-T4918_1 - should match elements on pinned messages screen', async () => {
         // # Open a channel screen, open channel info screen, and open pinned messages screen
         await ChannelScreen.open(channelsCategory, testChannel.name);
@@ -58,7 +64,6 @@ describe('Search - Pinned Messages', () => {
         await PinnedMessagesScreen.open();
 
         // * Verify basic elements on pinned messages screen
-        await waitFor(element(by.text('No pinned messages yet'))).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         await expect(PinnedMessagesScreen.emptyTitle).toHaveText('No pinned messages yet');
         await expect(PinnedMessagesScreen.emptyParagraph).toHaveText('To pin important messages, long-press on a message and choose Pin To Channel. Pinned messages will be visible to everyone in this channel.');
 
@@ -93,7 +98,6 @@ describe('Search - Pinned Messages', () => {
 
         // # Tap on post and jump to recent messages
         await pinnedMessagesPostListPostItem.tap();
-        await waitFor(PermalinkScreen.jumpToRecentMessagesButton).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         await PermalinkScreen.jumpToRecentMessages();
 
         // * Verify on channel screen and pinned message is displayed
@@ -132,12 +136,12 @@ describe('Search - Pinned Messages', () => {
         await EditPostScreen.saveButton.tap();
 
         // * Verify post message is updated and displays edited indicator '(edited)'
-        const {postListPostItem: updatedPostListPostItem} = PinnedMessagesScreen.getPostListPostItem(pinnedPost.id);
-        await waitFor(updatedPostListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-        await ChannelScreen.assertPostMessageEdited(pinnedPost.id, updatedMessage, 'pinned_page');
+        const {postListPostItem: updatedPostListPostItem, postListPostItemEditedIndicator} = PinnedMessagesScreen.getPostListPostItem(pinnedPost.id, updatedMessage);
+        await expect(updatedPostListPostItem).toBeVisible();
+        await expect(postListPostItemEditedIndicator).toHaveText('Edited');
 
         // # Open post options for updated pinned message and tap on reply option
-        await PostOptionsScreen.openPostOptionsForPinedPosts(pinnedPost.id);
+        await PinnedMessagesScreen.openPostOptionsFor(pinnedPost.id, updatedMessage);
         await PostOptionsScreen.replyPostOption.tap();
 
         // * Verify on thread screen
@@ -156,12 +160,12 @@ describe('Search - Pinned Messages', () => {
         await ThreadScreen.back();
 
         // * Verify reply count and following button
-        const {postListPostItem} = PinnedMessagesScreen.getPostListPostItem(pinnedPost.id, updatedMessage);
-        await PinnedMessagesScreen.verifyReplyCount(pinnedPost.id, 1);
-        await PinnedMessagesScreen.verifyFollowingLabel(pinnedPost.id, true);
+        const {postListPostItem, postListPostItemFooterReplyCount, postListPostItemFooterFollowingButton} = PinnedMessagesScreen.getPostListPostItem(pinnedPost.id, updatedMessage);
+        await expect(postListPostItemFooterReplyCount).toHaveText('1 reply');
+        await expect(postListPostItemFooterFollowingButton).toBeVisible();
 
         // # Open post options for updated pinned message and delete post
-        await PostOptionsScreen.openPostOptionsForPinedPosts(pinnedPost.id);
+        await PinnedMessagesScreen.openPostOptionsFor(pinnedPost.id, updatedMessage);
         await PostOptionsScreen.deletePost({confirm: true});
 
         // * Verify updated pinned message is deleted
