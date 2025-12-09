@@ -31,8 +31,9 @@ export function deleteLastGrapheme(text: string, cursorPosition: number): {
     // Remove last grapheme cluster
     clusters.pop();
 
-    const updatedText = clusters.join('') + text.slice(adjustedCursorPosition);
-    const newCursorPosition = clusters.join('').length;
+    const joinedClusters = clusters.join('');
+    const updatedText = joinedClusters + text.slice(adjustedCursorPosition);
+    const newCursorPosition = joinedClusters.length;
 
     return {
         text: updatedText,
