@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {AIRewriting} from '@ai/rewrite';
 import React, {useCallback, useRef} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, type LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
@@ -98,6 +99,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderColor: changeOpacity(theme.centerChannelColor, 0.20),
             borderTopLeftRadius: 12,
             borderTopRightRadius: 12,
+            position: 'relative',
         },
         postPriorityLabel: {
             marginLeft: 12,
@@ -142,7 +144,7 @@ function DraftInput({
 
     const handleLayout = useCallback((e: LayoutChangeEvent) => {
         updatePostInputTop(e.nativeEvent.layout.height);
-    }, []);
+    }, [updatePostInputTop]);
 
     const inputRef = useRef<PasteInputRef>();
     const focus = useCallback(() => {
@@ -196,6 +198,7 @@ function DraftInput({
 
     return (
         <>
+            <AIRewriting/>
             <Typing
                 channelId={channelId}
                 rootId={rootId}
@@ -206,7 +209,6 @@ function DraftInput({
                 style={style.inputWrapper}
                 testID={testID}
             >
-
                 <ScrollView
                     style={style.inputContainer}
                     contentContainerStyle={style.inputContentContainer}
