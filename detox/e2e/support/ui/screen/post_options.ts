@@ -25,6 +25,7 @@ class PostOptionsScreen {
         pinnedPostListItemPrefix: 'pinned_messages.post_list.post',
     };
 
+    searchedPostListItem = (postId: string) => element(by.id(`search_results.post_list.post.${postId}`));
     pinnedPostListItem = (postId: string) => element(by.id(`pinned_messages.post_list.post.${postId}`));
     postOptionsScreen = element(by.id(this.testID.postOptionsScreen));
     pickReactionButton = element(by.id(this.testID.pickReactionButton));
@@ -88,6 +89,11 @@ class PostOptionsScreen {
     openPostOptionsForPinedPosts = async (postId: string) => {
         await waitFor(this.pinnedPostListItem(postId)).toExist().withTimeout(timeouts.TWO_SEC);
         await this.pinnedPostListItem(postId).longPress();
+    };
+
+    openPostOptionsForSearchedPosts = async (postId: string) => {
+        await waitFor(this.searchedPostListItem(postId)).toExist().withTimeout(timeouts.TWO_SEC);
+        await this.searchedPostListItem(postId).longPress();
     };
 }
 

@@ -122,6 +122,7 @@ describe('Channels - Find Channels', () => {
         await FindChannelsScreen.getFilteredChannelItem(groupMessageChannel.name).tap();
 
         // * Verify on target GM screen
+        await wait(timeouts.TWO_SEC);
         const attributes = await element(by.id('channel_post_list.intro.display_name')).getAttributes();
 
         if ('label' in attributes && typeof attributes.label === 'string') {
@@ -144,7 +145,7 @@ describe('Channels - Find Channels', () => {
 
         // * Verify search returns the target archived channel item
         await wait(timeouts.TWO_SEC);
-        await FindChannelsScreen.getFilteredChannelItem(archivedChannel.name).tap();
+        await FindChannelsScreen.getFilteredArchivedChannelItem(archivedChannel.name).tap();
 
         // * Verify on archievd channel name
         await verifyDetailsOnChannelScreen(archivedChannel.display_name);

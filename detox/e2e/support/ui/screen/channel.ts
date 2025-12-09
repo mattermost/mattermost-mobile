@@ -316,12 +316,13 @@ class ChannelScreen {
     assertPostMessageEdited = async (
         postId: string,
         updatedMessage: string,
-        locator: 'channel' | 'pinned' | 'thread' = 'channel',
+        locator: 'channel_page' | 'pinned_page' | 'thread_page' | 'search_page' = 'channel_page',
     ) => {
         const locatorTestIDs = {
-            channel: 'channel.post_list.post',
-            pinned: 'pinned_messages.post_list.post',
-            thread: 'thread.post_list.post',
+            channel_page: 'channel.post_list.post',
+            pinned_page: 'pinned_messages.post_list.post',
+            search_page: 'search_results.post_list.post',
+            thread_page: 'thread.post_list.post',
         };
 
         const postItemTestID = locatorTestIDs[locator];

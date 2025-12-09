@@ -149,7 +149,7 @@ describe('Messaging - Message Edit', () => {
         const {postListPostItem: updatedReplyPostListPostItem} = ThreadScreen.getPostListPostItem(replyPost.id);
         await expect(updatedReplyPostListPostItem).toBeVisible();
 
-        await ChannelScreen.assertPostMessageEdited(replyPost.id, updatedReplyMessage, 'thread');
+        await ChannelScreen.assertPostMessageEdited(replyPost.id, updatedReplyMessage, 'thread_page');
 
         // # Go back to channel list screen
         await ThreadScreen.back();

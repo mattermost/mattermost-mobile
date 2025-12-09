@@ -134,7 +134,7 @@ describe('Search - Pinned Messages', () => {
         // * Verify post message is updated and displays edited indicator '(edited)'
         const {postListPostItem: updatedPostListPostItem} = PinnedMessagesScreen.getPostListPostItem(pinnedPost.id);
         await waitFor(updatedPostListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-        await ChannelScreen.assertPostMessageEdited(pinnedPost.id, updatedMessage, 'pinned');
+        await ChannelScreen.assertPostMessageEdited(pinnedPost.id, updatedMessage, 'pinned_page');
 
         // # Open post options for updated pinned message and tap on reply option
         await PostOptionsScreen.openPostOptionsForPinedPosts(pinnedPost.id);

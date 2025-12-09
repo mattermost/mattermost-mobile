@@ -48,6 +48,7 @@ describe('Localization', () => {
 
         // # Go to Account screen
         await AccountScreen.open();
+        await wait(timeouts.TWO_SEC);
 
         // * Verify Account screen elements are in Spanish
         await expect(element(by.text('Conectado'))).toBeVisible();

@@ -51,7 +51,6 @@ class CreateOrEditChannelScreen {
     openCreateChannel = async () => {
         // # Open create channel screen
         await ChannelListScreen.headerPlusButton.tap();
-        await waitFor(this.createOrEditChannelScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelListScreen.createNewChannelItem.tap();
 
         return this.toBeVisible();
