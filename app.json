@@ -1,4 +1,7 @@
 {
   "name": "Mattermost",
-  "displayName": "Mattermost"
+  "displayName": "Mattermost",
+  "plugins": [
+    "expo-web-browser"
+  ]
 }

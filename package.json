@@ -63,7 +63,7 @@
     "expo-linear-gradient": "14.0.2",
     "expo-store-review": "8.0.1",
     "expo-video-thumbnails": "9.0.3",
-    "expo-web-browser": "14.0.2",
+    "expo-web-browser": "~14.2.0",
     "fflate": "0.8.2",
     "fuse.js": "7.1.0",
     "html-entities": "2.6.0",

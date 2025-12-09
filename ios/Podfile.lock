@@ -72,7 +72,7 @@ PODS:
     - ExpoModulesCore
   - ExpoVideoThumbnails (9.0.3):
     - ExpoModulesCore
-  - ExpoWebBrowser (14.0.2):
+  - ExpoWebBrowser (14.2.0):
     - ExpoModulesCore
   - fast_float (6.1.4)
   - FBLazyVector (0.77.3)
@@ -2601,7 +2601,7 @@ SPEC CHECKSUMS:
   ExpoModulesCore: a2c6e08169fdbbdbbc3047924962d9ca797f230e
   ExpoStoreReview: 92ad323dd14485e7aa67d5b47248fb22876ffaee
   ExpoVideoThumbnails: 7e9cd967393af9af0f7b0c62a4a00549f1860cab
-  ExpoWebBrowser: a212e6b480d8857d3e441fba51e0c968333803b3
+  ExpoWebBrowser: dc39a88485f007e61a3dff05d6a75f22ab4a2e92
   fast_float: 06eeec4fe712a76acc9376682e4808b05ce978b6
   FBLazyVector: 23d8c5470c648a635893dc0956c6dbaead54b656
   fmt: a40bb5bd0294ea969aaaba240a927bd33d878cdd
