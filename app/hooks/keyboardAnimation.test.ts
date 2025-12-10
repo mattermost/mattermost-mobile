@@ -206,6 +206,15 @@ describe('useKeyboardAnimation', () => {
                 useKeyboardAnimation(100, true, false, 0, false, true),
             );
 
+            // First call onStart to set initial height (required for onInteractive to work)
+            act(() => {
+                keyboardHandlerCallbacks.onStart?.({
+                    height: 300,
+                    progress: 1,
+                });
+            });
+
+            // Then call onInteractive to simulate interactive drag
             act(() => {
                 keyboardHandlerCallbacks.onInteractive?.({
                     height: 250,
