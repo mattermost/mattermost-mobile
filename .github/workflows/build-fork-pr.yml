@@ -1,0 +1,221 @@
+---
+name: build-fork-pr
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to build'
+        required: true
+        default: 'main'
+      platform:
+        description: 'Platform to build'
+        required: true
+        type: choice
+        default: 'android'
+        options:
+          - ios
+          - android
+          - both
+
+  pull_request:
+    types:
+      - labeled
+
+# Limit permissions of the GITHUB_TOKEN
+permissions:
+  contents: read
+  pull-requests: write
+  actions: read
+
+env:
+  NODE_VERSION: 22.14.0
+  TERM: xterm
+  # Consistent environment variables
+  IS_FORK: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork }}
+  CHECKOUT_REF: ${{ github.event.pull_request.head.sha || github.ref }}
+  BRANCH_TO_BUILD: ${{ github.event.pull_request.head.ref || github.event.inputs.branch }}
+
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+    if: |
+      (
+        github.event.label.name == 'Build Apps for PR' || 
+        github.event.label.name == 'Build App for iOS' || 
+        github.event.label.name == 'Build App for Android' || 
+        (github.event_name == 'workflow_dispatch' && github.event.inputs.platform != '')
+      ) && 
+      (github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.fork == true)
+    steps:
+      - name: ci/checkout-repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ env.CHECKOUT_REF }}
+      - name: ci/test
+        uses: ./.github/actions/test
+
+  build-ios-fork-pr:
+    runs-on: macos-14-large
+    needs: test
+    if: |
+      (
+        github.event.label.name == 'Build Apps for PR' || 
+        github.event.label.name == 'Build App for iOS' || 
+        (github.event_name == 'workflow_dispatch' && (github.event.inputs.platform == 'ios' || github.event.inputs.platform == 'both'))
+      ) && 
+      (github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.fork == true)
+    env:
+      # Fork-specific secrets (configure these in your repository settings)
+      AWS_ACCESS_KEY_ID: "${{ secrets.FORK_AWS_ACCESS_KEY_ID }}"
+      AWS_SECRET_ACCESS_KEY: "${{ secrets.FORK_AWS_SECRET_ACCESS_KEY }}"
+      MATTERMOST_WEBHOOK_URL: "${{ secrets.FORK_MATTERMOST_WEBHOOK_URL }}"
+      AWS_BUCKET_NAME: "${{ secrets.FORK_AWS_BUCKET_NAME }}"
+      AWS_REGION: "${{ secrets.FORK_AWS_REGION }}"
+      AWS_FOLDER_NAME: "mattermost-mobile"
+    steps:
+      - name: ci/checkout-repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ env.CHECKOUT_REF }}
+
+      - name: ci/prepare-ios-build
+        uses: ./.github/actions/prepare-ios-build
+
+      - name: ci/setup-fork-ios-build
+        run: |
+          echo "Setting up iOS build for fork (development signing)"
+          echo "CODE_SIGN_IDENTITY=" >> $GITHUB_ENV
+          echo "CODE_SIGNING_REQUIRED=NO" >> $GITHUB_ENV
+          echo "IOS_BUILD_EXPORT_METHOD=development" >> $GITHUB_ENV
+          echo "SENTRY_ENABLED=false" >> $GITHUB_ENV
+          echo "BUILD_PR=true" >> $GITHUB_ENV
+
+      - name: ci/build-ios-fork-pr
+        env:
+          GITHUB_PR_NUMBER: "${{ github.event.pull_request.number }}"
+          GITHUB_EVENT_NAME: "${{ github.event_name }}"
+          BRANCH_TO_BUILD: "${{ env.BRANCH_TO_BUILD }}"
+        run: bundle exec fastlane ios build --env ios.pr
+        working-directory: ./fastlane
+
+      - name: ci/upload-ios-fork-pr-build
+        id: ci-upload-ios-fork-pr-build
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ios-fork-build-pr-${{ github.run_id }}
+          path: "*.ipa"
+
+      - name: ci/post-artifact-link-to-pr
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prNumber = '${{ github.event.pull_request.number }}';
+            const runId = '${{ github.run_id }}';
+            const artifactName = `ios-fork-build-pr-${runId}`;
+            const installUrl = `itms-services://?action=download-manifest&url=https://pr-builds.mattermost.com/mattermost-mobile/${prNumber}/merge/Mattermost_Beta.plist`;
+
+            const message = `### 🍎 iOS Fork PR Build Complete\n\n` +
+              `**Build Artifact:** [${artifactName}](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${runId})\n` +
+              `**Install URL:** [Install from PR Builds](${installUrl})\n` +
+              `**Copy this URL:** ${installUrl}\n\n` +
+              `**Details:**\n` +
+              `- Commit: \`${{ env.CHECKOUT_REF }}\`\n` +
+              `- Branch: \`${{ env.BRANCH_TO_BUILD }}\`\n` +
+              `- Build Type: Development (Fork)\n\n` +
+              `*Note: This is a development build from a forked repository.*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: message
+            });
+
+  build-android-fork-pr:
+    runs-on: ubuntu-22.04
+    needs: test
+    if: |
+      (
+        github.event.label.name == 'Build Apps for PR' || 
+        github.event.label.name == 'Build App for Android' || 
+        (github.event_name == 'workflow_dispatch' && (github.event.inputs.platform == 'android' || github.event.inputs.platform == 'both'))
+      ) && 
+      (github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.fork == true)
+    env:
+      # Fork-specific secrets
+      AWS_ACCESS_KEY_ID: "${{ secrets.FORK_AWS_ACCESS_KEY_ID }}"
+      AWS_SECRET_ACCESS_KEY: "${{ secrets.FORK_AWS_SECRET_ACCESS_KEY }}"
+      MATTERMOST_WEBHOOK_URL: "${{ secrets.FORK_MATTERMOST_WEBHOOK_URL }}"
+      AWS_BUCKET_NAME: "${{ secrets.FORK_AWS_BUCKET_NAME }}"
+      AWS_REGION: "${{ secrets.FORK_AWS_REGION }}"
+      AWS_FOLDER_NAME: "mattermost-mobile"
+    steps:
+      - name: ci/checkout-repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ env.CHECKOUT_REF }}
+
+      - name: ci/prepare-android-build
+        uses: ./.github/actions/prepare-android-build
+
+      - name: ci/setup-fork-android-build
+        run: |
+          echo "Setting up Android build for fork (debug signing)"
+          # Generate debug keystore if missing
+          debug_keystore_path="android/app/debug.keystore"
+          if [ ! -f "$debug_keystore_path" ]; then
+            echo "Generating debug keystore..."
+            mkdir -p android/app
+            keytool -genkey -v -keystore "$debug_keystore_path" \
+              -alias androiddebugkey -storepass android -keypass android \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -dname "CN=Android Debug,OU=Android,O=Android,L=Unknown,S=Unknown,C=US"
+          fi
+
+          # Set environment variables for fork build
+          echo "BUILD_PR=true" >> $GITHUB_ENV
+          echo "SENTRY_ENABLED=false" >> $GITHUB_ENV
+
+      - name: ci/build-android-fork-pr
+        env:
+          GITHUB_PR_NUMBER: "${{ github.event.pull_request.number }}"
+          GITHUB_EVENT_NAME: "${{ github.event_name }}"
+          BRANCH_TO_BUILD: "${{ env.BRANCH_TO_BUILD }}"
+        run: bundle exec fastlane android build --env android.pr
+        working-directory: ./fastlane
+
+      - name: ci/upload-android-fork-pr-build
+        id: ci-upload-android-fork-pr-build
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: android-fork-build-pr-${{ github.run_id }}
+          path: "*.apk"
+
+      - name: ci/post-artifact-link-to-pr
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prNumber = '${{ github.event.pull_request.number }}';
+            const runId = '${{ github.run_id }}';
+            const artifactName = `android-fork-build-pr-${runId}`;
+            const installUrl = `https://pr-builds.mattermost.com/mattermost-mobile/${prNumber}/merge/Mattermost_Beta.apk`;
+            
+            const message = `### 🤖 Android Fork PR Build Complete\n\n` +
+              `**Build Artifact:** [${artifactName}](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${runId})\n` +
+              `**Install URL:** [Install from PR Builds](${installUrl})\n\n` +
+              `**Details:**\n` +
+              `- Commit: \`${{ env.CHECKOUT_REF }}\`\n` +
+              `- Branch: \`${{ env.BRANCH_TO_BUILD }}\`\n` +
+              `- Build Type: Debug (Fork)\n\n` +
+              `*Note: This is a debug build from a forked repository.*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: message
+            });
