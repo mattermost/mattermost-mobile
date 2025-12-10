@@ -124,5 +124,12 @@ libraries/**/**/.build
 android/app/src/main/res/raw/*
 .aider*
 
+# Intune submodule (private repository - internal builds only)
+# Track submodule reference but ignore content
+libraries/@mattermost/intune/*
+!libraries/@mattermost/intune/.gitkeep
+
+# Prevent committing Intune module in node_modules
+node_modules/@mattermost/intune
 # Claude Code
 .claude/settings.local.json

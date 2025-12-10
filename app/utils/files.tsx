@@ -40,5 +40,5 @@ export const getFileInfosIndexes = (orderedFilesForGallery: FileInfo[]) => {
 
 // return ordered FileInfo[] converted to GalleryItemType[]
 export const getOrderedGalleryItems = (orderedFileInfos: FileInfo[]) => {
-    return orderedFileInfos.map((f) => fileToGalleryItem(f, f.user_id));
+    return orderedFileInfos.map((f) => fileToGalleryItem(f, f.user_id, undefined, 0, f.id));
 };

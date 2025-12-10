@@ -10,7 +10,6 @@ import {DeviceEventEmitter, Platform, StyleSheet, View} from 'react-native';
 import {useKeyboardState} from 'react-native-keyboard-controller';
 import {enableFreeze, enableScreens} from 'react-native-screens';
 
-import {initializeSecurityManager} from '@actions/app/server';
 import {autoUpdateTimezone} from '@actions/remote/user';
 import ServerVersion from '@components/server_version';
 import {Events, Launch, Screens} from '@constants';
@@ -71,7 +70,7 @@ export function HomeScreen(props: HomeProps) {
     const keyboardState = useKeyboardState();
 
     useEffect(() => {
-        initializeSecurityManager();
+        SecurityManager.start();
     }, []);
 
     useEffect(() => {
@@ -151,10 +150,8 @@ export function HomeScreen(props: HomeProps) {
             }
         }
 
-        // Empty dependency array because this effect should only run once on mount to handle initial launch
-        // - intl, props.launchType, props.launchError, props.extra, props.componentId are intentionally omitted
-        // - This is a one-time launch event handler, not meant to re-trigger when props change
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+    // only run on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const tabBarComponent = useMemo(() => {
