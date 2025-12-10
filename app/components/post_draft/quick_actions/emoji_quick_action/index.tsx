@@ -12,6 +12,7 @@ import {ICON_SIZE} from '@constants/post_draft';
 import {useKeyboardAnimationContext} from '@context/keyboard_animation';
 import {useTheme} from '@context/theme';
 import {DEFAULT_INPUT_ACCESSORY_HEIGHT} from '@hooks/useInputAccessoryView';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {changeOpacity} from '@utils/theme';
 
 type Props = {
@@ -77,9 +78,9 @@ export default function EmojiQuickAction({
         checkKeyboard();
     }, [keyboardHeight, lastKeyboardHeight, isKeyboardFullyClosed, isInputAccessoryViewMode, inputAccessoryViewAnimatedHeight, showEmojiPicker]);
 
-    const handleButtonPress = useCallback(() => {
+    const handleButtonPress = usePreventDoubleTap(useCallback(() => {
         // Prevent opening if already showing or transitioning
-        if ((disabled || showInputAccessoryView || isTransitioningFromCustomView.value) && Platform.OS !== 'android') {
+        if (disabled || showInputAccessoryView || isTransitioningFromCustomView.value) {
             return;
         }
 
@@ -121,7 +122,7 @@ export default function EmojiQuickAction({
             // Dismiss keyboard
             runOnJS(KeyboardController.dismiss)();
         })();
-    }, [disabled, showInputAccessoryView, isTransitioningFromCustomView.value, keyboardHeight.value, lastKeyboardHeight, isInputAccessoryViewMode, inputAccessoryViewAnimatedHeight, setShowInputAccessoryView, scheduleKeyboardCheck]);
+    }, [disabled, showInputAccessoryView, isTransitioningFromCustomView.value, keyboardHeight.value, lastKeyboardHeight, isInputAccessoryViewMode, inputAccessoryViewAnimatedHeight, setShowInputAccessoryView, scheduleKeyboardCheck]));
 
     const actionTestID = disabled ? `${testID}.disabled` : testID;
     const color = disabled ? changeOpacity(theme.centerChannelColor, 0.16) : changeOpacity(theme.centerChannelColor, 0.64);

@@ -95,8 +95,8 @@ export const useKeyboardAnimation = (
     const tabBarAdjustment = isTablet && !isThreadView ? BOTTOM_TAB_HEIGHT + safeAreaBottom : 0;
 
     /**
-   * isCustomViewMode: Whether we're showing custom view instead of keyboard
-   * When true, keyboard handlers are ignored
+   * isInputAccessoryViewMode: Whether we're showing input accessory view (emoji picker) instead of keyboard
+   * When true, keyboard handlers are ignored to prevent interference with the emoji picker
    */
     const isInputAccessoryViewMode = useSharedValue(false);
 
