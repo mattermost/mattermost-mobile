@@ -1510,7 +1510,7 @@ PODS:
     - Yoga
   - react-native-netinfo (11.4.1):
     - React-Core
-  - react-native-network-client (1.8.4):
+  - react-native-network-client (1.9.1):
     - Alamofire (~> 5.10.2)
     - DoubleConversion
     - glog
@@ -2640,7 +2640,7 @@ SPEC CHECKSUMS:
   BlueRSA: 893ae5412de48a508a487067564dbcf9cd49df71
   boost: 1dca942403ed9342f98334bf4c3621f011aa7946
   CocoaLumberjack: 6a459bc897d6d80bd1b8c78482ec7ad05dffc3f0
-  DoubleConversion: f16ae600a246532c4020132d54af21d0ddb2a385
+  DoubleConversion: 5189b271737e1565bdce30deb4a08d647e3f5f54
   EXApplication: 4c72f6017a14a65e338c5e74fca418f35141e819
   EXConstants: fcfc75800824ac2d5c592b5bc74130bad17b146b
   Expo: 75e002fc29a18a72aa3db967b41b29c2b206875d
@@ -2657,7 +2657,7 @@ SPEC CHECKSUMS:
   FBLazyVector: 7605ea4810e0e10ae4815292433c09bf4324ba45
   fmt: 01b82d4ca6470831d1cc0852a1af644be019e8f6
   Gekidou: 94199ed8d31b900f2caeb9d5739c19bed9defc4a
-  glog: 08b301085f15bcbb6ff8632a8ebaf239aae04e6a
+  glog: 04b94705f318337d7ead9e6d17c019bd9b1f6b1b
   hermes-engine: 9e868dc7be781364296d6ee2f56d0c1a9ef0bb11
   HMSegmentedControl: 34c1f54d822d8308e7b24f5d901ec674dfa31352
   JitsiWebRTC: b47805ab5668be38e7ee60e2258f49badfe8e1d0
@@ -2705,7 +2705,7 @@ SPEC CHECKSUMS:
   react-native-emm: c7b71de7822a005bc0f0c52a8c83d6f22e525ab6
   react-native-image-picker: 9a8ef343925265cca1f014acae4724078014ef50
   react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187
-  react-native-network-client: 0d5a2c9124cae45f419c08837bd54cc90ed7e1ca
+  react-native-network-client: 75ad95697c3956004585c77f7a7b787372b2fdcb
   react-native-notifications: 3bafa1237ae8a47569a84801f17d80242fe9f6a5
   react-native-paste-input: ea65201607ec9109a03c3735b07c8dde43410d11
   react-native-performance: 125a96c145e29918b55b45ce25cbba54f1e24dcd
