@@ -131,3 +131,5 @@ libraries/@mattermost/intune/*
 
 # Prevent committing Intune module in node_modules
 node_modules/@mattermost/intune
+# Claude Code
+.claude/settings.local.json
