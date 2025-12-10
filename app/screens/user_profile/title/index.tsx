@@ -13,6 +13,7 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {useGalleryItem} from '@hooks/gallery';
 import {openGalleryAtIndex} from '@utils/gallery';
+import {urlSafeBase64Encode} from '@utils/security';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
@@ -101,6 +102,14 @@ const UserProfileTitle = ({
         }
 
         if (imageUrl) {
+            // Match the cache key pattern used by UserProfileAvatar component
+            let cacheKey;
+            if (enablePostIconOverride && userIconOverride) {
+                cacheKey = `user-override-icon-${urlSafeBase64Encode(userIconOverride)}`;
+            } else {
+                cacheKey = `user-${user.id}-${user.lastPictureUpdate}`;
+            }
+
             const item: GalleryItemType = {
                 id: user.id,
                 uri: imageUrl,
@@ -111,6 +120,7 @@ const UserProfileTitle = ({
                 mime_type: 'image/png',
                 authorId: user.id,
                 type: 'avatar',
+                cacheKey,
             };
             openGalleryAtIndex(galleryIdentifier, 0, [item]);
         }

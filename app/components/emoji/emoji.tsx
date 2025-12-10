@@ -2,13 +2,13 @@
 // See LICENSE.txt for license information.
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
-import {Image as ExpoImage} from 'expo-image';
 import React from 'react';
-import {Image, Platform, StyleSheet, Text} from 'react-native';
+import {StyleSheet, Text} from 'react-native';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {fetchCustomEmojiInBatch} from '@actions/remote/custom_emoji';
+import ExpoImage from '@components/expo_image';
 import {useServerUrl} from '@context/server';
 import NetworkManager from '@managers/network_manager';
 import {queryCustomEmojisByName} from '@queries/servers/custom_emoji';
@@ -102,56 +102,38 @@ const Emoji = (props: EmojiProps) => {
             return null;
         }
 
-        return Platform.select({
-            ios: (
-                <ExpoImage
-                    source={image}
-                    style={[commonStyle, imageStyle, {width, height}]}
-                    contentFit='contain'
-                    testID={testID}
-                    recyclingKey={key}
-                />
-            ),
-            android: (
-                <Image
-                    key={key}
-                    source={image}
-                    style={[commonStyle, imageStyle, {width, height}]}
-                    resizeMode='contain'
-                    testID={testID}
-                />
-            ),
-        });
+        return (
+            <ExpoImage
+                id={`emoji-${emojiName}`}
+                source={image}
+                style={[commonStyle, imageStyle, {width, height}]}
+                contentFit='contain'
+                testID={testID}
+                recyclingKey={key}
+                transition={0}
+                cachePolicy='memory'
+            />
+        );
     }
 
     if (!imageUrl) {
         return null;
     }
 
-    return Platform.select({
-        ios: (
-            <ExpoImage
-                style={[commonStyle, imageStyle, {width, height}]}
-                source={{uri: imageUrl}}
-                contentFit='contain'
-                testID={testID}
-                recyclingKey={key}
-                cachePolicy='disk'
-                placeholder={require('@assets/images/thumb.png')}
-                placeholderContentFit='contain'
-            />
-        ),
-        android: (
-            <Image
-                source={{uri: imageUrl, cache: 'force-cache'}}
-                style={[commonStyle, imageStyle, {width, height}]}
-                resizeMode='contain'
-                testID={testID}
-                key={key}
-                defaultSource={require('@assets/images/thumb.png')}
-            />
-        ),
-    });
+    return (
+        <ExpoImage
+            id={`emoji-${emojiName}`}
+            style={[commonStyle, imageStyle, {width, height}]}
+            source={{uri: imageUrl}}
+            contentFit='contain'
+            testID={testID}
+            recyclingKey={key}
+            cachePolicy='disk'
+            placeholder={require('@assets/images/thumb.png')}
+            placeholderContentFit='contain'
+            transition={0}
+        />
+    );
 };
 
 const withCustomEmojis = withObservables(['emojiName'], ({database, emojiName}: WithDatabaseArgs & {emojiName: string}) => {
