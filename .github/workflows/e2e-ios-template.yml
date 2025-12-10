@@ -3,18 +3,21 @@ name: Detox iOS E2E Tests Template
 on:
   workflow_call:
     inputs:
-      MM_TEST_SERVER_URL:
-        description: "The test server URL"
+      SITE_1_URL:
+        description: "First test server URL"
         required: false
         type: string
-      MM_TEST_USER_NAME:
-        description: "The admin username of the test instance"
+        default: 'https://mobile-e2e-site-1.test.mattermost.cloud'
+      SITE_2_URL:
+        description: "Second test server URL"
         required: false
         type: string
-      MM_TEST_PASSWORD:
-        description: "The admin password of the test instance"
+        default: 'https://mobile-e2e-site-2.test.mattermost.cloud'
+      SITE_3_URL:
+        description: "Third test server URL"
         required: false
         type: string
+        default: 'https://mobile-e2e-site-3.test.mattermost.cloud'
       MOBILE_VERSION:
         description: "The mobile version to test"
         required: false
@@ -70,9 +73,9 @@ env:
   HEADLESS: "true"
   TYPE: ${{ inputs.run-type }}
   PULL_REQUEST: "https://github.com/mattermost/mattermost-mobile/pull/${{ github.event.number }}"
-  SITE_1_URL: ${{ inputs.MM_TEST_SERVER_URL || 'https://mobile-e2e-site-1.test.mattermost.cloud' }}
-  SITE_2_URL: "https://mobile-e2e-site-2.test.mattermost.cloud"
-  SITE_3_URL: "https://mobile-e2e-site-3.test.mattermost.cloud"
+  SITE_1_URL: ${{ inputs.SITE_1_URL || 'https://mobile-e2e-site-1.test.mattermost.cloud' }}
+  SITE_2_URL: ${{ inputs.SITE_2_URL || 'https://mobile-e2e-site-2.test.mattermost.cloud' }}
+  SITE_3_URL: ${{ inputs.SITE_3_URL || 'https://mobile-e2e-site-3.test.mattermost.cloud' }}
   ZEPHYR_ENABLE: ${{ inputs.record_tests_in_zephyr }}
   JIRA_PROJECT_KEY: "MM"
   ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
@@ -309,24 +312,40 @@ jobs:
           echo "There was **${{ steps.summary.outputs.PERCENTAGE }}%** success rate." >> ${GITHUB_STEP_SUMMARY}
 
       - name: Comment report on the PR
-        if: ${{ github.event_name == 'pull_request' }}
+        if: ${{ github.event_name == 'workflow_dispatch' }}
         uses: actions/github-script@v7
         with:
           script: |
-            const prNumber = context.payload.pull_request.number;
+            // Get PR number from commit if triggered via workflow_dispatch
+            let prNumber;
+            if (context.eventName === 'pull_request') {
+              prNumber = context.payload.pull_request.number;
+            } else {
+              // For workflow_dispatch, try to find PR associated with the commit
+              const { data: prs } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                commit_sha: process.env.MOBILE_SHA,
+              });
+              if (prs.length > 0) {
+                prNumber = prs[0].number;
+              }
+            }
 
-            const commentBody = `**iOS E2E Test Report**: ${process.env.MOBILE_SHA} | ${process.env.PERCENTAGE}% (${process.env.PASSES}/${process.env.TOTAL}) | [full report](${process.env.TARGET_URL})
-              | Tests | Passed ✅ | Failed ❌ | Skipped ⏭️ | Errors ⚠️ |
-              |:---:|:---:|:---:|:---:|:---:|
-              | ${process.env.TOTAL} | ${process.env.PASSES} | ${process.env.FAILURES} | ${process.env.SKIPPED} | ${process.env.ERRORS} |
-              `;
+            if (prNumber) {
+              const commentBody = `**iOS E2E Test Report**: ${process.env.MOBILE_SHA} | ${process.env.PERCENTAGE}% (${process.env.PASSES}/${process.env.TOTAL}) | [full report](${process.env.TARGET_URL})
+                | Tests | Passed ✅ | Failed ❌ | Skipped ⏭️ | Errors ⚠️ |
+                |:---:|:---:|:---:|:---:|:---:|
+                | ${process.env.TOTAL} | ${process.env.PASSES} | ${process.env.FAILURES} | ${process.env.SKIPPED} | ${process.env.ERRORS} |
+                `;
 
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: prNumber,
-              body: commentBody,
-            });
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body: commentBody,
+              });
+            }
         env:
           STATUS: ${{ steps.determine-status.outputs.STATUS }}
           FAILURES: ${{ steps.summary.outputs.FAILURES }}
@@ -340,3 +359,40 @@ jobs:
           MOBILE_REF: ${{ needs.generate-specs.outputs.mobile_ref }}
           MOBILE_SHA: ${{ needs.generate-specs.outputs.mobile_sha }}
           TARGET_URL: ${{ steps.set-url.outputs.TARGET_URL }}
+
+      - name: Update commit status
+        uses: mattermost/actions/delivery/update-commit-status@main
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ needs.generate-specs.outputs.mobile_sha }}
+          context: e2e/detox-ios-tests
+          description: Completed with ${{ steps.summary.outputs.FAILURES }} failures
+          status: ${{ steps.determine-status.outputs.STATUS }}
+          target_url: ${{ steps.set-url.outputs.TARGET_URL }}
+
+      - name: Remove E2E label from PR
+        if: ${{ inputs.run-type == 'PR' }}
+        uses: actions/github-script@v7
+        continue-on-error: true
+        with:
+          script: |
+            // Find PR associated with the commit
+            const { data: prs } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: process.env.MOBILE_SHA,
+            });
+
+            if (prs.length > 0) {
+              const prNumber = prs[0].number;
+              await github.rest.issues.removeLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                name: 'Run/E2E-iOS',
+              });
+            }
+        env:
+          MOBILE_SHA: ${{ needs.generate-specs.outputs.mobile_sha }}
