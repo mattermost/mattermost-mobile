@@ -56,8 +56,8 @@ describe('PostOptions', () => {
 
         expect(screen.queryByText('Copy Link')).toBeVisible();
         expect(screen.queryByText('Save')).toBeVisible();
-        expect(screen.queryByText('Pin to Channel')).toBeVisible();
 
+        expect(screen.queryByText('Pin to Channel')).not.toBeVisible();
         expect(screen.queryByText('Copy Text')).not.toBeVisible();
         expect(screen.queryByText('Edit')).not.toBeVisible();
         expect(screen.queryByText('Reply')).not.toBeVisible();
@@ -95,9 +95,9 @@ describe('PostOptions', () => {
 
         expect(screen.queryByText('Copy Link')).toBeVisible();
         expect(screen.queryByText('Save')).toBeVisible();
-        expect(screen.queryByText('Pin to Channel')).toBeVisible();
-        expect(screen.queryByText('Copy Text')).toBeVisible();
 
+        expect(screen.queryByText('Copy Text')).not.toBeVisible();
+        expect(screen.queryByText('Pin to Channel')).not.toBeVisible();
         expect(screen.queryByText('Edit')).not.toBeVisible();
         expect(screen.queryByText('Reply')).not.toBeVisible();
         expect(screen.queryByText('Follow Message')).not.toBeVisible();

@@ -4,11 +4,9 @@
 import {fireEvent, screen} from '@testing-library/react-native';
 import React, {act} from 'react';
 
+import {removePost} from '@actions/local/post';
 import {deletePost, revealBoRPost} from '@actions/remote/post';
-import {
-    BOR_GLOBALLY_EXPIRED_POST_ERROR_CODE,
-    BOR_POST_EXPIRED_FOR_USER_ERROR_CODE,
-} from '@components/post_list/post/burn_on_read/unrevealed/constants';
+import {BOR_ERROR_CODES} from '@components/post_list/post/burn_on_read/unrevealed/constants';
 import {PostModel} from '@database/models/server';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import {showBoRPostErrorSnackbar} from '@utils/snack_bar';
@@ -18,6 +16,10 @@ import UnrevealedBurnOnReadPost from '.';
 jest.mock('@actions/remote/post', () => ({
     revealBoRPost: jest.fn(),
     deletePost: jest.fn(),
+}));
+
+jest.mock('@actions/local/post', () => ({
+    removePost: jest.fn(),
 }));
 
 jest.mock('@utils/snack_bar', () => ({
@@ -74,36 +76,25 @@ describe('UnrevealedBurnOnReadPost', () => {
         expect(showBoRPostErrorSnackbar).not.toHaveBeenCalled();
     });
 
-    test('should handle post expired for user error by showing snackbar and deleting post', async () => {
-        const error = {server_error_id: BOR_POST_EXPIRED_FOR_USER_ERROR_CODE, message: 'Post has expired'};
-        jest.mocked(revealBoRPost).mockResolvedValue({error});
+    test('should handle all post reveal errors', async () => {
+        for (const errorCode of BOR_ERROR_CODES) {
+            // Clearing mocks to ensure each iteration runs with fresh mock state
+            jest.clearAllMocks();
 
-        renderWithIntlAndTheme(<UnrevealedBurnOnReadPost {...baseProps}/>);
+            const error = {server_error_id: errorCode, message: `Post unrevealed error for code: ${errorCode}`};
+            jest.mocked(revealBoRPost).mockResolvedValueOnce({error});
 
-        const button = screen.getByText('View message');
+            renderWithIntlAndTheme(<UnrevealedBurnOnReadPost {...baseProps}/>);
+            const button = screen.getByText('View message');
 
-        await act(async () => {
-            fireEvent.press(button);
-        });
+            // eslint-disable-next-line no-await-in-loop
+            await act(async () => {
+                fireEvent.press(button);
+            });
 
-        expect(showBoRPostErrorSnackbar).toHaveBeenCalledWith('Post has expired');
-        expect(deletePost).toHaveBeenCalledWith('', mockPost);
-    });
-
-    test('should handle post expired for all error by showing snackbar and deleting post', async () => {
-        const error = {server_error_id: BOR_GLOBALLY_EXPIRED_POST_ERROR_CODE, message: 'Post has expired'};
-        jest.mocked(revealBoRPost).mockResolvedValue({error});
-
-        renderWithIntlAndTheme(<UnrevealedBurnOnReadPost {...baseProps}/>);
-
-        const button = screen.getByText('View message');
-
-        await act(async () => {
-            fireEvent.press(button);
-        });
-
-        expect(showBoRPostErrorSnackbar).toHaveBeenCalledWith('Post has expired');
-        expect(deletePost).toHaveBeenCalledWith('', mockPost);
+            expect(showBoRPostErrorSnackbar).toHaveBeenCalledWith(`Post unrevealed error for code: ${errorCode}`);
+            expect(removePost).toHaveBeenCalledWith('', mockPost);
+        }
     });
 
     test('should handle non-400 error without deleting post', async () => {
@@ -118,7 +109,7 @@ describe('UnrevealedBurnOnReadPost', () => {
             fireEvent.press(button);
         });
 
-        expect(deletePost).not.toHaveBeenCalled();
+        expect(removePost).not.toHaveBeenCalled();
         expect(showBoRPostErrorSnackbar).toHaveBeenCalledWith('Unexpected server error');
     });
 });
