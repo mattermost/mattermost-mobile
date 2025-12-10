@@ -8,7 +8,7 @@ import Button from '@components/button';
 import {useServerUrl} from '@context/server';
 import {addChecklistItem} from '@playbooks/actions/remote/checklist';
 import ProgressBar from '@playbooks/components/progress_bar';
-import {goToRenameChecklist, goToAddChecklistItem} from '@playbooks/screens/navigation';
+import {goToAddChecklistItem} from '@playbooks/screens/navigation';
 import {renderWithIntl} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 import {logError} from '@utils/log';
@@ -22,7 +22,14 @@ const serverUrl = 'test-server-url';
 jest.mock('@context/server');
 jest.mocked(useServerUrl).mockReturnValue(serverUrl);
 
-jest.mock('@components/compass_icon', () => 'CompassIcon');
+jest.mock('@components/compass_icon', () => ({
+    __esModule: true,
+    default: jest.fn(),
+}));
+const CompassIcon = require('@components/compass_icon').default;
+jest.mocked(CompassIcon).mockImplementation(
+    (props: any) => React.createElement('CompassIcon', {testID: 'compass-icon', ...props}) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+);
 
 jest.mock('./checklist_item');
 jest.mocked(ChecklistItem).mockImplementation(
@@ -313,26 +320,26 @@ describe('Checklist', () => {
 
     it('renders edit icon in header', () => {
         const props = getBaseProps();
-        const {getByText} = renderWithIntl(<Checklist {...props}/>);
+        const {getByTestId} = renderWithIntl(<Checklist {...props}/>);
 
-        // Verify the component renders with the edit functionality available
-        const title = getByText('Test Checklist');
-        expect(title).toBeTruthy();
-
-        // The edit icon should be present (tested indirectly through component rendering)
-        expect(goToRenameChecklist).toBeDefined();
+        const editButton = getByTestId('edit-checklist-button');
+        expect(editButton).toBeTruthy();
     });
 
     it('toggles expanded state which affects chevron icon', async () => {
         const props = getBaseProps();
-        const {getByText, getByTestId} = renderWithIntl(<Checklist {...props}/>);
+        const {getByText, getByTestId, getAllByTestId} = renderWithIntl(<Checklist {...props}/>);
 
         const header = getByText('Test Checklist');
 
-        // Initially expanded
+        // Initially expanded - chevron should be down
         await waitFor(() => {
             expect(getByTestId('checklist-items-container')).toHaveAnimatedStyle({paddingVertical: 16});
         });
+        const chevronIcons = getAllByTestId('compass-icon');
+        const chevron = chevronIcons.find((icon) => icon.props.name === 'chevron-down' || icon.props.name === 'chevron-right');
+        expect(chevron).toBeTruthy();
+        expect(chevron?.props.name).toBe('chevron-down');
 
         // Toggle to collapsed - chevron should change to right
         act(() => {
@@ -342,6 +349,10 @@ describe('Checklist', () => {
         await waitFor(() => {
             expect(getByTestId('checklist-items-container')).toHaveAnimatedStyle({paddingVertical: 0});
         });
+        const chevronIconsCollapsed = getAllByTestId('compass-icon');
+        const chevronCollapsed = chevronIconsCollapsed.find((icon) => icon.props.name === 'chevron-down' || icon.props.name === 'chevron-right');
+        expect(chevronCollapsed).toBeTruthy();
+        expect(chevronCollapsed?.props.name).toBe('chevron-right');
 
         // Toggle back to expanded - chevron should change to down
         act(() => {
@@ -351,6 +362,10 @@ describe('Checklist', () => {
         await waitFor(() => {
             expect(getByTestId('checklist-items-container')).toHaveAnimatedStyle({paddingVertical: 16});
         });
+        const chevronIconsExpanded = getAllByTestId('compass-icon');
+        const chevronExpanded = chevronIconsExpanded.find((icon) => icon.props.name === 'chevron-down' || icon.props.name === 'chevron-right');
+        expect(chevronExpanded).toBeTruthy();
+        expect(chevronExpanded?.props.name).toBe('chevron-down');
     });
 
     it('handles add item error correctly', async () => {
