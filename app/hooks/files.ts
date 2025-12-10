@@ -45,7 +45,7 @@ const getFileInfo = async (serverUrl: string, bookmarks: ChannelBookmarkModel[],
 
                 let {width, height} = fileInfo;
                 if (imageFile && !width) {
-                    const size = await getImageSize(uri);
+                    const size = await getImageSize(serverUrl, uri, b.fileId);
                     width = size.width;
                     height = size.height;
                 }

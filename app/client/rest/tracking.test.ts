@@ -6,6 +6,7 @@ import {DeviceEventEmitter} from 'react-native';
 
 import LocalConfig from '@assets/config.json';
 import {Events} from '@constants';
+import NetworkPerformanceManager from '@managers/network_performance_manager';
 import test_helper from '@test/test_helper';
 
 import * as ClientConstants from './constants';
@@ -62,7 +63,17 @@ jest.mock('@managers/performance_metrics_manager', () => ({
     collectNetworkRequestData: jest.fn(),
 }));
 
+jest.mock('@managers/network_performance_manager', () => ({
+    __esModule: true,
+    default: {
+        startRequestTracking: jest.fn(() => 'mock-request-id-123'),
+        completeRequestTracking: jest.fn(),
+        cancelRequestTracking: jest.fn(),
+    },
+}));
+
 describe('ClientTracking', () => {
+    const mockedNPM = jest.mocked(NetworkPerformanceManager);
     const apiClientMock = {
         baseUrl: 'https://example.com',
         get: jest.fn(),
@@ -875,6 +886,74 @@ describe('ClientTracking', () => {
             client.setClientCredentials('bearer3', undefined);
             expect(client.requestHeaders[ClientConstants.HEADER_AUTH]).toBe(`${ClientConstants.HEADER_BEARER} bearer3`);
             expect(client.requestHeaders[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET]).toBeUndefined();
+        });
+    });
+
+    describe('Network Performance Tracking', () => {
+        const createMockMetrics = (overrides = {}) => ({
+            latency: 500,
+            size: 1000,
+            compressedSize: 500,
+            startTime: Date.now(),
+            endTime: Date.now() + 500,
+            speedInMbps: 1,
+            networkType: 'Wi-Fi',
+            tlsCipherSuite: 'none',
+            tlsVersion: 'none',
+            isCached: false,
+            httpVersion: 'h2',
+            connectionTime: 0,
+            ...overrides,
+        });
+
+        const mockSuccessResponse = (metrics = createMockMetrics()) => ({
+            ok: true,
+            data: {success: true},
+            headers: {},
+            metrics,
+        });
+
+        const requestOptions = {
+            method: 'GET',
+            groupLabel: 'Cold Start' as RequestGroupLabel,
+        };
+
+        beforeEach(() => {
+            jest.clearAllMocks();
+        });
+
+        it('should call full tracking lifecycle', async () => {
+            const mockMetrics = createMockMetrics();
+            apiClientMock.get.mockResolvedValue(mockSuccessResponse(mockMetrics));
+
+            await client.doFetchWithTracking('https://example.com/api', requestOptions);
+
+            expect(mockedNPM.startRequestTracking).toHaveBeenCalledWith('https://example.com', 'https://example.com/api');
+            expect(mockedNPM.completeRequestTracking).toHaveBeenCalledWith('https://example.com', 'mock-request-id-123', mockMetrics);
+        });
+
+        it('should pass correct server URL to NetworkPerformanceManager', async () => {
+            const customBaseUrl = 'https://custom-server.com';
+            const customApiClient = {...apiClientMock, baseUrl: customBaseUrl};
+            const customClient = new ClientTracking(customApiClient as unknown as APIClientInterface);
+            const mockMetrics = createMockMetrics({latency: 300, size: 2000, compressedSize: 1000, speedInMbps: 2});
+
+            customApiClient.get.mockResolvedValue(mockSuccessResponse(mockMetrics));
+
+            await customClient.doFetchWithTracking('https://custom-server.com/api', requestOptions);
+
+            expect(mockedNPM.startRequestTracking).toHaveBeenCalledWith(customBaseUrl, 'https://custom-server.com/api');
+            expect(mockedNPM.completeRequestTracking).toHaveBeenCalledWith(customBaseUrl, 'mock-request-id-123', mockMetrics);
+        });
+
+        it('should call cancelRequestTracking when request fails', async () => {
+            apiClientMock.get.mockRejectedValue(new Error('Request failed'));
+
+            await expect(client.doFetchWithTracking('https://example.com/api', requestOptions)).rejects.toThrow('Received invalid response from the server.');
+
+            expect(mockedNPM.startRequestTracking).toHaveBeenCalledWith('https://example.com', 'https://example.com/api');
+            expect(mockedNPM.cancelRequestTracking).toHaveBeenCalledWith('https://example.com', 'mock-request-id-123');
+            expect(mockedNPM.completeRequestTracking).not.toHaveBeenCalled();
         });
     });
 });

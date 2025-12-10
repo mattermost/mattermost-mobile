@@ -4,19 +4,27 @@
 import CookieManager from '@react-native-cookies/cookies';
 import {AppState, DeviceEventEmitter, Platform} from 'react-native';
 
-import {cancelSessionNotification, logout, scheduleSessionNotification} from '@actions/remote/session';
+import {cancelAllSessionNotifications} from '@actions/local/session';
+import {logout, scheduleSessionNotification} from '@actions/remote/session';
 import {Events} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getAllServerCredentials, removeServerCredentials} from '@init/credentials';
 import {relaunchApp} from '@init/launch';
 import PushNotifications from '@init/push_notifications';
+import IntuneManager from '@managers/intune_manager';
 import NetworkManager from '@managers/network_manager';
 import SecurityManager from '@managers/security_manager';
 import WebsocketManager from '@managers/websocket_manager';
+import {queryGlobalValue} from '@queries/app/global';
+import {getAllServers, getServerDisplayName} from '@queries/app/servers';
+import TestHelper from '@test/test_helper';
 import {deleteFileCache, deleteFileCacheByDir} from '@utils/file';
 import {isMainActivity} from '@utils/helpers';
 
 import {SessionManagerSingleton as SessionManagerClass} from './session_manager';
+
+import type {Query} from '@nozbe/watermelondb';
+import type GlobalModel from '@typings/database/models/app/global';
 
 jest.mock('@react-native-cookies/cookies', () => ({
     get: jest.fn(),
@@ -34,12 +42,35 @@ jest.mock('@database/manager', () => ({
     serverDatabases: {},
 }));
 jest.mock('@i18n');
+jest.mock('@actions/local/session', () => {
+    const actual = jest.requireActual('@actions/local/session');
+    return {
+        ...actual,
+        cancelAllSessionNotifications: jest.fn(),
+    };
+});
 jest.mock('@init/credentials');
 jest.mock('@init/launch');
 jest.mock('@init/push_notifications');
+jest.mock('@managers/intune_manager', () => ({
+    __esModule: true,
+    default: {
+        unenrollServer: jest.fn().mockResolvedValue(undefined),
+        subscribeToPolicyChanges: jest.fn().mockReturnValue({remove: jest.fn()}),
+        subscribeToEnrollmentChanges: jest.fn().mockReturnValue({remove: jest.fn()}),
+        subscribeToWipeRequests: jest.fn().mockReturnValue({remove: jest.fn()}),
+        subscribeToAuthRequired: jest.fn().mockReturnValue({remove: jest.fn()}),
+        subscribeToConditionalLaunchBlocked: jest.fn().mockReturnValue({remove: jest.fn()}),
+        subscribeToIdentitySwitchRequired: jest.fn().mockReturnValue({remove: jest.fn()}),
+    },
+}));
 jest.mock('@managers/network_manager');
 jest.mock('@managers/security_manager');
 jest.mock('@managers/websocket_manager');
+jest.mock('@queries/app/global', () => ({
+    queryGlobalValue: jest.fn(),
+    storeGlobal: jest.fn(),
+}));
 jest.mock('@queries/app/servers');
 jest.mock('@queries/servers/user');
 jest.mock('@screens/navigation');
@@ -64,12 +95,24 @@ describe('SessionManager', () => {
     });
 
     jest.mocked(getAllServerCredentials).mockResolvedValue([{serverUrl: mockServerUrl, userId: 'user_id', token: 'token'}]);
+    jest.mocked(getAllServers).mockResolvedValue([]);
+    jest.mocked(getServerDisplayName).mockResolvedValue(mockServerDisplayName);
+
+    // Mock queryGlobalValue to return a resolved promise for cache migration check
+    jest.mocked(queryGlobalValue).mockReturnValue({
+        fetch: jest.fn().mockResolvedValue([{value: true}]),
+    } as unknown as Query<GlobalModel>);
 
     beforeEach(() => {
         jest.clearAllMocks();
 
         AppState.currentState = 'active';
         Platform.OS = 'ios';
+
+        // Reset queryGlobalValue mock to return cache migration as done
+        jest.mocked(queryGlobalValue).mockReturnValue({
+            fetch: jest.fn().mockResolvedValue([{value: true}]),
+        } as unknown as Query<GlobalModel>);
 
         (AppState.addEventListener as jest.Mock).mockImplementation((event, callback) => {
             if (event === 'change' || event === 'focus' || event === 'blur') {
@@ -81,7 +124,16 @@ describe('SessionManager', () => {
         SessionManager = new SessionManagerClass();
     });
 
-    describe('initialization', () => {
+    afterEach(() => {
+        // Clear all timers to prevent Jest from hanging
+        jest.clearAllTimers();
+
+        // Remove all event listeners
+        DeviceEventEmitter.removeAllListeners(Events.SERVER_LOGOUT);
+        DeviceEventEmitter.removeAllListeners(Events.SESSION_EXPIRED);
+    });
+
+    describe('constructor', () => {
         it('should construct with Android correctly', async () => {
             Platform.OS = 'android';
             const manager = new SessionManagerClass();
@@ -93,8 +145,37 @@ describe('SessionManager', () => {
 
     describe('initialization', () => {
         it('should initialize correctly', async () => {
-            await SessionManager.init();
-            expect(cancelSessionNotification).toHaveBeenCalled();
+            SessionManager.init();
+            expect(cancelAllSessionNotifications).toHaveBeenCalled();
+        });
+
+        it('should delete legacy cache on first init', async () => {
+            // Mock cache migration as not done
+            jest.mocked(queryGlobalValue).mockReturnValueOnce({
+                fetch: jest.fn().mockResolvedValue([]),
+            } as unknown as Query<GlobalModel>);
+
+            SessionManager.init();
+
+            // Wait for the async promise chain to complete
+            await new Promise((resolve) => setImmediate(resolve));
+
+            expect(deleteFileCacheByDir).toHaveBeenCalledWith('com.hackemist.SDImageCache');
+        });
+
+        it('should not delete legacy cache if migration already done', async () => {
+            // Mock cache migration as already done
+            jest.mocked(queryGlobalValue).mockReturnValueOnce({
+                fetch: jest.fn().mockResolvedValue([{value: true}]),
+            } as unknown as Query<GlobalModel>);
+
+            SessionManager.init();
+
+            // Wait for the async promise chain to complete
+            await new Promise((resolve) => setImmediate(resolve));
+            await new Promise((resolve) => setImmediate(resolve));
+
+            expect(deleteFileCacheByDir).not.toHaveBeenCalledWith('com.hackemist.SDImageCache');
         });
     });
 
@@ -103,28 +184,31 @@ describe('SessionManager', () => {
             const event = {serverUrl: mockServerUrl, removeServer: true};
             DeviceEventEmitter.emit(Events.SERVER_LOGOUT, event);
 
-            await new Promise((resolve) => setImmediate(resolve));
+            await TestHelper.wait(50);
 
             expect(removeServerCredentials).toHaveBeenCalledWith(mockServerUrl);
             expect(PushNotifications.removeServerNotifications).toHaveBeenCalledWith(mockServerUrl);
             expect(NetworkManager.invalidateClient).toHaveBeenCalledWith(mockServerUrl);
             expect(WebsocketManager.invalidateClient).toHaveBeenCalledWith(mockServerUrl);
             expect(SecurityManager.removeServer).toHaveBeenCalledWith(mockServerUrl);
+            expect(IntuneManager.unenrollServer).toHaveBeenCalledWith(mockServerUrl, false);
         });
 
         it('should handle session expiration', async () => {
             DeviceEventEmitter.emit(Events.SESSION_EXPIRED, mockServerUrl);
 
-            await new Promise((resolve) => setImmediate(resolve));
+            await TestHelper.wait(50);
 
             expect(logout).toHaveBeenCalledWith(mockServerUrl, undefined, {skipEvents: true, skipServerLogout: true});
+            expect(SecurityManager.removeServer).toHaveBeenCalledWith(mockServerUrl);
+            expect(IntuneManager.unenrollServer).toHaveBeenCalledWith(mockServerUrl, true);
             expect(relaunchApp).toHaveBeenCalled();
         });
     });
 
     describe('app state changes', () => {
-        beforeEach(async () => {
-            await SessionManager.init();
+        beforeEach(() => {
+            SessionManager.init();
         });
 
         it('should handle active state', async () => {
@@ -132,8 +216,7 @@ describe('SessionManager', () => {
             if (appStateCallback) {
                 jest.useFakeTimers();
                 appStateCallback('active');
-                jest.runAllTimers();
-                expect(cancelSessionNotification).toHaveBeenCalled();
+                expect(cancelAllSessionNotifications).toHaveBeenCalled();
                 jest.useRealTimers();
             }
         });
@@ -141,67 +224,59 @@ describe('SessionManager', () => {
         it('should handle inactive state', async () => {
             expect(appStateCallback).toBeDefined();
             if (appStateCallback) {
-                jest.useFakeTimers();
                 appStateCallback('inactive');
-                jest.runAllTimers();
+                await TestHelper.wait(50);
                 expect(scheduleSessionNotification).toHaveBeenCalled();
-                jest.useRealTimers();
             }
         });
     });
 
     describe('cleanup operations', () => {
-        beforeEach(async () => {
+        beforeEach(() => {
             const mockCookies = {
                 cookie1: {name: 'cookie1'},
                 cookie2: {name: 'cookie2'},
             };
             (CookieManager.get as jest.Mock).mockResolvedValue(mockCookies);
-            await SessionManager.init();
+            SessionManager.init();
         });
 
         it('should clear cookies correctly - iOS', async () => {
             Platform.OS = 'ios';
-            jest.useFakeTimers();
             DeviceEventEmitter.emit(Events.SERVER_LOGOUT, {
                 serverUrl: mockServerUrl,
                 removeServer: true,
             });
 
-            jest.runAllTimers();
+            await TestHelper.wait(450);
 
             expect(CookieManager.clearByName).toHaveBeenCalledWith(mockServerUrl, 'cookie1', false);
             expect(CookieManager.clearByName).toHaveBeenCalledWith(mockServerUrl, 'cookie2', false);
-            jest.useRealTimers();
         });
 
         it('should clear cookies correctly - Android', async () => {
             Platform.OS = 'android';
-            jest.useFakeTimers();
             DeviceEventEmitter.emit(Events.SERVER_LOGOUT, {
                 serverUrl: mockServerUrl,
                 removeServer: true,
             });
 
-            jest.runAllTimers();
+            await TestHelper.wait(50);
 
             expect(CookieManager.flush).toHaveBeenCalled();
-            jest.useRealTimers();
         });
 
         it('should clear file caches', async () => {
-            jest.useFakeTimers();
             DeviceEventEmitter.emit(Events.SERVER_LOGOUT, {
                 serverUrl: mockServerUrl,
                 removeServer: true,
             });
 
-            jest.runAllTimers();
+            await TestHelper.wait(50);
 
             expect(deleteFileCache).toHaveBeenCalledWith(mockServerUrl);
             expect(deleteFileCacheByDir).toHaveBeenCalledWith('mmPasteInput');
             expect(deleteFileCacheByDir).toHaveBeenCalledWith('thumbnails');
-            jest.useRealTimers();
         });
     });
 });

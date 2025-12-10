@@ -27,6 +27,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         borderColor: changeOpacity(theme.centerChannelColor, 0.16),
         borderRadius: 4,
         ...typography('Body', 200),
+        lineHeight: undefined,
     },
 }));
 

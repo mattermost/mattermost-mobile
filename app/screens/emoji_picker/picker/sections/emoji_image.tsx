@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Image} from 'expo-image';
 import React, {memo, useCallback} from 'react';
 import {StyleSheet, View} from 'react-native';
 
+import ExpoImage from '@components/expo_image';
 import FileIcon from '@components/files/file_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {EMOJI_ROW_MARGIN, EMOJI_SIZE} from '@constants/emoji';
@@ -50,8 +50,9 @@ const ImageEmoji = ({file, imageUrl, onEmojiPress, path}: ImageEmojiProps) => {
                         />
                         }
                         {Boolean(imageUrl) &&
-                        <Image
-                            source={{uri: path}}
+                        <ExpoImage
+                            id={`emoji-${path}`}
+                            source={{uri: imageUrl}}
                             style={styles.imageEmoji}
                         />
                         }
