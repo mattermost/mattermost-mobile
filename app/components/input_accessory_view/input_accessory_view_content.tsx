@@ -2,23 +2,22 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {StyleSheet, Text, View} from 'react-native';
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        alignItems: 'center',
-    },
-});
+import CustomEmojiPicker from '@components/post_draft/custom_emoji_picker';
+import {useKeyboardAnimationContext} from '@context/keyboard_animation';
 
 /**
  * InputAccessoryViewContent - Content for input accessory view
  */
 const InputAccessoryViewContent = () => {
+    const {inputAccessoryViewAnimatedHeight, isEmojiSearchFocused, setIsEmojiSearchFocused} = useKeyboardAnimationContext();
+
     return (
-        <View style={styles.container}>
-            <Text>{'🙂'}</Text>
-        </View>
+        <CustomEmojiPicker
+            height={inputAccessoryViewAnimatedHeight}
+            isEmojiSearchFocused={isEmojiSearchFocused}
+            setIsEmojiSearchFocused={setIsEmojiSearchFocused}
+        />
     );
 };
 

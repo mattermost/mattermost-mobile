@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {BottomSheetFlashList} from '@gorhom/bottom-sheet';
 import {FlashList, type ListRenderItemInfo} from '@shopify/flash-list';
 import {chunk} from 'lodash';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
@@ -13,12 +12,11 @@ import {EMOJI_CATEGORY_ICONS, EMOJI_ROW_MARGIN, EMOJI_SIZE, EMOJIS_PER_PAGE, EMO
 import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
 import {setEmojiCategoryBarIcons, setEmojiCategoryBarSection, useEmojiCategoryBar} from '@hooks/emoji_category_bar';
+import EmojiRow, {type EmojiSectionRow} from '@screens/emoji_picker/picker/sections/emoji_row';
+import SectionFooter from '@screens/emoji_picker/picker/sections/section_footer';
+import SectionHeader, {type EmojiSection} from '@screens/emoji_picker/picker/sections/section_header';
 import {CategoryNames, EmojiIndicesByCategory, CategoryTranslations, CategoryMessage} from '@utils/emoji';
 import {fillEmoji} from '@utils/emoji/helpers';
-
-import EmojiRow, {type EmojiSectionRow} from './emoji_row';
-import SectionFooter from './section_footer';
-import SectionHeader, {type EmojiSection} from './section_header';
 
 import type {CustomEmojiModel} from '@database/models/server';
 
@@ -40,7 +38,7 @@ const getItemType = (item: SectionListItem) => item.type;
 
 const styles = StyleSheet.create({
     container: {flex: 1, paddingBottom: 20},
-    containerStyle: {paddingBottom: 50},
+    containerStyle: {paddingBottom: 50, paddingHorizontal: 12},
 });
 
 type Props = {
@@ -50,7 +48,7 @@ type Props = {
     file?: ExtractedFileInfo;
     onEmojiPress: (emoji: string) => void;
     recentEmojis: string[];
-}
+};
 
 CategoryNames.forEach((name: string) => {
     if (CategoryTranslations.has(name) && CategoryMessage.has(name)) {
@@ -62,7 +60,7 @@ CategoryNames.forEach((name: string) => {
     }
 });
 
-export default function EmojiSectionList({customEmojis, customEmojisEnabled, file, imageUrl, onEmojiPress, recentEmojis}: Props) {
+export default function CustomEmojiSections({customEmojis, customEmojisEnabled, file, imageUrl, onEmojiPress, recentEmojis}: Props) {
     const [customEmojiPage, setCustomEmojiPage] = useState(() => Math.ceil(customEmojis.length / EMOJIS_PER_PAGE));
     const [fetchingCustomEmojis, setFetchingCustomEmojis] = useState(false);
     const [loadedAllCustomEmojis, setLoadedAllCustomEmojis] = useState(false);
@@ -158,9 +156,9 @@ export default function EmojiSectionList({customEmojis, customEmojisEnabled, fil
     }, [customEmojis, customEmojisEnabled, file, imageUrl, isTablet, recentEmojis]);
 
     const stickyHeaderIndices = useMemo(() =>
-       sections.
-           map((item, index) => (item.type === 'section' ? index : undefined)).
-           filter((item) => item !== undefined) as number[],
+        sections.
+            map((item, index) => (item.type === 'section' ? index : undefined)).
+            filter((item) => item !== undefined) as number[],
     [sections]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<SectionListItem>) => {
@@ -226,8 +224,6 @@ export default function EmojiSectionList({customEmojis, customEmojisEnabled, fil
         return fetchingCustomEmojis ? <SectionFooter/> : null;
     }, [fetchingCustomEmojis]);
 
-    const List = useMemo(() => (isTablet ? FlashList : BottomSheetFlashList), [isTablet]);
-
     useEffect(() => {
         setEmojiCategoryBarIcons(sections.filter((s) => s.type === 'section').map((s) => ({
             key: s.key,
@@ -246,7 +242,7 @@ export default function EmojiSectionList({customEmojis, customEmojisEnabled, fil
 
     return (
         <View style={styles.container}>
-            <List
+            <FlashList
                 contentContainerStyle={styles.containerStyle}
                 data={sections}
                 estimatedItemSize={EMOJI_SIZE + EMOJI_ROW_MARGIN}
@@ -256,15 +252,12 @@ export default function EmojiSectionList({customEmojis, customEmojisEnabled, fil
                 onEndReachedThreshold={0.5}
                 onEndReached={loadMoreCustomEmojis}
                 onStickyHeaderIndexChanged={handleStickyHeaderIndexChanged}
-
-                //@ts-expect-error type definition for ref
                 ref={list}
                 renderItem={renderItem}
                 stickyHeaderIndices={stickyHeaderIndices}
             />
-            {isTablet &&
             <EmojiCategoryBar/>
-            }
         </View>
     );
 }
+

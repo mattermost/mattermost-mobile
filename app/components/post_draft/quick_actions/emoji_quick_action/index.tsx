@@ -84,7 +84,7 @@ export default function EmojiQuickAction({
             return;
         }
 
-        if (Platform.OS === 'android') {
+        if (Platform.OS === 'android' && KeyboardController.isVisible()) {
             KeyboardController.dismiss();
 
             // Wait for keyboard to be fully dismissed before showing emoji picker

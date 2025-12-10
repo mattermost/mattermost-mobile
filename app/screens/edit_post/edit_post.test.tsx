@@ -6,6 +6,7 @@ import React from 'react';
 import {Alert} from 'react-native';
 
 import DraftEditPostUploadManager from '@managers/draft_upload_manager';
+import * as Navigation from '@screens/navigation';
 import {fireEvent, renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 import PickerUtil from '@utils/file/file_picker';
@@ -14,6 +15,7 @@ import EditPost from './edit_post';
 
 import type {Database} from '@nozbe/watermelondb';
 import type PostModel from '@typings/database/models/servers/post';
+import type {IntlShape} from 'react-intl';
 
 jest.mock('@utils/file/file_picker');
 jest.mock('@managers/draft_upload_manager', () => ({
@@ -22,6 +24,13 @@ jest.mock('@managers/draft_upload_manager', () => ({
     registerProgressHandler: jest.fn(() => jest.fn()),
     registerErrorHandler: jest.fn(() => jest.fn()),
     cancel: jest.fn(),
+}));
+jest.mock('@screens/navigation', () => ({
+    openAttachmentOptions: jest.fn(),
+    buildNavigationButton: jest.fn((id: string, testID: string) => ({id, testID})),
+    dismissBottomSheet: jest.fn(() => Promise.resolve()),
+    dismissModal: jest.fn(),
+    setButtons: jest.fn(),
 }));
 
 const TEST_CONFIG = {
@@ -111,6 +120,14 @@ describe('Edit Post', () => {
                 onUploadFiles?.([file as ExtractedFileInfo]);
                 return Promise.resolve({error: undefined});
             }),
+            attachFileFromPhotoGallery: jest.fn(() => {
+                onUploadFiles?.([file as ExtractedFileInfo]);
+                return Promise.resolve({error: undefined});
+            }),
+            attachFileFromCamera: jest.fn(() => {
+                onUploadFiles?.([file as ExtractedFileInfo]);
+                return Promise.resolve({error: undefined});
+            }),
         }) as unknown as PickerUtil);
     };
 
@@ -122,9 +139,23 @@ describe('Edit Post', () => {
     };
 
     const triggerFileUpload = async (screen: ReturnType<typeof renderEditPost>) => {
-        await act(async () => {
-            fireEvent.press(screen.getByTestId('edit_post.quick_actions.file_action'));
+        let onUploadFilesCallback: ((files: ExtractedFileInfo[]) => void) | undefined;
+        jest.mocked(Navigation.openAttachmentOptions).mockImplementation((intl, theme, props) => {
+            onUploadFilesCallback = props?.onUploadFiles;
+            return undefined;
         });
+
+        await act(async () => {
+            fireEvent.press(screen.getByTestId('edit_post.quick_actions.attachment_action'));
+        });
+
+        if (onUploadFilesCallback) {
+            await act(async () => {
+                const mockIntl = {formatMessage: jest.fn()} as unknown as IntlShape;
+                const mockPicker = new PickerUtil(mockIntl, onUploadFilesCallback as (files: ExtractedFileInfo[]) => void);
+                await mockPicker.attachFileFromFiles(undefined, true);
+            });
+        }
     };
 
     const triggerFileRemoval = async (screen: ReturnType<typeof renderEditPost>, fileId: string) => {

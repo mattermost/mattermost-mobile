@@ -29,6 +29,16 @@ interface KeyboardAnimationContextType {
     isTransitioningFromCustomView: SharedValue<boolean>;
     closeInputAccessoryView: () => void;
     scrollToEnd: () => void;
+    isEmojiSearchFocused: boolean;
+    setIsEmojiSearchFocused: (focused: boolean) => void;
+    cursorPositionRef: React.MutableRefObject<number>;
+    registerCursorPosition: (cursorPosition: number) => void;
+    updateValue: React.Dispatch<React.SetStateAction<string>> | null;
+    updateCursorPosition: React.Dispatch<React.SetStateAction<number>> | null;
+    registerPostInputCallbacks: (
+        updateValueFn: React.Dispatch<React.SetStateAction<string>>,
+        updateCursorPositionFn: React.Dispatch<React.SetStateAction<number>>
+    ) => void;
 }
 
 const KeyboardAnimationContext = createContext<KeyboardAnimationContextType | null>(null);
@@ -90,6 +100,21 @@ export const useKeyboardAnimationContext = () => {
         // No-op fallback
     }, []);
 
+    const defaultSetIsEmojiSearchFocused = useCallback(() => {
+        // No-op fallback
+    }, []);
+
+    const defaultCursorPositionRef = useRef<number>(0);
+    const defaultRegisterCursorPosition = useCallback(() => {
+        // No-op fallback
+    }, []);
+
+    const defaultUpdateValue = useRef<React.Dispatch<React.SetStateAction<string>> | null>(null);
+    const defaultUpdateCursorPosition = useRef<React.Dispatch<React.SetStateAction<number>> | null>(null);
+    const defaultRegisterPostInputCallbacks = useCallback(() => {
+        // No-op fallback
+    }, []);
+
     const fallbackValue = useMemo(() => ({
         height: defaultHeight,
         inset: defaultInset,
@@ -113,6 +138,13 @@ export const useKeyboardAnimationContext = () => {
         isTransitioningFromCustomView: defaultIsTransitioningFromCustomView,
         closeInputAccessoryView: defaultCloseInputAccessoryView,
         scrollToEnd: defaultScrollToEnd,
+        isEmojiSearchFocused: false,
+        setIsEmojiSearchFocused: defaultSetIsEmojiSearchFocused,
+        cursorPositionRef: defaultCursorPositionRef,
+        registerCursorPosition: defaultRegisterCursorPosition,
+        updateValue: defaultUpdateValue.current,
+        updateCursorPosition: defaultUpdateCursorPosition.current,
+        registerPostInputCallbacks: defaultRegisterPostInputCallbacks,
     }), [
         defaultHeight,
         defaultInset,
@@ -133,6 +165,12 @@ export const useKeyboardAnimationContext = () => {
         defaultIsTransitioningFromCustomView,
         defaultCloseInputAccessoryView,
         defaultScrollToEnd,
+        defaultSetIsEmojiSearchFocused,
+        defaultCursorPositionRef,
+        defaultRegisterCursorPosition,
+        defaultUpdateValue,
+        defaultUpdateCursorPosition,
+        defaultRegisterPostInputCallbacks,
     ]);
 
     // If context exists, return it; otherwise return fallback
