@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {handleAgentPostUpdate} from '@agents/actions/websocket';
+
 import * as bookmark from '@actions/local/channel_bookmark';
 import {handleBoRPostRevealedEvent} from '@actions/websocket/burn_on_read';
 import * as scheduledPost from '@actions/websocket/scheduled_post';
@@ -301,6 +303,11 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
 
         case WebsocketEvents.CUSTOM_PROFILE_ATTRIBUTES_FIELD_DELETED:
             handleCustomProfileAttributesFieldDeletedEvent(serverUrl, msg);
+            break;
+
+        // Agents
+        case WebsocketEvents.AGENTS_POST_UPDATE:
+            handleAgentPostUpdate(msg);
             break;
 
         // Burn on Read Events
