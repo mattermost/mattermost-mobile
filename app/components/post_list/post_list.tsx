@@ -3,7 +3,8 @@
 
 import {FlatList} from '@stream-io/flat-list-mvcp';
 import React, {type ReactElement, useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {DeviceEventEmitter, type ListRenderItemInfo, Platform, type StyleProp, StyleSheet, type ViewStyle, type NativeSyntheticEvent, type NativeScrollEvent} from 'react-native';
+import {DeviceEventEmitter, type GestureResponderEvent, type ListRenderItemInfo, Platform, type StyleProp, StyleSheet, type ViewStyle, type NativeSyntheticEvent, type NativeScrollEvent} from 'react-native';
+import {useKeyboardState} from 'react-native-keyboard-controller';
 import Animated, {runOnJS, useAnimatedProps, useAnimatedReaction, useSharedValue, type AnimatedStyle} from 'react-native-reanimated';
 
 import {removePost} from '@actions/local/post';
@@ -18,6 +19,7 @@ import {PostTypes} from '@constants/post';
 import {useKeyboardAnimationContext} from '@context/keyboard_animation';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {DEFAULT_INPUT_ACCESSORY_HEIGHT} from '@hooks/useInputAccessoryView';
 import {getDateForDateLine, preparePostList} from '@utils/post_list';
 
 import {INITIAL_BATCH_TO_RENDER, SCROLL_POSITION_CONFIG, VIEWABILITY_CONFIG} from './config';
@@ -56,6 +58,8 @@ type Props = {
     currentCallBarVisible?: boolean;
     savedPostIds: Set<string>;
     listRef?: React.RefObject<FlatList<string | PostModel>>;
+    onTouchMove?: (event: GestureResponderEvent) => void;
+    onTouchEnd?: () => void;
 }
 
 type onScrollEndIndexListenerEvent = (endIndex: number) => void;
@@ -107,6 +111,8 @@ const PostList = ({
     testID,
     savedPostIds,
     listRef,
+    onTouchMove,
+    onTouchEnd,
 }: Props) => {
     const firstIdInPosts = posts[0]?.id;
 
@@ -118,6 +124,8 @@ const PostList = ({
         keyboardHeight,
         isKeyboardFullyOpen,
         isKeyboardFullyClosed,
+        inputAccessoryViewAnimatedHeight,
+        isInputAccessoryViewMode,
     } = useKeyboardAnimationContext();
 
     const onScrollEndIndexListener = useRef<onScrollEndIndexListenerEvent>();
@@ -127,8 +135,10 @@ const PostList = ({
     const [showScrollToEndBtn, setShowScrollToEndBtn] = useState(false);
     const [lastPostId, setLastPostId] = useState<string | undefined>(firstIdInPosts);
     const [progressViewOffset, setProgressViewOffset] = useState(postInputContainerHeight);
+    const [emojiPickerPadding, setEmojiPickerPadding] = useState(0);
     const theme = useTheme();
     const serverUrl = useServerUrl();
+    const {isVisible: isKeyboardVisible} = useKeyboardState();
 
     // Update progressViewOffset to position RefreshControl correctly when keyboard-aware props are applied.
     // Only update when keyboard state changes (fully open ↔ fully closed) to prevent flickering during animation.
@@ -165,10 +175,13 @@ const PostList = ({
     const isNewMessage = lastPostId ? firstIdInPosts !== lastPostId : false;
 
     const scrollToEnd = useCallback(() => {
-        const targetOffset = -keyboardHeight.value;
+        const activeHeight = Math.max(keyboardHeight.value, inputAccessoryViewAnimatedHeight.value);
+        const targetOffset = -activeHeight;
 
         listRef?.current?.scrollToOffset({offset: targetOffset, animated: true});
-    }, [listRef, keyboardHeight]);
+
+        setShowScrollToEndBtn(false);
+    }, [listRef, keyboardHeight, inputAccessoryViewAnimatedHeight]);
 
     useEffect(() => {
         const t = setTimeout(() => {
@@ -389,24 +402,34 @@ const PostList = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [orderedPosts, highlightedId]);
 
-    // For inverted list: paddingTop in contentContainerStyle = visual bottom padding
+    // Sync emoji picker padding from SharedValue to React state
+    // This ensures the padding updates when SharedValues change
+    useAnimatedReaction(
+        () => {
+            const shouldAddEmojiPickerPadding = Platform.OS === 'android' && !isKeyboardVisible && isInputAccessoryViewMode.value;
+            const emojiPickerHeight = shouldAddEmojiPickerPadding ? (inputAccessoryViewAnimatedHeight.value || DEFAULT_INPUT_ACCESSORY_HEIGHT) : 0;
+            return emojiPickerHeight;
+        },
+        (emojiPickerHeight) => {
+            runOnJS(setEmojiPickerPadding)(emojiPickerHeight);
+        },
+        [isKeyboardVisible],
+    );
+
+    // Combine contentContainerStyle with padding style
+    // Use regular style with state value synced from SharedValues
     const contentContainerStyleWithPadding = useMemo(() => {
-        return [
-            contentContainerStyle,
-            {paddingTop: postInputContainerHeight},
-        ];
-    }, [contentContainerStyle, postInputContainerHeight]);
+        const paddingStyle = {paddingTop: postInputContainerHeight + emojiPickerPadding};
+        return contentContainerStyle ? [contentContainerStyle, paddingStyle] : paddingStyle;
+    }, [contentContainerStyle, postInputContainerHeight, emojiPickerPadding]);
 
     // contentInset only for dynamic keyboard height
     const animatedProps = useAnimatedProps(
-        () => {
-            // For inverted FlatList, contentInset.top applies to the visual bottom
-            return {
-                contentInset: {
-                    top: contentInset.value, // Only keyboard height (dynamic)
-                },
-            };
-        },
+        () => ({
+            contentInset: {
+                top: contentInset.value, // For inverted FlatList, applies to visual bottom
+            },
+        }),
         [contentInset],
     );
 
@@ -442,6 +465,8 @@ const PostList = ({
                 testID={`${testID}.flat_list`}
                 inverted={true}
                 refreshing={refreshing}
+                onTouchMove={onTouchMove}
+                onTouchEnd={onTouchEnd}
                 onRefresh={onRefresh}
             />
             {location !== Screens.PERMALINK &&

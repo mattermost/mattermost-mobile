@@ -45,10 +45,12 @@ const ThreadContent = ({
             containerStyle={styles.flex}
             isThreadView={true}
             enabled={enabled}
-            renderList={({listRef}) => (
+            renderList={({listRef, onTouchMove, onTouchEnd}) => (
                 <ThreadPostList
                     rootPost={rootPost}
                     listRef={listRef}
+                    onTouchMove={onTouchMove}
+                    onTouchEnd={onTouchEnd}
                 />
             )}
         >

@@ -22,6 +22,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         height: 32,
         alignItems: 'center',
         justifyContent: 'center',
+        marginHorizontal: 2,
     },
     icon: {
         color: changeOpacity(theme.centerChannelColor, 0.56),
@@ -54,3 +55,4 @@ const EmojiCategoryBarIcon = ({currentIndex, icon, index, scrollToIndex, theme}:
 };
 
 export default EmojiCategoryBarIcon;
+

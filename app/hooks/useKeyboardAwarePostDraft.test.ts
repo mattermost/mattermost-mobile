@@ -81,6 +81,8 @@ describe('useKeyboardAwarePostDraft', () => {
         isKeyboardFullyOpen: {value: false},
         isKeyboardFullyClosed: {value: true},
         isKeyboardInTransition: {value: false},
+        isInputAccessoryViewMode: {value: false},
+        isTransitioningFromCustomView: {value: false},
     };
 
     beforeEach(() => {
@@ -127,6 +129,8 @@ describe('useKeyboardAwarePostDraft', () => {
                 mockKeyboardAnimationReturn.scroll,
                 mockKeyboardAnimationReturn.offset,
                 true, // isIOS
+                mockKeyboardAnimationReturn.isInputAccessoryViewMode,
+                mockKeyboardAnimationReturn.isTransitioningFromCustomView,
             );
         });
     });

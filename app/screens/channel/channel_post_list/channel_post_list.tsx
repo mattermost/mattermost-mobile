@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {type StyleProp, StyleSheet, type ViewStyle, DeviceEventEmitter, type FlatList} from 'react-native';
+import {type StyleProp, StyleSheet, type ViewStyle, DeviceEventEmitter, type FlatList, type GestureResponderEvent} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {markChannelAsRead, unsetActiveChannelOnServer} from '@actions/remote/channel';
@@ -29,6 +29,8 @@ type Props = {
     posts: PostModel[];
     shouldShowJoinLeaveMessages: boolean;
     listRef: React.RefObject<FlatList<string | PostModel>>;
+    onTouchMove?: (event: GestureResponderEvent) => void;
+    onTouchEnd?: () => void;
 }
 
 const edges: Edge[] = [];
@@ -40,7 +42,7 @@ const styles = StyleSheet.create({
 const ChannelPostList = ({
     channelId, contentContainerStyle, isCRTEnabled,
     lastViewedAt, posts, shouldShowJoinLeaveMessages,
-    listRef,
+    listRef, onTouchMove, onTouchEnd,
 }: Props) => {
     const appState = useAppState();
     const isTablet = useIsTablet();
@@ -129,6 +131,8 @@ const ChannelPostList = ({
             showMoreMessages={true}
             testID='channel.post_list'
             listRef={listRef}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
         />
     );
 
