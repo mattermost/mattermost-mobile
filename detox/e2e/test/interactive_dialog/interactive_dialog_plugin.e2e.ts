@@ -17,7 +17,7 @@ import {
     User,
     Post,
 } from '@support/server_api';
-import { apiDisablePluginById } from '@support/server_api/plugin';
+import {apiDisablePluginById} from '@support/server_api/plugin';
 import {
     serverOneUrl,
     siteOneUrl,
