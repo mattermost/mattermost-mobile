@@ -727,7 +727,6 @@
   "mobile.manage_members.remove_member": "Aus Kanal entfernen",
   "mobile.manage_members.section_title_admins": "KANAL ADMINISTRATOREN",
   "mobile.manage_members.section_title_members": "MITGLIEDER",
-  "mobile.managed.OK": "OK",
   "mobile.managed.biometric_failed": "Die biometrische oder Passcode-Authentifizierung ist fehlgeschlagen.",
   "mobile.managed.blocked_by": "Blockiert durch {vendor}",
   "mobile.managed.exit": "Beenden",

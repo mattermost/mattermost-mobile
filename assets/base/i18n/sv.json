@@ -724,7 +724,6 @@
   "mobile.manage_members.remove_member": "Ta bort från kanalen",
   "mobile.manage_members.section_title_admins": "KANALADMINISTRATÖRER",
   "mobile.manage_members.section_title_members": "MEDLEMMAR",
-  "mobile.managed.OK": "OK",
   "mobile.managed.biometric_failed": "Biometri eller Passcode-autentisering misslyckades.",
   "mobile.managed.blocked_by": "Blockerad av {vendor}",
   "mobile.managed.exit": "Avsluta",
