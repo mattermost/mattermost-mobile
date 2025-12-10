@@ -244,7 +244,7 @@ class DatabaseManagerSingleton {
         return undefined;
     };
 
-    public setActiveServerDatabase = async (serverUrl: string): Promise<void> => {
+    public setActiveServerDatabase = async (serverUrl: string, options?: ActiveServerOptions): Promise<void> => {
         if (this.appDatabase?.database) {
             const database = this.appDatabase?.database;
             await database.write(async () => {
@@ -253,7 +253,7 @@ class DatabaseManagerSingleton {
                     await servers[0].update((server: ServersModel) => {
                         server.lastActiveAt = Date.now();
                     });
-                    DeviceEventEmitter.emit(Events.ACTIVE_SERVER_CHANGED, serverUrl);
+                    DeviceEventEmitter.emit(Events.ACTIVE_SERVER_CHANGED, {serverUrl, options});
                 }
             });
         }

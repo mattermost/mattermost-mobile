@@ -368,6 +368,22 @@ const Server = ({
             return;
         }
 
+        if (data.config.MobileJailbreakProtection === 'true') {
+            const isJailbroken = await SecurityManager.isDeviceJailbroken(headRequest.url, data.config.SiteName);
+            if (isJailbroken) {
+                setConnecting(false);
+                return;
+            }
+        }
+
+        if (data.config.MobileEnableBiometrics === 'true') {
+            const biometricsResult = await SecurityManager.authenticateWithBiometrics(headRequest.url, data.config.SiteName);
+            if (!biometricsResult) {
+                setConnecting(false);
+                return;
+            }
+        }
+
         const server = await getServerByIdentifier(data.config.DiagnosticId);
         const credentials = await getServerCredentials(headRequest.url);
         setConnecting(false);

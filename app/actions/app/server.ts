@@ -7,6 +7,7 @@ import {doPing} from '@actions/remote/general';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
+import SecurityManager from '@managers/security_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getServer, getServerByIdentifier} from '@queries/app/servers';
 import {logError} from '@utils/log';
@@ -22,9 +23,22 @@ export async function switchToServer(serverUrl: string, theme: Theme, intl: Intl
         return;
     }
     if (server.lastActiveAt) {
-        Navigation.updateProps(Screens.HOME, {extra: undefined});
-        DatabaseManager.setActiveServerDatabase(server.url);
-        WebsocketManager.initializeClient(server.url, 'Server Switch');
+        const isJailbroken = await SecurityManager.isDeviceJailbroken(server.url);
+        if (isJailbroken) {
+            return;
+        }
+
+        const authenticated = await SecurityManager.authenticateWithBiometricsIfNeeded(server.url);
+        if (authenticated) {
+            Navigation.updateProps(Screens.HOME, {extra: undefined});
+            DatabaseManager.setActiveServerDatabase(server.url, {
+                skipJailbreakCheck: true,
+                skipBiometricCheck: true,
+                skipMAMEnrollmentCheck: false,
+                forceSwitch: false,
+            });
+            WebsocketManager.initializeClient(server.url, 'Server Switch');
+        }
 
         return;
     }
@@ -60,6 +74,21 @@ export async function switchToServerAndLogin(serverUrl: string, theme: Theme, in
         return;
     }
 
-    canReceiveNotifications(server.url, result.canReceiveNotifications as string, intl);
-    loginToServer(theme, server.url, server.displayName, data.config!, data.license!);
+    if (data.config?.MobileJailbreakProtection === 'true') {
+        const isJailbroken = await SecurityManager.isDeviceJailbroken(server.url);
+        if (isJailbroken) {
+            callback?.();
+            return;
+        }
+    }
+
+    let authenticated = true;
+    if (data.config?.MobileEnableBiometrics === 'true') {
+        authenticated = await SecurityManager.authenticateWithBiometrics(server.url, data.config?.SiteName);
+    }
+
+    if (authenticated) {
+        canReceiveNotifications(server.url, result.canReceiveNotifications as string, intl);
+        loginToServer(theme, server.url, server.displayName, data.config!, data.license!);
+    }
 }

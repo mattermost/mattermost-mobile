@@ -9,4 +9,3 @@
 [submodule "libraries/@mattermost/intune"]
 	path = libraries/@mattermost/intune
 	url = git@github.com:mattermost/mattermost-mobile-intune.git
-	branch = ios
