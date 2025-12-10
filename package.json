@@ -199,7 +199,7 @@
     "postinstall": "patch-package && ./scripts/postinstall.sh",
     "prepare": "husky",
     "preinstall": "./scripts/preinstall.sh && npx solidarity",
-    "start": "react-native start",
+    "start": "react-native start --host 127.0.0.1",
     "test": "jest --runInBand",
     "test:ci": "jest --verbose=false --forceExit",
     "test:ci:coverage": "npm run test:ci -- --coverage",

@@ -274,6 +274,7 @@
   "connection_banner.connecting": "Bezig met verbinden...",
   "connection_banner.not_connected": "Kan geen verbinding maken met netwerk",
   "connection_banner.not_reachable": "De server is niet bereikbaar",
+  "connection_banner.slow": "Beperkte netwerkverbinding",
   "create_direct_message.title": "Direct bericht maken",
   "create_post.deactivated": "Je bekijkt een gearchiveerd kanaal met een gedeactiveerde gebruiker.",
   "create_post.thread_reply": "Reageer op dit draadje...",
