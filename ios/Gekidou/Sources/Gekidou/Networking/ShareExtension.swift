@@ -13,8 +13,10 @@ struct UploadSessionData {
     var channelId: String?
     var files: [String] = []
     var fileIds: [String] = []
+    var filesInfo: [String: NSDictionary] = [:]
     var message: String = ""
     var totalFiles: Int = 0
+    var isDraft: Bool = false
     
     func toDictionary() -> NSDictionary {
         let data: NSDictionary = [
@@ -22,8 +24,10 @@ struct UploadSessionData {
             "channelId": channelId as Any,
             "files": files,
             "fileIds": fileIds,
+            "filesInfo": filesInfo,
             "message": message,
-            "totalFiles": totalFiles
+            "totalFiles": totalFiles,
+            "isDraft": isDraft
         ]
         
         return data
@@ -34,16 +38,20 @@ struct UploadSessionData {
         let channelId = dict["channelId"] as! String
         let files = dict["files"] as! [String]
         let fileIds = dict["fileIds"] as! [String]
+        let filesInfo = dict["filesInfo"] as! [String: NSDictionary]
         let message = dict["message"] as! String
         let totalFiles = dict["totalFiles"] as! Int
+        let isDraft = dict["isDraft"] as? Bool ?? false
         
         return UploadSessionData(
             serverUrl: serverUrl,
             channelId: channelId,
             files: files,
             fileIds: fileIds,
+            filesInfo: filesInfo,
             message: message,
-            totalFiles: totalFiles
+            totalFiles: totalFiles,
+            isDraft: isDraft
         )
     }
 }
@@ -88,13 +96,14 @@ public class ShareExtension: NSObject {
         )
     }
     
-    func createUploadSessionData(id: String, serverUrl: String, channelId: String, message: String, files: [String]) {
+    func createUploadSessionData(id: String, serverUrl: String, channelId: String, message: String, files: [String], isDraft: Bool) {
         let data = UploadSessionData(
             serverUrl: serverUrl,
             channelId: channelId,
             files: files,
             message: message,
-            totalFiles: files.count
+            totalFiles: files.count,
+            isDraft: isDraft
         )
         
         saveUploadSessionData(id: id, data: data)
@@ -117,17 +126,30 @@ public class ShareExtension: NSObject {
         )
     }
     
-    func appendCompletedUploadToSession(id: String, fileId: String) {
+    func appendCompletedUploadToSession(id: String, fileId: String, fileData: NSDictionary) {
         if let data = getUploadSessionData(id: id) {
             var fileIds = data.fileIds
             fileIds.append(fileId)
+
+            var filesInfo = data.filesInfo
+            let filteredFilesInfo: NSDictionary = [
+                "id": fileData["id"] ?? "",
+                "mime_type": fileData["mime_type"] ?? "",
+                "extension": fileData["extension"] ?? "",
+                "name": fileData["name"] ?? "",
+                "size": fileData["size"] ?? "",
+            ]
+            filesInfo[fileId] = filteredFilesInfo
+
             let newData = UploadSessionData(
                 serverUrl: data.serverUrl,
                 channelId: data.channelId,
                 files: data.files,
                 fileIds: fileIds,
+                filesInfo: filesInfo,
                 message: data.message,
-                totalFiles: data.totalFiles
+                totalFiles: data.totalFiles,
+                isDraft: data.isDraft
             )
             saveUploadSessionData(id: id, data: newData)
         }

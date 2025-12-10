@@ -1363,6 +1363,7 @@
   "share_extension.max_resolution": "Image exceeds maximum dimensions of 7680 x 4320 px",
   "share_extension.message": "Enter a message (optional)",
   "share_extension.multiple_label": "{count, number} attachments",
+  "share_extension.save_draft": "Save as draft",
   "share_extension.server_label": "Server",
   "share_extension.servers_screen.title": "Select server",
   "share_extension.share_screen.title": "Share to {applicationName}",

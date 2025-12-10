@@ -75,7 +75,7 @@ extension ShareExtension: URLSessionDataDelegate {
                 let fileData = fileInfos[0] as! NSDictionary
                 let fileId = fileData.object(forKey: "id") as? String ?? "no file id"
                 let filename = fileData.object(forKey: "name") as? String ?? "no file name"
-                appendCompletedUploadToSession(id: id, fileId: fileId)
+                appendCompletedUploadToSession(id: id, fileId: fileId, fileData: fileData)
                 let total = uploadData.totalFiles
                 let count = uploadData.fileIds.count + 1
                 

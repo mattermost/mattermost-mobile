@@ -95,6 +95,7 @@ class ShareViewController: UIViewController {
       let linkPreviewUrl = userInfo["linkPreviewUrl"] as? String
       let fileCount = attachments.count
       let files: [String] = attachments.map{ $0.fileUrl.absoluteString }
+      let isDraft = userInfo["isDraft"] as? Bool ?? false
       
      
      
@@ -128,7 +129,8 @@ class ShareViewController: UIViewController {
           completionHandler: { [weak self] in
             self?.removeObservers()
             self?.extensionContext!.completeRequest(returningItems: [])
-          })
+          },
+          isDraft: isDraft)
         if uploadError != nil {
           NotificationCenter.default.post(name: Notification.Name("errorPosting"), object: nil, userInfo: ["info": uploadError as Any])
         }

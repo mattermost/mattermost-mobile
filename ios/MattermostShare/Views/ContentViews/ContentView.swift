@@ -78,6 +78,13 @@ struct ContentView: View {
       }
       
       Spacer()
+
+      PostButton(
+        attachments: $attachments,
+        linkPreviewUrl: linkPreviewUrl,
+        message: $message,
+        isDraft: true
+      )
     }
 //    .keyboardAdaptive()
   }
