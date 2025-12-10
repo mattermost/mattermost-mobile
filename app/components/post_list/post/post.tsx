@@ -163,6 +163,7 @@ const Post = ({
     const isCallsPost = isCallsCustomMessage(post);
     const borPost = isBoRPost(post);
     const isUnrevealedPost = isUnrevealedBoRPost(post);
+    const isOwnPost = Boolean(currentUser && post.userId === currentUser.id);
     const isAgentPostType = isAgentPost(post);
     const hasBeenDeleted = (post.deleteAt !== 0);
     const isWebHook = isFromWebhook(post);
@@ -365,7 +366,7 @@ const Post = ({
                 joiningChannelId={null}
             />
         );
-    } else if (isUnrevealedPost) {
+    } else if (isUnrevealedPost && !isOwnPost) {
         body = (
             <UnrevealedBurnOnReadPost post={post}/>
         );

@@ -11,6 +11,7 @@ import {getPostById} from '@queries/servers/post';
 import {renderWithEverything, waitFor} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
+import Body from './body';
 import Post from './post';
 
 import type {Database} from '@nozbe/watermelondb';
@@ -18,6 +19,7 @@ import type PostModel from '@typings/database/models/servers/post';
 
 jest.mock('@managers/performance_metrics_manager');
 jest.mock('@components/post_list/post/burn_on_read/unrevealed');
+jest.mock('./body');
 
 describe('performance metrics', () => {
     let database: Database;
@@ -84,18 +86,37 @@ describe('performance metrics', () => {
 
     it('should render unrevealed post correctly', async () => {
         const props = getBaseProps();
-        const unrevealedBoRPost = TestHelper.fakePostModel({
+        props.post = TestHelper.fakePostModel({
             type: PostTypes.BURN_ON_READ,
             props: {
                 expire_at: Date.now() + 1000000,
             },
         });
 
-        props.post = unrevealedBoRPost;
-
         renderWithEverything(<Post {...props}/>, {database, serverUrl});
         await waitFor(() => {
             expect(UnrevealedBurnOnReadPost).toHaveBeenCalled();
         });
+    });
+
+    it('own BoR post should show as revealed even without metadata', async () => {
+        const currentUser = TestHelper.fakeUserModel();
+        const props = {
+            ...getBaseProps(),
+            currentUser,
+        };
+        props.post = TestHelper.fakePostModel({
+            type: PostTypes.BURN_ON_READ,
+            userId: currentUser.id,
+            props: {
+                expire_at: Date.now() + 1000000,
+            },
+        });
+
+        renderWithEverything(<Post {...props}/>, {database, serverUrl});
+        await waitFor(() => {
+            expect(Body).toHaveBeenCalled();
+        });
+        expect(UnrevealedBurnOnReadPost).not.toHaveBeenCalled();
     });
 });
