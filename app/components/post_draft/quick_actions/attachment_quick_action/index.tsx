@@ -7,11 +7,10 @@ import {KeyboardController} from 'react-native-keyboard-controller';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {Screens} from '@constants';
 import {ICON_SIZE} from '@constants/post_draft';
 import {useKeyboardAnimationContext} from '@context/keyboard_animation';
 import {useTheme} from '@context/theme';
-import {openAsBottomSheet} from '@screens/navigation';
+import {openAttachmentOptions} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {QuickActionAttachmentProps} from '@typings/components/post_draft_quick_action';
@@ -52,19 +51,13 @@ export default function AttachmentQuickAction({
         closeInputAccessoryView();
         await KeyboardController.dismiss();
 
-        openAsBottomSheet({
-            closeButtonId: 'attachment-close-id',
-            screen: Screens.ATTACHMENT_OPTIONS,
-            theme,
-            title: intl.formatMessage({id: 'mobile.file_attachment.title', defaultMessage: 'Files and media'}),
-            props: {
-                onUploadFiles,
-                maxFilesReached,
-                canUploadFiles: !disabled,
-                testID,
-                fileCount,
-                maxFileCount,
-            },
+        openAttachmentOptions(intl, theme, {
+            onUploadFiles,
+            maxFilesReached,
+            canUploadFiles: !disabled,
+            testID,
+            fileCount,
+            maxFileCount,
         });
     }, [closeInputAccessoryView, intl, theme, onUploadFiles, maxFilesReached, disabled, testID, fileCount, maxFileCount]);
 

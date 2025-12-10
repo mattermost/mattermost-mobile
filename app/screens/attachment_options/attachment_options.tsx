@@ -108,6 +108,20 @@ const AttachmentOptions: React.FC<Props> = ({
         picker.attachFileFromCamera(options);
     };
 
+    const onTakeVideo = async () => {
+        await dismissBottomSheet(Screens.ATTACHMENT_OPTIONS);
+        if (!checkCanUpload() || checkMaxFiles()) {
+            return;
+        }
+        const options: CameraOptions = {
+            quality: 0.8,
+            videoQuality: 'high',
+            mediaType: 'video',
+            saveToPhotos: true,
+        };
+        picker.attachFileFromCamera(options);
+    };
+
     const onAttachFile = async () => {
         await dismissBottomSheet(Screens.ATTACHMENT_OPTIONS);
         if (!checkCanUpload() || checkMaxFiles()) {
@@ -139,6 +153,12 @@ const AttachmentOptions: React.FC<Props> = ({
                     text={intl.formatMessage({id: 'mobile.file_upload.camera_photo', defaultMessage: 'Take a photo'})}
                 />
                 <SlideUpPanelItem
+                    leftIcon='video-outline'
+                    onPress={onTakeVideo}
+                    testID='file_attachment.take_video'
+                    text={intl.formatMessage({id: 'mobile.file_upload.camera_video', defaultMessage: 'Take a video'})}
+                />
+                <SlideUpPanelItem
                     leftIcon='paperclip'
                     onPress={onAttachFile}
                     testID='file_attachment.attach_file'
@@ -149,7 +169,7 @@ const AttachmentOptions: React.FC<Props> = ({
     };
 
     const snapPoints = useMemo(() => {
-        const componentHeight = TITLE_HEIGHT + bottomSheetSnapPoint(3, ITEM_HEIGHT);
+        const componentHeight = TITLE_HEIGHT + bottomSheetSnapPoint(4, ITEM_HEIGHT);
         return [1, componentHeight];
     }, []);
 

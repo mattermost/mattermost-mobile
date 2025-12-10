@@ -667,6 +667,7 @@
   "mobile.file_attachment.title": "Files and media",
   "mobile.file_upload.browse": "Attach a file",
   "mobile.file_upload.camera_photo": "Take a photo",
+  "mobile.file_upload.camera_video": "Take a video",
   "mobile.file_upload.disabled2": "File uploads from mobile are disabled.",
   "mobile.file_upload.library": "Choose from photo library",
   "mobile.file_upload.max_warning": "Uploads limited to {count} files maximum.",

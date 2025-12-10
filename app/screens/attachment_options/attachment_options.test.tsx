@@ -86,6 +86,25 @@ describe('AttachmentOptions', () => {
             });
         });
 
+        it('should call picker.attachFileFromCamera when take video is selected', async () => {
+            const {getByTestId} = renderWithIntlAndTheme(
+                <AttachmentOptions {...baseProps}/>,
+            );
+
+            const takeVideoItem = getByTestId('file_attachment.take_video');
+            fireEvent.press(takeVideoItem);
+
+            await waitFor(() => {
+                expect(mockDismissBottomSheet).toHaveBeenCalledWith(Screens.ATTACHMENT_OPTIONS);
+                expect(mockAttachFileFromCamera).toHaveBeenCalledWith({
+                    quality: 0.8,
+                    videoQuality: 'high',
+                    mediaType: 'video',
+                    saveToPhotos: true,
+                });
+            });
+        });
+
         it('should call picker.attachFileFromFiles when attach file is selected', async () => {
             const {getByTestId} = renderWithIntlAndTheme(
                 <AttachmentOptions {...baseProps}/>,
