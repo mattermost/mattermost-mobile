@@ -5,6 +5,7 @@ import React from 'react';
 import {StyleSheet, View} from 'react-native';
 
 import AttachmentAction from './attachment_quick_action';
+import EmojiAction from './emoji_quick_action';
 import InputAction from './input_quick_action';
 import PostPriorityAction from './post_priority_action';
 
@@ -57,8 +58,7 @@ export default function QuickActions({
 
     const atInputActionTestID = `${testID}.at_input_action`;
     const slashInputActionTestID = `${testID}.slash_input_action`;
-
-    // const emojiActionTestID = `${testID}.emoji_action`;
+    const emojiActionTestID = `${testID}.emoji_action`;
     const attachmentActionTestID = `${testID}.attachment_action`;
     const postPriorityActionTestID = `${testID}.post_priority_action`;
 
@@ -95,10 +95,9 @@ export default function QuickActions({
                     focus={focus}
                 />
             )}
-            {/* TODO: Uncomment this when we have the actual emoji picker */}
-            {/* <EmojiAction
+            <EmojiAction
                 testID={emojiActionTestID}
-            /> */}
+            />
             {isPostPriorityEnabled && canShowPostPriority && (
                 <PostPriorityAction
                     testID={postPriorityActionTestID}

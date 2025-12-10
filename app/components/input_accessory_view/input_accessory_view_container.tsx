@@ -2,21 +2,23 @@
 // See LICENSE.txt for license information.
 
 import React, {type ReactNode} from 'react';
-import {StyleSheet} from 'react-native';
 import Animated, {useAnimatedStyle, type SharedValue} from 'react-native-reanimated';
+
+import {useTheme} from '@context/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
     children: ReactNode;
     animatedHeight: SharedValue<number>;
 };
 
-const styles = StyleSheet.create({
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
-        backgroundColor: 'yellow',
+        backgroundColor: theme.centerChannelBg,
         overflow: 'hidden',
         width: '100%',
     },
-});
+}));
 
 /**
  * InputAccessoryViewContainer - Container for input accessory view content
@@ -25,6 +27,9 @@ const InputAccessoryViewContainer = ({
     children,
     animatedHeight,
 }: Props) => {
+    const theme = useTheme();
+    const styles = getStyleSheet(theme);
+
     const animatedStyle = useAnimatedStyle(() => {
         return {
             height: animatedHeight.value,

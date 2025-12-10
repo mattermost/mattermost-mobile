@@ -407,7 +407,7 @@ describe('useKeyboardAnimation', () => {
             expect(result.current.height.value).toBe(300 - expectedAdjustment);
         });
 
-        it('should not apply tab bar adjustment for thread view', () => {
+        it('should apply safeAreaBottom adjustment for thread view', () => {
             const safeAreaBottom = 20;
             const {result} = renderHook(() =>
                 useKeyboardAnimation(100, true, true, safeAreaBottom, true, true),
@@ -420,10 +420,10 @@ describe('useKeyboardAnimation', () => {
                 });
             });
 
-            expect(result.current.height.value).toBe(300);
+            expect(result.current.height.value).toBe(300 - safeAreaBottom);
         });
 
-        it('should not apply tab bar adjustment for mobile', () => {
+        it('should apply safeAreaBottom adjustment for mobile', () => {
             const safeAreaBottom = 20;
             const {result} = renderHook(() =>
                 useKeyboardAnimation(100, true, false, safeAreaBottom, false, true),
@@ -436,7 +436,7 @@ describe('useKeyboardAnimation', () => {
                 });
             });
 
-            expect(result.current.height.value).toBe(300);
+            expect(result.current.height.value).toBe(300 - safeAreaBottom);
         });
     });
 

@@ -92,7 +92,7 @@ export const useKeyboardAnimation = (
     // Calculate tab bar adjustment (only for tablets, not in thread view)
     // This accounts for the tab bar height + safe area bottom that gets hidden when keyboard opens
     // Thread views don't have a tab bar, so no adjustment is needed
-    const tabBarAdjustment = isTablet && !isThreadView ? BOTTOM_TAB_HEIGHT + safeAreaBottom : 0;
+    const tabBarAdjustment = isTablet && !isThreadView ? BOTTOM_TAB_HEIGHT + safeAreaBottom : safeAreaBottom;
 
     /**
    * isCustomViewMode: Whether we're showing custom view instead of keyboard

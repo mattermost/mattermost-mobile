@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useRef, type ReactNode} from 'react';
+import React, {useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode} from 'react';
 import {DeviceEventEmitter, Keyboard, Platform, type StyleProp, StyleSheet, type ViewStyle, View, type LayoutChangeEvent, type GestureResponderEvent} from 'react-native';
 import {KeyboardGestureArea} from 'react-native-keyboard-controller';
 import Animated, {runOnJS, useAnimatedReaction, useSharedValue, withTiming} from 'react-native-reanimated';
@@ -96,23 +96,77 @@ export const KeyboardAwarePostDraftContainer = ({
         isKeyboardFullyOpen,
     });
 
+    const [isEmojiSearchFocused, setIsEmojiSearchFocused] = useState(false);
+
+    // Ref to store cursor position from PostInput
+    const cursorPositionRef = useRef<number>(0);
+
+    // Function to register cursor position updates from PostInput
+    const registerCursorPosition = useCallback((cursorPosition: number) => {
+        cursorPositionRef.current = cursorPosition;
+    }, []);
+
+    // Refs to store PostInput callbacks
+    const updateValueRef = useRef<React.Dispatch<React.SetStateAction<string>> | null>(null);
+    const updateCursorPositionRef = useRef<React.Dispatch<React.SetStateAction<number>> | null>(null);
+
+    // Function to register PostInput callbacks
+    const registerPostInputCallbacks = useCallback((
+        updateValueFn: React.Dispatch<React.SetStateAction<string>>,
+        updateCursorPositionFn: React.Dispatch<React.SetStateAction<number>>,
+    ) => {
+        updateValueRef.current = updateValueFn;
+        updateCursorPositionRef.current = updateCursorPositionFn;
+
+        if (updateValueFn) {
+            updateValueFn((currentValue: string) => {
+                cursorPositionRef.current = currentValue.length;
+                return currentValue;
+            });
+        }
+    }, []);
+
+    // Ref to track if a layout update is already scheduled
+    const layoutUpdateScheduledRef = useRef(false);
+    const pendingHeightRef = useRef<number | null>(null);
+
+    // Helper to apply the batched height update
+    const applyBatchedHeightUpdate = useCallback(() => {
+        layoutUpdateScheduledRef.current = false;
+
+        if (pendingHeightRef.current !== null) {
+            const heightToSet = pendingHeightRef.current;
+            pendingHeightRef.current = null;
+
+            // Only update if the rounded height changed by more than 0.5px (a real change).
+            // This prevents jitter in FlatList paddingTop and improves performance.
+            setPostInputContainerHeight((prevHeight) => {
+                const roundedPrevHeight = Math.round(prevHeight);
+                if (roundedPrevHeight !== heightToSet) {
+                    return heightToSet;
+                }
+                return prevHeight;
+            });
+        }
+    }, [setPostInputContainerHeight]);
+
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         const newHeight = e.nativeEvent.layout.height;
         const roundedHeight = Math.round(newHeight);
 
-        // Debounce sub-pixel layout fluctuations to prevent unnecessary re-renders.
-        // React Native sometimes reports fractional pixel measurements (90.67, 91.00, 90.99)
-        // that would trigger multiple state updates for the same visual height.
-        // Round both prevHeight and newHeight to integers and compare for equality.
-        // This prevents jitter in FlatList paddingTop and improves performance.
-        setPostInputContainerHeight((prevHeight) => {
-            const roundedPrevHeight = Math.round(prevHeight);
-            if (roundedPrevHeight !== roundedHeight) {
-                return roundedHeight;
-            }
-            return prevHeight;
-        });
-    }, [setPostInputContainerHeight]);
+        // Store the latest height value
+        pendingHeightRef.current = roundedHeight;
+
+        // If an update is already scheduled, skip scheduling another one
+        // This batches all layout updates during animations to a single update per frame
+        if (layoutUpdateScheduledRef.current) {
+            return;
+        }
+
+        // Schedule update for next frame to batch rapid layout changes during animations
+        layoutUpdateScheduledRef.current = true;
+        requestAnimationFrame(applyBatchedHeightUpdate);
+    }, [applyBatchedHeightUpdate]);
 
     // Refs for tracking emoji picker swipe-to-dismiss gesture
     const previousTouchYRef = useRef<number | null>(null);
@@ -197,14 +251,18 @@ export const KeyboardAwarePostDraftContainer = ({
 
     // Callback to dismiss emoji picker after animation completes
     const dismissEmojiPicker = useCallback(() => {
+        // Reset emoji search focus when dismissing emoji picker
+        setIsEmojiSearchFocused(false);
         setShowInputAccessoryView(false);
         isInputAccessoryViewMode.value = false;
         inset.value = 0;
         offset.value = 0;
         keyboardHeight.value = 0;
-    }, [setShowInputAccessoryView, isInputAccessoryViewMode, inset, offset, keyboardHeight]);
+    }, [setShowInputAccessoryView, isInputAccessoryViewMode, inset, offset, keyboardHeight, setIsEmojiSearchFocused]);
 
     const closeInputAccessoryView = useCallback(() => {
+        // Reset emoji search focus when closing emoji picker
+        setIsEmojiSearchFocused(false);
         setShowInputAccessoryView(false);
         isInputAccessoryViewMode.value = false;
         isTransitioningFromCustomView.value = false;
@@ -213,7 +271,7 @@ export const KeyboardAwarePostDraftContainer = ({
         inset.value = withTiming(0, {duration: 200});
         offset.value = withTiming(0, {duration: 200});
         keyboardHeight.value = 0;
-    }, [inputAccessoryViewAnimatedHeight, inset, offset, keyboardHeight, setShowInputAccessoryView, isInputAccessoryViewMode, isTransitioningFromCustomView]);
+    }, [inputAccessoryViewAnimatedHeight, inset, offset, keyboardHeight, setShowInputAccessoryView, isInputAccessoryViewMode, isTransitioningFromCustomView, setIsEmojiSearchFocused]);
 
     const scrollToEnd = useCallback(() => {
         const activeHeight = Math.max(keyboardHeight.value, inputAccessoryViewAnimatedHeight.value);
@@ -295,6 +353,12 @@ export const KeyboardAwarePostDraftContainer = ({
         gestureStartedInEmojiPickerRef.current = false;
     }, [inputAccessoryViewAnimatedHeight, dismissEmojiPicker, inset, scroll, animatedScrollAdjustment]);
 
+    useLayoutEffect(() => {
+        if (showInputAccessoryView && Platform.OS === 'ios') {
+            keyboardHeight.value = 0;
+        }
+    }, [showInputAccessoryView, keyboardHeight]);
+
     // After emoji picker renders, adjust heights and scroll to keep messages visible
     useEffect(() => {
         if (showInputAccessoryView) {
@@ -303,20 +367,17 @@ export const KeyboardAwarePostDraftContainer = ({
                 const emojiPickerHeight = inputAccessoryViewAnimatedHeight.value;
                 const currentScroll = scroll.value;
 
-                // Save original emoji picker height for gesture tracking
+                originalScrollBeforeEmojiPicker.value = currentScroll;
                 originalEmojiPickerHeightRef.current = emojiPickerHeight;
 
-                // Reset keyboard height to 0 (removes translateY, emoji picker height replaces it)
-                keyboardHeight.value = 0;
+                // For inverted list: when inset increases, content shifts UP visually. Scroll UP to compensate.
+                const targetContentOffset = currentScroll - emojiPickerHeight;
 
-                // Set inset to emoji picker height (adds bottom padding to list)
                 inset.value = emojiPickerHeight;
-
-                // Set offset to emoji picker height (same as keyboard behavior)
                 offset.value = emojiPickerHeight;
 
                 listRef.current?.scrollToOffset({
-                    offset: -emojiPickerHeight + currentScroll,
+                    offset: targetContentOffset,
                     animated: false,
                 });
             });
@@ -325,6 +386,67 @@ export const KeyboardAwarePostDraftContainer = ({
         // Only depend on showInputAccessoryView - the effect should only run when emoji picker visibility changes
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [showInputAccessoryView]);
+
+    // Track if we've already restored scroll for current emoji picker closing (Android only)
+    // Use SharedValue instead of ref so it can be accessed in worklets
+    const hasRestoredScrollForEmojiPicker = useSharedValue(false);
+
+    // Store the original scroll value when emoji picker opens, so we can restore it when closing
+    const originalScrollBeforeEmojiPicker = useSharedValue(0);
+
+    // Reset restoration flag when emoji picker opens
+    useEffect(() => {
+        if (showInputAccessoryView) {
+            hasRestoredScrollForEmojiPicker.value = false;
+            originalScrollBeforeEmojiPicker.value = 0;
+        }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [showInputAccessoryView]);
+
+    // Callback to restore scroll when emoji picker closes (called from worklet)
+    const restoreScrollAfterEmojiPickerClose = useCallback((previousHeight: number, currentScroll: number) => {
+        if (listRef.current && previousHeight > 0) {
+            listRef.current.scrollToOffset({
+                offset: currentScroll,
+                animated: false,
+            });
+        }
+
+        // ref is not required to be in deps because it is a stable reference
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // Android: Watch for emoji picker closing and restore scroll position when both height and inset reach 0
+    const isAndroid = Platform.OS === 'android';
+    useAnimatedReaction(
+        () => ({
+            height: inputAccessoryViewAnimatedHeight.value,
+            inset: inset.value,
+        }),
+        (current, previous) => {
+            if (!isAndroid) {
+                return;
+            }
+
+            // When emoji picker closes: height goes to 0 AND inset reaches 0. Check previous.inset > 0 because inset affects scroll.
+            const shouldRestoreScroll = previous !== null &&
+                previous.inset !== undefined &&
+                previous.inset > 0 &&
+                current.height === 0 &&
+                current.inset === 0 &&
+                !hasRestoredScrollForEmojiPicker.value;
+
+            if (shouldRestoreScroll) {
+                hasRestoredScrollForEmojiPicker.value = true;
+                const currentScroll = scroll.value;
+                const emojiPickerHeight = previous.inset;
+
+                runOnJS(restoreScrollAfterEmojiPickerClose)(emojiPickerHeight, currentScroll);
+            }
+        },
+        [inputAccessoryViewAnimatedHeight, inset, scroll, restoreScrollAfterEmojiPickerClose],
+    );
 
     const keyboardAnimationValue = useMemo(() => ({
         height: keyboardCurrentHeight,
@@ -349,6 +471,13 @@ export const KeyboardAwarePostDraftContainer = ({
         isTransitioningFromCustomView,
         closeInputAccessoryView,
         scrollToEnd,
+        isEmojiSearchFocused,
+        setIsEmojiSearchFocused,
+        cursorPositionRef,
+        registerCursorPosition,
+        updateValue: updateValueRef.current,
+        updateCursorPosition: updateCursorPositionRef.current,
+        registerPostInputCallbacks,
     }), [keyboardCurrentHeight,
         inset,
         offset,
@@ -371,6 +500,10 @@ export const KeyboardAwarePostDraftContainer = ({
         isTransitioningFromCustomView,
         closeInputAccessoryView,
         scrollToEnd,
+        isEmojiSearchFocused,
+        setIsEmojiSearchFocused,
+        registerCursorPosition,
+        registerPostInputCallbacks,
     ]);
 
     const wrapperProps = useMemo(() => {
