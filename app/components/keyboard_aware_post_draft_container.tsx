@@ -103,10 +103,11 @@ export const KeyboardAwarePostDraftContainer = ({
         // Debounce sub-pixel layout fluctuations to prevent unnecessary re-renders.
         // React Native sometimes reports fractional pixel measurements (90.67, 91.00, 90.99)
         // that would trigger multiple state updates for the same visual height.
-        // Only update if the rounded height changed by more than 0.5px (a real change).
+        // Round both prevHeight and newHeight to integers and compare for equality.
         // This prevents jitter in FlatList paddingTop and improves performance.
         setPostInputContainerHeight((prevHeight) => {
-            if (Math.abs(prevHeight - roundedHeight) > 0.5) {
+            const roundedPrevHeight = Math.round(prevHeight);
+            if (roundedPrevHeight !== roundedHeight) {
                 return roundedHeight;
             }
             return prevHeight;
@@ -152,8 +153,8 @@ export const KeyboardAwarePostDraftContainer = ({
         }
 
         // Get finger Y position on screen
-        const fingerY = event.nativeEvent.touches[0]?.pageY;
-        if (!fingerY) {
+        const fingerY = event.nativeEvent.pageY;
+        if (fingerY == null) {
             return;
         }
 
@@ -184,16 +185,13 @@ export const KeyboardAwarePostDraftContainer = ({
 
         // Subtract input container height to get emoji picker height
         const emojiPickerHeight = distanceFromBottom - postInputContainerHeight;
-
-        const isSwipingDown = previousTouchYRef.current !== null && fingerY > previousTouchYRef.current;
         const maxHeight = originalEmojiPickerHeightRef.current;
-
-        const clampedHeight = Math.max(0, Math.min(emojiPickerHeight, maxHeight));
+        const clampedHeight = emojiPickerHeight < 0 ? 0 : Math.min(emojiPickerHeight, maxHeight);
 
         inputAccessoryViewAnimatedHeight.value = clampedHeight;
         inset.value = clampedHeight;
         lastDistanceFromBottomRef.current = clampedHeight;
-        lastIsSwipingDownRef.current = isSwipingDown;
+        lastIsSwipingDownRef.current = previousTouchYRef.current !== null && fingerY > previousTouchYRef.current;
         previousTouchYRef.current = fingerY;
     }, [showInputAccessoryView, postInputContainerHeight, inputAccessoryViewAnimatedHeight, inset, windowHeight]);
 
@@ -238,7 +236,6 @@ export const KeyboardAwarePostDraftContainer = ({
 
         // Only process if gesture started in emoji picker
         if (!gestureStartedInEmojiPickerRef.current) {
-            gestureStartedInEmojiPickerRef.current = false;
             return;
         }
 
