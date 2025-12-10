@@ -371,10 +371,7 @@ describe('Checklist', () => {
     it('handles add item error correctly', async () => {
         const mockError = {message: 'Add item failed'};
         jest.mocked(addChecklistItem).mockResolvedValueOnce({error: mockError} as {error: Error});
-        jest.mocked(goToAddChecklistItem).mockImplementation(async (intl, theme, playbookRunName, onAdd) => {
-            // Simulate calling the add callback with a new item title
-            onAdd('New Item');
-        });
+        jest.mocked(goToAddChecklistItem).mockClear();
 
         const props = getBaseProps();
         props.isFinished = false;
@@ -385,6 +382,11 @@ describe('Checklist', () => {
         const addButton = getByTestId('add-checklist-item-button');
         act(() => {
             fireEvent.press(addButton);
+        });
+
+        const onAdd = jest.mocked(goToAddChecklistItem).mock.calls[0][3];
+        await act(async () => {
+            await onAdd('New Item');
         });
 
         await waitFor(() => {
