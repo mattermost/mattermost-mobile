@@ -3,7 +3,9 @@
 
 import {Q} from '@nozbe/watermelondb';
 import deepEqual from 'deep-equal';
+import {DeviceEventEmitter} from 'react-native';
 
+import {Events} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
@@ -36,6 +38,7 @@ export async function storeConfigAndLicense(serverUrl: string, config: ClientCon
 
             if (systems.length) {
                 await operator.handleSystem({systems, prepareRecordsOnly: false});
+                DeviceEventEmitter.emit(Events.LICENSE_CHANGED, {serverUrl, license});
             }
 
             return await storeConfig(serverUrl, config);
@@ -76,7 +79,9 @@ export async function storeConfig(serverUrl: string, config: ClientConfig | unde
         }
 
         if (configsToDelete.length || configsToUpdate.length) {
-            return operator.handleConfigs({configs: configsToUpdate, configsToDelete, prepareRecordsOnly});
+            const results = await operator.handleConfigs({configs: configsToUpdate, configsToDelete, prepareRecordsOnly});
+            DeviceEventEmitter.emit(Events.CONFIG_CHANGED, {serverUrl, config});
+            return results;
         }
     } catch (error) {
         logError('storeConfig', error);

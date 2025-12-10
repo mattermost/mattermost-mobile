@@ -18,7 +18,6 @@ import {
 import {
     ChannelListScreen,
     ChannelScreen,
-    HomeScreen,
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
@@ -42,11 +41,6 @@ describe('Messaging - Markdown List', () => {
     beforeEach(async () => {
         // * Verify on channel list screen
         await ChannelListScreen.toBeVisible();
-    });
-
-    afterAll(async () => {
-        // # Log out
-        await HomeScreen.logout();
     });
 
     it('MM-T4894_1 - should be able to display markdown bullet list', async () => {

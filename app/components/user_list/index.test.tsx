@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React, {type ComponentProps} from 'react';
-import {Image} from 'react-native';
 
 import {Screens} from '@constants';
 import {Ringtone} from '@constants/calls';
@@ -93,20 +92,11 @@ describe('components/channel_list_row', () => {
         },
     };
 
-    const originalResolveAssetSource = Image.resolveAssetSource;
+    // const originalResolveAssetSource = Image.resolveAssetSource;
 
     beforeAll(async () => {
         const server = await TestHelper.setupServerDatabase();
         database = server.database;
-
-        // This is needed to properly populate the URLs until
-        // https://github.com/facebook/react-native/pull/43497
-        // gets into React Native Jest code.
-        Image.resolveAssetSource = jest.fn().mockImplementation((source) => source);
-    });
-
-    afterAll(() => {
-        Image.resolveAssetSource = originalResolveAssetSource;
     });
 
     function getBaseProps(): ComponentProps<typeof UserList> {

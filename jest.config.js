@@ -26,7 +26,7 @@ module.exports = {
         '@sentry/react-native|' +
         'validator|' +
         'hast-util-from-selector|hastscript|property-information|hast-util-parse-selector|space-separated-tokens|comma-separated-tokens|zwitch|' +
-        '@mattermost/calls|@voximplant/react-native-foreground-service|' +
+        '@mattermost/calls|@mattermost/rnutils|@mattermost/hardware-keyboard|@mattermost/rnshare|@mattermost/secure-pdf-viewer|@voximplant/react-native-foreground-service|' +
         '@rneui/base)',
     ],
     moduleNameMapper: {
