@@ -1,5 +1,8 @@
 PODS:
   - Alamofire (5.10.2)
+  - BlueCryptor (1.0.32)
+  - BlueECC (1.2.5)
+  - BlueRSA (1.0.203)
   - boost (1.84.0)
   - CocoaLumberjack (3.8.5):
     - CocoaLumberjack/Core (= 3.8.5)
@@ -56,12 +59,20 @@ PODS:
   - fast_float (6.1.4)
   - FBLazyVector (0.77.3)
   - fmt (11.0.2)
+  - Gekidou (0.1.0):
+    - SQLite.swift (= 0.15.4)
+    - SwiftJWT (= 3.6.200)
   - glog (0.3.5)
   - hermes-engine (0.77.3):
     - hermes-engine/Pre-built (= 0.77.3)
   - hermes-engine/Pre-built (0.77.3)
   - HMSegmentedControl (1.5.6)
   - JitsiWebRTC (124.0.2)
+  - KituraContracts (1.2.1):
+    - LoggerAPI (~> 1.7)
+  - LoggerAPI (1.9.200):
+    - Logging (~> 1.1)
+  - Logging (1.4.0)
   - mattermost-hardware-keyboard (0.0.0):
     - DoubleConversion
     - glog
@@ -126,7 +137,8 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RCT-Folly (2024.11.18.00):
+  - OpenGraph (1.4.1)
+  - RCT-Folly (2024.10.14.00):
     - boost
     - DoubleConversion
     - fast_float (= 6.1.4)
@@ -1423,7 +1435,7 @@ PODS:
     - Yoga
   - react-native-netinfo (11.4.1):
     - React-Core
-  - react-native-network-client (1.9.0):
+  - react-native-network-client (1.9.1):
     - Alamofire (~> 5.10.2)
     - DoubleConversion
     - glog
@@ -2157,7 +2169,16 @@ PODS:
   - Sentry/HybridSDK (8.48.0)
   - simdjson (3.9.4)
   - SocketRocket (0.7.1)
+  - SQLite.swift (0.15.4):
+    - SQLite.swift/standard (= 0.15.4)
+  - SQLite.swift/standard (0.15.4)
   - Starscream (4.0.8)
+  - SwiftJWT (3.6.200):
+    - BlueCryptor (~> 1.0)
+    - BlueECC (~> 1.1)
+    - BlueRSA (~> 1.0)
+    - KituraContracts (~> 1.2)
+    - LoggerAPI (~> 1.7)
   - SwiftyJSON (5.0.2)
   - TurboLogIOSNative (0.1.0):
     - CocoaLumberjack (~> 3.8.5)
@@ -2185,11 +2206,13 @@ DEPENDENCIES:
   - fast_float (from `../node_modules/react-native/third-party-podspecs/fast_float.podspec`)
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
   - fmt (from `../node_modules/react-native/third-party-podspecs/fmt.podspec`)
+  - Gekidou (from `./Gekidou`)
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
   - "mattermost-hardware-keyboard (from `../node_modules/@mattermost/hardware-keyboard`)"
   - "mattermost-react-native-turbo-log (from `../node_modules/@mattermost/react-native-turbo-log`)"
   - "mattermost-rnutils (from `../node_modules/@mattermost/rnutils`)"
+  - OpenGraph (= 1.4.1)
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCT-Folly/Fabric (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCTDeprecation (from `../node_modules/react-native/ReactApple/Libraries/RCTFoundation/RCTDeprecation`)
@@ -2293,14 +2316,23 @@ DEPENDENCIES:
 SPEC REPOS:
   trunk:
     - Alamofire
+    - BlueCryptor
+    - BlueECC
+    - BlueRSA
     - CocoaLumberjack
     - HMSegmentedControl
     - JitsiWebRTC
+    - KituraContracts
+    - LoggerAPI
+    - Logging
+    - OpenGraph
     - SDWebImage
     - SDWebImageSVGCoder
     - Sentry
     - SocketRocket
+    - SQLite.swift
     - Starscream
+    - SwiftJWT
     - SwiftyJSON
 
 EXTERNAL SOURCES:
@@ -2338,6 +2370,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/Libraries/FBLazyVector"
   fmt:
     :podspec: "../node_modules/react-native/third-party-podspecs/fmt.podspec"
+  Gekidou:
+    :path: "./Gekidou"
   glog:
     :podspec: "../node_modules/react-native/third-party-podspecs/glog.podspec"
   hermes-engine:
@@ -2549,9 +2583,12 @@ CHECKOUT OPTIONS:
 
 SPEC CHECKSUMS:
   Alamofire: 7193b3b92c74a07f85569e1a6c4f4237291e7496
-  boost: 7e761d76ca2ce687f7cc98e698152abd03a18f90
+  BlueCryptor: b0aee3d9b8f367b49b30de11cda90e1735571c24
+  BlueECC: 0d18e93347d3ec6d41416de21c1ffa4d4cd3c2cc
+  BlueRSA: 893ae5412de48a508a487067564dbcf9cd49df71
+  boost: 1dca942403ed9342f98334bf4c3621f011aa7946
   CocoaLumberjack: 6a459bc897d6d80bd1b8c78482ec7ad05dffc3f0
-  DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
+  DoubleConversion: 5189b271737e1565bdce30deb4a08d647e3f5f54
   EXApplication: 4c72f6017a14a65e338c5e74fca418f35141e819
   EXConstants: fcfc75800824ac2d5c592b5bc74130bad17b146b
   Expo: 1687edb10c76b0c0f135306d6ae245379f50ed54
@@ -2560,7 +2597,7 @@ SPEC CHECKSUMS:
   ExpoFileSystem: 42d363d3b96f9afab980dcef60d5657a4443c655
   ExpoImage: 043fcf882697fbcf4f50da1233b373d281f0456d
   ExpoLinearGradient: 35ebd83b16f80b3add053a2fd68cc328ed927f60
-  ExpoModulesCore: 7cbb8499aa4f46aeefcf332922d4ab3d4b203fa8
+  ExpoModulesCore: 2d8d1c8e238bd5e1448b06c284ac896b162fb856
   ExpoStoreReview: 92ad323dd14485e7aa67d5b47248fb22876ffaee
   ExpoVideoThumbnails: 7e9cd967393af9af0f7b0c62a4a00549f1860cab
   ExpoWebBrowser: a212e6b480d8857d3e441fba51e0c968333803b3
@@ -2671,7 +2708,9 @@ SPEC CHECKSUMS:
   Sentry: 1ca8405451040482877dcd344dfa3ef80b646631
   simdjson: 7bb9e33d87737cec966e7b427773c67baa4458fe
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
+  SQLite.swift: a107c734115fea616a4ad31371d39f1637e8de56
   Starscream: 19b5533ddb925208db698f0ac508a100b884a1b9
+  SwiftJWT: 88c412708f58c169d431d344c87bc79a87c830ae
   SwiftyJSON: f5b1bf1cd8dd53cd25887ac0eabcfd92301c6a5a
   TurboLogIOSNative: 45f6d20ba17ee39f8106e718e93baf43b2d76b7b
   WatermelonDB: 4c846c8cb94eef3cba90fa034d15310163226703
