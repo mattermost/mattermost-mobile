@@ -17,6 +17,7 @@ import {
     User,
     Post,
 } from '@support/server_api';
+import { apiDisablePluginById } from '@support/server_api/plugin';
 import {
     serverOneUrl,
     siteOneUrl,
@@ -156,7 +157,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
                 },
                 Plugins: {
                     'com.mattermost.demo-plugin': {
-                        'MinimalMode': true,
+                        'DialogOnlyMode': true,
                     },
                 }},
         });
@@ -168,6 +169,10 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await LoginScreen.login(testUser);
         await ChannelListScreen.toBeVisible();
         await ChannelScreen.open(channelsCategory, testChannel.name);
+    });
+
+    afterAll(async () => {
+        await apiDisablePluginById(siteOneUrl, DemoPlugin.id);
     });
 
     afterEach(async () => {

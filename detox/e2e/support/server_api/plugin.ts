@@ -5,7 +5,6 @@ import path from 'path';
 
 import client from './client';
 import {apiUploadFile, getResponseFromError} from './common';
-import {apiGetConfig} from './system';
 
 // ****************************************************************
 // Plugins
@@ -78,7 +77,7 @@ export const apiDisableNonPrepackagedPlugins = async (baseUrl: string): Promise<
         return;
     }
     plugins.active.forEach(async (plugin: any) => {
-        if (!prepackagedPlugins.has(plugin.id)) {
+        if (plugin.id !== DemoPlugin.id && !prepackagedPlugins.has(plugin.id)) {
             await apiDisablePluginById(baseUrl, plugin.id);
         }
     });
@@ -223,34 +222,6 @@ export const apiGetPluginStatus = async (baseUrl: string, pluginId: string, vers
 };
 
 /**
- * Check and log server configuration settings that affect plugin activation.
- * @param {string} baseUrl - the base server URL
- * @return {Object} returns config settings relevant to plugin activation
- */
-const checkPluginActivationConfig = async (baseUrl: string): Promise<any> => {
-    try {
-        const {config} = await apiGetConfig(baseUrl);
-        const enableGifPicker = config.ServiceSettings?.EnableGifPicker;
-        const enablePublicLink = config.FileSettings?.EnablePublicLink;
-
-        // eslint-disable-next-line no-console
-        console.log('=== Server Config Check (Plugin Activation Requirements) ===');
-        // eslint-disable-next-line no-console
-        console.log(`ServiceSettings.EnableGifPicker: ${enableGifPicker}`);
-        // eslint-disable-next-line no-console
-        console.log(`FileSettings.EnablePublicLink: ${enablePublicLink}`);
-        // eslint-disable-next-line no-console
-        console.log('=============================================================');
-
-        return {enableGifPicker, enablePublicLink};
-    } catch (err) {
-        // eslint-disable-next-line no-console
-        console.log('Failed to retrieve server config:', err);
-        return {};
-    }
-};
-
-/**
  * Upload and enable demo plugin, handling various states.
  * Uses DemoPlugin.getLatestDownloadUrl() internally to avoid SSRF concerns.
  * @param {Object} options - configuration object
@@ -268,9 +239,6 @@ export const apiUploadAndEnablePlugin = async (options: {
     const id = DemoPlugin.id;
 
     try {
-        // Check server config settings that affect plugin activation
-        await checkPluginActivationConfig(baseUrl);
-
         // Check current plugin status
         const statusResult = await apiGetPluginStatus(baseUrl, id, version);
         if (statusResult.error) {
@@ -310,16 +278,6 @@ export const apiUploadAndEnablePlugin = async (options: {
                 });
 
                 return {plugin: verifyStatus.plugin, message: 'Plugin was inactive with correct version, now enabled'};
-
-                // if (verifyStatus.isActive) {
-                //     if (!version || (version && verifyStatus.isVersionMatch)) {
-                //         return {plugin: verifyStatus.plugin, message: 'Plugin was inactive with correct version, now enabled'};
-                //     }
-
-                //     // Wrong version but active - log it and continue to try installing correct version
-                //     // eslint-disable-next-line no-console
-                //     console.log(`Activated existing plugin version ${verifyStatus.plugin?.version} but expected ${version}. Will attempt to download correct version.`);
-                // }
             }
         }
 
