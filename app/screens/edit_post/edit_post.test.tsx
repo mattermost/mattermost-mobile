@@ -26,7 +26,7 @@ jest.mock('@managers/draft_upload_manager', () => ({
     cancel: jest.fn(),
 }));
 jest.mock('@screens/navigation', () => ({
-    openAsBottomSheet: jest.fn(),
+    openAttachmentOptions: jest.fn(),
     buildNavigationButton: jest.fn((id: string, testID: string) => ({id, testID})),
     dismissBottomSheet: jest.fn(() => Promise.resolve()),
     dismissModal: jest.fn(),
@@ -140,7 +140,7 @@ describe('Edit Post', () => {
 
     const triggerFileUpload = async (screen: ReturnType<typeof renderEditPost>) => {
         let onUploadFilesCallback: ((files: ExtractedFileInfo[]) => void) | undefined;
-        jest.mocked(Navigation.openAsBottomSheet).mockImplementation(({props}) => {
+        jest.mocked(Navigation.openAttachmentOptions).mockImplementation((intl, theme, props) => {
             onUploadFilesCallback = props?.onUploadFiles;
             return undefined;
         });

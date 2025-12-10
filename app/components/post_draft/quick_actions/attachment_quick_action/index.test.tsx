@@ -4,7 +4,8 @@
 import {fireEvent, waitFor} from '@testing-library/react-native';
 import {KeyboardController} from 'react-native-keyboard-controller';
 
-import {Screens} from '@constants';
+import {useKeyboardAnimationContext} from '@context/keyboard_animation';
+import {openAttachmentOptions} from '@screens/navigation';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
 import AttachmentQuickAction from '.';
@@ -20,14 +21,14 @@ jest.mock('@context/keyboard_animation', () => ({
 }));
 
 jest.mock('@screens/navigation', () => ({
-    openAsBottomSheet: jest.fn(),
+    openAttachmentOptions: jest.fn(),
 }));
 
 describe('AttachmentQuickAction', () => {
     const mockCloseInputAccessoryView = jest.fn();
-    const mockKeyboardControllerDismiss = KeyboardController.dismiss as jest.Mock;
-    const mockOpenAsBottomSheet = require('@screens/navigation').openAsBottomSheet as jest.Mock;
-    const mockUseKeyboardAnimationContext = require('@context/keyboard_animation').useKeyboardAnimationContext as jest.Mock;
+    const mockKeyboardControllerDismiss = jest.mocked(KeyboardController.dismiss);
+    const mockOpenAttachmentOptions = jest.mocked(openAttachmentOptions);
+    const mockUseKeyboardAnimationContext = jest.mocked(useKeyboardAnimationContext);
 
     const baseProps = {
         disabled: false,
@@ -42,7 +43,7 @@ describe('AttachmentQuickAction', () => {
         jest.clearAllMocks();
         mockUseKeyboardAnimationContext.mockReturnValue({
             closeInputAccessoryView: mockCloseInputAccessoryView,
-        });
+        } as unknown as ReturnType<typeof useKeyboardAnimationContext>);
     });
 
     describe('user interactions', () => {
@@ -61,7 +62,7 @@ describe('AttachmentQuickAction', () => {
             await waitFor(() => {
                 expect(mockCloseInputAccessoryView).toHaveBeenCalledTimes(1);
                 expect(mockKeyboardControllerDismiss).toHaveBeenCalledTimes(1);
-                expect(mockOpenAsBottomSheet).toHaveBeenCalledTimes(1);
+                expect(mockOpenAttachmentOptions).toHaveBeenCalledTimes(1);
             });
         });
 
@@ -81,7 +82,7 @@ describe('AttachmentQuickAction', () => {
             // Should not trigger any actions when disabled
             expect(mockCloseInputAccessoryView).not.toHaveBeenCalled();
             expect(mockKeyboardControllerDismiss).not.toHaveBeenCalled();
-            expect(mockOpenAsBottomSheet).not.toHaveBeenCalled();
+            expect(mockOpenAttachmentOptions).not.toHaveBeenCalled();
         });
 
         it('should close input accessory view before opening bottom sheet', async () => {
@@ -93,9 +94,9 @@ describe('AttachmentQuickAction', () => {
             fireEvent.press(button);
 
             await waitFor(() => {
-                // closeInputAccessoryView should be called before openAsBottomSheet
+                // closeInputAccessoryView should be called before openAttachmentOptions
                 expect(mockCloseInputAccessoryView).toHaveBeenCalledTimes(1);
-                expect(mockOpenAsBottomSheet).toHaveBeenCalledTimes(1);
+                expect(mockOpenAttachmentOptions).toHaveBeenCalledTimes(1);
             });
         });
 
@@ -109,13 +110,13 @@ describe('AttachmentQuickAction', () => {
 
             await waitFor(() => {
                 expect(mockKeyboardControllerDismiss).toHaveBeenCalledTimes(1);
-                expect(mockOpenAsBottomSheet).toHaveBeenCalledTimes(1);
+                expect(mockOpenAttachmentOptions).toHaveBeenCalledTimes(1);
             });
         });
     });
 
     describe('bottom sheet opening', () => {
-        it('should open bottom sheet with correct screen', async () => {
+        it('should call openAttachmentOptions with intl, theme, and props', async () => {
             const {getByTestId} = renderWithIntlAndTheme(
                 <AttachmentQuickAction {...baseProps}/>,
             );
@@ -124,32 +125,23 @@ describe('AttachmentQuickAction', () => {
             fireEvent.press(button);
 
             await waitFor(() => {
-                expect(mockOpenAsBottomSheet).toHaveBeenCalledWith(
+                expect(mockOpenAttachmentOptions).toHaveBeenCalledTimes(1);
+                expect(mockOpenAttachmentOptions).toHaveBeenCalledWith(
+                    expect.any(Object), // intl
+                    expect.any(Object), // theme
                     expect.objectContaining({
-                        screen: Screens.ATTACHMENT_OPTIONS,
+                        onUploadFiles: baseProps.onUploadFiles,
+                        maxFilesReached: false,
+                        canUploadFiles: true,
+                        testID: 'test-attachment',
+                        fileCount: 0,
+                        maxFileCount: 10,
                     }),
                 );
             });
         });
 
-        it('should open bottom sheet with correct close button ID', async () => {
-            const {getByTestId} = renderWithIntlAndTheme(
-                <AttachmentQuickAction {...baseProps}/>,
-            );
-
-            const button = getByTestId('test-attachment');
-            fireEvent.press(button);
-
-            await waitFor(() => {
-                expect(mockOpenAsBottomSheet).toHaveBeenCalledWith(
-                    expect.objectContaining({
-                        closeButtonId: 'attachment-close-id',
-                    }),
-                );
-            });
-        });
-
-        it('should pass correct props to bottom sheet', async () => {
+        it('should pass correct props to openAttachmentOptions', async () => {
             const onUploadFiles = jest.fn();
             const {getByTestId} = renderWithIntlAndTheme(
                 <AttachmentQuickAction
@@ -167,16 +159,16 @@ describe('AttachmentQuickAction', () => {
             fireEvent.press(button);
 
             await waitFor(() => {
-                expect(mockOpenAsBottomSheet).toHaveBeenCalledWith(
+                expect(mockOpenAttachmentOptions).toHaveBeenCalledWith(
+                    expect.any(Object), // intl
+                    expect.any(Object), // theme
                     expect.objectContaining({
-                        props: expect.objectContaining({
-                            onUploadFiles,
-                            fileCount: 5,
-                            maxFilesReached: false,
-                            canUploadFiles: true,
-                            testID: 'custom-test-id',
-                            maxFileCount: 10,
-                        }),
+                        onUploadFiles,
+                        fileCount: 5,
+                        maxFilesReached: false,
+                        canUploadFiles: true,
+                        testID: 'custom-test-id',
+                        maxFileCount: 10,
                     }),
                 );
             });
@@ -193,11 +185,11 @@ describe('AttachmentQuickAction', () => {
             const button = getByTestId('test-attachment.disabled');
             fireEvent.press(button);
 
-            // When disabled, bottom sheet should not open
-            expect(mockOpenAsBottomSheet).not.toHaveBeenCalled();
+            // When disabled, openAttachmentOptions should not be called
+            expect(mockOpenAttachmentOptions).not.toHaveBeenCalled();
         });
 
-        it('should pass correct title to bottom sheet', async () => {
+        it('should pass intl and theme to openAttachmentOptions', async () => {
             const {getByTestId} = renderWithIntlAndTheme(
                 <AttachmentQuickAction {...baseProps}/>,
             );
@@ -206,27 +198,14 @@ describe('AttachmentQuickAction', () => {
             fireEvent.press(button);
 
             await waitFor(() => {
-                expect(mockOpenAsBottomSheet).toHaveBeenCalledWith(
+                expect(mockOpenAttachmentOptions).toHaveBeenCalledWith(
                     expect.objectContaining({
-                        title: 'Files and media',
-                    }),
-                );
-            });
-        });
-
-        it('should pass theme to bottom sheet', async () => {
-            const {getByTestId} = renderWithIntlAndTheme(
-                <AttachmentQuickAction {...baseProps}/>,
-            );
-
-            const button = getByTestId('test-attachment');
-            fireEvent.press(button);
-
-            await waitFor(() => {
-                expect(mockOpenAsBottomSheet).toHaveBeenCalledWith(
+                        formatMessage: expect.any(Function),
+                    }), // intl
                     expect.objectContaining({
-                        theme: expect.any(Object),
-                    }),
+                        centerChannelColor: expect.anything(),
+                    }), // theme
+                    expect.any(Object), // props
                 );
             });
         });
@@ -245,11 +224,11 @@ describe('AttachmentQuickAction', () => {
             fireEvent.press(button);
 
             await waitFor(() => {
-                expect(mockOpenAsBottomSheet).toHaveBeenCalledWith(
+                expect(mockOpenAttachmentOptions).toHaveBeenCalledWith(
+                    expect.any(Object), // intl
+                    expect.any(Object), // theme
                     expect.objectContaining({
-                        props: expect.objectContaining({
-                            fileCount: 3,
-                        }),
+                        fileCount: 3,
                     }),
                 );
             });
@@ -267,11 +246,11 @@ describe('AttachmentQuickAction', () => {
             fireEvent.press(button);
 
             await waitFor(() => {
-                expect(mockOpenAsBottomSheet).toHaveBeenCalledWith(
+                expect(mockOpenAttachmentOptions).toHaveBeenCalledWith(
+                    expect.any(Object), // intl
+                    expect.any(Object), // theme
                     expect.objectContaining({
-                        props: expect.objectContaining({
-                            maxFilesReached: true,
-                        }),
+                        maxFilesReached: true,
                     }),
                 );
             });
@@ -289,11 +268,11 @@ describe('AttachmentQuickAction', () => {
             fireEvent.press(button);
 
             await waitFor(() => {
-                expect(mockOpenAsBottomSheet).toHaveBeenCalledWith(
+                expect(mockOpenAttachmentOptions).toHaveBeenCalledWith(
+                    expect.any(Object), // intl
+                    expect.any(Object), // theme
                     expect.objectContaining({
-                        props: expect.objectContaining({
-                            maxFileCount: 20,
-                        }),
+                        maxFileCount: 20,
                     }),
                 );
             });
@@ -313,11 +292,11 @@ describe('AttachmentQuickAction', () => {
             fireEvent.press(button);
 
             await waitFor(() => {
-                expect(mockOpenAsBottomSheet).toHaveBeenCalledWith(
+                expect(mockOpenAttachmentOptions).toHaveBeenCalledWith(
+                    expect.any(Object), // intl
+                    expect.any(Object), // theme
                     expect.objectContaining({
-                        props: expect.objectContaining({
-                            fileCount: 0,
-                        }),
+                        fileCount: 0,
                     }),
                 );
             });
