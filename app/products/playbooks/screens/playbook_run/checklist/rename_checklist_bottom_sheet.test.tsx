@@ -19,14 +19,6 @@ jest.mock('@screens/navigation', () => ({
     setButtons: jest.fn(),
 }));
 
-jest.mock('react-native', () => {
-    const RN = jest.requireActual('react-native');
-    RN.Keyboard = {
-        dismiss: jest.fn(),
-    };
-    return RN;
-});
-
 jest.mock('@hooks/navigation_button_pressed', () => jest.fn());
 jest.mock('@hooks/android_back_handler', () => jest.fn());
 jest.mock('@managers/security_manager', () => ({
@@ -135,7 +127,7 @@ describe('RenameChecklistBottomSheet', () => {
 
     it('should enable save button when title has content and is different from currentTitle', () => {
         const props = getBaseProps();
-        const {getByTestId, rerender} = renderWithIntlAndTheme(<RenameChecklistBottomSheet {...props}/>);
+        const {getByTestId} = renderWithIntlAndTheme(<RenameChecklistBottomSheet {...props}/>);
 
         const input = getByTestId('playbooks.checklist.rename.input');
 
@@ -146,9 +138,6 @@ describe('RenameChecklistBottomSheet', () => {
         act(() => {
             fireEvent.changeText(input, 'New Checklist Title');
         });
-
-        // Re-render to trigger useEffect
-        rerender(<RenameChecklistBottomSheet {...props}/>);
 
         // Button should be enabled now
         const updatedButton = {
@@ -162,7 +151,7 @@ describe('RenameChecklistBottomSheet', () => {
 
     it('should disable save button when title is same as currentTitle', () => {
         const props = getBaseProps();
-        const {getByTestId, rerender} = renderWithIntlAndTheme(<RenameChecklistBottomSheet {...props}/>);
+        const {getByTestId} = renderWithIntlAndTheme(<RenameChecklistBottomSheet {...props}/>);
 
         const input = getByTestId('playbooks.checklist.rename.input');
 
@@ -170,7 +159,6 @@ describe('RenameChecklistBottomSheet', () => {
         act(() => {
             fireEvent.changeText(input, 'Different Title');
         });
-        rerender(<RenameChecklistBottomSheet {...props}/>);
 
         // Button should be enabled
         const enabledButton = {
@@ -185,7 +173,6 @@ describe('RenameChecklistBottomSheet', () => {
         act(() => {
             fireEvent.changeText(input, currentTitle);
         });
-        rerender(<RenameChecklistBottomSheet {...props}/>);
 
         // Button should be disabled
         const disabledButton = {
@@ -199,7 +186,7 @@ describe('RenameChecklistBottomSheet', () => {
 
     it('should disable save button when title is empty', () => {
         const props = getBaseProps();
-        const {getByTestId, rerender} = renderWithIntlAndTheme(<RenameChecklistBottomSheet {...props}/>);
+        const {getByTestId} = renderWithIntlAndTheme(<RenameChecklistBottomSheet {...props}/>);
 
         const input = getByTestId('playbooks.checklist.rename.input');
 
@@ -207,7 +194,6 @@ describe('RenameChecklistBottomSheet', () => {
         act(() => {
             fireEvent.changeText(input, 'Different Title');
         });
-        rerender(<RenameChecklistBottomSheet {...props}/>);
 
         // Button should be enabled to ensure there are no race conditions passing as good
         const checkButton = {
@@ -222,7 +208,6 @@ describe('RenameChecklistBottomSheet', () => {
         act(() => {
             fireEvent.changeText(input, '');
         });
-        rerender(<RenameChecklistBottomSheet {...props}/>);
 
         // Button should be disabled
         const updatedButton = {
@@ -236,7 +221,7 @@ describe('RenameChecklistBottomSheet', () => {
 
     it('should disable save button when title is only whitespace', () => {
         const props = getBaseProps();
-        const {getByTestId, rerender} = renderWithIntlAndTheme(<RenameChecklistBottomSheet {...props}/>);
+        const {getByTestId} = renderWithIntlAndTheme(<RenameChecklistBottomSheet {...props}/>);
 
         const input = getByTestId('playbooks.checklist.rename.input');
 
@@ -244,7 +229,6 @@ describe('RenameChecklistBottomSheet', () => {
         act(() => {
             fireEvent.changeText(input, '   ');
         });
-        rerender(<RenameChecklistBottomSheet {...props}/>);
 
         // Button should be disabled
         const updatedButton = {
@@ -318,7 +302,7 @@ describe('RenameChecklistBottomSheet', () => {
 
     it('should update navigation button when canSave changes', () => {
         const props = getBaseProps();
-        const {getByTestId, rerender} = renderWithIntlAndTheme(<RenameChecklistBottomSheet {...props}/>);
+        const {getByTestId} = renderWithIntlAndTheme(<RenameChecklistBottomSheet {...props}/>);
 
         const input = getByTestId('playbooks.checklist.rename.input');
 
@@ -331,7 +315,6 @@ describe('RenameChecklistBottomSheet', () => {
         act(() => {
             fireEvent.changeText(input, 'Different Title');
         });
-        rerender(<RenameChecklistBottomSheet {...props}/>);
 
         // Should update with enabled button
         expect(setButtons).toHaveBeenLastCalledWith(componentId, {

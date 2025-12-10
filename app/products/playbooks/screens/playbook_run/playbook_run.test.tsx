@@ -491,7 +491,7 @@ describe('PlaybookRun', () => {
             summary: 'Test summary',
             channel_id: 'api-channel-id-456',
         });
-        props.playbookRun = apiRun as unknown as PlaybookRunModel;
+        props.playbookRun = apiRun;
         const {getByTestId} = renderWithEverything(<PlaybookRun {...props}/>, {database});
 
         const checklistList = getByTestId('checklist-list');
@@ -530,7 +530,7 @@ describe('PlaybookRun', () => {
             name: 'Test Playbook Run',
             summary: 'Test summary',
         });
-        props.playbookRun = apiRun as unknown as PlaybookRunModel;
+        props.playbookRun = apiRun;
         const {getByTestId} = renderWithEverything(<PlaybookRun {...props}/>, {database});
 
         const outOfDateHeader = getByTestId('out-of-date-header');

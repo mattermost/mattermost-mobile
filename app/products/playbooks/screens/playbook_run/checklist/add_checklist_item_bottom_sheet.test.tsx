@@ -11,6 +11,7 @@ import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import SecurityManager from '@managers/security_manager';
 import {buildNavigationButton, popTopScreen, setButtons} from '@screens/navigation';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
+import {getLastCall, getLastCallForButton} from '@test/mock_helpers';
 
 import AddChecklistItemBottomSheet from './add_checklist_item_bottom_sheet';
 
@@ -47,17 +48,6 @@ describe('AddChecklistItemBottomSheet', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         jest.mocked(buildNavigationButton).mockReturnValue(mockRightButton as any);
-        jest.mocked(useNavButtonPressed).mockImplementation((buttonId, compId, callback) => {
-            // Simulate button press when buttonId matches
-            if (buttonId === 'add-checklist-item' && compId === componentId) {
-                // Store callback for manual triggering in tests
-                (useNavButtonPressed as any).lastCallback = callback;
-            }
-        });
-        jest.mocked(useAndroidHardwareBackHandler).mockImplementation((compId, callback) => {
-            // Store callback for manual triggering in tests
-            (useAndroidHardwareBackHandler as any).lastCallback = callback;
-        });
     });
 
     function getBaseProps() {
@@ -134,7 +124,7 @@ describe('AddChecklistItemBottomSheet', () => {
 
     it('should enable save button when title has content', () => {
         const props = getBaseProps();
-        const {getByTestId, rerender} = renderWithIntlAndTheme(<AddChecklistItemBottomSheet {...props}/>);
+        const {getByTestId} = renderWithIntlAndTheme(<AddChecklistItemBottomSheet {...props}/>);
 
         const input = getByTestId('playbooks.checklist_item.add.input');
 
@@ -145,9 +135,6 @@ describe('AddChecklistItemBottomSheet', () => {
         act(() => {
             fireEvent.changeText(input, 'Task Title');
         });
-
-        // Re-render to trigger useEffect
-        rerender(<AddChecklistItemBottomSheet {...props}/>);
 
         // Button should be enabled now
         const updatedButton = {
@@ -161,7 +148,7 @@ describe('AddChecklistItemBottomSheet', () => {
 
     it('should disable save button when title is empty', () => {
         const props = getBaseProps();
-        const {getByTestId, rerender} = renderWithIntlAndTheme(<AddChecklistItemBottomSheet {...props}/>);
+        const {getByTestId} = renderWithIntlAndTheme(<AddChecklistItemBottomSheet {...props}/>);
 
         const input = getByTestId('playbooks.checklist_item.add.input');
 
@@ -169,7 +156,6 @@ describe('AddChecklistItemBottomSheet', () => {
         act(() => {
             fireEvent.changeText(input, 'Task Title');
         });
-        rerender(<AddChecklistItemBottomSheet {...props}/>);
 
         // Button should be enabled now, covered by previous test, but needed to check otherwise there could be a race condition
         const checkButton = {
@@ -184,7 +170,6 @@ describe('AddChecklistItemBottomSheet', () => {
         act(() => {
             fireEvent.changeText(input, '');
         });
-        rerender(<AddChecklistItemBottomSheet {...props}/>);
 
         // Button should be disabled
         const updatedButton = {
@@ -198,7 +183,7 @@ describe('AddChecklistItemBottomSheet', () => {
 
     it('should disable save button when title is only whitespace', () => {
         const props = getBaseProps();
-        const {getByTestId, rerender} = renderWithIntlAndTheme(<AddChecklistItemBottomSheet {...props}/>);
+        const {getByTestId} = renderWithIntlAndTheme(<AddChecklistItemBottomSheet {...props}/>);
 
         const input = getByTestId('playbooks.checklist_item.add.input');
 
@@ -206,7 +191,6 @@ describe('AddChecklistItemBottomSheet', () => {
         act(() => {
             fireEvent.changeText(input, '   ');
         });
-        rerender(<AddChecklistItemBottomSheet {...props}/>);
 
         // Button should be disabled
         const updatedButton = {
@@ -231,7 +215,8 @@ describe('AddChecklistItemBottomSheet', () => {
         });
 
         // Trigger save button press
-        const saveCallback = (useNavButtonPressed as any).lastCallback;
+        const lastCall = getLastCallForButton(jest.mocked(useNavButtonPressed), 'add-checklist-item');
+        const saveCallback = lastCall[2];
         act(() => {
             saveCallback();
         });
@@ -254,7 +239,8 @@ describe('AddChecklistItemBottomSheet', () => {
         });
 
         // Trigger save button press
-        const saveCallback = (useNavButtonPressed as any).lastCallback;
+        const lastCall = getLastCallForButton(jest.mocked(useNavButtonPressed), 'add-checklist-item');
+        const saveCallback = lastCall[2];
         act(() => {
             saveCallback();
         });
@@ -268,7 +254,10 @@ describe('AddChecklistItemBottomSheet', () => {
         renderWithIntlAndTheme(<AddChecklistItemBottomSheet {...props}/>);
 
         // Trigger save button press without setting title
-        const saveCallback = (useNavButtonPressed as any).lastCallback;
+        const lastCall = getLastCallForButton(jest.mocked(useNavButtonPressed), 'add-checklist-item');
+        expect(lastCall).toBeDefined();
+        const saveCallback = lastCall[2];
+        expect(saveCallback).toBeDefined();
         act(() => {
             saveCallback();
         });
@@ -289,7 +278,8 @@ describe('AddChecklistItemBottomSheet', () => {
         });
 
         // Trigger save button press
-        const saveCallback = (useNavButtonPressed as any).lastCallback;
+        const lastCall = getLastCallForButton(jest.mocked(useNavButtonPressed), 'add-checklist-item');
+        const saveCallback = lastCall[2];
         act(() => {
             saveCallback();
         });
@@ -303,7 +293,8 @@ describe('AddChecklistItemBottomSheet', () => {
         renderWithIntlAndTheme(<AddChecklistItemBottomSheet {...props}/>);
 
         // Trigger back handler
-        const backCallback = (useAndroidHardwareBackHandler as any).lastCallback;
+        const lastCall = getLastCall(jest.mocked(useAndroidHardwareBackHandler));
+        const backCallback = lastCall[1];
         act(() => {
             backCallback();
         });
@@ -327,7 +318,7 @@ describe('AddChecklistItemBottomSheet', () => {
 
     it('should update navigation button when canSave changes', () => {
         const props = getBaseProps();
-        const {getByTestId, rerender} = renderWithIntlAndTheme(<AddChecklistItemBottomSheet {...props}/>);
+        const {getByTestId} = renderWithIntlAndTheme(<AddChecklistItemBottomSheet {...props}/>);
 
         const input = getByTestId('playbooks.checklist_item.add.input');
 
@@ -340,7 +331,6 @@ describe('AddChecklistItemBottomSheet', () => {
         act(() => {
             fireEvent.changeText(input, 'Task');
         });
-        rerender(<AddChecklistItemBottomSheet {...props}/>);
 
         // Should update with enabled button
         expect(setButtons).toHaveBeenLastCalledWith(componentId, {

@@ -16,6 +16,7 @@ import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {fetchPlaybookRun, fetchPlaybookRunMetadata, postStatusUpdate} from '@playbooks/actions/remote/runs';
 import {popTopScreen, setButtons} from '@screens/navigation';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
+import {getLastCall} from '@test/mock_helpers';
 import TestHelper from '@test/test_helper';
 
 import PostUpdate from './post_update';
@@ -78,11 +79,6 @@ jest.mock('react-native', () => {
         },
     };
 });
-
-function getLastCall<T, U extends any[], V>(mock: jest.Mock<T, U, V>): U {
-    const allCalls = mock.mock.calls;
-    return allCalls[allCalls.length - 1];
-}
 
 describe('PostUpdate', () => {
     function getBaseProps(): ComponentProps<typeof PostUpdate> {

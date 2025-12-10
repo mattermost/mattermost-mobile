@@ -6,7 +6,6 @@ import React, {type ComponentProps} from 'react';
 
 import Button from '@components/button';
 import {useServerUrl} from '@context/server';
-import {useTheme} from '@context/theme';
 import {addChecklistItem} from '@playbooks/actions/remote/checklist';
 import ProgressBar from '@playbooks/components/progress_bar';
 import {goToRenameChecklist, goToAddChecklistItem} from '@playbooks/screens/navigation';
@@ -19,16 +18,9 @@ import Checklist from './checklist';
 import ChecklistItem from './checklist_item';
 
 const serverUrl = 'test-server-url';
-const mockTheme = {
-    centerChannelColor: '#000000',
-    centerChannelBg: '#ffffff',
-};
 
 jest.mock('@context/server');
 jest.mocked(useServerUrl).mockReturnValue(serverUrl);
-
-jest.mock('@context/theme');
-jest.mocked(useTheme).mockReturnValue(mockTheme as ReturnType<typeof useTheme>);
 
 jest.mock('@components/compass_icon', () => 'CompassIcon');
 
@@ -62,10 +54,6 @@ jest.mock('@playbooks/actions/remote/checklist', () => ({
 
 jest.mock('@utils/snack_bar', () => ({
     showPlaybookErrorSnackbar: jest.fn(),
-}));
-
-jest.mock('@utils/log', () => ({
-    logError: jest.fn(),
 }));
 
 describe('Checklist', () => {
