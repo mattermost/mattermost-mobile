@@ -16,6 +16,7 @@ type Props = {
     isPostPriorityEnabled: boolean;
     canShowPostPriority?: boolean;
     canShowSlashCommands?: boolean;
+    canShowEmojiPicker?: boolean;
     maxFileCount: number;
 
     // Draft Handler
@@ -46,6 +47,7 @@ export default function QuickActions({
     isPostPriorityEnabled,
     canShowSlashCommands = true,
     canShowPostPriority,
+    canShowEmojiPicker = true,
     maxFileCount,
     updateValue,
     addFiles,
@@ -95,9 +97,11 @@ export default function QuickActions({
                     focus={focus}
                 />
             )}
-            <EmojiAction
-                testID={emojiActionTestID}
-            />
+            {canShowEmojiPicker && (
+                <EmojiAction
+                    testID={emojiActionTestID}
+                />
+            )}
             {isPostPriorityEnabled && canShowPostPriority && (
                 <PostPriorityAction
                     testID={postPriorityActionTestID}
