@@ -5,7 +5,8 @@ import {fetchAIBots, getBotDirectChannel, type LLMBot} from '@agents/actions/rem
 import {goToAgentThreadsList} from '@agents/screens/navigation';
 import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {type LayoutChangeEvent, View, Text, TouchableOpacity, ActivityIndicator, ScrollView, Image} from 'react-native';
+import {type LayoutChangeEvent, View, Text, TouchableOpacity, ActivityIndicator, ScrollView} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {buildAbsoluteUrl} from '@actions/remote/file';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
@@ -34,40 +35,62 @@ type Props = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         flex: 1,
-        backgroundColor: theme.centerChannelBg,
+        backgroundColor: theme.sidebarBg,
     },
-    header: {
+    headerContainer: {
+        backgroundColor: theme.sidebarBg,
+    },
+    headerContent: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 16,
-        paddingVertical: 12,
-        borderBottomWidth: 1,
-        borderBottomColor: changeOpacity(theme.centerChannelColor, 0.16),
-        backgroundColor: theme.centerChannelBg,
+        height: 52,
+        paddingHorizontal: 8,
     },
-    threadListButton: {
-        padding: 8,
-        marginRight: 12,
-    },
-    botSelectorButton: {
-        flex: 1,
+    headerLeft: {
+        width: 100,
         flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: 8,
-        paddingHorizontal: 12,
-        backgroundColor: changeOpacity(theme.buttonBg, 0.08),
-        borderRadius: 4,
+        paddingHorizontal: 8,
     },
-    botAvatar: {
-        width: 20,
-        height: 20,
-        borderRadius: 10,
-        marginRight: 8,
+    headerIconButton: {
+        padding: 10,
     },
-    botSelectorText: {
+    headerCenter: {
         flex: 1,
-        fontSize: 16,
-        color: theme.centerChannelColor,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    headerTitle: {
+        color: theme.sidebarText,
+        fontFamily: 'Metropolis-SemiBold',
+        fontSize: 18,
+        lineHeight: 24,
+    },
+    headerSubtitle: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 2,
+    },
+    headerSubtitleText: {
+        color: changeOpacity(theme.sidebarText, 0.72),
+        fontFamily: 'OpenSans',
+        fontSize: 12,
+        lineHeight: 16,
+    },
+    headerRight: {
+        width: 100,
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        paddingHorizontal: 8,
+        gap: 4,
+    },
+    mainContent: {
+        flex: 1,
+        backgroundColor: theme.centerChannelBg,
+        borderTopLeftRadius: 12,
+        borderTopRightRadius: 12,
+        overflow: 'hidden',
     },
     content: {
         flex: 1,
@@ -88,6 +111,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
+        backgroundColor: theme.centerChannelBg,
     },
     errorText: {
         fontSize: 14,
@@ -104,6 +128,7 @@ const AgentChat = ({
     const intl = useIntl();
     const theme = useTheme();
     const serverUrl = useServerUrl();
+    const insets = useSafeAreaInsets();
     const styles = getStyleSheet(theme);
 
     const [bots, setBots] = useState<LLMBot[]>([]);
@@ -175,7 +200,7 @@ const AgentChat = ({
 
     useAndroidHardwareBackHandler(componentId, exit);
 
-    const handleThreadListPress = useCallback(() => {
+    const handleHistoryPress = useCallback(() => {
         goToAgentThreadsList(intl);
     }, [intl]);
 
@@ -238,11 +263,13 @@ const AgentChat = ({
 
     if (loading) {
         return (
-            <View style={styles.loadingContainer}>
-                <ActivityIndicator
-                    size='large'
-                    color={theme.buttonBg}
-                />
+            <View style={[styles.container, {paddingTop: insets.top}]}>
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator
+                        size='large'
+                        color={theme.buttonBg}
+                    />
+                </View>
             </View>
         );
     }
@@ -252,84 +279,105 @@ const AgentChat = ({
             style={styles.container}
             onLayout={onLayout}
         >
-            <View style={styles.header}>
-                <TouchableOpacity
-                    onPress={handleThreadListPress}
-                    style={styles.threadListButton}
-                    testID='agent_chat.thread_list_button'
-                >
-                    <CompassIcon
-                        name='format-list-bulleted'
-                        size={24}
-                        color={theme.centerChannelColor}
-                    />
-                </TouchableOpacity>
+            {/* Header */}
+            <View style={[styles.headerContainer, {paddingTop: insets.top}]}>
+                <View style={styles.headerContent}>
+                    {/* Left - Back button */}
+                    <View style={styles.headerLeft}>
+                        <TouchableOpacity
+                            onPress={exit}
+                            style={styles.headerIconButton}
+                            testID='agent_chat.back_button'
+                        >
+                            <CompassIcon
+                                name='arrow-left'
+                                size={20}
+                                color={changeOpacity(theme.sidebarText, 0.56)}
+                            />
+                        </TouchableOpacity>
+                    </View>
 
-                <TouchableOpacity
-                    onPress={handleBotSelectorPress}
-                    style={styles.botSelectorButton}
-                    disabled={bots.length <= 1}
-                    testID='agent_chat.bot_selector'
-                >
-                    {selectedBot && (
-                        <Image
-                            source={{
-                                uri: buildAbsoluteUrl(
-                                    serverUrl,
-                                    buildProfileImageUrl(serverUrl, selectedBot.id, selectedBot.lastIconUpdate),
-                                ),
-                            }}
-                            style={styles.botAvatar}
-                            testID='agent_chat.bot_selector.avatar'
-                        />
-                    )}
-                    <Text style={styles.botSelectorText}>
-                        {selectedBot?.displayName || intl.formatMessage({
-                            id: 'agents.chat.select_agent',
-                            defaultMessage: 'Select an agent',
-                        })}
-                    </Text>
-                    {bots.length > 1 && (
-                        <CompassIcon
-                            name='chevron-down'
-                            size={18}
-                            color={theme.centerChannelColor}
-                        />
-                    )}
-                </TouchableOpacity>
+                    {/* Center - Title and bot selector */}
+                    <TouchableOpacity
+                        onPress={handleBotSelectorPress}
+                        style={styles.headerCenter}
+                        disabled={bots.length <= 1}
+                        testID='agent_chat.bot_selector'
+                    >
+                        <Text style={styles.headerTitle}>
+                            {intl.formatMessage({
+                                id: 'agents.chat.title',
+                                defaultMessage: 'Agents',
+                            })}
+                        </Text>
+                        <View style={styles.headerSubtitle}>
+                            <Text style={styles.headerSubtitleText}>
+                                {selectedBot?.displayName || intl.formatMessage({
+                                    id: 'agents.chat.select_agent',
+                                    defaultMessage: 'Select an agent',
+                                })}
+                            </Text>
+                            {bots.length > 1 && (
+                                <CompassIcon
+                                    name='chevron-down'
+                                    size={12}
+                                    color={changeOpacity(theme.sidebarText, 0.72)}
+                                />
+                            )}
+                        </View>
+                    </TouchableOpacity>
+
+                    {/* Right - History icon */}
+                    <View style={styles.headerRight}>
+                        <TouchableOpacity
+                            onPress={handleHistoryPress}
+                            style={styles.headerIconButton}
+                            testID='agent_chat.history_button'
+                        >
+                            <CompassIcon
+                                name='clock-outline'
+                                size={20}
+                                color={theme.sidebarText}
+                            />
+                        </TouchableOpacity>
+                    </View>
+                </View>
             </View>
 
-            <ScrollView
-                style={styles.content}
-                contentContainerStyle={{flexGrow: 1}}
-            >
-                <Text style={styles.welcomeText}>
-                    {intl.formatMessage({
-                        id: 'agents.chat.welcome',
-                        defaultMessage: 'Start a conversation with an agent',
-                    })}
-                </Text>
-                <Text style={styles.descriptionText}>
-                    {intl.formatMessage({
-                        id: 'agents.chat.description',
-                        defaultMessage: 'Type a message below to start a new conversation. You can view your past conversations by tapping the list icon above.',
-                    })}
-                </Text>
-                {error && <Text style={styles.errorText}>{error}</Text>}
-            </ScrollView>
+            {/* Main content */}
+            <View style={styles.mainContent}>
+                <ScrollView
+                    style={styles.content}
+                    contentContainerStyle={{flexGrow: 1}}
+                >
+                    <Text style={styles.welcomeText}>
+                        {intl.formatMessage({
+                            id: 'agents.chat.welcome',
+                            defaultMessage: 'Start a conversation with an agent',
+                        })}
+                    </Text>
+                    <Text style={styles.descriptionText}>
+                        {intl.formatMessage({
+                            id: 'agents.chat.description',
+                            defaultMessage: 'Type a message below to start a new conversation. You can view your past conversations by tapping the history icon above.',
+                        })}
+                    </Text>
+                    {error && <Text style={styles.errorText}>{error}</Text>}
+                </ScrollView>
 
-            {channelId && (
-                <ExtraKeyboardProvider>
-                    <PostDraft
-                        channelId={channelId}
-                        testID='agent_chat.post_draft'
-                        containerHeight={containerHeight}
-                        isChannelScreen={false}
-                        location={Screens.AGENT_CHAT}
-                        onPostCreated={handlePostCreated}
-                    />
-                </ExtraKeyboardProvider>
-            )}
+                {channelId && (
+                    <ExtraKeyboardProvider>
+                        <PostDraft
+                            channelId={channelId}
+                            testID='agent_chat.post_draft'
+                            containerHeight={containerHeight}
+                            isChannelScreen={false}
+                            location={Screens.AGENT_CHAT}
+                            onPostCreated={handlePostCreated}
+                        />
+                    </ExtraKeyboardProvider>
+                )}
+            </View>
         </View>
     );
 };

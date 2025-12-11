@@ -1,11 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {fetchAIBots, type LLMBot} from '@agents/actions/remote/bots';
 import {fetchAIThreads} from '@agents/actions/remote/threads';
+import {goToAgentChat} from '@agents/screens/navigation';
 import {FlashList, type ListRenderItem} from '@shopify/flash-list';
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View, Text, TouchableOpacity, RefreshControl, ActivityIndicator} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import CompassIcon from '@components/compass_icon';
@@ -28,12 +31,56 @@ const THREAD_ITEM_HEIGHT = 88;
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         flex: 1,
+        backgroundColor: theme.sidebarBg,
+    },
+    headerContainer: {
+        backgroundColor: theme.sidebarBg,
+    },
+    headerContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        height: 52,
+        paddingHorizontal: 8,
+    },
+    headerLeft: {
+        width: 100,
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 8,
+    },
+    headerIconButton: {
+        padding: 10,
+    },
+    headerCenter: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    headerTitle: {
+        color: theme.sidebarText,
+        fontFamily: 'Metropolis-SemiBold',
+        fontSize: 18,
+        lineHeight: 24,
+    },
+    headerRight: {
+        width: 100,
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        paddingHorizontal: 8,
+    },
+    mainContent: {
+        flex: 1,
         backgroundColor: theme.centerChannelBg,
+        borderTopLeftRadius: 12,
+        borderTopRightRadius: 12,
+        overflow: 'hidden',
     },
     loadingContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
+        backgroundColor: theme.centerChannelBg,
     },
     emptyContainer: {
         flex: 1,
@@ -59,18 +106,20 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     threadItem: {
         flexDirection: 'row',
-        padding: 16,
+        paddingLeft: 26,
+        paddingRight: 20,
+        paddingVertical: 16,
         backgroundColor: theme.centerChannelBg,
         borderBottomWidth: 1,
         borderBottomColor: changeOpacity(theme.centerChannelColor, 0.08),
     },
     threadContent: {
         flex: 1,
+        gap: 6,
     },
     threadHeader: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 4,
     },
     threadTitle: {
         flex: 1,
@@ -79,22 +128,39 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: theme.centerChannelColor,
     },
     threadTimestamp: {
-        fontSize: 12,
+        fontSize: 11,
         color: changeOpacity(theme.centerChannelColor, 0.64),
         marginLeft: 8,
     },
     threadPreview: {
-        fontSize: 14,
-        color: changeOpacity(theme.centerChannelColor, 0.72),
-        marginBottom: 4,
+        fontSize: 16,
+        color: theme.centerChannelColor,
+        lineHeight: 24,
     },
     threadMeta: {
         flexDirection: 'row',
         alignItems: 'center',
+        gap: 4,
     },
     threadReplyCount: {
         fontSize: 12,
+        fontWeight: '600',
         color: changeOpacity(theme.centerChannelColor, 0.64),
+        paddingHorizontal: 8,
+        paddingVertical: 4.5,
+    },
+    agentTag: {
+        backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
+        borderRadius: 4,
+        paddingHorizontal: 4,
+        paddingVertical: 2,
+    },
+    agentTagText: {
+        fontSize: 10,
+        fontWeight: '600',
+        color: theme.centerChannelColor,
+        textTransform: 'uppercase',
+        letterSpacing: 0.2,
     },
     errorText: {
         fontSize: 14,
@@ -102,7 +168,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         textAlign: 'center',
     },
     listContent: {
-        paddingVertical: 8,
+        paddingVertical: 0,
     },
 }));
 
@@ -112,12 +178,36 @@ const AgentThreadsList = ({
     const intl = useIntl();
     const theme = useTheme();
     const serverUrl = useServerUrl();
+    const insets = useSafeAreaInsets();
     const styles = getStyleSheet(theme);
 
     const [threads, setThreads] = useState<AIThread[]>([]);
+    const [bots, setBots] = useState<LLMBot[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    // Create a map of channel_id to bot display name
+    const botNameByChannelId = useMemo(() => {
+        const map: Record<string, string> = {};
+        for (const bot of bots) {
+            if (bot.dmChannelID) {
+                map[bot.dmChannelID] = bot.displayName;
+            }
+        }
+        return map;
+    }, [bots]);
+
+    // Fetch bots on mount for agent tags
+    useEffect(() => {
+        const loadBots = async () => {
+            const {bots: fetchedBots} = await fetchAIBots(serverUrl);
+            if (fetchedBots) {
+                setBots(fetchedBots);
+            }
+        };
+        loadBots();
+    }, [serverUrl]);
 
     const loadThreads = useCallback(async (isRefresh = false) => {
         if (isRefresh) {
@@ -164,6 +254,10 @@ const AgentThreadsList = ({
         loadThreads(true);
     }, [loadThreads]);
 
+    const handleNewChat = useCallback(() => {
+        goToAgentChat(intl);
+    }, [intl]);
+
     const handleThreadPress = useCallback(async (thread: AIThread) => {
         // Navigate to the thread
         await fetchAndSwitchToThread(serverUrl, thread.id, false);
@@ -209,7 +303,7 @@ const AgentThreadsList = ({
                             color={changeOpacity(theme.centerChannelColor, 0.64)}
                         />
                         <Text style={styles.threadReplyCount}>
-                            {` ${item.reply_count} ${item.reply_count === 1 ? intl.formatMessage({
+                            {`${item.reply_count} ${item.reply_count === 1 ? intl.formatMessage({
                                 id: 'agents.threads_list.reply',
                                 defaultMessage: 'reply',
                             }) : intl.formatMessage({
@@ -217,11 +311,18 @@ const AgentThreadsList = ({
                                 defaultMessage: 'replies',
                             })}`}
                         </Text>
+                        {botNameByChannelId[item.channel_id] && (
+                            <View style={styles.agentTag}>
+                                <Text style={styles.agentTagText}>
+                                    {botNameByChannelId[item.channel_id]}
+                                </Text>
+                            </View>
+                        )}
                     </View>
                 </View>
             </TouchableOpacity>
         );
-    }, [handleThreadPress, intl, styles, theme]);
+    }, [botNameByChannelId, handleThreadPress, intl, styles, theme]);
 
     const renderEmptyState = useCallback(() => {
         if (error) {
@@ -281,22 +382,70 @@ const AgentThreadsList = ({
 
     return (
         <View style={styles.container}>
-            <FlashList
-                data={threads}
-                renderItem={renderItem}
-                estimatedItemSize={THREAD_ITEM_HEIGHT}
-                contentContainerStyle={styles.listContent}
-                ListEmptyComponent={renderEmptyState}
-                refreshControl={
-                    <RefreshControl
-                        refreshing={refreshing}
-                        onRefresh={handleRefresh}
-                        colors={[theme.buttonBg]}
-                        tintColor={theme.buttonBg}
-                    />
-                }
-                testID='agent_threads_list.flat_list'
-            />
+            {/* Header */}
+            <View style={[styles.headerContainer, {paddingTop: insets.top}]}>
+                <View style={styles.headerContent}>
+                    {/* Left - Back button */}
+                    <View style={styles.headerLeft}>
+                        <TouchableOpacity
+                            onPress={exit}
+                            style={styles.headerIconButton}
+                            testID='agent_threads_list.back_button'
+                        >
+                            <CompassIcon
+                                name='arrow-left'
+                                size={20}
+                                color={changeOpacity(theme.sidebarText, 0.56)}
+                            />
+                        </TouchableOpacity>
+                    </View>
+
+                    {/* Center - Title */}
+                    <View style={styles.headerCenter}>
+                        <Text style={styles.headerTitle}>
+                            {intl.formatMessage({
+                                id: 'agents.threads_list.title',
+                                defaultMessage: 'Agent chat history',
+                            })}
+                        </Text>
+                    </View>
+
+                    {/* Right - New chat button */}
+                    <View style={styles.headerRight}>
+                        <TouchableOpacity
+                            onPress={handleNewChat}
+                            style={styles.headerIconButton}
+                            testID='agent_threads_list.new_chat_button'
+                        >
+                            <CompassIcon
+                                name='plus'
+                                size={20}
+                                color={theme.sidebarText}
+                            />
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </View>
+
+            {/* Main content */}
+            <View style={styles.mainContent}>
+                <FlashList
+                    data={threads}
+                    renderItem={renderItem}
+                    estimatedItemSize={THREAD_ITEM_HEIGHT}
+                    contentContainerStyle={styles.listContent}
+                    ListEmptyComponent={renderEmptyState}
+                    refreshControl={
+                        <RefreshControl
+                            refreshing={refreshing}
+                            onRefresh={handleRefresh}
+                            colors={[theme.buttonBg]}
+                            tintColor={theme.buttonBg}
+                        />
+                    }
+                    testID='agent_threads_list.flat_list'
+                />
+            </View>
         </View>
     );
 };
