@@ -135,7 +135,7 @@ describe('RenamePlaybookRunBottomSheet', () => {
 
     it('should enable save button when title has content and is different from currentTitle', () => {
         const props = getBaseProps();
-        const {getByTestId, rerender} = renderWithIntlAndTheme(<RenamePlaybookRunBottomSheet {...props}/>);
+        const {getByTestId} = renderWithIntlAndTheme(<RenamePlaybookRunBottomSheet {...props}/>);
 
         const input = getByTestId('playbooks.playbook_run.rename.input');
 
@@ -146,9 +146,6 @@ describe('RenamePlaybookRunBottomSheet', () => {
         act(() => {
             fireEvent.changeText(input, 'New Playbook Run Title');
         });
-
-        // Re-render to trigger useEffect
-        rerender(<RenamePlaybookRunBottomSheet {...props}/>);
 
         // Button should be enabled now
         const updatedButton = {
@@ -162,7 +159,7 @@ describe('RenamePlaybookRunBottomSheet', () => {
 
     it('should disable save button when title is same as currentTitle', () => {
         const props = getBaseProps();
-        const {getByTestId, rerender} = renderWithIntlAndTheme(<RenamePlaybookRunBottomSheet {...props}/>);
+        const {getByTestId} = renderWithIntlAndTheme(<RenamePlaybookRunBottomSheet {...props}/>);
 
         const input = getByTestId('playbooks.playbook_run.rename.input');
 
@@ -170,7 +167,6 @@ describe('RenamePlaybookRunBottomSheet', () => {
         act(() => {
             fireEvent.changeText(input, 'Different Title');
         });
-        rerender(<RenamePlaybookRunBottomSheet {...props}/>);
 
         // Button should be enabled
         const enabledButton = {
@@ -185,7 +181,6 @@ describe('RenamePlaybookRunBottomSheet', () => {
         act(() => {
             fireEvent.changeText(input, currentTitle);
         });
-        rerender(<RenamePlaybookRunBottomSheet {...props}/>);
 
         // Button should be disabled
         const disabledButton = {
@@ -199,7 +194,7 @@ describe('RenamePlaybookRunBottomSheet', () => {
 
     it('should disable save button when title is empty', () => {
         const props = getBaseProps();
-        const {getByTestId, rerender} = renderWithIntlAndTheme(<RenamePlaybookRunBottomSheet {...props}/>);
+        const {getByTestId} = renderWithIntlAndTheme(<RenamePlaybookRunBottomSheet {...props}/>);
 
         const input = getByTestId('playbooks.playbook_run.rename.input');
 
@@ -207,7 +202,6 @@ describe('RenamePlaybookRunBottomSheet', () => {
         act(() => {
             fireEvent.changeText(input, 'Different Title');
         });
-        rerender(<RenamePlaybookRunBottomSheet {...props}/>);
 
         // Button should be enabled to ensure there are no race conditions passing as good
         const checkButton = {
@@ -222,7 +216,6 @@ describe('RenamePlaybookRunBottomSheet', () => {
         act(() => {
             fireEvent.changeText(input, '');
         });
-        rerender(<RenamePlaybookRunBottomSheet {...props}/>);
 
         // Button should be disabled
         const updatedButton = {
@@ -236,7 +229,7 @@ describe('RenamePlaybookRunBottomSheet', () => {
 
     it('should disable save button when title is only whitespace', () => {
         const props = getBaseProps();
-        const {getByTestId, rerender} = renderWithIntlAndTheme(<RenamePlaybookRunBottomSheet {...props}/>);
+        const {getByTestId} = renderWithIntlAndTheme(<RenamePlaybookRunBottomSheet {...props}/>);
 
         const input = getByTestId('playbooks.playbook_run.rename.input');
 
@@ -244,7 +237,6 @@ describe('RenamePlaybookRunBottomSheet', () => {
         act(() => {
             fireEvent.changeText(input, '   ');
         });
-        rerender(<RenamePlaybookRunBottomSheet {...props}/>);
 
         // Button should be disabled
         const updatedButton = {
@@ -318,7 +310,7 @@ describe('RenamePlaybookRunBottomSheet', () => {
 
     it('should update navigation button when canSave changes', () => {
         const props = getBaseProps();
-        const {getByTestId, rerender} = renderWithIntlAndTheme(<RenamePlaybookRunBottomSheet {...props}/>);
+        const {getByTestId} = renderWithIntlAndTheme(<RenamePlaybookRunBottomSheet {...props}/>);
 
         const input = getByTestId('playbooks.playbook_run.rename.input');
 
@@ -331,7 +323,6 @@ describe('RenamePlaybookRunBottomSheet', () => {
         act(() => {
             fireEvent.changeText(input, 'Different Title');
         });
-        rerender(<RenamePlaybookRunBottomSheet {...props}/>);
 
         // Should update with enabled button
         expect(setButtons).toHaveBeenLastCalledWith(componentId, {
