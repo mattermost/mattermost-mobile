@@ -203,10 +203,10 @@ index 0000000..3bb655b
 +    fun getCachePath(): String = cachePath
 +}
 diff --git a/node_modules/expo-image/android/src/main/java/expo/modules/image/okhttp/ExpoImageOkHttpClientGlideModule.kt b/node_modules/expo-image/android/src/main/java/expo/modules/image/okhttp/ExpoImageOkHttpClientGlideModule.kt
-index 071907c..6e68046 100644
+index 071907c..edf10c1 100644
 --- a/node_modules/expo-image/android/src/main/java/expo/modules/image/okhttp/ExpoImageOkHttpClientGlideModule.kt
 +++ b/node_modules/expo-image/android/src/main/java/expo/modules/image/okhttp/ExpoImageOkHttpClientGlideModule.kt
-@@ -70,9 +70,15 @@ data class GlideUrlWrapper(val glideUrl: GlideUrl) {
+@@ -70,8 +70,15 @@ data class GlideUrlWrapper(val glideUrl: GlideUrl) {
  
  @GlideModule
  class ExpoImageOkHttpClientGlideModule : LibraryGlideModule() {
@@ -215,15 +215,14 @@ index 071907c..6e68046 100644
 +  }
    override fun registerComponents(context: Context, glide: Glide, registry: Registry) {
 -    val client = OkHttpClient()
--    // We don't use the `GlideUrl` directly but we want to replace the default okhttp loader anyway
 +    val client = if (okHttpClient != null) {
 +      okHttpClient!!
 +    } else {
 +      OkHttpClient()
-+    }    // We don't use the `GlideUrl` directly but we want to replace the default okhttp loader anyway
++    }
+     // We don't use the `GlideUrl` directly but we want to replace the default okhttp loader anyway
      // to make sure that the app will use only one client.
      registry.replace(GlideUrl::class.java, InputStream::class.java, OkHttpUrlLoader.Factory(client))
-     registry.prepend(GlideUrlWrapper::class.java, InputStream::class.java, GlideUrlWrapperLoader.Factory(client))
 diff --git a/node_modules/expo-image/android/src/main/java/expo/modules/image/records/SourceMap.kt b/node_modules/expo-image/android/src/main/java/expo/modules/image/records/SourceMap.kt
 index 72ad8fa..60ceaac 100644
 --- a/node_modules/expo-image/android/src/main/java/expo/modules/image/records/SourceMap.kt
@@ -448,6 +447,7 @@ index 1451696..3985a30 100644
      }
  
 @@ -230,7 +272,6 @@ public final class ImageModule: Module {
+ 
    static func registerCoders() {
      SDImageCodersManager.shared.addCoder(WebPCoder.shared)
 -    SDImageCodersManager.shared.addCoder(SDImageAVIFCoder.shared)
