@@ -151,6 +151,22 @@ describe('useKeyboardAnimation', () => {
             expect(result.current.keyboardHeight.value).toBe(300);
             expect(result.current.keyboardTranslateY.value).toBe(300);
             expect(result.current.bottomInset.value).toBe(300);
+
+            // isKeyboardFullyOpen is set to false in onStart to prevent jerky behavior
+            // It will be set to true in onEnd when animation completes
+            expect(result.current.isKeyboardFullyOpen.value).toBe(false);
+            expect(result.current.isKeyboardFullyClosed.value).toBe(false);
+            expect(result.current.isKeyboardInTransition.value).toBe(false);
+
+            // Call onEnd to finalize the state
+            act(() => {
+                keyboardHandlerCallbacks.onEnd?.({
+                    height: 300,
+                    progress: 1,
+                });
+            });
+
+            // After onEnd, keyboard should be marked as fully open
             expect(result.current.isKeyboardFullyOpen.value).toBe(true);
             expect(result.current.isKeyboardFullyClosed.value).toBe(false);
             expect(result.current.isKeyboardInTransition.value).toBe(false);
