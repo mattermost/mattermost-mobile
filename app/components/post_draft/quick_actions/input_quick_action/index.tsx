@@ -6,7 +6,9 @@ import React, {useCallback} from 'react';
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {ICON_SIZE} from '@constants/post_draft';
+import {useKeyboardAnimationContext} from '@context/keyboard_animation';
 import {useTheme} from '@context/theme';
+import {useFocusAfterEmojiDismiss} from '@hooks/useFocusAfterEmojiDismiss';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
@@ -38,6 +40,11 @@ export default function InputQuickAction({
     focus,
 }: Props) {
     const theme = useTheme();
+    const {inputRef} = useKeyboardAnimationContext();
+
+    // Use hook to handle focus after emoji picker dismissal
+    const {focus: focusWithEmojiDismiss} = useFocusAfterEmojiDismiss(inputRef, focus);
+
     const onPress = useCallback(() => {
         updateValue((v) => {
             if (inputType === 'at') {
@@ -49,8 +56,8 @@ export default function InputQuickAction({
             }
             return '/';
         });
-        focus();
-    }, [inputType, updateValue, focus]);
+        focusWithEmojiDismiss();
+    }, [inputType, updateValue, focusWithEmojiDismiss]);
 
     const actionTestID = disabled ?
         `${testID}.disabled` :

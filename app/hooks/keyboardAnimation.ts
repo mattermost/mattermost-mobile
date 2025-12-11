@@ -183,6 +183,9 @@ export const useKeyboardAnimation = (
             // Update scroll view insets and offsets
             // bottomInset: Adds bottom padding to scroll content
             bottomInset.value = adjustedHeight;
+
+            // scrollOffset: Ensures the scroll view scrolls with the keyboard animation
+            scrollOffset.value = adjustedHeight;
         },
 
         /**
@@ -293,11 +296,16 @@ export const useKeyboardAnimation = (
             // Then onMove events come with lower heights/progress, causing jerky behavior
             // If we've already reached the final keyboard height (isKeyboardFullyOpen or keyboardHeight matches final),
             // ignore onMove events that would reduce keyboardTranslateY below the final value
+            // BUT: Always allow scrollOffset and bottomInset to update during animation for smooth scrolling
             const finalHeight = keyboardHeight.value;
             const finalAdjustedHeight = finalHeight > 0 ? finalHeight - tabBarAdjustment : 0;
             const hasReachedFinalState = finalHeight > 0 && keyboardTranslateY.value >= finalAdjustedHeight * 0.95; // 95% threshold to account for rounding
 
             if (hasReachedFinalState && absHeight < keyboardTranslateY.value && e.progress < 1) {
+                // Still update scrollOffset and bottomInset even if we ignore keyboardTranslateY
+                // This ensures the list scrolls smoothly with the keyboard animation
+                scrollOffset.value = absHeight;
+                bottomInset.value = absHeight;
                 return;
             }
 

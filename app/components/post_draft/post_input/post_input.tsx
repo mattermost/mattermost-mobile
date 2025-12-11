@@ -20,6 +20,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {useInputPropagation} from '@hooks/input';
+import {useFocusAfterEmojiDismiss} from '@hooks/useFocusAfterEmojiDismiss';
 import {DEFAULT_INPUT_ACCESSORY_HEIGHT} from '@hooks/useInputAccessoryView';
 import NavigationStore from '@store/navigation_store';
 import {handleDraftUpdate} from '@utils/draft';
@@ -165,11 +166,20 @@ export default function PostInput({
 
     const lastNativeValue = useRef('');
     const previousAppState = useRef(AppState.currentState);
-    const [isManuallyFocusingAfterEmojiDismiss, setIsManuallyFocusingAfterEmojiDismiss] = useState(false);
-    const isDismissingEmojiPicker = useRef(false);
-    const focusTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     const [longMessageAlertShown, setLongMessageAlertShown] = useState(false);
+
+    // Handle focus after emoji picker dismissal
+    const focusInput = useCallback(() => {
+        inputRef.current?.focus();
+    }, [inputRef]);
+
+    const {
+        focus: focusWithEmojiDismiss,
+        isDismissingEmojiPicker,
+        focusTimeoutRef,
+        isManuallyFocusingAfterEmojiDismiss,
+    } = useFocusAfterEmojiDismiss(inputRef, focusInput);
 
     const disableCopyAndPaste = managedConfig.copyAndPasteProtection === 'true';
     const maxHeight = isTablet ? 150 : 88;
@@ -189,52 +199,8 @@ export default function PostInput({
 
     // Handle press event (fires BEFORE onFocus) - dismiss emoji picker before keyboard opens
     const handlePress = useCallback(() => {
-        if (Platform.OS === 'android' && showInputAccessoryView) {
-            isDismissingEmojiPicker.current = true;
-            setIsManuallyFocusingAfterEmojiDismiss(true);
-
-            runOnUI(() => {
-                'worklet';
-                inputAccessoryViewAnimatedHeight.value = 0;
-                keyboardTranslateY.value = 0;
-                isInputAccessoryViewMode.value = false;
-                isTransitioningFromCustomView.value = true;
-            })();
-
-            setIsEmojiSearchFocused(false);
-            setShowInputAccessoryView(false);
-        }
-    }, [showInputAccessoryView, inputAccessoryViewAnimatedHeight, setShowInputAccessoryView, isInputAccessoryViewMode, keyboardTranslateY, isTransitioningFromCustomView, setIsEmojiSearchFocused]);
-
-    // Handle focus after emoji picker is dismissed
-    useEffect(() => {
-        if (Platform.OS === 'android' && isManuallyFocusingAfterEmojiDismiss && !showInputAccessoryView) {
-            isDismissingEmojiPicker.current = false;
-
-            if (focusTimeoutRef.current) {
-                clearTimeout(focusTimeoutRef.current);
-            }
-
-            inputRef.current?.blur();
-
-            const handleDelayedFocus = () => {
-                inputRef.current?.focus();
-                setIsManuallyFocusingAfterEmojiDismiss(false);
-                focusTimeoutRef.current = null;
-            };
-
-            focusTimeoutRef.current = setTimeout(handleDelayedFocus, 200);
-
-            return () => {
-                if (focusTimeoutRef.current) {
-                    clearTimeout(focusTimeoutRef.current);
-                    focusTimeoutRef.current = null;
-                }
-            };
-        }
-
-        return undefined;
-    }, [isManuallyFocusingAfterEmojiDismiss, showInputAccessoryView, inputRef]);
+        focusWithEmojiDismiss();
+    }, [focusWithEmojiDismiss]);
 
     const onFocus = useCallback(() => {
         // Ignore focus events during emoji picker dismissal - handled manually
@@ -258,9 +224,6 @@ export default function PostInput({
         setShowInputAccessoryView(false);
 
         if (Platform.OS === 'android') {
-            if (!focusTimeoutRef.current) {
-                setIsManuallyFocusingAfterEmojiDismiss(false);
-            }
 
             keyboardTranslateY.value = inputAccessoryViewAnimatedHeight.value;
             inputAccessoryViewAnimatedHeight.value = 0;
@@ -315,7 +278,7 @@ export default function PostInput({
                 }
             }, 1000);
         }
-    }, [setIsFocused, showInputAccessoryView, inputAccessoryViewAnimatedHeight, setShowInputAccessoryView, isInputAccessoryViewMode, keyboardTranslateY, isTransitioningFromCustomView, isManuallyFocusingAfterEmojiDismiss, setIsEmojiSearchFocused, isEmojiSearchFocused, keyboardHeight, lastKeyboardHeight, bottomInset, scrollOffset]);
+    }, [isDismissingEmojiPicker, focusTimeoutRef, isManuallyFocusingAfterEmojiDismiss, isEmojiSearchFocused, setIsFocused, setIsEmojiSearchFocused, setShowInputAccessoryView, showInputAccessoryView, keyboardTranslateY, inputAccessoryViewAnimatedHeight, isInputAccessoryViewMode, isTransitioningFromCustomView, bottomInset, scrollOffset, keyboardHeight.value, lastKeyboardHeight]);
 
     const handleAndroidKeyboardHide = useCallback(() => {
         onBlur();
