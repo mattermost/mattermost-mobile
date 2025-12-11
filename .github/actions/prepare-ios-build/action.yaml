@@ -45,8 +45,9 @@ runs:
         path: |
           ios/Pods
           libraries/@mattermost/intune/ios/Frameworks
-        key: ${{ runner.os }}-pods-v3-intune-${{ inputs.intune-enabled }}-${{ steps.intune-hash.outputs.hash }}-${{ hashFiles('ios/Podfile.lock') }}
+        key: ${{ runner.os }}-pods-v3-intune-${{ inputs.intune-enabled }}-${{ steps.intune-hash.outputs.hash }}-${{ hashFiles('ios/Podfile.lock') }}-${{ github.ref_name }}
         restore-keys: |
+          ${{ runner.os }}-pods-v3-intune-${{ inputs.intune-enabled }}-${{ steps.intune-hash.outputs.hash }}-${{ hashFiles('ios/Podfile.lock') }}-
           ${{ runner.os }}-pods-v3-intune-${{ inputs.intune-enabled }}-${{ steps.intune-hash.outputs.hash }}-
           ${{ runner.os }}-pods-v3-intune-${{ inputs.intune-enabled }}-
 
@@ -59,4 +60,10 @@ runs:
         echo "INTUNE_ENABLED=$INTUNE_ENABLED"
         npm run ios-gems
         npm run pod-install
+        
+        # Temporary fix for hermes-engine pod update on specific branch
+        if [[ "$GITHUB_REF_NAME" == "feat/MM-65147-upgrade-react-native-0773" ]] || [[ "$GITHUB_HEAD_REF" == "feat/MM-65147-upgrade-react-native-0773" ]]; then
+          echo "::notice::Running pod update hermes-engine for branch $GITHUB_REF_NAME$GITHUB_HEAD_REF"
+          cd ios && pod update hermes-engine --no-repo-update
+        fi
         echo "::endgroup::"
