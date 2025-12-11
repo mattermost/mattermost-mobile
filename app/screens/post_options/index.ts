@@ -16,6 +16,7 @@ import {observePermissionForChannel, observePermissionForPost} from '@queries/se
 import {observeConfigIntValue, observeConfigValue, observeLicense} from '@queries/servers/system';
 import {observeIsCRTEnabled, observeThreadById} from '@queries/servers/thread';
 import {observeCurrentUser} from '@queries/servers/user';
+import {isBoRPost, isUnrevealedBoRPost} from '@utils/bor';
 import {toMilliseconds} from '@utils/datetime';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {isFromWebhook, isSystemMessage} from '@utils/post';
@@ -83,6 +84,8 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
     const serverVersion = observeConfigValue(database, 'Version');
     const postEditTimeLimit = observeConfigIntValue(database, 'PostEditTimeLimit', -1);
     const bindings = AppsManager.observeBindings(serverUrl, AppBindingLocations.POST_MENU_ITEM);
+    const borPost = isBoRPost(post);
+    const unrevealedBoRPost = isUnrevealedBoRPost(post);
 
     const canPostPermission = combineLatest([channel, currentUser]).pipe(switchMap(([c, u]) => observePermissionForChannel(database, c, u, Permissions.CREATE_POST, false)));
     const hasAddReactionPermission = currentUser.pipe(switchMap((u) => observePermissionForPost(database, post, u, Permissions.ADD_REACTION, true)));
@@ -107,17 +110,17 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
         }),
     );
 
-    const canReply = combineLatest([channelIsArchived, channelIsReadOnly, canPostPermission]).pipe(switchMap(([isArchived, isReadOnly, canPost]) => {
+    const canReply = borPost ? of$(false) : combineLatest([channelIsArchived, channelIsReadOnly, canPostPermission]).pipe(switchMap(([isArchived, isReadOnly, canPost]) => {
         return of$(!isArchived && !isReadOnly && sourceScreen !== Screens.THREAD && !isSystemMessage(post) && canPost);
     }));
 
-    const canPin = combineLatest([channelIsArchived, channelIsReadOnly]).pipe(switchMap(([isArchived, isReadOnly]) => {
+    const canPin = borPost ? of$(false) : combineLatest([channelIsArchived, channelIsReadOnly]).pipe(switchMap(([isArchived, isReadOnly]) => {
         return of$(!isSystemMessage(post) && !isArchived && !isReadOnly);
     }));
 
     const isSaved = observePostSaved(database, post.id);
 
-    const canEdit = combineLatest([postEditTimeLimit, isLicensed, channel, currentUser, channelIsArchived, channelIsReadOnly, canEditUntil, canPostPermission]).pipe(
+    const canEdit = borPost ? of$(false) : combineLatest([postEditTimeLimit, isLicensed, channel, currentUser, channelIsArchived, channelIsReadOnly, canEditUntil, canPostPermission]).pipe(
         switchMap(([lt, ls, c, u, isArchived, isReadOnly, until, canPost]) => {
             const isOwner = u?.id === post.userId;
             const canEditPostPermission = (c && u) ? observeCanEditPost(database, isOwner, post, lt, ls, c, u) : of$(false);
@@ -137,7 +140,7 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
         )),
     );
 
-    const canAddReaction = combineLatest([hasAddReactionPermission, channelIsReadOnly, isUnderMaxAllowedReactions, channelIsArchived]).pipe(
+    const canAddReaction = unrevealedBoRPost ? of$(false) : combineLatest([hasAddReactionPermission, channelIsReadOnly, isUnderMaxAllowedReactions, channelIsArchived]).pipe(
         switchMap(([permission, readOnly, maxAllowed, isArchived]) => {
             return of$(!isSystemMessage(post) && permission && !readOnly && !isArchived && maxAllowed && showAddReaction);
         }),
@@ -163,6 +166,7 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
         post,
         thread,
         bindings,
+        isBoRPost: of$(borPost),
     };
 });
 

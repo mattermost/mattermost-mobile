@@ -108,6 +108,9 @@ const WebsocketEvents = {
 
     // Agents
     AGENTS_POST_UPDATE: 'custom_mattermost-ai_postupdate',
+
+    // Burn on Read
+    BOR_POST_REVEALED: 'post_revealed',
 };
 
 export default WebsocketEvents;
