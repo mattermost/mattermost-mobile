@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {removePost} from '@actions/local/post';
 import {handleNewPostEvent, handlePostEdited} from '@actions/websocket/posts';
+import {PostTypes} from '@constants/post';
 import DatabaseManager from '@database/manager';
 import {getPostById} from '@queries/servers/post';
 import TestHelper from '@test/test_helper';
-import {removePost} from '@actions/local/post';
-import {PostTypes} from '@constants/post';
 
 import {handleBoRPostRevealedEvent, handleBoRPostBurnedEvent} from './burn_on_read';
 
@@ -182,7 +182,7 @@ describe('WebSocket Burn on Read Actions', () => {
             const result = await handleBoRPostBurnedEvent(serverUrl, msg);
 
             expect(result).toHaveProperty('error');
-            expect(result.error).toBeInstanceOf(Error);
+            expect(result!.error).toBeInstanceOf(Error);
             expect(mockedRemovePost).not.toHaveBeenCalled();
         });
     });
