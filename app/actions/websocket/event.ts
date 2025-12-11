@@ -4,7 +4,7 @@
 import {handleAgentPostUpdate} from '@agents/actions/websocket';
 
 import * as bookmark from '@actions/local/channel_bookmark';
-import {handleBoRPostRevealedEvent} from '@actions/websocket/burn_on_read';
+import {handleBoRPostBurnedEvent, handleBoRPostRevealedEvent} from '@actions/websocket/burn_on_read';
 import * as scheduledPost from '@actions/websocket/scheduled_post';
 import * as calls from '@calls/connection/websocket_event_handlers';
 import {WebsocketEvents} from '@constants';
@@ -24,6 +24,8 @@ import {handleThreadUpdatedEvent, handleThreadReadChangedEvent, handleThreadFoll
 import {handleUserUpdatedEvent, handleUserTypingEvent, handleStatusChangedEvent, handleCustomProfileAttributesValuesUpdatedEvent, handleCustomProfileAttributesFieldUpdatedEvent, handleCustomProfileAttributesFieldDeletedEvent} from './users';
 
 export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMessage) {
+    console.log({receivedMessage: msg});
+    
     switch (msg.event) {
         case WebsocketEvents.POSTED:
         case WebsocketEvents.EPHEMERAL_MESSAGE:
@@ -313,6 +315,9 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
         // Burn on Read Events
         case WebsocketEvents.BOR_POST_REVEALED:
             handleBoRPostRevealedEvent(serverUrl, msg);
+            break;
+        case WebsocketEvents.BOR_POST_BURNED:
+            handleBoRPostBurnedEvent(serverUrl, msg);
             break;
     }
     handlePlaybookEvents(serverUrl, msg);
