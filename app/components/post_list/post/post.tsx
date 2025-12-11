@@ -13,6 +13,7 @@ import {showPermalink} from '@actions/remote/permalink';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import CallsCustomMessage from '@calls/components/calls_custom_message';
 import {isCallsCustomMessage} from '@calls/utils';
+import UnrevealedBurnOnReadPost from '@components/post_list/post/burn_on_read/unrevealed';
 import SystemAvatar from '@components/system_avatar';
 import SystemHeader from '@components/system_header';
 import {POST_TIME_TO_FAIL} from '@constants/post';
@@ -23,6 +24,7 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {openAsBottomSheet} from '@screens/navigation';
+import {isBoRPost, isUnrevealedBoRPost} from '@utils/bor';
 import {hasJumboEmojiOnly} from '@utils/emoji/helpers';
 import {fromAutoResponder, isFromWebhook, isPostFailed, isPostPendingOrFailed, isSystemMessage} from '@utils/post';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -161,6 +163,9 @@ const Post = ({
     const isFailed = isPostFailed(post);
     const isSystemPost = isSystemMessage(post);
     const isCallsPost = isCallsCustomMessage(post);
+    const borPost = isBoRPost(post);
+    const isUnrevealedPost = isUnrevealedBoRPost(post);
+    const isOwnPost = Boolean(currentUser && post.userId === currentUser.id);
     const isAgentPostType = isAgentPost(post);
     const hasBeenDeleted = (post.deleteAt !== 0);
     const isWebHook = isFromWebhook(post);
@@ -192,9 +197,9 @@ const Post = ({
         if (isEphemeral || hasBeenDeleted) {
             removePost(serverUrl, post);
         } else if (isValidSystemMessage && !hasBeenDeleted && !isPendingOrFailed) {
-            if ([Screens.CHANNEL, Screens.PERMALINK].includes(location)) {
+            // BoR posts cannot have replies, so don't open threads screen for them
+            if (!borPost && [Screens.CHANNEL, Screens.PERMALINK].includes(location)) {
                 await blurAndDismissKeyboard();
-
                 const postRootId = post.rootId || post.id;
                 fetchAndSwitchToThread(serverUrl, postRootId);
             }
@@ -203,10 +208,7 @@ const Post = ({
         setTimeout(() => {
             pressDetected.current = false;
         }, 300);
-    }, [
-        blurAndDismissKeyboard, hasBeenDeleted, isAutoResponder, isEphemeral,
-        isPendingOrFailed, isSystemPost, location, serverUrl, post,
-    ]);
+    }, [location, isAutoResponder, isSystemPost, isEphemeral, hasBeenDeleted, isPendingOrFailed, serverUrl, post, borPost, blurAndDismissKeyboard]);
 
     const handlePress = useCallback(() => {
         pressDetected.current = true;
@@ -368,6 +370,10 @@ const Post = ({
                 isHost={false}
                 joiningChannelId={null}
             />
+        );
+    } else if (isUnrevealedPost && !isOwnPost) {
+        body = (
+            <UnrevealedBurnOnReadPost post={post}/>
         );
     } else if (isAgentPostType && !hasBeenDeleted) {
         body = (
