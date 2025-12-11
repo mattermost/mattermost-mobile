@@ -60,10 +60,10 @@ describe('useKeyboardAnimation', () => {
                 useKeyboardAnimation(100, true, false, 0, false, true),
             );
 
-            expect(result.current.height.value).toBe(0);
-            expect(result.current.inset.value).toBe(0);
-            expect(result.current.offset.value).toBe(0);
-            expect(result.current.scroll.value).toBe(0);
+            expect(result.current.keyboardTranslateY.value).toBe(0);
+            expect(result.current.bottomInset.value).toBe(0);
+            expect(result.current.scrollOffset.value).toBe(0);
+            expect(result.current.scrollPosition.value).toBe(0);
             expect(result.current.keyboardHeight.value).toBe(0);
             expect(result.current.isKeyboardFullyOpen.value).toBe(false);
             expect(result.current.isKeyboardFullyClosed.value).toBe(true);
@@ -88,7 +88,7 @@ describe('useKeyboardAnimation', () => {
                 useKeyboardAnimation(100, true, false, 0, false, false),
             );
 
-            const initialHeight = result.current.height.value;
+            const initialHeight = result.current.keyboardTranslateY.value;
 
             act(() => {
                 keyboardHandlerCallbacks.onStart?.({
@@ -97,7 +97,7 @@ describe('useKeyboardAnimation', () => {
                 });
             });
 
-            expect(result.current.height.value).toBe(initialHeight);
+            expect(result.current.keyboardTranslateY.value).toBe(initialHeight);
         });
 
         it('should process events when enabled is true', () => {
@@ -112,7 +112,7 @@ describe('useKeyboardAnimation', () => {
                 });
             });
 
-            expect(result.current.height.value).toBe(300);
+            expect(result.current.keyboardTranslateY.value).toBe(300);
         });
     });
 
@@ -122,7 +122,7 @@ describe('useKeyboardAnimation', () => {
                 useKeyboardAnimation(100, false, false, 0, false, true),
             );
 
-            const initialHeight = result.current.height.value;
+            const initialHeight = result.current.keyboardTranslateY.value;
 
             act(() => {
                 keyboardHandlerCallbacks.onStart?.({
@@ -131,7 +131,7 @@ describe('useKeyboardAnimation', () => {
                 });
             });
 
-            expect(result.current.height.value).toBe(initialHeight);
+            expect(result.current.keyboardTranslateY.value).toBe(initialHeight);
         });
     });
 
@@ -149,8 +149,8 @@ describe('useKeyboardAnimation', () => {
             });
 
             expect(result.current.keyboardHeight.value).toBe(300);
-            expect(result.current.height.value).toBe(300);
-            expect(result.current.inset.value).toBe(300);
+            expect(result.current.keyboardTranslateY.value).toBe(300);
+            expect(result.current.bottomInset.value).toBe(300);
             expect(result.current.isKeyboardFullyOpen.value).toBe(true);
             expect(result.current.isKeyboardFullyClosed.value).toBe(false);
             expect(result.current.isKeyboardInTransition.value).toBe(false);
@@ -168,7 +168,7 @@ describe('useKeyboardAnimation', () => {
                 });
             });
 
-            expect(result.current.height.value).toBe(150);
+            expect(result.current.keyboardTranslateY.value).toBe(150);
             expect(result.current.isKeyboardFullyOpen.value).toBe(false);
             expect(result.current.isKeyboardInTransition.value).toBe(true);
         });
@@ -186,7 +186,7 @@ describe('useKeyboardAnimation', () => {
                 });
             });
 
-            const initialHeight = result.current.height.value;
+            const initialHeight = result.current.keyboardTranslateY.value;
 
             // Try to trigger adjustment event (height = keyboardHeight - postInputContainerHeight)
             act(() => {
@@ -196,7 +196,7 @@ describe('useKeyboardAnimation', () => {
                 });
             });
 
-            expect(result.current.height.value).toBe(initialHeight);
+            expect(result.current.keyboardTranslateY.value).toBe(initialHeight);
         });
     });
 
@@ -222,9 +222,9 @@ describe('useKeyboardAnimation', () => {
                 });
             });
 
-            expect(result.current.height.value).toBe(250);
-            expect(result.current.offset.value).toBe(250);
-            expect(result.current.inset.value).toBe(250);
+            expect(result.current.keyboardTranslateY.value).toBe(250);
+            expect(result.current.scrollOffset.value).toBe(250);
+            expect(result.current.bottomInset.value).toBe(250);
         });
 
         it('should track keyboard closing state', () => {
@@ -250,7 +250,7 @@ describe('useKeyboardAnimation', () => {
 
             // isKeyboardClosing is internal state, not exposed in return value
             // We verify closing behavior by checking that height decreases
-            expect(result.current.height.value).toBeLessThan(300);
+            expect(result.current.keyboardTranslateY.value).toBeLessThan(300);
         });
 
         it('should ignore events matching postInputContainerHeight', () => {
@@ -258,7 +258,7 @@ describe('useKeyboardAnimation', () => {
                 useKeyboardAnimation(100, true, false, 0, false, true),
             );
 
-            const initialHeight = result.current.height.value;
+            const initialHeight = result.current.keyboardTranslateY.value;
 
             act(() => {
                 keyboardHandlerCallbacks.onInteractive?.({
@@ -267,7 +267,7 @@ describe('useKeyboardAnimation', () => {
                 });
             });
 
-            expect(result.current.height.value).toBe(initialHeight);
+            expect(result.current.keyboardTranslateY.value).toBe(initialHeight);
         });
     });
 
@@ -284,9 +284,9 @@ describe('useKeyboardAnimation', () => {
                 });
             });
 
-            expect(result.current.height.value).toBe(280);
-            expect(result.current.offset.value).toBe(280);
-            expect(result.current.inset.value).toBe(280);
+            expect(result.current.keyboardTranslateY.value).toBe(280);
+            expect(result.current.scrollOffset.value).toBe(280);
+            expect(result.current.bottomInset.value).toBe(280);
         });
 
         it('should set values to 0 when keyboard is closing', () => {
@@ -317,9 +317,9 @@ describe('useKeyboardAnimation', () => {
                 });
             });
 
-            expect(result.current.height.value).toBe(0);
-            expect(result.current.offset.value).toBe(0);
-            expect(result.current.inset.value).toBe(0);
+            expect(result.current.keyboardTranslateY.value).toBe(0);
+            expect(result.current.scrollOffset.value).toBe(0);
+            expect(result.current.bottomInset.value).toBe(0);
         });
 
         it('should handle negative heights from programmatic dismiss', () => {
@@ -334,7 +334,7 @@ describe('useKeyboardAnimation', () => {
                 });
             });
 
-            expect(result.current.height.value).toBe(50); // Math.abs applied
+            expect(result.current.keyboardTranslateY.value).toBe(50); // Math.abs applied
         });
     });
 
@@ -385,7 +385,7 @@ describe('useKeyboardAnimation', () => {
             expect(result.current.isKeyboardFullyOpen.value).toBe(false);
             expect(result.current.isKeyboardFullyClosed.value).toBe(true);
             expect(result.current.isKeyboardInTransition.value).toBe(false);
-            expect(result.current.height.value).toBe(0);
+            expect(result.current.keyboardTranslateY.value).toBe(0);
         });
     });
 
@@ -404,7 +404,7 @@ describe('useKeyboardAnimation', () => {
             });
 
             const expectedAdjustment = BOTTOM_TAB_HEIGHT + safeAreaBottom;
-            expect(result.current.height.value).toBe(300 - expectedAdjustment);
+            expect(result.current.keyboardTranslateY.value).toBe(300 - expectedAdjustment);
         });
 
         it('should apply safeAreaBottom adjustment for thread view', () => {
@@ -420,7 +420,7 @@ describe('useKeyboardAnimation', () => {
                 });
             });
 
-            expect(result.current.height.value).toBe(300 - safeAreaBottom);
+            expect(result.current.keyboardTranslateY.value).toBe(300 - safeAreaBottom);
         });
 
         it('should apply safeAreaBottom adjustment for mobile', () => {
@@ -436,17 +436,17 @@ describe('useKeyboardAnimation', () => {
                 });
             });
 
-            expect(result.current.height.value).toBe(300 - safeAreaBottom);
+            expect(result.current.keyboardTranslateY.value).toBe(300 - safeAreaBottom);
         });
     });
 
     describe('scroll handler', () => {
-        it('should track scroll position with inset', () => {
+        it('should track scroll position with bottomInset', () => {
             const {result} = renderHook(() =>
                 useKeyboardAnimation(100, true, false, 0, false, true),
             );
 
-            // Set inset first
+            // Set bottomInset first
             act(() => {
                 keyboardHandlerCallbacks.onStart?.({
                     height: 200,
@@ -462,7 +462,7 @@ describe('useKeyboardAnimation', () => {
                 result.current.onScroll(mockScrollEvent);
             });
 
-            expect(result.current.scroll.value).toBe(100 + result.current.inset.value);
+            expect(result.current.scrollPosition.value).toBe(100 + result.current.bottomInset.value);
         });
     });
 });

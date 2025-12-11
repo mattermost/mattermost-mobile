@@ -79,7 +79,7 @@ const ScrollToEndView = ({
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
 
-    const {height, postInputContainerHeight, inputAccessoryViewAnimatedHeight} = useKeyboardAnimationContext();
+    const {keyboardTranslateY, postInputContainerHeight, inputAccessoryViewAnimatedHeight} = useKeyboardAnimationContext();
 
     // On iOS we have to take account of the keyboard.
     // We cannot use `useKeyboardOverlap` here because of the positioning of the element.
@@ -89,7 +89,7 @@ const ScrollToEndView = ({
 
     const animatedStyle = useAnimatedStyle(
         () => {
-            const activeHeight = Math.max(height.value, inputAccessoryViewAnimatedHeight.value);
+            const activeHeight = Math.max(keyboardTranslateY.value, inputAccessoryViewAnimatedHeight.value);
 
             return {
                 transform: [
@@ -101,7 +101,7 @@ const ScrollToEndView = ({
                 opacity: withTiming(showScrollToEndBtn ? 1 : 0),
             };
         },
-        [showScrollToEndBtn, isNewMessage, height, inputAccessoryViewAnimatedHeight, postInputContainerHeight],
+        [showScrollToEndBtn, isNewMessage, keyboardTranslateY, inputAccessoryViewAnimatedHeight, postInputContainerHeight],
     );
 
     const scrollButtonStyles = isNewMessage ? styles.scrollToEndBadge : styles.scrollToEndButton;

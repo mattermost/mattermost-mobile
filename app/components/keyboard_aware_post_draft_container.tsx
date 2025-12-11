@@ -20,7 +20,7 @@ type RenderListProps = {
     listRef: ReturnType<typeof useKeyboardAwarePostDraft>['listRef'];
     contentInset: ReturnType<typeof useKeyboardAwarePostDraft>['contentInset'];
     onScroll: ReturnType<typeof useKeyboardAwarePostDraft>['onScroll'];
-    keyboardCurrentHeight: ReturnType<typeof useKeyboardAwarePostDraft>['height'];
+    keyboardCurrentHeight: ReturnType<typeof useKeyboardAwarePostDraft>['keyboardTranslateY'];
     postInputContainerHeight: number;
     onTouchMove?: (event: GestureResponderEvent) => void;
     onTouchEnd?: () => void;
@@ -48,8 +48,6 @@ const styles = StyleSheet.create({
     },
 });
 
-const AnimatedView = Animated.createAnimatedComponent(View);
-
 /**
  * Wrapper component that provides keyboard-aware behavior for post draft screens
  * Handles keyboard animations, scroll adjustments, and input container positioning
@@ -65,17 +63,17 @@ export const KeyboardAwarePostDraftContainer = ({
     const {height: windowHeight} = useWindowDimensions();
 
     const {
-        height: keyboardCurrentHeight,
+        keyboardTranslateY: keyboardCurrentHeight,
         listRef,
         inputRef,
-        contentInset: inset,
+        contentInset: bottomInset,
         onScroll,
         postInputContainerHeight,
         setPostInputContainerHeight,
         inputContainerAnimatedStyle,
         keyboardHeight,
-        offset,
-        scroll,
+        scrollOffset,
+        scrollPosition,
         blurInput,
         focusInput,
         blurAndDismissKeyboard,
@@ -180,9 +178,9 @@ export const KeyboardAwarePostDraftContainer = ({
     const animatedScrollAdjustment = useSharedValue(0);
 
     // Callback to perform scroll adjustment
-    const performScrollAdjustment = useCallback((scrollOffset: number) => {
+    const performScrollAdjustment = useCallback((targetOffset: number) => {
         listRef.current?.scrollToOffset({
-            offset: scrollOffset,
+            offset: targetOffset,
             animated: false,
         });
     }, [listRef]);
@@ -243,11 +241,11 @@ export const KeyboardAwarePostDraftContainer = ({
         const clampedHeight = emojiPickerHeight < 0 ? 0 : Math.min(emojiPickerHeight, maxHeight);
 
         inputAccessoryViewAnimatedHeight.value = clampedHeight;
-        inset.value = clampedHeight;
+        bottomInset.value = clampedHeight;
         lastDistanceFromBottomRef.current = clampedHeight;
         lastIsSwipingDownRef.current = previousTouchYRef.current !== null && fingerY > previousTouchYRef.current;
         previousTouchYRef.current = fingerY;
-    }, [showInputAccessoryView, postInputContainerHeight, inputAccessoryViewAnimatedHeight, inset, windowHeight]);
+    }, [showInputAccessoryView, postInputContainerHeight, inputAccessoryViewAnimatedHeight, bottomInset, windowHeight]);
 
     // Callback to dismiss emoji picker after animation completes
     const dismissEmojiPicker = useCallback(() => {
@@ -255,10 +253,10 @@ export const KeyboardAwarePostDraftContainer = ({
         setIsEmojiSearchFocused(false);
         setShowInputAccessoryView(false);
         isInputAccessoryViewMode.value = false;
-        inset.value = 0;
-        offset.value = 0;
+        bottomInset.value = 0;
+        scrollOffset.value = 0;
         keyboardHeight.value = 0;
-    }, [setShowInputAccessoryView, isInputAccessoryViewMode, inset, offset, keyboardHeight, setIsEmojiSearchFocused]);
+    }, [setShowInputAccessoryView, isInputAccessoryViewMode, bottomInset, scrollOffset, keyboardHeight, setIsEmojiSearchFocused]);
 
     const closeInputAccessoryView = useCallback(() => {
         // Reset emoji search focus when closing emoji picker
@@ -268,10 +266,10 @@ export const KeyboardAwarePostDraftContainer = ({
         isTransitioningFromCustomView.value = false;
 
         inputAccessoryViewAnimatedHeight.value = withTiming(0, {duration: 200});
-        inset.value = withTiming(0, {duration: 200});
-        offset.value = withTiming(0, {duration: 200});
+        bottomInset.value = withTiming(0, {duration: 200});
+        scrollOffset.value = withTiming(0, {duration: 200});
         keyboardHeight.value = 0;
-    }, [inputAccessoryViewAnimatedHeight, inset, offset, keyboardHeight, setShowInputAccessoryView, isInputAccessoryViewMode, isTransitioningFromCustomView, setIsEmojiSearchFocused]);
+    }, [inputAccessoryViewAnimatedHeight, bottomInset, scrollOffset, keyboardHeight, setShowInputAccessoryView, isInputAccessoryViewMode, isTransitioningFromCustomView, setIsEmojiSearchFocused]);
 
     const scrollToEnd = useCallback(() => {
         const activeHeight = Math.max(keyboardHeight.value, inputAccessoryViewAnimatedHeight.value);
@@ -299,11 +297,11 @@ export const KeyboardAwarePostDraftContainer = ({
 
         if (lastDistanceFromBottomRef.current !== null && lastIsSwipingDownRef.current !== null) {
             const currentInsetHeight = lastDistanceFromBottomRef.current;
-            const currentScrollValue = scroll.value;
+            const currentScrollValue = scrollPosition.value;
 
             if (lastIsSwipingDownRef.current) {
                 // User was swiping DOWN → Collapse and dismiss emoji picker
-                // Calculate scroll positions: as inset decreases from current to 0,
+                // Calculate scroll positions: as bottomInset decreases from current to 0,
                 // list should scroll from current position to final position
                 const startScrollOffset = -currentInsetHeight + currentScrollValue;
                 const endScrollOffset = currentScrollValue;
@@ -316,7 +314,7 @@ export const KeyboardAwarePostDraftContainer = ({
                         runOnJS(dismissEmojiPicker)();
                     },
                 );
-                inset.value = withTiming(0, {duration: 250});
+                bottomInset.value = withTiming(0, {duration: 250});
 
                 // Animate scroll position from start to end - this makes list scroll down smoothly
                 animatedScrollAdjustment.value = startScrollOffset;
@@ -329,13 +327,13 @@ export const KeyboardAwarePostDraftContainer = ({
                 // User was swiping UP → Expand to full height
                 const targetHeight = originalEmojiPickerHeightRef.current;
 
-                // Calculate scroll positions: as inset increases from current to targetHeight,
+                // Calculate scroll positions: as bottomInset increases from current to targetHeight,
                 // list should scroll from current position to final position
                 const startScrollOffset = -currentInsetHeight + currentScrollValue;
                 const endScrollOffset = -targetHeight + currentScrollValue;
 
                 inputAccessoryViewAnimatedHeight.value = withTiming(targetHeight, {duration: 250});
-                inset.value = withTiming(targetHeight, {duration: 250});
+                bottomInset.value = withTiming(targetHeight, {duration: 250});
 
                 // Animate scroll position from start to end - this makes list scroll up smoothly
                 animatedScrollAdjustment.value = startScrollOffset;
@@ -351,7 +349,7 @@ export const KeyboardAwarePostDraftContainer = ({
         lastDistanceFromBottomRef.current = null;
         lastIsSwipingDownRef.current = null;
         gestureStartedInEmojiPickerRef.current = false;
-    }, [inputAccessoryViewAnimatedHeight, dismissEmojiPicker, inset, scroll, animatedScrollAdjustment]);
+    }, [inputAccessoryViewAnimatedHeight, dismissEmojiPicker, bottomInset, scrollPosition, animatedScrollAdjustment]);
 
     useLayoutEffect(() => {
         if (showInputAccessoryView && Platform.OS === 'ios') {
@@ -365,16 +363,16 @@ export const KeyboardAwarePostDraftContainer = ({
             // Wait one frame to ensure emoji picker has rendered
             requestAnimationFrame(() => {
                 const emojiPickerHeight = inputAccessoryViewAnimatedHeight.value;
-                const currentScroll = scroll.value;
+                const currentScroll = scrollPosition.value;
 
                 originalScrollBeforeEmojiPicker.value = currentScroll;
                 originalEmojiPickerHeightRef.current = emojiPickerHeight;
 
-                // For inverted list: when inset increases, content shifts UP visually. Scroll UP to compensate.
+                // For inverted list: when bottomInset increases, content shifts UP visually. Scroll UP to compensate.
                 const targetContentOffset = currentScroll - emojiPickerHeight;
 
-                inset.value = emojiPickerHeight;
-                offset.value = emojiPickerHeight;
+                bottomInset.value = emojiPickerHeight;
+                scrollOffset.value = emojiPickerHeight;
 
                 listRef.current?.scrollToOffset({
                     offset: targetContentOffset,
@@ -417,43 +415,43 @@ export const KeyboardAwarePostDraftContainer = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Android: Watch for emoji picker closing and restore scroll position when both height and inset reach 0
+    // Android: Watch for emoji picker closing and restore scroll position when both height and bottomInset reach 0
     const isAndroid = Platform.OS === 'android';
     useAnimatedReaction(
         () => ({
             height: inputAccessoryViewAnimatedHeight.value,
-            inset: inset.value,
+            bottomInset: bottomInset.value,
         }),
         (current, previous) => {
             if (!isAndroid) {
                 return;
             }
 
-            // When emoji picker closes: height goes to 0 AND inset reaches 0. Check previous.inset > 0 because inset affects scroll.
+            // When emoji picker closes: height goes to 0 AND bottomInset reaches 0. Check previous.bottomInset > 0 because bottomInset affects scroll.
             const shouldRestoreScroll = previous !== null &&
-                previous.inset !== undefined &&
-                previous.inset > 0 &&
+                previous.bottomInset !== undefined &&
+                previous.bottomInset > 0 &&
                 current.height === 0 &&
-                current.inset === 0 &&
+                current.bottomInset === 0 &&
                 !hasRestoredScrollForEmojiPicker.value;
 
             if (shouldRestoreScroll) {
                 hasRestoredScrollForEmojiPicker.value = true;
-                const currentScroll = scroll.value;
-                const emojiPickerHeight = previous.inset;
+                const currentScroll = scrollPosition.value;
+                const emojiPickerHeight = previous.bottomInset;
 
                 runOnJS(restoreScrollAfterEmojiPickerClose)(emojiPickerHeight, currentScroll);
             }
         },
-        [inputAccessoryViewAnimatedHeight, inset, scroll, restoreScrollAfterEmojiPickerClose],
+        [inputAccessoryViewAnimatedHeight, bottomInset, scrollPosition, restoreScrollAfterEmojiPickerClose],
     );
 
-    const keyboardAnimationValue = useMemo(() => ({
-        height: keyboardCurrentHeight,
-        inset,
-        offset,
+    const keyboardAnimationValues = useMemo(() => ({
+        keyboardTranslateY: keyboardCurrentHeight,
+        bottomInset,
+        scrollOffset,
         keyboardHeight,
-        scroll,
+        scrollPosition,
         onScroll,
         postInputContainerHeight,
         inputRef,
@@ -479,10 +477,10 @@ export const KeyboardAwarePostDraftContainer = ({
         updateCursorPosition: updateCursorPositionRef.current,
         registerPostInputCallbacks,
     }), [keyboardCurrentHeight,
-        inset,
-        offset,
+        bottomInset,
+        scrollOffset,
         keyboardHeight,
-        scroll,
+        scrollPosition,
         onScroll,
         postInputContainerHeight,
         inputRef,
@@ -527,14 +525,14 @@ export const KeyboardAwarePostDraftContainer = ({
                 {renderList({
                     keyboardCurrentHeight,
                     listRef,
-                    contentInset: inset,
+                    contentInset: bottomInset,
                     onScroll,
                     postInputContainerHeight,
                     onTouchMove: handleTouchMove,
                     onTouchEnd: handleTouchEnd,
                 })}
             </View>
-            <AnimatedView
+            <Animated.View
                 style={[
                     inputContainerAnimatedStyle,
                     styles.inputContainer,
@@ -550,12 +548,12 @@ export const KeyboardAwarePostDraftContainer = ({
                         <InputAccessoryViewContent/>
                     </InputAccessoryViewContainer>
                 )}
-            </AnimatedView>
+            </Animated.View>
         </>
     );
 
     return (
-        <KeyboardAnimationProvider value={keyboardAnimationValue}>
+        <KeyboardAnimationProvider value={keyboardAnimationValues}>
             <Wrapper {...wrapperProps}>
                 {content}
             </Wrapper>

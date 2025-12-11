@@ -130,14 +130,14 @@ export default function PostInput({
         showInputAccessoryView,
         isInputAccessoryViewMode,
         inputAccessoryViewAnimatedHeight,
-        height,
+        keyboardTranslateY,
         isTransitioningFromCustomView,
         setIsEmojiSearchFocused,
         isEmojiSearchFocused,
         keyboardHeight,
         lastKeyboardHeight,
-        inset,
-        offset,
+        bottomInset,
+        scrollOffset,
         registerCursorPosition,
         registerPostInputCallbacks,
     } = useKeyboardAnimationContext();
@@ -196,7 +196,7 @@ export default function PostInput({
             runOnUI(() => {
                 'worklet';
                 inputAccessoryViewAnimatedHeight.value = 0;
-                height.value = 0;
+                keyboardTranslateY.value = 0;
                 isInputAccessoryViewMode.value = false;
                 isTransitioningFromCustomView.value = true;
             })();
@@ -204,7 +204,7 @@ export default function PostInput({
             setIsEmojiSearchFocused(false);
             setShowInputAccessoryView(false);
         }
-    }, [showInputAccessoryView, inputAccessoryViewAnimatedHeight, setShowInputAccessoryView, isInputAccessoryViewMode, height, isTransitioningFromCustomView, setIsEmojiSearchFocused]);
+    }, [showInputAccessoryView, inputAccessoryViewAnimatedHeight, setShowInputAccessoryView, isInputAccessoryViewMode, keyboardTranslateY, isTransitioningFromCustomView, setIsEmojiSearchFocused]);
 
     // Handle focus after emoji picker is dismissed
     useEffect(() => {
@@ -262,13 +262,13 @@ export default function PostInput({
                 setIsManuallyFocusingAfterEmojiDismiss(false);
             }
 
-            height.value = inputAccessoryViewAnimatedHeight.value;
+            keyboardTranslateY.value = inputAccessoryViewAnimatedHeight.value;
             inputAccessoryViewAnimatedHeight.value = 0;
             isInputAccessoryViewMode.value = false;
 
-            // Reset inset and offset so the scroll restoration can trigger when emoji picker closes
-            inset.value = 0;
-            offset.value = 0;
+            // Reset bottomInset and scrollOffset so the scroll restoration can trigger when emoji picker closes
+            bottomInset.value = 0;
+            scrollOffset.value = 0;
 
             return;
         }
@@ -290,7 +290,7 @@ export default function PostInput({
 
             // Set input container height to keyboard height to ensure correct final position
             // This ensures the height always matches the keyboard, preventing accumulation
-            height.value = targetKeyboardHeight;
+            keyboardTranslateY.value = targetKeyboardHeight;
 
             // Use runOnUI to disable input accessory view mode atomically
             // This ensures the transition flag is visible when keyboard handlers start processing
@@ -311,7 +311,7 @@ export default function PostInput({
                 }
             }, 1000);
         }
-    }, [setIsFocused, showInputAccessoryView, inputAccessoryViewAnimatedHeight, setShowInputAccessoryView, isInputAccessoryViewMode, height, isTransitioningFromCustomView, isManuallyFocusingAfterEmojiDismiss, setIsEmojiSearchFocused, isEmojiSearchFocused, keyboardHeight, lastKeyboardHeight, inset, offset]);
+    }, [setIsFocused, showInputAccessoryView, inputAccessoryViewAnimatedHeight, setShowInputAccessoryView, isInputAccessoryViewMode, keyboardTranslateY, isTransitioningFromCustomView, isManuallyFocusingAfterEmojiDismiss, setIsEmojiSearchFocused, isEmojiSearchFocused, keyboardHeight, lastKeyboardHeight, bottomInset, scrollOffset]);
 
     const handleAndroidKeyboardHide = useCallback(() => {
         onBlur();

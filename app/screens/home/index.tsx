@@ -154,18 +154,15 @@ export function HomeScreen(props: HomeProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const tabBarComponent = useMemo(() => {
-        const TabBarComponent = (tabProps: BottomTabBarProps) => {
-            return (
-                <TabBar
-                    {...tabProps}
-                    theme={theme}
-                />
-            );
-        };
-        TabBarComponent.displayName = 'TabBarComponent';
-        return TabBarComponent;
-    }, [theme]);
+    const TabBarComponent = (tabProps: BottomTabBarProps) => {
+        return (
+            <TabBar
+                {...tabProps}
+                theme={theme}
+            />
+        );
+    };
+    TabBarComponent.displayName = 'TabBarComponent';
 
     return (
         <View
@@ -190,7 +187,7 @@ export function HomeScreen(props: HomeProps) {
                 <Tab.Navigator
                     screenOptions={{headerShown: false, freezeOnBlur: false, lazy: true}}
                     backBehavior='none'
-                    tabBar={tabBarComponent}
+                    tabBar={TabBarComponent}
                 >
                     <Tab.Screen
                         name={Screens.HOME}

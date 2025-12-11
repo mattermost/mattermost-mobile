@@ -73,10 +73,10 @@ describe('useKeyboardAwarePostDraft', () => {
     const mockKeyboardControllerDismiss = KeyboardController.dismiss as jest.Mock;
 
     const mockKeyboardAnimationReturn = {
-        height: {value: 0},
-        inset: {value: 0},
-        offset: {value: 0},
-        scroll: {value: 0},
+        keyboardTranslateY: {value: 0},
+        bottomInset: {value: 0},
+        scrollOffset: {value: 0},
+        scrollPosition: {value: 0},
         onScroll: jest.fn(),
         isKeyboardFullyOpen: {value: false},
         isKeyboardFullyClosed: {value: true},
@@ -100,8 +100,8 @@ describe('useKeyboardAwarePostDraft', () => {
             expect(result.current.postInputContainerHeight).toBe(91);
             expect(result.current.listRef.current).toBeNull();
             expect(result.current.inputRef.current).toBeUndefined();
-            expect(result.current.height).toBe(mockKeyboardAnimationReturn.height);
-            expect(result.current.contentInset).toBe(mockKeyboardAnimationReturn.inset);
+            expect(result.current.keyboardTranslateY).toBe(mockKeyboardAnimationReturn.keyboardTranslateY);
+            expect(result.current.contentInset).toBe(mockKeyboardAnimationReturn.bottomInset);
             expect(result.current.onScroll).toBe(mockKeyboardAnimationReturn.onScroll);
             expect(result.current.blurInput).toBeDefined();
             expect(result.current.focusInput).toBeDefined();
@@ -126,8 +126,8 @@ describe('useKeyboardAwarePostDraft', () => {
 
             expect(mockUseKeyboardScrollAdjustment).toHaveBeenCalledWith(
                 result.current.listRef,
-                mockKeyboardAnimationReturn.scroll,
-                mockKeyboardAnimationReturn.offset,
+                mockKeyboardAnimationReturn.scrollPosition,
+                mockKeyboardAnimationReturn.scrollOffset,
                 true, // isIOS
                 mockKeyboardAnimationReturn.isInputAccessoryViewMode,
                 mockKeyboardAnimationReturn.isTransitioningFromCustomView,
@@ -239,16 +239,16 @@ describe('useKeyboardAwarePostDraft', () => {
 
     describe('blurAndDismissKeyboard', () => {
         it('should reset shared values and dismiss keyboard', async () => {
-            const mockHeight = {value: 300};
-            const mockInset = {value: 300};
-            const mockOffset = {value: 300};
+            const mockKeyboardTranslateY = {value: 300};
+            const mockBottomInset = {value: 300};
+            const mockScrollOffset = {value: 300};
             const mockBlur = jest.fn();
 
             mockUseKeyboardAnimation.mockReturnValue({
                 ...mockKeyboardAnimationReturn,
-                height: mockHeight,
-                inset: mockInset,
-                offset: mockOffset,
+                keyboardTranslateY: mockKeyboardTranslateY,
+                bottomInset: mockBottomInset,
+                scrollOffset: mockScrollOffset,
             });
 
             const {result} = renderHook(() => useKeyboardAwarePostDraft());
@@ -260,23 +260,23 @@ describe('useKeyboardAwarePostDraft', () => {
                 await result.current.blurAndDismissKeyboard();
             });
 
-            expect(mockHeight.value).toBe(0);
-            expect(mockInset.value).toBe(0);
-            expect(mockOffset.value).toBe(0);
+            expect(mockKeyboardTranslateY.value).toBe(0);
+            expect(mockBottomInset.value).toBe(0);
+            expect(mockScrollOffset.value).toBe(0);
             expect(mockBlur).toHaveBeenCalled();
             expect(mockKeyboardControllerDismiss).toHaveBeenCalled();
         });
 
         it('should handle missing inputRef gracefully', async () => {
-            const mockHeight = {value: 300};
-            const mockInset = {value: 300};
-            const mockOffset = {value: 300};
+            const mockKeyboardTranslateY = {value: 300};
+            const mockBottomInset = {value: 300};
+            const mockScrollOffset = {value: 300};
 
             mockUseKeyboardAnimation.mockReturnValue({
                 ...mockKeyboardAnimationReturn,
-                height: mockHeight,
-                inset: mockInset,
-                offset: mockOffset,
+                keyboardTranslateY: mockKeyboardTranslateY,
+                bottomInset: mockBottomInset,
+                scrollOffset: mockScrollOffset,
             });
 
             const {result} = renderHook(() => useKeyboardAwarePostDraft());
@@ -285,19 +285,19 @@ describe('useKeyboardAwarePostDraft', () => {
                 await result.current.blurAndDismissKeyboard();
             });
 
-            expect(mockHeight.value).toBe(0);
-            expect(mockInset.value).toBe(0);
-            expect(mockOffset.value).toBe(0);
+            expect(mockKeyboardTranslateY.value).toBe(0);
+            expect(mockBottomInset.value).toBe(0);
+            expect(mockScrollOffset.value).toBe(0);
             expect(mockKeyboardControllerDismiss).toHaveBeenCalled();
         });
     });
 
     describe('inputContainerAnimatedStyle', () => {
         it('should return animated style with translateY on iOS', () => {
-            const mockHeight = {value: 200};
+            const mockKeyboardTranslateY = {value: 200};
             mockUseKeyboardAnimation.mockReturnValue({
                 ...mockKeyboardAnimationReturn,
-                height: mockHeight,
+                keyboardTranslateY: mockKeyboardTranslateY,
             });
 
             const {result} = renderHook(() => useKeyboardAwarePostDraft());
@@ -331,7 +331,7 @@ describe('useKeyboardAwarePostDraft', () => {
         it('should return all expected properties', () => {
             const {result} = renderHook(() => useKeyboardAwarePostDraft());
 
-            expect(result.current).toHaveProperty('height');
+            expect(result.current).toHaveProperty('keyboardTranslateY');
             expect(result.current).toHaveProperty('listRef');
             expect(result.current).toHaveProperty('inputRef');
             expect(result.current).toHaveProperty('contentInset');
@@ -340,8 +340,8 @@ describe('useKeyboardAwarePostDraft', () => {
             expect(result.current).toHaveProperty('setPostInputContainerHeight');
             expect(result.current).toHaveProperty('inputContainerAnimatedStyle');
             expect(result.current).toHaveProperty('keyboardHeight');
-            expect(result.current).toHaveProperty('offset');
-            expect(result.current).toHaveProperty('scroll');
+            expect(result.current).toHaveProperty('scrollOffset');
+            expect(result.current).toHaveProperty('scrollPosition');
             expect(result.current).toHaveProperty('blurInput');
             expect(result.current).toHaveProperty('focusInput');
             expect(result.current).toHaveProperty('blurAndDismissKeyboard');
@@ -350,10 +350,10 @@ describe('useKeyboardAwarePostDraft', () => {
             expect(result.current).toHaveProperty('isKeyboardInTransition');
         });
 
-        it('should return keyboardHeight as alias for height', () => {
+        it('should return keyboardHeight as alias for keyboardTranslateY', () => {
             const {result} = renderHook(() => useKeyboardAwarePostDraft());
 
-            expect(result.current.keyboardHeight).toBe(result.current.height);
+            expect(result.current.keyboardHeight).toBe(result.current.keyboardTranslateY);
         });
     });
 });

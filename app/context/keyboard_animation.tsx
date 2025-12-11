@@ -7,11 +7,11 @@ import {useSharedValue, type SharedValue} from 'react-native-reanimated';
 import type {PasteInputRef} from '@mattermost/react-native-paste-input';
 
 interface KeyboardAnimationContextType {
-    height: SharedValue<number>;
-    inset: SharedValue<number>;
-    offset: SharedValue<number>;
+    keyboardTranslateY: SharedValue<number>;
+    bottomInset: SharedValue<number>;
+    scrollOffset: SharedValue<number>;
     keyboardHeight: SharedValue<number>;
-    scroll: SharedValue<number>;
+    scrollPosition: SharedValue<number>;
     onScroll: (event: unknown) => void;
     postInputContainerHeight: number;
     inputRef: React.MutableRefObject<PasteInputRef | undefined>;
@@ -63,11 +63,11 @@ export const useKeyboardAnimationContext = () => {
     const context = useContext(KeyboardAnimationContext);
 
     // Always create default values (hooks must be called unconditionally)
-    const defaultHeight = useSharedValue(0);
-    const defaultInset = useSharedValue(0);
-    const defaultOffset = useSharedValue(0);
+    const defaultKeyboardTranslateY = useSharedValue(0);
+    const defaultBottomInset = useSharedValue(0);
+    const defaultScrollOffset = useSharedValue(0);
     const defaultKeyboardHeight = useSharedValue(0);
-    const defaultScroll = useSharedValue(0);
+    const defaultScrollPosition = useSharedValue(0);
     const defaultIsKeyboardFullyOpen = useSharedValue(false);
     const defaultIsKeyboardFullyClosed = useSharedValue(true);
     const defaultIsKeyboardInTransition = useSharedValue(false);
@@ -116,11 +116,11 @@ export const useKeyboardAnimationContext = () => {
     }, []);
 
     const fallbackValue = useMemo(() => ({
-        height: defaultHeight,
-        inset: defaultInset,
-        offset: defaultOffset,
+        keyboardTranslateY: defaultKeyboardTranslateY,
+        bottomInset: defaultBottomInset,
+        scrollOffset: defaultScrollOffset,
         keyboardHeight: defaultKeyboardHeight,
-        scroll: defaultScroll,
+        scrollPosition: defaultScrollPosition,
         onScroll: defaultOnScroll,
         postInputContainerHeight: DEFAULT_POST_INPUT_HEIGHT,
         inputRef: defaultInputRef,
@@ -146,11 +146,11 @@ export const useKeyboardAnimationContext = () => {
         updateCursorPosition: defaultUpdateCursorPosition.current,
         registerPostInputCallbacks: defaultRegisterPostInputCallbacks,
     }), [
-        defaultHeight,
-        defaultInset,
-        defaultOffset,
+        defaultKeyboardTranslateY,
+        defaultBottomInset,
+        defaultScrollOffset,
         defaultKeyboardHeight,
-        defaultScroll,
+        defaultScrollPosition,
         defaultOnScroll,
         defaultInputRef,
         defaultBlurInput,

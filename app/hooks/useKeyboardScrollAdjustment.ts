@@ -14,8 +14,8 @@ import type {FlatList} from 'react-native';
  */
 export const useKeyboardScrollAdjustment = (
     scrollViewRef: React.RefObject<FlatList<string | PostModel>>,
-    scroll: SharedValue<number>,
-    offset: SharedValue<number>,
+    scrollPosition: SharedValue<number>,
+    scrollOffset: SharedValue<number>,
     enabled = true,
     isInputAccessoryViewMode?: SharedValue<boolean>,
     isTransitioningFromCustomView?: SharedValue<boolean>,
@@ -31,10 +31,10 @@ export const useKeyboardScrollAdjustment = (
         [scrollViewRef],
     );
 
-    // Watch for offset changes and adjust scroll position accordingly
+    // Watch for scrollOffset changes and adjust scroll position accordingly
     useAnimatedReaction(
         () => ({
-            offset: offset.value,
+            scrollOffset: scrollOffset.value,
             isInputAccessoryViewMode: isInputAccessoryViewMode?.value || false,
             isTransitioning: isTransitioningFromCustomView?.value || false,
         }),
@@ -44,13 +44,13 @@ export const useKeyboardScrollAdjustment = (
             // Skip scroll adjustment when:
             // - Input Accessory view (emoji picker) is active
             // - Transitioning from custom view to keyboard (heights are same, no scroll needed)
-            // - Offset hasn't actually changed (prevents re-scrolling after transition ends)
-            const offsetChanged = previous === null || Math.abs(current.offset - (previous?.offset || 0)) > 0.5;
+            // - scrollOffset hasn't actually changed (prevents re-scrolling after transition ends)
+            const scrollOffsetChanged = previous === null || Math.abs(current.scrollOffset - (previous?.scrollOffset || 0)) > 0.5;
 
-            if (enabled && !current.isInputAccessoryViewMode && !current.isTransitioning && offsetChanged) {
-                runOnJS(scrollToOffset)(current.offset, scroll.value);
+            if (enabled && !current.isInputAccessoryViewMode && !current.isTransitioning && scrollOffsetChanged) {
+                runOnJS(scrollToOffset)(current.scrollOffset, scrollPosition.value);
             }
         },
-        [offset, enabled, isInputAccessoryViewMode, isTransitioningFromCustomView],
+        [scrollPosition, scrollOffset, enabled, isInputAccessoryViewMode, isTransitioningFromCustomView],
     );
 };

@@ -117,8 +117,8 @@ const PostList = ({
     const firstIdInPosts = posts[0]?.id;
 
     const {
-        height: keyboardHeightValue,
-        inset: contentInset,
+        keyboardTranslateY: keyboardHeightValue,
+        bottomInset: contentInset,
         onScroll: onScrollProp,
         postInputContainerHeight,
         keyboardHeight,
@@ -148,14 +148,14 @@ const PostList = ({
         () => ({
             isFullyOpen: isKeyboardFullyOpen.value,
             isFullyClosed: isKeyboardFullyClosed.value,
-            height: keyboardHeightValue.value,
+            keyboardTranslateY: keyboardHeightValue.value,
         }),
-        ({isFullyOpen, isFullyClosed, height}) => {
+        ({isFullyOpen, isFullyClosed, keyboardTranslateY}) => {
             // Only update when state actually changes (transition detected)
             const stateChanged = (prevIsFullyClosed.value !== isFullyClosed) || (prevIsFullyOpen.value !== isFullyOpen);
 
             if (stateChanged && (isFullyOpen || isFullyClosed)) {
-                const offset = postInputContainerHeight + height;
+                const offset = postInputContainerHeight + keyboardTranslateY;
                 runOnJS(setProgressViewOffset)(offset);
             }
             prevIsFullyOpen.value = isFullyOpen;

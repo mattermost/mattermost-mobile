@@ -21,33 +21,33 @@ export const useKeyboardAnimation = (
     const progress = useSharedValue(0);
 
     /**
-   * height: Keyboard height (adjusted for tab bar) used to animate input container position
+   * keyboardTranslateY: Keyboard height (adjusted for tab bar) used to animate input container position
    *
    * How it works: This value represents the keyboard height and is used with negative translateY
-   * in useKeyboardAwarePostDraft.ts (transform: [{translateY: -height.value}]) to move the input
+   * in useKeyboardAwarePostDraft.ts (transform: [{translateY: -keyboardTranslateY.value}]) to move the input
    * container UP by the keyboard height amount. Higher keyboard height = input moves up more.
    *
    * Smoothed during interactive gestures to prevent jerky movements
    */
-    const height = useSharedValue(0);
+    const keyboardTranslateY = useSharedValue(0);
 
     /**
-   * inset: Bottom inset for the scroll view
+   * bottomInset: Bottom inset for the scroll view
    * Adds padding at the bottom of scroll content so it doesn't hide behind keyboard
    */
-    const inset = useSharedValue(0);
+    const bottomInset = useSharedValue(0);
 
     /**
-   * offset: Scroll offset adjustment when keyboard opens
+   * scrollOffset: Scroll offset adjustment when keyboard opens
    * Ensures the scroll view scrolls to the right position when keyboard appears
    */
-    const offset = useSharedValue(0);
+    const scrollOffset = useSharedValue(0);
 
     /**
    * scroll: Tracks the current scroll position of the ScrollView
    * Used to calculate proper offset when keyboard opens
    */
-    const scroll = useSharedValue(0);
+    const scrollPosition = useSharedValue(0);
 
     /**
    * keyboardHeight: The exact height of the keyboard from events
@@ -160,7 +160,7 @@ export const useKeyboardAnimation = (
             // Store the exact keyboard height
             keyboardHeight.value = e.height;
             const adjustedHeight = e.height - (tabBarAdjustment * e.progress);
-            height.value = adjustedHeight;
+            keyboardTranslateY.value = adjustedHeight;
 
             // Update keyboard state flags
             isKeyboardFullyClosed.value = e.height === 0;
@@ -168,8 +168,8 @@ export const useKeyboardAnimation = (
             isKeyboardInTransition.value = e.height > 0 && e.progress < 1;
 
             // Update scroll view insets and offsets
-            // inset: Adds bottom padding to scroll content
-            inset.value = adjustedHeight;
+            // bottomInset: Adds bottom padding to scroll content
+            bottomInset.value = adjustedHeight;
         },
 
         /**
@@ -203,28 +203,28 @@ export const useKeyboardAnimation = (
             // Ignore stale interactive events during screen navigation
             // When navigating from channel (keyboard open) to thread, the channel's keyboard dismissal
             // can trigger stale onInteractive events that arrive at the newly mounted thread screen.
-            // If keyboard is fully closed (height === 0), any onInteractive event is stale and should be ignored.
-            if (height.value === 0) {
+            // If keyboard is fully closed (keyboardTranslateY === 0), any onInteractive event is stale and should be ignored.
+            if (keyboardTranslateY.value === 0) {
                 return;
             }
 
-            if (height.value > 0) {
+            if (keyboardTranslateY.value > 0) {
                 isInteractiveGesture.value = true;
             }
 
-            // Track if keyboard is closing (height decreasing) or opening (height increasing)
+            // Track if keyboard is closing (keyboardTranslateY decreasing) or opening (keyboardTranslateY increasing)
             // This detects direction changes mid-gesture for smooth animations
-            if (e.height < height.value) {
+            if (e.height < keyboardTranslateY.value) {
                 isKeyboardClosing.value = true;
-            } else if (e.height > height.value) {
+            } else if (e.height > keyboardTranslateY.value) {
                 // User changed direction - swiped back up
                 isKeyboardClosing.value = false;
             }
 
             const adjustedHeight = e.height - (tabBarAdjustment * e.progress);
-            height.value = adjustedHeight;
-            offset.value = adjustedHeight;
-            inset.value = adjustedHeight;
+            keyboardTranslateY.value = adjustedHeight;
+            scrollOffset.value = adjustedHeight;
+            bottomInset.value = adjustedHeight;
 
             // Update keyboard state flags
             isKeyboardFullyClosed.value = e.height === 0;
@@ -257,12 +257,12 @@ export const useKeyboardAnimation = (
                 return;
             }
 
-            // If keyboard is closing (detected in onInteractive), set height/offset/inset to 0
+            // If keyboard is closing (detected in onInteractive), set keyboardTranslateY/scrollOffset/bottomInset to 0
             // This prevents the keyboard from jumping back up when user releases finger mid-swipe
             if (isKeyboardClosing.value) {
-                height.value = 0;
-                offset.value = 0;
-                inset.value = 0;
+                keyboardTranslateY.value = 0;
+                scrollOffset.value = 0;
+                bottomInset.value = 0;
                 return;
             }
 
@@ -280,13 +280,13 @@ export const useKeyboardAnimation = (
             // After user releases finger mid-swipe up, onMove sometimes gets wrong height values
             // Example: keyboard at 346px, user releases, onMove reports 80px (stale from earlier)
             // This check only applies during interactive gestures, not during normal keyboard opening
-            if (isInteractiveGesture.value && absHeight < height.value && e.progress < 1) {
+            if (isInteractiveGesture.value && absHeight < keyboardTranslateY.value && e.progress < 1) {
                 return;
             }
 
-            height.value = absHeight;
-            offset.value = absHeight;
-            inset.value = absHeight;
+            keyboardTranslateY.value = absHeight;
+            scrollOffset.value = absHeight;
+            bottomInset.value = absHeight;
 
             // Update keyboard state flags
             isKeyboardFullyClosed.value = absHeight === 0;
@@ -344,19 +344,19 @@ export const useKeyboardAnimation = (
                     return;
                 }
 
-                // If transitioning from custom view, always update height to match keyboard
+                // If transitioning from custom view, always update keyboardTranslateY to match keyboard
                 // This ensures correct positioning when emoji picker height != keyboard height
                 if (wasTransitioningFromCustomView) {
-                    height.value = adjustedHeight;
-                } else if (Math.abs(height.value - adjustedHeight) > 1) {
+                    keyboardTranslateY.value = adjustedHeight;
+                } else if (Math.abs(keyboardTranslateY.value - adjustedHeight) > 1) {
                     // For normal keyboard opening, only adjust if significantly different
-                    height.value = adjustedHeight;
+                    keyboardTranslateY.value = adjustedHeight;
                 }
 
-                // Update inset and offset to match final keyboard height
+                // Update bottomInset and scrollOffset to match final keyboard height
                 // This ensures messages don't get hidden behind keyboard
-                inset.value = adjustedHeight;
-                offset.value = adjustedHeight;
+                bottomInset.value = adjustedHeight;
+                scrollOffset.value = adjustedHeight;
 
                 isKeyboardFullyOpen.value = true;
                 isKeyboardFullyClosed.value = false;
@@ -366,14 +366,14 @@ export const useKeyboardAnimation = (
             // Use e.progress (from event) not progress.value (shared value might be stale)
             if (e.progress === 0) {
                 // Only set to 0 if not already close to 0
-                if (Math.abs(height.value) > 0.5) {
-                    height.value = 0;
+                if (Math.abs(keyboardTranslateY.value) > 0.5) {
+                    keyboardTranslateY.value = 0;
                 }
                 isKeyboardFullyOpen.value = false;
                 isKeyboardFullyClosed.value = true;
                 isKeyboardInTransition.value = false;
-                offset.value = 0;
-                inset.value = 0;
+                scrollOffset.value = 0;
+                bottomInset.value = 0;
             }
         },
     });
@@ -388,17 +388,17 @@ export const useKeyboardAnimation = (
    */
     const onScroll = useAnimatedScrollHandler({
         onScroll: (e) => {
-            scroll.value = e.contentOffset.y + inset.value;
+            scrollPosition.value = e.contentOffset.y + bottomInset.value;
         },
     });
 
     return {
-        height,
+        keyboardTranslateY,
         onScroll,
-        inset,
-        offset,
+        bottomInset,
+        scrollOffset,
         keyboardHeight,
-        scroll,
+        scrollPosition,
         isKeyboardFullyOpen,
         isKeyboardFullyClosed,
         isKeyboardInTransition,

@@ -31,10 +31,10 @@ export const useKeyboardAwarePostDraft = (isThreadView = false, enabled = true) 
     const insets = useSafeAreaInsets();
 
     const {
-        height,
-        inset,
-        offset,
-        scroll,
+        keyboardTranslateY,
+        bottomInset,
+        scrollOffset,
+        scrollPosition,
         onScroll,
         isKeyboardFullyOpen,
         isKeyboardFullyClosed,
@@ -45,12 +45,12 @@ export const useKeyboardAwarePostDraft = (isThreadView = false, enabled = true) 
 
     // Only apply scroll adjustment on iOS, Android uses native keyboard handling
     // Also pass isInputAccessoryViewMode and isTransitioningFromCustomView to control scroll behavior
-    useKeyboardScrollAdjustment(listRef, scroll, offset, isIOS, isInputAccessoryViewMode, isTransitioningFromCustomView);
+    useKeyboardScrollAdjustment(listRef, scrollPosition, scrollOffset, isIOS, isInputAccessoryViewMode, isTransitioningFromCustomView);
 
     const inputContainerAnimatedStyle = useAnimatedStyle(
         () => {
             return {
-                transform: [{translateY: isIOS ? -height.value : 0}],
+                transform: [{translateY: isIOS ? -keyboardTranslateY.value : 0}],
             };
         },
         [],
@@ -65,25 +65,25 @@ export const useKeyboardAwarePostDraft = (isThreadView = false, enabled = true) 
     }, []);
 
     const blurAndDismissKeyboard = useCallback(async () => {
-        inset.value = 0;
-        offset.value = 0;
-        height.value = 0;
+        bottomInset.value = 0;
+        scrollOffset.value = 0;
+        keyboardTranslateY.value = 0;
         inputRef.current?.blur();
         await KeyboardController.dismiss();
-    }, [height, inset, offset]);
+    }, [keyboardTranslateY, bottomInset, scrollOffset]);
 
     return {
-        height,
+        keyboardTranslateY,
         listRef,
         inputRef,
-        contentInset: inset,
+        contentInset: bottomInset,
         onScroll,
         postInputContainerHeight,
         setPostInputContainerHeight,
         inputContainerAnimatedStyle,
-        keyboardHeight: height,
-        offset,
-        scroll,
+        keyboardHeight: keyboardTranslateY,
+        scrollOffset,
+        scrollPosition,
         blurInput,
         focusInput,
         blurAndDismissKeyboard,
