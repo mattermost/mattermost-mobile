@@ -59,11 +59,6 @@ runs:
         echo "::group::install-pods-dependencies"
         echo "INTUNE_ENABLED=$INTUNE_ENABLED"
         npm run ios-gems
+        cd ios && pod update hermes-engine --no-repo-update
         npm run pod-install
-        
-        # Temporary fix for hermes-engine pod update on specific branch
-        if [[ "$GITHUB_REF_NAME" == "feat/MM-65147-upgrade-react-native-0773" ]] || [[ "$GITHUB_HEAD_REF" == "feat/MM-65147-upgrade-react-native-0773" ]]; then
-          echo "::notice::Running pod update hermes-engine for branch $GITHUB_REF_NAME$GITHUB_HEAD_REF"
-          cd ios && pod update hermes-engine --no-repo-update
-        fi
         echo "::endgroup::"
