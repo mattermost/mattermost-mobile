@@ -2,10 +2,11 @@
 // See LICENSE.txt for license information.
 
 import {fetchAIBots, getBotDirectChannel, type LLMBot} from '@agents/actions/remote/bots';
+import {AgentsIntro} from '@agents/components/illustrations';
 import {goToAgentThreadsList} from '@agents/screens/navigation';
 import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {type LayoutChangeEvent, View, Text, TouchableOpacity, ActivityIndicator, ScrollView} from 'react-native';
+import {type LayoutChangeEvent, View, Text, TouchableOpacity, ActivityIndicator} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {buildAbsoluteUrl} from '@actions/remote/file';
@@ -94,18 +95,24 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     content: {
         flex: 1,
-        padding: 16,
+        justifyContent: 'flex-end',
+    },
+    introContent: {
+        gap: 8,
+        paddingHorizontal: 24,
+        paddingTop: 16,
+        paddingBottom: 32,
     },
     welcomeText: {
-        fontSize: 18,
-        fontWeight: '600',
+        fontSize: 25,
+        fontFamily: 'Metropolis-SemiBold',
+        lineHeight: 30,
         color: theme.centerChannelColor,
-        marginBottom: 8,
     },
     descriptionText: {
-        fontSize: 14,
-        color: changeOpacity(theme.centerChannelColor, 0.64),
-        marginBottom: 24,
+        fontSize: 16,
+        lineHeight: 24,
+        color: theme.centerChannelColor,
     },
     loadingContainer: {
         flex: 1,
@@ -346,24 +353,24 @@ const AgentChat = ({
 
             {/* Main content */}
             <View style={styles.mainContent}>
-                <ScrollView
-                    style={styles.content}
-                    contentContainerStyle={{flexGrow: 1}}
-                >
-                    <Text style={styles.welcomeText}>
-                        {intl.formatMessage({
-                            id: 'agents.chat.welcome',
-                            defaultMessage: 'Start a conversation with an agent',
-                        })}
-                    </Text>
-                    <Text style={styles.descriptionText}>
-                        {intl.formatMessage({
-                            id: 'agents.chat.description',
-                            defaultMessage: 'Type a message below to start a new conversation. You can view your past conversations by tapping the history icon above.',
-                        })}
-                    </Text>
-                    {error && <Text style={styles.errorText}>{error}</Text>}
-                </ScrollView>
+                <View style={styles.content}>
+                    <View style={styles.introContent}>
+                        <AgentsIntro theme={theme}/>
+                        <Text style={styles.welcomeText}>
+                            {intl.formatMessage({
+                                id: 'agents.chat.intro_title',
+                                defaultMessage: 'Ask Agents anything',
+                            })}
+                        </Text>
+                        <Text style={styles.descriptionText}>
+                            {intl.formatMessage({
+                                id: 'agents.chat.intro_description',
+                                defaultMessage: 'Agents are here to help.',
+                            })}
+                        </Text>
+                        {error && <Text style={styles.errorText}>{error}</Text>}
+                    </View>
+                </View>
 
                 {channelId && (
                     <ExtraKeyboardProvider>
