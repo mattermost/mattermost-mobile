@@ -284,7 +284,6 @@ const AgentChat = ({
     return (
         <View
             style={styles.container}
-            onLayout={onLayout}
         >
             {/* Header */}
             <View style={[styles.headerContainer, {paddingTop: insets.top}]}>
@@ -352,7 +351,10 @@ const AgentChat = ({
             </View>
 
             {/* Main content */}
-            <View style={styles.mainContent}>
+            <View
+                style={styles.mainContent}
+                onLayout={onLayout}
+            >
                 <View style={styles.content}>
                     <View style={styles.introContent}>
                         <AgentsIntro theme={theme}/>
