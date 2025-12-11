@@ -1,0 +1,11 @@
+# Intune MAM library submodule (private repository - internal builds only)
+# To pin to a specific tag/commit:
+#   cd libraries/@mattermost/intune
+#   git checkout <tag-or-commit>
+#   cd ../..
+#   git add libraries/@mattermost/intune
+#   git commit -m "Update Intune submodule to <version>"
+
+[submodule "libraries/@mattermost/intune"]
+	path = libraries/@mattermost/intune
+	url = git@github.com:mattermost/mattermost-mobile-intune.git

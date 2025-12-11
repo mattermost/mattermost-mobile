@@ -243,11 +243,11 @@ describe('observeIsMinimumLicenseTier', () => {
         }).then(() => {
             operator.handleSystem({
                 systems: [
-                    {id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: 'Professional'}},
+                    {id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: 'professional'}},
                 ],
                 prepareRecordsOnly: false,
             }).then(() => {
-                observeIsMinimumLicenseTier(database, 'Professional').subscribe((isMinimumTier) => {
+                observeIsMinimumLicenseTier(database, 'professional').subscribe((isMinimumTier) => {
                     expect(isMinimumTier).toBe(false);
                     done();
                 });
