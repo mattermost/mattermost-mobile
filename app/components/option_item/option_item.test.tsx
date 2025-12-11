@@ -375,4 +375,16 @@ describe('OptionItem', () => {
         });
         expect(props.action).not.toHaveBeenCalled();
     });
+
+    it('should show destructive info styling when isInfoDestructive is true', () => {
+        const props = getBaseProps();
+        props.info = 'Test info';
+        props.isInfoDestructive = true;
+        props.destructive = false;
+
+        const {getByText} = renderWithIntlAndTheme(<OptionItem {...props}/>);
+
+        const info = getByText('Test info');
+        expect(info).toHaveStyle({color: Preferences.THEMES.denim.dndIndicator});
+    });
 });

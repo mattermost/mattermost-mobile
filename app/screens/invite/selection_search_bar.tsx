@@ -19,13 +19,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             display: 'flex',
         },
         searchBarTitleText: {
-            marginHorizontal: 20,
             marginTop: SEARCH_BAR_TITLE_MARGIN_TOP,
             color: theme.centerChannelColor,
             ...typography('Heading', 700, 'SemiBold'),
         },
         searchBar: {
-            marginHorizontal: 20,
             marginTop: SEARCH_BAR_MARGIN_TOP,
         },
         searchInput: {
@@ -65,17 +63,17 @@ export default function SelectionSearchBar({
         onLayoutContainer(e);
     }, [onLayoutContainer]);
 
-    const onTextInputFocus = () => {
+    const onTextInputFocus = useCallback(() => {
         setIsFocused(true);
-    };
+    }, []);
 
-    const onTextInputBlur = () => {
+    const onTextInputBlur = useCallback(() => {
         setIsFocused(false);
-    };
+    }, []);
 
-    const handleSearchChange = (text: string) => {
+    const handleSearchChange = useCallback((text: string) => {
         onSearchChange(text);
-    };
+    }, [onSearchChange]);
 
     const searchInputStyle = useMemo(() => {
         const style = [];
@@ -90,7 +88,7 @@ export default function SelectionSearchBar({
         }
 
         return style;
-    }, [isFocused, styles]);
+    }, [isFocused, styles.searchInput, theme.buttonBg]);
 
     return (
         <View
