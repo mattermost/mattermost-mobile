@@ -259,9 +259,9 @@ export const useKeyboardAnimation = (
                 return;
             }
 
-            // During transition from custom view, only update keyboardHeight for reference
+            // During transition from custom view, don't update keyboardHeight from onMove events
+            // These events can be stale/out-of-order. Wait for onEnd to get the final correct height.
             if (isTransitioningFromCustomView.value) {
-                keyboardHeight.value = e.height;
                 return;
             }
 
@@ -358,13 +358,19 @@ export const useKeyboardAnimation = (
 
             // Use e.progress (from event) not progress.value (shared value might be stale)
             if (e.progress === 1) {
+                // CRITICAL FIX: Update keyboardHeight FIRST from onEnd event (most reliable source)
+                // During transition, onMove events can be stale/out-of-order, so onEnd's height is authoritative
+                // Store previous value for stale check before updating
+                const previousKeyboardHeight = keyboardHeight.value;
+                keyboardHeight.value = e.height;
+
                 // Use same calculation as onInteractive/onMove for consistency
                 const adjustedHeight = e.height - (tabBarAdjustment * e.progress);
 
                 // Ignore stale/out-of-order events
-                // If keyboard is supposed to be closed (keyboardHeight.value = 0) but we get an open event,
+                // If keyboard is supposed to be closed (previousKeyboardHeight = 0) but we get an open event,
                 // it's a stale event from before the close - ignore it
-                if (keyboardHeight.value === 0 && e.height > 0) {
+                if (previousKeyboardHeight === 0 && e.height > 0) {
                     return;
                 }
 
