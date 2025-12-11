@@ -8,6 +8,8 @@ import Animated from 'react-native-reanimated';
 import {useServerUrl} from '@context/server';
 import {urlSafeBase64Encode} from '@utils/security';
 
+import type {SharedRefType} from 'expo';
+
 type ExpoImagePropsWithId = ImageProps & {id: string};
 type ExpoImagePropsMemoryOnly = ImageProps & {cachePolicy: 'memory'; id?: string};
 type ExpoImageProps = ExpoImagePropsWithId | ExpoImagePropsMemoryOnly;
@@ -25,13 +27,13 @@ const ExpoImage = forwardRef<Image, ExpoImageProps>(({id, ...props}, ref) => {
      * for filesystem path compatibility (avoiding special characters in directory names).
      */
     const cachePath = useMemo(() => urlSafeBase64Encode(serverUrl), [serverUrl]);
-    const source: ImageSource = useMemo(() => {
-        if (typeof props.source === 'number') {
+    const source: ImageSource | string | number | ImageSource[] | string[] | SharedRefType<'image'> | null | undefined = useMemo(() => {
+        if (typeof props.source === 'number' || typeof props.source === 'string' || Array.isArray(props.source) || !props.source) {
             return props.source;
         }
 
         // Only add cacheKey and cachePath if id is provided (i.e., not memory-only caching)
-        if (id) {
+        if (id && typeof props.source === 'object' && 'uri' in props.source) {
             return {
                 ...props.source,
                 cacheKey: id,
@@ -43,13 +45,13 @@ const ExpoImage = forwardRef<Image, ExpoImageProps>(({id, ...props}, ref) => {
     }, [id, props.source, cachePath]);
 
     // Process placeholder to add cachePath and cacheKey if it has a uri
-    const placeholder: ImageSource | undefined = useMemo(() => {
-        if (!props.placeholder || typeof props.placeholder === 'number' || typeof props.placeholder === 'string') {
+    const placeholder: ImageSource | string | number | ImageSource[] | string[] | SharedRefType<'image'> | null | undefined = useMemo(() => {
+        if (!props.placeholder || typeof props.placeholder === 'number' || typeof props.placeholder === 'string' || Array.isArray(props.placeholder)) {
             return props.placeholder;
         }
 
         // If placeholder has a uri and id is provided, add cachePath and cacheKey
-        if (props.placeholder.uri && id) {
+        if (typeof props.placeholder === 'object' && 'uri' in props.placeholder && props.placeholder.uri && id) {
             return {
                 ...props.placeholder,
                 cacheKey: `${id}-thumb`,
@@ -74,13 +76,13 @@ ExpoImage.displayName = 'ExpoImage';
 const ExpoImageBackground = ({id, ...props}: ExpoImageBackgroundProps) => {
     const serverUrl = useServerUrl();
     const cachePath = useMemo(() => urlSafeBase64Encode(serverUrl), [serverUrl]);
-    const source: ImageSource = useMemo(() => {
-        if (typeof props.source === 'number') {
+    const source: ImageSource | string | number | ImageSource[] | string[] | SharedRefType<'image'> | null | undefined = useMemo(() => {
+        if (typeof props.source === 'number' || typeof props.source === 'string' || Array.isArray(props.source) || !props.source) {
             return props.source;
         }
 
         // Only add cacheKey and cachePath if id is provided (i.e., not memory-only caching)
-        if (id) {
+        if (id && typeof props.source === 'object' && 'uri' in props.source) {
             return {
                 ...props.source,
                 cacheKey: id,
@@ -92,13 +94,13 @@ const ExpoImageBackground = ({id, ...props}: ExpoImageBackgroundProps) => {
     }, [id, props.source, cachePath]);
 
     // Process placeholder to add cachePath and cacheKey if it has a uri
-    const placeholder: ImageSource | undefined = useMemo(() => {
-        if (!props.placeholder || typeof props.placeholder === 'number' || typeof props.placeholder === 'string') {
+    const placeholder: ImageSource | string | number | ImageSource[] | string[] | SharedRefType<'image'> | null | undefined = useMemo(() => {
+        if (!props.placeholder || typeof props.placeholder === 'number' || typeof props.placeholder === 'string' || Array.isArray(props.placeholder)) {
             return props.placeholder;
         }
 
         // If placeholder has a uri and id is provided, add cachePath and cacheKey
-        if (props.placeholder.uri && id) {
+        if (typeof props.placeholder === 'object' && 'uri' in props.placeholder && props.placeholder.uri && id) {
             return {
                 ...props.placeholder,
                 cacheKey: `${id}-thumb`,
