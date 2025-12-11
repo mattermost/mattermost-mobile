@@ -59,6 +59,5 @@ runs:
         echo "::group::install-pods-dependencies"
         echo "INTUNE_ENABLED=$INTUNE_ENABLED"
         npm run ios-gems
-        cd ios && pod update hermes-engine --no-repo-update
         npm run pod-install
         echo "::endgroup::"
