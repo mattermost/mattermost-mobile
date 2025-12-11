@@ -1,13 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {removePost} from '@actions/local/post';
 import {handleNewPostEvent, handlePostEdited} from '@actions/websocket/posts';
+import {PostTypes} from '@constants/post';
 import DatabaseManager from '@database/manager';
 import {getPostById} from '@queries/servers/post';
 import {logError} from '@utils/log';
-import {removePost} from "@actions/local/post";
-import {getCurrentUser} from "@queries/servers/user";
-import {PostTypes} from "@constants/post";
 
 export async function handleBoRPostRevealedEvent(serverUrl: string, msg: WebSocketMessage) {
     try {
