@@ -3,7 +3,6 @@
 
 import React, {useCallback, useRef} from 'react';
 import {Platform, StyleSheet} from 'react-native';
-import {KeyboardController} from 'react-native-keyboard-controller';
 import {runOnJS, runOnUI} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
@@ -13,6 +12,7 @@ import {useKeyboardAnimationContext} from '@context/keyboard_animation';
 import {useTheme} from '@context/theme';
 import {DEFAULT_INPUT_ACCESSORY_HEIGHT} from '@hooks/useInputAccessoryView';
 import {usePreventDoubleTap} from '@hooks/utils';
+import {dismissKeyboard, isKeyboardVisible} from '@utils/keyboard';
 import {changeOpacity} from '@utils/theme';
 
 type Props = {
@@ -84,8 +84,8 @@ export default function EmojiQuickAction({
             return;
         }
 
-        if (Platform.OS === 'android' && KeyboardController.isVisible()) {
-            KeyboardController.dismiss();
+        if (Platform.OS === 'android' && isKeyboardVisible()) {
+            dismissKeyboard();
 
             // Wait for keyboard to be fully dismissed before showing emoji picker
             // This prevents the emoji picker from appearing above the keyboard
@@ -120,7 +120,7 @@ export default function EmojiQuickAction({
             runOnJS(setShowInputAccessoryView)(true);
 
             // Dismiss keyboard
-            runOnJS(KeyboardController.dismiss)();
+            runOnJS(dismissKeyboard)();
         })();
     }, [disabled, showInputAccessoryView, isTransitioningFromCustomView.value, keyboardHeight.value, lastKeyboardHeight, isInputAccessoryViewMode, inputAccessoryViewAnimatedHeight, setShowInputAccessoryView, scheduleKeyboardCheck]));
 

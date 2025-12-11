@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useState} from 'react';
-import {type LayoutChangeEvent, StyleSheet} from 'react-native';
+import {Platform, type LayoutChangeEvent, StyleSheet} from 'react-native';
 import {KeyboardProvider} from 'react-native-keyboard-controller';
 import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -134,7 +134,17 @@ const Channel = ({
                     shouldRenderChannelBanner={includeChannelBanner}
                 />
                 {shouldRender &&
-                <KeyboardProvider>
+                (Platform.OS === 'ios' ? (
+                    <KeyboardProvider>
+                        <ChannelContent
+                            channelId={channelId}
+                            marginTop={marginTop}
+                            scheduledPostCount={scheduledPostCount}
+                            containerHeight={containerHeight}
+                            enabled={isVisible}
+                        />
+                    </KeyboardProvider>
+                ) : (
                     <ChannelContent
                         channelId={channelId}
                         marginTop={marginTop}
@@ -142,7 +152,7 @@ const Channel = ({
                         containerHeight={containerHeight}
                         enabled={isVisible}
                     />
-                </KeyboardProvider>
+                ))
                 }
                 {showFloatingCallContainer && shouldRender &&
                     <FloatingCallContainer

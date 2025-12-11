@@ -266,6 +266,10 @@ export default function PostInput({
             inputAccessoryViewAnimatedHeight.value = 0;
             isInputAccessoryViewMode.value = false;
 
+            // IMPORTANT: Reset isTransitioningFromCustomView when keyboard opens
+            // This ensures emoji picker can be opened again after keyboard appears
+            isTransitioningFromCustomView.value = false;
+
             // Reset bottomInset and scrollOffset so the scroll restoration can trigger when emoji picker closes
             bottomInset.value = 0;
             scrollOffset.value = 0;
