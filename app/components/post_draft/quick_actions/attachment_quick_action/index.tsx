@@ -26,6 +26,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             justifyContent: 'center',
             width: 40,
             height: 40,
+            marginRight: 8,
         },
         icon: {
             alignSelf: 'center',
