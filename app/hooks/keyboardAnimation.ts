@@ -155,11 +155,28 @@ export const useKeyboardAnimation = (
                 return;
             }
 
+            // CRITICAL FIX: Ignore redundant onStart events when keyboard is already fully open
+            // On real iOS devices, onStart can fire multiple times - once at the beginning and again
+            // when keyboard reaches full height. If we're already at the target height and position,
+            // processing this redundant event would reset state flags (isKeyboardFullyOpen, etc.)
+            // causing the input container to jump down and back up.
+            // Check if keyboard is already at target height and position
+            const adjustedHeight = e.height - (tabBarAdjustment * e.progress);
+            const isAlreadyAtTargetHeight = keyboardHeight.value > 0 &&
+                Math.abs(keyboardHeight.value - e.height) < 1; // Allow 1px tolerance for rounding
+            const isAlreadyAtTargetPosition = keyboardTranslateY.value > 0 &&
+                Math.abs(keyboardTranslateY.value - adjustedHeight) < 1; // Allow 1px tolerance
+            const isAlreadyFullyOpen = isKeyboardFullyOpen.value;
+
+            // If keyboard is already fully open and at correct position, ignore this redundant onStart
+            if (isAlreadyAtTargetHeight && isAlreadyAtTargetPosition && isAlreadyFullyOpen && e.height > 0) {
+                return;
+            }
+
             progress.value = e.progress;
 
             // Store the exact keyboard height
             keyboardHeight.value = e.height;
-            const adjustedHeight = e.height - (tabBarAdjustment * e.progress);
 
             // CRITICAL FIX: On real iOS devices, onStart can fire with progress: 1 before animation completes
             // Even if progress is 1, we should NOT set isKeyboardFullyOpen to true in onStart because:

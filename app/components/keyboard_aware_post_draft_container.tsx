@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode} from 'react';
-import {DeviceEventEmitter, Keyboard, Platform, type StyleProp, StyleSheet, type ViewStyle, View, type LayoutChangeEvent, type GestureResponderEvent} from 'react-native';
+import {BackHandler, DeviceEventEmitter, Keyboard, Platform, type StyleProp, StyleSheet, type ViewStyle, View, type LayoutChangeEvent, type GestureResponderEvent} from 'react-native';
 import {KeyboardGestureArea} from 'react-native-keyboard-controller';
 import Animated, {runOnJS, useAnimatedReaction, useSharedValue, withTiming} from 'react-native-reanimated';
 
@@ -277,6 +277,23 @@ export const KeyboardAwarePostDraftContainer = ({
 
         listRef.current?.scrollToOffset({offset: targetOffset, animated: true});
     }, [listRef, keyboardHeight, inputAccessoryViewAnimatedHeight]);
+
+    useEffect(() => {
+        if (Platform.OS !== 'android') {
+            return undefined;
+        }
+
+        const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+            if (showInputAccessoryView) {
+                closeInputAccessoryView();
+                return true;
+            }
+
+            return false;
+        });
+
+        return () => backHandler.remove();
+    }, [showInputAccessoryView, closeInputAccessoryView]);
 
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.CLOSE_INPUT_ACCESSORY_VIEW, () => {
