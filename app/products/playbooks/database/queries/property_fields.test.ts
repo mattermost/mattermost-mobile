@@ -289,6 +289,61 @@ describe('Property Fields Queries', () => {
 
             expect(subscriptionNext).toHaveBeenCalledWith([]);
         });
+
+        it('should emit when a property value changes', async () => {
+            const subscriptionNext = jest.fn();
+            const runId = 'run-id-1';
+            const fieldId = 'field-1';
+            const valueId = 'value-1';
+
+            // Create initial value
+            const initialValue = TestHelper.fakePlaybookRunAttributeValue(fieldId, runId, {
+                id: valueId,
+                value: 'initial value',
+            });
+
+            await operator.handlePlaybookRunPropertyValue({
+                propertyValues: [initialValue],
+                prepareRecordsOnly: false,
+            });
+
+            // Subscribe to observable
+            const result = observePlaybookRunPropertyValues(operator.database, runId);
+            const subscription = result.subscribe({next: subscriptionNext});
+
+            // Wait for initial emission
+            await new Promise((resolve) => setTimeout(resolve, 100));
+            expect(subscriptionNext).toHaveBeenCalled();
+            const initialValues = subscriptionNext.mock.calls[0][0];
+            expect(initialValues).toHaveLength(1);
+            expect(initialValues[0].value).toBe('initial value');
+
+            // Clear previous calls
+            subscriptionNext.mockClear();
+
+            // Update the value
+            const updatedValue = TestHelper.fakePlaybookRunAttributeValue(fieldId, runId, {
+                id: valueId,
+                value: 'updated value',
+                update_at: Date.now(),
+            });
+
+            await operator.handlePlaybookRunPropertyValue({
+                propertyValues: [updatedValue],
+                prepareRecordsOnly: false,
+            });
+
+            // Wait for the observer to emit the change
+            await new Promise((resolve) => setTimeout(resolve, 100));
+
+            // Verify observer emitted with updated value
+            expect(subscriptionNext).toHaveBeenCalled();
+            const updatedValues = subscriptionNext.mock.calls[0][0];
+            expect(updatedValues).toHaveLength(1);
+            expect(updatedValues[0].value).toBe('updated value');
+
+            subscription.unsubscribe();
+        });
     });
 
     describe('observePlaybookRunPropertyValue', () => {
@@ -538,6 +593,80 @@ describe('Property Fields Queries', () => {
             expect(fieldsWithValues).toHaveLength(1);
             expect(fieldsWithValues[0].propertyField.name).toBe('Active Field');
             expect(fieldsWithValues[0].value!.value).toBe('Value 1');
+        });
+
+        it('should emit when a property value changes', async () => {
+            const subscriptionNext = jest.fn();
+            const runId = 'run-id-1';
+            const fieldId = 'field-1';
+            const valueId = 'value-1';
+
+            // Create property field
+            const propertyField = TestHelper.fakePlaybookRunAttribute({
+                id: fieldId,
+                target_id: runId,
+                target_type: 'run',
+                name: 'Test Field',
+                type: 'text',
+                delete_at: 0,
+            });
+
+            // Create initial value
+            const initialValue = TestHelper.fakePlaybookRunAttributeValue(fieldId, runId, {
+                id: valueId,
+                value: 'initial value',
+            });
+
+            await operator.handlePlaybookRunPropertyField({
+                propertyFields: [propertyField],
+                prepareRecordsOnly: false,
+            });
+
+            await operator.handlePlaybookRunPropertyValue({
+                propertyValues: [initialValue],
+                prepareRecordsOnly: false,
+            });
+
+            // Subscribe to observable
+            const result = observePlaybookRunPropertyFieldsWithValues(operator.database, runId);
+            const subscription = result.subscribe({next: subscriptionNext});
+
+            // Wait for initial emission
+            await new Promise((resolve) => setTimeout(resolve, 100));
+            expect(subscriptionNext).toHaveBeenCalled();
+            const initialFieldsWithValues = subscriptionNext.mock.calls[0][0];
+            expect(initialFieldsWithValues).toHaveLength(1);
+            expect(initialFieldsWithValues[0].propertyField.id).toBe(fieldId);
+            expect(initialFieldsWithValues[0].value).toBeDefined();
+            expect(initialFieldsWithValues[0].value!.value).toBe('initial value');
+
+            // Clear previous calls
+            subscriptionNext.mockClear();
+
+            // Update the value
+            const updatedValue = TestHelper.fakePlaybookRunAttributeValue(fieldId, runId, {
+                id: valueId,
+                value: 'updated value',
+                update_at: Date.now(),
+            });
+
+            await operator.handlePlaybookRunPropertyValue({
+                propertyValues: [updatedValue],
+                prepareRecordsOnly: false,
+            });
+
+            // Wait for the observer to emit the change
+            await new Promise((resolve) => setTimeout(resolve, 100));
+
+            // Verify observer emitted with updated value
+            expect(subscriptionNext).toHaveBeenCalled();
+            const updatedFieldsWithValues = subscriptionNext.mock.calls[0][0];
+            expect(updatedFieldsWithValues).toHaveLength(1);
+            expect(updatedFieldsWithValues[0].propertyField.id).toBe(fieldId);
+            expect(updatedFieldsWithValues[0].value).toBeDefined();
+            expect(updatedFieldsWithValues[0].value!.value).toBe('updated value');
+
+            subscription.unsubscribe();
         });
     });
 });
