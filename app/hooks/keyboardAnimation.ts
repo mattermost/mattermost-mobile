@@ -160,12 +160,25 @@ export const useKeyboardAnimation = (
             // Store the exact keyboard height
             keyboardHeight.value = e.height;
             const adjustedHeight = e.height - (tabBarAdjustment * e.progress);
+
+            // CRITICAL FIX: On real iOS devices, onStart can fire with progress: 1 before animation completes
+            // Even if progress is 1, we should NOT set isKeyboardFullyOpen to true in onStart because:
+            // 1. onMove events may still come with lower progress values
+            // 2. Only onEnd with progress === 1 should mark the keyboard as fully open
+            // This prevents jerky behavior where the input container jumps down and back up
+            const wasAlreadyOpen = keyboardTranslateY.value > 0;
+
+            // Always treat as transitioning if we might receive more events (even with progress: 1)
+            // Only exception: if height is 0 (keyboard closing)
+            const shouldTreatAsTransitioning = e.height > 0 && (e.progress < 1 || wasAlreadyOpen);
+
             keyboardTranslateY.value = adjustedHeight;
 
             // Update keyboard state flags
+            // NEVER mark as fully open in onStart - always wait for onEnd to confirm
             isKeyboardFullyClosed.value = e.height === 0;
-            isKeyboardFullyOpen.value = e.height > 0 && e.progress === 1;
-            isKeyboardInTransition.value = e.height > 0 && e.progress < 1;
+            isKeyboardFullyOpen.value = false; // Always false in onStart - onEnd will set it correctly
+            isKeyboardInTransition.value = e.height > 0 && shouldTreatAsTransitioning;
 
             // Update scroll view insets and offsets
             // bottomInset: Adds bottom padding to scroll content
@@ -276,6 +289,18 @@ export const useKeyboardAnimation = (
 
             const absHeight = Math.abs(e.height) - (tabBarAdjustment * e.progress); // Use Math.abs because programmatic dismiss (KeyboardController.dismiss()) reports negative heights
 
+            // CRITICAL FIX: On real iOS devices, onStart can fire with progress: 1 before animation completes
+            // Then onMove events come with lower heights/progress, causing jerky behavior
+            // If we've already reached the final keyboard height (isKeyboardFullyOpen or keyboardHeight matches final),
+            // ignore onMove events that would reduce keyboardTranslateY below the final value
+            const finalHeight = keyboardHeight.value;
+            const finalAdjustedHeight = finalHeight > 0 ? finalHeight - tabBarAdjustment : 0;
+            const hasReachedFinalState = finalHeight > 0 && keyboardTranslateY.value >= finalAdjustedHeight * 0.95; // 95% threshold to account for rounding
+
+            if (hasReachedFinalState && absHeight < keyboardTranslateY.value && e.progress < 1) {
+                return;
+            }
+
             // Ignore stale/incorrect events ONLY during/after interactive gestures
             // After user releases finger mid-swipe up, onMove sometimes gets wrong height values
             // Example: keyboard at 346px, user releases, onMove reports 80px (stale from earlier)
@@ -292,7 +317,6 @@ export const useKeyboardAnimation = (
             isKeyboardFullyClosed.value = absHeight === 0;
             isKeyboardFullyOpen.value = absHeight > 0 && e.progress === 1;
             isKeyboardInTransition.value = absHeight > 0 && e.progress < 1;
-
         },
 
         onEnd: (e) => {
