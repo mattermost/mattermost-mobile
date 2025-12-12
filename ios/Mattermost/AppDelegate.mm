@@ -168,10 +168,18 @@ NSString* const NOTIFICATION_TEST_ACTION = @"test";
 
 // Required for deeplinking
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options{
+  // Handle MSAL URLs first before passing to RCTLinkingManager
+  if ([self handleMSALURL:url]) {
+    return YES;
+  }
   return [RCTLinkingManager application:application openURL:url options:options];
 }
 
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
+  // Handle MSAL URLs first before passing to RCTLinkingManager
+  if ([self handleMSALURL:url]) {
+    return YES;
+  }
   return [RCTLinkingManager application:application openURL:url sourceApplication:sourceApplication annotation:annotation];
 }
 
