@@ -21,7 +21,14 @@
   "private": true,
   "scripts": {
     "build": "npm i && bash ./scripts/build.sh",
-    "clean": "rm -rf android/src/main/jniLibs MattermostE2eeFramework.xcframework rust/target"
+    "clean": "rm -rf android/src/main/jniLibs MattermostE2eeFramework.xcframework rust/target",
+    "test": "npm run test:rust && npm run test:verify",
+    "test:rust": "cd rust && cargo test",
+    "test:verify": "bash ./scripts/verify-build.sh",
+    "test:ios": "bash ./tests/ios/run-tests.sh",
+    "test:android": "bash ./tests/android/run-tests.sh",
+    "test:native": "npm run test:ios && npm run test:android",
+    "test:all": "npm run test && npm run test:native"
   },
   "devDependencies": {
     "uniffi-bindgen-react-native": "^0.29.3-1"

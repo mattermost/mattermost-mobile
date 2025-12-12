@@ -214,7 +214,12 @@
     "tsc": "NODE_OPTIONS=--max_old_space_size=12000 tsc --noEmit",
     "updatesnapshot": "NODE_OPTIONS=--max_old_space_size=12000 jest --updateSnapshot",
     "e2ee:build": "npm run --prefix libraries/@mattermost/e2ee build",
-    "e2ee:clean": "npm run --prefix libraries/@mattermost/e2ee clean"
+    "e2ee:clean": "npm run --prefix libraries/@mattermost/e2ee clean",
+    "e2ee:test": "npm run --prefix libraries/@mattermost/e2ee test",
+    "e2ee:test:rust": "npm run --prefix libraries/@mattermost/e2ee test:rust",
+    "e2ee:test:ios": "npm run --prefix libraries/@mattermost/e2ee test:ios",
+    "e2ee:test:android": "npm run --prefix libraries/@mattermost/e2ee test:android",
+    "e2ee:test:all": "npm run --prefix libraries/@mattermost/e2ee test:all"
   },
   "overrides": {
     "promise": "^8.3.0",
