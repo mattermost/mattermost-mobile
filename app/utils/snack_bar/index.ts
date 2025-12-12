@@ -80,3 +80,10 @@ export const showEnableTranslationSnackbar = (onAction: () => void, location: Av
         actionText: 'Enable',
     });
 };
+
+export const showBoRPostErrorSnackbar = (message?: string) => {
+    return showSnackBar({
+        barType: SNACK_BAR_TYPE.BOR_POST_EXPIRED,
+        customMessage: message,
+    });
+};

@@ -48,12 +48,14 @@ type PostOptionsProps = {
     componentId: AvailableScreens;
     bindings: AppBinding[];
     serverUrl: string;
+    isBoRPost?: boolean;
 };
 const PostOptions = ({
     canAddReaction, canDelete, canEdit,
     canMarkAsUnread, canPin, canReply, canViewTranslation,
     combinedPost, componentId, isSaved,
     sourceScreen, post, thread, bindings, serverUrl,
+    isBoRPost,
 }: PostOptionsProps) => {
     const managedConfig = useManagedConfig<ManagedConfig>();
     const isTablet = useIsTablet();
@@ -69,7 +71,7 @@ const PostOptions = ({
     const isSystemPost = isSystemMessage(post);
 
     const canCopyPermalink = !isSystemPost && managedConfig?.copyAndPasteProtection !== 'true';
-    const canCopyText = canCopyPermalink && post.message;
+    const canCopyText = canCopyPermalink && post.message && !isBoRPost;
 
     const shouldRenderFollow = !(sourceScreen !== Screens.CHANNEL || !thread);
     const shouldShowBindings = bindings.length > 0 && !isSystemPost;

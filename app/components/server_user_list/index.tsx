@@ -12,7 +12,6 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 import type {SectionListData} from 'react-native';
 
 type Props = {
-    currentUserId: string;
     tutorialWatched: boolean;
     handleSelectProfile: (user: UserProfile) => void;
     term: string;
@@ -26,7 +25,6 @@ type Props = {
 }
 
 export default function ServerUserList({
-    currentUserId,
     tutorialWatched,
     handleSelectProfile,
     term,
@@ -123,7 +121,6 @@ export default function ServerUserList({
 
     return (
         <UserList
-            currentUserId={currentUserId}
             handleSelectProfile={handleSelectProfile}
             loading={loading}
             profiles={data}

@@ -28,7 +28,10 @@ type PostType =
     | 'system_auto_responder'
     | 'custom_calls'
     | 'custom_calls_recording'
-    | 'custom_run_update';
+    | 'custom_run_update'
+    | 'custom_llmbot'
+    | 'custom_llm_postback'
+    | 'burn_on_read';
 
 type PostEmbedType = 'image' | 'message_attachment' | 'opengraph' | 'permalink';
 
@@ -75,6 +78,7 @@ type PostMetadata = {
     reactions?: Reaction[];
     priority?: PostPriority;
     original_language?: string;
+    expire_at?: number;
 };
 
 type Post = {
