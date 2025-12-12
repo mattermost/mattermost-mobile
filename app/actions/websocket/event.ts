@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {handleAgentPostUpdate} from '@agents/actions/websocket';
+import {handleAgentsEvents} from '@agents/actions/websocket/events';
 
 import * as bookmark from '@actions/local/channel_bookmark';
 import {handleBoRPostRevealedEvent} from '@actions/websocket/burn_on_read';
@@ -316,4 +317,5 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
             break;
     }
     handlePlaybookEvents(serverUrl, msg);
+    handleAgentsEvents(serverUrl, msg);
 }
