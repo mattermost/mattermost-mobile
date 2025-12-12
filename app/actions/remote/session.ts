@@ -482,7 +482,7 @@ export const magicLinkLogin = async (serverUrl: string, token: string): Promise<
         );
         if (!pingResult.error && pingResult.canReceiveNotifications) {
             const intl = getIntlShape(user.locale);
-            canReceiveNotifications(serverUrlToUse, pingResult.canReceiveNotifications as string, intl);
+            await canReceiveNotifications(serverUrlToUse, pingResult.canReceiveNotifications as string, intl);
         }
     } catch (error) {
         return {error, failed: true};
