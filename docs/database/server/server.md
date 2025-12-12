@@ -95,6 +95,23 @@ channel_id string  INDEX FK >- Channel.id
 files string #stringify (array)
 message string
 root_id string INDEX NULL FK >- Post.id
+type string NULL
+
+
+ScheduledPost
+-
+id PK string # auto-generated
+channel_id string  INDEX FK >- Channel.id
+files string #stringify (array)
+message string
+root_id string INDEX NULL FK >- Post.id
+metadata string NULL
+create_at number
+update_at number
+scheduled_at number
+processed_at number NULL
+error_code string
+type string NULL
 
 
 File
