@@ -43,6 +43,9 @@ declare class ScheduledPostModel extends Model {
     /** error_code : The reason message if the schedule post failed */
     errorCode: string;
 
+    /** type : The post type of draft */
+    type?: string;
+
     toApi: (user_id: string) => ScheduledPost;
 }
 
