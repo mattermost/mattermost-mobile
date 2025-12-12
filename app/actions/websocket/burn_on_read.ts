@@ -12,7 +12,7 @@ export async function handleBoRPostRevealedEvent(serverUrl: string, msg: WebSock
     try {
         const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
         if (!operator) {
-            return null;
+            return {};
         }
 
         const {database} = operator;
@@ -20,7 +20,7 @@ export async function handleBoRPostRevealedEvent(serverUrl: string, msg: WebSock
         try {
             post = JSON.parse(msg.data.post);
         } catch {
-            return null;
+            return {};
         }
 
         const existingPost = await getPostById(database, post.id);

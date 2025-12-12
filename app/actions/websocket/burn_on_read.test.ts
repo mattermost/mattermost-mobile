@@ -103,7 +103,7 @@ describe('WebSocket Burn on Read Actions', () => {
 
             const result = await handleBoRPostRevealedEvent(serverUrl, invalidJsonMsg);
 
-            expect(result).toBeNull();
+            expect(result).toEqual({});
             expect(mockedGetPostById).not.toHaveBeenCalled();
             expect(mockedHandleNewPostEvent).not.toHaveBeenCalled();
             expect(mockedHandlePostEdited).not.toHaveBeenCalled();
