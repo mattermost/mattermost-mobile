@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-openmls = "0.7.1"
+openmls = "=0.7.1"
 uniffi = { version = "=0.29.3", features = ["build"] }
 
 [build-dependencies]

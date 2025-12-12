@@ -2,7 +2,6 @@
 
 set -euo pipefail
 
-REQUIRED_RUST_VERSION="1.90.0"
 ANDROID_TARGETS=(aarch64-linux-android armv7-linux-androideabi x86_64-linux-android i686-linux-android)
 IOS_TARGETS=(aarch64-apple-ios aarch64-apple-ios-sim x86_64-apple-ios)
 
@@ -19,29 +18,11 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PACKAGE_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
-command_exists() {
-  command -v "$1" >/dev/null 2>&1
-}
-
 ensure_command() {
   local cmd="$1"
   local install_hint="$2"
-  if ! command_exists "${cmd}"; then
+  if ! command -v "$1" >/dev/null 2>&1; then
     echo "error: ${cmd} is required but was not found. ${install_hint}" >&2
-    exit 1
-  fi
-}
-
-ensure_rust_version() {
-  ensure_command "rustc" "Install Rust via rustup: https://rustup.rs/"
-  ensure_command "rustup" "Install Rust via rustup: https://rustup.rs/"
-  ensure_command "cargo" "Install Rust via rustup: https://rustup.rs/"
-
-  local rust_version
-  rust_version="$(rustc --version | awk '{print $2}')"
-  if [[ "${rust_version}" != "${REQUIRED_RUST_VERSION}" ]]; then
-    echo "error: Rust ${REQUIRED_RUST_VERSION} is required (found ${rust_version})." >&2
-    echo "       Run 'rustup default ${REQUIRED_RUST_VERSION}' or 'rustup override set ${REQUIRED_RUST_VERSION}' in this repo." >&2
     exit 1
   fi
 }
@@ -122,6 +103,5 @@ build_android() {
   )
 }
 
-ensure_rust_version
 build_ios
 build_android
