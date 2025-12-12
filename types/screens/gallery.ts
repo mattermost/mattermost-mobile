@@ -34,6 +34,7 @@ export type GalleryItemType = {
     size?: number;
     postId?: string;
     postProps?: Record<string, unknown> & {captions?: Caption[]};
+    cacheKey: string;
 };
 
 export type GalleryAction = 'none' | 'downloading' | 'copying' | 'sharing' | 'opening' | 'external';

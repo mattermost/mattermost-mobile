@@ -70,7 +70,7 @@ describe('Servers Queries', () => {
         expect(result).toBeUndefined();
     });
 
-    test('queryAllActiveServers should return all active servers query', () => {
+    test('queryAllActiveServers should return all active servers query sorted by last_active_at descending', () => {
         queryAllActiveServers();
         expect(mockDatabase.get).toHaveBeenCalledWith(SERVERS);
         expect(mockServerModel.query).toHaveBeenCalledWith(
@@ -78,6 +78,7 @@ describe('Servers Queries', () => {
                 Q.where('identifier', Q.notEq('')),
                 Q.where('last_active_at', Q.gt(0)),
             ),
+            Q.sortBy('last_active_at', Q.desc),
         );
     });
 

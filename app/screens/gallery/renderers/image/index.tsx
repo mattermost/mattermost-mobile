@@ -65,6 +65,7 @@ function ImageRenderer({
     return (
         <TransfrormerProvider sharedValues={sharedValues}>
             <ImageTransformer
+                cacheKey={item.cacheKey}
                 isPageActive={isPageActive}
                 targetDimensions={targetDimensions}
                 height={targetHeight}

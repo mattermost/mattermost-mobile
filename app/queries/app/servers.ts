@@ -31,6 +31,7 @@ export const queryAllActiveServers = () => {
                 Q.where('identifier', Q.notEq('')),
                 Q.where('last_active_at', Q.gt(0)),
             ),
+            Q.sortBy('last_active_at', Q.desc),
         );
     } catch {
         return undefined;

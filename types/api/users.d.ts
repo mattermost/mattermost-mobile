@@ -163,4 +163,4 @@ type GetUsersOptions = {
 	team_roles?: string;
 };
 
-type LoginType = '' | 'guest_magic_link';
+type LoginType = '' | 'magic_link';

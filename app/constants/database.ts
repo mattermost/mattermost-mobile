@@ -78,6 +78,7 @@ export const SYSTEM_IDENTIFIERS = {
     WEBSOCKET: 'WebSocket',
     PLAYBOOKS_VERSION: 'playbooks_version',
     AGENTS_VERSION: 'agents_version',
+    LAST_BOR_POST_CLEANUP_RUN: 'lastBoRPostCleanupRun',
 };
 
 export const GLOBAL_IDENTIFIERS = {
@@ -89,6 +90,7 @@ export const GLOBAL_IDENTIFIERS = {
     LAST_VIEWED_CHANNEL: 'lastViewedChannel',
     LAST_VIEWED_THREAD: 'lastViewedThread',
     PUSH_DISABLED_ACK: 'pushDisabledAck',
+    CACHE_MIGRATION: 'cacheMigration',
 };
 
 export enum OperationType {
