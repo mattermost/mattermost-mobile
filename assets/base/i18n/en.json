@@ -25,7 +25,6 @@
   "agents.controls.stop": "Stop Generating",
   "agents.generating": "Generating response...",
   "agents.home_button.title": "Agents",
-  "agents.menu.title": "Agents",
   "agents.reasoning.thinking": "Thinking",
   "agents.regenerate.cancel": "Cancel",
   "agents.regenerate.confirm": "Regenerate",
