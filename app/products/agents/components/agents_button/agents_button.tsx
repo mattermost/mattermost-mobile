@@ -69,7 +69,7 @@ const AgentsButton = () => {
         >
             <View style={containerStyle}>
                 <CompassIcon
-                    name='robot-happy'
+                    name='creation-outline'
                     style={iconStyle}
                     testID='channel_list.agents.button-icon'
                 />

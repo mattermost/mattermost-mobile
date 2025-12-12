@@ -28,7 +28,7 @@ interface ToolCardProps {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
-            marginBottom: 4,
+            marginBottom: 0,
         },
         header: {
             flexDirection: 'row',
@@ -50,7 +50,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flex: 1,
         },
         argumentsContainer: {
-            marginLeft: 24,
+            marginLeft: 13,
         },
         markdownText: {
             fontSize: 11,
@@ -62,7 +62,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             alignItems: 'center',
             gap: 8,
             paddingTop: 8,
-            paddingLeft: 24,
+            paddingLeft: 13,
         },
         responseLabelText: {
             fontSize: 14,
@@ -71,14 +71,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.75),
         },
         resultContainer: {
-            marginLeft: 24,
+            marginLeft: 13,
         },
         statusContainer: {
             flexDirection: 'row',
             alignItems: 'center',
             gap: 8,
             marginTop: 16,
-            paddingLeft: 24,
+            paddingLeft: 13,
         },
         statusText: {
             fontSize: 14,
@@ -97,6 +97,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             paddingVertical: 8,
             paddingHorizontal: 16,
             justifyContent: 'center',
+            alignItems: 'center',
+            minHeight: 32,
         },
         buttonDisabled: {
             opacity: 0.5,
@@ -335,6 +337,7 @@ const ToolCard = ({
                         disabled={isProcessing}
                         style={[styles.button, isProcessing && styles.buttonDisabled]}
                         activeOpacity={0.7}
+                        hitSlop={{top: 4, bottom: 4, left: 0, right: 0}}
                     >
                         <FormattedText
                             id='agents.tool_call.approve'
@@ -347,6 +350,7 @@ const ToolCard = ({
                         disabled={isProcessing}
                         style={[styles.button, isProcessing && styles.buttonDisabled]}
                         activeOpacity={0.7}
+                        hitSlop={{top: 4, bottom: 4, left: 0, right: 0}}
                     >
                         <FormattedText
                             id='agents.tool_call.reject'

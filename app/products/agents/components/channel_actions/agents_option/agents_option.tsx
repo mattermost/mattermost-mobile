@@ -36,7 +36,7 @@ const AgentsOption = ({
             <SlideUpPanelItem
                 onPress={onPress}
                 text={intl.formatMessage(messages.agents)}
-                leftIcon='robot-happy'
+                leftIcon='creation-outline'
                 rightIcon='chevron-right'
             />
         );
@@ -45,7 +45,7 @@ const AgentsOption = ({
     return (
         <OptionItem
             type={Platform.select({ios: 'arrow', default: 'default'})}
-            icon='robot-happy'
+            icon='creation-outline'
             action={onPress}
             label={intl.formatMessage(messages.agents)}
         />
