@@ -17,13 +17,11 @@ export async function fetchAIThreads(
 ): Promise<{threads?: AIThread[]; error?: unknown}> {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        const url = '/plugins/mattermost-ai/ai_threads';
+        const threads = await client.getAIThreads();
 
-        const response = await client.doFetch(url, {method: 'GET'}) as unknown as AIThread[];
-
-        return {threads: response};
+        return {threads};
     } catch (error) {
-        logError('Failed to fetch AI threads', error);
+        logError('[fetchAIThreads] Failed to fetch AI threads', error);
         return {error: getFullErrorMessage(error)};
     }
 }

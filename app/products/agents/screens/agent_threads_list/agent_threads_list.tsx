@@ -3,16 +3,17 @@
 
 import {fetchAIBots, type LLMBot} from '@agents/actions/remote/bots';
 import {fetchAIThreads} from '@agents/actions/remote/threads';
+import ThreadItem, {THREAD_ITEM_HEIGHT} from '@agents/screens/agent_threads_list/thread_item';
 import {goToAgentChat} from '@agents/screens/navigation';
 import {FlashList, type ListRenderItem} from '@shopify/flash-list';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {View, Text, TouchableOpacity, RefreshControl, ActivityIndicator} from 'react-native';
+import {View, Text, TouchableOpacity, RefreshControl} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import CompassIcon from '@components/compass_icon';
-import FormattedRelativeTime from '@components/formatted_relative_time';
+import Loading from '@components/loading';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
@@ -25,8 +26,6 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 type Props = {
     componentId: AvailableScreens;
 };
-
-const THREAD_ITEM_HEIGHT = 88;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -103,64 +102,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: changeOpacity(theme.centerChannelColor, 0.64),
         textAlign: 'center',
         lineHeight: 20,
-    },
-    threadItem: {
-        flexDirection: 'row',
-        paddingLeft: 26,
-        paddingRight: 20,
-        paddingVertical: 16,
-        backgroundColor: theme.centerChannelBg,
-        borderBottomWidth: 1,
-        borderBottomColor: changeOpacity(theme.centerChannelColor, 0.08),
-    },
-    threadContent: {
-        flex: 1,
-        gap: 6,
-    },
-    threadHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    threadTitle: {
-        flex: 1,
-        fontSize: 16,
-        fontWeight: '600',
-        color: theme.centerChannelColor,
-    },
-    threadTimestamp: {
-        fontSize: 11,
-        color: changeOpacity(theme.centerChannelColor, 0.64),
-        marginLeft: 8,
-    },
-    threadPreview: {
-        fontSize: 16,
-        color: theme.centerChannelColor,
-        lineHeight: 24,
-    },
-    threadMeta: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 4,
-    },
-    threadReplyCount: {
-        fontSize: 12,
-        fontWeight: '600',
-        color: changeOpacity(theme.centerChannelColor, 0.64),
-        paddingHorizontal: 8,
-        paddingVertical: 4.5,
-    },
-    agentTag: {
-        backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
-        borderRadius: 4,
-        paddingHorizontal: 4,
-        paddingVertical: 2,
-    },
-    agentTagText: {
-        fontSize: 10,
-        fontWeight: '600',
-        color: theme.centerChannelColor,
-        textTransform: 'uppercase',
-        letterSpacing: 0.2,
     },
     errorText: {
         fontSize: 14,
@@ -267,62 +208,14 @@ const AgentThreadsList = ({
 
     const renderItem: ListRenderItem<AIThread> = useCallback(({item}) => {
         return (
-            <TouchableOpacity
-                onPress={() => handleThreadPress(item)}
-                style={styles.threadItem}
-                testID={`agent_thread.${item.id}`}
-            >
-                <View style={styles.threadContent}>
-                    <View style={styles.threadHeader}>
-                        <Text
-                            style={styles.threadTitle}
-                            numberOfLines={1}
-                        >
-                            {item.title || intl.formatMessage({
-                                id: 'agents.threads_list.default_title',
-                                defaultMessage: 'Conversation with Agents',
-                            })}
-                        </Text>
-                        <FormattedRelativeTime
-                            value={item.update_at}
-                            style={styles.threadTimestamp}
-                        />
-                    </View>
-                    {item.message && (
-                        <Text
-                            style={styles.threadPreview}
-                            numberOfLines={2}
-                        >
-                            {item.message}
-                        </Text>
-                    )}
-                    <View style={styles.threadMeta}>
-                        <CompassIcon
-                            name='reply-outline'
-                            size={14}
-                            color={changeOpacity(theme.centerChannelColor, 0.64)}
-                        />
-                        <Text style={styles.threadReplyCount}>
-                            {`${item.reply_count} ${item.reply_count === 1 ? intl.formatMessage({
-                                id: 'agents.threads_list.reply',
-                                defaultMessage: 'reply',
-                            }) : intl.formatMessage({
-                                id: 'agents.threads_list.replies',
-                                defaultMessage: 'replies',
-                            })}`}
-                        </Text>
-                        {botNameByChannelId[item.channel_id] && (
-                            <View style={styles.agentTag}>
-                                <Text style={styles.agentTagText}>
-                                    {botNameByChannelId[item.channel_id]}
-                                </Text>
-                            </View>
-                        )}
-                    </View>
-                </View>
-            </TouchableOpacity>
+            <ThreadItem
+                thread={item}
+                onPress={handleThreadPress}
+                botName={botNameByChannelId[item.channel_id]}
+                theme={theme}
+            />
         );
-    }, [botNameByChannelId, handleThreadPress, intl, styles, theme]);
+    }, [botNameByChannelId, handleThreadPress, theme]);
 
     const renderEmptyState = useCallback(() => {
         if (error) {
@@ -371,12 +264,11 @@ const AgentThreadsList = ({
 
     if (loading) {
         return (
-            <View style={styles.loadingContainer}>
-                <ActivityIndicator
-                    size='large'
-                    color={theme.buttonBg}
-                />
-            </View>
+            <Loading
+                containerStyle={styles.loadingContainer}
+                size='large'
+                color={theme.buttonBg}
+            />
         );
     }
 

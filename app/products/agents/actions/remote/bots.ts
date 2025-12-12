@@ -5,36 +5,9 @@ import NetworkManager from '@managers/network_manager';
 import {getFullErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
 
-export enum ChannelAccessLevel {
-    All = 0,
-    Allow = 1,
-    Block = 2,
-}
+import type {LLMBot} from '@agents/types';
 
-export enum UserAccessLevel {
-    All = 0,
-    Allow = 1,
-    Block = 2,
-}
-
-export interface LLMBot {
-    id: string;
-    displayName: string;
-    username: string;
-    lastIconUpdate: number;
-    dmChannelID: string;
-    channelAccessLevel: ChannelAccessLevel;
-    channelIDs: string[];
-    userAccessLevel: UserAccessLevel;
-    userIDs: string[];
-    teamIDs: string[];
-}
-
-interface AIBotsResponse {
-    bots: LLMBot[];
-    searchEnabled: boolean;
-    allowUnsafeLinks: boolean;
-}
+export type {LLMBot};
 
 /**
  * Fetch all AI bots from the server
@@ -46,9 +19,7 @@ export async function fetchAIBots(
 ): Promise<{bots?: LLMBot[]; searchEnabled?: boolean; allowUnsafeLinks?: boolean; error?: unknown}> {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        const url = '/plugins/mattermost-ai/ai_bots';
-
-        const response = await client.doFetch(url, {method: 'GET'}) as unknown as AIBotsResponse;
+        const response = await client.getAIBots();
 
         return {
             bots: response.bots,
@@ -56,7 +27,7 @@ export async function fetchAIBots(
             allowUnsafeLinks: response.allowUnsafeLinks,
         };
     } catch (error) {
-        logError('Failed to fetch AI bots', error);
+        logError('[fetchAIBots] Failed to fetch AI bots', error);
         return {error: getFullErrorMessage(error)};
     }
 }
@@ -81,7 +52,7 @@ export async function getBotDirectChannel(
 
         return {channelId: channel.id};
     } catch (error) {
-        logError('Failed to get bot direct channel', error);
+        logError('[getBotDirectChannel] Failed to get bot direct channel', error);
         return {error: getFullErrorMessage(error)};
     }
 }

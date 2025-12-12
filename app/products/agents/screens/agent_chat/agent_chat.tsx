@@ -3,18 +3,20 @@
 
 import {fetchAIBots, getBotDirectChannel, type LLMBot} from '@agents/actions/remote/bots';
 import {AgentsIntro} from '@agents/components/illustrations';
+import BotSelectorItem from '@agents/screens/agent_chat/bot_selector_item';
 import {goToAgentThreadsList} from '@agents/screens/navigation';
 import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {type LayoutChangeEvent, View, Text, TouchableOpacity, ActivityIndicator} from 'react-native';
+import {type LayoutChangeEvent, View, Text, TouchableOpacity} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {buildAbsoluteUrl} from '@actions/remote/file';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import {buildProfileImageUrl} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
+import Loading from '@components/loading';
 import PostDraft from '@components/post_draft';
-import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
+import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {Screens} from '@constants';
 import {ExtraKeyboardProvider} from '@context/extra_keyboard';
 import {useServerUrl} from '@context/server';
@@ -231,15 +233,13 @@ const AgentChat = ({
                         );
 
                         return (
-                            <SlideUpPanelItem
+                            <BotSelectorItem
                                 key={bot.id}
-                                leftIcon={{uri: avatarUrl}}
-                                leftImageStyles={{borderRadius: 12}}
-                                onPress={() => handleBotSelect(bot)}
-                                testID={`agent_chat.bot_selector.bot_item.${bot.id}`}
-                                text={bot.displayName}
-                                rightIcon={selectedBot?.id === bot.id ? 'check' : undefined}
-                                rightIconStyles={{color: theme.linkColor}}
+                                bot={bot}
+                                avatarUrl={avatarUrl}
+                                isSelected={selectedBot?.id === bot.id}
+                                onSelect={handleBotSelect}
+                                theme={theme}
                             />
                         );
                     })}
@@ -271,12 +271,11 @@ const AgentChat = ({
     if (loading) {
         return (
             <View style={[styles.container, {paddingTop: insets.top}]}>
-                <View style={styles.loadingContainer}>
-                    <ActivityIndicator
-                        size='large'
-                        color={theme.buttonBg}
-                    />
-                </View>
+                <Loading
+                    containerStyle={styles.loadingContainer}
+                    size='large'
+                    color={theme.buttonBg}
+                />
             </View>
         );
     }
