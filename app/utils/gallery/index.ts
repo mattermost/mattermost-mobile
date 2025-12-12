@@ -2,8 +2,9 @@
 // See LICENSE.txt for license information.
 
 import RNUtils from '@mattermost/rnutils';
+import {Image} from 'expo-image';
 import React, {type RefObject} from 'react';
-import {DeviceEventEmitter, Image, Keyboard, Platform, View} from 'react-native';
+import {DeviceEventEmitter, Keyboard, Platform, View} from 'react-native';
 import {Navigation, type Options, type OptionsLayout} from 'react-native-navigation';
 import {measure, type AnimatedRef} from 'react-native-reanimated';
 
@@ -11,6 +12,7 @@ import {Events, Screens} from '@constants';
 import {allOrientations, showOverlay} from '@screens/navigation';
 import {isImage, isVideo} from '@utils/file';
 import {generateId} from '@utils/general';
+import {urlSafeBase64Encode} from '@utils/security';
 
 import type {GalleryItemType, GalleryManagerSharedValues} from '@typings/screens/gallery';
 
@@ -29,7 +31,7 @@ export const clampVelocity = (velocity: number, minVelocity: number, maxVelocity
     return Math.max(Math.min(velocity, -minVelocity), -maxVelocity);
 };
 
-export const fileToGalleryItem = (file: FileInfo, authorId?: string, postProps?: Record<string, unknown>, lastPictureUpdate = 0): GalleryItemType => {
+export const fileToGalleryItem = (file: FileInfo, authorId?: string, postProps?: Record<string, unknown>, lastPictureUpdate = 0, cacheKey: string = file.id || ''): GalleryItemType => {
     let type: GalleryItemType['type'] = 'file';
     if (isVideo(file)) {
         type = 'video';
@@ -52,6 +54,7 @@ export const fileToGalleryItem = (file: FileInfo, authorId?: string, postProps?:
         uri: file.localPath || file.uri || '',
         width: file.width,
         postProps: postProps || file.postProps,
+        cacheKey,
     };
 };
 
@@ -190,8 +193,7 @@ export function openGalleryAtIndex(galleryIdentifier: string, initialIndex: numb
 
 export const typedMemo: <T>(c: T) => T = React.memo;
 
-export const getImageSize = (uri: string) => {
-    return new Promise<{width: number; height: number}>((resolve, reject) => {
-        Image.getSize(uri, (width, height) => resolve({width, height}), reject);
-    });
+export const getImageSize = async (serverUrl: string, uri: string, cacheKey: string) => {
+    const image = await Image.loadAsync({uri, cacheKey, cachePath: urlSafeBase64Encode(serverUrl)});
+    return {width: image.width, height: image.height};
 };
