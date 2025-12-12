@@ -77,6 +77,7 @@ export const SYSTEM_IDENTIFIERS = {
     TEAM_HISTORY: 'teamHistory',
     WEBSOCKET: 'WebSocket',
     PLAYBOOKS_VERSION: 'playbooks_version',
+    AGENTS_VERSION: 'agents_version',
 };
 
 export const GLOBAL_IDENTIFIERS = {
