@@ -41,6 +41,7 @@ You can leave the Beta testing program at any time:
 3. Follow [these instructions](https://developers.mattermost.com/contribute/mobile/developer-setup/) to set up your developer environment
 4. Join the [Native Mobile Apps channel](https://community.mattermost.com/core/channels/native-mobile-apps) on our team site to ask questions
 
+**Native build prerequisites:** The E2EE module uses a Rust bridge. Installing the app now requires Rust 1.90.0 with `cargo-ndk` and the iOS/Android Rust targets (`rustup target add aarch64-apple-ios aarch64-apple-ios-sim x86_64-apple-ios aarch64-linux-android armv7-linux-androideabi x86_64-linux-android i686-linux-android`). The install script checks for these tools and exits early with guidance if they are missing.
 
 
 # Frequently Asked Questions

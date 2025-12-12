@@ -1,0 +1,29 @@
+{
+  "name": "@mattermost/e2ee",
+  "version": "0.0.0",
+  "description": "Rust-backed E2EE module for the Mattermost mobile app",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:mattermost/mattermost-mobile.git"
+  },
+  "homepage": "#readme",
+  "main": "src/index",
+  "codegenConfig": {
+    "name": "MattermostE2eeSpec",
+    "type": "modules",
+    "jsSrcsDir": "src",
+    "android": {
+      "javaPackageName": "com.mattermost.e2ee"
+    }
+  },
+  "author": "Mattermost, Inc.",
+  "license": "Apache 2.0",
+  "private": true,
+  "scripts": {
+    "build": "npm i && bash ./scripts/build.sh",
+    "clean": "rm -rf android/src/main/jniLibs MattermostE2eeFramework.xcframework rust/target"
+  },
+  "devDependencies": {
+    "uniffi-bindgen-react-native": "^0.29.3-1"
+  }
+}

@@ -133,3 +133,16 @@ libraries/@mattermost/intune/*
 node_modules/@mattermost/intune
 # Claude Code
 .claude/settings.local.json
+
+# E2EE Rust build artifacts and generated bindings
+libraries/@mattermost/e2ee/rust/target/
+libraries/@mattermost/e2ee/rust_modules/
+libraries/@mattermost/e2ee/android/src/main/jniLibs/
+libraries/@mattermost/e2ee/android/src/main/java/com/mattermost/e2ee/
+libraries/@mattermost/e2ee/MattermostE2eeFramework.xcframework/
+libraries/@mattermost/e2ee/cpp/generated/
+libraries/@mattermost/e2ee/src/generated/
+libraries/@mattermost/e2ee/src/NativeMattermostE2ee.ts
+libraries/@mattermost/e2ee/src/index.tsx
+libraries/@mattermost/e2ee/ios/MattermostE2ee.h
+libraries/@mattermost/e2ee/ios/MattermostE2ee.mm

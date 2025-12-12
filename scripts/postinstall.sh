@@ -10,6 +10,25 @@ function installPodsM1() {
     npm run pod-install-m1
 }
 
+function buildE2EE() {
+    # Check if E2EE artifacts already exist
+    local IOS_FRAMEWORK="libraries/@mattermost/e2ee/MattermostE2eeFramework.xcframework"
+    local ANDROID_LIBS="libraries/@mattermost/e2ee/android/src/main/jniLibs"
+
+    if [[ -d "$IOS_FRAMEWORK" ]] && [[ -d "$ANDROID_LIBS" ]]; then
+        echo "E2EE artifacts already exist, skipping build..."
+        return 0
+    fi
+
+    echo "Building Mattermost E2EE module"
+    if ! npm run e2ee:build; then
+        echo "Failed to build Mattermost E2EE module. See errors above for missing dependencies." >&2
+        exit 1
+    fi
+}
+
+buildE2EE
+
 if [[ "$OSTYPE" == "darwin"* ]]; then
   if [ "$INTUNE_ENABLED" = "1" ]; then
     echo "🔐 INTUNE_ENABLED detected"

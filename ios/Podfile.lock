@@ -136,6 +136,28 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - MattermostE2ee (0.0.0):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.10.14.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - uniffi-bindgen-react-native (= 0.29.3-1)
+    - Yoga
   - OpenGraph (1.4.1)
   - RCT-Folly (2024.10.14.00):
     - boost
@@ -2240,6 +2262,8 @@ PODS:
   - SwiftyJSON (5.0.2)
   - TurboLogIOSNative (0.1.0):
     - CocoaLumberjack (~> 3.8.5)
+  - uniffi-bindgen-react-native (0.29.3-1):
+    - React-Core
   - WatermelonDB (0.28.0):
     - React
     - simdjson
@@ -2270,6 +2294,7 @@ DEPENDENCIES:
   - "mattermost-hardware-keyboard (from `../node_modules/@mattermost/hardware-keyboard`)"
   - "mattermost-react-native-turbo-log (from `../node_modules/@mattermost/react-native-turbo-log`)"
   - "mattermost-rnutils (from `../node_modules/@mattermost/rnutils`)"
+  - "MattermostE2ee (from `../node_modules/@mattermost/e2ee`)"
   - OpenGraph (= 1.4.1)
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCT-Folly/Fabric (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
@@ -2390,6 +2415,7 @@ SPEC REPOS:
     - Starscream
     - SwiftJWT
     - SwiftyJSON
+    - uniffi-bindgen-react-native
 
 EXTERNAL SOURCES:
   boost:
@@ -2439,6 +2465,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@mattermost/react-native-turbo-log"
   mattermost-rnutils:
     :path: "../node_modules/@mattermost/rnutils"
+  MattermostE2ee:
+    :path: "../node_modules/@mattermost/e2ee"
   RCT-Folly:
     :podspec: "../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec"
   RCTDeprecation:
@@ -2640,7 +2668,7 @@ SPEC CHECKSUMS:
   BlueRSA: 893ae5412de48a508a487067564dbcf9cd49df71
   boost: 1dca942403ed9342f98334bf4c3621f011aa7946
   CocoaLumberjack: 6a459bc897d6d80bd1b8c78482ec7ad05dffc3f0
-  DoubleConversion: 5189b271737e1565bdce30deb4a08d647e3f5f54
+  DoubleConversion: f16ae600a246532c4020132d54af21d0ddb2a385
   EXApplication: 4c72f6017a14a65e338c5e74fca418f35141e819
   EXConstants: fcfc75800824ac2d5c592b5bc74130bad17b146b
   Expo: 75e002fc29a18a72aa3db967b41b29c2b206875d
@@ -2657,7 +2685,7 @@ SPEC CHECKSUMS:
   FBLazyVector: 7605ea4810e0e10ae4815292433c09bf4324ba45
   fmt: 01b82d4ca6470831d1cc0852a1af644be019e8f6
   Gekidou: 94199ed8d31b900f2caeb9d5739c19bed9defc4a
-  glog: 04b94705f318337d7ead9e6d17c019bd9b1f6b1b
+  glog: 08b301085f15bcbb6ff8632a8ebaf239aae04e6a
   hermes-engine: 9e868dc7be781364296d6ee2f56d0c1a9ef0bb11
   HMSegmentedControl: 34c1f54d822d8308e7b24f5d901ec674dfa31352
   JitsiWebRTC: b47805ab5668be38e7ee60e2258f49badfe8e1d0
@@ -2667,6 +2695,7 @@ SPEC CHECKSUMS:
   mattermost-hardware-keyboard: a17b424a774fe564c6b90016ba0bc02e4b567a3e
   mattermost-react-native-turbo-log: 833b9ef2a709979e67e69e37f21b75015a1c1cbc
   mattermost-rnutils: 32f4f7ad85e2e470259a0e1e5ae6cd4fee83e77e
+  MattermostE2ee: 8dfbff29d05f85c15039bd22d731d9a0de2f3078
   OpenGraph: 596722bb7f112d2dabcdb284cb817f01341a7540
   RCT-Folly: ea9d9256ba7f9322ef911169a9f696e5857b9e17
   RCTDeprecation: ebe712bb05077934b16c6bf25228bdec34b64f83
@@ -2768,9 +2797,10 @@ SPEC CHECKSUMS:
   SwiftJWT: 88c412708f58c169d431d344c87bc79a87c830ae
   SwiftyJSON: f5b1bf1cd8dd53cd25887ac0eabcfd92301c6a5a
   TurboLogIOSNative: 45f6d20ba17ee39f8106e718e93baf43b2d76b7b
+  uniffi-bindgen-react-native: 125eae9e3a0cf34bf8f3d4b0ceed517df7cc0733
   WatermelonDB: 75e467adbaf2cb2809780fb3eda7ce4964e11778
   Yoga: 1259c7a8cbaccf7b4c3ddf8ee36ca11be9dee407
 
-PODFILE CHECKSUM: 6c4ca8922ebba245d14c717b0a7063d2bd56acad
+PODFILE CHECKSUM: b978783980ef85f452af681dd1ecebbd799b288e
 
 COCOAPODS: 1.16.1
