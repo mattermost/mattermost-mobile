@@ -111,6 +111,7 @@ const WebsocketEvents = {
 
     // Burn on Read
     BOR_POST_REVEALED: 'post_revealed',
+    BOR_POST_BURNED: 'post_burned',
 };
 
 export default WebsocketEvents;
