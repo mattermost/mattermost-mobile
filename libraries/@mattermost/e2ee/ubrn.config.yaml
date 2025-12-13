@@ -1,0 +1,20 @@
+---
+# uniffi-bindgen-react-native configuration
+# Points to the Mattermost E2EE Rust library
+
+name: MattermostE2ee
+rust:
+  directory: rust
+  manifestPath: Cargo.toml
+
+ios:
+  directory: ios
+  moduleName: MattermostE2ee
+
+android:
+  directory: android
+  packageName: com.mattermost.e2ee
+
+bindings:
+  ts: src/generated     # default: src/generated
+  cpp: cpp/generated    # default: cpp/generated
