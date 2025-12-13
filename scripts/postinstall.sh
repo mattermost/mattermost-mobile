@@ -27,6 +27,10 @@ function buildE2EE() {
     fi
 }
 
+# Setup Rust toolchain if needed (only installs missing deps)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+"${SCRIPT_DIR}/setup-rust.sh"
+
 buildE2EE
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
