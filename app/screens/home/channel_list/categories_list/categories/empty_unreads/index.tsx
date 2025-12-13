@@ -12,11 +12,7 @@ import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import EmptyIllustration from './empty_unreads';
-
-type Props = {
-    onlyUnreads: boolean;
-}
+import EmptyIllustration from './empty_unreads_svg';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     buttonContainer: {
@@ -44,14 +40,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-function EmptyUnreads({onlyUnreads}: Props) {
+function EmptyUnreads() {
     const intl = useIntl();
     const theme = useTheme();
     const serverUrl = useServerUrl();
     const styles = getStyleSheet(theme);
 
     const onPress = () => {
-        showUnreadChannelsOnly(serverUrl, !onlyUnreads);
+        showUnreadChannelsOnly(serverUrl, false);
     };
 
     return (

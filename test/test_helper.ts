@@ -26,6 +26,7 @@ import type PlaybookChecklistItemModel from '@playbooks/types/database/models/pl
 import type PlaybookRunModel from '@playbooks/types/database/models/playbook_run';
 import type PlaybookRunAttributeModel from '@playbooks/types/database/models/playbook_run_attribute';
 import type PlaybookRunAttributeValueModel from '@playbooks/types/database/models/playbook_run_attribute_value';
+import type CategoryModel from '@typings/database/models/servers/category';
 import type CategoryChannelModel from '@typings/database/models/servers/category_channel';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type ChannelBookmarkModel from '@typings/database/models/servers/channel_bookmark';
@@ -639,6 +640,27 @@ class TestHelperSingleton {
             sortOrder: 0,
             category: this.fakeRelation(),
             myChannel: this.fakeRelation(),
+            ...overwrite,
+        };
+    };
+
+    fakeCategoryModel = (overwrite?: Partial<CategoryModel>): CategoryModel => {
+        return {
+            ...this.fakeModel(),
+            displayName: this.generateId(),
+            type: 'custom',
+            sortOrder: 0,
+            sorting: 'alpha',
+            muted: false,
+            collapsed: false,
+            teamId: this.generateId(),
+            team: this.fakeRelation(),
+            categoryChannels: this.fakeQuery([]),
+            categoryChannelsBySortOrder: this.fakeQuery([]),
+            channels: this.fakeQuery([]),
+            myChannels: this.fakeQuery([]),
+            observeHasChannels: jest.fn(),
+            toCategoryWithChannels: jest.fn(),
             ...overwrite,
         };
     };
