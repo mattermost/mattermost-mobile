@@ -36,6 +36,11 @@ check_dir() {
 echo "==> Verifying E2EE build artifacts..."
 echo ""
 
+# On CI, only verify the platform that was built:
+# - macOS runners build iOS only
+# - Linux runners build Android only
+# Locally, verify both platforms
+
 # Check iOS artifacts (only on macOS)
 if [[ "$(uname)" == "Darwin" ]]; then
     echo "iOS:"
@@ -46,14 +51,16 @@ if [[ "$(uname)" == "Darwin" ]]; then
     echo ""
 fi
 
-# Check Android artifacts
-echo "Android:"
-check_dir "android/src/main/jniLibs" "jniLibs directory"
-check_file "android/src/main/jniLibs/arm64-v8a/libmattermost_e2ee.a" "arm64-v8a library"
-check_file "android/src/main/jniLibs/armeabi-v7a/libmattermost_e2ee.a" "armeabi-v7a library"
-check_file "android/src/main/jniLibs/x86_64/libmattermost_e2ee.a" "x86_64 library"
-check_file "android/src/main/jniLibs/x86/libmattermost_e2ee.a" "x86 library"
-echo ""
+# Check Android artifacts -- run always locally, or on CI on linux only
+if [[ "${CI:-}" != "true" ]] || [[ "$(uname)" != "Darwin" ]]; then
+    echo "Android:"
+    check_dir "android/src/main/jniLibs" "jniLibs directory"
+    check_file "android/src/main/jniLibs/arm64-v8a/libmattermost_e2ee.a" "arm64-v8a library"
+    check_file "android/src/main/jniLibs/armeabi-v7a/libmattermost_e2ee.a" "armeabi-v7a library"
+    check_file "android/src/main/jniLibs/x86_64/libmattermost_e2ee.a" "x86_64 library"
+    check_file "android/src/main/jniLibs/x86/libmattermost_e2ee.a" "x86 library"
+    echo ""
+fi
 
 # Check generated bindings
 echo "Generated bindings:"

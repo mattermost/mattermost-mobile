@@ -10,6 +10,7 @@ on:
 env:
   NODE_VERSION: 22.14.0
   TERM: xterm
+  E2EE_RELEASE: 1
 
 jobs:
   test:
