@@ -15,6 +15,7 @@ import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {createPlaybookRun} from '@playbooks/actions/remote/runs';
 import {popTopScreen, setButtons} from '@screens/navigation';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
+import {getLastCall, getLastCallForButton} from '@test/mock_helpers';
 import TestHelper from '@test/test_helper';
 
 import StartARun from './start_a_run';
@@ -69,17 +70,6 @@ jest.mock('@screens/navigation', () => ({
 jest.mock('@utils/snack_bar', () => ({
     showPlaybookErrorSnackbar: jest.fn(),
 }));
-
-function getLastCall<T, U extends unknown[], V>(mock: jest.Mock<T, U, V>): U {
-    const allCalls = mock.mock.calls;
-    return allCalls[allCalls.length - 1];
-}
-
-function getLastCallForButton<T, U extends unknown[], V>(mock: jest.Mock<T, U, V>, buttonId: string): U {
-    const allCalls = mock.mock.calls;
-    const buttonCalls = allCalls.filter((call) => call[0] === buttonId);
-    return buttonCalls[buttonCalls.length - 1];
-}
 
 describe('StartARun', () => {
     function getBaseProps(): ComponentProps<typeof StartARun> {

@@ -214,7 +214,10 @@ const Checklist = ({
                     </View>
                     <View style={styles.progressAndEditContainer}>
                         <Text style={styles.progressText}>{`${completed} / ${totalNumber} done`}</Text>
-                        <TouchableOpacity onPress={handleEditPress}>
+                        <TouchableOpacity
+                            onPress={handleEditPress}
+                            testID='edit-checklist-button'
+                        >
                             <CompassIcon
                                 name='pencil-outline'
                                 style={styles.editIcon}

@@ -202,7 +202,16 @@ export default function PlaybookRun({
     const isFinished = isRunFinished(playbookRun);
     const readOnly = isFinished || !isParticipant;
 
-    const playbookRunType = useMemo(() => playbookRun?.type || 'playbook', [playbookRun]);
+    const playbookRunType = useMemo(() => {
+        if (!playbookRun) {
+            return PLAYBOOK_RUN_TYPES.PlaybookType;
+        }
+        if (playbookRun.type) {
+            return playbookRun.type;
+        }
+        const playbookId = 'playbookId' in playbookRun ? playbookRun.playbookId : (playbookRun.playbook_id || '');
+        return playbookId ? PLAYBOOK_RUN_TYPES.PlaybookType : PLAYBOOK_RUN_TYPES.ChannelChecklistType;
+    }, [playbookRun]);
 
     const containerStyle = useMemo(() => {
         return [
