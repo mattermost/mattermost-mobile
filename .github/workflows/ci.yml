@@ -27,3 +27,16 @@ jobs:
         uses: ./.github/actions/test-coverage
         with:
           run_id: ${{ github.run_id }}
+
+  test-rust:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: ci/checkout-repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: ci/setup-rust
+        uses: dtolnay/rust-toolchain@master
+      - name: ci/prepare-node-deps
+        uses: ./.github/actions/prepare-node-deps
+      - name: ci/test-rust
+        shell: bash
+        run: npm run e2ee:test:rust
