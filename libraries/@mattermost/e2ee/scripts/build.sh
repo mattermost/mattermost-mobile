@@ -95,9 +95,6 @@ build_android() {
   (
     cd "${PACKAGE_DIR}"
     npx --no-install ubrn build android ${RELEASE_FLAG} --and-generate
-    # Override generated file with old architecture support
-    echo "==> Applying old architecture overrides..."
-    cp "${PACKAGE_DIR}/overrides/MattermostE2ee.mm" "${PACKAGE_DIR}/ios/MattermostE2ee.mm"
     # Patch index.tsx to use wrapper
     node "${SCRIPT_DIR}/patch-generated.js"
   )
