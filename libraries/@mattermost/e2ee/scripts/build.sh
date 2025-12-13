@@ -103,5 +103,17 @@ build_android() {
   )
 }
 
-build_ios
-build_android
+# On CI, only build for the current platform:
+# - macOS runners build iOS only
+# - Linux runners build Android only
+# Locally, build both platforms
+if [[ "${CI:-}" == "true" ]]; then
+  if [[ "$(uname)" == "Darwin" ]]; then
+    build_ios
+  else
+    build_android
+  fi
+else
+  build_ios
+  build_android
+fi
