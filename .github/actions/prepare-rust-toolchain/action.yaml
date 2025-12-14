@@ -17,6 +17,10 @@ runs:
         target: ${{ inputs.platform == 'ios' && 'aarch64-apple-ios,aarch64-apple-ios-sim,x86_64-apple-ios' || 'aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android,i686-linux-android' }}
         cache: false
 
+    - name: ci/ensure-cargo-path
+      shell: bash
+      run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
     - name: ci/cache-rust-artifacts
       uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
       with:
