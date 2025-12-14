@@ -99,6 +99,13 @@ android {
     }
   }
 
+  // Handle duplicate native libraries from prefab/react-native
+  // See: https://github.com/facebook/react-native/issues/35215
+  packagingOptions {
+    pickFirst '**/libjsi.so'
+    pickFirst '**/libc++_shared.so'
+    pickFirst '**/libreactnative.so'
+  }
 
   lintOptions {
     disable "GradleCompatible"
@@ -144,18 +151,3 @@ if (isNewArchitectureEnabled()) {
   }
 }
 
-// Remove duplicate native libraries that are already provided by react-native
-// These get copied by CMake/prefab but cause conflicts at app merge time
-tasks.configureEach { task ->
-  if (task.name.contains('copyReleaseJniLibsProjectOnly') || task.name.contains('copyDebugJniLibsProjectOnly')) {
-    task.doLast {
-      def jniDir = new File(buildDir, "intermediates/library_jni")
-      jniDir.eachFileRecurse { file ->
-        if (file.name == 'libjsi.so' || file.name == 'libc++_shared.so') {
-          println "Removing duplicate library: ${file.path}"
-          file.delete()
-        }
-      }
-    }
-  }
-}
