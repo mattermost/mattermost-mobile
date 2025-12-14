@@ -217,6 +217,7 @@
     "e2ee:clean": "npm run --prefix libraries/@mattermost/e2ee clean",
     "e2ee:test": "npm run --prefix libraries/@mattermost/e2ee test",
     "e2ee:test:rust": "npm run --prefix libraries/@mattermost/e2ee test:rust",
+    "e2ee:test:verify": "npm run --prefix libraries/@mattermost/e2ee test:verify",
     "e2ee:test:ios": "npm run --prefix libraries/@mattermost/e2ee test:ios",
     "e2ee:test:android": "npm run --prefix libraries/@mattermost/e2ee test:android",
     "e2ee:test:all": "npm run --prefix libraries/@mattermost/e2ee test:all"
