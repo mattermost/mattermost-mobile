@@ -10,6 +10,9 @@ rust:
 ios:
   directory: ios
   moduleName: MattermostE2ee
+  targets:
+    - aarch64-apple-ios
+    - aarch64-apple-ios-sim
 
 android:
   directory: android

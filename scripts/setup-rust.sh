@@ -6,7 +6,7 @@
 set -euo pipefail
 
 ANDROID_TARGETS=(aarch64-linux-android armv7-linux-androideabi x86_64-linux-android i686-linux-android)
-IOS_TARGETS=(aarch64-apple-ios aarch64-apple-ios-sim x86_64-apple-ios)
+IOS_TARGETS=(aarch64-apple-ios aarch64-apple-ios-sim)
 
 check_rustup() {
     command -v rustup >/dev/null 2>&1

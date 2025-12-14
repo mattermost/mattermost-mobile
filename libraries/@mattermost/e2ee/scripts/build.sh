@@ -3,7 +3,7 @@
 set -euo pipefail
 
 ANDROID_TARGETS=(aarch64-linux-android armv7-linux-androideabi x86_64-linux-android i686-linux-android)
-IOS_TARGETS=(aarch64-apple-ios aarch64-apple-ios-sim x86_64-apple-ios)
+IOS_TARGETS=(aarch64-apple-ios aarch64-apple-ios-sim)
 
 # Use --release flag if E2EE_RELEASE=1 (set by CI)
 # Local dev builds use debug mode for faster builds and better debugging

@@ -70,7 +70,11 @@ find_package(fbjni REQUIRED CONFIG)
 target_link_libraries(
   mattermost-e2ee
   fbjni::fbjni
-  ReactAndroid::jsi
   ${LOGCAT}
   my_rust_lib
 )
+
+# Only link jsi separately for RN < 0.76 (it's merged into reactnative for 0.76+)
+if (NOT REACTNATIVE_MERGED_SO)
+  target_link_libraries(mattermost-e2ee ReactAndroid::jsi)
+endif()

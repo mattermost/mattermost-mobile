@@ -27,7 +27,7 @@ libraries/@mattermost/e2ee/
 Developers need:
 - **Rust 1.90.0** (installed via [rustup](https://rustup.rs/); the `rust-toolchain.toml` in this package pins the version automatically)
 - **cargo-ndk**: `cargo install cargo-ndk`
-- **Rust targets**: `rustup target add aarch64-apple-ios aarch64-apple-ios-sim x86_64-apple-ios aarch64-linux-android armv7-linux-androideabi x86_64-linux-android i686-linux-android`
+- **Rust targets**: `rustup target add aarch64-apple-ios aarch64-apple-ios-sim aarch64-linux-android armv7-linux-androideabi x86_64-linux-android i686-linux-android`
 - **Android NDK**: Set up via Android Studio
 - **Xcode**: For iOS development (macOS hosts only)
 
