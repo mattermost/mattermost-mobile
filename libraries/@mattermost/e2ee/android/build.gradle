@@ -99,10 +99,6 @@ android {
     }
   }
 
-  // Exclude libraries already provided by react-native
-  packagingOptions {
-    excludes += ['**/libjsi.so', '**/libc++_shared.so']
-  }
 
   lintOptions {
     disable "GradleCompatible"
@@ -145,5 +141,21 @@ if (isNewArchitectureEnabled()) {
     jsRootDir = file("../src/")
     libraryName = "MattermostE2ee"
     codegenJavaPackageName = "com.mattermost.e2ee"
+  }
+}
+
+// Remove duplicate native libraries that are already provided by react-native
+// These get copied by CMake/prefab but cause conflicts at app merge time
+tasks.configureEach { task ->
+  if (task.name.contains('copyReleaseJniLibsProjectOnly') || task.name.contains('copyDebugJniLibsProjectOnly')) {
+    task.doLast {
+      def jniDir = new File(buildDir, "intermediates/library_jni")
+      jniDir.eachFileRecurse { file ->
+        if (file.name == 'libjsi.so' || file.name == 'libc++_shared.so') {
+          println "Removing duplicate library: ${file.path}"
+          file.delete()
+        }
+      }
+    }
   }
 }
