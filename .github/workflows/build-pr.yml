@@ -77,6 +77,13 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
+      - name: ci/free-disk-space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          df -h
+
       - name: ci/prepare-android-build
         uses: ./.github/actions/prepare-android-build
         env:
