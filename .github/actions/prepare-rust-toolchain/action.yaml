@@ -44,13 +44,6 @@ runs:
         fi
         echo "::endgroup::"
 
-    - name: ci/test-rust-unit
-      shell: bash
-      run: |
-        echo "::group::test-rust-unit"
-        npm run e2ee:test:rust
-        echo "::endgroup::"
-
     - name: ci/build-e2ee-module
       shell: bash
       run: |
@@ -62,16 +55,5 @@ runs:
       shell: bash
       run: |
         echo "::group::verify-e2ee-build"
-        npm run e2ee:test
-        echo "::endgroup::"
-
-    - name: ci/test-e2ee-native
-      shell: bash
-      run: |
-        echo "::group::test-e2ee-native (${{ inputs.platform }})"
-        if [[ "${{ inputs.platform }}" == "ios" ]]; then
-          npm run e2ee:test:ios
-        else
-          npm run e2ee:test:android
-        fi
+        npm run e2ee:test:verify
         echo "::endgroup::"
