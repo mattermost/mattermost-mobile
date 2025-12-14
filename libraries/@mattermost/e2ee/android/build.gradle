@@ -99,14 +99,6 @@ android {
     }
   }
 
-  // Handle duplicate native libraries from prefab/react-native
-  // See: https://github.com/facebook/react-native/issues/35215
-  packagingOptions {
-    pickFirst '**/libjsi.so'
-    pickFirst '**/libc++_shared.so'
-    pickFirst '**/libreactnative.so'
-  }
-
   lintOptions {
     disable "GradleCompatible"
   }
