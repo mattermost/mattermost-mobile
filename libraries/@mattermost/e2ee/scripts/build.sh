@@ -95,6 +95,10 @@ build_android() {
   (
     cd "${PACKAGE_DIR}"
     npx --no-install ubrn build android ${RELEASE_FLAG} --and-generate
+    # Override generated files with old architecture support
+    echo "==> Applying old architecture overrides..."
+    cp "${PACKAGE_DIR}/overrides/MattermostE2eeModule.kt" "${PACKAGE_DIR}/android/src/main/java/com/mattermost/e2ee/MattermostE2eeModule.kt"
+    cp "${PACKAGE_DIR}/overrides/MattermostE2eePackage.kt" "${PACKAGE_DIR}/android/src/main/java/com/mattermost/e2ee/MattermostE2eePackage.kt"
     # Patch index.tsx to use wrapper
     node "${SCRIPT_DIR}/patch-generated.js"
   )

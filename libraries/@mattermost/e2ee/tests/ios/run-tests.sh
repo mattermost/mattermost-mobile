@@ -6,14 +6,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PACKAGE_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 XCFRAMEWORK="${PACKAGE_DIR}/MattermostE2eeFramework.xcframework"
 
-# Determine which architecture to use
-if [[ "$(uname -m)" == "arm64" ]]; then
-    ARCH="arm64"
-    FRAMEWORK_PATH="${XCFRAMEWORK}/ios-arm64-simulator"
-else
-    ARCH="x86_64"
-    FRAMEWORK_PATH="${XCFRAMEWORK}/ios-arm64-simulator"
-fi
+# We only build ARM simulator - Intel Macs can run via Rosetta
+ARCH="arm64"
+FRAMEWORK_PATH="${XCFRAMEWORK}/ios-arm64-simulator"
 
 # Check if xcframework exists
 if [[ ! -d "${XCFRAMEWORK}" ]]; then
