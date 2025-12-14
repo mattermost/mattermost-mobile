@@ -10,9 +10,7 @@ rust:
 ios:
   directory: ios
   moduleName: MattermostE2ee
-  targets:
-    - aarch64-apple-ios
-    - aarch64-apple-ios-sim
+  # targets passed via CLI --targets flag in build.sh (dynamic based on host arch)
 
 android:
   directory: android

@@ -41,12 +41,19 @@ echo ""
 # - Linux runners build Android only
 # Locally, verify both platforms
 
+# Determine expected simulator slice based on host architecture
+if [[ "$(uname -m)" == "arm64" ]]; then
+    SIM_SLICE="ios-arm64-simulator"
+else
+    SIM_SLICE="ios-x86_64-simulator"
+fi
+
 # Check iOS artifacts (only on macOS)
 if [[ "$(uname)" == "Darwin" ]]; then
     echo "iOS:"
     check_dir "MattermostE2eeFramework.xcframework" "xcframework directory"
     check_dir "MattermostE2eeFramework.xcframework/ios-arm64" "iOS arm64 slice"
-    check_dir "MattermostE2eeFramework.xcframework/ios-arm64-simulator" "iOS arm64 simulator slice"
+    check_dir "MattermostE2eeFramework.xcframework/${SIM_SLICE}" "iOS simulator slice (${SIM_SLICE})"
     check_file "MattermostE2eeFramework.xcframework/ios-arm64/libmattermost_e2ee.a" "iOS arm64 static library"
     echo ""
 fi

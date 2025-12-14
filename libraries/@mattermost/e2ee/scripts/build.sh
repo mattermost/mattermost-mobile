@@ -3,7 +3,15 @@
 set -euo pipefail
 
 ANDROID_TARGETS=(aarch64-linux-android armv7-linux-androideabi x86_64-linux-android i686-linux-android)
-IOS_TARGETS=(aarch64-apple-ios aarch64-apple-ios-sim)
+
+# iOS simulator target depends on host architecture
+# M1/M2 Macs build arm64 simulator, Intel Macs build x86_64 simulator
+if [[ "$(uname -m)" == "arm64" ]]; then
+    IOS_SIM_TARGET="aarch64-apple-ios-sim"
+else
+    IOS_SIM_TARGET="x86_64-apple-ios"
+fi
+IOS_TARGETS=(aarch64-apple-ios "${IOS_SIM_TARGET}")
 
 # Use --release flag if E2EE_RELEASE=1 (set by CI)
 # Local dev builds use debug mode for faster builds and better debugging
@@ -73,11 +81,15 @@ build_ios() {
 
   ensure_targets "${IOS_TARGETS[@]}"
 
-  echo "==> Building MattermostE2ee (iOS)"
+  # Join targets with comma for CLI
+  local targets_csv
+  targets_csv=$(IFS=,; echo "${IOS_TARGETS[*]}")
+
+  echo "==> Building MattermostE2ee (iOS) with targets: ${targets_csv}"
   rm -rf "${PACKAGE_DIR}/MattermostE2eeFramework.xcframework"
   (
     cd "${PACKAGE_DIR}"
-    npx --no-install ubrn build ios ${RELEASE_FLAG} --and-generate
+    npx --no-install ubrn build ios ${RELEASE_FLAG} --and-generate --targets "${targets_csv}"
     # Override generated file with old architecture support
     echo "==> Applying old architecture overrides..."
     cp "${PACKAGE_DIR}/overrides/MattermostE2ee.mm" "${PACKAGE_DIR}/ios/MattermostE2ee.mm"

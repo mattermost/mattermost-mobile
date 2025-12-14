@@ -6,7 +6,14 @@
 set -euo pipefail
 
 ANDROID_TARGETS=(aarch64-linux-android armv7-linux-androideabi x86_64-linux-android i686-linux-android)
-IOS_TARGETS=(aarch64-apple-ios aarch64-apple-ios-sim)
+
+# iOS simulator target depends on host architecture
+if [[ "$(uname -m)" == "arm64" ]]; then
+    IOS_SIM_TARGET="aarch64-apple-ios-sim"
+else
+    IOS_SIM_TARGET="x86_64-apple-ios"
+fi
+IOS_TARGETS=(aarch64-apple-ios "${IOS_SIM_TARGET}")
 
 check_rustup() {
     command -v rustup >/dev/null 2>&1
