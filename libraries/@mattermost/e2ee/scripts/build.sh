@@ -2,6 +2,12 @@
 
 set -euo pipefail
 
+# Ensure cargo is in PATH - needed for CI where PATH updates may not propagate correctly
+if [[ -f "$HOME/.cargo/env" ]]; then
+  # shellcheck source=/dev/null
+  source "$HOME/.cargo/env"
+fi
+
 ANDROID_TARGETS=(aarch64-linux-android armv7-linux-androideabi x86_64-linux-android i686-linux-android)
 
 # iOS simulator target depends on host architecture
