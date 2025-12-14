@@ -176,6 +176,10 @@ android {
     packagingOptions {
         pickFirst '**/libjsi.so'
         pickFirst '**/libc++_shared.so'
+        pickFirst '**/libreactnative.so'
+        pickFirst '**/libfbjni.so'
+        pickFirst '**/libturbomodulejsijni.so'
+        pickFirst '**/libreact_nativemodule_core.so'
     }
 
     // applicationVariants are e.g. debug, release
