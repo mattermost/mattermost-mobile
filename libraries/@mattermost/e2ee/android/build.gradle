@@ -74,7 +74,8 @@ android {
     }
     externalNativeBuild {
       cmake {
-        arguments '-DANDROID_STL=c++_shared'
+        // Use c++_static to avoid bundling libc++_shared.so (React Native provides it)
+        arguments '-DANDROID_STL=c++_static'
         abiFilters (*reactNativeArchitectures())
       }
     }
