@@ -46,6 +46,7 @@ interface ClientConfig {
     EmailNotificationContentsType: string;
     EnableBanner: string;
     EnableBotAccountCreation: string;
+    EnableBurnOnRead: string;
     EnableChannelViewedMessages: string;
     EnableClientMetrics?: string;
     EnableCluster: string;

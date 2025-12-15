@@ -254,6 +254,10 @@ export const observeIsPostPriorityEnabled = (database: Database) => {
     return observeConfigBooleanValue(database, 'PostPriority');
 };
 
+export const observeIsBoREnabled = (database: Database) => {
+    return observeConfigBooleanValue(database, 'EnableBurnOnRead');
+};
+
 export const observeIsPostAcknowledgementsEnabled = (database: Database) => {
     return observeConfigBooleanValue(database, 'PostAcknowledgements');
 };
