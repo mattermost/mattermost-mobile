@@ -7,6 +7,7 @@ import {of as of$, combineLatest} from 'rxjs';
 import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {Permissions, Preferences, Screens} from '@constants';
+import {DEFAULT_LOCALE} from '@i18n';
 import {queryFilesForPost} from '@queries/servers/file';
 import {observePost, observePostAuthor, queryPostsBetween, observeIsPostPriorityEnabled} from '@queries/servers/post';
 import {queryReactionsForPost} from '@queries/servers/reaction';
@@ -86,6 +87,25 @@ function isFirstReply(post: PostModel, previousPost?: PostModel) {
     return false;
 }
 
+function observeIsConsecutivePost(database: Database, post: PostModel, previousPost?: PostModel) {
+    if (isBoRPost(post)) {
+        return of$(false);
+    }
+    if (!post ||!previousPost) {
+        return of$(false);
+    }
+
+    const userLocale = observeCurrentUser(database).pipe(
+        switchMap((user) => of$(user?.locale || DEFAULT_LOCALE)),
+    );
+
+    const author = post.userId ? observePostAuthor(database, post) : of$(undefined);
+    return combineLatest([userLocale, author]).pipe(
+        switchMap(([locale, user]) => of$(Boolean(!user?.isBot && areConsecutivePosts(post, previousPost, locale)))),
+        distinctUntilChanged(),
+    );
+}
+
 const withSystem = withObservables([], ({database}: WithDatabaseArgs) => ({
     currentUser: observeCurrentUser(database),
 }));
@@ -96,7 +116,6 @@ const withPost = withObservables(
         let isLastReply = of$(true);
         let isPostAddChannelMember = of$(false);
         const isOwner = currentUser?.id === post.userId;
-        const author = post.userId ? observePostAuthor(database, post) : of$(undefined);
         const canDelete = observePermissionForPost(database, post, currentUser, isOwner ? Permissions.DELETE_POST : Permissions.DELETE_OTHERS_POSTS, false);
         const isEphemeral = of$(isPostEphemeral(post));
 
@@ -127,10 +146,7 @@ const withPost = withObservables(
 
         // Don't combine consecutive Burn on Read posts as we want each BoR post
         // to display its header to allow displaying the remaining time.
-        const isConsecutivePost = isBoRPost(post) ? of$(false) : author.pipe(
-            switchMap((user) => of$(Boolean(post && previousPost && !user?.isBot && areConsecutivePosts(post, previousPost)))),
-            distinctUntilChanged(),
-        );
+        const isConsecutivePost = observeIsConsecutivePost(database, post, previousPost);
 
         const hasFiles = queryFilesForPost(database, post.id).observeCount().pipe(
             switchMap((c) => of$(c > 0)),

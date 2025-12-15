@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {defineMessages} from 'react-intl';
+import {defineMessages, useIntl} from 'react-intl';
 
 import {BaseOption} from '@components/common_post_options';
 import {Screens} from '@constants';
@@ -10,32 +10,33 @@ import {dismissBottomSheet, goToScreen} from '@screens/navigation';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
-type ViewTranslationProps = {
+type Props = {
     bottomSheetId: AvailableScreens;
     postId: string;
 }
 
 const messages = defineMessages({
-    viewTranslation: {
-        id: 'mobile.post_info.view_translation',
-        defaultMessage: 'View Translation',
+    showTranslation: {
+        id: 'mobile.post_info.show_translation',
+        defaultMessage: 'Show Translation',
     },
 });
 
-const ViewTranslationOption = ({bottomSheetId, postId}: ViewTranslationProps) => {
+const ShowTranslationOption = ({bottomSheetId, postId}: Props) => {
+    const intl = useIntl();
     const onHandlePress = useCallback(async () => {
         await dismissBottomSheet(bottomSheetId);
-        goToScreen(Screens.VIEW_TRANSLATION, 'View Translation', {postId});
-    }, [bottomSheetId, postId]);
+        goToScreen(Screens.SHOW_TRANSLATION, intl.formatMessage(messages.showTranslation), {postId});
+    }, [bottomSheetId, intl, postId]);
 
     return (
         <BaseOption
-            message={messages.viewTranslation}
-            iconName='globe'
+            message={messages.showTranslation}
+            iconName='translate'
             onPress={onHandlePress}
-            testID='post_options.view_translation.option'
+            testID='post_options.show_translation.option'
         />
     );
 };
 
-export default ViewTranslationOption;
+export default ShowTranslationOption;

@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo, useState} from 'react';
+import {useIntl} from 'react-intl';
 import {type LayoutChangeEvent, ScrollView, useWindowDimensions, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 
@@ -9,6 +10,7 @@ import Markdown from '@components/markdown';
 import {isChannelMentions} from '@components/markdown/channel_mention/channel_mention';
 import {SEARCH} from '@constants/screens';
 import {useShowMoreAnimatedStyle} from '@hooks/show_more';
+import {getPostTranslatedMessage, getPostTranslation} from '@utils/post';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -77,6 +79,7 @@ const Message = ({
     const maxHeight = Math.round((dimensions.height * 0.5) + SHOW_MORE_HEIGHT);
     const animatedStyle = useShowMoreAnimatedStyle(height, maxHeight, open);
     const style = getStyleSheet(theme);
+    const intl = useIntl();
 
     // We need to memoize these two values because they are actually getters that return a new list
     // on every render. We need to trust that changes in the currentUser will trigger the recalculation.
@@ -100,11 +103,10 @@ const Message = ({
         return isChannelMentions(post.props?.channel_mentions) ? post.props.channel_mentions : {};
     }, [post.props?.channel_mentions]);
 
+    const translation = getPostTranslation(post, intl.locale);
     let message = post.message;
-    if (isChannelAutotranslated) {
-        if (typeof post.translation === 'string') {
-            message = post.translation;
-        }
+    if (isChannelAutotranslated && translation?.state === 'ready') {
+        message = getPostTranslatedMessage(post.message, translation);
     }
 
     return (

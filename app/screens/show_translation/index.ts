@@ -11,7 +11,7 @@ import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeIsCRTEnabled} from '@queries/servers/thread';
 import {mapCustomEmojiNames} from '@utils/emoji/helpers';
 
-import ViewTranslation from './view_translation';
+import ShowTranslation from './show_translation';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
@@ -34,5 +34,5 @@ const enhance = withObservables(['postId'], ({postId, database}: Props) => {
     };
 });
 
-export default withDatabase(enhance(ViewTranslation));
+export default withDatabase(enhance(ShowTranslation));
 

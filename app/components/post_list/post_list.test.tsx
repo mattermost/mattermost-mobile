@@ -81,7 +81,6 @@ describe('components/post_list/PostList', () => {
         testID: 'post_list',
         shouldShowJoinLeaveMessages: false,
         isChannelAutotranslated: false,
-        channelAutotranslationEnabled: false,
     };
 
     it('renders correctly with basic props', () => {

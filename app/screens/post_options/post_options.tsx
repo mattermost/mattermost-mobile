@@ -6,7 +6,7 @@ import {useManagedConfig} from '@mattermost/react-native-emm';
 import React, {useMemo} from 'react';
 import {ScrollView} from 'react-native';
 
-import {CopyPermalinkOption, FollowThreadOption, ReplyOption, SaveOption, ViewTranslationOption} from '@components/common_post_options';
+import {CopyPermalinkOption, FollowThreadOption, ReplyOption, SaveOption, ShowTranslationOption} from '@components/common_post_options';
 import CopyTextOption from '@components/copy_text_option';
 import {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
@@ -138,7 +138,7 @@ const PostOptions = ({
                 />
                 }
                 {canViewTranslation &&
-                <ViewTranslationOption
+                <ShowTranslationOption
                     bottomSheetId={Screens.POST_OPTIONS}
                     postId={post.id}
                 />

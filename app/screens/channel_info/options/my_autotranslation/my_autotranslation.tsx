@@ -3,6 +3,7 @@
 
 import React, {useCallback, useState} from 'react';
 import {defineMessage, useIntl} from 'react-intl';
+import {Alert} from 'react-native';
 
 import {setMyChannelAutotranslation} from '@actions/remote/channel';
 import OptionItem from '@components/option_item';
@@ -23,7 +24,7 @@ const MyAutotranslation = ({channelId, displayName, enabled, channelAutotranslat
     const serverUrl = useServerUrl();
     const intl = useIntl();
 
-    const toggleAutotranslation = usePreventDoubleTap(useCallback(async () => {
+    const doToggleAutotranslation = useCallback(async () => {
         setAutotranslation((v) => !v);
         const result = await setMyChannelAutotranslation(serverUrl, channelId, !enabled);
         if (result?.error) {
@@ -38,7 +39,28 @@ const MyAutotranslation = ({channelId, displayName, enabled, channelAutotranslat
             );
             setAutotranslation((v) => !v);
         }
-    }, [channelId, displayName, enabled, intl, serverUrl]));
+    }, [channelId, displayName, enabled, intl, serverUrl]);
+
+    const toggleAutotranslation = usePreventDoubleTap(useCallback(async () => {
+        if (autotranslation) {
+            Alert.alert(
+                intl.formatMessage({
+                    id: 'channel_info.turn_off_auto_translation.title',
+                    defaultMessage: 'Turn off auto-translation',
+                }),
+                intl.formatMessage({
+                    id: 'channel_info.turn_off_auto_translation.description',
+                    defaultMessage: 'Messages in this channel will revert to their original language. This will only affect how you see this channel. Other members won’t be affected.',
+                }),
+                [
+                    {text: intl.formatMessage({id: 'channel_info.turn_off_auto_translation.button.cancel', defaultMessage: 'cancel'}), style: 'cancel'},
+                    {text: intl.formatMessage({id: 'channel_info.turn_off_auto_translation.button.yes', defaultMessage: 'Yes, turn off'}), onPress: () => doToggleAutotranslation()},
+                ],
+            );
+        } else {
+            doToggleAutotranslation();
+        }
+    }, [autotranslation, doToggleAutotranslation, intl]));
 
     if (!channelAutotranslationEnabled) {
         return null;
@@ -62,7 +84,7 @@ const MyAutotranslation = ({channelId, displayName, enabled, channelAutotranslat
                 defaultMessage: 'Auto-translation',
             })}
             description={description}
-            icon='globe'
+            icon='translate'
             type='toggle'
             selected={autotranslation}
             testID={`channel_info.options.my_autotranslation.option.toggled.${autotranslation}`}

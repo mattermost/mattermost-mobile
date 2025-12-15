@@ -29,7 +29,7 @@ const ChannelAutotranslation = ({channelId, displayName, enabled}: Props) => {
                 intl,
                 result.error,
                 defineMessage({
-                    id: 'channel_info.channel_autotranslation_failed',
+                    id: 'channel_settings.channel_autotranslation_failed',
                     defaultMessage: 'An error occurred trying to enable automatic translation for channel {displayName}',
                 }),
                 {displayName},
@@ -42,13 +42,17 @@ const ChannelAutotranslation = ({channelId, displayName, enabled}: Props) => {
         <OptionItem
             action={toggleAutotranslation}
             label={intl.formatMessage({
-                id: 'channel_info.channel_autotranslation',
-                defaultMessage: 'Enable automatic translation for this channel',
+                id: 'channel_settings.channel_autotranslation',
+                defaultMessage: 'Auto-translation',
             })}
-            icon='globe'
+            description={intl.formatMessage({
+                id: 'channel_settings.channel_autotranslation_description',
+                defaultMessage: 'When enabled, channel members can turn on auto-translation to view messages in their preferred language.',
+            })}
+            icon='translate'
             type='toggle'
             selected={autotranslation}
-            testID={`channel_info.options.channel_autotranslation.option.toggled.${autotranslation}`}
+            testID={`channel_settings.channel_autotranslation.option.toggled.${autotranslation}`}
         />
     );
 };

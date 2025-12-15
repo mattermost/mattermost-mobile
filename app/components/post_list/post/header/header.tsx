@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
+import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 
 import {removePost} from '@actions/local/post';
@@ -15,8 +16,8 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {DEFAULT_LOCALE} from '@i18n';
 import {isOwnBoRPost, isUnrevealedBoRPost} from '@utils/bor';
-import {postUserDisplayName} from '@utils/post';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {getPostTranslation, postUserDisplayName} from '@utils/post';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 import {ensureString} from '@utils/types';
 import {typography} from '@utils/typography';
 import {displayUsername, getUserCustomStatus, getUserTimezone, isCustomStatusExpired} from '@utils/user';
@@ -25,6 +26,7 @@ import HeaderCommentedOn from './commented_on';
 import HeaderDisplayName from './display_name';
 import HeaderReply from './reply';
 import HeaderTag from './tag';
+import TranslateIcon from './translate_icon';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
@@ -117,6 +119,7 @@ const Header = ({
     ) && !isCustomStatusExpired(author) && Boolean(customStatus?.emoji);
     const userIconOverride = ensureString(post.props?.override_icon_url);
     const usernameOverride = ensureString(post.props?.override_username);
+    const intl = useIntl();
 
     // We need to add the expire_at to the dependencies to ensure we update the
     // memo when the relevant data changes.
@@ -130,6 +133,8 @@ const Header = ({
     const onBoRPostExpiry = useCallback(async () => {
         await removePost(serverUrl, post);
     }, [post, serverUrl]);
+
+    const translation = getPostTranslation(post, intl.locale);
 
     return (
         <>
@@ -163,12 +168,8 @@ const Header = ({
                         style={style.time}
                         testID='post_header.date_time'
                     />
-                    {isChannelAutotranslated && post.translationState === 'ready' &&
-                        <CompassIcon
-                            name='globe'
-                            size={16}
-                            color={changeOpacity(theme.centerChannelColor, 0.56)}
-                        />
+                    {isChannelAutotranslated &&
+                        <TranslateIcon translationState={translation?.state}/>
                     }
                     {isEphemeral && (
                         <FormattedText

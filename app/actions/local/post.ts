@@ -1,15 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {DeviceEventEmitter} from 'react-native';
+
 import {fetchPostAuthors} from '@actions/remote/post';
-import {ActionType, Post} from '@constants';
+import {ActionType, Events, Post} from '@constants';
 import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
-import {getChannelById, queryMyChannelsWithAutotranslation} from '@queries/servers/channel';
-import {countUsersFromMentions, getPostById, prepareDeletePost, queryPostsById} from '@queries/servers/post';
+import {getChannelById, getMyChannel, queryMyChannelsWithAutotranslation} from '@queries/servers/channel';
+import {countUsersFromMentions, getPostById, prepareDeletePost, queryPostsById, queryPostsInChannel, queryPostsInThread} from '@queries/servers/post';
 import {getCurrentUserId} from '@queries/servers/system';
 import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers/thread';
 import {generateId} from '@utils/general';
+import {safeParseJSON} from '@utils/helpers';
 import {logError} from '@utils/log';
 import {getLastFetchedAtFromPosts} from '@utils/post';
 import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
@@ -410,8 +413,35 @@ export async function deletePostsForChannel(serverUrl: string, channelId: string
         const preparedPostsArrays = await Promise.all(preparedPostsPromises);
         const preparedModels: Model[] = preparedPostsArrays.flat();
 
+        const postsInChannel = await queryPostsInChannel(database, channelId);
+        if (postsInChannel.length) {
+            for (const postRange of postsInChannel) {
+                const preparedPostRanges = postRange.prepareDestroyPermanently();
+                preparedModels.push(preparedPostRanges);
+            }
+        }
+
+        const threadPromises = posts.filter((post) => post.rootId === '').map((post) => {
+            return queryPostsInThread(database, post.id).fetch();
+        });
+
+        const threadRanges = (await Promise.all(threadPromises)).flat();
+        for (const threadRange of threadRanges) {
+            const preparedThreadRange = threadRange.prepareDestroyPermanently();
+            preparedModels.push(preparedThreadRange);
+        }
+
+        const myChannel = await getMyChannel(database, channelId);
+        if (myChannel) {
+            myChannel.prepareUpdate((v) => {
+                v.lastFetchedAt = 0;
+            });
+            preparedModels.push(myChannel);
+        }
+
         if (preparedModels.length && !prepareRecordsOnly) {
             await operator.batchRecords(preparedModels, 'deletePostsForChannel');
+            DeviceEventEmitter.emit(Events.POST_DELETED_FOR_CHANNEL, {serverUrl, channelId});
         }
 
         return {error: false, models: preparedModels};
@@ -459,3 +489,31 @@ export async function deletePostsForChannelsWithAutotranslation(serverUrl: strin
         return {error, models: []};
     }
 }
+
+export const updatePostTranslation = async (serverUrl: string, postId: string, language: string, translation: PostTranslation) => {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const post = await getPostById(database, postId);
+        if (!post) {
+            return {error: 'Post not found'};
+        }
+        await database.write(async () => {
+            post.update((v) => {
+                // At this point, the metadata is a string, so we need to parse it
+                let metadata: PostMetadata = safeParseJSON(v.metadata as string) as PostMetadata;
+                if (!metadata) {
+                    metadata = {};
+                }
+                if (!metadata.translations) {
+                    metadata.translations = {};
+                }
+                metadata.translations[language] = translation;
+                v.metadata = JSON.stringify(metadata) as any;
+            });
+        });
+        return {error: undefined};
+    } catch (error) {
+        logError('Failed updatePostTranslation', error);
+        return {error};
+    }
+};

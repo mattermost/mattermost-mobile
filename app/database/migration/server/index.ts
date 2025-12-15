@@ -40,15 +40,6 @@ export default schemaMigrations({migrations: [
                     {name: 'autotranslation', type: 'boolean'},
                 ],
             }),
-            addColumns({
-                table: POST,
-                columns: [
-                    {name: 'translation', type: 'string', isOptional: true},
-                    {name: 'translation_type', type: 'string', isOptional: true},
-                    {name: 'translation_confidence', type: 'number', isOptional: true},
-                    {name: 'translation_state', type: 'string', isOptional: true},
-                ],
-            }),
         ],
     },
     {

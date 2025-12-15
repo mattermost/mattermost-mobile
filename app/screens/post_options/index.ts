@@ -3,11 +3,12 @@
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {combineLatest, of as of$, Observable} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {combineLatestWith, switchMap} from 'rxjs/operators';
 
 import {Permissions, Post, Screens} from '@constants';
 import {AppBindingLocations} from '@constants/apps';
 import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
+import {DEFAULT_LOCALE} from '@i18n';
 import AppsManager from '@managers/apps_manager';
 import {observeChannel, observeIsReadOnlyChannel, observeIsChannelAutotranslated} from '@queries/servers/channel';
 import {observePost, observePostSaved} from '@queries/servers/post';
@@ -19,7 +20,7 @@ import {observeCurrentUser} from '@queries/servers/user';
 import {isBoRPost, isUnrevealedBoRPost} from '@utils/bor';
 import {toMilliseconds} from '@utils/datetime';
 import {isMinimumServerVersion} from '@utils/helpers';
-import {isFromWebhook, isSystemMessage} from '@utils/post';
+import {getPostTranslation, isFromWebhook, isSystemMessage} from '@utils/post';
 import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
 
 import PostOptions from './post_options';
@@ -155,7 +156,11 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
     );
 
     const canViewTranslation = observeIsChannelAutotranslated(database, post.channelId).pipe(
-        switchMap((isAutotranslated) => of$(isAutotranslated && post.translationState === 'ready')),
+        combineLatestWith(currentUser),
+        switchMap(([isAutotranslated, user]) => {
+            const translation = getPostTranslation(post, user?.locale || DEFAULT_LOCALE);
+            return of$(isAutotranslated && translation?.state === 'ready');
+        }),
     );
 
     return {

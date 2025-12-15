@@ -50,9 +50,21 @@ class EphemeralStoreSingleton {
     // It is cleared any time the connection with the server is lost.
     private channelPlaybooksSynced: {[serverUrl: string]: Set<string>} = {};
 
-    // This is used to track the channels that have shown the translation prompt toast.
-    // This persists across navigation to prevent showing the toast again when returning to a channel.
-    private translationToastShown: {[serverUrl: string]: Set<string>} = {};
+    // Track how many translations are being executed at the same time on the channel.
+    // We limit this to avoid overwhelming the device.
+    private runningTranslations = new Set<string>();
+
+    addRunningTranslation = (postId: string) => {
+        this.runningTranslations.add(postId);
+    };
+
+    removeRunningTranslation = (postId: string) => {
+        this.runningTranslations.delete(postId);
+    };
+
+    totalRunningTranslations = () => {
+        return this.runningTranslations.size;
+    };
 
     setProcessingNotification = (v: string) => {
         this.processingNotification = v;
@@ -306,17 +318,6 @@ class EphemeralStoreSingleton {
 
     clearChannelPlaybooksSynced = (serverUrl: string) => {
         delete this.channelPlaybooksSynced[serverUrl];
-    };
-
-    hasShownTranslationToast = (serverUrl: string, channelId: string) => {
-        return this.translationToastShown[serverUrl]?.has(channelId) ?? false;
-    };
-
-    setTranslationToastShown = (serverUrl: string, channelId: string) => {
-        if (!this.translationToastShown[serverUrl]) {
-            this.translationToastShown[serverUrl] = new Set();
-        }
-        this.translationToastShown[serverUrl]?.add(channelId);
     };
 }
 

@@ -13,6 +13,7 @@ import {ExtraKeyboardProvider} from '@context/extra_keyboard';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {popTopScreen} from '@screens/navigation';
+import {getPostTranslation} from '@utils/post';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -61,7 +62,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-function ViewTranslation({
+function ShowTranslation({
     componentId,
     post,
     appsEnabled,
@@ -84,7 +85,8 @@ function ViewTranslation({
         return null;
     }
 
-    const originalLanguage = post.metadata?.original_language || 'en';
+    const translation = getPostTranslation(post, intl.locale);
+    const originalLanguage = translation?.source_lang || 'unknown';
 
     const renderMessageBlock = (
         language: string,
@@ -94,7 +96,7 @@ function ViewTranslation({
         return (
             <View style={[style.messageBlock, original && style.messageBlockOriginal]}>
                 <View style={style.badgeContainer}>
-                    <Text style={style.languageText}>{intl.formatDisplayName(language, {type: 'language'})}</Text>
+                    <Text style={style.languageText}>{language === 'unknown' ? intl.formatMessage({id: 'mobile.translation.unknown_language', defaultMessage: 'Unknown'}) : intl.formatDisplayName(language, {type: 'language'})}</Text>
                     <Tag
                         message={badgeLabel}
                         type={original ? 'info' : 'general'}
@@ -106,7 +108,7 @@ function ViewTranslation({
                     customEmojiNames={customEmojiNames}
                     highlightPinnedOrSaved={false}
                     isCRTEnabled={isCRTEnabled}
-                    location={Screens.VIEW_TRANSLATION}
+                    location={Screens.SHOW_TRANSLATION}
                     post={post}
                     shouldRenderReplyButton={false}
                     showAddReaction={false}
@@ -124,7 +126,7 @@ function ViewTranslation({
         <SafeAreaView
             edges={edges}
             style={style.container}
-            testID='view_translation.screen'
+            testID='show_translation.screen'
         >
             <ExtraKeyboardProvider>
                 <ScrollView
@@ -145,5 +147,5 @@ function ViewTranslation({
     );
 }
 
-export default ViewTranslation;
+export default ShowTranslation;
 
