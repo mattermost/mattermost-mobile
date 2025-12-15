@@ -3,7 +3,7 @@
 
 import {uniqueId} from 'lodash';
 import React, {useCallback, useEffect, useState} from 'react';
-import {type LayoutChangeEvent, StyleSheet} from 'react-native';
+import {Platform, type LayoutChangeEvent, StyleSheet} from 'react-native';
 import {KeyboardProvider} from 'react-native-keyboard-controller';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
@@ -122,7 +122,17 @@ const Thread = ({
             >
                 <RoundedHeaderContext/>
                 {Boolean(rootPost) &&
-                <KeyboardProvider>
+                (Platform.OS === 'ios' ? (
+                    <KeyboardProvider>
+                        <ThreadContent
+                            rootId={rootId}
+                            rootPost={rootPost!}
+                            scheduledPostCount={scheduledPostCount}
+                            containerHeight={containerHeight}
+                            enabled={isVisible}
+                        />
+                    </KeyboardProvider>
+                ) : (
                     <ThreadContent
                         rootId={rootId}
                         rootPost={rootPost!}
@@ -130,7 +140,7 @@ const Thread = ({
                         containerHeight={containerHeight}
                         enabled={isVisible}
                     />
-                </KeyboardProvider>
+                ))
                 }
                 {showFloatingCallContainer &&
                     <FloatingCallContainer
