@@ -1,0 +1,33 @@
+
+// =============================================================================
+// CUSTOM ADDITIONS - Appended by build.sh after ubrn generates the base file
+// Fix for libc++_shared.so duplicate conflicts during androidTest builds
+// =============================================================================
+
+// Helper closure to delete libc++_shared.so from build intermediates
+def deleteLibcppShared = { taskName ->
+  def jniDir = file("${buildDir}/intermediates/library_jni")
+  println "[e2ee] ${taskName}: Checking jniDir: ${jniDir} (exists: ${jniDir.exists()})"
+  if (jniDir.exists()) {
+    fileTree(jniDir).matching { include '**/libc++_shared.so' }.each { f ->
+      println "[e2ee] ${taskName}: Deleting duplicate: ${f}"
+      f.delete()
+    }
+  }
+}
+
+// Hook into task graph to delete libc++_shared.so before merge tasks run
+// ReactAndroid's prefab brings in libc++_shared.so which conflicts with RN's own copy
+gradle.taskGraph.whenReady { taskGraph ->
+  println "[e2ee] Task graph ready with ${taskGraph.allTasks.size()} tasks"
+  taskGraph.allTasks.each { task ->
+    if (task.name.contains('NativeLibs') && task.name.contains('merge')) {
+      if (task.project == project) {
+        println "[e2ee] Adding doFirst to: ${task.path}"
+        task.doFirst { deleteLibcppShared(task.name) }
+      }
+    }
+  }
+}
+
+println "[e2ee] build.gradle loaded (with custom libc++_shared.so fix)"

@@ -132,9 +132,13 @@ build_android() {
     find "${PACKAGE_DIR}/android" -name "*.so" -print 2>/dev/null || true
 
     # Override generated files with old architecture support
-    echo "==> Applying old architecture overrides..."
+    echo "==> Applying overrides..."
     cp "${PACKAGE_DIR}/overrides/MattermostE2eeModule.kt" "${PACKAGE_DIR}/android/src/main/java/com/mattermost/e2ee/MattermostE2eeModule.kt"
     cp "${PACKAGE_DIR}/overrides/MattermostE2eePackage.kt" "${PACKAGE_DIR}/android/src/main/java/com/mattermost/e2ee/MattermostE2eePackage.kt"
+    # Append custom Gradle code to fix libc++_shared.so duplicates during androidTest builds
+    # We append rather than replace to preserve ubrn-generated configuration
+    cat "${PACKAGE_DIR}/overrides/build.gradle.append" >> "${PACKAGE_DIR}/android/build.gradle"
+    echo "==> Overrides applied (appended libc++_shared.so fix to build.gradle)"
     # Patch index.tsx to use wrapper
     node "${SCRIPT_DIR}/patch-generated.js"
   )
