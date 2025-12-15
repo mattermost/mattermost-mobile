@@ -217,4 +217,54 @@ describe('DraftAndScheduledPost', () => {
         expect(mockOpenAsBottonSheet).toHaveBeenCalled();
         expect(mockOpenAsBottonSheet.mock.calls[0][0].props?.draftType).toBe(DRAFT_TYPE_SCHEDULED);
     });
+
+    it('renders BoR indicator for BoR scheduled post', () => {
+        const props = {
+            ...baseProps,
+            draftType: DRAFT_TYPE_SCHEDULED,
+            post: TestHelper.fakeScheduledPostModel({
+                rootId: '',
+                updateAt: 1234567890,
+                metadata: {},
+                files: [] as FileInfo[],
+                scheduledAt: 1234567890,
+                errorCode: '',
+                type: 'burn_on_read',
+            }),
+        };
+        renderWithIntlAndTheme(<DraftAndScheduledPost {...props}/>);
+
+        expect(screen.getByTestId('draft_post.bor_indicator')).toBeVisible();
+    });
+
+    it('renders BoR indicator with post priority if set', () => {
+        const props = {
+            ...baseProps,
+            draftType: DRAFT_TYPE_SCHEDULED,
+            isPostPriorityEnabled: true,
+            post: TestHelper.fakeScheduledPostModel({
+                rootId: '',
+                updateAt: 1234567890,
+                metadata: {
+                    priority: {
+                        priority: 'urgent',
+                        requested_ack: true,
+                        persistent_notifications: true,
+                    },
+                },
+                files: [] as FileInfo[],
+                scheduledAt: 1234567890,
+                errorCode: '',
+                type: 'burn_on_read',
+            }),
+        };
+        renderWithIntlAndTheme(<DraftAndScheduledPost {...props}/>);
+
+        expect(screen.getByTestId('draft_post.bor_indicator')).toBeVisible();
+
+        expect(screen.getByTestId('draft_post.priority')).toBeVisible();
+        expect(screen.getByTestId('urgent_post_priority_label')).toBeVisible();
+        expect(screen.getByTestId('drafts.requested_ack.icon')).toBeVisible();
+        expect(screen.getByTestId('drafts.persistent_notifications.icon')).toBeVisible();
+    });
 });
