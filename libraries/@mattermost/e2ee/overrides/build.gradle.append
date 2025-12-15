@@ -1,33 +1,48 @@
 
 // =============================================================================
 // CUSTOM ADDITIONS - Appended by build.sh after ubrn generates the base file
-// Fix for libc++_shared.so duplicate conflicts during androidTest builds
+// Fix for duplicate native lib conflicts during androidTest builds.
+// ReactAndroid's prefab provides libs that React Native already bundles.
 // =============================================================================
 
-// Helper closure to delete libc++_shared.so from build intermediates
-def deleteLibcppShared = { taskName ->
+// List of native libs that ReactAndroid prefab provides but that React Native
+// already bundles at the app level. We must delete these from our library's
+// build intermediates to avoid duplicate conflicts during androidTest merges.
+def reactNativeProvidedLibs = [
+  'libc++_shared.so',
+  'libfbjni.so',
+  'libjsi.so',
+  'libreactnative.so',
+  'libturbomodulejsijni.so',
+  'libreact_nativemodule_core.so',
+]
+
+// Helper closure to delete React Native provided libs from build intermediates
+def deleteReactNativeLibs = { taskName ->
   def jniDir = file("${buildDir}/intermediates/library_jni")
   println "[e2ee] ${taskName}: Checking jniDir: ${jniDir} (exists: ${jniDir.exists()})"
   if (jniDir.exists()) {
-    fileTree(jniDir).matching { include '**/libc++_shared.so' }.each { f ->
-      println "[e2ee] ${taskName}: Deleting duplicate: ${f}"
-      f.delete()
+    reactNativeProvidedLibs.each { libName ->
+      fileTree(jniDir).matching { include "**/${libName}" }.each { f ->
+        println "[e2ee] ${taskName}: Deleting duplicate: ${f}"
+        f.delete()
+      }
     }
   }
 }
 
-// Hook into task graph to delete libc++_shared.so before merge tasks run
-// ReactAndroid's prefab brings in libc++_shared.so which conflicts with RN's own copy
+// Hook into task graph to delete React Native provided libs before merge tasks run
+// ReactAndroid's prefab brings in these libs which conflict with RN's own copies
 gradle.taskGraph.whenReady { taskGraph ->
   println "[e2ee] Task graph ready with ${taskGraph.allTasks.size()} tasks"
   taskGraph.allTasks.each { task ->
     if (task.name.contains('NativeLibs') && task.name.contains('merge')) {
       if (task.project == project) {
         println "[e2ee] Adding doFirst to: ${task.path}"
-        task.doFirst { deleteLibcppShared(task.name) }
+        task.doFirst { deleteReactNativeLibs(task.name) }
       }
     }
   }
 }
 
-println "[e2ee] build.gradle loaded (with custom libc++_shared.so fix)"
+println "[e2ee] build.gradle loaded (with React Native prefab libs fix)"
