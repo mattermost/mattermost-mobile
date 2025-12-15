@@ -157,13 +157,20 @@ dependencies {
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 }
 
-// Workaround for duplicate libc++_shared.so during androidTest builds
-// The react-native dependency brings in libc++_shared.so, causing conflicts during merge
-// See: https://github.com/aspect-build/rules_ts/issues/227#issuecomment-1502584015
-tasks.configureEach { task ->
-  if (task.name.contains("AndroidTestNativeLibs")) {
-    task.configure {
-      duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+// Delete libc++_shared.so from build outputs - React Native provides it at runtime
+// This prevents duplicate conflicts during androidTest merges
+// The prefab from ReactAndroid brings in libc++_shared.so which conflicts with RN's own copy
+afterEvaluate {
+  tasks.matching { it.name.startsWith('copy') && it.name.contains('JniLibs') }.configureEach { task ->
+    task.doLast {
+      // Delete libc++_shared.so from the library_jni output directory
+      def jniDir = file("${buildDir}/intermediates/library_jni")
+      if (jniDir.exists()) {
+        fileTree(jniDir).matching { include '**/libc++_shared.so' }.each {
+          println "Deleting duplicate: ${it}"
+          it.delete()
+        }
+      }
     }
   }
 }
