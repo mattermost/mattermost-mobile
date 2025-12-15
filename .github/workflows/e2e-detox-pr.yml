@@ -103,6 +103,27 @@ jobs:
           STORE_PASSWORD: "${{ secrets.MM_MOBILE_STORE_PASSWORD }}"
           MATTERMOST_BUILD_GH_TOKEN: "${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}"
 
+      - name: Debug e2ee module setup
+        run: |
+          echo "=== Checking e2ee module setup ==="
+          echo ""
+          echo "--- Is node_modules/@mattermost/e2ee a symlink? ---"
+          ls -la node_modules/@mattermost/ | grep e2ee || echo "e2ee not found in node_modules/@mattermost/"
+          echo ""
+          echo "--- Resolve symlink if exists ---"
+          readlink -f node_modules/@mattermost/e2ee || echo "Not a symlink or doesn't exist"
+          echo ""
+          echo "--- First 20 lines of node_modules build.gradle ---"
+          head -20 node_modules/@mattermost/e2ee/android/build.gradle || echo "File not found"
+          echo ""
+          echo "--- First 20 lines of libraries build.gradle ---"
+          head -20 libraries/@mattermost/e2ee/android/build.gradle || echo "File not found"
+          echo ""
+          echo "--- Are they the same file? (diff) ---"
+          diff node_modules/@mattermost/e2ee/android/build.gradle libraries/@mattermost/e2ee/android/build.gradle && echo "FILES ARE IDENTICAL" || echo "FILES ARE DIFFERENT"
+          echo ""
+          echo "=== End debug ==="
+
       - name: Install Dependencies
         run: sudo apt-get clean && sudo apt-get update && sudo apt-get install -y default-jdk
 
