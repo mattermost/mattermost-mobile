@@ -103,8 +103,9 @@ android {
   // Handle duplicate native libraries from e2ee module + react-native during androidTest builds
   // See: https://github.com/facebook/react-native/issues/35215
   packagingOptions {
+    // Exclude libc++_shared.so - React Native provides it at app level
+    exclude '**/libc++_shared.so'
     pickFirst '**/libjsi.so'
-    pickFirst '**/libc++_shared.so'
     pickFirst '**/libreactnative.so'
     pickFirst '**/libfbjni.so'
     pickFirst '**/libturbomodulejsijni.so'
@@ -114,7 +115,9 @@ android {
   // Also configure for the newer packaging DSL (AGP 7.0+)
   packaging {
     jniLibs {
-      pickFirsts.add('**/libc++_shared.so')
+      // Exclude libc++_shared.so from this library - React Native provides it at app level
+      // This prevents duplicate conflicts during androidTest merges
+      excludes.add('**/libc++_shared.so')
       pickFirsts.add('**/libjsi.so')
       pickFirsts.add('**/libreactnative.so')
       pickFirsts.add('**/libfbjni.so')
@@ -160,15 +163,15 @@ dependencies {
 // Delete libc++_shared.so from build outputs - React Native provides it at runtime
 // This prevents duplicate conflicts during androidTest merges
 // The prefab from ReactAndroid brings in libc++_shared.so which conflicts with RN's own copy
-afterEvaluate {
-  tasks.matching { it.name.startsWith('copy') && it.name.contains('JniLibs') }.configureEach { task ->
-    task.doLast {
-      // Delete libc++_shared.so from the library_jni output directory
+tasks.configureEach { task ->
+  // Intercept any merge tasks that handle native libs
+  if (task.name.contains('merge') && task.name.contains('NativeLibs')) {
+    task.doFirst {
       def jniDir = file("${buildDir}/intermediates/library_jni")
       if (jniDir.exists()) {
-        fileTree(jniDir).matching { include '**/libc++_shared.so' }.each {
-          println "Deleting duplicate: ${it}"
-          it.delete()
+        fileTree(jniDir).matching { include '**/libc++_shared.so' }.each { f ->
+          println "[e2ee] Deleting duplicate before ${task.name}: ${f}"
+          f.delete()
         }
       }
     }
