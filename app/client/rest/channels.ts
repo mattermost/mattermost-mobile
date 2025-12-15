@@ -163,8 +163,6 @@ const ClientChannels = <TBase extends Constructor<ClientBase>>(superclass: TBase
         return this.patchChannel(channelId, {autotranslation: enabled});
     };
 
-    // TODO: This endpoint is mocked and needs backend implementation
-    // Mock endpoint: PUT /channels/{channelId}/members/me/autotranslation
     setMyChannelAutotranslation = async (channelId: string, enabled: boolean) => {
         return this.doFetch(
             `${this.getChannelMemberRoute(channelId, 'me')}/autotranslation`,

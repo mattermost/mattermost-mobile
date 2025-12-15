@@ -26,10 +26,6 @@ export default tableSchema({
         {name: 'type', type: 'string', isIndexed: true},
         {name: 'update_at', type: 'number'},
         {name: 'user_id', type: 'string', isIndexed: true},
-        {name: 'translation', type: 'string', isOptional: true},
-        {name: 'translation_type', type: 'string', isOptional: true},
-        {name: 'translation_confidence', type: 'number', isOptional: true},
-        {name: 'translation_state', type: 'string', isOptional: true},
     ],
 });
 

@@ -1287,15 +1287,15 @@ export const setMyChannelAutotranslation = async (serverUrl: string, channelId: 
         const client = NetworkManager.getClient(serverUrl);
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-        const membershipData = await client.setMyChannelAutotranslation(channelId, enabled);
+        await client.setMyChannelAutotranslation(channelId, enabled);
         const models = [];
 
         const myChannel = await getMyChannel(database, channelId);
-        const autotranslationChanged = myChannel && myChannel.autotranslation !== membershipData.autotranslation;
+        const autotranslationChanged = myChannel && myChannel.autotranslation !== enabled;
 
         if (myChannel && autotranslationChanged) {
             myChannel.prepareUpdate((v) => {
-                v.autotranslation = membershipData.autotranslation ?? false;
+                v.autotranslation = enabled;
             });
             models.push(myChannel);
         }
@@ -1309,7 +1309,7 @@ export const setMyChannelAutotranslation = async (serverUrl: string, channelId: 
             await deletePostsForChannel(serverUrl, channelId);
         }
 
-        return {membership: membershipData};
+        return {data: true};
     } catch (error) {
         logDebug('error on setMyChannelAutotranslation', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
