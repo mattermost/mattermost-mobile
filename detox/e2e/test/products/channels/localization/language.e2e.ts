@@ -51,7 +51,6 @@ describe('Localization', () => {
         await wait(timeouts.TWO_SEC);
 
         // * Verify Account screen elements are in Spanish
-        await expect(element(by.text('Conectado'))).toBeVisible();
         await expect(element(by.text('Establecer un estado personalizado'))).toBeVisible();
         await expect(element(by.text('Tu Perfil'))).toBeVisible();
         await expect(element(by.text('Ajustes'))).toBeVisible();

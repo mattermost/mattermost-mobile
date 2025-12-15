@@ -5,7 +5,7 @@ import {Setup, User, Team, Playbooks, PlaybooksHelpers, Channel} from '@support/
 import {siteOneUrl} from '@support/test_config';
 import {ServerScreen, LoginScreen, ChannelScreen, ChannelListScreen, ThreadScreen} from '@support/ui/screen';
 
-describe.skip('Playbooks - Basic', () => {
+describe('Playbooks - Basic', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
 
