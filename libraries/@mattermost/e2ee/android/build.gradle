@@ -110,6 +110,16 @@ android {
     pickFirst '**/libreact_nativemodule_core.so'
   }
 
+  // Also configure for the newer packaging DSL (AGP 7.0+)
+  packaging {
+    jniLibs {
+      pickFirsts.add('**/libc++_shared.so')
+      pickFirsts.add('**/libjsi.so')
+      pickFirsts.add('**/libreactnative.so')
+      pickFirsts.add('**/libfbjni.so')
+    }
+  }
+
   lintOptions {
     disable "GradleCompatible"
   }

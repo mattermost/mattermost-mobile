@@ -114,14 +114,22 @@ build_android() {
   prepare_cargo_ndk
 
   echo "==> Building MattermostE2ee (Android)"
+  # Clean Gradle build cache and any cached libc++_shared.so to avoid stale/duplicate native libs
+  rm -rf "${PACKAGE_DIR}/android/build"
   rm -rf "${PACKAGE_DIR}/android/src/main/jniLibs"
+  echo "==> Pre-build cleanup: removing any cached libc++_shared.so..."
+  find "${PACKAGE_DIR}" -name "libc++_shared.so" -print -delete 2>/dev/null || true
   (
     cd "${PACKAGE_DIR}"
+    # Tell cargo-ndk to not bundle libc++_shared.so - React Native provides it
+    export ANDROID_NDK_CLANG_NO_LIBCXX=1
     npx --no-install ubrn build android ${RELEASE_FLAG} --and-generate
 
-    # Remove libc++_shared.so - React Native provides this, and duplicates cause build failures
-    echo "==> Removing duplicate libc++_shared.so (React Native provides this)..."
-    find "${PACKAGE_DIR}/android/src/main/jniLibs" -name "libc++_shared.so" -delete 2>/dev/null || true
+    # Remove libc++_shared.so from everywhere - React Native provides this, and duplicates cause build failures
+    echo "==> Post-build cleanup: removing any libc++_shared.so..."
+    find "${PACKAGE_DIR}" -name "libc++_shared.so" -print -delete 2>/dev/null || true
+    echo "==> Remaining native libs:"
+    find "${PACKAGE_DIR}/android" -name "*.so" -print 2>/dev/null || true
 
     # Override generated files with old architecture support
     echo "==> Applying old architecture overrides..."

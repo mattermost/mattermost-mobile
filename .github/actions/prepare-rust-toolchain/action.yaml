@@ -32,7 +32,7 @@ runs:
           ~/.cargo/registry/cache/
           ~/.cargo/git/db/
           libraries/@mattermost/e2ee/rust/target/
-        key: ${{ runner.os }}-cargo-${{ inputs.platform }}-${{ steps.rust-toolchain.outputs.cachekey }}-${{ hashFiles('libraries/@mattermost/e2ee/rust/Cargo.lock') }}
+        key: ${{ runner.os }}-cargo-${{ inputs.platform }}-${{ steps.rust-toolchain.outputs.cachekey }}-${{ hashFiles('libraries/@mattermost/e2ee/rust/Cargo.lock', 'libraries/@mattermost/e2ee/scripts/build.sh') }}
         restore-keys: |
           ${{ runner.os }}-cargo-${{ inputs.platform }}-${{ steps.rust-toolchain.outputs.cachekey }}-
           ${{ runner.os }}-cargo-${{ inputs.platform }}-
