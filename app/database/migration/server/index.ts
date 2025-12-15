@@ -26,21 +26,16 @@ const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM, PLAYBOOK_RUN_A
 
 export default schemaMigrations({migrations: [
     {
-        toVersion: 17,
-        steps: [
-            addColumns({
-                table: DRAFT,
-                columns: [
-                    {name: 'type', type: 'string', isOptional: true},
-                ],
-            }),
-        ],
-    },
-    {
         toVersion: 16,
         steps: [
             addColumns({
                 table: SCHEDULED_POST,
+                columns: [
+                    {name: 'type', type: 'string', isOptional: true},
+                ],
+            }),
+            addColumns({
+                table: DRAFT,
                 columns: [
                     {name: 'type', type: 'string', isOptional: true},
                 ],

@@ -46,5 +46,5 @@ export default class DraftModel extends Model implements DraftModelInterface {
     @field('update_at') updateAt!: number;
 
     /** type : The type of post  */
-    @field('type') type?: PostTypesUserCreatable;
+    @field('type') type!: PostTypesUserCreatable | null;
 }

@@ -32,7 +32,7 @@ declare class DraftModel extends Model {
     updateAt: number;
 
     /** type : The post type of draft */
-    type?: string;
+    type: string | null;
 }
 
 export default DraftModel;
