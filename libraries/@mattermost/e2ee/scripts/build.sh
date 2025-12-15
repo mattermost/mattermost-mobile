@@ -118,6 +118,11 @@ build_android() {
   (
     cd "${PACKAGE_DIR}"
     npx --no-install ubrn build android ${RELEASE_FLAG} --and-generate
+
+    # Remove libc++_shared.so - React Native provides this, and duplicates cause build failures
+    echo "==> Removing duplicate libc++_shared.so (React Native provides this)..."
+    find "${PACKAGE_DIR}/android/src/main/jniLibs" -name "libc++_shared.so" -delete 2>/dev/null || true
+
     # Override generated files with old architecture support
     echo "==> Applying old architecture overrides..."
     cp "${PACKAGE_DIR}/overrides/MattermostE2eeModule.kt" "${PACKAGE_DIR}/android/src/main/java/com/mattermost/e2ee/MattermostE2eeModule.kt"
