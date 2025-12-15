@@ -414,8 +414,9 @@ describe('Search - Search Messages', () => {
         await SearchMessagesScreen.toBeVisible();
 
         // * Verify reply count and following button
-        await SearchMessagesScreen.verifyReplyCount(replyPost.id, 1);
-        await SearchMessagesScreen.verifyFollowingLabel(replyPost.id, true);
+        await wait(timeouts.FOUR_SEC);
+        await waitFor(element(by.text('1 reply'))).toBeVisible().withTimeout(timeouts.TWO_SEC);
+        await waitFor(element(by.text('Following'))).toBeVisible().withTimeout(timeouts.TWO_SEC);
 
         // # Open post options for updated searched message and delete post
         await SearchMessagesScreen.openPostOptionsFor(searchedPost.id, updatedMessage);

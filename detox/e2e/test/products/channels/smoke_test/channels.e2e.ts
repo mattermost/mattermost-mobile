@@ -202,9 +202,6 @@ describe('Smoke Test - Channels', () => {
 
         // * Verify on channel screen and post draft archived message is displayed
         await waitFor(ChannelListScreen.channelListScreen).toBeVisible().withTimeout(timeouts.TEN_SEC);
-
-        // * Verify on channel list screen and the channel left by the user does not appear on the list
-        await ChannelListScreen.toBeVisible();
         await expect(ChannelListScreen.getChannelItem(channelsCategory, channel.name)).not.toExist();
     });
 });

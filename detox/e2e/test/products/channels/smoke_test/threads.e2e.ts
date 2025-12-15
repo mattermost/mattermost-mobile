@@ -66,16 +66,16 @@ describe('Smoke Test - Threads', () => {
         await ThreadScreen.postMessage(`${parentMessage} reply`);
         await wait(timeouts.ONE_SEC);
         await ThreadScreen.followingButton.tap();
+        await wait(timeouts.FOUR_SEC);
 
         // * Verify thread is not followed by user via thread navigation
-        await waitFor(ThreadScreen.followButton).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         await expect(ThreadScreen.followButton).toBeVisible();
 
         // # Follow thread via thread navigation
         await ThreadScreen.followButton.tap();
+        await wait(timeouts.FOUR_SEC);
 
         // * Verify thread is followed by user via thread navigation
-        await waitFor(ThreadScreen.followingButton).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         await expect(ThreadScreen.followingButton).toBeVisible();
 
         // # Go back to channel list screen, then go to global threads screen, tap on all your threads button, open thread options for thread, tap on mark as unread option, and tap on unread threads button
@@ -89,15 +89,14 @@ describe('Smoke Test - Threads', () => {
         await GlobalThreadsScreen.headerUnreadThreadsButton.tap();
 
         // * Verify thread is displayed in unread threads section
-        await expect(GlobalThreadsScreen.getThreadItem(parentPost.id)).toBeVisible();
+        await waitFor(GlobalThreadsScreen.getThreadItem(parentPost.id)).toBeVisible().withTimeout(timeouts.FOUR_SEC);
 
         // # Open thread options for thread and tap on mark as read option
         await GlobalThreadsScreen.openThreadOptionsFor(parentPost.id);
         await ThreadOptionsScreen.markAsReadOption.tap();
 
         // * Verify thread is not displayed anymore in unread threads section
-        await wait(timeouts.ONE_SEC);
-        await expect(GlobalThreadsScreen.getThreadItem(parentPost.id)).not.toBeVisible();
+        await waitFor(GlobalThreadsScreen.getThreadItem(parentPost.id)).not.toBeVisible().withTimeout(timeouts.FOUR_SEC);
 
         // # Tap on all your threads button, tap on the thread, and add new reply to thread
         await GlobalThreadsScreen.headerAllThreadsButton.tap();

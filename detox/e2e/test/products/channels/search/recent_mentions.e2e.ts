@@ -135,12 +135,10 @@ describe('Search - Recent Mentions', () => {
         await EditPostScreen.saveButton.tap();
 
         // * Verify post message is updated and displays edited indicator '(edited)'
-        const {postListPostItem: updatedPostListPostItem, postListPostItemEditedIndicator} = RecentMentionsScreen.getPostListPostItem(mentionPost.id, updatedMessage);
-        await expect(updatedPostListPostItem).toBeVisible();
-        await expect(postListPostItemEditedIndicator).toHaveText('Edited');
+        await ChannelScreen.assertPostMessageEdited(mentionPost.id, updatedMessage);
 
         // # Open post options for recent mention and tap on reply option
-        await RecentMentionsScreen.openPostOptionsFor(mentionPost.id, updatedMessage);
+        await element(by.id(`channel.post_list.post.${mentionPost.id}`)).longPress();
         await PostOptionsScreen.replyPostOption.tap();
 
         // * Verify on thread screen

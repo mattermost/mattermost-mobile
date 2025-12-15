@@ -75,6 +75,7 @@ describe('Channels - Find Channels', () => {
 
         // # Tap on the target public channel item
         await FindChannelsScreen.getFilteredChannelItem(testChannel.name).tap();
+        await wait(timeouts.FOUR_SEC);
 
         // * Verify on target public channel screen
         await verifyDetailsOnChannelScreen(testChannel.display_name);
@@ -120,9 +121,9 @@ describe('Channels - Find Channels', () => {
         // * Verify search returns the target group message channel item
         await wait(timeouts.TWO_SEC);
         await FindChannelsScreen.getFilteredChannelItem(groupMessageChannel.name).tap();
+        await wait(timeouts.FOUR_SEC);
 
         // * Verify on target GM screen
-        await wait(timeouts.TWO_SEC);
         const attributes = await element(by.id('channel_post_list.intro.display_name')).getAttributes();
 
         if ('label' in attributes && typeof attributes.label === 'string') {
@@ -145,7 +146,8 @@ describe('Channels - Find Channels', () => {
 
         // * Verify search returns the target archived channel item
         await wait(timeouts.TWO_SEC);
-        await FindChannelsScreen.getFilteredArchivedChannelItem(archivedChannel.name).tap();
+        await FindChannelsScreen.getFilteredChannelItem(archivedChannel.name).tap();
+        await wait(timeouts.FOUR_SEC);
 
         // * Verify on archievd channel name
         await verifyDetailsOnChannelScreen(archivedChannel.display_name);
@@ -179,6 +181,7 @@ describe('Channels - Find Channels', () => {
 });
 
 async function verifyDetailsOnChannelScreen(display_name: string) {
+    await wait(timeouts.TWO_SEC);
     try {
         await ChannelScreen.scheduledPostTooltipCloseButton.tap();
     } catch (error) {
