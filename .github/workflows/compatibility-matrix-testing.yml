@@ -11,6 +11,9 @@ on:
         description: "The mattermost mobile version to test"
         required: true
 
+env:
+  E2EE_RELEASE: 1
+
 jobs:
   ## This is picked up after the finish for cleanup
   upload-cmt-server-detals:

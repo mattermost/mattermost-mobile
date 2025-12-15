@@ -16,6 +16,7 @@ env:
   SNYK_VERSION: "1.1297.2"
   CYCLONEDX_VERSION: "v0.27.2"
   INTUNE_ENABLED: 1
+  E2EE_RELEASE: 1
 
 jobs:
   test:
