@@ -181,12 +181,38 @@ export const useKeyboardAnimation = (
             isKeyboardFullyOpen.value = false; // Always false in onStart - onEnd will set it correctly
             isKeyboardInTransition.value = e.height > 0 && shouldTreatAsTransitioning;
 
+            // When keyboard closes (height: 0), preserve isKeyboardClosing flag if it was true
+            // This prevents onMove events from processing stale closing animation values
+            // Only reset if keyboard was actually open (not already closing)
+            if (e.height === 0) {
+                // If keyboard was closing, keep the flag true so onMove knows to ignore stale events
+                // If keyboard was opening, reset the flag
+                if (!isKeyboardClosing.value) {
+                    isKeyboardClosing.value = false;
+                }
+
+                // Always reset interactive gesture flag when keyboard closes
+                isInteractiveGesture.value = false;
+            }
+
             // Update scroll view insets and offsets
             // bottomInset: Adds bottom padding to scroll content
             bottomInset.value = adjustedHeight;
 
-            // scrollOffset: Ensures the scroll view scrolls with the keyboard animation
-            scrollOffset.value = adjustedHeight;
+            // CRITICAL FIX: Don't update scrollOffset in onStart if progress === 1 and keyboard wasn't already open
+            // On real iOS devices, onStart can fire with progress: 1 BEFORE the animation starts
+            // This causes scrollOffset to jump immediately to the final value, triggering a scroll
+            // Then onMove events come with intermediate values, causing jerky "down then up" behavior
+            // Solution: Only update scrollOffset in onStart if progress < 1 OR keyboard was already open
+            // Let onMove handle the smooth animation for opening keyboards
+            // Note: wasAlreadyOpen is checked BEFORE keyboardTranslateY.value is updated, so use that
+            if (e.progress < 1 || wasAlreadyOpen || e.height === 0) {
+                // scrollOffset: Ensures the scroll view scrolls with the keyboard animation
+                scrollOffset.value = adjustedHeight;
+            } else {
+                // Don't update scrollOffset yet - wait for onMove to animate smoothly
+                // This prevents the initial jump when keyboard opens
+            }
         },
 
         /**
@@ -225,20 +251,28 @@ export const useKeyboardAnimation = (
                 return;
             }
 
+            const previousKeyboardTranslateY = keyboardTranslateY.value;
+
             if (keyboardTranslateY.value > 0) {
                 isInteractiveGesture.value = true;
             }
 
-            // Track if keyboard is closing (keyboardTranslateY decreasing) or opening (keyboardTranslateY increasing)
+            // Calculate adjusted height first to compare properly
+            const adjustedHeight = e.height - (tabBarAdjustment * e.progress);
+
+            // Track if keyboard is closing (adjusted height decreasing) or opening (adjusted height increasing)
+            // Compare adjusted heights, not raw event height vs adjusted height
             // This detects direction changes mid-gesture for smooth animations
-            if (e.height < keyboardTranslateY.value) {
+            if (adjustedHeight < previousKeyboardTranslateY) {
+                // Keyboard is closing - height is decreasing
                 isKeyboardClosing.value = true;
-            } else if (e.height > keyboardTranslateY.value) {
+            } else if (adjustedHeight > previousKeyboardTranslateY) {
                 // User changed direction - swiped back up
                 isKeyboardClosing.value = false;
             }
 
-            const adjustedHeight = e.height - (tabBarAdjustment * e.progress);
+            // If adjustedHeight === previousKeyboardTranslateY, keep current isKeyboardClosing state
+
             keyboardTranslateY.value = adjustedHeight;
             scrollOffset.value = adjustedHeight;
             bottomInset.value = adjustedHeight;
@@ -274,12 +308,16 @@ export const useKeyboardAnimation = (
                 return;
             }
 
-            // If keyboard is closing (detected in onInteractive), set keyboardTranslateY/scrollOffset/bottomInset to 0
-            // This prevents the keyboard from jumping back up when user releases finger mid-swipe
+            // CRITICAL FIX: Ignore stale onMove events after keyboard closes
+            // When keyboard closes, onStart fires with height: 0, but onMove may still fire with stale values
+            // If keyboardHeight is 0 (closed), ignore any onMove events that try to set positive heights
+            if (keyboardHeight.value === 0 && e.height > 0) {
+                return;
+            }
+
+            // If keyboard is closing (detected in onInteractive), ignore onMove events
+            // This prevents stale closing animation values from causing jumps
             if (isKeyboardClosing.value) {
-                keyboardTranslateY.value = 0;
-                scrollOffset.value = 0;
-                bottomInset.value = 0;
                 return;
             }
 
@@ -288,6 +326,14 @@ export const useKeyboardAnimation = (
             // We use both offset prop AND manual animation, so this would cause flicker
             // Example: keyboard opens at 346px → then adjustment event at 229px (346 - 117 offset)
             if (parseInt(e.height.toString()) === keyboardHeight.value - postInputContainerHeight) {
+                return;
+            }
+
+            // CRITICAL FIX: Ignore invalid onMove events with progress > 1
+            // On real iOS devices, sometimes onMove fires with progress > 1 (e.g., 1.266)
+            // These are invalid events that can cause the input container to jump
+            // Progress should always be between 0 and 1 for valid keyboard animation events
+            if (e.progress > 1) {
                 return;
             }
 
@@ -412,7 +458,21 @@ export const useKeyboardAnimation = (
                 isKeyboardFullyClosed.value = true;
                 isKeyboardInTransition.value = false;
                 scrollOffset.value = 0;
+
+                // CRITICAL FIX: Reset scrollPosition when keyboard closes
+                // scrollPosition = contentOffsetY + bottomInset
+                // Before bottomInset becomes 0, calculate actual content offset: scrollPosition - bottomInset
+                // This preserves the user's scroll position even if iOS resets the list to 0
+                const currentBottomInset = bottomInset.value;
+                if (scrollPosition.value > currentBottomInset) {
+                    scrollPosition.value = scrollPosition.value - currentBottomInset;
+                }
+
                 bottomInset.value = 0;
+
+                // Reset closing flag when keyboard fully closes
+                isKeyboardClosing.value = false;
+                isInteractiveGesture.value = false;
             }
         },
     });
@@ -427,7 +487,13 @@ export const useKeyboardAnimation = (
    */
     const onScroll = useAnimatedScrollHandler({
         onScroll: (e) => {
-            scrollPosition.value = e.contentOffset.y + bottomInset.value;
+            const newScrollPosition = e.contentOffset.y + bottomInset.value;
+
+            // Preserve scrollPosition when keyboard is closed and list resets to 0
+            // This prevents iOS's list reset from overwriting the preserved scroll position
+            if (bottomInset.value > 0 || e.contentOffset.y > 0 || scrollPosition.value === 0) {
+                scrollPosition.value = newScrollPosition;
+            }
         },
     });
 

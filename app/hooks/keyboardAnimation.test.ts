@@ -294,6 +294,13 @@ describe('useKeyboardAnimation', () => {
             );
 
             act(() => {
+                keyboardHandlerCallbacks.onStart?.({
+                    height: 250,
+                    progress: 0.7,
+                });
+            });
+
+            act(() => {
                 keyboardHandlerCallbacks.onMove?.({
                     height: 280,
                     progress: 0.9,
@@ -305,12 +312,11 @@ describe('useKeyboardAnimation', () => {
             expect(result.current.bottomInset.value).toBe(280);
         });
 
-        it('should set values to 0 when keyboard is closing', () => {
+        it('should ignore onMove events when keyboard is closing', () => {
             const {result} = renderHook(() =>
                 useKeyboardAnimation(100, true, false, 0, false, true),
             );
 
-            // Set initial height and mark as closing
             act(() => {
                 keyboardHandlerCallbacks.onStart?.({
                     height: 300,
@@ -325,7 +331,6 @@ describe('useKeyboardAnimation', () => {
                 });
             });
 
-            // Now onMove should respect the closing state
             act(() => {
                 keyboardHandlerCallbacks.onMove?.({
                     height: 150,
@@ -333,9 +338,9 @@ describe('useKeyboardAnimation', () => {
                 });
             });
 
-            expect(result.current.keyboardTranslateY.value).toBe(0);
-            expect(result.current.scrollOffset.value).toBe(0);
-            expect(result.current.bottomInset.value).toBe(0);
+            expect(result.current.keyboardTranslateY.value).toBe(200);
+            expect(result.current.scrollOffset.value).toBe(200);
+            expect(result.current.bottomInset.value).toBe(200);
         });
 
         it('should handle negative heights from programmatic dismiss', () => {
