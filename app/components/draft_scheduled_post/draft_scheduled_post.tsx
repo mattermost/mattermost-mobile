@@ -3,7 +3,7 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, Platform, TouchableHighlight, View} from 'react-native';
+import {Keyboard, TouchableHighlight, View} from 'react-native';
 
 import {switchToThread} from '@actions/local/thread';
 import {switchToChannelById} from '@actions/remote/channel';
@@ -76,7 +76,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             height: '100%',
         },
         borIndicator: {
-            paddingVertical: Platform.select({ios: 2, android: 2}),
+            paddingVertical: 2,
         },
     };
 });
